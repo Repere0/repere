@@ -1,0 +1,15 @@
+# Donnees sources : plusieurs Go, retelechargeables depuis data.gouv.fr.
+# Un depot garde ce qui ne se retrouve pas ailleurs, pas ce qui se retelecharge.
+*.csv
+ofgl-*
+elus-*
+
+# Sorties engendrees : build_pwa.py les refabrique a l'identique.
+site_v*/
+repere_site*.zip
+repere_pwa*.zip
+
+# Bruit de systeme
+desktop.ini
+Thumbs.db
+node_modules/

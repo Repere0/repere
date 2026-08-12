@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Repère — la vie publique près de chez vous</title>
+<meta name="description" content="Repère résume les décisions publiques qui vous concernent, de votre commune à la France. Sourcé, sans opinion, sans compte, sans collecte de données.">
+<!-- Aucune police distante, aucun CDN, aucune requête réseau : la page est autonome,
+     comme l'app. Une page de présentation qui appellerait Google Fonts contredirait
+     la première promesse du produit. -->
+<style>
+:root{
+  --paper:#F7F4EE; --card:#FFFFFF; --ink:#1d1d1f; --ink-2:#3a3a3e; --muted:#6e6e73;
+  --sep:#e3e0da; --fill:#f2efe9;
+  --c-ville:#0e7490; --c-agglo:#0891b2; --c-dept:#b45309; --c-region:#6d28d9; --c-france:#1d1d1f;
+  --r:14px; --r-s:9px; --ring:#1d1d1f;
+}
+@media (prefers-color-scheme:dark){
+  :root{ --paper:#121214; --card:#1b1b1e; --ink:#f2f2f4; --ink-2:#d2d2d6; --muted:#9a9aa0;
+         --sep:#2c2c31; --fill:#232327; --c-france:#f2f2f4; --ring:#f2f2f4; }
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--paper);color:var(--ink);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  font-size:17px;line-height:1.55;-webkit-font-smoothing:antialiased}
+:focus-visible{outline:2px solid var(--ring);outline-offset:2px;border-radius:var(--r-s)}
+.wrap{max-width:940px;margin:0 auto;padding:0 24px}
+h1,h2,h3{line-height:1.2;letter-spacing:-.02em;margin:0}
+h1{font-size:clamp(34px,6vw,58px);font-weight:800}
+h2{font-size:clamp(24px,3.4vw,34px);font-weight:800;margin-bottom:14px}
+h3{font-size:19px;font-weight:700;margin-bottom:6px}
+p{margin:0 0 14px}
+a{color:inherit}
+.lead{font-size:clamp(18px,2.2vw,22px);color:var(--ink-2);max-width:56ch}
+.muted{color:var(--muted)}
+.small{font-size:14px;line-height:1.5}
+
+header.top{position:sticky;top:0;z-index:20;background:color-mix(in srgb,var(--paper) 88%,transparent);
+  backdrop-filter:saturate(160%) blur(12px);border-bottom:1px solid var(--sep)}
+.topin{display:flex;align-items:center;justify-content:space-between;gap:16px;height:60px}
+.mark{display:flex;align-items:center;gap:8px;font-weight:800;letter-spacing:-.02em;font-size:18px}
+nav a{display:inline-block;padding:10px 12px;min-height:44px;line-height:24px;text-decoration:none;
+  color:var(--ink-2);font-size:15px;font-weight:600;border-radius:var(--r-s)}
+nav a:hover{background:var(--fill);color:var(--ink)}
+@media(max-width:720px){nav a[data-opt]{display:none}}
+
+section{padding:76px 0;border-bottom:1px solid var(--sep)}
+section:last-of-type{border-bottom:0}
+
+/* ---------- héros ---------- */
+.hero{padding:84px 0 68px}
+.herogrid{display:grid;grid-template-columns:1.15fr .85fr;gap:52px;align-items:center}
+@media(max-width:860px){.herogrid{grid-template-columns:1fr;gap:38px}}
+.cta{display:flex;flex-wrap:wrap;gap:12px;margin-top:26px}
+.btn{display:inline-flex;align-items:center;justify-content:center;min-height:48px;padding:0 22px;
+  border-radius:999px;font-weight:700;font-size:16px;text-decoration:none;border:1px solid transparent;cursor:pointer}
+.btn.p{background:var(--ink);color:var(--paper)}
+.btn.s{background:transparent;color:var(--ink);border-color:var(--sep)}
+.btn.s:hover{background:var(--fill)}
+
+/* ---------- téléphone ---------- */
+.phone{width:264px;margin:0 auto;border-radius:38px;background:var(--card);
+  border:1px solid var(--sep);box-shadow:0 22px 60px rgba(0,0,0,.16);overflow:hidden}
+.ph-top{height:34px;display:flex;align-items:center;justify-content:center}
+.notch{width:76px;height:5px;border-radius:3px;background:var(--sep)}
+.ph-body{padding:0 14px 18px}
+.ph-h{font-size:20px;font-weight:800;letter-spacing:-.02em;margin:2px 0 3px}
+.ph-sub{font-size:11.5px;color:var(--muted);margin-bottom:12px}
+.mini{background:var(--fill);border-radius:12px;padding:11px 12px;margin-bottom:8px}
+.tagline-lvl{display:inline-block;font-size:9.5px;font-weight:800;letter-spacing:.6px;
+  text-transform:uppercase;color:#fff;padding:3px 7px;border-radius:5px;margin-bottom:6px}
+.mini .t{font-size:12.5px;font-weight:700;line-height:1.3;margin-bottom:3px}
+.mini .b{font-size:11px;color:var(--muted);line-height:1.4}
+.ph-bar{display:flex;justify-content:space-around;border-top:1px solid var(--sep);padding-top:9px;margin-top:4px}
+.ph-bar span{font-size:9.5px;color:var(--muted);font-weight:600}
+.ph-bar span.on{color:var(--ink);font-weight:800}
+
+/* ---------- cartes ---------- */
+.grid{display:grid;gap:16px}
+.g3{grid-template-columns:repeat(3,1fr)}
+.g2{grid-template-columns:repeat(2,1fr)}
+@media(max-width:860px){.g3,.g2{grid-template-columns:1fr}}
+.card{background:var(--card);border:1px solid var(--sep);border-radius:var(--r);padding:22px}
+.card .k{display:block;font-size:10.5px;font-weight:800;letter-spacing:.7px;text-transform:uppercase;
+  color:var(--muted);margin-bottom:9px}
+.rule{width:26px;height:3px;border-radius:2px;margin-bottom:12px}
+
+/* ---------- règles ---------- */
+ol.rules{counter-reset:r;list-style:none;padding:0;margin:0;display:grid;gap:2px}
+ol.rules li{counter-increment:r;padding:16px 0;border-bottom:1px solid var(--sep);
+  display:grid;grid-template-columns:38px 1fr;gap:14px;align-items:start}
+ol.rules li:last-child{border-bottom:0}
+ol.rules li::before{content:counter(r,decimal-leading-zero);font-weight:800;color:var(--muted);font-size:14px;padding-top:2px}
+/* La puce ::before occupe la colonne 1 ; le titre et l'explication doivent tous
+   deux tenir dans la colonne 2. Sans cette regle, le <span> retombe en colonne 1,
+   large de 38px, et le texte se casse a un mot par ligne. */
+ol.rules li>b,ol.rules li>span{grid-column:2}
+ol.rules li>span{align-self:start}
+ol.rules b{display:block;margin-bottom:2px}
+
+/* ---------- tableau ---------- */
+.tbl{width:100%;border-collapse:collapse;font-size:14.5px}
+.tbl th,.tbl td{text-align:left;padding:11px 10px;border-bottom:1px solid var(--sep);vertical-align:top}
+.tbl th{font-size:11px;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);font-weight:800}
+.scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+
+details.q{border:1px solid var(--sep);border-radius:var(--r);background:var(--card);margin-bottom:10px}
+details.q summary{cursor:pointer;padding:16px 20px;font-weight:700;min-height:44px;
+  display:flex;align-items:center;list-style:none}
+details.q summary::-webkit-details-marker{display:none}
+details.q summary::after{content:"+";margin-left:auto;font-weight:700;color:var(--muted)}
+details.q[open] summary::after{content:"\2212"}
+details.q .in{padding:0 20px 18px;color:var(--ink-2)}
+
+footer{padding:52px 0 70px;color:var(--muted);font-size:14px}
+.skip{position:absolute;left:-9999px}
+.skip:focus{left:12px;top:12px;background:var(--ink);color:var(--paper);padding:12px 16px;border-radius:8px;z-index:99}
+</style>
+</head>
+<body>
+<a class="skip" href="#produit">Aller au contenu</a>
+
+<header class="top">
+  <div class="wrap topin">
+    <div class="mark">
+      <svg width="20" height="24" viewBox="0 0 72 86" aria-hidden="true"><path d="M36 4C19.4 4 6 17.4 6 34c0 20.5 24.6 42.4 28.3 45.6a2.6 2.6 0 0 0 3.4 0C41.4 76.4 66 54.5 66 34 66 17.4 52.6 4 36 4Z" fill="currentColor"/><circle cx="36" cy="33" r="12.5" fill="var(--paper)"/><circle cx="36" cy="33" r="4.4" fill="currentColor"/></svg>
+      Repère
+    </div>
+    <nav>
+      <a href="#produit">L'app</a>
+      <a href="#methode" data-opt>La méthode</a>
+      <a href="#sources" data-opt>Les sources</a>
+      <a href="#etat">Où on en est</a>
+    </nav>
+  </div>
+</header>
+
+<!-- ============================ PARTIE 1 — LE PRODUIT ============================ -->
+<div class="wrap hero">
+  <div class="herogrid">
+    <div>
+      <h1>La vie publique,<br>près de chez vous.</h1>
+      <p class="lead" style="margin-top:20px">Repère résume les décisions qui vous concernent — de votre conseil municipal à l'Assemblée nationale. Chaque information porte sa source. Aucune ne porte d'opinion.</p>
+      <div class="cta">
+        <a class="btn p" href="#installer">Installer l'app</a>
+        <a class="btn s" href="#methode">Comment c'est fait</a>
+      </div>
+      <p class="small muted" style="margin-top:18px">Sans compte. Sans publicité. Sans collecte de données — <a href="#vieprivee">et on explique précisément ce que ça veut dire</a>.</p>
+    </div>
+
+    <div class="phone" role="img" aria-label="Aperçu de l'application Repère : le fil des décisions, classées de la commune à la France.">
+      <div class="ph-top"><div class="notch"></div></div>
+      <div class="ph-body">
+        <div class="ph-h">Mon fil</div>
+        <div class="ph-sub">Fontainebleau et ses environs</div>
+
+        <div class="mini">
+          <span class="tagline-lvl" style="background:var(--c-ville)">Ville</span>
+          <div class="t">Conseil municipal : 29 décisions votées</div>
+          <div class="b">Délibérations 26/110 à 26/138, publiées en intégralité sur le site de la ville.</div>
+        </div>
+        <div class="mini">
+          <span class="tagline-lvl" style="background:var(--c-dept)">Département</span>
+          <div class="t">84,9 M€ pour rénover 67 collèges</div>
+          <div class="b">Dernière séance du mandat en Seine-et-Marne.</div>
+        </div>
+        <div class="mini">
+          <span class="tagline-lvl" style="background:var(--c-region)">Région</span>
+          <div class="t">1,2 milliard voté en commission permanente</div>
+          <div class="b">Plus de 600 M€ aux transports du quotidien.</div>
+        </div>
+
+        <div class="ph-bar">
+          <span class="on">Fil</span><span>Agenda</span><span>Qui décide</span><span>Jouer</span><span>Moi</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<section id="produit">
+  <div class="wrap">
+    <h2>Cinq écrans, une idée par écran</h2>
+    <p class="lead" style="margin-bottom:32px">Chaque écran doit se comprendre en trois secondes. C'est la contrainte de conception, pas un slogan.</p>
+    <div class="grid g3">
+      <div class="card">
+        <div class="rule" style="background:var(--c-ville)"></div>
+        <span class="k">Mon fil</span>
+        <h3>Ce qui a été décidé</h3>
+        <p class="small muted" style="margin:0">Les décisions de votre commune, de votre agglo, de votre département, de votre région et de la France — dans cet ordre, avec la couleur de l'échelon. Chaque carte se déplie ; le lien vers le document officiel, lui, reste toujours visible. La preuve ne se cache pas derrière un geste.</p>
+      </div>
+      <div class="card">
+        <div class="rule" style="background:var(--c-dept)"></div>
+        <span class="k">Où va mon argent</span>
+        <h3>Le budget, en euros par habitant</h3>
+        <p class="small muted" style="margin:0">Comparer deux budgets bruts n'a aucun sens : une ville de 15 000 habitants et une région de 12 millions ne jouent pas au même jeu. Repère ramène tout au même dénominateur, et liste les six pièges à connaître avant de comparer quoi que ce soit.</p>
+      </div>
+      <div class="card">
+        <div class="rule" style="background:var(--c-region)"></div>
+        <span class="k">Qui décide</span>
+        <h3>Vos élus, leurs mandats</h3>
+        <p class="small muted" style="margin:0">Qui décide quoi, à quel échelon, avec quelles compétences. Les fiches d'élus s'appuient sur le Répertoire national des élus du ministère de l'Intérieur. Rien n'y est déduit : ce qui n'est pas dans la source n'est pas affiché.</p>
+      </div>
+      <div class="card">
+        <div class="rule" style="background:var(--c-france)"></div>
+        <span class="k">L'agenda</span>
+        <h3>Ce qui arrive</h3>
+        <p class="small muted" style="margin:0">Lois en discussion, échéances, élections, débats télévisés avec la chaîne. Ce qui a une date confirmée porte sa date ; ce qui n'en a pas est écrit comme tel. Il n'y a pas de date approximative.</p>
+      </div>
+      <div class="card">
+        <div class="rule" style="background:var(--c-agglo)"></div>
+        <span class="k">Jouer</span>
+        <h3>Comprendre sans réviser</h3>
+        <p class="small muted" style="margin:0">Une question, quatre réponses, une explication sourcée. Le jeu ne récompense ni ne punit : bonne ou mauvaise réponse, l'écran de correction est graphiquement identique — même couleur, même animation, même hauteur. On apprend, on n'est pas noté.</p>
+      </div>
+      <div class="card">
+        <div class="rule" style="background:var(--muted)"></div>
+        <span class="k">Le dictionnaire</span>
+        <h3>Le jargon, traduit</h3>
+        <p class="small muted" style="margin:0">Délibération, commission permanente, 49.3, ordonnance, PLUi. Chaque terme technique qui apparaît dans un résumé est cliquable et défini en une phrase. Rien n'est supposé connu.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="installer">
+  <div class="wrap">
+    <h2>Installer Repère</h2>
+    <div class="grid g3" style="margin-top:24px">
+      <div class="card">
+        <span class="k">iPhone / iPad</span>
+        <h3>Depuis Safari</h3>
+        <p class="small muted" style="margin:0">Ouvrez Repère dans Safari, touchez le bouton Partager, puis « Sur l'écran d'accueil ». L'app s'installe avec son icône et fonctionne hors connexion.</p>
+      </div>
+      <div class="card">
+        <span class="k">Android</span>
+        <h3>Play Store ou navigateur</h3>
+        <p class="small muted" style="margin:0">Depuis le Play Store, ou directement depuis Chrome via « Installer l'application ». Les deux donnent exactement la même app.</p>
+      </div>
+      <div class="card">
+        <span class="k">Ordinateur</span>
+        <h3>Aucune installation</h3>
+        <p class="small muted" style="margin:0">Repère est pensé pour le téléphone. Sur ordinateur, cette page est le bon endroit pour comprendre le projet ; l'app s'utilise en mobilité.</p>
+      </div>
+    </div>
+    <p class="small muted" style="margin-top:20px">L'app tient dans un seul fichier. Une fois installée, elle n'a plus besoin de réseau : les données ne sont pas au bout d'un lien, elles sont dans l'app.</p>
+  </div>
+</section>
+
+<!-- ============================ PARTIE 2 — LE DOSSIER ============================ -->
+<section id="methode">
+  <div class="wrap">
+    <p class="k" style="font-size:11px;font-weight:800;letter-spacing:.8px;text-transform:uppercase;color:var(--muted);margin-bottom:10px">Le dossier</p>
+    <h2>Les règles que Repère s'impose</h2>
+    <p class="lead" style="margin-bottom:30px">Une app d'information politique n'a d'intérêt que si l'on peut vérifier ce qu'elle refuse de faire. Voici les règles, écrites pour pouvoir être opposées au produit.</p>
+
+    <ol class="rules">
+      <li><b>Aucun classement d'élus, de partis ou de territoires.</b><span class="small muted">Pas de score, pas de palmarès, pas de « meilleur » ou de « pire ». Un compteur d'absences est un fait ; un classement des absents est un jugement.</span></li>
+      <li><b>Jamais un vote non confirmé attribué à une personne.</b><span class="small muted">Quand la source officielle ne donne pas la position individuelle, l'app écrit « non confirmé ». Elle ne déduit pas la position d'une personne de celle de son groupe.</span></li>
+      <li><b>L'abstention n'est pas un vote contre.</b><span class="small muted">Et un texte passé par 49.3 ou par un vote à main levée n'a pas de position individuelle publiable. L'app l'explique au lieu de laisser un blanc ambigu.</span></li>
+      <li><b>Toutes les familles politiques au même gabarit graphique.</b><span class="small muted">Même taille de pastille, même mise en page, même longueur de résumé. Une différence de traitement visuel est déjà un éditorial.</span></li>
+      <li><b>Le jeu ne récompense ni ne punit.</b><span class="small muted">Aucune couleur, animation, vibration ou son ne dépend du fait que la réponse soit juste. Vérifié écran par écran, dans les deux modes d'affichage : les deux corrections sont identiques au pixel près.</span></li>
+      <li><b>Jamais le patrimoine des parlementaires.</b><span class="small muted">Sa republication est punie d'un an d'emprisonnement et 45 000 € d'amende. La loi vise « tout ou partie », « de quelque manière que ce soit » : Repère n'en publie donc ni extrait, ni chiffre isolé, ni moyenne, ni ordre de grandeur, ni graphique dérivé. Rien.</span></li>
+      <li><b>Chaque chiffre porte son statut.</b><span class="small muted">« Chiffres vérifiés » ou « à confirmer ». Il n'y a pas de troisième cas, et pas de chiffre sans mention.</span></li>
+    </ol>
+  </div>
+</section>
+
+<section id="vide">
+  <div class="wrap">
+    <h2>La doctrine du vide</h2>
+    <div class="grid g2" style="margin-top:20px">
+      <div>
+        <p>C'est la décision de conception dont nous sommes le plus sûrs, et celle qui coûte le plus cher à l'écran.</p>
+        <p><b>Quand un chiffre n'est pas mesuré, l'app n'affiche aucun élément graphique.</b> Pas de barre grise, pas de hachure, pas de contour en pointillé, pas de « — ». Une phrase calme qui dit ce qui manque, et le lien vers la source officielle.</p>
+        <p class="muted small">La raison est simple : une barre grise à 3 % se lit comme une petite valeur. Elle ne se lit pas comme une absence de mesure. Un espace vide, lui, ne ment pas.</p>
+      </div>
+      <div class="card">
+        <span class="k">Ce que ça donne</span>
+        <p class="small" style="margin:0 0 10px"><b>Budget de votre commune</b></p>
+        <p class="small muted" style="margin:0">Nous n'avons pas encore chargé les comptes de cette commune. Ils sont publiés chaque année par la direction générale des finances publiques.</p>
+        <p class="small" style="margin:12px 0 0"><a href="#sources" style="color:var(--c-ville);font-weight:700">Voir la source officielle</a></p>
+        <p class="small muted" style="margin:14px 0 0;padding-top:12px;border-top:1px solid var(--sep)">Aucune barre, aucun graphique, aucun zéro. On montre le chiffre, ou on écrit qu'on ne l'a pas. Jamais un entre-deux graphique.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="sources">
+  <div class="wrap">
+    <h2>D'où viennent les données</h2>
+    <p class="lead" style="margin-bottom:26px">Uniquement des producteurs publics, sous licence ouverte. Chaque licence impose des obligations, et ces obligations sont tenues à l'écran, pas seulement dans un fichier.</p>
+    <div class="scroll">
+      <table class="tbl">
+        <thead><tr><th>Donnée</th><th>Producteur</th><th>Licence</th><th>Ce que ça impose à l'app</th></tr></thead>
+        <tbody>
+          <tr><td><b>Élus et mandats</b><br><span class="muted small">Répertoire national des élus</span></td><td>Ministère de l'Intérieur</td><td>ODbL 1.0</td><td>Mention de la licence et date de mise à jour partout où la donnée sert. Un bouton « exporter les élus » serait une redistribution et déclencherait le partage à l'identique : il n'y en a pas.</td></tr>
+          <tr><td><b>Finances locales</b><br><span class="muted small">Comptes des collectivités</span></td><td>DGFiP / OFGL</td><td>Licence Ouverte 2.0</td><td>Producteur et date affichés sur chaque fiche. Interdiction de dénaturer la donnée — d'où le refus de comparer des budgets bruts.</td></tr>
+          <tr><td><b>Marchés publics</b><br><span class="muted small">Données essentielles de la commande publique</span></td><td>Acheteurs publics</td><td>Licence Ouverte 2.0</td><td>Qualité très inégale selon l'acheteur. Ce qui est incomplet à la source est signalé comme tel, pas complété par nos soins.</td></tr>
+          <tr><td><b>Déclarations d'intérêts</b></td><td>HATVP</td><td>Licence Ouverte 2.0</td><td>Les intérêts, jamais le patrimoine. Et comme la HATVP dépublie en fin de fonctions, Repère est un miroir, pas une archive : ce qui disparaît de la source disparaît de l'app.</td></tr>
+          <tr><td><b>Votes à l'Assemblée</b><br><span class="muted small">Scrutins publics</span></td><td>Assemblée nationale</td><td>Licence Ouverte</td><td>Le sens du vote nominatif quand il existe ; « non confirmé » sinon ; l'explication quand il n'existe pas de position individuelle.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="small muted" style="margin-top:18px">Une déclaration d'intérêts n'est pas un conflit d'intérêts. Cette phrase précède la rubrique dans l'app, parce que la confusion entre les deux est la principale façon de transformer une donnée publique en accusation.</p>
+  </div>
+</section>
+
+<section id="jamais">
+  <div class="wrap">
+    <h2>Ce que Repère ne pourra jamais afficher</h2>
+    <p class="lead" style="margin-bottom:26px">Non par prudence, mais parce que la donnée n'existe pas. Le dire fait partie du produit.</p>
+    <div class="grid g3">
+      <div class="card">
+        <h3>Les délibérations municipales</h3>
+        <p class="small muted" style="margin:0 0 10px">Elles ne sont pas publiées en base nationale. Chaque commune les met en ligne à sa façon, le plus souvent en PDF, sans format commun.</p>
+        <p class="small" style="margin:0"><b>Ce qu'on fait à la place :</b> signaler la séance, dire combien de décisions ont été prises, et lier le document officiel.</p>
+      </div>
+      <div class="card">
+        <h3>Le vote de chaque conseiller</h3>
+        <p class="small muted" style="margin:0 0 10px">Les procès-verbaux mentionnent « adopté à l'unanimité » ou un décompte global. La position individuelle n'est pas produite.</p>
+        <p class="small" style="margin:0"><b>Ce qu'on fait à la place :</b> le sens du vote de l'assemblée, jamais celui d'une personne.</p>
+      </div>
+      <div class="card">
+        <h3>Le calendrier des conseils</h3>
+        <p class="small muted" style="margin:0 0 10px">Il n'est centralisé nulle part. Chaque collectivité l'annonce sur son propre site, quand elle l'annonce.</p>
+        <p class="small" style="margin:0"><b>Ce qu'on fait à la place :</b> les échéances nationales et régionales, exactes, et le lien vers le site de la commune.</p>
+      </div>
+    </div>
+    <p style="margin-top:22px;font-size:19px;font-weight:700">La donnée n'est pas cachée : elle n'est pas produite.</p>
+    <p class="small muted" style="max-width:62ch">C'est une distinction qui compte. Une app qui remplirait ces trous par une estimation serait plus complète et moins fiable. Nous préférons une app qui dit où s'arrête ce qu'elle sait.</p>
+  </div>
+</section>
+
+<section id="vieprivee">
+  <div class="wrap">
+    <h2>Ce que Repère ne sait pas de vous</h2>
+    <div class="grid g2" style="margin-top:20px">
+      <div class="card">
+        <span class="k">Techniquement, pas commercialement</span>
+        <h3>Aucun stockage, d'aucune sorte</h3>
+        <p class="small muted" style="margin:0">Pas de <i>localStorage</i>, pas de <i>sessionStorage</i>, pas de base locale, pas de cookie. Votre commune, votre score au jeu, vos élus suivis : tout vit en mémoire le temps de la session et disparaît en fermant l'app. Ce n'est pas une politique de confidentialité, c'est une contrainte technique vérifiée à chaque livraison.</p>
+      </div>
+      <div class="card">
+        <span class="k">Zéro appel sortant</span>
+        <h3>Les données sont dans l'app</h3>
+        <p class="small muted" style="margin:0">L'app ne contacte aucun serveur, y compris le nôtre. Elle ne peut donc pas savoir quelle commune vous consultez, ni quels élus vous regardez. C'est aussi pour ça que les photos officielles sont embarquées et jamais chargées depuis un site distant : une image distante révélerait à son hébergeur quelle fiche vous êtes en train de lire.</p>
+      </div>
+    </div>
+    <div class="card" style="margin-top:20px">
+      <span class="k">L'exception, et elle est unique</span>
+      <h3>Les réactions</h3>
+      <p class="small muted" style="margin:0">Sous chaque décision, cinq réactions et la répartition des réponses. C'est le seul moment où l'app enverra quelque chose sur un réseau, et ce qui part tient en deux champs : l'identifiant de la décision, le type de réaction. Pas de compte, pas d'identifiant, pas de cookie ; le service qui compte ne conserve ni l'adresse IP ni l'heure, seulement un total. Le prix est écrit dans l'app : sans identifiant, personne ne peut garantir une réaction par personne, donc le pourcentage dit ce qu'ont choisi les lecteurs qui ont réagi, jamais ce que pensent les Français. Et il n'apparaît qu'après que vous ayez choisi — voir un résultat avant de se prononcer oriente ce qu'on répond.</p>
+    </div>
+    <p class="small muted" style="margin-top:18px">Pas de compte, pas d'e-mail, pas de publicité, pas de traceur. Il n'y a rien à vendre parce qu'il n'y a rien à collecter.</p>
+  </div>
+</section>
+
+<section id="etat">
+  <div class="wrap">
+    <h2>Où en est le projet, honnêtement</h2>
+    <p class="lead" style="margin-bottom:22px">Repère mesure sa propre couverture et affiche le résultat dans l'app, y compris quand il est mauvais. Voici l'état réel.</p>
+    <div class="card" style="margin-bottom:26px">
+      <span class="k">Le chiffre, tel que l'app le calcule</span>
+      <p style="margin:6px 0 10px;font-size:34px;line-height:1;font-weight:700">33&nbsp;%</p>
+      <p class="small" style="margin:0 0 8px">Couverture pondérée, comptée sur les données réellement embarquées dans le fichier — pas une estimation, pas une intention. Sur ces 33 points, <b>13 viennent de la couche « liens officiels »</b> : elle fonctionne partout en France, mais elle n'apporte aucune donnée, elle amène l'utilisateur à la bonne page. L'app affiche cette part à part, pour qu'on ne lise pas le score pour plus qu'il ne vaut.</p>
+      <p class="small" style="margin:0"><b>1 commune sur 34 945</b> est couverte en profondeur. Les élus locaux, les finances locales et les marchés publics sont à zéro : aucune barre n'est dessinée pour eux, parce qu'une barre minuscule se lit comme une petite valeur, jamais comme une absence.</p>
+    </div>
+    <div class="grid g2">
+      <div class="card">
+        <span class="k">Ce qui marche partout en France</span>
+        <p class="small" style="margin:0 0 8px"><b>Les décisions nationales</b> — lois votées, scrutins, échéances. Une loi s'applique aux 34 945 communes.</p>
+        <p class="small" style="margin:0 0 8px"><b>Les liens officiels</b> — l'app fabrique l'adresse de recherche des services publics de n'importe quelle commune.</p>
+        <p class="small" style="margin:0 0 8px"><b>Le dictionnaire, le jeu, les compétences par échelon</b> — qui décide de quoi ne dépend pas d'où vous habitez.</p>
+      </div>
+      <div class="card">
+        <span class="k">Ce qui est encore en construction</span>
+        <p class="small" style="margin:0 0 8px"><b>Les élus locaux</b> — le fichier national existe et est sous licence ouverte ; son intégration est la prochaine étape, et c'est celle qui change le plus l'app.</p>
+        <p class="small" style="margin:0 0 8px"><b>Les finances locales et les marchés publics</b> — sources identifiées, connecteurs à écrire.</p>
+        <p class="small" style="margin:0 0 8px"><b>Les décisions locales détaillées</b> — aujourd'hui une seule commune, en Seine-et-Marne. L'Île-de-France est le prochain périmètre.</p>
+      </div>
+    </div>
+    <p class="small muted" style="margin-top:20px">L'écran « couverture » de l'app compte chaque couche dans les données réellement embarquées, et n'affiche aucune barre pour une couche vide. Un produit qui note sa propre complétude n'a d'intérêt que s'il peut se donner une mauvaise note.</p>
+  </div>
+</section>
+
+<section id="questions">
+  <div class="wrap">
+    <h2>Questions</h2>
+    <details class="q"><summary>Repère est-il neutre, vraiment ?</summary><div class="in small">Aucun média n'est neutre par déclaration. Ce que Repère peut offrir, ce sont des règles vérifiables : pas de classement, pas de vote attribué sans confirmation, même gabarit graphique pour toutes les familles politiques, et une source cliquable sous chaque affirmation. Si une carte vous semble orientée, la source est là pour vous permettre de trancher sans nous.</div></details>
+    <details class="q"><summary>Pourquoi un abonnement, et pas un paiement unique ?</summary><div class="in small">Cette page a longtemps dit l'inverse, et l'argument d'alors reste juste : un abonnement pousse à produire du volume pour justifier la mensualité, et une information civique a besoin d'exactitude, pas de volume. Ce qui a changé, c'est ce que l'abonnement finance. Il ne paie aucun article : <b>tout ce qui répond à « qui décide chez moi » et « où va mon argent » est gratuit, en entier, pour les 34 875 communes</b>, et le restera. Il paie la <b>surveillance continue</b> — les alertes de votre rue, la veille d'un dossier, plusieurs communes suivies — qui coûte tous les mois, contrairement à un texte qu'on écrit une fois. La pression au volume est donc désamorcée à la racine : écrire davantage n'ajouterait pas un abonné, puisque le contenu n'est pas ce qui est vendu. 1,99 € par mois, résiliable en un geste, sans compte à créer.</div></details>
+    <details class="q"><summary>Qui écrit les résumés ?</summary><div class="in small">Ils sont rédigés à partir du document officiel, et chacun renvoie à ce document. La règle de rédaction est simple : des phrases courtes, aucun adjectif d'appréciation, et le jargon défini au lieu d'être évité.</div></details>
+    <details class="q"><summary>Puis-je utiliser Repère si ma commune n'est pas couverte ?</summary><div class="in small">Oui. Les décisions nationales, l'agenda, le dictionnaire, le jeu et les compétences par échelon fonctionnent partout. Si votre commune n'est pas encore dans la liste, l'app vous demande votre département pour vous garder au moins les décisions départementales et régionales — au lieu de vous laisser sans rien.</div></details>
+    <details class="q"><summary>Et les données personnelles ?</summary><div class="in small">Il n'y en a pas. L'app ne stocke rien et ne contacte aucun serveur. Voir <a href="#vieprivee">la section détaillée</a>.</div></details>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div class="mark" style="margin-bottom:12px">
+      <svg width="18" height="22" viewBox="0 0 72 86" aria-hidden="true"><path d="M36 4C19.4 4 6 17.4 6 34c0 20.5 24.6 42.4 28.3 45.6a2.6 2.6 0 0 0 3.4 0C41.4 76.4 66 54.5 66 34 66 17.4 52.6 4 36 4Z" fill="currentColor"/><circle cx="36" cy="33" r="12.5" fill="var(--paper)"/><circle cx="36" cy="33" r="4.4" fill="currentColor"/></svg>
+      Repère
+    </div>
+    <p style="margin:0 0 6px">La vie publique, près de chez vous — résumée, sourcée, sans opinion.</p>
+    <p style="margin:0 0 6px">Données publiques sous Licence Ouverte 2.0 et ODbL 1.0. Producteurs et dates de mise à jour affichés dans l'app, à l'endroit où chaque donnée est utilisée.</p>
+    <p style="margin:0"><a href="confidentialite.html">Politique de confidentialité</a> — elle tient en une phrase, mais elle est écrite en entier.</p>
+  </div>
+</footer>
+</body>
+</html>

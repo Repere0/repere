@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Repère — Politique de confidentialité</title>
+<meta name="description" content="Repère ne collecte aucune donnée. Politique de confidentialité complète.">
+<!-- Page autonome : aucune police web, aucun CDN, aucune requête sortante.
+     Une politique de confidentialité qui chargerait un script tiers pour
+     annoncer qu'elle ne piste personne serait sa propre réfutation. -->
+<style>
+  :root{
+    --bg:#F1EDE4; --card:#FFFFFF; --sep:#E2DBD0;
+    --encre:#1B1815; --gris:#5C5750;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{ --bg:#151311; --card:#1E1B18; --sep:#312C27; --encre:#F2EEE7; --gris:#A79F95; }
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--encre);
+    font:16px/1.62 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    -webkit-font-smoothing:antialiased;}
+  .wrap{max-width:720px;margin:0 auto;padding:56px 22px 90px}
+  h1{font-size:30px;line-height:1.2;margin:0 0 6px;letter-spacing:-.01em}
+  .maj{color:var(--gris);font-size:14px;margin:0 0 30px}
+  h2{font-size:19px;margin:36px 0 10px;letter-spacing:-.01em}
+  p{margin:0 0 12px}
+  .card{background:var(--card);border:1px solid var(--sep);border-radius:14px;padding:20px 22px;margin:26px 0}
+  .card p:last-child{margin-bottom:0}
+  .fort{font-size:19px;font-weight:700;margin:0 0 8px}
+  .small{font-size:14.5px;color:var(--gris)}
+  a{color:inherit}
+  footer{margin-top:44px;padding-top:20px;border-top:1px solid var(--sep);font-size:14px;color:var(--gris)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <h1>Politique de confidentialité</h1>
+  <p class="maj">Repère — application mobile et web. Dernière mise à jour : 11 août 2026.</p>
+
+  <div class="card">
+    <p class="fort">Repère ne collecte aucune donnée personnelle.</p>
+    <p class="small">Aucun compte, aucune adresse e-mail, aucune inscription. Aucun identifiant publicitaire, aucun traceur, aucune mesure d'audience, aucun outil d'analyse. Aucune donnée n'est transmise à un tiers.</p>
+    <p class="small">Une seule chose est écrite sur votre appareil, et elle n'en sort jamais : un compteur de jours consécutifs, décrit en détail plus bas. Nous préférons le dire dès la première phrase plutôt que de le glisser en bas de page.</p>
+  </div>
+
+  <h2>Ce que l'application stocke sur votre appareil</h2>
+  <p>Une seule chose, et la voici en entier : <b>votre série de jours consécutifs</b>. Elle tient en deux valeurs — la date de votre dernière ouverture, et un nombre de jours. Une vingtaine d'octets, sous la clé <code>repere.serie</code>. Vous pouvez l'effacer d'un geste depuis l'écran Jouer, et l'application continue de fonctionner exactement pareil.</p>
+  <p>Ce qui n'est <b>pas</b> écrit : aucun identifiant, aucune commune, aucun historique de lecture, aucune de vos réponses au jeu, aucune heure précise. Ce nombre ne dit ni qui vous êtes ni ce que vous avez consulté, et il ne quitte jamais votre téléphone — il n'existe aucun serveur qui le connaisse. Ni <i>sessionStorage</i>, ni cookie, ni base de données locale ne sont utilisés.</p>
+  <p>Tout le reste — la commune que vous consultez, les fiches que vous ouvrez, vos réponses au jeu, vos réglages — existe uniquement dans la mémoire vive de l'application et disparaît dès que vous la fermez.</p>
+  <p>Le seul stockage utilisé est un cache technique qui conserve les fichiers de l'application elle-même — la page, l'icône, le manifeste — pour qu'elle démarre sans connexion. Ce cache ne contient aucune information sur vous. Le vider revient à réinstaller l'application.</p>
+
+  <h2>La localisation</h2>
+  <p>Repère ne demande jamais l'accès à votre position. Vous choisissez votre commune vous-même, en la saisissant ou en la sélectionnant dans une liste embarquée dans l'application. Ce choix n'est envoyé nulle part.</p>
+
+  <h2>Les connexions réseau</h2>
+  <p>Une fois installée, l'application fonctionne entièrement hors connexion : toutes les données qu'elle affiche sont contenues dans le fichier de l'application. Elle n'interroge aucun serveur, ni le nôtre, ni celui d'un tiers.</p>
+  <p>La seule exception est volontaire et visible : lorsque vous touchez un lien source — vers Légifrance, le site de votre mairie, data.gouv.fr — votre navigateur ouvre ce site, qui applique alors sa propre politique de confidentialité, sur laquelle nous n'avons aucune prise. C'est vous qui décidez d'ouvrir ce lien, et il est toujours affiché en clair avant d'être suivi.</p>
+  <p>Aucune image n'est chargée depuis un site extérieur. C'est une décision de conception : une simple photo distante révélerait à un serveur tiers votre adresse IP et l'identité de l'élu que vous consultez.</p>
+
+  <h2>Les réactions, quand elles seront activées</h2>
+  <p>Une fonction de réaction est prévue : sous chaque décision, cinq boutons — d'accord, pas d'accord, perdu, en colère, intéressé — et l'affichage de la répartition des réponses. Elle est la <b>seule et unique</b> occasion où l'application enverra quelque chose sur un réseau, et voici exactement ce qui partira, à l'exclusion de tout le reste : l'identifiant de la décision, et le type de réaction que vous avez touché.</p>
+  <p>Il n'y a pas de compte, pas d'identifiant, pas de jeton, pas de cookie, pas d'empreinte de navigateur. Le service qui compte ne conserve ni votre adresse IP, ni l'heure de votre réaction : il ne garde qu'un total. Il ne peut donc pas relier deux de vos réactions entre elles, ni savoir que c'est vous.</p>
+  <p>Cela a un prix, et nous préférons l'écrire que le taire : sans identifiant, personne ne peut garantir une réaction par personne. Les pourcentages affichés disent ce qu'ont choisi les lecteurs de Repère qui ont réagi. Ils ne disent pas ce que pense la population française, et l'application le rappelle à chaque fois qu'elle en affiche un.</p>
+  <p>L'envoi n'a lieu qu'au moment où vous touchez un bouton. Rien n'est envoyé à l'ouverture de l'application, et si l'envoi échoue — hors connexion, par exemple — le reste de l'application continue de fonctionner normalement.</p>
+
+  <h2>Les enfants</h2>
+  <p>L'application ne collectant aucune donnée, elle n'en collecte pas davantage auprès des mineurs. Elle ne comporte ni publicité, ni achat intégré, ni contenu généré par les utilisateurs, ni messagerie.</p>
+
+  <h2>Vos droits (RGPD)</h2>
+  <p>Les droits d'accès, de rectification, d'effacement, de limitation, d'opposition et de portabilité s'exercent sur des données à caractère personnel faisant l'objet d'un traitement. Repère n'en met en œuvre aucun : il n'existe donc aucun fichier vous concernant à consulter, corriger ou supprimer. Si vous souhaitez néanmoins nous poser la question, écrivez-nous et nous vous répondrons.</p>
+
+  <h2>Les données affichées</h2>
+  <p>Les informations présentées proviennent de données publiques ouvertes de l'administration française — notamment le Répertoire national des élus, publié sous licence ODbL 1.0, et divers jeux de données sous Licence Ouverte 2.0. Le producteur et la date de mise à jour figurent à l'endroit où la donnée est utilisée. L'application ne publie jamais les déclarations de patrimoine des élus, ni aucune donnée dérivée de celles-ci.</p>
+
+  <h2>Modifications</h2>
+  <p>Si cette politique change, la date de mise à jour en tête de page change avec elle. Une application qui ne collecte rien a peu de raisons de modifier ce texte : s'il évoluait de façon substantielle, ce serait pour annoncer une collecte, et cette annonce serait faite explicitement.</p>
+
+  <h2>Nous contacter</h2>
+  <p>arthurpinardpro@gmail.com</p>
+
+  <footer>Repère — l'information publique locale, résumée et sourcée, sans opinion.</footer>
+</div>
+</body>
+</html>

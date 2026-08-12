@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Repère — présentation du projet</title>
+<meta name="description" content="Repère : la vie publique près de chez vous. Présentation du projet, de sa méthode et de son état réel d'avancement.">
+<!-- Aucune police distante, aucun CDN, aucune requête réseau, aucun stockage.
+     Un deck qui présente une app « sans appel sortant » ne peut pas en faire un.
+     Règle de chiffres : ce qui n'est pas mesuré dans le projet est soit retiré,
+     soit écrit « à confirmer ». Il n'y a pas de troisième cas. -->
+<style>
+:root{
+  --paper:#F7F4EE; --card:#FFFFFF; --ink:#1d1d1f; --ink-2:#3a3a3e; --muted:#6e6e73;
+  --sep:#e3e0da; --fill:#f2efe9;
+  --c-ville:#0e7490; --c-agglo:#0891b2; --c-dept:#b45309; --c-region:#6d28d9; --c-france:#1d1d1f;
+  --r:14px; --r-s:9px; --ring:#1d1d1f;
+}
+@media (prefers-color-scheme:dark){
+  :root{ --paper:#121214; --card:#1b1b1e; --ink:#f2f2f4; --ink-2:#d2d2d6; --muted:#9a9aa0;
+         --sep:#2c2c31; --fill:#232327; --c-france:#f2f2f4; --ring:#f2f2f4; }
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  font-size:17px;line-height:1.55;-webkit-font-smoothing:antialiased;
+  min-height:100vh;display:flex;flex-direction:column}
+:focus-visible{outline:2px solid var(--ring);outline-offset:2px;border-radius:var(--r-s)}
+h1,h2,h3{line-height:1.2;letter-spacing:-.02em;margin:0}
+h1{font-size:clamp(34px,5.4vw,54px);font-weight:800}
+h2{font-size:clamp(24px,3.2vw,34px);font-weight:800}
+h3{font-size:18px;font-weight:700;margin-bottom:6px}
+p{margin:0 0 14px}
+p:last-child{margin-bottom:0}
+b{font-weight:700}
+.small{font-size:14px;line-height:1.5}
+.muted{color:var(--muted)}
+.lead{font-size:clamp(17px,1.9vw,21px);color:var(--ink-2);max-width:62ch}
+
+/* ---------- coquille ---------- */
+.shell{flex:1;display:flex;flex-direction:column;width:100%;max-width:1040px;
+  margin:0 auto;padding:20px 24px 0}
+.deckhead{display:flex;align-items:center;justify-content:space-between;gap:16px;
+  padding-bottom:14px;border-bottom:1px solid var(--sep)}
+.mark{display:flex;align-items:center;gap:8px;font-weight:800;letter-spacing:-.02em;font-size:17px}
+.stamp{font-size:11px;font-weight:800;letter-spacing:.7px;text-transform:uppercase;color:var(--muted);
+  text-align:right;line-height:1.45}
+.stage{flex:1;padding:30px 0 26px;min-height:0}
+
+/* ---------- diapositives ---------- */
+.slide{display:none}
+.slide.on{display:block}
+.k{display:block;font-size:11px;font-weight:800;letter-spacing:.8px;text-transform:uppercase;
+  color:var(--muted);margin-bottom:10px}
+.sub{color:var(--ink-2);max-width:64ch;margin:13px 0 24px;font-size:clamp(16px,1.6vw,18px)}
+
+/* ---------- grilles et cartes ---------- */
+.grid{display:grid;gap:16px}
+.g2{grid-template-columns:repeat(2,1fr)}
+.g3{grid-template-columns:repeat(3,1fr)}
+.g21{grid-template-columns:1.25fr .75fr}
+@media(max-width:860px){.g2,.g3,.g21{grid-template-columns:1fr}}
+.card{background:var(--card);border:1px solid var(--sep);border-radius:var(--r);padding:20px}
+.card p{font-size:14.5px;line-height:1.5}
+.rule{width:26px;height:3px;border-radius:2px;margin-bottom:12px;background:var(--muted)}
+/* .card p fixe 14.5px : la figure doit gagner en specificite, sinon le grand
+   chiffre s'affiche au corps de texte. */
+.card p.figure,.figure{font-size:clamp(30px,3.6vw,40px);font-weight:800;line-height:1;letter-spacing:-.02em;margin:0 0 8px}
+.flag{display:inline-block;font-size:10.5px;font-weight:800;letter-spacing:.6px;text-transform:uppercase;
+  color:var(--ink-2);background:var(--fill);border:1px solid var(--sep);
+  padding:4px 9px;border-radius:6px;margin-bottom:10px}
+.lvl{display:inline-block;font-size:10px;font-weight:800;letter-spacing:.6px;text-transform:uppercase;
+  color:#fff;padding:3px 8px;border-radius:5px}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}
+.chip{font-size:13px;font-weight:700;color:var(--ink-2);background:var(--fill);
+  border:1px solid var(--sep);border-radius:999px;padding:7px 14px}
+
+/* ---------- listes ---------- */
+ol.rules{counter-reset:r;list-style:none;padding:0;margin:0}
+ol.rules li{counter-increment:r;padding:10px 0;border-bottom:1px solid var(--sep);
+  display:grid;grid-template-columns:34px 1fr;gap:14px;align-items:start}
+ol.rules li:last-child{border-bottom:0;padding-bottom:0}
+ol.rules li::before{content:counter(r,decimal-leading-zero);font-weight:800;color:var(--muted);
+  font-size:13px;padding-top:3px}
+/* Titre ET explication doivent tenir en colonne 2 : sans cette regle, le <span>
+   retombe dans la colonne de 34px et le texte se casse a un mot par ligne. */
+ol.rules li>b,ol.rules li>span{grid-column:2}
+ol.rules li>b{display:block;margin-bottom:2px}
+
+ul.plain{list-style:none;padding:0;margin:0}
+ul.plain li{padding:11px 0;border-bottom:1px solid var(--sep);font-size:14.5px;line-height:1.5}
+ul.plain li:last-child{border-bottom:0;padding-bottom:0}
+
+/* ---------- frise ---------- */
+.tl{list-style:none;padding:0;margin:0}
+.tl li{display:grid;grid-template-columns:150px 1fr;gap:18px;padding:14px 0;
+  border-bottom:1px solid var(--sep)}
+.tl li:last-child{border-bottom:0;padding-bottom:0}
+.tl .when{font-size:12px;font-weight:800;letter-spacing:.6px;text-transform:uppercase;
+  color:var(--muted);padding-top:3px}
+.tl .what{font-size:15.5px;font-weight:700;margin-bottom:2px}
+@media(max-width:640px){.tl li{grid-template-columns:1fr;gap:4px}.tl .when{padding-top:0}}
+
+/* ---------- tableau ---------- */
+.scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.tbl{width:100%;border-collapse:collapse;font-size:14.5px;min-width:520px}
+.tbl th,.tbl td{text-align:left;padding:11px 10px;border-bottom:1px solid var(--sep);vertical-align:top}
+.tbl th{font-size:11px;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);font-weight:800}
+.tbl tr:last-child td{border-bottom:0}
+
+/* ---------- barre de mesure ---------- */
+.bar{height:8px;border-radius:4px;background:var(--fill);border:1px solid var(--sep);overflow:hidden;margin:10px 0 6px}
+.bar i{display:block;height:100%;background:var(--ink-2)}
+
+/* ---------- teléphone ---------- */
+.phone{width:240px;margin:0 auto;border-radius:34px;background:var(--card);
+  border:1px solid var(--sep);box-shadow:0 18px 48px rgba(0,0,0,.14);overflow:hidden}
+.ph-top{height:30px;display:flex;align-items:center;justify-content:center}
+.notch{width:70px;height:5px;border-radius:3px;background:var(--sep)}
+.ph-body{padding:0 13px 16px}
+.ph-h{font-size:19px;font-weight:800;letter-spacing:-.02em;margin:2px 0 3px}
+.ph-sub{font-size:11.5px;color:var(--muted);margin-bottom:11px}
+.mini{background:var(--fill);border-radius:11px;padding:10px 11px;margin-bottom:8px}
+.mini .lvl{margin-bottom:6px}
+.mini .t{font-size:12.5px;font-weight:700;line-height:1.3;margin:0 0 3px}
+.mini .b{font-size:11px;color:var(--muted);line-height:1.4;margin:0}
+.ph-bar{display:flex;justify-content:space-around;border-top:1px solid var(--sep);padding-top:9px;margin-top:2px}
+.ph-bar span{font-size:9.5px;color:var(--muted);font-weight:600}
+.ph-bar span.on{color:var(--ink);font-weight:800}
+
+/* ---------- navigation ---------- */
+.navbar{position:sticky;bottom:0;background:var(--paper);border-top:1px solid var(--sep);
+  padding:12px 24px calc(12px + env(safe-area-inset-bottom,0px))}
+.navin{max-width:1040px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.nb{display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  min-height:44px;min-width:44px;padding:0 18px;border-radius:999px;
+  font-size:15px;font-weight:700;font-family:inherit;cursor:pointer;
+  background:var(--card);color:var(--ink);border:1px solid var(--sep)}
+.nb:hover:not(:disabled){background:var(--fill)}
+.nb:disabled{color:var(--muted);cursor:default;opacity:.55}
+.pos{display:flex;align-items:center;gap:14px;min-width:0}
+.count{font-size:14px;font-weight:800;letter-spacing:.4px;color:var(--ink-2);
+  font-variant-numeric:tabular-nums;white-space:nowrap}
+.dots{display:flex;gap:0}
+.dot{width:44px;height:44px;padding:0;border:0;background:none;cursor:pointer;
+  display:flex;align-items:center;justify-content:center}
+.dot::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--sep);border:1px solid var(--muted)}
+.dot[aria-current="true"]::before{background:var(--ink);border-color:var(--ink);width:10px;height:10px}
+@media(max-width:900px){.dots{display:none}}
+@media(max-width:420px){.nb{padding:0 14px;font-size:14px}}
+.hint{font-size:12px;color:var(--muted);text-align:center;margin:8px auto 0;max-width:1040px}
+@media(max-width:640px){.hint{display:none}}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+</style>
+</head>
+<body>
+
+<div class="shell">
+  <div class="deckhead">
+    <div class="mark">
+      <svg width="18" height="22" viewBox="0 0 72 86" aria-hidden="true"><path d="M36 4C19.4 4 6 17.4 6 34c0 20.5 24.6 42.4 28.3 45.6a2.6 2.6 0 0 0 3.4 0C41.4 76.4 66 54.5 66 34 66 17.4 52.6 4 36 4Z" fill="currentColor"/><circle cx="36" cy="33" r="12.5" fill="var(--paper)"/><circle cx="36" cy="33" r="4.4" fill="currentColor"/></svg>
+      Repère
+    </div>
+    <div class="stamp">Présentation du projet<br>Chiffres vérifiés, ou marqués à confirmer</div>
+  </div>
+
+  <main class="stage" id="stage" aria-live="polite">
+
+  <!-- 01 — Couverture -->
+  <section class="slide on" id="s1" aria-label="Diapositive 1 sur 11 : Repère">
+    <span class="k">01 — Repère</span>
+    <h1>La vie publique,<br>près de chez vous.</h1>
+    <p class="lead" style="margin-top:20px">Repère résume les décisions qui vous concernent — de votre conseil municipal à l'Assemblée nationale. Chaque information porte sa source. Aucune ne porte d'opinion.</p>
+    <div class="chips">
+      <span class="chip">Application web installable</span>
+      <span class="chip">Sans compte, sans publicité</span>
+      <span class="chip">Aucune donnée collectée</span>
+      <span class="chip">Sources publiques sous licence ouverte</span>
+    </div>
+    <p class="small muted" style="margin-top:22px">Ce document dit l'état réel du projet, y compris ce qui n'est pas fait. Un produit qui note sa propre complétude n'a d'intérêt que s'il peut se donner une mauvaise note.</p>
+  </section>
+
+  <!-- 02 — Le constat -->
+  <section class="slide" id="s2" aria-label="Diapositive 2 sur 11 : le constat">
+    <span class="k">02 — Le constat</span>
+    <h2>L'information publique existe, mais elle est illisible</h2>
+    <p class="sub">Le problème n'est pas le secret. Presque tout est publié. Le problème est que rien n'est lisible, comparable, ni rattaché à l'endroit où l'on vit.</p>
+    <div class="grid g3">
+      <div class="card">
+        <div class="rule"></div>
+        <h3>Éparpillée</h3>
+        <p class="muted">Une commune publie ses délibérations en PDF sur son site, le département sur le sien, l'État ailleurs. Aucun format commun, aucune base nationale pour le niveau local.</p>
+      </div>
+      <div class="card">
+        <div class="rule"></div>
+        <h3>Écrite pour des juristes</h3>
+        <p class="muted">Délibération, commission permanente, 49.3, PLUi. Le vocabulaire suppose une compétence que personne n'est censé avoir.</p>
+      </div>
+      <div class="card">
+        <div class="rule"></div>
+        <h3>Détachée du quotidien</h3>
+        <p class="muted">Un budget brut ne dit rien : une ville de 15 000 habitants et une région de plusieurs millions ne jouent pas au même jeu. Sans dénominateur commun, comparer induit en erreur.</p>
+      </div>
+    </div>
+    <p class="small muted" style="margin-top:20px">Les chiffres d'audience, de défiance ou de taille de marché qui figuraient dans la version précédente de ce document ont été retirés : aucun n'était sourcé. Le constat ci-dessus tient sans eux.</p>
+  </section>
+
+  <!-- 03 — La solution -->
+  <section class="slide" id="s3" aria-label="Diapositive 3 sur 11 : la solution">
+    <span class="k">03 — La solution</span>
+    <h2>Une app qui range l'information par échelon</h2>
+    <p class="sub">De la commune à la France, dans cet ordre, avec la couleur de l'échelon. Chaque carte se déplie ; le lien vers le document officiel, lui, reste toujours visible.</p>
+    <div class="grid g21">
+      <div>
+        <ul class="plain">
+          <li><b>Ce qui a été décidé.</b> Les décisions de votre commune, agglo, département, région et de la France, résumées en phrases courtes, sans adjectif d'appréciation.</li>
+          <li><b>Où va votre argent.</b> Les budgets ramenés en euros par habitant, avec la liste des pièges à connaître avant de comparer quoi que ce soit.</li>
+          <li><b>Qui décide.</b> Les élus, leurs mandats, leurs compétences. Ce qui n'est pas dans la source officielle n'est pas affiché.</li>
+          <li><b>Ce qui arrive.</b> Lois en discussion, échéances, élections. Ce qui a une date confirmée porte sa date ; ce qui n'en a pas est écrit comme tel.</li>
+          <li><b>Comprendre sans réviser.</b> Une question, quatre réponses, une explication sourcée. Bonne ou mauvaise réponse, l'écran de correction est identique.</li>
+        </ul>
+      </div>
+      <div class="phone" role="img" aria-label="Aperçu de l'application : le fil des décisions, classées de la commune à la France.">
+        <div class="ph-top"><div class="notch"></div></div>
+        <div class="ph-body">
+          <div class="ph-h">Mon fil</div>
+          <div class="ph-sub">Fontainebleau et ses environs</div>
+          <div class="mini">
+            <span class="lvl" style="background:var(--c-ville)">Ville</span>
+            <p class="t">Conseil municipal : 29 décisions votées</p>
+            <p class="b">Délibérations publiées en intégralité sur le site de la ville.</p>
+          </div>
+          <div class="mini">
+            <span class="lvl" style="background:var(--c-dept)">Département</span>
+            <p class="t">Séance du conseil départemental</p>
+            <p class="b">Le montant voté, tel qu'il figure au procès-verbal.</p>
+          </div>
+          <div class="mini">
+            <span class="lvl" style="background:var(--c-region)">Région</span>
+            <p class="t">Commission permanente</p>
+            <p class="b">Chaque ligne renvoie à la délibération officielle.</p>
+          </div>
+          <div class="ph-bar">
+            <span class="on">Fil</span><span>Agenda</span><span>Qui décide</span><span>Jouer</span><span>Moi</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 04 — Produit -->
+  <section class="slide" id="s4" aria-label="Diapositive 4 sur 11 : le produit">
+    <span class="k">04 — Produit &amp; expérience</span>
+    <h2>Cinq écrans, une idée par écran</h2>
+    <p class="sub">Chaque écran doit se comprendre en trois secondes. C'est la contrainte de conception, pas un slogan.</p>
+    <div class="grid g3">
+      <div class="card">
+        <div class="rule" style="background:var(--c-ville)"></div>
+        <span class="k">Mon fil</span>
+        <h3>Ce qui a été décidé</h3>
+        <p class="muted">Classé par échelon, avec la couleur de l'échelon et le lien vers le document officiel toujours visible. La preuve ne se cache pas derrière un geste.</p>
+      </div>
+      <div class="card">
+        <div class="rule" style="background:var(--c-dept)"></div>
+        <span class="k">Où va mon argent</span>
+        <h3>Le budget par habitant</h3>
+        <p class="muted">Tout ramené au même dénominateur, et les pièges de comparaison listés avant les chiffres plutôt qu'après.</p>
+      </div>
+      <div class="card">
+        <div class="rule" style="background:var(--c-region)"></div>
+        <span class="k">Qui décide</span>
+        <h3>Vos élus, leurs mandats</h3>
+        <p class="muted">Appuyé sur le Répertoire national des élus du ministère de l'Intérieur. Rien n'y est déduit.</p>
+      </div>
+      <div class="card">
+        <div class="rule" style="background:var(--c-france)"></div>
+        <span class="k">L'agenda</span>
+        <h3>Ce qui arrive</h3>
+        <p class="muted">Lois en discussion, échéances, élections. Il n'y a pas de date approximative : soit la date est confirmée, soit c'est écrit.</p>
+      </div>
+      <div class="card">
+        <div class="rule" style="background:var(--c-agglo)"></div>
+        <span class="k">Jouer</span>
+        <h3>Comprendre sans réviser</h3>
+        <p class="muted">Le jeu ne récompense ni ne punit : même couleur, même animation, même hauteur, que la réponse soit juste ou fausse. On apprend, on n'est pas noté.</p>
+      </div>
+      <div class="card">
+        <div class="rule"></div>
+        <span class="k">Le dictionnaire</span>
+        <h3>Le jargon, traduit</h3>
+        <p class="muted">Chaque terme technique qui apparaît dans un résumé est cliquable et défini en une phrase. Rien n'est supposé connu.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 05 — Le terrain -->
+  <section class="slide" id="s5" aria-label="Diapositive 5 sur 11 : le terrain">
+    <span class="k">05 — Le terrain</span>
+    <h2>Ce qu'il y a à couvrir</h2>
+    <p class="sub">Le périmètre du produit est un fait administratif, pas une estimation de marché. Il se compte, et il donne la mesure du travail.</p>
+    <div class="grid g3">
+      <div class="card">
+        <p class="figure">34 945</p>
+        <p class="small"><b>communes</b></p>
+        <p class="small muted" style="margin-top:6px">Le dénominateur de la couverture. À revalider contre le code officiel géographique en cours — le projet refuse de calculer un pourcentage sur un dénominateur non vérifié.</p>
+      </div>
+      <div class="card">
+        <p class="figure">101</p>
+        <p class="small"><b>départements</b></p>
+        <p class="small muted" style="margin-top:6px">Tous accessibles dans l'app sous forme de boutons natifs groupés par région, sans carte distante ni fond de plan chargé depuis un serveur.</p>
+      </div>
+      <div class="card">
+        <p class="figure">18</p>
+        <p class="small"><b>régions</b></p>
+        <p class="small muted" style="margin-top:6px">Métropole et outre-mer. Les compétences par échelon ne dépendent pas du lieu : cette partie fonctionne partout dès aujourd'hui.</p>
+      </div>
+    </div>
+    <div class="card" style="margin-top:16px">
+      <span class="flag">Hypothèse — à confirmer</span>
+      <p class="small" style="margin:0"><b>Taille du public atteignable.</b> Aucune estimation d'audience n'est avancée ici. Les chiffres de marché de la version précédente (nombre de citoyens concernés, croissance du secteur, TAM / SAM / SOM) ont été retirés faute de source vérifiable. S'ils doivent revenir, ils devront être repris d'une publication citée et datée, comme n'importe quelle donnée affichée dans l'app.</p>
+    </div>
+  </section>
+
+  <!-- 06 — Modèle économique -->
+  <section class="slide" id="s6" aria-label="Diapositive 6 sur 11 : le modèle économique">
+    <span class="k">06 — Modèle économique</span>
+    <h2>Un paiement unique, et rien à vendre d'autre</h2>
+    <p class="sub">L'app ne collecte aucune donnée : il n'y a donc rien à revendre, ni audience à monétiser. Le modèle en découle, il ne s'y ajoute pas.</p>
+    <div class="grid g2">
+      <div class="card">
+        <span class="k">Ce qui finance</span>
+        <h3>Un achat, une fois</h3>
+        <p class="muted">Un abonnement pousse à produire du volume pour justifier la mensualité. Une information civique n'a pas besoin de volume, elle a besoin d'exactitude. Le paiement unique retire cette pression.</p>
+        <p class="small" style="margin-top:12px"><span class="flag" style="margin-bottom:0">Prix envisagé — à confirmer</span></p>
+        <p class="small muted" style="margin-top:8px">Un prix de l'ordre de 4,99 € est l'hypothèse de travail du plan de lancement, non un prix arrêté. Les taux de commission des magasins d'applications et les frais de paiement doivent être revérifiés à leurs conditions en vigueur au moment de la mise en vente.</p>
+      </div>
+      <div class="card">
+        <span class="k">Ce qui est exclu, par construction</span>
+        <h3>Pas de données à valoriser</h3>
+        <p class="muted">Pas de publicité, pas de traceur, pas de revente de données d'usage, pas d'offre « B2B data ». L'app ne contacte aucun serveur, y compris le nôtre : elle ne peut pas savoir quelle commune vous consultez, donc elle n'a rien à céder à personne.</p>
+        <p class="small muted" style="margin-top:12px">La ligne « valorisation des données d'engagement » de la version précédente a été supprimée : elle contredisait directement la promesse technique du produit.</p>
+      </div>
+    </div>
+    <div class="card" style="margin-top:16px">
+      <span class="k">Coût de structure, année 1</span>
+      <p class="small" style="margin:0">Le plan de lancement tient dans un budget de <b>250 €</b> sur douze mois : domaine, hébergement gratuit, comptes développeurs. Aucune agence, aucune publicité, aucun abonnement à un outil. La marge du budget sert à réagir, pas à dépenser.</p>
+    </div>
+  </section>
+
+  <!-- 07 — Feuille de route -->
+  <section class="slide" id="s7" aria-label="Diapositive 7 sur 11 : la feuille de route">
+    <span class="k">07 — Feuille de route</span>
+    <h2>Le web d'abord, les magasins ensuite</h2>
+    <p class="sub">Une application web installable se corrige en dix minutes ; une mise à jour de magasin attend une validation. Sur un calendrier court, l'ordre compte plus que l'ambition.</p>
+    <ul class="tl">
+      <li>
+        <div class="when">Étape 1</div>
+        <div><p class="what">Exister légalement et techniquement</p><p class="small muted">Immatriculation, nom de domaine, mentions légales, directeur de publication désigné. Coût réel : le domaine.</p></div>
+      </li>
+      <li>
+        <div class="when">Étape 2</div>
+        <div><p class="what">Brancher les élus locaux</p><p class="small muted">Le fichier national existe et est sous licence ouverte ; le câblage est en place mais dormant dans l'app tant que la donnée n'est pas injectée. C'est l'étape qui change le plus le produit.</p></div>
+      </li>
+      <li>
+        <div class="when">Étape 3</div>
+        <div><p class="what">Étendre la couverture locale</p><p class="small muted">Aujourd'hui une seule commune couverte en profondeur. L'Île-de-France est le prochain périmètre ; finances locales et marchés publics ont leurs sources identifiées et leurs connecteurs à écrire.</p></div>
+      </li>
+      <li>
+        <div class="when">Étape 4</div>
+        <div><p class="what">Distribution et paiement</p><p class="small muted">Magasins d'applications puis paiement en ligne, déclenchés seulement quand il y a un usage réel. Le web reste la version de référence.</p></div>
+      </li>
+      <li>
+        <div class="when">Avril 2027</div>
+        <div><p class="what">L'élection présidentielle</p><p class="small muted">Date fixée par le calendrier électoral. C'est le moment où le sujet devient d'intérêt général — et le plus dangereux pour la réputation d'un produit d'information. Ce qui doit être prêt avant l'est avant.</p></div>
+      </li>
+    </ul>
+    <p class="small muted" style="margin-top:18px">Les objectifs d'utilisateurs datés qui figuraient ici (cap de fréquentation avant 2027, ouverture à d'autres pays) ont été retirés : ils n'étaient adossés à aucune mesure.</p>
+  </section>
+
+  <!-- 08 — Ce qui différencie -->
+  <section class="slide" id="s8" aria-label="Diapositive 8 sur 11 : ce qui différencie Repère">
+    <span class="k">08 — Ce qui nous différencie</span>
+    <h2>Des règles écrites pour pouvoir être opposées au produit</h2>
+    <p class="sub">Aucun média n'est neutre par déclaration. Ce que Repère peut offrir, ce sont des règles vérifiables une par une, dans le fichier livré.</p>
+    <ol class="rules">
+      <li><b>Aucun classement d'élus, de partis ou de territoires.</b><span class="small muted">Un compteur d'absences est un fait ; un classement des absents est un jugement.</span></li>
+      <li><b>Jamais un vote non confirmé attribué à une personne.</b><span class="small muted">Quand la source officielle ne donne pas la position individuelle, l'app écrit « non confirmé ». Elle ne déduit pas la position d'une personne de celle de son groupe.</span></li>
+      <li><b>Toutes les familles politiques au même gabarit graphique.</b><span class="small muted">Même pastille, même mise en page, même longueur de résumé. Une différence de traitement visuel est déjà un éditorial.</span></li>
+      <li><b>Le jeu ne récompense ni ne punit.</b><span class="small muted">Aucune couleur, animation, vibration ou son ne dépend du fait que la réponse soit juste. Vérifié écran par écran, dans les deux modes d'affichage.</span></li>
+      <li><b>Jamais le patrimoine des parlementaires.</b><span class="small muted">Ni extrait, ni chiffre isolé, ni moyenne, ni ordre de grandeur, ni graphique dérivé. Rien.</span></li>
+      <li><b>Chaque chiffre porte son statut.</b><span class="small muted">« Chiffres vérifiés » ou « à confirmer ». Il n'y a pas de troisième cas, et pas de chiffre sans mention — y compris dans ce document.</span></li>
+    </ol>
+  </section>
+
+  <!-- 09 — La doctrine du vide -->
+  <section class="slide" id="s9" aria-label="Diapositive 9 sur 11 : la doctrine du vide">
+    <span class="k">09 — La doctrine du vide</span>
+    <h2>Quand un chiffre n'est pas mesuré, l'app n'affiche rien</h2>
+    <p class="sub">C'est la décision de conception dont le projet est le plus sûr, et celle qui coûte le plus cher à l'écran.</p>
+    <div class="grid g2">
+      <div>
+        <p>Pas de barre grise, pas de hachure, pas de contour en pointillé, pas de tiret. Une phrase calme qui dit ce qui manque, et le lien vers la source officielle.</p>
+        <p class="small muted">La raison est simple : une barre grise à 3 % se lit comme une petite valeur. Elle ne se lit pas comme une absence de mesure. Un espace vide, lui, ne ment pas.</p>
+        <p style="margin-top:18px;font-size:19px;font-weight:700">La donnée n'est pas cachée : elle n'est pas produite.</p>
+        <p class="small muted">Les délibérations municipales ne sont publiées dans aucune base nationale, le vote de chaque conseiller n'est pas produit, le calendrier des conseils n'est centralisé nulle part. Une app qui remplirait ces trous par une estimation serait plus complète et moins fiable.</p>
+      </div>
+      <div class="card">
+        <span class="k">Ce que ça donne à l'écran</span>
+        <p class="small" style="margin:0 0 10px"><b>Budget de votre commune</b></p>
+        <p class="small muted" style="margin:0">Nous n'avons pas encore chargé les comptes de cette commune. Ils sont publiés chaque année par la direction générale des finances publiques.</p>
+        <p class="small" style="margin:12px 0 0"><b style="color:var(--c-ville)">Voir la source officielle</b></p>
+        <p class="small muted" style="margin:14px 0 0;padding-top:12px;border-top:1px solid var(--sep)">Aucune barre, aucun graphique, aucun zéro. On montre le chiffre, ou on écrit qu'on ne l'a pas. Jamais un entre-deux graphique.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 10 — Où on en est -->
+  <section class="slide" id="s10" aria-label="Diapositive 10 sur 11 : où en est le projet">
+    <span class="k">10 — Où on en est, honnêtement</span>
+    <h2>33 % de couverture, dont 13 points qui n'apportent aucune donnée</h2>
+    <p class="sub">L'app mesure sa propre couverture et affiche le résultat, y compris quand il est mauvais. Voici le chiffre tel qu'elle le calcule.</p>
+    <div class="grid g2">
+      <div class="card">
+        <span class="k">Couverture pondérée, mesurée</span>
+        <p class="figure">33 %</p>
+        <div class="bar"><i style="width:33%"></i></div>
+        <p class="small muted" style="margin:0">Comptée sur les données réellement embarquées dans le fichier livré — pas une estimation, pas une intention.</p>
+        <p class="small" style="margin:12px 0 0"><b>13 de ces 33 points viennent de la couche « liens officiels ».</b> Elle fonctionne partout en France, mais elle n'apporte aucune donnée : elle amène l'utilisateur à la bonne page. L'app affiche cette part à part, pour qu'on ne lise pas le score pour plus qu'il ne vaut.</p>
+        <p class="small" style="margin:12px 0 0"><b>1 commune sur 34 945</b> est couverte en profondeur. Les élus locaux, les finances locales et les marchés publics sont à zéro : aucune barre n'est dessinée pour eux.</p>
+      </div>
+      <div>
+        <div class="card" style="margin-bottom:16px">
+          <span class="k">Ce qui marche partout en France</span>
+          <p class="small" style="margin:0 0 8px"><b>Les décisions nationales</b> — lois votées, scrutins, échéances. Une loi s'applique aux 34 945 communes.</p>
+          <p class="small" style="margin:0 0 8px"><b>Les liens officiels</b> — l'app fabrique l'adresse de recherche des services publics de n'importe quelle commune.</p>
+          <p class="small" style="margin:0"><b>Le dictionnaire, le jeu, les compétences par échelon</b> — qui décide de quoi ne dépend pas d'où vous habitez.</p>
+        </div>
+        <div class="card">
+          <span class="k">Ce qui est encore en construction</span>
+          <p class="small" style="margin:0 0 8px"><b>Les élus locaux</b> — câblage en place, données à injecter.</p>
+          <p class="small" style="margin:0 0 8px"><b>Finances locales et marchés publics</b> — sources identifiées, connecteurs à écrire.</p>
+          <p class="small" style="margin:0"><b>Les décisions locales détaillées</b> — une seule commune aujourd'hui.</p>
+        </div>
+      </div>
+    </div>
+    <p class="small muted" style="margin-top:16px">Les objectifs chiffrés d'utilisateurs, de rétention et de conversion de la version précédente ont été retirés de ce document : ils n'étaient adossés à aucune mesure, et un projet qui exige une source sous chaque chiffre affiché ne peut pas s'en dispenser dans sa propre présentation.</p>
+  </section>
+
+  <!-- 11 — Conclusion -->
+  <section class="slide" id="s11" aria-label="Diapositive 11 sur 11 : ce qui distingue Repère">
+    <span class="k">11 — En un mot</span>
+    <h2>Le produit se distingue par ce qu'il refuse de faire</h2>
+    <p class="sub">Il n'y a pas de barrière technique à copier une app d'information civique. Il y a une barrière de discipline : tenir des règles qui coûtent quelque chose à l'écran, tous les jours, y compris quand personne ne regarde.</p>
+    <div class="grid g3">
+      <div class="card">
+        <div class="rule"></div>
+        <h3>Sourcé</h3>
+        <p class="muted">Uniquement des producteurs publics, sous licence ouverte. Les obligations de licence sont tenues à l'écran, à l'endroit où la donnée sert, pas seulement dans un fichier de mentions.</p>
+      </div>
+      <div class="card">
+        <div class="rule"></div>
+        <h3>Sans opinion</h3>
+        <p class="muted">Pas de classement, pas de palmarès, pas de position attribuée sans confirmation, même gabarit pour toutes les familles politiques. Chaque règle est vérifiable dans le fichier livré.</p>
+      </div>
+      <div class="card">
+        <div class="rule"></div>
+        <h3>Sans collecte</h3>
+        <p class="muted">Aucun stockage local, aucun compte, aucun appel sortant. Ce n'est pas une politique de confidentialité, c'est une contrainte technique vérifiée à chaque livraison.</p>
+      </div>
+    </div>
+    <div class="card" style="margin-top:16px">
+      <span class="k">Ce que ce document n'affirme pas</span>
+      <p class="small" style="margin:0">Aucune projection d'audience, de revenus ni de parts de marché n'est avancée ici. L'état d'avancement présenté est celui que l'application mesure sur elle-même. Tout le reste demande une source, et l'obtiendra avant d'être écrit.</p>
+    </div>
+  </section>
+
+  </main>
+</div>
+
+<nav class="navbar" aria-label="Navigation entre les diapositives">
+  <div class="navin">
+    <button class="nb" id="prev" type="button">&#8592;&nbsp;Précédent</button>
+    <div class="pos">
+      <span class="count" id="count">01 / 11</span>
+      <div class="dots" id="dots" role="tablist" aria-label="Aller à une diapositive"></div>
+    </div>
+    <button class="nb" id="next" type="button">Suivant&nbsp;&#8594;</button>
+  </div>
+  <p class="hint">Flèches gauche et droite du clavier pour circuler.</p>
+  <p class="sr" id="live" role="status"></p>
+</nav>
+
+<script>
+(function(){
+  "use strict";
+  var slides = Array.prototype.slice.call(document.querySelectorAll('.slide'));
+  var total = slides.length;
+  var cur = 0;
+  var prev = document.getElementById('prev');
+  var next = document.getElementById('next');
+  var count = document.getElementById('count');
+  var dots = document.getElementById('dots');
+  var live = document.getElementById('live');
+  var titles = slides.map(function(s){
+    var h = s.querySelector('h1,h2');
+    return h ? h.textContent.trim() : ('Diapositive ' + (slides.indexOf(s)+1));
+  });
+
+  function pad(n){ return (n < 10 ? '0' : '') + n; }
+
+  for (var i = 0; i < total; i++){
+    (function(idx){
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'dot';
+      b.setAttribute('role','tab');
+      b.setAttribute('aria-label', 'Diapositive ' + (idx+1) + ' sur ' + total + ' : ' + titles[idx]);
+      b.addEventListener('click', function(){ go(idx); });
+      dots.appendChild(b);
+    })(i);
+  }
+  var dotEls = Array.prototype.slice.call(dots.children);
+
+  function render(){
+    for (var i = 0; i < total; i++){
+      var on = (i === cur);
+      slides[i].classList.toggle('on', on);
+      dotEls[i].setAttribute('aria-current', on ? 'true' : 'false');
+      dotEls[i].setAttribute('aria-selected', on ? 'true' : 'false');
+    }
+    count.textContent = pad(cur+1) + ' / ' + total;
+    prev.disabled = (cur === 0);
+    next.disabled = (cur === total - 1);
+    live.textContent = 'Diapositive ' + (cur+1) + ' sur ' + total + ' : ' + titles[cur];
+    if (window.scrollTo) window.scrollTo(0, 0);
+  }
+
+  function go(i){
+    if (i < 0 || i >= total || i === cur) return;
+    cur = i;
+    render();
+  }
+
+  prev.addEventListener('click', function(){ go(cur - 1); });
+  next.addEventListener('click', function(){ go(cur + 1); });
+
+  document.addEventListener('keydown', function(e){
+    if (e.metaKey || e.ctrlKey || e.altKey) return;
+    var t = e.target;
+    if (t && t.tagName && /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName)) return;
+    if (e.key === 'ArrowRight' || e.key === 'PageDown'){ go(cur + 1); e.preventDefault(); }
+    else if (e.key === 'ArrowLeft' || e.key === 'PageUp'){ go(cur - 1); e.preventDefault(); }
+    else if (e.key === 'Home'){ go(0); e.preventDefault(); }
+    else if (e.key === 'End'){ go(total - 1); e.preventDefault(); }
+  });
+
+  render();
+})();
+</script>
+</body>
+</html>
