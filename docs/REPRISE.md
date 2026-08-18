@@ -1,6 +1,6 @@
 # Repère — texte de reprise
 
-*À coller au début d'une nouvelle conversation.*
+*Mis à jour le 18 août 2026. À coller au début d'une nouvelle conversation.*
 
 ---
 
@@ -15,126 +15,129 @@ connue avant la présidentielle d'avril 2027. Budget engagé : 250 €, dont 0 d
 
 ## Où sont les fichiers
 
-**Rien n'est dans ton environnement au démarrage** — chaque session repart d'un
-conteneur vide. Deux sources :
+**Rien n'est dans ton environnement au démarrage.** Deux sources :
 
-1. **Les documents du projet claude.ai** — lis-les avec l'outil Projects, en priorité
-   `claude/Repere_Systeme_de_travail.md` (invariants, méthode, journal des arbitrages)
-   et `claude/Repere_Modele_Freemium.md` (gratuit/premium, prix).
-2. **Mon dossier Téléchargements**, connecté via le pont d'appareil
-   (`mcp__remote-devices__*`). Tout ce qui a été livré s'y trouve :
-   `app_repere_v18.html` (16 Mo, le produit), `repere_site.zip` (le site prêt à
-   déposer), `repere_presentation.html`, `repere_deck.html`, et les fichiers de
-   données sources (RNE, COG, OFGL). Demande-moi l'accès au dossier et récupère ce
-   dont tu as besoin avec `device_stage_files`.
+1. **Mon dossier `C:\Users\APina\Downloads`**, via le pont d'appareil
+   (`mcp__remote-devices__*`). Demande-moi l'accès, il est accordé en un clic.
+2. Les documents du projet claude.ai.
+
+**L'outillage est à `Downloads\outils\`** — et il a déjà été perdu une fois :
+`build_pwa.py` (générateur de la PWA) et `test_repere.mjs` (le banc). Un dépôt git est
+en cours de mise en place (`initialiser_depot.bat`, git installé le 18 août).
 
 L'extension **Claude pour Chrome** est installée : tu peux piloter mon navigateur pour
-Netlify, Cloudflare et plus tard la console Play Store.
+Netlify, et pour télécharger les jeux de données que ton conteneur ne peut pas atteindre.
 
-## État réel au 12 août 2026
+## État réel au 18 août 2026
 
-- L'app est **en ligne** sur Netlify (je te donnerai l'adresse). Elle s'installe sur
-  l'écran d'accueil et fonctionne hors connexion.
-- **Couverture des données mesurée : 62 %**, affichée dans l'app.
-- Embarqué : **34 637 maires**, 116 454 adjoints, 52 368 conseillers communautaires,
-  4 037 conseillers départementaux, 1 744 régionaux, 925 parlementaires, 588 élus des
-  collectivités uniques — et les **comptes des 34 875 communes**, 101 départements,
-  17 régions (OFGL).
-- Poids : 16,3 Mo, soit 6,2 Mo au téléchargement. Banc vert.
-- Ce qui reste à zéro : les **délibérations locales** (1 commune sur 34 875) et les
-  **marchés publics**.
+- **En ligne : `repereapp.netlify.app`** (Netlify, équipe `repere0`, projet `repereapp`),
+  déploiement en glissant un zip sur la page *Deploys*.
+- Version courante : **v18.13**. `sw.js` en `repere-50ef9723bae8`.
+- Le site sert : `/` l'application, `/accueil.html` la landing, `/presentation` la même
+  landing par réécriture, `/confidentialite.html` la politique de confidentialité.
+- **Couverture des données : 62 %**, affichée dans l'app.
+- Embarqué : 34 637 maires, 116 454 adjoints, 52 368 conseillers communautaires,
+  4 037 départementaux, 1 744 régionaux, 925 parlementaires — et les comptes des
+  34 875 communes, 101 départements, 17 régions (OFGL).
+- Reste à zéro : les délibérations locales (1 commune sur 34 875) et les marchés publics.
 
 ## Les invariants — ils ne se discutent pas au fil de l'eau
 
-1. **Un seul fichier.** `app_repere_v18.html`, autonome, sans build. La PWA, la page
-   PC et le deck sont *engendrés* par des scripts, jamais recopiés à la main.
-2. **Aucune donnée personnelle ne quitte l'appareil.** Une seule valeur y est écrite :
-   la série de jours, sous la clé `repere.serie`. `sessionStorage` et IndexedDB sont
-   interdits, `localStorage` ne peut toucher que cette clé — le banc échoue sinon.
-3. **Aucun classement** d'élus, de partis ou de territoires. Des compteurs factuels,
-   jamais un tri, un score, une moyenne ou un rang.
+1. **Un seul fichier.** `app_repere_vXX.html`, autonome, sans build. La PWA, la landing
+   et le deck sont *engendrés* par `outils/build_pwa.py`, jamais recopiés à la main.
+2. **Aucune donnée personnelle ne quitte l'appareil.** Une seule clé `localStorage` :
+   `repere.serie`. `sessionStorage` et IndexedDB interdits. *(Une seconde clé,
+   `repere.acces`, est autorisée le jour où le paiement sera réel — à inscrire au banc
+   avant d'être posée.)*
+3. **Aucun classement** d'élus, de partis ou de territoires. Jamais de tri, de score,
+   de moyenne ni de rang.
 4. **Chaque chiffre porte son statut** : « chiffres vérifiés » ou « à confirmer ».
 5. **Doctrine du vide** : une donnée non mesurée n'a droit à aucun élément graphique.
-   Une phrase calme et le lien officiel. Jamais une barre minuscule, qui se lit comme
-   une petite valeur et non comme une absence.
-6. **Le jeu ne récompense ni ne punit.** Les médailles marquent une assiduité, jamais
-   une bonne réponse.
-7. **Couleurs d'échelon figées** : ville #0e7490, agglo #0891b2, département #b45309,
-   région #6d28d9, national #1d1d1f. Hors échelon et famille politique, l'interface
-   reste grise (amplitude RVB ≤ 24). Pas d'emoji structurel. Cibles tactiles 44 px.
+   Une phrase calme et le lien officiel.
+6. **Le jeu ne récompense ni ne punit.** Les médailles marquent une assiduité.
+7. **Couleurs d'échelon figées** : ville `#0e7490`, agglo `#0891b2`, département
+   `#b45309`, région `#6d28d9`, national `#1d1d1f`. Ailleurs l'interface reste grise
+   (amplitude RVB ≤ 24). Pas d'emoji structurel. Cibles tactiles 44 px.
 8. **Jamais le patrimoine des parlementaires**, ni rien qui en dérive.
 
-## Arbitrages déjà tranchés — ne les rouvre pas sans me demander
+## Arbitrages tranchés — ne les rouvre pas sans me demander
 
-Play Store (25 €) + PWA sur iOS · maire et adjoints partout · `geo.api.gouv.fr` retiré
-de la recherche · page PC en une seule page · **compteurs factuels sans classement** ·
-**réactions avec pourcentages, compteur anonyme sans compte** · **série de jours
-autorisée** · **aucun compte utilisateur, médailles locales** · **gratuit + abonnement
-1,99 €/mois** · dénominateur = 34 875 communes (COG 2026 INSEE) · pitch deck refondu ·
-promesse de délai du droit de réponse réécrite sans chiffre.
+Play Store (25 €) + PWA sur iOS · page PC en une seule page · réactions anonymes sans
+compte · série de jours autorisée · **aucun compte utilisateur : l'abonnement passe par
+un code d'accès anonyme ou la facturation Play Store** · **gratuit + abonnement
+1,99 €/mois** · dénominateur = 34 875 communes (COG 2026 INSEE).
+
+**La ligne freemium** : rien de ce qui répond aux deux questions fondatrices n'est
+payant. Gratuit = qui décide, où va mon argent, les votes, le fil, le jeu, le calendrier,
+le dictionnaire, la carte. Premium = plusieurs communes, alertes de rue, archive longue,
+export, comparaison de deux territoires. **Aucune fonction premium n'est encore
+construite, et la vente n'est pas ouverte** — il faut d'abord une structure juridique.
+
+**Présences en commission** (18 août) : on liste ce qu'un député **a fait**, jamais ce
+qu'il n'a pas fait. Aucune absence, aucun total, aucun pourcentage, aucun dénominateur.
+La présence est fiable, l'absence ne l'est pas — un député « absent » peut siéger
+ailleurs à la même heure.
 
 ## Méthode de travail — non négociable
 
-- **N'ouvre jamais `app_repere_v18.html` en entier** (16 Mo). Lis `INDEX.md`, puis
-  cible des plages de lignes avec grep.
-- Toute modification par **patch Python à assertions** : toutes les assertions
-  vérifiées **avant** la moindre écriture. Une ancre qui ne correspond pas se re-dérive
-  par grep — jamais de devinette, jamais d'assertion relâchée.
-- Le fichier n'utilise que des **apostrophes ASCII** `'`. Une ancre contenant `’`
-  échouera.
-- Après chaque patch : `node test_repere.mjs app_repere_v18.html` doit finir par
-  « VERDICT : tout passe ».
+- **N'ouvre jamais `app_repere_vXX.html` en entier** (16 Mo). Cible des plages de lignes
+  par grep.
+- Toute modification par **patch Python à assertions** : toutes vérifiées **avant** la
+  moindre écriture. Une ancre qui ne correspond pas se re-dérive par grep.
+- Le code écrit à la main n'utilise que des **apostrophes ASCII**. Les données
+  embarquées, elles, contiennent des apostrophes typographiques (noms officiels INSEE) :
+  une ancre qui les traverse doit les recopier telles quelles.
+- Après chaque patch : `node test_repere.mjs <fichier>` doit finir par
+  **« VERDICT : tout passe »** (34 contrôles).
 - Playwright : chromium `/opt/pw-browsers`, `PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers`,
-  **jamais** `playwright install`. CommonJS :
-  `import pkg from '/home/claude/.npm-global/lib/node_modules/playwright/index.js'; const {chromium}=pkg;`
-- Pour atteindre une commune dans un test : remplir `#ob-input`, appeler
-  `obValidateTyped()`, puis `finishOnboard()`. Un `obPick()` avec code INSEE vide donne
-  un écran vide et induit en erreur.
+  **jamais** `playwright install`.
+- Pour atteindre une commune en test : remplir `#ob-input`, appeler `obValidateTyped()`,
+  puis `finishOnboard()`.
 
-## Les pièges appris à la dure — ils se reproduiront
+## Les pièges appris à la dure
 
-**Un banc vert sur une page cassée reste un banc vert.** Six défauts réels ont été
-trouvés en **regardant des captures d'écran**, aucun par les assertions seules : un
-faux maire sur 197 communes, le budget d'Île-de-France servi à toute la France, un
-bouton qui chevauchait son paragraphe, une carte vide sous le voile d'onboarding. **Relis
-toujours les images.**
+**Un banc vert sur une page cassée reste un banc vert.** Les défauts réels se voient sur
+les captures : un lien bleu hors palette, un texte gras replié en colonne par un
+conteneur flex, un bandeau d'erreur affiché sur un fichier intact. **Relis les images.**
 
-**Un rapport de succès peut porter sur des données entièrement fausses.** Écris toujours
-un contrôle *indépendant*, qui relit la source brute sans réutiliser une ligne du script
-qu'il vérifie.
+**Un texte peut contredire le code sans que rien ne le signale.** La charte a affirmé
+« pas de série de jours » alors que la série existait, et l'écran des offres a vendu
+« les titres seulement » alors que l'app donnait tout. Le banc a maintenant un contrôle
+par contradiction connue.
 
-**Une étape 9 manquante annule les huit précédentes.** Le projet a produit trois fois
-de la donnée que l'interface ignorait. Ingestion et affichage partent ensemble.
+**Un contrôle naïf tombe sur la trace du correctif.** Le journal des corrections *cite*
+l'ancienne formulation ; un test qui cherche cette phrase la retrouve et croit le défaut
+présent. Une citation n'est pas une affirmation.
 
-**Un numérateur nul est une mesure ; un dénominateur absent ne l'est pas.** Et on ne
-renormalise jamais un score sur les seules couches mesurables : le chiffre est monté de
-33 à 71 % sans qu'aucune donnée n'ait été ajoutée.
+**Le service worker peut prendre un fichier pour l'application.** Toute navigation était
+rangée sous `./index.html` : visiter `/sw.js` remplaçait durablement l'app par ce fichier
+dans le cache. Corrigé le 18 août — et l'empreinte du cache porte désormais aussi sur le
+service worker, sinon le cache fautif survit au correctif censé le vider.
 
-**Les fichiers sources contiennent des colonnes homonymes.** Le fichier des communes
-porte aussi les colonnes de sa région : un appariement par synonymes non contraint par
-échelon joint les montants au mauvais territoire, en silence.
+**Un numérateur nul est une mesure ; un dénominateur absent ne l'est pas.**
 
-## Ce qui reste à faire, par priorité
+## Où on en était — l'agenda parlementaire
 
-**Pour la bêta** : renommer le site (fait), les **mentions légales**, le **numéro de
-version** affiché dans l'app, le **formulaire de retour** câblé sur
-`repere0@protonmail.com`, un **guide de test**, et l'essai sur un vrai iPhone et un vrai
-Android. Puis ouvrir à une dizaine de testeurs.
+Jeu de données **Réunions** de l'Assemblée (Licence ouverte), téléchargé et mesuré :
 
-**Défauts connus à corriger** : les écrans « Où va mon argent » affichent des chiffres
-sans étiquette de vérification quand les données sont absentes ; dans le format compacté
-de l'OFGL un `0` ne distingue pas « absent » de « réellement zéro » ; la couverture
-n'est pas encore précalculée à la fabrication (le frontend calcule encore) ; du code
-mort et trois défauts d'accessibilité identifiés.
+- 7 470 réunions, du 1ᵉʳ juillet 2024 au 1ᵉʳ décembre 2026
+- 6 259 commissions · 1 024 séances · 187 initiatives de députés
+- 6 296 confirmées, **1 163 annulées ou supprimées** (à ne jamais afficher comme tenues)
+- ordre du jour : 29,7 % · compte rendu : 48,4 % · **présences nominatives : 83,8 %**
+- **seulement 20 réunions à venir, aucune avec ordre du jour** — normal en intersession,
+  ça se remplira à la rentrée d'octobre
+- `organeReuniRef` renvoie à un référentiel : `AMO10` (organes actifs) laisse **39 % des
+  réunions sans nom** — il faut `AMO50` (historique), téléchargé, **pas encore examiné**
 
-**Ensuite** : déployer le compteur de réactions (Cloudflare Workers, code écrit, il
-reste à le publier et à coller son adresse dans `REACT_URL`), le compte Play Store,
-le partage du résultat du jeu en image, l'abonnement, puis les marchés publics et les
-délibérations locales.
+`data.assemblee-nationale.fr` est bloqué depuis le conteneur : les jeux se téléchargent
+par mon navigateur, puis se récupèrent avec `device_stage_files`.
 
-**Ce que je dois faire moi** : ouvrir à la main les 22 adresses sources du quiz, et
-envoyer deux courriels à l'Assemblée et au Sénat pour les droits sur les portraits
-officiels.
+**Prochaine étape** : dépiler `AMO50`, vérifier qu'il nomme les commissions d'enquête
+closes, puis écrire l'ingestion et l'écran **ensemble** — le projet a déjà produit trois
+fois de la donnée que l'interface ignorait.
+
+Ensuite : les questions écrites et orales (thématiques par député), puis la mise en
+veille des sept écrans de démonstration avant d'ouvrir la bêta.
 
 ## Comment je veux qu'on travaille
 

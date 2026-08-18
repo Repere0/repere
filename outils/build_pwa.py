@@ -142,6 +142,109 @@ ancienne = re.search(r'VERSION *= *"repere-([0-9a-f]{12})"', sw)
 assert ancienne, "VERSION introuvable dans sw.js"
 sw = sw.replace(ancienne.group(0), 'VERSION = "repere-%s"' % empreinte, 1)
 
+# ------------------------------------------- sw.js : strategie de document (18 aout 2026)
+# POURQUOI : index.html pese 16 Mo (6,2 Mo au transfert). En reseau-d'abord, chaque
+# ouverture de l'app retelechargeait ces 6,2 Mo AVANT d'afficher quoi que ce soit. On
+# passe en cache-d'abord + revalidation en fond : affichage immediat, version en ligne
+# servie a l'ouverture suivante. Le navigateur revalide sw.js (4 ko) a chaque
+# navigation, et un deploiement change VERSION : le retard maximum est d'une ouverture.
+#
+# PIEGE, paye une fois en production : en cache-d'abord, servir aveuglement index.html
+# pour TOUTE navigation renvoie l'application a la place de /presentation et de
+# /confidentialite.html. Le reseau-d'abord masquait le probleme tant qu'on etait en
+# ligne. D'ou la table PAGES : chaque document servi par le site a SA cle de cache, et
+# une adresse inconnue n'est pas interceptee du tout — elle part au reseau, et c'est
+# l'hebergeur qui repond (404 comprise).
+#
+# Trois corrections viennent avec :
+#   - "./" retire de la coquille : doublon exact de index.html, 32 Mo stockes au lieu de 16 ;
+#   - estBonne() : une 404 ou une page d'erreur de l'hebergeur ne peut plus etre mise en
+#     cache — l'ancien code cachait n'importe quelle reponse, l'app mourait hors ligne
+#     sans rien dire ;
+#   - cache: "reload" a l'installation : la coquille est prise au reseau, jamais au cache
+#     HTTP du navigateur, sinon un deploiement peut installer une version deja perimee.
+# Le sw.js de reference (REF) reste celui de la v18.9 : on transforme, on ne recopie pas.
+
+SW_COQ_AV = 'var COQUILLE = [\n  "./",\n  "./index.html",'
+SW_COQ_AP = ('var DOC = "./index.html";\n'
+             '/* Les seules navigations que ce service worker intercepte, et la cle de cache de\n'
+             '   chacune. "presentation" est l adresse propre servie par _redirects. Tout ce qui\n'
+             '   n est pas dans cette table passe au reseau sans etre touche. */\n'
+             'var PAGES = {\n'
+             '  "": DOC,\n'
+             '  "index.html": DOC,\n'
+             '  "confidentialite.html": "./confidentialite.html"\n'
+             '};\n'
+             'var COQUILLE = [\n  "./index.html",')
+assert sw.count(SW_COQ_AV) == 1, "la coquille du service worker a change"
+sw = sw.replace(SW_COQ_AV, SW_COQ_AP, 1)
+
+SW_INST_AV = ('self.addEventListener("install", function (e) {\n'
+              '  e.waitUntil(caches.open(VERSION).then(function (c) { return c.addAll(COQUILLE); })\n'
+              '    .then(function () { return self.skipWaiting(); }));\n'
+              '});')
+SW_INST_AP = ('self.addEventListener("install", function (e) {\n'
+              '  e.waitUntil(caches.open(VERSION).then(function (c) {\n'
+              '    /* cache: "reload" : on prend la coquille au reseau, jamais au cache HTTP du\n'
+              '       navigateur - sinon un deploiement peut installer une version deja perimee. */\n'
+              '    return c.addAll(COQUILLE.map(function (u) {\n'
+              '      return new Request(u, { cache: "reload" });\n'
+              '    }));\n'
+              '  }).then(function () { return self.skipWaiting(); }));\n'
+              '});')
+assert sw.count(SW_INST_AV) == 1, "le gestionnaire d installation du service worker a change"
+sw = sw.replace(SW_INST_AV, SW_INST_AP, 1)
+
+SW_FETCH_AV = 'self.addEventListener("fetch", function (e) {'
+SW_BONNE = ("/* Ne met en cache qu une reponse reellement valide : une 404 ou une page d erreur de\n"
+            "   l hebergeur mise en cache rendrait l app morte hors ligne, silencieusement. */\n"
+            "function estBonne(rep) {\n"
+            '  return rep && rep.ok && rep.status === 200 && rep.type === "basic";\n'
+            "}\n\n")
+assert sw.count(SW_FETCH_AV) == 1, "le gestionnaire fetch du service worker a change"
+sw = sw.replace(SW_FETCH_AV, SW_BONNE + SW_FETCH_AV, 1)
+
+SW_NAV_AV = ("  /* Reseau d'abord pour le document : si une nouvelle version est en ligne, on la\n"
+             "     prend ; sinon on retombe sur le cache et l'app s'ouvre quand meme hors ligne. */\n"
+             '  if (r.mode === "navigate") {\n'
+             "    e.respondWith(fetch(r).then(function (rep) {\n"
+             "      var copie = rep.clone();\n"
+             '      caches.open(VERSION).then(function (c) { c.put("./index.html", copie); });\n'
+             "      return rep;\n"
+             "    }).catch(function () {\n"
+             '      return caches.match("./index.html").then(function (m) { return m || Response.error(); });\n'
+             "    }));\n"
+             "    return;\n"
+             "  }")
+SW_NAV_AP = ("  /* Cache d abord pour les documents connus, revalidation en fond. */\n"
+             '  if (r.mode === "navigate") {\n'
+             '    var cle = PAGES[new URL(r.url).pathname.split("/").pop()];\n'
+             "    /* Adresse inconnue : on ne l intercepte pas. Servir index.html ici masquerait\n"
+             "       les 404 de l hebergeur et casserait toute page ajoutee plus tard. */\n"
+             "    if (!cle) return;\n"
+             "    e.respondWith(caches.match(cle).then(function (m) {\n"
+             "      var reseau = fetch(r).then(function (rep) {\n"
+             "        if (estBonne(rep)) {\n"
+             "          var copie = rep.clone();\n"
+             "          caches.open(VERSION).then(function (c) { c.put(cle, copie); });\n"
+             "        }\n"
+             "        return rep;\n"
+             "      });\n"
+             "      if (m) {\n"
+             "        /* On sert le cache tout de suite ; la requete reseau continue seule.\n"
+             "           waitUntil la maintient en vie apres la reponse, sans bloquer l affichage. */\n"
+             "        e.waitUntil(reseau.catch(function () {}));\n"
+             "        return m;\n"
+             "      }\n"
+             "      /* Premiere visite, ou cache vide : il n y a que le reseau. */\n"
+             "      return reseau.catch(function () { return Response.error(); });\n"
+             "    }));\n"
+             "    return;\n"
+             "  }")
+assert sw.count(SW_NAV_AV) == 1, "le gestionnaire de navigation du service worker a change"
+sw = sw.replace(SW_NAV_AV, SW_NAV_AP, 1)
+assert sw.count("var cle =") == 1 and "PAGES[" in sw
+
 # ------------------------------------------------------- accueil.html (la landing)
 # POURQUOI une page separee : build_pwa.py retire la landing de index.html — c'est
 # volontaire, index.html EST l'application. La landing est donc engendree ici, depuis
@@ -224,21 +327,17 @@ io.open(os.path.join(SORTIE, "accueil.html"), "w", encoding="utf-8").write(accue
 print("accueil.html : %d Ko, %d bloc(s) de landing" % (len(accueil.encode("utf-8")) / 1024, len(LANDING)))
 
 # ------------------------------------------------------------- sw.js : accueil.html
-# PIEGE EVITE : le gestionnaire `navigate` du service worker recopie TOUTE navigation
-# dans le cache sous "./index.html". Sans garde, une visite sur accueil.html
-# remplacerait l'application par la landing dans le cache hors ligne.
-GARDE_AV = '  if (r.mode === "navigate") {\n    e.respondWith(fetch(r).then(function (rep) {\n      var copie = rep.clone();\n      caches.open(VERSION).then(function (c) { c.put("./index.html", copie); });'
-GARDE_AP = ('  if (r.mode === "navigate") {\n'
-            '    /* La landing (accueil.html) est une page a part : recopiee sous "./index.html",\n'
-            '       elle remplacerait l application par la page de presentation dans le cache\n'
-            '       hors ligne. On ne met en cache que l application elle-meme. */\n'
-            '    var estAccueil = new URL(r.url).pathname.indexOf("accueil.html") >= 0;\n'
-            '    e.respondWith(fetch(r).then(function (rep) {\n'
-            '      var copie = rep.clone();\n'
-            '      if (!estAccueil) caches.open(VERSION).then(function (c) { c.put("./index.html", copie); });')
-assert sw.count(GARDE_AV) == 1, "le gestionnaire de navigation du service worker a change"
-sw = sw.replace(GARDE_AV, GARDE_AP, 1)
-assert "estAccueil" in sw
+# La landing a sa propre cle de cache : sous "./index.html" elle remplacerait
+# l application par la page de presentation dans le cache hors ligne, et en
+# cache-d abord une visite sur /presentation renverrait l application. Les deux
+# adresses (accueil.html et l adresse propre /presentation) pointent sur la meme cle.
+ENTREE_AV = '  "confidentialite.html": "./confidentialite.html"\n'
+ENTREE_AP = ('  "confidentialite.html": "./confidentialite.html",\n'
+             '  "accueil.html": "./accueil.html",\n'
+             '  "presentation": "./accueil.html"\n')
+assert sw.count(ENTREE_AV) == 1, "la table PAGES du service worker a change"
+sw = sw.replace(ENTREE_AV, ENTREE_AP, 1)
+assert sw.count('"./accueil.html"') == 2
 sw = sw.replace('  "./confidentialite.html",', '  "./confidentialite.html",\n  "./accueil.html",', 1)
 assert '"./accueil.html"' in sw
 
