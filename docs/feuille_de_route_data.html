@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Repère — feuille de route des données publiques</title>
+<style>
+  :root{--bg:#F1EDE4;--card:#FBF9F5;--ink:#1B1815;--ink-2:#4A443D;--muted:#8A8078;
+    --sep:#E3DCD0;--fill:#EDE7DC;}
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font:16px/1.62 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;}
+  .wrap{max-width:1040px;margin:0 auto;padding:48px 24px 90px;}
+  h1{font-size:34px;line-height:1.15;letter-spacing:-.02em;margin:0 0 10px;}
+  .sub{color:var(--ink-2);font-size:17px;max-width:66ch;margin:0 0 6px;}
+  .date{color:var(--muted);font-size:13px;margin-bottom:32px;}
+  h2{font-size:23px;letter-spacing:-.01em;margin:52px 0 6px;padding-top:24px;border-top:1px solid var(--sep);}
+  .h2sub{color:var(--muted);font-size:14px;margin:0 0 16px;}
+  h3{font-size:17px;margin:26px 0 8px;}
+  p{margin:0 0 12px;max-width:74ch;}
+  code{background:var(--fill);padding:2px 6px;border-radius:5px;font-size:13.5px;
+    font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;}
+  table{width:100%;border-collapse:collapse;margin:14px 0;font-size:14px;background:var(--card);
+    border-radius:12px;overflow:hidden;box-shadow:0 1px 2px rgba(0,0,0,.04);}
+  th{text-align:left;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);
+    padding:11px 13px;border-bottom:1px solid var(--sep);}
+  td{padding:10px 13px;border-bottom:1px solid var(--sep);vertical-align:top;}
+  tr:last-child td{border-bottom:none;}
+  td.f{font-weight:600;}
+  .tag{display:inline-block;font-size:10.5px;font-weight:700;letter-spacing:.04em;
+    padding:3px 7px;border-radius:20px;white-space:nowrap;}
+  .ok{background:#E6E9E4;color:#3C4A38;}
+  .go{background:#1B1815;color:#F4F1EA;}
+  .hm{background:var(--fill);color:var(--ink-2);}
+  .no{background:#F0E2D2;color:#7A4E1C;}
+  .lead{background:var(--card);border-radius:14px;padding:22px 24px;margin:14px 0;
+    box-shadow:0 1px 2px rgba(0,0,0,.04);}
+  .lead b{display:block;font-size:19px;margin-bottom:6px;}
+  .warn{border-left:3px solid var(--ink);padding:16px 20px;background:var(--card);
+    border-radius:0 12px 12px 0;margin:18px 0;}
+  ol,ul{max-width:74ch;padding-left:22px;} li{margin-bottom:9px;}
+  .etape{background:var(--card);border-radius:14px;padding:20px 22px;margin:12px 0;
+    box-shadow:0 1px 2px rgba(0,0,0,.04);border-left:4px solid var(--sep);}
+  .etape .n{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);
+    display:block;margin-bottom:4px;}
+  .etape h3{margin:0 0 8px;}
+  .foot{margin-top:52px;padding-top:18px;border-top:1px solid var(--sep);font-size:13.5px;color:var(--muted);}
+  a{color:var(--ink);text-underline-offset:2px;}
+  @media(max-width:760px){h1{font-size:27px;}table{font-size:13px;}th,td{padding:9px;}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>Toutes les données publiques — ce que ça veut dire, et ce que ça coûte</h1>
+<p class="sub">La liste des sources qui restent, classées par ce qu'elles apportent à
+l'habitant. Et l'arbitrage d'architecture sans lequel aucune de ces étapes ne tient.</p>
+<p class="date">18 août 2026</p>
+
+<div class="warn">
+  <p><b>L'arbitrage d'abord, parce qu'il conditionne tout le reste.</b> Aujourd'hui
+  l'application est <b>un seul fichier de 17 Mo</b> qui contient toutes ses données et
+  ne fait <b>aucune requête</b> — le serveur ne sait donc rien de ce que vous consultez.
+  C'est la promesse la plus forte du produit.</p>
+  <p style="margin:0">« Toutes les données publiques » ne rentre pas dans ce fichier.
+  Mesuré : les comptes OFGL des communes pèsent <b>3,9 Go</b>, et les marchés publics
+  <b>de 500 à 970 Mo par fichier, pour 40 fichiers, mis à jour quotidiennement</b>.
+  On ne peut pas embarquer ça. Il faut choisir comment servir le lourd — et ce choix
+  se paie en vie privée.</p>
+</div>
+
+<h2>1. Les trois architectures possibles</h2>
+<p class="h2sub">Le même produit, trois promesses différentes</p>
+
+<div class="etape">
+  <span class="n">Option A — tout embarqué, pré-agrégé</span>
+  <h3>Ce qu'on fait aujourd'hui, poussé à sa limite</h3>
+  <p>La fabrication réduit chaque source à ce que l'app affiche : un budget par commune,
+  pas les 3,9 Go de lignes. On peut aller loin — l'agenda parlementaire complet n'a
+  coûté que 630 Ko.</p>
+  <p style="margin:0"><b>Ce que ça préserve :</b> aucune requête, aucun log, hors ligne
+  intégral. <b>Ce que ça coûte :</b> un plafond dur autour de 30 à 40 Mo, au-delà
+  duquel l'installation devient pénible sur un téléphone. Les marchés publics commune
+  par commune n'y tiendront pas.</p>
+</div>
+
+<div class="etape">
+  <span class="n">Option B — un fichier par commune, servi à la demande</span>
+  <h3>Le plus complet, et celui qui abîme la promesse</h3>
+  <p>L'app va chercher <code>/d/64547.json</code> quand vous ouvrez Ustaritz.</p>
+  <p style="margin:0"><b>Ce que ça permet :</b> tout, sans limite de taille.
+  <b>Ce que ça coûte :</b> les journaux du serveur enregistrent quelle commune est
+  consultée, depuis quelle adresse IP. Aujourd'hui Repère ne peut rien savoir de vous ;
+  demain il pourrait, et « nous ne regardons pas les journaux » est une promesse qu'un
+  utilisateur ne peut pas vérifier.</p>
+</div>
+
+<div class="etape" style="border-left-color:var(--ink);">
+  <span class="n">Option C — un fichier par département</span>
+  <h3>Ce que je recommande</h3>
+  <p>101 fichiers au lieu de 34 875. L'app charge le département, puis trouve la commune
+  dedans, en local.</p>
+  <p>Un département compte en moyenne 345 communes : le serveur apprend que quelqu'un
+  s'intéresse aux Pyrénées-Atlantiques, jamais à Ustaritz. C'est assez grossier pour ne
+  désigner personne, assez fin pour que les fichiers restent raisonnables — l'ordre de
+  grandeur est de quelques centaines de Ko par département pour les marchés publics
+  d'une année.</p>
+  <p style="margin:0">Et le service worker met le département en cache : après la
+  première ouverture, l'application redevient hors ligne pour ce territoire. La
+  promesse devient : <i>« Repère apprend au plus votre département, une fois, et ne le
+  redemande pas. »</i> Elle reste vraie, vérifiable, et elle s'écrit à l'écran.</p>
+</div>
+
+<h2>2. Les sources qui restent, par ordre d'intérêt</h2>
+<p class="h2sub">Classées par ce qu'elles changent pour un habitant, pas par leur taille</p>
+
+<table>
+<thead><tr><th>Source</th><th>Ce qu'elle répond</th><th>Poids</th><th>Cadence</th><th>Rang</th></tr></thead>
+<tbody>
+<tr><td class="f">Scrutins de l'Assemblée</td><td>Comment mon député a voté — déjà partiellement là, à compléter et à tenir à jour</td><td>~10 Mo</td><td>quotidienne</td><td><span class="tag go">1</span></td></tr>
+<tr><td class="f">Questions écrites et orales</td><td>Sur quels sujets ma députée travaille, avec la rubrique officielle — tu l'as demandé explicitement</td><td>~50 Mo</td><td>quotidienne</td><td><span class="tag go">2</span></td></tr>
+<tr><td class="f">Comptes rendus de séance</td><td>Ce qui s'est dit, en citations littérales</td><td>~200 Mo</td><td>quotidienne</td><td><span class="tag go">3</span></td></tr>
+<tr><td class="f">Sénat — séance publique</td><td>La moitié manquante du Parlement</td><td>~100 Mo</td><td>hebdomadaire</td><td><span class="tag ok">4</span></td></tr>
+<tr><td class="f">Marchés publics (DECP)</td><td>À qui ma commune a commandé, pour combien</td><td>500-970 Mo × 40</td><td>quotidienne</td><td><span class="tag hm">5</span></td></tr>
+<tr><td class="f">Délibérations locales (SCDL)</td><td>Ce que mon conseil municipal a voté — aujourd'hui à 1 commune sur 34 875</td><td>variable</td><td>irrégulière</td><td><span class="tag hm">6</span></td></tr>
+<tr><td class="f">HATVP</td><td>Déclarations d'intérêts, représentants d'intérêts — déjà là, à recroiser</td><td>~30 Mo</td><td>continue</td><td><span class="tag ok">7</span></td></tr>
+<tr><td class="f">Arcom — temps de parole</td><td>Le socle de la page 2027</td><td>léger</td><td>par élection</td><td><span class="tag ok">8</span></td></tr>
+<tr><td class="f">Conseil constitutionnel — parrainages</td><td>Qui est officiellement candidat</td><td>léger</td><td>février 2027</td><td><span class="tag ok">9</span></td></tr>
+<tr><td class="f">Enquêtes publiques</td><td>Ce sur quoi je peux encore donner mon avis, et jusqu'à quand</td><td>fragmenté</td><td>irrégulière</td><td><span class="tag no">10</span></td></tr>
+<tr><td class="f">Permis de construire</td><td>La brique des « alertes de ma rue »</td><td>très fragmenté</td><td>irrégulière</td><td><span class="tag no">11</span></td></tr>
+</tbody>
+</table>
+
+<p><b>Les deux dernières ne sont pas une question de taille mais de nature.</b> Les
+enquêtes publiques et les permis ne sont pas publiés dans un fichier national : ils
+vivent sur des registres départementaux, des sites de préfecture et des panneaux
+plantés dans la terre. Il n'existe pas de source unique à télécharger — c'est
+exactement pour ça que l'information est illisible, et exactement ce qui rend les
+alertes de rue difficiles à tenir. Le portail
+<code>portails_opendata_departements.txt</code> que tu as déjà dans tes fichiers est le
+bon point de départ, mais il faudra le faire commune par commune, et l'app devra dire
+où elle regarde et où elle ne regarde pas.</p>
+
+<h2>3. La collecte automatique — écrite, testée, prête</h2>
+<p class="h2sub">Deux fichiers dans ton dépôt, gratuits, sans serveur à administrer</p>
+
+<p>Le collecteur ne tourne <b>ni sur ton poste ni dans mon conteneur</b> : sur ton poste
+il manquerait les jours où la machine est éteinte, et mon conteneur ne peut même pas
+joindre <code>data.assemblee-nationale.fr</code> — je viens de le vérifier, la requête
+échoue en 403. Il tourne dans <b>GitHub Actions</b> : gratuit sur un dépôt privé,
+à heure fixe, avec une trace publique de chaque exécution.</p>
+
+<table>
+<thead><tr><th>Fichier</th><th>Ce qu'il fait</th></tr></thead>
+<tbody>
+<tr><td class="f"><code>outils/collecte.py</code></td><td>Télécharge les sources déclarées, vérifie que la réponse est un vrai jeu de données et non une page d'erreur déguisée, calcule son empreinte, et écrit <code>data/journal_collecte.json</code> — <b>y compris quand ça échoue</b>.</td></tr>
+<tr><td class="f"><code>.github/workflows/collecte.yml</code></td><td>Lance la collecte chaque jour à 05h47 UTC, dépile les archives, relance l'ingestion, <b>relit sa propre sortie</b> pour vérifier qu'elle est utilisable, puis ne commite que si quelque chose a changé.</td></tr>
+</tbody>
+</table>
+
+<div class="lead">
+  <b>La règle qui gouverne ce collecteur : une collecte qui échoue en silence est pire qu'une collecte qui n'existe pas.</b>
+  Chaque tentative laisse une ligne datée avec le code HTTP, la taille, l'empreinte et
+  l'erreur. Une réponse de moins de 10 Ko est refusée et supprimée — c'est presque
+  toujours une page d'erreur qui se ferait passer pour un fichier. Et l'application
+  affichera « dernière mise à jour réussie le … » à partir de ce journal, pas d'une
+  date d'exécution qui ne prouve rien.
+</div>
+
+<p><b>Ce que le workflow ne fait pas encore, volontairement</b> : reconstruire l'app et
+déployer. Chaque reconstruction produit un fichier de 17 Mo ; l'activer sans réfléchir
+ferait grossir le dépôt d'environ 6 Mo par jour, soit 2 Go par an. L'étape est écrite et
+commentée en bas du fichier, avec les deux secrets Netlify à créer — <b>que tu créeras
+toi-même, et que tu ne dois coller nulle part, ici comme ailleurs</b>.</p>
+
+<h2>4. L'ordre que je propose</h2>
+
+<ol>
+  <li><b>Trancher l'architecture</b> (A, B ou C ci-dessus). Rien de lourd ne peut avancer avant. Une demi-heure de décision, pas de code.</li>
+  <li><b>Activer la collecte quotidienne</b> telle qu'elle est : trois sources de l'Assemblée, agenda tenu à jour tout seul. Il suffit de commiter les deux fichiers.</li>
+  <li><b>Les scrutins et les questions écrites</b> — c'est ce que tu as demandé pour la fiche du député, et c'est léger. Deux ingestions sur le modèle de <code>agenda_an.py</code>.</li>
+  <li><b>Précalculer la couverture à la fabrication</b> plutôt que dans le navigateur. C'est dans tes défauts connus depuis le début, et ça devient nécessaire dès qu'il y a plusieurs sources à dater.</li>
+  <li><b>La mise en veille des sept écrans de démonstration</b>, avant d'ouvrir à des testeurs. Une demi-journée.</li>
+  <li><b>Les marchés publics</b>, une fois l'architecture tranchée. C'est le plus gros gain restant pour « où va mon argent » : passer du budget agrégé à « qui a été payé ».</li>
+  <li><b>Le Sénat</b>, en écrivant à l'écran ce que sa base ne couvre pas.</li>
+  <li><b>Les délibérations locales</b>, commune par commune, en affichant la couverture réelle — c'est la seule ligne du produit qui soit encore à 1 sur 34 875.</li>
+</ol>
+
+<div class="warn">
+  <p style="margin:0"><b>Un mot sur « le plus complet possible ».</b> La complétude n'est
+  pas le nombre de sources branchées : c'est le rapport entre ce que l'app promet et ce
+  qu'elle montre. Ajouter les marchés publics de 34 875 communes en laissant les
+  délibérations à 1 sur 34 875 ferait <i>baisser</i> la cohérence de l'ensemble, même en
+  ajoutant des gigaoctets. La couverture mesurée et affichée — 62 % aujourd'hui — est le
+  bon indicateur, et c'est elle qu'il faut faire monter, pas le nombre de jeux de
+  données.</p>
+</div>
+
+<p class="foot">Sources vérifiées le 18 août 2026 :
+<a href="https://www.data.gouv.fr/datasets/donnees-essentielles-de-la-commande-publique-fichiers-consolides">Marchés publics — fichiers consolidés, data.gouv.fr</a> (40 fichiers JSON, 66 Mo à 970 Mo, mise à jour quotidienne) ·
+<a href="https://data.assemblee-nationale.fr/travaux-parlementaires/reunions">Assemblée nationale — Réunions</a> ·
+<a href="https://data.senat.fr/la-base-comptes-rendus/">Sénat — base Comptes rendus</a> ·
+<a href="https://www.arcom.fr/temps-parole/election/open-data">Arcom — temps de parole</a>.
+Poids de l'agenda mesuré dans cette session : 630 Ko compacts pour 6 280 réunions.</p>
+
+</div>
+</body>
+</html>

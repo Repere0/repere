@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Repère — le chemin vers une app complète</title>
+<style>
+  :root{--bg:#F1EDE4;--card:#FBF9F5;--ink:#1B1815;--ink-2:#4A443D;--muted:#8A8078;
+    --sep:#E3DCD0;--fill:#EDE7DC;}
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font:16px/1.62 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;}
+  .wrap{max-width:1000px;margin:0 auto;padding:48px 24px 90px;}
+  h1{font-size:34px;line-height:1.15;letter-spacing:-.02em;margin:0 0 10px;}
+  .sub{color:var(--ink-2);font-size:17px;max-width:66ch;margin:0 0 6px;}
+  .date{color:var(--muted);font-size:13px;margin-bottom:32px;}
+  h2{font-size:23px;letter-spacing:-.01em;margin:52px 0 6px;padding-top:24px;border-top:1px solid var(--sep);}
+  .h2sub{color:var(--muted);font-size:14px;margin:0 0 16px;}
+  h3{font-size:17px;margin:24px 0 8px;}
+  p{margin:0 0 12px;max-width:74ch;}
+  code{background:var(--fill);padding:2px 6px;border-radius:5px;font-size:13.5px;
+    font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;}
+  pre{background:#1B1815;color:#F4F1EA;border-radius:12px;padding:16px 18px;overflow-x:auto;
+    font-size:13px;line-height:1.6;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;}
+  pre .c{color:#9d968c;}
+  .etape{background:var(--card);border-radius:14px;padding:20px 22px;margin:14px 0;
+    box-shadow:0 1px 2px rgba(0,0,0,.04);border-left:4px solid var(--sep);}
+  .etape.toi{border-left-color:var(--ink);}
+  .etape .n{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);
+    display:block;margin-bottom:4px;}
+  .etape h3{margin:0 0 8px;}
+  .qui{display:inline-block;font-size:10.5px;font-weight:700;letter-spacing:.04em;
+    padding:3px 8px;border-radius:20px;margin-left:8px;vertical-align:2px;}
+  .q-toi{background:#1B1815;color:#F4F1EA;}
+  .q-moi{background:#E6E9E4;color:#3C4A38;}
+  .warn{border-left:3px solid var(--ink);padding:16px 20px;background:var(--card);
+    border-radius:0 12px 12px 0;margin:18px 0;}
+  .lead{background:var(--card);border-radius:14px;padding:22px 24px;margin:14px 0;
+    box-shadow:0 1px 2px rgba(0,0,0,.04);}
+  .lead b{display:block;font-size:19px;margin-bottom:6px;}
+  ol,ul{max-width:74ch;padding-left:22px;} li{margin-bottom:8px;}
+  table{width:100%;border-collapse:collapse;margin:14px 0;font-size:14px;background:var(--card);
+    border-radius:12px;overflow:hidden;box-shadow:0 1px 2px rgba(0,0,0,.04);}
+  th{text-align:left;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);
+    padding:11px 13px;border-bottom:1px solid var(--sep);}
+  td{padding:10px 13px;border-bottom:1px solid var(--sep);vertical-align:top;}
+  tr:last-child td{border-bottom:none;}
+  .courriel{background:var(--card);border:1px solid var(--sep);border-radius:12px;
+    padding:18px 20px;margin:14px 0;font-size:14.5px;line-height:1.6;}
+  .courriel .k{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);
+    display:block;margin-bottom:8px;}
+  .foot{margin-top:52px;padding-top:18px;border-top:1px solid var(--sep);font-size:13.5px;color:var(--muted);}
+  a{color:var(--ink);text-underline-offset:2px;}
+  @media(max-width:760px){h1{font-size:27px;}table{font-size:13px;}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>Le chemin vers une app complète</h1>
+<p class="sub">L'architecture est tranchée : un fichier par département. Voici ce que
+ça implique, dans l'ordre, avec ce que tu fais et ce que je fais. Plus les deux
+réponses que tu m'as demandées — les portraits, et les agendas.</p>
+<p class="date">18 août 2026</p>
+
+<div class="lead">
+  <b>La promesse qui devient possible, et qu'il faudra écrire à l'écran.</b>
+  « Repère apprend au plus votre département, une seule fois, et ne le redemande pas. »
+  Elle est vérifiable par n'importe qui avec l'onglet réseau d'un navigateur — c'est ce
+  qui la distingue d'un engagement de confidentialité ordinaire.
+</div>
+
+<h2>Étape 0 — ce soir, quinze minutes</h2>
+<p class="h2sub">Rien de tout le reste ne bouge tant que la collecte ne tourne pas</p>
+
+<div class="etape toi">
+  <span class="n">Toi</span>
+  <h3>Poser le workflow et l'activer<span class="qui q-toi">15 min</span></h3>
+  <p>Le fichier est dans <code>docs/collecte_workflow.yml.txt</code> — les outils
+  distants refusent d'écrire dans <code>.github/workflows</code>, et c'est une garde
+  saine : personne ne devrait pouvoir déposer du code exécutable dans ton dépôt à
+  distance, moi compris.</p>
+<pre>cd %USERPROFILE%\repere
+mkdir .github\workflows
+copy docs\collecte_workflow.yml.txt .github\workflows\collecte.yml
+
+<span class="c">rem  les sources brutes ne se versionnent pas : elles se retelechargent</span>
+echo data/*.zip>> .gitignore
+echo data/brut_*/>> .gitignore
+
+git add -A
+git commit -m "Collecte quotidienne des sources publiques"
+git push</pre>
+  <p style="margin:0">Puis sur GitHub, onglet <b>Actions</b> → <b>Collecte quotidienne</b>
+  → <b>Run workflow</b>, pour la lancer une première fois à la main. Si elle passe au
+  vert, elle tournera seule chaque matin à 05h47 UTC. Si elle échoue, le journal te dira
+  laquelle des trois sources a lâché — et ce sera une vraie information, pas un silence.</p>
+</div>
+
+<h2>Étape 1 — le découpage par département</h2>
+<p class="h2sub">Le socle technique de tout ce qui suit</p>
+
+<div class="etape">
+  <span class="n">Moi</span>
+  <h3>Le format, et la règle qui le gouverne<span class="qui q-moi">une session</span></h3>
+  <p>Un fichier par département, servi depuis le site, chargé une fois, mis en cache par
+  le service worker :</p>
+<pre>site/d/64.json     <span class="c">— Pyrenees-Atlantiques : 546 communes</span>
+site/d/75.json     <span class="c">— Paris</span>
+site/d/2A.json     <span class="c">— Corse-du-Sud (les codes ne sont pas tous numeriques)</span>
+...  101 fichiers</pre>
+  <p><b>La règle non négociable :</b> l'application ne demande <b>jamais</b> un fichier
+  qui contiendrait un code commune dans son adresse. Le département est l'unité la plus
+  fine qui parte sur le réseau. C'est ce qui rend la promesse vraie plutôt que
+  déclarative — et c'est un contrôle que j'ajouterai au banc : aucune adresse construite
+  à partir d'un code INSEE de commune.</p>
+  <p style="margin:0">Ce que l'app garde embarqué : l'index des 34 875 communes, les
+  élus, les budgets agrégés — tout ce qui est déjà là. Ce qui passe en fichiers de
+  département : le lourd et le fréquemment mis à jour, marchés publics en tête.</p>
+</div>
+
+<div class="etape">
+  <span class="n">Moi</span>
+  <h3>Ce que voit un utilisateur hors ligne<span class="qui q-moi">même session</span></h3>
+  <p>Au premier affichage d'une donnée départementale, l'app va la chercher. Ensuite,
+  elle est en cache : hors ligne, tout continue de fonctionner pour ce département.</p>
+  <p style="margin:0">Et si le réseau manque à la première fois, la doctrine du vide
+  s'applique telle quelle : une phrase calme, le lien officiel, aucun graphique. Pas de
+  roue qui tourne indéfiniment.</p>
+</div>
+
+<h2>Étape 2 — les sources, dans l'ordre</h2>
+
+<table>
+<thead><tr><th>Rang</th><th>Source</th><th>Ce qu'elle ajoute</th><th>Qui</th></tr></thead>
+<tbody>
+<tr><td>1</td><td class="f">Scrutins de l'Assemblée</td><td>« Comment mon député a voté » tenu à jour tout seul, au lieu d'un instantané figé</td><td>moi</td></tr>
+<tr><td>2</td><td class="f">Questions écrites et orales</td><td>Sur quels thèmes ma députée travaille — avec la rubrique officielle, donc sans que je qualifie quoi que ce soit</td><td>moi</td></tr>
+<tr><td>3</td><td class="f">Couverture précalculée</td><td>Le pourcentage calculé à la fabrication et daté, au lieu d'être recalculé dans le navigateur</td><td>moi</td></tr>
+<tr><td>4</td><td class="f">Mise en veille des 7 écrans de démo</td><td>Condition pour ouvrir aux testeurs : la bêta ne montre que ce qui est vrai</td><td>moi</td></tr>
+<tr><td>5</td><td class="f">Marchés publics par département</td><td>Passer de « ma commune dépense 913 M€ » à « à qui elle a payé, et combien »</td><td>moi</td></tr>
+<tr><td>6</td><td class="f">Comptes rendus de séance</td><td>Le verbatim choisi : trois à cinq citations littérales par débat, avec la règle de sélection affichée</td><td>moi</td></tr>
+<tr><td>7</td><td class="f">Sénat</td><td>La moitié manquante — en écrivant que sa base ne couvre pas les commissions</td><td>moi</td></tr>
+<tr><td>8</td><td class="f">Structure juridique</td><td>Sans elle, pas un euro d'abonnement ne peut être encaissé</td><td><b>toi</b></td></tr>
+<tr><td>9</td><td class="f">Délibérations locales</td><td>La seule ligne encore à 1 commune sur 34 875 — commune par commune, en affichant la couverture réelle</td><td>moi</td></tr>
+</tbody>
+</table>
+
+<h2>Les portraits des parlementaires</h2>
+<p class="h2sub">Vérifié aujourd'hui, et la réponse n'est pas celle qu'on suppose</p>
+
+<div class="warn">
+  <p><b>Les portraits ne sont pas libres de droit.</b> La page « Photos libres de droit »
+  de l'Assemblée nationale ne couvre que <b>l'architecture et l'hémicycle</b> — la
+  colonnade, les salons, les salles de commission, la photo de groupe de la législature.
+  Les portraits individuels n'y figurent pas.</p>
+  <p style="margin:0">Et même ces photos-là portent trois interdits que Repère doit
+  regarder en face : <i>« l'utilisateur s'interdit de procéder à un usage de ces photos à
+  des fins publicitaires »</i>, <i>« s'interdit de procéder ou de faire procéder par un
+  tiers à la vente de ces photos »</i>, et <i>« s'interdit d'adapter, modifier, recadrer,
+  retoucher ces photos sans l'accord écrit et préalable »</i>. Une app qui vend un
+  abonnement et qui recadrerait un portrait en vignette ronde coche deux de ces trois
+  cases.</p>
+</div>
+
+<p>Il y a deux droits superposés, et l'un se règle plus facilement que l'autre. Le
+<b>droit d'auteur du photographe</b> : le portrait officiel est une œuvre, elle a un
+auteur, et sa republication demande une autorisation. Le <b>droit à l'image de l'élu</b> :
+plus souple pour une personne publique dans l'exercice de ses fonctions et à des fins
+d'information — mais il ne fait pas disparaître le premier.</p>
+
+<p><b>Ce que fait l'app aujourd'hui, et qui est la bonne réponse en attendant :</b> les
+initiales. C'est déjà codé (<code>eluInitials</code>, <code>eluPhotoMode</code>), c'est
+sobre, et surtout c'est cohérent avec ta doctrine — pas de portrait, pas de hiérarchie
+visuelle entre les élus, pas de risque juridique.</p>
+
+<p><b>L'action concrète :</b> écrire à la Division de l'information multimédia,
+<code>dim@assemblee-nationale.fr</code>, adresse indiquée par l'Assemblée elle-même pour
+les demandes d'autorisation. Le brouillon est en bas de cette page. Tant que la réponse
+n'est pas écrite et archivée, on n'affiche aucun portrait — une autorisation orale ou
+supposée ne vaut rien le jour où elle est contestée.</p>
+
+<h2>Les agendas politiques des parlementaires</h2>
+<p class="h2sub">Là, ma réponse est un refus argumenté</p>
+
+<p><b>Il n'existe aucune source officielle d'agenda individuel.</b> Ce que publie
+l'Assemblée, c'est l'agenda de <b>l'institution</b> — les réunions, avec qui les
+convoque et quel en est l'ordre du jour. C'est exactement ce que tu as déjà dans la
+v18.14. L'agenda personnel d'un député — ses déplacements, ses rendez-vous, ses
+inaugurations — n'est publié nulle part de façon systématique.</p>
+
+<p>On pourrait le reconstituer à partir de ce que chaque élu publie lui-même. Je te le
+déconseille, pour une raison qui n'est pas technique : <b>suivre les déplacements et les
+rendez-vous d'une personne, jour après jour, c'est de la surveillance</b>, même quand
+chaque élément pris isolément est public. Repère répond à « qui décide chez moi et où va
+mon argent ». Savoir qu'une députée a inauguré un gymnase samedi ne répond ni à l'une ni
+à l'autre — mais ça alimenterait très bien un procès en assiduité, exactement ce qu'on a
+refusé la semaine dernière avec les présences en commission.</p>
+
+<div class="lead">
+  <b>Ce que je propose à la place, et qui répond mieux à ta vraie question.</b>
+  Sur la fiche d'un député : les réunions où il a <b>siégé</b> (déjà décidé), les
+  <b>questions qu'il a posées</b> avec leur thème officiel, ses <b>votes</b> scrutin par
+  scrutin, et les <b>textes dont il a été rapporteur</b>. Quatre traces factuelles de
+  travail parlementaire, toutes issues de sources officielles, toutes vérifiables — et
+  aucune qui raconte où il se trouvait un samedi.
+</div>
+
+<p>Une exception qui a du sens : pendant la campagne de 2027, l'<b>agenda publié par un
+candidat lui-même</b> sur son site officiel. Ce n'est plus de la surveillance, c'est la
+reprise d'une annonce publique — et tous les candidats sont traités pareil, avec la date
+de dernière collecte affichée. C'est déjà ce que prévoit la page 2027.</p>
+
+<h2>Les deux courriels à envoyer</h2>
+<p class="h2sub">À toi — c'était déjà dans ta liste, les voici rédigés</p>
+
+<div class="courriel">
+  <span class="k">À : dim@assemblee-nationale.fr — Objet : Demande d'autorisation de reproduction des portraits officiels des députés</span>
+  <p>Madame, Monsieur,</p>
+  <p>Je développe Repère, une application civique gratuite qui présente, pour chaque
+  commune française, les élus qui la représentent et l'usage des finances publiques
+  locales. Les données proviennent de sources officielles réutilisées sous Licence
+  ouverte, dont vos jeux de données ouverts, que je cite systématiquement.</p>
+  <p>Je souhaiterais afficher, sur la fiche de chaque député, son portrait officiel, aux
+  seules fins d'identification et d'information du public. L'application ne comporte
+  aucune publicité et ne revend aucune image ; elle proposera à terme un abonnement
+  facultatif finançant son développement, l'intégralité des informations relatives aux
+  élus restant gratuite.</p>
+  <p>Pourriez-vous m'indiquer les conditions d'une telle reproduction : autorisation
+  nécessaire, mention de crédit à faire figurer, restrictions de format ou de cadrage ?
+  En l'absence d'autorisation, l'application continuera d'afficher les initiales des
+  élus, sans portrait.</p>
+  <p style="margin:0">Je vous remercie de votre attention.</p>
+</div>
+
+<div class="courriel">
+  <span class="k">Au Sénat — même objet, à adresser au service de la communication</span>
+  <p style="margin:0">Le même texte, en remplaçant « députés » par « sénateurs » et en
+  citant data.senat.fr parmi les sources réutilisées.</p>
+</div>
+
+<div class="warn">
+  <p style="margin:0"><b>Une phrase que je te conseille de garder telle quelle dans les
+  deux courriels :</b> « En l'absence d'autorisation, l'application continuera d'afficher
+  les initiales des élus, sans portrait. » Elle dit que tu n'attends pas leur silence
+  pour agir, et elle montre que ton produit fonctionne sans eux. C'est ce qui donne le
+  plus de chances d'obtenir une réponse — et ça reste vrai quoi qu'ils répondent.</p>
+</div>
+
+<p class="foot">Sources vérifiées le 18 août 2026 :
+<a href="https://www.assemblee-nationale.fr/presse/photos.asp">Assemblée nationale — Photos libres de droit</a> (architecture et hémicycle uniquement ; usage publicitaire, vente et recadrage interdits ; contact <code>dim@assemblee-nationale.fr</code>) ·
+<a href="https://data.assemblee-nationale.fr/licence-ouverte-open-licence">Assemblée nationale — Licence ouverte</a> ·
+<a href="https://data.assemblee-nationale.fr/travaux-parlementaires/reunions">Jeu de données Réunions</a>, seul agenda officiel publié.</p>
+
+</div>
+</body>
+</html>

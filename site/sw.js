@@ -11,11 +11,12 @@
  * vieux cache est efface a l'activation. Personne ne reste sur une version perimee.
  */
 var VERSION = "repere-e9d1adb6c1ed";
+var DOC = "./index.html";
 var COQUILLE = [
-  "./",
   "./index.html",
   "./manifest.webmanifest",
   "./confidentialite.html",
+  "./accueil.html",
   "./icones/repere-192.png",
   "./icones/repere-512.png",
   "./icones/repere-512-maskable.png",
@@ -24,8 +25,13 @@ var COQUILLE = [
 ];
 
 self.addEventListener("install", function (e) {
-  e.waitUntil(caches.open(VERSION).then(function (c) { return c.addAll(COQUILLE); })
-    .then(function () { return self.skipWaiting(); }));
+  e.waitUntil(caches.open(VERSION).then(function (c) {
+    /* cache: "reload" : on prend la coquille au reseau, jamais au cache HTTP du
+       navigateur — sinon un deploiement peut installer une version deja perimee. */
+    return c.addAll(COQUILLE.map(function (u) {
+      return new Request(u, { cache: "reload" });
+    }));
+  }).then(function () { return self.skipWaiting(); }));
 });
 
 self.addEventListener("activate", function (e) {
@@ -36,19 +42,58 @@ self.addEventListener("activate", function (e) {
   }).then(function () { return self.clients.claim(); }));
 });
 
+/* Ne met en cache qu'une reponse reellement valide : une 404 ou une page d'erreur de
+   l'hebergeur mise en cache rendrait l'app morte hors ligne, silencieusement. */
+function estBonne(rep) {
+  return rep && rep.ok && rep.status === 200 && rep.type === "basic";
+}
+
+/* ET une reponse qui est vraiment un document. C'EST LE CORRECTIF DU 12 AOUT :
+   sans lui, taper n'importe quelle adresse du site dans la barre du navigateur —
+   /sw.js, /manifest.webmanifest — comptait comme une navigation, la reponse etait
+   rangee sous "./index.html", et le cache d'abord servait ensuite CE fichier a la
+   place de l'application. C'est arrive pour de vrai : le code du service worker
+   s'affichait a la racine du site. Un visiteur curieux suffisait a se casser l'app,
+   jusqu'au deploiement suivant, et rien ne le lui disait. */
+function estDocument(rep) {
+  var t = rep && rep.headers ? (rep.headers.get("content-type") || "") : "";
+  return t.indexOf("text/html") >= 0;
+}
+
+/* Les seules adresses qui SONT l'application ou la landing. Toute autre navigation
+   passe au reseau sans etre mise en cache : elle ne represente aucune des deux. */
+function cleDocument(url) {
+  var p = new URL(url).pathname.replace(/\/+$/, "/");
+  if (p.indexOf("accueil.html") >= 0 || p === "/presentation") return "./accueil.html";
+  if (p === "/" || p.indexOf("index.html") >= 0) return DOC;
+  return null;
+}
+
 self.addEventListener("fetch", function (e) {
   var r = e.request;
   if (r.method !== "GET") return;
   if (new URL(r.url).origin !== self.location.origin) return;
-  /* Reseau d'abord pour le document : si une nouvelle version est en ligne, on la
-     prend ; sinon on retombe sur le cache et l'app s'ouvre quand meme hors ligne. */
+  /* Cache d'abord pour le document, revalidation en fond. */
   if (r.mode === "navigate") {
-    e.respondWith(fetch(r).then(function (rep) {
-      var copie = rep.clone();
-      caches.open(VERSION).then(function (c) { c.put("./index.html", copie); });
-      return rep;
-    }).catch(function () {
-      return caches.match("./index.html").then(function (m) { return m || Response.error(); });
+    var cle = cleDocument(r.url);
+    /* Navigation vers autre chose que l'app ou la landing : on ne touche a rien. */
+    if (!cle) return;
+    e.respondWith(caches.match(cle).then(function (m) {
+      var reseau = fetch(r).then(function (rep) {
+        if (estBonne(rep) && estDocument(rep)) {
+          var copie = rep.clone();
+          caches.open(VERSION).then(function (c) { c.put(cle, copie); });
+        }
+        return rep;
+      });
+      if (m) {
+        /* On sert le cache tout de suite ; la requete reseau continue seule.
+           waitUntil la maintient en vie apres la reponse, sans bloquer l'affichage. */
+        e.waitUntil(reseau.catch(function () {}));
+        return m;
+      }
+      /* Premiere visite, ou cache vide : il n'y a que le reseau. */
+      return reseau.catch(function () { return Response.error(); });
     }));
     return;
   }

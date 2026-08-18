@@ -13,3 +13,7 @@ repere_pwa*.zip
 desktop.ini
 Thumbs.db
 node_modules/
+data/*.zip
+data/brut_*/
+data/*.zip
+data/brut_*/
