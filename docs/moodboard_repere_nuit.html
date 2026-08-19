@@ -1,0 +1,382 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Repère — Moodboard « Nuit sable » (DA cible)</title>
+<style>
+:root{
+  /* ---- socle nuit proposé (amplitude de canaux ≤ 24, doctrine respectée) ---- */
+  --nuit:#141110; --s1:#1C1917; --s2:#24201C; --s3:#2E2823;
+  --bord:#332D26; --bord-fort:#463E35;
+  --t1:#F7F4EE; --t2:#C9C1B6; --t3:#9A9086;
+  /* ---- accent crème : HORS doctrine (amplitude 69). Voir §2. ---- */
+  --creme:#E0C49B; --creme-sobre:#D8CDBB; --sable:#E3DED3;
+  /* ---- échelons, variantes « -clair » DÉJÀ présentes dans l'app ---- */
+  --ville:#14a5cd; --agglo:#43d4f7; --dept:#f6964e; --region:#be9fee; --france:#ede9e1;
+  --vert:#68ac8a;
+  --r-xs:8px; --r-sm:12px; --r-md:18px; --r-lg:24px; --r-pill:999px;
+  --sp1:4px; --sp2:8px; --sp3:12px; --sp4:16px; --sp5:20px; --sp6:28px; --sp7:40px;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{
+  background:var(--nuit); color:var(--t1);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  -webkit-font-smoothing:antialiased; line-height:1.55; padding:0 0 80px;
+}
+.wrap{max-width:1080px;margin:0 auto;padding:0 24px;}
+header.top{padding:64px 0 40px;border-bottom:1px solid var(--bord);}
+.eyebrow{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--t3);font-weight:700;}
+h1{font-size:clamp(34px,5vw,52px);line-height:1.04;letter-spacing:-.025em;font-weight:800;margin:14px 0 18px;}
+h2{font-size:clamp(24px,3vw,32px);line-height:1.12;letter-spacing:-.02em;font-weight:800;margin:0 0 8px;}
+h3{font-size:17px;line-height:1.35;letter-spacing:-.01em;font-weight:700;margin:0 0 6px;}
+p{color:var(--t2);font-size:15px;line-height:1.62;max-width:70ch;}
+p+p{margin-top:12px;}
+b,strong{color:var(--t1);font-weight:700;}
+section{padding:56px 0;border-bottom:1px solid var(--bord);}
+.num{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--creme);font-weight:700;margin-bottom:14px;}
+.grid{display:grid;gap:14px;margin-top:24px;}
+.g2{grid-template-columns:repeat(auto-fit,minmax(300px,1fr));}
+.g3{grid-template-columns:repeat(auto-fit,minmax(220px,1fr));}
+.g4{grid-template-columns:repeat(auto-fit,minmax(168px,1fr));}
+.card{background:var(--s1);border:1px solid var(--bord);border-radius:var(--r-md);padding:18px;}
+.card.s2{background:var(--s2);}
+.note{background:var(--s2);border:1px solid var(--bord-fort);border-left:3px solid var(--creme);
+  border-radius:var(--r-sm);padding:16px 18px;margin-top:22px;}
+.note.alerte{border-left-color:var(--dept);}
+.note.mesure{border-left-color:var(--ville);}
+.note .l{font-size:11px;letter-spacing:.14em;text-transform:uppercase;font-weight:700;color:var(--t3);margin-bottom:6px;}
+/* --- nuancier --- */
+.sw{border:1px solid var(--bord);border-radius:var(--r-sm);overflow:hidden;background:var(--s1);}
+.sw .patch{height:72px;}
+.sw .meta{padding:10px 12px;font-size:12px;line-height:1.5;}
+.sw .hex{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--t1);font-size:12px;}
+.sw .r{color:var(--t3);font-size:11px;}
+.ok{color:var(--vert);font-weight:700;}
+.ko{color:var(--dept);font-weight:700;}
+/* --- typo --- */
+.spec{display:flex;align-items:baseline;gap:16px;padding:14px 0;border-bottom:1px solid var(--bord);}
+.spec .t{font-family:ui-monospace,Menlo,monospace;font-size:11px;color:var(--t3);min-width:112px;}
+/* --- composants --- */
+.pill{display:inline-block;font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;
+  padding:4px 9px;border-radius:var(--r-pill);color:var(--nuit);}
+.metaline{font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--t3);font-weight:700;margin:12px 0 8px;}
+.artcard{background:var(--s1);border:1px solid var(--bord);border-radius:var(--r-lg);padding:20px;position:relative;}
+.artcard h4{font-size:23px;line-height:1.18;letter-spacing:-.02em;font-weight:800;margin:0 0 10px;color:var(--t1);}
+.artcard .src{font-size:11.5px;color:var(--t3);margin-top:14px;}
+.artcard .sig{position:absolute;top:16px;right:16px;width:34px;height:34px;border-radius:var(--r-pill);
+  background:var(--t1);display:flex;align-items:center;justify-content:center;color:var(--nuit);font-size:15px;}
+.date{width:52px;border-radius:14px;padding:8px 0;text-align:center;color:var(--nuit);flex-shrink:0;}
+.date .d{font-size:19px;font-weight:800;line-height:1;}
+.date .m{font-size:10px;font-weight:700;letter-spacing:.05em;}
+.row{display:flex;gap:14px;align-items:center;background:var(--s1);border:1px solid var(--bord);
+  border-radius:var(--r-md);padding:12px 14px;}
+.tile{background:var(--s1);border:1px solid var(--bord);border-radius:var(--r-md);padding:16px;text-align:center;}
+.tile.plein{background:var(--creme);color:var(--nuit);border-color:var(--creme);}
+.tile.blanc{background:var(--t1);color:var(--nuit);border-color:var(--t1);}
+.tile .n{font-size:30px;font-weight:800;line-height:1;letter-spacing:-.02em;}
+.tile .l{font-size:11px;color:var(--t3);margin-top:6px;font-weight:600;}
+.tile.plein .l,.tile.blanc .l{color:rgba(20,17,16,.62);}
+.tabs{display:flex;background:var(--s1);border:1px solid var(--bord);border-radius:var(--r-md);
+  padding:10px 4px;justify-content:space-around;}
+.tabs div{font-size:10px;color:var(--t3);text-align:center;font-weight:600;}
+.tabs div.on{color:var(--t1);}
+.tabs .ic{display:block;width:20px;height:20px;border:1.6px solid currentColor;border-radius:5px;margin:0 auto 5px;}
+.sw-tog{width:44px;height:26px;border-radius:var(--r-pill);background:var(--vert);position:relative;flex-shrink:0;}
+.sw-tog i{position:absolute;top:3px;right:3px;width:20px;height:20px;border-radius:50%;background:#fff;}
+.vide{border:1px dashed var(--bord-fort);border-radius:var(--r-md);padding:22px;text-align:center;color:var(--t3);font-size:13px;}
+table{width:100%;border-collapse:collapse;margin-top:20px;font-size:13.5px;}
+th,td{text-align:left;padding:11px 12px;border-bottom:1px solid var(--bord);vertical-align:top;}
+th{font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--t3);font-weight:700;}
+td b{color:var(--t1);}
+.tag{display:inline-block;font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;
+  padding:3px 7px;border-radius:5px;background:var(--s3);color:var(--t2);}
+.tag.fort{background:var(--dept);color:var(--nuit);}
+.tag.moy{background:var(--creme);color:var(--nuit);}
+ul{margin:12px 0 0 20px;color:var(--t2);font-size:15px;line-height:1.62;}
+li{margin-bottom:7px;}
+li b{color:var(--t1);}
+.stack{display:grid;gap:12px;margin-top:20px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="top">
+  <div class="eyebrow">Repère · direction artistique · 18 août 2026</div>
+  <h1>Nuit sable.<br>La même doctrine,<br>éclairée par l'autre côté.</h1>
+  <p>Ce document est un moodboard <b>exécutable</b> : ce que vous lisez est rendu avec les valeurs
+  proposées, pas décrit à côté d'elles. Chaque ratio de contraste a été calculé, pas estimé.</p>
+  <div class="note mesure">
+    <div class="l">Ce que j'ai mesuré / ce que je propose</div>
+    <p><b>Mesuré</b> — les 130 variables CSS de <code>app_repere_v18_17.html</code>, relevées dans le
+    bloc <code>:root</code> : la DA actuelle s'appelle « sable &amp; encre », elle est <b>claire</b>
+    (fond #F1EDE4), et elle contient déjà onze variantes <code>-clair</code> des couleurs d'échelon
+    et de famille politique — c'est-à-dire qu'un thème sombre y était anticipé.</p>
+    <p><b>Proposé</b> — tout le reste. Les photos que vous m'avez montrées sont prises en biais, de
+    basse définition, sur un écran : je peux en lire l'<i>intention</i> (noir chaud, crème, titres
+    éditoriaux, pastilles saturées) mais <b>aucune valeur exacte</b>. Je ne prétends nulle part
+    avoir relevé un hex dans une photo.</p>
+  </div>
+</header>
+
+<section>
+  <div class="num">§1 — Palette</div>
+  <h2>Un seul axe sable, du plus sombre au plus clair.</h2>
+  <p>La DA actuelle est une rampe sable claire. La cible est <b>la même rampe, retournée</b> : c'est
+  ce qui permet de basculer sans réécrire la doctrine ni les composants. Le fond n'est pas noir mais
+  <b>brun-noir</b> — un gris neutre ferait « application système », exactement le défaut que la DA
+  actuelle a été écrite pour corriger.</p>
+
+  <div class="grid g4">
+    <div class="sw"><div class="patch" style="background:#141110"></div><div class="meta"><div class="hex">#141110</div><div class="r">fond · amplitude 4</div></div></div>
+    <div class="sw"><div class="patch" style="background:#1C1917"></div><div class="meta"><div class="hex">#1C1917</div><div class="r">surface 1 · cartes · 1,07:1 / fond</div></div></div>
+    <div class="sw"><div class="patch" style="background:#24201C"></div><div class="meta"><div class="hex">#24201C</div><div class="r">surface 2 · replis · 1,16:1</div></div></div>
+    <div class="sw"><div class="patch" style="background:#2E2823"></div><div class="meta"><div class="hex">#2E2823</div><div class="r">surface 3 · pressé · 1,29:1</div></div></div>
+    <div class="sw"><div class="patch" style="background:#332D26"></div><div class="meta"><div class="hex">#332D26</div><div class="r">bordure · 1,38:1</div></div></div>
+    <div class="sw"><div class="patch" style="background:#463E35"></div><div class="meta"><div class="hex">#463E35</div><div class="r">bordure forte · 1,79:1</div></div></div>
+  </div>
+
+  <div class="metaline">Texte — les trois seuls niveaux autorisés</div>
+  <div class="grid g3">
+    <div class="sw"><div class="patch" style="background:#141110;display:flex;align-items:center;justify-content:center;color:#F7F4EE;font-size:19px;font-weight:800">Titre</div><div class="meta"><div class="hex">#F7F4EE</div><div class="r">primaire · <span class="ok">17,12:1</span> · AAA</div></div></div>
+    <div class="sw"><div class="patch" style="background:#141110;display:flex;align-items:center;justify-content:center;color:#C9C1B6;font-size:15px">Corps de texte</div><div class="meta"><div class="hex">#C9C1B6</div><div class="r">secondaire · <span class="ok">10,55:1</span> · AAA</div></div></div>
+    <div class="sw"><div class="patch" style="background:#141110;display:flex;align-items:center;justify-content:center;color:#9A9086;font-size:12px">MÉTADONNÉE · SOURCE</div><div class="meta"><div class="hex">#9A9086</div><div class="r">tertiaire · <span class="ok">6,00:1</span> · AA</div></div></div>
+  </div>
+
+  <div class="metaline">Échelons — les variantes <code>-clair</code> existent déjà dans le fichier</div>
+  <div class="grid g4">
+    <div class="sw"><div class="patch" style="background:#141110;display:flex;align-items:center;justify-content:center"><span class="pill" style="background:#14a5cd">Ville</span></div><div class="meta"><div class="hex">#14a5cd</div><div class="r"><span class="ok">6,53:1</span> · AA</div></div></div>
+    <div class="sw"><div class="patch" style="background:#141110;display:flex;align-items:center;justify-content:center"><span class="pill" style="background:#43d4f7">Agglo</span></div><div class="meta"><div class="hex">#43d4f7</div><div class="r"><span class="ok">10,74:1</span> · AAA</div></div></div>
+    <div class="sw"><div class="patch" style="background:#141110;display:flex;align-items:center;justify-content:center"><span class="pill" style="background:#f6964e">Département</span></div><div class="meta"><div class="hex">#f6964e</div><div class="r"><span class="ok">8,40:1</span> · AAA</div></div></div>
+    <div class="sw"><div class="patch" style="background:#141110;display:flex;align-items:center;justify-content:center"><span class="pill" style="background:#be9fee">Région</span></div><div class="meta"><div class="hex">#be9fee</div><div class="r"><span class="ok">8,40:1</span> · AAA</div></div></div>
+  </div>
+  <div class="note">
+    <div class="l">Le résultat qui compte</div>
+    <p>Les quatre couleurs d'échelon en version claire passent <b>toutes</b> le niveau AA sur ce fond,
+    trois sur quatre passent AAA. Autrement dit : <b>le thème sombre ne coûte rien en accessibilité</b>,
+    et l'invariant 7 (cinq couleurs d'échelon figées) n'a pas besoin d'être touché — seulement lu du
+    bon côté. Le banc vérifie les hex du texte : il faudra lui apprendre les variantes claires,
+    ce qui est un ajout de six lignes, pas une réécriture.</p>
+  </div>
+</section>
+
+<section>
+  <div class="num">§2 — Le seul vrai conflit</div>
+  <h2>Le crème que vous aimez casse votre propre doctrine.</h2>
+  <p>Votre fichier porte, en commentaire, une règle que le banc contrôle : <i>« Seules deux familles
+  ont le droit de dépasser une amplitude de canaux de 24 : les échelons et les familles politiques.
+  Tout le reste vit dans une rampe sable dont les canaux ne s'écartent jamais de plus de 24 — c'est
+  ce qui donne la chaleur sans jamais désigner un camp. »</i></p>
+  <p>Le crème doré des photos a une <b>amplitude de 69</b>. Il est presque trois fois hors doctrine.
+  Ce n'est pas un détail cosmétique : c'est la règle qui garantit qu'aucune couleur d'interface ne
+  puisse être lue comme une couleur politique.</p>
+
+  <div class="grid g3">
+    <div class="sw"><div class="patch" style="background:#E0C49B"></div><div class="meta"><div class="hex">#E0C49B</div><div class="r">crème des photos · amplitude <span class="ko">69</span> · contraste 11,22:1</div></div></div>
+    <div class="sw"><div class="patch" style="background:#D8CDBB"></div><div class="meta"><div class="hex">#D8CDBB</div><div class="r">compromis · amplitude <span class="ko">29</span> · 11,97:1</div></div></div>
+    <div class="sw"><div class="patch" style="background:#E3DED3"></div><div class="meta"><div class="hex">#E3DED3</div><div class="r">dans la doctrine · amplitude <span class="ok">16</span> · 14,01:1</div></div></div>
+  </div>
+
+  <div class="note alerte">
+    <div class="l">Trois issues, et je recommande la première</div>
+    <p><b>1. Amender la doctrine, par écrit, avec le motif.</b> La règle existe pour empêcher qu'une
+    couleur désigne un camp. Un crème unique, réservé aux <b>surfaces d'engagement</b> — série de
+    jours, badges de date, appel à l'action — ne touche jamais un contenu politique : il ne menace
+    donc pas la neutralité. Ce qui la menacerait, c'est de violer la règle en silence. Écrivez
+    l'exception dans le commentaire du <code>:root</code>, avec sa limite : <i>« un seul accent chaud,
+    jamais sur un nom, un parti, un vote ou un territoire »</i>.</p>
+    <p><b>2. Reculer sur #D8CDBB</b> (amplitude 29). Vous perdez la chaleur dorée mais gardez presque
+    la règle. C'est le choix tiède : hors doctrine quand même, et moins beau.</p>
+    <p><b>3. Rester dans #E3DED3.</b> Doctrine intacte, mais l'accent devient un blanc cassé : la
+    direction artistique que vous aimez disparaît. Autant ne pas faire le chantier.</p>
+  </div>
+</section>
+
+<section>
+  <div class="num">§3 — Typographie</div>
+  <h2>Le vrai écart n'est pas la couleur, c'est l'échelle.</h2>
+  <p>L'échelle actuelle mesurée dans le fichier s'arrête à <b>17 px</b> : cinq niveaux, 11 / 12 / 13 /
+  15 / 17. Il n'existe <b>aucun niveau d'affichage</b>. Les titres énormes des photos sont donc
+  impossibles à obtenir sans ajouter des barreaux en haut de l'échelle — c'est le chantier le plus
+  structurant du lot, et il touche tous les écrans.</p>
+
+  <div style="margin-top:24px">
+    <div class="spec"><span class="t">--t-34 / 36</span><span style="font-size:34px;font-weight:800;letter-spacing:-.025em;line-height:1.06">La vie publique, sans le brouillard.</span></div>
+    <div class="spec"><span class="t">--t-28 / 32</span><span style="font-size:28px;font-weight:800;letter-spacing:-.022em;line-height:1.12">Les décisions, jour après jour.</span></div>
+    <div class="spec"><span class="t">--t-23 / 27</span><span style="font-size:23px;font-weight:800;letter-spacing:-.02em;line-height:1.18">Le Département renforce l'aide aux trajets</span></div>
+    <div class="spec"><span class="t">--t-17 / 24</span><span style="font-size:17px;font-weight:700;letter-spacing:-.01em">Titre de section, gras</span></div>
+    <div class="spec"><span class="t">--t-15 / 24</span><span style="font-size:15px;color:var(--t2)">Corps de texte. Le niveau qui porte 80 % de l'application.</span></div>
+    <div class="spec"><span class="t">--t-13 / 19</span><span style="font-size:13px;color:var(--t2)">Texte secondaire, sous-titres de carte.</span></div>
+    <div class="spec"><span class="t">--t-11 / 15 · caps</span><span style="font-size:11px;letter-spacing:.16em;text-transform:uppercase;font-weight:700;color:var(--t3)">Votre repère · sur-titre</span></div>
+    <div class="spec"><span class="t">--t-10 / 14 · meta</span><span style="font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;font-weight:700;color:var(--t3)">2 min de lecture · source publique</span></div>
+  </div>
+
+  <div class="note">
+    <div class="l">Le choix de police, honnêtement</div>
+    <p>L'application est un fichier autonome qui doit fonctionner <b>hors connexion</b> : aucune police
+    ne peut être appelée sur le réseau. Deux options seulement.</p>
+    <p><b>Pile système</b> (ce que fait l'app aujourd'hui) : sur iPhone c'est SF Pro, sur Android
+    Roboto. Avec <code>font-weight:800</code> et <code>letter-spacing:-.025em</code> sur les titres,
+    on obtient environ 85 % de l'effet des photos — mais l'app ne ressemble pas exactement à
+    elle-même d'un téléphone à l'autre. Coût : zéro.</p>
+    <p><b>Police variable encapsulée en base64</b> (Inter Tight, Archivo ou Instrument Sans, sous-ensemble
+    latin, 2 graisses) : rendu identique partout, environ <b>+45 à 70 Ko</b> sur un fichier de 17 Mo,
+    soit 0,4 %. C'est ce que je recommande — mais vérifiez la licence : ces trois-là sont sous SIL
+    Open Font License, qui autorise l'encapsulation ; ne le supposez pas pour une autre.</p>
+  </div>
+</section>
+
+<section>
+  <div class="num">§4 — Géométrie</div>
+  <h2>Ce qui ne change pas.</h2>
+  <p>Les rayons et les espacements mesurés dans le fichier sont <b>déjà ceux des photos</b> :
+  8 / 12 / 18 / 24 px de rayon, une échelle d'espacement 4-8-12-16-20-28-40. Rien à refaire.
+  Le seul vrai changement est l'<b>ombre</b> : sur fond sombre, une ombre teintée d'encre ne se voit
+  pas. La profondeur passe de l'ombre à la <b>bordure et à l'élévation de surface</b>.</p>
+  <div class="grid g4">
+    <div class="card" style="border-radius:8px;text-align:center;font-size:12px;color:var(--t3)">--r-xs · 8px<br><span style="color:var(--t2)">pastilles, tampons</span></div>
+    <div class="card" style="border-radius:12px;text-align:center;font-size:12px;color:var(--t3)">--r-sm · 12px<br><span style="color:var(--t2)">rangées, replis</span></div>
+    <div class="card" style="border-radius:18px;text-align:center;font-size:12px;color:var(--t3)">--r-md · 18px<br><span style="color:var(--t2)">cartes, tuiles</span></div>
+    <div class="card" style="border-radius:24px;text-align:center;font-size:12px;color:var(--t3)">--r-lg · 24px<br><span style="color:var(--t2)">cartes de une</span></div>
+  </div>
+  <div class="note">
+    <div class="l">Règle d'élévation en nuit</div>
+    <p>Rang 0 : fond. Rang 1 : <code>#1C1917</code> + bordure <code>#332D26</code>. Rang 2 :
+    <code>#24201C</code> + bordure <code>#463E35</code>. Rang 3 (feuille modale) :
+    <code>#2E2823</code> + bordure forte + voile <code>rgba(20,17,16,.72)</code> sur le fond.
+    <b>Aucune ombre portée.</b> Quatre tokens d'ombre du fichier deviennent inutiles en nuit : ne les
+    supprimez pas, faites-les pointer sur <code>none</code> — une custom property inconnue invalide la
+    déclaration entière, c'est écrit noir sur blanc dans votre propre commentaire.</p>
+  </div>
+</section>
+
+<section>
+  <div class="num">§5 — Composants</div>
+  <h2>Le vocabulaire, rendu.</h2>
+
+  <div class="metaline">Carte de une — pastille d'échelon, métadonnée, titre éditorial, source, signet</div>
+  <div class="artcard" style="margin-top:8px">
+    <div class="sig">&#9633;</div>
+    <span class="pill" style="background:#f6964e">Département</span>
+    <div class="metaline" style="margin:12px 0 8px">2 min de lecture · source publique</div>
+    <h4>Le Département renforce l'aide aux trajets domicile-travail</h4>
+    <p style="font-size:14.5px">Une nouvelle aide peut prendre en charge une partie des abonnements
+    de transport des actifs aux revenus modestes.</p>
+    <div class="src">Conseil départemental de Seine-et-Marne</div>
+  </div>
+
+  <div class="metaline" style="margin-top:32px">Rendez-vous — badge de date plein, deux lignes</div>
+  <div class="stack">
+    <div class="row">
+      <div class="date" style="background:#68ac8a"><div class="d">18</div><div class="m">août</div></div>
+      <div><h3>Commission permanente</h3><p style="font-size:13px">Conseil départemental · département</p></div>
+    </div>
+    <div class="row">
+      <div class="date" style="background:#E0C49B"><div class="d">24</div><div class="m">août</div></div>
+      <div><h3>Conseil municipal</h3><p style="font-size:13px">Hôtel de ville · ville</p></div>
+    </div>
+  </div>
+  <div class="note alerte" style="margin-top:16px">
+    <div class="l">Un piège dans les photos</div>
+    <p>Sur les captures, ces rangées portent un bouton « Ajouter à mon agenda » et une cloche de
+    rappel, et l'écran « Moi » montre un interrupteur <b>vert, activé</b>, intitulé « Rappel quotidien —
+    une info essentielle chaque matin ». C'est <b>exactement</b> la promesse que nous venons de retirer
+    de l'application hier : aucun envoi n'existe. Si vous reprenez cette maquette telle quelle, vous
+    réintroduisez la fausse promesse que la mise en veille a coûté une journée à supprimer.</p>
+  </div>
+
+  <div class="metaline" style="margin-top:32px">Tuiles de mesure — le crème et le blanc en aplat</div>
+  <div class="grid g3">
+    <div class="tile blanc"><div class="n">5</div><div class="l">jours de suite</div></div>
+    <div class="tile plein"><div class="n">0</div><div class="l">badge</div></div>
+    <div class="tile"><div class="n">2</div><div class="l">minutes / jour</div></div>
+  </div>
+
+  <div class="metaline" style="margin-top:32px">Rangée de réglage · état vide · barre d'onglets</div>
+  <div class="stack">
+    <div class="row">
+      <div style="width:34px;height:34px;border-radius:10px;background:var(--s3);border:1px solid var(--bord-fort);flex-shrink:0"></div>
+      <div style="flex:1"><h3>Ma commune</h3><p style="font-size:13px">Fontainebleau</p></div>
+      <div style="color:var(--t3);font-size:18px">&rsaquo;</div>
+    </div>
+    <div class="row">
+      <div style="width:34px;height:34px;border-radius:10px;background:var(--s3);border:1px solid var(--bord-fort);flex-shrink:0"></div>
+      <div style="flex:1"><h3>Taille du texte</h3><p style="font-size:13px">Appliquée à toute l'application</p></div>
+      <div class="sw-tog"><i></i></div>
+    </div>
+    <div class="vide">Votre bibliothèque est vide.<br>Touchez le signet d'une carte pour garder une explication sous la main.</div>
+    <div class="tabs">
+      <div class="on"><span class="ic"></span>Fil</div>
+      <div><span class="ic"></span>Agenda</div>
+      <div><span class="ic"></span>Qui dirige</div>
+      <div><span class="ic"></span>Comprendre</div>
+      <div><span class="ic"></span>Moi</div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="num">§6 — Écarts avec l'app actuelle</div>
+  <h2>Ce que ça coûte, poste par poste.</h2>
+  <table>
+    <tr><th>Chantier</th><th>Nature</th><th>Effort</th><th>Risque</th></tr>
+    <tr><td><b>Basculer la rampe sable en nuit</b><br>~35 tokens de <code>:root</code></td><td>Un seul bloc de variables. Les composants ne bougent pas.</td><td><span class="tag">1/2 journée</span></td><td>Faible — mais le banc contrôle les hex du texte : il faudra lui apprendre les valeurs nuit.</td></tr>
+    <tr><td><b>Ajouter les niveaux d'affichage</b><br>34 / 28 / 23 px</td><td>Nouveaux tokens + reprise des titres d'écran un par un.</td><td><span class="tag moy">2 à 3 jours</span></td><td>Moyen — c'est le poste qui touche le plus d'écrans. À faire écran par écran, pas d'un coup.</td></tr>
+    <tr><td><b>Neutraliser les ombres</b></td><td>Quatre tokens vers <code>none</code>, élévation par bordure.</td><td><span class="tag">1 heure</span></td><td>Faible.</td></tr>
+    <tr><td><b>Accent crème</b></td><td>Amender la doctrine du <code>:root</code>, ajouter un token, l'employer sur trois usages.</td><td><span class="tag">2 heures</span></td><td><b>Élevé sur le fond, pas sur la forme</b> — voir §2.</td></tr>
+    <tr><td><b>Police encapsulée</b></td><td>Sous-ensemble latin en base64, 2 graisses.</td><td><span class="tag">1/2 journée</span></td><td>Faible. Vérifier la licence.</td></tr>
+    <tr><td><b>Refonte de l'architecture</b><br>onglet « Comprendre », bibliothèque de signets, rappels</td><td>Ce ne sont pas des changements de DA : ce sont trois fonctionnalités.</td><td><span class="tag fort">Hors lot</span></td><td><b>Élevé.</b> À arbitrer séparément, et après les tests utilisateurs — pas avant.</td></tr>
+  </table>
+</section>
+
+<section>
+  <div class="num">§7 — Le risque dont personne ne parle</div>
+  <h2>Un produit trop magazine a l'air d'avoir un avis.</h2>
+  <p>C'est le point que je porterais en réunion, et il n'est pas confortable. Repère tient sur une
+  promesse : <b>aucune opinion, aucun classement, aucun camp</b>. Or le vocabulaire visuel des photos
+  est celui de la presse d'opinion haut de gamme : titres énormes, fond noir, accent doré, hiérarchie
+  éditoriale forte. Ce vocabulaire est <i>beau</i>, et il <i>signale</i> — il dit « voici ce qui est
+  important », donc « voici mon point de vue ».</p>
+  <p>Ce n'est pas une raison de renoncer. C'est une raison de poser <b>trois garde-fous</b> en même
+  temps que la DA, sinon la forme mangera la doctrine sans que personne ne s'en aperçoive :</p>
+  <ul>
+    <li><b>Le titre énorme n'est jamais de vous.</b> Il reprend l'objet de la décision, dans les
+    termes du document officiel. Un titre écrit par l'app, à cette taille, devient un éditorial.</li>
+    <li><b>Le crème ne touche jamais un nom, un parti, un vote ou un territoire.</b> Uniquement les
+    surfaces d'engagement. C'est la limite à écrire dans le <code>:root</code>.</li>
+    <li><b>Une carte de une par échelon, jamais deux.</b> La hiérarchie visuelle forte impose un
+    plafond : à partir du moment où deux cartes ont le même gabarit géant, c'est l'ordre qui
+    hiérarchise, et l'ordre devient un jugement.</li>
+  </ul>
+</section>
+
+<section style="border-bottom:none">
+  <div class="num">§8 — Ordre d'exécution</div>
+  <h2>Dans quel ordre, et ce que je ne ferais pas.</h2>
+  <ul>
+    <li><b>1. Rien avant le déploiement de la v18.17.</b> Le site en ligne est encore la v18.14 avec
+    l'écran de paiement. Une DA magnifique sur un site juridiquement exposé n'améliore rien.</li>
+    <li><b>2. Rien avant les cinq tests utilisateurs.</b> Vous pourriez refaire toute la DA et
+    découvrir en septembre que les gens ne comprennent pas « échelon ». L'ordre inverse coûte
+    deux semaines.</li>
+    <li><b>3. Le lot « nuit » en une passe</b> — rampe + ombres + accent, une demi-journée, réversible
+    par un seul bloc de variables. C'est le meilleur rapport effet/risque du document.</li>
+    <li><b>4. Les niveaux d'affichage, écran par écran</b>, en commençant par « Mon fil » : c'est
+    l'écran que 90 % des gens verront le plus, et le seul dont le rendu justifie à lui seul le lot.</li>
+    <li><b>5. La police encapsulée en dernier</b> : c'est le poste le plus visible sur une capture
+    d'écran et le moins utile à un utilisateur réel.</li>
+  </ul>
+  <div class="note mesure">
+    <div class="l">Une chose que je n'ai pas pu vérifier</div>
+    <p>Je ne sais pas d'où viennent ces maquettes. La barre des tâches de l'une des photos montre un
+    onglet Replit, ce qui suggère un prototype distinct de l'application. <b>Si c'est un second
+    codebase, dites-le-moi avant que j'écrive une ligne</b> : porter une DA vers un fichier de 17 Mo
+    et maintenir un prototype en parallèle, c'est deux vérités qui divergent, et l'une des deux
+    finira par être fausse sans que personne sache laquelle.</p>
+  </div>
+</section>
+
+</div>
+</body>
+</html>

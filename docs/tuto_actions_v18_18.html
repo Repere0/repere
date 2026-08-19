@@ -1,0 +1,263 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Repère — Les actions à faire (v18.18)</title>
+<style>
+:root{
+  --ink:#1B1815; --ink-2:#413A33; --muted:#6B6259; --sep:#E2DBD0; --sep-fort:#CBC2B4;
+  --bg:#F1EDE4; --card:#FFFFFF; --fill:#EEE9E0;
+  --urgent:#9B4808; --ok:#45584A; --ville:#0C657D;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+  line-height:1.6;padding:0 0 80px;-webkit-font-smoothing:antialiased}
+.wrap{max-width:840px;margin:0 auto;padding:0 22px}
+header{padding:52px 0 28px;border-bottom:2px solid var(--ink)}
+.eyebrow{font-size:11px;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);font-weight:700}
+h1{font-size:clamp(30px,5vw,42px);line-height:1.06;letter-spacing:-.025em;font-weight:800;margin:12px 0 14px}
+h2{font-size:21px;line-height:1.25;letter-spacing:-.015em;font-weight:800;margin:0}
+p{color:var(--ink-2);font-size:15.5px;line-height:1.65;max-width:72ch}
+p+p{margin-top:10px}
+b{color:var(--ink);font-weight:700}
+.etape{border-top:1px solid var(--sep);padding:30px 0}
+.etape:first-of-type{border-top:none}
+.tete{display:flex;gap:14px;align-items:baseline;margin-bottom:12px}
+.n{font-size:12px;font-weight:800;letter-spacing:.06em;background:var(--ink);color:var(--bg);
+  border-radius:999px;padding:4px 11px;flex-shrink:0;line-height:1.4}
+.n.urg{background:var(--urgent)}
+.duree{font-size:11.5px;color:var(--muted);font-weight:700;letter-spacing:.04em;text-transform:uppercase;margin-left:auto;flex-shrink:0}
+pre{background:var(--ink);color:#F7F4EE;border-radius:12px;padding:14px 16px;margin:14px 0;
+  font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;line-height:1.7;
+  overflow-x:auto;white-space:pre}
+pre .c{color:#A79E94}
+code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:13.5px;background:var(--fill);
+  border-radius:5px;padding:1px 5px}
+.bloc{background:var(--card);border:1px solid var(--sep);border-radius:14px;padding:15px 17px;margin-top:14px}
+.bloc .l{font-size:10.5px;letter-spacing:.13em;text-transform:uppercase;font-weight:800;color:var(--muted);margin-bottom:6px}
+.bloc.reussi{border-left:3px solid var(--ok)}
+.bloc.piege{border-left:3px solid var(--urgent)}
+.bloc.pourquoi{border-left:3px solid var(--ville)}
+.bloc p{font-size:14.5px}
+ul{margin:10px 0 0 21px;color:var(--ink-2);font-size:15px}
+li{margin-bottom:6px}
+.avert{background:#F0EBE1;border:1px solid var(--sep-fort);border-radius:14px;padding:16px 18px;margin:22px 0}
+.avert .l{font-size:10.5px;letter-spacing:.13em;text-transform:uppercase;font-weight:800;color:var(--urgent);margin-bottom:6px}
+table{width:100%;border-collapse:collapse;margin-top:16px;font-size:14px}
+th,td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--sep);vertical-align:top}
+th{font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:800}
+footer{border-top:2px solid var(--ink);margin-top:34px;padding-top:22px}
+@media print{body{background:#fff}pre{background:#fff;color:#000;border:1px solid #999}}
+</style></head><body><div class="wrap">
+
+<header>
+  <div class="eyebrow">Repère · tutoriel · v18.18 · 19 août 2026</div>
+  <h1>Les actions à faire,<br>dans l'ordre où elles comptent.</h1>
+  <p>Neuf étapes. Les quatre premières prennent vingt minutes et retirent une exposition
+  juridique réelle. Les cinq suivantes peuvent attendre le week-end. Chacune dit
+  <b>pourquoi</b>, <b>quoi taper</b>, <b>comment savoir que c'est réussi</b> et <b>où est le piège</b>.</p>
+  <div class="avert">
+    <div class="l">Ce qui est vrai en ce moment</div>
+    <p>Le site en ligne est encore la <b>v18.14</b>. Il affiche 1,99 €/mois, un bouton
+    « S'abonner » et un tunnel de paiement — pour un service qu'aucune structure juridique
+    ne peut vendre. Tout le travail des deux derniers jours ne réduit ce risque qu'à
+    l'étape 4.</p>
+  </div>
+</header>
+
+<div class="etape">
+  <div class="tete"><span class="n urg">1</span><h2>Mettre ton dépôt à jour</h2><span class="duree">1 minute</span></div>
+  <div class="bloc pourquoi"><div class="l">Pourquoi</div>
+  <p>J'ai vérifié : ton clone local n'a ni <code>outils/agenda_an.json</code> ni dossier
+  <code>data/</code>. La collecte quotidienne tourne sur GitHub et commite chaque matin,
+  mais <b>tu n'as jamais récupéré ces commits</b>. Sans ça, tu ne peux pas reconstruire
+  l'app avec les données du jour.</p></div>
+  <pre><span class="c">:: ouvre l'invite de commandes, puis</span>
+cd C:\Users\APina\repere
+git pull</pre>
+  <div class="bloc reussi"><div class="l">Réussi si</div>
+  <p>La sortie mentionne <code>outils/agenda_an.json</code> et <code>data/journal_collecte.json</code>,
+  et <code>git log --oneline -5</code> montre des commits « Collecte du … ».</p></div>
+  <div class="bloc piege"><div class="l">Piège</div>
+  <p>Si <code>git pull</code> répond <i>« Your local changes would be overwritten »</i>,
+  c'est que je viens d'écrire des fichiers que le distant a aussi modifiés. Tape
+  <code>git stash</code>, puis <code>git pull</code>, puis <code>git stash pop</code>.
+  Si un conflit apparaît, ne bricole pas : envoie-moi la sortie exacte.</p></div>
+</div>
+
+<div class="etape">
+  <div class="tete"><span class="n urg">2</span><h2>Commiter ce que je viens de déposer</h2><span class="duree">5 minutes</span></div>
+  <div class="bloc pourquoi"><div class="l">Pourquoi</div>
+  <p>Deux fichiers manquaient au dépôt : <code>site/index.html</code> et
+  <code>app_repere_v18_9.html.bak</code>. Ce sont la <b>référence</b> et la <b>source</b> de
+  la preuve que <code>build_pwa</code> exige avant de produire quoi que ce soit. Sans eux,
+  la reconstruction automatique échouait chaque matin — la collecte tournait dans le vide.
+  Ils font 16 Mo chacun, ne changeront jamais, et c'est le prix d'une garantie qui se
+  vérifie tous les jours.</p></div>
+  <pre>git add -A
+git status
+git commit -m "v18.18 : mise en veille, correctifs juridiques, collecte servie"
+git push</pre>
+  <div class="bloc reussi"><div class="l">Réussi si</div>
+  <p><code>git status</code>, avant le commit, liste bien <code>app_repere_v18_18.html</code>,
+  <code>site/index.html</code>, <code>app_repere_v18_9.html.bak</code>, les quatre fichiers
+  de <code>outils/</code> et les deux documents de <code>docs/</code>. Après le push,
+  <code>git status</code> dit <i>« nothing to commit, working tree clean »</i>.</p></div>
+  <div class="bloc piege"><div class="l">Piège</div>
+  <p>Le push envoie environ 50 Mo : compte une à trois minutes, et ne l'interromps pas.
+  Si GitHub refuse pour cause de taille, dis-le-moi — on passera la preuve en option
+  explicite plutôt que de bricoler Git LFS.</p></div>
+</div>
+
+<div class="etape">
+  <div class="tete"><span class="n urg">3</span><h2>Poser le nouveau workflow</h2><span class="duree">2 minutes</span></div>
+  <div class="bloc pourquoi"><div class="l">Pourquoi</div>
+  <p>La version 1 collectait et s'arrêtait. La version 2 <b>reconstruit et déploie</b> :
+  depuis que l'agenda est servi à part, Netlify n'envoie que les fichiers modifiés, soit
+  650 Ko par jour au lieu de 17 Mo. L'arbitrage sur la taille qui bloquait cette étape
+  n'a plus d'objet.</p></div>
+  <p>Dans l'explorateur : copie <code>docs\collecte_workflow_v2.yml.txt</code> par-dessus
+  <code>.github\workflows\collecte.yml</code>, en le renommant. Puis :</p>
+  <pre>git add .github/workflows/collecte.yml
+git commit -m "Workflow v2 : la collecte atteint le site"
+git push</pre>
+  <div class="bloc reussi"><div class="l">Réussi si</div>
+  <p>Onglet <b>Actions</b> du dépôt : le workflow apparaît toujours, sans bandeau rouge
+  d'erreur de syntaxe. L'étape « Déployer sur Netlify » sera <b>sautée</b> tant que les
+  secrets n'existent pas (étape 6) — c'est voulu, le job reste vert.</p></div>
+</div>
+
+<div class="etape">
+  <div class="tete"><span class="n urg">4</span><h2>Déployer la v18.18 — l'étape qui compte</h2><span class="duree">5 minutes</span></div>
+  <div class="bloc pourquoi"><div class="l">Pourquoi</div>
+  <p>C'est la seule action de cette liste qui change quelque chose pour un visiteur
+  <i>aujourd'hui</i> : elle retire du site public le prix, le bouton d'abonnement, l'écran
+  de paiement, la case d'âge, les réglages de notification qui n'envoient rien, et les
+  quatre contenus étiquetés DÉMO ou À RECROISER.</p></div>
+  <p>Décompresse <code>repere_site_v18_18.zip</code>, va sur ton site Netlify, onglet
+  <b>Deploys</b>, et glisse-dépose <b>le contenu du dossier</b> dans la zone de dépôt.</p>
+  <div class="bloc piege"><div class="l">Piège — celui-là fait perdre une heure</div>
+  <p>Glisse le <b>contenu</b> (<code>index.html</code>, <code>accueil.html</code>,
+  <code>sw.js</code>, <code>donnees/</code>, <code>icones/</code>…), <b>pas le dossier</b>
+  qui les contient. Sinon Netlify publie un site dont la racine est un dossier, et tu
+  obtiens une page blanche ou une liste de fichiers.</p></div>
+  <div class="bloc reussi"><div class="l">Réussi si</div>
+  <p>Sur le site, cherche « 1,99 » avec <code>Ctrl+F</code> : <b>aucun résultat</b>. Dans
+  l'écran Sources, le pied de page dit « Repère v18.18 ». Dans l'agenda parlementaire,
+  le panneau de couverture affiche « Dernière collecte » avec une date.</p></div>
+</div>
+
+<div class="etape">
+  <div class="tete"><span class="n">5</span><h2>Vérifier sur ton téléphone</h2><span class="duree">3 minutes</span></div>
+  <div class="bloc pourquoi"><div class="l">Pourquoi</div>
+  <p>Ton téléphone est le seul appareil dont on sait qu'il a déjà installé une ancienne
+  version. Le service worker sert depuis son cache : si l'empreinte n'a pas changé, il
+  continuerait à servir la v18.14 <b>avec l'écran de paiement</b>, indéfiniment. L'empreinte
+  a bien changé (<code>repere-d39cdab38722</code>), mais c'est à vérifier sur un vrai
+  appareil, pas à supposer.</p></div>
+  <ul>
+    <li>Ouvre le site, puis <b>ferme complètement</b> l'app installée et rouvre-la.</li>
+    <li>Cherche le pied de page « Repère v18.18 ». S'il dit encore 18.14 ou 18.15 : réglages
+    du navigateur → vider les données du site, ou désinstaller puis réinstaller depuis
+    l'écran d'accueil.</li>
+    <li>Mets l'avion, rouvre : l'app doit fonctionner, et l'agenda doit dire calmement
+    qu'il n'est pas chargé plutôt que tourner dans le vide.</li>
+  </ul>
+</div>
+
+<div class="etape">
+  <div class="tete"><span class="n">6</span><h2>Créer les deux secrets Netlify</h2><span class="duree">10 minutes</span></div>
+  <div class="bloc pourquoi"><div class="l">Pourquoi</div>
+  <p>Sans eux, le workflow reconstruit le site chaque matin et le jette. Avec eux, l'agenda
+  parlementaire du jour est en ligne à 6 h, sans que tu touches à rien.</p></div>
+  <table>
+    <tr><th>Secret</th><th>Où le trouver</th></tr>
+    <tr><td><code>NETLIFY_AUTH_TOKEN</code></td><td>Netlify → ton avatar → <b>User settings</b> → <b>Applications</b> → <b>Personal access tokens</b> → en créer un, avec une date d'expiration.</td></tr>
+    <tr><td><code>NETLIFY_SITE_ID</code></td><td>Sur ton site → <b>Site configuration</b> → <b>General</b> → <b>Site details</b>. Netlify a renommé « Sites » en « Projects » : selon la version de l'interface, tu liras peut-être <i>Project ID</i>. C'est la même valeur.</td></tr>
+  </table>
+  <p style="margin-top:12px">Puis, sur GitHub : dépôt → <b>Settings</b> → <b>Secrets and
+  variables</b> → <b>Actions</b> → <b>New repository secret</b>, une fois par secret, en
+  respectant exactement les deux noms ci-dessus.</p>
+  <div class="avert">
+    <div class="l">Règle sans exception</div>
+    <p>Ces deux valeurs ne doivent apparaître <b>nulle part</b> ailleurs que dans le
+    formulaire de GitHub. Ni dans un fichier du dépôt, ni dans une note, ni dans une
+    conversation — <b>y compris avec moi</b>. Un jeton Netlify collé une fois quelque part
+    est un jeton à révoquer. Si ça arrive : User settings → Applications → révoque-le et
+    recrée-en un.</p>
+  </div>
+</div>
+
+<div class="etape">
+  <div class="tete"><span class="n">7</span><h2>Lancer le workflow à la main, et lire ce qu'il dit</h2><span class="duree">5 minutes</span></div>
+  <div class="bloc pourquoi"><div class="l">Pourquoi</div>
+  <p>Ne pas attendre 5 h 47 du matin pour découvrir qu'une étape casse. Et surtout : c'est
+  la première fois que la chaîne complète — collecte, normalisation, reconstruction,
+  déploiement — tourne d'un bout à l'autre.</p></div>
+  <p>Dépôt → <b>Actions</b> → <b>Collecte quotidienne</b> → <b>Run workflow</b>.</p>
+  <div class="bloc reussi"><div class="l">Réussi si</div>
+  <p>Trois lignes précises dans le journal :</p>
+  <ul>
+    <li><code>agenda : 6xxx reunions, 3xx instances, collecte du 2026-08-…</code></li>
+    <li><code>agenda servi : 6xx Ko, depuis la collecte du 2026-08-…</code></li>
+    <li><code>site : agenda du 2026-08-…, 6xxx reunions</code></li>
+  </ul>
+  <p>La troisième est celle qui compte : elle prouve que le site servira le fichier du
+  matin et non la copie figée dans les 17 Mo. Si la date affichée n'est pas celle du jour,
+  le job <b>échoue exprès</b>.</p></div>
+  <div class="bloc piege"><div class="l">Piège</div>
+  <p>Si « Télécharger les sources » passe en orange, ouvre <code>data/journal_collecte.json</code>
+  dans le dépôt : chaque échec y est daté avec son message. Une source de l'Assemblée
+  indisponible un matin est normale ; trois matins de suite ne l'est pas.</p></div>
+</div>
+
+<div class="etape">
+  <div class="tete"><span class="n">8</span><h2>Me déposer le fichier des scrutins</h2><span class="duree">2 minutes</span></div>
+  <div class="bloc pourquoi"><div class="l">Pourquoi</div>
+  <p>C'est la réponse directe à « l'app est pauvre en informations actuelles ». Un scrutin
+  est daté, officiel, nominatif, et <b>territorial</b> : le vote de ton député, pour les
+  577 circonscriptions d'un coup, sans écrire une ligne d'éditorial. Ta collecte télécharge
+  déjà ce fichier chaque matin — et le job le jette à la fin.</p>
+  <p>Je ne peux pas le télécharger d'ici : mon conteneur reçoit un 403 de
+  <code>data.assemblee-nationale.fr</code>, et la page officielle ne documente pas les noms
+  de champs. Écrire l'ingestion sans avoir vu le fichier, ce serait deviner.</p></div>
+  <p>Télécharge <b>Scrutins.json.zip</b> depuis
+  <code>data.assemblee-nationale.fr</code> (rubrique Travaux parlementaires → Votes) et
+  pose-le dans <code>C:\Users\APina\repere\data\</code>. Crée le dossier s'il n'existe pas.</p>
+  <div class="bloc reussi"><div class="l">Réussi si</div>
+  <p>Tu me le dis. Je vérifie le schéma champ par champ, j'écris
+  <code>outils/scrutins_an.py</code> avec les mêmes contrôles indépendants que l'agenda, et
+  le fil se remplit pour toute la France.</p></div>
+  <div class="bloc piege"><div class="l">Ce que je refuserai d'en faire</div>
+  <p>Aucun décompte de présence, aucun taux d'absence, aucun classement de députés. Un
+  compteur d'absences est un classement déguisé, et les données de présence de l'Assemblée
+  ne sont pas fiables. Le vote, oui : c'est un fait. Le jugement, non.</p></div>
+</div>
+
+<div class="etape">
+  <div class="tete"><span class="n">9</span><h2>Montrer l'app à cinq personnes</h2><span class="duree">une soirée</span></div>
+  <div class="bloc pourquoi"><div class="l">Pourquoi</div>
+  <p>C'est l'action la plus importante de la liste, et la seule qui ne soit pas technique.
+  Toute la mise en veille a servi à ça : tu peux maintenant tendre ton téléphone sans avoir
+  à expliquer ce qui est faux dedans. Tu es à quatre mois de la bêta de décembre, et le
+  risque principal n'est plus technique — c'est de construire longtemps pour quelqu'un que
+  tu n'as jamais regardé se servir de l'app.</p></div>
+  <ul>
+    <li>Ne montre rien, ne commente rien. Donne le téléphone et tais-toi.</li>
+    <li>Une seule consigne : <i>« trouve qui est ton maire, et où va l'argent de ta commune »</i>.</li>
+    <li>Note deux choses seulement : <b>où la personne hésite</b>, et <b>le premier mot
+    qu'elle ne comprend pas</b>. Le mot « échelon » est mon pari.</li>
+    <li>Ne corrige rien pendant. Ne promets rien après.</li>
+  </ul>
+</div>
+
+<footer>
+  <h2>Si tu ne fais qu'une chose ce soir</h2>
+  <p style="margin-top:8px">L'étape 4. Le reste peut attendre le week-end ; un site public
+  qui affiche un prix pour un service non vendable, non.</p>
+  <p style="margin-top:14px;font-size:13.5px;color:var(--muted)">Repère — tutoriel des actions,
+  v18.18, 19 août 2026. Les chemins d'interface Netlify ont été vérifiés dans la
+  documentation officielle le jour de rédaction ; les libellés « Sites » / « Projects »
+  sont en cours de renommage chez Netlify et peuvent différer de ce document.</p>
+</footer>
+
+</div></body></html>

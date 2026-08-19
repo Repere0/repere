@@ -159,6 +159,8 @@ const adresses = [];
 page.on("request", r => { try { adresses.push(new URL(r.url()).pathname + new URL(r.url()).search); } catch (e) {} });
 page.on("pageerror", e => erreursJS.push("pageerror: " + e.message));
 page.on("console", m => { if (m.type() === "error") erreursJS.push("console: " + m.text().slice(0, 160)); });
+const avertis = [];
+page.on("console", m => { if (m.type() === "warning") avertis.push(m.text().slice(0, 160)); });
 
 /* Un index engendre par build_pwa.py va chercher son agenda sur le reseau. L'ouvrir
    en file:// ferait echouer ce fetch pour une raison qui n'a rien a voir avec
@@ -188,6 +190,22 @@ await page.goto(base);
 await page.waitForTimeout(4500);
 
 /* Defaut du 12 aout — le bandeau de troncature se posait sur un fichier entier. */
+/* Mise en veille (patch 13) — un banc entierement vert ne prouvait rien sur elle :
+   les controles existants relisent le code, et le code des ecrans retires reste. */
+{
+  verif("veille — la constante existe et vaut true",
+    /const BETA_RESTREINTE = true;/.test(SRC));
+  /* Le bloc d'offre vit dans la source ; dans la version servie il a ete extrait
+     vers accueil.html par build_pwa. On controle celui qui est present. */
+  const ldOffre = (SRC.match(/<div class="ld-offre">[\s\S]*?<\/div>\s*\n/) || [""])[0];
+  const voisin = path.join(path.dirname(path.resolve(CIBLE)), "accueil.html");
+  const accueil = fs.existsSync(voisin) ? fs.readFileSync(voisin, "utf8") : "";
+  const aControler = ldOffre.length > 100 ? ldOffre : accueil;
+  verif("veille — la page d'accueil, extraite hors de l'app, n'affiche aucun prix",
+    aControler.length > 100 && !/\d,\d\d\s*€/.test(aControler),
+    aControler.length <= 100 ? "ni bloc d'offre ni accueil.html trouve" : "un prix subsiste");
+}
+
 verif("chargement — le drapeau de fin de fichier est pose",
   await page.evaluate(() => window.REPERE_COMPLET === true));
 verif("chargement — aucun bandeau « fichier non charge »",
@@ -354,6 +372,35 @@ verif("parcours — la commune saisie est bien celle retenue",
     /[\/=](\d{5}|2[AB]\d{3})(\.json|\/|$|&)/.test(u) || /insee=|commune=/i.test(u));
   verif("architecture — aucune adresse reseau ne porte un code de commune",
     fautives.length === 0, [...new Set(fautives)].slice(0, 5).join(" | "));
+}
+
+/* La veille, MESUREE dans le navigateur : c'est le seul controle qui distingue
+   « les noeuds sont marques » de « les noeuds sont partis ». */
+{
+  const restants = await page.evaluate(() =>
+    [...document.querySelectorAll("[data-veille]")].map(e => e.tagName + "." + (e.className || "")));
+  verif("veille — aucun noeud marque ne survit au demarrage",
+    restants.length === 0, restants.slice(0, 5).join(" | "));
+
+  const mots = await page.evaluate(() => {
+    const trouves = [];
+    /* Le mot « abonnement » seul ne suffit pas : les mentions legales disent
+       « aucun abonnement n'existe », et c'est exactement ce qu'on veut lire.
+       On cherche une OFFRE — un prix, un bouton, un nom commercial. */
+    const motif = /premium|1,99|s'abonner|code d'acc/i;
+    document.querySelectorAll(".screen").forEach(ecran => {
+      const t = ecran.innerText || "";
+      const m = t.match(motif);
+      if (m) trouves.push(ecran.id + " : " + t.slice(Math.max(0, t.indexOf(m[0]) - 30), t.indexOf(m[0]) + 40).replace(/\s+/g, " "));
+    });
+    return trouves;
+  });
+  verif("veille — aucun ecran ne parle encore d'un abonnement",
+    mots.length === 0, mots.slice(0, 3).join(" | "));
+
+  const inconnus = avertis.filter(m => /ecran inconnu|écran inconnu/i.test(m));
+  verif("veille — aucun ecran inconnu demande pendant le parcours",
+    inconnus.length === 0, inconnus.slice(0, 3).join(" | "));
 }
 
 verif("rendu — aucune erreur JavaScript sur tout le parcours",

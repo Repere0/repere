@@ -2369,7 +2369,7 @@ details.plus[open] > *:not(summary){animation:pliOuvre .22s ease both;}
 
       <div class="ob-step active" id="ob-step1">
         <div class="wordmark"><svg width="26" height="31" viewBox="0 0 72 86" aria-hidden="true" style="vertical-align:-4px;margin-right:6px;"><path d="M36 4C19.4 4 6 17.4 6 34c0 20.5 24.6 42.4 28.3 45.6a2.6 2.6 0 0 0 3.4 0C41.4 76.4 66 54.5 66 34 66 17.4 52.6 4 36 4Z" fill="currentColor"/><circle cx="36" cy="33" r="12.5" fill="var(--paper,#f5f5f7)"/><circle cx="36" cy="33" r="4.4" fill="currentColor"/></svg>Repère</div>
-        <p class="tagline">La vie publique, près de chez vous — résumée, sourcée, sans opinion. Sans compte pour commencer.</p>
+        <p class="tagline">La vie publique, près de chez vous — résumée, sourcée, sans opinion. Sans compte, et sans rien à payer.</p>
         <h3>Où habitez-vous&nbsp;?</h3>
         <div class="search">
           <input type="text" id="ob-input" placeholder="Nom de votre commune…" autocomplete="address-level2" autocapitalize="words" autocorrect="off" spellcheck="false" enterkeyhint="go"
@@ -2406,7 +2406,7 @@ details.plus[open] > *:not(summary){animation:pliOuvre .22s ease both;}
           </div>
         </div>
         <button style="background:none;border:none;font-family:inherit;font-size:var(--t-13);font-weight:700;color:var(--ink);text-decoration:underline;text-underline-offset:3px;padding:12px 2px;min-height:44px;cursor:pointer;margin-bottom:10px;" onclick="obBack()">Ce n'est pas ma commune</button>
-        <div class="notifopt">
+        <div class="notifopt" data-veille="notifs">
           <div class="t">
             <div class="a">Recevoir l'essentiel du jour</div>
             <div class="b">1 notification à 18 h maximum. Des faits, jamais d'opinions. Modifiable à tout moment.</div>
@@ -2520,7 +2520,7 @@ details.plus[open] > *:not(summary){animation:pliOuvre .22s ease both;}
              Les lire coûtait cinq secondes sur les trois disponibles. Elles
              restent en pied de fil, lues une fois, jamais dans le chemin. -->
         <div class="banner install" id="banner-install">
-          <div><b>Ajouter Repère à l'écran d'accueil</b><br>Sur iPhone : Partager <span style="opacity:.8">&#11014;</span> puis « Sur l'écran d'accueil ». Nécessaire pour recevoir les notifications sur iOS.</div>
+          <div><b>Ajouter Repère à l'écran d'accueil</b><br>Sur iPhone : Partager <span style="opacity:.8">&#11014;</span> puis « Sur l'écran d'accueil ».</div>
           <button class="x" onclick="document.getElementById('banner-install').style.display='none'" aria-label="Fermer la bannière d'installation">&#10005;</button>
         </div>
         <div class="mission">
@@ -2801,8 +2801,13 @@ details.plus[open] > *:not(summary){animation:pliOuvre .22s ease both;}
           </div>
         </div>
 
-        <div class="section-title">Exemple de synthèse — débat d'entre-deux-tours <span class="demo-tag">DÉMO</span></div>
-        <div id="debat-synth"></div>
+        <div class="section-title">Aucun débat n'a encore eu lieu</div>
+        <!-- Doctrine du vide : plutot qu'un exemple fabrique range au meme gabarit
+             que les contenus vrais, une phrase et une date. -->
+        <div class="src-block" style="padding-top:10px;padding-bottom:10px;">
+          <p style="margin:0;">Le premier résumé paraîtra ici après le débat d'entre-deux-tours, entre le 18 avril et le 2 mai 2027. Tant qu'aucun débat n'a eu lieu, il n'y a rien à résumer.</p>
+        </div>
+        <div id="debat-synth" hidden></div>
 
         <button class="neutral-mini" onclick="openNote('debats')">
           <span class="k">Comment on vérifie</span>
@@ -2862,7 +2867,7 @@ details.plus[open] > *:not(summary){animation:pliOuvre .22s ease both;}
       <!-- ============ QUI INFLUENCE ============ -->
       <div class="screen" id="s-influence">
         <details class="repli">
-          <summary><span>1 · Qui doit déclarer ses intérêts ?</span><span class="n">HATVP</span></summary>
+          <summary><span>Qui doit déclarer ses intérêts ?</span><span class="n">HATVP</span></summary>
           <div class="repli-in">
             <p>La <b>Haute Autorité pour la transparence de la vie publique</b> publie en ligne les déclarations d'intérêts et d'activités : activités professionnelles des cinq dernières années, activités de conseil, participations dans des sociétés, mandats électifs et indemnités, collaborateurs parlementaires.</p>
             <ul style="margin-top:8px;">
@@ -2892,7 +2897,7 @@ details.plus[open] > *:not(summary){animation:pliOuvre .22s ease both;}
           <p>Déclarer ses intérêts est une <b>obligation légale</b>. Un lien déclaré <b>n'est pas un conflit d'intérêts</b> : ni une faute, ni une infraction. Seules la HATVP, l'administration ou la justice peuvent le qualifier.</p>
         </div>
 
-        <details class="repli">
+        <details class="repli" data-veille="demo">
           <summary><span>2 · Le lobbying, en chiffres</span><span class="n">3 604 organisations</span></summary>
           <div class="repli-in">
             <div class="stat-strip" style="margin-bottom:10px;">
@@ -2906,7 +2911,7 @@ details.plus[open] > *:not(summary){animation:pliOuvre .22s ease both;}
         </details>
 
         <details class="repli">
-          <summary><span>3 · Qui finance la vie politique</span><span class="n">64,1 M€ en 2025</span></summary>
+          <summary><span>Qui finance la vie politique</span><span class="n">64,1 M€ en 2025</span></summary>
           <div class="repli-in">
             <p>Chaque année, un décret répartit une aide publique entre les partis, en deux parts égales : en proportion des <b>voix obtenues aux législatives</b> (réduite si la parité n'est pas respectée), puis du <b>nombre de parlementaires rattachés</b>.</p>
             <div id="aide-bars"></div>
@@ -2937,15 +2942,15 @@ details.plus[open] > *:not(summary){animation:pliOuvre .22s ease both;}
         <div class="law">
           <span class="real-tag">SUIVI RÉEL</span>
           <h3>Loi sur la fin de vie — aide à mourir</h3>
-          <div class="sub">Adoptée le 15 juillet 2026. Au Conseil constitutionnel depuis cette date — décision attendue vers le 15 août.</div>
+          <div class="sub">Adoptée le 15 juillet 2026. Le Conseil constitutionnel l'a déclarée conforme, avec réserves, le 14 août 2026 (décision n° 2026-910 DC). La promulgation n'est pas vérifiée à ce jour.</div>
           <div class="steps">
             <div class="step done"><div class="b"><svg viewBox="0 0 24 24"><path d="m5 13 4 4 10-10"/></svg></div><div class="l">Dépôt</div></div>
             <div class="step done"><div class="b"><svg viewBox="0 0 24 24"><path d="m5 13 4 4 10-10"/></svg></div><div class="l">Lectures<br>AN &amp; Sénat</div></div>
             <div class="step done"><div class="b"><svg viewBox="0 0 24 24"><path d="m5 13 4 4 10-10"/></svg></div><div class="l">Adoption<br>15 juil.</div></div>
-            <div class="step now"><div class="b"></div><div class="l">Conseil<br>constit.</div></div>
-            <div class="step"><div class="b"></div><div class="l"><span class="gl" onclick="openDef('promulgation')">Signature<br>du président</span></div></div>
+            <div class="step done"><div class="b"><svg viewBox="0 0 24 24"><path d="m5 13 4 4 10-10"/></svg></div><div class="l">Conseil<br>constit.<br>14 août</div></div>
+            <div class="step now"><div class="b"></div><div class="l"><span class="gl" onclick="openDef('promulgation')">Signature<br>du président</span></div></div>
           </div>
-          <div class="bellrow">
+          <div class="bellrow" data-veille="notifs">
             <span class="t" style="display:inline-flex;align-items:center;gap:7px;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9a6 6 0 1 1 12 0c0 5 2 6.5 2 6.5H4S6 14 6 9zM10.5 19.5a1.8 1.8 0 0 0 3 0"/></svg> M'alerter à chaque étape franchie</span>
             <button class="sw" role="switch" aria-checked="false" aria-label="M'alerter à chaque étape" onclick="toggleSw(this)"></button>
           </div>
@@ -2959,16 +2964,15 @@ details.plus[open] > *:not(summary){animation:pliOuvre .22s ease both;}
         <div class="section-title">Mes lieux</div>
         <div class="src-block" style="padding-top:6px;padding-bottom:6px;">
           <div class="place">
-            <div><div class="n" data-lieu="environs">Fontainebleau et ses environs</div><div class="c">Digest quotidien activé</div></div>
+            <div><div class="n" data-lieu="environs">Fontainebleau et ses environs</div><div class="c">Commune suivie</div></div>
             <button class="btn on" onclick="this.classList.toggle('on');this.textContent=this.classList.contains('on')?'Suivi':'Suivre'">Suivi</button>
           </div>
           <div class="place">
-            <div><div class="n">Ajouter un lieu</div><div class="c">Plusieurs communes suivies : inclus avec Premium</div></div>
-            <button class="btn" onclick="show('s-abo','Offres')">Les offres</button>
+            <div><div class="n">Une seule commune pour l'instant</div><div class="c">Suivre plusieurs communes n'est pas encore fait.</div></div>
           </div>
         </div>
 
-        <details class="repli">
+        <details class="repli" data-veille="commerce">
           <summary><span>Alertes de ma rue</span><span class="n">PREMIUM</span></summary>
           <div class="repli-in">
             <p style="margin-bottom:10px;"><b>Permis de construire, travaux, enquêtes publiques à moins de 500 m de chez vous.</b> Inclus dans Premium (1,99 € par mois) ; les alertes d'urgence restent gratuites pour tous, sans abonnement.</p>
@@ -3004,12 +3008,12 @@ details.plus[open] > *:not(summary){animation:pliOuvre .22s ease both;}
             <span class="tt"><span class="a">Sources &amp; charte de neutralité</span><span class="b">D'où vient l'info, journal des corrections, financement</span></span>
             <span class="chev">›</span>
           </button>
-          <button class="moi-row" onclick="showTab('s-suivis','Mes suivis')">
+          <button class="moi-row" onclick="show('s-suivis','Mes suivis',true)">
             <span class="ic"><svg viewBox="0 0 24 24"><path d="M12 21s-7-5.5-7-11a7 7 0 1 1 14 0c0 5.5-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></svg></span>
             <span class="tt"><span class="a">Mes lieux</span><span class="b" data-lieu="environs">Fontainebleau et ses environs</span></span>
             <span class="chev">›</span>
           </button>
-          <button class="moi-row" onclick="show('s-notifs','Notifications',true)">
+          <button class="moi-row" data-veille="notifs" onclick="show('s-notifs','Notifications',true)">
             <span class="ic"><svg viewBox="0 0 24 24"><path d="M6 9a6 6 0 1 1 12 0c0 5 2 6.5 2 6.5H4S6 14 6 9zM10.5 19.5a1.8 1.8 0 0 0 3 0"/></svg></span>
             <span class="tt"><span class="a">Notifications</span><span class="b">1 par jour maximum · digest à 18 h · tout est réglable</span></span>
             <span class="chev">›</span>
@@ -3037,16 +3041,15 @@ details.plus[open] > *:not(summary){animation:pliOuvre .22s ease both;}
         </div>
 
         <div class="zone">
-          <div class="section-title">Mon accès</div>
-          <button class="clarteplus-cta" onclick="show('s-abo','Offres')">
-            <span class="a">Premium <span class="plus-pill">1,99 € / mois</span></span>
-            <span class="b">Plusieurs communes suivies, alertes de ma rue, archive, version audio, export. Résiliable en un geste.</span>
-          </button>
-          <button class="moi-row" onclick="goAccount()">
-            <span class="ic"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-6.5 8-6.5s8 2.5 8 6.5"/></svg></span>
-            <span class="tt"><span class="a">Mon accès</span><span class="b">Abonnement, code, résiliation, mes données</span></span>
-            <span class="chev">›</span>
-          </button>
+          <div class="section-title">Ce que coûte Repère</div>
+          <!-- POURQUOI cette zone reste, au lieu de disparaitre avec le reste :
+               retirer toute mention d'argent laisse la question ouverte — « quand
+               est-ce qu'on va me demander de payer ? » — et c'est elle qui
+               reviendrait dans les retours de test au lieu du produit. -->
+          <div class="src-block" style="padding-top:10px;padding-bottom:10px;">
+            <p style="margin:0;">Rien. <b>Repère est gratuit, en entier, et ne vend rien.</b>
+            Il n'y a ni compte, ni paiement, ni abonnement — pas même caché quelque part.</p>
+          </div>
         </div>
 
         <details class="repli">
@@ -3054,9 +3057,9 @@ details.plus[open] > *:not(summary){animation:pliOuvre .22s ease both;}
           <div class="repli-in">
             <p style="margin-bottom:10px;">Ce que Repère collecte — et ne collecte jamais.</p>
             <button class="abo-sec" style="margin-top:0;" onclick="openDef('donnees')">Voir le détail</button>
-            <p class="abo-note" style="text-align:left;margin-top:10px;">Repère v18.14 — bêta fermée.</p>
+            <p class="abo-note" style="text-align:left;margin-top:10px;">Repère v18.18 — bêta fermée.</p>
             <button class="abo-sec" style="margin-top:10px;" onclick="showTab('s-moi','Moi');show('s-sources','Sources &amp; charte');setTimeout(function(){var d=document.getElementById('repli-legal');if(d){d.open=true;d.scrollIntoView({block:'center'});}},60);">Mentions légales, CGU &amp; confidentialité</button>
-            <a class="abo-sec" style="display:block;text-align:center;text-decoration:none;margin-top:10px;" href="mailto:repere0@protonmail.com?subject=Rep%C3%A8re%20v18.14%20%E2%80%94%20retour%20de%20test">Écrire à l'équipe</a>
+            <a class="abo-sec" style="display:block;text-align:center;text-decoration:none;margin-top:10px;" href="mailto:repere0@protonmail.com?subject=Rep%C3%A8re%20v18.18%20%E2%80%94%20retour%20de%20test">Écrire à l'équipe</a>
           </div>
         </details>
       </div>
@@ -3156,6 +3159,8 @@ details.plus[open] > *:not(summary){animation:pliOuvre .22s ease both;}
             <p>Signalement d'erreur : chaque signalement est lu. Nous répondons dès que possible, et une correction avérée est publiée <b>sans coupe ni commentaire</b>. Jamais de correction silencieuse.</p>
             <div class="fresh" style="margin-top:10px;"><span>Charte modifiée : le « gel des contenus sensibles en période électorale » est remplacé par une règle plus stricte et vérifiable — pendant une campagne, aucune donnée qui ne soit officielle et aucune citation qui ne soit littérale.</span><span class="d">12 août 2026</span></div>
             <div class="fresh"><span>Charte modifiée : la mention « pas de série de jours » ne correspondait pas à l'application, qui en compte une. Réécrite.</span><span class="d">12 août 2026</span></div>
+            <div class="fresh"><span>Le suivi de la loi sur la fin de vie annonçait une décision du Conseil constitutionnel « attendue vers le 15 août ». Elle a été rendue le 14 août 2026 (n° 2026-910 DC) : conformité avec réserves. Corrigé.</span><span class="d">18 août 2026</span></div>
+            <div class="fresh"><span>Les écrans décrivant une offre payante, un paiement et des réglages de notification ont été retirés : rien de tout cela n'existe. Repère est gratuit et n'encaisse rien.</span><span class="d">18 août 2026</span></div>
             <div class="fresh"><span>Aucune correction de fait publiée à ce jour.</span><span class="d">journal ouvert</span></div>
             <p class="fd-note" style="margin-top:8px;">Ce journal est vide parce qu'il n'y a rien à y écrire, pas parce qu'il n'est pas tenu : chaque correction y sera datée, avec la valeur erronée et la valeur exacte, et restera visible.</p>
             <p style="margin-top:12px;"><b>Pourquoi pas de commentaires ?</b> Un fil local dérape vite et exigerait une modération que nous préférons consacrer à la vérification des faits. Vous pouvez signaler une erreur sous chaque carte.</p>
@@ -3166,20 +3171,17 @@ details.plus[open] > *:not(summary){animation:pliOuvre .22s ease both;}
         <details class="repli">
           <summary><span>D'où vient notre argent</span><span class="n">et ce qu'on refuse</span></summary>
           <div class="repli-in">
-            <p style="margin-bottom:6px;">Répartition <b>cible</b> des revenus. <span class="demo-tag">OBJECTIF À 3 ANS</span></p>
-            <div class="money-bar" role="img" aria-label="Répartition des revenus : abonnements 45 %, licences presse 25 %, Repère Pro 15 %, ateliers éducation 10 %, sponsors locaux 5 %.">
-              <i style="width:45%;background:var(--n-05)"></i><i style="width:25%;background:var(--n-28)"></i><i style="width:15%;background:var(--n-48)"></i><i style="width:10%;background:var(--n-70)"></i><i style="width:5%;background:var(--n-86)"></i>
-            </div>
-            <div class="money-leg">
-              <i style="background:var(--n-05)"></i>Abonnements 45 % · <i style="background:var(--n-28)"></i>Licences presse 25 % · <i style="background:var(--n-48)"></i>Repère Pro 15 %<br>
-              <i style="background:var(--n-70)"></i>Ateliers éducation 10 % · <i style="background:var(--n-86)"></i>Sponsors locaux 5 %
-            </div>
+            <!-- POURQUOI ce graphique est parti : il chiffrait cinq revenus dont
+                 aucun n'existe, et le dernier d'entre eux ouvrait precisement la
+                 porte que la charte des refus, douze lignes plus bas, ferme. -->
+            <p style="margin-bottom:6px;">Aujourd'hui, <b>Repère n'a aucun revenu</b> et aucune
+            structure juridique pour en percevoir. Le projet est financé par son auteur.
+            Le jour où cela changera, la répartition sera écrite ici, chiffrée et datée.</p>
             <p style="margin-top:12px;font-weight:700;color:var(--ink);">Charte des refus</p>
             <ul style="margin-top:6px;">
               <li>Aucun financement politique, aucune pub de parti, d'élu ou de candidat</li>
               <li>Aucun revenu d'une collectivité couverte</li>
               <li>Aucune pub programmatique, aucune revente de données</li>
-              <li>Les alertes d'urgence restent toujours gratuites</li>
               <li>Aucune gamification du vote ; aucun classement ou notation des élus</li>
               <li>Pendant une campagne : aucune donnée qui ne soit officielle, aucune citation qui ne soit littérale</li>
             </ul>
@@ -3196,13 +3198,14 @@ details.plus[open] > *:not(summary){animation:pliOuvre .22s ease both;}
             <p style="margin-top:10px;"><b>Contact.</b> <a href="mailto:repere0@protonmail.com" style="color:var(--ink);text-decoration:underline;text-underline-offset:2px;">repere0@protonmail.com</a> — signalement d'erreur, droit de réponse, question sur vos données. Chaque message est lu.</p>
             <p style="margin-top:10px;"><b>Hébergement.</b> Netlify, Inc., 512 2nd Street, Suite 200, San Francisco, CA 94107, États-Unis.</p>
             <p style="margin-top:10px;"><b>Données personnelles.</b> Repère ne crée aucun compte et ne collecte aucune donnée personnelle. Rien ne quitte votre appareil : il n'y a ni serveur de profils, ni traceur, ni mesure d'audience, ni revente. Une seule valeur est écrite sur cet appareil, votre série de jours consécutifs, et l'effacer tient en un geste depuis « Mes données ». Vos droits d'accès, de rectification et d'effacement portent donc sur un fichier qui n'existe pas — c'est volontaire.</p>
+            <p style="margin-top:10px;"><b>Données des personnes citées.</b> Repère publie des données à caractère personnel concernant des <b>personnes publiques</b> — élus, candidats, représentants d'intérêts — issues exclusivement de sources officielles et republiées à des fins d'information du public (art. 85 du RGPD, art. 80 de la loi du 6 janvier 1978). C'est un traitement de données, et l'éditeur en est responsable. Toute personne citée peut demander l'accès, la rectification, l'effacement ou s'opposer à la publication, à l'adresse ci-dessus. Repère ne publie jamais le patrimoine d'un élu, ni aucune donnée relative à sa vie privée.</p>
             <p style="margin-top:10px;"><b>Sources et licences.</b> Répertoire national des élus (ministère de l'Intérieur, ODbL 1.0), Code officiel géographique (INSEE), Observatoire des finances et de la gestion publique locales, data.gouv.fr, Légifrance, Assemblée nationale et Sénat. Chaque écran affiche le producteur et la date de mise à jour de la donnée qu'il montre.</p>
             <p style="margin-top:10px;"><b>Propriété intellectuelle.</b> Les textes de l'application appartiennent à l'éditeur ; les données publiques restent sous la licence de leur producteur. Les portraits officiels des parlementaires ne sont pas republiés, faute d'autorisation.</p>
             <p style="margin-top:10px;"><b>Droit de réponse.</b> Toute personne citée peut en demander un à l'adresse ci-dessus. Il est publié sans coupe ni commentaire au journal public des corrections.</p>
             <p style="margin-top:10px;"><b>Conditions d'utilisation.</b> Repère informe. Il ne conseille pas, ne représente personne, n'engage aucune collectivité et ne remplace aucun acte officiel. Les résumés sont vérifiés un par un et peuvent malgré tout comporter une erreur : <b>en cas d'écart, la source officielle liée sous chaque carte fait foi</b>, jamais le résumé.</p>
-            <p style="margin-top:10px;"><b>Abonnement.</b> Premium 1,99 € par mois, sans engagement, résiliable à tout moment sans justification ni frais, droit de rétractation de 14 jours. <b>La vente n'est pas ouverte :</b> aucun paiement n'est possible aujourd'hui, et l'écran de paiement est une simulation.</p>
-            <a class="abo-sec" style="display:block;text-align:center;text-decoration:none;margin-top:14px;" href="mailto:repere0@protonmail.com?subject=Rep%C3%A8re%20v18.14%20%E2%80%94%20retour%20de%20test&body=Ce%20que%20j%27ai%20fait%20%3A%0A%0ACe%20que%20j%27attendais%20%3A%0A%0ACe%20qui%20s%27est%20passe%20%3A%0A%0AMa%20commune%20%3A%0AMon%20telephone%20%3A%0A">Écrire à l'équipe — retour de test</a>
-            <p class="abo-note" style="text-align:left;margin-top:10px;">Repère v18.14 — bêta fermée. Données embarquées dans l'application, utilisables hors connexion.</p>
+            <p style="margin-top:10px;"><b>Prix.</b> Repère est gratuit, intégralement, dans cette version. Rien n'est en vente : aucun paiement n'est possible, aucun abonnement n'existe, aucun écran de paiement n'est présent dans l'application. Toute mise en vente future sera précédée de la publication de l'identité de l'éditeur et de son statut juridique, ci-dessus.</p>
+            <a class="abo-sec" style="display:block;text-align:center;text-decoration:none;margin-top:14px;" href="mailto:repere0@protonmail.com?subject=Rep%C3%A8re%20v18.18%20%E2%80%94%20retour%20de%20test&body=Ce%20que%20j%27ai%20fait%20%3A%0A%0ACe%20que%20j%27attendais%20%3A%0A%0ACe%20qui%20s%27est%20passe%20%3A%0A%0AMa%20commune%20%3A%0AMon%20telephone%20%3A%0A">Écrire à l'équipe — retour de test</a>
+            <p class="abo-note" style="text-align:left;margin-top:10px;">Repère v18.18 — bêta fermée. Données embarquées dans l'application, utilisables hors connexion.</p>
           </div>
         </details>
 
@@ -3214,7 +3217,7 @@ details.plus[open] > *:not(summary){animation:pliOuvre .22s ease both;}
       </div>
 
       <!-- ============ NOTIFICATIONS (depuis l'onglet Moi) ============ -->
-      <div class="screen" id="s-notifs">
+      <div class="screen" id="s-notifs" data-veille="commerce">
         <div class="src-block" style="margin-top:6px;">
           <h3>Restez informé sans être dérangé</h3>
           <p style="margin-bottom:12px;"><b>1 notification par jour maximum. Des faits, jamais d'opinions.</b> Se désabonner tient en un geste.</p>
@@ -3274,7 +3277,7 @@ details.plus[open] > *:not(summary){animation:pliOuvre .22s ease both;}
       </div>
 
       <!-- ============ OFFRES (achat unique) ============ -->
-      <div class="screen" id="s-abo">
+      <div class="screen" id="s-abo" data-veille="commerce">
         <div class="free-line">Qui décide chez vous, et où va votre argent : gratuit, en entier.<span>Premium 1,99 € par mois — l'échelle et la profondeur, jamais l'information de base. Résiliable en un geste.</span></div>
 
         <p class="abo-note" style="margin-top:2px;">Sans payer et sans compte : les décisions, les élus, les budgets et les votes — résumé complet et lien vers la source officielle. Ce qui répond aux deux questions fondatrices ne sera jamais derrière un paiement.</p>
@@ -3315,7 +3318,7 @@ details.plus[open] > *:not(summary){animation:pliOuvre .22s ease both;}
       </div>
 
       <!-- ============ COMPTE : connexion ============ -->
-      <div class="screen" id="s-compte-login">
+      <div class="screen" id="s-compte-login" data-veille="commerce">
         <div class="src-block" style="margin-top:6px;">
           <h3>Activer mon accès</h3>
           <!-- POURQUOI aucun courriel et aucun mot de passe : un abonnement doit se
@@ -3334,7 +3337,7 @@ details.plus[open] > *:not(summary){animation:pliOuvre .22s ease both;}
       </div>
 
       <!-- ============ MON ACCES (etat de l'abonnement) ============ -->
-      <div class="screen" id="s-compte-gestion">
+      <div class="screen" id="s-compte-gestion" data-veille="commerce">
         <div class="src-block" style="margin-top:6px;">
           <h3>Mon accès</h3>
           <p id="gestion-email" style="margin-bottom:4px;">Accès premium actif</p>
@@ -3475,7 +3478,7 @@ details.plus[open] > *:not(summary){animation:pliOuvre .22s ease both;}
       </div>
 
       <!-- ============ PAIEMENT (achat unique, simulé) ============ -->
-      <div class="screen" id="s-paiement">
+      <div class="screen" id="s-paiement" data-veille="commerce">
         <div class="pay-step active" id="pay-step1">
           <div class="src-block" style="margin-top:6px;">
             <span class="real-tag" style="background:var(--muted);">SIMULATION / MAQUETTE</span>
@@ -3612,19 +3615,18 @@ details.plus[open] > *:not(summary){animation:pliOuvre .22s ease both;}
     Toutes les familles politiques présentées de la même manière.</p>
   </div>
 
-  <!-- 7 — OFFRE. Le prix est ecrit, et la vente est annoncee comme fermee : une
-       offre qu'on ne peut pas acheter doit le dire, sinon c'est une promesse
-       non prouvee. -->
+  <!-- 7 — GRATUITE. Ce bloc est EXTRAIT du fichier par build_pwa et publie dans
+       accueil.html : aucune mise en veille JavaScript ne l'atteint. Il annoncait
+       un prix pour un service qu'aucune structure ne peut vendre. Reecrit en dur. -->
   <div class="ld-offre">
-    <h2 style="font-size:19px;color:#f5f5f7;margin:0 0 8px;">L'essentiel est gratuit. Il le restera.</h2>
+    <h2 style="font-size:19px;color:#f5f5f7;margin:0 0 8px;">Gratuit. Sans compte. Sans publicité.</h2>
     <p style="font-size:14px;line-height:1.6;margin:0 0 10px;">Qui décide, où va votre
     argent, comment votre député a voté, le calendrier, le dictionnaire : gratuit, sans
     compte, pour les 34 875 communes. <b>Aucune décision, aucun élu, aucun budget et
     aucun vote ne passera jamais derrière un paiement.</b></p>
-    <p style="font-size:14px;line-height:1.6;margin:0;"><span class="pr">1,99 €</span>
-    par mois pour ce qui vient en plus : plusieurs communes suivies, les alertes de votre
-    rue, l'archive. Résiliable en un geste, sans compte à créer.
-    <b>La vente n'est pas encore ouverte</b> — l'application le dit aussi à l'écran.</p>
+    <p style="font-size:14px;line-height:1.6;margin:0;">Repère est aujourd'hui en bêta fermée.
+    <b>Rien n'est en vente</b> : il n'existe ni abonnement, ni paiement, ni structure pour
+    encaisser quoi que ce soit. Si cela change un jour, ce sera écrit ici avant de l'être ailleurs.</p>
   </div>
 
   <!-- 8 — CTA FINAL, identique au premier : une seule action possible. -->
@@ -3860,7 +3862,7 @@ function quiEmpty(couleur, titre, nom, phrase, lien, libLien) {
     ${lien ? `<div class="foot" style="display:flex;justify-content:flex-end;margin-top:8px;">
       <a class="src" href="${lien}" target="_blank" rel="noopener">${libLien || lien} ↗</a></div>` : ""}
     <div class="meta"><span>Nous préférons ne rien afficher plutôt qu'afficher les élus d'un autre territoire.</span>
-      <button class="src" onclick="showTab('s-suivis','Mes suivis')">Demander l'ouverture de mon territoire</button></div>
+      <a class="src" href="mailto:repere0@protonmail.com?subject=Rep%C3%A8re%20%E2%80%94%20ouverture%20de%20ma%20commune" target="_blank" rel="noopener">Demander l'ouverture de ma commune ↗</a></div>
   </div>`;
 }
 function renderQui() {
@@ -4112,16 +4114,14 @@ const DEFS = {
   agglo: ["Communauté d'agglomération", "Regroupement de communes qui exerce ensemble des compétences comme les mobilités ou la collecte des déchets. Source : vie-publique.fr"],
   sponsor: ["Partenaire — jamais politique", "Encart unique, gabarit fixe, plafonné à 3 partenaires locaux. Exclus : partis, élus, candidats, syndicats, cultes, et toute entreprise titulaire d'un marché public avec une collectivité couverte. Le partenaire n'intervient jamais dans les contenus."],
   ia: ["Résumé assisté par IA", "Un programme pré-remplit le résumé depuis le document officiel ; un humain vérifie chaque chiffre, vote et nom contre le PDF avant publication. L'IA ne publie jamais seule."],
-  signaler: ["Signaler une erreur / droit de réponse", "Chaque signalement est lu et reçoit une réponse. Un droit de réponse est publié sans coupe ni commentaire (loi de 1881), et toute correction figure au journal public des corrections, dans l'écran Sources. Aucun délai n'est promis ici : Repère est tenu par une seule personne, et une promesse de délai affichée puis non tenue vaudrait moins que pas de promesse du tout."],
+  signaler: ["Signaler une erreur / droit de réponse", "Chaque signalement est lu et reçoit une réponse. Un droit de réponse est publié sans coupe ni commentaire (art. 6 IV de la LCEN), et toute correction figure au journal public des corrections, dans l'écran Sources. Aucun délai n'est promis ici : Repère est tenu par une seule personne, et une promesse de délai affichée puis non tenue vaudrait moins que pas de promesse du tout."],
   donnees: ["Vos données", "Votre commune, vos suivis, vos réglages vivent en mémoire le temps de la session et disparaissent quand vous fermez l'app. Une seule chose est écrite sur votre appareil : votre série de jours consécutifs — une date et un nombre, vingt octets, effaçables d'un geste depuis l'écran Jouer. Rien n'en part vers un serveur. Repère ne collecte jamais : position GPS, contenus lus, opinions, données revendues. Aucune pub ciblée."],
-  prepermission: ["Activer les notifications", "Dans l'application réelle, l'autorisation du téléphone serait demandée maintenant — jamais au premier lancement. Ici, c'est une maquette : le digest de 18 h est simulé plus bas. (1 notification par jour maximum.)"],
-  email: ["Très bien — pas de notification", "Vous pouvez recevoir le même essentiel du jour par e-mail à 18 h : même contenu, même règle « des faits, jamais d'opinions ». Proposé aussi automatiquement sur iPhone si l'app n'est pas installée sur l'écran d'accueil."],
-  stripe: ["Paiement (simulation)", "Dans l'application réelle, ce bouton ouvre une page de paiement web sécurisée Stripe — hors magasins d'applications, sans commission de 15 à 30 %, c'est ce qui permet de tenir l'abonnement à 1,99 € par mois. Sur Android, la facturation passe par le Play Store. Maquette : aucun paiement réel."],
-  offrir: ["Offrir Premium (12 mois)", "Un lien cadeau à envoyer : la personne reçoit un code d'accès valable douze mois, sans créer de compte, sans donner son nom et sans saisir de carte. Rien ne se renouvelle tout seul : au terme des douze mois, l'accès premium s'arrête et l'application reste entièrement utilisable. (Maquette.)"],
-  resilier: ["Résilier", "En un geste, depuis « Mon accès » : la résiliation prend effet à la fin du mois déjà payé, et rien n'est prélevé ensuite. Aucune raison à donner, aucun formulaire, aucun courriel à écrire. Sur Android, la résiliation se fait aussi depuis les abonnements du Play Store. Droit de rétractation légal de 14 jours. Après résiliation, l'application reste entièrement utilisable : le gratuit n'est pas un essai. (Simulation de maquette.)"],
-  codepartenaire: ["Code partenaire", "Les médiathèques, lycées et missions locales partenaires disposent de codes qui ouvrent le premium gratuitement pour leurs publics. Ces codes sont anonymes : ils ne portent ni nom ni courriel. Exemple de code : MEDIA77 (démo)."],
+  /* v18.16 — six definitions retirees : prepermission, email, stripe, offrir,
+     resilier, codepartenaire. Elles decrivaient un tunnel Stripe, un lien cadeau,
+     des « mediatheques et lycees partenaires » et un digest par courriel : rien de
+     tout cela n'existe, et plus aucun appelant ne subsistait apres la mise en veille. */
   methode: ["Notre méthode", "Chaque carte : document officiel collecté et archivé → résumé pré-rempli par IA → vérification humaine chiffre par chiffre → publication avec lien source. Détails dans l'écran Sources & charte."],
-  rne: ["Répertoire National des Élus (RNE)", "Base officielle du Ministère de l'Intérieur qui recense tous les élus de France — les 34 945 communes, les intercommunalités, les départements, les régions, les députés et sénateurs. Mise à jour trimestrielle, diffusé sous licence ODbL 1.0 : mentionner la source est obligatoire. C'est ce qui permet à Repère de dire « qui vous représente » partout. Le RNE ne contient pas l'étiquette politique : elle est jointe aux données de l'Assemblée, du Sénat et aux résultats électoraux. Source : data.gouv.fr."],
+  rne: ["Répertoire National des Élus (RNE)", "Base officielle du Ministère de l'Intérieur qui recense tous les élus de France — les 34 875 communes, les intercommunalités, les départements, les régions, les députés et sénateurs. Mise à jour trimestrielle, diffusé sous licence ODbL 1.0 : mentionner la source est obligatoire. C'est ce qui permet à Repère de dire « qui vous représente » partout. Le RNE ne contient pas l'étiquette politique : elle est jointe aux données de l'Assemblée, du Sénat et aux résultats électoraux. Source : data.gouv.fr."],
   viepublique: ["vie-publique.fr", "Site officiel d'information sur la vie publique, édité par la Direction de l'information légale et administrative (Premier ministre). Repère y puise les catégories neutres (« gauche », « centre », « droite »…) qu'il rapporte sans les endosser. Source : vie-publique.fr."],
   mainlevee: ["Vote à main levée", "Procédure de vote par défaut à l'Assemblée nationale : le président de séance constate le résultat à vue, sans enregistrer qui a voté quoi. La grande majorité des votes en séance (articles, amendements, procédure) se déroulent ainsi. Un scrutin public — le seul qui produise un relevé nominatif — n'a lieu que s'il est demandé par le Gouvernement, un président de groupe, une commission, le président de séance, ou décidé par la Conférence des présidents. Conséquence : sur beaucoup de textes, la position individuelle d'un député n'existe dans aucun document officiel. Source : assemblee-nationale.fr."],
   hatvp: ["Haute Autorité pour la transparence de la vie publique (HATVP)", "Autorité administrative indépendante créée par les lois du 11 octobre 2013. Elle reçoit et contrôle les déclarations d'intérêts et de patrimoine d'environ 15 000 à 18 000 responsables publics, tient le répertoire des représentants d'intérêts (lobbying) et publie ces données en open data sous Licence Ouverte. Point essentiel : déclarer un intérêt est une obligation légale, ce n'est ni un aveu ni une faute. Source : hatvp.fr."],
@@ -4865,8 +4865,11 @@ let currentTab = "s-fil";
 const NAV_DIR = { avant: 1, arriere: -1 };
 let navSens = NAV_DIR.avant;
 function activate(id, title) {
-  document.querySelectorAll(".screen").forEach(x => { x.classList.remove("active"); });
+  /* v18.16 — l'ordre compte : eteindre les 21 ecrans avant de verifier que la
+     cible existe rendait la page entierement blanche pour un id inconnu, avec
+     pour seul signal un console.warn. On cherche d'abord. */
   const el = document.getElementById(id);
+  document.querySelectorAll(".screen").forEach(x => { x.classList.remove("active"); });
   /* v18 — POURQUOI ne pas laisser jeter : un data-s d'onglet ou un onclick="show('s-x')"
      qui pointe vers un écran renommé casserait TOUTE la navigation, retour compris, et
      l'utilisateur resterait sur l'écran précédent sans un mot. Un écran qui ne s'ouvre
@@ -6746,7 +6749,36 @@ function openElu(id){
   `);
 }
 
+/* ============================ MISE EN VEILLE (beta fermee) ============================
+   POURQUOI : rien n'est en vente — aucune structure juridique, aucun encaissement — et
+   aucune notification n'est envoyee. Montrer un prix, un tunnel de paiement ou un
+   reglage de notification serait promettre ce qui n'existe pas. La regle est simple :
+   la beta ne montre que ce qui est vrai.
+
+   POUR REMETTRE EN SERVICE : passer BETA_RESTREINTE a false NE SUFFIT PAS. Les textes
+   reecrits par le patch 13 (mentions legales, page d'accueil, onboarding, « Mes
+   lieux ») disent aujourd'hui la verite d'une application gratuite ; il faut les
+   reprendre un par un. Le booleen rouvre les portes, il ne repose pas les phrases. */
+const BETA_RESTREINTE = true;
+const EN_VEILLE = ["s-abo", "s-paiement", "s-compte-login", "s-compte-gestion", "s-notifs"];
+
+function enVeille(id) { return BETA_RESTREINTE && EN_VEILLE.indexOf(id) !== -1; }
+
+/* On RETIRE du DOM au lieu de masquer : un ecran en display:none reste dans la page,
+   lisible par qui ouvre le fichier, et un jour quelqu'un le rallume par accident.
+   Le code des fonctions, lui, reste — seule la porte se ferme. */
+function appliquerVeille() {
+  if (!BETA_RESTREINTE) return;
+  var n = document.querySelectorAll("[data-veille]");
+  for (var i = 0; i < n.length; i++) {
+    if (n[i].parentNode) n[i].parentNode.removeChild(n[i]);
+  }
+}
+
 function showTab(id, title) {
+  /* Un onglet ne peut pas etre en veille aujourd'hui, mais la garde est ici pour
+     que l'invariant tienne meme si la table change. */
+  if (enVeille(id)) { showTab("s-fil", "Mon fil"); return; }
   currentTab = id;
   NAV_STACK.length = 0;
   document.getElementById("appbar").classList.remove("sub");
@@ -6758,9 +6790,16 @@ function showTab(id, title) {
   activate(id, title);
 }
 function show(id, title, remplace) { /* écran secondaire avec retour */
+  /* Lien profond ou cran de retour vers un ecran retire : on ne fait pas « rien »
+     — un bouton qui ne repond pas se lit comme une application plantee. On revient
+     a l'onglet courant, qui existe toujours. */
+  if (enVeille(id)) { showTab(currentTab || "s-fil", "Mon fil"); return; }
   /* L'agenda de l'Assemblee se peint a l'ouverture : 6 280 lignes ne se rendent pas
      au chargement de l'application, elles se rendent quand quelqu'un les demande. */
-  if (id === "s-an" && typeof anRendre === "function") setTimeout(anRendre, 0);
+  if (id === "s-an" && typeof anRendre === "function") setTimeout(function () {
+    if (typeof anCharger === "function") anCharger();
+    anRendre();
+  }, 0);
   document.getElementById("appbar").classList.add("sub");
   /* v18 — POURQUOI officialiser ce troisième paramètre : le balisage et huit appels du
      banc lui passaient déjà « true », et il était silencieusement ignoré. Un argument
@@ -6779,12 +6818,15 @@ const NAV_STACK = [];
 function goBack() {
   navSens = NAV_DIR.arriere;   /* le seul chemin qui recule : la direction se lit ici */
   NAV_STACK.pop();                                   /* l'écran courant */
-  const prev = NAV_STACK.pop();                      /* celui d'avant */
+  let prev = NAV_STACK.pop();                        /* celui d'avant */
+  /* Un cran pose avant la veille pointerait vers un ecran retire : on saute. */
+  while (prev && enVeille(prev.id)) prev = NAV_STACK.pop();
   if (prev && prev.id !== currentTab) { show(prev.id, prev.title); return; }
   const t = document.querySelector(`.tab[data-s="${currentTab}"]`);
   showTab(currentTab, t ? t.dataset.t : "Mon fil");
 }
 document.querySelectorAll(".tab").forEach(t => t.addEventListener("click", () => showTab(t.dataset.s, t.dataset.t)));
+appliquerVeille();
 
 /* pastille de lieu → gérer mes lieux / explorer la carte */
 function openLocSheet() {
@@ -6793,7 +6835,7 @@ function openLocSheet() {
     <p style="font-size:var(--t-13);color:var(--muted);line-height:var(--lh-13);margin-bottom:12px;">${chaineEchelons()}</p>
     ${_t.insee ? `<p style="font-size:var(--t-12);color:var(--sep-txt);margin-bottom:12px;">Code INSEE ${_t.insee}</p>` : `<p style="font-size:var(--t-12);color:var(--muted);margin-bottom:12px;">Commune saisie à la main : nous n'avons pas encore pu l'identifier dans le référentiel officiel. Certaines rubriques resteront vides tant que ce n'est pas fait.</p>`}
     <button class="abo-cta" onclick="closeSheet2();show('s-carte','Autour de moi')">Explorer la carte de France</button>
-    <button class="abo-sec" onclick="closeSheet2();showTab('s-suivis','Mes suivis')">Gérer mes lieux</button>`);
+    <button class="abo-sec" onclick="closeSheet2();show('s-suivis','Mes suivis')">Gérer mes lieux</button>`);
 }
 
 /* ================= taille du texte (A / A+ / A++), état en mémoire ================= */
@@ -6887,6 +6929,9 @@ function oublierAcces() {
 
 /* ================= paiement (achat unique, simulation — aucun backend réel) ================= */
 function startPayment() {
+  /* Les noeuds de l'ecran de paiement n'existent plus en beta : sans cette garde,
+     un appel residuel jetterait un TypeError et le banc verrait une erreur JS. */
+  if (BETA_RESTREINTE) return;
   const offer = OFFERS[STATE.selectedOffer] || OFFERS.premium;
   document.getElementById("pay-offer-name").textContent = offer.name;
   document.getElementById("pay-offer-price").textContent = offer.price + " " + (offer.periode || "");
@@ -6896,10 +6941,12 @@ function startPayment() {
   show("s-paiement", "Paiement (simulation)");
 }
 function payGoStep(n) {
+  if (BETA_RESTREINTE) return;
   document.querySelectorAll(".pay-step").forEach(s => s.classList.remove("active"));
   document.getElementById("pay-step" + n).classList.add("active");
 }
 function confirmPayment() {
+  if (BETA_RESTREINTE) return;
   /* Aucun compte a creer : le paiement delivre un code, et c'est le code qui porte
      l'acces. Le voici simule, dans la forme exacte que prendra le vrai. */
   STATE.acces.actif = true;
@@ -15838,9 +15885,67 @@ function anSelection() {
   return out;
 }
 
+/* Etat du chargement : "embarque", "absent", "en cours", "servi", "echec".
+   Il est affiche a l'ecran, parce qu'un ecran vide sans explication est le pire des
+   trois cas possibles — pire qu'une erreur, qui elle au moins se comprend. */
+var AN_ETAT = "absent";
+/* Date de collecte, telle qu'elle est ecrite dans le fichier servi. Jamais devinee :
+   si la cle manque, la variable reste vide et l'ecran n'annonce aucune date. */
+var AN_MAJ = (window.REPERE_AGENDA_AN && window.REPERE_AGENDA_AN.maj) || "";
+var AN_MOIS = ["janvier", "février", "mars", "avril", "mai", "juin",
+               "juillet", "août", "septembre", "octobre", "novembre", "décembre"];
+function anJour(iso) {
+  var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(iso || ""));
+  if (!m) return String(iso || "");          /* format inattendu : on rend tel quel */
+  return Number(m[3]) + " " + AN_MOIS[Number(m[2]) - 1] + " " + m[1];
+}
+
+function anCharger() {
+  if (AN_ETAT === "en cours" || AN_ETAT === "servi") return;
+  if (!window.REPERE_AGENDA_URL) return;      /* fichier autonome : rien a chercher */
+  AN_ETAT = "en cours";
+  anRendre();
+  fetch(window.REPERE_AGENDA_URL, { credentials: "omit" })
+    .then(function (r) {
+      if (!r.ok) throw new Error("HTTP " + r.status);
+      return r.json();
+    })
+    .then(function (d) {
+      /* On refuse une reponse qui n'a pas la forme attendue : une page d'erreur
+         renvoyee en 200 par un hebergeur ne doit pas passer pour un agenda. */
+      if (!d || d.v !== 1 || !Array.isArray(d.r) || !Array.isArray(d.org)) {
+        throw new Error("format inattendu");
+      }
+      window.REPERE_AGENDA_AN = d;
+      AN_MAJ = d.maj || "";
+      AN_ETAT = "servi";
+      anRendre();
+    })
+    .catch(function () { AN_ETAT = "echec"; anRendre(); });
+}
+
 function anRendre() {
   var zone = document.getElementById("an-liste");
-  if (!zone || !window.REPERE_AGENDA_AN) return;
+  if (!zone) return;
+  if (!window.REPERE_AGENDA_AN) {
+    var plus0 = document.getElementById("an-plus");
+    if (plus0) plus0.style.display = "none";
+    if (AN_ETAT === "en cours") {
+      zone.innerHTML = '<p class="dico-vide">Chargement de l\'agenda parlementaire...</p>';
+    } else {
+      /* Doctrine du vide : pas de graphique, pas de squelette anime qui ferait
+         croire a un chargement sans fin. Une phrase, et la source officielle. */
+      zone.innerHTML = '<p class="dico-vide">L\'agenda de l\'Assemblee n\'a pas pu etre '
+        + 'charge. Il n\'est pas vide : il n\'est pas la. '
+        + '<a href="https://data.assemblee-nationale.fr/travaux-parlementaires/reunions" '
+        + 'target="_blank" rel="noopener" style="color:var(--ink);text-decoration:underline;'
+        + 'text-underline-offset:2px;">Le fichier officiel de l\'Assemblee</a>.</p>';
+      if (AN_ETAT !== "echec" && window.REPERE_AGENDA_URL) anCharger();
+    }
+    var couv0 = document.getElementById("an-couverture");
+    if (couv0) couv0.innerHTML = '<p>Rien a decrire tant que l\'agenda n\'est pas charge.</p>';
+    return;
+  }
   var sel = anSelection();
   var fin = Math.min(sel.length, (AN_PAGE + 1) * AN_PAR_PAGE);
   var h = "";
@@ -15874,6 +15979,9 @@ function anRendre() {
       + '<div class="fresh"><span>Avec ordre du jour</span><span class="d">' + avecODJ + '</span></div>'
       + '<div class="fresh"><span>Annoncées puis annulées</span><span class="d">' + annulees + '</span></div>'
       + '<div class="fresh"><span>Écartées : instance non nommée</span><span class="d">911</span></div>'
+      + '<div class="fresh"><span>' + (AN_MAJ ? "Dernière collecte" : "Origine des donnees")
+        + '</span><span class="d">' + (AN_MAJ ? anJour(AN_MAJ)
+          : (AN_ETAT === "servi" ? "telechargees" : "embarquees dans l\'application")) + '</span></div>'
       + '<p style="margin-top:8px;">Ces 911 réunions existent dans le fichier officiel, mais leur instance '
       + 'n\'est nommée par aucun référentiel publié. Nous préférons ne pas les afficher '
       + 'plutôt que de vous montrer un code.</p>';

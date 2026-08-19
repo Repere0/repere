@@ -25,6 +25,7 @@ Regles d'ingestion — chacune a une raison, et la raison compte plus que la reg
 Usage : python3 outils/agenda_an.py <dossier_agenda> <dossier_amo30> <sortie.json>
 """
 import sys, io, json, glob, collections
+import datetime
 
 if len(sys.argv) != 4:
     sys.exit(__doc__)
@@ -99,8 +100,20 @@ for e in lignes:
         table.append([noms[u][0], noms[u][1]])
     e["o"] = idx[u]
 
-paquet = {"v": 1, "org": table, "r": lignes}
-brut = json.dumps(paquet, ensure_ascii=False, separators=(",", ":"))
+# UNE REUNION PAR LIGNE, et c'est un choix de stockage, pas de style. En une seule
+# ligne de 630 Ko, git ne sait pas calculer de difference utile : chaque collecte
+# quotidienne recommettrait le fichier entier, soit ~230 Mo de depot en un an. Avec
+# un retour a la ligne par reunion, git ne garde que les lignes qui changent. Le
+# poids servi ne bouge pas : la compression du serveur absorbe les retours a la ligne.
+paquet_org = json.dumps(table, ensure_ascii=False, separators=(",", ":"))
+corps = ",\n".join(json.dumps(e, ensure_ascii=False, separators=(",", ":")) for e in lignes)
+# POURQUOI une date de collecte DANS le fichier : sans elle, l'application ne peut pas
+# dire a quand remontent ses donnees, et une donnee dont on ignore l'age vaut une
+# donnee fausse. Elle est en UTC, au format ISO, et c'est la seule valeur du fichier
+# qui ne vienne pas du referentiel de l'Assemblee.
+maj = datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%d")
+brut = '{"v":1,"maj":"' + maj + '","org":' + paquet_org + ',"r":[\n' + corps + '\n]}'
+paquet = json.loads(brut)
 
 # Controle independant : on relit la sortie sans reutiliser une variable d'au-dessus.
 relu = json.loads(brut)
@@ -108,6 +121,8 @@ assert len(relu["r"]) == stats["retenue"]
 assert all(0 <= e["o"] < len(relu["org"]) for e in relu["r"]), "un index d'instance sort de la table"
 assert "presence" not in brut and "acteurRef" not in brut, "une presence nominative a fuite"
 assert relu["r"] == sorted(relu["r"], key=lambda e: e["d"]), "les reunions ne sont pas triees"
+assert relu["maj"] == maj, "la date de collecte n'a pas ete relue"
+assert len(relu["maj"]) == 10
 
 io.open(SORTIE, "w", encoding="utf-8").write(brut)
 for k, v in stats.most_common():

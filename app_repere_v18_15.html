@@ -3054,9 +3054,9 @@ details.plus[open] > *:not(summary){animation:pliOuvre .22s ease both;}
           <div class="repli-in">
             <p style="margin-bottom:10px;">Ce que Repère collecte — et ne collecte jamais.</p>
             <button class="abo-sec" style="margin-top:0;" onclick="openDef('donnees')">Voir le détail</button>
-            <p class="abo-note" style="text-align:left;margin-top:10px;">Repère v18.14 — bêta fermée.</p>
+            <p class="abo-note" style="text-align:left;margin-top:10px;">Repère v18.15 — bêta fermée.</p>
             <button class="abo-sec" style="margin-top:10px;" onclick="showTab('s-moi','Moi');show('s-sources','Sources &amp; charte');setTimeout(function(){var d=document.getElementById('repli-legal');if(d){d.open=true;d.scrollIntoView({block:'center'});}},60);">Mentions légales, CGU &amp; confidentialité</button>
-            <a class="abo-sec" style="display:block;text-align:center;text-decoration:none;margin-top:10px;" href="mailto:repere0@protonmail.com?subject=Rep%C3%A8re%20v18.14%20%E2%80%94%20retour%20de%20test">Écrire à l'équipe</a>
+            <a class="abo-sec" style="display:block;text-align:center;text-decoration:none;margin-top:10px;" href="mailto:repere0@protonmail.com?subject=Rep%C3%A8re%20v18.15%20%E2%80%94%20retour%20de%20test">Écrire à l'équipe</a>
           </div>
         </details>
       </div>
@@ -3201,8 +3201,8 @@ details.plus[open] > *:not(summary){animation:pliOuvre .22s ease both;}
             <p style="margin-top:10px;"><b>Droit de réponse.</b> Toute personne citée peut en demander un à l'adresse ci-dessus. Il est publié sans coupe ni commentaire au journal public des corrections.</p>
             <p style="margin-top:10px;"><b>Conditions d'utilisation.</b> Repère informe. Il ne conseille pas, ne représente personne, n'engage aucune collectivité et ne remplace aucun acte officiel. Les résumés sont vérifiés un par un et peuvent malgré tout comporter une erreur : <b>en cas d'écart, la source officielle liée sous chaque carte fait foi</b>, jamais le résumé.</p>
             <p style="margin-top:10px;"><b>Abonnement.</b> Premium 1,99 € par mois, sans engagement, résiliable à tout moment sans justification ni frais, droit de rétractation de 14 jours. <b>La vente n'est pas ouverte :</b> aucun paiement n'est possible aujourd'hui, et l'écran de paiement est une simulation.</p>
-            <a class="abo-sec" style="display:block;text-align:center;text-decoration:none;margin-top:14px;" href="mailto:repere0@protonmail.com?subject=Rep%C3%A8re%20v18.14%20%E2%80%94%20retour%20de%20test&body=Ce%20que%20j%27ai%20fait%20%3A%0A%0ACe%20que%20j%27attendais%20%3A%0A%0ACe%20qui%20s%27est%20passe%20%3A%0A%0AMa%20commune%20%3A%0AMon%20telephone%20%3A%0A">Écrire à l'équipe — retour de test</a>
-            <p class="abo-note" style="text-align:left;margin-top:10px;">Repère v18.14 — bêta fermée. Données embarquées dans l'application, utilisables hors connexion.</p>
+            <a class="abo-sec" style="display:block;text-align:center;text-decoration:none;margin-top:14px;" href="mailto:repere0@protonmail.com?subject=Rep%C3%A8re%20v18.15%20%E2%80%94%20retour%20de%20test&body=Ce%20que%20j%27ai%20fait%20%3A%0A%0ACe%20que%20j%27attendais%20%3A%0A%0ACe%20qui%20s%27est%20passe%20%3A%0A%0AMa%20commune%20%3A%0AMon%20telephone%20%3A%0A">Écrire à l'équipe — retour de test</a>
+            <p class="abo-note" style="text-align:left;margin-top:10px;">Repère v18.15 — bêta fermée. Données embarquées dans l'application, utilisables hors connexion.</p>
           </div>
         </details>
 
@@ -6760,7 +6760,10 @@ function showTab(id, title) {
 function show(id, title, remplace) { /* écran secondaire avec retour */
   /* L'agenda de l'Assemblee se peint a l'ouverture : 6 280 lignes ne se rendent pas
      au chargement de l'application, elles se rendent quand quelqu'un les demande. */
-  if (id === "s-an" && typeof anRendre === "function") setTimeout(anRendre, 0);
+  if (id === "s-an" && typeof anRendre === "function") setTimeout(function () {
+    if (typeof anCharger === "function") anCharger();
+    anRendre();
+  }, 0);
   document.getElementById("appbar").classList.add("sub");
   /* v18 — POURQUOI officialiser ce troisième paramètre : le balisage et huit appels du
      banc lui passaient déjà « true », et il était silencieusement ignoré. Un argument
@@ -15838,9 +15841,56 @@ function anSelection() {
   return out;
 }
 
+/* Etat du chargement : "embarque", "absent", "en cours", "servi", "echec".
+   Il est affiche a l'ecran, parce qu'un ecran vide sans explication est le pire des
+   trois cas possibles — pire qu'une erreur, qui elle au moins se comprend. */
+var AN_ETAT = "absent";
+
+function anCharger() {
+  if (AN_ETAT === "en cours" || AN_ETAT === "servi") return;
+  if (!window.REPERE_AGENDA_URL) return;      /* fichier autonome : rien a chercher */
+  AN_ETAT = "en cours";
+  anRendre();
+  fetch(window.REPERE_AGENDA_URL, { credentials: "omit" })
+    .then(function (r) {
+      if (!r.ok) throw new Error("HTTP " + r.status);
+      return r.json();
+    })
+    .then(function (d) {
+      /* On refuse une reponse qui n'a pas la forme attendue : une page d'erreur
+         renvoyee en 200 par un hebergeur ne doit pas passer pour un agenda. */
+      if (!d || d.v !== 1 || !Array.isArray(d.r) || !Array.isArray(d.org)) {
+        throw new Error("format inattendu");
+      }
+      window.REPERE_AGENDA_AN = d;
+      AN_ETAT = "servi";
+      anRendre();
+    })
+    .catch(function () { AN_ETAT = "echec"; anRendre(); });
+}
+
 function anRendre() {
   var zone = document.getElementById("an-liste");
-  if (!zone || !window.REPERE_AGENDA_AN) return;
+  if (!zone) return;
+  if (!window.REPERE_AGENDA_AN) {
+    var plus0 = document.getElementById("an-plus");
+    if (plus0) plus0.style.display = "none";
+    if (AN_ETAT === "en cours") {
+      zone.innerHTML = '<p class="dico-vide">Chargement de l\'agenda parlementaire...</p>';
+    } else {
+      /* Doctrine du vide : pas de graphique, pas de squelette anime qui ferait
+         croire a un chargement sans fin. Une phrase, et la source officielle. */
+      zone.innerHTML = '<p class="dico-vide">L\'agenda de l\'Assemblee n\'a pas pu etre '
+        + 'charge. Il n\'est pas vide : il n\'est pas la. '
+        + '<a href="https://data.assemblee-nationale.fr/travaux-parlementaires/reunions" '
+        + 'target="_blank" rel="noopener" style="color:var(--ink);text-decoration:underline;'
+        + 'text-underline-offset:2px;">Le fichier officiel de l\'Assemblee</a>.</p>';
+      if (AN_ETAT !== "echec" && window.REPERE_AGENDA_URL) anCharger();
+    }
+    var couv0 = document.getElementById("an-couverture");
+    if (couv0) couv0.innerHTML = '<p>Rien a decrire tant que l\'agenda n\'est pas charge.</p>';
+    return;
+  }
   var sel = anSelection();
   var fin = Math.min(sel.length, (AN_PAGE + 1) * AN_PAR_PAGE);
   var h = "";
@@ -15874,6 +15924,8 @@ function anRendre() {
       + '<div class="fresh"><span>Avec ordre du jour</span><span class="d">' + avecODJ + '</span></div>'
       + '<div class="fresh"><span>Annoncées puis annulées</span><span class="d">' + annulees + '</span></div>'
       + '<div class="fresh"><span>Écartées : instance non nommée</span><span class="d">911</span></div>'
+      + '<div class="fresh"><span>Origine des donnees</span><span class="d">'
+        + (AN_ETAT === "servi" ? "telechargees" : "embarquees dans l\'application") + '</span></div>'
       + '<p style="margin-top:8px;">Ces 911 réunions existent dans le fichier officiel, mais leur instance '
       + 'n\'est nommée par aucun référentiel publié. Nous préférons ne pas les afficher '
       + 'plutôt que de vous montrer un code.</p>';
