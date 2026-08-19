@@ -6,6 +6,8 @@ elus-*
 
 # Sorties engendrees : build_pwa.py les refabrique a l'identique.
 site_v*/
+site_a_deployer/
+site_engendre/
 repere_site*.zip
 repere_pwa*.zip
 
@@ -13,7 +15,5 @@ repere_pwa*.zip
 desktop.ini
 Thumbs.db
 node_modules/
-data/*.zip
-data/brut_*/
 data/*.zip
 data/brut_*/

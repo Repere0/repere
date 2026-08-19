@@ -16,6 +16,12 @@
 # transformation produit exactement le site fait a la main a l'origine. Sans eux,
 # build_pwa refuse de produire quoi que ce soit — et c'est voulu.
 
+# 19/08/2026 — checkout passe en v5 et setup-python en v6 : les versions precedentes
+# ciblent Node 20, que les runners GitHub forcent deja sur Node 24 depuis septembre 2025.
+# L'avertissement etait sans consequence aujourd'hui, et deviendra une panne le jour ou
+# Node 20 sera retire. Un avertissement qu'on laisse s'installer finit par etre du bruit
+# qu'on ne lit plus.
+
 name: Collecte quotidienne
 
 on:
@@ -33,10 +39,10 @@ jobs:
 
     steps:
       - name: Recuperer le depot
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Installer Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: "3.12"
 
