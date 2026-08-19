@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Repère — Trois actions, puis plus rien</title>
+<style>
+:root{--ink:#1B1815;--ink-2:#413A33;--muted:#6B6259;--sep:#E2DBD0;--sep-fort:#CBC2B4;
+ --bg:#F1EDE4;--card:#FFF;--fill:#EEE9E0;--urgent:#9B4808;--ok:#45584A;--ville:#0C657D}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+ line-height:1.6;padding:0 0 70px;-webkit-font-smoothing:antialiased}
+.wrap{max-width:820px;margin:0 auto;padding:0 22px}
+header{padding:48px 0 24px;border-bottom:2px solid var(--ink)}
+.eyebrow{font-size:11px;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);font-weight:700}
+h1{font-size:clamp(28px,5vw,40px);line-height:1.07;letter-spacing:-.025em;font-weight:800;margin:12px 0 14px}
+h2{font-size:20px;line-height:1.25;letter-spacing:-.015em;font-weight:800;margin:0}
+p{color:var(--ink-2);font-size:15.5px;line-height:1.65;max-width:72ch;overflow-wrap:anywhere}
+p+p{margin-top:10px}
+b{color:var(--ink);font-weight:700}
+.etape{border-top:1px solid var(--sep);padding:28px 0}
+.tete{display:flex;gap:13px;align-items:baseline;margin-bottom:12px}
+.n{font-size:12px;font-weight:800;background:var(--ink);color:var(--bg);border-radius:999px;padding:4px 11px;flex-shrink:0;line-height:1.4}
+.n.urg{background:var(--urgent)}
+.duree{font-size:11.5px;color:var(--muted);font-weight:700;letter-spacing:.04em;text-transform:uppercase;margin-left:auto;flex-shrink:0}
+pre{background:var(--ink);color:#F7F4EE;border-radius:12px;padding:13px 15px;margin:13px 0;
+ font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12.5px;line-height:1.7;white-space:pre-wrap;word-break:break-all}
+code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:13px;background:var(--fill);border-radius:5px;padding:1px 5px}
+.bloc{background:var(--card);border:1px solid var(--sep);border-radius:14px;padding:14px 16px;margin-top:13px}
+.bloc .l{font-size:10.5px;letter-spacing:.13em;text-transform:uppercase;font-weight:800;color:var(--muted);margin-bottom:6px}
+.bloc.reussi{border-left:3px solid var(--ok)}
+.bloc.piege{border-left:3px solid var(--urgent)}
+.bloc.pourquoi{border-left:3px solid var(--ville)}
+.bloc p{font-size:14.5px}
+ul{margin:9px 0 0 20px;color:var(--ink-2);font-size:15px}li{margin-bottom:6px;overflow-wrap:anywhere}
+a{color:var(--ville);overflow-wrap:anywhere}
+.avert{background:#F0EBE1;border:1px solid var(--sep-fort);border-radius:14px;padding:15px 17px;margin:20px 0}
+.avert .l{font-size:10.5px;letter-spacing:.13em;text-transform:uppercase;font-weight:800;color:var(--urgent);margin-bottom:6px}
+table{width:100%;border-collapse:collapse;margin-top:16px;font-size:14px}
+th,td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--sep);vertical-align:top}
+th{font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:800}
+footer{border-top:2px solid var(--ink);margin-top:30px;padding-top:20px}
+@media print{body{background:#fff}pre{background:#fff;color:#000;border:1px solid #999}}
+</style></head><body><div class="wrap">
+
+<header>
+  <div class="eyebrow">Repère · 19 août 2026 · automatisation</div>
+  <h1>Trois actions,<br>puis plus rien.</h1>
+  <p>J'ai changé la structure au lieu de t'aider à faire les gestes plus vite. Après ces
+  trois actions, une modification de ma part arrive en ligne <b>sans que tu touches à
+  quoi que ce soit</b>.</p>
+  <table>
+    <tr><th>Ce qu'il fallait faire à chaque changement</th><th>Maintenant</th></tr>
+    <tr><td>Copier un fichier dans <code>.github\workflows\</code></td><td><b>Plus jamais</b> — toute la logique vit dans <code>outils/pipeline.sh</code>, que j'écris directement</td></tr>
+    <tr><td><code>git add</code> / <code>commit</code> / <code>push</code></td><td><b>Automatique</b> — une tâche horaire lance <code>pousser.bat</code></td></tr>
+    <tr><td>Glisser le dossier sur Netlify</td><td><b>Automatique</b> — le workflow publie</td></tr>
+    <tr><td>Vérifier que rien n'est cassé</td><td><b>Automatique</b> — 40 contrôles dans un vrai navigateur, avant publication</td></tr>
+  </table>
+</header>
+
+<div class="etape">
+  <div class="tete"><span class="n urg">1</span><h2>Poser le lanceur, la dernière fois</h2><span class="duree">3 minutes</span></div>
+  <div class="bloc pourquoi"><div class="l">Pourquoi c'est la dernière</div>
+  <p>Le nouveau workflow ne contient plus aucune logique : il installe Python, Node et un
+  navigateur, puis lance <code>bash outils/pipeline.sh</code>. Tout ce qui pourra changer
+  demain est dans <code>outils/</code>, un dossier ordinaire où j'écris sans passer par
+  toi. Ce fichier-là ne devrait plus jamais bouger.</p></div>
+  <pre>copy /Y docs\collecte_workflow_v3.yml.txt .github\workflows\collecte.yml</pre>
+  <pre>findstr /C:"pipeline.sh" .github\workflows\collecte.yml</pre>
+  <div class="bloc reussi"><div class="l">Réussi si</div>
+  <p>La seconde commande affiche une ligne. Sinon, arrête-toi et dis-le-moi.</p></div>
+  <pre>git add -A && git commit -m "Chaine deplacee dans outils/pipeline.sh ; banc en CI" && git push</pre>
+</div>
+
+<div class="etape">
+  <div class="tete"><span class="n urg">2</span><h2>Installer la tâche horaire</h2><span class="duree">30 secondes</span></div>
+  <div class="bloc pourquoi"><div class="l">Ce qu'elle remplace</div>
+  <p>Je peux écrire dans ton dossier mais je n'ai aucun terminal sur ta machine : je ne
+  peux pas lancer <code>git</code>. C'était la dernière chose qui te restait à faire à
+  chaque fois. <code>pousser.bat</code> le fait : il récupère les commits du robot, ajoute
+  ce qui a changé, et envoie.</p></div>
+  <p>Double-clique <code>installer_tache_horaire.bat</code>, dans <code>C:\Users\APina\repere</code>.
+  Aucun droit administrateur n'est nécessaire.</p>
+  <div class="bloc reussi"><div class="l">Réussi si</div>
+  <p>La fenêtre affiche « Tache creee : elle tournera toutes les heures. » Tu peux aussi
+  double-cliquer <code>pousser.bat</code> quand tu veux, sans attendre l'heure. Il écrit
+  tout dans <code>journal_pousser.txt</code>.</p></div>
+  <div class="bloc piege"><div class="l">Ce qu'il refuse de faire</div>
+  <p>Il s'arrête, sans rien envoyer, si un fichier à envoyer porte <code>.env</code>,
+  <code>secret</code>, <code>token</code>, <code>credential</code>, <code>.pem</code> ou
+  <code>id_rsa</code> dans son nom, ou s'il dépasse 50 Mo. Pour retirer la tâche :
+  <code>desinstaller_tache.bat</code>.</p></div>
+</div>
+
+<div class="etape">
+  <div class="tete"><span class="n urg">3</span><h2>Les deux secrets Netlify</h2><span class="duree">10 minutes, une fois</span></div>
+  <div class="bloc pourquoi"><div class="l">La dernière chose que je ne peux pas faire</div>
+  <p>Un jeton ne doit jamais passer par une conversation. C'est la seule étape de ce
+  document que je ne pourrai jamais reprendre, quelle que soit la configuration.</p></div>
+  <ul>
+    <li><b>Le jeton</b> — <a href="https://app.netlify.com/user/applications#personal-access-tokens">app.netlify.com/user/applications</a> → <b>New access token</b>. La valeur ne s'affiche qu'une fois.</li>
+    <li><b>L'identifiant</b> — <a href="https://app.netlify.com/sites/repereapp/configuration/general">app.netlify.com/sites/repereapp/configuration/general</a> → <b>Site information</b> → Site ID.</li>
+    <li><b>Les déposer</b> — <a href="https://github.com/Repere0/repere/settings/secrets/actions">github.com/Repere0/repere/settings/secrets/actions</a> → <b>New repository secret</b>.</li>
+  </ul>
+  <pre>NETLIFY_AUTH_TOKEN
+NETLIFY_SITE_ID</pre>
+  <div class="avert"><div class="l">Sans exception</div>
+  <p>Ces deux valeurs ne vont que dans le formulaire GitHub. Jamais dans un fichier du
+  dépôt, jamais dans une conversation — <b>y compris avec moi</b>.</p></div>
+</div>
+
+<div class="etape">
+  <div class="tete"><span class="n">✓</span><h2>Ce qui se passe ensuite, tout seul</h2><span class="duree">tous les jours</span></div>
+  <ul>
+    <li><b>5 h 47</b> — le robot télécharge l'Assemblée, normalise l'agenda, décrit le schéma des scrutins.</li>
+    <li>Il <b>vérifie</b> : format, nombre de réunions, aucune donnée nominative de présence, date du jour, et qu'il reste des réunions à venir — ce dernier point attrape le gel silencieux d'une source, par exemple après une dissolution.</li>
+    <li>Il <b>reconstruit</b> le site, l'agenda du matin remplaçant la copie figée dans les 17 Mo.</li>
+    <li>Il <b>éprouve</b> : 40 contrôles dans un vrai navigateur, sur le site reconstruit. Un seul échec et rien n'est publié.</li>
+    <li>Il <b>publie</b> sur Netlify, et écrit dans le journal « publié » ou « non publié, secrets absents ».</li>
+    <li><b>Toutes les heures</b>, ta machine envoie au dépôt ce que j'ai écrit entre-temps.</li>
+  </ul>
+</div>
+
+<footer>
+  <h2>Ce que je ne peux pas automatiser, et je ne le cacherai pas</h2>
+  <p style="margin-top:8px">Tes secrets. Ton téléphone. Et le jugement : le jour où le banc
+  passera au vert sur quelque chose de faux, c'est un humain qui devra le voir. Un banc
+  vert sur une page cassée reste un banc vert.</p>
+  <p style="margin-top:12px"><b>Une réserve honnête</b> : les trois fichiers <code>.bat</code>
+  sont écrits pour Windows, mais je n'ai aucun moyen de les exécuter d'ici — mon conteneur
+  est sous Linux. Leur structure est vérifiée, leur comportement réel ne l'est pas. Si l'un
+  d'eux se comporte mal au premier lancement, envoie-moi <code>journal_pousser.txt</code>.</p>
+</footer>
+
+</div></body></html>

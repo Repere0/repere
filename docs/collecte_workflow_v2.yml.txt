@@ -16,6 +16,12 @@
 # transformation produit exactement le site fait a la main a l'origine. Sans eux,
 # build_pwa refuse de produire quoi que ce soit — et c'est voulu.
 
+# 19/08/2026 — checkout passe en v5 et setup-python en v6 : les versions precedentes
+# ciblent Node 20, que les runners GitHub forcent deja sur Node 24 depuis septembre 2025.
+# L'avertissement etait sans consequence aujourd'hui, et deviendra une panne le jour ou
+# Node 20 sera retire. Un avertissement qu'on laisse s'installer finit par etre du bruit
+# qu'on ne lit plus.
+
 name: Collecte quotidienne
 
 on:
@@ -31,12 +37,21 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
 
+    # POURQUOI ces deux variables sont declarees ICI et pas dans l'etape de deploiement :
+    # le bloc `env:` d'une etape n'est pas visible dans le `if:` de cette meme etape.
+    # Ecrit au niveau de l'etape, le test « le secret existe-t-il ? » etait toujours faux
+    # et le deploiement etait saute meme apres avoir cree les secrets — une panne muette,
+    # la pire espece. Au niveau du job, `env` est lu par les `if:` des etapes.
+    env:
+      NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+      NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+
     steps:
       - name: Recuperer le depot
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Installer Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: "3.12"
 
@@ -65,6 +80,14 @@ jobs:
             data/brut_AMO30/json \
             outils/agenda_an.json
 
+      - name: Decrire le schema des scrutins
+        # Le fichier des scrutins pese 26 Mo et n'a aucune documentation de champs. Cette
+        # etape en publie l'arborescence et un exemple tronque, pour qu'on puisse ecrire
+        # l'ingestion sur des noms de champs LUS et non supposes. continue-on-error :
+        # c'est de la documentation, elle ne doit jamais faire tomber la collecte.
+        continue-on-error: true
+        run: python3 outils/echantillon_scrutins.py data/brut_Scrutins docs/schema_scrutins.md
+
       - name: Verifier que la sortie est utilisable
         # Un fichier produit n'est pas un fichier valide. On relit ce qui vient d'etre
         # ecrit, sans reutiliser une ligne du script qui l'a ecrit.
@@ -89,11 +112,15 @@ jobs:
           set -e
           git config user.name "Collecte Repere"
           git config user.email "repere0@protonmail.com"
-          git add outils/agenda_an.json data/journal_collecte.json
+          git add outils/agenda_an.json data/journal_collecte.json docs/schema_scrutins.md
           if git diff --cached --quiet; then
             echo "Rien de nouveau aujourd'hui."
           else
             git commit -m "Collecte du $(date -u +%d/%m/%Y)"
+            # Se rebaser avant de pousser : si quelqu'un a pousse pendant l'execution,
+            # le push est refuse (non-fast-forward) et le job tombe en rouge pour une
+            # raison qui n'a rien a voir avec la collecte. C'est arrive le 19/08/2026.
+            git pull --rebase --autostash origin main
             git push
           fi
 
@@ -119,10 +146,18 @@ jobs:
         # Ne se declenche que si les deux secrets existent : sans eux, le job reste vert
         # et la collecte reste utile, au lieu d'echouer tous les matins.
         if: env.NETLIFY_AUTH_TOKEN != '' && env.NETLIFY_SITE_ID != ''
-        env:
-          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
-          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
-        run: npx --yes netlify-cli@17 deploy --dir=site_engendre --prod --message "Collecte du $(date -u +%d/%m/%Y)"
+        run: npx --yes netlify-cli deploy --dir=site_engendre --prod --message "Collecte du $(date -u +%d/%m/%Y)"
+
+      - name: Dire ce qui a ete publie, ou pourquoi rien ne l'a ete
+        # Un deploiement saute en silence se lit comme un deploiement reussi. On ecrit
+        # laquelle des deux choses s'est produite, dans le journal, en clair.
+        if: always()
+        run: |
+          if [ -z "$NETLIFY_AUTH_TOKEN" ] || [ -z "$NETLIFY_SITE_ID" ]; then
+            echo "::notice::Site reconstruit mais NON publie : les secrets NETLIFY_AUTH_TOKEN et/ou NETLIFY_SITE_ID sont absents."
+          else
+            echo "::notice::Site reconstruit et publie sur Netlify."
+          fi
 
       - name: Signaler les echecs de collecte
         if: steps.collecte.outcome == 'failure'

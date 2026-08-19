@@ -16,8 +16,16 @@
 import fs from "node:fs";
 import path from "node:path";
 import http from "node:http";
-import pkg from "/home/claude/.npm-global/lib/node_modules/playwright/index.js";
-const { chromium } = pkg;
+/* Playwright est resolu de trois facons, dans cet ordre : par le nom (cas normal,
+   et cas du runner GitHub ou il est installe dans le projet), puis par le chemin
+   absolu du conteneur de developpement. Un banc qui ne demarre pas sur le runner
+   ne protege rien — et c'est precisement la ou il doit tourner. */
+let chromium;
+try {
+  ({ chromium } = await import("playwright"));
+} catch {
+  ({ chromium } = (await import("/home/claude/.npm-global/lib/node_modules/playwright/index.js")).default);
+}
 
 const CIBLE = process.argv[2];
 if (!CIBLE || !fs.existsSync(CIBLE)) {
