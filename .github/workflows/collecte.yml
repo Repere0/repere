@@ -37,6 +37,15 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
 
+    # POURQUOI ces deux variables sont declarees ICI et pas dans l'etape de deploiement :
+    # le bloc `env:` d'une etape n'est pas visible dans le `if:` de cette meme etape.
+    # Ecrit au niveau de l'etape, le test « le secret existe-t-il ? » etait toujours faux
+    # et le deploiement etait saute meme apres avoir cree les secrets — une panne muette,
+    # la pire espece. Au niveau du job, `env` est lu par les `if:` des etapes.
+    env:
+      NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+      NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+
     steps:
       - name: Recuperer le depot
         uses: actions/checkout@v5
@@ -125,10 +134,18 @@ jobs:
         # Ne se declenche que si les deux secrets existent : sans eux, le job reste vert
         # et la collecte reste utile, au lieu d'echouer tous les matins.
         if: env.NETLIFY_AUTH_TOKEN != '' && env.NETLIFY_SITE_ID != ''
-        env:
-          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
-          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
-        run: npx --yes netlify-cli@17 deploy --dir=site_engendre --prod --message "Collecte du $(date -u +%d/%m/%Y)"
+        run: npx --yes netlify-cli deploy --dir=site_engendre --prod --message "Collecte du $(date -u +%d/%m/%Y)"
+
+      - name: Dire ce qui a ete publie, ou pourquoi rien ne l'a ete
+        # Un deploiement saute en silence se lit comme un deploiement reussi. On ecrit
+        # laquelle des deux choses s'est produite, dans le journal, en clair.
+        if: always()
+        run: |
+          if [ -z "$NETLIFY_AUTH_TOKEN" ] || [ -z "$NETLIFY_SITE_ID" ]; then
+            echo "::notice::Site reconstruit mais NON publie : les secrets NETLIFY_AUTH_TOKEN et/ou NETLIFY_SITE_ID sont absents."
+          else
+            echo "::notice::Site reconstruit et publie sur Netlify."
+          fi
 
       - name: Signaler les echecs de collecte
         if: steps.collecte.outcome == 'failure'
