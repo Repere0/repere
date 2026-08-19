@@ -11,6 +11,13 @@ site_engendre/
 repere_site*.zip
 repere_pwa*.zip
 
+# Journal de pousser.bat. POURQUOI IL NE DOIT PAS ETRE SUIVI : le script y ecrit
+# pendant que git rebase le depot. Git tente alors de remplacer un fichier que
+# le script tient ouvert, echoue avec « unable to unlink old », et laisse un
+# autostash a moitie pose qui bloque toutes les tentatives suivantes. Un journal
+# d'execution n'a de toute facon rien a faire dans l'historique du code.
+journal_pousser.txt
+
 # Bruit de systeme
 desktop.ini
 Thumbs.db
