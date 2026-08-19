@@ -1,0 +1,122 @@
+# =============================================================================
+# Collecte quotidienne de Repere — version 4, dite « lanceur ».
+#
+# CE FICHIER NE DEVRAIT PLUS JAMAIS CHANGER. C'est tout son interet.
+#
+# Le dossier .github/workflows/ est protege en ecriture contre les outils distants :
+# chaque evolution de la chaine obligeait a une manipulation manuelle — copier un
+# fichier, verifier, committer, pousser. Toute la logique vit desormais dans
+# outils/pipeline.sh, un fichier ordinaire du depot. Les evolutions futures s'y font
+# sans jamais retoucher a ce lanceur.
+#
+# CE QUI REND LA PUBLICATION AUTOMATIQUE ACCEPTABLE : outils/pipeline.sh fait tourner
+# le banc de 40 controles sur le site RECONSTRUIT, dans un vrai navigateur, avant tout
+# deploiement. Si un seul controle tombe, la pipeline s'arrete et rien n'est publie.
+# Publier sans relecture humaine n'est pas un pari tant que quelque chose dit non a
+# notre place.
+# =============================================================================
+
+name: Collecte quotidienne
+
+on:
+  schedule:
+    # 05h47 UTC — heure creuse, et volontairement pas ronde : les runners GitHub
+    # sont satures a :00, et les serveurs de l'Assemblee aussi.
+    - cron: "47 5 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  collecte:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    # POURQUOI ICI et pas dans l'etape : le bloc env: d'une etape n'est pas visible
+    # dans le if: de cette meme etape. Ecrit au niveau de l'etape, le test « le secret
+    # existe-t-il ? » etait toujours faux et le deploiement etait saute meme apres
+    # creation des secrets — une panne muette, la pire espece.
+    env:
+      NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+      NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+
+    steps:
+      - name: Recuperer le depot
+        uses: actions/checkout@v5
+
+      - name: Installer Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Installer le navigateur du banc
+        # Node n'est PAS installe par une action : l'image ubuntu-latest l'embarque.
+        # actions/setup-node@v4 ciblait Node 20, deprecie — et c'etait la troisieme
+        # action a mettre a jour en deux jours. Une dependance retiree ne se deprecie
+        # plus jamais. On verifie quand meme sa presence, pour que l'absence eventuelle
+        # se lise en une ligne au lieu d'une erreur obscure de npm.
+        # Le banc mesure le rendu reel : sans navigateur, il ne prouve rien. Chromium
+        # seul suffit, --with-deps installe les bibliotheques systeme manquantes.
+        run: |
+          node --version || { echo "::error::Node absent de l'image du runner."; exit 1; }
+          npm install --no-save playwright@1.49.0
+          npx playwright install --with-deps chromium
+
+      - name: Telecharger les sources
+        id: collecte
+        # continue-on-error : une source indisponible ne doit empecher ni l'ingestion
+        # des autres, ni l'ecriture du journal. C'est le journal qui porte l'echec.
+        continue-on-error: true
+        run: python3 outils/collecte.py
+
+      - name: Executer la chaine
+        # Depiler, normaliser, decrire, verifier, reconstruire, eprouver.
+        # Tout est dans outils/pipeline.sh — c'est la qu'on modifie, pas ici.
+        run: bash outils/pipeline.sh
+
+      - name: Committer ce qui a change
+        run: |
+          set -e
+          git config user.name "Collecte Repere"
+          git config user.email "repere0@protonmail.com"
+          git add outils/agenda_an.json data/journal_collecte.json docs/schema_scrutins.md
+          if git diff --cached --quiet; then
+            echo "Rien de nouveau aujourd'hui."
+          else
+            git commit -m "Collecte du $(date -u +%d/%m/%Y)"
+            # Se rebaser avant de pousser : si quelqu'un a pousse pendant l'execution,
+            # le push est refuse et le job tombe en rouge pour une raison etrangere
+            # a la collecte. C'est arrive le 19/08/2026.
+            git pull --rebase --autostash origin main
+            git push
+          fi
+
+      - name: Publier sur Netlify
+        if: env.NETLIFY_AUTH_TOKEN != '' && env.NETLIFY_SITE_ID != ''
+        run: npx --yes netlify-cli deploy --dir=site_engendre --prod --message "Collecte du $(date -u +%d/%m/%Y)"
+
+      - name: Dire ce qui a ete publie, ou pourquoi rien ne l'a ete
+        # Un deploiement saute en silence se lit comme un deploiement reussi.
+        if: always()
+        run: |
+          if [ -z "$NETLIFY_AUTH_TOKEN" ] || [ -z "$NETLIFY_SITE_ID" ]; then
+            echo "::notice::Site reconstruit mais NON publie : les secrets NETLIFY_AUTH_TOKEN et/ou NETLIFY_SITE_ID sont absents."
+          else
+            echo "::notice::Site reconstruit, eprouve par le banc, et publie sur Netlify."
+          fi
+
+      - name: Signaler les echecs de collecte
+        if: steps.collecte.outcome == 'failure'
+        run: |
+          echo "::warning::Au moins une source n'a pas pu etre telechargee."
+          cat data/journal_collecte.json
+          exit 1
+
+# ---------------------------------------------------------------------------
+# LES DEUX SECRETS se creent dans Settings > Secrets and variables > Actions :
+#   NETLIFY_AUTH_TOKEN — Netlify > User settings > Applications > Personal access tokens
+#   NETLIFY_SITE_ID    — Netlify > Site configuration > General > Site information
+# Personne d'autre que toi ne doit les voir : ne les colle jamais dans une
+# conversation, ici ou ailleurs.
+# ---------------------------------------------------------------------------
