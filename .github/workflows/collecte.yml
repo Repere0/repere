@@ -1,28 +1,30 @@
-# Collecte quotidienne des donnees publiques de Repere.
+# Collecte quotidienne des donnees publiques de Repere — version 2.
 #
-# POURQUOI ICI et pas ailleurs : le conteneur de travail de Claude ne peut pas
-# joindre data.assemblee-nationale.fr, et un poste allume de facon irreguliere ne
-# fait pas une collecte quotidienne. Un runner GitHub le fait gratuitement, a heure
-# fixe, avec une trace publique de chaque execution — et le journal des echecs est
-# versionne comme le reste.
+# CE QUI CHANGE PAR RAPPORT A LA VERSION 1 : la boucle est fermee. La version 1
+# collectait et commitait ; le resultat n'atteignait personne, parce qu'il fallait
+# reconstruire et redeployer a la main un fichier de 17 Mo. Depuis la v18.15, l'agenda
+# est SERVI A PART (650 Ko) et build_pwa prefere le fichier collecte a la copie figee
+# dans l'application. Reconstruire ne coute donc plus que quelques secondes de Python,
+# et Netlify n'envoie que les fichiers qui ont change — soit 650 Ko par jour, pas 17 Mo.
 #
-# CE QUE CE WORKFLOW NE FAIT PAS ENCORE : il ne reconstruit pas l'application et ne
-# deploie pas. C'est volontaire. La regeneration engendre un fichier de 17 Mo par
-# execution ; l'activer sans arbitrage ferait grossir le depot de 6 Mo par jour.
-# Voir l'etape « Reconstruire et deployer » en bas, commentee, avec ce qu'il faut
-# pour l'activer.
+# CE QU'IL FAUT AVOIR DANS LE DEPOT pour que l'etape de reconstruction fonctionne :
+#   - app_repere_v18_18.html      (l'application ; le script prend la plus recente)
+#   - site/sw.js, site/manifest.webmanifest, site/icones/, site/confidentialite.html
+#   - site/index.html             (reference de la preuve)
+#   - app_repere_v18_9.html.bak   (source de la preuve)
+# Les deux derniers ne changent JAMAIS : ils servent a prouver, chaque matin, que la
+# transformation produit exactement le site fait a la main a l'origine. Sans eux,
+# build_pwa refuse de produire quoi que ce soit — et c'est voulu.
 
 name: Collecte quotidienne
 
 on:
   schedule:
-    # 05h47 UTC — une heure creuse, et volontairement pas a l'heure ronde : les
-    # runners GitHub sont satures a :00, et les serveurs de l'Assemblee aussi.
     - cron: "47 5 * * *"
-  workflow_dispatch:        # pour la lancer a la main depuis l'onglet Actions
+  workflow_dispatch:
 
 permissions:
-  contents: write           # necessaire pour committer les donnees normalisees
+  contents: write
 
 jobs:
   collecte:
@@ -40,9 +42,6 @@ jobs:
 
       - name: Telecharger les sources
         id: collecte
-        # continue-on-error : une source indisponible ne doit pas empecher les
-        # autres d'etre ingerees, ni empecher le journal d'etre commite. C'est le
-        # journal qui porte l'echec, pas l'absence de commit.
         continue-on-error: true
         run: python3 outils/collecte.py
 
@@ -52,17 +51,13 @@ jobs:
           cd data
           for z in *.zip; do
             [ -e "$z" ] || continue
-            dossier="${z%.json.zip}"
-            dossier="${dossier%.zip}"
-            rm -rf "brut_$dossier"
-            mkdir -p "brut_$dossier"
+            dossier="${z%.json.zip}"; dossier="${dossier%.zip}"
+            rm -rf "brut_$dossier"; mkdir -p "brut_$dossier"
             unzip -oq "$z" -d "brut_$dossier"
             echo "$z -> brut_$dossier"
           done
 
       - name: Normaliser l'agenda parlementaire
-        # Les chemins suivent la structure des archives officielles : Agenda.json.zip
-        # contient json/reunion/, AMO30 contient json/organe/.
         run: |
           set -e
           python3 outils/agenda_an.py \
@@ -71,18 +66,22 @@ jobs:
             outils/agenda_an.json
 
       - name: Verifier que la sortie est utilisable
-        # Un fichier produit n'est pas un fichier valide. On relit ce qui vient
-        # d'etre ecrit, sans reutiliser une ligne du script qui l'a ecrit.
+        # Un fichier produit n'est pas un fichier valide. On relit ce qui vient d'etre
+        # ecrit, sans reutiliser une ligne du script qui l'a ecrit.
         run: |
           python3 - <<'PY'
-          import json, sys
+          import json, datetime
           d = json.load(open("outils/agenda_an.json", encoding="utf-8"))
           assert d.get("v") == 1, "version de format inattendue"
           assert len(d["r"]) > 5000, "trop peu de reunions : %d" % len(d["r"])
           assert d["org"], "table des instances vide"
           assert all(0 <= e["o"] < len(d["org"]) for e in d["r"]), "index d'instance hors table"
           assert "acteurRef" not in json.dumps(d)[:2000000], "une presence nominative a fuite"
-          print("agenda : %d reunions, %d instances" % (len(d["r"]), len(d["org"])))
+          # La date de collecte doit etre celle du jour : un fichier non regenere qui
+          # passerait tous les autres controles serait invisible sans celui-ci.
+          today = datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%d")
+          assert d.get("maj") == today, "date de collecte %r au lieu de %s" % (d.get("maj"), today)
+          print("agenda : %d reunions, %d instances, collecte du %s" % (len(d["r"]), len(d["org"]), d["maj"]))
           PY
 
       - name: Committer si quelque chose a change
@@ -98,10 +97,34 @@ jobs:
             git push
           fi
 
+      # ---------------------------------------------------------------- publication
+      - name: Reconstruire le site
+        id: build
+        run: |
+          set -e
+          APP=$(ls -1 app_repere_v18_*.html | grep -v '\.bak$' | sort -V | tail -1)
+          echo "application : $APP"
+          python3 outils/build_pwa_reconstruit.py "$APP" site site_engendre
+          # L'agenda servi DOIT etre celui de la collecte, pas la copie embarquee.
+          python3 - <<'PY'
+          import json, datetime
+          d = json.load(open("site_engendre/donnees/agenda_an.json", encoding="utf-8"))
+          today = datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%d")
+          assert d.get("maj") == today, \
+              "le site servirait un agenda du %r : la substitution n'a pas eu lieu" % d.get("maj")
+          print("site : agenda du %s, %d reunions" % (d["maj"], len(d["r"])))
+          PY
+
+      - name: Deployer sur Netlify
+        # Ne se declenche que si les deux secrets existent : sans eux, le job reste vert
+        # et la collecte reste utile, au lieu d'echouer tous les matins.
+        if: env.NETLIFY_AUTH_TOKEN != '' && env.NETLIFY_SITE_ID != ''
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+        run: npx --yes netlify-cli@17 deploy --dir=site_engendre --prod --message "Collecte du $(date -u +%d/%m/%Y)"
+
       - name: Signaler les echecs de collecte
-        # Le job passe au rouge SI et seulement SI une source a echoue — apres que
-        # le journal a ete commite. Un echec visible dans l'onglet Actions, et une
-        # ligne datee dans le depot : les deux, pas l'un ou l'autre.
         if: steps.collecte.outcome == 'failure'
         run: |
           echo "::warning::Au moins une source n'a pas pu etre telechargee."
@@ -109,21 +132,9 @@ jobs:
           exit 1
 
 # ---------------------------------------------------------------------------
-# ETAPE SUIVANTE, a activer quand l'arbitrage sur la taille sera pris :
-#
-#   - name: Reconstruire l'application et le site
-#     run: |
-#       python3 outils/patch_10_agenda_an.py app_repere.html outils/agenda_an.json
-#       python3 outils/build_pwa.py app_repere.html site site_engendre
-#
-#   - name: Deployer sur Netlify
-#     env:
-#       NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
-#       NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
-#     run: npx netlify-cli deploy --dir=site_engendre --prod
-#
-# Les deux secrets se creent dans Settings > Secrets and variables > Actions.
-# Le jeton se genere depuis ton compte Netlify (User settings > Applications).
+# LES DEUX SECRETS se creent dans Settings > Secrets and variables > Actions :
+#   NETLIFY_AUTH_TOKEN  — Netlify > User settings > Applications > Personal access token
+#   NETLIFY_SITE_ID     — Netlify > Site configuration > Site ID
 # Personne d'autre que toi ne doit les voir : ne les colle jamais dans une
 # conversation, ici ou ailleurs.
 # ---------------------------------------------------------------------------
