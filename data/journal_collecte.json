@@ -1,37 +1,37 @@
 {
- "execute_le": "2026-08-20T00:24:58Z",
+ "execute_le": "2026-08-20T00:28:45Z",
  "sources": [
   {
    "cle": "agenda_an",
    "titre": "Assemblee nationale — reunions (seance, commissions, enquetes)",
    "url": "https://data.assemblee-nationale.fr/static/openData/repository/17/vp/reunions/Agenda.json.zip",
-   "tentee_le": "2026-08-20T00:24:58Z",
+   "tentee_le": "2026-08-20T00:28:45Z",
    "http": 200,
    "octets": 7818308,
    "empreinte": "a4c4e636f000f485",
-   "secondes": 1.5,
+   "secondes": 0.8,
    "ok": true
   },
   {
    "cle": "organes_an",
    "titre": "Assemblee nationale — acteurs, mandats et organes (historique)",
    "url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip",
-   "tentee_le": "2026-08-20T00:24:59Z",
+   "tentee_le": "2026-08-20T00:28:46Z",
    "http": 200,
    "octets": 13597769,
    "empreinte": "c7c50ee82640aadc",
-   "secondes": 3.1,
+   "secondes": 3.3,
    "ok": true
   },
   {
    "cle": "scrutins_an",
    "titre": "Assemblee nationale — scrutins publics",
    "url": "https://data.assemblee-nationale.fr/static/openData/repository/17/loi/scrutins/Scrutins.json.zip",
-   "tentee_le": "2026-08-20T00:25:02Z",
+   "tentee_le": "2026-08-20T00:28:49Z",
    "http": 200,
    "octets": 26317479,
    "empreinte": "fd1df2c685d3df6f",
-   "secondes": 1.7,
+   "secondes": 1.1,
    "ok": true
   }
  ]
