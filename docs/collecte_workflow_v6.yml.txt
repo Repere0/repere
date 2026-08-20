@@ -1,5 +1,5 @@
 # =============================================================================
-# Collecte quotidienne de Repere — version 7, dite « lanceur ».
+# Collecte quotidienne de Repere — version 6, dite « lanceur ».
 #
 # CE FICHIER NE DEVRAIT PLUS JAMAIS CHANGER. C'est tout son interet.
 #
@@ -111,29 +111,7 @@ jobs:
         # le dire. Le job est quand meme mis au rouge, plus bas, si la publication a
         # echoue — mais apres avoir explique pourquoi.
         continue-on-error: true
-        run: |
-          # SONDE PREALABLE. On a perdu deux soirees a deviner entre « le jeton est
-          # mauvais » et « l'identifiant du site est mauvais ». L'API de Netlify tranche
-          # en un appel, et son CODE HTTP suffit :
-          #   200 -> le jeton est valide ET le site existe : la faute est ailleurs
-          #   401 -> le jeton est invalide, revoque, ou mal recopie
-          #   404 -> le jeton est valide mais l'identifiant du site ne correspond a rien
-          # POURQUOI PAS `netlify status` : il imprime le courriel du compte, et les
-          # journaux de ce depot sont publics. On n'affiche donc QUE le code.
-          CODE=$(curl -s -o /dev/null -w "%{http_code}" \
-            -H "Authorization: Bearer $NETLIFY_AUTH_TOKEN" \
-            "https://api.netlify.com/api/v1/sites/$NETLIFY_SITE_ID")
-          echo "sonde Netlify (jeton + identifiant du site) : HTTP $CODE"
-          case "$CODE" in
-            200) echo "::notice::Jeton valide et site trouve. Si la publication echoue malgre tout, la cause n'est ni le jeton ni l'identifiant." ;;
-            401) echo "::error::Jeton NETLIFY_AUTH_TOKEN refuse (HTTP 401). Il est revoque, expire, ou mal recopie. Remplace la valeur du secret." ;;
-            403) echo "::error::Jeton valide mais sans droit sur ce site (HTTP 403). Le jeton appartient peut-etre a un autre compte." ;;
-            404) echo "::error::Identifiant NETLIFY_SITE_ID introuvable (HTTP 404). Reprends le Site ID dans la configuration du site." ;;
-            *)   echo "::warning::Sonde inattendue (HTTP $CODE). Reseau ? Reessayer." ;;
-          esac
-          echo "node $(node --version)"
-          npx --yes netlify-cli --version || true
-          npx --yes netlify-cli deploy --dir=site_engendre --prod --message "Collecte du $(date -u +%d/%m/%Y)"
+        run: npx --yes netlify-cli deploy --dir=site_engendre --prod --message "Collecte du $(date -u +%d/%m/%Y)"
 
       - name: Dire si l'enregistrement a abouti
         if: always()

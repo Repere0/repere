@@ -60,6 +60,45 @@ SOURCES = [
         "cadence": "quotidienne",
         "licence": "Licence ouverte",
     },
+    # -----------------------------------------------------------------------
+    # COMMUNE -> CIRCONSCRIPTION. Sans cette table, un scrutin ne peut etre
+    # affiche que nationalement — « l'Assemblee a vote ceci » — et jamais « votre
+    # depute a vote cela ». Or c'est la seconde forme qui repond a « qui decide
+    # chez moi ». La table CIRCOS embarquee dans l'application couvre exactement
+    # UNE commune (Fontainebleau) : mesure faite le 20/08/2026.
+    #
+    # DEUX SOURCES, ET C'EST VOLONTAIRE. On ne choisira pas avant d'avoir mesure.
+    #  - circos_min : publiee par le ministere de l'Interieur, donc officielle,
+    #    mais datee de 2017 et au format XLSX. Le decoupage n'a pas bouge depuis
+    #    2010, elle reste donc valable — sauf pour les communes nouvelles creees
+    #    depuis, qui en seront absentes.
+    #  - circos_bv : CSV de juin 2024, derive des resultats officiels des
+    #    legislatives de 2022, mais republie par un tiers. Plus recent, plus
+    #    simple a lire, provenance moins directe.
+    # On collecte les deux, on mesure la couverture de chacune contre le Code
+    # officiel geographique 2026, et on tranche sur des chiffres. La provenance
+    # retenue sera ecrite dans l'application, comme toutes les autres.
+    # -----------------------------------------------------------------------
+    {
+        "cle": "circos_min",
+        "titre": "Communes et cantons par circonscription legislative (ministere de l'Interieur, 2017)",
+        "url": "https://www.data.gouv.fr/api/1/datasets/r/4d0b70e1-7757-43cc-882b-5c3b04fe38b4",
+        "fichier": "circos_ministere.xlsx",
+        "poids": "1,6 Mo",
+        "cadence": "figee (decoupage de 2010)",
+        "licence": "Licence ouverte",
+    },
+    {
+        "cle": "circos_bv",
+        "titre": "Bureaux de vote et leur circonscription legislative (derive des resultats 2022)",
+        "url": "https://www.data.gouv.fr/api/1/datasets/r/ed6c2f24-2b83-4a26-a1a2-14c928b58b0b",
+        "fichier": "circos_bureaux_de_vote.csv",
+        "poids": "5,1 Mo",
+        "cadence": "a chaque scrutin legislatif",
+        "licence": "Licence ouverte",
+        "note": "Republie par un tiers a partir de donnees officielles : la provenance "
+                "doit etre ecrite telle quelle si cette source est retenue.",
+    },
 ]
 
 # Sources a ajouter APRES arbitrage : elles sont trop lourdes pour etre embarquees

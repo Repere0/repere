@@ -39,6 +39,18 @@ python3 outils/agenda_an.py data/brut_Agenda/json data/brut_AMO30/json outils/ag
 python3 outils/echantillon_scrutins.py data/brut_Scrutins docs/schema_scrutins.md \
   || echo "::warning::le schema des scrutins n'a pas pu etre decrit"
 
+# ------------------------- 3 bis. decrire les tables de circonscriptions (documentaire)
+# Sans table commune -> circonscription, un scrutin ne peut etre affiche que
+# nationalement. On collecte deux candidates et on les fait DECRIRE ici, pour ecrire
+# le lecteur sur des colonnes lues. Le choix entre les deux se fera sur la couverture
+# mesuree contre le Code officiel geographique, pas sur une preference.
+for paire in "data/circos_bureaux_de_vote.csv docs/schema_circos_bv.md" \
+             "data/circos_ministere.xlsx docs/schema_circos_min.md"; do
+  set -- $paire
+  python3 outils/echantillon_source.py "$1" "$2" \
+    || echo "::warning::description impossible pour $1"
+done
+
 # ---------------------------------------------- 4. verifier la sortie, sans confiance
 # On relit ce qui vient d'etre ecrit, sans reutiliser une ligne du script qui l'a ecrit.
 python3 - "$AUJOURDHUI" <<'PY'
