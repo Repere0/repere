@@ -51,6 +51,25 @@ for paire in "data/circos_bureaux_de_vote.csv docs/schema_circos_bv.md" \
     || echo "::warning::description impossible pour $1"
 done
 
+# ------------------------------ 3 ter. la table commune -> circonscription(s)
+# Sans elle, un scrutin ne peut etre affiche que nationalement.
+python3 outils/circos.py data/circos_bureaux_de_vote.csv outils/circos.json
+
+# ---------------------------------------- 3 quater. les scrutins, position par depute
+# 80 derniers scrutins. Ni non-votants, ni mise au point, ni agregat par depute :
+# les raisons sont ecrites en tete de outils/scrutins_an.py, et le script se controle
+# lui-meme — il refuse de produire un fichier ou un non-votant serait compte comme
+# votant.
+python3 outils/scrutins_an.py data/brut_Scrutins outils/scrutins_an.json 80
+
+# ------------------- 3 quinquies. decrire les acteurs (pour nommer les references)
+# Les scrutins designent les deputes par une reference opaque (PA1234). Le referentiel
+# AMO30 porte les noms et les circonscriptions. On le fait decrire avant d'ecrire le
+# lecteur, comme pour les scrutins — c'est ce qui avait evite le piege du champ
+# `votant` tantot liste tantot objet.
+python3 outils/echantillon_scrutins.py data/brut_AMO30/json/acteur docs/schema_acteurs.md \
+  || echo "::warning::les acteurs n'ont pas pu etre decrits (chemin different ?)"
+
 # ---------------------------------------------- 4. verifier la sortie, sans confiance
 # On relit ce qui vient d'etre ecrit, sans reutiliser une ligne du script qui l'a ecrit.
 python3 - "$AUJOURDHUI" <<'PY'
