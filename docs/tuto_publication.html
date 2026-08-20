@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Repère — Faire aboutir la publication</title>
+<style>
+:root{--ink:#1B1815;--ink-2:#413A33;--muted:#6B6259;--sep:#E2DBD0;--sep-fort:#CBC2B4;
+ --bg:#F1EDE4;--card:#FFF;--fill:#EEE9E0;--urgent:#9B4808;--ok:#45584A;--ville:#0C657D}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+ line-height:1.6;padding:0 0 70px;-webkit-font-smoothing:antialiased}
+.wrap{max-width:840px;margin:0 auto;padding:0 22px}
+header{padding:46px 0 22px;border-bottom:2px solid var(--ink)}
+.eyebrow{font-size:11px;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);font-weight:700}
+h1{font-size:clamp(27px,5vw,38px);line-height:1.08;letter-spacing:-.025em;font-weight:800;margin:12px 0 14px}
+h2{font-size:20px;line-height:1.25;letter-spacing:-.015em;font-weight:800;margin:0}
+p{color:var(--ink-2);font-size:15.5px;line-height:1.65;max-width:72ch;overflow-wrap:anywhere}
+p+p{margin-top:10px}
+b{color:var(--ink);font-weight:700}
+.etape{border-top:1px solid var(--sep);padding:26px 0}
+.tete{display:flex;gap:13px;align-items:baseline;margin-bottom:12px}
+.n{font-size:12px;font-weight:800;background:var(--ink);color:var(--bg);border-radius:999px;padding:4px 11px;flex-shrink:0;line-height:1.4}
+.n.urg{background:var(--urgent)}
+.duree{font-size:11.5px;color:var(--muted);font-weight:700;letter-spacing:.04em;text-transform:uppercase;margin-left:auto;flex-shrink:0}
+pre{background:var(--ink);color:#F7F4EE;border-radius:12px;padding:13px 15px;margin:12px 0;
+ font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12.5px;line-height:1.7;white-space:pre-wrap;word-break:break-all}
+code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:13px;background:var(--fill);border-radius:5px;padding:1px 5px}
+.bloc{background:var(--card);border:1px solid var(--sep);border-radius:14px;padding:14px 16px;margin-top:12px}
+.bloc .l{font-size:10.5px;letter-spacing:.13em;text-transform:uppercase;font-weight:800;color:var(--muted);margin-bottom:6px}
+.bloc.reussi{border-left:3px solid var(--ok)}
+.bloc.piege{border-left:3px solid var(--urgent)}
+.bloc.pourquoi{border-left:3px solid var(--ville)}
+.bloc p{font-size:14.5px}
+ul{margin:9px 0 0 20px;color:var(--ink-2);font-size:15px}li{margin-bottom:6px;overflow-wrap:anywhere}
+a{color:var(--ville);overflow-wrap:anywhere}
+table{width:100%;border-collapse:collapse;margin-top:14px;font-size:14px;table-layout:fixed}
+td,th{overflow-wrap:anywhere}
+th,td{text-align:left;padding:10px;border-bottom:1px solid var(--sep);vertical-align:top}
+th{font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:800}
+td code{font-size:12.5px}
+.avert{background:#F0EBE1;border:1px solid var(--sep-fort);border-radius:14px;padding:15px 17px;margin:18px 0}
+.avert .l{font-size:10.5px;letter-spacing:.13em;text-transform:uppercase;font-weight:800;color:var(--urgent);margin-bottom:6px}
+footer{border-top:2px solid var(--ink);margin-top:28px;padding-top:20px}
+@media print{body{background:#fff}pre{background:#fff;color:#000;border:1px solid #999}}
+</style></head><body><div class="wrap">
+
+<header>
+  <div class="eyebrow">Repère · 20 août 2026 · dernière marche</div>
+  <h1>Faire aboutir<br>la publication.</h1>
+  <p>Tout fonctionne sauf le dernier geste. La collecte télécharge, la chaîne tourne, le
+  banc valide — et la publication sur Netlify échoue. Trois étapes, et c'est fini.</p>
+  <div class="avert">
+    <div class="l">Ce que j'ai mesuré, et une erreur à moi</div>
+    <p>Le site en ligne sert encore <code>"maj":"2026-08-19"</code> : celui que tu avais
+    déposé à la main hier. L'exécution d'aujourd'hui <b>n'a rien publié</b>, alors que
+    l'annotation affirmait le contraire. Je l'avais écrite pour vérifier que les secrets
+    <i>existaient</i>, jamais que la publication avait <i>réussi</i>. C'est corrigé en v5 :
+    elle lit maintenant le résultat réel.</p>
+  </div>
+</header>
+
+<div class="etape">
+  <div class="tete"><span class="n urg">1</span><h2>Poser la v5</h2><span class="duree">2 minutes</span></div>
+  <div class="bloc pourquoi"><div class="l">Pourquoi c'est la première chose</div>
+  <p>Sans elle, la prochaine exécution te mentira encore, et tu chercheras au mauvais
+  endroit. Elle supprime aussi <code>actions/setup-node</code>, l'action dépréciée qui
+  t'avertit à chaque passage — l'avertissement prouve que c'est encore la v3 qui tourne,
+  la v4 n'est jamais arrivée sur GitHub.</p></div>
+  <pre>copy /Y docs\collecte_workflow_v5.yml.txt .github\workflows\collecte.yml</pre>
+  <pre>findstr /C:"version 5" .github\workflows\collecte.yml</pre>
+  <div class="bloc reussi"><div class="l">Réussi si</div>
+  <p>La seconde commande affiche une ligne. Puis double-clique <code>pousser.bat</code> :
+  sa dernière ligne doit être <code>OK - envoye.</code></p></div>
+</div>
+
+<div class="etape">
+  <div class="tete"><span class="n urg">2</span><h2>Lire l'erreur, et la reconnaître</h2><span class="duree">3 minutes</span></div>
+  <p>Va sur <a href="https://github.com/Repere0/repere/actions/workflows/collecte.yml">la page du workflow</a>,
+  ouvre la dernière exécution, clique sur l'étape <b>Publier sur Netlify</b>, et lis ses
+  dernières lignes. Puis trouve ton symptôme :</p>
+  <table>
+    <tr><th>Ce que tu lis</th><th>Ce que c'est</th><th>Ce que tu fais</th></tr>
+    <tr>
+      <td><code>401</code>, <code>Unauthorized</code>, <code>Not authorized</code>, <code>invalid token</code>, <code>authentication</code></td>
+      <td><b>Le jeton est mauvais ou révoqué.</b> C'est mon hypothèse principale : celui que tu avais sous les yeux hier soir était l'ancien, celui que je t'ai fait révoquer.</td>
+      <td>Étape 3 : remplace <code>NETLIFY_AUTH_TOKEN</code>.</td>
+    </tr>
+    <tr>
+      <td><code>404</code>, <code>Site not found</code>, <code>does not exist</code></td>
+      <td>L'identifiant du site ne correspond à rien.</td>
+      <td>Reprends le Site ID sur <a href="https://app.netlify.com/sites/repereapp/configuration/general">la configuration du site</a> et remplace <code>NETLIFY_SITE_ID</code>.</td>
+    </tr>
+    <tr>
+      <td><code>Missing site ID</code>, <code>site is required</code></td>
+      <td>Le secret existe mais son <b>nom</b> ne correspond pas exactement.</td>
+      <td>Vérifie l'orthographe dans la liste des secrets : majuscules et tirets bas compris.</td>
+    </tr>
+    <tr>
+      <td><code>npm ERR</code>, <code>ENOTFOUND</code>, <code>ETIMEDOUT</code></td>
+      <td>Incident réseau passager sur le runner. Rien à corriger.</td>
+      <td>Relance simplement le workflow.</td>
+    </tr>
+    <tr>
+      <td><code>Deploy path does not exist</code></td>
+      <td>Le dossier construit est absent — improbable, le banc a validé juste avant.</td>
+      <td>Envoie-moi les lignes : ce serait un défaut de ma chaîne.</td>
+    </tr>
+    <tr>
+      <td>Autre chose</td>
+      <td>Je ne devine pas.</td>
+      <td>Colle-moi les dix dernières lignes, telles quelles.</td>
+    </tr>
+  </table>
+</div>
+
+<div class="etape">
+  <div class="tete"><span class="n urg">3</span><h2>Remplacer le jeton, si c'est lui</h2><span class="duree">5 minutes</span></div>
+  <div class="bloc pourquoi"><div class="l">Pourquoi tu ne peux pas vérifier autrement</div>
+  <p>Un secret GitHub est en écriture seule : personne ne peut le relire, pas même toi.
+  Une faute de frappe est donc invisible, et la seule façon de la corriger est de
+  <b>remplacer</b> la valeur. Ne cherche pas à comparer.</p></div>
+  <ul>
+    <li>Sur <a href="https://app.netlify.com/user/applications#personal-access-tokens">app.netlify.com/user/applications</a>, vérifie d'abord qu'il ne reste <b>aucun</b> jeton commençant par <code>nfp_1N4D</code>. S'il est encore là, révoque-le : il a été affiché dans une capture d'écran.</li>
+    <li>Crée un jeton neuf. <b>Copie-le immédiatement</b> — la valeur ne s'affiche qu'une fois.</li>
+    <li>Sur <a href="https://github.com/Repere0/repere/settings/secrets/actions">la page des secrets</a>, ouvre <code>NETLIFY_AUTH_TOKEN</code>, colle la nouvelle valeur <b>seule</b> — pas le nom devant, pas d'espace, pas de retour à la ligne — et enregistre.</li>
+    <li>Relance le workflow.</li>
+  </ul>
+  <div class="bloc piege"><div class="l">Le piège du copier-coller</div>
+  <p>Sélectionner un jeton à la souris attrape souvent une espace ou un saut de ligne
+  invisible à la fin. Utilise le bouton de copie de Netlify s'il en propose un, plutôt
+  que la sélection manuelle.</p></div>
+</div>
+
+<div class="etape">
+  <div class="tete"><span class="n">✓</span><h2>Savoir que c'est enfin bon</h2><span class="duree">1 minute</span></div>
+  <p>Deux vérifications, dans cet ordre :</p>
+  <ul>
+    <li>Dans l'exécution, l'annotation finale dit <b>« Site reconstruit, éprouvé par le banc,
+    et publié sur Netlify »</b> — et cette fois elle l'aura mesuré.</li>
+    <li>La preuve indépendante, celle qui ne dépend d'aucune annotation : ouvre
+    <a href="https://repereapp.netlify.app/donnees/agenda_an.json">repereapp.netlify.app/donnees/agenda_an.json</a>.
+    Le champ <code>"maj"</code> au tout début doit porter <b>la date du jour</b>. S'il
+    affiche encore une date passée, rien n'a été publié, quoi qu'en dise le journal.</li>
+  </ul>
+  <div class="bloc reussi"><div class="l">Et à partir de là</div>
+  <p>La chaîne est complète. Chaque matin à 5 h 47 : collecte, normalisation, contrôles,
+  reconstruction, 40 contrôles dans un vrai navigateur, publication. Et toutes les heures,
+  ta machine envoie au dépôt ce que j'ai écrit entre-temps. Plus rien à faire.</p></div>
+</div>
+
+<footer>
+  <h2>Ce que je fais pendant ce temps</h2>
+  <p style="margin-top:8px">J'ai le schéma réel des scrutins : 8 434 scrutins, l'arborescence
+  complète, et le piège du champ <code>votant</code> qui est tantôt une liste tantôt un objet
+  seul. Il me manque la table qui relie une commune à sa circonscription — celle de l'app en
+  contient <b>une</b>. Je vais la chercher dans les données publiques, et ensuite ton fil
+  cesse d'avoir un mois de retard.</p>
+  <p style="margin-top:12px;font-size:13.5px;color:var(--muted)">Repère — faire aboutir la
+  publication, 20 août 2026. Les symptômes du tableau sont les messages usuels de
+  netlify-cli ; si le tien n'y figure pas, ne l'interprète pas, envoie-le.</p>
+</footer>
+
+</div></body></html>
