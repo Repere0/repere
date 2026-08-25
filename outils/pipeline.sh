@@ -89,6 +89,17 @@ APP_DEC=$(ls -1 app_repere_v18_*.html | grep -v '\.bak$' | sort -V | tail -1)
 python3 outils/decouper.py "$APP_DEC" site_donnees \
   || echo "::warning::le decoupage par departement a echoue"
 
+# ---------------- 3 septies. AUTO -> RELU -> PUBLIE : la couche editoriale
+# L'etage AUTO pose des brouillons dans data/auto/, jamais affiches. L'etage PUBLIE ne
+# retient que ce qu'un humain a relu et bascule dans data/evenements/. C'est ce geste
+# humain qui rend vraie la promesse « verifie par un humain » de l'invariant 4 — une
+# chaine entierement automatique la rendrait fausse a l'endroit precis ou l'on demande
+# d'etre cru.
+python3 outils/candidats.py outils/scrutins_an.json data/auto 10 \
+  || echo "::warning::les candidats n'ont pas pu etre fabriques"
+python3 outils/evenements.py data/evenements outils/evenements.json \
+  || echo "::warning::la couche editoriale a echoue"
+
 # ---------------------------------------------- 4. verifier la sortie, sans confiance
 # On relit ce qui vient d'etre ecrit, sans reutiliser une ligne du script qui l'a ecrit.
 python3 - "$AUJOURDHUI" <<'PY'
