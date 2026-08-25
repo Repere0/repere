@@ -59,9 +59,21 @@ done
 # ils seront eprouves sur donnees reelles, on remettra le `set -e` sur eux.
 
 # ------------------------------ 3 ter. la table commune -> circonscription(s)
-# Sans elle, un scrutin ne peut etre affiche que nationalement.
-python3 outils/circos.py data/circos_bureaux_de_vote.csv outils/circos.json \
-  || echo "::warning::circos.py a echoue — la table des circonscriptions n'est pas produite"
+# Sans elle, l'application affiche les neuf parlementaires d'un departement a
+# quelqu'un sans pouvoir dire dans quelle circonscription il vote.
+#
+# SOURCE RETENUE : le XLSX du ministere de l'Interieur. Mesure du 25/08/2026 :
+# 34 626 communes rattachees sur 34 637, soit 99,97 %, outre-mer a 100 %. Le CSV
+# par bureau de vote reste accepte par circos.py mais n'est plus la source : sa
+# provenance est indirecte, et il n'apportait pas assez pour la justifier.
+# openpyxl n'est pas garanti sur le runner : on l'installe sans bruit, et si
+# l'installation echoue, l'etape avertit au lieu de tomber.
+APP_CIRC=$(ls -1 app_repere_v18_*.html | grep -v '\.bak$' | sort -V | tail -1)
+python3 -m pip install --quiet --disable-pip-version-check openpyxl >/dev/null 2>&1 \
+  || echo "::warning::openpyxl indisponible — la table des circonscriptions ne sera pas relue"
+python3 outils/circos.py data/circos_ministere.xlsx outils/circos.json "$APP_CIRC" \
+  && python3 outils/circos_injecter.py "$APP_CIRC" outils/circos.json \
+  || echo "::warning::la table des circonscriptions n'a pas ete produite ou posee"
 
 # ---------------------------------------- 3 quater. les scrutins, position par depute
 # 80 derniers scrutins. Ni non-votants, ni mise au point, ni agregat par depute :

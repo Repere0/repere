@@ -533,6 +533,105 @@ verif("parcours — la commune saisie est bien celle retenue",
     "la mention manque : un calcul passerait pour une donnee officielle");
 }
 
+/* Le francais affiche porte ses accents. Mesure sur le rendu, jamais sur la
+   source : les commentaires du fichier sont sans accents par regle. */
+{
+  const MOTS_SANS_ACCENT = ["Repere", "decoupage", "depute", "deputes", "legislative",
+    "legislatives", "partagee", "creee", "creees", "electoral", "Repertoire", "elu",
+    "elus", "depense", "depenses", "annee", "annees", "impots", "verifie", "verifies",
+    "donnees", "numero", "reponse", "present", "apres", "different", "differente",
+    "interieur", "ministere", "precedent", "resultat", "resultats", "memes", "meme",
+    "eleve", "elevee", "exterieur", "regulier", "irregulieres", "facon", "reel"];
+
+  const ids = await page.evaluate(() =>
+    [...document.querySelectorAll('.screen[id^="s-"]')].map(e => e.id));
+  for (const id of ids) {
+    try { await page.evaluate(i => show(i, i), id); await page.waitForTimeout(110); }
+    catch (e) { /* un ecran qui refuse de s'ouvrir est deja signale ailleurs */ }
+  }
+
+  const fautes = await page.evaluate(mots => {
+    const vus = [];
+    document.querySelectorAll(".screen").forEach(e => {
+      const t = e.innerText || "";
+      mots.forEach(m => {
+        /* Un mot colle a un point, un tiret ou une barre oblique appartient a un
+           nom de domaine ou a une adresse : ceux-la n'ont pas d'accents. */
+        const re = new RegExp("(?:^|[^A-Za-zÀ-ÿ./-])" + m + "(?![A-Za-zÀ-ÿ./-])");
+        if (re.test(t)) vus.push(e.id + " : " + m);
+      });
+    });
+    return vus;
+  }, MOTS_SANS_ACCENT);
+
+  verif("langue — le francais affiche porte ses accents",
+    fautes.length === 0, fautes.slice(0, 6).join(" | "));
+}
+
+/* La circonscription, MESUREE dans le navigateur. */
+{
+  await page.evaluate(() => showTab("s-qui"));
+  await page.waitForTimeout(600);
+
+  const c = await page.evaluate(() => {
+    if (typeof circoOk !== "function" || !circoOk()) return { absent: true };
+    const carte = [...document.querySelectorAll("#s-qui .who")]
+      .find(e => /Députés et sénateurs/.test(e.textContent || ""));
+    const T = window.REPERE_CIRCOS.communes;
+    /* Relecture independante : on va rechercher le numero dans la table, on
+       refabrique l'ordinal ici, et on le cherche dans le texte affiche. */
+    const v = T[STATE.insee];
+    const attendu = (typeof v === "number") ? (v === 1 ? "1re" : v + "e") : null;
+
+    /* Balayage complet : la phrase doit se fabriquer pour chaque commune. */
+    let creux = 0, exemple = "";
+    const codes = Object.keys(T);
+    for (let i = 0; i < codes.length; i++) {
+      const p = circoPhrase(codes[i], "Commune", "Territoire");
+      if (!p || /undefined|NaN|\bnulle?\b/.test(p) || p.indexOf("circonscription") === -1) {
+        creux++; if (!exemple) exemple = codes[i] + " -> " + String(p).slice(0, 60);
+      }
+    }
+    return {
+      absent: false,
+      peinte: !!(carte && /circonscription/.test(carte.innerText || "")),
+      texte: carte ? (carte.innerText || "") : "",
+      attendu: attendu,
+      total: codes.length,
+      creux: creux,
+      exemple: exemple
+    };
+  });
+
+  if (c.absent) {
+    verif("circonscription — la table est embarquee", false,
+      "window.REPERE_CIRCOS absent : outils/circos_injecter.py n'a pas tourne");
+  } else {
+    verif("circonscription — la phrase est peinte dans la carte des parlementaires",
+      c.peinte === true, "aucune mention de circonscription dans la carte");
+
+    if (c.attendu) {
+      verif("circonscription — le numero affiche est celui de la table",
+        c.texte.indexOf("la " + c.attendu + " circonscription") !== -1,
+        "attendu « la " + c.attendu + " circonscription », absent du texte");
+    } else {
+      verif("circonscription — le numero affiche est celui de la table",
+        /circonscriptions législatives/.test(c.texte),
+        "commune partagee : la phrase plurielle est attendue");
+    }
+
+    /* Aucun nom propre de parlementaire dans la phrase : le lien depute ->
+       circonscription n'existe pas dans les donnees, il ne doit pas etre invente. */
+    const phrase = (c.texte.match(/[^\n]*circonscription[^\n]*/) || [""])[0];
+    verif("circonscription — la phrase ne nomme aucun depute",
+      !/\b[A-ZÀ-Ý]{2,}[A-ZÀ-Ý\s-]{2,}\b/.test(phrase.replace(/REPÈRE/gi, "")),
+      phrase.slice(0, 90));
+
+    verif("circonscription — la phrase se fabrique pour les " + c.total + " communes",
+      c.creux === 0, c.creux + " creux, ex. " + c.exemple);
+  }
+}
+
 verif("rendu — aucune erreur JavaScript sur tout le parcours",
   erreursJS.length === 0, erreursJS.slice(0, 4).join(" | "));
 
