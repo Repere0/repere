@@ -474,6 +474,65 @@ verif("parcours — la commune saisie est bien celle retenue",
     a.nulles === 0, a.nulles + " barre(s) a 0 px");
 }
 
+/* La carte de traduction des comptes, MESUREE dans le navigateur. */
+{
+  await page.evaluate(() => showTab("s-argent"));
+  await page.waitForTimeout(700);
+
+  const t = await page.evaluate(() => {
+    const corps = document.getElementById("arg-body");
+    if (!corps) return null;
+    const cartes = [...corps.querySelectorAll(".arg-card")];
+    const carte = cartes.find(c => /veulent dire/.test(c.textContent || ""));
+    if (!carte) return { trouvee: false };
+    /* Recalcul independant : on relit les montants BRUTS dans les donnees, on
+       refait la division ici, et on la compare a ce que la page affiche. */
+    const ex = (typeof ofglExerciceAffiche === "function")
+      ? (ofglExerciceAffiche("ville") || {}).ex : null;
+    const val = i => (typeof ofglVal === "function") ? ofglVal(ex, i) : null;
+    const dep = val(1), sal = val(4);
+    const attendu = (dep && sal && dep.m > 0)
+      ? Math.round(sal.m / dep.m * 100) : null;
+    return {
+      trouvee: true,
+      rapports: carte.querySelectorAll(".arg-row").length,
+      texte: (carte.innerText || ""),
+      attenduSalaires: attendu
+    };
+  });
+
+  verif("traduction — la carte des rapports est peinte a l'ecran",
+    t && t.trouvee === true, t ? "carte absente de #arg-body" : "#arg-body introuvable");
+
+  verif("traduction — au moins deux rapports affiches",
+    t && t.rapports >= 2, t ? t.rapports + " rapport(s)" : "");
+
+  /* Le controle qui distingue « la division est faite » de « elle est juste ». */
+  if (t && t.attenduSalaires !== null) {
+    const attendu = t.attenduSalaires + " € de salaires";
+    verif("traduction — le rapport affiche est celui que redonne le calcul",
+      t.texte.indexOf(attendu) !== -1,
+      "attendu « " + attendu + " », absent du texte de la carte");
+  } else {
+    verif("traduction — le rapport affiche est celui que redonne le calcul",
+      false, "les montants bruts n'ont pas pu etre relus pour recalculer");
+  }
+
+  /* Invariant 3 et invariant 4, dans la carte elle-meme. Les mots cherches sont
+     ceux qui trahiraient une comparaison ou un jugement ; « compare » est exclu
+     de la recherche parce que la carte contient « ne compare ce territoire a un
+     autre », qui est exactement la promesse et non sa violation. */
+  const fautifs = (t && t.texte ? t.texte : "")
+    .split(/\s+/).join(" ")
+    .match(/moyenne nationale|classement|palmar|mieux que|moins bien|bien g[ée]r|mal g[ée]r/i);
+  verif("traduction — aucun jugement ni comparaison entre territoires",
+    fautifs === null, fautifs ? fautifs[0] : "");
+
+  verif("traduction — la carte dit que ce sont des divisions, pas des chiffres publies",
+    (t && t.texte || "").indexOf("ce sont des divisions") !== -1,
+    "la mention manque : un calcul passerait pour une donnee officielle");
+}
+
 verif("rendu — aucune erreur JavaScript sur tout le parcours",
   erreursJS.length === 0, erreursJS.slice(0, 4).join(" | "));
 

@@ -8315,6 +8315,135 @@ function ofglVide(k, cas, nom) {
     + '</div>';
 }
 /* Le bloc des six agregats, pour n'importe lequel des trois echelons locaux. */
+/* Exercice affiche : le plus recent OU CE TERRITOIRE a des donnees. Une centaine
+   de communes n'ont pas encore de comptes 2025 definitifs ; on retombe sur 2024
+   et on le dit, plutot que de laisser croire a un compte a jour.
+
+   EXTRAIT DE ofglBloc LE 25 AOUT : la carte de traduction a besoin du meme
+   exercice que le tableau des montants. Recopier la boucle aurait autorise les
+   deux cartes a parler de deux annees differentes sans que rien ne le dise. */
+function ofglExerciceAffiche(k) {
+  const r = ofglTerr(k);
+  if (!r) return null;
+  const ans = ofglExercices(r);
+  const ordre = (window.REPERE_OFGL && window.REPERE_OFGL.meta
+                 && window.REPERE_OFGL.meta.agregats) || [];
+  for (let i = ans.length - 1; i >= 0; i--) {
+    const cand = r.ex[ans[i]];
+    if (ordre.some((p, j) => ofglVal(cand, j))) return { r: r, an: ans[i], ex: cand };
+  }
+  return null;
+}
+
+/* ------------------------------------------------------------------ TRADUIRE
+   Cinq divisions, et rien d'autre. Chaque phrase porte ce qu'elle ne veut PAS
+   dire : c'est la moitie du travail, et c'est celle qui manque partout ailleurs.
+   Aucun rapport ne sort du territoire affiche — invariant 3. */
+function argPourCent(a, b) { return Math.round(a / b * 100); }
+
+/* Les agents qu'une collectivite paie ne sont pas les memes selon l'echelon.
+   Trois exemples concrets valent mieux qu'une phrase generique vraie partout et
+   utile nulle part. */
+const ARG_AGENTS = {
+  ville:  "l'école, la cantine, l'état civil, les espaces verts",
+  dept:   "les collèges, les routes départementales, l'aide sociale",
+  region: "les lycées, les trains régionaux, la formation professionnelle"
+};
+
+function argRatios(ex, k) {
+  const v = i => ofglVal(ex, i);
+  const rec = v(0), dep = v(1), det = v(2), inv = v(3), sal = v(4), imp = v(5);
+  const nn = x => (x && typeof x.m === "number" && x.m > 0);
+  const out = [];
+
+  if (nn(det) && nn(rec)) {
+    const mois = det.m / (rec.m / 12);
+    out.push({
+      l: "Sa dette",
+      v: mois.toLocaleString("fr-FR", { minimumFractionDigits: 1, maximumFractionDigits: 1 })
+         + " mois de recettes",
+      d: "Si tout ce qui est encaissé allait au remboursement, il faudrait ce temps-là. "
+       + "Ce n'est pas ce qui se passe : une dette se rembourse sur des années, et "
+       + "un emprunt sert le plus souvent à payer un équipement qui durera plus longtemps que lui. "
+       + "Le rapport donne un ordre de grandeur, pas un diagnostic."
+    });
+  }
+
+  if (nn(sal) && nn(dep)) {
+    out.push({
+      l: "Sur 100 € dépensés",
+      v: argPourCent(sal.m, dep.m) + " € de salaires",
+      d: "Ce sont les agents qui tiennent " + (ARG_AGENTS[k] || "les services au quotidien")
+       + ". Une part élevée n'est pas un gaspillage : c'est souvent le signe d'une collectivité qui "
+       + "rend ses services elle-même plutôt que de les acheter à l'extérieur."
+    });
+  }
+
+  if (nn(inv) && nn(dep)) {
+    out.push({
+      l: "Sur 100 € dépensés",
+      v: argPourCent(inv.m, dep.m) + " € d'investissement",
+      d: "L'investissement, ce sont les travaux et les équipements : une école, une voirie, une "
+       + "salle. Cette part bouge beaucoup d'une année à l'autre — haute l'année d'un chantier, "
+       + "basse ensuite. Une seule année ne dit rien d'une tendance."
+    });
+  }
+
+  if (nn(imp) && nn(rec)) {
+    const p = argPourCent(imp.m, rec.m);
+    out.push({
+      l: "Sur 100 € encaissés",
+      v: p + " € d'impôts et taxes",
+      d: "Les " + (100 - p) + " € restants viennent d'ailleurs : dotations versées par l'État, "
+       + "subventions d'autres collectivités, sommes payées par les usagers de certains services. "
+       + "Repère ne détaille pas cette composition — le fichier embarqué ne la porte pas."
+    });
+  }
+
+  if (nn(dep)) {
+    out.push({
+      l: "Ses dépenses",
+      v: ofglNb(dep.m / 365) + " € par jour",
+      d: "Moyenne sur l'année, pas un rythme réel : les dépenses d'une collectivité sont très "
+       + "irrégulières. C'est une façon de rendre un total annuel imaginable, rien de plus."
+    });
+  }
+
+  return out;
+}
+
+function argTraduction(k) {
+  if (!OFGL_ECH[k]) return "";
+  const choisi = ofglExerciceAffiche(k);
+  if (!choisi) return "";
+  const lignes = argRatios(choisi.ex, k);
+  const c = OFGL_ECH_COULEUR[k] || "var(--c-region-aplat)";
+  /* Doctrine du vide : sous deux rapports, la carte n'a rien a traduire. On ecrit
+     la phrase et on s'arrete — surtout pas une carte a moitie remplie. */
+  if (lignes.length < 2) {
+    return '<div class="arg-card" style="border-left-color:' + c + ';">'
+      + '<div class="ig-vide"><b>Pas assez de montants pour traduire ces comptes.</b>'
+      + 'Les rapports ci-dessous se calculent à partir de plusieurs lignes à la fois ; '
+      + 'pour l\'exercice ' + ofglEsc(choisi.an) + ', le fichier officiel n\'en porte pas assez. '
+      + 'Les montants disponibles restent affichés au-dessus, tels que la source les publie.</div>'
+      + '</div>';
+  }
+  return '<div class="arg-card" style="border-left-color:' + c + ';">'
+    + '<div class="arg-h"><div><div class="arg-t" style="color:' + c + ';">Ce que ces chiffres veulent dire</div>'
+    + '<div class="arg-s">Les mêmes comptes, exercice ' + ofglEsc(choisi.an) + ', rapportés les uns aux autres</div></div></div>'
+    + lignes.map(function (o) {
+        return '<div class="arg-row">'
+          + '<div class="arg-l"><span>' + o.l + '</span><b>' + o.v + '</b></div>'
+          + '<div class="arg-d">' + o.d + '</div>'
+          + '</div>';
+      }).join("")
+    + '<p class="tx-note"><b>Ce ne sont pas des chiffres publiés : ce sont des divisions.</b> '
+    + 'Repère les calcule à partir des montants affichés juste au-dessus, qui viennent, eux, du '
+    + 'fichier officiel. Aucun de ces rapports ne compare ce territoire à un autre : ils ne divisent '
+    + 'que ses propres montants entre eux, et aucun ne dit si c\'est bien ou mal.</p>'
+    + '</div>';
+}
+
 function ofglBloc(k) {
   if (!OFGL_ECH[k]) return "";
   const code = ofglCode(k);
@@ -8326,15 +8455,9 @@ function ofglBloc(k) {
     : ((typeof terr === "function") ? (terr().region || "") : ""));
   const ans = ofglExercices(r);
   const ordre = window.REPERE_OFGL.meta.agregats || [];
-  /* Exercice affiche : le plus recent OU CE TERRITOIRE a des donnees. Une centaine
-     de communes n'ont pas encore de comptes 2025 definitifs ; on retombe sur 2024
-     et on le dit, plutot que de laisser croire a un compte a jour. */
-  let an = null, ex = null;
-  for (let i = ans.length - 1; i >= 0; i--) {
-    const cand = r.ex[ans[i]];
-    if (ordre.some((p, j) => ofglVal(cand, j))) { an = ans[i]; ex = cand; break; }
-  }
-  if (!an) return ofglVide(k, "vide", r.nom);
+  const choisi = ofglExerciceAffiche(k);
+  if (!choisi) return ofglVide(k, "vide", r.nom);
+  const an = choisi.an, ex = choisi.ex;
   const dernier = ofglDernierEchelon(k);
   const enRetard = (dernier && an !== dernier);
   /* Reference de l'evolution : le PREMIER exercice disponible pour ce meme
@@ -8456,8 +8579,10 @@ function renderArgent() {
     return;
   }
   if (OFGL_ECH[argKey]) {
+    /* La traduction vient JUSTE APRES les montants et AVANT le comparatif :
+       on lit un chiffre, puis ce qu'il veut dire, avant de passer aux echelons. */
     document.getElementById("arg-body").innerHTML =
-      ofglBloc(argKey) + argComparatif() + renderArgentLocal();
+      ofglBloc(argKey) + argTraduction(argKey) + argComparatif() + renderArgentLocal();
     return;
   }
   if (!argDispo(argKey)) {
