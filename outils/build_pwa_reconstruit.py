@@ -190,6 +190,33 @@ if D_AG in index:
     assert 'window.REPERE_AGENDA_AN = {"v":1' not in index, "le bloc de donnees subsiste"
     print("agenda servi : %.0f Ko, depuis %s" % (len(donnees_agenda) / 1024, origine))
 
+    # ---------------------------------------- les evenements editoriaux, servis aussi
+    # Meme mecanique que l'agenda, meme raison : le fichier autonome n'a pas d'adresse a
+    # aller chercher, la version servie en recoit une. Sans ce bloc, la couche editoriale
+    # produit un fichier que personne ne lit — ce qui a ete le cas pendant deux jours.
+    ev = os.path.join(os.path.dirname(os.path.abspath(__file__)), "evenements.json")
+    if os.path.exists(ev):
+        brut_ev = lire(ev)
+        d_ev = json.loads(brut_ev)
+        assert d_ev.get("v") == 1 and isinstance(d_ev.get("r"), list), \
+            "evenements.json n'a pas la forme attendue"
+        io.open(os.path.join(SORTIE, "donnees", "evenements.json"), "w",
+                encoding="utf-8").write(brut_ev)
+        ancre_ev = 'window.REPERE_AGENDA_URL = "donnees/agenda_an.json"'
+        assert index.count(ancre_ev) == 1, "l'adresse de l'agenda est introuvable"
+        index = index.replace(
+            ancre_ev,
+            ancre_ev + ';\nwindow.REPERE_EVENEMENTS_URL = "donnees/evenements.json"', 1)
+        # On s'ancre sur accueil.html et non sur l'agenda : a cet endroit du script,
+        # la ligne de l'agenda n'a pas encore ete posee dans le service worker.
+        assert '"./accueil.html",' in sw, "la coquille du service worker a change"
+        sw = sw.replace('"./accueil.html",',
+                        '"./accueil.html",\n  "./donnees/evenements.json",', 1)
+        assert '"./donnees/evenements.json"' in sw
+        print("evenements servis : %d fait(s) valide(s)" % len(d_ev["r"]))
+    else:
+        print("evenements : aucun fichier — le fil garde ses cartes ecrites a la main")
+
     # Le service worker doit le connaitre, sinon l'app installee perd son agenda
     # des qu'elle est hors ligne — un manque invisible, le pire des cas.
     assert '"./accueil.html",' in sw, "la coquille du service worker a change"

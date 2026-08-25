@@ -21,6 +21,8 @@ journal_pousser.txt
 # Obsidian : la configuration du coffre est versionnee (elle fait partie du poste de
 # travail), mais l'etat des fenetres change a chaque ouverture et n'a rien a y faire.
 data/.obsidian/workspace.json
+# Bases creees par accident : « Sans titre.base » et compagnie.
+data/**/Sans titre*.base
 data/.obsidian/workspace-mobile.json
 data/.trash/
 

@@ -1,0 +1,55 @@
+# Le bureau de relecture de Repere, en deux vues.
+# Syntaxe relevee dans la documentation officielle d'Obsidian (help/bases/syntax),
+# pas devinee. Si une colonne reste vide, c'est que la propriete n'existe pas encore
+# dans l'entete du fichier concerne.
+filters:
+  or:
+    - file.inFolder("auto")
+    - file.inFolder("evenements")
+properties:
+  note.titre:
+    displayName: Titre
+  note.date:
+    displayName: Date du fait
+  note.echelon:
+    displayName: Échelon
+  note.confiance:
+    displayName: Confiance
+  note.valide:
+    displayName: Validé
+  note.source:
+    displayName: Source
+  note.insee:
+    displayName: Commune
+views:
+  - type: table
+    name: À relire
+    filters:
+      and:
+        - file.inFolder("auto")
+    order:
+      - file.name
+      - note.date
+      - note.titre
+      - note.echelon
+      - note.confiance
+  - type: table
+    name: Publiés
+    filters:
+      and:
+        - file.inFolder("evenements")
+    order:
+      - file.name
+      - note.date
+      - note.titre
+      - note.echelon
+      - note.insee
+      - note.confiance
+  - type: table
+    name: Tout, par date
+    order:
+      - note.date
+      - note.titre
+      - note.valide
+      - note.echelon
+      - note.source
