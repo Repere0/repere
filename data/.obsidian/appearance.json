@@ -1,1 +1,5 @@
-{ "accentColor": "#0C657D", "baseFontSize": 17, "theme": "system" }
+{
+  "accentColor": "#0C657D",
+  "baseFontSize": 17,
+  "theme": "system"
+}

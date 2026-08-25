@@ -10,5 +10,7 @@
   "newFileLocation": "folder",
   "newFileFolderPath": "auto",
   "alwaysUpdateLinks": true,
-  "userIgnoreFilters": [".obsidian/"]
+  "userIgnoreFilters": [
+    ".obsidian/"
+  ]
 }
