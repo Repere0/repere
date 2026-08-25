@@ -1,0 +1,471 @@
+<title>Passation Repère</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Public+Sans:ital,wght@0,400;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;600&display=swap">
+
+<style>
+/* ============================================================================
+   Palette : celle de l'application elle-meme, relevee dans son bloc :root.
+   « Sable & encre » en clair ; la rampe « nuit » calculee pour le mode sombre,
+   avec les variantes -clair des couleurs d'echelon, deja presentes dans le code.
+   ========================================================================== */
+:root{
+  --ground:#F1EDE4; --surface:#FFFFFF; --surface-2:#EEE9E0; --sunken:#E8E2D7;
+  --line:#E2DBD0; --line-strong:#CBC2B4;
+  --ink:#1B1815; --ink-2:#413A33; --ink-3:#6B6259;
+  --ville:#0C657D; --dept:#9B4808; --region:#4E1C9C;
+  --ok:#3F5A46; --ok-fill:#E4EDE3; --attn:#9B4808; --attn-fill:#F6E9DC;
+  --wait:#6B6259; --wait-fill:#EBE6DC;
+  --code-bg:#221E1A; --code-ink:#F0EBE2;
+  --shadow:0 1px 2px rgba(27,24,21,.05), 0 8px 24px rgba(27,24,21,.05);
+}
+:root:not([data-theme="light"]){
+  @media (prefers-color-scheme: dark){
+    --ground:#141110; --surface:#1C1917; --surface-2:#24201C; --sunken:#100E0D;
+    --line:#332D26; --line-strong:#4A4137;
+    --ink:#F7F4EE; --ink-2:#C9C1B6; --ink-3:#9A9086;
+    --ville:#43d4f7; --dept:#f6964e; --region:#be9fee;
+    --ok:#79B48F; --ok-fill:#1E2A22; --attn:#f6964e; --attn-fill:#2E2318;
+    --wait:#9A9086; --wait-fill:#262220;
+    --code-bg:#0E0C0B; --code-ink:#E7E1D7;
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 10px 30px rgba(0,0,0,.35);
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#141110; --surface:#1C1917; --surface-2:#24201C; --sunken:#100E0D;
+  --line:#332D26; --line-strong:#4A4137;
+  --ink:#F7F4EE; --ink-2:#C9C1B6; --ink-3:#9A9086;
+  --ville:#43d4f7; --dept:#f6964e; --region:#be9fee;
+  --ok:#79B48F; --ok-fill:#1E2A22; --attn:#f6964e; --attn-fill:#2E2318;
+  --wait:#9A9086; --wait-fill:#262220;
+  --code-bg:#0E0C0B; --code-ink:#E7E1D7;
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 10px 30px rgba(0,0,0,.35);
+}
+
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  background:var(--ground); color:var(--ink-2);
+  font-family:"Public Sans","Segoe UI",system-ui,-apple-system,sans-serif;
+  font-size:16px; line-height:1.62; padding:0 0 96px;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:960px;margin:0 auto;padding:0 24px}
+.narrow{max-width:66ch}
+
+h1,h2,h3,.display{font-family:"Bricolage Grotesque","Public Sans",sans-serif;color:var(--ink);text-wrap:balance}
+h1{font-size:clamp(34px,6vw,58px);line-height:1.02;letter-spacing:-.03em;font-weight:800}
+h2{font-size:clamp(24px,3.4vw,32px);line-height:1.12;letter-spacing:-.022em;font-weight:700;margin:0 0 6px}
+h3{font-size:18px;line-height:1.3;letter-spacing:-.012em;font-weight:700;margin:0 0 4px}
+p{margin:0 0 14px;max-width:66ch}
+p:last-child{margin-bottom:0}
+strong{color:var(--ink);font-weight:700}
+a{color:var(--ville)}
+code,kbd,.mono{font-family:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace}
+code{font-size:.87em;background:var(--surface-2);border-radius:4px;padding:.1em .35em;color:var(--ink)}
+pre{background:var(--code-bg);color:var(--code-ink);border-radius:12px;padding:18px 20px;
+  overflow-x:auto;font-family:"JetBrains Mono",monospace;font-size:12.5px;line-height:1.75;margin:0}
+pre code{background:none;color:inherit;padding:0;font-size:inherit}
+
+.eyebrow{font-family:"JetBrains Mono",monospace;font-size:11px;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--ink-3);font-weight:600}
+
+/* ---------- ouverture ---------- */
+header.top{padding:76px 0 30px}
+.lede{font-size:19px;line-height:1.55;color:var(--ink-2);margin-top:18px}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1px;
+  background:var(--line);border:1px solid var(--line);border-radius:14px;overflow:hidden;margin-top:32px}
+.stat{background:var(--surface);padding:16px 18px}
+.stat .n{font-family:"Bricolage Grotesque",sans-serif;font-size:26px;font-weight:700;
+  color:var(--ink);line-height:1.1;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.stat .l{font-size:12.5px;color:var(--ink-3);margin-top:3px;line-height:1.35}
+
+/* ---------- parties ---------- */
+.part{border-top:2px solid var(--ink);margin-top:64px;padding-top:20px}
+.part-head{display:flex;gap:14px;align-items:baseline;flex-wrap:wrap;margin-bottom:26px}
+.part-num{font-family:"JetBrains Mono",monospace;font-size:12px;font-weight:600;
+  color:var(--ground);background:var(--ink);border-radius:999px;padding:5px 11px;flex-shrink:0}
+section{margin-top:38px}
+
+/* ---------- etats ---------- */
+.rows{display:flex;flex-direction:column;gap:10px;margin-top:18px}
+.row{display:grid;grid-template-columns:auto 1fr auto;gap:14px;align-items:start;
+  background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+.row .stripe{width:3px;border-radius:2px;align-self:stretch;min-height:38px}
+.row .body p{font-size:14.5px;color:var(--ink-3);margin:3px 0 0;max-width:60ch}
+.chip{font-family:"JetBrains Mono",monospace;font-size:10.5px;font-weight:600;letter-spacing:.07em;
+  text-transform:uppercase;padding:4px 9px;border-radius:999px;white-space:nowrap;align-self:center}
+.chip.fait{background:var(--ok-fill);color:var(--ok)}
+.chip.encours{background:var(--attn-fill);color:var(--attn)}
+.chip.rien{background:var(--wait-fill);color:var(--wait)}
+.s-fait{background:var(--ok)} .s-encours{background:var(--attn)} .s-rien{background:var(--line-strong)}
+
+/* ---------- flux ---------- */
+.flux{display:grid;grid-template-columns:repeat(auto-fit,minmax(168px,1fr));gap:12px;margin-top:22px}
+.node{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 15px;
+  position:relative;box-shadow:var(--shadow)}
+.node .k{font-family:"JetBrains Mono",monospace;font-size:10.5px;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--ink-3);font-weight:600;display:block;margin-bottom:6px}
+.node .v{font-family:"Bricolage Grotesque",sans-serif;font-weight:700;color:var(--ink);font-size:16px;line-height:1.25}
+.node .d{font-size:13px;color:var(--ink-3);margin-top:6px;line-height:1.45}
+.node.accent{border-color:var(--ville);border-width:1.5px}
+
+/* ---------- encadres ---------- */
+.note{background:var(--surface);border:1px solid var(--line);border-left:3px solid var(--ville);
+  border-radius:0 12px 12px 0;padding:16px 18px;margin-top:20px}
+.note.warn{border-left-color:var(--attn)}
+.note.good{border-left-color:var(--ok)}
+.note .k{font-family:"JetBrains Mono",monospace;font-size:10.5px;letter-spacing:.13em;
+  text-transform:uppercase;font-weight:600;color:var(--ink-3);display:block;margin-bottom:7px}
+.note p{font-size:14.5px}
+
+/* ---------- tableaux ---------- */
+.tw{overflow-x:auto;margin-top:20px;border:1px solid var(--line);border-radius:12px;background:var(--surface)}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{text-align:left;padding:11px 14px;border-bottom:1px solid var(--line);vertical-align:top}
+tr:last-child td{border-bottom:none}
+th{font-family:"JetBrains Mono",monospace;font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--ink-3);font-weight:600;background:var(--surface-2)}
+td.num{font-variant-numeric:tabular-nums;white-space:nowrap}
+td strong{color:var(--ink)}
+
+ul{margin:12px 0 0 20px;max-width:64ch}
+li{margin-bottom:8px}
+li::marker{color:var(--ink-3)}
+
+.codewrap{margin-top:20px}
+.codecap{font-family:"JetBrains Mono",monospace;font-size:11px;letter-spacing:.09em;text-transform:uppercase;
+  color:var(--ink-3);margin-bottom:8px;font-weight:600}
+
+footer{border-top:2px solid var(--ink);margin-top:70px;padding-top:24px}
+.sig{font-size:13px;color:var(--ink-3);margin-top:16px}
+
+:focus-visible{outline:2px solid var(--ville);outline-offset:2px;border-radius:3px}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+@media print{body{background:#fff}pre{background:#fff;color:#000;border:1px solid #999}}
+</style>
+
+<div class="wrap">
+
+<header class="top">
+  <div class="eyebrow">Repère · v18.19 · 25 août 2026</div>
+  <h1>Passation</h1>
+  <p class="lede narrow">Application civique française neutre : <strong>qui décide chez moi</strong>,
+  <strong>où va mon argent</strong>, pour n'importe laquelle des 34 875 communes. Un seul
+  développeur, 250 € de budget, bêta fermée visée en décembre 2026, présidentielle en avril 2027.
+  Ce document dit où en est le projet, puis comment il est fait.</p>
+
+  <div class="stats">
+    <div class="stat"><div class="n">16,99 Mo</div><div class="l">un fichier HTML, 16 049 lignes</div></div>
+    <div class="stat"><div class="n">40</div><div class="l">contrôles automatiques avant chaque publication</div></div>
+    <div class="stat"><div class="n">412 Ko</div><div class="l">ce qu'un lecteur téléchargera, après découpage</div></div>
+    <div class="stat"><div class="n">0 €</div><div class="l">coût d'exploitation mensuel</div></div>
+  </div>
+</header>
+
+<!-- ==================================================================== -->
+<div class="part">
+  <div class="part-head"><span class="part-num">I</span><h2>Où en est le projet</h2></div>
+
+  <p class="narrow">La chaîne d'exploitation est <strong>terminée et tourne seule</strong>. Le
+  produit, lui, n'est pas encore montrable à des inconnus : les données sont là mais mal
+  desservies, et le fil d'actualité a deux mois de retard. Mon estimation honnête :
+  <strong>autour de 60 % du chemin</strong> vers « montrable à dix personnes sans avoir à
+  expliquer ce qui est faux dedans ».</p>
+
+  <section>
+    <h3>Ce qui est fait, vérifié</h3>
+    <div class="rows">
+
+      <div class="row">
+        <span class="stripe s-fait"></span>
+        <div class="body"><strong>Chaîne quotidienne complète</strong>
+        <p>5 h 47 UTC : collecte des sources officielles, normalisation, contrôles,
+        reconstruction, 40 tests dans un vrai Chromium, publication sur Netlify. Zéro
+        intervention humaine, zéro coût.</p></div>
+        <span class="chip fait">fait</span>
+      </div>
+
+      <div class="row">
+        <span class="stripe s-fait"></span>
+        <div class="body"><strong>Mise en veille de tout ce qui était faux</strong>
+        <p>Cinq écrans commerciaux et dix blocs de démonstration retirés du DOM au démarrage.
+        Plus aucun prix affiché, aucune promesse de notification qui n'existe pas.</p></div>
+        <span class="chip fait">fait</span>
+      </div>
+
+      <div class="row">
+        <span class="stripe s-fait"></span>
+        <div class="body"><strong>Correctifs juridiques</strong>
+        <p>Traitement de données reformulé (art. 85 RGPD), droit de réponse sous l'art. 6 IV
+        de la LCEN, adresse de contact unique. La géolocalisation ne domicilie plus personne
+        à Fontainebleau quand le réseau manque.</p></div>
+        <span class="chip fait">fait</span>
+      </div>
+
+      <div class="row">
+        <span class="stripe s-fait"></span>
+        <div class="body"><strong>Découpage des données par département</strong>
+        <p>103 fichiers + deux socles. Ce qu'un lecteur télécharge passe de 16,2 Mo à
+        <strong>412 Ko</strong>, soit 41 fois moins. Les tables de personnes sont réindexées
+        par département pour ne pas servir les 74 728 noms de France entière.</p></div>
+        <span class="chip fait">fait</span>
+      </div>
+
+      <div class="row">
+        <span class="stripe s-fait"></span>
+        <div class="body"><strong>Couche éditoriale AUTO → RELU → PUBLIÉ</strong>
+        <p>La machine pose des brouillons, un humain valide, l'application ne lit que le
+        validé. Filtre de sources : institutions publiques uniquement, la presse est refusée
+        — droit d'auteur et neutralité.</p></div>
+        <span class="chip fait">fait</span>
+      </div>
+
+      <div class="row">
+        <span class="stripe s-fait"></span>
+        <div class="body"><strong>Audit UX par onze relecteurs</strong>
+        <p>Quatre regards (jeunes, aînés, accessibilité, neutralité), chacun contredit par un
+        relecteur adverse, puis arbitré. Conclusion : le problème principal est la barre
+        d'onglets, pas la couleur.</p></div>
+        <span class="chip fait">fait</span>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h3>Ce qui est commencé mais pas branché</h3>
+    <div class="rows">
+      <div class="row">
+        <span class="stripe s-encours"></span>
+        <div class="body"><strong>L'application ne consomme pas encore les données découpées</strong>
+        <p>Les 206 fichiers sont produits et publiés ; l'app lit toujours les variables
+        globales embarquées. Il manque le chargeur asynchrone et son état d'attente.</p></div>
+        <span class="chip encours">en cours</span>
+      </div>
+      <div class="row">
+        <span class="stripe s-encours"></span>
+        <div class="body"><strong>Scrutins et circonscriptions ingérés, pas affichés</strong>
+        <p>8 434 scrutins et la table commune → circonscription sont produits chaque matin.
+        Aucun écran ne les lit encore.</p></div>
+        <span class="chip encours">en cours</span>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h3>Ce qui bloque une ouverture au public</h3>
+    <div class="rows">
+      <div class="row">
+        <span class="stripe s-rien"></span>
+        <div class="body"><strong>Le fil a deux mois de retard</strong>
+        <p>13 cartes écrites à la main, la plus récente du 29 juin. Une seule est locale.
+        La couche éditoriale résout le mécanisme ; il reste à écrire un fait par jour.</p></div>
+        <span class="chip rien">à faire</span>
+      </div>
+      <div class="row">
+        <span class="stripe s-rien"></span>
+        <div class="body"><strong>L'écran de l'argent est vide pour les 34 875 communes</strong>
+        <p><code>ARGENT_CMP</code> et <code>ARGENT_SERIE</code> sont déclarés vides et jamais
+        écrits. Les deux graphiques principaux affichent leur état vide, posés sur 8,42 Mo de
+        comptes réels déjà embarqués. C'est un câblage absent, pas un manque de données.</p></div>
+        <span class="chip rien">à faire</span>
+      </div>
+      <div class="row">
+        <span class="stripe s-rien"></span>
+        <div class="body"><strong>La barre d'onglets ne porte aucune des deux questions</strong>
+        <p>« Où va mon argent » est une tuile à 7 236 px du haut d'un écran, soit onze gestes
+        depuis l'accueil. L'onglet « Qui décide ? » ouvre un quiz.</p></div>
+        <span class="chip rien">à faire</span>
+      </div>
+      <div class="row">
+        <span class="stripe s-rien"></span>
+        <div class="body"><strong>Aucune structure juridique, aucun canal de diffusion</strong>
+        <p>Rien n'est en vente, donc l'exposition est fermée. Mais personne ne sait que
+        Repère existe, et aucun travail n'a encore porté là-dessus.</p></div>
+        <span class="chip rien">à faire</span>
+      </div>
+    </div>
+  </section>
+
+  <div class="note warn">
+    <span class="k">Le risque principal</span>
+    <p>Ce n'est pas technique. Le produit n'a <strong>jamais été montré à un inconnu</strong>.
+    Toute l'énergie va dans la chaîne et la refonte, et rien dans la façon dont quelqu'un
+    apprend que ça existe — alors que l'objectif est d'être connu avant avril 2027.</p>
+  </div>
+</div>
+
+<!-- ==================================================================== -->
+<div class="part">
+  <div class="part-head"><span class="part-num">II</span><h2>Brief technique</h2>
+  <span class="eyebrow" style="align-self:center">pour un développeur JS / React</span></div>
+
+  <p class="narrow">Premier réflexe attendu en découvrant le projet : « pourquoi ce n'est pas
+  du React ? ». La réponse tient en quatre contraintes, et elles sont dures.</p>
+
+  <section>
+    <h3>Les quatre contraintes qui décident de l'architecture</h3>
+    <div class="tw"><table>
+      <tr><th>Contrainte</th><th>Conséquence directe</th></tr>
+      <tr><td><strong>Hors ligne obligatoire</strong></td><td>L'app doit fonctionner sans réseau, dans le métro, dans un village sans couverture. Un <code>fetch</code> vers une API au premier rendu est disqualifiant.</td></tr>
+      <tr><td><strong>Zéro donnée collectée</strong></td><td>Pas de compte, pas de courriel, pas de mesure d'audience, une seule clé <code>localStorage</code>. C'est l'argument central du produit. Un serveur crée mécaniquement des journaux, donc des adresses IP.</td></tr>
+      <tr><td><strong>Un développeur, ~8 h par semaine</strong></td><td>Toute chaîne d'outils à maintenir se paie sur le temps de produit. Il n'y a pas de <code>node_modules</code> en production, pas d'étape de compilation.</td></tr>
+      <tr><td><strong>250 € de budget total</strong></td><td>Aucun serveur applicatif. L'hébergement est statique et gratuit.</td></tr>
+    </table></div>
+
+    <div class="note">
+      <span class="k">L'idée à retenir</span>
+      <p>Il <em>y a</em> un backend — il tourne au moment de la <strong>fabrication</strong>,
+      pas de l'usage. Une action GitHub joue chaque matin le rôle qu'un serveur Express jouerait
+      à chaque requête : elle collecte, normalise, vérifie, produit du JSON et publie. Zéro coût,
+      zéro journal, zéro maintenance, et le résultat fonctionne hors ligne.</p>
+    </div>
+  </section>
+
+  <section>
+    <h3>Le flux</h3>
+    <div class="flux">
+      <div class="node"><span class="k">1 · Sources</span><span class="v">Open data</span>
+        <div class="d">Assemblée nationale, data.gouv.fr, RNE, OFGL. Licence ouverte.</div></div>
+      <div class="node"><span class="k">2 · Pipeline</span><span class="v">Python, en CI</span>
+        <div class="d">13 étapes ordonnées dans <code>outils/pipeline.sh</code>.</div></div>
+      <div class="node accent"><span class="k">3 · Artefacts</span><span class="v">JSON versionné</span>
+        <div class="d">Un fichier par département, plus les socles et l'agenda.</div></div>
+      <div class="node"><span class="k">4 · Application</span><span class="v">HTML autonome</span>
+        <div class="d">Le fichier embarque tout ; la version servie va chercher son département.</div></div>
+    </div>
+
+    <div class="codewrap">
+      <div class="codecap">outils/pipeline.sh — l'ordre réel</div>
+      <pre><code>1  dépiler les archives            unzip data/*.zip
+2  normaliser l'agenda            agenda_an.py      → 6 280 réunions
+3  décrire les schémas            echantillon_*.py  → docs/schema_*.md
+4  table des circonscriptions     circos.py         → commune → circo
+5  scrutins publics               scrutins_an.py    → 80 derniers, par député
+6  découpage par département      decouper.py       → 206 fichiers
+7  couche éditoriale              candidats.py + evenements.py
+8  vérifications indépendantes    relecture de ce qui vient d'être écrit
+9  reconstruction du site         build_pwa_reconstruit.py
+10 banc                           node test_repere.mjs   ← le verrou
+11 publication                    netlify-cli deploy --prod</code></pre>
+    </div>
+
+    <div class="note good">
+      <span class="k">Pourquoi l'étape 10 est le verrou</span>
+      <p>Le banc ouvre le site reconstruit dans un vrai Chromium et mesure le rendu : hauteurs,
+      contrastes, cibles tactiles d'au moins 44 px, absence d'erreur JavaScript, écrans qui ne
+      s'ouvrent pas vides. <strong>Un seul échec et rien n'est publié.</strong> C'est ce qui rend
+      acceptable une publication quotidienne sans relecture humaine. Principe de conception écrit
+      dans le fichier : <em>un banc vert sur une page cassée reste un banc vert</em> — d'où la
+      moitié des contrôles qui mesurent le rendu plutôt que de relire le texte du source.</p>
+    </div>
+  </section>
+
+  <section>
+    <h3>Les données</h3>
+    <div class="tw"><table>
+      <tr><th>Jeu</th><th class="num">Poids</th><th>Contenu</th><th>Fraîcheur</th></tr>
+      <tr><td><code>REPERE_RNE</code></td><td class="num">6,45 Mo</td><td>Tous les élus de France : 34 637 maires, 116 454 adjoints, conseils départementaux et régionaux, 925 parlementaires</td><td>mensuelle</td></tr>
+      <tr><td><code>REPERE_OFGL</code></td><td class="num">8,42 Mo</td><td>Comptes des collectivités, 34 875 communes</td><td>annuelle</td></tr>
+      <tr><td><code>agenda_an.json</code></td><td class="num">665 Ko</td><td>6 280 réunions parlementaires</td><td><strong>quotidienne</strong></td></tr>
+      <tr><td><code>scrutins_an.json</code></td><td class="num">~200 Ko</td><td>80 derniers scrutins, position de chaque député</td><td><strong>quotidienne</strong></td></tr>
+      <tr><td><code>circos.json</code></td><td class="num">~600 Ko</td><td>Commune → circonscription(s) législative(s)</td><td>par législature</td></tr>
+      <tr><td><code>evenements.json</code></td><td class="num">variable</td><td>Le fil éditorial, validé à la main</td><td><strong>quotidienne</strong></td></tr>
+    </table></div>
+
+    <p style="margin-top:16px">Le RNE stocke les personnes par index dans deux tables globales
+    — 7 821 prénoms, 74 728 noms. Le découpage <strong>réindexe</strong> ces tables par
+    département : sans ça, chaque lecteur téléchargerait les 805 Ko de noms de France entière
+    pour lire une commune.</p>
+
+    <div class="codewrap">
+      <div class="codecap">forme d'une entrée, relevée et non devinée</div>
+      <pre><code>com["01001"]  = [idxPrénom, idxNom, idxFonction]        // le maire
+adj["01001"]  = [[p, n, f], ...]                       // les adjoints
+ecc["01004"]  = [epci, x, [[p, n, f], ...]]            // ⚠ liste au 3ᵉ rang</code></pre>
+    </div>
+  </section>
+
+  <section>
+    <h3>Les huit invariants — ce qui fera échouer une contribution</h3>
+    <ul>
+      <li><strong>1. Autonomie.</strong> <code>app_repere_vXX.html</code> fonctionne hors ligne, sans une requête.</li>
+      <li><strong>2. Une seule clé.</strong> <code>localStorage["repere.serie"]</code>, rien d'autre. Ni <code>sessionStorage</code>, ni IndexedDB, ni cookie.</li>
+      <li><strong>3. Aucun classement.</strong> Ni note, ni score, ni tri numérique d'une liste de personnes, de partis ou de territoires.</li>
+      <li><strong>4. Chaque chiffre porte sa source officielle et sa date.</strong></li>
+      <li><strong>5. Doctrine du vide.</strong> Une absence produit une phrase et un lien — jamais un graphique vide, jamais un squelette animé.</li>
+      <li><strong>6. Rien qui gamifie le vote ou l'opinion.</strong></li>
+      <li><strong>7. Palette.</strong> Cinq couleurs d'échelon figées ; hors échelons, aucune couleur ne dépasse une amplitude de canaux RVB de 24.</li>
+      <li><strong>8. Jamais</strong> le patrimoine d'un élu, jamais de donnée de présence ou d'absence.</li>
+    </ul>
+
+    <div class="note warn">
+      <span class="k">Le piège le plus facile à déclencher</span>
+      <p>Le banc refuse toute adresse réseau contenant un code de commune —
+      <code>?insee=13055</code>, <code>/donnees/13055.json</code>. Un serveur qui sait quelle
+      commune vous consultez sait où vous habitez. Le découpage est fait <strong>par
+      département</strong> pour cette raison précise, pas pour la taille des fichiers.</p>
+    </div>
+  </section>
+
+  <section>
+    <h3>Trois chantiers, par ordre de valeur</h3>
+    <div class="tw"><table>
+      <tr><th>Chantier</th><th>Ce que ça change</th><th class="num">Effort</th></tr>
+      <tr><td><strong>Brancher l'écran de l'argent</strong><br><code>ARGENT_CMP</code>, <code>ARGENT_SERIE</code></td><td>Deux graphiques passent de « vides partout » à « remplis partout », sur des données déjà présentes</td><td class="num">1 j</td></tr>
+      <tr><td><strong>Chargeur asynchrone du découpage</strong></td><td>Premier affichage de 412 Ko au lieu de 16,2 Mo. Demande un vrai état d'attente conforme à la doctrine du vide</td><td class="num">2–3 j</td></tr>
+      <tr><td><strong>Barre d'onglets : 5 → 4</strong></td><td>« Où va mon argent » passe de onze gestes à un</td><td class="num">2,5 j</td></tr>
+    </table></div>
+  </section>
+
+  <section>
+    <h3>Et React Native, alors ?</h3>
+    <p class="narrow">Question légitime, réponse nuancée — et il faut la poser dans cet ordre.</p>
+    <ul>
+      <li><strong>Réutilisable tel quel :</strong> tout l'étage données. Le pipeline, les schémas, les JSON produits. C'est du contrat, pas du code d'interface.</li>
+      <li><strong>Non réutilisable :</strong> l'étage rendu, en totalité. Le fichier est du DOM impératif sans composants ; il n'y a rien à porter, il y a à réécrire.</li>
+      <li><strong>Ce qu'une app native coûte ici :</strong> deux magasins d'applications, donc deux processus de validation, une identité de développeur, et des commissions de 15 à 30 % si un paiement apparaît un jour. Le web, lui, ne demande la permission de personne pour publier — ce qui, pour un produit civique en période électorale, n'est pas un détail.</li>
+      <li><strong>Ce qu'elle apporterait :</strong> les notifications système. C'est la seule chose que le web ne fait pas bien sur iOS. Or le produit n'envoie aujourd'hui aucune notification, et l'arbitrage écrit dit qu'il ne notifiera jamais ce que l'utilisateur <em>n'a pas fait</em>.</li>
+    </ul>
+    <p class="narrow" style="margin-top:14px">Conclusion : le mobile natif n'est pas le prochain
+    chantier. Il le deviendra le jour où il y aura des utilisateurs à qui il manque quelque
+    chose — pas avant.</p>
+  </section>
+
+  <section>
+    <h3>Pour prendre la main en dix minutes</h3>
+    <div class="codewrap">
+      <pre><code># le dépôt
+git clone https://github.com/Repere0/repere && cd repere
+
+# faire tourner le banc sur le fichier de travail
+npm install --no-save playwright && npx playwright install chromium
+node test_repere.mjs app_repere_v18_19.html      # 40 contrôles, ~40 s
+
+# reconstruire le site servi depuis le fichier autonome
+python3 outils/build_pwa_reconstruit.py app_repere_v18_19.html site site_engendre
+
+# la chaîne entière, telle qu'elle tourne en CI
+bash outils/pipeline.sh</code></pre>
+    </div>
+    <p style="margin-top:16px">Convention de modification : on ne touche pas au fichier de 17 Mo
+    à la main. Chaque changement est un script Python à assertions
+    (<code>outils/patch_NN_*.py</code>) qui vérifie ses ancres <strong>avant</strong> d'écrire,
+    puis le banc, puis la relecture des captures d'écran.</p>
+  </section>
+</div>
+
+<footer>
+  <div class="wrap" style="padding:0">
+    <h3>En une phrase, pour chaque lecteur</h3>
+    <p class="narrow" style="margin-top:10px"><strong>Pour toi :</strong> la machine est finie,
+    le produit ne l'est pas — et le prochain gain n'est pas technique, c'est de le montrer à dix
+    personnes.</p>
+    <p class="narrow"><strong>Pour un développeur :</strong> ce n'est pas une application web mal
+    architecturée, c'est un artefact hors ligne dont le backend s'exécute à la fabrication ;
+    juge-la sur ses quatre contraintes avant de proposer de la réécrire.</p>
+    <p class="sig">Repère — passation du 25 août 2026. Tous les chiffres de ce document sont
+    mesurés dans le dépôt à cette date, pas estimés.</p>
+  </div>
+</footer>
+
+</div>

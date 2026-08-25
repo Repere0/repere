@@ -63,7 +63,9 @@ def entete(txt):
         meta[k.strip()] = v
     return meta, m.group(2).strip()
 
-fichiers = sorted(glob.glob(os.path.join(SOURCE, "*.md")))
+# Les fichiers prefixes par « _ » sont techniques (gabarits Obsidian) : on ne les lit pas.
+fichiers = sorted(f for f in glob.glob(os.path.join(SOURCE, "*.md"))
+                  if not os.path.basename(f).startswith("_"))
 retenus, refus = [], collections.Counter()
 detail = []
 

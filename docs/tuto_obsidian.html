@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Repère — Le bureau de relecture</title>
+<style>
+:root{--ink:#1B1815;--ink-2:#413A33;--muted:#6B6259;--sep:#E2DBD0;--sep-fort:#CBC2B4;
+ --bg:#F1EDE4;--card:#FFF;--fill:#EEE9E0;--urgent:#9B4808;--ok:#45584A;--ville:#0C657D}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);line-height:1.62;padding:0 0 70px;
+ font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;-webkit-font-smoothing:antialiased}
+.wrap{max-width:830px;margin:0 auto;padding:0 22px}
+header{padding:46px 0 22px;border-bottom:2px solid var(--ink)}
+.eyebrow{font-size:11px;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);font-weight:700}
+h1{font-size:clamp(27px,5vw,38px);line-height:1.08;letter-spacing:-.025em;font-weight:800;margin:12px 0 14px}
+h2{font-size:20px;line-height:1.25;letter-spacing:-.015em;font-weight:800;margin:0}
+p{color:var(--ink-2);font-size:15.5px;line-height:1.65;max-width:70ch;overflow-wrap:anywhere}
+p+p{margin-top:10px}
+b{color:var(--ink);font-weight:700}
+.etape{border-top:1px solid var(--sep);padding:26px 0}
+.tete{display:flex;gap:13px;align-items:baseline;margin-bottom:12px}
+.n{font-size:12px;font-weight:800;background:var(--ink);color:var(--bg);border-radius:999px;padding:4px 11px;flex-shrink:0;line-height:1.4}
+.n.urg{background:var(--urgent)}
+.duree{font-size:11.5px;color:var(--muted);font-weight:700;letter-spacing:.04em;text-transform:uppercase;margin-left:auto;flex-shrink:0}
+pre{background:var(--ink);color:#F7F4EE;border-radius:12px;padding:13px 15px;margin:12px 0;
+ font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12.5px;line-height:1.7;white-space:pre-wrap;word-break:break-all}
+code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:13px;background:var(--fill);border-radius:5px;padding:1px 5px}
+.bloc{background:var(--card);border:1px solid var(--sep);border-radius:14px;padding:14px 16px;margin-top:12px}
+.bloc .l{font-size:10.5px;letter-spacing:.13em;text-transform:uppercase;font-weight:800;color:var(--muted);margin-bottom:6px}
+.bloc.reussi{border-left:3px solid var(--ok)}
+.bloc.piege{border-left:3px solid var(--urgent)}
+.bloc.pourquoi{border-left:3px solid var(--ville)}
+.bloc p{font-size:14.5px}
+ul,ol{margin:9px 0 0 21px;color:var(--ink-2);font-size:15px}li{margin-bottom:7px;overflow-wrap:anywhere}
+a{color:var(--ville);overflow-wrap:anywhere}
+table{width:100%;border-collapse:collapse;margin-top:14px;font-size:14px;table-layout:fixed}
+th,td{text-align:left;padding:10px;border-bottom:1px solid var(--sep);vertical-align:top;overflow-wrap:anywhere}
+th{font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:800}
+.avert{background:#F0EBE1;border:1px solid var(--sep-fort);border-radius:14px;padding:15px 17px;margin:18px 0}
+.avert .l{font-size:10.5px;letter-spacing:.13em;text-transform:uppercase;font-weight:800;color:var(--urgent);margin-bottom:6px}
+footer{border-top:2px solid var(--ink);margin-top:28px;padding-top:20px}
+@media print{body{background:#fff}pre{background:#fff;color:#000;border:1px solid #999}}
+</style></head><body><div class="wrap">
+
+<header>
+  <div class="eyebrow">Repère · Obsidian · 25 août 2026</div>
+  <h1>Le bureau<br>de relecture.</h1>
+  <p>Quatre étapes pour publier ton premier fait. Ensuite, c'est trois minutes par jour et
+  plus jamais ce document.</p>
+  <div class="bloc pourquoi" style="margin-top:18px">
+    <div class="l">Pourquoi ce geste existe</div>
+    <p>La machine collecte 8 434 scrutins et 6 280 réunions chaque matin, et elle n'en publie
+    aucun. C'est voulu : l'application promet « vérifié par un humain », et une chaîne
+    entièrement automatique rendrait cette phrase fausse à l'endroit précis où l'on demande
+    d'être cru. <b>Le geste que tu vas apprendre est ce qui rend la promesse vraie.</b></p>
+  </div>
+</header>
+
+<div class="etape">
+  <div class="tete"><span class="n urg">1</span><h2>Récupérer ce que la chaîne a écrit</h2><span class="duree">1 minute</span></div>
+  <p>Double-clique <code>pousser.bat</code>. Il récupère d'abord les commits du robot — dont
+  les candidats déposés ce matin — puis envoie la configuration du coffre que je viens
+  d'écrire sur ton disque.</p>
+  <div class="bloc reussi"><div class="l">Réussi si</div>
+  <p>Dernière ligne : <code>OK - envoye.</code> Et le dossier <code>data\auto\</code> existe
+  et contient des fichiers <code>scrutin-2026-…md</code>.</p></div>
+  <div class="bloc piege"><div class="l">Si <code>data\auto\</code> est vide ou absent</div>
+  <p>C'est que la chaîne n'a pas encore fabriqué de candidats. Relance le workflow une fois
+  — <a href="https://github.com/Repere0/repere/actions/workflows/collecte.yml">ici</a> — puis
+  refais <code>pousser.bat</code>. J'ai vérifié que <code>outils/scrutins_an.json</code>
+  existe bien sur le dépôt avec 8 434 scrutins : la matière est là.</p></div>
+</div>
+
+<div class="etape">
+  <div class="tete"><span class="n urg">2</span><h2>Ouvrir le coffre</h2><span class="duree">1 minute</span></div>
+  <p>Dans Obsidian : <b>Ouvrir un dossier comme coffre</b>, puis choisis exactement :</p>
+  <pre>C:\Users\APina\repere\data</pre>
+  <div class="bloc pourquoi"><div class="l">Pourquoi <code>data</code> et pas le dépôt entier</div>
+  <p>Le dépôt contient sept fichiers HTML de 17 Mo et deux cents JSON. Indexer tout ça
+  transformerait Obsidian en explorateur de fichiers lent. Là, tu ouvres un bureau qui ne
+  contient que ce que tu écris.</p></div>
+  <div class="bloc reussi"><div class="l">Réussi si</div>
+  <p>Tu vois quatre dossiers — <code>auto</code>, <code>evenements</code>,
+  <code>notes</code>, <code>_TEMPLATES</code> — et trois signets en haut du volet de gauche :
+  <b>① Le geste du jour</b>, <b>② À relire</b>, <b>③ Publiés</b>.</p></div>
+  <p style="margin-top:12px">Prends deux minutes pour lire <b>① Le geste du jour</b>. Les
+  trois autres notes se lisent quand tu en as besoin, et elles sont liées entre elles.</p>
+</div>
+
+<div class="etape">
+  <div class="tete"><span class="n urg">3</span><h2>Publier ton premier fait</h2><span class="duree">3 minutes</span></div>
+  <ol>
+    <li>Clique le signet <b>② À relire</b>. Choisis un candidat.</li>
+    <li><b>Ouvre sa <code>source</code> dans le navigateur</b> et relis le fait contre elle.
+    C'est l'étape qui compte : tout le reste est de la mise en forme.</li>
+    <li>Réécris le titre s'il est illisible. Il reprend l'objet de la décision dans les termes
+    du document — jamais une formule de ton cru.</li>
+    <li>Complète <b>« Ce que ça change »</b>, une phrase concrète. Si tu dois supposer pour
+    l'écrire, <b>laisse vide</b> : c'est prévu, et plus honnête qu'une phrase plausible.</li>
+    <li>Dans le bandeau des propriétés, bascule <code>valide</code> de <code>false</code> à
+    <code>true</code>. Passe <code>confiance</code> à <code>verifie</code> si tu as vraiment
+    lu le document.</li>
+    <li><b>Glisse le fichier de <code>auto</code> vers <code>evenements</code></b> dans le
+    volet de gauche.</li>
+  </ol>
+  <div class="bloc piege"><div class="l">Le test avant de valider</div>
+  <p><i>Est-ce que quelqu'un qui pense l'inverse de moi trouverait cette phrase exacte ?</i>
+  Si la réponse est non, réécris-la. C'est tout le produit qui tient dans cette question.</p></div>
+</div>
+
+<div class="etape">
+  <div class="tete"><span class="n">4</span><h2>L'envoyer, et vérifier demain</h2><span class="duree">30 secondes</span></div>
+  <p>Ferme Obsidian, double-clique <code>pousser.bat</code>. La chaîne le publiera demain
+  matin à 5 h 47.</p>
+  <div class="bloc reussi"><div class="l">La vérification, le lendemain</div>
+  <p>Ouvre <a href="https://repereapp.netlify.app/donnees/evenements.json">repereapp.netlify.app/donnees/evenements.json</a>.
+  Ton fait doit y figurer, avec sa source et sa date. C'est une mesure directe, indépendante
+  de ce que raconte le journal d'exécution.</p></div>
+  <div class="bloc pourquoi"><div class="l">Ce que la chaîne refuse de publier</div>
+  <table>
+    <tr><th>Cas</th><th>Ce qui se passe</th></tr>
+    <tr><td>Pas de <code>source</code></td><td>écarté, avertissement dans le journal</td></tr>
+    <tr><td>Source de presse</td><td>écarté — droit d'auteur, et neutralité</td></tr>
+    <tr><td>Date floue (« été 2026 »)</td><td>écarté — un fait daté ou rien</td></tr>
+    <tr><td><code>valide: false</code></td><td>reste en salle d'attente, sans bruit</td></tr>
+  </table>
+  <p style="margin-top:10px">Rien de tout ça ne casse la chaîne : elle prévient et continue.
+  Le site du jour est publié quoi qu'il arrive.</p></div>
+</div>
+
+<div class="etape">
+  <div class="tete"><span class="n">!</span><h2>Trois choses à ne pas faire dans le coffre</h2></div>
+  <ul>
+    <li><b>Ne modifie aucun <code>.json</code>.</b> Ce sont des sorties de la chaîne : elles
+    seront réécrites demain matin, et ta modification disparaîtra sans un mot.</li>
+    <li><b>Ne renomme pas les dossiers</b> <code>auto</code> et <code>evenements</code> :
+    ce sont les chemins que la chaîne lit.</li>
+    <li><b>N'installe pas d'extension communautaire qui réécrit les en-têtes YAML</b>
+    (Linter, Templater agressif). Le lecteur attend un en-tête simple, une clé par ligne. Les
+    extensions de base suffisent, et elles sont déjà réglées.</li>
+  </ul>
+  <div class="avert">
+    <div class="l">Une réserve honnête</div>
+    <p>J'ai écrit la configuration d'Obsidian sans pouvoir vérifier ta version. Si un réglage
+    est ignoré ou réécrit à la première ouverture, ce n'est pas grave — Obsidian reprend la
+    main proprement. Dis-le-moi si quelque chose n'apparaît pas comme décrit ici.</p>
+  </div>
+</div>
+
+<footer>
+  <h2>Le rythme</h2>
+  <p style="margin-top:8px">Un fait par jour suffit. Trente secondes de lecture pour celui
+  qui te lit, trois minutes d'écriture pour toi. Dans un mois, le fil a <b>trente faits
+  datés</b> — contre treize aujourd'hui, dont le plus récent a deux mois.</p>
+  <p style="margin-top:12px;font-size:13.5px;color:var(--muted)">Repère — le bureau de
+  relecture, 25 août 2026. Le geste complet est aussi dans le coffre, note
+  « Comment publier un fait ».</p>
+</footer>
+
+</div></body></html>

@@ -1,0 +1,14 @@
+{
+  "attachmentFolderPath": "./",
+  "showLineNumber": false,
+  "readableLineLength": true,
+  "strictLineBreaks": false,
+  "showFrontmatter": true,
+  "propertiesInDocument": "visible",
+  "defaultViewMode": "source",
+  "livePreview": true,
+  "newFileLocation": "folder",
+  "newFileFolderPath": "auto",
+  "alwaysUpdateLinks": true,
+  "userIgnoreFilters": [".obsidian/"]
+}

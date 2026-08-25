@@ -1,0 +1,10 @@
+{
+  "items": [
+    { "type": "file", "path": "notes/Comment publier un fait.md", "title": "① Le geste du jour" },
+    { "type": "search", "query": "path:auto", "title": "② À relire" },
+    { "type": "search", "query": "path:evenements", "title": "③ Publiés" },
+    { "type": "file", "path": "notes/Sources autorisées.md", "title": "Sources autorisées" },
+    { "type": "file", "path": "notes/Ce qu'on ne publie jamais.md", "title": "Ce qu'on ne publie jamais" },
+    { "type": "file", "path": "notes/Écrire un fait.md", "title": "Écrire un fait" }
+  ]
+}
