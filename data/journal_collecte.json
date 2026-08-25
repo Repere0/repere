@@ -1,59 +1,59 @@
 {
- "execute_le": "2026-08-25T08:57:22Z",
+ "execute_le": "2026-08-25T09:12:18Z",
  "sources": [
   {
    "cle": "agenda_an",
    "titre": "Assemblee nationale — reunions (seance, commissions, enquetes)",
    "url": "https://data.assemblee-nationale.fr/static/openData/repository/17/vp/reunions/Agenda.json.zip",
-   "tentee_le": "2026-08-25T08:57:22Z",
+   "tentee_le": "2026-08-25T09:12:18Z",
    "http": 200,
    "octets": 7818312,
    "empreinte": "dae69f6fe2d238d4",
-   "secondes": 16.1,
+   "secondes": 5.0,
    "ok": true
   },
   {
    "cle": "organes_an",
    "titre": "Assemblee nationale — acteurs, mandats et organes (historique)",
    "url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip",
-   "tentee_le": "2026-08-25T08:57:38Z",
+   "tentee_le": "2026-08-25T09:12:23Z",
    "http": 200,
    "octets": 13600215,
    "empreinte": "0a3040d627a6f4d7",
-   "secondes": 23.2,
+   "secondes": 6.0,
    "ok": true
   },
   {
    "cle": "scrutins_an",
    "titre": "Assemblee nationale — scrutins publics",
    "url": "https://data.assemblee-nationale.fr/static/openData/repository/17/loi/scrutins/Scrutins.json.zip",
-   "tentee_le": "2026-08-25T08:58:01Z",
+   "tentee_le": "2026-08-25T09:12:29Z",
    "http": 200,
    "octets": 26317479,
    "empreinte": "52a4299a40420aea",
-   "secondes": 0.6,
+   "secondes": 1.5,
    "ok": true
   },
   {
    "cle": "circos_min",
    "titre": "Communes et cantons par circonscription legislative (ministere de l'Interieur, 2017)",
    "url": "https://www.data.gouv.fr/api/1/datasets/r/4d0b70e1-7757-43cc-882b-5c3b04fe38b4",
-   "tentee_le": "2026-08-25T08:58:02Z",
+   "tentee_le": "2026-08-25T09:12:31Z",
    "http": 200,
    "octets": 1682216,
    "empreinte": "46ff9b58d8ee4cb6",
-   "secondes": 2.0,
+   "secondes": 2.7,
    "ok": true
   },
   {
    "cle": "circos_bv",
    "titre": "Bureaux de vote et leur circonscription legislative (derive des resultats 2022)",
    "url": "https://www.data.gouv.fr/api/1/datasets/r/ed6c2f24-2b83-4a26-a1a2-14c928b58b0b",
-   "tentee_le": "2026-08-25T08:58:04Z",
+   "tentee_le": "2026-08-25T09:12:33Z",
    "http": 200,
    "octets": 5302597,
    "empreinte": "49cf4eeff6b6f9b6",
-   "secondes": 2.3,
+   "secondes": 2.9,
    "ok": true
   }
  ]
