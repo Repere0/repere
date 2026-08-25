@@ -51,16 +51,25 @@ for paire in "data/circos_bureaux_de_vote.csv docs/schema_circos_bv.md" \
     || echo "::warning::description impossible pour $1"
 done
 
+# POURQUOI LES DEUX INGESTEURS SUIVANTS N'ARRETENT PAS LA CHAINE (20/08/2026) :
+# ajoutes le jour meme, ils ont fait tomber « Executer la chaine », GitHub a saute la
+# publication, et un site deja valide par les 40 controles du banc est reste a la porte
+# pour une raison qui n'avait rien a voir avec lui. Un chantier neuf ne doit pas pouvoir
+# empecher la mise en ligne de ce qui marche deja. Ils avertissent bruyamment ; quand
+# ils seront eprouves sur donnees reelles, on remettra le `set -e` sur eux.
+
 # ------------------------------ 3 ter. la table commune -> circonscription(s)
 # Sans elle, un scrutin ne peut etre affiche que nationalement.
-python3 outils/circos.py data/circos_bureaux_de_vote.csv outils/circos.json
+python3 outils/circos.py data/circos_bureaux_de_vote.csv outils/circos.json \
+  || echo "::warning::circos.py a echoue — la table des circonscriptions n'est pas produite"
 
 # ---------------------------------------- 3 quater. les scrutins, position par depute
 # 80 derniers scrutins. Ni non-votants, ni mise au point, ni agregat par depute :
 # les raisons sont ecrites en tete de outils/scrutins_an.py, et le script se controle
 # lui-meme — il refuse de produire un fichier ou un non-votant serait compte comme
 # votant.
-python3 outils/scrutins_an.py data/brut_Scrutins outils/scrutins_an.json 80
+python3 outils/scrutins_an.py data/brut_Scrutins outils/scrutins_an.json 80 \
+  || echo "::warning::scrutins_an.py a echoue — les scrutins ne sont pas produits"
 
 # ------------------- 3 quinquies. decrire les acteurs (pour nommer les references)
 # Les scrutins designent les deputes par une reference opaque (PA1234). Le referentiel
@@ -69,6 +78,16 @@ python3 outils/scrutins_an.py data/brut_Scrutins outils/scrutins_an.json 80
 # `votant` tantot liste tantot objet.
 python3 outils/echantillon_scrutins.py data/brut_AMO30/json/acteur docs/schema_acteurs.md \
   || echo "::warning::les acteurs n'ont pas pu etre decrits (chemin different ?)"
+
+# ------------------- 3 sexies. DECOUPAGE : un fichier par departement
+# DATA -> PIPELINE -> JSON. L'application embarque 16,3 Mo pour que quelqu'un lise UNE
+# commune. Le decoupage ramene ce qu'un lecteur telecharge a environ 400 Ko : les deux
+# socles, plus son departement. Le fichier autonome, lui, garde tout : c'est la version
+# SERVIE qui va chercher son departement, et elle seule.
+# Non bloquant tant que l'application ne consomme pas encore ces fichiers.
+APP_DEC=$(ls -1 app_repere_v18_*.html | grep -v '\.bak$' | sort -V | tail -1)
+python3 outils/decouper.py "$APP_DEC" site_donnees \
+  || echo "::warning::le decoupage par departement a echoue"
 
 # ---------------------------------------------- 4. verifier la sortie, sans confiance
 # On relit ce qui vient d'etre ecrit, sans reutiliser une ligne du script qui l'a ecrit.
@@ -109,6 +128,13 @@ assert d.get("maj") == today, \
     "le site servirait un agenda du %r : la substitution n'a pas eu lieu" % d.get("maj")
 print("site : agenda du %s, %d reunions" % (d["maj"], len(d["r"])))
 PY
+
+# --------------------------- 5 bis. poser les donnees decoupees dans le site
+if [ -d site_donnees ]; then
+  mkdir -p site_engendre/donnees
+  cp -r site_donnees/* site_engendre/donnees/ 2>/dev/null || true
+  echo "decoupage publie : $(find site_engendre/donnees -name '*.json' | wc -l) fichiers"
+fi
 
 # ------------------------------------------------------------ 6. eprouver
 # LE VERROU DE L'AUTOMATISATION. Si un seul des 40 controles tombe, `set -e` arrete

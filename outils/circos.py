@@ -30,14 +30,20 @@ if not os.path.exists(SRC):
 
 REQUISES = ["codeCommune", "codeCirconscription", "codeDepartement", "nomCirconscription"]
 
+# Le delimiteur se devine sur l'en-tete, comme le fait le descripteur. L'ecrire en dur
+# etait exactement le defaut que la methode « lire avant d'ecrire » devait empecher.
+_tete = io.open(SRC, encoding="utf-8", errors="replace").readline()
+DELIM = max([";", ",", "\t", "|"], key=lambda d: _tete.count(d))
+
 par_commune = collections.defaultdict(set)
 noms = {}
 lignes = 0
 with io.open(SRC, encoding="utf-8", errors="replace", newline="") as f:
-    lect = csv.DictReader(f, delimiter=";")
+    lect = csv.DictReader(f, delimiter=DELIM)
     manquantes = [c for c in REQUISES if c not in (lect.fieldnames or [])]
-    assert not manquantes, ("colonnes absentes : %s — le format a change, "
-                            "relire docs/schema_circos_bv.md" % ", ".join(manquantes))
+    assert not manquantes, ("colonnes absentes : %s (delimiteur devine : %r, colonnes "
+                            "vues : %s) — relire docs/schema_circos_bv.md"
+                            % (", ".join(manquantes), DELIM, lect.fieldnames))
     for l in lect:
         lignes += 1
         insee = (l["codeCommune"] or "").strip()

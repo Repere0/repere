@@ -1,0 +1,757 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Repere — Direction de conception</title><style>
+:root{--ink:#1B1815;--ink-2:#413A33;--muted:#6B6259;--sep:#E2DBD0;--sep-fort:#CBC2B4;
+ --bg:#F1EDE4;--card:#FFF;--fill:#EEE9E0;--urgent:#9B4808;--ok:#45584A;--ville:#0C657D}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);margin:0;padding:0 0 90px;line-height:1.62;
+ font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;-webkit-font-smoothing:antialiased}
+.wrap{max-width:900px;margin:0 auto;padding:0 22px}
+.chapeau{padding:52px 0 26px;border-bottom:2px solid var(--ink);margin-bottom:8px}
+.eyebrow{font-size:11px;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);font-weight:700}
+.chapeau h1{font-size:clamp(29px,5vw,44px);line-height:1.05;letter-spacing:-.025em;font-weight:800;margin:12px 0 14px}
+.chapeau p{font-size:16px;color:var(--ink-2);max-width:70ch}
+h1{font-size:30px;line-height:1.12;letter-spacing:-.022em;font-weight:800;margin:44px 0 12px;
+ padding-top:22px;border-top:1px solid var(--sep)}
+h2{font-size:24px;line-height:1.18;letter-spacing:-.02em;font-weight:800;margin:40px 0 12px;
+ padding-top:20px;border-top:1px solid var(--sep)}
+h3{font-size:19px;line-height:1.25;font-weight:800;margin:28px 0 8px}
+h4{font-size:16px;font-weight:800;margin:20px 0 6px}
+p{font-size:15.5px;color:var(--ink-2);margin:0 0 12px;max-width:74ch;overflow-wrap:anywhere}
+strong{color:var(--ink);font-weight:700}
+ul,ol{margin:10px 0 14px 22px;color:var(--ink-2);font-size:15.5px}
+li{margin-bottom:7px;overflow-wrap:anywhere}
+code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:13px;background:var(--fill);
+ border-radius:5px;padding:1px 5px;overflow-wrap:anywhere}
+pre{background:var(--ink);color:#F7F4EE;border-radius:14px;padding:16px 18px;overflow-x:auto;
+ font-size:12.5px;line-height:1.62;margin:16px 0}
+pre code{background:none;color:inherit;padding:0;font-size:12.5px}
+blockquote{margin:16px 0;padding:14px 18px;background:var(--card);border-left:3px solid var(--ville);
+ border-radius:0 12px 12px 0}
+blockquote p{margin:0;font-size:16px;color:var(--ink)}
+table{width:100%;border-collapse:collapse;margin:16px 0;font-size:13.8px;display:block;overflow-x:auto}
+th,td{text-align:left;padding:10px 11px;border-bottom:1px solid var(--sep);vertical-align:top;min-width:92px}
+th{font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);font-weight:800;
+ border-bottom:1px solid var(--sep-fort)}
+td strong{color:var(--ink)}
+hr{border:none;border-top:1px solid var(--sep);margin:34px 0}
+em{color:var(--ink-2)}
+@media print{body{background:#fff}pre{background:#fff;color:#000;border:1px solid #999}}
+</style></head><body><div class="wrap"><div class="chapeau"><div class="eyebrow">Repere · 20 aout 2026 · equipe UX/UI · 11 agents</div><h1>Direction de conception.</h1><p>Quatre regards ont propose une refonte — jeunes, aines, accessibilite, neutralite. Chacun a ete passe au crible par un relecteur adverse. Ce document est l&rsquo;arbitrage : il tranche les contradictions au lieu de les additionner, et cite les critiques quand elles ont tue une idee.</p></div><h1>REPÈRE — DIRECTION DE CONCEPTION</h1>
+<p><strong>Arbitrage des quatre propositions · 20 août 2026 · cible : bêta fermée décembre 2026</strong></p>
+<p><em>Note de méthode : j'ai revérifié dans le fichier les faits sur lesquels les quatre équipes se contredisent. Les mesures citées ci-dessous sont les miennes, pas les leurs. Le moodboard n'est pas dans <code>docs/</code> : il est à <code>/home/claude/repere/moodboard_repere_nuit.html</code>.</em></p>
+<hr />
+<h2>1. LE CONSTAT EN CINQ LIGNES</h2>
+<ol>
+<li><strong>La barre d'onglets ne porte aucune des deux questions du produit.</strong> Libellés réels (l. 3555-3576) : <code>Fil · Agenda · Qui dirige · Jouer · Moi</code>. « Où va mon argent » est une tuile à <code>y = 7 236 px</code> dans un écran de 7 583 px : <strong>10,8 hauteurs d'écran de défilement</strong>, derrière un onglet qui parle des élus.</li>
+<li><strong>L'écran d'entrée n'a aucune sortie</strong> : 17 cibles cliquables dans <code>s-fil</code>, <strong>zéro <code>show()</code></strong>, zéro <code>showTab()</code>. Et il est le plus périmé : dernière décision <strong>29 juin 2026</strong>, soit 52 jours.</li>
+<li><strong>L'application ment sur trois points vérifiés.</strong> <code>catch</code> de la géolocalisation, l. 4707 : <code>obPick("Fontainebleau","77","77186")</code> — réseau coupé, un habitant de Marseille se voit domicilié à Fontainebleau et reçoit le budget de Fontainebleau. <code>renderArgent()</code> l. 8364 : <code>ordre = ["ville","dept","region","etat"]</code> — <strong>l'agglo, couleur figée, annoncée à l'arrivée, cible de deux questions du jeu, est escamotée sans une phrase</strong>. <code>renderFeed()</code> : <strong>aucun <code>.sort()</code></strong> — l'ordre du fil est l'ordre de saisie de l'auteur.</li>
+<li><strong>La typographie existe et ne sert pas.</strong> Les onze crans (11 → 56 px) sont déclarés depuis v18.17 ; <strong>280 appels sur 392 (71 %) sont à 13 px ou moins</strong>, <code>--t-17</code>, la « base de lecture », sert 28 fois. Le brief et le moodboard se trompent tous deux en disant que l'échelle s'arrête à 17.</li>
+<li><strong>Le poids n'est pas un problème de CSS</strong> (165 Ko sur 17 Mo = 0,98 %) : c'est un problème de temps d'auteur — 168 règles redéclarées sur trois couches, 835 espacements en dur.</li>
+</ol>
+<hr />
+<h2>2. LA TENSION CENTRALE, ET COMMENT JE LA TRANCHE</h2>
+<p>La contradiction n'est pas « jeunes contre âgés ». Elle est celle-ci, et elle est vraie :</p>
+<blockquote>
+<p><strong>Le primo-lecteur, le lecteur pressé et le lecteur malvoyant ont tous besoin d'une hiérarchie visuelle forte pour savoir où commencer. La neutralité interdit précisément de dire ce qui compte le plus.</strong></p>
+</blockquote>
+<p>Le regard de la neutralité pousse la logique jusqu'au bout : gabarit unique, titres ramenés à 17 px, manchette supprimée. Sa critique adverse l'a tué sur deux points, à raison : un fil intégralement plat est <strong>un registre pour militant, un mur pour la personne qui ouvre l'app une fois avant avril 2027</strong> (C1), et à <code>--fs = 1,35</code> un écran plat devient un écran plat plus gros — on supprime l'aide au balayage en gardant la contrainte de densité (C2). Le regard de l'accessibilité a la même exigence par l'autre bout : un <code>&lt;h1&gt;</code> par écran, des repères pré-attentionnels.</p>
+<p><strong>Je tranche ainsi, et cette phrase est opposable à toute maquette :</strong></p>
+<blockquote>
+<p><strong>La typographie hiérarchise à l'intérieur d'un objet ; elle ne hiérarchise jamais deux objets de même nature.</strong></p>
+</blockquote>
+<p>Concrètement : dans une carte de décision, le titre domine le corps qui domine la méta — hiérarchie forte, lisible en trois secondes, utile au balayage. Entre deux cartes de décision, <strong>aucun écart</strong> : même gabarit, même taille de titre, même surface. Et la première position n'est pas un jugement, c'est une règle écrite à l'écran : <em>« Rangées du niveau le plus proche de chez vous au niveau national. Ce n'est pas un ordre d'importance, c'est un ordre de distance. »</em></p>
+<p>Ce qui meurt de cet arbitrage : le gabarit <code>.une</code> à 41 px (rapport 2,41 avec le corps — une amplitude de manchette de presse). Ce qui survit : la garde d'exécution de <code>essUne()</code> l. 7008 (<code>const num = (it.num &amp;&amp; it.verif) ? … : ""</code>, le chiffre ne peut pas sortir sans son tampon), que la critique adverse a eu raison de défendre — <strong>elle est portée dans le gabarit commun, pas supprimée.</strong> On n'échange pas une impossibilité par construction contre un contrôle de banc qu'on peut oublier de lancer.</p>
+<p>Corollaire, et c'est la seconde tranche : <strong>la bêta de décembre est une bêta de forme, pas de fraîcheur.</strong> Le regard des 18-25 ans a raison sur le fond — « une application civique dont la dernière décision date d'un mois est un annuaire » — et sa critique a raison sur le chiffrage : 200 communes en délibérations, c'est 30 à 40 jours d'analyseurs syntaxiques à maintenir, et l'auteur en est à sa <strong>huitième</strong> version de workflow de collecte en 48 heures. Je refuse donc d'appeler l'onglet d'entrée « Aujourd'hui », et je refuse d'écrire « mis à jour le 18 août ». On promet <strong>« Ce qui a été décidé »</strong>, daté, avec la doctrine du vide appliquée pour de vrai. Une promesse tenable vaut mieux qu'une promesse fraîche.</p>
+<hr />
+<h2>3. LES PRINCIPES DE CONCEPTION</h2>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Principe</th>
+<th>Ce qu'il résout</th>
+<th>Banc</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>P1</strong></td>
+<td><strong>La barre d'onglets est la carte du produit : chaque onglet porte une des deux questions ou un service qu'on peut nommer ; aucun onglet n'est un jeu.</strong></td>
+<td>Défaut n° 1 et n° 3 : les deux questions sont à un geste, plus une exploration.</td>
+<td><strong>Oui.</strong> Les libellés d'onglet contiennent « décide » et « argent » ; <code>data-t</code> et le nœud texte d'un même onglet ne peuvent pas différer (le titre ne change plus sous le doigt).</td>
+</tr>
+<tr>
+<td><strong>P2</strong></td>
+<td><strong>La typographie hiérarchise à l'intérieur d'un objet, jamais entre deux objets de même nature.</strong></td>
+<td>La tension centrale.</td>
+<td><strong>Oui.</strong> Dans <code>#feed</code>, tous les nœuds d'une même classe ont la même <code>font-size</code> calculée ; aucun cran supérieur à <code>--t-24</code> n'existe dans le fil.</td>
+</tr>
+<tr>
+<td><strong>P3</strong></td>
+<td><strong>Tout ordre de liste est produit par un comparateur nommé, déterministe, et la règle d'ordre est écrite à l'écran.</strong></td>
+<td><code>renderFeed()</code> sans tri : l'app applique à sa surface la plus vue une règle qui n'existe pas.</td>
+<td><strong>Oui.</strong> Toute fonction de rendu de liste appelle <code>ordre*()</code> ; la phrase d'ordre est présente dans le DOM. <em>Le tirage au sort proposé par le regard de la neutralité est refusé : sa critique l'a tué (mémoire spatiale détruite, <code>FEED.indexOf</code> et <code>hemi-vote-${idx}</code> cassés, banc non déterministe).</em></td>
+</tr>
+<tr>
+<td><strong>P4</strong></td>
+<td><strong>Une absence produit du texte et un lien. Jamais une forme : ni animation, ni aplat, ni barre, ni ligne escamotée.</strong></td>
+<td>Invariant 5, plus le cas <code>renderArgent</code> où l'agglo disparaît sans phrase.</td>
+<td><strong>Oui.</strong> Aucun <code>@keyframes</code> sur un sélecteur contenant <code>skel/placeholder/loading</code> ; aucun nœud vide sous <code>aria-busy</code> ; <code>aria-busy</code> posé par le JS et jamais en dur (sinon un JS en échec fait pulser l'attente à l'infini).</td>
+</tr>
+<tr>
+<td><strong>P5</strong></td>
+<td><strong>Aucun texte porteur de sens sous 13 px, et la source n'est jamais à plus d'un cran du chiffre qu'elle justifie.</strong></td>
+<td>71 % de l'interface sous 14 px ; la preuve écrite plus petit que ce qu'elle prouve.</td>
+<td><strong>Oui.</strong> Mesure sur <code>getComputedStyle</code> des 12 écrans, aux trois échelles. <em>Le plancher 14/14/15 du regard des aînés est refusé : sa critique a raison, il écrase trois crans en deux et détruit la hiérarchie que le même document exige quatre paragraphes plus haut. Le plancher est 12/13/15.</em></td>
+</tr>
+<tr>
+<td><strong>P6</strong></td>
+<td><strong>Aucune donnée officielle présente n'est masquée pour équilibrer une apparence ; et aucun compteur d'activité d'une personne n'est affiché.</strong></td>
+<td>Les deux extrêmes : la règle de parité du regard de la neutralité (P3 chez eux) transformerait une valeur sourcée en absence — c'est l'inverse de l'invariant 5. Et <code>.stat30</code> aligne trois nombres sous un nom, ce qui produit un classement dans la tête du lecteur.</td>
+<td><strong>Oui, et c'est le 41ᵉ contrôle :</strong> aucun tri numérique d'une liste de personnes, de partis ou de territoires ; aucune grille de compteurs sous un nom propre.</td>
+</tr>
+<tr>
+<td><strong>P7</strong></td>
+<td><strong>Rien qui parle de l'usage que l'utilisateur fait de Repère n'apparaît avant la dernière décision du fil.</strong></td>
+<td>La série de jours est en position 2, devant 12 des 13 décisions.</td>
+<td><strong>Oui.</strong> Index DOM de <code>#serie-jours</code>, <code>.mission</code>, <code>#banner-install</code> supérieur à celui de la dernière <code>.card</code>.</td>
+</tr>
+<tr>
+<td><strong>P8</strong></td>
+<td><strong>Un motif ARIA à moitié posé est interdit : à défaut du motif complet, du HTML nu.</strong></td>
+<td>5 <code>role="tab"</code> pour <strong>0</strong> <code>role="tabpanel"</code> et 0 <code>aria-controls</code> ; <code>role="option"</code> posé sur des <code>&lt;button&gt;</code> ; <code>role="tablist"</code> sur des filtres cumulables, alors que le bon motif (<code>aria-pressed</code>) est employé six lignes plus bas.</td>
+<td><strong>Oui.</strong> <code>role="tab"</code> implique <code>tabpanel</code> + <code>aria-controls</code>, sinon échec. Principe <strong>soustractif</strong> : son exécution est moins chère que le statu quo.</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>4. L'ARCHITECTURE CIBLE</h2>
+<p><strong>17 écrans vivants (22 écrits) → 12 écrans, 5 onglets → 4.</strong></p>
+<h3>La barre</h3>
+<table>
+<thead>
+<tr>
+<th>Onglet (libellé exact)</th>
+<th>Titre d'écran</th>
+<th>Contenu</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Ce qui a été décidé</strong></td>
+<td><em>Ce qui a été décidé près de chez vous</em></td>
+<td><code>s-fil</code>, nettoyé, trié, avec ses liens sortants</td>
+</tr>
+<tr>
+<td><strong>Qui décide</strong></td>
+<td><em>Qui décide chez vous ?</em></td>
+<td><code>s-qui</code> + <code>s-elus</code> + <code>s-partis</code> (repli) + <code>s-influence</code> (section)</td>
+</tr>
+<tr>
+<td><strong>Mon argent</strong></td>
+<td><em>Où va votre argent ?</em></td>
+<td><code>s-argent</code>, promu</td>
+</tr>
+<tr>
+<td><strong>Repère</strong></td>
+<td><em>Repère</em></td>
+<td><code>s-moi</code> + réglages + accès à Mots, Sources, Mes lieux</td>
+</tr>
+</tbody>
+</table>
+<p>Les deux questions sont dans la barre. « Moi » disparaît : c'est un mot de réseau social, et le contenu est de la doctrine et des réglages. « Jouer » disparaît de la barre : un jeu ne peut pas occuper 25 % de la navigation permanente d'un produit dont les deux questions n'y étaient pas. <strong>Il n'est pas tué</strong> — la critique du regard de la neutralité a raison, c'est le seul levier de retour et la série est bâtie dessus : il devient une carte en pied de fil, après la dernière décision (P7), intitulée <strong>« La question du jour »</strong>. Pas « Comprendre » : ce mot promet que celui qui joue comprend, donc juge celui qui ne joue pas.</p>
+<h3>Les douze écrans</h3>
+<p><code>s-fil</code> · <code>s-qui</code> · <code>s-argent</code> · <code>s-moi</code> (les quatre onglets) · <code>s-agenda</code> (<em>Ce qui vient</em>) · <code>s-an</code> (<em>À l'Assemblée</em>) · <code>s-vote</code> (<em>Comment votre député a voté</em>) · <code>s-carte</code> (<em>Autour de moi</em>) · <code>s-suivis</code> (<em>Mes lieux</em>) · <code>s-dico</code> (<em>Les mots</em>) · <code>s-sources</code> (<em>Sources et charte</em>) · <code>s-jeu</code> (<em>La question du jour</em>).</p>
+<h3>Ce qui disparaît, et pourquoi</h3>
+<table>
+<thead>
+<tr>
+<th>Écran</th>
+<th>Sort</th>
+<th>Motif</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>s-elus</code></td>
+<td>section de <code>s-qui</code></td>
+<td>Un seul point d'entrée, une tuile au fond d'une page de 7 583 px. Ce n'est pas un écran, c'est le contenu de l'onglet.</td>
+</tr>
+<tr>
+<td><code>s-partis</code></td>
+<td>repli dans <code>s-qui</code></td>
+<td>Son titre de section est littéralement <strong>« Les groupes, du plus nombreux au plus petit »</strong> (l. 2775). C'est un classement, et les quatre équipes l'ont manqué. En repli, sans ce titre, c'est une donnée de composition.</td>
+</tr>
+<tr>
+<td><code>s-influence</code></td>
+<td>section de <code>s-qui</code></td>
+<td>630 px, 1 cible, 1 entrée. Un écran de 630 px n'est pas un écran.</td>
+</tr>
+<tr>
+<td><code>s-debats</code></td>
+<td>fondu dans <code>s-agenda</code></td>
+<td>Deux écrans sur la présidentielle dans un produit qui doit être connu <em>avant</em> avril 2027 est déjà un signal de priorité. <strong>Je ne le supprime pas</strong> : la critique du regard jeune a raison, retirer la présidentielle d'un produit dont l'objectif est d'être connu avant avril 2027, c'est décider que la présidentielle n'est pas le sujet.</td>
+</tr>
+<tr>
+<td><code>s-2027</code></td>
+<td>carte datée en tête de <code>s-agenda</code></td>
+<td>Ses sept engagements (ordre tiré au sort des candidats, même nombre de signes, jamais de sondage) sont la meilleure page de doctrine du fichier : ils <strong>remontent dans <code>s-sources</code> comme charte générale</strong> au lieu de rester une exception locale.</td>
+</tr>
+<tr>
+<td><code>s-notifs</code></td>
+<td>supprimé du DOM publié</td>
+<td>Sa seule entrée est elle-même en veille.</td>
+</tr>
+<tr>
+<td><code>s-abo</code>, <code>s-paiement</code>, <code>s-compte-login</code>, <code>s-compte-gestion</code></td>
+<td><strong>gabarits conservés en veille, phrases de vente vidées, nœuds <code>[data-veille]</code> retirés au moment d'engendrer le site par <code>build_pwa.py</code></strong></td>
+<td>Trois équipes sur quatre voulaient les supprimer du fichier. <strong>Refusé.</strong> <code>REPRISE.md</code> range « gratuit + abonnement 1,99 €/mois » dans les <em>arbitrages tranchés</em>, et <code>test_repere.mjs</code> l. 131 exige <code>prixJS.length &gt;= 1</code>. La suppression jette du travail fait et casse un contrôle pour résoudre un risque réel — « la source publiée contient le mot abonnement » — que le correctif dans <code>build_pwa.py</code> résout en 0,5 j, réversible par <code>BETA_RESTREINTE</code>. <strong>L'interrupteur l. 2981, <code>aria-label="Alertes de ma rue (réservé à Premium)"</code>, est retiré immédiatement</strong> : lui, il ment à l'écran.</td>
+</tr>
+</tbody>
+</table>
+<h3>Trois corrections d'architecture qui ne créent ni ne suppriment d'écran</h3>
+<ul>
+<li><strong><code>activate()</code> l. 4885 : <code>el.scrollTop = 0</code> devient conditionnel.</strong> Sur <code>goBack()</code>, on restaure la position. Aujourd'hui, <code>s-qui → s-argent → Retour</code> renvoie à 0 px, soit 7 236 px à refaire.</li>
+<li><strong>La grille de six tuiles remonte en tête de <code>s-qui</code></strong>, et la porte du jeu (l. 2636) quitte la première fenêtre : l'utilisateur venu chercher son maire lit d'abord une invitation à jouer.</li>
+<li><strong>Le fil acquiert des liens sortants.</strong> C'est le point le moins cher et le plus rentable de tout l'audit : trois liens dans la carte de décision (<em>Qui a décidé ça · Où va cet argent · Le document officiel</em>) ramènent les deux questions à deux gestes depuis l'accueil, sans toucher à la barre.</li>
+</ul>
+<p><strong>Le banc devra changer.</strong> <code>test_repere.mjs</code> l. 238 : <code>verif("navigation — au moins quinze ecrans declares", ids.length &gt;= 15)</code>. Ce contrôle a été écrit pour attraper une suppression accidentelle, pas pour imposer un effectif. Il est remplacé par la <strong>liste nommée des douze écrans</strong> : plus strict, et compatible avec la cible. C'est le lot 1, et il passe avant toute refonte.</p>
+<hr />
+<h2>5. LES TROIS ÉCRANS</h2>
+<h3>5.1 Premier lancement — un écran, une question</h3>
+<pre><code>                                                   (25 % de vide)
+
+   Repère                                          --t-13, capitales, gris
+
+   Où habitez-vous ?                               --t-34, gras
+
+   C'est la seule chose que Repère vous demandera.  --t-15, --ink-2
+
+   ┌────────────────────────────────────────┐
+   │ Nom de votre commune                   │      56 px, texte 18 px
+   └────────────────────────────────────────┘
+   ↓ suggestions, navigables aux flèches
+
+   [        Valider ma commune              ]      48 px, plein
+
+   [  Trouver ma commune par ma position    ]      48 px, contour
+
+                                                   (vide)
+
+   CE QUI EST ÉCRIT SUR VOTRE TÉLÉPHONE            --t-11, capitales
+   Une seule chose : le nombre de jours où vous     --t-13
+   êtes venu. Vous pouvez l'effacer d'un bouton.
+   Aucun compte, aucune adresse, aucune mesure
+   d'audience.
+</code></pre>
+<p><strong>Décisions.</strong> L'étape 2 (« C'est tout bon ») disparaît : une confirmation qui n'apporte rien devient <strong>la première ligne du fil</strong>, <code>Fontainebleau · Ce n'est pas ça ?</code>. Les deux points de progression disparaissent : deux points annoncent qu'il y en aura d'autres. Le mot-symbole reste, en petit — la critique du regard jeune a raison, Repère est aussi un <strong>site</strong> ouvert par lien partagé, personne n'a rien téléchargé.</p>
+<p>Le paragraphe de 47 mots sur <code>geo.api.gouv.fr</code> <strong>quitte l'écran par défaut</strong> et s'affiche en feuille au toucher du bouton de position, réécrit : <em>« Votre position part une seule fois vers geo.api.gouv.fr, le service public qui trouve la commune. Rien n'est conservé. La recherche par nom, elle, ne quitte jamais votre téléphone. »</em> Il informe au moment où il informe, au lieu du moment où il inquiète.</p>
+<p><strong>Les cinq badges sont au gabarit strictement identique.</strong> Aujourd'hui <code>Agglo</code> est peint en <code>--c-agglo-encre</code> quand les quatre autres sont en <code>-aplat</code> : correction de contraste légitime qui produit, à l'œil, un badge sur cinq visiblement plus sombre. Cinq niveaux au même gabarit, ou l'invariant 7 ne veut plus rien dire.</p>
+<p><strong>L'engagement de vie privée est le dernier bloc lu avant d'entrer.</strong> C'est la promesse la plus vérifiable du produit et la seule que la concurrence ne peut pas copier sans se saborder ; elle est aujourd'hui en note grise de 12 px sous un bouton.</p>
+<p><strong>Je ne mets pas le réglage de taille sur cet écran</strong> (le regard de l'accessibilité le demandait) : c'est une décision de plus imposée à 100 % des entrants pour servir quelques pour cent. Voir §6 et pari n° 3.</p>
+<h3>5.2 Le fil — « Ce qui a été décidé »</h3>
+<pre><code>Fontainebleau ▾                          [ Filtrer ]      --t-13
+Décision la plus récente : 29 juin 2026                   --t-12, gris
+                                          (chaîne CALCULÉE, jamais écrite en dur)
+
+┌──────────────────────────────────────────────────────┐
+│ ▮ MAIRIE           29 juin 2026                      │  --t-11 caps + date
+│                                                      │
+│ 29 délibérations adoptées au conseil du 29 juin      │  --t-20 gras
+│                                                      │
+│ Le conseil a examiné les délibérations n° 26/110 à   │  --t-15
+│ 26/138, publiées en intégralité sur le site de la    │
+│ ville.                                               │
+│                                                      │
+│ ○ CHIFFRES VÉRIFIÉS le 22 juillet 2026               │  --t-11, HORS repli
+│ fontainebleau.fr ↗  (nouvelle fenêtre)               │  --t-12
+│                                                      │
+│ Qui a décidé ça ›     Où va cet argent ›             │  --t-13, LIENS SORTANTS
+│ ▸ Lire le détail — replié, touchez pour ouvrir       │
+└──────────────────────────────────────────────────────┘
+
+           … cartes suivantes, gabarit IDENTIQUE …
+
+Vous êtes à jour.                                          --t-20
+13 décisions, du 24 juin 2025 au 22 juillet 2026.          --t-13
+Elles sont rangées du niveau le plus proche de chez vous
+au niveau national, et de la plus récente à la plus
+ancienne. Ce n'est pas un ordre d'importance : c'est un
+ordre de distance.
+Pas de défilement infini : quand c'est fini, c'est fini.
+
+┌──────────────────────────────────────────────────────┐
+│ La question du jour                                  │
+│ Qui décide du prix de votre cantine ?                │
+│ [ Répondre ]   Rien n'est noté.                      │
+└──────────────────────────────────────────────────────┘
+
+Les résumés sont écrits avec l'aide d'une IA et relus par
+un humain. Chaque chiffre renvoie à sa source officielle.
+Notre méthode ›
+</code></pre>
+<p><strong>Décisions, et ce qu'elles tuent.</strong></p>
+<ul>
+<li><strong><code>MAIRIE</code> est écrit en toutes lettres dans le bandeau</strong>, à côté de la pastille de couleur. C'est le meilleur remède du lot sur le mot « échelon », et il vient de la critique du regard de l'accessibilité : il règle le daltonisme et le mot d'un coup, pour une ligne de CSS et une chaîne. <code>ECH_LABEL</code> (l. 5935) contient déjà <em>Mairie / Agglo / Département / Région / National</em>.</li>
+<li><strong>Plus de manchette.</strong> Le bloc <code>#ess</code> à 41 px disparaît ; la première carte est celle que le comparateur nommé place en premier, au même gabarit que les douze autres. La règle est écrite en pied. <em>(Défaut que personne n'a vu et que je corrige au passage : <code>ESSENTIEL</code> ne contient </em><em>aucune</em><em> entrée <code>ville</code> ni <code>agglo</code> — une <code>region</code>, deux <code>france</code>. La « une locale » ne pouvait structurellement jamais être locale.)</em></li>
+<li><strong>Le tampon de vérification sort du repli.</strong> Un chiffre visible dont l'état de vérification est caché est exactement ce que l'invariant 4 interdit. C'est un ajout, pas une suppression : la critique du regard jeune a raison de dire que la source n'est pas le statut.</li>
+<li><strong>17 pastilles de filtre → 1 bouton « Filtrer ».</strong> Elles sont <strong>repliées, pas supprimées</strong> : la critique a raison, l'échelon sert celui qui a un territoire, le thème sert le parent, l'agriculteur, le malade — et si le fil grossit, il faudra reconstruire en urgence ce qu'on aurait tué en décembre.</li>
+<li><strong>La mention IA est écrite une fois, en pied.</strong> Répétée treize fois, une garantie devient un doute. La source, elle, reste sur chaque carte.</li>
+<li><strong><code>.real-tag</code> « DÉCISIONS ET VOTES RÉELS » est retiré</strong>, et <code>.demo-tag</code> avec lui : la critique du regard de la neutralité est juste — ne garder que « DÉMO » fait de l'absence d'étiquette une affirmation implicite du réel. On supprime les deux <strong>et</strong> on n'embarque plus aucune carte de démonstration.</li>
+<li><strong>Le squelette animé devient un bloc de texte fixe</strong> : <em>« Repère prépare les décisions de votre commune. »</em> Pas « rien » : le navigateur doit analyser <strong>17 Mo</strong> avant la première ligne de JS, et sur un Android d'entrée de gamme un écran blanc se lit comme une panne. Et <code>aria-busy</code> cesse d'être posé en dur dans le balisage.</li>
+</ul>
+<p><strong>L'état vide, pour les 34 869 communes non couvertes</strong> — 90 mots deviennent 30, plus une issue :</p>
+<pre><code>Ici, Repère sait déjà qui décide et où va l'argent.
+
+Il ne sait pas encore ce qui s'est décidé cette semaine
+à Brest : la ville ne publie pas ses délibérations en
+données ouvertes.
+
+[ Voir qui décide à Brest ]
+Les délibérations sur brest.fr ↗
+</code></pre>
+<p>Règle opposable, et c'est la meilleure phrase produite par les quatre équipes : <strong>la phrase porte sur ce que Repère sait, jamais sur ce que la commune vaut.</strong> Elle tient l'invariant 3 en respectant l'invariant 5 à la lettre.</p>
+<h3>5.3 La fiche d'un élu</h3>
+<pre><code>[ ‹ Retour ]
+
+( JP )   Jean-François Parigi                       --t-24 gras
+         Président du conseil départemental          --t-15
+         de Seine-et-Marne
+         ▮ DÉPARTEMENT      ● Droite                 pastille + famille
+
+CE QUE CE MANDAT DÉCIDE                              --t-13 caps
+Les collèges, les routes départementales et l'aide
+sociale à l'enfance et aux personnes âgées.          --t-17
+Prochaines élections départementales : 2028.
+
+OÙ IL SIÈGE AUSSI — 4 mandats en cours               --t-13 caps, OUVERT
+Conseiller départemental · canton de Meaux
+Conseil départemental de Seine-et-Marne · depuis 2015
+Fiche officielle ↗  (nouvelle fenêtre)
+… trois autres, même gabarit …
+
+Un même nom peut siéger au conseil municipal, à
+l'intercommunalité, au département et au syndicat qui
+vote le prix de l'eau. Cette liste dit où. Elle ne dit
+pas combien de travail cela représente, et elle ne se
+compare pas d'une personne à l'autre.
+L'ordre est celui de la collectivité, du président aux
+conseillers.
+
+CE QU'IL A DÉPOSÉ CES 30 JOURS
+Proposition de loi sur les mobilités rurales ·
+Question écrite n° 14 302 · Amendement n° 88 au PLF.
+(aucun total, aucune grille de compteurs)
+
+[ Écrire par le formulaire officiel du département ]  48 px
+
+▸ Son parcours — replié, touchez pour ouvrir
+▸ Ses prises de position publiques — replié, touchez pour ouvrir
+▸ Vérifier par vous-même — replié, touchez pour ouvrir
+
+CE QUE REPÈRE N'AFFICHERA JAMAIS ICI
+Ni patrimoine, ni revenu, ni présence, ni absence, ni
+note, ni classement. Ce n'est pas un oubli, c'est la
+règle. Notre charte ›
+</code></pre>
+<p><strong>Décisions, et les arbitrages entre équipes.</strong></p>
+<ul>
+<li><strong>8 replis → 3, avec leur état écrit en toutes lettres.</strong> Le regard des aînés voulait tout déplier ; sa critique l'a tué : à <code>--fs = 1,6</code>, une fiche sans replis fait huit à douze hauteurs d'écran, et le mode d'échec du lecteur âgé n'est pas « il ignore ce qu'est un chevron », c'est « il perd sa place en défilant ». <code>▸ Son parcours — replié, touchez pour ouvrir</code> est la version adulte du principe.</li>
+<li><strong><code>.stat30</code> : on nomme au lieu de compter.</strong> Le regard jeune voulait supprimer « En 30 jours » ; sa critique a raison, l'argument « trois nombres alignés sous un nom sont une note » condamnerait aussi « 291 voix pour » et « 84,9 M€ pour 67 collèges ». Ce qui fabrique le classement, c'est <strong>la grille identique d'une personne à l'autre</strong>, qui rend deux fiches superposables. On liste les objets, jamais les totaux. 0,5 j au lieu d'une suppression, et cela respecte l'arbitrage écrit du 18 août (« on liste ce qu'un député a fait »).</li>
+<li><strong>Le compteur <code>nbChg</code> d'affiliations disparaît — et le mot « stable » avec lui.</strong> La critique a raison : supprimer le nombre en gardant l'étiquette qualitative, c'est garder le jugement et enlever la mesure. On tranche les deux.</li>
+<li><strong>« Où il siège aussi » est ouvert et en deuxième position</strong>, parce que le commentaire du code le dit lui-même (l. ~6626 : <em>« la donnée la plus utile de la fiche »</em>) et qu'elle est aujourd'hui dans le troisième repli.</li>
+<li><strong>L'ordre des mandats est écrit à l'écran.</strong> <code>rneRangFonction()</code> construit un rang numérique explicite (0, 1, 100+n, 600, 700, 800, 999) : c'est un tri par hiérarchie institutionnelle, parfaitement légitime, mais le commentaire affirme « L'ordre suit celui de la source, il ne classe personne ». On écrit ce que le code fait. C'est le piège maison n° 2 de <code>REPRISE.md</code>.</li>
+<li><strong>Photos : rien à faire.</strong> Le regard de la neutralité chiffrait 1,5 j pour les retirer « et alléger le fichier ». <code>eluPhotoMode()</code> l. 6144 exige <code>statut === "licenciee" &amp;&amp; licence &amp;&amp; credit</code>, <code>ELUS_MODE = "genere"</code> : <strong>aucune photo n'est rendue, aucune image n'est embarquée</strong>, et le commentaire l. 6138-6143 énonce déjà l'argument sociologique en meilleurs termes. Chantier fantôme, supprimé du plan.</li>
+<li><strong>« Ce qu'il ne décide pas » est refusé.</strong> L'idée du regard de l'accessibilité est la meilleure page de son document, et sa critique l'a tuée : c'est une affirmation juridique <strong>par territoire</strong> (≈ 1 250 EPCI, compétences optionnelles votées par statuts), un maire qui est aussi conseiller départemental décide bel et bien du collège, et l'invariant 4 exige la source et la date. Cinq gabarits génériques = 3 jours et un risque de dire faux sur une personne nommée. « Ce que ce mandat décide », lui, est déjà dans les données (<code>e.decide</code>).</li>
+</ul>
+<hr />
+<h2>6. LE LANGAGE VISUEL</h2>
+<h3>Couleurs</h3>
+<p><strong>Les cinq échelons ne bougent pas</strong> : <code>--c-ville #0e7490</code> · <code>--c-agglo #0891b2</code> · <code>--c-dept #b45309</code> · <code>--c-region #6d28d9</code> · <code>--c-france #1d1d1f</code>.</p>
+<p><strong>Correction que personne n'a vue et qui compte.</strong> En mode sombre (l. 2145), <code>--c-ville-aplat</code> est rebranché sur <code>--c-ville-clair</code>, etc. Les hexadécimaux gelés restent déclarés mais <strong>inutilisés</strong>, et le contrôle statique du banc sur l'invariant 7 passe donc sur des déclarations mortes. Deux conséquences à écrire dans la doctrine :
+1. La famille figée n'a pas cinq membres, elle en a <strong>dix</strong> : les cinq aplats et les cinq variantes claires. Il faut les nommer comme telles, sinon « les cinq couleurs figées » est une phrase fausse.
+2. Le contrôle de l'invariant 7 doit porter sur les <strong>valeurs effectives dans les deux schémas</strong>, pas sur les déclarations du <code>:root</code>.</p>
+<p><strong>Trois corrections de contraste, calculées sur <code>--bg #F1EDE4</code> :</strong></p>
+<table>
+<thead>
+<tr>
+<th>Aujourd'hui</th>
+<th>Mesure</th>
+<th>Demain</th>
+<th>Mesure</th>
+<th>Amplitude</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--sep-txt #756C62</code> (texte 12 px gras)</td>
+<td><strong>4,41:1 — échoue AA</strong></td>
+<td><code>#6E655C</code></td>
+<td><strong>4,89:1</strong></td>
+<td>18 ✓</td>
+</tr>
+<tr>
+<td>Frontière signifiante <code>--sep #E2DBD0</code></td>
+<td><strong>1,18:1</strong></td>
+<td><code>#8C8275</code></td>
+<td><strong>3,23:1</strong></td>
+<td>23 ✓</td>
+</tr>
+<tr>
+<td><code>--c-agglo #0891b2</code> en texte</td>
+<td><strong>3,15:1 — échoue</strong></td>
+<td><code>--c-agglo-encre #066F89</code></td>
+<td><strong>4,93:1</strong></td>
+<td>exempt</td>
+</tr>
+<tr>
+<td><code>--c-dept #b45309</code> en texte</td>
+<td><strong>4,30:1 — échoue</strong></td>
+<td><code>--c-dept-encre #9B4808</code></td>
+<td><strong>5,41:1</strong></td>
+<td>exempt</td>
+</tr>
+</tbody>
+</table>
+<p>Deux précisions. <strong>Je ne repointe pas <code>--sep-txt</code> sur <code>--muted #6B6259</code></strong> comme le proposait le regard des aînés : sa critique a raison, le fichier a déjà supprimé un doublon exact de <code>--muted</code> (commentaire l. 41), on ne rejoue pas une faute effacée. Et <strong>je n'entoure pas toutes les cartes d'un trait à 3:1</strong> : le seuil 1.4.11 vaut pour les frontières nécessaires à identifier un composant, et une carte dont le titre est à 15,13:1 est identifiable. <code>#8C8275</code> est réservé aux frontières qui portent du sens : séparation entre deux items d'une liste, anneau de focus, état actif d'un filtre. <code>--gris-1</code> (3,27:1) et <code>--gris-2</code> (2,26:1) sont <strong>interdits sur du texte</strong>, par contrôle de banc.</p>
+<h3>La règle d'amplitude 24, frontalement</h3>
+<p><strong>Aucune exception. Aucun amendement.</strong> Le moodboard propose d'amender la doctrine par écrit pour son accent crème <code>#E0C49B</code> (amplitude <strong>69</strong>, vérifiée, presque trois fois le plafond), et sa proposition est la plus honnête des trois qu'il envisage. Je la refuse quand même, et l'argument du regard de la neutralité est le bon : <strong>la valeur de cette règle tient à ce qu'elle n'a aucune exception.</strong> Une doctrine à une exception écrite en aura deux dans six mois, et personne ne saura dire laquelle était la bonne — sur un projet à une personne seule, c'est la seule protection qui survivra à décembre.</p>
+<p>Conséquence pratique, à assumer : <strong>l'appel à l'action se distingue par la forme, pas par la chaleur.</strong> Bouton plein, 48 px, encre <code>--acc #2B2621</code> (amplitude 11). C'est moins séduisant sur une capture d'écran. C'est ce que coûte la règle, et elle vaut son prix.</p>
+<p>Deux exceptions déjà en place restent en place, et on les <strong>écrit</strong> au lieu de les taire : les cinq échelons et les onze familles politiques. Et une troisième doit être écrite comme telle : <code>geo.api.gouv.fr</code>. L'invariant 1 dit « sans aucune requête réseau ». Le bouton de position en émet une. Le regard de la neutralité a été pris en flagrant délit de deux poids deux mesures par sa critique — refuser l'exception de couleur au nom de l'absence d'exception, puis en accorder une au réseau six pages plus loin. <strong>La bonne écriture : l'application est entièrement fonctionnelle réseau coupé, et ce bouton est le seul point du fichier autorisé à émettre une requête, sur geste explicite, vers un service public, sans conservation.</strong> À inscrire au banc.</p>
+<h3>Échelle typographique</h3>
+<p>Les onze crans sont conservés tels quels — <strong>le chantier que le moodboard chiffre à 2-3 jours comme « le plus structurant du lot » est déjà fait</strong>, il a été relevé sur v18.17. Ce qui change, ce sont les rôles, écrits en commentaire au-dessus de chaque cran :</p>
+<table>
+<thead>
+<tr>
+<th>Cran</th>
+<th>Rôle exclusif</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--t-11</code></td>
+<td><strong>capitales seulement</strong> (étiquettes de section, échelon). Jamais de texte courant.</td>
+</tr>
+<tr>
+<td><code>--t-12</code></td>
+<td>méta : date, source, mention légale</td>
+</tr>
+<tr>
+<td><code>--t-13</code></td>
+<td><strong>plancher du texte courant</strong></td>
+</tr>
+<tr>
+<td><code>--t-15</code></td>
+<td>corps d'une carte</td>
+</tr>
+<tr>
+<td><code>--t-17</code></td>
+<td>corps explicatif, doctrine, définitions</td>
+</tr>
+<tr>
+<td><code>--t-20</code></td>
+<td>titre d'une carte de décision</td>
+</tr>
+<tr>
+<td><code>--t-24</code></td>
+<td>titre d'écran, nom d'un élu</td>
+</tr>
+<tr>
+<td><code>--t-29</code></td>
+<td><code>.appbar h2</code> uniquement</td>
+</tr>
+<tr>
+<td><code>--t-34</code></td>
+<td>question du premier lancement, une seule pose</td>
+</tr>
+<tr>
+<td><code>--t-41</code>, <code>--t-56</code></td>
+<td><strong>supprimés</strong> — le seul cran qui portait une règle écrite (<code>--t-56</code> : « chiffre seul, jamais du texte ») est celui qui ne servait jamais.</td>
+</tr>
+</tbody>
+</table>
+<p>Les 29 <code>font-size</code> en dur hors tokens, dont <strong>six sous 12 px</strong>, sont ramenés dans l'échelle : le fichier porte déjà l'engagement « plus jamais de mention structurante sous 12 px » et le viole six fois. <code>--t-10</code> proposé par le moodboard est <strong>refusé</strong> : ajouter le token institutionnaliserait le défaut.</p>
+<p><strong>Le multiplicateur.</strong> <code>setScale()</code> l. 6842 n'écrit rien : la taille est perdue à chaque fermeture. Deux solutions étaient sur la table, je refuse les deux et j'en prends une troisième.
+- <em>Une seconde clé</em> : refusée, invariant 2.
+- <em>Un champ <code>t</code> dans <code>repere.serie</code></em> : refusé, et c'est la critique du regard de l'accessibilité qui l'a tué. <code>serieOublier()</code> fait <code>removeItem</code> puis reconstruit <code>{d,j:1,m:1}</code> — <strong>le bouton « effacer mes données » détruirait le réglage d'un malvoyant</strong> ; <code>serieLire()</code> jette l'objet entier si <code>o.j</code> n'est pas un nombre ; en navigation privée, rien ne persiste. Coupler un besoin d'accessibilité à un compteur de jeu est une faute de conception. <em>(Au passage : l'accusation selon laquelle <code>serieMaj()</code> perdrait <code>m</code> silencieusement est fausse — j'ai lu les neuf lignes, <code>SERIE.m = Math.max(...)</code> restaure <code>m</code> dans les trois branches.)</em>
+- <em>Ce que je fais</em> : <strong>passage de l'échelle en <code>rem</code></strong>, pour hériter du réglage système que l'utilisateur a déjà su faire seul — zéro écran, zéro clé, zéro persistance à inventer, et ça couvre plus de monde que trois boutons placés derrière un corps jugé trop petit. Plus le plafond de <code>--fs</code> porté de <strong>1,35 à 1,50</strong> (pas 1,75 : la barre à cinq onglets, les cinq pastilles en <code>white-space:nowrap</code> et les bandeaux en <code>text-overflow:ellipsis</code> cassent avant). C'est le levier gratuit que les quatre équipes ont diagnostiqué et qu'aucune n'a corrigé. <strong>Réserve honnête</strong> : sur Android le réglage est hérité ; sur iOS il ne l'est qu'avec <code>font: -apple-system-body</code> sur la racine. C'est le pari n° 3.</p>
+<h3>Le moodboard « Nuit sable » — ce que je retiens, ce que je rejette</h3>
+<table>
+<thead>
+<tr>
+<th>Proposition</th>
+<th>Verdict</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Fond brun-noir chaud <code>#141110</code></td>
+<td><strong>Déjà fait.</strong> Le mode sombre existe, l. 2096-2241, 50 sélecteurs, 5 638 o nets, piloté par <code>prefers-color-scheme</code>. Le moodboard ne le mentionne pas, et c'est ce qui lui manque le plus. Pas d'interrupteur : sans mémoire, un thème choisi renvoie l'utilisateur au blanc en pleine nuit — le commentaire du fichier a déjà écrit cet arbitrage mieux que moi.</td>
+</tr>
+<tr>
+<td>Accent crème <code>#E0C49B</code> + amendement de doctrine</td>
+<td><strong>Rejeté.</strong> Amplitude 69. Voir ci-dessus.</td>
+</tr>
+<tr>
+<td>« Ajouter des barreaux en haut de l'échelle »</td>
+<td><strong>Rejeté : ils existent.</strong> Relevé sur v18.17. Et l'échelle de rechange proposée (34/28/23/17/15/13/11/10) casserait 392 appels pour un gain nul.</td>
+</tr>
+<tr>
+<td><code>--t-10</code></td>
+<td><strong>Rejeté.</strong></td>
+</tr>
+<tr>
+<td>Police variable encapsulée en base64</td>
+<td><strong>Repoussé après la bêta.</strong> Le moodboard a raison sur le coût (+0,4 % du fichier, aucune requête). Mais <code>.screen-shell</code> déclare <code>font-variant-numeric: tabular-nums lining-nums</code> : un sous-ensemble mal découpé désaligne <strong>tous les chiffres</strong> d'un produit dont l'argument est le chiffre sourcé. Et une police à caractère fort est un accent ; la pile système a l'accent du téléphone du lecteur, c'est-à-dire aucun accent attribuable à Repère.</td>
+</tr>
+<tr>
+<td>§7, « un produit trop magazine a l'air d'avoir un avis » et ses trois garde-fous</td>
+<td><strong>Retenu, et c'est sa meilleure page.</strong> Il est devenu P2.</td>
+</tr>
+<tr>
+<td><strong>Son ordre des chantiers</strong></td>
+<td><strong>Rejeté frontalement.</strong> Un écran de 7 583 px repeint en brun-noir avec des titres à 34 px reste un écran de 7 583 px — et allonger les pages <strong>aggrave</strong> le défaut n° 1. Architecture d'abord, échelle ensuite, thème en dernier.</td>
+</tr>
+</tbody>
+</table>
+<h3>Géométrie et mouvement</h3>
+<p>Cinq rayons (<code>--r-xs 8</code> → <code>--r-pill</code>), sept espacements. <strong>Je ne lance pas de nettoyage global</strong> : 22 000 o supprimables = 0,13 % du fichier, et le vrai coût est du temps d'auteur. Règle : <strong>tout bloc réécrit par ce plan passe aux tokens</strong> ; les 168 règles redéclarées ne sont résorbées que sur les composants effectivement touchés (carte, onglet, chip, rangée de liste). Le reste attend.</p>
+<p>Mouvement : <code>prefers-reduced-motion</code> est déjà respecté (l. 1954, 2236, 9106). <code>@keyframes skelPulse</code> est supprimé. Aucune animation nouvelle. Une seule transition autorisée, celle de l'enfoncement d'un élément touché.</p>
+<hr />
+<h2>7. LE VOCABULAIRE</h2>
+<p><strong>« Échelon » : je ne le remplace pas, je le rends inutile.</strong></p>
+<p>Le regard des 18-25 ans proposait « niveau ». Sa critique l'a tué et elle a raison : « niveau » évoque une hiérarchie (niveau 1 &lt; niveau 5) et un niveau de jeu, sur un produit qui interdit la hiérarchie et redoute le procès en gamification. Une région n'est pas au-dessus d'une commune, elle fait autre chose. Et un renommage « d'affichage seulement » installe exactement l'écart texte/code que <code>REPRISE.md</code> nomme comme le piège maison n° 2.</p>
+<p><strong>La règle : on n'écrit jamais le mot générique, on écrit toujours l'instance.</strong> <code>Mairie · Agglo · Département · Région · France</code>, en toutes lettres, dans chaque bandeau de carte, à côté de la pastille. <code>ECH_LABEL</code> le fait déjà. Le mot « échelon » survit dans le code (<code>--c-*</code>, <code>.lvl</code>, <code>data-lvl</code>, le banc) et apparaît <strong>une seule fois à l'écran</strong>, glosé en une phrase au premier emploi, avec <code>.gl</code> cliquable : <em>« les cinq échelons, c'est-à-dire les cinq collectivités qui décident chez vous »</em>. Le pari de l'auteur est probablement juste ; on le désamorce en une ligne au lieu de le tester sur 34 875 communes.</p>
+<table>
+<thead>
+<tr>
+<th>À bannir</th>
+<th>Par quoi</th>
+<th>Motif</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Fil</code> (onglet)</td>
+<td><strong>Ce qui a été décidé</strong></td>
+<td>Mot d'ingénieur. Et « Aujourd'hui » est refusé : faux 29 jours sur 30.</td>
+</tr>
+<tr>
+<td><code>Jouer</code> / <code>Qui décide ?</code> (le même onglet portait les deux)</td>
+<td><strong>La question du jour</strong></td>
+<td>Le titre changeait sous le doigt au moment du tap. Et « Qui décide ? » est la formulation de la raison d'être : elle ne peut pas désigner un quiz de 1 067 px.</td>
+</tr>
+<tr>
+<td><code>Moi</code></td>
+<td><strong>Repère</strong></td>
+<td>Convention de réseau social.</td>
+</tr>
+<tr>
+<td><code>Qui dirige</code></td>
+<td><strong>Qui décide</strong></td>
+<td>Deux quasi-synonymes adjacents pour deux objets sans rapport. Le mot qui coûtera d'abord n'est pas « échelon », c'est « décide ».</td>
+</tr>
+<tr>
+<td><code>L'essentiel du jour</code></td>
+<td><em>(supprimé)</em></td>
+<td>L'essentiel selon qui ? Remplacé par la règle d'ordre écrite.</td>
+</tr>
+<tr>
+<td><code>DÉCISIONS ET VOTES RÉELS</code></td>
+<td><em>(supprimé)</em></td>
+<td>Un tampon qui affirme la réalité crée par contraste une catégorie « pas réel ». La preuve, c'est la source sur chaque carte.</td>
+</tr>
+<tr>
+<td><code>digest</code> (3 occurrences)</td>
+<td><strong>le résumé du soir</strong></td>
+<td>Anglicisme dans une application civique française.</td>
+</tr>
+<tr>
+<td><code>Bonjour</code> en <code>&lt;h3&gt;</code></td>
+<td><em>(supprimé)</em></td>
+<td>Une salutation au rang de titre principal dans le rotor d'un lecteur d'écran.</td>
+</tr>
+<tr>
+<td><code>Premium</code>, <code>abonnement</code>, <code>Offres</code> à l'écran</td>
+<td><em>(vidés)</em></td>
+<td>L'écran de réglages dit « Repère est gratuit, en entier, et ne vend rien » ; du balisage qui dit le contraire dort dans le même fichier.</td>
+</tr>
+<tr>
+<td><code>mis à jour le 18 août</code></td>
+<td><strong>Décision la plus récente : …</strong></td>
+<td>Chaîne <strong>calculée</strong> sur les données, donc toujours vraie. Le fichier l'a déjà écrit, l. 7370 : <em>« Une app sans réseau ne s'actualise jamais — annoncer une heure de rafraîchissement serait une phrase fausse. »</em></td>
+</tr>
+<tr>
+<td><code>Ce n'est pas ma commune</code>, 13 px souligné</td>
+<td><strong>bouton bordé 56 px, au-dessus du bouton principal</strong></td>
+<td>C'est le bouton de la peur : il doit être le plus facile à trouver.</td>
+</tr>
+<tr>
+<td>Les 25 <code>↗</code> et 10 <code>›</code> lus à voix haute</td>
+<td><code>aria-hidden="true"</code> + mention « nouvelle fenêtre » sur les 44 liens</td>
+<td>RGAA 13.2 ; « flèche nord-est » à chaque source.</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>8. LE PLAN DE TRAVAIL</h2>
+<p><strong>Capacité réelle.</strong> 20 août → 15 décembre = 16 semaines. Soirs et week-end : deux soirées de 2 h + une demi-journée = <strong>8 h/semaine ≈ 17 jours de 7 h</strong>. Les quatre équipes ont sous-estimé leurs chiffrages d'un facteur 1,5 à 2 en moyenne, mesuré par leurs critiques. <strong>J'engage donc 12 jours et je garde 5 jours de marge</strong>, et je le dis : la marge n'est pas du confort, c'est le coefficient d'erreur rendu explicite. Chaque lot inclut le cycle imposé par <code>REPRISE.md</code> : patch Python à assertions, <code>node test_repere.mjs</code>, <code>build_pwa.py</code>, <strong>relecture des captures</strong> (« un banc vert sur une page cassée reste un banc vert »).</p>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Lot</th>
+<th>Jours</th>
+<th>Gain</th>
+<th>Risque</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>1</strong></td>
+<td><strong>La vérité d'abord.</strong> Retirer <code>obPick("Fontainebleau","77","77186")</code> du <code>catch</code> l. 4707 → « Position introuvable. Tapez le nom de votre commune. » · retirer l'interrupteur « réservé à Premium » l. 2981 · <code>aria-busy</code> posé par le JS · supprimer les 24 champs <code>emoji</code> morts (vérifié : jamais lus par aucun gabarit) · <code>.stat30</code> nommé au lieu de compté · <code>nbChg</code> et « stable » retirés.</td>
+<td><strong>0,5</strong></td>
+<td>L'application cesse de domicilier un Marseillais à Fontainebleau et de lui montrer le budget de Fontainebleau comme le sien. Ferme deux brèches d'invariant 3.</td>
+<td><strong>Nul.</strong> Suppressions et une phrase.</td>
+</tr>
+<tr>
+<td><strong>2</strong></td>
+<td><strong>Le banc avant la refonte.</strong> Remplacer le contrôle l. 238 (<code>ids.length &gt;= 15</code>) par la liste nommée des 12 écrans · reformuler l'invariant 5 (« aucun élément graphique ne représente une donnée absente ; un indicateur de chargement borné n'en est pas un ») · ajouter les contrôles P1, P3, P4, P6 (41ᵉ : aucun tri numérique d'une liste de personnes, de partis ou de territoires) · porter le contrôle d'invariant 7 sur les valeurs <strong>effectives</strong> dans les deux schémas de couleur.</td>
+<td><strong>1,5</strong></td>
+<td>C'est la porte. Sans lui, tous les lots suivants sont irréversibles.</td>
+<td>Faible.</td>
+</tr>
+<tr>
+<td><strong>3</strong></td>
+<td><strong>Les deux questions dans la barre.</strong> 5 onglets → 4 · <code>s-argent</code> promu · le jeu sort de la barre vers le pied du fil · <code>showTab</code>/<code>show</code>/<code>NAV_STACK</code>/liens profonds · <code>activate()</code> cesse de remettre le défilement à zéro sur <code>goBack()</code>.</td>
+<td><strong>2,5</strong></td>
+<td>Corrige les défauts 1, 3, 4 et 8. « Où va mon argent » passe de ≈ 11 gestes à 1.</td>
+<td><strong>Moyen.</strong> Deux mécaniques de navigation distinctes, contrôles l. 251 et 265 à rejouer.</td>
+</tr>
+<tr>
+<td><strong>4</strong></td>
+<td><strong><code>s-qui</code> découpé.</strong> La grille de tuiles remonte en tête · <code>s-elus</code>, <code>s-partis</code> (repli, sans le titre « du plus nombreux au plus petit »), <code>s-influence</code> deviennent des sections · la porte du jeu quitte la première fenêtre · <code>s-debats</code> et <code>s-2027</code> fondus dans <code>s-agenda</code> · <code>s-notifs</code> retiré · nœuds <code>[data-veille]</code> retirés dans <code>build_pwa.py</code>.</td>
+<td><strong>2,0</strong></td>
+<td>17 écrans → 12. Le sommaire cesse d'être une récompense de persévérance.</td>
+<td><strong>Moyen.</strong></td>
+</tr>
+<tr>
+<td><strong>5</strong></td>
+<td><strong>La carte du fil.</strong> Comparateur <code>ordreFil()</code> déterministe + phrase d'ordre en pied · gabarit unique, <code>.une</code> fondue, garde <code>essUne()</code> portée dans le gabarit commun · échelon en toutes lettres dans le bandeau · tampon hors du repli · trois liens sortants · 17 pastilles → 1 bouton « Filtrer » · squelette animé → bloc de texte fixe · <code>.real-tag</code> et <code>.demo-tag</code> retirés · mention IA descendue en pied.</td>
+<td><strong>1,5</strong></td>
+<td>Le fil cesse d'être un cul-de-sac et cesse d'ordonner au hasard sa surface la plus vue.</td>
+<td>Faible à moyen.</td>
+</tr>
+<tr>
+<td><strong>6</strong></td>
+<td><strong>Les états vides honnêtes.</strong> Le <code>.coverage-note</code> de 90 mots → 30 mots + un bouton · <strong>l'agglo manquante de <code>renderArgent()</code> l. 8364 devient une phrase de doctrine du vide et un lien</strong>, au lieu d'un escamotage · les deux questions du jeu qui y renvoient cessent de pointer vers une réponse absente.</td>
+<td><strong>0,5</strong></td>
+<td>Meilleur rapport valeur/coût du lot : gain immédiat pour 34 869 communes.</td>
+<td><strong>Nul.</strong></td>
+</tr>
+<tr>
+<td><strong>7</strong></td>
+<td><strong>Contrastes et plancher.</strong> <code>--sep-txt → #6E655C</code> · frontières signifiantes <code>#8C8275</code> · <code>--c-agglo</code>/<code>--c-dept</code> interdits en texte (variantes <code>-encre</code>) · <code>--gris-1</code>/<code>--gris-2</code> interdits sur du texte · plancher : aucun texte courant sous <code>--t-13</code>, <code>--t-11</code> réservé aux capitales · les 6 <code>font-size</code> en dur sous 12 px ramenés dans l'échelle · contrôle de contraste au banc, dans les deux schémas.</td>
+<td><strong>1,5</strong></td>
+<td>Corrige quatre échecs AA mesurés. Le plus petit texte de l'écran devient contrôlable.</td>
+<td>Faible.</td>
+</tr>
+<tr>
+<td><strong>8</strong></td>
+<td><strong>Vocabulaire et sémantique.</strong> Renommages des quatre onglets et des titres · glose d'« échelon » au premier emploi · un <code>&lt;h1&gt;</code> par écran, <code>&lt;main&gt;</code>, <code>&lt;nav&gt;</code>, <code>aria-current</code> · purge des deux <code>&lt;h3&gt;</code> vides et des <code>&lt;h2&gt;—&lt;/h2&gt;</code> · <strong>retrait</strong> des rôles ARIA à moitié posés (<code>role="tab"</code> sans <code>tabpanel</code> → boutons + <code>aria-current</code> ; <code>role="tablist"</code> sur les filtres d'échelon → <code>role="group"</code> + <code>aria-pressed</code>, comme six lignes plus bas) · <code>aria-hidden</code> sur ↗ et › · mention « nouvelle fenêtre ».</td>
+<td><strong>2,0</strong></td>
+<td>P8 est soustractif : son exécution est moins chère que le statu quo. Les libellés cessent de changer sous le doigt.</td>
+<td>Faible.</td>
+</tr>
+<tr>
+<td></td>
+<td><strong>TOTAL ENGAGÉ</strong></td>
+<td><strong>12,0</strong></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td><strong>Marge (coefficient d'erreur assumé)</strong></td>
+<td><strong>5,0</strong></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h3>═══ AU-DELÀ DE CETTE LIGNE, C'EST APRÈS LA BÊTA ═══</h3>
+<table>
+<thead>
+<tr>
+<th>Lot</th>
+<th>Jours réalistes</th>
+<th>Pourquoi pas avant</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Ingestion des scrutins publics de l'Assemblée + re-engendrement automatique</td>
+<td><strong>15-21</strong>, et non 12-18</td>
+<td><code>data.assemblee-nationale.fr</code> est bloqué depuis le conteneur, <code>AMO50</code> n'est pas examiné (39 % des réunions sans nom d'organe), huit versions de workflow en 48 h et rien de fini. Et la question « qui relit ? » n'a pas de réponse : si l'ingestion tourne seule, la phrase « relu par un humain » devient fausse, sur le point exact où l'on demande d'être cru. <strong>Les 200 communes en délibérations : renoncement explicite.</strong></td>
+</tr>
+<tr>
+<td>Fiche d'élu refondue (§5.3 en entier)</td>
+<td><strong>4-5</strong></td>
+<td><code>openElu()</code> est un générateur de balisage de 170 lignes. Elle est atteinte par peu de gens ; la barre d'onglets est atteinte par tous.</td>
+</tr>
+<tr>
+<td>Premier lancement en un écran (§5.1)</td>
+<td><strong>1,5</strong></td>
+<td>Amélioration réelle, mais <code>STATE.onboarded</code> n'est pas persisté : l'onboarding rejoue à chaque ouverture, et le corriger demanderait une clé. À traiter avec la question de la persistance, pas avant.</td>
+</tr>
+<tr>
+<td>Passage en <code>rem</code> + plafond <code>--fs</code> à 1,50</td>
+<td><strong>2-3</strong></td>
+<td>Voir pari n° 3 : à vérifier sur appareil réel avant d'engager.</td>
+</tr>
+<tr>
+<td>Police variable encapsulée</td>
+<td><strong>2-3</strong></td>
+<td>Risque <code>tabular-nums</code>.</td>
+</tr>
+<tr>
+<td>Résorption des 168 règles redéclarées</td>
+<td><strong>6</strong></td>
+<td>0,13 % du fichier. Du temps d'auteur, pas des octets.</td>
+</tr>
+<tr>
+<td>FALC intégral</td>
+<td><strong>10-15</strong></td>
+<td>Et la preuve de sa difficulté est dans les maquettes des équipes : <em>« Aide à mourir : la loi adoptée »</em> transforme en trois mots un texte voté par une chambre et non promulgué en loi en vigueur.</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>9. CE QU'ON NE FERA PAS</h2>
+<ol>
+<li><strong>Comparer deux communes, ou une commune à une moyenne.</strong> Le mécanisme le plus viral disponible, réalisable en deux jours avec les 8,83 Mo d'OFGL. Un € par habitant en regard d'un autre produit un gagnant et un perdant, quelle que soit la légende. <strong>Invariant 3.</strong> À la place : le montant de <strong>votre</strong> commune, avec l'exercice et la source, et rien à côté.</li>
+<li><strong>La carte de France en mode « Couleur politique ».</strong> Le regard jeune proposait de supprimer le mode « Couverture » ; sa critique a montré que <code>seg-couv</code> porte <code>class="active"</code> et que le supprimer <strong>promeut <code>pol</code> au rang de vue unique et par défaut</strong> — des aplats gauche/centre/droite sur une carte de France, l'objet le plus « camp » du fichier. On fait l'inverse : <strong><code>s-carte</code> ne garde que le mode exploration</strong>, sélecteur de lieu, sans aucun aplat politique ni de complétude. Le pourcentage de couverture reste global, en texte, dans « Notre méthode » — jamais par commune, parce qu'appliqué à un territoire c'est un classement même sans tri.</li>
+<li><strong>Un test « quel élu êtes-vous ».</strong> Format roi chez les 18-25 ans. Il transforme une institution en identité et désigne un camp par la bande. <strong>Invariant 6.</strong></li>
+<li><strong>Une notification qui réclame.</strong> Repère peut notifier <em>ce qui a été décidé</em>, jamais <em>ce que vous n'avez pas fait</em>. Le code tient déjà la ligne (la médaille obtenue reste acquise, la série rompue repart à 1 sans commentaire, sans rouge, sans « dommage ») ; on ne la perd pas en ajoutant le push. <strong>Et l'interrupteur de notification quitte l'onboarding</strong> : la première interaction du produit ne peut pas être une promesse d'envoi qui n'existe pas.</li>
+<li><strong>Un compteur de réactions affiché.</strong> « 847 personnes ont trouvé ça injuste » est un sondage d'opinion sans méthode sur un produit sans opinion. La réaction reste strictement locale, aucun total n'est jamais rendu. À vérifier et à inscrire au banc avant décembre.</li>
+<li><strong>Un mode contraste élevé séparé, et un mode « senior ».</strong> Le premier double la surface de test pour une personne seule et divise la palette en deux vérités : la bonne réponse est de porter la palette <strong>par défaut</strong> au-dessus des seuils. Le second : personne n'appuie sur un bouton qui dit « je suis vieux ».</li>
+<li><strong>Une lecture audio.</strong> Voix embarquée exclue (17 Mo), <code>speechSynthesis</code> déclenche un appel réseau sur plusieurs systèmes. <strong>Invariants 1 et 2.</strong> Le vrai levier est d'écrire plus court.</li>
+<li><strong>Une seconde clé <code>localStorage</code>, et un champ de plus dans <code>repere.serie</code>.</strong> Les deux sont refusés (§6). L'invariant 2 n'est pas une contrainte technique, c'est le seul argument de vente du produit.</li>
+<li><strong>Supprimer les gabarits commerciaux du fichier.</strong> Trois équipes le demandaient. <code>REPRISE.md</code> classe l'arbitrage comme tranché et le banc l. 131 exige qu'un prix soit déclaré en JavaScript. On vide les phrases, on retire les nœuds à l'engendrement du site, on garde les gabarits en veille. Réversible, 0,5 j, zéro contrôle cassé.</li>
+<li><strong>La direction artistique « Nuit sable » telle quelle, avant décembre.</strong> Son mode sombre existe déjà, son chantier typographique est déjà fait, son accent viole l'invariant 7 de 45 points d'amplitude, et son ordre des chantiers aggrave le principal défaut du produit. On garde sa page 7 et son honnêteté ; on refuse son calendrier.</li>
+<li><strong>Ranger le fil au hasard.</strong> Le tirage au sort est légitime pour des <strong>candidats à une élection</strong> — c'est écrit l. 3390 et c'est juste. Il ne l'est pas pour des décisions déjà prises, qui ont une date : il détruit la mémoire spatiale, casse <code>FEED.indexOf</code>, rend le partage non reproductible et le banc non déterministe. Et ranger <em>n</em> éléments au hasard, c'est affirmer sans source qu'ils sont équivalents.</li>
+</ol>
+<hr />
+<h2>10. LES TROIS PARIS</h2>
+<p>Je ne suis sûr d'aucun des trois. Chacun se tranche avec cinq personnes, un téléphone, zéro euro, en une soirée. <strong>Ils passent avant les lots 3 à 8</strong>, et l'un d'eux peut les invalider — c'est exactement pour ça qu'ils existent.</p>
+<h3>Pari 1 — Le premier mur n'est pas le mot « échelon », c'est de ne pas savoir qu'il y a cinq décideurs</h3>
+<p><em>Ce que je crois :</em> personne ne bute sur le mot ; les gens butent sur l'idée qu'une décision qui les concerne a pu être prise par une intercommunalité dont ils ignorent le nom. Écrire <code>MAIRIE</code> en toutes lettres dans le bandeau règle le mot pour une ligne de CSS ; la vraie question est si l'idée passe.</p>
+<p><em>L'expérience :</em> cinq personnes qui ne connaissent pas le projet. On leur montre <strong>une carte du fil</strong>, sans rien dire. Question : <em>« Qui a décidé ça, à votre avis ? »</em> Puis, dix minutes plus tard, sur une autre carte : <em>« Et ça ? »</em> On compte les bonnes attributions et on note les mots qu'elles emploient. <strong>Si trois personnes sur cinq attribuent tout au maire, le bandeau ne suffit pas</strong> et il faut une ligne de plus dans la carte (<em>« c'est l'agglo qui décide, pas la mairie »</em>) — 0,5 j non budgété. Si quatre sur cinq attribuent juste, le pari est gagné et on ne dépense rien.</p>
+<h3>Pari 2 — Un fil sans manchette ne perd pas le primo-lecteur</h3>
+<p><em>Ce que je crois :</em> la tranche du §2 tient — hiérarchie dans la carte, pas entre les cartes. Mais la critique du regard de la neutralité m'inquiète : <em>« C'est un excellent registre pour un journaliste. C'est un mur pour la personne qui ouvre l'app une fois avant avril 2027. »</em></p>
+<p><em>L'expérience :</em> deux versions sur deux téléphones, une avec manchette à 41 px, une au gabarit unique. Cinq personnes, ordre alterné. On ouvre, <strong>on ne dit rien</strong>, on regarde : quelle carte est touchée en premier, en combien de secondes, et si quelqu'un dit « je ne sais pas par où commencer ». <strong>Si le gabarit unique produit plus de trois secondes d'hésitation ou une seule phrase de désorientation, je réintroduis un signal</strong> — mais un signal de <strong>nature</strong>, pas de taille : un filet de couleur d'échelon en tête de la première carte de chaque section, jamais une taille supérieure. <em>(Cette expérience est la dernière phrase du regard de la neutralité, et c'est la meilleure idée de son document — plus utile que ses douze suppressions.)</em></p>
+<h3>Pari 3 — Le réglage système de taille est hérité si l'échelle passe en <code>rem</code></h3>
+<p><em>Ce que je crois :</em> c'est le levier le moins cher de tout l'audit et personne ne l'a pris. <code>grep</code> de <code>rem</code>/<code>em</code> dans les <code>font-size</code> : <strong>0 occurrence</strong>. Tout est en pixels, donc le réglage « texte agrandi » que l'utilisateur a déjà su activer dans son téléphone ne produit <strong>aucun effet</strong> sur Repère.</p>
+<p><em>L'expérience :</em> un iPhone en Dynamic Type au maximum, un Android à 130 %. On ouvre la version <code>rem</code> et on mesure la hauteur d'une capitale au réglet, contre la version actuelle. <strong>Si iOS n'hérite pas</strong> (probable sans <code>font: -apple-system-body</code> sur la racine), deux issues : soit on pose <code>font: -apple-system-body</code> et on revérifie que les onze crans tiennent, soit on abandonne <code>rem</code>, on garde A/A+/A++ en session et on porte le plafond à 1,50 — et le réglage reste perdu à chaque fermeture, ce qui est cruel mais moins cruel que de le coupler au compteur de jeu. <strong>Ce pari décide seul si le lot « rem » remonte au-dessus de la ligne.</strong></p>
+<hr />
+<h2>EN UNE PHRASE</h2>
+<p>Repère n'a pas un problème de couleur, ni un problème de police, ni même — pas encore — un problème de fraîcheur : <strong>il a un problème de barre d'onglets.</strong> Un produit qui pose deux questions et dont aucun des cinq onglets ne les porte fait payer à chaque utilisateur, à chaque ouverture, le prix d'une exploration que douze jours de travail suppriment définitivement. Tout le reste — le brun-noir, la manchette, le FALC, les 200 communes — attend janvier.</p></div></body></html>
