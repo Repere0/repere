@@ -35,12 +35,37 @@ assert d.get("v") == 1, "format inattendu"
 os.makedirs(DEST, exist_ok=True)
 
 def ardoise(t):
+    """Coupe a 150 signes, mais sur une FRONTIERE DE MOT : la coupe brute produisait
+       des titres finissant au milieu d'un mot (« ... souverainete agrico »)."""
     t = re.sub(r"\s+", " ", t or "").strip()
-    return t[:150]
+    if len(t) <= 150:
+        return t
+    coupe = t[:150].rsplit(" ", 1)[0].rstrip(" ,;:-")
+    return coupe + "\u2026"
 
+def sansAccent(t):
+    """Pour comparer sans dependre de la graphie de la source."""
+    paires = (("é", "e"), ("è", "e"), ("ê", "e"), ("à", "a"), ("ô", "o"), ("û", "u"))
+    t = (t or "").lower()
+    for x, y in paires:
+        t = t.replace(x, y)
+    return t
+
+# MESURE du 25 aout 2026 sur outils/scrutins_an.json (80 scrutins) : le champ « s » vaut
+# « adopté » 46 fois et « rejeté » 34 fois — DEJA accentue. La table precedente etait
+# indexee sans accent : elle ne trouvait jamais rien, et le script retombait sur le
+# libelle long « l'Assemblée nationale a adopté », qu'il inserait dans une phrase
+# commencant deja par « L'Assemblée nationale a ». Table indexee sur la forme mesuree.
 SORTS = {"adopte": "adopté", "rejete": "rejeté"}
 
-ecrits, deja = 0, 0
+
+def titre_de(objet):
+    """L'objet du scrutin est une phrase de proces-verbal : minuscule initiale et point
+       final. Un titre de carte n'est ni l'un ni l'autre."""
+    t = (objet or "").strip().rstrip(".").strip()
+    return (t[:1].upper() + t[1:]) if t else t
+
+ecrits, deja, poses = 0, 0, []
 for e in sorted(d["r"], key=lambda x: x["d"], reverse=True)[:COMBIEN]:
     nom = "scrutin-%s-%s.md" % (e["d"], str(e["n"]).rjust(4, "0"))
     chemin = os.path.join(DEST, nom)
@@ -48,13 +73,13 @@ for e in sorted(d["r"], key=lambda x: x["d"], reverse=True)[:COMBIEN]:
     if os.path.exists(chemin):
         deja += 1
         continue
-    sort = SORTS.get(e.get("s", ""), e.get("sl") or e.get("s") or "")
-    objet = ardoise(e.get("o") or e.get("t"))
+    sort = SORTS.get(sansAccent(e.get("s", "")), "") or e.get("s") or ""
+    objet = titre_de(ardoise(e.get("o") or e.get("t")))
     pour = e.get("dec", {}).get("pour", "")
     contre = e.get("dec", {}).get("contre", "")
     absten = e.get("dec", {}).get("abstentions", "")
     corps = (
-        "L'Assemblée nationale a %s ce texte le %s.\n\n"
+        "Résultat du scrutin : %s, le %s.\n\n"
         "Pour : %s · Contre : %s · Abstentions : %s · Votants : %s\n\n"
         "Ce que ça change : \n"
     ) % (sort or "voté", e["d"], pour, contre, absten, e.get("nv", ""))
@@ -69,18 +94,43 @@ for e in sorted(d["r"], key=lambda x: x["d"], reverse=True)[:COMBIEN]:
         "valide: false\n"
         "---\n\n%s"
     ) % (objet.replace(":", " —"), e["d"], e["n"], e["n"], corps)
+    # La faute du 25 aout, rendue impossible : le verbe ne doit jamais reintroduire
+    # le sujet que la phrase porte deja.
+    assert "Assemblée nationale a" not in corps, \
+        "le sujet reintroduit dans le verbe, scrutin %s : %r" % (e["n"], corps[:90])
+    assert corps.count("adopté") + corps.count("rejeté") <= 1, \
+        "sort enonce deux fois, scrutin %s" % e["n"]
     io.open(chemin, "w", encoding="utf-8").write(texte)
     ecrits += 1
+    poses.append(chemin)
 
-# controle : aucun candidat ne doit sortir marque valide
+# Controle : aucun candidat ECRIT PAR CE RUN ne doit sortir marque valide. La garde
+# precedente jugeait TOUT le dossier — elle faisait donc echouer la chaine des qu'un
+# humain avait valide un brouillon a la main, ce qui est le geste qu'on lui demande.
+# Un fichier valide encore present ici est sans danger : evenements.py ne lit que
+# data/evenements/. Ce n'est pas une faute, c'est un rappel.
+for chemin in poses:
+    t = io.open(chemin, encoding="utf-8").read()
+    assert "valide: false" in t, "%s sort marque valide alors que ce run vient de l'ecrire" % chemin
+
+a_deplacer = []
 for f in sorted(os.listdir(DEST)):
     if f.endswith(".md"):
         t = io.open(os.path.join(DEST, f), encoding="utf-8").read()
-        assert "valide: false" in t, "%s n'est pas marque comme brouillon" % f
+        if "valide: true" in t:
+            a_deplacer.append(f)
 
 print("candidats ecrits        : %d" % ecrits)
 print("deja presents, intacts  : %d" % deja)
 print("en attente de relecture : %d" % len([f for f in os.listdir(DEST) if f.endswith('.md')]))
+if a_deplacer:
+    print()
+    print("%d candidat(s) sont marques « valide: true » mais encore dans %s :"
+          % (len(a_deplacer), DEST))
+    for f in a_deplacer:
+        print("   - %s" % f)
+    print("Tant qu'ils sont la, l'application ne les voit PAS. Deplace-les dans")
+    print("data/evenements/ pour qu'ils soient publies.")
 print()
 print("Pour en publier un : relis-le, complete « Ce que ca change », puis")
 print("passe `valide: false` a `valide: true` et deplace le fichier dans data/evenements/.")

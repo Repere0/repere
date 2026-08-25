@@ -93,6 +93,14 @@ for f in fichiers:
         refus["confiance inconnue"] += 1; detail.append((nom, "confiance " + str(conf))); continue
     if not corps:
         refus["corps vide"] += 1; detail.append((nom, "aucun texte")); continue
+    # « Ce que ca change » est le seul endroit de la carte ecrit par un humain, et le
+    # seul qui reponde a « en quoi ca me concerne ». Un brouillon valide sans l'avoir
+    # rempli publierait un intertitre suivi de rien — un contenant sans contenu, ce que
+    # la doctrine du vide interdit precisement. On refuse, on ne complete pas.
+    m_chg = re.search(r"Ce que [cç]a change\s*:(.*)$", corps, re.S)
+    if m_chg is not None and not m_chg.group(1).strip():
+        refus["« ce que ca change » vide"] += 1
+        detail.append((nom, "l'intertitre est la, le texte manque")); continue
     retenus.append({
         "id": os.path.splitext(nom)[0],
         "t": meta["titre"],
