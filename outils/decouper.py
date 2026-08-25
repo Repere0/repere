@@ -25,8 +25,15 @@ SOURCE = sys.argv[1]
 SORTIE = sys.argv[2] if len(sys.argv) > 2 else "donnees"
 
 def departement(insee):
-    """Regle officielle : 97x sur trois chiffres (outre-mer), 2A/2B pour la Corse."""
-    if insee[:2] == "97":
+    """MEME REGLE QUE L'APPLICATION, mot pour mot. `deptFromInsee()` y ecrit :
+           c.startsWith("97") || c.startsWith("98") ? c.slice(0,3) : c.slice(0,2)
+       Ce script ecrivait 97x sur trois chiffres et 98x sur DEUX. Les 32 communes
+       de Polynesie et les 33 de Nouvelle-Caledonie demandaient donc un fichier
+       que le decoupage n'ecrivait pas — 404, et une phrase accusant le reseau du
+       lecteur d'une faute de notre chaine. Deux endroits derivaient un code de
+       departement ; il n'y en a plus qu'un qui fasse foi, et une assertion plus
+       bas verifie que les deux ensembles coincident."""
+    if insee[:2] in ("97", "98"):
         return insee[:3]
     return insee[:2]
 
@@ -140,17 +147,31 @@ for d in depts:
     tailles[d] = len(brut.encode())
 
 # ------------------------------------------------------------------------- OFGL
+# `exercices` et `source` decrivent l'ECHELON, pas une commune : ils restent au
+# socle. Sans eux, `ofglDernierEchelon("ville")` rendrait null et l'application ne
+# pourrait plus dire « 2025 n'est pas encore la pour cette commune ».
+_com = OFGL["ech"].get("commune", {})
 ofgl_socle = {"v": OFGL.get("v"), "meta": OFGL.get("meta"),
+              "commune": {"exercices": _com.get("exercices"), "source": _com.get("source")},
               "departement": OFGL["ech"].get("departement"),
               "region": OFGL["ech"].get("region")}
 ofgl_brut = json.dumps(ofgl_socle, ensure_ascii=False, separators=(",", ":"))
 io.open(os.path.join(SORTIE, "ofgl", "socle.json"), "w", encoding="utf-8").write(ofgl_brut)
 
-com_ofgl = OFGL["ech"].get("commune", {})
+# `ech.commune` porte {terr, exercices, source} — les communes sont sous « terr ».
+# Iterer sur ech.commune lui-meme produisait trois cles ("terr", "exercices",
+# "source") dont aucune n'est un code INSEE : les 103 fichiers sortaient vides.
+com_ofgl = OFGL["ech"].get("commune", {}).get("terr", {})
+assert isinstance(com_ofgl, dict) and len(com_ofgl) > 30000, \
+    "ech.commune.terr ne porte que %d entrees — la forme du bloc OFGL a change" % len(com_ofgl)
 tailles_ofgl = {}
 for d in depts:
     sous = {c: v for c, v in com_ofgl.items() if departement(c) == d}
-    brut = json.dumps({"d": d, "commune": sous}, ensure_ascii=False, separators=(",", ":"))
+    # La forme rendue doit etre celle que `ofglTerr()` lit dans l'application :
+    # window.REPERE_OFGL.ech.commune.terr[code]. On rend donc un sous-arbre « terr »,
+    # pas un dictionnaire nu — sinon la fusion devrait deviner ou le ranger.
+    brut = json.dumps({"d": d, "commune": {"terr": sous}},
+                      ensure_ascii=False, separators=(",", ":"))
     io.open(os.path.join(SORTIE, "ofgl", "%s.json" % d), "w", encoding="utf-8").write(brut)
     tailles_ofgl[d] = len(brut.encode())
 
@@ -171,6 +192,24 @@ assert obtenu == attendu, "la reindexation a casse un nom : %r vs %r" % (obtenu,
 total_com = sum(len(json.loads(io.open(os.path.join(SORTIE, "rne", "%s.json" % d),
                 encoding="utf-8").read()).get("com", {})) for d in depts)
 assert total_com == len(RNE["com"]), "%d communes reparties sur %d" % (total_com, len(RNE["com"]))
+
+# CONTROLE INDEPENDANT DU COTE OFGL — son absence est la cause du defaut corrige
+# le 25 aout : le cote RNE en portait un, le cote OFGL n'en portait aucun, et les
+# 103 fichiers sont sortis vides pendant des jours sans que rien ne le dise.
+total_ofgl = 0
+for d in depts:
+    r = json.loads(io.open(os.path.join(SORTIE, "ofgl", "%s.json" % d), encoding="utf-8").read())
+    total_ofgl += len(r["commune"]["terr"])
+assert total_ofgl == len(com_ofgl), \
+    "%d communes OFGL reparties sur %d attendues" % (total_ofgl, len(com_ofgl))
+assert total_ofgl > 30000, "seulement %d communes OFGL ecrites" % total_ofgl
+
+# Les deux regles de derivation du code de departement doivent donner le MEME
+# ensemble. Sans cette egalite, un territoire a statut particulier ajoute demain
+# rouvrira exactement le trou des 65 communes du Pacifique.
+depts_rne = sorted({departement(c) for c in RNE["cl"]})
+assert depts_rne == sorted(depts), \
+    "desaccord sur les departements : %r" % (set(depts_rne) ^ set(depts))
 
 paquets = sorted((tailles[d] + tailles_ofgl[d], d) for d in depts)
 avant = os.path.getsize(SOURCE)
