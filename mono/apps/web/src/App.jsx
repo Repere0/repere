@@ -85,7 +85,7 @@ export default function App() {
              dans une assertion. Une fois le departement choisi, la liste se replie
              sur une seule ligne : ce que le lecteur est venu voir passe devant le
              moyen d'y arriver. Le details reste ouvert tant que rien n'est choisi. */
-          <details className="choix" open={!departement}>
+          <details className="choix" open>
             <summary>
               {departement
                 ? <>Département <b>{departement}</b> — changer</>

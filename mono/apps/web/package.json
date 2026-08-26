@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build && node ../../scripts/empreinte-sw.mjs dist",
+    "build": "vite build && xcopy /E /I /Y ..\\..\\data dist\\data > nul && node ../../scripts/empreinte-sw.mjs dist",
     "preview": "vite preview --port 4173"
   },
   "dependencies": {
