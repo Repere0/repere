@@ -1,25 +1,24 @@
-$ErrorActionPreference = "Continue"
+﻿$ErrorActionPreference = "Continue"
 
 $ROOT = "C:\Users\APina\repere\mono"
-$LOG = "$ROOT\orchestrator\logs"
+$LOG  = "$ROOT\orchestrator\logs"
 
 Set-Location $ROOT
 New-Item -ItemType Directory -Force $LOG | Out-Null
 
-Write-Host ""
-Write-Host "========================================" -ForegroundColor Cyan
-Write-Host " REPERÉ - ORCHESTRATEUR" -ForegroundColor Cyan
-Write-Host "========================================" -ForegroundColor Cyan
-Write-Host "Projet : $ROOT"
-Write-Host ""
+function Header($text) {
+    Write-Host ""
+    Write-Host "========================================" -ForegroundColor Cyan
+    Write-Host " $text" -ForegroundColor Cyan
+    Write-Host "========================================" -ForegroundColor Cyan
+}
 
 $prompt = @"
-Tu travailles sur le projet Repère.
+Projet Repère.
 
-Objectif :
-rendre Repère viable pour un banc de test en décembre 2026.
+Objectif : rendre le projet viable pour un banc de test en décembre 2026.
 
-Inspecte le dépôt avant toute modification.
+Travaille de façon autonome.
 
 Priorités :
 1. architecture
@@ -34,110 +33,114 @@ Priorités :
 10. préparation startup
 
 Règles :
-- mesure avant de conclure ;
-- préserve l'existant ;
-- ne fais aucune modification destructive ;
-- ne change pas l'architecture critique sans justification ;
-- les décisions critiques doivent être signalées ;
-- améliore directement ce qui est sûr et local ;
-- lance les tests après modification ;
-- documente les changements.
+- inspecter avant de modifier ;
+- mesurer avant de conclure ;
+- préserver l'existant ;
+- aucune modification destructive ;
+- ne pas changer une architecture critique sans justification ;
+- améliorer directement ce qui est sûr ;
+- lancer les tests après modification ;
+- documenter les changements.
 
-Travaille de façon autonome sur les problèmes prioritaires.
+Commence par les problèmes les plus importants et laisse le dépôt dans un état fonctionnel.
 "@
 
-# --------------------------------------------------
+# ========================================
 # CODEX
-# --------------------------------------------------
+# ========================================
 
-Write-Host ""
-Write-Host "========================================" -ForegroundColor Cyan
-Write-Host " CODEX" -ForegroundColor Cyan
-Write-Host "========================================" -ForegroundColor Cyan
+Header "CODEX"
 
 $codexLog = "$LOG\codex.log"
 
-& codex.cmd exec --sandbox workspace-write $prompt 2>&1 |
-    Out-File -FilePath $codexLog -Encoding utf8
+Write-Host "Lancement de Codex..."
+Write-Host "Log : $codexLog"
+Write-Host ""
+
+cmd /c "codex.cmd exec --sandbox workspace-write -- `"$prompt`"" 2>&1 |
+    Tee-Object -FilePath $codexLog
 
 $codexExit = $LASTEXITCODE
 
-Write-Host ""
 if ($codexExit -eq 0) {
+    Write-Host ""
     Write-Host "CODEX : OK" -ForegroundColor Green
 } else {
+    Write-Host ""
     Write-Host "CODEX : ECHEC ($codexExit)" -ForegroundColor Red
-    Write-Host "Log : $codexLog"
 }
 
-# --------------------------------------------------
+# ========================================
 # CLAUDE
-# --------------------------------------------------
+# ========================================
 
-Write-Host ""
-Write-Host "========================================" -ForegroundColor Cyan
-Write-Host " CLAUDE" -ForegroundColor Cyan
-Write-Host "========================================" -ForegroundColor Cyan
+Header "CLAUDE"
 
 $claudeLog = "$LOG\claude.log"
 
-& claude.cmd -p $prompt 2>&1 |
-    Out-File -FilePath $claudeLog -Encoding utf8
+Write-Host "Lancement de Claude..."
+Write-Host "Log : $claudeLog"
+Write-Host ""
+
+cmd /c "claude.cmd -p `"$prompt`"" 2>&1 |
+    Tee-Object -FilePath $claudeLog
 
 $claudeExit = $LASTEXITCODE
 
-Write-Host ""
 if ($claudeExit -eq 0) {
+    Write-Host ""
     Write-Host "CLAUDE : OK" -ForegroundColor Green
 } else {
+    Write-Host ""
     Write-Host "CLAUDE : ECHEC ($claudeExit)" -ForegroundColor Red
-    Write-Host "Log : $claudeLog"
 }
 
-# --------------------------------------------------
+# ========================================
 # BUILD
-# --------------------------------------------------
+# ========================================
 
-Write-Host ""
-Write-Host "========================================" -ForegroundColor Cyan
-Write-Host " BUILD" -ForegroundColor Cyan
-Write-Host "========================================" -ForegroundColor Cyan
+Header "BUILD"
 
 $buildLog = "$LOG\build.log"
 
-pnpm.cmd build 2>&1 |
-    Out-File -FilePath $buildLog -Encoding utf8
+Write-Host "Lancement du build..."
+Write-Host ""
+
+cmd /c "pnpm.cmd build" 2>&1 |
+    Tee-Object -FilePath $buildLog
 
 $buildExit = $LASTEXITCODE
 
-Write-Host ""
 if ($buildExit -eq 0) {
+    Write-Host ""
     Write-Host "BUILD : OK" -ForegroundColor Green
 } else {
+    Write-Host ""
     Write-Host "BUILD : ECHEC ($buildExit)" -ForegroundColor Red
 }
 
-# --------------------------------------------------
-# SUMMARY
-# --------------------------------------------------
+# ========================================
+# RESULTAT
+# ========================================
+
+Header "RESULTAT"
 
 Write-Host ""
-Write-Host "========================================" -ForegroundColor Cyan
-Write-Host " FIN" -ForegroundColor Cyan
-Write-Host "========================================" -ForegroundColor Cyan
-
+Write-Host "Codex  : $codexExit"
+Write-Host "Claude : $claudeExit"
+Write-Host "Build  : $buildExit"
 Write-Host ""
-Write-Host "Logs :" -ForegroundColor Yellow
+
+Write-Host "Logs :"
 Write-Host "  $codexLog"
 Write-Host "  $claudeLog"
 Write-Host "  $buildLog"
-
 Write-Host ""
 
 if ($codexExit -eq 0 -and $claudeExit -eq 0 -and $buildExit -eq 0) {
     Write-Host "TOUT EST OK." -ForegroundColor Green
-} else {
-    Write-Host "ATTENTION : au moins une étape a échoué." -ForegroundColor Red
+    exit 0
 }
 
-Write-Host ""
+Write-Host "ATTENTION : une ou plusieurs étapes ont échoué." -ForegroundColor Red
+exit 1
