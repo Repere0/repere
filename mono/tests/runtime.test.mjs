@@ -91,8 +91,13 @@ await page.goto(base, { waitUntil: "networkidle" });
 await page.waitForTimeout(1500);
 page.off("response", compteur);
 
-verif("poids — le premier ecran reste sous 400 Ko", poids <= 400 * 1024,
+/* LE PLAFOND A ETE ABAISSE DE 400 A 120 Ko. Il etait fixe quand le socle React
+   pesait a lui seul 142 Ko ; il ne mesurait donc plus rien. Mesure du jour, socle
+   preact et noms des territoires compris : 57 Ko. Le plafond laisse de la marge
+   sans laisser passer un retour en arriere. */
+verif("poids — le premier ecran reste sous 120 Ko", poids <= 120 * 1024,
   Math.round(poids / 1024) + " Ko transferes avant le choix d'un departement");
+console.log("        (mesure : " + Math.round(poids / 1024) + " Ko)");
 
 /* INVARIANT 2 : aucune adresse ne porte un code de commune. Mesure sur ce qui a
    REELLEMENT ete demande, pas sur ce que le code compose. */
@@ -109,7 +114,23 @@ verif("invariant 2 — rien n'est ecrit sur l'appareil avant un geste du lecteur
   JSON.stringify(stockage));
 
 console.log("\n--- parcours -------------------------------------------------");
-await page.getByRole("button", { name: "64", exact: true }).click();
+/* Le choix du departement se fait par NOM ou par numero : la pastille porte les
+   deux. On la designe par le numero en tete, et on verifie au passage que le nom
+   officiel est bien affiche — sans lui, il fallait savoir que sa commune est
+   « dans le 64 » pour entrer dans le produit. */
+const listeDept = await page.evaluate(() => document.querySelector(".liste-dept").innerText);
+verif("rendu — les departements portent leur nom, pas seulement leur numero",
+  /Pyrénées-Atlantiques/.test(listeDept) && /Ain/.test(listeDept),
+  listeDept.slice(0, 120).replace(/\n+/g, " / "));
+/* Recherche par nom, sans accents : personne ne tape « Pyrénées » au clavier. */
+await page.getByLabel(/Votre département/).fill("pyrenees at");
+await page.waitForTimeout(300);
+const filtre = await page.evaluate(() => document.querySelector(".liste-dept").innerText);
+verif("recherche — un departement se trouve par son nom, sans accents",
+  /Pyrénées-Atlantiques/.test(filtre) && !/Ain\b/.test(filtre),
+  filtre.slice(0, 120).replace(/\n+/g, " / "));
+
+await page.getByRole("button", { name: /^64\b/ }).click();
 await page.waitForTimeout(1800);
 
 const apres = await page.evaluate(() => ({
@@ -123,7 +144,7 @@ verif("invariant 2 — une seule cle, nommee, et elle ne porte qu'un departement
   JSON.stringify(apres));
 verif("invariant 2 — sessionStorage reste vide", apres.session.length === 0, apres.session.join(","));
 
-await page.getByRole("searchbox").first().fill("Ustaritz");
+await page.getByLabel(/Votre commune/).fill("Ustaritz");
 await page.waitForTimeout(400);
 await page.getByRole("button", { name: "Ustaritz", exact: true }).click();
 await page.waitForTimeout(700);
@@ -226,6 +247,57 @@ const petites = await page.evaluate(() =>
 verif("accessibilite — toute cible tactile mesure au moins 44 px",
   petites.length === 0, petites.slice(0, 4).map(p => p.t + " (" + p.h + "px)").join(" | "));
 
+console.log("\n--- theme sombre ---------------------------------------------");
+/* LE THEME SOMBRE EST UN VRAI RENDU, PAS UNE VARIANTE. Mesure : le titre « A
+   l'Assemblee nationale » y avait un rapport de contraste de 1,02 sur le fond de
+   sa carte — invisible. Aucun controle ne regardait le theme sombre. */
+const ctxSombre = await nav.newContext({ viewport: { width: 390, height: 844 }, colorScheme: "dark" });
+const pageSombre = await ctxSombre.newPage();
+const erreursSombre = [];
+pageSombre.on("pageerror", e => erreursSombre.push(e.message));
+await pageSombre.goto(base, { waitUntil: "networkidle" });
+await pageSombre.waitForTimeout(1000);
+await pageSombre.getByRole("button", { name: /^64\b/ }).click();
+await pageSombre.waitForTimeout(1600);
+await pageSombre.getByLabel(/Votre commune/).fill("Ustaritz");
+await pageSombre.waitForTimeout(300);
+await pageSombre.getByRole("button", { name: "Ustaritz", exact: true }).click();
+await pageSombre.waitForTimeout(600);
+await pageSombre.getByRole("button", { name: "Sources" }).click();
+await pageSombre.waitForTimeout(800);
+
+const contrastes = await pageSombre.evaluate(() => {
+  const rgb = t => (t.match(/\d+(\.\d+)?/g) || []).slice(0, 3).map(Number);
+  const lum = c => {
+    const v = c.map(x => x / 255).map(x => x <= 0.03928 ? x / 12.92 : Math.pow((x + 0.055) / 1.055, 2.4));
+    return 0.2126 * v[0] + 0.7152 * v[1] + 0.0722 * v[2];
+  };
+  const fond = e => {
+    for (let n = e; n; n = n.parentElement) {
+      const c = getComputedStyle(n).backgroundColor;
+      const p = rgb(c);
+      if (p.length === 3 && !/rgba\(0, 0, 0, 0\)|transparent/.test(c)) return p;
+    }
+    return [255, 255, 255];
+  };
+  const rapport = (a, b) => {
+    const [x, y] = [lum(a), lum(b)].sort((p, q) => q - p);
+    return (x + 0.05) / (y + 0.05);
+  };
+  return [...document.querySelectorAll(".carte h2, .tuile-v, .carte-s, .ligne-h b, .tag")].map(e => ({
+    quoi: e.className || e.tagName, texte: (e.innerText || "").slice(0, 28),
+    r: Math.round(rapport(rgb(getComputedStyle(e).color), fond(e)) * 100) / 100,
+  }));
+});
+const troppeu = contrastes.filter(c => c.r < 3);
+verif("accessibilite — en theme sombre, aucun texte sous 3:1 de contraste",
+  troppeu.length === 0,
+  troppeu.map(c => `${c.texte} = ${c.r}:1`).join(" | "));
+verif("accessibilite — la mesure de contraste porte bien sur quelque chose",
+  contrastes.length >= 5, contrastes.length + " element(s) mesure(s)");
+verif("theme sombre — aucune erreur JavaScript", erreursSombre.length === 0, erreursSombre.join(" | "));
+await ctxSombre.close();
+
 console.log("\n--- hors ligne -----------------------------------------------");
 const sw = await page.evaluate(async () => {
   const r = await navigator.serviceWorker.getRegistration();
@@ -289,7 +361,7 @@ verif("invariant 5 — hors ligne, aucun message d'echec au-dessus de donnees pr
    ne pas proposer « Reessayer » a quelqu'un qui n'a pas de reseau. */
 await page.locator(".choix > summary").click();
 await page.waitForTimeout(300);
-await page.getByRole("button", { name: "12", exact: true }).click();
+await page.getByRole("button", { name: /^12\b/ }).click();
 await page.waitForTimeout(1200);
 const jamaisVu = await page.evaluate(() => ({
   texte: document.body.innerText,

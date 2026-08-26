@@ -23,7 +23,12 @@ const RACINE = path.resolve(import.meta.dirname, "..");
 const lire = p => fs.readFileSync(path.join(RACINE, p), "utf8");
 const existe = p => fs.existsSync(path.join(RACINE, p));
 
-/* Le code écrit à la main, hors données engendrées et hors dépendances. */
+/* Le code écrit à la main, hors données engendrées et hors dépendances.
+ *
+ * LE BALAYAGE NE LISAIT QUE .js .jsx .mjs .css. Le document HTML et le manifeste
+ * de la PWA y echappaient donc entierement — et ils portaient une couleur
+ * absente de la palette gelee, portee par `theme-color`, que le controle de
+ * l'invariant 7 ne pouvait pas voir. Un fichier non lu est un fichier non garde. */
 function sourcesEcrites() {
   const out = [];
   const marche = d => {
@@ -32,7 +37,7 @@ function sourcesEcrites() {
       if (e.isDirectory()) {
         if (["node_modules", "dist", ".git", "data", ".turbo"].includes(e.name)) continue;
         marche(rel);
-      } else if (/\.(js|jsx|mjs|css)$/.test(e.name)) out.push(rel);
+      } else if (/\.(js|jsx|mjs|css|html|svg|webmanifest)$/.test(e.name)) out.push(rel);
     }
   };
   marche(".");
@@ -131,6 +136,31 @@ test("invariant 7 — palette gelée, et aucune couleur hors palette", () => {
     }
   }
   assert.ok(controlees > 5, "trop peu de couleurs controlees : le test ne mesure rien");
+  /* La liste balayee doit contenir le document et le manifeste : c'est la ou la
+     couleur hors palette s'etait glissee. */
+  const balayes = sourcesEcrites();
+  for (const f of ["apps/web/index.html", "apps/web/public/manifest.webmanifest"]) {
+    assert.ok(balayes.includes(f), `${f} n'est pas relu par le controle de la palette`);
+  }
+});
+
+test("PWA — le manifeste declare des icones, et elles existent", () => {
+  /* Un manifeste sans icone n'est pas installable : le navigateur ne propose
+     rien, et la PWA « sur le telephone » n'existe pas. Le champ etait un tableau
+     vide. */
+  const m = JSON.parse(lire("apps/web/public/manifest.webmanifest"));
+  assert.ok(Array.isArray(m.icons) && m.icons.length >= 2,
+    "le manifeste ne declare pas assez d'icones pour etre installable");
+  assert.ok(m.icons.some(i => /512/.test(i.sizes || "")), "aucune icone de 512 px");
+  assert.ok(m.icons.some(i => i.purpose === "maskable"), "aucune icone masquable");
+  for (const i of m.icons) {
+    assert.ok(existe(path.join("apps/web/public", i.src.replace(/^\//, ""))),
+      `le manifeste declare ${i.src}, qui n'existe pas`);
+  }
+  const doc = lire("apps/web/index.html");
+  assert.ok(/rel="icon"/.test(doc), "aucune icone d'onglet : chaque ouverture demande un /favicon.ico inexistant");
+  assert.equal(m.theme_color, JSON.parse('"#0e7490"'),
+    "la couleur du manifeste doit etre un echelon gele");
 });
 
 /* TOUS les JSON produits, pas seulement ceux de data/departments. La garde ne
@@ -237,6 +267,32 @@ test("architecture — le build ne dépend d'aucune commande propre à un systè
   }
 });
 
+test("territoires — chaque département publié porte son nom officiel et sa source", () => {
+  /* Le fichier d'origine ne connait que les codes. Un premier ecran qui n'affiche
+     que des numeros demande au lecteur de savoir que sa commune est « dans le
+     64 » — un savoir de plaque d'immatriculation. Les noms viennent de fichiers
+     officiels releves une fois ; ils doivent couvrir TOUS les codes produits,
+     sinon le premier ecran redevient muet pour ceux qui manquent. */
+  const noms = JSON.parse(lire("scripts/noms-territoires.json"));
+  assert.ok(Array.isArray(noms.sources) && noms.sources.length >= 1, "le fichier de noms ne declare aucune source");
+  for (const src of noms.sources) {
+    for (const champ of ["producteur", "licence", "url", "releve_le"]) {
+      assert.ok(src[champ], `une source des noms de territoires n'a pas de ${champ}`);
+    }
+  }
+  if (!existe("data/index.json")) return;
+  const index = JSON.parse(lire("data/index.json"));
+  const sansNom = index.departements.filter(d => !d.nom).map(d => d.code);
+  assert.deepEqual(sansNom, [],
+    "des territoires publies n'ont pas de nom : " + sansNom.join(", "));
+  assert.ok(Array.isArray(index.sources.territoires) && index.sources.territoires.length >= 1,
+    "index.json affiche des noms sans declarer d'ou ils viennent");
+  /* Le nom affiche est du texte francais : il porte ses accents. */
+  const fautifs = index.departements.filter(d =>
+    MOTS_A_ACCENTS.some(m => new RegExp("(?:^|[^A-Za-zÀ-ÿ./-])" + m + "(?![A-Za-zÀ-ÿ./-])").test(d.nom)));
+  assert.deepEqual(fautifs.map(d => d.nom), [], "un nom de territoire s'affiche sans accents");
+});
+
 test("invariant 4 — le composant Source existe et sait annoncer un calcul", () => {
   const s = lire("packages/ui/src/composants.jsx");
   assert.ok(/export function Source/.test(s), "aucun composant Source");
@@ -277,6 +333,30 @@ test("invariant 1 — le service worker sépare la coquille des données", () =>
   assert.ok(sw.includes("estDocument"), "aucun controle de type sur les documents mis en cache");
   assert.ok(/n\.startsWith\("repere-coquille-"\)/.test(sw),
     "l'activation efface autre chose que les anciennes coquilles");
+});
+
+test("architecture — le socle de rendu est preact, et l'alias est complet", () => {
+  /* Repere n'utilise de React que createRoot, StrictMode, lazy, Suspense et les
+     hooks : preact/compat les implemente, pour 20 Ko au lieu de 142. Le socle
+     pesait 82 % du premier ecran d'un produit dont l'argument est de peser peu.
+     Rien n'est reecrit dans l'application — seul l'alias change. Un alias
+     incomplet ferait revenir un vrai React dans le paquet, sans bruit. */
+  const conf = lire("apps/web/vite.config.js");
+  for (const attendu of ["react/jsx-dev-runtime", "react/jsx-runtime", "react-dom/client", "react-dom", "react"]) {
+    const motif = "/^" + attendu.split("/").join("\\/") + "$/";
+    assert.ok(conf.includes(motif),
+      `l'alias de « ${attendu} » manque (${motif}) : ce module reviendrait au vrai React`);
+  }
+  const pkg = JSON.parse(lire("apps/web/package.json"));
+  assert.ok(pkg.dependencies.preact, "apps/web ne declare pas preact");
+  /* Le socle produit doit rester petit : la mesure, pas l'intention. */
+  const assets = path.join(RACINE, "apps/web/dist/assets");
+  if (!fs.existsSync(assets)) return;
+  const socle = fs.readdirSync(assets).find(f => /^socle-.*\.js$/.test(f));
+  assert.ok(socle, "aucun morceau « socle » dans le build");
+  const octets = fs.statSync(path.join(assets, socle)).size;
+  assert.ok(octets < 60 * 1024,
+    `le socle pese ${Math.round(octets / 1024)} Ko : un vrai React est revenu dans le paquet`);
 });
 
 test("architecture — une seule fabrique d'adresses dans tout le produit", () => {

@@ -44,6 +44,11 @@
     --trait: #33302a;
     --voile: #24211c;
     --ombre: 0 1px 2px rgba(0,0,0,.45), 0 10px 28px -18px rgba(0,0,0,.85);
+    /* L'echelon « france » n'est pas une couleur : c'est l'encre du produit
+       (#1d1d1f, amplitude 2). En theme sombre l'encre change de bord, et lui
+       avec — sinon le filet des cartes nationales disparaissait dans le fond.
+       Ce n'est pas un degel : c'est le meme neutre, du bon cote. */
+    --e-france: #ede9e0;
   }
 }
 :root[data-theme="dark"] {
@@ -54,6 +59,7 @@
   --trait: #33302a;
   --voile: #24211c;
   --ombre: 0 1px 2px rgba(0,0,0,.45), 0 10px 28px -18px rgba(0,0,0,.85);
+  --e-france: #ede9e0;
 }
 
 * { box-sizing: border-box; }

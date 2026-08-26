@@ -26,12 +26,20 @@ export function Chargement({ titre, corps }) {
   );
 }
 
+/* L'ECHELON EST POSE COMME VARIABLE, PAS COMME COULEUR DE TEXTE.
+ *
+ * Le titre portait `style={{ color: var(--e-echelon) }}` en ligne, donc la meme
+ * couleur dans les deux themes. Mesure en theme sombre, sur fond de carte :
+ * l'echelon « france » (#1d1d1f, un quasi-noir) donnait un rapport de contraste
+ * de 1,02 — le titre « A l'Assemblee nationale » etait litteralement invisible ;
+ * « region » tombait a 2,42. Un style en ligne ne peut pas repondre au theme :
+ * on passe donc l'echelon en variable CSS, et la feuille decide. */
 export function Carte({ echelon = "ville", titre, sousTitre, tag, children }) {
   return (
-    <section className="carte" style={{ borderLeftColor: `var(--e-${echelon})` }}>
+    <section className="carte" style={{ "--e": `var(--e-${echelon})` }}>
       <header className="carte-h">
         <div>
-          <h2 style={{ color: `var(--e-${echelon})` }}>{titre}</h2>
+          <h2>{titre}</h2>
           {sousTitre ? <p className="carte-s">{sousTitre}</p> : null}
         </div>
         {tag ? <span className="tag">{tag}</span> : null}
@@ -45,16 +53,20 @@ export function Tuile({ k, v, n, echelon }) {
   return (
     <div className="tuile">
       <span className="tuile-k">{k}</span>
-      <span className="tuile-v" style={echelon ? { color: `var(--e-${echelon})` } : undefined}>{v}</span>
+      <span className="tuile-v" style={echelon ? { "--e": `var(--e-${echelon})` } : undefined}>{v}</span>
       {n ? <span className="tuile-n">{n}</span> : null}
     </div>
   );
 }
 
-export function Puce({ actif, echelon = "ville", onClick, children }) {
+/* `onSurvol` porte sur le BOUTON, pas sur un <span> a l'interieur : un span n'est
+   pas focusable, donc l'appel a onFocus qui y etait pose ne se declenchait jamais.
+   Le prechargement au survol existait pour la souris et pour elle seule. */
+export function Puce({ actif, echelon = "ville", onClick, onSurvol, children }) {
   return (
     <button type="button" className={"puce" + (actif ? " actif" : "")}
-      aria-pressed={actif} onClick={onClick}>
+      aria-pressed={actif} onClick={onClick}
+      onMouseEnter={onSurvol} onFocus={onSurvol}>
       <span className="pastille" style={{ background: `var(--e-${echelon})` }} aria-hidden="true" />
       {children}
     </button>
@@ -87,7 +99,7 @@ export function BarreEchelon({ libelle, valeur, maximum, unite = "€", echelon 
 /* INVARIANT 4 : aucun chiffre ne s'affiche sans ce composant à côté. */
 /* « mise a jour du 2026-07-29 » est une date de machine. Vu sur une capture : un
    ecran qui explique des comptes publics ne peut pas ecrire ses dates en ISO. */
-function dateFr(v) {
+export function dateFr(v) {
   const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(v || ""));
   if (!m) return v;
   const mois = ["janvier", "février", "mars", "avril", "mai", "juin", "juillet",

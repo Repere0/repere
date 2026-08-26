@@ -31,6 +31,82 @@ function ecrireDepartement(d) {
   try { d ? localStorage.setItem(CLE, d) : localStorage.removeItem(CLE); } catch { /* mode privé */ }
 }
 
+/* Comparer « Pyrenees at » et « Pyrénées-Atlantiques » : au clavier, personne ne
+   tape les accents, et le trait d'union se tape en espace une fois sur deux. On
+   ramene donc tout a des mots nus, et on demande que chaque mot cherche soit le
+   debut d'un mot du territoire — « cotes armor », « val doise », « 64 ». */
+function mots(t) {
+  return String(t || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase().replace(/[^a-z0-9]+/g, " ").trim().split(" ").filter(Boolean);
+}
+/* L'apostrophe se tape rarement : « val doise » doit trouver Val-d'Oise, et
+   « cote dor » la Cote-d'Or. On indexe donc aussi la forme sans apostrophe, ou
+   « d'Oise » devient un seul mot. */
+function motsCible(t) {
+  return [...new Set([...mots(t), ...mots(String(t || "").replace(/['\u2019]/g, ""))])];
+}
+function correspond(cherches, cible) {
+  return cherches.every(m => cible.some(w => w.startsWith(m)));
+}
+
+/* LE DEPARTEMENT SE CHERCHE PAR SON NOM, PAS SEULEMENT PAR SON NUMERO.
+ *
+ * L'ecran d'accueil affichait cent quatre numeros et rien d'autre. Il fallait
+ * savoir que sa commune est « dans le 64 » pour entrer dans le produit — un
+ * savoir de plaque d'immatriculation, que tout le monde n'a pas. Les noms
+ * viennent des fichiers officiels (voir scripts/noms-territoires.json) et sont
+ * fondus dans index.json : aucune requete de plus. */
+function ChoixDepartement({ index, departement, onOuvrir, onSurvol }) {
+  const [filtre, setFiltre] = useState("");
+  const cherches = mots(filtre);
+  const choisi = index.departements.find(d => d.code === departement);
+  const vus = cherches.length
+    ? index.departements.filter(d => correspond(cherches, motsCible(d.code + " " + (d.nom || ""))))
+    : index.departements;
+
+  return (
+    <details className="choix" open={!departement}>
+      {/* Un seul element de flexbox pour tout l'intitule : sans ce span, chaque
+          fragment de texte devenait un element a part et la ligne se cassait
+          n'importe ou des que le nom du departement s'y ajoutait. */}
+      <summary>
+        <span className="choix-libelle">
+          {departement
+            ? <>Département <b>{departement}</b>{choisi && choisi.nom ? " · " + choisi.nom : ""}<span className="choix-action"> — changer</span></>
+            : <>Choisir un département <span className="note">({index.departements.length} publiés)</span></>}
+        </span>
+      </summary>
+      <div className="dedans-choix">
+        <label className="champ">
+          <span>Votre département — son nom ou son numéro</span>
+          <input type="search" value={filtre} placeholder="Pyrénées, 64, Nord…"
+            autoComplete="off" onChange={e => setFiltre(e.target.value)} />
+        </label>
+        {vus.length === 0 ? (
+          <Vide titre={`Aucun département publié ne correspond à « ${filtre.trim()} ».`}
+            corps="Repère publie les 101 départements et trois collectivités d'outre-mer. Essayez le début du nom, ou le numéro." />
+        ) : (
+          <>
+            <div className="rangee liste-dept" role="group" aria-label="Départements publiés">
+              {vus.map(d => (
+                <Puce key={d.code} actif={d.code === departement} echelon="dept"
+                  onClick={() => onOuvrir(d.code)} onSurvol={() => onSurvol(d.code)}>
+                  <span className="puce-code">{d.code}</span>
+                  {d.nom ? <span className="puce-nom">{d.nom}</span> : null}
+                </Puce>
+              ))}
+            </div>
+            <p className="note" role="status" aria-live="polite">
+              {cherches.length ? `${vus.length} territoire${vus.length > 1 ? "s" : ""} correspond${vus.length > 1 ? "ent" : ""}.`
+                 : "Les collectivités d'outre-mer figurent en fin de liste."}
+            </p>
+          </>
+        )}
+      </div>
+    </details>
+  );
+}
+
 /* LA COMMUNE EST CHOISIE UNE FOIS, PAS UNE FOIS PAR ONGLET.
  *
  * Avant, « Qui décide » et « Où va l'argent » portaient chacun leur champ de
@@ -38,7 +114,7 @@ function ecrireDepartement(d) {
  * choix, et les deux écrans pouvaient afficher deux communes différentes en même
  * temps. Le lecteur perdait sa place à chaque va-et-vient. Le choix vit donc
  * ici, au-dessus des onglets, et les écrans le reçoivent. */
-function ChoixCommune({ paquet, commune, onCommune }) {
+function ChoixCommune({ paquet, nomDepartement, commune, onCommune }) {
   const [filtre, setFiltre] = useState("");
   const communes = useMemo(() => Object.entries(paquet.communes), [paquet]);
   const q = filtre.trim().toLowerCase();
@@ -54,7 +130,10 @@ function ChoixCommune({ paquet, commune, onCommune }) {
   return (
     <div className="choix-commune">
       <label className="champ">
-        <span>Votre commune, dans le département {paquet.d}</span>
+        {/* « dans le 64 » se dit, « dans le Pyrenees-Atlantiques » non : ni
+            l'article ni l'elision ne se derivent d'un nom de departement. On
+            juxtapose donc, sans rien accorder. */}
+        <span>Votre commune — département {paquet.d}{nomDepartement ? " · " + nomDepartement : ""}</span>
         <input type="search" value={filtre} placeholder="Tapez les premières lettres — Ustaritz, Bayonne…"
           autoComplete="off" onChange={e => setFiltre(e.target.value)} />
       </label>
@@ -117,6 +196,9 @@ export default function App() {
   useEffect(() => { if (departement) ouvrir(departement); }, []);   // eslint-disable-line
 
   const fiche = paquet && commune ? paquet.communes[commune] : null;
+  const territoire = index && paquet
+    ? index.departements.find(d => d.code === paquet.d) : null;
+  const nomDepartement = territoire ? territoire.nom : null;
 
   return (
     <div className="app">
@@ -137,30 +219,13 @@ export default function App() {
         {etatIndex !== ETATS.SERVI && !index
           ? <Vide {...(PHRASES[etatIndex] || PHRASES[ETATS.ECHEC])} onAction={() => location.reload()} />
           : null}
+        {/* CENT QUATRE PASTILLES REMPLISSAIENT L'ECRAN — vu sur une capture, pas
+            dans une assertion. Une fois le departement choisi, la liste se replie
+            sur une seule ligne : ce que le lecteur est venu voir passe devant le
+            moyen d'y arriver. Le details reste ouvert tant que rien n'est choisi. */}
         {index ? (
-          /* CENT QUATRE PASTILLES REMPLISSAIENT L'ECRAN — vu sur une capture, pas
-             dans une assertion. Une fois le departement choisi, la liste se replie
-             sur une seule ligne : ce que le lecteur est venu voir passe devant le
-             moyen d'y arriver. Le details reste ouvert tant que rien n'est choisi. */
-          <details className="choix" open={!departement}>
-            <summary>
-              {departement
-                ? <>Département <b>{departement}</b> — changer</>
-                : <>Choisir un département <span className="note">({index.departements.length} publiés)</span></>}
-            </summary>
-            <p className="note note-choix">
-              Les départements sont désignés par leur numéro, comme sur une plaque d'immatriculation.
-            </p>
-            <div className="rangee liste-dept">
-              {index.departements.map(d => (
-                <Puce key={d.code} actif={d.code === departement} echelon="dept"
-                  onClick={() => ouvrir(d.code)}>
-                  <span onMouseEnter={() => prechargerDepartement(d.code)}
-                        onFocus={() => prechargerDepartement(d.code)}>{d.code}</span>
-                </Puce>
-              ))}
-            </div>
-          </details>
+          <ChoixDepartement index={index} departement={departement}
+            onOuvrir={ouvrir} onSurvol={prechargerDepartement} />
         ) : null}
       </nav>
 
@@ -173,43 +238,47 @@ export default function App() {
 
           {etat === ETATS.SERVI && paquet ? (
             <>
-              <ChoixCommune paquet={paquet} commune={commune} onCommune={setCommune} />
+              <ChoixCommune paquet={paquet} nomDepartement={nomDepartement}
+                commune={commune} onCommune={setCommune} />
 
+              {/* JE SUIS OÙ. Une seule ligne, toujours au même endroit, qui ne
+                  bouge plus quand on change d'onglet. */}
               {fiche ? (
-                <>
-                  {/* JE SUIS OÙ. Une seule ligne, toujours au même endroit, qui ne
-                      bouge plus quand on change d'onglet. */}
-                  <p className="situe" role="status" aria-live="polite">
-                    <b>{fiche.nom}</b> · département {paquet.d}
-                  </p>
-
-                  <nav className="onglets" aria-label="Ce que vous voulez savoir">
-                    {ONGLETS.map(o => (
-                      <button key={o.id} type="button"
-                        className={"onglet" + (onglet === o.id ? " actif" : "")}
-                        aria-current={onglet === o.id ? "page" : undefined}
-                        onMouseEnter={o.charge} onFocus={o.charge}
-                        onClick={() => { o.charge(); setOnglet(o.id); }}>
-                        {o.libelle}
-                      </button>
-                    ))}
-                  </nav>
-
-                  <main>
-                    <Suspense fallback={<Chargement titre="Ouverture de l'écran."
-                      corps="Le code de cet écran est téléchargé à la demande, une seule fois." />}>
-                      {onglet === "qui" ? <QuiDecide paquet={paquet} index={index} commune={commune} /> : null}
-                      {onglet === "argent" ? <OuVaArgent paquet={paquet} index={index} commune={commune} /> : null}
-                      {onglet === "sources" ? <Sources index={index} paquet={paquet} /> : null}
-                    </Suspense>
-                  </main>
-                </>
-              ) : (
-                <p className="invite">
-                  Choisissez votre commune ci-dessus : Repère affichera ses élus, sa circonscription
-                  et ses comptes.
+                <p className="situe" role="status" aria-live="polite">
+                  <b>{fiche.nom}</b> · {nomDepartement ? nomDepartement + " (" + paquet.d + ")" : "département " + paquet.d}
                 </p>
-              )}
+              ) : null}
+
+              {/* Les onglets apparaissent des que le departement est la. « Sources »
+                  ne parle pas d'une commune : exiger d'en choisir une pour lire
+                  d'ou viennent les donnees rendait le seul ecran de verification du
+                  produit inatteignable tant qu'on n'avait pas fini le parcours. */}
+              <nav className="onglets" aria-label="Ce que vous voulez savoir">
+                {ONGLETS.map(o => (
+                  <button key={o.id} type="button"
+                    className={"onglet" + (onglet === o.id ? " actif" : "")}
+                    aria-current={onglet === o.id ? "page" : undefined}
+                    onMouseEnter={o.charge} onFocus={o.charge}
+                    onClick={() => { o.charge(); setOnglet(o.id); }}>
+                    {o.libelle}
+                  </button>
+                ))}
+              </nav>
+
+              <main>
+                <Suspense fallback={<Chargement titre="Ouverture de l'écran."
+                  corps="Le code de cet écran est téléchargé à la demande, une seule fois." />}>
+                  {onglet === "sources" ? <Sources index={index} paquet={paquet} /> : null}
+                  {onglet !== "sources" && !fiche ? (
+                    <p className="invite">
+                      Choisissez votre commune ci-dessus : Repère affichera ses élus, sa
+                      circonscription et ses comptes.
+                    </p>
+                  ) : null}
+                  {onglet === "qui" && fiche ? <QuiDecide paquet={paquet} index={index} commune={commune} /> : null}
+                  {onglet === "argent" && fiche ? <OuVaArgent paquet={paquet} index={index} commune={commune} /> : null}
+                </Suspense>
+              </main>
             </>
           ) : null}
         </>

@@ -1,1 +1,1 @@
-export { Vide, Carte, Tuile, Puce, Chargement, BarreEchelon, Source } from "./composants.jsx";
+export { Vide, Carte, Tuile, Puce, Chargement, BarreEchelon, Source, dateFr } from "./composants.jsx";

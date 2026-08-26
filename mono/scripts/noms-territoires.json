@@ -1,0 +1,439 @@
+{
+ "v": 1,
+ "quoi": "Noms officiels des départements et des collectivités d'outre-mer, par code INSEE.",
+ "pourquoi": "Le fichier mono-HTML de Repère ne porte pas les noms : il ne connaît que les codes. Sans eux, le premier écran demande au lecteur de savoir que sa commune est dans le 64. Ce fichier est relu par scripts/extract-html.js, jamais par l'application : aucune adresse réseau ne le désigne.",
+ "sources": [
+  {
+   "producteur": "API Découpage administratif (Etalab / DINUM)",
+   "licence": "Licence Ouverte 2.0",
+   "url": "https://geo.api.gouv.fr/departements",
+   "portee": "les 101 départements",
+   "releve_le": "2026-08-26"
+  },
+  {
+   "producteur": "Insee — Codification des collectivités et territoires français d'outre-mer",
+   "licence": "Licence Ouverte 2.0",
+   "url": "https://www.insee.fr/fr/information/7929495",
+   "portee": "975, 987, 988 — collectivités, absentes de l'API des départements",
+   "releve_le": "2026-08-26"
+  }
+ ],
+ "territoires": {
+  "01": {
+   "nom": "Ain",
+   "type": "département"
+  },
+  "02": {
+   "nom": "Aisne",
+   "type": "département"
+  },
+  "03": {
+   "nom": "Allier",
+   "type": "département"
+  },
+  "04": {
+   "nom": "Alpes-de-Haute-Provence",
+   "type": "département"
+  },
+  "05": {
+   "nom": "Hautes-Alpes",
+   "type": "département"
+  },
+  "06": {
+   "nom": "Alpes-Maritimes",
+   "type": "département"
+  },
+  "07": {
+   "nom": "Ardèche",
+   "type": "département"
+  },
+  "08": {
+   "nom": "Ardennes",
+   "type": "département"
+  },
+  "09": {
+   "nom": "Ariège",
+   "type": "département"
+  },
+  "10": {
+   "nom": "Aube",
+   "type": "département"
+  },
+  "11": {
+   "nom": "Aude",
+   "type": "département"
+  },
+  "12": {
+   "nom": "Aveyron",
+   "type": "département"
+  },
+  "13": {
+   "nom": "Bouches-du-Rhône",
+   "type": "département"
+  },
+  "14": {
+   "nom": "Calvados",
+   "type": "département"
+  },
+  "15": {
+   "nom": "Cantal",
+   "type": "département"
+  },
+  "16": {
+   "nom": "Charente",
+   "type": "département"
+  },
+  "17": {
+   "nom": "Charente-Maritime",
+   "type": "département"
+  },
+  "18": {
+   "nom": "Cher",
+   "type": "département"
+  },
+  "19": {
+   "nom": "Corrèze",
+   "type": "département"
+  },
+  "21": {
+   "nom": "Côte-d'Or",
+   "type": "département"
+  },
+  "22": {
+   "nom": "Côtes-d'Armor",
+   "type": "département"
+  },
+  "23": {
+   "nom": "Creuse",
+   "type": "département"
+  },
+  "24": {
+   "nom": "Dordogne",
+   "type": "département"
+  },
+  "25": {
+   "nom": "Doubs",
+   "type": "département"
+  },
+  "26": {
+   "nom": "Drôme",
+   "type": "département"
+  },
+  "27": {
+   "nom": "Eure",
+   "type": "département"
+  },
+  "28": {
+   "nom": "Eure-et-Loir",
+   "type": "département"
+  },
+  "29": {
+   "nom": "Finistère",
+   "type": "département"
+  },
+  "2A": {
+   "nom": "Corse-du-Sud",
+   "type": "département"
+  },
+  "2B": {
+   "nom": "Haute-Corse",
+   "type": "département"
+  },
+  "30": {
+   "nom": "Gard",
+   "type": "département"
+  },
+  "31": {
+   "nom": "Haute-Garonne",
+   "type": "département"
+  },
+  "32": {
+   "nom": "Gers",
+   "type": "département"
+  },
+  "33": {
+   "nom": "Gironde",
+   "type": "département"
+  },
+  "34": {
+   "nom": "Hérault",
+   "type": "département"
+  },
+  "35": {
+   "nom": "Ille-et-Vilaine",
+   "type": "département"
+  },
+  "36": {
+   "nom": "Indre",
+   "type": "département"
+  },
+  "37": {
+   "nom": "Indre-et-Loire",
+   "type": "département"
+  },
+  "38": {
+   "nom": "Isère",
+   "type": "département"
+  },
+  "39": {
+   "nom": "Jura",
+   "type": "département"
+  },
+  "40": {
+   "nom": "Landes",
+   "type": "département"
+  },
+  "41": {
+   "nom": "Loir-et-Cher",
+   "type": "département"
+  },
+  "42": {
+   "nom": "Loire",
+   "type": "département"
+  },
+  "43": {
+   "nom": "Haute-Loire",
+   "type": "département"
+  },
+  "44": {
+   "nom": "Loire-Atlantique",
+   "type": "département"
+  },
+  "45": {
+   "nom": "Loiret",
+   "type": "département"
+  },
+  "46": {
+   "nom": "Lot",
+   "type": "département"
+  },
+  "47": {
+   "nom": "Lot-et-Garonne",
+   "type": "département"
+  },
+  "48": {
+   "nom": "Lozère",
+   "type": "département"
+  },
+  "49": {
+   "nom": "Maine-et-Loire",
+   "type": "département"
+  },
+  "50": {
+   "nom": "Manche",
+   "type": "département"
+  },
+  "51": {
+   "nom": "Marne",
+   "type": "département"
+  },
+  "52": {
+   "nom": "Haute-Marne",
+   "type": "département"
+  },
+  "53": {
+   "nom": "Mayenne",
+   "type": "département"
+  },
+  "54": {
+   "nom": "Meurthe-et-Moselle",
+   "type": "département"
+  },
+  "55": {
+   "nom": "Meuse",
+   "type": "département"
+  },
+  "56": {
+   "nom": "Morbihan",
+   "type": "département"
+  },
+  "57": {
+   "nom": "Moselle",
+   "type": "département"
+  },
+  "58": {
+   "nom": "Nièvre",
+   "type": "département"
+  },
+  "59": {
+   "nom": "Nord",
+   "type": "département"
+  },
+  "60": {
+   "nom": "Oise",
+   "type": "département"
+  },
+  "61": {
+   "nom": "Orne",
+   "type": "département"
+  },
+  "62": {
+   "nom": "Pas-de-Calais",
+   "type": "département"
+  },
+  "63": {
+   "nom": "Puy-de-Dôme",
+   "type": "département"
+  },
+  "64": {
+   "nom": "Pyrénées-Atlantiques",
+   "type": "département"
+  },
+  "65": {
+   "nom": "Hautes-Pyrénées",
+   "type": "département"
+  },
+  "66": {
+   "nom": "Pyrénées-Orientales",
+   "type": "département"
+  },
+  "67": {
+   "nom": "Bas-Rhin",
+   "type": "département"
+  },
+  "68": {
+   "nom": "Haut-Rhin",
+   "type": "département"
+  },
+  "69": {
+   "nom": "Rhône",
+   "type": "département"
+  },
+  "70": {
+   "nom": "Haute-Saône",
+   "type": "département"
+  },
+  "71": {
+   "nom": "Saône-et-Loire",
+   "type": "département"
+  },
+  "72": {
+   "nom": "Sarthe",
+   "type": "département"
+  },
+  "73": {
+   "nom": "Savoie",
+   "type": "département"
+  },
+  "74": {
+   "nom": "Haute-Savoie",
+   "type": "département"
+  },
+  "75": {
+   "nom": "Paris",
+   "type": "département"
+  },
+  "76": {
+   "nom": "Seine-Maritime",
+   "type": "département"
+  },
+  "77": {
+   "nom": "Seine-et-Marne",
+   "type": "département"
+  },
+  "78": {
+   "nom": "Yvelines",
+   "type": "département"
+  },
+  "79": {
+   "nom": "Deux-Sèvres",
+   "type": "département"
+  },
+  "80": {
+   "nom": "Somme",
+   "type": "département"
+  },
+  "81": {
+   "nom": "Tarn",
+   "type": "département"
+  },
+  "82": {
+   "nom": "Tarn-et-Garonne",
+   "type": "département"
+  },
+  "83": {
+   "nom": "Var",
+   "type": "département"
+  },
+  "84": {
+   "nom": "Vaucluse",
+   "type": "département"
+  },
+  "85": {
+   "nom": "Vendée",
+   "type": "département"
+  },
+  "86": {
+   "nom": "Vienne",
+   "type": "département"
+  },
+  "87": {
+   "nom": "Haute-Vienne",
+   "type": "département"
+  },
+  "88": {
+   "nom": "Vosges",
+   "type": "département"
+  },
+  "89": {
+   "nom": "Yonne",
+   "type": "département"
+  },
+  "90": {
+   "nom": "Territoire de Belfort",
+   "type": "département"
+  },
+  "91": {
+   "nom": "Essonne",
+   "type": "département"
+  },
+  "92": {
+   "nom": "Hauts-de-Seine",
+   "type": "département"
+  },
+  "93": {
+   "nom": "Seine-Saint-Denis",
+   "type": "département"
+  },
+  "94": {
+   "nom": "Val-de-Marne",
+   "type": "département"
+  },
+  "95": {
+   "nom": "Val-d'Oise",
+   "type": "département"
+  },
+  "971": {
+   "nom": "Guadeloupe",
+   "type": "département"
+  },
+  "972": {
+   "nom": "Martinique",
+   "type": "département"
+  },
+  "973": {
+   "nom": "Guyane",
+   "type": "département"
+  },
+  "974": {
+   "nom": "La Réunion",
+   "type": "département"
+  },
+  "976": {
+   "nom": "Mayotte",
+   "type": "département"
+  },
+  "975": {
+   "nom": "Saint-Pierre-et-Miquelon",
+   "type": "collectivité d'outre-mer"
+  },
+  "987": {
+   "nom": "Polynésie française",
+   "type": "collectivité d'outre-mer"
+  },
+  "988": {
+   "nom": "Nouvelle-Calédonie",
+   "type": "collectivité d'outre-mer"
+  }
+ }
+}

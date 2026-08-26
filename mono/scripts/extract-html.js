@@ -22,6 +22,24 @@
 import fs from "node:fs";
 import path from "node:path";
 import readline from "node:readline";
+import { fileURLToPath } from "node:url";
+
+/* LES NOMS DES TERRITOIRES NE SONT PAS DANS LE FICHIER D'ORIGINE.
+ *
+ * Il ne connait que les codes. Le premier ecran demandait donc au lecteur de
+ * savoir que sa commune est « dans le 64 ». Les noms viennent d'un fichier
+ * releve une fois aupres de sources officielles (voir scripts/noms-territoires.json,
+ * qui porte ses sources et ses licences) et sont fondus dans index.json : le
+ * build ne touche pas au reseau, et l'application ne demande pas un fichier de
+ * plus. Si le fichier manque, l'extraction continue sans les noms — les codes
+ * seuls restent justes. */
+const ICI = path.dirname(fileURLToPath(import.meta.url));
+function nomsTerritoires() {
+  const f = path.join(ICI, "noms-territoires.json");
+  if (!fs.existsSync(f)) { console.warn("noms-territoires.json absent : index.json n'aura que les codes"); return null; }
+  try { return JSON.parse(fs.readFileSync(f, "utf8")); }
+  catch (e) { console.error("noms-territoires.json illisible : " + e.message); process.exit(6); }
+}
 
 const ENTREE = process.argv[2] || "./input/index.html";
 const SORTIE = process.argv[3] || "./data";
@@ -117,6 +135,7 @@ async function extraire() {
   };
   const reaccentuer = t => String(t || "").replace(/[A-Za-z]+/g, m => ACCENTS[m] || m);
 
+  const noms = nomsTerritoires();
   const meta = {
     v: 1,
     genere_le: new Date().toISOString().slice(0, 10),
@@ -124,6 +143,7 @@ async function extraire() {
       elus: (RNE.meta && { producteur: reaccentuer(RNE.meta.producteur), licence: RNE.meta.licence, maj: RNE.meta.maj }) || null,
       comptes: (OFGL && OFGL.meta && { producteur: reaccentuer(OFGL.meta.producteur), licence: OFGL.meta.licence, maj: OFGL.meta.maj }) || null,
       circonscriptions: (CIRCOS && { producteur: reaccentuer(CIRCOS.source), licence: CIRCOS.licence, decoupage: CIRCOS.decoupage }) || null,
+      territoires: (noms && noms.sources) || null,
     },
     agregats: (OFGL && OFGL.meta && OFGL.meta.agregats) || [],
   };
@@ -135,11 +155,16 @@ async function extraire() {
   }
   const index = {
     ...meta,
-    departements: departements.map(d => ({
-      code: d,
-      communes: Object.keys(paquets.get(d).communes).length,
-      octets: tailles[d],
-    })),
+    departements: departements.map(d => {
+      const t = noms && noms.territoires ? noms.territoires[d] : null;
+      return {
+        code: d,
+        /* Un code sans nom garde le code : on n'invente pas de libelle. */
+        ...(t ? { nom: t.nom, type: t.type } : {}),
+        communes: Object.keys(paquets.get(d).communes).length,
+        octets: tailles[d],
+      };
+    }),
   };
   ecrire(path.join(SORTIE, "index.json"), index);
 
@@ -163,7 +188,10 @@ async function extraire() {
   console.log("departement median    : " + Math.round(median / 1024) + " Ko");
   console.log("le plus lourd         : " + Math.round(octets[octets.length - 1] / 1024) + " Ko");
   console.log("source d'origine      : " + Math.round(fs.statSync(ENTREE).size / 1048576) + " Mo");
+  const sansNom = index.departements.filter(d => !d.nom).map(d => d.code);
   console.log("index.json            : " + Math.round(fs.statSync(path.join(SORTIE, "index.json")).size / 1024) + " Ko");
+  console.log("territoires nommes    : " + (index.departements.length - sansNom.length) + "/" + index.departements.length
+    + (sansNom.length ? "  (sans nom : " + sansNom.join(", ") + ")" : ""));
 }
 
 extraire();

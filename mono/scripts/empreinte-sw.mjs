@@ -10,7 +10,7 @@ import crypto from "node:crypto";
 import path from "node:path";
 
 const dossier = process.argv[2] || "public";
-const fichier = path.join(dossier === "public" ? "public" : dossier, "sw.js");
+const fichier = path.join(dossier, "sw.js");
 if (!fs.existsSync(fichier)) { console.log("sw.js absent de " + dossier + " — rien a faire"); process.exit(0); }
 
 let sw = fs.readFileSync(fichier, "utf8");
@@ -24,7 +24,12 @@ const assets = fs.existsSync(path.join(dossier, "assets"))
       .filter(f => /\.(js|css|woff2?)$/.test(f))
       .map(f => "/assets/" + f)
   : [];
-const aPrecharger = ["/", "/index.html", "/manifest.webmanifest", "/data/index.json", ...assets];
+/* Les icones de la PWA aussi : sans elles, l'application installee affiche un
+   carre vide au premier lancement hors ligne. On ne precharge que celles qui
+   existent reellement dans le build. */
+const icones = ["/icone.svg", "/icone-192.png", "/icone-512.png", "/icone-512-masquable.png"]
+  .filter(f => fs.existsSync(path.join(dossier, f.slice(1))));
+const aPrecharger = ["/", "/index.html", "/manifest.webmanifest", "/data/index.json", ...icones, ...assets];
 const motif = /const A_PRECHARGER = \[[^\]]*\];/;
 if (!motif.test(sw)) { console.error("A_PRECHARGER introuvable dans " + fichier); process.exit(1); }
 sw = sw.replace(motif, "const A_PRECHARGER = " + JSON.stringify(aPrecharger) + ";");
