@@ -2,7 +2,6 @@
 import { Chargement, Vide, Puce } from "@repere/ui";
 import {
 chargerIndex, chargerDepartement, chargerDeputes, prechargerDepartement, ETATS, PHRASES,} from "@repere/data-utils";
-const [deputes, setDeputes] = useState(null);
 /* CHARGEMENT PARESSEUX DES ÉCRANS. Chacun est un module séparé : ouvrir « Qui
    décide » ne télécharge pas le code de « Où va mon argent ». Le socle React est
    dans un morceau à part (voir vite.config.js). */
@@ -35,11 +34,13 @@ export default function App() {
   const [paquet, setPaquet] = useState(null);
   const [etat, setEtat] = useState(ETATS.ABSENT);
   const [onglet, setOnglet] = useState("qui");
+  const [deputes, setDeputes] = useState(null);
 
-  useEffect(() => {chargerDeputes().then(r => {
-  if (vivant && r.donnees) setDeputes(r.donnees);
-});
+  useEffect(() => {
     let vivant = true;
+    chargerDeputes().then(r => {
+      if (vivant && r.donnees) setDeputes(r.donnees);
+    });
     chargerIndex().then(r => {
       if (!vivant) return;
       setEtatIndex(r.etat);

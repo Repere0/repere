@@ -1,146 +1,77 @@
-﻿$ErrorActionPreference = "Continue"
+﻿$prompt = @"
+Tu es l'agent principal de développement du projet Repère.
+Tu dois inspecter le dépôt et choisir toi-même la prochaine tâche sûre.
 
-$ROOT = "C:\Users\APina\repere\mono"
-$LOG  = "$ROOT\orchestrator\logs"
+Dépôt :
+C:\Users\APina\repere\mono
 
-Set-Location $ROOT
-New-Item -ItemType Directory -Force $LOG | Out-Null
+OBJECTIF
+Rendre Repère réellement viable pour un banc de test en décembre 2026.
 
-function Header($text) {
-    Write-Host ""
-    Write-Host "========================================" -ForegroundColor Cyan
-    Write-Host " $text" -ForegroundColor Cyan
-    Write-Host "========================================" -ForegroundColor Cyan
-}
+TA MISSION MAINTENANT
 
-$prompt = @"
-Projet Repère.
+Tu dois travailler directement sur le dépôt.
 
-Objectif : rendre le projet viable pour un banc de test en décembre 2026.
+1. Inspecte le monorepo :
+   - apps/
+   - packages/
+   - data/
+   - scripts/
+   - tests/
+   - package.json
+   - turbo.json
+   - pnpm-workspace.yaml
+   - README.md
+   - CONTEXTE_PROJET.md
 
-Travaille de façon autonome.
+2. Identifie les problèmes réels, en les mesurant.
 
-Priorités :
-1. architecture
-2. données
-3. code
-4. UX/UI
-5. qualité
-6. tests
-7. déploiement
-8. performance
-9. sécurité
-10. préparation startup
+3. Classe-les :
+   P0 = bloque le fonctionnement ou le banc de test
+   P1 = risque important
+   P2 = amélioration importante
+   P3 = amélioration ultérieure
 
-Règles :
-- inspecter avant de modifier ;
-- mesurer avant de conclure ;
-- préserver l'existant ;
-- aucune modification destructive ;
-- ne pas changer une architecture critique sans justification ;
-- améliorer directement ce qui est sûr ;
-- lancer les tests après modification ;
-- documenter les changements.
+4. Choisis ensuite UNE tâche P0 ou P1 sûre et locale.
 
-Commence par les problèmes les plus importants et laisse le dépôt dans un état fonctionnel.
+5. Implémente cette tâche directement.
+
+6. Ne fais aucune modification destructive.
+
+7. Ne change pas :
+   - architecture critique
+   - schéma de données critique
+   - API externe
+   - sécurité critique
+   - déploiement production
+   sans le signaler explicitement.
+
+8. Après modification :
+   - lance les tests pertinents ;
+   - lance le build ;
+   - vérifie réellement le résultat.
+
+9. À la fin, produis un rapport avec exactement :
+
+TASK:
+ce qui a été traité
+
+FINDINGS:
+problèmes trouvés
+
+CHANGES:
+fichiers modifiés et pourquoi
+
+TESTS:
+tests exécutés et résultat
+
+BUILD:
+résultat
+
+NEXT:
+prochaine tâche recommandée
+
+IMPORTANT :
+Ne me demande pas quelle partie traiter.
+Tu dois inspecter le dépôt et choisir toi-même la prochaine tâche sûre.
 "@
-
-# ========================================
-# CODEX
-# ========================================
-
-Header "CODEX"
-
-$codexLog = "$LOG\codex.log"
-
-Write-Host "Lancement de Codex..."
-Write-Host "Log : $codexLog"
-Write-Host ""
-
-cmd /c "codex.cmd exec --sandbox workspace-write -- `"$prompt`"" 2>&1 |
-    Tee-Object -FilePath $codexLog
-
-$codexExit = $LASTEXITCODE
-
-if ($codexExit -eq 0) {
-    Write-Host ""
-    Write-Host "CODEX : OK" -ForegroundColor Green
-} else {
-    Write-Host ""
-    Write-Host "CODEX : ECHEC ($codexExit)" -ForegroundColor Red
-}
-
-# ========================================
-# CLAUDE
-# ========================================
-
-Header "CLAUDE"
-
-$claudeLog = "$LOG\claude.log"
-
-Write-Host "Lancement de Claude..."
-Write-Host "Log : $claudeLog"
-Write-Host ""
-
-cmd /c "claude.cmd -p `"$prompt`"" 2>&1 |
-    Tee-Object -FilePath $claudeLog
-
-$claudeExit = $LASTEXITCODE
-
-if ($claudeExit -eq 0) {
-    Write-Host ""
-    Write-Host "CLAUDE : OK" -ForegroundColor Green
-} else {
-    Write-Host ""
-    Write-Host "CLAUDE : ECHEC ($claudeExit)" -ForegroundColor Red
-}
-
-# ========================================
-# BUILD
-# ========================================
-
-Header "BUILD"
-
-$buildLog = "$LOG\build.log"
-
-Write-Host "Lancement du build..."
-Write-Host ""
-
-cmd /c "pnpm.cmd build" 2>&1 |
-    Tee-Object -FilePath $buildLog
-
-$buildExit = $LASTEXITCODE
-
-if ($buildExit -eq 0) {
-    Write-Host ""
-    Write-Host "BUILD : OK" -ForegroundColor Green
-} else {
-    Write-Host ""
-    Write-Host "BUILD : ECHEC ($buildExit)" -ForegroundColor Red
-}
-
-# ========================================
-# RESULTAT
-# ========================================
-
-Header "RESULTAT"
-
-Write-Host ""
-Write-Host "Codex  : $codexExit"
-Write-Host "Claude : $claudeExit"
-Write-Host "Build  : $buildExit"
-Write-Host ""
-
-Write-Host "Logs :"
-Write-Host "  $codexLog"
-Write-Host "  $claudeLog"
-Write-Host "  $buildLog"
-Write-Host ""
-
-if ($codexExit -eq 0 -and $claudeExit -eq 0 -and $buildExit -eq 0) {
-    Write-Host "TOUT EST OK." -ForegroundColor Green
-    exit 0
-}
-
-Write-Host "ATTENTION : une ou plusieurs étapes ont échoué." -ForegroundColor Red
-exit 1
