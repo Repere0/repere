@@ -632,6 +632,95 @@ verif("parcours — la commune saisie est bien celle retenue",
   }
 }
 
+/* INVARIANT 1, MESURE POUR DE VRAI : service worker installe, reseau coupe,
+   rechargement, parcours complet. Second contexte pour ne pas polluer le premier. */
+if (serveur) {
+  const ctx2 = await nav.newContext({ viewport: { width: 420, height: 900 } });
+  const p2 = await ctx2.newPage();
+  const erreurs2 = [];
+  p2.on("pageerror", e => erreurs2.push("pageerror: " + e.message));
+  p2.on("console", m => { if (m.type() === "error") erreurs2.push("console: " + m.text().slice(0, 120)); });
+
+  await p2.goto(base);
+  await p2.waitForTimeout(6500);
+  const installe = await p2.evaluate(async () => {
+    const r = await navigator.serviceWorker.getRegistration();
+    if (!r || !r.active) return { actif: false, fichiers: [] };
+    const noms = await caches.keys();
+    const c = await caches.open(noms[0]);
+    const k = await c.keys();
+    return { actif: true, fichiers: k.map(x => new URL(x.url).pathname).sort() };
+  });
+  verif("invariant 1 — le service worker s'installe et remplit son cache",
+    installe.actif && installe.fichiers.length >= 8,
+    installe.actif ? installe.fichiers.length + " fichier(s) en cache" : "aucun service worker actif");
+  /* Les donnees servies doivent etre DANS la coquille : sans elles, l'application
+     installee perd ses faits des qu'elle est hors ligne — un manque invisible. */
+  verif("invariant 1 — les donnees servies sont dans la coquille",
+    installe.fichiers.some(f => /donnees\/agenda_an\.json$/.test(f))
+    && installe.fichiers.some(f => /donnees\/evenements\.json$/.test(f)),
+    installe.fichiers.filter(f => /donnees/.test(f)).join(", ") || "aucun fichier de donnees en cache");
+
+  await ctx2.setOffline(true);
+  await p2.reload({ waitUntil: "load" }).catch(() => {});
+  await p2.waitForTimeout(5500);
+
+  const horsLigne = await p2.evaluate(() => ({
+    coupe: navigator.onLine === false,
+    complet: window.REPERE_COMPLET === true,
+    tronque: !!document.getElementById("repere-tronque"),
+    onboard: !!document.getElementById("ob-input")
+  }));
+  verif("invariant 1 — le reseau est bien coupe pendant la mesure",
+    horsLigne.coupe === true, "navigator.onLine vaut encore true : la mesure ne prouverait rien");
+  verif("invariant 1 — hors ligne, l'application se charge en entier",
+    horsLigne.complet && !horsLigne.tronque && horsLigne.onboard,
+    JSON.stringify(horsLigne));
+
+  if (horsLigne.onboard) {
+    await p2.fill("#ob-input", "Ustaritz");
+    await p2.evaluate(() => obValidateTyped());
+    await p2.waitForTimeout(900);
+    await p2.evaluate(() => finishOnboard());
+    await p2.waitForTimeout(1800);
+    const vu = await p2.evaluate(() => {
+      showTab("s-qui");
+      const carte = [...document.querySelectorAll("#s-qui .who")]
+        .find(e => /Députés et sénateurs/.test(e.textContent || ""));
+      const t2 = document.querySelector("#s-qui .who .t2");
+      return {
+        maire: (t2 && t2.textContent || "").trim(),
+        circo: !!(carte && /circonscription/.test(carte.innerText || "")),
+        ev: typeof EV_ETAT === "string" ? EV_ETAT : "?",
+        cartes: (typeof FEED !== "undefined") ? FEED.length : -1
+      };
+    });
+    await p2.waitForTimeout(400);
+    const argent = await p2.evaluate(() => {
+      showTab("s-argent");
+      return new Promise(r => setTimeout(() => {
+        const c = document.getElementById("arg-body");
+        r(c ? c.querySelectorAll(".arg-row").length : -1);
+      }, 800));
+    });
+
+    verif("invariant 1 — hors ligne, le nom du maire s'affiche",
+      vu.maire.length > 2, "« " + vu.maire + " »");
+    verif("invariant 1 — hors ligne, la circonscription s'affiche",
+      vu.circo === true, "la phrase manque : la table embarquee n'a pas ete lue");
+    verif("invariant 1 — hors ligne, les faits collectes sont servis depuis le cache",
+      vu.ev === "servi", "EV_ETAT = " + vu.ev + " (le cache du service worker n'a pas repondu)");
+    verif("invariant 1 — hors ligne, les comptes s'affichent",
+      argent >= 5, argent + " ligne(s) dans #arg-body");
+  }
+
+  verif("invariant 1 — aucune erreur JavaScript hors ligne",
+    erreurs2.length === 0, erreurs2.slice(0, 3).join(" | "));
+  await ctx2.close();
+} else {
+  console.log("  note | fichier autonome : pas de service worker, controle hors ligne sans objet");
+}
+
 verif("rendu — aucune erreur JavaScript sur tout le parcours",
   erreursJS.length === 0, erreursJS.slice(0, 4).join(" | "));
 

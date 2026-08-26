@@ -160,10 +160,20 @@ if [ -d site_donnees ]; then
 fi
 
 # ------------------------------------------------------------ 6. eprouver
-# LE VERROU DE L'AUTOMATISATION. Si un seul des 40 controles tombe, `set -e` arrete
-# tout ici et le deploiement n'a pas lieu. C'est ce qui autorise a publier sans
-# qu'un humain regarde.
-echo "== banc =="
+# LE VERROU DE L'AUTOMATISATION. Si un seul controle tombe, `set -e` arrete tout
+# ici et le deploiement n'a pas lieu. C'est ce qui autorise a publier sans qu'un
+# humain regarde.
+#
+# DEUX SORTIES, DEUX PASSAGES. Le projet produit un fichier autonome qui embarque
+# tout et ne demande rien, et une version servie qui va chercher son agenda, ses
+# evenements et bientot son departement. Jusqu'au 25/08/2026 seule la seconde etait
+# eprouvee : la divergence entre les deux n'etait gardee par rien. Le banc sait les
+# distinguer tout seul — il ne monte son serveur HTTP que si la source declare une
+# adresse — il ne lui manquait qu'une invocation.
+echo "== banc : le fichier autonome =="
+node test_repere.mjs "$APP"
+
+echo "== banc : la version servie =="
 node test_repere.mjs site_engendre/index.html
 
 echo "== pipeline terminee sans erreur =="
