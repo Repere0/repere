@@ -1,0 +1,24 @@
+{
+  "repo": "C:\\Users\\APina\\repere\\mono",
+  "agents": {
+    "codex": "codex.cmd",
+    "claude": "claude.cmd"
+  },
+  "commands": {
+    "build": "pnpm.cmd build",
+    "test": "pnpm.cmd test"
+  },
+  "policy": {
+    "autoCommit": false,
+    "autoPush": false,
+    "autoMerge": false,
+    "requireApprovalFor": [
+      "architecture",
+      "database-schema",
+      "external-api",
+      "security",
+      "destructive-change",
+      "production-deployment"
+    ]
+  }
+}
