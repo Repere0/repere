@@ -139,12 +139,46 @@ export async function chargerIndex({ delaiMs = 8000 } = {}) {
 
 /* Préchargement : quand le navigateur est inactif, et JAMAIS en réseau mesuré.
    Un préchargement qui consomme le forfait de quelqu'un sans le lui demander
-   est un abus, même s'il rend l'application plus rapide. */
+   est un abus, même s'il rend l'application plus rapide.
+ *
+ * DEUX GARDES AJOUTEES, ET LA MESURE QUI LES A IMPOSEES. Le prechargement se
+ * declenchait au survol ET au focus, sans delai ni plafond. Au clavier, traverser
+ * la liste des cent quatre territoires met le focus sur chacun d'eux : cent
+ * quatre paquets departementaux mis en file, une centaine de kilo-octets chacun,
+ * une douzaine de mega-octets pour quelqu'un qui cherchait simplement le sien a
+ * la tabulation. La fonction violait donc exactement ce que son commentaire
+ * interdit.
+ *
+ *   1. UNE INTENTION A LA FOIS. Chaque appel annule le precedent : il faut que
+ *      le survol ou le focus SE POSE un quart de seconde pour que quoi que ce
+ *      soit parte. Traverser la liste ne declenche plus rien.
+ *   2. UN PLAFOND. Un lecteur a un departement, parfois deux quand il hesite.
+ *      Au-dela de trois paquets reellement telecharges d'avance, on s'arrete et
+ *      on attend un vrai clic. Les lectures qui viennent du cache ne comptent
+ *      pas : elles ne coutent rien.
+ */
+const DELAI_INTENTION = 250;
+const PLAFOND_PRECHARGEMENTS = 3;
+let minuteurIntention = null;
+let prechargesAuReseau = 0;
+
+export function annulerPrechargement() {
+  if (minuteurIntention !== null) { clearTimeout(minuteurIntention); minuteurIntention = null; }
+}
+
 export function prechargerDepartement(dep) {
   if (typeof navigator === "undefined") return;
   const c = navigator.connection;
   if (c && (c.saveData || /2g/.test(c.effectiveType || ""))) return;
-  const lancer = () => chargerDepartement(dep).catch(() => {});
-  if (typeof requestIdleCallback === "function") requestIdleCallback(lancer, { timeout: 2000 });
-  else setTimeout(lancer, 300);
+  if (prechargesAuReseau >= PLAFOND_PRECHARGEMENTS) return;
+
+  annulerPrechargement();
+  minuteurIntention = setTimeout(() => {
+    minuteurIntention = null;
+    const lancer = () => chargerDepartement(dep)
+      .then(r => { if (r && r.depuis === "reseau") prechargesAuReseau++; })
+      .catch(() => {});
+    if (typeof requestIdleCallback === "function") requestIdleCallback(lancer, { timeout: 2000 });
+    else setTimeout(lancer, 300);
+  }, DELAI_INTENTION);
 }

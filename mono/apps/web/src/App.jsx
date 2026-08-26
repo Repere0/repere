@@ -1,7 +1,8 @@
 import React, { Suspense, lazy, useCallback, useEffect, useMemo, useState } from "react";
 import { Chargement, Vide, Puce } from "@repere/ui";
 import {
-  chargerIndex, chargerDepartement, prechargerDepartement, ETATS, PHRASES,
+  chargerIndex, chargerDepartement, prechargerDepartement, annulerPrechargement,
+  ETATS, PHRASES,
 } from "@repere/data-utils";
 
 /* CHARGEMENT PARESSEUX DES ÉCRANS. Chacun est un module séparé : ouvrir « Qui
@@ -64,6 +65,13 @@ function ChoixDepartement({ index, departement, onOuvrir, onSurvol }) {
     ? index.departements.filter(d => correspond(cherches, motsCible(d.code + " " + (d.nom || ""))))
     : index.departements;
 
+  /* COMPTES DERIVES, JAMAIS ECRITS A LA MAIN. « les 101 départements et trois
+     collectivités » etait vrai le jour ou je l'ai tape, et le serait reste dans
+     le texte le jour ou il aurait cesse de l'etre. Le fichier porte le type de
+     chaque territoire : la phrase se lit dedans. */
+  const outreMer = index.departements.filter(d => d.type && d.type !== "département").length;
+  const departements = index.departements.length - outreMer;
+
   return (
     <details className="choix" open={!departement}>
       {/* Un seul element de flexbox pour tout l'intitule : sans ce span, chaque
@@ -83,11 +91,14 @@ function ChoixDepartement({ index, departement, onOuvrir, onSurvol }) {
             autoComplete="off" onChange={e => setFiltre(e.target.value)} />
         </label>
         {vus.length === 0 ? (
-          <Vide titre={`Aucun département publié ne correspond à « ${filtre.trim()} ».`}
-            corps="Repère publie les 101 départements et trois collectivités d'outre-mer. Essayez le début du nom, ou le numéro." />
+          <Vide titre={`Aucun territoire publié ne correspond à « ${filtre.trim()} ».`}
+            corps={`Repère publie ${departements} départements${outreMer ? ` et ${outreMer} collectivités d'outre-mer` : ""}. Essayez le début du nom, ou le numéro.`} />
         ) : (
           <>
-            <div className="rangee liste-dept" role="group" aria-label="Départements publiés">
+            {/* Quitter la liste annule l'intention de prechargement en cours :
+                le doigt ou le focus qui passe n'est pas une demande. */}
+            <div className="rangee liste-dept" role="group" aria-label="Départements publiés"
+              onMouseLeave={annulerPrechargement} onBlur={annulerPrechargement}>
               {vus.map(d => (
                 <Puce key={d.code} actif={d.code === departement} echelon="dept"
                   onClick={() => onOuvrir(d.code)} onSurvol={() => onSurvol(d.code)}>
@@ -97,8 +108,9 @@ function ChoixDepartement({ index, departement, onOuvrir, onSurvol }) {
               ))}
             </div>
             <p className="note" role="status" aria-live="polite">
-              {cherches.length ? `${vus.length} territoire${vus.length > 1 ? "s" : ""} correspond${vus.length > 1 ? "ent" : ""}.`
-                 : "Les collectivités d'outre-mer figurent en fin de liste."}
+              {cherches.length
+                ? `${vus.length} territoire${vus.length > 1 ? "s" : ""} correspond${vus.length > 1 ? "ent" : ""}.`
+                : `${departements} départements${outreMer ? `, puis ${outreMer} collectivités d'outre-mer en fin de liste` : ""}.`}
             </p>
           </>
         )}
@@ -199,6 +211,18 @@ export default function App() {
   const territoire = index && paquet
     ? index.departements.find(d => d.code === paquet.d) : null;
   const nomDepartement = territoire ? territoire.nom : null;
+
+  /* LE TITRE DE L'ONGLET DIT OU L'ON EST. Il valait « Repère — qui décide chez
+     vous » du debut a la fin : deux onglets ouverts sur deux communes etaient
+     indiscernables dans la barre du navigateur, et un signet ne disait rien.
+     Le titre ne porte QUE ce qui est deja affiche a l'ecran — jamais plus. */
+  useEffect(() => {
+    if (typeof document === "undefined") return;
+    const base = "Repère — qui décide chez vous";
+    document.title = fiche
+      ? `${fiche.nom} — Repère`
+      : (nomDepartement ? `${nomDepartement} — Repère` : base);
+  }, [fiche, nomDepartement]);
 
   return (
     <div className="app">

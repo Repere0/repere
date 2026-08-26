@@ -23,7 +23,7 @@ département — et qui fonctionne hors ligne.
 | départements et collectivités | 104, tous nommés |
 | communes réparties | 34 637 |
 | département médian | 107 Ko |
-| contrôles d'invariants | **21 statiques + 34 dans un navigateur** |
+| contrôles d'invariants | **21 statiques + 36 dans un navigateur** |
 
 Le premier écran ne demande qu'un seul fichier de données : `data/index.json`.
 Aucun paquet départemental n'est téléchargé avant que le lecteur ait choisi son
@@ -39,7 +39,7 @@ pnpm dev                                                # web + api de dev
 
 ```bash
 pnpm build          # vite + copie de data/ dans dist/ + empreinte du service worker
-pnpm test           # 21 contrôles statiques, puis 34 dans un vrai navigateur
+pnpm test           # 21 contrôles statiques, puis 36 dans un vrai navigateur
 ```
 
 `pnpm build` copie `data/` dans `dist/` lui-même, avec un script Node : la
@@ -58,12 +58,17 @@ d'un `pnpm extract` (pour `data/`) et d'un `pnpm build` (pour le banc navigateur
 3. **Deux caches, pas un.** La coquille est versionnée par le build ; les données
    ne le sont pas. Sinon la publication quotidienne effacerait le département de
    chaque lecteur chaque matin.
-4. **Aucune police chargée depuis un hôte tiers.** Un lien vers `fonts.googleapis.com`
+4. **Le préchargement demande une intention, pas un passage.** Survoler ou
+   traverser la liste des territoires ne télécharge rien : il faut que le survol
+   ou le focus s'y pose un quart de seconde, et pas plus de trois paquets sont
+   pris d'avance. Un préchargement qui consomme le forfait de quelqu'un sans le
+   lui demander est un abus, même s'il rend l'application plus rapide.
+5. **Aucune police chargée depuis un hôte tiers.** Un lien vers `fonts.googleapis.com`
    ferait connaître à Google l'adresse IP de chaque lecteur, à chaque ouverture.
-5. **IndexedDB ne reçoit que de la donnée publique.** Une garde refuse toute
+6. **IndexedDB ne reçoit que de la donnée publique.** Une garde refuse toute
    écriture qui n'est pas un paquet départemental, et un contrôle vérifie qu'il
    n'existe qu'un seul magasin.
-6. **Deux thèmes, un seul seuil de lisibilité.** Le thème sombre n'est pas une
+7. **Deux thèmes, un seul seuil de lisibilité.** Le thème sombre n'est pas une
    variante décorative : un contrôle mesure le contraste réel de chaque texte
    coloré dans un navigateur en thème sombre, et refuse tout ce qui passe sous
    3:1. La couleur d'échelon reste sur le filet des cartes ; elle ne porte le
@@ -75,7 +80,8 @@ d'un `pnpm extract` (pour `data/`) et d'un `pnpm build` (pour le banc navigateur
    par son nom autant que par son numéro (« pyrenees at », « cotes armor », « 64 ») :
    savoir qu'on habite « dans le 64 » n'est pas un prérequis pour entrer.
    Le choix de la commune est fait UNE fois : il ne se refait pas à chaque
-   onglet, et une ligne le rappelle au-dessus des onglets.
+   onglet, une ligne le rappelle au-dessus des onglets, et le titre de l'onglet
+   du navigateur porte le nom de la commune ouverte.
 2. **Qui décide** — le maire, ses adjoints, la circonscription législative.
 3. **Où va l'argent** — six montants publiés, puis ce qu'ils veulent dire.
 4. **D'où ça vient** — chaque carte porte sa source, son producteur et sa date.
@@ -118,6 +124,6 @@ apps/api            serveur de DÉVELOPPEMENT uniquement.
 packages/ui         jetons CSS et composants. Aucun composant « squelette ».
 packages/data-utils invariants, magasin IndexedDB, client de données.
 scripts/            extraction, copie de data/ et empreinte du service worker.
-tests/              21 contrôles statiques + 34 dans un navigateur.
+tests/              21 contrôles statiques + 36 dans un navigateur.
 data/               engendré. Ne pas modifier à la main.
 ```

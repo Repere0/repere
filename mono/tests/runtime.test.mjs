@@ -122,6 +122,26 @@ const listeDept = await page.evaluate(() => document.querySelector(".liste-dept"
 verif("rendu — les departements portent leur nom, pas seulement leur numero",
   /Pyrénées-Atlantiques/.test(listeDept) && /Ain/.test(listeDept),
   listeDept.slice(0, 120).replace(/\n+/g, " / "));
+/* TRAVERSER LA LISTE AU CLAVIER NE DOIT RIEN TELECHARGER.
+ *
+ * Le prechargement se declenche au survol et au focus. Sans delai ni plafond,
+ * une tabulation a travers les cent quatre territoires mettait en file cent
+ * quatre paquets departementaux — une douzaine de mega-octets pour quelqu'un qui
+ * cherchait simplement le sien. On traverse donc douze pastilles sans s'arreter,
+ * et on exige qu'AUCUN paquet ne soit parti. */
+servies = [];
+await page.getByLabel(/Votre département/).focus();
+for (let i = 0; i < 16; i++) { await page.keyboard.press("Tab"); await page.waitForTimeout(40); }
+/* On RESSORT de la liste avant de mesurer : se poser sur une pastille EST une
+   intention, et precharger ce territoire-la est le comportement voulu. Ce que le
+   controle mesure, c'est la traversee — le doigt ou le focus qui passe. */
+await page.getByLabel(/Votre département/).focus();
+await page.waitForTimeout(1400);
+const paquetsFiles = servies.filter(u => u.startsWith("/data/departments/"));
+verif("prechargement — traverser la liste au clavier ne telecharge aucun departement",
+  paquetsFiles.length === 0,
+  paquetsFiles.length + " paquet(s) demande(s) : " + [...new Set(paquetsFiles)].slice(0, 5).join(", "));
+
 /* Recherche par nom, sans accents : personne ne tape « Pyrénées » au clavier. */
 await page.getByLabel(/Votre département/).fill("pyrenees at");
 await page.waitForTimeout(300);
@@ -155,6 +175,13 @@ verif("rendu — le maire de la commune choisie s'affiche",
 verif("rendu — la circonscription s'affiche et ne nomme personne",
   /6e circonscription législative/.test(qui) && !/votre députée est/i.test(qui),
   qui.slice(0, 160).replace(/\n+/g, " / "));
+
+/* Le titre de l'onglet suit le lecteur : deux onglets ouverts sur deux communes
+   etaient indiscernables dans la barre du navigateur, et un signet ne disait
+   rien. Il ne porte que ce qui est deja a l'ecran. */
+const titre = await page.title();
+verif("orientation — le titre de l'onglet nomme la commune ouverte",
+  /^Ustaritz — Repère$/.test(titre), titre);
 
 /* INVARIANT 2 encore : le magasin IndexedDB ne doit contenir QUE des paquets
    departementaux. C'est la condition qui rend son usage acceptable. */
