@@ -1,4 +1,4 @@
-﻿#!/usr/bin/env python3
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """Generateur de la PWA — reconstruit, puis PROUVE.
 
@@ -141,6 +141,28 @@ for nom in os.listdir(REF):
 
 src_app = lire(SOURCE)
 index = engendrer(src_app)
+
+# La landing transmet la commune par ?c=. L'application v18.9 possede deja
+# son vrai moteur de recherche (obSuggest / obValidateTyped) : on ne duplique
+# surtout pas les donnees. On ne fait ici que remettre la saisie dans le vrai
+# champ de l'onboarding et lancer la recherche locale.
+BOOT_COMMUNE = r"""<script>
+(function () {
+  try {
+    var p = new URLSearchParams(window.location.search);
+    var c = (p.get("c") || "").trim();
+    if (!c) return;
+    var champ = document.getElementById("ob-input");
+    if (!champ) return;
+    champ.value = c;
+    if (typeof obSuggest === "function") obSuggest(c);
+    champ.focus({preventScroll:true});
+  } catch (e) {}
+})();
+</script>"""
+assert "</body>" in index, "balise </body> absente de l'application"
+index = index.replace("</body>", BOOT_COMMUNE + "\n</body>", 1)
+
 sw = lire(os.path.join(REF, "sw.js"))
 
 # ------------------------------------------------- l'agenda, servi a part
@@ -304,15 +326,20 @@ PIED = """<p class="ld-pied">
   INSEE, Observatoire des finances et de la gestion publique locales, Assemblee nationale, Senat.
 </p>
 """
-RECHERCHE_COMMUNE = """
+RECHERCHE = """
 <div style="max-width:520px;margin:0 auto 28px;text-align:center;">
   <input id="ld-input"
          type="text"
          placeholder="Votre commune"
          autocomplete="address-level2"
+         autocapitalize="words"
+         autocorrect="off"
+         spellcheck="false"
+         enterkeyhint="go"
+         onkeydown="if(event.key==='Enter'){event.preventDefault();ldGo('ld-input');}"
          style="width:100%;padding:13px 16px;border-radius:12px;
                 border:1px solid #555;background:#171615;color:#f5f5f7;
-                font-size:16px;">
+                font-size:16px;outline:none;">
   <button type="button" onclick="ldGo('ld-input')"
           style="margin-top:10px;padding:11px 20px;border-radius:12px;
                  border:1px solid #777;background:#222;color:#f5f5f7;
@@ -322,41 +349,15 @@ RECHERCHE_COMMUNE = """
 </div>
 """
 
-corps = RECHERCHE_COMMUNE + "\n" + "\n".join(LANDING)
-# Champ de recherche de commune pour la page d'accueil.
-RECHERCHE_COMMUNE = """
-<div style="max-width:520px;margin:0 auto 28px;text-align:center;">
-  <input id="ld-input"
-         type="text"
-         placeholder="Votre commune"
-         autocomplete="address-level2"
-         style="width:100%;padding:13px 16px;border-radius:12px;
-                border:1px solid #555;background:#171615;color:#f5f5f7;
-                font-size:16px;outline:none;">
-  <button onclick="ldGo('ld-input')"
-          style="margin-top:10px;padding:11px 20px;border-radius:12px;
-                 border:1px solid #777;background:#222;color:#f5f5f7;
-                 font-size:15px;cursor:pointer;">
-    Voir ma commune
-  </button>
-</div>
-"""
+corps = RECHERCHE + "\n" + "\n".join(LANDING)
 
-corps = RECHERCHE_COMMUNE + "\n" + corps
-
-RECHERCHE = """
-<div style="max-width:520px;margin:0 auto 28px;text-align:center;">
-<input id="ld-input" type="text" placeholder="Votre commune"
-style="width:100%;padding:13px 16px;border-radius:12px;border:1px solid #555;background:#171615;color:#f5f5f7;font-size:16px;">
-<button type="button" onclick="ldGo('ld-input')"
-style="margin-top:10px;padding:11px 20px;border-radius:12px;border:1px solid #777;background:#222;color:#f5f5f7;font-size:15px;">
-Voir ma commune
-</button>
-</div>
-"""
-
-accueil = TETE + RECHERCHE + corps + "\n" + PIED + JS_ACCUEIL + "\n</body>\n</html>\n"
+accueil = TETE + corps + "\n" + PIED + JS_ACCUEIL + "\n</body>\n</html>\n"
 assert accueil.count("function ldGo") == 1
+assert accueil.count('id="ld-input"') == 1
+assert accueil.count("Voir ma commune") == 1
+assert "index.html?c=" in accueil
+io.open(os.path.join(SORTIE, "accueil.html"), "w", encoding="utf-8").write(accueil)
+print("accueil.html : %d Ko, %d bloc(s) de landing" % (len(accueil.encode("utf-8")) / 1024, len(LANDING)))
 
 # ------------------------------------------------------------- sw.js
 # La garde de navigation vit desormais DANS la reference (site/sw.js) : elle limite
