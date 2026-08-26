@@ -306,6 +306,8 @@ PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers node test_repere.mjs site_v18_20/index
 | **`env:` au niveau de l'étape dans GitHub Actions** | Invisible pour le `if:` de cette même étape : le déploiement était silencieusement sauté. Le mettre au niveau du job. |
 | **Un script qui écrit son journal dans le dépôt** | `pousser.bat` v1 se sabotait pendant le rebase. Le journal est maintenant ignoré par git. |
 | **Une annotation qui affirme sans mesurer** | Trois fois. Une annotation doit mesurer ce qu'elle affirme. |
+| **Un garde-fou qui filtre sur une sous-chaîne** | `pousser.bat` refusait tout envoi contenant le mot `token` n'importe où dans un chemin. `packages/ui/src/tokens.css` a bloqué tous les envois pendant trois heures, sans nommer le fichier en cause. Un garde doit dire QUI il refuse, et filtrer sur ce qu'il veut dire — ici l'extension, pas la sous-chaîne. |
+| **Corriger du batch sans pouvoir l'exécuter** | Deux tentatives à l'aveugle avant que ça marche. `pousser.bat --test` existe désormais : il éprouve son propre filtre sans toucher à git. Quand on ne peut pas vérifier soi-même, on livre le moyen de vérifier. |
 
 ---
 
@@ -410,13 +412,19 @@ Il vit dans **`mono/`**, à l'intérieur de ce dépôt. Le fichier mono-HTML de 
 racine **reste la source des données** : `mono/scripts/extract-html.js` lit ses
 blocs `REPERE_*` et produit `mono/data/`.
 
+**ÉPROUVÉ SUR LE RUNNER GITHUB le 26 août 2026** (run #3, 55 s, succès) :
+extraction 104 départements / 34 637 communes, **13 contrôles statiques** et
+**21 contrôles dans un navigateur**, zéro échec — service worker installé,
+serveur éteint, parcours complet. Les chiffres du runner sont identiques à ceux
+mesurés en local, au kilo-octet près.
+
 **Ce qu'il change, mesuré :**
 
 | | mono-HTML | monorepo |
 |---|---:|---:|
 | premier écran | 16,5 Mo | **164 Ko — 54 Ko compressés** |
 | + un département | (tout est déjà là) | 186 Ko / 70 Ko compressés |
-| contrôles d'invariants | 55 / 64 | **13 statiques + 21 navigateur** |
+| contrôles d'invariants | 55 / 64 | **13 statiques + 21 navigateur**, verts sur le runner |
 
 **Les décisions qui ne se rediscutent pas sans argument neuf :**
 
