@@ -23,6 +23,17 @@
 .choix[open] > summary::after { content: "▴"; }
 .choix > summary b { color: var(--e-dept); }
 .liste-dept { max-height: 13rem; overflow-y: auto; padding: 0 1rem 1rem; }
+.note-choix { padding: 0 1rem; margin: 0 0 .6rem; }
+
+/* « JE SUIS OU ». Une ligne qui ne bouge plus quand on change d'onglet : sans
+   elle, les ecrans se ressemblaient assez pour qu'on oublie quelle commune on
+   regarde. */
+.choix-commune { margin-bottom: 1.2rem; }
+.choix-commune .note { display: block; align-self: auto; margin: .5rem 0 0; }
+.situe { font-family: var(--t-titre); font-size: .95rem; color: var(--sourd);
+  border-left: 4px solid var(--e-ville); padding: .1rem 0 .1rem .7rem; margin: 1.2rem 0 0; }
+.situe b { color: var(--encre); }
+.tx-intro { margin-top: 0; margin-bottom: .9rem; }
 
 .puce, .onglet {
   font-family: var(--t-titre); font-size: .88rem; font-weight: 600;
@@ -36,8 +47,11 @@
 .puce.actif, .onglet.actif { background: var(--encre); color: var(--sol); border-color: var(--encre); }
 .pastille { width: 8px; height: 8px; border-radius: 99px; flex: 0 0 auto; }
 
-.onglets { display: flex; gap: calc(var(--pas) * 2); margin: 1.4rem 0 1.2rem;
-  overflow-x: auto; padding-bottom: 2px; }
+/* Les onglets PASSENT A LA LIGNE plutot que de defiler. A 390 px les trois ne
+   tiennent pas sur une ligne : le troisieme etait coupe par le bord de l'ecran,
+   sans rien qui laisse deviner qu'on pouvait faire defiler pour l'atteindre. */
+.onglets { display: flex; flex-wrap: wrap; gap: calc(var(--pas) * 2);
+  margin: 1rem 0 1.2rem; padding-bottom: 2px; }
 .onglet { border-radius: var(--r); white-space: nowrap; }
 
 .champ { display: block; margin-bottom: 1rem; }

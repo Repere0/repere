@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo } from "react";
 import { Carte, Vide, Tuile, BarreEchelon, Source } from "@repere/ui";
 
 /* Le tableau plat des comptes : [population, montant0, parHab0, montant1, ...].
@@ -49,21 +49,11 @@ function rapports(ex) {
   return out;
 }
 
-export default function OuVaArgent({ paquet, index }) {
-  const [filtre, setFiltre] = useState("");
-  const [choisie, setChoisie] = useState(null);
+export default function OuVaArgent({ paquet, index, commune }) {
   const agregats = (index && index.agregats) || [];
   const src = index && index.sources ? index.sources.comptes : null;
 
-  const vues = useMemo(() => {
-    const q = filtre.trim().toLowerCase();
-    return Object.entries(paquet.communes)
-      .filter(([, c]) => c.comptes && (!q || c.nom.toLowerCase().includes(q)))
-      .sort((a, b) => a[1].nom.localeCompare(b[1].nom, "fr"))
-      .slice(0, 60);
-  }, [paquet, filtre]);
-
-  const c = choisie ? paquet.communes[choisie] : null;
+  const c = commune ? paquet.communes[commune] : null;
   const exercice = useMemo(() => {
     if (!c || !c.comptes) return null;
     const ans = Object.keys(c.comptes).filter(a => /^\d{4}$/.test(a)).sort();
@@ -73,63 +63,68 @@ export default function OuVaArgent({ paquet, index }) {
     return null;
   }, [c, agregats]);
 
+  if (!c) return null;
+
   const rr = exercice ? rapports(exercice.ex) : [];
   const maxAgregat = exercice
     ? Math.max(...agregats.map((_, i) => (valeur(exercice.ex, i) || {}).m || 0))
     : 0;
 
+  if (!exercice) {
+    /* DOCTRINE DU VIDE. Avant, les communes sans comptes disparaissaient
+       simplement de la liste : le lecteur cherchait la sienne, ne la trouvait
+       pas, et rien ne lui disait pourquoi. Une absence se dit. */
+    return (
+      <Vide titre={`${c.nom} : ses comptes ne figurent pas dans le fichier officiel.`}
+        corps="Un montant absent n'est pas un montant nul : Repère n'affiche rien plutôt qu'un zéro qui pourrait être faux. Les très petites communes et celles qui viennent de fusionner manquent souvent à ce fichier."
+        lien={{ texte: "Chercher cette commune dans les comptes publics", url: "https://data.ofgl.fr/" }} />
+    );
+  }
+
   return (
     <div className="pile">
-      <label className="champ">
-        <span>Les comptes d'une commune du département {paquet.d}</span>
-        <input type="search" value={filtre} placeholder="Ustaritz, Bayonne…"
-          onChange={e => { setFiltre(e.target.value); setChoisie(null); }} />
-      </label>
+      {/* Nom seul : « les comptes de X » demanderait une elision non derivable. */}
+      <Carte echelon="ville" titre={c.nom}
+        sousTitre={`Les comptes de la commune · exercice ${exercice.an}${population(exercice.ex) ? ` · ${population(exercice.ex).toLocaleString("fr-FR")} habitants` : ""} · budget principal`}
+        tag="Donnée officielle">
+        <p className="tx-note tx-intro">
+          Les six lignes ci-dessous sont publiées telles quelles par l'Observatoire des finances
+          locales. Elles sont en euros, pour cette commune seule, sur une seule année.
+        </p>
+        {agregats.map((a, i) => {
+          const v = valeur(exercice.ex, i);
+          if (!v) return (
+            <div className="ligne" key={i}>
+              <div className="ligne-h"><span>{a[1]}</span><b>—</b></div>
+              <div className="ligne-note">Non renseigné pour l'exercice {exercice.an}. Le fichier ne porte pas cette ligne — ce n'est pas un montant nul.</div>
+            </div>
+          );
+          return <BarreEchelon key={i} libelle={a[1]} valeur={v.m} maximum={maxAgregat} echelon="ville" />;
+        })}
+        <p className="tx-note">
+          La longueur des barres compare ces six montants entre eux, pour cette commune uniquement.
+          Repère ne compare jamais deux communes.
+        </p>
+        {src ? <Source producteur={src.producteur} licence={src.licence} maj={src.maj} url="https://data.ofgl.fr/" /> : null}
+      </Carte>
 
-      <div className="rangee liste">
-        {vues.map(([insee, com]) => (
-          <button key={insee} type="button"
-            className={"puce" + (insee === choisie ? " actif" : "")}
-            onClick={() => setChoisie(insee)}>{com.nom}</button>
-        ))}
-      </div>
-
-      {c && !exercice ? (
-        <Vide titre={`Les comptes de ${c.nom} ne figurent pas dans le fichier officiel.`}
-          corps="Un montant absent n'est pas un montant nul : Repère n'affiche rien plutôt qu'un zéro qui pourrait être faux."
-          lien={{ texte: "Consulter les comptes", url: "https://data.ofgl.fr/" }} />
-      ) : null}
-
-      {c && exercice ? (
-        <>
-          <Carte echelon="ville" titre={c.nom} sousTitre={`Comptes de l'exercice ${exercice.an}${population(exercice.ex) ? ` · ${population(exercice.ex).toLocaleString("fr-FR")} habitants` : ""} · budget principal`} tag="Chiffres vérifiés">
-            {agregats.map((a, i) => {
-              const v = valeur(exercice.ex, i);
-              if (!v) return (
-                <div className="ligne" key={i}>
-                  <div className="ligne-h"><span>{a[1]}</span><b>—</b></div>
-                  <div className="ligne-note">Non renseigné pour l'exercice {exercice.an}.</div>
-                </div>
-              );
-              return <BarreEchelon key={i} libelle={a[1]} valeur={v.m} maximum={maxAgregat} echelon="ville" />;
-            })}
-            {src ? <Source producteur={src.producteur} licence={src.licence} maj={src.maj} url="https://data.ofgl.fr/" /> : null}
-          </Carte>
-
-          {rr.length >= 2 ? (
-            <Carte echelon="dept" titre="Ce que ces chiffres veulent dire"
-              sousTitre={`Les mêmes comptes, exercice ${exercice.an}, rapportés les uns aux autres`}>
-              <div className="tuiles">
-                {rr.map((o, i) => <Tuile key={i} k={o.l} v={o.v} n={o.d} />)}
-              </div>
-              <Source calcul producteur={src ? src.producteur : ""} licence={src ? src.licence : ""} maj={src ? src.maj : ""} />
-            </Carte>
-          ) : (
-            <Vide titre="Pas assez de montants pour traduire ces comptes."
-              corps={`Les rapports se calculent à partir de plusieurs lignes à la fois ; pour l'exercice ${exercice.an}, le fichier officiel n'en porte pas assez.`} />
-          )}
-        </>
-      ) : null}
+      {rr.length >= 2 ? (
+        <Carte echelon="dept" titre="Ce que ces chiffres veulent dire"
+          sousTitre={`Les mêmes comptes, exercice ${exercice.an}, rapportés les uns aux autres`}
+          tag="Calcul Repère">
+          <p className="tx-note tx-intro">
+            Aucun de ces rapports n'est publié : Repère les calcule à partir des six montants
+            ci-dessus, et explique sous chacun ce qu'il ne veut pas dire.
+          </p>
+          <div className="tuiles">
+            {rr.map((o, i) => <Tuile key={i} k={o.l} v={o.v} n={o.d} />)}
+          </div>
+          <Source calcul producteur={src ? src.producteur : ""} licence={src ? src.licence : ""} maj={src ? src.maj : ""} />
+        </Carte>
+      ) : (
+        <Vide titre="Pas assez de montants pour traduire ces comptes."
+          corps={`Les rapports se calculent à partir de plusieurs lignes à la fois ; pour l'exercice ${exercice.an}, le fichier officiel n'en porte pas assez.`} />
+      )}
     </div>
   );
 }

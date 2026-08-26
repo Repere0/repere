@@ -12,9 +12,16 @@ import path from "node:path";
 import http from "node:http";
 import { adresseFautive, MOTS_A_ACCENTS } from "../packages/data-utils/src/invariants.js";
 
+/* Playwright est une devDependency de la racine : il se resout normalement.
+   Le repli precedent pointait un chemin absolu propre a une machine — il ne
+   pouvait fonctionner nulle part ailleurs, et masquait la vraie cause quand
+   l'installation manquait. */
 let chromium;
 try { ({ chromium } = await import("playwright")); }
-catch { ({ chromium } = (await import("/home/claude/.npm-global/lib/node_modules/playwright/index.js")).default); }
+catch (e) {
+  console.error("playwright introuvable — lance `pnpm install` a la racine.\n" + e.message);
+  process.exit(2);
+}
 
 const DIST = path.resolve(process.argv[2] || "apps/web/dist");
 if (!fs.existsSync(path.join(DIST, "index.html"))) {
@@ -154,12 +161,17 @@ verif("invariant 2 — un seul magasin, et il ne porte que des paquets departeme
   JSON.stringify(magasins));
 
 console.log("\n--- l'argent -------------------------------------------------");
+/* LA COMMUNE EST CHOISIE UNE FOIS. Avant, chaque onglet portait sa propre
+   recherche et sa propre selection : passer de « Qui decide » a « Ou va
+   l'argent » ramenait un ecran vide, et il fallait rechoisir. On change donc
+   d'onglet SANS rien reselectionner, et on exige que les comptes de la meme
+   commune soient la. */
 await page.getByRole("button", { name: "Où va l'argent" }).click();
-await page.waitForTimeout(600);
-await page.getByRole("searchbox").first().fill("Ustaritz");
-await page.waitForTimeout(400);
-await page.getByRole("button", { name: "Ustaritz", exact: true }).click();
-await page.waitForTimeout(700);
+await page.waitForTimeout(900);
+const memeCommune = await page.evaluate(() => document.body.innerText);
+verif("parcours — la commune choisie survit au changement d'onglet",
+  /Ustaritz/.test(memeCommune) && /Ce qu'elle encaisse/.test(memeCommune),
+  memeCommune.slice(0, 160).replace(/\n+/g, " / "));
 
 const argent = await page.evaluate(() => {
   const t = document.body.innerText;
@@ -170,6 +182,11 @@ verif("rendu — les comptes sont traduits, pas seulement affiches",
   /mois de recettes/.test(argent.t) && /€ de salaires/.test(argent.t), "aucun rapport interne affiche");
 verif("invariant 4 — un calcul est annonce comme un calcul",
   /ce n'est pas un chiffre publié/i.test(argent.t), "la mention manque : un calcul passerait pour une donnee officielle");
+/* Le lecteur doit pouvoir separer d'un coup d'oeil ce qui est publie de ce que
+   Repere deduit : les deux cartes portent une etiquette, et elles different. */
+verif("invariant 4 — donnee officielle et calcul Repere sont etiquetes differemment",
+  /DONNÉE OFFICIELLE/i.test(argent.t) && /CALCUL REPÈRE/i.test(argent.t),
+  argent.t.slice(0, 200).replace(/\n+/g, " / "));
 verif("invariant 5 — aucune barre de largeur nulle",
   argent.barres.length > 0 && argent.nulles === 0,
   argent.barres.length + " barre(s), " + argent.nulles + " a zero pixel");
@@ -179,11 +196,27 @@ const classement = argent.t.match(/classement|palmar|moyenne nationale|mieux que
 verif("invariant 3 — aucun classement ni comparaison entre territoires",
   classement === null, classement ? classement[0] : "");
 
-/* La langue : le francais affiche porte ses accents. Faute commise deux fois. */
+/* La langue : le francais affiche porte ses accents. Faute commise deux fois.
+   La mesure ne portait que sur l'ecran des comptes ; l'ecran « Sources », lui,
+   affichait « Ministere de l'Interieur ... circonscription legislative » recopie
+   tel quel depuis le fichier engendre. On lit donc les TROIS ecrans. */
+await page.getByRole("button", { name: "Sources" }).click();
+await page.waitForTimeout(700);
+const texteSources = await page.evaluate(() => document.body.innerText);
+verif("rendu — l'ecran Sources nomme les trois producteurs",
+  /Élus —/.test(texteSources) && /Comptes —/.test(texteSources) && /Circonscriptions —/.test(texteSources),
+  texteSources.slice(0, 200).replace(/\n+/g, " / "));
+verif("rendu — aucune date de decoupage annoncee comme une mise a jour",
+  !/mise à jour du découpage/i.test(texteSources), "« mise a jour du decoupage de 2010 » ne veut rien dire");
+
+const vuPartout = argent.t + "\n" + texteSources + "\n" + qui;
 const sansAccent = MOTS_A_ACCENTS.filter(m =>
-  new RegExp("(?:^|[^A-Za-zÀ-ÿ./-])" + m + "(?![A-Za-zÀ-ÿ./-])").test(argent.t));
-verif("langue — le francais affiche porte ses accents",
+  new RegExp("(?:^|[^A-Za-zÀ-ÿ./-])" + m + "(?![A-Za-zÀ-ÿ./-])").test(vuPartout));
+verif("langue — le francais affiche porte ses accents, sur les trois ecrans",
   sansAccent.length === 0, sansAccent.join(", "));
+
+await page.getByRole("button", { name: "Où va l'argent" }).click();
+await page.waitForTimeout(500);
 
 console.log("\n--- cibles tactiles et accessibilite -------------------------");
 const petites = await page.evaluate(() =>
@@ -228,9 +261,47 @@ verif("invariant 1 — le reseau est bien coupe pendant la mesure",
   horsLigne.coupe === true, "navigator.onLine vaut encore true : la mesure ne prouverait rien");
 verif("invariant 1 — hors ligne, l'application s'ouvre",
   /Qui décide chez vous/.test(horsLigne.texte), horsLigne.texte.slice(0, 120));
+/* CE QUE CE CONTROLE MESURE MAINTENANT. Il cherchait une phrase de l'interface,
+   donc il tombait au premier changement de formulation tout en laissant passer
+   une vraie panne. Il mesure desormais l'etat : le paquet departemental est
+   revenu (des communes de ce departement sont listees) ET la liste des
+   departements aussi (on peut encore en changer hors ligne). */
+const etatHorsLigne = await page.evaluate(() => ({
+  communes: document.querySelectorAll(".choix-commune .puce").length,
+  choixDept: !!document.querySelector(".choix"),
+  dept: (document.querySelector(".choix > summary") || {}).innerText || "",
+}));
 verif("invariant 1 — hors ligne, le departement deja consulte revient tout seul",
-  /Ustaritz|Piero ROUGET|Chercher une commune/.test(horsLigne.texte),
+  etatHorsLigne.communes > 0 && /64/.test(etatHorsLigne.dept),
+  JSON.stringify(etatHorsLigne));
+verif("invariant 1 — hors ligne, on peut encore changer de departement",
+  etatHorsLigne.choixDept === true,
+  "la liste des departements n'a pas survecu a la coupure : elle n'etait gardee qu'en memoire");
+/* Le message doit dire la verite sur l'etat reel. Un « Repere n'a pas reussi a
+   joindre le serveur » affiche AU-DESSUS de donnees presentes est un mensonge,
+   et le bouton Reessayer un cul-de-sac dans un tunnel. */
+verif("invariant 5 — hors ligne, aucun message d'echec au-dessus de donnees presentes",
+  !/n'a pas réussi à joindre le serveur/.test(horsLigne.texte),
   horsLigne.texte.slice(0, 200).replace(/\n+/g, " / "));
+
+/* SCENARIO 6 : hors ligne, un departement JAMAIS telecharge. Le produit doit
+   dire « vous etes hors ligne », pas « le serveur n'a pas repondu » — et surtout
+   ne pas proposer « Reessayer » a quelqu'un qui n'a pas de reseau. */
+await page.locator(".choix > summary").click();
+await page.waitForTimeout(300);
+await page.getByRole("button", { name: "12", exact: true }).click();
+await page.waitForTimeout(1200);
+const jamaisVu = await page.evaluate(() => ({
+  texte: document.body.innerText,
+  reessayer: [...document.querySelectorAll(".vide button")].map(b => b.innerText),
+}));
+verif("invariant 5 — hors ligne, un departement jamais telecharge le dit dans ces mots",
+  /Vous êtes hors ligne/.test(jamaisVu.texte)
+  && /jamais été téléchargé sur cet appareil/.test(jamaisVu.texte),
+  jamaisVu.texte.slice(0, 220).replace(/\n+/g, " / "));
+verif("invariant 5 — aucun bouton « Reessayer » n'est propose hors ligne",
+  jamaisVu.reessayer.every(t => !/Réessayer/i.test(t)),
+  jamaisVu.reessayer.join(" | ") + " — un bouton Reessayer dans un tunnel est un cul-de-sac");
 
 verif("rendu — aucune erreur JavaScript applicative sur tout le parcours",
   erreurs.length === 0, erreurs.slice(0, 3).join(" | "));

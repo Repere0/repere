@@ -18,9 +18,12 @@
 import Fastify from "fastify";
 import fs from "node:fs";
 import path from "node:path";
-import { adresseFautive } from "../../packages/data-utils/src/invariants.js";
+import { fileURLToPath } from "node:url";
+import { adresseFautive } from "@repere/data-utils/invariants";
 
-const RACINE = path.resolve(process.cwd(), "../../data");
+/* La racine se deduit de l'emplacement DE CE FICHIER, pas du dossier courant :
+   `pnpm dev` lance depuis la racine du depot ne trouvait plus data/. */
+const RACINE = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", "..", "data");
 const app = Fastify({ logger: false });   /* pas de journal : rien à enregistrer */
 
 app.addHook("onRequest", async (req, rep) => {

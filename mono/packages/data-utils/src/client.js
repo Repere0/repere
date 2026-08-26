@@ -24,18 +24,19 @@ export function adresseDepartement(dep) {
   return url;
 }
 export function adresseIndex() { return `${BASE_DONNEES}/index.json`; }
-export function adresseDeputes() {
-  return `${BASE_DONNEES}/deputes.json`;
-}
 
-export async function chargerDeputes({ delaiMs = 8000 } = {}) {
-  try {
-    const donnees = await auReseau(adresseDeputes(), delaiMs);
-    return { etat: ETATS.SERVI, donnees, depuis: "reseau" };
-  } catch (e) {
-    return { etat: e.etat || ETATS.ECHEC, donnees: null, raison: e.message };
-  }
-}
+/* CE QUI A ETE RETIRE ICI, ET POURQUOI.
+ *
+ * Un chargement de `data/deputes.json` vivait a cet endroit. Il partait au
+ * reseau des l'ouverture de l'application — 87 Ko avant meme le choix d'un
+ * departement — sans cache, sans test de coupure reseau, et l'ecran qui devait
+ * l'afficher ne le lisait jamais. Surtout : ce fichier ne declare ni producteur,
+ * ni licence, ni date. L'invariant 4 exige que chaque information affichee porte
+ * sa source ; il ne peut donc rien afficher tant que le fichier n'est pas
+ * accompagne de ses metadonnees, comme le sont les elus et les comptes dans
+ * `index.json`. Le fichier reste sur le disque, il n'est simplement pas servi.
+ */
+
 const enVol = new Map();   /* dédoublonne les requêtes simultanées */
 
 export const ETATS = Object.freeze({
@@ -108,14 +109,28 @@ export async function chargerDepartement(dep, { delaiMs = 8000 } = {}) {
   return promesse;
 }
 
+/* L'INDEX SURVIT A LA COUPURE, COMME LES DEPARTEMENTS.
+ *
+ * Il ne le faisait pas : il n'etait garde qu'en memoire, donc perdu au premier
+ * rechargement. Mesure hors ligne, serveur eteint : le departement revenait bien
+ * du magasin, mais la liste des departements, elle, manquait — et l'application
+ * affichait « Repere n'a pas reussi a joindre le serveur » avec un bouton
+ * Reessayer, au-dessus de donnees parfaitement presentes. Le message mentait sur
+ * l'etat reel, et le lecteur ne pouvait plus changer de departement hors ligne.
+ *
+ * La cle `socle:IDX` passe deja la garde du magasin (`^(dep|socle):[0-9A-Z]{1,3}$`)
+ * et le controle runtime l'accepte : rien n'est assoupli ici, l'index est
+ * simplement range ou il aurait toujours du l'etre. */
 export async function chargerIndex({ delaiMs = 8000 } = {}) {
   const cle = "socle:IDX";
   const enCache = await magasin.lire(cle);
   if (enCache) return { etat: ETATS.SERVI, donnees: enCache, depuis: "cache" };
+  if (typeof navigator !== "undefined" && navigator.onLine === false) {
+    return { etat: ETATS.HORS_LIGNE, donnees: null };
+  }
   try {
     const donnees = await auReseau(adresseIndex(), delaiMs);
-    /* L'index n'est pas un paquet departemental : on le garde en memoire seule,
-       plutot que d'assouplir la garde du magasin pour lui faire une place. */
+    await magasin.ecrire(cle, donnees).catch(() => {});
     return { etat: ETATS.SERVI, donnees, depuis: "reseau" };
   } catch (e) {
     return { etat: e.etat || ETATS.ECHEC, donnees: null, raison: e.message };

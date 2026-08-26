@@ -5,24 +5,28 @@
 > La chaîne `collecte.yml` continue de publier le site actuel ; celle du monorepo
 > construit et éprouve **sans publier**, tant que la bascule n'est pas décidée.
 
-Qui décide chez vous, et où va votre argent. Pour les 34 875 communes de France,
+Qui décide chez vous, et où va votre argent. Pour les 34 637 communes que portent les fichiers officiels,
 à partir des sources officielles.
 
 ## Ce que fait ce dépôt
 
 Il transforme le fichier mono-HTML de Repère (17,3 Mo) en un site qui charge
-**54 Ko compressés** au premier écran, puis **une centaine de kilo-octets** par
+**55 Ko compressés** au premier écran, puis **une centaine de kilo-octets** par
 département — et qui fonctionne hors ligne.
 
-| mesure du 25 août 2026 | valeur |
+| mesure du 26 août 2026 | valeur |
 |---|---|
-| premier écran | 164 Ko, **54 Ko compressés** |
-| + un département (le 64) | 186 Ko, 70 Ko compressés |
+| premier écran | 168 Ko, **55 Ko compressés** |
+| + un département (le 64) | 354 Ko, 125 Ko compressés |
 | fichier mono-HTML actuel | 16,5 Mo |
 | départements produits | 104 |
 | communes réparties | 34 637 |
-| département médian | 108 Ko |
-| contrôles d'invariants | **13 statiques + 21 dans un navigateur** |
+| département médian | 107 Ko |
+| contrôles d'invariants | **18 statiques + 29 dans un navigateur** |
+
+Le premier écran ne demande qu'un seul fichier de données : `data/index.json`.
+Aucun paquet départemental n'est téléchargé avant que le lecteur ait choisi son
+département.
 
 ## Démarrer
 
@@ -33,11 +37,13 @@ pnpm dev                                                # web + api de dev
 ```
 
 ```bash
-pnpm test                        # invariants statiques, sans navigateur
-pnpm build && cp -r data apps/web/dist/data
-node scripts/empreinte-sw.mjs apps/web/dist
-node tests/runtime.test.mjs apps/web/dist   # invariants dans un navigateur
+pnpm build          # vite + copie de data/ dans dist/ + empreinte du service worker
+pnpm test           # 18 contrôles statiques, puis 29 dans un vrai navigateur
 ```
+
+`pnpm build` copie `data/` dans `dist/` lui-même, avec un script Node : la
+commande est la même sous Windows, sous macOS et sous Linux. `pnpm test` a besoin
+d'un `pnpm extract` (pour `data/`) et d'un `pnpm build` (pour le banc navigateur).
 
 ## Les décisions qui ne se discutent pas
 
@@ -57,6 +63,19 @@ node tests/runtime.test.mjs apps/web/dist   # invariants dans un navigateur
    écriture qui n'est pas un paquet départemental, et un contrôle vérifie qu'il
    n'existe qu'un seul magasin.
 
+## Ce que le lecteur voit, dans cet ordre
+
+1. **Où je suis** — un département, puis une commune. Le choix de la commune est
+   fait UNE fois : il ne se refait pas à chaque onglet, et une ligne le rappelle
+   au-dessus des onglets.
+2. **Qui décide** — le maire, ses adjoints, la circonscription législative.
+3. **Où va l'argent** — six montants publiés, puis ce qu'ils veulent dire.
+4. **D'où ça vient** — chaque carte porte sa source, son producteur et sa date.
+5. **Donnée ou calcul** — deux étiquettes qui ne se confondent pas :
+   « Donnée officielle » pour ce qui est publié tel quel, « Calcul Repère » pour
+   ce que Repère déduit. Un contrôle navigateur vérifie que les deux sont là et
+   qu'elles diffèrent.
+
 ## Les huit invariants
 
 Ils sont dans `packages/data-utils/src/invariants.js`, sous forme de données : les
@@ -70,7 +89,7 @@ apps/web            React + Vite. Écrans chargés à la demande.
 apps/api            serveur de DÉVELOPPEMENT uniquement.
 packages/ui         jetons CSS et composants. Aucun composant « squelette ».
 packages/data-utils invariants, magasin IndexedDB, client de données.
-scripts/            extraction et empreinte du service worker.
-tests/              13 contrôles statiques + 21 dans un navigateur.
+scripts/            extraction, copie de data/ et empreinte du service worker.
+tests/              18 contrôles statiques + 29 dans un navigateur.
 data/               engendré. Ne pas modifier à la main.
 ```

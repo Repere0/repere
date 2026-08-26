@@ -15,7 +15,7 @@ export default function Sources({ index, paquet }) {
         {s.comptes ? <Source producteur={"Comptes — " + s.comptes.producteur} licence={s.comptes.licence} maj={s.comptes.maj}
           url="https://data.ofgl.fr/" /> : null}
         {s.circonscriptions ? <Source producteur={"Circonscriptions — " + s.circonscriptions.producteur}
-          licence={s.circonscriptions.licence} maj={"découpage de " + s.circonscriptions.decoupage} /> : null}
+          licence={s.circonscriptions.licence} mention={"découpage de " + s.circonscriptions.decoupage} /> : null}
         <div className="tuiles">
           <Tuile k="Département ouvert" v={paquet.d} echelon="dept" />
           <Tuile k="Communes dans ce fichier" v={Object.keys(paquet.communes).length.toLocaleString("fr-FR")} />

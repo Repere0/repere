@@ -14,7 +14,7 @@ import fs from "node:fs";
 import path from "node:path";
 import {
   INVARIANTS, ECHELONS, AMPLITUDE_MAX, amplitude, adresseFautive,
-  CHAMPS_INTERDITS, MOTS_CLASSEMENT, MOTS_GAMIFICATION,
+  CHAMPS_INTERDITS, MOTS_CLASSEMENT, MOTS_GAMIFICATION, MOTS_A_ACCENTS,
 } from "../packages/data-utils/src/invariants.js";
 import { estDonneePublique, MAGASIN } from "../packages/data-utils/src/store.js";
 import { adresseDepartement, PHRASES, ETATS } from "../packages/data-utils/src/client.js";
@@ -133,6 +133,22 @@ test("invariant 7 — palette gelée, et aucune couleur hors palette", () => {
   assert.ok(controlees > 5, "trop peu de couleurs controlees : le test ne mesure rien");
 });
 
+/* TOUS les JSON produits, pas seulement ceux de data/departments. La garde ne
+   lisait que ce dossier : un fichier national depose a cote — c'est arrive avec
+   un data/deputes.json — n'etait controle par rien du tout. */
+function donneesProduites() {
+  const out = [];
+  const marche = d => {
+    for (const e of fs.readdirSync(path.join(RACINE, d), { withFileTypes: true })) {
+      const rel = path.join(d, e.name);
+      if (e.isDirectory()) marche(rel);
+      else if (e.name.endsWith(".json")) out.push(rel);
+    }
+  };
+  if (existe("data")) marche("data");
+  return out;
+}
+
 test("invariant 8 — aucun champ de patrimoine ni de présence dans les données produites", () => {
   if (!existe("data/index.json")) {
     assert.ok(false, "data/index.json absent : lance `pnpm extract` avant les tests");
@@ -141,10 +157,82 @@ test("invariant 8 — aucun champ de patrimoine ni de présence dans les donnée
   assert.ok(fichiers.length > 90, `seulement ${fichiers.length} departements produits`);
   /* On lit TOUS les fichiers, pas un échantillon : un champ interdit qui
      n'apparaîtrait que dans un département passerait un échantillonnage. */
-  for (const f of fichiers) {
-    const brut = lire(path.join("data/departments", f));
+  const tous = donneesProduites();
+  assert.ok(tous.length > 90, "la marche dans data/ n'a rien trouve : le controle ne mesure rien");
+  for (const f of tous) {
+    const brut = lire(f);
     for (const champ of CHAMPS_INTERDITS) {
       assert.ok(!brut.includes(`"${champ}"`), `${f} porte le champ interdit « ${champ} »`);
+    }
+  }
+});
+
+test("langue — les libellés de source engendrés portent leurs accents", () => {
+  /* Ils sont recopies depuis le fichier d'origine et affiches tels quels par
+     l'ecran « Sources ». L'un d'eux arrivait sans accents. */
+  if (!existe("data/index.json")) return;
+  const sources = JSON.parse(lire("data/index.json")).sources || {};
+  for (const [nom, s] of Object.entries(sources)) {
+    if (!s || !s.producteur) continue;
+    const fautifs = MOTS_A_ACCENTS.filter(m =>
+      new RegExp("(?:^|[^A-Za-zÀ-ÿ./-])" + m + "(?![A-Za-zÀ-ÿ./-])").test(s.producteur));
+    assert.deepEqual(fautifs, [],
+      `le libelle de la source « ${nom} » s'affiche sans accents : ${s.producteur}`);
+  }
+});
+
+test("invariant 4 — aucune donnée n'est servie sans source déclarée", () => {
+  /* Un fichier depose dans data/ et branche dans le client, mais dont personne
+     ne sait qui le publie ni quand, ne peut rien afficher : l'invariant 4 exige
+     une source. La garde tient par les adresses — le client ne compose que les
+     deux familles dont index.json declare la provenance. */
+  const client = lire("packages/data-utils/src/client.js");
+  const composees = [...client.matchAll(/\$\{BASE_DONNEES\}(\/[A-Za-z0-9_${}./-]*)/g)].map(m => m[1]);
+  assert.deepEqual([...new Set(composees)].sort(), ["/departments/${d}.json", "/index.json"],
+    "client.js compose une adresse de donnees inattendue : " + composees.join(", "));
+  const sources = existe("data/index.json") ? (JSON.parse(lire("data/index.json")).sources || {}) : {};
+  for (const attendue of ["elus", "comptes", "circonscriptions"]) {
+    assert.ok(sources[attendue] && sources[attendue].producteur,
+      `index.json ne declare pas la source « ${attendue} »`);
+  }
+});
+
+test("architecture — aucun hook React au niveau module", () => {
+  /* Un `const [x, setX] = useState(...)` ecrit hors composant s'execute au
+     chargement du module : React leve, et RIEN ne s'affiche. Ni le build ni les
+     controles statiques ne le voyaient — seul le navigateur. C'est arrive, et la
+     page est restee blanche avec un build vert. */
+  const hooks = /^(?:const|let|var)\s[^\n]*\buse(?:State|Effect|Memo|Callback|Ref|Context|Reducer)\s*\(/;
+  for (const f of sourcesEcrites()) {
+    if (f.includes("tests")) continue;
+    lire(f).split("\n").forEach((ligne, i) => {
+      assert.ok(!hooks.test(ligne),
+        `${f}:${i + 1} appelle un hook React au niveau module — la page ne s'affichera pas`);
+    });
+  }
+});
+
+test("qualité — aucun fichier source ne commence par un BOM", () => {
+  for (const f of sourcesEcrites()) {
+    const brut = fs.readFileSync(path.join(RACINE, f));
+    assert.ok(!(brut[0] === 0xef && brut[1] === 0xbb && brut[2] === 0xbf),
+      `${f} commence par un BOM UTF-8 : il ressort dans le rendu et dans les diffs`);
+  }
+});
+
+test("architecture — le build ne dépend d'aucune commande propre à un système", () => {
+  /* `xcopy` a fait echouer le build sur toute machine qui n'est pas Windows —
+     apres un `vite build` reussi, donc un dist/ sans donnees et un code de
+     sortie qui, lui, disait bien qu'il fallait regarder. */
+  const propres = ["xcopy", "robocopy", "copy /", "del /", "powershell", "cmd /c"];
+  for (const f of ["package.json", "apps/web/package.json", "apps/api/package.json",
+                   "packages/ui/package.json", "packages/data-utils/package.json"]) {
+    const scripts = JSON.parse(lire(f)).scripts || {};
+    for (const [nom, cmd] of Object.entries(scripts)) {
+      for (const mot of propres) {
+        assert.ok(!cmd.toLowerCase().includes(mot),
+          `${f} · script « ${nom} » depend de « ${mot} » : il ne tournera que sur un systeme`);
+      }
     }
   }
 });

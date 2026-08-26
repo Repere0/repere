@@ -95,13 +95,35 @@ async function extraire() {
     };
   }
 
+  /* LES LIBELLES DE SOURCE SONT DU TEXTE AFFICHE.
+   *
+   * Un des trois blocs porte son libelle sans accents (« Ministere de
+   * l'Interieur — communes et cantons par circonscription legislative ») et
+   * l'ecran « Sources » le rendait tel quel. La regle du projet est explicite :
+   * les commentaires du code sont sans accents, le texte affiche jamais.
+   * On ne renomme personne : seuls les mots de la table ci-dessous sont touches,
+   * un mot absent de la table est recopie tel quel. Un controle statique relit
+   * data/index.json et echoue si un libelle affiche reste sans accents. */
+  const ACCENTS = {
+    Ministere: "Ministère", ministere: "ministère",
+    Interieur: "Intérieur", interieur: "intérieur",
+    legislative: "législative", legislatives: "législatives",
+    Repertoire: "Répertoire", repertoire: "répertoire",
+    elus: "élus", Elus: "Élus",
+    donnees: "données", Donnees: "Données",
+    generale: "générale", Generale: "Générale",
+    decoupage: "découpage", Decoupage: "Découpage",
+    financiere: "financière", publiques: "publiques",
+  };
+  const reaccentuer = t => String(t || "").replace(/[A-Za-z]+/g, m => ACCENTS[m] || m);
+
   const meta = {
     v: 1,
     genere_le: new Date().toISOString().slice(0, 10),
     sources: {
-      elus: (RNE.meta && { producteur: RNE.meta.producteur, licence: RNE.meta.licence, maj: RNE.meta.maj }) || null,
-      comptes: (OFGL && OFGL.meta && { producteur: OFGL.meta.producteur, licence: OFGL.meta.licence, maj: OFGL.meta.maj }) || null,
-      circonscriptions: (CIRCOS && { producteur: CIRCOS.source, licence: CIRCOS.licence, decoupage: CIRCOS.decoupage }) || null,
+      elus: (RNE.meta && { producteur: reaccentuer(RNE.meta.producteur), licence: RNE.meta.licence, maj: RNE.meta.maj }) || null,
+      comptes: (OFGL && OFGL.meta && { producteur: reaccentuer(OFGL.meta.producteur), licence: OFGL.meta.licence, maj: OFGL.meta.maj }) || null,
+      circonscriptions: (CIRCOS && { producteur: reaccentuer(CIRCOS.source), licence: CIRCOS.licence, decoupage: CIRCOS.decoupage }) || null,
     },
     agregats: (OFGL && OFGL.meta && OFGL.meta.agregats) || [],
   };
