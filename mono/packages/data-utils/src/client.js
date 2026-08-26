@@ -24,7 +24,18 @@ export function adresseDepartement(dep) {
   return url;
 }
 export function adresseIndex() { return `${BASE_DONNEES}/index.json`; }
+export function adresseDeputes() {
+  return `${BASE_DONNEES}/deputes.json`;
+}
 
+export async function chargerDeputes({ delaiMs = 8000 } = {}) {
+  try {
+    const donnees = await auReseau(adresseDeputes(), delaiMs);
+    return { etat: ETATS.SERVI, donnees, depuis: "reseau" };
+  } catch (e) {
+    return { etat: e.etat || ETATS.ECHEC, donnees: null, raison: e.message };
+  }
+}
 const enVol = new Map();   /* dédoublonne les requêtes simultanées */
 
 export const ETATS = Object.freeze({

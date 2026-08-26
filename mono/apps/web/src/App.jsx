@@ -1,9 +1,8 @@
-import React, { Suspense, lazy, useCallback, useEffect, useState } from "react";
+﻿import React, { Suspense, lazy, useCallback, useEffect, useState } from "react";
 import { Chargement, Vide, Puce } from "@repere/ui";
 import {
-  chargerIndex, chargerDepartement, prechargerDepartement, ETATS, PHRASES,
-} from "@repere/data-utils";
-
+chargerIndex, chargerDepartement, chargerDeputes, prechargerDepartement, ETATS, PHRASES,} from "@repere/data-utils";
+const [deputes, setDeputes] = useState(null);
 /* CHARGEMENT PARESSEUX DES ÉCRANS. Chacun est un module séparé : ouvrir « Qui
    décide » ne télécharge pas le code de « Où va mon argent ». Le socle React est
    dans un morceau à part (voir vite.config.js). */
@@ -37,7 +36,9 @@ export default function App() {
   const [etat, setEtat] = useState(ETATS.ABSENT);
   const [onglet, setOnglet] = useState("qui");
 
-  useEffect(() => {
+  useEffect(() => {chargerDeputes().then(r => {
+  if (vivant && r.donnees) setDeputes(r.donnees);
+});
     let vivant = true;
     chargerIndex().then(r => {
       if (!vivant) return;
@@ -124,7 +125,7 @@ export default function App() {
               : null}
             {etat === ETATS.SERVI && paquet ? (
               <Suspense fallback={<Chargement titre="Ouverture de l'écran." corps="Le code de cet écran est téléchargé à la demande." />}>
-                {onglet === "qui" ? <QuiDecide paquet={paquet} index={index} /> : null}
+                {onglet === "qui" ? <QuiDecide paquet={paquet} index={index} deputes={deputes} /> : null}
                 {onglet === "argent" ? <OuVaArgent paquet={paquet} index={index} /> : null}
                 {onglet === "sources" ? <Sources index={index} paquet={paquet} /> : null}
               </Suspense>
@@ -137,3 +138,4 @@ export default function App() {
     </div>
   );
 }
+
