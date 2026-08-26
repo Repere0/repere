@@ -34,9 +34,17 @@ jobs:
       - uses: actions/checkout@v4
 
       - uses: pnpm/action-setup@v4
-        with: { version: 8 }
+        with:
+          version: 8
       - uses: actions/setup-node@v4
-        with: { node-version: 22, cache: pnpm }
+        with:
+          node-version: 22
+          cache: pnpm
+          # `defaults.working-directory` ne s'applique QU'AUX ETAPES `run:`.
+          # Une action, elle, part toujours de la racine du depot : sans cette
+          # ligne, setup-node cherchait pnpm-lock.yaml a la racine et echouait
+          # avec « Dependencies lock file is not found ». Mesure du 26/08.
+          cache-dependency-path: mono/pnpm-lock.yaml
 
       - run: pnpm install --frozen-lockfile
 
@@ -61,8 +69,12 @@ jobs:
       # ------------------------------------------------ 4. LE VERROU
       # Service worker installé, serveur ÉTEINT, parcours complet. C'est ce
       # contrôle qui autorise à publier sans qu'un humain regarde.
+      # `pnpm dlx` aurait installe le NAVIGATEUR mais pas le paquet : le banc fait
+      # `import("playwright")`, qui aurait echoue faute de le trouver dans
+      # node_modules. Playwright est donc une devDependency du monorepo, et on
+      # installe seulement son navigateur ici.
       - name: Installer le navigateur du banc
-        run: pnpm dlx playwright@1 install --with-deps chromium
+        run: pnpm exec playwright install --with-deps chromium
       - name: Invariants — contrôles dans un navigateur
         run: node tests/runtime.test.mjs apps/web/dist
 
