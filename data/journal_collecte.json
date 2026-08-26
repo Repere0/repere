@@ -1,15 +1,15 @@
 {
- "execute_le": "2026-08-26T12:25:01Z",
+ "execute_le": "2026-08-26T12:53:02Z",
  "sources": [
   {
-   "cle": "organes_an",
-   "titre": "Assemblee nationale — acteurs, mandats et organes (historique)",
-   "url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip",
-   "tentee_le": "2026-08-26T12:25:01Z",
+   "cle": "scrutins_an",
+   "titre": "Assemblee nationale — scrutins publics",
+   "url": "https://data.assemblee-nationale.fr/static/openData/repository/17/loi/scrutins/Scrutins.json.zip",
+   "tentee_le": "2026-08-26T12:53:02Z",
    "http": 200,
-   "octets": 13600196,
-   "empreinte": "fb4635e78ff31310",
-   "secondes": 4.8,
+   "octets": 26317479,
+   "empreinte": "3504c3fc771bc32d",
+   "secondes": 2.8,
    "ok": true
   }
  ]

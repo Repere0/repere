@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+﻿#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """Generateur de la PWA — reconstruit, puis PROUVE.
 
@@ -100,7 +100,7 @@ def engendrer(html, lien_confidentialite=True):
     # liait. Elle etait mise en cache par le service worker et atteignable seulement
     # en tapant son adresse. Le lien n'est pose QUE dans la version servie, parce que
     # le fichier autonome ouvert depuis un telephone n'a pas cette page a cote de lui.
-    ancre_legal = '<p style="margin-top:10px;"><b>Sources et licences.</b>'
+    ancre_legal = '<p class="abo-note" style="text-align:left;margin-top:10px;">'
     assert html.count(ancre_legal) == 1, "le repli des mentions legales est introuvable"
     lien = ('<p style="margin-top:10px;"><b>Politique de confidentialité.</b> '
             '<a href="confidentialite.html" style="color:var(--ink);text-decoration:underline;'
@@ -243,12 +243,17 @@ sw = sw.replace(ancienne.group(0), 'VERSION = "repere-%s"' % empreinte, 1)
 # POURQUOI une page separee : build_pwa.py retire la landing de index.html — c'est
 # volontaire, index.html EST l'application. La landing est donc engendree ici, depuis
 # le MEME fichier source : une seule verite, deux sorties. Rien n'est recopie a la main.
-D_CSS_LD = "/* ------- landing (visible seulement hors installation"
-i = src_app.index(D_CSS_LD)
-j = src_app.index("\n}\n", src_app.index("@media(max-width:640px){", i)) + 3
-CSS_LD = src_app[i:j]
-assert ".ld-h1{" in CSS_LD and "@media(max-width:640px)" in CSS_LD and len(CSS_LD) < 6000, \
-    "le CSS de la landing n'a pas ete decoupe correctement"
+i = src_app.index(".pitch{")
+fin_css = src_app.index("</style>", i)
+CSS_LD = "\n".join(
+    ligne for ligne in src_app[i:fin_css].splitlines()
+    if ligne.startswith(".pitch")
+)
+
+assert ".pitch{" in CSS_LD and ".pitch h1{" in CSS_LD, \
+    "le CSS de la landing v18.9 est introuvable"
+assert len(CSS_LD) < 6000, \
+    "le CSS de la landing est anormalement long"
 
 # Sur la landing, le bouton n'ouvre pas un telephone dessine : il ouvre l'application,
 # avec la commune deja saisie. C'est le seul endroit ou ldGo() differe.
@@ -299,26 +304,59 @@ PIED = """<p class="ld-pied">
   INSEE, Observatoire des finances et de la gestion publique locales, Assemblee nationale, Senat.
 </p>
 """
+RECHERCHE_COMMUNE = """
+<div style="max-width:520px;margin:0 auto 28px;text-align:center;">
+  <input id="ld-input"
+         type="text"
+         placeholder="Votre commune"
+         autocomplete="address-level2"
+         style="width:100%;padding:13px 16px;border-radius:12px;
+                border:1px solid #555;background:#171615;color:#f5f5f7;
+                font-size:16px;">
+  <button type="button" onclick="ldGo('ld-input')"
+          style="margin-top:10px;padding:11px 20px;border-radius:12px;
+                 border:1px solid #777;background:#222;color:#f5f5f7;
+                 font-size:15px;cursor:pointer;">
+    Voir ma commune
+  </button>
+</div>
+"""
 
-corps = "\n".join(LANDING)
-# Dans le fichier source, la landing surplombe le telephone dessine et le dit. Sur
-# accueil.html il n y a pas de telephone en dessous : l application est sur une autre
-# page. La phrase serait fausse, donc elle change ici — vu sur une capture, pas par
-# une assertion.
-FAUX = '<p class="ld-micro" style="margin-top:22px;">L\'application est juste en dessous. Elle fonctionne, avec de vraies donnees.</p>'
-FAUX = FAUX.replace("donnees", "donn\u00e9es").replace("L'application", "L'application")
-assert corps.count('L\'application est juste en dessous') == 1, "la phrase du telephone dessine a change"
-i_f = corps.index('<p class="ld-micro" style="margin-top:22px;">')
-j_f = corps.index('</p>', i_f) + 4
-corps = corps[:i_f] + ('<p class="ld-micro" style="margin-top:22px;">Tapez votre commune : '
-                       'l\'application s\'ouvre directement sur vos donn\u00e9es, sans inscription.</p>') + corps[j_f:]
-assert 'juste en dessous' not in corps
-accueil = TETE + corps + "\n" + PIED + JS_ACCUEIL + "\n</body>\n</html>\n"
+corps = RECHERCHE_COMMUNE + "\n" + "\n".join(LANDING)
+# Champ de recherche de commune pour la page d'accueil.
+RECHERCHE_COMMUNE = """
+<div style="max-width:520px;margin:0 auto 28px;text-align:center;">
+  <input id="ld-input"
+         type="text"
+         placeholder="Votre commune"
+         autocomplete="address-level2"
+         style="width:100%;padding:13px 16px;border-radius:12px;
+                border:1px solid #555;background:#171615;color:#f5f5f7;
+                font-size:16px;outline:none;">
+  <button onclick="ldGo('ld-input')"
+          style="margin-top:10px;padding:11px 20px;border-radius:12px;
+                 border:1px solid #777;background:#222;color:#f5f5f7;
+                 font-size:15px;cursor:pointer;">
+    Voir ma commune
+  </button>
+</div>
+"""
+
+corps = RECHERCHE_COMMUNE + "\n" + corps
+
+RECHERCHE = """
+<div style="max-width:520px;margin:0 auto 28px;text-align:center;">
+<input id="ld-input" type="text" placeholder="Votre commune"
+style="width:100%;padding:13px 16px;border-radius:12px;border:1px solid #555;background:#171615;color:#f5f5f7;font-size:16px;">
+<button type="button" onclick="ldGo('ld-input')"
+style="margin-top:10px;padding:11px 20px;border-radius:12px;border:1px solid #777;background:#222;color:#f5f5f7;font-size:15px;">
+Voir ma commune
+</button>
+</div>
+"""
+
+accueil = TETE + RECHERCHE + corps + "\n" + PIED + JS_ACCUEIL + "\n</body>\n</html>\n"
 assert accueil.count("function ldGo") == 1
-assert 'id="ld-input"' in accueil and 'id="ld-input2"' in accueil
-assert "index.html?c=" in accueil
-io.open(os.path.join(SORTIE, "accueil.html"), "w", encoding="utf-8").write(accueil)
-print("accueil.html : %d Ko, %d bloc(s) de landing" % (len(accueil.encode("utf-8")) / 1024, len(LANDING)))
 
 # ------------------------------------------------------------- sw.js
 # La garde de navigation vit desormais DANS la reference (site/sw.js) : elle limite
@@ -342,3 +380,7 @@ io.open(os.path.join(SORTIE, "sw.js"), "w", encoding="utf-8").write(sw)
 print("index.html : %.2f Mo" % (len(index.encode("utf-8")) / 1048576))
 print("sw.js : VERSION repere-%s (etait repere-%s)" % (empreinte, ancienne.group(1)))
 print("site ecrit dans %s" % SORTIE)
+
+
+
+
