@@ -1,0 +1,81 @@
+/* Jetons de Repère.
+ *
+ * INVARIANT 7 : cinq couleurs d'échelon gelées, et aucune autre couleur du
+ * produit ne dépasse une amplitude RGB de 24. Les jetons neutres ci-dessous
+ * sont donc TOUS des gris légèrement chauds, mesurés, jamais des couleurs.
+ * Le test d'invariants relit ce fichier et refait le calcul.
+ *
+ * Trois états de thème, pas deux : un choix explicite pose data-theme, et le
+ * réglage « système » ne pose rien du tout — la majorité des lecteurs sont dans
+ * ce troisième cas.
+ */
+:root {
+  /* les cinq échelons — GELÉS, ne pas modifier */
+  --e-ville:  #0e7490;
+  --e-agglo:  #0891b2;
+  --e-dept:   #b45309;
+  --e-region: #6d28d9;
+  --e-france: #1d1d1f;
+
+  /* neutres : amplitude RGB <= 24 */
+  --sol:   #f2efe9;
+  --carte: #ffffff;
+  --encre: #1a1917;
+  --sourd: #6b675f;
+  --trait: #ddd8ce;
+  --voile: #ece8e0;
+
+  --r: 10px;
+  --ombre: 0 1px 2px rgba(26,25,23,.06), 0 10px 28px -18px rgba(26,25,23,.35);
+  --pas: 4px;
+  /* Polices du systeme uniquement : aucun hote tiers ne voit passer un lecteur.
+     Les familles nommees sont utilisees si elles sont deja installees, jamais
+     telechargees. */
+  --t-mono: ui-monospace, "SF Mono", "IBM Plex Mono", Menlo, Consolas, monospace;
+  --t-titre: "Bricolage Grotesque", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --t-texte: "Source Serif 4", Charter, Georgia, "Times New Roman", serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --sol:   #141310;
+    --carte: #1d1b17;
+    --encre: #ede9e0;
+    --sourd: #9c968b;
+    --trait: #33302a;
+    --voile: #24211c;
+    --ombre: 0 1px 2px rgba(0,0,0,.45), 0 10px 28px -18px rgba(0,0,0,.85);
+  }
+}
+:root[data-theme="dark"] {
+  --sol:   #141310;
+  --carte: #1d1b17;
+  --encre: #ede9e0;
+  --sourd: #9c968b;
+  --trait: #33302a;
+  --voile: #24211c;
+  --ombre: 0 1px 2px rgba(0,0,0,.45), 0 10px 28px -18px rgba(0,0,0,.85);
+}
+
+* { box-sizing: border-box; }
+html { color-scheme: light dark; }
+body {
+  margin: 0;
+  background: var(--sol);
+  color: var(--encre);
+  font-family: var(--t-texte);
+  font-size: 17px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+h1, h2, h3, .eyebrow, .puce, button, .tuile-k, .tuile-v { font-family: var(--t-titre); }
+h1 { font-size: clamp(1.9rem, 5.5vw, 2.6rem); line-height: 1.06; letter-spacing: -.022em; margin: 0 0 .4rem; text-wrap: balance; }
+h2 { font-size: clamp(1.2rem, 3.4vw, 1.5rem); line-height: 1.18; letter-spacing: -.015em; margin: 0 0 .3rem; text-wrap: balance; }
+h3 { font-size: 1rem; margin: 0 0 .25rem; }
+p  { margin: 0 0 .9rem; max-width: 64ch; }
+a  { color: var(--e-ville); text-underline-offset: 2px; }
+:focus-visible { outline: 2px solid var(--e-ville); outline-offset: 3px; border-radius: 4px; }
+code, .mono { font-family: var(--t-mono); font-size: .86em; font-variant-numeric: tabular-nums; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .001ms !important; transition-duration: .001ms !important; }
+}

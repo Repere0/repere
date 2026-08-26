@@ -1,0 +1,258 @@
+<title>Brancher le monorepo</title>
+
+<style>
+:root{
+  --sol:#F2EFE9; --carte:#FFFFFF; --encre:#1A1917; --sourd:#6B675F;
+  --trait:#DDD8CE; --accent:#14707F; --accent-doux:#E3EFF1;
+  --grave:#8E2C24; --moyen:#8A5E14;
+  --grave-fond:#F6E9E7; --moyen-fond:#F6EFE0;
+  --ombre:0 1px 2px rgba(26,25,23,.06), 0 10px 28px -18px rgba(26,25,23,.35);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --sol:#141310; --carte:#1D1B17; --encre:#EDE9E0; --sourd:#9C968B;
+    --trait:#33302A; --accent:#5CB6C4; --accent-doux:#1B2E31;
+    --grave:#E08A7E; --moyen:#D5A548;
+    --grave-fond:#2C1D1A; --moyen-fond:#2B2415;
+    --ombre:0 1px 2px rgba(0,0,0,.45), 0 10px 28px -18px rgba(0,0,0,.85);
+  }
+}
+:root[data-theme="dark"]{
+  --sol:#141310; --carte:#1D1B17; --encre:#EDE9E0; --sourd:#9C968B;
+  --trait:#33302A; --accent:#5CB6C4; --accent-doux:#1B2E31;
+  --grave:#E08A7E; --moyen:#D5A548;
+  --grave-fond:#2C1D1A; --moyen-fond:#2B2415;
+  --ombre:0 1px 2px rgba(0,0,0,.45), 0 10px 28px -18px rgba(0,0,0,.85);
+}
+*{box-sizing:border-box}
+body{margin:0; background:var(--sol); color:var(--encre);
+  font-family:"Source Serif 4",Charter,Georgia,serif; font-size:17px; line-height:1.62;
+  -webkit-font-smoothing:antialiased;}
+.page{max-width:760px; margin:0 auto; padding:clamp(28px,6vw,68px) clamp(18px,5vw,36px) 90px;}
+h1,h2,h3,.eyebrow,kbd,.tag{font-family:"Bricolage Grotesque",system-ui,-apple-system,"Segoe UI",sans-serif;}
+h1{font-size:clamp(2rem,6vw,2.9rem); line-height:1.05; font-weight:700; letter-spacing:-.022em; margin:0 0 .5rem; text-wrap:balance;}
+h2{font-size:clamp(1.25rem,3.4vw,1.55rem); line-height:1.18; font-weight:700; letter-spacing:-.015em; margin:0; text-wrap:balance;}
+h3{font-size:1rem; font-weight:700; margin:0 0 .3rem;}
+p{margin:0 0 .95rem; max-width:64ch;}
+a{color:var(--accent); text-underline-offset:2px;}
+strong{font-weight:600;}
+code{font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace; font-size:.86em;
+  background:var(--accent-doux); padding:.12em .38em; border-radius:4px;}
+.eyebrow{font-size:.72rem; font-weight:700; letter-spacing:.14em; text-transform:uppercase; color:var(--sourd); margin:0 0 .8rem;}
+.chapeau{font-size:1.1rem; color:var(--sourd); max-width:58ch;}
+header.tete{border-bottom:1px solid var(--trait); padding-bottom:1.8rem; margin-bottom:2rem;}
+
+.encadre{background:var(--accent-doux); border-radius:10px; padding:1rem 1.15rem; margin:0 0 2rem;}
+.encadre p{margin:0; max-width:none;}
+.encadre p + p{margin-top:.6rem;}
+
+ol.etapes{list-style:none; counter-reset:e; padding:0; margin:0; display:flex; flex-direction:column; gap:1.6rem;}
+ol.etapes > li{counter-increment:e; background:var(--carte); border:1px solid var(--trait);
+  border-radius:12px; padding:1.15rem 1.3rem; box-shadow:var(--ombre);}
+.tete-etape{display:flex; align-items:flex-start; gap:.85rem; margin-bottom:.9rem;}
+.tete-etape::before{content:counter(e); flex:0 0 auto; font-family:"Bricolage Grotesque",sans-serif;
+  font-weight:700; font-size:1rem; width:2.1rem; height:2.1rem; border-radius:99px;
+  display:grid; place-items:center; background:var(--accent); color:var(--sol);}
+.tete-etape .h{flex:1 1 auto;}
+.tete-etape .duree{font-family:ui-monospace,monospace; font-size:.74rem; color:var(--sourd);
+  white-space:nowrap; margin-top:.35rem;}
+
+.clics{list-style:none; padding:0; margin:.2rem 0 1rem; counter-reset:c;}
+.clics li{counter-increment:c; position:relative; padding-left:1.9rem; margin-bottom:.55rem; font-size:.96rem;}
+.clics li::before{content:counter(c) "."; position:absolute; left:0; top:0;
+  font-family:ui-monospace,monospace; font-size:.82rem; color:var(--sourd); padding-top:.18em;}
+
+kbd{display:inline-block; font-size:.8rem; font-weight:600; padding:.16em .5em;
+  border:1px solid var(--trait); border-bottom-width:2px; border-radius:5px;
+  background:var(--sol); white-space:nowrap;}
+
+pre{background:var(--encre); color:var(--sol); border-radius:9px; padding:.85rem 1rem;
+  overflow-x:auto; font-size:.82rem; line-height:1.65; margin:.6rem 0 1rem;}
+pre code{background:none; padding:0; color:inherit; font-size:1em;}
+
+.attendu{border-left:3px solid var(--accent); padding:.15rem 0 .15rem .9rem; margin:.9rem 0;}
+.attendu b{display:block; font-family:"Bricolage Grotesque",sans-serif; font-size:.72rem;
+  font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--accent); margin-bottom:.3rem;}
+.attendu p{margin:0; font-size:.93rem;}
+
+.alerte{background:var(--moyen-fond); border-radius:9px; padding:.8rem .95rem; margin:.9rem 0 0; font-size:.92rem;}
+.alerte.rouge{background:var(--grave-fond);}
+.alerte b{display:block; margin-bottom:.25rem;}
+.alerte p{margin:0; max-width:none;}
+
+details{background:var(--carte); border:1px solid var(--trait); border-radius:10px; margin-top:1.6rem;}
+summary{font-family:"Bricolage Grotesque",sans-serif; font-weight:600; font-size:.95rem;
+  padding:.9rem 1.1rem; cursor:pointer; min-height:44px; display:flex; align-items:center;}
+details[open] summary{border-bottom:1px solid var(--trait);}
+.det-corps{padding:1rem 1.1rem 1.1rem;}
+
+table{border-collapse:collapse; width:100%; font-size:.88rem; margin:.6rem 0 0;}
+th,td{text-align:left; padding:.55rem .7rem; border-bottom:1px solid var(--trait); vertical-align:top;}
+th{font-family:"Bricolage Grotesque",sans-serif; font-size:.68rem; font-weight:700;
+  letter-spacing:.08em; text-transform:uppercase; color:var(--sourd);}
+tr:last-child td{border-bottom:none;}
+.pied{border-top:1px solid var(--trait); padding-top:1.4rem; margin-top:2.4rem; color:var(--sourd); font-size:.9rem;}
+@media (prefers-reduced-motion: reduce){*{animation:none!important; transition:none!important;}}
+</style>
+
+<div class="page">
+
+<header class="tete">
+  <p class="eyebrow">Repère · 26 août 2026</p>
+  <h1>Brancher le monorepo</h1>
+  <p class="chapeau">Trois gestes, un quart d'heure. Tout le reste est déjà écrit sur ton disque.</p>
+</header>
+
+<div class="encadre">
+  <p><strong>D'abord, la bonne nouvelle : tu n'as rien à installer et rien à faire tourner sur ton PC.</strong></p>
+  <p>Les commandes que je t'ai données hier soir étaient facultatives — c'est la chaîne GitHub qui construit et qui vérifie, sur ses propres machines. Ton PC ne sert qu'à envoyer les fichiers, comme d'habitude, avec <code>pousser.bat</code>.</p>
+</div>
+
+<ol class="etapes">
+
+<li>
+  <div class="tete-etape"><div class="h">
+    <h2>Envoyer le monorepo sur GitHub</h2>
+    <p class="duree">2 minutes · sur ton PC</p>
+  </div></div>
+
+  <p><strong>Double-clic sur <code>pousser.bat</code></strong>, dans <code>C:\Users\APina\repere</code>. C'est exactement le geste que tu fais déjà.</p>
+
+  <div class="attendu">
+    <b>Ce que tu dois voir</b>
+    <p>La fenêtre noire défile et se termine par <strong><code>OK - envoye</code></strong>. Elle aura envoyé le dossier <code>mono\</code> et une trentaine de fichiers.</p>
+  </div>
+
+  <div class="alerte rouge">
+    <b>Si tu lis <code>REFUS : un fichier au nom suspect allait partir</code></b>
+    <p><strong>C'est arrivé le 26 août, et c'était ma faute.</strong> <code>pousser.bat</code> refuse tout envoi contenant un fichier dont le nom évoque un secret — et il cherchait le mot <em>token</em> n'importe où dans le chemin. Le monorepo apporte <code>packages/ui/src/tokens.css</code>, les jetons de couleur de l'interface : le garde a bloqué tous les envois pendant trois heures, sans dire lequel des fichiers posait problème.</p>
+    <p>La <strong>version 3</strong> de <code>pousser.bat</code> corrige ça : elle écarte d'abord les extensions qu'un secret ne porte jamais (<code>.css</code>, <code>.js</code>, <code>.md</code>…), puis applique le même contrôle au reste — un <code>.env</code>, un <code>.pem</code> ou un <code>token.txt</code> restent attrapés. Et elle nomme le fichier en cause. Si tu vois encore ce message, c'est que tu as l'ancienne version.</p>
+  </div>
+
+  <div class="alerte">
+    <b>Cet ordre-là compte.</b>
+    <p>Il faut envoyer <code>mono\</code> <em>avant</em> de créer le fichier de l'étape 2. Sinon la chaîne se lancera en cherchant un dossier qui n'existe pas encore sur GitHub, et elle échouera pour cette seule raison.</p>
+  </div>
+</li>
+
+<li>
+  <div class="tete-etape"><div class="h">
+    <h2>Créer le fichier de la chaîne, sur le site de GitHub</h2>
+    <p class="duree">5 minutes · dans ton navigateur</p>
+  </div></div>
+
+  <p>C'est le seul geste un peu inhabituel, et il a une raison : le dossier <code>.github\workflows\</code> est <strong>protégé en écriture</strong> — je ne peux pas y déposer de fichier à distance. C'est déjà pour ça que tu avais dû coller <code>collecte.yml</code> à la main.</p>
+
+  <ol class="clics">
+    <li>Ouvre <strong>ton dépôt Repère sur github.com</strong>.</li>
+    <li>Clique sur l'onglet <strong>Code</strong>, puis entre dans le dossier <strong><code>.github</code></strong>, puis <strong><code>workflows</code></strong>. Tu dois y voir <code>collecte.yml</code>.</li>
+    <li>En haut à droite, bouton <strong>« Add file »</strong> → <strong>« Create new file »</strong>.</li>
+    <li>Dans la case du nom, tape exactement : <strong><code>build-publish.yml</code></strong></li>
+    <li>Sur ton PC, ouvre <strong><code>docs\build_publish_workflow.yml.txt</code></strong> avec le Bloc-notes. <kbd>Ctrl</kbd> + <kbd>A</kbd> puis <kbd>Ctrl</kbd> + <kbd>C</kbd> pour tout copier.</li>
+    <li>Reviens sur GitHub, clique dans la grande zone de texte, <kbd>Ctrl</kbd> + <kbd>V</kbd>.</li>
+    <li>Descends en bas de page, bouton vert <strong>« Commit changes »</strong>, puis à nouveau <strong>« Commit changes »</strong> dans la fenêtre qui s'ouvre.</li>
+  </ol>
+
+  <div class="attendu">
+    <b>Ce que tu dois voir</b>
+    <p>Le dossier <code>workflows</code> contient maintenant <strong>deux</strong> fichiers : <code>collecte.yml</code> et <code>build-publish.yml</code>.</p>
+  </div>
+
+  <div class="alerte">
+    <b>Si le fichier existe déjà sur GitHub.</b>
+    <p>Tu n'as pas à le recréer : entre dedans, clique sur l'icône <strong>crayon</strong> en haut à droite, <kbd>Ctrl</kbd> + <kbd>A</kbd> pour tout sélectionner, colle la nouvelle version par-dessus, puis « Commit changes ».</p>
+  </div>
+
+  <div class="alerte">
+    <b>Le nom doit être exact.</b>
+    <p><code>build-publish.yml</code> — un tiret au milieu, et <code>.yml</code> à la fin, pas <code>.yaml</code> ni <code>.txt</code>. GitHub ignore silencieusement un fichier mal nommé : rien ne se passera, et rien ne te dira pourquoi.</p>
+  </div>
+</li>
+
+<li>
+  <div class="tete-etape"><div class="h">
+    <h2>Lancer la chaîne à la main, une fois</h2>
+    <p class="duree">30 secondes, puis 4 minutes d'attente</p>
+  </div></div>
+
+  <ol class="clics">
+    <li>Sur GitHub, onglet <strong>« Actions »</strong>, tout en haut.</li>
+    <li>Dans la colonne de gauche, clique sur <strong>« Construire, éprouver, publier »</strong>.</li>
+    <li>À droite, bouton <strong>« Run workflow »</strong> → puis le bouton vert <strong>« Run workflow »</strong>.</li>
+    <li>Attends une trentaine de secondes, puis rafraîchis la page. Une ligne apparaît avec un rond jaune qui tourne.</li>
+  </ol>
+
+  <div class="attendu">
+    <b>Ce que tu dois voir au bout de 4 à 5 minutes</b>
+    <p>Un <strong>rond vert</strong>. En cliquant dessus puis sur l'étape <em>« Extraire les données par département »</em>, tu dois lire <code>departements : 104</code> et <code>communes reparties : 34637</code>. Et tout en bas de la page du run, un fichier <strong><code>site-monorepo</code></strong> à télécharger : c'est le site construit.</p>
+  </div>
+
+  <div class="alerte">
+    <b>Elle ne met rien en ligne, et c'est voulu.</b>
+    <p>Ton site actuel continue d'être publié par <code>collecte.yml</code>, comme avant. Cette nouvelle chaîne construit et vérifie seulement. On basculera la publication quand elle aura tourné au vert plusieurs jours de suite — deux chaînes qui publient en même temps se marcheraient dessus sans que personne ne le voie.</p>
+  </div>
+</li>
+
+</ol>
+
+<details>
+  <summary>Si le rond est rouge — les trois causes probables</summary>
+  <div class="det-corps">
+    <p>Clique sur le rond rouge, puis sur l'étape qui porte une croix. Le message est en bas.</p>
+    <table>
+      <thead><tr><th>Ce que tu lis</th><th>Ce que ça veut dire</th><th>Quoi faire</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><code>Some specified paths were not resolved</code></td>
+          <td>Le dossier <code>mono\</code> n'est pas sur GitHub — la chaîne cherche un verrou qui n'y est pas encore.</td>
+          <td>C'est presque toujours <code>pousser.bat</code> qui a refusé l'envoi. Ouvre <code>journal_pousser.txt</code> et regarde les dernières lignes : si tu y lis <code>REFUS secret</code>, prends la version 3 de <code>pousser.bat</code>.</td>
+        </tr>
+        <tr>
+          <td><code>No such file or directory</code> près de <code>mono</code></td>
+          <td>Même cause.</td>
+          <td>Même remède. Vérifie que <code>mono</code> apparaît dans l'onglet Code de GitHub avant de relancer la chaîne.</td>
+        </tr>
+        <tr>
+          <td><code>Dependencies lock file is not found</code></td>
+          <td>Corrigé le 26 août : l'étape qui prépare Node cherchait le verrou à la racine du dépôt au lieu de <code>mono\</code>.</td>
+          <td>Assure-toi d'avoir collé la <strong>dernière</strong> version de <code>docs\build_publish_workflow.yml.txt</code> — elle contient la ligne <code>cache-dependency-path</code>.</td>
+        </tr>
+        <tr>
+          <td><code>ERR_PNPM_OUTDATED_LOCKFILE</code></td>
+          <td><code>mono\pnpm-lock.yaml</code> n'a pas été envoyé, ou il est plus ancien que les <code>package.json</code>.</td>
+          <td>Relance <code>pousser.bat</code> après avoir vérifié que je t'ai bien envoyé le verrou à jour.</td>
+        </tr>
+        <tr>
+          <td><code>bloc REPERE_RNE introuvable</code></td>
+          <td>La chaîne n'a pas trouvé le fichier de l'application à la racine.</td>
+          <td>Envoie-moi le message, c'est de mon côté : le chemin est à corriger.</td>
+        </tr>
+      </tbody>
+    </table>
+    <p style="margin-top:1rem">Dans tous les cas : copie-moi les dernières lignes rouges. Je ne devine pas, je lis.</p>
+  </div>
+</details>
+
+<details>
+  <summary>Facultatif — le faire tourner sur ton PC</summary>
+  <div class="det-corps">
+    <p><strong>Tu n'en as pas besoin.</strong> Ça sert seulement à voir le site avant que GitHub ne le construise. Il faut <strong>Node.js</strong> installé — <em>je ne peux pas vérifier depuis ici si tu l'as</em>, donc commence par ouvrir un terminal dans <code>C:\Users\APina\repere\mono</code> et taper <code>node -v</code>. Si ça répond un numéro de version, tu l'as.</p>
+    <pre><code>cd C:\Users\APina\repere\mono
+npm install -g pnpm
+pnpm install
+node scripts/extract-html.js ../app_repere_v18_20.html ./data
+pnpm test
+pnpm build
+xcopy /E /I /Y data apps\web\dist\data
+node scripts/empreinte-sw.mjs apps/web/dist
+npx serve apps/web/dist</code></pre>
+    <p>La dernière ligne ouvre une adresse locale à coller dans ton navigateur.</p>
+    <p>Le contrôle dans le navigateur (<code>node tests/runtime.test.mjs apps/web/dist</code>) demande en plus <code>npx playwright install chromium</code>, soit environ 150 Mo de téléchargement. La chaîne GitHub le fait déjà pour toi à chaque run : c'est vraiment facultatif.</p>
+  </div>
+</details>
+
+<footer class="pied">
+  <p><strong>Résumé s'il ne fallait retenir qu'une chose :</strong> <code>pousser.bat</code>, puis créer <code>build-publish.yml</code> sur GitHub en collant le contenu de <code>docs\build_publish_workflow.yml.txt</code>, puis « Run workflow ». Rien d'autre.</p>
+</footer>
+
+</div>

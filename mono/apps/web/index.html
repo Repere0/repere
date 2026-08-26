@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Repère — qui décide chez vous</title>
+<meta name="description" content="Qui décide chez vous, et où va votre argent. Pour les 34 875 communes de France, à partir des sources officielles.">
+<meta name="theme-color" content="#14707f">
+<link rel="manifest" href="/manifest.webmanifest">
+<!-- AUCUNE POLICE CHARGEE DEPUIS UN HOTE TIERS. Un lien vers fonts.googleapis.com
+     ferait connaitre a Google l'adresse IP de chaque lecteur de Repere, a chaque
+     ouverture : c'est exactement ce que l'invariant 2 refuse, meme s'il ne parle
+     que du stockage. La mesure qui a decide : hors ligne, ces requetes echouaient
+     et la page basculait de toute facon sur les polices du systeme. On prend donc
+     les polices du systeme tout de suite, pour tout le monde, sans tiers. -->
+</head>
+<body>
+<div id="root"></div>
+<noscript>Repère a besoin de JavaScript pour lire les données publiques qu'il embarque. Les sources officielles restent consultables sur data.gouv.fr.</noscript>
+<script type="module" src="/src/main.jsx"></script>
+</body>
+</html>

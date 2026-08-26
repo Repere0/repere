@@ -1,0 +1,11 @@
+{
+  "name": "Repère",
+  "short_name": "Repère",
+  "description": "Qui décide chez vous, et où va votre argent.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f2efe9",
+  "theme_color": "#14707f",
+  "lang": "fr",
+  "icons": []
+}
