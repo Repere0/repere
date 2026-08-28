@@ -222,15 +222,64 @@ test("invariant 4 — aucune donnée n'est servie sans source déclarée", () =>
   /* Un fichier depose dans data/ et branche dans le client, mais dont personne
      ne sait qui le publie ni quand, ne peut rien afficher : l'invariant 4 exige
      une source. La garde tient par les adresses — le client ne compose que les
-     deux familles dont index.json declare la provenance. */
+     TROIS familles dont index.json declare la provenance.
+     La troisieme, /deputes.json, a ete ajoutee le 28/08/2026 : elle n'est
+     autorisee ici que parce que sa source est declaree juste en dessous, et
+     l'ordre des deux assertions est volontaire. */
   const client = lire("packages/data-utils/src/client.js");
   const composees = [...client.matchAll(/\$\{BASE_DONNEES\}(\/[A-Za-z0-9_${}./-]*)/g)].map(m => m[1]);
-  assert.deepEqual([...new Set(composees)].sort(), ["/departments/${d}.json", "/index.json"],
+  assert.deepEqual([...new Set(composees)].sort(),
+    ["/departments/${d}.json", "/deputes.json", "/index.json"],
     "client.js compose une adresse de donnees inattendue : " + composees.join(", "));
   const sources = existe("data/index.json") ? (JSON.parse(lire("data/index.json")).sources || {}) : {};
-  for (const attendue of ["elus", "comptes", "circonscriptions"]) {
+  for (const attendue of ["elus", "comptes", "circonscriptions", "deputes"]) {
     assert.ok(sources[attendue] && sources[attendue].producteur,
       `index.json ne declare pas la source « ${attendue} »`);
+  }
+});
+
+test("invariant 4 — le fichier des députés emporte sa source avec lui", () => {
+  /* Ce fichier n'est pas lu par le premier ecran : l'ecran qui l'affiche ne peut
+     donc pas aller chercher sa provenance dans index.json au moment ou il rend.
+     Il la porte lui-meme, et sans les quatre champs, l'extraction doit refuser
+     de le publier. Un nom d'elu affiche sans producteur ni date, c'est
+     exactement ce que l'invariant 4 interdit. */
+  if (!existe("data/deputes.json")) {
+    assert.fail("data/deputes.json absent — lance `pnpm extract` avant les controles");
+  }
+  const f = JSON.parse(lire("data/deputes.json"));
+  for (const champ of ["producteur", "licence", "releve_le", "legislature"]) {
+    assert.ok(f.source && f.source[champ], `data/deputes.json ne porte pas « ${champ} »`);
+  }
+  assert.match(f.source.releve_le, /^\d{4}-\d{2}-\d{2}$/, "la date de releve n'est pas une date");
+  const cles = Object.keys(f.deputes || {});
+  assert.ok(cles.length > 500, `${cles.length} circonscriptions seulement dans data/deputes.json`);
+  for (const k of cles) {
+    assert.match(k, /^(\d{1,3}|2[AB])-\d{1,2}$/, `cle de circonscription mal formee : ${k}`);
+  }
+  /* Ni patrimoine ni presence, ni etiquette politique : on verifie la FORME des
+     entrees, pas seulement l'absence de mots interdits. Un champ de plus ici
+     serait passe inapercu. */
+  const attendus = new Set(["prenom", "nom", "acteurRef", "dateDebut"]);
+  for (const [k, v] of Object.entries(f.deputes)) {
+    for (const champ of Object.keys(v)) {
+      assert.ok(attendus.has(champ), `champ inattendu « ${champ} » sur ${k}`);
+    }
+  }
+});
+
+test("invariant 4 — le relevé des députés est versionné, pas engendré au réseau", () => {
+  /* Le build ne doit toucher au reseau NI POUR CE FICHIER : le releve vit dans
+     scripts/, comme les noms de territoires, et l'extraction le recopie. Sans
+     cela, la chaine publique produirait un jour un site sans deputes sans que
+     rien n'echoue. */
+  assert.ok(existe("scripts/deputes.json"),
+    "scripts/deputes.json absent : data/deputes.json ne serait pas reproductible");
+  const extraction = lire("scripts/extract-html.js");
+  assert.ok(/deputes\.json/.test(extraction), "extract-html.js ne lit pas le releve des deputes");
+  for (const f of ["scripts/extract-html.js", "scripts/deputes.json"]) {
+    assert.ok(!/https?:\/\/(?!www\.data\.gouv|data\.assemblee|geo\.api|www\.insee)/.test(lire(f)),
+      `${f} pointe vers un hote qui n'est pas une source officielle`);
   }
 });
 

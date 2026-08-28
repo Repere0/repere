@@ -81,7 +81,12 @@ page.on("console", m => {
 });
 
 const adresses = [];
-page.on("request", r => { try { adresses.push(new URL(r.url).pathname + new URL(r.url).search); } catch {} });
+/* `r.url` EST UNE FONCTION dans Playwright, pas une chaine. `new URL(r.url)`
+   levait donc a chaque requete, le catch avalait l'erreur, et la liste restait
+   VIDE : le controle « aucune adresse ne porte un code de commune » passait au
+   vert sans avoir rien regarde depuis qu'il existe. Defaut trouve le 28/08/2026
+   en ajoutant un controle qui, lui, exigeait une adresse presente. */
+page.on("request", r => { try { const u = new URL(r.url()); adresses.push(u.pathname + u.search); } catch {} });
 
 console.log("\n--- premiere visite ------------------------------------------");
 let poids = 0;
@@ -101,6 +106,9 @@ console.log("        (mesure : " + Math.round(poids / 1024) + " Ko)");
 
 /* INVARIANT 2 : aucune adresse ne porte un code de commune. Mesure sur ce qui a
    REELLEMENT ete demande, pas sur ce que le code compose. */
+/* Une liste vide ne prouve rien : on exige d'abord d'avoir vu passer des
+   adresses, sinon ce controle se contente de son propre silence. */
+verif("mesure — le mouchard de requetes voit passer les adresses", adresses.length > 0, String(adresses.length));
 const fautives = adresses.filter(adresseFautive);
 verif("invariant 2 — aucune adresse demandee ne porte un code de commune",
   fautives.length === 0, [...new Set(fautives)].slice(0, 4).join(" | "));
@@ -172,9 +180,36 @@ await page.waitForTimeout(700);
 const qui = await page.evaluate(() => document.body.innerText);
 verif("rendu — le maire de la commune choisie s'affiche",
   /Piero ROUGET/.test(qui), qui.slice(0, 120).replace(/\n+/g, " / "));
-verif("rendu — la circonscription s'affiche et ne nomme personne",
-  /6e circonscription législative/.test(qui) && !/votre députée est/i.test(qui),
+verif("rendu — la circonscription de la commune s'affiche",
+  /6e circonscription législative/.test(qui),
   qui.slice(0, 160).replace(/\n+/g, " / "));
+
+/* LE PARCOURS VA JUSQU'A L'ELU NATIONAL, ET PAS SEULEMENT JUSQU'AU NUMERO.
+   « 6e circonscription legislative » ne dit a personne qui le represente. Le
+   nom vient du fichier des mandats de l'Assemblee, telecharge par CET ecran
+   seulement — d'ou l'attente : il part apres le premier rendu. */
+await page.waitForTimeout(900);
+const avecDepute = await page.evaluate(() => document.body.innerText);
+verif("rendu — le depute elu dans cette circonscription est nomme",
+  /Peio Dufau/.test(avecDepute),
+  avecDepute.slice(0, 400).replace(/\n+/g, " / "));
+verif("invariant 4 — le nom du depute porte sa source, sa licence et sa date",
+  /Assemblée nationale/.test(avecDepute) && /Licence Ouverte/.test(avecDepute)
+  && /relevé le \d/.test(avecDepute),
+  avecDepute.slice(0, 400).replace(/\n+/g, " / "));
+/* Ni etiquette politique, ni groupe, ni rien qui ressemble a un classement :
+   le fichier des mandats n'en porte pas, et l'ecran n'en fabrique pas. */
+verif("invariant 3 — le depute est nomme sans etiquette ni comparaison",
+  !/groupe politique|majorité|opposition|classement/i.test(avecDepute),
+  avecDepute.slice(0, 400).replace(/\n+/g, " / "));
+
+/* LE PREMIER ECRAN NE PAIE PAS CE FICHIER. Il ne part QUE depuis « Qui decide » :
+   la mesure porte sur les adresses reellement demandees depuis l'ouverture. */
+verif("architecture — le fichier des deputes n'est demande qu'une fois, et pas au premier ecran",
+  adresses.filter(u => /\/data\/deputes\.json$/.test(u)).length === 1
+  && adresses.indexOf(adresses.find(u => /deputes\.json$/.test(u)))
+     > adresses.indexOf(adresses.find(u => /index\.json$/.test(u))),
+  adresses.join(" ") || "(aucune adresse relevee)");
 
 /* Le titre de l'onglet suit le lecteur : deux onglets ouverts sur deux communes
    etaient indiscernables dans la barre du navigateur, et un signet ne disait

@@ -24,17 +24,25 @@ export function adresseDepartement(dep) {
   return url;
 }
 export function adresseIndex() { return `${BASE_DONNEES}/index.json`; }
+/* Le fichier des deputes ne porte AUCUN code de commune, et n'est demande que
+   par l'ecran qui l'affiche : la maille reste la circonscription. */
+export function adresseDeputes() { return `${BASE_DONNEES}/deputes.json`; }
 
-/* CE QUI A ETE RETIRE ICI, ET POURQUOI.
+/* CE QUI A ETE RETIRE ICI, PUIS REMIS, ET POURQUOI.
  *
  * Un chargement de `data/deputes.json` vivait a cet endroit. Il partait au
  * reseau des l'ouverture de l'application — 87 Ko avant meme le choix d'un
  * departement — sans cache, sans test de coupure reseau, et l'ecran qui devait
- * l'afficher ne le lisait jamais. Surtout : ce fichier ne declare ni producteur,
- * ni licence, ni date. L'invariant 4 exige que chaque information affichee porte
- * sa source ; il ne peut donc rien afficher tant que le fichier n'est pas
- * accompagne de ses metadonnees, comme le sont les elus et les comptes dans
- * `index.json`. Le fichier reste sur le disque, il n'est simplement pas servi.
+ * l'afficher ne le lisait jamais. Surtout : ce fichier ne declarait ni
+ * producteur, ni licence, ni date, alors que l'invariant 4 exige que chaque
+ * information affichee porte sa source. Il a donc ete retire.
+ *
+ * Il revient le 28 aout 2026, avec les quatre choses qui lui manquaient : le
+ * releve est versionne dans scripts/deputes.json avec son producteur, sa
+ * licence, sa legislature et sa date, l'extraction refuse de publier un fichier
+ * qui n'en porterait pas, et il traverse maintenant les trois etages — memoire,
+ * IndexedDB, reseau — comme un departement. Il ne part QUE si le lecteur ouvre
+ * « Qui decide » : le premier ecran ne le demande pas.
  */
 
 const enVol = new Map();   /* dédoublonne les requêtes simultanées */
@@ -135,6 +143,35 @@ export async function chargerIndex({ delaiMs = 8000 } = {}) {
   } catch (e) {
     return { etat: e.etat || ETATS.ECHEC, donnees: null, raison: e.message };
   }
+}
+
+/* LES DÉPUTÉS, comme l'index et les départements : mémoire, IndexedDB, réseau.
+ *
+ * Un seul fichier pour toute la France — 53 Ko —, demandé une seule fois, et
+ * seulement par l'écran « Qui décide ». Hors ligne sans l'avoir jamais reçu, on
+ * ne ment pas : l'état revient HORS_LIGNE et l'écran écrit une phrase, pas un
+ * nom deviné. */
+export async function chargerDeputes({ delaiMs = 8000 } = {}) {
+  const cle = "socle:DEP";
+  const enCache = await magasin.lire(cle);
+  if (enCache) return { etat: ETATS.SERVI, donnees: enCache, depuis: "cache" };
+  if (enVol.has(cle)) return enVol.get(cle);
+
+  const promesse = (async () => {
+    if (typeof navigator !== "undefined" && navigator.onLine === false) {
+      return { etat: ETATS.HORS_LIGNE, donnees: null };
+    }
+    try {
+      const donnees = await auReseau(adresseDeputes(), delaiMs);
+      await magasin.ecrire(cle, donnees).catch(() => {});
+      return { etat: ETATS.SERVI, donnees, depuis: "reseau" };
+    } catch (e) {
+      return { etat: e.etat || ETATS.ECHEC, donnees: null, raison: e.message };
+    } finally { enVol.delete(cle); }
+  })();
+
+  enVol.set(cle, promesse);
+  return promesse;
 }
 
 /* Préchargement : quand le navigateur est inactif, et JAMAIS en réseau mesuré.

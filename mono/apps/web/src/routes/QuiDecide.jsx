@@ -1,7 +1,9 @@
-import React from "react";
-import { Carte, Vide, Source } from "@repere/ui";
+import React, { useEffect, useState } from "react";
+import { Carte, Vide, Source, Chargement, dateFr } from "@repere/ui";
+import { chargerDeputes, ETATS } from "@repere/data-utils";
 
 const RNE_URL = "https://www.data.gouv.fr/fr/datasets/repertoire-national-des-elus-1/";
+const AN_URL = "https://data.assemblee-nationale.fr/acteurs/deputes-en-exercice";
 
 function ordinal(n) { return n === 1 ? "1re" : n + "e"; }
 
@@ -30,8 +32,71 @@ function phraseCirco(nom, circo) {
   return {
     titre: "Circonscription",
     valeur: `${ordinal(circo)} circonscription législative`,
-    corps: `${nom} vote dans cette circonscription pour élire un député à l'Assemblée nationale. Repère ne peut pas encore dire qui y a été élu : ce lien n'existe pas dans le Répertoire national des élus, et il ne sera pas deviné.`,
+    corps: `${nom} vote dans cette circonscription pour élire un député à l'Assemblée nationale.`,
   };
+}
+
+/* QUI A ÉTÉ ÉLU DANS CETTE CIRCONSCRIPTION.
+ *
+ * Ce lien n'est pas dans le Répertoire national des élus, et il n'est pas
+ * deviné : il vient du fichier des mandats de l'Assemblée nationale, relevé une
+ * fois et publié avec son producteur, sa licence, sa législature et sa date
+ * (scripts/deputes.json → data/deputes.json). Le fichier n'est demandé QUE par
+ * cet écran, et une seule fois : ni le premier écran ni « Où va l'argent » ne
+ * le téléchargent.
+ *
+ * Une commune à cheval sur plusieurs circonscriptions n'affiche personne :
+ * laquelle est la vôtre dépend de votre adresse, que Repère ne demande pas. */
+function Depute({ dep, circo }) {
+  const [etat, setEtat] = useState(ETATS.EN_COURS);
+  const [fichier, setFichier] = useState(null);
+
+  useEffect(() => {
+    let vivant = true;
+    chargerDeputes().then(r => {
+      if (!vivant) return;
+      setEtat(r.etat);
+      setFichier(r.donnees);
+    });
+    return () => { vivant = false; };
+  }, []);
+
+  if (etat === ETATS.EN_COURS) {
+    return <Chargement titre="Recherche du député élu dans cette circonscription."
+      corps="Cinquante kilo-octets pour toute la France, une seule fois." />;
+  }
+  /* Hors ligne sans avoir jamais reçu le fichier : on le dit, et on ne propose
+     pas de « Réessayer » qui ne peut pas aboutir. */
+  if (etat !== ETATS.SERVI || !fichier || !fichier.deputes) {
+    return <Vide titre="Le nom du député élu ici n'est pas arrivé jusqu'à cet appareil."
+      corps="La circonscription ci-dessus, elle, est bien celle de cette commune. Le fichier des mandats de l'Assemblée nationale sera téléchargé à la prochaine connexion."
+      lien={{ texte: "Assemblée nationale — députés en exercice", url: AN_URL }} />;
+  }
+
+  const d = fichier.deputes[dep + "-" + circo];
+  const s = fichier.source || {};
+  if (!d) {
+    return <Vide titre="Le fichier des mandats de l'Assemblée nationale ne porte personne pour cette circonscription."
+      corps="Un siège vacant, une législature qui change, un découpage plus récent que le relevé : c'est la source qui est muette, et Repère n'invente pas de nom."
+      lien={{ texte: "Assemblée nationale — députés en exercice", url: AN_URL }} />;
+  }
+
+  return (
+    <>
+      <div className="ligne">
+        <div className="ligne-h">
+          <span>Siège à l'Assemblée nationale</span>
+          <b>{d.prenom} {d.nom}</b>
+        </div>
+        <div className="ligne-note">
+          Mandat ouvert{d.dateDebut ? " depuis le " + dateFr(d.dateDebut) : ""}, {s.legislature ? s.legislature + "e législature" : "législature en cours"}.
+          Ni étiquette politique, ni parcours : le fichier des mandats n'en porte pas.
+        </div>
+      </div>
+      <Source producteur={s.producteur} licence={s.licence}
+        mention={s.releve_le ? "relevé le " + dateFr(s.releve_le) : undefined} url={s.url || AN_URL} />
+    </>
+  );
 }
 
 export default function QuiDecide({ paquet, index, commune }) {
@@ -86,6 +151,17 @@ export default function QuiDecide({ paquet, index, commune }) {
         {srcCirco ? (
           <Source producteur={srcCirco.producteur} licence={srcCirco.licence}
             mention={"découpage de " + srcCirco.decoupage} />
+        ) : null}
+
+        {/* UN FILET, ET IL A ETE AJOUTE SUR CAPTURE. Le nom de l'elu venait
+            juste apres la source du decoupage, sans separation : on lisait
+            « Ministere de l'Interieur · decoupage de 2010 » puis un nom, et
+            cette source semblait couvrir ce nom-la. Les deux blocs ont deux
+            producteurs differents ; ils sont maintenant separes a l'oeil.
+            Le depute n'est demande que pour une commune qui tient dans UNE
+            circonscription. */}
+        {typeof c.circo === "number" ? (
+          <div className="bloc-second"><Depute dep={paquet.d} circo={c.circo} /></div>
         ) : null}
       </Carte>
     </div>

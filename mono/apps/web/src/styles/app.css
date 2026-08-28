@@ -99,6 +99,9 @@
   text-transform: uppercase; padding: .3em .65em; border: 1px solid var(--encre);
   border-radius: 99px; white-space: nowrap; }
 
+/* Deux blocs de donnees dans une meme carte, avec DEUX producteurs differents :
+   sans ce filet, la source du premier se lisait comme celle du second. */
+.bloc-second { border-top: 1px solid var(--trait); margin-top: 1rem; padding-top: .9rem; }
 .ligne { margin-bottom: .8rem; }
 .ligne:last-child { margin-bottom: 0; }
 .ligne-h { display: flex; align-items: baseline; justify-content: space-between; gap: .7rem;

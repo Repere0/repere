@@ -41,6 +41,35 @@ function nomsTerritoires() {
   catch (e) { console.error("noms-territoires.json illisible : " + e.message); process.exit(6); }
 }
 
+/* LE DEPUTE ELU N'EST PAS DANS LE FICHIER D'ORIGINE NON PLUS.
+ *
+ * Le fichier mono-HTML porte la circonscription d'une commune ; il ne dit pas
+ * qui y a ete elu, et le Repertoire national des elus ne porte pas ce lien.
+ * L'Assemblee nationale, elle, le publie. Le releve est versionne dans
+ * scripts/deputes.json AVEC son producteur, sa licence, sa legislature et sa
+ * date : sans ces quatre choses, l'invariant 4 interdit de l'afficher. Il est
+ * recopie dans data/deputes.json — le build ne touche pas au reseau, et la
+ * chaine publique reconstruit le meme fichier. */
+function relevesDeputes() {
+  const f = path.join(ICI, "deputes.json");
+  if (!fs.existsSync(f)) { console.warn("deputes.json absent : aucun depute ne sera publie"); return null; }
+  let d;
+  try { d = JSON.parse(fs.readFileSync(f, "utf8")); }
+  catch (e) { console.error("deputes.json illisible : " + e.message); process.exit(7); }
+  const s = d && d.source;
+  /* Un fichier sans source ne s'affiche pas : mieux vaut echouer au build que
+     publier un nom d'elu que rien ne date ni ne rattache a un producteur. */
+  if (!s || !s.producteur_affiche || !s.licence || !s.releve_le || !s.legislature) {
+    console.error("deputes.json sans producteur, licence, legislature ou date");
+    process.exit(7);
+  }
+  if (!d.deputes || !Object.keys(d.deputes).length) {
+    console.error("deputes.json ne porte aucun depute");
+    process.exit(7);
+  }
+  return d;
+}
+
 const ENTREE = process.argv[2] || "./input/index.html";
 const SORTIE = process.argv[3] || "./data";
 
@@ -136,6 +165,7 @@ async function extraire() {
   const reaccentuer = t => String(t || "").replace(/[A-Za-z]+/g, m => ACCENTS[m] || m);
 
   const noms = nomsTerritoires();
+  const deputes = relevesDeputes();
   const meta = {
     v: 1,
     genere_le: new Date().toISOString().slice(0, 10),
@@ -144,6 +174,17 @@ async function extraire() {
       comptes: (OFGL && OFGL.meta && { producteur: reaccentuer(OFGL.meta.producteur), licence: OFGL.meta.licence, maj: OFGL.meta.maj }) || null,
       circonscriptions: (CIRCOS && { producteur: reaccentuer(CIRCOS.source), licence: CIRCOS.licence, decoupage: CIRCOS.decoupage }) || null,
       territoires: (noms && noms.sources) || null,
+      /* La source des deputes est annoncee dans l'index — donc sur l'ecran
+         « Sources » — meme si le fichier des deputes, lui, n'est demande que
+         par l'ecran qui l'affiche. */
+      deputes: (deputes && {
+        producteur: deputes.source.producteur_affiche,
+        licence: deputes.source.licence,
+        url: deputes.source.url,
+        legislature: deputes.source.legislature,
+        portee: deputes.source.portee,
+        releve_le: deputes.source.releve_le,
+      }) || null,
     },
     agregats: (OFGL && OFGL.meta && OFGL.meta.agregats) || [],
   };
@@ -168,6 +209,19 @@ async function extraire() {
   };
   ecrire(path.join(SORTIE, "index.json"), index);
 
+  /* Le fichier des deputes est publie A PART, et pas fondu dans index.json :
+     l'index part au premier ecran, ce fichier ne part que si le lecteur ouvre
+     « Qui decide ». Il emporte sa source avec lui, pour que l'ecran n'ait pas a
+     aller la chercher ailleurs. */
+  let octetsDeputes = 0;
+  if (deputes) {
+    octetsDeputes = ecrire(path.join(SORTIE, "deputes.json"), {
+      v: 1,
+      source: index.sources.deputes,
+      deputes: deputes.deputes,
+    });
+  }
+
   /* CONTRÔLE INDÉPENDANT : on relit ce qu'on vient d'écrire, sans réutiliser une
      variable d'au-dessus. Son absence côté comptes a déjà laissé passer 103
      fichiers vides pendant des jours. */
@@ -188,6 +242,33 @@ async function extraire() {
   console.log("departement median    : " + Math.round(median / 1024) + " Ko");
   console.log("le plus lourd         : " + Math.round(octets[octets.length - 1] / 1024) + " Ko");
   console.log("source d'origine      : " + Math.round(fs.statSync(ENTREE).size / 1048576) + " Mo");
+  /* CONTROLE INDEPENDANT DU LIEN COMMUNE -> CIRCONSCRIPTION -> DEPUTE.
+     Il relit les DEUX fichiers ecrits sur le disque, sans reutiliser une
+     variable d'au-dessus, et compte les communes dont la circonscription unique
+     trouve un depute. Un jour ou le format des cles changera, ce compte
+     tombera a zero et le dira — l'ecran, lui, ne dirait rien. */
+  if (deputes) {
+    const relu = JSON.parse(fs.readFileSync(path.join(SORTIE, "deputes.json"), "utf8"));
+    const cles = Object.keys(relu.deputes);
+    const malFormees = cles.filter(k => !/^(\d{1,3}|2[AB])-\d{1,2}$/.test(k));
+    if (malFormees.length) {
+      console.error("cles de deputes mal formees : " + malFormees.slice(0, 5).join(", "));
+      process.exit(7);
+    }
+    let avec = 0, sans = 0, plusieurs = 0;
+    for (const d of departements) {
+      const p = JSON.parse(fs.readFileSync(path.join(SORTIE, "departments", d + ".json"), "utf8"));
+      for (const c of Object.values(p.communes)) {
+        if (Array.isArray(c.circo)) { plusieurs++; continue; }
+        if (c.circo === null || c.circo === undefined) { sans++; continue; }
+        if (relu.deputes[d + "-" + c.circo]) avec++; else sans++;
+      }
+    }
+    if (avec === 0) { console.error("ECHEC : aucune commune ne trouve son depute"); process.exit(7); }
+    console.log("deputes.json          : " + Math.round(octetsDeputes / 1024) + " Ko, " + cles.length + " circonscriptions");
+    console.log("communes -> depute    : " + avec + " nommees, " + plusieurs + " a cheval sur plusieurs circos, " + sans + " sans");
+  }
+
   const sansNom = index.departements.filter(d => !d.nom).map(d => d.code);
   console.log("index.json            : " + Math.round(fs.statSync(path.join(SORTIE, "index.json")).size / 1024) + " Ko");
   console.log("territoires nommes    : " + (index.departements.length - sansNom.length) + "/" + index.departements.length
