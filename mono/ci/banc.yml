@@ -1,0 +1,122 @@
+# LE BANC, AILLEURS QUE SUR UN POSTE.
+#
+# OU CE FICHIER DOIT VIVRE. GitHub ne lit les chaines qu'a la RACINE du depot :
+# ce fichier doit donc etre deplace dans `.github/workflows/banc.yml` a cote de
+# `collecte.yml`, un cran au-dessus de `mono/`. Il est ecrit ici parce que c'est
+# le seul endroit ou l'outil qui l'a redige avait le droit d'ecrire ; toutes ses
+# commandes supposent deja que le monorepo est dans `mono/`.
+#
+# POURQUOI IL EXISTE. En une seule journee, trois defauts n'ont ete vus que parce
+# qu'une deuxieme machine a lance le banc : `xcopy` qui ne construit que sous
+# Windows, un motif de fichiers que cmd.exe ne developpe pas, et des chemins
+# compares avec des barres obliques alors que Windows en met a l'envers. Aucun
+# des trois n'etait un defaut du produit ; tous les trois auraient ete decouverts
+# en production. Tant que le banc ne tourne que sur un poste, « le banc est vert »
+# est une affirmation de couloir.
+#
+# CE QU'IL NE FAIT PAS : publier. Il construit et il eprouve, rien d'autre.
+
+name: Banc
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: banc-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  banc:
+    name: ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false          # on veut savoir si UN seul systeme casse
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+
+    defaults:
+      run:
+        working-directory: mono
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      # La version de pnpm est celle que le depot declare, pas celle du runner.
+      - name: Preparer pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@8.15.9 --activate
+
+      - name: Installer
+        run: pnpm install --frozen-lockfile
+
+      # Le banc navigateur ouvre un vrai Chromium : sans lui, la moitie des
+      # controles ne mesure rien.
+      - name: Installer Chromium
+        run: pnpm exec playwright install --with-deps chromium
+        if: runner.os == 'Linux'
+      - name: Installer Chromium
+        run: pnpm exec playwright install chromium
+        if: runner.os == 'Windows'
+
+      # LA SOURCE DES DONNEES. `extract` lit le fichier mono-HTML de la racine du
+      # depot. S'il n'est pas la, on s'arrete NET plutot que de laisser passer un
+      # banc vert qui n'aurait rien mesure : les controles de donnees et le
+      # parcours navigateur en dependent tous les deux.
+      - name: Verifier la presence de la source
+        shell: bash
+        run: |
+          fichier=$(ls ../app_repere_v*.html 2>/dev/null | head -n1 || true)
+          if [ -z "$fichier" ]; then
+            echo "::error::aucun app_repere_v*.html a la racine du depot."
+            echo "Le banc a besoin de la source des donnees. Committez-la, ou"
+            echo "restaurez-la depuis la chaine collecte.yml avant cette etape."
+            exit 1
+          fi
+          echo "source=$fichier" >> "$GITHUB_ENV"
+          echo "source trouvee : $fichier"
+
+      - name: Extraire les donnees
+        shell: bash
+        run: node scripts/extract-html.js "$source" ./data
+
+      - name: Construire
+        run: pnpm build
+
+      - name: Eprouver
+        run: pnpm test
+
+      # REPRODUCTIBILITE. Deux constructions de suite doivent produire les memes
+      # empreintes. Une chaine qui publie tous les jours et dont les empreintes
+      # bougent sans raison efface le cache de chaque lecteur chaque matin — c'est
+      # exactement la panne que la separation des deux caches evite.
+      - name: Deux constructions donnent le meme resultat
+        if: runner.os == 'Linux'
+        shell: bash
+        run: |
+          avant=$(ls apps/web/dist/assets | sort | sha256sum)
+          rm -rf apps/web/dist .turbo apps/web/.turbo
+          pnpm build > /dev/null
+          apres=$(ls apps/web/dist/assets | sort | sha256sum)
+          echo "avant : $avant"
+          echo "apres : $apres"
+          if [ "$avant" != "$apres" ]; then
+            echo "::error::deux constructions successives ne produisent pas les memes empreintes"
+            exit 1
+          fi
+
+      # De quoi regarder ce qui s'est passe quand un controle tombe.
+      - name: Garder le build
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist-${{ matrix.os }}
+          path: mono/apps/web/dist
+          retention-days: 7
+          if-no-files-found: ignore

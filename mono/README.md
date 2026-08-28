@@ -23,7 +23,7 @@ département — et qui fonctionne hors ligne.
 | départements et collectivités | 104, tous nommés |
 | communes réparties | 34 637 |
 | département médian | 107 Ko |
-| contrôles d'invariants | **21 statiques + 36 dans un navigateur** |
+| contrôles d'invariants | **27 statiques + 36 dans un navigateur** |
 
 Le premier écran ne demande qu'un seul fichier de données : `data/index.json`.
 Aucun paquet départemental n'est téléchargé avant que le lecteur ait choisi son
@@ -39,7 +39,7 @@ pnpm dev                                                # web + api de dev
 
 ```bash
 pnpm build          # vite + copie de data/ dans dist/ + empreinte du service worker
-pnpm test           # 21 contrôles statiques, puis 36 dans un vrai navigateur
+pnpm test           # 27 contrôles statiques, puis 36 dans un vrai navigateur
 ```
 
 `pnpm build` copie `data/` dans `dist/` lui-même, avec un script Node : la
@@ -90,6 +90,19 @@ d'un `pnpm extract` (pour `data/`) et d'un `pnpm build` (pour le banc navigateur
    ce que Repère déduit. Un contrôle navigateur vérifie que les deux sont là et
    qu'elles diffèrent.
 
+## Le banc tourne-t-il ailleurs qu'ici ?
+
+Pas encore, et c'est le dernier trou. `ci/banc.yml` est prêt : il installe,
+extrait, construit et éprouve sur **Linux et Windows**, puis vérifie que deux
+constructions successives produisent les mêmes empreintes. Il attend d'être
+déplacé dans `.github/workflows/` à la racine du dépôt, à côté de `collecte.yml`.
+
+Pourquoi ça compte : en une journée, trois défauts n'ont été vus que parce qu'une
+deuxième machine a lancé le banc — `xcopy` qui ne construit que sous Windows, un
+motif de fichiers que `cmd.exe` ne développe pas, et des chemins comparés avec
+des barres obliques quand Windows en met à l'envers. Aucun n'était un défaut du
+produit ; tous les trois seraient arrivés en production.
+
 ## Le socle de rendu
 
 `preact/compat`, par alias dans `apps/web/vite.config.js`. Le socle React pesait
@@ -124,6 +137,7 @@ apps/api            serveur de DÉVELOPPEMENT uniquement.
 packages/ui         jetons CSS et composants. Aucun composant « squelette ».
 packages/data-utils invariants, magasin IndexedDB, client de données.
 scripts/            extraction, copie de data/ et empreinte du service worker.
-tests/              21 contrôles statiques + 36 dans un navigateur.
+ci/                 la chaine du banc, a deplacer dans .github/workflows/.
+tests/              27 contrôles statiques + 36 dans un navigateur.
 data/               engendré. Ne pas modifier à la main.
 ```

@@ -37,7 +37,14 @@ function sourcesEcrites() {
       if (e.isDirectory()) {
         if (["node_modules", "dist", ".git", "data", ".turbo"].includes(e.name)) continue;
         marche(rel);
-      } else if (/\.(js|jsx|mjs|css|html|svg|webmanifest)$/.test(e.name)) out.push(rel);
+      } else if (/\.(js|jsx|mjs|css|html|svg|webmanifest)$/.test(e.name)) {
+        /* CHEMINS EN BARRES OBLIQUES, SUR LES DEUX SYSTEMES. `path.join` rend
+           « apps\\web\\index.html » sous Windows : les comparaisons et les
+           messages d'echec de ce fichier differaient donc d'un poste a l'autre,
+           et un controle est passe au rouge la-bas en restant vert ici. Un
+           identifiant de fichier ne doit pas dependre du systeme qui le lit. */
+        out.push(rel.split(path.sep).join("/"));
+      }
     }
   };
   marche(".");
@@ -254,7 +261,8 @@ test("architecture — le build ne dépend d'aucune commande propre à un systè
   /* `xcopy` a fait echouer le build sur toute machine qui n'est pas Windows —
      apres un `vite build` reussi, donc un dist/ sans donnees et un code de
      sortie qui, lui, disait bien qu'il fallait regarder. */
-  const propres = ["xcopy", "robocopy", "copy /", "del /", "powershell", "cmd /c"];
+  const propres = ["xcopy", "robocopy", "copy /", "del /", "powershell", "cmd /c",
+                   "rm -rf", "cp -r", "mkdir -p", "&& :"];
   for (const f of ["package.json", "apps/web/package.json", "apps/api/package.json",
                    "packages/ui/package.json", "packages/data-utils/package.json"]) {
     const scripts = JSON.parse(lire(f)).scripts || {};
@@ -263,6 +271,14 @@ test("architecture — le build ne dépend d'aucune commande propre à un systè
         assert.ok(!cmd.toLowerCase().includes(mot),
           `${f} · script « ${nom} » depend de « ${mot} » : il ne tournera que sur un systeme`);
       }
+      /* LES MOTIFS DE FICHIERS AUSSI. `node --test tests/*.test.mjs` compte sur
+         le shell pour developper l'etoile : bash le fait, cmd.exe non — c'est
+         alors Node qui doit s'en charger, et il ne le sait que depuis peu. Le
+         script marchait ici et pouvait echouer la-bas, pour la meme raison
+         qu'`xcopy`. Un dossier ou un nom de fichier ne demande rien a personne. */
+      assert.ok(!/[*?]/.test(cmd),
+        `${f} · script « ${nom} » contient un motif de fichier (« ${cmd} ») : ` +
+        "son developpement depend du shell, donc du systeme");
     }
   }
 });
@@ -291,6 +307,119 @@ test("territoires — chaque département publié porte son nom officiel et sa s
   const fautifs = index.departements.filter(d =>
     MOTS_A_ACCENTS.some(m => new RegExp("(?:^|[^A-Za-zÀ-ÿ./-])" + m + "(?![A-Za-zÀ-ÿ./-])").test(d.nom)));
   assert.deepEqual(fautifs.map(d => d.nom), [], "un nom de territoire s'affiche sans accents");
+});
+
+test("banc — le balayage voit tout le depot, pas une copie amputee", () => {
+  /* CE CONTROLE EXISTE A CAUSE D'UNE PANNE DE CE BANC, PAS DU PRODUIT.
+   *
+   * Le 26 aout 2026, le banc etait vert sur un poste et rouge sur un autre : la
+   * copie de travail du premier ne contenait pas orchestrator/orchestrator.mjs,
+   * et les controles qui lisent « toutes les sources » n'avaient donc jamais lu
+   * ce fichier — qui portait un BOM. Un banc qui ne voit qu'une partie du depot
+   * ne dit rien de l'autre, et il le dit en vert.
+   *
+   * On verifie donc la BATTERIE elle-meme : les dossiers attendus existent, ils
+   * contiennent chacun au moins une source, et le compte total ne s'effondre pas
+   * en silence. */
+  const balayes = sourcesEcrites();
+  const racines = ["apps/web/src", "apps/web/public", "apps/api", "packages/ui/src",
+                   "packages/data-utils/src", "scripts", "tests", "orchestrator"];
+  for (const r of racines) {
+    assert.ok(balayes.some(f => f.startsWith(r + "/")),
+      `aucune source lue sous ${r}/ : la copie de travail est incomplete, ` +
+      "ou le balayage exclut un dossier qu'il ne devrait pas exclure");
+  }
+  assert.ok(balayes.length >= 20,
+    `seulement ${balayes.length} sources balayees : un banc vert ne prouverait presque rien`);
+  /* Et il ne doit PAS lire ce qui n'est pas ecrit a la main. */
+  for (const interdit of ["node_modules", "/dist/", "data/departments"]) {
+    assert.deepEqual(balayes.filter(f => f.includes(interdit)), [],
+      `le balayage lit ${interdit}, qui n'est pas du code ecrit a la main`);
+  }
+});
+
+test("banc — tous les fichiers de test sont réellement lancés", () => {
+  /* Le script nomme ses fichiers un par un, parce qu'un motif comme
+     `tests/*.test.mjs` compte sur le shell pour l'etendre — et cmd.exe ne le
+     fait pas. Le prix de cette precision, c'est qu'un fichier ajoute et oublie
+     ne serait jamais lance, et personne ne le verrait : le banc resterait vert
+     avec un test de moins. Ce controle ferme la boucle. */
+  const script = (JSON.parse(lire("package.json")).scripts || {}).test || "";
+  const surDisque = fs.readdirSync(path.join(RACINE, "tests"))
+    .filter(f => /\.test\.mjs$/.test(f));
+  assert.ok(surDisque.length >= 2, "moins de deux fichiers de test sur le disque");
+  const oublies = surDisque.filter(f => !script.includes("tests/" + f));
+  assert.deepEqual(oublies, [],
+    "des fichiers de test existent mais ne sont pas lances par `pnpm test` : " + oublies.join(", "));
+});
+
+test("données — chaque paquet départemental a la forme que l'application attend", () => {
+  /* L'extraction se relit elle-meme, mais RIEN ne revérifie les fichiers ensuite.
+     Un paquet tronque, une commune sans nom, un index qui ne correspond plus aux
+     fichiers : l'application afficherait du vide sans que rien ne l'annonce. On
+     relit donc tout, et on compare a ce que l'index promet. */
+  if (!existe("data/index.json")) return;
+  const index = JSON.parse(lire("data/index.json"));
+  const annonce = new Map(index.departements.map(d => [d.code, d]));
+  const fichiers = fs.readdirSync(path.join(RACINE, "data/departments"))
+    .filter(f => f.endsWith(".json"));
+  assert.equal(fichiers.length, index.departements.length,
+    `${fichiers.length} fichiers pour ${index.departements.length} territoires annonces`);
+
+  let communesLues = 0;
+  for (const f of fichiers) {
+    const code = f.replace(/\.json$/, "");
+    const brut = lire(path.join("data/departments", f));
+    const p = JSON.parse(brut);
+    assert.equal(p.d, code, `${f} porte le code « ${p.d} »`);
+    assert.ok(p.communes && typeof p.communes === "object", `${f} n'a pas de communes`);
+
+    const dit = annonce.get(code);
+    assert.ok(dit, `${f} n'est pas annonce dans index.json`);
+    const n = Object.keys(p.communes).length;
+    assert.equal(n, dit.communes, `${f} porte ${n} communes, l'index en annonce ${dit.communes}`);
+    /* En OCTETS, pas en caracteres : « Alçay-Alçabéhéty » ne pese pas le meme
+       nombre de l'un et de l'autre, et l'index compte des octets. */
+    const octets = fs.statSync(path.join(RACINE, "data/departments", f)).size;
+    assert.equal(octets, dit.octets,
+      `${f} pese ${octets} octets, l'index en annonce ${dit.octets} — l'index et les fichiers ont diverge`);
+    communesLues += n;
+
+    for (const [insee, c] of Object.entries(p.communes)) {
+      assert.ok(/^(\d{5}|2[AB]\d{3})$/.test(insee), `${f} : code commune invalide « ${insee} »`);
+      assert.ok(typeof c.nom === "string" && c.nom.length > 0, `${f} : ${insee} sans nom`);
+      assert.ok(c.maire === null || (c.maire && typeof c.maire.nom === "string"),
+        `${f} : ${insee} porte un maire de forme inattendue`);
+      assert.ok(Number.isInteger(c.adjoints) && c.adjoints >= 0,
+        `${f} : ${insee} porte un nombre d'adjoints inattendu`);
+      assert.ok(c.circo === null || Number.isInteger(c.circo) || Array.isArray(c.circo),
+        `${f} : ${insee} porte une circonscription de forme inattendue`);
+      assert.ok(c.comptes === null || typeof c.comptes === "object",
+        `${f} : ${insee} porte des comptes de forme inattendue`);
+    }
+  }
+  assert.ok(communesLues > 30000, `seulement ${communesLues} communes relues`);
+});
+
+test("langue — aucun nom de commune ne s'affiche sans ses accents", () => {
+  /* Les noms viennent de la source et s'affichent tels quels : ils sont du texte
+     francais au meme titre que le reste. Le controle existant ne regardait que
+     les libelles de source. */
+  if (!existe("data/index.json")) return;
+  const fichiers = fs.readdirSync(path.join(RACINE, "data/departments")).filter(f => f.endsWith(".json"));
+  const fautifs = [];
+  for (const f of fichiers) {
+    const p = JSON.parse(lire(path.join("data/departments", f)));
+    for (const c of Object.values(p.communes)) {
+      for (const m of MOTS_A_ACCENTS) {
+        if (new RegExp("(?:^|[^A-Za-zÀ-ÿ./'-])" + m + "(?![A-Za-zÀ-ÿ./'-])").test(c.nom)) {
+          fautifs.push(f + " : " + c.nom); break;
+        }
+      }
+    }
+    if (fautifs.length > 5) break;
+  }
+  assert.deepEqual(fautifs, [], "des noms de communes s'affichent sans accents");
 });
 
 test("invariant 4 — le composant Source existe et sait annoncer un calcul", () => {
@@ -357,6 +486,78 @@ test("architecture — le socle de rendu est preact, et l'alias est complet", ()
   const octets = fs.statSync(path.join(assets, socle)).size;
   assert.ok(octets < 60 * 1024,
     `le socle pese ${Math.round(octets / 1024)} Ko : un vrai React est revenu dans le paquet`);
+});
+
+/* Les controles qui suivent lisent le BUILD, pas les sources : ils mesurent ce
+   qui serait reellement publie. */
+const DIST = "apps/web/dist";
+function build() {
+  assert.ok(existe(path.join(DIST, "index.html")),
+    "build absent : lance `pnpm build` avant les tests");
+  return fs.readdirSync(path.join(RACINE, DIST, "assets"));
+}
+
+test("invariant 2 — le site publié ne charge AUCUNE ressource d'un autre hôte", () => {
+  /* Le README en fait une decision : un lien vers un hote tiers lui ferait
+     connaitre l'adresse IP de chaque lecteur, a chaque ouverture. Jusqu'ici, la
+     seule garantie etait un commentaire dans index.html. On mesure maintenant le
+     produit fini.
+     ATTENTION A CE QUE LE CONTROLE VISE : un LIEN vers data.gouv.fr est legitime,
+     c'est le lecteur qui clique. Ce qui est interdit, c'est ce que la page va
+     CHERCHER toute seule. */
+  const actifs = build();
+  const doc = lire(path.join(DIST, "index.html"));
+  for (const m of doc.matchAll(/<(?:script|link|img|iframe|source)\b[^>]*\b(?:src|href)\s*=\s*["']([^"']+)["']/gi)) {
+    assert.ok(!/^(?:https?:)?\/\//i.test(m[1]),
+      `index.html charge « ${m[1]} » depuis un autre hote`);
+  }
+  for (const f of actifs) {
+    const brut = lire(path.join(DIST, "assets", f));
+    if (f.endsWith(".css")) {
+      for (const m of brut.matchAll(/url\(\s*["']?((?:https?:)?\/\/[^)"']+)/gi)) {
+        assert.ok(false, `${f} charge « ${m[1]} » depuis un autre hote`);
+      }
+      assert.ok(!/@import\s+["']?(?:https?:)?\/\//i.test(brut), `${f} importe une feuille distante`);
+    }
+    if (f.endsWith(".js")) {
+      for (const m of brut.matchAll(/\b(?:fetch|importScripts)\s*\(\s*["'`]((?:https?:)?\/\/[^"'`]+)/gi)) {
+        assert.ok(false, `${f} va chercher « ${m[1]} » sur un autre hote`);
+      }
+    }
+  }
+  /* Le service worker non plus : c'est lui qui parle au reseau le plus souvent. */
+  const sw = lire(path.join(DIST, "sw.js"));
+  assert.ok(/url\.origin !== self\.location\.origin/.test(sw),
+    "le service worker n'ecarte plus explicitement les autres origines");
+});
+
+test("invariant 1 — le service worker précharge exactement ce que le build a produit", () => {
+  /* La liste est REECRITE au build. Si elle derive des fichiers reellement
+     produits — un actif oublie, un actif fantome — la PWA installee s'ouvre sur
+     une coquille incomplete, et seul un vrai hors-ligne le revele. */
+  const actifs = build();
+  const sw = lire(path.join(DIST, "sw.js"));
+  const m = /const A_PRECHARGER = (\[[^\]]*\]);/.exec(sw);
+  assert.ok(m, "A_PRECHARGER introuvable dans le service worker publie");
+  const liste = JSON.parse(m[1]);
+
+  const attendus = actifs.filter(f => /\.(js|css|woff2?)$/.test(f)).map(f => "/assets/" + f);
+  const manquants = attendus.filter(a => !liste.includes(a));
+  assert.deepEqual(manquants, [],
+    "des fichiers produits par le build ne sont pas precharges : hors ligne, ils manqueront");
+
+  const fantomes = liste.filter(u => u.startsWith("/assets/") && !attendus.includes(u));
+  assert.deepEqual(fantomes, [],
+    "le service worker precharge des fichiers qui n'existent plus dans le build");
+
+  for (const socle of ["/", "/index.html", "/manifest.webmanifest", "/data/index.json"]) {
+    assert.ok(liste.includes(socle), `${socle} n'est pas precharge : l'application ne s'ouvrira pas hors ligne`);
+  }
+  for (const u of liste) {
+    if (u === "/" || u.startsWith("/data/")) continue;
+    assert.ok(existe(path.join(DIST, u.replace(/^\//, ""))),
+      `le service worker precharge ${u}, qui n'existe pas dans le build`);
+  }
 });
 
 test("architecture — une seule fabrique d'adresses dans tout le produit", () => {
