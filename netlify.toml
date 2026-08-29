@@ -1,0 +1,60 @@
+# Publication de Repère — le monorepo, construit par Netlify lui-même.
+#
+# CE QUE CE FICHIER REMPLACE. Jusqu'au 29 août 2026, le site en ligne était
+# déposé à la main : `site_a_deployer/` est même ignoré par git, donc rien dans
+# le dépôt ne produisait ce que les gens voyaient. Un correctif poussé ici
+# n'arrivait en ligne que si quelqu'un pensait à re-déposer un dossier. À partir
+# de maintenant, Netlify part du dépôt, extrait les données du fichier
+# mono-HTML, construit, et publie ce qu'il vient de construire.
+#
+# LE BUILD NE TOUCHE PAS AU RÉSEAU. Les 34 637 communes, les noms des
+# territoires et le relevé des députés viennent tous de fichiers versionnés
+# dans ce dépôt. Une source injoignable ne peut donc pas produire un site vide.
+
+[build]
+  base    = "mono"
+  publish = "apps/web/dist"
+
+  # LE FICHIER SOURCE N'EST PAS NOMMÉ EN DUR, ET C'EST VOLONTAIRE. Il change de
+  # nom à chaque version (v18_20, v18_21…) : un nom écrit ici serait juste le
+  # jour où on l'écrit, et faux la fois d'après — avec, au mieux, un build rouge,
+  # au pire un site publié sur les données d'une version précédente. On prend
+  # donc le plus récent, en excluant les .bak. `sort -V` compare 18_9 et 18_20
+  # comme des numéros de version, là où `sort` seul mettrait 18_9 en dernier.
+  #
+  # L'ORDRE EST EXTRAIRE, CONSTRUIRE, PUIS ÉPROUVER — pas l'inverse. Deux des
+  # contrôles statiques relisent le dossier `dist` : ils vérifient que le service
+  # worker précharge exactement ce que le build vient de produire, et qu'aucune
+  # ressource d'un autre hôte n'a atterri dans la page publiée. Lancés avant le
+  # build, ils échouent sur un dossier absent. C'est le cas dans
+  # .github/workflows/build-publish.yml, qui les lance en deuxième position :
+  # cette chaîne-là n'a jamais tourné, sinon on l'aurait vu.
+  command = "node scripts/extract-html.js \"$(ls -1 ../app_repere_v18_*.html | grep -v '\\.bak$' | sort -V | tail -1)\" ./data && pnpm build && node --test tests/invariants.test.mjs"
+
+[build.environment]
+  NODE_VERSION = "22"
+
+# LE SERVICE WORKER NE DOIT JAMAIS ÊTRE SERVI DEPUIS UN CACHE LONG.
+# C'est lui qui porte la version de la coquille : un sw.js gardé en cache par le
+# navigateur fige l'application sur une version périmée, et la PWA installée
+# cesse de se mettre à jour sans que rien ne le dise.
+[[headers]]
+  for = "/sw.js"
+  [headers.values]
+    Cache-Control = "no-cache"
+
+# Les fichiers de /assets/ portent une empreinte dans leur nom : leur contenu ne
+# change jamais, ils peuvent donc être gardés un an.
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+# LES DONNÉES SE REVALIDENT, ELLES NE SE FIGENT PAS. La chaîne de collecte
+# republie des départements ; un cache long les gèlerait chez le lecteur. Le
+# service worker, lui, garde sa propre copie pour le hors ligne : ces deux
+# caches ne font pas le même travail.
+[[headers]]
+  for = "/data/*"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
