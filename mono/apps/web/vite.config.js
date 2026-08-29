@@ -51,6 +51,13 @@ export default defineConfig({
            Sans ça, ouvrir « Où va mon argent » téléchargerait aussi le code de
            tous les écrans que le lecteur n'ouvrira peut-être jamais. */
         manualChunks(id) {
+          /* LE MOUVEMENT N'EST PAS DU SOCLE. framer-motion n'est importe que par
+             les ecrans, qui sont eux-memes charges a la demande. Sans cette
+             ligne, il tombait dans « socle » — le morceau que le PREMIER ecran
+             telecharge — et le plafond de 120 Ko sautait pour une animation que
+             personne n'a encore vue. Mesure du 29/08 : socle 19,5 Ko sans lui,
+             et le morceau du mouvement ne part qu'au premier ecran ouvert. */
+          if (/node_modules[\\/](framer-motion|motion|motion-dom|motion-utils)[\\/]/.test(id)) return "mouvement";
           if (id.includes("node_modules")) return "socle";
         },
       },

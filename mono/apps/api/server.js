@@ -41,6 +41,17 @@ app.get("/data/index.json", async (req, rep) => {
   return rep.type("application/json").send(fs.readFileSync(f, "utf8"));
 });
 
+/* LE DEV DOIT SERVIR LES MEMES CHEMINS QUE LA PRODUCTION, sinon il ment.
+   Cette route manquait le 28/08 : en `pnpm dev`, le fichier des deputes
+   repondait 404 et l'ecran affichait sa phrase de repli — un defaut visible
+   seulement en developpement, donc exactement celui qu'on corrige trois fois
+   avant de comprendre qu'il n'a jamais existe en production. */
+app.get("/data/deputes.json", async (req, rep) => {
+  const f = path.join(RACINE, "deputes.json");
+  if (!fs.existsSync(f)) return rep.code(404).send({ erreur: "deputes absents", quoi_faire: "lancer `pnpm extract`" });
+  return rep.type("application/json").send(fs.readFileSync(f, "utf8"));
+});
+
 app.get("/data/departments/:code.json", async (req, rep) => {
   const code = String(req.params.code).toUpperCase();
   if (!/^(\d{2,3}|2[AB])$/.test(code)) {

@@ -1,5 +1,6 @@
 import React, { useMemo } from "react";
 import { Carte, Vide, Tuile, BarreEchelon, Source } from "@repere/ui";
+import { Pile } from "@repere/ui/amicro";
 
 /* Le tableau plat des comptes : [population, montant0, parHab0, montant1, ...].
    Six agrégats, deux valeurs chacun. La forme vient du fichier officiel ; on ne
@@ -82,7 +83,7 @@ export default function OuVaArgent({ paquet, index, commune }) {
   }
 
   return (
-    <div className="pile">
+    <Pile>
       {/* Nom seul : « les comptes de X » demanderait une elision non derivable. */}
       <Carte echelon="ville" titre={c.nom}
         sousTitre={`Les comptes de la commune · exercice ${exercice.an}${population(exercice.ex) ? ` · ${population(exercice.ex).toLocaleString("fr-FR")} habitants` : ""} · budget principal`}
@@ -125,6 +126,6 @@ export default function OuVaArgent({ paquet, index, commune }) {
         <Vide titre="Pas assez de montants pour traduire ces comptes."
           corps={`Les rapports se calculent à partir de plusieurs lignes à la fois ; pour l'exercice ${exercice.an}, le fichier officiel n'en porte pas assez.`} />
       )}
-    </div>
+    </Pile>
   );
 }

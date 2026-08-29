@@ -24,7 +24,7 @@ département — et qui fonctionne hors ligne.
 | communes réparties | 34 637 |
 | département médian | 108 Ko |
 | circonscriptions avec leur député | 577, pour 34 508 communes |
-| contrôles d'invariants | **29 statiques + 41 dans un navigateur** |
+| contrôles d'invariants | **29 statiques + 42 dans un navigateur** |
 
 Le premier écran ne demande qu'un seul fichier de données : `data/index.json`.
 Aucun paquet départemental n'est téléchargé avant que le lecteur ait choisi son
@@ -40,7 +40,7 @@ pnpm dev                                                # web + api de dev
 
 ```bash
 pnpm build          # vite + copie de data/ dans dist/ + empreinte du service worker
-pnpm test           # 29 contrôles statiques, puis 41 dans un vrai navigateur
+pnpm test           # 29 contrôles statiques, puis 42 dans un vrai navigateur
 ```
 
 `pnpm build` copie `data/` dans `dist/` lui-même, avec un script Node : la
@@ -159,6 +159,6 @@ packages/ui         jetons CSS et composants. Aucun composant « squelette ».
 packages/data-utils invariants, magasin IndexedDB, client de données.
 scripts/            extraction, copie de data/ et empreinte du service worker.
 ci/                 la chaine du banc, a deplacer dans .github/workflows/.
-tests/              29 contrôles statiques + 41 dans un navigateur.
+tests/              29 contrôles statiques + 42 dans un navigateur.
 data/               engendré. Ne pas modifier à la main.
 ```

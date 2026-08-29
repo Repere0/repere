@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Carte, Vide, Source, Chargement, dateFr } from "@repere/ui";
+import { Pile } from "@repere/ui/amicro";
 import { chargerDeputes, ETATS } from "@repere/data-utils";
 
 const RNE_URL = "https://www.data.gouv.fr/fr/datasets/repertoire-national-des-elus-1/";
@@ -108,7 +109,7 @@ export default function QuiDecide({ paquet, index, commune }) {
   const p = phraseCirco(c.nom, c.circo);
 
   return (
-    <div className="pile">
+    <Pile>
       {/* Le titre est le NOM SEUL : « de ${nom} » demanderait une elision qui ne se
           derive pas du nom (de Ustaritz / d'Anglet). Le sous-titre porte le sens. */}
       <Carte echelon="ville" titre={c.nom}
@@ -164,6 +165,6 @@ export default function QuiDecide({ paquet, index, commune }) {
           <div className="bloc-second"><Depute dep={paquet.d} circo={c.circo} /></div>
         ) : null}
       </Carte>
-    </div>
+    </Pile>
   );
 }

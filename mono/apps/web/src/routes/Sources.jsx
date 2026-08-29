@@ -16,6 +16,16 @@ export default function Sources({ index, paquet }) {
           url="https://data.ofgl.fr/" /> : null}
         {s.circonscriptions ? <Source producteur={"Circonscriptions — " + s.circonscriptions.producteur}
           licence={s.circonscriptions.licence} mention={"découpage de " + s.circonscriptions.decoupage} /> : null}
+        {/* Le decoupage dit dans quelle circonscription vote une commune ; le
+            fichier des mandats dit qui y siege. Deux producteurs, deux lignes :
+            les confondre laisserait croire que le ministere publie le nom des
+            deputes, ce qu'il ne fait pas. */}
+        {s.deputes ? <Source producteur={"Députés — " + s.deputes.producteur}
+          licence={s.deputes.licence}
+          mention={s.deputes.legislature
+            ? s.deputes.legislature + "e législature, relevé le " + dateFr(s.deputes.releve_le)
+            : undefined}
+          url={s.deputes.url} /> : null}
         {/* Les noms des territoires ne viennent pas du meme fichier que le reste :
             ils ont leurs propres producteurs, et ils le disent. */}
         {Array.isArray(s.territoires) ? s.territoires.map((t, i) => (

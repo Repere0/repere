@@ -286,9 +286,16 @@ verif("invariant 3 — aucun classement ni comparaison entre territoires",
 await page.getByRole("button", { name: "Sources" }).click();
 await page.waitForTimeout(700);
 const texteSources = await page.evaluate(() => document.body.innerText);
-verif("rendu — l'ecran Sources nomme les trois producteurs",
-  /Élus —/.test(texteSources) && /Comptes —/.test(texteSources) && /Circonscriptions —/.test(texteSources),
-  texteSources.slice(0, 200).replace(/\n+/g, " / "));
+verif("rendu — l'ecran Sources nomme chacun de ses producteurs",
+  /Élus —/.test(texteSources) && /Comptes —/.test(texteSources)
+  && /Circonscriptions —/.test(texteSources) && /Députés —/.test(texteSources),
+  texteSources.slice(0, 260).replace(/\n+/g, " / "));
+/* Le decoupage et les mandats ont deux producteurs DIFFERENTS. Une ligne unique
+   laisserait croire que le ministere publie le nom des deputes. */
+verif("rendu — le decoupage et les mandats ne sont pas donnes comme une seule source",
+  /Circonscriptions — Ministère de l'Intérieur/.test(texteSources)
+  && /Députés — Assemblée nationale/.test(texteSources),
+  texteSources.slice(0, 260).replace(/\n+/g, " / "));
 verif("rendu — aucune date de decoupage annoncee comme une mise a jour",
   !/mise à jour du découpage/i.test(texteSources), "« mise a jour du decoupage de 2010 » ne veut rien dire");
 

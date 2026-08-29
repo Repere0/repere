@@ -283,6 +283,56 @@ test("invariant 4 — le relevé des députés est versionné, pas engendré au 
   }
 });
 
+test("amicro — le mouvement ne part pas au premier écran", () => {
+  /* framer-motion pese 122 Ko (40 Ko compresses). Le premier ecran de Repere en
+     pese 59. Le paquet n'est donc tolerable QU'A UNE CONDITION : n'etre importe
+     que par les ecrans, qui sont eux-memes charges a la demande. Deux gardes,
+     parce qu'une seule ne suffirait pas.
+
+     1. Personne d'autre que les ecrans ne l'importe. Un `import` d'amicro dans
+        App.jsx, main.jsx ou l'index de @repere/ui le ferait basculer dans le
+        morceau du premier ecran, et le plafond sauterait sans que rien ne le
+        dise avant la mesure navigateur.
+     2. Le decoupage du build lui garde son propre morceau. */
+  for (const f of ["apps/web/src/App.jsx", "apps/web/src/main.jsx", "packages/ui/src/index.js"]) {
+    const src = lire(f);
+    assert.ok(!/@repere\/ui\/amicro|framer-motion|"motion"/.test(src),
+      `${f} importe le mouvement : il partirait au premier ecran`);
+  }
+  const vite = lire("apps/web/vite.config.js");
+  assert.match(vite, /return "mouvement"/,
+    "vite.config.js ne donne plus son propre morceau a framer-motion");
+
+  /* Et si le build a tourne, on VERIFIE la separation sur le resultat, pas sur
+     l'intention : le morceau du socle ne doit pas contenir le moteur d'animation. */
+  if (existe("apps/web/dist")) {
+    const dossier = path.join(RACINE, "apps/web/dist/assets");
+    if (fs.existsSync(dossier)) {
+      const socle = fs.readdirSync(dossier).find(n => n.startsWith("socle-"));
+      if (socle) {
+        const contenu = fs.readFileSync(path.join(dossier, socle), "utf8");
+        assert.ok(!/framer-motion|useReducedMotion/.test(contenu),
+          "le morceau du socle contient le moteur d'animation");
+      }
+    }
+  }
+});
+
+test("amicro — toute animation se coupe si le lecteur l'a demandé", () => {
+  /* Un reglage systeme « moins d'animations » n'est pas une preference de gout :
+     vertiges, migraines, troubles vestibulaires. Un composant anime qui ne lit
+     pas ce reglage est un defaut d'accessibilite, pas un detail. */
+  const src = lire("packages/ui/src/amicro.jsx");
+  assert.match(src, /useReducedMotion/,
+    "amicro.jsx n'interroge pas le reglage « moins d'animations »");
+  assert.match(src, /if \(sansMouvement\) return/,
+    "amicro.jsx lit le reglage mais n'en tire aucune consequence");
+  /* Attribution : le code vient d'ailleurs, sous licence MIT. La licence exige
+     que l'avis de copyright voyage avec le code. */
+  assert.match(src, /MIT/, "amicro.jsx ne porte pas la licence de son auteur");
+  assert.match(src, /Syed Subhan/, "amicro.jsx ne porte pas le nom de son auteur");
+});
+
 test("architecture — aucun hook React au niveau module", () => {
   /* Un `const [x, setX] = useState(...)` ecrit hors composant s'execute au
      chargement du module : React leve, et RIEN ne s'affiche. Ni le build ni les
