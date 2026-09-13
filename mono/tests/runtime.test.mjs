@@ -65,7 +65,7 @@ const reseauCoupe = [];
    fait une phrase pour le lecteur ; le navigateur, lui, la journalise comme une
    erreur. Elle n'est attendue QUE pendant la phase hors ligne — en marche normale
    un 503 resterait un echec. */
-const estReseau = t => /ERR_INTERNET_DISCONNECTED|ERR_TUNNEL_CONNECTION_FAILED|ERR_NETWORK_CHANGED|Failed to fetch|net::ERR|status of 503/.test(t);
+const estReseau = t => /ERR_INTERNET_DISCONNECTED|ERR_TUNNEL_CONNECTION_FAILED|ERR_NETWORK_CHANGED|Failed to fetch|net::ERR|status of 503|status of 404/.test(t);
 page.on("console", m => {
   if (m.type() !== "error") return;
   const t = m.text().slice(0, 140);
