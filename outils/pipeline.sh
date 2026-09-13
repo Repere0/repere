@@ -71,9 +71,10 @@ done
 APP_CIRC=$(ls -1 app_repere_v18_*.html | grep -v '\.bak$' | sort -V | tail -1)
 python3 -m pip install --quiet --disable-pip-version-check openpyxl >/dev/null 2>&1 \
   || echo "::warning::openpyxl indisponible — la table des circonscriptions ne sera pas relue"
-python3 outils/circos.py data/circos_ministere.xlsx outils/circos.json "$APP_CIRC" \
-  && python3 outils/circos_injecter.py "$APP_CIRC" outils/circos.json \
-  || echo "::warning::la table des circonscriptions n'a pas ete produite ou posee"
+python3 outils/circos.py data/circos_ministere.xlsx outils/circos.json "$APP_CIRC"
+test -s outils/circos.json
+python3 outils/circos_injecter.py "$APP_CIRC" outils/circos.json
+grep -q 'window.REPERE_CIRCOS' "$APP_CIRC"
 
 # --------------------------------------- 3 quater. référentiel des députés actifs
 # Le frontend le charge sous /data/deputes.json. Construire la sortie dans le répertoire
