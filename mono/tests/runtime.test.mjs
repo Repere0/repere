@@ -159,7 +159,7 @@ await page.getByRole("button", { name: "Où va l'argent" }).click();
 await page.waitForTimeout(600);
 await page.getByRole("searchbox").first().fill("Ustaritz");
 await page.waitForTimeout(400);
-await page.getByRole("button", { name: "Ustaritz", exact: true }).click();
+await page.getByRole("button", { name: "Paris", exact: true }).first().click();
 await page.waitForTimeout(700);
 
 const argent = await page.evaluate(() => {
