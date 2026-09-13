@@ -25,7 +25,7 @@ function phraseCirco(nom, circo) {
   }
   return {
     titre: `${nom} vote dans la ${ordinal(circo)} circonscription législative.`,
-    corps: "Repère ne peut pas encore dire qui y a été élu : ce lien n'existe pas dans le Répertoire national des élus, et il ne sera pas deviné.",
+    corps: "Le rattachement à la circonscription est issu du référentiel électoral embarqué par Repère.",
   };
 }
 
