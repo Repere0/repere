@@ -61,6 +61,7 @@ done
 # ------------------------------ 3 ter. la table commune -> circonscription(s)
 # Sans elle, l'application affiche les neuf parlementaires d'un departement a
 # quelqu'un sans pouvoir dire dans quelle circonscription il vote.
+# ETAT BETA : la source est nationale, mais le produit exposera uniquement l'IDF.
 #
 # SOURCE RETENUE : le XLSX du ministere de l'Interieur. Mesure du 25/08/2026 :
 # 34 626 communes rattachees sur 34 637, soit 99,97 %, outre-mer a 100 %. Le CSV
