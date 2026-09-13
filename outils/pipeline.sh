@@ -75,6 +75,12 @@ python3 outils/circos.py data/circos_ministere.xlsx outils/circos.json "$APP_CIR
   && python3 outils/circos_injecter.py "$APP_CIRC" outils/circos.json \
   || echo "::warning::la table des circonscriptions n'a pas ete produite ou posee"
 
+# --------------------------------------- 3 quater. référentiel des députés actifs
+# Le frontend le charge sous /data/deputes.json. Construire la sortie dans le répertoire
+# publié évite un fichier intermédiaire absent du dépôt monorepo.
+python3 outils/construire_deputes.py data/brut_AMO30/json/acteur site_donnees/deputes.json
+assert -s site_donnees/deputes.json
+
 # ---------------------------------------- 3 quater. les scrutins, position par depute
 # 80 derniers scrutins. Ni non-votants, ni mise au point, ni agregat par depute :
 # les raisons sont ecrites en tete de outils/scrutins_an.py, et le script se controle
