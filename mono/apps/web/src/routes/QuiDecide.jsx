@@ -50,7 +50,7 @@ export default function QuiDecide({ paquet, index, deputes }) {
 
   function deputePour(c) {
     if (!c || !deputes || Array.isArray(c.circo) || c.circo == null) return null;
-    return deputes[paquet.d + "-" + c.circo] || null;
+    return deputes[paquet.d + "-" + c.circo] || deputes[String(paquet.d).padStart(2, "0") + "-" + c.circo] || null;
   }
 
   const depute = deputePour(c);
