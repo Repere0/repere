@@ -121,7 +121,7 @@ python3 outils/decouper.py "$APP_DEC" site_donnees \
 # BETA IDF : supprimer du dossier servi les départements hors Île-de-France.
 # La collecte reste nationale (maximum de fraîcheur et réutilisation future), mais
 # le téléchargement lecteur reste limité à 75,77,78,91,92,93,94,95.
-python3 - site_donnees <<'PY'
+python3 - <<'PY'
 from pathlib import Path
 root = Path("site_donnees")
 idf = {"75.json","77.json","78.json","91.json","92.json","93.json","94.json","95.json"}
