@@ -29,8 +29,12 @@ export function adresseDeputes() {
 }
 
 export async function chargerDeputes({ delaiMs = 8000 } = {}) {
+  const cle = "socle:DEPUTES";
+  const enCache = await magasin.lire(cle);
+  if (enCache) return { etat: ETATS.SERVI, donnees: enCache, depuis: "cache" };
   try {
     const donnees = await auReseau(adresseDeputes(), delaiMs);
+    await magasin.ecrire(cle, donnees).catch(() => {});
     return { etat: ETATS.SERVI, donnees, depuis: "reseau" };
   } catch (e) {
     return { etat: e.etat || ETATS.ECHEC, donnees: null, raison: e.message };

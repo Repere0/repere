@@ -1,12 +1,24 @@
+#!/usr/bin/env python3
+"""Construit le référentiel député actif de la 17e législature.
+
+Usage:
+  python3 outils/construire_deputes.py [source_acteurs] [destination]
+
+La sortie est un dictionnaire "département-circonscription" -> identité.
+Aucune donnée d'usage n'est produite.
+"""
 import json
 import glob
 import os
+import sys
 
-SOURCE = r"data\brut_AMO30\json\acteur"
-DEST = r"mono\data\deputes.json"
+SOURCE = sys.argv[1] if len(sys.argv) > 1 else r"data/brut_AMO30/json/acteur"
+DEST = sys.argv[2] if len(sys.argv) > 2 else r"site_donnees/deputes.json"
+
+if not os.path.isdir(SOURCE):
+    raise SystemExit("source acteurs absente : %s" % SOURCE)
 
 resultat = {}
-
 for f in glob.glob(os.path.join(SOURCE, "*.json")):
     with open(f, encoding="utf-8") as h:
         a = json.load(h)["acteur"]
@@ -20,21 +32,17 @@ for f in glob.glob(os.path.join(SOURCE, "*.json")):
 
     for m in mandats:
         lieu = ((m.get("election") or {}).get("lieu") or {})
-
         if str(m.get("legislature")) != "17":
             continue
         if m.get("typeOrgane") != "ASSEMBLEE":
             continue
         if not lieu.get("numDepartement") or not lieu.get("numCirco"):
             continue
-
-        date_fin = m.get("dateFin")
-        if date_fin:
+        if m.get("dateFin"):
             continue
 
         dep = str(lieu["numDepartement"])
         circo = str(lieu["numCirco"])
-
         resultat[f"{dep}-{circo}"] = {
             "acteurRef": uid,
             "prenom": ident.get("prenom", ""),
@@ -43,15 +51,12 @@ for f in glob.glob(os.path.join(SOURCE, "*.json")):
             "dateFin": m.get("dateFin"),
         }
 
-os.makedirs(os.path.dirname(DEST), exist_ok=True)
+if len(resultat) < 500:
+    raise SystemExit("trop peu de députés actifs produits : %d" % len(resultat))
 
+os.makedirs(os.path.dirname(DEST) or ".", exist_ok=True)
 with open(DEST, "w", encoding="utf-8") as h:
     json.dump(resultat, h, ensure_ascii=False, indent=2, sort_keys=True)
 
 print("députés actifs :", len(resultat))
 print("fichier :", DEST)
-
-for k in sorted(resultat):
-    if k.startswith("69-"):
-        x = resultat[k]
-        print(k, "→", x["prenom"], x["nom"], "|", x["acteurRef"])

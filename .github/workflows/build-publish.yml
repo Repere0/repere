@@ -1,6 +1,8 @@
 name: Construire, éprouver, publier
 
 on:
+  push:
+    branches: ["reprise-idf"]
   schedule:
     # 06h23 UTC, apres la collecte de 05h47, et volontairement pas rond : les
     # runners GitHub sont satures a :00.
@@ -64,7 +66,9 @@ jobs:
       # ------------------------------------------------ 3. construire
       - run: pnpm build
       - name: Publier les données dans le site
-        run: cp -r data apps/web/dist/data && node scripts/empreinte-sw.mjs apps/web/dist
+        run: |
+          cp -r data apps/web/dist/data
+          node scripts/empreinte-sw.mjs apps/web/dist
 
       # ------------------------------------------------ 4. LE VERROU
       # Service worker installé, serveur ÉTEINT, parcours complet. C'est ce

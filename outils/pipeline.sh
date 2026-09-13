@@ -59,8 +59,11 @@ done
 # ils seront eprouves sur donnees reelles, on remettra le `set -e` sur eux.
 
 # ------------------------------ 3 ter. la table commune -> circonscription(s)
-# Sans elle, l'application affiche les neuf parlementaires d'un departement a
-# quelqu'un sans pouvoir dire dans quelle circonscription il vote.
+# BETA IDF : on conserve la table nationale comme socle de verite, mais le site
+# publié ne sert que les 8 départements franciliens.
+# Sans elle, l'application affiche les parlementaires d'un departement sans
+# pouvoir dire dans quelle circonscription il vote.
+# ETAT BETA : la source est nationale, mais le produit exposera uniquement l'IDF.
 #
 # SOURCE RETENUE : le XLSX du ministere de l'Interieur. Mesure du 25/08/2026 :
 # 34 626 communes rattachees sur 34 637, soit 99,97 %, outre-mer a 100 %. Le CSV
@@ -71,17 +74,31 @@ done
 APP_CIRC=$(ls -1 app_repere_v18_*.html | grep -v '\.bak$' | sort -V | tail -1)
 python3 -m pip install --quiet --disable-pip-version-check openpyxl >/dev/null 2>&1 \
   || echo "::warning::openpyxl indisponible — la table des circonscriptions ne sera pas relue"
-python3 outils/circos.py data/circos_ministere.xlsx outils/circos.json "$APP_CIRC" \
-  && python3 outils/circos_injecter.py "$APP_CIRC" outils/circos.json \
-  || echo "::warning::la table des circonscriptions n'a pas ete produite ou posee"
+python3 outils/circos.py data/circos_ministere.xlsx outils/circos.json "$APP_CIRC"
+test -s outils/circos.json
+python3 outils/circos_injecter.py "$APP_CIRC" outils/circos.json
+grep -q 'window.REPERE_CIRCOS' "$APP_CIRC"
+
+# --------------------------------------- 3 quater. référentiel des députés actifs
+# Le frontend le charge sous /data/deputes.json. Construire la sortie dans le répertoire
+# publié évite un fichier intermédiaire absent du dépôt monorepo.
+python3 outils/construire_deputes.py data/brut_AMO30/json/acteur site_donnees/deputes.json
+test -s site_donnees/deputes.json
+python3 - site_donnees/deputes.json <<'PY'
+import json, sys
+d = json.load(open(sys.argv[1], encoding="utf-8"))
+assert 500 <= len(d) <= 577, "nombre de députés hors plage : %d" % len(d)
+assert all("-" in k and v.get("acteurRef") for k,v in d.items()), "référentiel député mal formé"
+print("députés : %d circonscriptions actives" % len(d))
+PY
 
 # ---------------------------------------- 3 quater. les scrutins, position par depute
 # 80 derniers scrutins. Ni non-votants, ni mise au point, ni agregat par depute :
 # les raisons sont ecrites en tete de outils/scrutins_an.py, et le script se controle
 # lui-meme — il refuse de produire un fichier ou un non-votant serait compte comme
 # votant.
-python3 outils/scrutins_an.py data/brut_Scrutins outils/scrutins_an.json 80 \
-  || echo "::warning::scrutins_an.py a echoue — les scrutins ne sont pas produits"
+python3 outils/scrutins_an.py data/brut_Scrutins outils/scrutins_an.json 80
+test -s outils/scrutins_an.json
 
 # ------------------- 3 quinquies. decrire les acteurs (pour nommer les references)
 # Les scrutins designent les deputes par une reference opaque (PA1234). Le referentiel
@@ -100,6 +117,19 @@ python3 outils/echantillon_scrutins.py data/brut_AMO30/json/acteur docs/schema_a
 APP_DEC=$(ls -1 app_repere_v18_*.html | grep -v '\.bak$' | sort -V | tail -1)
 python3 outils/decouper.py "$APP_DEC" site_donnees \
   || echo "::warning::le decoupage par departement a echoue"
+
+# BETA IDF : supprimer du dossier servi les départements hors Île-de-France.
+# La collecte reste nationale (maximum de fraîcheur et réutilisation future), mais
+# le téléchargement lecteur reste limité à 75,77,78,91,92,93,94,95.
+python3 - <<'PY'
+from pathlib import Path
+root = Path("site_donnees")
+idf = {"75.json","77.json","78.json","91.json","92.json","93.json","94.json","95.json"}
+for p in root.glob("*.json"):
+    if p.name not in idf and p.name[:2].isdigit():
+        p.unlink()
+print("sortie lecteur IDF :", sorted(p.name for p in root.glob("*.json") if p.name in idf))
+PY
 
 # ---------------- 3 septies. AUTO -> RELU -> PUBLIE : la couche editoriale
 # L'etage AUTO pose des brouillons dans data/auto/, jamais affiches. L'etage PUBLIE ne

@@ -82,8 +82,10 @@ async function extraire() {
   const fonction = f => (RNE.f || [])[f] || "";
 
   const paquets = new Map();
+  const DEPARTEMENTS_IDF = new Set(["75","77","78","91","92","93","94","95"]);
   for (const insee of Object.keys(libelles)) {
     const d = departementDe(insee);
+    if (!DEPARTEMENTS_IDF.has(d)) continue;
     if (!paquets.has(d)) paquets.set(d, { d, communes: {} });
     const maire = (RNE.com || {})[insee];
     paquets.get(d).communes[insee] = {
@@ -124,13 +126,14 @@ async function extraire() {
   /* CONTRÔLE INDÉPENDANT : on relit ce qu'on vient d'écrire, sans réutiliser une
      variable d'au-dessus. Son absence côté comptes a déjà laissé passer 103
      fichiers vides pendant des jours. */
+  const attenduesIdf = Object.keys(libelles).filter(insee => DEPARTEMENTS_IDF.has(departementDe(insee))).length;
   let relues = 0;
   for (const d of departements) {
     const p = JSON.parse(fs.readFileSync(path.join(SORTIE, "departments", d + ".json"), "utf8"));
     relues += Object.keys(p.communes).length;
   }
-  if (relues !== Object.keys(libelles).length) {
-    console.error(`ECHEC : ${relues} communes reparties pour ${Object.keys(libelles).length} attendues`);
+  if (relues !== attenduesIdf) {
+    console.error(`ECHEC : ${relues} communes reparties pour ${attenduesIdf} attendues`);
     process.exit(5);
   }
 

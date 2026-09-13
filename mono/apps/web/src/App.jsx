@@ -2,7 +2,6 @@
 import { Chargement, Vide, Puce } from "@repere/ui";
 import {
 chargerIndex, chargerDepartement, chargerDeputes, prechargerDepartement, ETATS, PHRASES,} from "@repere/data-utils";
-const [deputes, setDeputes] = useState(null);
 /* CHARGEMENT PARESSEUX DES ÉCRANS. Chacun est un module séparé : ouvrir « Qui
    décide » ne télécharge pas le code de « Où va mon argent ». Le socle React est
    dans un morceau à part (voir vite.config.js). */
@@ -20,6 +19,12 @@ const ONGLETS = [
    ni identifiant. Elle ne contient qu'un code de département — jamais une
    commune, jamais un horodatage d'usage. */
 const CLE = "repere.departement";
+const IDF = new Set(["75","77","78","91","92","93","94","95"]);
+const IDF_NOMS = {
+  "75":"Paris","77":"Seine-et-Marne","78":"Yvelines","91":"Essonne",
+  "92":"Hauts-de-Seine","93":"Seine-Saint-Denis","94":"Val-de-Marne","95":"Val-d’Oise"
+};
+const IDF_ORDRE = ["75","77","78","91","92","93","94","95"];
 
 function lireDepartement() {
   try { return localStorage.getItem(CLE) || ""; } catch { return ""; }
@@ -30,16 +35,19 @@ function ecrireDepartement(d) {
 
 export default function App() {
   const [index, setIndex] = useState(null);
+  const [deputes, setDeputes] = useState(null);
   const [etatIndex, setEtatIndex] = useState(ETATS.EN_COURS);
   const [departement, setDepartement] = useState(lireDepartement);
   const [paquet, setPaquet] = useState(null);
   const [etat, setEtat] = useState(ETATS.ABSENT);
   const [onglet, setOnglet] = useState("qui");
+  const indexVisible = index ? { ...index, departements: index.departements.filter(d => IDF.has(d.code)) } : null;
 
-  useEffect(() => {chargerDeputes().then(r => {
-  if (vivant && r.donnees) setDeputes(r.donnees);
-});
+  useEffect(() => {
     let vivant = true;
+    chargerDeputes().then(r => {
+      if (vivant && r.donnees) setDeputes(r.donnees);
+    });
     chargerIndex().then(r => {
       if (!vivant) return;
       setEtatIndex(r.etat);
@@ -60,7 +68,10 @@ export default function App() {
 
   /* Un département déjà choisi se recharge tout seul : le lecteur ne redit pas
      chaque matin où il habite. */
-  useEffect(() => { if (departement) ouvrir(departement); }, []);   // eslint-disable-line
+  useEffect(() => {
+    if (departement && IDF.has(departement)) ouvrir(departement);
+    else if (departement) { ecrireDepartement(""); setDepartement(""); }
+  }, []);   // eslint-disable-line
 
   return (
     <div className="app">
@@ -74,13 +85,13 @@ export default function App() {
       </header>
 
       <nav className="departements" aria-label="Choisir un département">
-        {etatIndex === ETATS.EN_COURS && !index
+        {etatIndex === ETATS.EN_COURS && !indexVisible
           ? <Chargement titre="Chargement de la liste des départements." corps="Cinq kilo-octets, une seule fois." />
           : null}
-        {etatIndex !== ETATS.SERVI && !index
+        {etatIndex !== ETATS.SERVI && !indexVisible
           ? <Vide {...PHRASES[etatIndex] || PHRASES[ETATS.ECHEC]} onAction={() => location.reload()} />
           : null}
-        {index ? (
+        {indexVisible ? (
           /* CENT QUATRE PASTILLES REMPLISSAIENT L'ECRAN — vu sur une capture, pas
              dans une assertion. Une fois le departement choisi, la liste se replie
              sur une seule ligne : ce que le lecteur est venu voir passe devant le
@@ -88,11 +99,11 @@ export default function App() {
           <details className="choix" open={!departement}>
             <summary>
               {departement
-                ? <>Département <b>{departement}</b> — changer</>
+                ? <>Département <b>{departement} — {IDF_NOMS[departement]}</b> — changer</>
                 : <>Choisir un département <span className="note">({index.departements.length} publiés)</span></>}
             </summary>
             <div className="rangee liste-dept">
-              {index.departements.map(d => (
+              {IDF_ORDRE.map(code => indexVisible.departements.find(d => d.code === code)).filter(Boolean).map(d => (
                 <Puce key={d.code} actif={d.code === departement} echelon="dept"
                   onClick={() => ouvrir(d.code)}>
                   <span onMouseEnter={() => prechargerDepartement(d.code)}
@@ -125,9 +136,9 @@ export default function App() {
               : null}
             {etat === ETATS.SERVI && paquet ? (
               <Suspense fallback={<Chargement titre="Ouverture de l'écran." corps="Le code de cet écran est téléchargé à la demande." />}>
-                {onglet === "qui" ? <QuiDecide paquet={paquet} index={index} deputes={deputes} /> : null}
-                {onglet === "argent" ? <OuVaArgent paquet={paquet} index={index} /> : null}
-                {onglet === "sources" ? <Sources index={index} paquet={paquet} /> : null}
+                {onglet === "qui" ? <QuiDecide paquet={paquet} index={indexVisible} deputes={deputes} /> : null}
+                {onglet === "argent" ? <OuVaArgent paquet={paquet} index={indexVisible} /> : null}
+                {onglet === "sources" ? <Sources index={indexVisible} paquet={paquet} /> : null}
               </Suspense>
             ) : null}
           </main>

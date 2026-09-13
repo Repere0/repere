@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { Carte, Vide, Source } from "@repere/ui";
 
 function ordinal(n) { return n === 1 ? "1re" : n + "e"; }
@@ -25,11 +25,11 @@ function phraseCirco(nom, circo) {
   }
   return {
     titre: `${nom} vote dans la ${ordinal(circo)} circonscription législative.`,
-    corps: "Repère ne peut pas encore dire qui y a été élu : ce lien n'existe pas dans le Répertoire national des élus, et il ne sera pas deviné.",
+    corps: "Le rattachement à la circonscription est issu du référentiel électoral embarqué par Repère.",
   };
 }
 
-export default function QuiDecide({ paquet, index }) {
+export default function QuiDecide({ paquet, index, deputes }) {
   const [filtre, setFiltre] = useState("");
   const [choisie, setChoisie] = useState(null);
 
@@ -48,11 +48,18 @@ export default function QuiDecide({ paquet, index }) {
   const c = choisie ? paquet.communes[choisie] : null;
   const src = index && index.sources ? index.sources.elus : null;
 
+  function deputePour(c) {
+    if (!c || !deputes || Array.isArray(c.circo) || c.circo == null) return null;
+    return deputes[paquet.d + "-" + c.circo] || deputes[String(paquet.d).padStart(2, "0") + "-" + c.circo] || null;
+  }
+
+  const depute = deputePour(c);
+
   return (
     <div className="pile">
       <label className="champ">
         <span>Chercher une commune du département {paquet.d}</span>
-        <input type="search" value={filtre} placeholder="Ustaritz, Bayonne…"
+        <input type="search" value={filtre} placeholder="Commune, ville…"
           onChange={e => { setFiltre(e.target.value); setChoisie(null); }} />
       </label>
 
@@ -97,7 +104,16 @@ export default function QuiDecide({ paquet, index }) {
           </Carte>
 
           <Carte echelon="france" titre="À l'Assemblée nationale" sousTitre="La circonscription de cette commune">
-            {(() => { const p = phraseCirco(c.nom, c.circo); return <Vide titre={p.titre} corps={p.corps} />; })()}
+            {depute ? (
+              <div className="ligne">
+                <div className="ligne-h"><span>Votre député</span><b>{depute.prenom} {depute.nom}</b></div>
+                <div className="ligne-note">
+                  {"La commune est rattachée à la " + ordinal(c.circo) + " circonscription législative. Cette correspondance vient du référentiel de l’Assemblée nationale."}
+                </div>
+              </div>
+            ) : (
+              (() => { const p = phraseCirco(c.nom, c.circo); return <Vide titre={p.titre} corps={p.corps} />; })()
+            )}
             {index && index.sources && index.sources.circonscriptions ? (
               <Source producteur={index.sources.circonscriptions.producteur}
                 licence={index.sources.circonscriptions.licence}
