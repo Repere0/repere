@@ -80,7 +80,14 @@ grep -q 'window.REPERE_CIRCOS' "$APP_CIRC"
 # Le frontend le charge sous /data/deputes.json. Construire la sortie dans le répertoire
 # publié évite un fichier intermédiaire absent du dépôt monorepo.
 python3 outils/construire_deputes.py data/brut_AMO30/json/acteur site_donnees/deputes.json
-assert -s site_donnees/deputes.json
+test -s site_donnees/deputes.json
+python3 - site_donnees/deputes.json <<'PY'
+import json, sys
+d = json.load(open(sys.argv[1], encoding="utf-8"))
+assert 500 <= len(d) <= 577, "nombre de députés hors plage : %d" % len(d)
+assert all("-" in k and v.get("acteurRef") for k,v in d.items()), "référentiel député mal formé"
+print("députés : %d circonscriptions actives" % len(d))
+PY
 
 # ---------------------------------------- 3 quater. les scrutins, position par depute
 # 80 derniers scrutins. Ni non-votants, ni mise au point, ni agregat par depute :
