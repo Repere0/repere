@@ -230,7 +230,7 @@ verif("invariant 1 — le reseau est bien coupe pendant la mesure",
 verif("invariant 1 — hors ligne, l'application s'ouvre",
   /Qui décide chez vous/.test(horsLigne.texte), horsLigne.texte.slice(0, 120));
 verif("invariant 1 — hors ligne, le departement deja consulte revient tout seul",
-  /Ustaritz|Piero ROUGET|Chercher une commune/.test(horsLigne.texte),
+  /Paris|Chercher une commune|Département 75/.test(horsLigne.texte),
   horsLigne.texte.slice(0, 200).replace(/\n+/g, " / "));
 
 verif("rendu — aucune erreur JavaScript applicative sur tout le parcours",
