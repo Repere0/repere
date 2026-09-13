@@ -125,9 +125,9 @@ await page.waitForTimeout(700);
 const qui = await page.evaluate(() => document.body.innerText);
 verif("rendu — le maire de la commune choisie s'affiche",
   /maire|maire de Paris/i.test(qui), qui.slice(0, 120).replace(/\n+/g, " / "));
-verif("rendu — la circonscription s'affiche et ne nomme personne",
+verif("rendu — la circonscription s'affiche",
   /circonscription législative/i.test(qui),
-  qui.slice(0, 160).replace(/\n+/g, " / "));
+  qui.slice(-500).replace(/\n+/g, " / "));
 
 /* INVARIANT 2 encore : le magasin IndexedDB ne doit contenir QUE des paquets
    departementaux. C'est la condition qui rend son usage acceptable. */
