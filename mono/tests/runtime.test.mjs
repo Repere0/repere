@@ -102,7 +102,8 @@ verif("invariant 2 — rien n'est ecrit sur l'appareil avant un geste du lecteur
   JSON.stringify(stockage));
 
 console.log("\n--- parcours -------------------------------------------------");
-await page.getByRole("button", { name: "64", exact: true }).click();
+const deptButton = page.getByRole("button", { name: "75", exact: true }).or(page.getByRole("button", { name: "64", exact: true }));
+await deptButton.first().click();
 await page.waitForTimeout(1800);
 
 const apres = await page.evaluate(() => ({
@@ -116,9 +117,9 @@ verif("invariant 2 — une seule cle, nommee, et elle ne porte qu'un departement
   JSON.stringify(apres));
 verif("invariant 2 — sessionStorage reste vide", apres.session.length === 0, apres.session.join(","));
 
-await page.getByRole("searchbox").first().fill("Ustaritz");
+await page.getByRole("searchbox").first().fill("Paris");
 await page.waitForTimeout(400);
-await page.getByRole("button", { name: "Ustaritz", exact: true }).click();
+await page.getByRole("button", { name: "Paris", exact: true }).first().click();
 await page.waitForTimeout(700);
 
 const qui = await page.evaluate(() => document.body.innerText);
