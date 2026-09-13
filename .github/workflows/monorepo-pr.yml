@@ -1,0 +1,59 @@
+name: Monorepo PR
+
+on:
+  pull_request:
+    paths:
+      - "mono/**"
+      - ".github/workflows/monorepo-pr.yml"
+
+concurrency:
+  group: monorepo-pr-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: mono
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 8.15.9
+          run_install: false
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: mono/pnpm-lock.yaml
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Static invariants
+        run: node --test tests/invariants.test.mjs
+
+      - name: Build
+        run: pnpm build
+
+      - name: Install Chromium for smoke test
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Browser invariants
+        run: node tests/runtime.test.mjs apps/web/dist
+
+      - name: Check generated output exists
+        shell: bash
+        run: |
+          test -s apps/web/dist/index.html
+          test -s apps/web/dist/sw.js
+          test -s apps/web/dist/manifest.webmanifest
