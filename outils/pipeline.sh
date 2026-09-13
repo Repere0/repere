@@ -59,8 +59,10 @@ done
 # ils seront eprouves sur donnees reelles, on remettra le `set -e` sur eux.
 
 # ------------------------------ 3 ter. la table commune -> circonscription(s)
-# Sans elle, l'application affiche les neuf parlementaires d'un departement a
-# quelqu'un sans pouvoir dire dans quelle circonscription il vote.
+# BETA IDF : on conserve la table nationale comme socle de verite, mais le site
+# publié ne sert que les 8 départements franciliens.
+# Sans elle, l'application affiche les parlementaires d'un departement sans
+# pouvoir dire dans quelle circonscription il vote.
 # ETAT BETA : la source est nationale, mais le produit exposera uniquement l'IDF.
 #
 # SOURCE RETENUE : le XLSX du ministere de l'Interieur. Mesure du 25/08/2026 :
@@ -115,6 +117,19 @@ python3 outils/echantillon_scrutins.py data/brut_AMO30/json/acteur docs/schema_a
 APP_DEC=$(ls -1 app_repere_v18_*.html | grep -v '\.bak$' | sort -V | tail -1)
 python3 outils/decouper.py "$APP_DEC" site_donnees \
   || echo "::warning::le decoupage par departement a echoue"
+
+# BETA IDF : supprimer du dossier servi les départements hors Île-de-France.
+# La collecte reste nationale (maximum de fraîcheur et réutilisation future), mais
+# le téléchargement lecteur reste limité à 75,77,78,91,92,93,94,95.
+python3 - site_donnees <<'PY'
+from pathlib import Path
+root = Path("site_donnees")
+idf = {"75.json","77.json","78.json","91.json","92.json","93.json","94.json","95.json"}
+for p in root.glob("*.json"):
+    if p.name not in idf and p.name[:2].isdigit():
+        p.unlink()
+print("sortie lecteur IDF :", sorted(p.name for p in root.glob("*.json") if p.name in idf))
+PY
 
 # ---------------- 3 septies. AUTO -> RELU -> PUBLIE : la couche editoriale
 # L'etage AUTO pose des brouillons dans data/auto/, jamais affiches. L'etage PUBLIE ne
