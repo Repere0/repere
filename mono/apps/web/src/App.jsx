@@ -24,6 +24,7 @@ const IDF_NOMS = {
   "75":"Paris","77":"Seine-et-Marne","78":"Yvelines","91":"Essonne",
   "92":"Hauts-de-Seine","93":"Seine-Saint-Denis","94":"Val-de-Marne","95":"Val-d’Oise"
 };
+const IDF_ORDRE = ["75","77","78","91","92","93","94","95"];
 
 function lireDepartement() {
   try { return localStorage.getItem(CLE) || ""; } catch { return ""; }
@@ -102,7 +103,7 @@ export default function App() {
                 : <>Choisir un département <span className="note">({index.departements.length} publiés)</span></>}
             </summary>
             <div className="rangee liste-dept">
-              {indexVisible.departements.map(d => (
+              {IDF_ORDRE.map(code => indexVisible.departements.find(d => d.code === code)).filter(Boolean).map(d => (
                 <Puce key={d.code} actif={d.code === departement} echelon="dept"
                   onClick={() => ouvrir(d.code)}>
                   <span onMouseEnter={() => prechargerDepartement(d.code)}
