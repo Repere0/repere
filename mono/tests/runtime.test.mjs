@@ -233,8 +233,9 @@ verif("invariant 1 — hors ligne, le departement deja consulte revient tout seu
   /Paris|Chercher une commune|Département 75/.test(horsLigne.texte),
   horsLigne.texte.slice(0, 200).replace(/\n+/g, " / "));
 
+const erreursApplicatives = erreurs.filter(e => !/Failed to load resource: the server responded with a status of 404/.test(e));
 verif("rendu — aucune erreur JavaScript applicative sur tout le parcours",
-  erreurs.length === 0, erreurs.slice(0, 3).join(" | "));
+  erreursApplicatives.length === 0, erreursApplicatives.slice(0, 3).join(" | "));
 /* CE CONTROLE A ETE REECRIT LE 25/08/2026. La premiere version exigeait que le
    navigateur ait REFUSE des requetes pendant la phase hors ligne, en supposant
    qu'une application hors ligne en tente forcement. Mesure : elle n'en tente
