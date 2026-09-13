@@ -20,6 +20,10 @@ const ONGLETS = [
    commune, jamais un horodatage d'usage. */
 const CLE = "repere.departement";
 const IDF = new Set(["75","77","78","91","92","93","94","95"]);
+const IDF_NOMS = {
+  "75":"Paris","77":"Seine-et-Marne","78":"Yvelines","91":"Essonne",
+  "92":"Hauts-de-Seine","93":"Seine-Saint-Denis","94":"Val-de-Marne","95":"Val-d’Oise"
+};
 
 function lireDepartement() {
   try { return localStorage.getItem(CLE) || ""; } catch { return ""; }
@@ -94,7 +98,7 @@ export default function App() {
           <details className="choix" open={!departement}>
             <summary>
               {departement
-                ? <>Département <b>{departement}</b> — changer</>
+                ? <>Département <b>{departement} — {IDF_NOMS[departement]}</b> — changer</>
                 : <>Choisir un département <span className="note">({index.departements.length} publiés)</span></>}
             </summary>
             <div className="rangee liste-dept">
