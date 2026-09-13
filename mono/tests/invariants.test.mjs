@@ -138,7 +138,9 @@ test("invariant 8 — aucun champ de patrimoine ni de présence dans les donnée
     assert.ok(false, "data/index.json absent : lance `pnpm extract` avant les tests");
   }
   const fichiers = fs.readdirSync(path.join(RACINE, "data/departments"));
-  assert.ok(fichiers.length > 90, `seulement ${fichiers.length} departements produits`);
+  const idf = new Set(["75.json","77.json","78.json","91.json","92.json","93.json","94.json","95.json"]);
+  for (const f of fichiers) assert.ok(idf.has(f), `la bêta IDF ne doit pas embarquer ${f}`);
+  assert.equal(fichiers.length, 8, `la bêta doit produire exactement 8 départements IDF, pas ${fichiers.length}`);
   /* On lit TOUS les fichiers, pas un échantillon : un champ interdit qui
      n'apparaîtrait que dans un département passerait un échantillonnage. */
   for (const f of fichiers) {
