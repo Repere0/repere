@@ -80,6 +80,33 @@ SOURCES = [
     # retenue sera ecrite dans l'application, comme toutes les autres.
     # -----------------------------------------------------------------------
     {
+        "cle": "rne_deputes",
+        "titre": "Ministère de l'intérieur — Répertoire national des élus, députés",
+        "url": "https://www.data.gouv.fr/api/1/datasets/r/1ac42ff4-1336-44f8-a221-832039dbc142",
+        "fichier": "RNE_deputes.csv",
+        "poids": "72 Ko",
+        "cadence": "trimestrielle",
+        "licence": "Licence Ouverte 2.0",
+    },
+    {
+        "cle": "rne_maires",
+        "titre": "Ministère de l'intérieur — Répertoire national des élus, maires",
+        "url": "https://www.data.gouv.fr/api/1/datasets/r/2876a346-d50c-4911-934e-19ee07b0e503",
+        "fichier": "RNE_maires.csv",
+        "poids": "4,1 Mo",
+        "cadence": "trimestrielle",
+        "licence": "Licence Ouverte 2.0",
+    },
+    {
+        "cle": "rne_municipaux",
+        "titre": "Ministère de l'intérieur — Répertoire national des élus, conseillers municipaux",
+        "url": "https://www.data.gouv.fr/api/1/datasets/r/4f1c8f45-0d6e-4d3f-8a3c-8b6c7b0f2c3f",
+        "fichier": "RNE_municipaux.csv",
+        "poids": "62 Mo",
+        "cadence": "trimestrielle",
+        "licence": "Licence Ouverte 2.0",
+    },
+    {
         "cle": "circos_min",
         "titre": "Communes et cantons par circonscription legislative (ministere de l'Interieur, 2017)",
         "url": "https://www.data.gouv.fr/api/1/datasets/r/4d0b70e1-7757-43cc-882b-5c3b04fe38b4",
