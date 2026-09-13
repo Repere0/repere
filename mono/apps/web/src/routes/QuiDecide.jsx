@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { Carte, Vide, Source } from "@repere/ui";
 
 function ordinal(n) { return n === 1 ? "1re" : n + "e"; }
