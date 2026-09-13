@@ -157,7 +157,7 @@ verif("invariant 2 — un seul magasin, et il ne porte que des paquets departeme
 console.log("\n--- l'argent -------------------------------------------------");
 await page.getByRole("button", { name: "Où va l'argent" }).click();
 await page.waitForTimeout(600);
-await page.getByRole("searchbox").first().fill("Ustaritz");
+await page.getByRole("searchbox").first().fill("Paris");
 await page.waitForTimeout(400);
 await page.getByRole("button", { name: "Paris", exact: true }).first().click();
 await page.waitForTimeout(700);
