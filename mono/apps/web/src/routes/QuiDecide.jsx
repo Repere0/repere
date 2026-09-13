@@ -108,7 +108,7 @@ export default function QuiDecide({ paquet, index, deputes }) {
               <div className="ligne">
                 <div className="ligne-h"><span>Votre député</span><b>{depute.prenom} {depute.nom}</b></div>
                 <div className="ligne-note">
-                  {${"La commune est rattachée à la " + ordinal(c.circo) + " circonscription législative. Cette correspondance vient du référentiel de l'Assemblée nationale."}}
+                  {"La commune est rattachée à la " + ordinal(c.circo) + " circonscription législative. Cette correspondance vient du référentiel de l’Assemblée nationale."}
                 </div>
               </div>
             ) : (
