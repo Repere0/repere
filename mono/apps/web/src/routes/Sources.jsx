@@ -78,6 +78,17 @@ export default function Sources({ index, paquet }) {
           ))}
         </ol>
         {PROMESSES.map((t, i) => <p className="tx-note" key={i}>{t}</p>)}
+        {/* LE SEUL CANAL DE RETOUR, ET IL EST LA PARCE QU'IL N'Y EN A PAS D'AUTRE.
+            Repere ne mesure rien : ni page vue, ni clic, ni erreur remontee. C'est
+            le bon choix, mais il a une consequence — un chiffre faux peut rester
+            faux des mois sans que personne ici ne l'apprenne. Une adresse ecrite
+            en clair est donc un instrument, pas une politesse. */}
+        <p className="tx-note">
+          Un chiffre vous semble faux, une source manque, quelque chose ne s'affiche pas ?
+          Écrivez à <a href="mailto:repere0@protonmail.com">repere0@protonmail.com</a>.
+          Repère ne mesure rien de ce que vous faites : votre message est le seul moyen
+          que nous ayons de l'apprendre.
+        </p>
       </Carte>
     </div>
   );

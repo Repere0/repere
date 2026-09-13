@@ -864,3 +864,36 @@ test("invariant 4 — toute source déclarée dans l'index est affichée sur l'�
   assert.deepEqual(absentes, [],
     "une source declaree n'apparait pas sur l'ecran Sources : " + absentes.join(", "));
 });
+
+test("PWA — l'application est installable sur Android comme sur iOS", () => {
+  /* « Telechargeable » n'est pas une metaphore : pour le banc de decembre, chacun
+     doit pouvoir poser Repere sur son ecran d'accueil et l'ouvrir comme une
+     application. Android lit le manifeste ; iOS, lui, IGNORE `display: standalone`
+     et n'obeit qu'a des metas marquees obsoletes. Sans elles, l'icone posee sur un
+     iPhone rouvre Safari avec sa barre d'adresse — la moitie d'un banc de dix
+     personnes verrait une page web la ou l'autre moitie voit une application. */
+  const m = JSON.parse(lire("apps/web/public/manifest.webmanifest"));
+  for (const champ of ["name", "short_name", "start_url", "scope", "id", "display", "icons"]) {
+    assert.ok(m[champ], `le manifeste ne declare pas « ${champ} »`);
+  }
+  assert.ok(["standalone", "fullscreen", "minimal-ui"].includes(m.display),
+    `display « ${m.display} » : le navigateur ne proposera pas l'installation`);
+  const tailles = m.icons.map(i => i.sizes);
+  for (const t of ["192x192", "512x512"]) {
+    assert.ok(tailles.includes(t), `le manifeste n'a pas d'icone ${t} : Android refuse l'installation`);
+  }
+  assert.ok(m.icons.some(i => i.purpose === "maskable"),
+    "aucune icone maskable : Android rognera l'icone n'importe comment");
+
+  const html = lire("apps/web/index.html");
+  assert.match(html, /rel="manifest"/, "la page ne lie pas le manifeste");
+  assert.match(html, /rel="apple-touch-icon"/,
+    "sans apple-touch-icon, iOS met une capture d'ecran a la place de l'icone");
+  assert.match(html, /name="apple-mobile-web-app-capable" content="yes"/,
+    "sans cette meta, l'icone posee sur un iPhone rouvre Safari au lieu de l'application");
+
+  /* Un service worker sans reponse au fetch n'est pas un service worker : le
+     navigateur ne propose pas l'installation, et rien ne marche hors ligne. */
+  assert.match(lire("apps/web/public/sw.js"), /addEventListener\(\s*["']fetch["']/,
+    "le service worker ne repond a aucune requete");
+});

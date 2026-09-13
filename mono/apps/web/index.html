@@ -19,6 +19,17 @@
 <meta name="theme-color" content="#0e7490">
 <link rel="icon" href="/icone.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="/icone-192.png">
+<!-- iOS NE LIT PAS `display: standalone` DU MANIFESTE. Sur iPhone, une icone
+     ajoutee a l ecran d accueil sans ces trois lignes rouvre Safari avec sa barre
+     d adresse : le lecteur ne voit pas une application, il voit une page web dans
+     un navigateur, et la promesse « installable » tombe. Ces metas sont marquees
+     obsoletes par la specification et restent, en 2026, le seul moyen d obtenir
+     le plein ecran sur iOS. La version standard est posee a cote, pour le jour ou
+     Safari la lira. -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Repère">
 <link rel="manifest" href="/manifest.webmanifest">
 <!-- AUCUNE POLICE CHARGEE DEPUIS UN HOTE TIERS. Un lien vers fonts.googleapis.com
      ferait connaitre a Google l'adresse IP de chaque lecteur de Repere, a chaque
