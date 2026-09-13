@@ -64,7 +64,11 @@ jobs:
       # ------------------------------------------------ 3. construire
       - run: pnpm build
       - name: Publier les données dans le site
-        run: cp -r data apps/web/dist/data && node scripts/empreinte-sw.mjs apps/web/dist
+        run: |
+          cp -r data apps/web/dist/data
+          test -s ../site_donnees/deputes.json
+          cp ../site_donnees/deputes.json apps/web/dist/data/deputes.json
+          node scripts/empreinte-sw.mjs apps/web/dist
 
       # ------------------------------------------------ 4. LE VERROU
       # Service worker installé, serveur ÉTEINT, parcours complet. C'est ce
