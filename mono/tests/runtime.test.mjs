@@ -102,7 +102,7 @@ verif("invariant 2 — rien n'est ecrit sur l'appareil avant un geste du lecteur
   JSON.stringify(stockage));
 
 console.log("\n--- parcours -------------------------------------------------");
-const deptButton = page.getByRole("button", { name: "75", exact: true }).or(page.getByRole("button", { name: "64", exact: true }));
+const deptButton = page.getByRole("button", { name: "75", exact: true });
 await deptButton.first().click();
 await page.waitForTimeout(1800);
 
