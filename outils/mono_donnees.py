@@ -46,6 +46,41 @@ def ecrire(dest, paquet, quoi):
     return relu
 
 # ---------------------------------------------------------------- les deputes
+def lire_acteur(a):
+    """Les sieges ouverts d'un acteur, sous forme (cle « dep-circo », fiche).
+
+    TROIS PIEGES DU FORMAT, releves dans docs/schema_acteurs.md AVANT d'ecrire
+    une ligne — c'est la methode qui avait deja evite le champ `votant` tantot
+    liste tantot objet dans les scrutins :
+
+      1. `mandats.mandat` est une LISTE dans 2 995 fichiers et un OBJET SEUL dans
+         5 autres. Un lecteur ecrit de memoire aurait plante sur ces cinq-la, ou
+         pire, les aurait ignores en silence.
+      2. `dateFin` vaut `null` pour un mandat ouvert et une date pour un mandat
+         clos. Un mandat clos qui passerait le filtre ferait cohabiter deux
+         deputes sur le meme siege — d'ou le controle des doublons plus bas.
+      3. `legislature` est une CHAINE (« 17 »), pas un nombre. Comparer a 17
+         entier ne retiendrait jamais personne, et le fichier produit serait vide
+         sans qu'aucune exception ne soit levee.
+    """
+    mandats = (a.get("mandats") or {}).get("mandat") or []
+    if not isinstance(mandats, list):
+        mandats = [mandats]
+    ident = (a.get("etatCivil") or {}).get("ident") or {}
+    uid = (a.get("uid") or {}).get("#text", "")
+    for m in mandats:
+        if not isinstance(m, dict):                   continue
+        lieu = ((m.get("election") or {}).get("lieu") or {})
+        if str(m.get("legislature")) != "17":         continue
+        if m.get("typeOrgane") != "ASSEMBLEE":        continue
+        if not lieu.get("numDepartement") or not lieu.get("numCirco"): continue
+        if m.get("dateFin"):                          continue
+        if not uid:                                   continue
+        yield ("%s-%s" % (lieu["numDepartement"], lieu["numCirco"]),
+               {"prenom": ident.get("prenom", ""), "nom": ident.get("nom", ""),
+                "acteurRef": uid, "dateDebut": m.get("dateDebut")})
+
+
 def deputes():
     source = chemin("data", "brut_AMO30", "json", "acteur")
     fichiers = glob.glob(os.path.join(source, "*.json"))
@@ -54,23 +89,10 @@ def deputes():
         return
     sortie, doublons = {}, []
     for f in fichiers:
-        a = json.load(io.open(f, encoding="utf-8"))["acteur"]
-        mandats = a.get("mandats", {}).get("mandat", [])
-        if not isinstance(mandats, list):
-            mandats = [mandats]
-        ident = a.get("etatCivil", {}).get("ident", {})
-        uid = (a.get("uid") or {}).get("#text", "")
-        for m in mandats:
-            lieu = ((m.get("election") or {}).get("lieu") or {})
-            if str(m.get("legislature")) != "17":         continue
-            if m.get("typeOrgane") != "ASSEMBLEE":        continue
-            if not lieu.get("numDepartement") or not lieu.get("numCirco"): continue
-            if m.get("dateFin"):                          continue
-            cle = "%s-%s" % (lieu["numDepartement"], lieu["numCirco"])
+        for cle, fiche in lire_acteur(json.load(io.open(f, encoding="utf-8"))["acteur"]):
             if cle in sortie:
                 doublons.append(cle)
-            sortie[cle] = {"prenom": ident.get("prenom", ""), "nom": ident.get("nom", ""),
-                           "acteurRef": uid, "dateDebut": m.get("dateDebut")}
+            sortie[cle] = fiche
     # UN SIEGE, UN DEPUTE. Deux mandats ouverts sur la meme circonscription veut dire
     # que le filtre « dateFin » a laisse passer un mandat clos : on refuse d'ecrire.
     assert not doublons, "deux mandats ouverts sur la meme circonscription : %s" % doublons[:3]
@@ -125,6 +147,71 @@ def scrutins():
         "acteurs": d["acteurs"],
         "r": d["r"],
     }, "scrutins (%d)" % len(d["r"]))
+
+def autotest():
+    """Eprouve la lecture d'un acteur SANS reseau et SANS archive depilee.
+
+    La branche « deputes » ne peut pas tourner dans le conteneur : le referentiel
+    AMO30 n'y est pas, et les serveurs de l'Assemblee n'y sont pas joignables. Elle
+    partait donc en production sans avoir jamais ete executee. Ce banc lui donne
+    les cas du schema reel, y compris ceux qui n'arrivent que cinq fois sur trois
+    mille.  Lance :  python3 outils/mono_donnees.py --test
+    """
+    cas = [
+        ("liste normale, un siege ouvert", {
+            "uid": {"#text": "PA1"}, "etatCivil": {"ident": {"prenom": "A", "nom": "Un"}},
+            "mandats": {"mandat": [
+                {"legislature": "17", "typeOrgane": "ASSEMBLEE", "dateDebut": "2024-07-07",
+                 "dateFin": None, "election": {"lieu": {"numDepartement": "93", "numCirco": "6"}}},
+                {"legislature": "17", "typeOrgane": "COMPER", "dateDebut": "2024-07-18",
+                 "dateFin": None, "election": {"lieu": {}}},
+            ]}}, [("93-6", "PA1")]),
+        ("objet seul au lieu d'une liste", {
+            "uid": {"#text": "PA2"}, "etatCivil": {"ident": {"prenom": "B", "nom": "Deux"}},
+            "mandats": {"mandat":
+                {"legislature": "17", "typeOrgane": "ASSEMBLEE", "dateDebut": "2024-07-07",
+                 "dateFin": None, "election": {"lieu": {"numDepartement": "75", "numCirco": "1"}}}}},
+            [("75-1", "PA2")]),
+        ("mandat clos : ecarte", {
+            "uid": {"#text": "PA3"}, "etatCivil": {"ident": {"prenom": "C", "nom": "Trois"}},
+            "mandats": {"mandat": [
+                {"legislature": "17", "typeOrgane": "ASSEMBLEE", "dateDebut": "2024-07-07",
+                 "dateFin": "2025-09-01", "election": {"lieu": {"numDepartement": "75", "numCirco": "2"}}}]}},
+            []),
+        ("legislature precedente : ecartee", {
+            "uid": {"#text": "PA4"}, "etatCivil": {"ident": {"prenom": "D", "nom": "Quatre"}},
+            "mandats": {"mandat": [
+                {"legislature": "16", "typeOrgane": "ASSEMBLEE", "dateDebut": "2022-06-22",
+                 "dateFin": None, "election": {"lieu": {"numDepartement": "75", "numCirco": "3"}}}]}},
+            []),
+        ("senateur : ecarte", {
+            "uid": {"#text": "PA5"}, "etatCivil": {"ident": {"prenom": "E", "nom": "Cinq"}},
+            "mandats": {"mandat": [
+                {"legislature": "17", "typeOrgane": "SENAT", "dateDebut": "2024-07-07",
+                 "dateFin": None, "election": {"lieu": {"numDepartement": "75", "numCirco": "4"}}}]}},
+            []),
+        ("acteur sans mandat : ne plante pas", {"uid": {"#text": "PA6"}}, []),
+        ("mandats absents : ne plante pas", {"uid": {"#text": "PA7"}, "mandats": None}, []),
+        ("francais de l'etranger : garde son siege", {
+            "uid": {"#text": "PA8"}, "etatCivil": {"ident": {"prenom": "F", "nom": "Huit"}},
+            "mandats": {"mandat": [
+                {"legislature": "17", "typeOrgane": "ASSEMBLEE", "dateDebut": "2024-07-07",
+                 "dateFin": None, "election": {"lieu": {"numDepartement": "099", "numCirco": "5"}}}]}},
+            [("099-5", "PA8")]),
+    ]
+    echecs = 0
+    for titre, acteur, attendu in cas:
+        obtenu = [(c, f["acteurRef"]) for c, f in lire_acteur(acteur)]
+        ok = obtenu == attendu
+        echecs += 0 if ok else 1
+        print("  %-4s %-42s %s" % ("ok" if ok else "ECHEC", titre,
+                                   "" if ok else "attendu %s, obtenu %s" % (attendu, obtenu)))
+    print("\n%d cas, %d echec(s)." % (len(cas), echecs))
+    return 1 if echecs else 0
+
+if "--test" in sys.argv:
+    print("Autotest de la lecture du referentiel des acteurs (AMO30).\n")
+    sys.exit(autotest())
 
 deputes()
 scrutins()

@@ -89,8 +89,22 @@ python3 outils/scrutins_an.py data/brut_Scrutins outils/scrutins_an.json 80 \
 # de plus en plus vieux sans que rien ne le dise. Le script refuse d'ecraser un
 # releve valide par un fichier vide — une source manquante avertit, elle ne casse
 # rien, et la chaine continue avec le releve de la veille.
-python3 outils/mono_donnees.py . \
-  || echo "::warning::au moins un releve du monorepo n'a pas ete rafraichi (voir les avertissements ci-dessus)"
+# L'AUTOTEST PASSE D'ABORD, ET C'EST LUI QUI AUTORISE L'ECRITURE. La lecture du
+# referentiel des acteurs ne peut pas etre eprouvee ailleurs : l'archive AMO30
+# n'existe que sur le runner. Si ses huit cas ne passent pas — un format qui a
+# change, un champ qui devient une liste — on ne regenere rien et on garde le
+# releve de la veille.
+# LE NOM DE LA COMMUNE, TEL QU'IL S'ECRIT. Une commune sur quatre s'affichait mal
+# avant le 13/09/2026 : article interne en majuscule, initiale desaccentuee. Le
+# libelle officiel vient du Code officiel geographique, par le paquet du decoupage
+# administratif d'Etalab — que le runner sait joindre, contrairement au conteneur.
+# Le script refuse d'ecraser un fichier valide par un fichier maigre.
+python3 outils/noms_communes.py . \
+  || echo "::warning::les noms officiels des communes n'ont pas ete rafraichis"
+
+python3 outils/mono_donnees.py --test \
+  && python3 outils/mono_donnees.py . \
+  || echo "::warning::les releves du monorepo n'ont pas ete rafraichis (voir les avertissements ci-dessus)"
 
 # ------------------- 3 quinquies. decrire les acteurs (pour nommer les references)
 # Les scrutins designent les deputes par une reference opaque (PA1234). Le referentiel

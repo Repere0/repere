@@ -388,6 +388,29 @@ const petites = await page.evaluate(() =>
 verif("accessibilite — toute cible tactile mesure au moins 44 px",
   petites.length === 0, petites.slice(0, 4).map(p => p.t + " (" + p.h + "px)").join(" | "));
 
+console.log("\n--- recherche et accents -------------------------------------");
+/* LA RECHERCHE NE DOIT PAS DEPENDRE DES ACCENTS, DANS LES DEUX SENS. Depuis que
+   les libelles portent leur orthographe officielle, une comparaison brute
+   ferait disparaitre Évry-Courcouronnes pour qui tape « evry » — et l'inverse
+   etait deja vrai avant. On mesure les deux graphies sur la meme commune. */
+const pageAcc = await (await nav.newContext()).newPage();
+await pageAcc.goto(base, { waitUntil: "networkidle" });
+await pageAcc.getByLabel(/Votre département/).fill("essonne");
+await pageAcc.getByRole("button", { name: /^91 / }).click();
+const graphies = {};
+for (const q of ["evry", "Évry", "EVRY"]) {
+  await pageAcc.getByLabel(/Votre commune/).fill(q);
+  await pageAcc.waitForTimeout(200);
+  const l = pageAcc.locator(".choix-commune .puce");
+  graphies[q] = (await l.count()) ? (await l.first().innerText()).trim() : "(rien)";
+}
+verif("recherche — les trois graphies d'un meme nom trouvent la meme commune",
+  new Set(Object.values(graphies)).size === 1 && graphies["evry"] === "Évry-Courcouronnes",
+  JSON.stringify(graphies));
+verif("langue — le nom affiche porte son orthographe officielle",
+  graphies["evry"] === "Évry-Courcouronnes", JSON.stringify(graphies));
+await pageAcc.context().close();
+
 console.log("\n--- mouvement reduit -----------------------------------------");
 /* LA COUPURE DU MOUVEMENT, MESUREE ET PAS DEDUITE. Le controle statique lit le
    CSS ; celui-ci ouvre une page en declarant le reglage systeme « moins

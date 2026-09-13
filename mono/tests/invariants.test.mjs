@@ -237,7 +237,7 @@ test("invariant 4 — aucune donnée n'est servie sans source déclarée", () =>
      "/scrutins.json", "/scrutins/${d}.json"],
     "client.js compose une adresse de donnees inattendue : " + composees.join(", "));
   const sources = existe("data/index.json") ? (JSON.parse(lire("data/index.json")).sources || {}) : {};
-  for (const attendue of ["elus", "comptes", "circonscriptions", "deputes", "scrutins"]) {
+  for (const attendue of ["elus", "comptes", "circonscriptions", "deputes", "scrutins", "communes"]) {
     assert.ok(sources[attendue] && sources[attendue].producteur,
       `index.json ne declare pas la source « ${attendue} »`);
   }
@@ -798,4 +798,69 @@ test("bêta Île-de-France — aucune commune ne reste sans député nommable", 
   }
   assert.deepEqual(muettes, [],
     "des communes de la beta n'ont aucun depute a nommer : " + muettes.slice(0, 5).join(", "));
+});
+
+test("langue — les noms de communes portent leur orthographe officielle", () => {
+  if (!existe("data/departments/91.json")) return;
+  /* MESURE DU 13/09/2026 : 9 198 communes sur 34 637 — UNE SUR QUATRE —
+     s'affichaient mal. Le Repertoire national des elus ecrit en capitales, et la
+     recapitalisation du produit mettait une majuscule aux articles internes
+     (« Choisy-Le-Roi ») et perdait les accents des initiales
+     (« Evry-Courcouronnes »). Le libelle vient desormais du Code officiel
+     geographique, par le decoupage administratif d'Etalab.
+
+     DEUX ASSERTIONS, ET L'ORDRE COMPTE : la premiere est une regle
+     typographique verifiable partout, la seconde des temoins nommes. Sans les
+     temoins, une source qui deviendrait muette laisserait passer des libelles
+     tronques sans qu'aucune majuscule fautive n'apparaisse. */
+  const fautifs = [];
+  for (const dep of BETA_IDF) {
+    for (const c of Object.values(litData(`departments/${dep}.json`).communes)) {
+      if (/-(Le|La|Les|Sur|Sous|En|Aux|Au|Du|De|Des|Et|Lez|Les|D'|L')-/.test(c.nom)) fautifs.push(c.nom);
+    }
+  }
+  assert.deepEqual(fautifs.slice(0, 5), [],
+    "des noms de communes capitalisent un article interne : " + fautifs.slice(0, 5).join(", "));
+
+  const temoins = {
+    "91": { "91228": "Évry-Courcouronnes", "91215": "Épinay-sous-Sénart" },
+    "94": { "94022": "Choisy-le-Roi", "94018": "Charenton-le-Pont" },
+  };
+  for (const [dep, attendus] of Object.entries(temoins)) {
+    const communes = litData(`departments/${dep}.json`).communes;
+    for (const [insee, nom] of Object.entries(attendus)) {
+      assert.equal(communes[insee] && communes[insee].nom, nom,
+        `${insee} devrait s'ecrire « ${nom} »`);
+    }
+  }
+});
+
+test("architecture — une seule règle de recherche, pour les territoires comme pour les communes", () => {
+  /* Les deux recherches derivaient la meme regle a deux endroits, et elles avaient
+     diverge : celle des communes faisait un `toLowerCase().includes()` sans
+     normalisation. Mesure avant correction : « Évry » 0 resultat dans un
+     departement qui compte Évry-Courcouronnes, et « evry » aurait cesse de la
+     trouver des que le libelle a porte son accent. */
+  const app = lire("apps/web/src/App.jsx");
+  assert.ok(!/c\.nom\.toLowerCase\(\)\.includes/.test(app),
+    "la recherche de communes compare des chaines brutes : un accent la fait echouer");
+  const usages = (app.match(/correspond\(cherches,/g) || []).length;
+  assert.ok(usages >= 2,
+    `la fonction de correspondance n'est utilisee que ${usages} fois : les deux recherches doivent la partager`);
+});
+
+test("invariant 4 — toute source déclarée dans l'index est affichée sur l'écran Sources", () => {
+  if (!existe("data/index.json")) return;
+  /* Le defaut qui a impose ce controle : les scrutins etaient publies, leur
+     source etait declaree dans index.json, l'ecran des votes la portait — mais la
+     page qui recense les sources ne la nommait pas. Elle enumerait une liste
+     ecrite a la main, et personne ne l'avait rouverte en ajoutant un jeu de
+     donnees. Trouve a l'oeil sur capture, pas par une assertion. */
+  const declarees = Object.entries(litData("index.json").sources || {})
+    .filter(([, v]) => v && (Array.isArray(v) ? v.length : true))
+    .map(([k]) => k);
+  const ecran = lire("apps/web/src/routes/Sources.jsx");
+  const absentes = declarees.filter(k => !new RegExp("s\\." + k + "\\b").test(ecran));
+  assert.deepEqual(absentes, [],
+    "une source declaree n'apparait pas sur l'ecran Sources : " + absentes.join(", "));
 });

@@ -128,15 +128,30 @@ function ChoixDepartement({ index, departement, onOuvrir, onSurvol }) {
  * ici, au-dessus des onglets, et les écrans le reçoivent. */
 function ChoixCommune({ paquet, nomDepartement, commune, onCommune }) {
   const [filtre, setFiltre] = useState("");
-  const communes = useMemo(() => Object.entries(paquet.communes), [paquet]);
-  const q = filtre.trim().toLowerCase();
+  /* LA MEME REGLE QUE POUR LES DEPARTEMENTS, ET ELLE NE L'ETAIT PAS.
+   *
+   * Cette recherche faisait un simple `toLowerCase().includes()` : « Évry » ne
+   * trouvait pas « Evry-Courcouronnes », et « epinay » cessait de trouver
+   * « Épinay-sous-Sénart » des l'instant ou les libelles ont porte leurs accents.
+   * Deux endroits derivaient la meme regle, et ils avaient diverge — la recherche
+   * de departements, elle, normalise depuis le debut. Elles partagent desormais
+   * `mots()` et `correspond()`.
+   *
+   * Mesure du 13/09/2026, avant correction : « Évry » 0 resultat, « Épinay »
+   * 0 resultat, sur un departement qui compte les deux. */
+  const communes = useMemo(
+    () => Object.entries(paquet.communes).map(([insee, c]) => [insee, c, motsCible(c.nom)]),
+    [paquet]);
+  const cherches = mots(filtre);
   const trouvees = useMemo(() => {
-    const base = q ? communes.filter(([, c]) => c.nom.toLowerCase().includes(q)) : communes;
+    const base = cherches.length
+      ? communes.filter(([, , cible]) => correspond(cherches, cible))
+      : communes;
     /* Tri ALPHABÉTIQUE, jamais numérique : classer des territoires par un
        chiffre est interdit (invariant 3), et l'ordre alphabétique est le seul
        qui ne dise rien de personne. */
     return base.slice().sort((a, b) => a[1].nom.localeCompare(b[1].nom, "fr"));
-  }, [communes, q]);
+  }, [communes, filtre]);
   const vues = trouvees.slice(0, 60);
 
   return (
@@ -165,7 +180,7 @@ function ChoixCommune({ paquet, nomDepartement, commune, onCommune }) {
           <p className="note" role="status" aria-live="polite">
             {trouvees.length > vues.length
               ? `${trouvees.length.toLocaleString("fr-FR")} communes correspondent, les 60 premières sont affichées. Continuez à taper pour affiner.`
-              : `${trouvees.length.toLocaleString("fr-FR")} commune${trouvees.length > 1 ? "s" : ""} ${q ? "trouvée" + (trouvees.length > 1 ? "s" : "") : "dans ce département"}.`}
+              : `${trouvees.length.toLocaleString("fr-FR")} commune${trouvees.length > 1 ? "s" : ""} ${cherches.length ? "trouvée" + (trouvees.length > 1 ? "s" : "") : "dans ce département"}.`}
           </p>
         </>
       )}

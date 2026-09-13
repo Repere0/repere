@@ -30,6 +30,17 @@ defaults:
 jobs:
   chaine:
     runs-on: ubuntu-latest
+
+    # AU NIVEAU DU JOB, ET PAS DE L'ETAPE. Le bloc `env:` d'une etape n'est pas
+    # visible dans le `if:` de cette meme etape : ecrit la, le test « le secret
+    # existe-t-il ? » est toujours faux et l'etape est sautee meme apres creation
+    # des secrets — une panne muette. Le meme piege a deja coute une soiree dans
+    # collecte.yml ; il est ecrit la-bas aussi.
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      CF_PAGES_PROJECT: ${{ secrets.CF_PAGES_PROJECT }}
+
     steps:
       - uses: actions/checkout@v4
 
@@ -55,16 +66,21 @@ jobs:
       - name: Extraire les données par département
         run: node scripts/extract-html.js "$(ls -1 ../app_repere_v18_*.html | grep -v '\.bak$' | sort -V | tail -1)" ./data
 
-      # ------------------------------------------------ 2. le banc, avant le build
-      # Les invariants statiques ne demandent ni navigateur ni build : ils tournent
-      # d'abord, parce qu'échouer en trente secondes vaut mieux qu'en cinq minutes.
-      - name: Invariants — contrôles statiques
-        run: node --test tests/invariants.test.mjs
-
-      # ------------------------------------------------ 3. construire
+      # ------------------------------------------------ 2. construire
+      # LES CONTROLES STATIQUES NE PEUVENT PAS PASSER AVANT LE BUILD, et cette
+      # chaine le faisait depuis le 26/08 : deux d'entre eux relisent le dossier
+      # `dist` — ils verifient que le service worker precharge exactement ce que le
+      # build vient de produire, et qu'aucune ressource d'un autre hote n'a atterri
+      # dans la page publiee. Lances sur un dossier absent, ils echouent avec
+      # « build absent ». Cette chaine n'avait donc jamais pu finir. Mesure du
+      # 13/09/2026, en la rejouant en entier. netlify.toml, lui, avait le bon ordre.
       - run: pnpm build
       - name: Publier les données dans le site
         run: cp -r data apps/web/dist/data && node scripts/empreinte-sw.mjs apps/web/dist
+
+      # ------------------------------------------------ 3. le banc statique
+      - name: Invariants — contrôles statiques
+        run: node --test tests/invariants.test.mjs
 
       # ------------------------------------------------ 4. LE VERROU
       # Service worker installé, serveur ÉTEINT, parcours complet. C'est ce
@@ -78,10 +94,70 @@ jobs:
       - name: Invariants — contrôles dans un navigateur
         run: node tests/runtime.test.mjs apps/web/dist
 
-      # ------------------------------------------------ 5. publier
-      # Aucun serveur applicatif : le site est un dossier de fichiers.
-      # Pas de publication tant que la bascule n'est pas decidee : on garde la
-      # sortie en artefact, consultable, sans toucher au site en ligne.
+      # ------------------------------------------------ 5. l'URL de demonstration
+      # CLOUDFLARE PAGES, ET SEULEMENT SI LES TROIS SECRETS EXISTENT.
+      #
+      # Ce n'est PAS la bascule du site public : c'est une seconde adresse, qui se
+      # reconstruit a chaque execution et sur laquelle on peut voir le monorepo tel
+      # qu'il sera. Tant que les secrets sont absents, cette etape est sautee et rien
+      # ne change — poser les secrets est donc la seule chose qui l'allume, et la
+      # retirer les secrets suffit a l'eteindre.
+      #
+      # ELLE NE PEUT PAS PUBLIER UNE VERSION CASSEE : elle vient APRES les 35
+      # controles statiques et les 50 controles navigateur, et `steps` s'arrete au
+      # premier echec. C'est ce qui rend la publication sans relecture acceptable.
+      #
+      # LES TROIS SECRETS, dans Settings > Secrets and variables > Actions :
+      #   CLOUDFLARE_API_TOKEN   Cloudflare > My Profile > API Tokens, gabarit
+      #                          « Edit Cloudflare Workers » ou permission
+      #                          Account > Cloudflare Pages > Edit
+      #   CLOUDFLARE_ACCOUNT_ID  Cloudflare > Workers & Pages, colonne de droite
+      #   CF_PAGES_PROJECT       le nom du projet Pages (ex. repere-demo)
+      # Ne les colle jamais dans une conversation.
+      - name: Publier l'URL de demonstration (Cloudflare Pages)
+        id: pages
+        if: env.CLOUDFLARE_API_TOKEN != '' && env.CLOUDFLARE_ACCOUNT_ID != '' && env.CF_PAGES_PROJECT != ''
+        continue-on-error: true
+        run: |
+          # SONDE PREALABLE, comme pour Netlify : distinguer en un appel « le jeton
+          # est mauvais » de « le projet n'existe pas ». On n'affiche que le code
+          # HTTP — les journaux de ce depot sont publics.
+          CODE=$(curl -s -o /dev/null -w "%{http_code}" \
+            -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+            "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/pages/projects/$CF_PAGES_PROJECT")
+          echo "sonde Cloudflare (jeton + projet) : HTTP $CODE"
+          case "$CODE" in
+            200) echo "::notice::Jeton valide et projet Pages trouve." ;;
+            401|403) echo "::error::Jeton CLOUDFLARE_API_TOKEN refuse ou sans droit sur Pages (HTTP $CODE)." ;;
+            404) echo "::error::Projet Pages « $CF_PAGES_PROJECT » introuvable sur ce compte (HTTP 404). Cree-le une fois dans Workers & Pages, ou corrige le secret." ;;
+            *)   echo "::warning::Sonde inattendue (HTTP $CODE)." ;;
+          esac
+          # --commit-dirty : le dossier publie est engendre, il n'est pas dans git.
+          # Sans ce drapeau, wrangler pose une question sur un runner sans terminal
+          # et attend une reponse qui ne viendra jamais. timeout : un blocage doit
+          # echouer en cinq minutes avec un message, pas consommer le job.
+          set +e
+          timeout 300 npx --yes wrangler@3 pages deploy apps/web/dist \
+            --project-name "$CF_PAGES_PROJECT" --branch "$GITHUB_REF_NAME" --commit-dirty=true
+          SORTIE=$?
+          set -e
+          [ "$SORTIE" = "124" ] && echo "::error::La publication est restee BLOQUEE et a ete interrompue au bout de 5 minutes."
+          exit $SORTIE
+
+      - name: Dire ce qui a ete publie, ou pourquoi rien ne l'a ete
+        if: always()
+        run: |
+          if [ -z "$CLOUDFLARE_API_TOKEN" ] || [ -z "$CF_PAGES_PROJECT" ]; then
+            echo "::notice::Monorepo construit et eprouve, mais AUCUNE URL de demonstration : les secrets Cloudflare ne sont pas poses. Le site public, lui, n'est pas concerne."
+          elif [ "${{ steps.pages.outcome }}" = "success" ]; then
+            echo "::notice::URL de demonstration mise a jour sur Cloudflare Pages."
+          else
+            echo "::error::La publication de l'URL de demonstration a ECHOUE. Lis la ligne « sonde Cloudflare » ci-dessus : 401/403 = jeton, 404 = projet."
+          fi
+
+      # ------------------------------------------------ 6. garder la sortie
+      # L'artefact reste, meme quand Cloudflare publie : il permet de telecharger
+      # exactement ce qui a ete mis en ligne, sans passer par l'hebergeur.
       - name: Garder la sortie en artefact
         uses: actions/upload-artifact@v4
         with:

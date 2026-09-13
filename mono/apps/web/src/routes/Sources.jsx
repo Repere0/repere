@@ -32,6 +32,24 @@ export default function Sources({ index, paquet }) {
           <Source key={i} producteur={"Noms des territoires — " + t.producteur}
             licence={t.licence} mention={t.portee} url={t.url} />
         )) : null}
+        {/* Le nom d'une commune est une donnee comme une autre, avec son propre
+            producteur : il vient du Code officiel geographique, pas du Repertoire
+            national des elus, qui l'ecrit en capitales. */}
+        {s.communes ? <Source producteur={"Noms des communes — " + s.communes.producteur}
+          licence={s.communes.licence}
+          mention={s.communes.releve_le ? "relevé le " + dateFr(s.communes.releve_le) : s.communes.portee}
+          url={s.communes.url} /> : null}
+        {/* LES SCRUTINS MANQUAIENT A CET ECRAN, et le defaut a ete vu a l'oeil sur
+            capture, pas par une assertion : l'application affichait la position de
+            vote d'un depute alors que la page qui recense les sources n'en
+            nommait pas le producteur. Le controle plus bas echoue desormais si une
+            source declaree dans index.json n'apparait pas ici. */}
+        {s.scrutins ? <Source producteur={"Scrutins — " + s.scrutins.producteur}
+          licence={s.scrutins.licence}
+          mention={s.scrutins.legislature
+            ? s.scrutins.legislature + "e législature, relevé le " + dateFr(s.scrutins.releve_le)
+            : undefined}
+          url={s.scrutins.url} /> : null}
         <div className="tuiles">
           <Tuile k="Département ouvert" v={paquet.d} echelon="dept" />
           <Tuile k="Communes dans ce fichier" v={Object.keys(paquet.communes).length.toLocaleString("fr-FR")} />

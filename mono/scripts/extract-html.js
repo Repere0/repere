@@ -102,6 +102,32 @@ function relevesScrutins() {
   return d;
 }
 
+/* LE NOM DE LA COMMUNE, TEL QU'IL S'ECRIT.
+ *
+ * Le Repertoire national des elus ecrit les communes EN CAPITALES ; le produit les
+ * recapitalisait lettre par lettre, et cette transformation etait fautive pour UNE
+ * COMMUNE SUR QUATRE — 9 198 sur 34 637, mesure du 13/09/2026. Deux fautes :
+ * « Choisy-Le-Roi » au lieu de « Choisy-le-Roi », et « Evry-Courcouronnes » au lieu
+ * d'« Évry-Courcouronnes ». La premiere se corrigerait avec une liste de mots ; la
+ * seconde, non — aucune regle ne sait qu'Evry prend un accent et Ermont pas. On
+ * prend donc le libelle officiel entier, ou on ne touche a rien.
+ *
+ * SANS SOURCE, PAS DE SUBSTITUTION : le fichier doit porter producteur, licence et
+ * date, sinon on garde les noms d'origine et on le dit. Voir outils/noms_communes.py. */
+function nomsOfficiels() {
+  const f = path.join(ICI, "noms-communes.json");
+  if (!fs.existsSync(f)) { console.warn("::warning::noms-communes.json absent : les noms de communes restent ceux du Repertoire national des elus"); return null; }
+  let d;
+  try { d = JSON.parse(fs.readFileSync(f, "utf8")); }
+  catch (e) { console.error("noms-communes.json illisible : " + e.message); process.exit(9); }
+  const s = d && d.source;
+  if (!s || !s.producteur_affiche || !s.licence || !s.releve_le || !d.noms) {
+    console.error("noms-communes.json sans producteur, licence, date ou libelles");
+    process.exit(9);
+  }
+  return d;
+}
+
 const ENTREE = process.argv[2] || "./input/index.html";
 const SORTIE = process.argv[3] || "./data";
 
@@ -160,13 +186,23 @@ async function extraire() {
   const nom = (p, n) => [(RNE.p || [])[p], (RNE.n || [])[n]].filter(Boolean).join(" ");
   const fonction = f => (RNE.f || [])[f] || "";
 
+  /* Lu AVANT la boucle qui remplit les paquets : c'est elle qui s'en sert. */
+  const officiels = nomsOfficiels();
+  let redresses = 0;
+  const sansLibelleOfficiel = [];
   const paquets = new Map();
   for (const insee of Object.keys(libelles)) {
     const d = departementDe(insee);
     if (!paquets.has(d)) paquets.set(d, { d, communes: {} });
     const maire = (RNE.com || {})[insee];
+    /* Le libelle officiel s'il existe, celui du Repertoire sinon — jamais un
+       melange des deux, et jamais un nom fabrique. Les cas sans correspondance
+       sont comptes et annonces plus bas. */
+    const officiel = officiels && officiels.noms[insee];
+    if (officiel && officiel !== libelles[insee]) redresses++;
+    else if (!officiel) sansLibelleOfficiel.push(insee);
     paquets.get(d).communes[insee] = {
-      nom: libelles[insee],
+      nom: officiel || libelles[insee],
       maire: maire ? { nom: nom(maire[0], maire[1]), fonction: fonction(maire[2]) } : null,
       adjoints: ((RNE.adj || {})[insee] || []).length,
       circo: circos[insee] !== undefined ? circos[insee] : null,
@@ -207,6 +243,15 @@ async function extraire() {
       comptes: (OFGL && OFGL.meta && { producteur: reaccentuer(OFGL.meta.producteur), licence: OFGL.meta.licence, maj: OFGL.meta.maj }) || null,
       circonscriptions: (CIRCOS && { producteur: reaccentuer(CIRCOS.source), licence: CIRCOS.licence, decoupage: CIRCOS.decoupage }) || null,
       territoires: (noms && noms.sources) || null,
+      /* Les libelles de communes ont leur propre producteur, distinct de celui des
+         elus : ce sont deux jeux de donnees, releves a deux dates. */
+      communes: (officiels && {
+        producteur: officiels.source.producteur_affiche,
+        licence: officiels.source.licence,
+        url: officiels.source.url,
+        portee: officiels.source.portee,
+        releve_le: officiels.source.releve_le,
+      }) || null,
       /* La source des deputes est annoncee dans l'index — donc sur l'ecran
          « Sources » — meme si le fichier des deputes, lui, n'est demande que
          par l'ecran qui l'affiche. */
@@ -442,6 +487,13 @@ async function extraire() {
   }
 
   const sansNom = index.departements.filter(d => !d.nom).map(d => d.code);
+  if (officiels) {
+    console.log("noms officiels        : " + redresses + " libelles redresses"
+      + (sansLibelleOfficiel.length
+          ? ", " + sansLibelleOfficiel.length + " sans correspondance (gardes tels quels : "
+            + sansLibelleOfficiel.slice(0, 3).join(", ") + ")"
+          : ", aucune commune sans correspondance"));
+  }
   console.log("index.json            : " + Math.round(fs.statSync(path.join(SORTIE, "index.json")).size / 1024) + " Ko");
   console.log("territoires nommes    : " + (index.departements.length - sansNom.length) + "/" + index.departements.length
     + (sansNom.length ? "  (sans nom : " + sansNom.join(", ") + ")" : ""));
