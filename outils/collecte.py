@@ -100,7 +100,7 @@ SOURCES = [
     {
         "cle": "rne_municipaux",
         "titre": "Ministère de l'intérieur — Répertoire national des élus, conseillers municipaux",
-        "url": "https://www.data.gouv.fr/api/1/datasets/r/4f1c8f45-0d6e-4d3f-8a3c-8b6c7b0f2c3f",
+        "url": "https://www.data.gouv.fr/api/1/datasets/r/d5f400de-ae3f-4966-8cb6-a85c70c6c24a",
         "fichier": "RNE_municipaux.csv",
         "poids": "62 Mo",
         "cadence": "trimestrielle",
