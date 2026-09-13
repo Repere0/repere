@@ -1,54 +1,43 @@
-\# Repère — Backlog IA
+# Repère — Backlog IA / course bêta IDF
 
+## P0 — sortir une bêta IDF fiable
 
+- [ ] Collecte quotidienne maximale des sources publiques
+- [ ] Filtrer uniquement la publication lecteur aux 8 départements IDF : 75, 77, 78, 91, 92, 93, 94, 95
+- [ ] Fiabiliser commune → circonscription → député
+- [ ] Fiabiliser député → acteurRef → scrutins
+- [ ] Provenance obligatoire : producteur, licence, date de mise à jour, URL
+- [ ] Ajouter RNE députés / maires / conseillers municipaux au pipeline
+- [ ] Pré-agréger les données lourdes au lieu de les envoyer au navigateur
+- [ ] Banc automatique sur chaque commit de reprise-idf
+- [ ] Corriger les erreurs navigateur réelles avant publication
+- [ ] Déployer sur Cloudflare Pages
+- [ ] Vérifier PWA/mobile/performance
+- [ ] Mesurer couverture des communes IDF et taux de rattachement à une circonscription
 
-\## P0 — Banc de test décembre 2026
+## P1 — enrichissement data
 
+- [ ] Résultats électoraux détaillés
+- [ ] Finances communales pré-agrégées
+- [ ] Marchés publics : étudier une agrégation locale/privacy-compatible
+- [ ] Agenda et organes AN
+- [ ] Historique des élus et mandats
 
+## P2 — produit
 
-\- \[ ] Stabiliser architecture
+- [ ] Analytics respectueux de la vie privée
+- [ ] SEO
+- [ ] observabilité
+- [ ] partage d'une fiche commune
+- [ ] carte IDF si elle apporte une vraie valeur
+- [ ] extension hors IDF
 
-\- \[ ] Fiabiliser les données
+## Rust
 
-\- \[ ] Couvrir les parcours principaux par tests
+- [ ] Ne pas réécrire avant mesure
+- [ ] Identifier les étapes CPU/mémoire réellement coûteuses
+- [ ] Prototyper uniquement le goulot d'étranglement mesuré
 
-\- \[ ] Corriger les bugs UX/UI
+## Décisions nécessitant validation humaine
 
-\- \[ ] Optimiser performance
-
-\- \[ ] Vérifier responsive/mobile
-
-\- \[ ] Vérifier déploiement
-
-\- \[ ] Vérifier PWA
-
-\- \[ ] Préparer documentation
-
-\- \[ ] Préparer démonstration banc de test
-
-
-
-\## P1 — Startup
-
-
-
-\- \[ ] Proposition de valeur
-
-\- \[ ] Parcours utilisateur
-
-\- \[ ] Analytics
-
-\- \[ ] SEO
-
-\- \[ ] Observabilité
-
-\- \[ ] Scalabilité
-
-
-
-\## Décisions nécessitant validation humaine
-
-
-
-Aucune pour le moment.
-
+- [ ] Ajouter les secrets Cloudflare dans GitHub Actions
