@@ -59,7 +59,7 @@ export default function QuiDecide({ paquet, index, deputes }) {
     <div className="pile">
       <label className="champ">
         <span>Chercher une commune du département {paquet.d}</span>
-        <input type="search" value={filtre} placeholder="Ustaritz, Bayonne…"
+        <input type="search" value={filtre} placeholder="Commune, ville…"
           onChange={e => { setFiltre(e.target.value); setChoisie(null); }} />
       </label>
 
