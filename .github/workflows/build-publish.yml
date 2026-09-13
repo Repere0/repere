@@ -82,6 +82,18 @@ jobs:
       # Aucun serveur applicatif : le site est un dossier de fichiers.
       # Pas de publication tant que la bascule n'est pas decidee : on garde la
       # sortie en artefact, consultable, sans toucher au site en ligne.
+      - name: Vérifier les huit départements IDF dans la sortie
+        run: node - <<'NODE'
+const fs = require("fs");
+const expected = ["75","77","78","91","92","93","94","95"];
+for (const d of expected) {
+  const p = `apps/web/dist/data/departments/${d}.json`;
+  if (!fs.existsSync(p)) throw new Error(`département IDF absent : ${d}`);
+}
+if (fs.existsSync("apps/web/dist/data/departments/01.json")) throw new Error("la bêta expose encore un département hors IDF");
+console.log("sortie IDF validée");
+NODE
+
       - name: Garder la sortie en artefact
         uses: actions/upload-artifact@v4
         with:
