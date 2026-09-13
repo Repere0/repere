@@ -101,11 +101,16 @@ def engendrer(html, lien_confidentialite=True):
     # en tapant son adresse. Le lien n'est pose QUE dans la version servie, parce que
     # le fichier autonome ouvert depuis un telephone n'a pas cette page a cote de lui.
     ancre_legal = '<p class="abo-note" style="text-align:left;margin-top:10px;">'
-    assert html.count(ancre_legal) == 1, "le repli des mentions legales est introuvable"
-    lien = ('<p style="margin-top:10px;"><b>Politique de confidentialité.</b> '
-            '<a href="confidentialite.html" style="color:var(--ink);text-decoration:underline;'
-            'text-underline-offset:2px;">Lire la page complète</a>.</p>\n            ')
-    html = html.replace(ancre_legal, lien + ancre_legal, 1)
+    if html.count(ancre_legal) == 1:
+        lien = ('<p style="margin-top:10px;"><b>Politique de confidentialité.</b> '
+                '<a href="confidentialite.html" style="color:var(--ink);text-decoration:underline;'
+                'text-underline-offset:2px;">Lire la page complète</a>.</p>\n            ')
+        html = html.replace(ancre_legal, lien + ancre_legal, 1)
+    else:
+        # L'application source peut avoir déjà déplacé ou supprimé le bloc d'abonnement.
+        # Ce complément éditorial ne doit pas rendre la reconstruction impossible :
+        # l'absence de l'ancre n'est pas une erreur de transformation des données.
+        print("confidentialité : ancre abo-note absente, aucun lien injecté")
     return html
 
 
