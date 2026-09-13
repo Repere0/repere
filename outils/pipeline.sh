@@ -94,8 +94,8 @@ PY
 # les raisons sont ecrites en tete de outils/scrutins_an.py, et le script se controle
 # lui-meme — il refuse de produire un fichier ou un non-votant serait compte comme
 # votant.
-python3 outils/scrutins_an.py data/brut_Scrutins outils/scrutins_an.json 80 \
-  || echo "::warning::scrutins_an.py a echoue — les scrutins ne sont pas produits"
+python3 outils/scrutins_an.py data/brut_Scrutins outils/scrutins_an.json 80
+test -s outils/scrutins_an.json
 
 # ------------------- 3 quinquies. decrire les acteurs (pour nommer les references)
 # Les scrutins designent les deputes par une reference opaque (PA1234). Le referentiel
