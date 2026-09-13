@@ -57,6 +57,11 @@ export default defineConfig({
              telecharge — et le plafond de 120 Ko sautait pour une animation que
              personne n'a encore vue. Mesure du 29/08 : socle 19,5 Ko sans lui,
              et le morceau du mouvement ne part qu'au premier ecran ouvert. */
+          /* Le morceau « mouvement » n'existe plus : framer-motion a ete retire le
+             13/09/2026 (122 Ko, 40 Ko compresses, pour une apparition de carte).
+             La regle est gardee vide volontairement : si une bibliotheque
+             d'animation revenait un jour, elle ne devrait pas retomber dans le
+             socle sans qu'on le decide. */
           if (/node_modules[\\/](framer-motion|motion|motion-dom|motion-utils)[\\/]/.test(id)) return "mouvement";
           if (id.includes("node_modules")) return "socle";
         },

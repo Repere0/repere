@@ -27,6 +27,21 @@ export function adresseIndex() { return `${BASE_DONNEES}/index.json`; }
 /* Le fichier des deputes ne porte AUCUN code de commune, et n'est demande que
    par l'ecran qui l'affiche : la maille reste la circonscription. */
 export function adresseDeputes() { return `${BASE_DONNEES}/deputes.json`; }
+/* LE CATALOGUE DES SCRUTINS : ce sur quoi on a vote, sans aucune position.
+   Commun a toute la France, demande une seule fois, et seulement par l'ecran
+   qui affiche les votes. */
+export function adresseScrutins() { return `${BASE_DONNEES}/scrutins.json`; }
+/* LES POSITIONS, PAR DEPARTEMENT — jamais par depute, jamais par commune. Une
+   adresse par depute dirait au serveur quel elu on regarde, donc, a une
+   circonscription pres, ou l'on habite. Deuxieme et derniere fabrique
+   d'adresses departementales : elle passe la meme garde que la premiere. */
+export function adresseVotes(dep) {
+  const d = String(dep).toUpperCase();
+  if (!/^(\d{2,3}|2[AB])$/.test(d)) throw new Error("code de departement invalide : " + dep);
+  const url = `${BASE_DONNEES}/scrutins/${d}.json`;
+  if (adresseFautive(url)) throw new Error("adresse fautive composee : " + url);
+  return url;
+}
 
 /* CE QUI A ETE RETIRE ICI, PUIS REMIS, ET POURQUOI.
  *
@@ -170,6 +185,43 @@ export async function chargerDeputes({ delaiMs = 8000 } = {}) {
     } finally { enVol.delete(cle); }
   })();
 
+  enVol.set(cle, promesse);
+  return promesse;
+}
+
+/* LE CATALOGUE ET LES POSITIONS, memoire -> IndexedDB -> reseau, comme le reste.
+ *
+ * Deux fichiers et non un seul : le catalogue (28 Ko) est le meme pour tout le
+ * monde, les positions d'un departement pesent moins de deux kilo-octets. Un
+ * lecteur qui change de commune dans son departement ne retelecharge rien.
+ *
+ * Ils ne partent QUE si le lecteur deplie « Comment il a vote » : ni le premier
+ * ecran, ni « Qui decide » a l'ouverture ne les demandent. */
+export async function chargerCatalogueScrutins({ delaiMs = 8000 } = {}) {
+  return chargerSocle("socle:SCR", adresseScrutins(), delaiMs);
+}
+export async function chargerVotes(dep, { delaiMs = 8000 } = {}) {
+  return chargerSocle("vote:" + String(dep).toUpperCase(), adresseVotes(dep), delaiMs);
+}
+
+/* Le trajet commun des trois etages, ecrit UNE fois. Les quatre chargements
+   au-dessus le repetaient mot pour mot ; la quatrieme copie est celle de trop. */
+async function chargerSocle(cle, url, delaiMs) {
+  const enCache = await magasin.lire(cle);
+  if (enCache) return { etat: ETATS.SERVI, donnees: enCache, depuis: "cache" };
+  if (enVol.has(cle)) return enVol.get(cle);
+  const promesse = (async () => {
+    if (typeof navigator !== "undefined" && navigator.onLine === false) {
+      return { etat: ETATS.HORS_LIGNE, donnees: null };
+    }
+    try {
+      const donnees = await auReseau(url, delaiMs);
+      await magasin.ecrire(cle, donnees).catch(() => {});
+      return { etat: ETATS.SERVI, donnees, depuis: "reseau" };
+    } catch (e) {
+      return { etat: e.etat || ETATS.ECHEC, donnees: null, raison: e.message };
+    } finally { enVol.delete(cle); }
+  })();
   enVol.set(cle, promesse);
   return promesse;
 }

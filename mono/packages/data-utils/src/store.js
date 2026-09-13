@@ -28,7 +28,11 @@ export const VERSION_BASE = 1;
 /* La forme d'un paquet départemental. Une écriture qui ne la respecte pas est
    refusée : c'est la garde qui empêche ce magasin de devenir autre chose. */
 export function estDonneePublique(cle, valeur) {
-  if (!/^(dep|socle):[0-9A-Z]{1,3}$/.test(String(cle))) return false;
+  /* « vote » rejoint « dep » et « socle » le 13/09/2026 : les positions de vote
+     sont rangees par DEPARTEMENT, exactement comme les elus. La garde reste ce
+     qu'elle est — au plus trois caracteres, majuscules et chiffres — pour qu'un
+     code INSEE de commune (cinq caracteres) ne puisse pas y entrer. */
+  if (!/^(dep|vote|socle):[0-9A-Z]{1,3}$/.test(String(cle))) return false;
   if (!valeur || typeof valeur !== "object") return false;
   if ("insee" in valeur && !("communes" in valeur)) return false;
   const interdits = ["utilisateur", "user", "email", "id_client", "session",

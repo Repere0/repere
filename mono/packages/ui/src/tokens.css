@@ -85,3 +85,21 @@ code, .mono { font-family: var(--t-mono); font-size: .86em; font-variant-numeric
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: .001ms !important; transition-duration: .001ms !important; }
 }
+
+/* LE MOUVEMENT, EN CSS ET PLUS EN JAVASCRIPT (13/09/2026).
+   Voir packages/ui/src/amicro.jsx pour la mesure qui a retire framer-motion. */
+.amicro-fadeup {
+  animation: amicro-fadeup var(--amicro-duree, .45s) cubic-bezier(.16, 1, .3, 1)
+             var(--amicro-delai, 0s) both;
+}
+@keyframes amicro-fadeup {
+  from { opacity: 0; transform: translateY(var(--amicro-y, 14px)); }
+  to   { opacity: 1; transform: none; }
+}
+/* REGLAGE SYSTEME RESPECTE, ET SANS JAVASCRIPT. Une personne qui a demande a son
+   appareil de ne plus animer les interfaces a souvent une bonne raison — vertiges,
+   migraines, troubles vestibulaires. Ici ce n'est pas une animation raccourcie :
+   c'est l'absence d'animation, et le contenu est visible d'emblee. */
+@media (prefers-reduced-motion: reduce) {
+  .amicro-fadeup { animation: none; }
+}

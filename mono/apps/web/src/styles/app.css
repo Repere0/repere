@@ -134,6 +134,14 @@
   border-radius: 99px; background: var(--e-ville); animation: pouls 1.4s ease-in-out infinite;
 }
 @keyframes pouls { 0%, 100% { opacity: .25; } 50% { opacity: 1; } }
+/* LE POULS SE COUPE AUSSI, et il ne le faisait pas. Trouve le 13/09/2026 par le
+   controle etendu aux animations CSS : la pastille du chargement clignotait sans
+   fin chez quelqu'un qui a demande a son appareil de ne plus animer les
+   interfaces. Eteinte, elle reste visible — c'est le clignotement qu'on retire,
+   pas l'indication. */
+@media (prefers-reduced-motion: reduce) {
+  .vide.charge b::after { animation: none; opacity: .6; }
+}
 
 .source, .tx-note { font-size: .8rem; color: var(--sourd); line-height: 1.5; margin: .8rem 0 0; }
 /* Un lien de source est petit par nature, et il reste une cible tactile : on lui
@@ -145,3 +153,27 @@
 .invariants { margin: 0; padding-left: 1.1rem; }
 .invariants li { margin-bottom: .6rem; font-size: .9rem; }
 .invariants b { display: block; font-weight: 600; }
+
+/* LES VOTES. Aucune couleur ne distingue « pour » de « contre » : ce serait un
+   jugement peint sur une donnee neutre, et l'invariant des couleurs reserve la
+   teinte aux echelons. Ce sont les MOTS qui distinguent, et rien d'autre. */
+.depliant {
+  display: block; width: 100%; min-height: 44px; margin-top: 12px;
+  padding: 11px 14px; text-align: left;
+  font: inherit; font-weight: 600; color: var(--tx, #1d1d1f);
+  background: var(--fond-2, #f5f5f7);
+  border: 1px solid var(--bord, #d9d9de); border-radius: 10px; cursor: pointer;
+}
+.depliant:hover { background: var(--fond-3, #ececf0); }
+.depliant:focus-visible { outline: 2px solid var(--e-national, #1d1d1f); outline-offset: 2px; }
+.votes { margin-top: 12px; }
+.votes-h { display: flex; align-items: baseline; justify-content: space-between; gap: .7rem; }
+.votes-h b { font-size: .95rem; }
+.votes-replier {
+  min-height: 44px; padding: 0 10px; font: inherit; font-size: .82rem;
+  color: var(--sourd); background: none; border: 0; cursor: pointer; text-decoration: underline;
+}
+.votes-replier:focus-visible { outline: 2px solid var(--e-national, #1d1d1f); outline-offset: 2px; }
+.votes-portee { margin: .2rem 0 .9rem; }
+.votes .ligne + .ligne { margin-top: 2px; }
+.votes a { color: inherit; }

@@ -83,6 +83,15 @@ python3 outils/circos.py data/circos_ministere.xlsx outils/circos.json "$APP_CIR
 python3 outils/scrutins_an.py data/brut_Scrutins outils/scrutins_an.json 80 \
   || echo "::warning::scrutins_an.py a echoue — les scrutins ne sont pas produits"
 
+# ------------- 3 quater bis. LES DEUX RELEVES DU MONOREPO, REFAITS ICI
+# Ils etaient poses a la main, tous les deux dates du 26 aout, pendant que la source
+# publiait chaque jour : l'ecran « Qui decide » servait donc un depute et des votes
+# de plus en plus vieux sans que rien ne le dise. Le script refuse d'ecraser un
+# releve valide par un fichier vide — une source manquante avertit, elle ne casse
+# rien, et la chaine continue avec le releve de la veille.
+python3 outils/mono_donnees.py . \
+  || echo "::warning::au moins un releve du monorepo n'a pas ete rafraichi (voir les avertissements ci-dessus)"
+
 # ------------------- 3 quinquies. decrire les acteurs (pour nommer les references)
 # Les scrutins designent les deputes par une reference opaque (PA1234). Le referentiel
 # AMO30 porte les noms et les circonscriptions. On le fait decrire avant d'ecrire le

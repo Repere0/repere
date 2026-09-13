@@ -28,18 +28,30 @@ if errorlevel 1 (
   echo ECHEC : la recuperation a echoue. Rien n a ete envoye.
   echo Ouvre journal_pousser.txt et envoie les dernieres lignes a Claude.
   echo ECHEC pull>> "%JOURNAL%"
-  pause
+  timeout /t 15 >nul
   exit /b 1
 )
 
 echo [2/4] Preparation des changements...
+rem ---------------------------------------------------------------------------
+rem VERSION 5 (13/09/2026). LA VERSION 4 MENTAIT.
+rem Mesure : le journal dit RIEN A ENVOYER a chaque execution horaire depuis le
+rem 26 aout, et pourtant github.com/Repere0/repere n a jamais recu la branche
+rem audit-finalisation-repere. Cause exacte : le test « git diff --cached
+rem --quiet » repond « rien de nouveau A COMMITTER », et le script sortait la
+rem dessus en succes SANS JAMAIS REGARDER si des commits deja faits restaient a
+rem quai. Trois semaines de travail sont restees sur un seul disque.
+rem
+rem Correctif : le chemin passe desormais TOUJOURS par :envoyer. Rien a
+rem committer ne veut pas dire rien a envoyer.
+rem ---------------------------------------------------------------------------
 git add -A
 git diff --cached --quiet
-if not errorlevel 1 (
-  echo Rien de nouveau a envoyer.
-  echo RIEN A ENVOYER>> "%JOURNAL%"
-  exit /b 0
-)
+if errorlevel 1 goto :il_y_a_du_neuf
+echo Rien de nouveau a committer.
+echo RIEN A COMMITTER>> "%JOURNAL%"
+goto :envoyer
+:il_y_a_du_neuf
 
 echo [3/4] Controle : aucun fichier ne doit ressembler a un secret...
 git diff --cached --name-only > "%TEMP%\repere_staged.txt"
@@ -76,7 +88,7 @@ type "%TEMP%\repere_suspects.txt"
 echo REFUS secret>> "%JOURNAL%"
 type "%TEMP%\repere_suspects.txt">> "%JOURNAL%"
 git reset >nul
-pause
+timeout /t 15 >nul
 exit /b 1
 :aucun_suspect
 
@@ -86,7 +98,7 @@ for /f "usebackq delims=" %%F in ("%TEMP%\repere_staged.txt") do (
       echo REFUS : %%F depasse 50 Mo. Rien n a ete fait.
       echo REFUS taille %%F>> "%JOURNAL%"
       git reset >nul
-      pause
+      timeout /t 15 >nul
       exit /b 1
     )
   )
@@ -94,16 +106,29 @@ for /f "usebackq delims=" %%F in ("%TEMP%\repere_staged.txt") do (
 
 echo [4/4] Envoi...
 git commit -m "Depot automatique du %DATE% %TIME%" >> "%JOURNAL%" 2>&1
+
+:envoyer
+rem Une branche sans amont refuse « git push » tout court. On regarde d abord,
+rem on choisit ensuite. Le cas normal est le premier ; le second ne se produit
+rem qu au tout premier envoi d une branche.
+git rev-parse --abbrev-ref --symbolic-full-name @{u} >nul 2>&1
+if errorlevel 1 goto :premier_envoi
 git push >> "%JOURNAL%" 2>&1
-if errorlevel 1 (
-  echo ECHEC : l envoi a echoue. Le commit est fait, mais rien n est parti.
-  echo ECHEC push>> "%JOURNAL%"
-  pause
-  exit /b 1
-)
+if errorlevel 1 goto :echec_push
+goto :envoi_ok
+:premier_envoi
+echo Cette branche n avait pas d amont : creation sur origin.
+echo PREMIER ENVOI (push -u)>> "%JOURNAL%"
+git push -u origin HEAD >> "%JOURNAL%" 2>&1
+if errorlevel 1 goto :echec_push
+:envoi_ok
 echo OK - envoye. Le workflow prend le relais.
 echo OK>> "%JOURNAL%"
 exit /b 0
+:echec_push
+echo ECHEC : l envoi a echoue. Le commit local est fait, mais rien n est parti.
+echo ECHEC push>> "%JOURNAL%"
+exit /b 1
 
 rem ===========================================================================
 rem  AUTOTEST â€” verifie le filtre du controle des secrets, sans toucher a git.

@@ -211,6 +211,78 @@ verif("architecture — le fichier des deputes n'est demande qu'une fois, et pas
      > adresses.indexOf(adresses.find(u => /index\.json$/.test(u))),
   adresses.join(" ") || "(aucune adresse relevee)");
 
+console.log("\n--- les votes du depute --------------------------------------");
+/* LA CHAINE COMPLETE, MESUREE DANS UN VRAI NAVIGATEUR :
+   commune -> circonscription -> depute -> scrutins -> position -> source.
+   Le banc statique verifie les fichiers ; ici on verifie que le lecteur les
+   atteint, et surtout QUAND ils partent au reseau. */
+const avantDepliage = adresses.slice();
+verif("architecture — rien de la chaine des votes ne part avant que le lecteur ne demande",
+  !avantDepliage.some(u => /\/data\/scrutins/.test(u)),
+  avantDepliage.filter(u => /scrutins/.test(u)).join(" ") || "(aucune, c'est ce qu'on veut)");
+
+const deplie = page.getByRole("button", { name: /Comment .+ a voté à l'Assemblée/ });
+const aUnDepliant = await deplie.count();
+verif("parcours — la fiche du depute propose de voir ses votes", aUnDepliant === 1, String(aUnDepliant));
+if (aUnDepliant === 1) {
+  await deplie.click();
+  await page.waitForTimeout(1200);
+  const votes = await page.evaluate(() => {
+    const b = document.querySelector(".votes");
+    return b ? b.innerText : "";
+  });
+
+  verif("produit — les votes s'affichent, dates et positions",
+    /\d{1,2} \w+ 202\d/.test(votes) && /(Pour|Contre|Abstention|Position non portée)/.test(votes),
+    votes.slice(0, 300).replace(/\n+/g, " / "));
+
+  /* Chaque LIGNE doit pouvoir etre verifiee par le lecteur lui-meme. On ne
+     ramasse que les liens des lignes de scrutin : le bloc porte aussi le lien
+     de sa source, qui vise le jeu de donnees et pas un scrutin. */
+  const liens = await page.evaluate(() =>
+    [...document.querySelectorAll(".votes .ligne a")].map(a => a.href));
+  verif("invariant 4 — chaque scrutin affiche renvoie au scrutin officiel",
+    liens.length > 0 && liens.every(h => /^https:\/\/www\.assemblee-nationale\.fr\/dyn\/17\/scrutins\/\d+$/.test(h)),
+    liens.slice(0, 2).join(" ") || "(aucun lien)");
+
+  verif("invariant 4 — les votes portent leur producteur, leur licence et leur date",
+    /Assemblée nationale/.test(votes) && /Licence Ouverte/.test(votes) && /relevé le \d/.test(votes),
+    votes.slice(-300).replace(/\n+/g, " / "));
+
+  /* INVARIANT 3, ET C'EST LA QU'IL SE JOUE. Un ecran de votes est l'endroit ou
+     un compteur s'invite tout seul : « a vote 12 fois pour », « present a 80 % ».
+     Rien de tel ne doit apparaitre, meme en toutes lettres. */
+  /* LA MESURE PORTE SUR LES LIGNES DE SCRUTIN, PAS SUR LA NOTE EN BAS.
+     Ecrite sur tout le bloc, elle echouait sur la phrase qui explique justement
+     qu'une position non portee n'est pas une absence — le controle refusait le
+     mot qui sert a ne pas compter les absences. Il porte donc la ou un compteur
+     s'inviterait vraiment : les lignes. */
+  const lignesVotes = await page.evaluate(() =>
+    [...document.querySelectorAll(".votes .ligne")].map(e => e.innerText).join("\n"));
+  verif("invariant 3 — aucun compte, aucun taux, aucun rang sur les lignes de vote",
+    !/\d+\s*%/.test(lignesVotes)
+    && !/\b(fois (pour|contre)|taux|assiduité|absentéisme|classement|score|moyenne|rang)\b/i.test(lignesVotes),
+    lignesVotes.replace(/\n+/g, " / ").slice(0, 400));
+
+  /* Deux fichiers, pas plus, et jamais un par depute ni un par commune. */
+  const demandes = adresses.filter(u => /\/data\/scrutins/.test(u));
+  verif("invariant 2 — les votes se demandent par departement, jamais par commune ni par depute",
+    demandes.length === 2
+    && demandes.some(u => /\/data\/scrutins\.json$/.test(u))
+    && demandes.some(u => /\/data\/scrutins\/\d{2,3}\.json$/.test(u))
+    && !demandes.some(u => /\d{5}|PA\d+/.test(u)),
+    demandes.join(" ") || "(aucune)");
+
+  /* Replier puis redeplier ne doit rien redemander : le fichier est en magasin. */
+  await page.getByRole("button", { name: "Replier" }).click();
+  await page.waitForTimeout(200);
+  await page.getByRole("button", { name: /Comment .+ a voté à l'Assemblée/ }).click();
+  await page.waitForTimeout(800);
+  verif("architecture — rouvrir les votes ne redemande rien au reseau",
+    adresses.filter(u => /\/data\/scrutins/.test(u)).length === 2,
+    adresses.filter(u => /scrutins/.test(u)).join(" "));
+}
+
 /* Le titre de l'onglet suit le lecteur : deux onglets ouverts sur deux communes
    etaient indiscernables dans la barre du navigateur, et un signet ne disait
    rien. Il ne porte que ce qui est deja a l'ecran. */
@@ -240,7 +312,7 @@ const magasins = await page.evaluate(async () => {
 verif("invariant 2 — un seul magasin, et il ne porte que des paquets departementaux",
   !magasins.inconnu
   && (magasins.magasins || []).every(m => m === "departements")
-  && (magasins.cles || []).every(c => /^(dep|socle):[0-9A-Z]{1,3}$/.test(c)),
+  && (magasins.cles || []).every(c => /^(dep|vote|socle):[0-9A-Z]{1,3}$/.test(c)),
   JSON.stringify(magasins));
 
 console.log("\n--- l'argent -------------------------------------------------");
@@ -315,6 +387,31 @@ const petites = await page.evaluate(() =>
     .filter(e => e.h > 0 && e.h < 44));
 verif("accessibilite — toute cible tactile mesure au moins 44 px",
   petites.length === 0, petites.slice(0, 4).map(p => p.t + " (" + p.h + "px)").join(" | "));
+
+console.log("\n--- mouvement reduit -----------------------------------------");
+/* LA COUPURE DU MOUVEMENT, MESUREE ET PAS DEDUITE. Le controle statique lit le
+   CSS ; celui-ci ouvre une page en declarant le reglage systeme « moins
+   d'animations » et demande au navigateur ce qu'il applique reellement. */
+const ctxCalme = await nav.newContext({ reducedMotion: "reduce" });
+const pageCalme = await ctxCalme.newPage();
+await pageCalme.goto(base, { waitUntil: "networkidle" });
+await pageCalme.getByRole("button", { name: /^64\b/ }).click();
+await pageCalme.getByLabel(/Votre commune/).fill("Ustaritz");
+await pageCalme.getByRole("button", { name: "Ustaritz", exact: true }).click();
+await pageCalme.waitForTimeout(700);
+const calme = await pageCalme.evaluate(() => {
+  const e = document.querySelector(".amicro-fadeup");
+  if (!e) return { absent: true };
+  const s = getComputedStyle(e);
+  return { nom: s.animationName, opacite: s.opacity, visible: e.getBoundingClientRect().height > 0 };
+});
+verif("accessibilite — mouvement reduit demande : aucune animation ne se joue",
+  !calme.absent && calme.nom === "none", JSON.stringify(calme));
+/* ET LE CONTENU RESTE VISIBLE. Couper une animation en laissant l'opacite a zero
+   serait pire que l'animation : la page resterait blanche. */
+verif("accessibilite — mouvement reduit : le contenu est visible d'emblee",
+  !calme.absent && calme.opacite === "1" && calme.visible, JSON.stringify(calme));
+await ctxCalme.close();
 
 console.log("\n--- theme sombre ---------------------------------------------");
 /* LE THEME SOMBRE EST UN VRAI RENDU, PAS UNE VARIANTE. Mesure : le titre « A

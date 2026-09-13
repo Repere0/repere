@@ -70,6 +70,38 @@ function relevesDeputes() {
   return d;
 }
 
+/* LES VOTES : LE CHAINON QUI MANQUAIT ENTRE UNE COMMUNE ET CE QUI SE DECIDE.
+ *
+ * Une commune donne une circonscription, une circonscription donne un depute :
+ * jusqu'ici la chaine s'arretait au nom. Elle continue maintenant jusqu'a ce que
+ * ce depute a VOTE — c'est la seule chose que l'electeur ne peut pas obtenir
+ * ailleurs en moins de dix minutes.
+ *
+ * CE FICHIER NE PORTE PAS DE JUGEMENT, ET LE FORMAT L'INTERDIT : aucune somme,
+ * aucun taux, aucun compte par depute. Une position par scrutin, dans l'ordre du
+ * catalogue, et le lien vers le scrutin officiel. Le releve amont (scrutins_an.py)
+ * ecarte deja les non-votants : un silence dans ce fichier veut dire « la source
+ * ne porte pas de position pour ce depute sur ce scrutin », jamais « absent ».
+ *
+ * Comme pour les deputes : sans producteur, licence, url et date, on n'ecrit rien. */
+function relevesScrutins() {
+  const f = path.join(ICI, "scrutins.json");
+  if (!fs.existsSync(f)) { console.warn("scrutins.json absent : aucun vote ne sera publie"); return null; }
+  let d;
+  try { d = JSON.parse(fs.readFileSync(f, "utf8")); }
+  catch (e) { console.error("scrutins.json illisible : " + e.message); process.exit(8); }
+  const s = d && d.source;
+  if (!s || !s.producteur_affiche || !s.licence || !s.url || !s.releve_le || !s.legislature) {
+    console.error("scrutins.json sans producteur, licence, url, legislature ou date");
+    process.exit(8);
+  }
+  if (!Array.isArray(d.r) || !d.r.length || !Array.isArray(d.acteurs) || !d.acteurs.length) {
+    console.error("scrutins.json ne porte aucun scrutin");
+    process.exit(8);
+  }
+  return d;
+}
+
 const ENTREE = process.argv[2] || "./input/index.html";
 const SORTIE = process.argv[3] || "./data";
 
@@ -166,6 +198,7 @@ async function extraire() {
 
   const noms = nomsTerritoires();
   const deputes = relevesDeputes();
+  const scrutins = relevesScrutins();
   const meta = {
     v: 1,
     genere_le: new Date().toISOString().slice(0, 10),
@@ -184,6 +217,16 @@ async function extraire() {
         legislature: deputes.source.legislature,
         portee: deputes.source.portee,
         releve_le: deputes.source.releve_le,
+      }) || null,
+      /* Annoncee sur l'ecran « Sources » comme les autres, meme si le catalogue
+         des scrutins n'est demande que par l'ecran qui l'affiche. */
+      scrutins: (scrutins && {
+        producteur: scrutins.source.producteur_affiche,
+        licence: scrutins.source.licence,
+        url: scrutins.source.url,
+        legislature: scrutins.source.legislature,
+        portee: scrutins.source.portee,
+        releve_le: scrutins.source.releve_le,
       }) || null,
     },
     agregats: (OFGL && OFGL.meta && OFGL.meta.agregats) || [],
@@ -220,6 +263,69 @@ async function extraire() {
       source: index.sources.deputes,
       deputes: deputes.deputes,
     });
+  }
+
+  /* LES VOTES, PUBLIES EN DEUX MORCEAUX, ET C'EST LE POINT DE L'AFFAIRE.
+   *
+   *   data/scrutins.json        le catalogue : ce sur quoi on a vote. Commun a
+   *                             toute la France, aucune position dedans.
+   *   data/scrutins/{dep}.json  les positions des SEULS deputes de ce
+   *                             departement, dans l'ordre du catalogue.
+   *
+   * Pourquoi pas un seul fichier : 80 scrutins x 577 deputes, c'est 90 Ko envoyes
+   * a quelqu'un qui veut lire UNE ligne. Decoupe par departement, la Seine-Saint-
+   * Denis pese moins de deux kilo-octets. La maille reste le departement — jamais
+   * la commune, jamais le depute : le serveur ne doit pas apprendre qui on lit.
+   *
+   * LE FORMAT DES POSITIONS est une chaine d'un caractere par scrutin, dans
+   * l'ordre du catalogue : p (pour), c (contre), a (abstention), . (la source ne
+   * porte pas de position). Une chaine de 80 caracteres remplace 80 objets, et
+   * surtout elle rend impossible d'y ranger autre chose qu'une position — pas de
+   * place pour un compte, un taux ou un rang. */
+  let octetsScrutins = 0, positionsEcrites = 0;
+  const depsAvecVotes = [];
+  if (scrutins && deputes) {
+    const catalogue = scrutins.r.map(e => ({
+      u: e.u, n: e.n, d: e.d, t: e.t, s: e.s, sl: e.sl, tv: e.tv, dec: e.dec, nv: e.nv,
+    }));
+    octetsScrutins = ecrire(path.join(SORTIE, "scrutins.json"), {
+      v: 1,
+      source: index.sources.scrutins,
+      url_scrutin: scrutins.source.url_scrutin,
+      ecarte: scrutins.source.ecarte,
+      total_source: scrutins.total_source,
+      scrutins: catalogue,
+    });
+
+    /* Position de chaque acteur, scrutin par scrutin, avant tout decoupage. */
+    const parActeur = new Map();
+    scrutins.r.forEach((e, i) => {
+      for (const [champ, lettre] of [["p", "p"], ["c", "c"], ["a", "a"]]) {
+        for (const idx of e[champ] || []) {
+          const ref = scrutins.acteurs[idx];
+          if (!ref) continue;
+          if (!parActeur.has(ref)) parActeur.set(ref, new Array(scrutins.r.length).fill("."));
+          parActeur.get(ref)[i] = lettre;
+        }
+      }
+    });
+
+    /* Un depute appartient au departement de sa circonscription : la cle du
+       fichier des mandats porte les deux (« 93-6 »). Aucune autre derivation. */
+    const parDep = new Map();
+    for (const [cle, d] of Object.entries(deputes.deputes)) {
+      const dep = cle.slice(0, cle.lastIndexOf("-"));
+      if (!d.acteurRef || !parActeur.has(d.acteurRef)) continue;
+      if (!parDep.has(dep)) parDep.set(dep, {});
+      parDep.get(dep)[d.acteurRef] = parActeur.get(d.acteurRef).join("");
+    }
+    for (const dep of [...parDep.keys()].sort()) {
+      ecrire(path.join(SORTIE, "scrutins", dep + ".json"), {
+        v: 1, d: dep, releve_le: scrutins.source.releve_le, positions: parDep.get(dep),
+      });
+      depsAvecVotes.push(dep);
+      positionsEcrites += Object.keys(parDep.get(dep)).length;
+    }
   }
 
   /* CONTRÔLE INDÉPENDANT : on relit ce qu'on vient d'écrire, sans réutiliser une
@@ -267,6 +373,72 @@ async function extraire() {
     if (avec === 0) { console.error("ECHEC : aucune commune ne trouve son depute"); process.exit(7); }
     console.log("deputes.json          : " + Math.round(octetsDeputes / 1024) + " Ko, " + cles.length + " circonscriptions");
     console.log("communes -> depute    : " + avec + " nommees, " + plusieurs + " a cheval sur plusieurs circos, " + sans + " sans");
+  }
+
+  /* CONTROLE INDEPENDANT DE LA CHAINE COMPLETE : commune -> circo -> depute ->
+     position. Il relit les TROIS fichiers sur le disque et refait le trajet pour
+     une commune reelle de chaque departement de la beta. Un jour ou une cle
+     changera de forme, ce compte tombera et le build s'arretera — l'ecran, lui,
+     afficherait simplement un blanc. */
+  if (scrutins && deputes && depsAvecVotes.length) {
+    const cat = JSON.parse(fs.readFileSync(path.join(SORTIE, "scrutins.json"), "utf8"));
+    const mandats = JSON.parse(fs.readFileSync(path.join(SORTIE, "deputes.json"), "utf8"));
+    const largeur = cat.scrutins.length;
+    let chaines = 0, deputesVus = 0;
+    const horsCommunes = [];
+    for (const dep of depsAvecVotes) {
+      const v = JSON.parse(fs.readFileSync(path.join(SORTIE, "scrutins", dep + ".json"), "utf8"));
+      for (const [ref, pos] of Object.entries(v.positions)) {
+        deputesVus++;
+        if (pos.length !== largeur) {
+          console.error(`ECHEC : ${dep}/${ref} porte ${pos.length} positions pour ${largeur} scrutins`);
+          process.exit(8);
+        }
+        if (/[^pca.]/.test(pos)) {
+          console.error(`ECHEC : ${dep}/${ref} porte un caractere qui n'est pas une position`);
+          process.exit(8);
+        }
+      }
+      /* 099 = les Francais etablis hors de France : onze circonscriptions, aucune
+         commune. Leurs deputes votent comme les autres et leur fichier de votes
+         est publie ; il n'y a simplement pas de commune d'ou partir. Sauter en
+         silence serait un trou muet — on le compte et on l'annonce. */
+      const fichierCommunes = path.join(SORTIE, "departments", dep + ".json");
+      if (!fs.existsSync(fichierCommunes)) { horsCommunes.push(dep); continue; }
+      const p = JSON.parse(fs.readFileSync(fichierCommunes, "utf8"));
+      for (const c of Object.values(p.communes)) {
+        if (typeof c.circo !== "number") continue;
+        const m = mandats.deputes[dep + "-" + c.circo];
+        if (m && v.positions[m.acteurRef]) chaines++;
+      }
+    }
+    if (chaines === 0) {
+      console.error("ECHEC : aucune commune ne remonte jusqu'a une position de vote");
+      process.exit(8);
+    }
+    const octets = depsAvecVotes.map(d => fs.statSync(path.join(SORTIE, "scrutins", d + ".json")).size);
+    console.log("scrutins.json         : " + Math.round(octetsScrutins / 1024) + " Ko, " + largeur + " scrutins");
+    console.log("votes par departement : " + depsAvecVotes.length + " fichiers, "
+      + deputesVus + " deputes, le plus lourd " + Math.round(Math.max(...octets) / 1024) + " Ko");
+    /* LA FRAICHEUR SE DIT, ET ELLE S'ANNONCE QUAND ELLE MANQUE.
+       Les deux releves ont ete poses a la main, tous deux dates du 26 aout, et
+       l'ecran a servi des votes vieillissants pendant deux semaines sans que rien
+       ne le signale. La collecte les refait maintenant chaque matin ; ce controle
+       est ce qui dira le jour ou elle cessera de le faire. Il AVERTIT, il n'arrete
+       pas : des donnees officielles d'il y a trois semaines restent publiables tant
+       que leur date est affichee au lecteur — et elle l'est. */
+    const jours = d => Math.round((Date.now() - Date.parse(d)) / 86400000);
+    for (const [quoi, releve] of [["mandats", mandats.source && mandats.source.releve_le],
+                                  ["scrutins", cat.source && cat.source.releve_le]]) {
+      if (!releve) continue;
+      const age = jours(releve);
+      if (age > 7) {
+        console.warn(`::warning::le releve des ${quoi} date du ${releve}, soit ${age} jours : `
+          + "la collecte quotidienne ne le rafraichit plus (voir outils/mono_donnees.py dans le journal du pipeline)");
+      }
+    }
+    console.log("communes -> position  : " + chaines
+      + (horsCommunes.length ? "  (sans commune : " + horsCommunes.join(", ") + ")" : ""));
   }
 
   const sansNom = index.departements.filter(d => !d.nom).map(d => d.code);

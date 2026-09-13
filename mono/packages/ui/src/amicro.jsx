@@ -40,30 +40,42 @@
  * 3. LE CONTENU EXISTE AVANT L'ANIMATION. `initial` ne cache jamais le texte
  *    pour un lecteur d'ecran : seule l'opacite et la position bougent, le
  *    noeud est dans le document des le premier rendu.
+ *
+ * 4. LE 13/09/2026, framer-motion EST RETIRE, ET C'EST UNE MESURE QUI L'A DECIDE.
+ *    La bibliotheque pesait 122 Ko, 40 Ko compresses — le plus gros telechargement
+ *    du produit, devant le departement le plus lourd — pour faire apparaitre des
+ *    cartes qui sont deja la. Elle partait des que le lecteur choisissait sa
+ *    commune. Ce que ce fichier lui demandait tient en deux proprietes CSS ; le
+ *    comportement visible est identique, la coupure du mouvement aussi, et elle
+ *    est meme plus sure qu'avant : c'est desormais le navigateur qui l'applique,
+ *    par media query, sans qu'aucun JavaScript n'ait besoin de s'executer.
+ *    Ce fichier ne recopie donc plus de code d'Amicro ; il en garde l'idee et le
+ *    credit ci-dessus.
+ *
  */
+
 import React from "react";
-import { motion, useReducedMotion } from "framer-motion";
 
 /* Le decalage entre deux cartes qui se suivent. Assez pour qu'on percoive un
    ordre de lecture, assez court pour qu'attendre ne soit jamais une attente. */
 export const PAS_AMICRO = 0.06;
 
+/* LE CONTENU EXISTE AVANT L'ANIMATION, et c'est la raison de `animation-fill-mode`
+   plutot que d'une opacite posee en style : le noeud est dans le document au
+   premier rendu, l'animation ne fait que le reveler. Un lecteur d'ecran, un
+   moteur, un navigateur sans CSS voient le texte. */
 export function FadeUp({ children, duration = 0.45, delay = 0, yOffset = 14, className = "" }) {
-  const sansMouvement = useReducedMotion();
-
-  /* Reglage systeme respecte : on rend l'element tel quel, sans motion du tout.
-     Ce n'est pas une animation a duree nulle — c'est l'absence d'animation. */
-  if (sansMouvement) return <div className={className}>{children}</div>;
-
   return (
-    <motion.div
-      initial={{ opacity: 0, y: yOffset }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration, delay, ease: [0.16, 1, 0.3, 1] }}
-      className={className}
+    <div
+      className={"amicro-fadeup" + (className ? " " + className : "")}
+      style={{
+        "--amicro-duree": duration + "s",
+        "--amicro-delai": delay + "s",
+        "--amicro-y": yOffset + "px",
+      }}
     >
       {children}
-    </motion.div>
+    </div>
   );
 }
 

@@ -225,14 +225,19 @@ test("invariant 4 — aucune donnée n'est servie sans source déclarée", () =>
      TROIS familles dont index.json declare la provenance.
      La troisieme, /deputes.json, a ete ajoutee le 28/08/2026 : elle n'est
      autorisee ici que parce que sa source est declaree juste en dessous, et
-     l'ordre des deux assertions est volontaire. */
+     l'ordre des deux assertions est volontaire.
+     Les quatrieme et cinquieme, /scrutins.json et /scrutins/{dep}.json, sont
+     ajoutees le 13/09/2026, a la meme condition : la source « scrutins » est
+     exigee dans index.json quelques lignes plus bas. Elargir cette liste sans
+     elargir l'autre fait echouer le test — c'est le but. */
   const client = lire("packages/data-utils/src/client.js");
   const composees = [...client.matchAll(/\$\{BASE_DONNEES\}(\/[A-Za-z0-9_${}./-]*)/g)].map(m => m[1]);
   assert.deepEqual([...new Set(composees)].sort(),
-    ["/departments/${d}.json", "/deputes.json", "/index.json"],
+    ["/departments/${d}.json", "/deputes.json", "/index.json",
+     "/scrutins.json", "/scrutins/${d}.json"],
     "client.js compose une adresse de donnees inattendue : " + composees.join(", "));
   const sources = existe("data/index.json") ? (JSON.parse(lire("data/index.json")).sources || {}) : {};
-  for (const attendue of ["elus", "comptes", "circonscriptions", "deputes"]) {
+  for (const attendue of ["elus", "comptes", "circonscriptions", "deputes", "scrutins"]) {
     assert.ok(sources[attendue] && sources[attendue].producteur,
       `index.json ne declare pas la source « ${attendue} »`);
   }
@@ -321,14 +326,35 @@ test("amicro — le mouvement ne part pas au premier écran", () => {
 test("amicro — toute animation se coupe si le lecteur l'a demandé", () => {
   /* Un reglage systeme « moins d'animations » n'est pas une preference de gout :
      vertiges, migraines, troubles vestibulaires. Un composant anime qui ne lit
-     pas ce reglage est un defaut d'accessibilite, pas un detail. */
+     pas ce reglage est un defaut d'accessibilite, pas un detail.
+
+     CE CONTROLE A CHANGE DE MOYEN LE 13/09/2026, PAS DE REGLE. Il exigeait
+     `useReducedMotion` et un retour anticipe en JavaScript ; framer-motion ayant
+     ete retire, la coupure est desormais faite par le navigateur, en CSS. La
+     regle est la meme, la garde est plus large : ce n'est plus « amicro appelle
+     la bonne fonction » mais « aucune animation declaree dans le produit n'echappe
+     a la media query ». Le banc navigateur, lui, mesure la coupure pour de vrai. */
   const src = lire("packages/ui/src/amicro.jsx");
-  assert.match(src, /useReducedMotion/,
-    "amicro.jsx n'interroge pas le reglage « moins d'animations »");
-  assert.match(src, /if \(sansMouvement\) return/,
-    "amicro.jsx lit le reglage mais n'en tire aucune consequence");
-  /* Attribution : le code vient d'ailleurs, sous licence MIT. La licence exige
-     que l'avis de copyright voyage avec le code. */
+  assert.ok(!/from ["'](framer-motion|motion)["']/.test(src),
+    "amicro.jsx reimporte une bibliotheque d'animation : 40 Ko compresses pour une apparition de carte");
+
+  /* Chaque selecteur qui declare une animation doit etre neutralise sous
+     prefers-reduced-motion, dans le meme fichier. */
+  for (const f of sourcesEcrites().filter(f => f.endsWith(".css"))) {
+    const css = lire(f);
+    const animes = [...css.matchAll(/(^|\n)\s*(\.[A-Za-z0-9_-]+)[^{}]*\{[^}]*\banimation\s*:/g)]
+      .map(m => m[2]);
+    if (!animes.length) continue;
+    const reduit = css.match(/@media \(prefers-reduced-motion: reduce\)[\s\S]*$/);
+    assert.ok(reduit, `${f} anime ${animes.join(", ")} sans jamais couper le mouvement`);
+    for (const sel of new Set(animes)) {
+      assert.ok(reduit[0].includes(sel),
+        `${f} anime ${sel} mais ne le neutralise pas quand le lecteur demande moins d'animations`);
+    }
+  }
+
+  /* Attribution : l'idee et le code d'origine viennent d'ailleurs, sous licence
+     MIT. La licence exige que l'avis de copyright voyage avec. */
   assert.match(src, /MIT/, "amicro.jsx ne porte pas la licence de son auteur");
   assert.match(src, /Syed Subhan/, "amicro.jsx ne porte pas le nom de son auteur");
 });
@@ -667,4 +693,109 @@ test("architecture — une seule fabrique d'adresses dans tout le produit", () =
   }
   assert.deepEqual(fautifs, [],
     "une adresse de donnees est composee ailleurs que dans client.js : deux endroits qui derivent la meme regle finissent par diverger");
+});
+
+/* ===========================================================================
+   LES VOTES — quatre controles ajoutes le 13/09/2026 avec la chaine
+   commune -> circonscription -> depute -> position.
+
+   Ils relisent les fichiers PUBLIES, pas les variables du script qui les a
+   ecrits : c'est la seule facon de voir un jour ou la sortie changera de forme
+   sans que personne ne l'ait voulu.
+   =========================================================================== */
+
+const BETA_IDF = ["75", "77", "78", "91", "92", "93", "94", "95"];
+const litData = f => JSON.parse(lire(path.join("data", f)));
+
+test("votes — la chaine commune → circonscription → député → position tient en Île-de-France", () => {
+  if (!existe("data/scrutins.json")) return;   /* extraction pas encore lancee */
+  const cat = litData("scrutins.json");
+  const mandats = litData("deputes.json");
+  const manquants = BETA_IDF.filter(d => !existe(`data/scrutins/${d}.json`));
+  assert.deepEqual(manquants, [],
+    "un departement de la beta n'a pas de fichier de votes : l'ecran afficherait un blanc");
+
+  let chaines = 0;
+  for (const dep of BETA_IDF) {
+    const votes = litData(`scrutins/${dep}.json`);
+    const communes = litData(`departments/${dep}.json`).communes;
+    for (const c of Object.values(communes)) {
+      if (typeof c.circo !== "number") continue;
+      const m = mandats.deputes[`${dep}-${c.circo}`];
+      if (!m || !m.acteurRef) continue;
+      const pos = votes.positions[m.acteurRef];
+      if (!pos) continue;
+      assert.equal(pos.length, cat.scrutins.length,
+        `${dep} : ${m.nom} porte ${pos.length} positions pour ${cat.scrutins.length} scrutins`);
+      chaines++;
+    }
+  }
+  assert.ok(chaines > 1000,
+    `seulement ${chaines} communes d'Ile-de-France remontent jusqu'a un vote : la chaine est rompue`);
+});
+
+test("votes — le catalogue ne porte aucune position, et chaque scrutin porte son lien", () => {
+  if (!existe("data/scrutins.json")) return;
+  const cat = litData("scrutins.json");
+  assert.ok(cat.url_scrutin && /^https:\/\//.test(cat.url_scrutin),
+    "le catalogue ne porte pas l'adresse ou le lecteur peut verifier un scrutin");
+  for (const s of cat.scrutins) {
+    for (const champ of ["p", "c", "a", "positions", "votants"]) {
+      assert.ok(!(champ in s),
+        `le scrutin ${s.n} porte « ${champ} » : les positions n'ont rien a faire dans le catalogue commun`);
+    }
+    assert.ok(s.n && s.d && s.t, `le scrutin ${s.u} n'a pas de numero, de date ou d'intitule`);
+  }
+});
+
+test("invariant 4 — les votes publiés portent producteur, licence, date et adresse", () => {
+  if (!existe("data/scrutins.json")) return;
+  const s = litData("scrutins.json").source || {};
+  for (const champ of ["producteur", "licence", "url", "releve_le", "legislature"]) {
+    assert.ok(s[champ], `la source des scrutins ne declare pas « ${champ} »`);
+  }
+  assert.match(s.releve_le, /^\d{4}-\d{2}-\d{2}$/, "la date de releve des scrutins n'est pas une date");
+});
+
+test("invariant 3 — le format des positions rend tout classement impossible", () => {
+  if (!existe("data/scrutins.json")) return;
+  const largeur = litData("scrutins.json").scrutins.length;
+  let lourd = 0, fichiers = 0;
+  for (const f of fs.readdirSync(path.join(RACINE, "data", "scrutins"))) {
+    fichiers++;
+    const octets = fs.statSync(path.join(RACINE, "data", "scrutins", f)).size;
+    if (octets > lourd) lourd = octets;
+    const v = JSON.parse(lire(path.join("data", "scrutins", f)));
+    for (const [ref, pos] of Object.entries(v.positions)) {
+      assert.equal(typeof pos, "string",
+        `${f} range autre chose qu'une suite de positions pour ${ref} : un objet peut porter un compte, une chaine non`);
+      assert.equal(pos.length, largeur, `${f} : ${ref} porte ${pos.length} positions pour ${largeur} scrutins`);
+      assert.ok(!/[^pca.]/.test(pos), `${f} : ${ref} porte un caractere qui n'est pas une position`);
+    }
+  }
+  assert.ok(fichiers > 100, `seulement ${fichiers} departements ont un fichier de votes`);
+  /* SERVIR PETIT. Le jour ou un fichier de votes departemental depassera huit
+     kilo-octets, c'est que quelqu'un y aura range autre chose que des positions. */
+  assert.ok(lourd < 8192, `le plus lourd fichier de votes pese ${lourd} octets`);
+});
+
+test("bêta Île-de-France — aucune commune ne reste sans député nommable", () => {
+  if (!existe("data/deputes.json")) return;
+  /* CE CONTROLE EXISTE A CAUSE DE PARIS. Une commune a cheval sur plusieurs
+     circonscriptions n'affichait personne : Paris, Saint-Denis, Creteil,
+     Versailles, Boulogne-Billancourt, Vitry, Colombes — quatorze communes
+     d'Ile-de-France, dont deux millions d'habitants pour la seule ville de Paris,
+     dans une beta dont l'Ile-de-France est le cap. Nommer n'est pas attribuer :
+     l'ecran dit qui la COMMUNE elit, jamais qui est « votre » depute. */
+  const mandats = litData("deputes.json").deputes;
+  const muettes = [];
+  for (const dep of BETA_IDF) {
+    for (const [insee, c] of Object.entries(litData(`departments/${dep}.json`).communes)) {
+      const circos = Array.isArray(c.circo) ? c.circo : (typeof c.circo === "number" ? [c.circo] : []);
+      if (!circos.length) { muettes.push(`${insee} ${c.nom} (pas de circonscription)`); continue; }
+      if (!circos.some(n => mandats[`${dep}-${n}`])) muettes.push(`${insee} ${c.nom}`);
+    }
+  }
+  assert.deepEqual(muettes, [],
+    "des communes de la beta n'ont aucun depute a nommer : " + muettes.slice(0, 5).join(", "));
 });
