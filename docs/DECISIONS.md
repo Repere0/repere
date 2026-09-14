@@ -116,6 +116,48 @@ Coût réel — table SIRET→INSEE à construire, avenants et cotitulaires à d
 gonfler les montants, dépendance à un acteur privé pour la version exploitable. La valeur ne se
 révèle qu'une fois le contenant existant. **Ne pas commencer avant.**
 
+### D-21 · « Ville de Paris » est le seul rattachement nominatif du produit
+**Décidé le 14/09/2026.** La source des projets financés publie un code INSEE pour
+chaque bénéficiaire — sauf pour la Ville de Paris, qui y figure comme
+« collectivité à statut particulier » avec un code vide. Cinq projets, 2,1 millions
+d'habitants : les écarter serait un trou visible.
+
+**Et pourtant le SIREN ne suffit pas.** Le SIREN d'une commune se décompose
+habituellement en `21 + département + commune` : 219300019 donne bien 93001,
+Aubervilliers. Appliqué à Paris, 217500016 donnerait **75001 — le 1ᵉʳ
+arrondissement — au lieu de 75056**. La règle qui marche 34 000 fois est fausse
+pour la seule commune où l'on aurait été tenté de s'en servir.
+
+Le rattachement est donc **nominatif, pas déduit** : une table d'une ligne, dont
+les trois champs (SIREN, type, nom) doivent correspondre exactement, vérifiée à
+l'annuaire des entreprises (SIREN 217500016 = VILLE DE PARIS, nature juridique
+7229, commune). Toute autre ligne sans code INSEE — les EPCI, les départements,
+les régions — est **comptée, annoncée et jetée**.
+
+### D-22 · Un intitulé officiel sans accents reste sans accents, et l'écran le dit
+La DGCL publie « Renovation de la halle du Montfort ». Remettre les accents serait
+réécrire un intitulé officiel (P15), et personne ne sait si « Realisation » en
+portait un, deux ou aucun. Ne rien dire laisserait croire à une faute de Repère.
+**On recopie, et on écrit une fois : « les intitulés sont recopiés tels que l'État
+les publie, sans correction ».** Un contrôle du banc échoue si quelqu'un corrige.
+
+### D-23 · La surface datée est le premier onglet, pas encore l'onglet d'ouverture
+L'ordre de la barre dit ce qui compte : « Ce qui a été décidé » passe devant.
+Mais l'application continue de s'ouvrir sur « Qui décide », dont la couverture est
+mesurée à 100 % sur les huit départements, tant que **la collecte réelle des
+projets n'a jamais tourné** — elle ne le peut pas hors de GitHub Actions, et les
+tâches planifiées ne se déclenchent que sur la branche par défaut.
+**La condition pour basculer est écrite dans le code** (`App.jsx`) : quand la
+collecte aura tourné et que la couverture aura été mesurée sur les 1 262 communes,
+`useState("qui")` devient `useState("decide")`. Une ligne, sur preuve.
+
+### D-24 · Une donnée dont la source a disparu ne survit pas au relevé
+Trouvé le 14/09 : le relevé des projets retiré, l'extraction a continué — et
+`data/projets/` est resté sur le disque, publié, pendant qu'`index.json` ne
+déclarait plus aucune source pour lui. Des fichiers valides, mais orphelins :
+exactement ce que l'invariant 4 existe pour empêcher, et invisible.
+**Ce qui n'a plus de source est effacé, et l'effacement est annoncé.**
+
 ### D-20 · Les promesses impossibles sont écrites, pour ne plus être refaites
 Le délai d'attente d'un logement social, les tarifs de cantine, les places de crèche disponibles,
 le taux de chômage communal, les médecins acceptant de nouveaux patients : **ces données n'existent

@@ -19,6 +19,7 @@ compréhensible, sourcée.
 | banc étendu à tout le parcours | ✅ 44 statiques + 64 navigateur |
 | **fusionner la branche dans `main`** | ⛔ **bloquant** — les tâches planifiées ne s'exécutent que sur la branche par défaut |
 | **publier une URL** | ⛔ **bloquant** — trois secrets Cloudflare |
+| ~~supprimer `public/data/deputes.json`~~ | ✅ **faux blocage** — vérifié le 14/09 : ce fichier n'existe plus sur aucune des deux branches |
 
 **Sans ces deux dernières lignes, il n'y a pas de bêta.** Tout le reste est prêt.
 
@@ -45,16 +46,27 @@ compréhensible, sourcée.
 
 **Objectif unique : donner une raison de revenir.** Aujourd'hui rien ne change entre deux visites.
 
-### 2.1 La surface datée — « Ce qui a été décidé »
-Un écran, trois types de faits, tous datés, locaux et sourcés :
+### 2.1 La surface datée — « Ce qui a été décidé » · ✅ *construite le 14/09, non collectée*
 
-1. **un projet financé par l'État** — DGCL, licence ouverte, `beneficiaire_code_insee`,
-   intitulé et montants. *Vérifié le 13/09.*
-2. **un vote de votre député** — déjà dans le produit, il ne reste qu'à le dater dans le fil.
-3. **votre conseil municipal** — élections du 22 mars 2026, participation et sièges.
+| | état |
+|---|---|
+| l'écran existe, premier onglet de la barre | ✅ 2,32 Ko compressés |
+| les projets financés par l'État | ✅ collecteur écrit et autotesté, **jamais exécuté** |
+| les lois votées par le député | ✅ les 8 scrutins solennels, datés dans le fil |
+| la règle d'ordre écrite à l'écran | ✅ mesurée par le banc |
+| les deux provenances, distinctes | ✅ mesurées par le banc |
+| **faire tourner la collecte pour de vrai** | ⛔ **dépend de la fusion dans `main`** |
+| l'écran s'ouvre par défaut | ⬜ après mesure de la couverture (D-23) |
+| le conseil municipal (élections du 22 mars 2026) | ⬜ non commencé |
 
-Ordre : **du plus récent au plus ancien**, et la règle d'ordre écrite à l'écran. Jamais de tri par
-importance.
+**La source est vérifiée** (14/09/2026) : DGCL, Licence Ouverte 2.0, publiée le
+24/07/2026, 16 799 projets pour l'exercice 2025, quatre dispositifs — DETR, DSIL,
+DPV, DSID. Le collecteur retient les exercices 2025 et 2024.
+
+**Ce qui reste inconnu, et c'est le seul vrai reste :** combien des 1 262 communes
+de la bêta portent au moins un projet. La collecte ne peut pas s'exécuter hors de
+GitHub Actions, et GitHub n'exécute les tâches planifiées que sur la branche par
+défaut. *Ce chiffre est le premier à mesurer une fois la branche fusionnée.*
 
 ### 2.2 L'intercommunalité nommée
 La brique Banatic donne `code INSEE → EPCI` et les compétences exercées. L'écran « Qui décide »

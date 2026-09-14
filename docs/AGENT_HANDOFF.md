@@ -59,7 +59,21 @@ les paquets départementaux. Lire par `grep` et plages de lignes.
 
 **f) Le contrôle de l'invariant 3 cherche des mots de classement dans le code écrit** — y compris
 dans les commentaires. Écrire « pire », « classement » ou « score » dans un commentaire fait
-échouer le banc. Le projet s'y est fait prendre quatre fois.
+échouer le banc. Le projet s'y est fait prendre **cinq** fois.
+
+**g) `git checkout -- .` a déjà détruit une demi-journée de travail dans ce dépôt.**
+Le 14/09, cette commande — tapée pour nettoyer un répertoire de mesure — a effacé
+toutes les modifications non commitées de fichiers suivis. Seuls les fichiers
+*non suivis* ont survécu. **On ne nettoie jamais avec `checkout -- .` : on nomme le
+fichier, ou on commite d'abord.** Commiter tôt coûte moins cher que rejouer.
+
+**h) La collecte des projets financés ne peut pas tourner ici.** `data.gouv.fr`,
+`static.data.gouv.fr` et `tabular-api.data.gouv.fr` sont refusés par la politique de
+sortie du conteneur. `outils/projets_etat.py --test` joue neuf lignes recopiées de
+la source et ne touche pas au réseau ; le banc, lui, pose une fixture dans le build
+de mesure et **la retire en sortant**. Ne jamais copier cette fixture dans
+`mono/scripts/projets.json` : elle passerait dans `index.json`, donc sur l'écran
+« Sources ». Un contrôle statique l'interdit.
 
 ---
 
@@ -68,8 +82,10 @@ dans les commentaires. Écrire « pire », « classement » ou « score » dans 
 - **Couverture Île-de-France** : maire 100 %, circonscription 100 %, député 100 %, votes 99,6 %,
   comptes 100 %, sur 1 262 communes. **Ce n'est pas le problème.**
 - **Poids** : 107 Ko compressés pour tout le parcours, puis plus aucune requête.
-- **Banc** : 44 contrôles statiques, 64 navigateur.
-- **Deux zéros** : aucune intercommunalité, aucun événement daté. **C'est le problème.**
+- **Banc** : 48 contrôles statiques, 79 navigateur.
+- **Un zéro sur deux est comblé** : l'écran « Ce qui a été décidé » existe et est mesuré,
+  mais **sa collecte n'a jamais tourné** — donc le nombre de communes réellement servies
+  est inconnu. L'intercommunalité reste à zéro.
 - **Rien n'est publié.** Le monorepo n'a pas d'URL.
 
 ---
@@ -80,21 +96,29 @@ dans les commentaires. Écrire « pire », « classement » ou « score » dans 
    (GitHub ne les exécute que sur la branche par défaut).
 2. **Trois secrets Cloudflare** (`CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`,
    `CF_PAGES_PROJECT`) — sans quoi il n'y a pas d'URL, donc pas de bêta.
-3. **Supprimer `mono/apps/web/public/data/deputes.json`** — 87 Ko sans producteur ni licence ni
-   date ; les outils distants ne peuvent pas effacer un fichier.
+~~3. Supprimer `mono/apps/web/public/data/deputes.json`~~ — **vérifié le 14/09 : ce fichier
+n'existe plus, ni sur `main` ni sur la branche de travail.** Ce blocage était périmé.
 
 ---
 
 ## 5. LA PROCHAINE CHOSE À FAIRE
 
-**La surface datée « Ce qui a été décidé ».** C'est le seul chantier qui donne une raison de
-revenir, et il est documenté de bout en bout :
-- la source principale est vérifiée et prête (`DATA_CATALOG.md` § 2.1) ;
-- l'architecture cible est arrêtée (`DECISIONS.md` D-01, D-03) ;
-- les règles de présentation sont écrites (`UX_PRINCIPLES.md` P4, P12).
+**Mesurer la couverture réelle des projets financés.** L'écran est construit, mesuré
+et sourcé ; ce qu'on ignore, c'est combien des 1 262 communes de la bêta portent au
+moins un fait. Le chemin est mécanique une fois la branche fusionnée :
 
-**Ne pas commencer les marchés publics avant que la surface datée vive.** Le coût est réel et la
-valeur ne se révèle qu'une fois le contenant existant.
+1. fusionner dans `main` (décision humaine, voir § 4) ;
+2. laisser la collecte tourner — `outils/projets_etat.py` est branché dans
+   `outils/pipeline.sh` et non bloquant ;
+3. lire le compte-rendu de l'extraction : `projets par departement: N fichiers,
+   M projets sur C communes` ;
+4. **si C dépasse la moitié des 1 262**, basculer l'onglet d'ouverture (D-23) —
+   une ligne dans `App.jsx` ;
+5. **sinon**, écrire la phrase de vide qui convient à une commune non financée et
+   la mesurer, avant de basculer quoi que ce soit.
+
+**Ne pas commencer les marchés publics avant.** Le coût est réel et la valeur ne se
+révèle qu'une fois le contenant éprouvé sur de vraies données.
 
 ---
 
@@ -122,5 +146,5 @@ valeur ne se révèle qu'une fois le contenant existant.
 | `ROADMAP_BETA_IDF.md` | les quatre phases, ce qui est fait, ce qui bloque |
 | `BETA_READINESS.md` | toutes les mesures de couverture, poids, accessibilité |
 | `HYPOTHESES.md` | ce qu'on croit sans l'avoir prouvé, et comment le tester |
-| `DECISIONS.md` | les seize décisions tranchées, à ne pas rouvrir sans preuve |
-| `UX_PRINCIPLES.md` | les quinze principes, chacun avec le défaut qui l'a imposé |
+| `DECISIONS.md` | les vingt-quatre décisions tranchées, à ne pas rouvrir sans preuve |
+| `UX_PRINCIPLES.md` | les seize principes, chacun avec le défaut qui l'a imposé |

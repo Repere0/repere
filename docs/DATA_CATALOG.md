@@ -59,11 +59,29 @@ position de vote 99,6 %, comptes 100 %, sur 1 262 communes.
 | fréquence | annuelle · dernière mise à jour **24 juillet 2026** *(vérifié)* |
 | clé | **`beneficiaire_code_insee`** *(vérifié)* |
 | date | `exercice` — **année seule, pas de jour** |
-| colonnes | exercice, dispositif, programme, beneficiaire_siren, beneficiaire_code_insee, **intitule**, **cou_ht**, **subvention**, taux |
+| colonnes | exercice, dispositif, programme, beneficiaire_type, beneficiaire_siren, beneficiaire_dep, beneficiaire_nom, beneficiaire_code_insee, **intitule**, **cout_ht**, **subvention**, taux |
+| volume | **16 799 lignes pour 2025** *(vérifié le 14/09/2026)* |
+| dispositifs | **DETR · DSIL · DPV · DSID** — quatre, pas deux |
 | affichable seul ? | **oui** — un projet nommé et chiffré se suffit |
-| valeur citoyenne | « En 2025, l'État a versé 180 000 € pour la rénovation de l'école Jean-Moulin, sur un chantier de 450 000 €. » |
+| valeur citoyenne | « En 2025, l'État a engagé 533 466 € pour la rénovation de la halle du Montfort, sur un chantier de 1 333 667 € hors taxes. » |
 | coût | **faible** |
-| piège | **jamais de montant par habitant** : cela produit un classement |
+| état | ✅ **collecté par `outils/projets_etat.py`, affiché par « Ce qui a été décidé »** (14/09/2026) |
+
+**Ce que la lecture des vraies lignes a appris, et qu'aucune fiche ne disait :**
+
+- `beneficiaire_dep` est écrit **sur trois caractères, zéro en tête** : filtrer sur
+  « 93 » ne renvoie rien, il faut « 093 ».
+- la colonne est `cout_ht`, pas `cou_ht` comme l'annonce la description du jeu.
+- **`beneficiaire_code_insee` est vide pour la Ville de Paris**, qui y figure comme
+  « collectivité à statut particulier ». Cinq projets, 2,1 millions d'habitants.
+  Et le SIREN ne sauve pas : `21 + dép + commune` donne 75001 — le 1ᵉʳ
+  arrondissement — au lieu de 75056. Voir la décision D-21.
+- **les intitulés arrivent sans accents** (« Renovation », « accessibilite ») alors
+  que les noms de bénéficiaires en portent. On recopie, on ne corrige pas (D-22).
+- les projets portés par un EPCI, un département ou une région n'ont pas de commune :
+  ils sont comptés, annoncés et jetés — jamais rattachés au siège administratif.
+
+| piège | **jamais de montant par habitant, jamais de total par commune** : les deux se lisent contre la commune d'à côté |
 
 ### 2.2 ★ Logement social — RPLS communal + inventaire SRU
 
