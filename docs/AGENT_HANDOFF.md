@@ -99,6 +99,19 @@ de mesure et **la retire en sortant**. Ne jamais copier cette fixture dans
 ~~3. Supprimer `mono/apps/web/public/data/deputes.json`~~ — **vérifié le 14/09 : ce fichier
 n'existe plus, ni sur `main` ni sur la branche de travail.** Ce blocage était périmé.
 
+~~4. Copier `mono/ci/build-publish.yml` dans `.github/workflows/`~~ — **vérifié le 14/09 :
+la version corrigée est déjà en place dans `.github/workflows/build-publish.yml`**, avec
+l'ordre des étapes réparé et le `env:` au niveau du job. Périmé aussi.
+
+**Il ne reste donc que DEUX blocages humains, et ils sont les deux mêmes depuis le 13/09.**
+
+⚠️ **Ne pas modifier `.github/workflows/` dans une livraison.** Un jeton GitHub sans la
+permission `workflows` fait rejeter le push ENTIER, pas seulement ce fichier : une
+correction cosmétique dans un commentaire ferait échouer toute la livraison. Les deux
+chiffres de contrôles cités dans ses commentaires (« 35 statiques, 50 navigateur ») sont
+périmés — ils valent 48 et 79 — et ils attendront une occasion où l'on touche déjà ce
+fichier pour une vraie raison.
+
 ---
 
 ## 5. LA PROCHAINE CHOSE À FAIRE

@@ -20,6 +20,7 @@ compréhensible, sourcée.
 | **fusionner la branche dans `main`** | ⛔ **bloquant** — les tâches planifiées ne s'exécutent que sur la branche par défaut |
 | **publier une URL** | ⛔ **bloquant** — trois secrets Cloudflare |
 | ~~supprimer `public/data/deputes.json`~~ | ✅ **faux blocage** — vérifié le 14/09 : ce fichier n'existe plus sur aucune des deux branches |
+| ~~copier le workflow corrigé dans `.github/workflows/`~~ | ✅ **faux blocage** — vérifié le 14/09 : il y est déjà |
 
 **Sans ces deux dernières lignes, il n'y a pas de bêta.** Tout le reste est prêt.
 
