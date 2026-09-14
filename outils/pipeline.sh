@@ -106,6 +106,23 @@ python3 outils/mono_donnees.py --test \
   && python3 outils/mono_donnees.py . \
   || echo "::warning::les releves du monorepo n'ont pas ete rafraichis (voir les avertissements ci-dessus)"
 
+# ------------------- 3 quater bis. les projets finances par l'Etat
+# LE PREMIER FAIT DATE DU PRODUIT. L'ecran « Ce qui a ete decide » n'a rien a
+# montrer sans ce releve : la DGCL publie chaque annee les ~20 000 projets
+# d'investissement qu'elle subventionne, avec le code INSEE du beneficiaire.
+#
+# NON BLOQUANT, ET C'EST LA REGLE DE TOUTE LA CHAINE (decision D-12) : si la
+# source ne repond pas, le releve de la veille reste, l'extraction le republie,
+# et l'ecran continue de dire la date de ce qu'il montre. Un fichier vide, lui,
+# serait bien pire qu'un fichier d'hier.
+#
+# L'AUTOTEST PASSE AVANT LA COLLECTE, comme pour mono_donnees.py : il joue neuf
+# lignes recopiees de la source, dont celle de la Ville de Paris qui n'a pas de
+# code INSEE. Si la source change de forme, on le sait avant d'ecrire.
+python3 outils/projets_etat.py --test \
+  && python3 outils/projets_etat.py . \
+  || echo "::warning::les projets finances par l'Etat n'ont pas ete rafraichis (voir ci-dessus)"
+
 # ------------------- 3 quinquies. decrire les acteurs (pour nommer les references)
 # Les scrutins designent les deputes par une reference opaque (PA1234). Le referentiel
 # AMO30 porte les noms et les circonscriptions. On le fait decrire avant d'ecrire le

@@ -50,6 +50,16 @@ export default function Sources({ index, paquet }) {
             ? s.scrutins.legislature + "e législature, relevé le " + dateFr(s.scrutins.releve_le)
             : undefined}
           url={s.scrutins.url} /> : null}
+        {/* Les projets financés portent DEUX dates, et les confondre ferait passer
+            un relevé de la veille pour une publication de la veille : l'État a
+            publié le `mis_a_jour_le`, Repère est allé le chercher le `releve_le`.
+            L'écran des sources est le seul endroit où les deux se lisent. */}
+        {s.projets ? <Source producteur={"Projets financés par l'État — " + s.projets.producteur}
+          licence={s.projets.licence}
+          maj={s.projets.mis_a_jour_le}
+          mention={(s.projets.exercices ? "exercices " + s.projets.exercices.join(" et ") + ", " : "")
+            + "relevé le " + dateFr(s.projets.releve_le)}
+          url={s.projets.url} /> : null}
         <div className="tuiles">
           <Tuile k="Département ouvert" v={paquet.d} echelon="dept" />
           <Tuile k="Communes dans ce fichier" v={Object.keys(paquet.communes).length.toLocaleString("fr-FR")} />

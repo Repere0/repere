@@ -47,6 +47,19 @@ export function adresseVotes(dep) {
   if (adresseFautive(url)) throw new Error("adresse fautive composee : " + url);
   return url;
 }
+/* LES PROJETS FINANCES PAR L'ETAT, PAR DEPARTEMENT — et surtout pas par
+   commune. C'est la seule donnee du produit qui soit propre a UNE commune et
+   non a un territoire entier : une adresse par commune aurait donc dit au
+   serveur, exactement, ou habite celui qui regarde. Le paquet departemental
+   porte les projets de toutes ses communes, et le tri se fait dans le
+   navigateur. Troisieme et derniere fabrique d'adresses departementales. */
+export function adresseProjets(dep) {
+  const d = String(dep).toUpperCase();
+  if (!/^(\d{2,3}|2[AB])$/.test(d)) throw new Error("code de departement invalide : " + dep);
+  const url = `${BASE_DONNEES}/projets/${d}.json`;
+  if (adresseFautive(url)) throw new Error("adresse fautive composee : " + url);
+  return url;
+}
 
 /* CE QUI A ETE RETIRE ICI, PUIS REMIS, ET POURQUOI.
  *
@@ -213,6 +226,9 @@ export async function chargerCatalogueScrutins({ delaiMs = 8000 } = {}) {
 }
 export async function chargerVotes(dep, { delaiMs = 8000 } = {}) {
   return chargerSocle("vote:" + String(dep).toUpperCase(), adresseVotes(dep), delaiMs);
+}
+export async function chargerProjets(dep, { delaiMs = 8000 } = {}) {
+  return chargerSocle("proj:" + String(dep).toUpperCase(), adresseProjets(dep), delaiMs);
 }
 
 /* Le trajet commun des trois etages, ecrit UNE fois. Les quatre chargements

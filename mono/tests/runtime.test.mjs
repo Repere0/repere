@@ -29,6 +29,65 @@ if (!fs.existsSync(path.join(DIST, "index.html"))) {
   process.exit(2);
 }
 
+/* LA FIXTURE DES PROJETS EST POSEE ICI, ET NULLE PART AILLEURS.
+ *
+ * La collecte des projets finances par l'Etat ne joint pas data.gouv.fr depuis un
+ * poste de developpement : le conteneur n'a pas d'acces sortant vers ce domaine,
+ * et la collecte reelle tourne dans GitHub Actions. Sans donnee, l'ecran « Ce qui
+ * a ete decide » ne pourrait etre eprouve que sur son ecran vide.
+ *
+ * ELLE EST POSEE DANS LE BUILD DEJA FAIT, JAMAIS DANS scripts/. Une copie dans
+ * scripts/projets.json a fait ecrire « FIXTURE DE BANC » dans la source publiee
+ * par index.json, donc sur l'ecran « Sources » : le controle statique l'a
+ * attrapee. Ici, la fixture ne touche que le repertoire servi au navigateur
+ * pendant la mesure — et elle en repart. */
+const FIXTURE = path.resolve(import.meta.dirname, "fixtures", "projets-beta.json");
+let fixturePosee = false;
+if (fs.existsSync(FIXTURE) && !fs.existsSync(path.join(DIST, "data", "projets"))) {
+  const paquet = JSON.parse(fs.readFileSync(FIXTURE, "utf8"));
+  const parDep = {};
+  for (const [insee, liste] of Object.entries(paquet.communes)) {
+    const dep = insee.startsWith("97") ? insee.slice(0, 3) : insee.slice(0, 2);
+    (parDep[dep] = parDep[dep] || {})[insee] = liste;
+  }
+  fs.mkdirSync(path.join(DIST, "data", "projets"), { recursive: true });
+  for (const [dep, communes] of Object.entries(parDep)) {
+    fs.writeFileSync(path.join(DIST, "data", "projets", dep + ".json"), JSON.stringify({
+      v: 1, d: dep, mis_a_jour_le: paquet.source.mis_a_jour_le,
+      releve_le: paquet.source.releve_le, exercices: paquet.source.exercices,
+      dispositifs: paquet.dispositifs, communes,
+    }));
+  }
+  const fIndex = path.join(DIST, "data", "index.json");
+  fs.copyFileSync(fIndex, fIndex + ".avant-fixture");
+  const index = JSON.parse(fs.readFileSync(fIndex, "utf8"));
+  index.sources = index.sources || {};
+  index.sources.projets = {
+    producteur: paquet.source.producteur_affiche, licence: paquet.source.licence,
+    url: paquet.source.url, exercices: paquet.source.exercices,
+    mis_a_jour_le: paquet.source.mis_a_jour_le, releve_le: paquet.source.releve_le,
+  };
+  fs.writeFileSync(fIndex, JSON.stringify(index));
+  fixturePosee = true;
+  console.log("  (fixture des projets posee dans le build de mesure : "
+    + Object.keys(parDep).length + " departements)");
+}
+
+/* ELLE EST RETIREE A LA FIN, QUOI QU'IL ARRIVE. Sinon le repertoire publie
+   garderait des projets de banc apres la mesure, et un deploiement lance dans la
+   foulee les servirait a de vrais habitants. Le nettoyage est branche sur la
+   sortie du processus, pas sur la fin du script : un controle qui echoue ne doit
+   pas laisser la fixture derriere lui. */
+function retirerFixture() {
+  if (!fixturePosee) return;
+  fs.rmSync(path.join(DIST, "data", "projets"), { recursive: true, force: true });
+  const fIndex = path.join(DIST, "data", "index.json");
+  if (fs.existsSync(fIndex + ".avant-fixture")) fs.renameSync(fIndex + ".avant-fixture", fIndex);
+  fixturePosee = false;
+}
+process.on("exit", retirerFixture);
+for (const sig of ["SIGINT", "SIGTERM"]) process.on(sig, () => { retirerFixture(); process.exit(1); });
+
 const resultats = [];
 function verif(nom, condition, detail) {
   resultats.push({ nom, ok: !!condition, detail: condition ? "" : (detail || "") });
@@ -520,8 +579,8 @@ console.log("\n--- tout le parcours, ecran par ecran ------------------------");
 const ctxTout = await nav.newContext({ viewport: { width: 390, height: 844 } });
 const pageTout = await ctxTout.newPage();
 const fautesCibles = [], fautesTexte = [];
-const auditerEcran = async (nom) => {
-  const d = await pageTout.evaluate(() => {
+const auditerEcran = async (nom, page = pageTout) => {
+  const d = await page.evaluate(() => {
     const vu = e => e.checkVisibility({ checkVisibilityCSS: true, contentVisibilityAuto: true });
     const cibles = [...document.querySelectorAll("a[href], button, input, summary")]
       .filter(vu)
@@ -583,9 +642,121 @@ await pageTout.getByRole("button", { name: "Sources" }).click();
 await pageTout.waitForTimeout(800);
 await auditerEcran("sources");
 
-verif("accessibilite — sur les six ecrans, toute cible tactile mesure au moins 44 px",
+/* --- CE QUI A ETE DECIDE : le septieme ecran ------------------------------- *
+ * Il est mesure comme les six autres — plancher typographique et zones d'appui —
+ * PUIS sur ce qui lui est propre : un fil date ne vaut que si le lecteur sait
+ * dans quel ordre il lit, et d'ou vient chaque fait. */
+await pageTout.getByRole("button", { name: "Ce qui a été décidé" }).click();
+await pageTout.waitForTimeout(1600);
+await auditerEcran("ce qui a ete decide");
+
+const fil = await pageTout.evaluate(() => {
+  const t = document.body.innerText;
+  const faits = [...document.querySelectorAll(".ligne.fait")];
+  return {
+    texte: t,
+    faits: faits.length,
+    titres: faits.map(f => (f.querySelector(".fait-titre, .vote-titre") || {}).innerText || ""),
+    entetes: [...document.querySelectorAll(".ligne.fait .groupe")].map(e => e.innerText),
+    annees: [...t.matchAll(/exercice (\d{4})/g)].map(m => Number(m[1])),
+    sources: [...document.querySelectorAll(".source")].map(e => e.innerText),
+    squelettes: document.querySelectorAll("[class*='skeleton'], [class*='squelette'], .shimmer").length,
+  };
+});
+
+verif("surface datee — le fil porte au moins un fait date",
+  fil.faits > 0, JSON.stringify({ faits: fil.faits }));
+verif("surface datee — la regle d'ordre est ecrite a l'ecran (principe P4)",
+  /ordre de date/i.test(fil.texte) && /plus récent au plus ancien/i.test(fil.texte),
+  fil.texte.slice(0, 200).replace(/\n+/g, " / "));
+verif("surface datee — les exercices se lisent du plus recent au plus ancien",
+  fil.annees.every((a, i) => i === 0 || fil.annees[i - 1] >= a), JSON.stringify(fil.annees));
+/* TROUVE A L'OEIL SUR CAPTURE, PAS PAR UNE ASSERTION : « A l'Assemblee nationale,
+   X a vote » etait repete devant CHACUN des huit votes, soit huit fois de suite,
+   et repoussait les titres de plusieurs hauteurs d'ecran. L'en-tete ne doit
+   apparaitre qu'en tete d'une suite. */
+verif("surface datee — l'en-tete d'une famille de faits ne se repete pas",
+  fil.entetes.length <= 3 && new Set(fil.entetes).size === fil.entetes.length,
+  JSON.stringify(fil.entetes));
+verif("invariant 4 — chaque famille de faits porte sa provenance",
+  fil.sources.length >= 1 && fil.sources.every(x => /·/.test(x) && /à la source/.test(x)),
+  JSON.stringify(fil.sources).slice(0, 200));
+verif("invariant 5 — le fil n'affiche aucune forme d'attente",
+  fil.squelettes === 0, String(fil.squelettes));
+verif("invariant 2 — le fil date ne demande aucune adresse portant un code de commune",
+  !servies.some(u => /\/(?:projets|scrutins)\/\d{5}/.test(u) || /9300[0-9]|75056/.test(u)),
+  servies.filter(u => /projets/.test(u)).join(" "));
+
+/* UNE COMMUNE QUI PORTE LES DEUX FAMILLES DE FAITS. Bagnolet, la commune du
+ * parcours, n'a aucun projet dans le releve de mesure : le fil n'y montre que des
+ * votes, et toute la mise en forme d'un projet — le montant, le dispositif
+ * developpe, le cout total, la source de la DGCL — serait restee sans controle.
+ * Aubervilliers en porte quatre. Mesurer sur une commune ou la moitie du code ne
+ * s'execute pas, c'est ne rien mesurer.
+ * UN CONTEXTE NEUF, ET C'EST NECESSAIRE : l'application se souvient du dernier
+ * departement ouvert, donc une page neuve dans le meme contexte rouvre la commune
+ * precedente et le champ « Ou habitez-vous » n'est plus a l'ecran. */
+const ctxA = await nav.newContext({ viewport: { width: 390, height: 844 } });
+const pageA = await ctxA.newPage();
+await pageA.goto(base, { waitUntil: "networkidle" });
+await pageA.getByLabel(/Où habitez-vous/).fill("aubervilliers");
+await pageA.waitForTimeout(400);
+await pageA.getByRole("button", { name: /Aubervilliers/ }).click();
+await pageA.waitForTimeout(1500);
+await pageA.getByRole("button", { name: "Ce qui a été décidé" }).click();
+await pageA.waitForTimeout(1600);
+await auditerEcran("ce qui a ete decide — avec projets", pageA);
+
+const avecProjets = await pageA.evaluate(() => {
+  const t = document.body.innerText;
+  return {
+    texte: t,
+    projets: document.querySelectorAll(".fait-titre").length,
+    votes: document.querySelectorAll(".vote-titre").length,
+    montants: [...t.matchAll(/L'État a engagé ([\d   ]+) €/g)].map(m => m[1]),
+    sources: [...document.querySelectorAll(".source")].map(e => e.innerText),
+    /* Principe P12 : deux objets de meme nature ne se hierarchisent pas. */
+    tailleProjet: (() => { const e = document.querySelector(".fait-titre");
+      return e ? getComputedStyle(e).fontSize : null; })(),
+    tailleVote: (() => { const e = document.querySelector(".vote-titre");
+      return e ? getComputedStyle(e).fontSize : null; })(),
+  };
+});
+
+verif("surface datee — une commune financee montre ses projets ET les votes de son depute",
+  avecProjets.projets >= 3 && avecProjets.votes >= 1,
+  JSON.stringify({ projets: avecProjets.projets, votes: avecProjets.votes }));
+verif("surface datee — un montant s'affiche en euros, groupe a la francaise",
+  avecProjets.montants.length >= 3 && avecProjets.montants.every(m => /\s/.test(m.trim())),
+  JSON.stringify(avecProjets.montants.slice(0, 3)));
+verif("surface datee — le sigle du dispositif est developpe en toutes lettres",
+  /Dotation politique de la ville/.test(avecProjets.texte), "");
+verif("surface datee — le cout total est annonce hors taxes, comme la source le publie",
+  /coût total du projet annoncé : .* hors taxes/.test(avecProjets.texte), "");
+/* PRINCIPE P15, DIT AU LECTEUR PLUTOT QUE CORRIGE EN SILENCE : la DGCL publie
+   « Renovation » sans accent. Si quelqu'un « corrige » un jour les accents, il
+   reecrira un intitule officiel — et l'ecran cesserait de le dire. */
+verif("principe P15 — l'intitule officiel n'est pas reecrit, et l'ecran le dit",
+  /Renovation de la halle/.test(avecProjets.texte)
+  && /recopiés tels que l'État les publie/.test(avecProjets.texte), "");
+verif("principe P12 — un projet et une loi portent le meme poids typographique",
+  avecProjets.tailleProjet && avecProjets.tailleProjet === avecProjets.tailleVote,
+  avecProjets.tailleProjet + " vs " + avecProjets.tailleVote);
+verif("invariant 4 — les deux provenances sont distinctes et nommees",
+  avecProjets.sources.length >= 2
+  && avecProjets.sources.some(x => /Projets|collectivités locales|FIXTURE/i.test(x))
+  && avecProjets.sources.some(x => /Assemblée|scrutin/i.test(x)),
+  JSON.stringify(avecProjets.sources).slice(0, 220));
+/* INVARIANT 3, SUR L'ECRAN QUI PORTE DES MONTANTS : aucun total, aucun montant
+   par habitant, aucun mot qui compare cette commune a une autre. */
+verif("invariant 3 — le fil ne totalise rien et ne compare a aucune autre commune",
+  !/par habitant|au total|total des subventions|moyenne des communes|davantage que/i.test(avecProjets.texte),
+  avecProjets.texte.slice(0, 160).replace(/\n+/g, " / "));
+await ctxA.close();
+
+verif("accessibilite — sur les sept ecrans, toute cible tactile mesure au moins 44 px",
   fautesCibles.length === 0, fautesCibles.slice(0, 4).join(" | "));
-verif("lisibilite — sur les six ecrans, aucun texte porteur de sens sous 13 px",
+verif("lisibilite — sur les sept ecrans, aucun texte porteur de sens sous 13 px",
   fautesTexte.length === 0, fautesTexte.slice(0, 4).join(" | "));
 await ctxTout.close();
 

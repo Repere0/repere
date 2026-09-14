@@ -8,11 +8,19 @@ import {
 /* CHARGEMENT PARESSEUX DES ÉCRANS. Chacun est un module séparé : ouvrir « Qui
    décide » ne télécharge pas le code de « Où va mon argent ». Le socle React est
    dans un morceau à part (voir vite.config.js). */
+const CeQuiADecide = lazy(() => import("./routes/CeQuiADecide.jsx"));
 const QuiDecide = lazy(() => import("./routes/QuiDecide.jsx"));
 const OuVaArgent = lazy(() => import("./routes/OuVaArgent.jsx"));
 const Sources = lazy(() => import("./routes/Sources.jsx"));
 
 const ONGLETS = [
+  /* « CE QUI A ETE DECIDE » EST LE PREMIER ONGLET, et cet ordre est la decision.
+     Les trois ecrans d'avant repondaient a des questions d'etat — qui, combien,
+     d'ou — toutes vraies le mois suivant. Le fil date est le seul qui change, et
+     c'est celui qui doit s'ouvrir. Le libelle est celui arrete en D-03 : le passe
+     compose promet du verifiable, la ou « L'actualite » promettrait une fraicheur
+     que la donnee publique ne tient pas. */
+  { id: "decide", libelle: "Ce qui a été décidé", echelon: "ville", charge: () => import("./routes/CeQuiADecide.jsx") },
   { id: "qui", libelle: "Qui décide", echelon: "ville", charge: () => import("./routes/QuiDecide.jsx") },
   { id: "argent", libelle: "Où va l'argent", echelon: "dept", charge: () => import("./routes/OuVaArgent.jsx") },
   { id: "sources", libelle: "Sources", echelon: "france", charge: () => import("./routes/Sources.jsx") },
@@ -341,6 +349,17 @@ export default function App() {
   const [departement, setDepartement] = useState(lireDepartement);
   const [paquet, setPaquet] = useState(null);
   const [etat, setEtat] = useState(ETATS.ABSENT);
+  /* L'ONGLET OUVERT PAR DEFAUT RESTE « QUI DECIDE », ET CE N'EST PAS UN OUBLI.
+     « Ce qui a ete decide » est le PREMIER onglet — l'ordre dit ce qui compte —
+     mais il n'est pas encore celui qui s'ouvre. La collecte des projets finances
+     n'a jamais tourne pour de vrai : elle ne peut pas s'executer depuis un poste
+     de developpement, et les taches planifiees ne se declenchent que sur la
+     branche par defaut. Faire atterrir chaque visiteur sur un ecran dont la
+     couverture reelle n'a jamais ete mesuree serait un pari ; « Qui decide »,
+     lui, est couvert a 100 % sur les huit departements.
+     LA CONDITION POUR BASCULER EST ECRITE : quand la collecte aura tourne et que
+     la couverture des projets aura ete mesuree sur les 1 262 communes de la beta,
+     cette ligne devient useState("decide"). Voir la decision D-23. */
   const [onglet, setOnglet] = useState("qui");
   const [commune, setCommune] = useState(null);
   const [communesBeta, setCommunesBeta] = useState(null);
@@ -488,6 +507,7 @@ export default function App() {
                       circonscription et ses comptes.
                     </p>
                   ) : null}
+                  {onglet === "decide" && fiche ? <CeQuiADecide paquet={paquet} index={index} commune={commune} /> : null}
                   {onglet === "qui" && fiche ? <QuiDecide paquet={paquet} index={index} commune={commune} /> : null}
                   {onglet === "argent" && fiche ? <OuVaArgent paquet={paquet} index={index} commune={commune} /> : null}
                 </Suspense>

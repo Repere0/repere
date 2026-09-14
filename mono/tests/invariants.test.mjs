@@ -229,17 +229,34 @@ test("invariant 4 — aucune donnée n'est servie sans source déclarée", () =>
      Les quatrieme et cinquieme, /scrutins.json et /scrutins/{dep}.json, sont
      ajoutees le 13/09/2026, a la meme condition : la source « scrutins » est
      exigee dans index.json quelques lignes plus bas. Elargir cette liste sans
-     elargir l'autre fait echouer le test — c'est le but. */
+     elargir l'autre fait echouer le test — c'est le but.
+     La sixieme, /projets/{dep}.json, est ajoutee le 14/09/2026 pour l'ecran
+     « Ce qui a ete decide ». C'est la donnee la plus indiscrete du produit — elle
+     est propre a UNE commune — et c'est pour cela qu'elle est servie par
+     DEPARTEMENT : une adresse par commune aurait dit au serveur ou habite celui
+     qui lit. La source « projets » est exigee juste en dessous. */
   const client = lire("packages/data-utils/src/client.js");
   const composees = [...client.matchAll(/\$\{BASE_DONNEES\}(\/[A-Za-z0-9_${}./-]*)/g)].map(m => m[1]);
   assert.deepEqual([...new Set(composees)].sort(),
     ["/communes-beta.json", "/departments/${d}.json", "/deputes.json", "/index.json",
-     "/scrutins.json", "/scrutins/${d}.json"],
+     "/projets/${d}.json", "/scrutins.json", "/scrutins/${d}.json"],
     "client.js compose une adresse de donnees inattendue : " + composees.join(", "));
   const sources = existe("data/index.json") ? (JSON.parse(lire("data/index.json")).sources || {}) : {};
   for (const attendue of ["elus", "comptes", "circonscriptions", "deputes", "scrutins", "communes"]) {
     assert.ok(sources[attendue] && sources[attendue].producteur,
       `index.json ne declare pas la source « ${attendue} »`);
+  }
+  /* Les projets sont la seule famille CONDITIONNELLE, et il faut que la garde le
+     soit aussi. La collecte ne joint pas data.gouv.fr depuis un poste de
+     developpement : exiger la source en toutes circonstances ferait echouer le
+     banc chez quelqu'un qui n'a simplement pas encore collecte, et la vraie faute
+     — publier des projets sans dire d'ou ils viennent — passerait pour du bruit.
+     La regle est donc : si des projets sont publies, leur source est declaree. */
+  if (existe("data/projets")) {
+    assert.ok(sources.projets && sources.projets.producteur,
+      "des projets sont publies sous data/projets mais index.json ne declare pas leur source");
+    assert.ok(sources.projets.mis_a_jour_le && sources.projets.releve_le,
+      "la source des projets ne porte pas ses deux dates : publication et releve");
   }
 });
 
@@ -961,4 +978,93 @@ test("votes — les lois sont distinguées des votes de détail", () => {
   }
   assert.match(lire("apps/web/src/routes/QuiDecide.jsx"), /solennel/i,
     "l'ecran des votes ne distingue plus les lois des votes de detail");
+});
+
+/* ------------------------------------------------------------------------- *
+ * CE QUI A ETE DECIDE — les quatre gardes de la surface datee (14/09/2026).
+ * ------------------------------------------------------------------------- */
+
+test("projets — aucune donnée de banc ne peut être servie à un citoyen", () => {
+  /* La fixture qui alimente le banc a la forme EXACTE du relevé produit par
+     outils/projets_etat.py : c'est ce qui la rend utile, et c'est ce qui la rend
+     dangereuse. Une copie égarée afficherait chez un habitant un gymnase qui
+     n'existe pas, avec un montant en euros et l'allure d'un fait officiel. Le
+     producteur porte donc un marqueur, et ce contrôle refuse qu'il franchisse la
+     frontière. Il ne dépend d'aucun nom de fichier : il lit ce qui est publié.
+     data/ ET le build : le banc pose sa fixture dans apps/web/dist le temps de la
+     mesure et la retire en sortant. Si elle y reste — un banc interrompu, un
+     nettoyage cassé — c'est CE répertoire qui part au déploiement. */
+  const coupables = [];
+  const marche = d => {
+    for (const e of fs.readdirSync(path.join(RACINE, d), { withFileTypes: true })) {
+      const rel = path.join(d, e.name);
+      if (e.isDirectory()) { marche(rel); continue; }
+      if (!e.name.endsWith(".json")) continue;
+      if (lire(rel).includes("FIXTURE")) coupables.push(rel);
+    }
+  };
+  for (const racine of ["data", "apps/web/dist/data"]) if (existe(racine)) marche(racine);
+  assert.deepEqual(coupables, [],
+    "une donnée de banc est publiée : " + coupables.join(", "));
+});
+
+test("projets — la lecture d'un scrutin n'est écrite qu'à un seul endroit", () => {
+  /* LE DEFAUT QUI L'A IMPOSE, ET IL EST DEJA ARRIVE. La recherche de commune
+     avait été dérivée deux fois ; les deux copies ont divergé, et « Évry » n'a
+     plus rien donné pendant des semaines sans que rien ne le signale (D-15).
+     Deux écrans lisent maintenant les mêmes scrutins. La règle vit dans
+     apps/web/src/lib/votes.jsx, et une seconde définition fait échouer le banc. */
+  for (const nom of ["estSolennel", "titreLisible", "procedure", "decompte", "LigneVote"]) {
+    const definitions = sourcesEcrites().filter(f =>
+      new RegExp("(?:function|const)\\s+" + nom + "\\b").test(lire(f)));
+    assert.deepEqual(definitions, ["apps/web/src/lib/votes.jsx"],
+      `« ${nom} » est défini ${definitions.length} fois : ` + definitions.join(", "));
+  }
+});
+
+test("projets — le fil daté nomme sa règle d'ordre, et ne trie sur aucun montant", () => {
+  /* PRINCIPE P4 : sans la phrase, le premier de la liste devient le plus
+     important dans la tête du lecteur. Et le tri lui-même doit rester celui du
+     temps : trier sur `subvention` ferait de l'écran un ordre d'importance que
+     rien n'annonce. */
+  const ecran = lire("apps/web/src/routes/CeQuiADecide.jsx");
+  assert.ok(/ordre de date/i.test(ecran),
+    "l'écran ne dit pas au lecteur dans quel ordre les faits sont rangés");
+  const tri = /faits\.sort\(([^;]*)\);/.exec(ecran);
+  assert.ok(tri, "le tri du fil est introuvable");
+  for (const interdit of ["subvention", "cout", "montant", "echelon"]) {
+    assert.ok(!tri[1].includes(interdit),
+      `le fil trie sur « ${interdit} » : ce n'est plus un ordre de date`);
+  }
+});
+
+test("projets — aucun projet n'est publié hors de son département", () => {
+  /* La faute la plus grave que cet écran puisse commettre : afficher chez un
+     habitant une décision qui n'est pas la sienne. Le contrôle est refait ici,
+     sur les fichiers publiés, indépendamment de celui de l'extraction — une
+     garde qui ne vit que dans le script qu'elle garde ne garde rien. */
+  if (!existe("data/projets")) return;
+  let lignes = 0;
+  for (const f of fs.readdirSync(path.join(RACINE, "data", "projets"))) {
+    if (!f.endsWith(".json")) continue;
+    const dep = f.replace(/\.json$/, "");
+    const paquet = JSON.parse(lire(path.join("data", "projets", f)));
+    assert.equal(paquet.d, dep, `${f} annonce le département ${paquet.d}`);
+    assert.ok(paquet.mis_a_jour_le && paquet.releve_le, `${f} ne porte pas ses deux dates`);
+    for (const [insee, liste] of Object.entries(paquet.communes || {})) {
+      const attendu = insee.startsWith("97") ? insee.slice(0, 3) : insee.slice(0, 2);
+      assert.equal(attendu, dep, `${insee} est publié dans le paquet ${dep}`);
+      for (const p of liste) {
+        lignes++;
+        assert.ok(p.intitule && typeof p.subvention === "number" && p.annee,
+          `${insee} porte une ligne sans intitulé, sans montant ou sans année`);
+        /* Aucun agrégat pré-calculé : le format lui-même doit rendre impossible
+           l'affichage d'un total par commune (invariant 3, décision D-13). */
+        for (const interdit of ["total", "par_habitant", "rang", "moyenne"]) {
+          assert.ok(!(interdit in p), `${insee} porte un champ « ${interdit} »`);
+        }
+      }
+    }
+  }
+  assert.ok(lignes > 0, "aucun projet publié alors que data/projets existe");
 });

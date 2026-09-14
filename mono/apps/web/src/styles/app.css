@@ -215,6 +215,21 @@
 .vote-titre { display: block; font-family: var(--t-titre); font-size: .98rem;
   line-height: 1.35; margin-bottom: .3rem; }
 .votes .ligne.vote { margin-bottom: 1.1rem; }
+/* UN FAIT DU FIL DATE. Le titre reprend EXACTEMENT les valeurs de .vote-titre,
+   et ce n'est pas une economie de lignes : le principe P12 interdit de
+   hierarchiser deux objets de MEME NATURE par la typographie. Dans le fil, un
+   gymnase renove et une loi votee sont deux faits dates ; donner au second un
+   titre plus gros dirait au lecteur lequel compte, et ce serait un jugement. */
+.fait-titre { display: block; font-family: var(--t-titre); font-size: .98rem;
+  line-height: 1.35; margin-bottom: .3rem; }
+.ligne.fait { margin-bottom: 1.3rem; }
+.ligne.fait .ligne.vote { margin-bottom: 0; }
+.ligne.fait .groupe { margin-bottom: .35rem; }
+.ligne.fait .groupe:first-child { margin-top: 1.4rem; }
+.ligne.fait:first-of-type .groupe:first-child { margin-top: .6rem; }
+.projets-note { margin: -.15rem 0 .55rem; }
+/* Le montant ne doit pas passer a la ligne au milieu d'un nombre. */
+.ligne.fait .ligne-h span { font-variant-numeric: tabular-nums; }
 /* 44 px DE ZONE D'APPUI SANS CASSER LE FIL DU PARAGRAPHE. Mesure du 13/09 : les
    dix liens « Scrutin n° … » faisaient moins de 44 px de haut, et le controle du
    banc ne les voyait pas — il ne mesurait qu'un seul ecran. */

@@ -102,6 +102,41 @@ function relevesScrutins() {
   return d;
 }
 
+/* LES PROJETS FINANCES PAR L'ETAT — le premier fait DATE du produit.
+ *
+ * Jusqu'ici Repere ne montrait que des etats : qui est maire, combien depense la
+ * commune. Rien ne changeait entre deux visites, et rien ne justifiait de rouvrir
+ * l'application. Un projet finance porte un intitule, un montant et une annee :
+ * c'est le premier objet que l'on peut ranger dans le temps.
+ *
+ * LA MAILLE EST LE DEPARTEMENT, comme pour les votes, et pour la meme raison :
+ * une adresse par commune dirait au serveur ou habite celui qui lit. Le paquet
+ * departemental porte les projets de toutes ses communes ; le navigateur choisit.
+ *
+ * L'INTITULE EST RECOPIE MOT POUR MOT. La source ecrit « Renovation de la halle
+ * du Montfort » sans accents : les remettre serait reecrire un intitule officiel.
+ *
+ * Comme partout : sans producteur, licence, url et date, on n'ecrit rien. Mais
+ * l'absence du fichier n'arrete PAS le build — elle retire l'ecran date, elle ne
+ * casse pas le reste du produit. Voir outils/projets_etat.py. */
+function relevesProjets() {
+  const f = path.join(ICI, "projets.json");
+  if (!fs.existsSync(f)) { console.warn("::warning::projets.json absent : aucun projet finance ne sera publie (voir outils/projets_etat.py)"); return null; }
+  let d;
+  try { d = JSON.parse(fs.readFileSync(f, "utf8")); }
+  catch (e) { console.error("projets.json illisible : " + e.message); process.exit(10); }
+  const s = d && d.source;
+  if (!s || !s.producteur_affiche || !s.licence || !s.url || !s.releve_le) {
+    console.error("projets.json sans producteur, licence, url ou date");
+    process.exit(10);
+  }
+  if (!d.communes || !Object.keys(d.communes).length) {
+    console.error("projets.json ne porte aucune commune");
+    process.exit(10);
+  }
+  return d;
+}
+
 /* LE NOM DE LA COMMUNE, TEL QU'IL S'ECRIT.
  *
  * Le Repertoire national des elus ecrit les communes EN CAPITALES ; le produit les
@@ -239,6 +274,7 @@ async function extraire() {
   const noms = nomsTerritoires();
   const deputes = relevesDeputes();
   const scrutins = relevesScrutins();
+  const projets = relevesProjets();
   const meta = {
     v: 1,
     genere_le: new Date().toISOString().slice(0, 10),
@@ -276,6 +312,19 @@ async function extraire() {
         legislature: scrutins.source.legislature,
         portee: scrutins.source.portee,
         releve_le: scrutins.source.releve_le,
+      }) || null,
+      /* La source des projets finances porte DEUX dates a ne pas confondre :
+         `mis_a_jour_le`, quand l'Etat a publie, et `releve_le`, quand Repere est
+         alle le chercher. L'ecran affiche la premiere — c'est celle qui dit
+         l'age du fait — et « Sources » les montre toutes les deux. */
+      projets: (projets && {
+        producteur: projets.source.producteur_affiche,
+        producteur_citoyen: projets.source.producteur_citoyen,
+        licence: projets.source.licence,
+        url: projets.source.url,
+        exercices: projets.source.exercices,
+        mis_a_jour_le: projets.source.mis_a_jour_le,
+        releve_le: projets.source.releve_le,
       }) || null,
     },
     agregats: (OFGL && OFGL.meta && OFGL.meta.agregats) || [],
@@ -374,6 +423,58 @@ async function extraire() {
       });
       depsAvecVotes.push(dep);
       positionsEcrites += Object.keys(parDep.get(dep)).length;
+    }
+  }
+
+  /* LES PROJETS, DECOUPES PAR DEPARTEMENT.
+   *
+   *   data/projets/{dep}.json   { insee : [ {annee, dispositif, intitule,
+   *                               subvention, cout} ] }
+   *
+   * On ne trie RIEN ici, et c'est voulu : le fil est ordonne dans le navigateur,
+   * par annee decroissante puis dans l'ordre ou l'Etat publie ses lignes. Trier
+   * par montant mettrait le plus gros projet en tete, et l'ecran le presenterait
+   * comme un ordre d'importance.
+   *
+   * Le code INSEE ne sert que de cle A L'INTERIEUR du fichier : il n'entre dans
+   * aucune adresse. C'est ce que garde l'invariant 2. */
+  const depsAvecProjets = [];
+  let projetsEcrits = 0;
+  /* UNE DONNEE DONT LA SOURCE A DISPARU NE DOIT PAS SURVIVRE AU RELEVE.
+     Trouve par le banc le 14/09/2026 : projets.json retire, l'extraction a
+     poursuivi sans lui — et data/projets/ est reste sur le disque avec ses
+     fichiers de la veille, publies, pendant qu'index.json ne declarait plus
+     aucune source pour eux. C'est la faute exacte que l'invariant 4 existe pour
+     empecher, et elle etait invisible : les fichiers etaient valides, seulement
+     orphelins. On efface donc ce qui n'a plus de source, et on le dit. */
+  if (!projets && fs.existsSync(path.join(SORTIE, "projets"))) {
+    fs.rmSync(path.join(SORTIE, "projets"), { recursive: true, force: true });
+    console.warn("::warning::data/projets efface : le releve a disparu, ses fichiers ne doivent pas lui survivre");
+  }
+  if (projets) {
+    const parDepProjets = new Map();
+    for (const [insee, liste] of Object.entries(projets.communes)) {
+      if (!Array.isArray(liste) || !liste.length) continue;
+      /* Le departement d'un code INSEE : deux caracteres, trois en outre-mer.
+         Aucune autre derivation, et une commune hors des paquets connus est
+         ecartee plutot que rangee au hasard. */
+      const dep = insee.startsWith("97") ? insee.slice(0, 3) : insee.slice(0, 2);
+      if (!paquets.has(dep)) continue;
+      if (!parDepProjets.has(dep)) parDepProjets.set(dep, {});
+      parDepProjets.get(dep)[insee] = liste;
+    }
+    for (const dep of [...parDepProjets.keys()].sort()) {
+      ecrire(path.join(SORTIE, "projets", dep + ".json"), {
+        v: 1, d: dep,
+        mis_a_jour_le: projets.source.mis_a_jour_le,
+        releve_le: projets.source.releve_le,
+        exercices: projets.source.exercices,
+        dispositifs: projets.dispositifs || {},
+        communes: parDepProjets.get(dep),
+      });
+      depsAvecProjets.push(dep);
+      projetsEcrits += Object.values(parDepProjets.get(dep))
+        .reduce((n, l) => n + l.length, 0);
     }
   }
 
@@ -488,6 +589,55 @@ async function extraire() {
     }
     console.log("communes -> position  : " + chaines
       + (horsCommunes.length ? "  (sans commune : " + horsCommunes.join(", ") + ")" : ""));
+  }
+
+  /* CONTROLE INDEPENDANT DES PROJETS : on relit sur le disque, on refait le
+     trajet commune -> projets, et on verifie qu'aucune ligne publiee ne sort de
+     son departement. Une cle mal formee afficherait chez un habitant une
+     decision qui n'est pas la sienne — c'est la faute la plus grave que cet
+     ecran puisse commettre, donc elle arrete le build et n'avertit pas. */
+  if (projets && depsAvecProjets.length) {
+    let lignes = 0, communesServies = 0;
+    for (const dep of depsAvecProjets) {
+      const f = JSON.parse(fs.readFileSync(path.join(SORTIE, "projets", dep + ".json"), "utf8"));
+      const habitantes = JSON.parse(fs.readFileSync(
+        path.join(SORTIE, "departments", dep + ".json"), "utf8")).communes;
+      for (const [insee, liste] of Object.entries(f.communes)) {
+        const attendu = insee.startsWith("97") ? insee.slice(0, 3) : insee.slice(0, 2);
+        if (attendu !== dep) {
+          console.error(`ECHEC : ${insee} publie dans le paquet ${dep}`);
+          process.exit(10);
+        }
+        if (!habitantes[insee]) {
+          console.error(`ECHEC : ${insee} porte des projets mais n'existe pas dans ${dep}.json`);
+          process.exit(10);
+        }
+        communesServies++;
+        for (const pr of liste) {
+          lignes++;
+          if (!pr.intitule || typeof pr.subvention !== "number" || !pr.annee) {
+            console.error(`ECHEC : ${insee} porte une ligne sans intitule, sans montant ou sans annee`);
+            process.exit(10);
+          }
+        }
+      }
+    }
+    const octets = depsAvecProjets.map(d => fs.statSync(path.join(SORTIE, "projets", d + ".json")).size);
+    console.log("projets par departement: " + depsAvecProjets.length + " fichiers, "
+      + lignes + " projets sur " + communesServies + " communes, le plus lourd "
+      + Math.round(Math.max(...octets) / 1024) + " Ko");
+    /* Meme regle de fraicheur que pour les votes : la source est ANNUELLE, donc
+       le seuil n'est pas sept jours mais quatorze mois. Au-dela, l'Etat a publie
+       un nouvel exercice que la collecte n'est pas allee chercher. */
+    const moisDepuis = d => (Date.now() - Date.parse(d)) / 2629800000;
+    const maj = projets.source.mis_a_jour_le;
+    if (maj && moisDepuis(maj) > 14) {
+      console.warn(`::warning::les projets finances datent de la publication du ${maj}, `
+        + `soit ${Math.round(moisDepuis(maj))} mois : un exercice plus recent existe `
+        + "probablement (voir outils/projets_etat.py)");
+    }
+  } else if (projets) {
+    console.warn("::warning::projets.json lu mais aucun departement servi : verifier les codes INSEE");
   }
 
   /* L'INDEX DE LA BETA : CHERCHER SA COMMUNE SANS SAVOIR SON DEPARTEMENT.
