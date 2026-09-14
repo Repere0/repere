@@ -34,14 +34,19 @@ for (const [dep,nomdep,commune] of CAS){
   page.on("pageerror",e=>err.push(String(e)));
   page.on("console",m=>{if(m.type()==="error")err.push("console: "+m.text().slice(0,120));});
   await page.goto(base,{waitUntil:"networkidle"});
-  await page.getByLabel(/Votre département/).fill(nomdep);
-  const b=page.getByRole("button",{name:new RegExp("^"+dep+" ")});
-  if(!await b.count()){console.log(`${dep} ECHEC : departement introuvable dans la recherche « ${nomdep} »`);await ctx.close();continue;}
-  await b.click();
-  await page.getByLabel(/Votre commune/).fill(commune);
-  const c=page.getByRole("button",{name:commune,exact:true});
-  if(!await c.count()){console.log(`${dep} ECHEC : commune « ${commune} » introuvable`);await ctx.close();continue;}
-  await c.click(); await page.waitForTimeout(700);
+  /* DEPUIS LE 13/09/2026 le parcours n'a plus d'etape « departement » : on tape
+     la commune, un seul geste. Le nom du departement reste passe pour verifier
+     que la puce l'affiche — un habitant doit reconnaitre le sien. */
+  await page.getByLabel(/Où habitez-vous/).fill(commune);
+  await page.waitForTimeout(300);
+  /* La correspondance EXACTE, pas la premiere venue : « paris » trouve aussi
+     Cormeilles-en-Parisis, et cliquer au hasard mesurerait la mauvaise commune —
+     c'est ce qui avait fait croire a une regression sur Paris. */
+  const c=page.getByRole("button",{name:new RegExp("^"+commune.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")+"\\b")});
+  if(!await c.count()){console.log(`${dep} ECHEC : commune « ${commune} » introuvable au premier ecran`);await ctx.close();continue;}
+  const libelle=await c.first().innerText();
+  if(!libelle.includes(nomdep)) console.log(`${dep} ATTENTION : la puce n'affiche pas « ${nomdep} » -> ${libelle.replace(/\n+/g," ")}`);
+  await c.first().click(); await page.waitForTimeout(900);
   const nbDep=await page.getByRole("button",{name:/Comment .* a voté/}).count();
   const txtQD=await page.evaluate(()=>document.body.innerText);
   const maire=/Maire\s*\n?\s*\S/.test(txtQD)|| txtQD.includes("Maire");

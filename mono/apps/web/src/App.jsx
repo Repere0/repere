@@ -1,8 +1,8 @@
 import React, { Suspense, lazy, useCallback, useEffect, useMemo, useState } from "react";
 import { Chargement, Vide, Puce } from "@repere/ui";
 import {
-  chargerIndex, chargerDepartement, prechargerDepartement, annulerPrechargement,
-  ETATS, PHRASES,
+  chargerIndex, chargerDepartement, chargerCommunesBeta, prechargerDepartement,
+  annulerPrechargement, entrer, ETATS, PHRASES,
 } from "@repere/data-utils";
 
 /* CHARGEMENT PARESSEUX DES ÉCRANS. Chacun est un module séparé : ouvrir « Qui
@@ -48,6 +48,145 @@ function motsCible(t) {
 }
 function correspond(cherches, cible) {
   return cherches.every(m => cible.some(w => w.startsWith(m)));
+}
+
+/* OU HABITEZ-VOUS — UN SEUL CHAMP, ET C'EST LA CORRECTION LA PLUS IMPORTANTE
+ * DE CETTE VERSION.
+ *
+ * CE QUI N'ALLAIT PAS, MESURE LE 13/09/2026. Le premier ecran affichait les 104
+ * departements deplies : 106 cibles cliquables sur 1,1 hauteur de telephone. Et
+ * il fallait savoir qu'on habite « dans le 93 » AVANT de pouvoir taper
+ * « Bagnolet ». Trois etapes du parcours sur dix n'existaient que parce que les
+ * fichiers de donnees sont decoupes par departement : le decoupage avait fuite
+ * dans l'interface.
+ *
+ * CE QUE FAIT CE COMPOSANT. Un champ, et il accepte les deux : une commune
+ * d'Ile-de-France (l'index de la beta, 11 Ko) ou n'importe quel departement. Une
+ * commune trouvee ouvre son departement toute seule. Rien n'est retire : les
+ * 104 departements restent atteignables, replies sous une ligne.
+ *
+ * CE QU'IL NE FAIT PAS. Il ne compose aucune adresse avec un code de commune :
+ * il en deduit deux caracteres — le departement — et c'est le fichier
+ * departemental habituel qui part. Le serveur n'apprend donc jamais quelle
+ * commune est lue. C'est l'invariant, et le banc le garde.
+ *
+ * POURQUOI DEUX GROUPES ETIQUETES et pas une liste unique : un citoyen qui tape
+ * « 93 » doit voir que Repere lui propose UN DEPARTEMENT, pas une commune dont
+ * le nom contiendrait 93. Les deux groupes sont tries alphabetiquement, sans
+ * aucun ordre de valeur — l'invariant 3 interdit de classer des territoires. */
+function Entree({ index, communesBeta, departement, onOuvrir, onCommuneDirecte, onSurvol }) {
+  const [filtre, setFiltre] = useState("");
+  const cherches = mots(filtre);
+
+  const communes = useMemo(() => {
+    if (!communesBeta || !communesBeta.communes) return [];
+    return Object.entries(communesBeta.communes)
+      .map(([insee, nom]) => [insee, nom, motsCible(nom)]);
+  }, [communesBeta]);
+
+  /* L'ORDRE DES RESULTATS EST CELUI DE LA RECHERCHE, PAS UN ORDRE DE VALEUR.
+   *
+   * Defaut trouve a l'oeil le 13/09/2026 : taper « paris » proposait
+   * « Cormeilles-en-Parisis », puis « Fontenay-en-Parisis », puis Paris — parce
+   * que « paris » est bien le debut du mot « Parisis » et que l'ordre etait
+   * alphabetique. La commune la plus peuplee de France arrivait troisieme sur son
+   * propre nom.
+   *
+   * On classe donc par PERTINENCE DE LA RECHERCHE : le nom exact d'abord, puis
+   * ceux qui commencent par ce qui a ete tape, puis le reste — et l'ordre
+   * alphabetique a l'interieur de chaque groupe. Ce n'est pas un ordre
+   * d'importance entre territoires, que l'invariant 3 interdit : c'est la reponse
+   * a ce que le lecteur vient d'ecrire, et elle ne depend d'aucune propriete de la
+   * commune — ni sa taille, ni sa population, ni rien qui la compare a une autre. */
+  const rang = (nom) => {
+    const n = mots(nom).join(" ");
+    const q = cherches.join(" ");
+    if (n === q) return 0;
+    if (n.startsWith(q)) return 1;
+    return 2;
+  };
+  const trouveesC = cherches.length
+    ? communes.filter(([, , cible]) => correspond(cherches, cible))
+        .sort((a, b) => rang(a[1]) - rang(b[1]) || a[1].localeCompare(b[1], "fr"))
+        .slice(0, 30)
+    : [];
+  const trouvesD = cherches.length
+    ? index.departements.filter(d => correspond(cherches, motsCible(d.code + " " + (d.nom || ""))))
+    : [];
+  const rien = cherches.length > 0 && trouveesC.length === 0 && trouvesD.length === 0;
+  const nomDep = code => {
+    const d = index.departements.find(x => x.code === code);
+    return d && d.nom ? d.nom : "département " + code;
+  };
+
+  return (
+    <div className="entree">
+      <label className="champ">
+        <span>Où habitez-vous ?</span>
+        <input type="search" value={filtre} autoComplete="off"
+          placeholder="Bagnolet, Créteil, Meaux…"
+          onChange={e => setFiltre(e.target.value)} />
+      </label>
+
+      {rien ? (
+        <Vide titre={`Rien ne correspond à « ${filtre.trim()} ».`}
+          corps="Tapez le début du nom de votre commune. Hors d'Île-de-France, cherchez d'abord votre département — son nom ou son numéro." />
+      ) : null}
+
+      {trouveesC.length ? (
+        <>
+          <p className="groupe">Communes</p>
+          <div className="rangee liste" role="group" aria-label="Communes trouvées">
+            {trouveesC.map(([insee, nom]) => (
+              <button key={insee} type="button" className="puce"
+                onClick={() => onCommuneDirecte(insee.slice(0, 2), insee)}>
+                <span className="pastille" style={{ background: "var(--e-ville)" }} aria-hidden="true" />
+                <span className="puce-nom">{nom}</span>
+                <span className="puce-code">{nomDep(insee.slice(0, 2))}</span>
+              </button>
+            ))}
+          </div>
+        </>
+      ) : null}
+
+      {trouvesD.length ? (
+        <>
+          <p className="groupe">Départements</p>
+          <div className="rangee liste-dept" role="group" aria-label="Départements trouvés"
+            onMouseLeave={annulerPrechargement} onBlur={annulerPrechargement}>
+            {trouvesD.map(d => (
+              <Puce key={d.code} actif={d.code === departement} echelon="dept"
+                onClick={() => onOuvrir(d.code)} onSurvol={() => onSurvol(d.code)}>
+                <span className="puce-code">{d.code}</span>
+                {d.nom ? <span className="puce-nom">{d.nom}</span> : null}
+              </Puce>
+            ))}
+          </div>
+        </>
+      ) : null}
+
+      {/* LE MUR DE 104 PASTILLES NE S'OUVRE PLUS TOUT SEUL. Il reste atteignable
+          en un geste, pour qui prefere parcourir plutot que taper — et pour les
+          departements hors Ile-de-France, dont aucune commune n'est dans l'index. */}
+      {!cherches.length ? (
+        <details className="choix">
+          <summary><span className="choix-libelle">Voir les {index.departements.length} départements publiés</span></summary>
+          <div className="dedans-choix">
+            <div className="rangee liste-dept" role="group" aria-label="Tous les départements publiés"
+              onMouseLeave={annulerPrechargement} onBlur={annulerPrechargement}>
+              {index.departements.map(d => (
+                <Puce key={d.code} echelon="dept"
+                  onClick={() => onOuvrir(d.code)} onSurvol={() => onSurvol(d.code)}>
+                  <span className="puce-code">{d.code}</span>
+                  {d.nom ? <span className="puce-nom">{d.nom}</span> : null}
+                </Puce>
+              ))}
+            </div>
+          </div>
+        </details>
+      ) : null}
+    </div>
+  );
 }
 
 /* LE DEPARTEMENT SE CHERCHE PAR SON NOM, PAS SEULEMENT PAR SON NUMERO.
@@ -147,10 +286,18 @@ function ChoixCommune({ paquet, nomDepartement, commune, onCommune }) {
     const base = cherches.length
       ? communes.filter(([, , cible]) => correspond(cherches, cible))
       : communes;
-    /* Tri ALPHABÉTIQUE, jamais numérique : classer des territoires par un
-       chiffre est interdit (invariant 3), et l'ordre alphabétique est le seul
-       qui ne dise rien de personne. */
-    return base.slice().sort((a, b) => a[1].nom.localeCompare(b[1].nom, "fr"));
+    /* Jamais d'ordre NUMERIQUE : ranger des territoires par un chiffre est
+       interdit (invariant 3). Quand rien n'est tape, l'ordre est alphabetique —
+       le seul qui ne dise rien de personne. Quand quelque chose est tape, la
+       correspondance exacte passe devant, pour la meme raison qu'a l'ecran
+       d'entree : « paris » doit proposer Paris avant Cormeilles-en-Parisis. */
+    const rangC = nom => {
+      const n = mots(nom).join(" "), q = cherches.join(" ");
+      return n === q ? 0 : n.startsWith(q) ? 1 : 2;
+    };
+    return base.slice().sort((a, b) =>
+      (cherches.length ? rangC(a[1].nom) - rangC(b[1].nom) : 0)
+      || a[1].nom.localeCompare(b[1].nom, "fr"));
   }, [communes, filtre]);
   const vues = trouvees.slice(0, 60);
 
@@ -196,6 +343,7 @@ export default function App() {
   const [etat, setEtat] = useState(ETATS.ABSENT);
   const [onglet, setOnglet] = useState("qui");
   const [commune, setCommune] = useState(null);
+  const [communesBeta, setCommunesBeta] = useState(null);
 
   useEffect(() => {
     let vivant = true;
@@ -204,11 +352,27 @@ export default function App() {
       setEtatIndex(r.etat);
       if (r.donnees) setIndex(r.donnees);
     });
+    /* 11 Ko, en meme temps que l'index : sans lui, le premier ecran ne sait
+       chercher que des departements. Son absence n'est pas bloquante — la
+       recherche par departement continue de fonctionner. */
+    chargerCommunesBeta().then(r => { if (vivant && r.donnees) setCommunesBeta(r.donnees); });
     return () => { vivant = false; };
   }, []);
 
-  const ouvrir = useCallback(async (dep) => {
-    setDepartement(dep);
+  /* `insee` est FACULTATIF, et il ne sert qu'a selectionner la commune une fois
+     le paquet arrive. Il n'entre dans aucune adresse : c'est `dep` seul qui part
+     au reseau. */
+  const ouvrir = useCallback(async (dep, insee) => {
+    /* ENTRER DANS UN TERRITOIRE EST UNE ETAPE : le retour du telephone doit
+       ramener a l'ecran d'entree, pas fermer l'application. On n'empile qu'a la
+       PREMIERE entree — changer de departement ensuite reste au meme niveau,
+       sinon dix changements demanderaient dix retours pour ressortir. */
+    setDepartement(prec => {
+      if (!prec) {
+        entrer(() => { setDepartement(""); setPaquet(null); setCommune(null); setEtat(ETATS.ABSENT); });
+      }
+      return dep;
+    });
     ecrireDepartement(dep);
     setEtat(ETATS.EN_COURS);
     setPaquet(null);
@@ -216,6 +380,10 @@ export default function App() {
     const r = await chargerDepartement(dep);
     setEtat(r.etat);
     setPaquet(r.donnees);
+    /* On ne selectionne que si la commune est bien dans le paquet recu : un code
+       venu d'un index plus recent que le fichier departemental ne doit pas
+       produire un ecran vide. */
+    if (insee && r.donnees && r.donnees.communes && r.donnees.communes[insee]) setCommune(insee);
   }, []);
 
   /* Un département déjà choisi se recharge tout seul : le lecteur ne redit pas
@@ -262,7 +430,13 @@ export default function App() {
             dans une assertion. Une fois le departement choisi, la liste se replie
             sur une seule ligne : ce que le lecteur est venu voir passe devant le
             moyen d'y arriver. Le details reste ouvert tant que rien n'est choisi. */}
-        {index ? (
+        {/* AVANT UN CHOIX : un seul champ, qui accepte une commune ou un
+            departement. APRES : la ligne repliee habituelle, pour changer. */}
+        {index && !departement ? (
+          <Entree index={index} communesBeta={communesBeta} departement={departement}
+            onOuvrir={ouvrir} onCommuneDirecte={ouvrir} onSurvol={prechargerDepartement} />
+        ) : null}
+        {index && departement ? (
           <ChoixDepartement index={index} departement={departement}
             onOuvrir={ouvrir} onSurvol={prechargerDepartement} />
         ) : null}
@@ -322,7 +496,7 @@ export default function App() {
           ) : null}
         </>
       ) : (
-        <p className="invite">Choisissez un département pour commencer. Repère ne demande jamais votre adresse.</p>
+        <p className="invite">Repère ne demande jamais votre adresse : le nom de votre commune suffit, et il ne quitte pas cet appareil.</p>
       )}
     </div>
   );

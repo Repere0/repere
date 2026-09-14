@@ -126,6 +126,13 @@ console.log("\n--- parcours -------------------------------------------------");
    deux. On la designe par le numero en tete, et on verifie au passage que le nom
    officiel est bien affiche — sans lui, il fallait savoir que sa commune est
    « dans le 64 » pour entrer dans le produit. */
+/* LE MUR DES 104 PASTILLES NE S'OUVRE PLUS TOUT SEUL (13/09/2026).
+   Le premier ecran pose une seule question — « Ou habitez-vous ? » — et la liste
+   complete est repliee sous une ligne. Elle reste le seul chemin pour les 96
+   departements hors Ile-de-France, dont aucune commune n'est dans l'index de la
+   beta : ce parcours-la doit donc rester eprouve de bout en bout. */
+await page.locator("details.choix > summary").click();
+await page.waitForTimeout(200);
 const listeDept = await page.evaluate(() => document.querySelector(".liste-dept").innerText);
 verif("rendu — les departements portent leur nom, pas seulement leur numero",
   /Pyrénées-Atlantiques/.test(listeDept) && /Ain/.test(listeDept),
@@ -138,12 +145,12 @@ verif("rendu — les departements portent leur nom, pas seulement leur numero",
  * cherchait simplement le sien. On traverse donc douze pastilles sans s'arreter,
  * et on exige qu'AUCUN paquet ne soit parti. */
 servies = [];
-await page.getByLabel(/Votre département/).focus();
+await page.getByLabel(/Où habitez-vous/).focus();
 for (let i = 0; i < 16; i++) { await page.keyboard.press("Tab"); await page.waitForTimeout(40); }
 /* On RESSORT de la liste avant de mesurer : se poser sur une pastille EST une
    intention, et precharger ce territoire-la est le comportement voulu. Ce que le
    controle mesure, c'est la traversee — le doigt ou le focus qui passe. */
-await page.getByLabel(/Votre département/).focus();
+await page.getByLabel(/Où habitez-vous/).focus();
 await page.waitForTimeout(1400);
 const paquetsFiles = servies.filter(u => u.startsWith("/data/departments/"));
 verif("prechargement — traverser la liste au clavier ne telecharge aucun departement",
@@ -151,7 +158,7 @@ verif("prechargement — traverser la liste au clavier ne telecharge aucun depar
   paquetsFiles.length + " paquet(s) demande(s) : " + [...new Set(paquetsFiles)].slice(0, 5).join(", "));
 
 /* Recherche par nom, sans accents : personne ne tape « Pyrénées » au clavier. */
-await page.getByLabel(/Votre département/).fill("pyrenees at");
+await page.getByLabel(/Où habitez-vous/).fill("pyrenees at");
 await page.waitForTimeout(300);
 const filtre = await page.evaluate(() => document.querySelector(".liste-dept").innerText);
 verif("recherche — un departement se trouve par son nom, sans accents",
@@ -388,6 +395,65 @@ const petites = await page.evaluate(() =>
 verif("accessibilite — toute cible tactile mesure au moins 44 px",
   petites.length === 0, petites.slice(0, 4).map(p => p.t + " (" + p.h + "px)").join(" | "));
 
+console.log("\n--- entree directe par commune -------------------------------");
+/* LE PARCOURS DE LA BETA : « j'habite a Bagnolet », et rien d'autre.
+ *
+ * Trois etapes du parcours sur dix n'existaient que parce que les fichiers sont
+ * decoupes par departement. Ce controle mesure qu'elles ont disparu — et surtout
+ * que leur disparition n'a rien coute a l'invariant : le reseau ne doit voir
+ * partir qu'un fichier DEPARTEMENTAL, jamais une adresse portant le code de la
+ * commune cherchee. */
+const ctxDirect = await nav.newContext({ viewport: { width: 390, height: 844 } });
+const pageDirect = await ctxDirect.newPage();
+const vues = [];
+pageDirect.on("request", r => { const u = new URL(r.url()); if (u.pathname.startsWith("/data")) vues.push(u.pathname); });
+await pageDirect.goto(base, { waitUntil: "networkidle" });
+
+/* Le premier ecran ne doit plus poser cent six choix : un champ, et une ligne
+   repliee pour qui veut parcourir. `checkVisibility` et pas le rectangle : les
+   enfants d'un <details> ferme ont une boite, ils ne sont pas visibles pour
+   autant — et c'est cette confusion qui avait fausse la premiere mesure. */
+const cibles = await pageDirect.evaluate(() =>
+  [...document.querySelectorAll("a,button,input,summary")]
+    .filter(e => e.checkVisibility({ checkVisibilityCSS: true, contentVisibilityAuto: true })).length);
+verif("parcours — le premier ecran ne pose plus qu'une question", cibles <= 4,
+  cibles + " cibles visibles a l'ouverture (etaient 106)");
+
+await pageDirect.getByLabel(/Où habitez-vous/).fill("bagnolet");
+await pageDirect.waitForTimeout(300);
+const propositions = await pageDirect.evaluate(() =>
+  [...document.querySelectorAll(".entree .liste .puce")].map(e => e.innerText.replace(/\n+/g, " ")));
+verif("parcours — une commune se trouve sans connaitre son departement",
+  propositions.length === 1 && /Bagnolet/.test(propositions[0]) && /Seine-Saint-Denis/.test(propositions[0]),
+  JSON.stringify(propositions));
+
+/* L'ORDRE DES RESULTATS. Defaut trouve a l'oeil : « paris » proposait
+   Cormeilles-en-Parisis, Fontenay-en-Parisis, puis Paris — la commune la plus
+   peuplee de France arrivait troisieme sur son propre nom, parce que « paris »
+   est le debut du mot « Parisis » et que l'ordre etait alphabetique. */
+await pageDirect.getByLabel(/Où habitez-vous/).fill("paris");
+await pageDirect.waitForTimeout(300);
+const ordreParis = await pageDirect.evaluate(() =>
+  [...document.querySelectorAll(".entree .liste .puce")].map(e => e.innerText.split("\n")[0].trim()));
+verif("recherche — le nom exact passe devant les noms qui le contiennent",
+  ordreParis[0] === "Paris", JSON.stringify(ordreParis.slice(0, 3)));
+
+await pageDirect.getByLabel(/Où habitez-vous/).fill("bagnolet");
+await pageDirect.waitForTimeout(300);
+await pageDirect.getByRole("button", { name: /Bagnolet/ }).click();
+await pageDirect.waitForTimeout(1500);
+const arrive = await pageDirect.evaluate(() => document.body.innerText);
+verif("parcours — un seul geste ouvre la commune, ses elus et son depute",
+  /Bagnolet/.test(arrive) && /Maire/.test(arrive) && /Assemblée nationale/.test(arrive),
+  arrive.slice(0, 160).replace(/\n+/g, " / "));
+
+/* L'INVARIANT N'A PAS ETE PAYE POUR CETTE COMMODITE. */
+const fautivesDirect = vues.filter(adresseFautive);
+verif("invariant 2 — l'entree par commune ne fait fuiter aucun code de commune",
+  fautivesDirect.length === 0 && vues.some(u => /\/data\/departments\/93\.json$/.test(u)),
+  vues.join(" "));
+await ctxDirect.close();
+
 console.log("\n--- recherche et accents -------------------------------------");
 /* LA RECHERCHE NE DOIT PAS DEPENDRE DES ACCENTS, DANS LES DEUX SENS. Depuis que
    les libelles portent leur orthographe officielle, une comparaison brute
@@ -395,7 +461,7 @@ console.log("\n--- recherche et accents -------------------------------------");
    etait deja vrai avant. On mesure les deux graphies sur la meme commune. */
 const pageAcc = await (await nav.newContext()).newPage();
 await pageAcc.goto(base, { waitUntil: "networkidle" });
-await pageAcc.getByLabel(/Votre département/).fill("essonne");
+await pageAcc.getByLabel(/Où habitez-vous/).fill("essonne");
 await pageAcc.getByRole("button", { name: /^91 / }).click();
 const graphies = {};
 for (const q of ["evry", "Évry", "EVRY"]) {
@@ -418,6 +484,8 @@ console.log("\n--- mouvement reduit -----------------------------------------");
 const ctxCalme = await nav.newContext({ reducedMotion: "reduce" });
 const pageCalme = await ctxCalme.newPage();
 await pageCalme.goto(base, { waitUntil: "networkidle" });
+await pageCalme.getByLabel(/Où habitez-vous/).fill("64");
+await pageCalme.waitForTimeout(200);
 await pageCalme.getByRole("button", { name: /^64\b/ }).click();
 await pageCalme.getByLabel(/Votre commune/).fill("Ustaritz");
 await pageCalme.getByRole("button", { name: "Ustaritz", exact: true }).click();
@@ -436,6 +504,91 @@ verif("accessibilite — mouvement reduit : le contenu est visible d'emblee",
   !calme.absent && calme.opacite === "1" && calme.visible, JSON.stringify(calme));
 await ctxCalme.close();
 
+console.log("\n--- tout le parcours, ecran par ecran ------------------------");
+/* LE CONTROLE DES CIBLES TACTILES NE MESURAIT QU'UN SEUL ECRAN — celui affiche a
+ * la fin du parcours. Mesure du 13/09/2026 : les dix liens « Scrutin n° … » et le
+ * lien de contact faisaient moins de 44 px, et il ne les avait jamais vus. Un
+ * controle qui ne regarde qu'un sixieme du produit ne garde rien.
+ *
+ * Il mesure donc maintenant LES SIX ECRANS, et deux regles a la fois : la zone
+ * d'appui de 44 px, et le plancher typographique de 13 px — 46 a 63 % du texte
+ * etait sous 14 px avant cette version.
+ *
+ * `checkVisibility` et non le rectangle : les enfants d'un <details> ferme ont une
+ * boite sans etre visibles, et c'est ce qui avait fausse la premiere mesure du
+ * nombre de cibles a l'accueil (106 comptees, 2 reellement affichees). */
+const ctxTout = await nav.newContext({ viewport: { width: 390, height: 844 } });
+const pageTout = await ctxTout.newPage();
+const fautesCibles = [], fautesTexte = [];
+const auditerEcran = async (nom) => {
+  const d = await pageTout.evaluate(() => {
+    const vu = e => e.checkVisibility({ checkVisibilityCSS: true, contentVisibilityAuto: true });
+    const cibles = [...document.querySelectorAll("a[href], button, input, summary")]
+      .filter(vu)
+      .map(e => ({ t: (e.innerText || e.getAttribute("aria-label") || e.type || "").trim().slice(0, 24),
+                   h: Math.round(e.getBoundingClientRect().height) }))
+      .filter(e => e.h > 0 && e.h < 44);
+    const textes = [...document.querySelectorAll("body *")]
+      .filter(e => vu(e) && [...e.childNodes].some(n => n.nodeType === 3 && n.textContent.trim().length > 2))
+      .map(e => ({ px: parseFloat(getComputedStyle(e).fontSize), t: e.textContent.trim().slice(0, 24) }))
+      .filter(x => x.px < 13);
+    return { cibles, textes };
+  });
+  for (const c of d.cibles) fautesCibles.push(nom + " : « " + c.t + " » " + c.h + "px");
+  for (const t of d.textes) fautesTexte.push(nom + " : " + t.px + "px « " + t.t + " »");
+};
+await pageTout.goto(base, { waitUntil: "networkidle" });
+await auditerEcran("accueil");
+await pageTout.getByLabel(/Où habitez-vous/).fill("bagnolet");
+await pageTout.waitForTimeout(300);
+await auditerEcran("recherche");
+await pageTout.getByRole("button", { name: /Bagnolet/ }).click();
+await pageTout.waitForTimeout(1500);
+await auditerEcran("qui decide");
+await pageTout.getByRole("button", { name: /Comment .+ a voté/ }).click();
+await pageTout.waitForTimeout(1300);
+await auditerEcran("votes");
+
+/* LE RETOUR DU TELEPHONE, MESURE POUR DE VRAI. Sans lui, le geste le plus courant
+   d'Android ferme l'application installee. On verifie aussi que l'adresse n'a pas
+   bouge : une URL par commune mettrait la commune consultee dans l'historique. */
+const urlAvant = pageTout.url();
+await pageTout.goBack();
+await pageTout.waitForTimeout(600);
+const apresRetour = await pageTout.evaluate(() => ({
+  votes: !!document.querySelector(".votes"),
+  texte: document.body.innerText.slice(0, 400),
+}));
+verif("navigation — le retour du telephone replie les votes au lieu de quitter",
+  !apresRetour.votes && /Bagnolet/.test(apresRetour.texte),
+  JSON.stringify(apresRetour).slice(0, 160));
+await pageTout.goBack();
+await pageTout.waitForTimeout(700);
+const retourEntree = await pageTout.evaluate(() => document.body.innerText);
+verif("navigation — un second retour ramene a l'ecran d'entree, l'application reste ouverte",
+  /Où habitez-vous/.test(retourEntree) && !pageTout.isClosed(),
+  retourEntree.slice(0, 120).replace(/\n+/g, " / "));
+verif("invariant 2 — le retour ne fait jamais apparaitre la commune dans l'adresse",
+  pageTout.url() === urlAvant && !/bagnolet|9300/i.test(pageTout.url()), pageTout.url());
+
+/* Les deux ecrans restants se mesurent apres, en revenant sur la commune. */
+await pageTout.getByLabel(/Où habitez-vous/).fill("bagnolet");
+await pageTout.waitForTimeout(300);
+await pageTout.getByRole("button", { name: /Bagnolet/ }).click();
+await pageTout.waitForTimeout(1400);
+await pageTout.getByRole("button", { name: "Où va l'argent" }).click();
+await pageTout.waitForTimeout(900);
+await auditerEcran("ou va l'argent");
+await pageTout.getByRole("button", { name: "Sources" }).click();
+await pageTout.waitForTimeout(800);
+await auditerEcran("sources");
+
+verif("accessibilite — sur les six ecrans, toute cible tactile mesure au moins 44 px",
+  fautesCibles.length === 0, fautesCibles.slice(0, 4).join(" | "));
+verif("lisibilite — sur les six ecrans, aucun texte porteur de sens sous 13 px",
+  fautesTexte.length === 0, fautesTexte.slice(0, 4).join(" | "));
+await ctxTout.close();
+
 console.log("\n--- theme sombre ---------------------------------------------");
 /* LE THEME SOMBRE EST UN VRAI RENDU, PAS UNE VARIANTE. Mesure : le titre « A
    l'Assemblee nationale » y avait un rapport de contraste de 1,02 sur le fond de
@@ -446,6 +599,8 @@ const erreursSombre = [];
 pageSombre.on("pageerror", e => erreursSombre.push(e.message));
 await pageSombre.goto(base, { waitUntil: "networkidle" });
 await pageSombre.waitForTimeout(1000);
+await pageSombre.getByLabel(/Où habitez-vous/).fill("64");
+await pageSombre.waitForTimeout(200);
 await pageSombre.getByRole("button", { name: /^64\b/ }).click();
 await pageSombre.waitForTimeout(1600);
 await pageSombre.getByLabel(/Votre commune/).fill("Ustaritz");

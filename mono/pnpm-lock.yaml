@@ -23,6 +23,9 @@ importers:
       '@fastify/static':
         specifier: ^7.0.4
         version: 7.0.4
+      '@repere/data-utils':
+        specifier: workspace:*
+        version: link:../../packages/data-utils
       fastify:
         specifier: ^4.28.1
         version: 4.29.1

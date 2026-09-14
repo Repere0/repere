@@ -233,7 +233,7 @@ test("invariant 4 — aucune donnée n'est servie sans source déclarée", () =>
   const client = lire("packages/data-utils/src/client.js");
   const composees = [...client.matchAll(/\$\{BASE_DONNEES\}(\/[A-Za-z0-9_${}./-]*)/g)].map(m => m[1]);
   assert.deepEqual([...new Set(composees)].sort(),
-    ["/departments/${d}.json", "/deputes.json", "/index.json",
+    ["/communes-beta.json", "/departments/${d}.json", "/deputes.json", "/index.json",
      "/scrutins.json", "/scrutins/${d}.json"],
     "client.js compose une adresse de donnees inattendue : " + composees.join(", "));
   const sources = existe("data/index.json") ? (JSON.parse(lire("data/index.json")).sources || {}) : {};
@@ -863,4 +863,102 @@ test("invariant 4 — toute source déclarée dans l'index est affichée sur l'�
   const absentes = declarees.filter(k => !new RegExp("s\\." + k + "\\b").test(ecran));
   assert.deepEqual(absentes, [],
     "une source declaree n'apparait pas sur l'ecran Sources : " + absentes.join(", "));
+});
+
+test("PWA — l'application est installable sur Android comme sur iOS", () => {
+  /* « Telechargeable » n'est pas une metaphore : pour le banc de decembre, chacun
+     doit pouvoir poser Repere sur son ecran d'accueil et l'ouvrir comme une
+     application. Android lit le manifeste ; iOS, lui, IGNORE `display: standalone`
+     et n'obeit qu'a des metas marquees obsoletes. Sans elles, l'icone posee sur un
+     iPhone rouvre Safari avec sa barre d'adresse — la moitie d'un banc de dix
+     personnes verrait une page web la ou l'autre moitie voit une application. */
+  const m = JSON.parse(lire("apps/web/public/manifest.webmanifest"));
+  for (const champ of ["name", "short_name", "start_url", "scope", "id", "display", "icons"]) {
+    assert.ok(m[champ], `le manifeste ne declare pas « ${champ} »`);
+  }
+  assert.ok(["standalone", "fullscreen", "minimal-ui"].includes(m.display),
+    `display « ${m.display} » : le navigateur ne proposera pas l'installation`);
+  const tailles = m.icons.map(i => i.sizes);
+  for (const t of ["192x192", "512x512"]) {
+    assert.ok(tailles.includes(t), `le manifeste n'a pas d'icone ${t} : Android refuse l'installation`);
+  }
+  assert.ok(m.icons.some(i => i.purpose === "maskable"),
+    "aucune icone maskable : Android rognera l'icone n'importe comment");
+
+  const html = lire("apps/web/index.html");
+  assert.match(html, /rel="manifest"/, "la page ne lie pas le manifeste");
+  assert.match(html, /rel="apple-touch-icon"/,
+    "sans apple-touch-icon, iOS met une capture d'ecran a la place de l'icone");
+  assert.match(html, /name="apple-mobile-web-app-capable" content="yes"/,
+    "sans cette meta, l'icone posee sur un iPhone rouvre Safari au lieu de l'application");
+
+  /* Un service worker sans reponse au fetch n'est pas un service worker : le
+     navigateur ne propose pas l'installation, et rien ne marche hors ligne. */
+  assert.match(lire("apps/web/public/sw.js"), /addEventListener\(\s*["']fetch["']/,
+    "le service worker ne repond a aucune requete");
+});
+
+test("lisibilité — aucune règle CSS n'écrit sous le plancher typographique de 13 px", () => {
+  /* MESURE DU 13/09/2026, avant correction : 46 a 63 % du texte de chaque ecran
+     etait sous 14 px, avec des crans a 9,92 px (l'etiquette « donnee officielle »)
+     et 10,56 px (les intitules de tuiles). La regle du projet — « aucun texte
+     porteur de sens sous 13 px » — etait ecrite depuis le 20 aout et appliquee
+     nulle part. Le banc navigateur mesure le rendu ; celui-ci arrete la faute a
+     la source, avant qu'un ecran ne soit construit pour la voir. */
+  const PLANCHER = 0.8125;   /* 13 px pour une base de 16 */
+  const fautifs = [];
+  for (const f of sourcesEcrites().filter(f => f.endsWith(".css"))) {
+    const css = lire(f);
+    for (const m of css.matchAll(/font-size:\s*([0-9.]+)rem/g)) {
+      if (parseFloat(m[1]) < PLANCHER) fautifs.push(`${f} : ${m[1]}rem`);
+    }
+    for (const m of css.matchAll(/font-size:\s*([0-9.]+)px/g)) {
+      if (parseFloat(m[1]) < 13) fautifs.push(`${f} : ${m[1]}px`);
+    }
+  }
+  assert.deepEqual(fautifs, [],
+    "du texte est ecrit sous 13 px : " + fautifs.slice(0, 4).join(", "));
+});
+
+test("bêta — la liste des départements est écrite à un seul endroit", () => {
+  /* L'extraction et le banc portaient chacun leur liste des huit departements.
+     Deux listes qui divergent produiraient un index incomplet que rien ne verrait
+     — l'index de la beta serait publie sans une commune, et le controle qui le
+     verifie chercherait la meme commune manquante. */
+  const extrait = /const BETA = \[([^\]]+)\]/.exec(lire("scripts/extract-html.js"));
+  assert.ok(extrait, "scripts/extract-html.js ne declare plus la liste de la beta");
+  const codes = extrait[1].match(/"(\d{2,3})"/g).map(x => x.replace(/"/g, ""));
+  assert.deepEqual(codes.slice().sort(), BETA_IDF.slice().sort(),
+    "la liste de la beta du banc et celle de l'extraction ont diverge");
+});
+
+test("produit — chaque échelon affiché dit ce qu'il décide", () => {
+  /* Le produit nommait un maire et un depute sans jamais dire sur quoi chacun a
+     du pouvoir : deux noms sans competence sont deux noms. Ces phrases ne
+     dependent d'aucune donnee — c'est la loi qui les fixe — mais leur absence
+     rendait l'ecran inutilisable pour qui ne connait pas les institutions. */
+  const src = lire("apps/web/src/routes/QuiDecide.jsx");
+  for (const echelon of ["ville", "agglo", "dept", "region", "france"]) {
+    assert.match(src, new RegExp(echelon + ":\\s*\"[^\"]{30,}\""),
+      `l'echelon « ${echelon} » n'a pas de phrase de competence`);
+  }
+  assert.match(src, /ordre de distance/i,
+    "l'ordre des echelons n'est pas explique a l'ecran : le premier passerait pour le plus important");
+});
+
+test("votes — les lois sont distinguées des votes de détail", () => {
+  if (!existe("data/scrutins.json")) return;
+  /* 89 % des scrutins publies sont des amendements ou des motions, et 66 sur 80
+     portent sur un seul texte. Sans cette distinction, l'ecran le plus important
+     du produit sert du Journal officiel. La source la porte : `typeVote`. */
+  const cat = litData("scrutins.json");
+  const solennels = cat.scrutins.filter(s => /solennel/i.test(s.tv || ""));
+  assert.ok(solennels.length > 0,
+    "aucun scrutin solennel dans le catalogue : l'ecran n'aurait aucune loi a montrer");
+  for (const s of solennels) {
+    assert.match(s.t, /^l'ensemble/i,
+      `le scrutin solennel ${s.n} ne porte pas sur l'ensemble d'un texte : la regle de tri ne tient plus`);
+  }
+  assert.match(lire("apps/web/src/routes/QuiDecide.jsx"), /solennel/i,
+    "l'ecran des votes ne distingue plus les lois des votes de detail");
 });

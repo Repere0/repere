@@ -128,6 +128,10 @@ function nomsOfficiels() {
   return d;
 }
 
+/* LES HUIT DEPARTEMENTS DE LA BETA. Ecrits une fois, ici, et repris par le banc :
+   deux listes qui divergent produiraient un index incomplet que rien ne verrait. */
+const BETA = ["75", "77", "78", "91", "92", "93", "94", "95"];
+
 const ENTREE = process.argv[2] || "./input/index.html";
 const SORTIE = process.argv[3] || "./data";
 
@@ -484,6 +488,64 @@ async function extraire() {
     }
     console.log("communes -> position  : " + chaines
       + (horsCommunes.length ? "  (sans commune : " + horsCommunes.join(", ") + ")" : ""));
+  }
+
+  /* L'INDEX DE LA BETA : CHERCHER SA COMMUNE SANS SAVOIR SON DEPARTEMENT.
+   *
+   * MESURE DU 13/09/2026 : entre l'ouverture et « je sais comment mon depute a
+   * vote », il y avait dix etapes, dont TROIS n'existaient que parce que les
+   * fichiers sont decoupes par departement — il fallait savoir qu'on habite
+   * « dans le 93 » avant de pouvoir taper « Bagnolet ». Personne ne pense comme
+   * ca. Le decoupage des donnees avait fuite dans l'interface.
+   *
+   * CE FICHIER LE REPARE SANS RIEN CHANGER AU DECOUPAGE. Il porte le nom et le
+   * code de chaque commune des huit departements de la beta ; l'ecran cherche
+   * dedans, en deduit le DEPARTEMENT, et demande le fichier departemental
+   * habituel. Le serveur n'apprend donc toujours que le departement — l'invariant
+   * tient, et il est garde par le controle des adresses.
+   *
+   * POURQUOI L'ILE-DE-FRANCE SEULEMENT, mesure a l'appui : 1 262 communes pesent
+   * 11 Ko compresses, la France entiere en pesant 271. On ne fait pas payer
+   * 271 Ko au premier ecran de tout le monde pour supprimer une etape. Les autres
+   * departements gardent leur parcours actuel, qui n'est pas retire. */
+  let octetsBeta = 0;
+  if (BETA.length) {
+    const communesBeta = {};
+    for (const dep of BETA) {
+      const f = path.join(SORTIE, "departments", dep + ".json");
+      if (!fs.existsSync(f)) { console.warn(`::warning::departement ${dep} de la beta absent`); continue; }
+      for (const [insee, c] of Object.entries(JSON.parse(fs.readFileSync(f, "utf8")).communes)) {
+        communesBeta[insee] = c.nom;
+      }
+    }
+    octetsBeta = ecrire(path.join(SORTIE, "communes-beta.json"), {
+      v: 1,
+      /* Le departement se DEDUIT du code INSEE, il n'est pas stocke : deux
+         caracteres par commune economises, et surtout une seule verite. */
+      departements: BETA,
+      source: index.sources.communes || null,
+      communes: communesBeta,
+    });
+
+    /* CONTROLE INDEPENDANT : on relit le fichier ecrit et on refait le trajet
+       complet pour une commune de chaque departement de la beta. */
+    const relu = JSON.parse(fs.readFileSync(path.join(SORTIE, "communes-beta.json"), "utf8"));
+    const codes = Object.keys(relu.communes);
+    const horsBeta = codes.filter(c => !BETA.includes(c.slice(0, 2)));
+    if (horsBeta.length) {
+      console.error("l'index de la beta porte des communes hors beta : " + horsBeta.slice(0, 3).join(", "));
+      process.exit(10);
+    }
+    for (const dep of BETA) {
+      const attendues = Object.keys(JSON.parse(fs.readFileSync(path.join(SORTIE, "departments", dep + ".json"), "utf8")).communes);
+      const dedans = codes.filter(c => c.slice(0, 2) === dep);
+      if (dedans.length !== attendues.length) {
+        console.error(`index de la beta : ${dedans.length} communes pour ${attendues.length} dans le departement ${dep}`);
+        process.exit(10);
+      }
+    }
+    console.log("index de la beta      : " + Math.round(octetsBeta / 1024) + " Ko, "
+      + codes.length + " communes sur " + BETA.length + " departements");
   }
 
   const sansNom = index.departements.filter(d => !d.nom).map(d => d.code);

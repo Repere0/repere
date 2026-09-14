@@ -2,6 +2,8 @@
 rem ============================================================================
 rem  Repere - envoie au depot ce qui a change, sans rien te demander.
 rem
+rem  VERSION 6 (13/09/2026) - voir le bloc de l etape 1 : plus de rebase sur main
+rem  depuis une branche de travail.
 rem  VERSION 3 (26/08/2026) - voir le bloc de l etape 3.
 rem  VERSION 2 (20/08/2026). Ce que la version 1 avait rate :
 rem  le journal etait ecrit DANS le depot et suivi par git. Au moment du rebase,
@@ -23,6 +25,75 @@ rem de la reference est le cas NORMAL, pas une erreur.
 git update-ref -d MERGE_AUTOSTASH 2>nul
 
 echo [1/4] Recuperation des commits du robot...
+rem ---------------------------------------------------------------------------
+rem VERSION 6 (13/09/2026). LA VERSION 5 A BLOQUE LE DEPOT PENDANT DES HEURES.
+rem
+rem Elle faisait « git pull --rebase origin main » A CHAQUE EXECUTION, quelle que
+rem soit la branche courante. Tant que main suivait la branche de travail, ca ne
+rem se voyait pas. Le 13/09, un commit a ete pousse sur main : chaque passage
+rem horaire s est alors mis a rebaser les DIX commits de la branche sur main. A
+rem 4h38 le rebase a bute sur un conflit dans App.jsx, a l etape 2 sur 10, et a
+rem laisse le depot EN COURS DE REBASE — HEAD detache, quatre marqueurs de
+rem conflit dans un fichier source, plus rien de commitable ni d envoyable. Les
+rem executions suivantes ont toutes echoue sur « ECHEC pull ».
+rem
+rem LA REGLE : une tache automatique ne rebase JAMAIS une branche de travail sur
+rem une autre branche. Sur main, on se met a jour comme avant. Ailleurs, on se
+rem contente de recuperer les objets — fetch ne touche a rien — et on se rebase
+rem sur SON PROPRE amont, celui de la branche, ou sur rien s il n existe pas.
+rem Integrer main dans une branche est une decision, pas une routine horaire.
+rem ---------------------------------------------------------------------------
+git rev-parse --abbrev-ref HEAD > "%TEMP%\repere_branche.txt" 2>nul
+set /p BRANCHE=< "%TEMP%\repere_branche.txt"
+echo branche : %BRANCHE%>> "%JOURNAL%"
+
+rem ---------------------------------------------------------------------------
+rem VERSION 7 (13/09/2026) : MAIN EST PROTEGEE CONTRE CE SCRIPT.
+rem
+rem Mesure, le jour meme : un script d entretien a laisse le depot sur main. La
+rem tache horaire s y est executee, y a commite un fichier et l a pousse — main a
+rem avance SANS la branche de travail, et l avance rapide de main est redevenue
+rem impossible. C est un cercle : chaque heure passee sur main eloigne un peu plus
+rem les deux.
+rem
+rem La regle est desormais explicite : AUCUNE TACHE AUTOMATIQUE NE COMMITE SUR
+rem MAIN. Sur main, ce script se met a jour et s arrete. Fusionner une branche
+rem dans main est une decision, et une decision se prend a la main.
+rem ---------------------------------------------------------------------------
+if /I not "%BRANCHE%"=="main" goto :pas_main
+echo.
+echo   Le depot est sur MAIN. Ce script ne commite jamais sur main.
+echo   Remets-toi sur ta branche de travail :
+echo       git checkout audit-finalisation-repere
+echo.
+echo REFUS : depot sur main, aucun commit automatique>> "%JOURNAL%"
+git fetch origin >> "%JOURNAL%" 2>&1
+git status --porcelain >> "%JOURNAL%" 2>&1
+timeout /t 20 >nul
+exit /b 0
+:pas_main
+
+rem --- branche de travail : fetch seulement, puis rebase sur son propre amont
+git fetch origin >> "%JOURNAL%" 2>&1
+if errorlevel 1 (
+  echo ECHEC : la recuperation a echoue. Rien n a ete envoye.
+  echo ECHEC fetch>> "%JOURNAL%"
+  timeout /t 15 >nul
+  exit /b 1
+)
+git rev-parse --abbrev-ref --symbolic-full-name @{u} >nul 2>&1
+if errorlevel 1 goto :apres_maj
+git pull --rebase --autostash >> "%JOURNAL%" 2>&1
+if errorlevel 1 (
+  echo ECHEC : la mise a jour de la branche a echoue. Rien n a ete envoye.
+  echo Lance « git rebase --abort » puis previens Claude.
+  echo ECHEC rebase sur l amont>> "%JOURNAL%"
+  timeout /t 15 >nul
+  exit /b 1
+)
+goto :apres_maj
+
+:maj_main
 git pull --rebase --autostash origin main >> "%JOURNAL%" 2>&1
 if errorlevel 1 (
   echo ECHEC : la recuperation a echoue. Rien n a ete envoye.
@@ -31,6 +102,7 @@ if errorlevel 1 (
   timeout /t 15 >nul
   exit /b 1
 )
+:apres_maj
 
 echo [2/4] Preparation des changements...
 rem ---------------------------------------------------------------------------

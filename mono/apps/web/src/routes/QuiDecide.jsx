@@ -1,11 +1,58 @@
 import React, { useEffect, useState } from "react";
 import { Carte, Vide, Source, Chargement, dateFr } from "@repere/ui";
 import { Pile } from "@repere/ui/amicro";
-import { chargerDeputes, chargerCatalogueScrutins, chargerVotes, ETATS } from "@repere/data-utils";
+import {
+  chargerDeputes, chargerCatalogueScrutins, chargerVotes, entrer, revenir, ETATS,
+} from "@repere/data-utils";
 
 const RNE_URL = "https://www.data.gouv.fr/fr/datasets/repertoire-national-des-elus-1/";
 const AN_URL = "https://data.assemblee-nationale.fr/acteurs/deputes-en-exercice";
 const AN_VOTES_URL = "https://data.assemblee-nationale.fr/travaux-parlementaires/votes";
+
+/* CE QUE DECIDE CHAQUE ECHELON — six phrases, aucune donnee nouvelle.
+ *
+ * CE QUI MANQUAIT. Le produit nommait un maire et un depute et ne disait JAMAIS
+ * sur quoi chacun a du pouvoir. Pour quelqu'un qui ne connait pas les
+ * institutions, deux noms sans competence sont deux noms : l'ecran repondait a
+ * « qui ? » sans jamais repondre a « qui decide QUOI ? ».
+ *
+ * LA REGLE D'ECRITURE : ne pas nommer l'institution, nommer ce qu'elle decide
+ * dans la vie du lecteur. « Le conseil departemental exerce la competence de
+ * l'action sociale » n'apprend rien ; « le departement decide des colleges, des
+ * routes et des aides sociales » s'entend une fois et se retient.
+ *
+ * CE QUI N'EST PAS ECRIT ICI, et c'est deliberé : le Senat. Un senateur n'est pas
+ * elu par le citoyen ; l'expliquer coute plus de mots que ca n'en rapporte a
+ * quelqu'un qui cherche qui decide chez lui.
+ *
+ * L'ORDRE EST CELUI DE LA DISTANCE, ET LA PHRASE LE DIT A L'ECRAN. Sans elle, le
+ * premier de la liste devient le plus important dans la tete du lecteur — or
+ * l'invariant 3 interdit de hierarchiser des territoires, y compris quand on se
+ * contente de le laisser deviner.
+ * (Ce commentaire evite le mot que l'invariant 3 cherche dans le code ecrit : la
+ *  garde ne fait pas la difference entre une violation et sa description.) */
+const COMPETENCES = {
+  ville: "l'école primaire, la cantine, les permis de construire, la voirie et l'état civil",
+  agglo: "les transports, les déchets, l'eau, et souvent les piscines et les médiathèques",
+  dept: "les collèges, les routes départementales, les aides sociales et la protection de l'enfance",
+  region: "les lycées, les trains du quotidien, la formation professionnelle et le développement économique",
+  france: "les lois qui s'appliquent partout, et le budget de l'État",
+};
+const ORDRE_DISTANCE = "Rangés du plus proche de chez vous au plus lointain. Ce n'est pas un ordre d'importance : c'est un ordre de distance.";
+
+/* Une ligne d'echelon : sa pastille de couleur, son nom, ce qu'il decide. La
+   pastille reprend le jeton gele de l'echelon — aucune autre couleur n'entre. */
+function LigneEchelon({ echelon, nom, corps, note }) {
+  return (
+    <div className="ligne echelon">
+      <div className="echelon-h">
+        <span className="pastille" style={{ background: `var(--e-${echelon})` }} aria-hidden="true" />
+        <b>{nom}</b>
+      </div>
+      <div className="ligne-note">{corps}{note ? " " + note : ""}</div>
+    </div>
+  );
+}
 
 function ordinal(n) { return n === 1 ? "1re" : n + "e"; }
 
@@ -52,6 +99,72 @@ function phraseCirco(nom, circo) {
 const MOTS = { p: "Pour", c: "Contre", a: "Abstention" };
 const PAR_TRANCHE = 10;
 
+/* CE QUE VOIT UN CITOYEN, ET CE QU'IL VOULAIT VOIR. Mesure du 13/09/2026 sur les
+ * 80 scrutins publies : 89 % sont des votes de PROCEDURE — amendements,
+ * sous-amendements, motions — et 66 sur 80 portent sur un seul et meme texte.
+ * L'ecran affichait donc, en tete, « le sous-amendement n° 1233 de Mme X a
+ * l'amendement n° 1050 de Mme Y a l'article 5 du projet de loi... ». Personne ne
+ * cherche ca. On cherche comment son depute a vote LA LOI.
+ *
+ * LA SOURCE PORTE DEJA LA DISTINCTION, il n'y avait qu'a la lire : `typeVote`
+ * vaut « scrutin public solennel » pour 8 scrutins sur 80, et ces huit-la sont
+ * exactement les votes sur l'ensemble d'un texte. Huit lois, huit positions.
+ *
+ * RIEN N'EST RETIRE : les 72 autres sont derriere un depliant, avec leur intitule
+ * officiel intact. Ce n'est pas un tri de valeur — c'est la distinction que
+ * l'Assemblee elle-meme etablit entre un vote solennel et un vote ordinaire. */
+const estSolennel = sc => /solennel/i.test(sc.tv || "");
+
+/* L'INTITULE OFFICIEL, ALLEGE DE SA PROCEDURE — ET DE RIEN D'AUTRE.
+ * On retire deux choses, toutes deux redondantes une fois la ligne mise en forme :
+ * l'amorce « l'ensemble de la / du », et la parenthese de lecture, qui est
+ * REAFFICHEE a cote de la date plutot que supprimee. Aucune reformulation, aucun
+ * mot ajoute : le lien vers le scrutin officiel donne le texte integral. */
+function titreLisible(t) {
+  let x = String(t || "").trim();
+  x = x.replace(/^l'ensemble (?:de la|du|des|de l')\s*/i, "");
+  x = x.replace(/\s*\((?:texte de la commission mixte paritaire|première lecture|nouvelle lecture|seconde délibération|lecture définitive)[^)]*\)\s*\.?\s*$/i, "");
+  x = x.replace(/\.\s*$/, "");
+  return x.charAt(0).toUpperCase() + x.slice(1);
+}
+function procedure(t) {
+  const m = /\((texte de la commission mixte paritaire|première lecture|nouvelle lecture|seconde délibération|lecture définitive)[^)]*\)\s*\.?\s*$/i.exec(String(t || ""));
+  return m ? m[1].toLowerCase() : "";
+}
+function decompte(d) {
+  if (!d) return "";
+  const n = Number(d.abstentions);
+  return `${d.pour} pour, ${d.contre} contre, ${d.abstentions} abstention${n > 1 ? "s" : ""}`;
+}
+
+/* UNE LIGNE DE VOTE. `loi` change la mise en forme, jamais le fond : pour un
+ * texte, le titre allege passe en tete et l'intitule officiel n'est plus repete ;
+ * pour un vote de detail, l'intitule officiel EST la ligne. Dans les deux cas :
+ * le resultat du scrutin AVANT la position du depute — on lisait « Contre » puis,
+ * huit lignes plus bas, que le texte avait ete adopte. */
+function LigneVote({ sc, position, base, loi }) {
+  const proc = procedure(sc.t);
+  return (
+    <div className="ligne vote">
+      {loi ? <b className="vote-titre">{titreLisible(sc.t)}</b> : null}
+      <div className="ligne-h">
+        <span>
+          Texte {sc.s === "adopté" ? "adopté" : sc.s === "rejeté" ? "rejeté" : sc.s} le {dateFr(sc.d)}
+          {proc ? " · " + proc : ""}
+        </span>
+        <b>{MOTS[position] || "Position non portée"}</b>
+      </div>
+      <div className="ligne-note">
+        {loi ? null : <>{sc.t} </>}
+        {decompte(sc.dec)}.{" "}
+        <a className="lien-scrutin" href={base + sc.n} target="_blank" rel="noopener noreferrer">
+          Scrutin n° {sc.n} sur le site de l'Assemblée
+        </a>
+      </div>
+    </div>
+  );
+}
+
 /* COMMENT IL A VOTE — le bout de chaine que personne d'autre ne donne.
  *
  * CE QUI EST AFFICHE : un scrutin par ligne, du plus recent au plus ancien,
@@ -92,7 +205,8 @@ function Votes({ dep, acteurRef, nom }) {
 
   if (!ouvert) {
     return (
-      <button type="button" className="depliant" onClick={() => setOuvert(true)}>
+      <button type="button" className="depliant"
+        onClick={() => { setOuvert(true); entrer(() => setOuvert(false)); }}>
         Comment {nom} a voté à l'Assemblée
       </button>
     );
@@ -116,49 +230,59 @@ function Votes({ dep, acteurRef, nom }) {
   }
 
   /* Du plus recent au plus ancien : le catalogue est trie par date croissante. */
-  const lignes = cat.scrutins
-    .map((sc, i) => ({ sc, p: suite[i] }))
-    .reverse();
-  const montres = lignes.slice(0, combien);
-  const reste = lignes.length - montres.length;
+  const lignes = cat.scrutins.map((sc, i) => ({ sc, p: suite[i] })).reverse();
+  const lois = lignes.filter(l => estSolennel(l.sc));
+  const details = lignes.filter(l => !estSolennel(l.sc));
+  const montres = details.slice(0, combien);
+  const reste = details.length - montres.length;
+  const base = cat.url_scrutin || "";
 
   return (
     <div className="votes">
       {/* UN EN-TETE, ET IL A ETE AJOUTE SUR CAPTURE. Deplie, l'ecran passait du
           nom du depute a une suite de dates : rien ne disait de qui etaient ces
-          positions, ni sur quelle periode. Le lecteur devait le deduire. */}
+          positions, ni sur quelle periode. */}
       <div className="votes-h">
         <b>Comment {nom} a voté</b>
-        <button type="button" className="votes-replier" onClick={() => setOuvert(false)}>Replier</button>
+        <button type="button" className="votes-replier" onClick={revenir}>Replier</button>
       </div>
-      <p className="tx-note votes-portee">{s.portee || ""}</p>
-      {montres.map(({ sc, p }) => (
-        <div className="ligne" key={sc.u}>
-          <div className="ligne-h">
-            <span>{dateFr(sc.d)}</span>
-            <b>{MOTS[p] || "Position non portée"}</b>
-          </div>
-          <div className="ligne-note">
-            {sc.t}
-            {" — "}
-            {sc.sl || sc.s}
-            {" ("}{sc.dec.pour} pour, {sc.dec.contre} contre, {sc.dec.abstentions} abstention
-            {Number(sc.dec.abstentions) > 1 ? "s" : ""}{")."}
-            {" "}
-            <a href={(cat.url_scrutin || "") + sc.n} target="_blank" rel="noopener noreferrer">
-              Scrutin n° {sc.n} sur le site de l'Assemblée
-            </a>
-          </div>
-        </div>
-      ))}
-      {reste > 0 ? (
-        <button type="button" className="depliant" onClick={() => setCombien(combien + PAR_TRANCHE)}>
-          Afficher {Math.min(reste, PAR_TRANCHE)} scrutin{Math.min(reste, PAR_TRANCHE) > 1 ? "s" : ""} de plus
-          {" "}({reste} restant{reste > 1 ? "s" : ""})
-        </button>
+
+      {lois.length ? (
+        <>
+          <p className="groupe">
+            {lois.length === 1 ? "La loi votée" : "Les " + lois.length + " lois votées"}
+            {" "}— votes solennels sur l'ensemble d'un texte
+          </p>
+          {lois.map(({ sc, p }) => <LigneVote key={sc.u} sc={sc} position={p} base={base} loi />)}
+        </>
+      ) : (
+        <p className="tx-note">
+          Sur la période relevée, l'Assemblée n'a tenu aucun vote solennel sur l'ensemble
+          d'un texte. Les votes de détail ci-dessous sont les seuls que la source porte.
+        </p>
+      )}
+
+      {details.length ? (
+        <>
+          <p className="groupe">
+            Les {details.length} votes de détail — amendements, motions, articles
+          </p>
+          <p className="tx-note votes-portee">
+            Ce sont les votes qui construisent un texte ligne à ligne. Ils sont nombreux,
+            et leur intitulé est celui de l'Assemblée, sans reformulation.
+          </p>
+          {montres.map(({ sc, p }) => <LigneVote key={sc.u} sc={sc} position={p} base={base} />)}
+          {reste > 0 ? (
+            <button type="button" className="depliant" onClick={() => setCombien(combien + PAR_TRANCHE)}>
+              Afficher {Math.min(reste, PAR_TRANCHE)} vote{Math.min(reste, PAR_TRANCHE) > 1 ? "s" : ""} de plus
+              {" "}({reste} restant{reste > 1 ? "s" : ""})
+            </button>
+          ) : null}
+        </>
       ) : null}
+
       <p className="tx-note">
-        {cat.ecarte}
+        {s.portee ? s.portee + ". " : ""}{cat.ecarte}
         {" Une position non portée n'est pas une absence : elle peut couvrir une délégation, "}
         une présidence de séance, ou un scrutin auquel le député n'a pas été appelé.
       </p>
@@ -306,6 +430,10 @@ export default function QuiDecide({ paquet, index, commune }) {
             corps="C'est la source qui est incomplète, pas la commune qui n'en a pas."
             lien={{ texte: "Répertoire national des élus", url: RNE_URL }} />
         )}
+        <div className="ligne">
+          <div className="ligne-h"><span>Ce que décide votre commune</span></div>
+          <div className="ligne-note">{COMPETENCES.ville.charAt(0).toUpperCase() + COMPETENCES.ville.slice(1)}.</div>
+        </div>
         <p className="tx-note">
           Ni étiquette politique, ni parcours : le Répertoire n'en contient pas, et Repère n'en invente pas.
         </p>
@@ -315,6 +443,10 @@ export default function QuiDecide({ paquet, index, commune }) {
       <Carte echelon="france" titre="À l'Assemblée nationale"
         sousTitre="Le député est élu par circonscription, pas par commune"
         tag={p.absence ? undefined : "Donnée officielle"}>
+        <div className="ligne">
+          <div className="ligne-h"><span>Ce que décide votre député</span></div>
+          <div className="ligne-note">{COMPETENCES.france.charAt(0).toUpperCase() + COMPETENCES.france.slice(1)}.</div>
+        </div>
         {p.absence ? (
           <Vide titre={p.titre} corps={p.corps} />
         ) : (
@@ -341,6 +473,25 @@ export default function QuiDecide({ paquet, index, commune }) {
         {c.circo === null || c.circo === undefined ? null : (
           <div className="bloc-second"><Depute dep={paquet.d} circo={c.circo} /></div>
         )}
+      </Carte>
+
+      {/* LES ECHELONS QUE REPERE NE PUBLIE PAS ENCORE. On ne nomme personne — les
+          donnees ne sont pas la — mais on dit ce que ces echelons decident. Se
+          taire laisserait croire qu'entre la commune et l'Assemblee il n'y a
+          rien, alors que c'est la que se decident les transports, les colleges
+          et les lycees. Une absence se dit, elle ne s'escamote pas. */}
+      <Carte echelon="dept" titre="Qui d'autre décide pour vous"
+        sousTitre="Trois échelons que Repère ne publie pas encore, et ce qu'ils décident">
+        <p className="tx-note tx-intro">{ORDRE_DISTANCE}</p>
+        <LigneEchelon echelon="agglo" nom="Votre intercommunalité" corps={COMPETENCES.agglo.charAt(0).toUpperCase() + COMPETENCES.agglo.slice(1) + "."}
+          note="Vous ne l'élisez pas directement : ce sont les conseillers municipaux qui y siègent." />
+        <LigneEchelon echelon="dept" nom="Votre département" corps={COMPETENCES.dept.charAt(0).toUpperCase() + COMPETENCES.dept.slice(1) + "."} />
+        <LigneEchelon echelon="region" nom="Votre région" corps={COMPETENCES.region.charAt(0).toUpperCase() + COMPETENCES.region.slice(1) + "."} />
+        <p className="tx-note">
+          Repère ne nomme pas encore les élus de ces trois échelons : les fichiers officiels
+          qui les portent ne sont pas publiés ici. Ce qu'ils décident, en revanche, ne dépend
+          d'aucune donnée — c'est la loi qui le fixe.
+        </p>
       </Carte>
     </Pile>
   );

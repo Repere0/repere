@@ -2,7 +2,7 @@
 .app { max-width: 820px; margin: 0 auto; padding: clamp(24px, 5vw, 56px) clamp(16px, 4vw, 32px) 88px; }
 
 .entete { border-bottom: 1px solid var(--trait); padding-bottom: 1.6rem; margin-bottom: 1.6rem; }
-.eyebrow { font-size: .72rem; font-weight: 700; letter-spacing: .14em; text-transform: uppercase;
+.eyebrow { font-size: .82rem; font-weight: 700; letter-spacing: .14em; text-transform: uppercase;
   color: var(--sourd); margin: 0 0 .7rem; }
 .chapeau { color: var(--sourd); max-width: 58ch; margin-bottom: 0; }
 .invite { color: var(--sourd); }
@@ -10,6 +10,25 @@
 .rangee { display: flex; flex-wrap: wrap; gap: calc(var(--pas) * 2); }
 .rangee.liste { max-height: 15rem; overflow-y: auto; padding: 2px; }
 .departements { margin-bottom: 1.4rem; }
+
+/* L'ECRAN D'ENTREE. Un champ, deux groupes de resultats, et le mur des 104
+   departements replie. Le libelle du champ est plus gros que les autres : c'est
+   la seule question que le produit pose. */
+.entree .champ > span { font-size: 1rem; color: var(--encre); }
+.entree .champ input { font-size: 1.05rem; }
+/* « Communes » / « Departements » : un intitule de groupe, pas un titre de
+   section — il n'entre pas dans le plan de la page pour un lecteur d'ecran, le
+   role="group" et son aria-label s'en chargent. */
+.groupe {
+  font-family: var(--t-titre); font-size: .82rem; font-weight: 700;
+  letter-spacing: .04em; color: var(--sourd); margin: 1rem 0 .45rem;
+}
+/* Dans une puce de commune, le departement est une precision, pas le nom. */
+.entree .liste .puce { max-width: 100%; }
+.entree .liste .puce .puce-code { font-size: .82rem; color: var(--sourd); font-family: var(--t-titre); }
+.entree .liste .puce.actif .puce-code { color: inherit; }
+.entree .liste .puce .puce-nom { color: var(--encre); font-weight: 600; }
+.entree .rangee.liste { max-height: 19rem; }
 /* Le choix du departement se replie une fois fait. Cent quatre pastilles
    deployees en permanence enterraient le contenu sous le moyen d'y acceder. */
 .choix { border: 1px solid var(--trait); border-radius: var(--r); background: var(--carte); }
@@ -63,7 +82,7 @@
 .onglet { border-radius: var(--r); white-space: nowrap; }
 
 .champ { display: block; margin-bottom: 1rem; }
-.champ > span { display: block; font-family: var(--t-titre); font-size: .78rem; font-weight: 600;
+.champ > span { display: block; font-family: var(--t-titre); font-size: .84rem; font-weight: 600;
   letter-spacing: .04em; color: var(--sourd); margin-bottom: .35rem; }
 .champ input {
   width: 100%; min-height: 44px; padding: .55rem .8rem; font: inherit;
@@ -92,10 +111,25 @@
 :root[data-theme="dark"] .carte h2,
 :root[data-theme="dark"] .tuile-v { color: var(--encre); }
 .carte-h { display: flex; align-items: flex-start; justify-content: space-between; gap: .8rem;
-  margin-bottom: .8rem; }
+  flex-wrap: wrap; margin-bottom: .8rem; }
+/* SUR UN TELEPHONE, L'ETIQUETTE PASSE SOUS LE TITRE. Vu sur capture apres le
+   relevement du plancher typographique : a 13 px, « DONNÉE OFFICIELLE » a cote du
+   titre reduisait « À l'Assemblée nationale » a trois lignes de trois mots. Le
+   titre reprend toute la largeur, l'etiquette se pose dessous — et l'ordre de
+   lecture reste celui du document, titre d'abord. */
+@media (max-width: 480px) {
+  .carte-h > div { flex: 1 1 100%; }
+  .carte-h .tag { align-self: flex-start; }
+}
 .carte-h h2 { margin: 0; }
 .carte-s { margin: .2rem 0 0; font-size: .86rem; color: var(--sourd); }
-.tag { font-family: var(--t-titre); font-size: .62rem; font-weight: 700; letter-spacing: .09em;
+/* PLANCHER TYPOGRAPHIQUE 13 px, POSE LE 13/09/2026 SUR MESURE. Sur les six
+   ecrans du parcours, 46 a 63 % du texte etait sous 14 px, avec des crans a
+   9,92 px (cette etiquette) et 10,56 px (les intitules de tuiles). La regle du
+   projet dit « aucun texte porteur de sens sous 13 px » ; elle etait ecrite et
+   n'etait appliquee nulle part. L'etiquette perd son interlettrage serre pour
+   tenir a cette taille sans pousser le titre de la carte a la ligne. */
+.tag { font-family: var(--t-titre); font-size: .8125rem; font-weight: 700; letter-spacing: .04em;
   text-transform: uppercase; padding: .3em .65em; border: 1px solid var(--encre);
   border-radius: 99px; white-space: nowrap; }
 
@@ -114,7 +148,7 @@
 .tuiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
   gap: .7rem; margin-top: .3rem; }
 .tuile { background: var(--voile); border-radius: 8px; padding: .75rem .85rem; }
-.tuile-k { display: block; font-size: .66rem; font-weight: 700; letter-spacing: .1em;
+.tuile-k { display: block; font-size: .8125rem; font-weight: 700; letter-spacing: .1em;
   text-transform: uppercase; color: var(--sourd); margin-bottom: .25rem; }
 .tuile-v { display: block; font-size: 1.15rem; font-weight: 700; letter-spacing: -.015em;
   font-variant-numeric: tabular-nums; line-height: 1.2; }
@@ -143,7 +177,7 @@
   .vide.charge b::after { animation: none; opacity: .6; }
 }
 
-.source, .tx-note { font-size: .8rem; color: var(--sourd); line-height: 1.5; margin: .8rem 0 0; }
+.source, .tx-note { font-size: .84rem; color: var(--sourd); line-height: 1.5; margin: .8rem 0 0; }
 /* Un lien de source est petit par nature, et il reste une cible tactile : on lui
    donne 44 px de haut sans casser le fil du paragraphe. Mesure a l'appui — il
    faisait 33 px, et le controle d'accessibilite l'a vu. */
@@ -175,5 +209,26 @@
 }
 .votes-replier:focus-visible { outline: 2px solid var(--e-national, #1d1d1f); outline-offset: 2px; }
 .votes-portee { margin: .2rem 0 .9rem; }
+/* LE TITRE DE LA LOI PASSE DEVANT LA DATE ET DEVANT LA POSITION. C'est le seul
+   endroit du produit ou une ligne de liste porte un titre : un vote solennel
+   n'est pas un element de plus dans une enumeration, c'est une loi. */
+.vote-titre { display: block; font-family: var(--t-titre); font-size: .98rem;
+  line-height: 1.35; margin-bottom: .3rem; }
+.votes .ligne.vote { margin-bottom: 1.1rem; }
+/* 44 px DE ZONE D'APPUI SANS CASSER LE FIL DU PARAGRAPHE. Mesure du 13/09 : les
+   dix liens « Scrutin n° … » faisaient moins de 44 px de haut, et le controle du
+   banc ne les voyait pas — il ne mesurait qu'un seul ecran. */
+.lien-scrutin { display: inline-block; min-height: 44px; line-height: 44px; }
+/* Le lien de contact est le SEUL canal de retour du produit — Repere ne mesure
+   rien. Il ne peut pas etre la seule cible de l'application trop petite pour un
+   pouce. */
+.tx-note a { display: inline-block; min-height: 44px; line-height: 44px; }
 .votes .ligne + .ligne { margin-top: 2px; }
 .votes a { color: inherit; }
+
+/* Les echelons : la pastille porte la couleur gelee de l'echelon, le nom la
+   suit. Aucune autre couleur, et la pastille n'est jamais seule porteuse de
+   sens — le nom est ecrit a cote. */
+.echelon-h { display: flex; align-items: baseline; gap: .5rem; }
+.echelon-h b { font-family: var(--t-titre); font-size: .95rem; }
+.ligne.echelon { margin-bottom: .9rem; }

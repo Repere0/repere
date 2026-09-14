@@ -31,6 +31,11 @@ export function adresseDeputes() { return `${BASE_DONNEES}/deputes.json`; }
    Commun a toute la France, demande une seule fois, et seulement par l'ecran
    qui affiche les votes. */
 export function adresseScrutins() { return `${BASE_DONNEES}/scrutins.json`; }
+/* L'INDEX DE LA BETA : nom de commune -> code INSEE, pour les huit departements
+   d'Ile-de-France. Il ne sert QU'A trouver un departement : le code INSEE ne
+   sort jamais de la memoire du navigateur, et aucune adresse n'est composee avec
+   lui. C'est ce que garde `adresseFautive`. */
+export function adresseCommunesBeta() { return `${BASE_DONNEES}/communes-beta.json`; }
 /* LES POSITIONS, PAR DEPARTEMENT — jamais par depute, jamais par commune. Une
    adresse par depute dirait au serveur quel elu on regarde, donc, a une
    circonscription pres, ou l'on habite. Deuxieme et derniere fabrique
@@ -197,6 +202,12 @@ export async function chargerDeputes({ delaiMs = 8000 } = {}) {
  *
  * Ils ne partent QUE si le lecteur deplie « Comment il a vote » : ni le premier
  * ecran, ni « Qui decide » a l'ouverture ne les demandent. */
+/* 11 Ko compresses, demandes au premier ecran et une seule fois. C'est ce qui
+   permet de taper « Bagnolet » sans savoir qu'on habite dans le 93 : voir la
+   mesure des dix etapes en tete de scripts/extract-html.js. */
+export async function chargerCommunesBeta({ delaiMs = 8000 } = {}) {
+  return chargerSocle("socle:CMB", adresseCommunesBeta(), delaiMs);
+}
 export async function chargerCatalogueScrutins({ delaiMs = 8000 } = {}) {
   return chargerSocle("socle:SCR", adresseScrutins(), delaiMs);
 }
