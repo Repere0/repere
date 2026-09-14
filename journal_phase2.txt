@@ -1,0 +1,13 @@
+===== appliquer_phase2 14/09/2026 16:16:48,85 =====
+--- [1] retour sur la branche de travail ---
+error: Your local changes to the following files would be overwritten by checkout:
+	pousser.bat
+Please commit your changes or stash them before you switch branches.
+Aborting
+===== ARRET SUR ERREUR =====
+main
+ M pousser.bat
+?? "Claude outputs/"
+?? _phase2/
+?? appliquer_phase2.bat
+?? journal_phase2.txt
