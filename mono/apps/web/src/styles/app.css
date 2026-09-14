@@ -159,8 +159,14 @@
   font-size: .92rem; line-height: 1.55; }
 .vide b { display: block; margin-bottom: .3rem; color: var(--encre); }
 .vide span { color: var(--sourd); }
+/* 44 px POUR LE LIEN D'UN ETAT VIDE, ET IL MANQUAIT DEPUIS TOUJOURS.
+   Le bouton portait `min-height: 44px`, le lien non : il n'atteignait 44 px que
+   lorsque son libelle passait a la ligne. Une phrase de vide plus courte, ecrite
+   le 14/09, l'a fait tomber a 41 px — et le controle des sept ecrans l'a vu. Tous
+   les etats vides du produit en beneficient, pas seulement le nouveau. */
 .vide a, .vide button { display: inline-block; margin-top: .55rem; font-family: var(--t-titre);
   font-size: .82rem; font-weight: 600; }
+.vide a { min-height: 44px; line-height: 44px; }
 .vide button { min-height: 44px; padding: .45rem .9rem; border: 1px solid var(--trait);
   border-radius: 99px; background: var(--carte); color: var(--encre); cursor: pointer; }
 .vide.charge b::after {
@@ -228,6 +234,14 @@
 .ligne.fait .groupe:first-child { margin-top: 1.4rem; }
 .ligne.fait:first-of-type .groupe:first-child { margin-top: .6rem; }
 .projets-note { margin: -.15rem 0 .55rem; }
+/* LA POSITION EST UNE PHRASE, PAS UNE CASE. Elle occupe sa propre ligne, en
+   pleine largeur, et ne se laisse pas scanner en colonne : voir le commentaire de
+   LigneVote dans lib/votes.jsx. Le gras porte le seul mot qui compte. */
+.vote-position { margin: .1rem 0 .35rem; font-size: .93rem; color: var(--sourd); }
+.vote-position b { color: var(--encre); }
+/* Le selecteur replie : un seul bouton, pleine largeur, 44 px garantis. */
+.choix-commune.replie { margin-bottom: 1rem; }
+.depliant-commune { width: 100%; text-align: left; }
 /* Le montant ne doit pas passer a la ligne au milieu d'un nombre. */
 .ligne.fait .ligne-h span { font-variant-numeric: tabular-nums; }
 /* 44 px DE ZONE D'APPUI SANS CASSER LE FIL DU PARAGRAPHE. Mesure du 13/09 : les

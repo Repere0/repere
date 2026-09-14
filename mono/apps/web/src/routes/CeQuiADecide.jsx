@@ -3,7 +3,7 @@ import { Carte, Vide, Source, Chargement, dateFr } from "@repere/ui";
 import {
   chargerProjets, chargerDeputes, chargerCatalogueScrutins, chargerVotes, ETATS,
 } from "@repere/data-utils";
-import { LigneVote, estSolennel } from "../lib/votes.jsx";
+import { LigneVote, estSolennel, positionsFiables, REFUS_APPARIEMENT } from "../lib/votes.jsx";
 
 const DGCL_URL = "https://www.data.gouv.fr/datasets/projets-finances-par-les-dotations-"
   + "de-soutien-a-linvestissement-des-collectivites-territoriales";
@@ -149,15 +149,31 @@ export default function CeQuiADecide({ paquet, index, commune }) {
   const circos = Array.isArray(fiche.circo) ? fiche.circo
                  : (fiche.circo === null || fiche.circo === undefined ? [] : [fiche.circo]);
   const base = (cat && cat.url_scrutin) || "";
-  if (cat && cat.scrutins && pos && pos.positions && deputes && deputes.deputes) {
+  const apparie = positionsFiables(cat, pos);
+  if (cat && cat.scrutins && pos && pos.positions && deputes && deputes.deputes && apparie) {
     for (const circo of circos) {
       const d = deputes.deputes[dep + "-" + circo];
       const suite = d && d.acteurRef ? pos.positions[d.acteurRef] : null;
       if (!suite) continue;
+      /* LE NOM COMPLET, ET JAMAIS LE PATRONYME SEUL.
+         Trouve par la red team le 14/09/2026, et c'etait une faute grave. Le
+         maire de Paris dans nos donnees est Emmanuel GREGOIRE ; la deputee de la
+         12e de Paris est Olivia Gregoire. L'ecran affichait « Gregoire a vote
+         Contre » : un lecteur parisien attribuait au MAIRE une position qu'il n'a
+         jamais emise. Deux personnes, deux familles politiques. Et 15 patronymes
+         sont partages par plusieurs deputes au national (Rousseau -> Sandrine
+         75-9 et Aurelien 78-7 ; Cazeneuve -> Jean-Rene 32-1 et Pierre 92-7).
+         Imputer publiquement a une personne identifiee une position qu'elle n'a
+         pas prise, c'est le terrain de la diffamation — et le prenom etait dans
+         le fichier, a cote, non utilise. */
+      const nomComplet = [d.prenom, d.nom].filter(Boolean).join(" ") || d.nom || "";
       cat.scrutins.forEach((sc, i) => {
         if (!estSolennel(sc)) return;          // les lois seulement : decision D-08
         faits.push({ cle: "v" + circo + sc.u, quand: sc.d, rang: 1, echelon: "france",
-                     type: "vote", sc, position: suite[i], qui: d.nom });
+                     /* `ref` et non le nom : deux deputes homonymes d'une commune a
+                        deux circonscriptions verraient sinon leurs votes fusionnes
+                        sous un seul en-tete. */
+                     type: "vote", sc, position: suite[i], qui: nomComplet, ref: d.acteurRef });
       });
     }
   }
@@ -181,22 +197,48 @@ export default function CeQuiADecide({ paquet, index, commune }) {
   }
 
   const nbProjets = faits.filter(f => f.type === "projet").length;
-  const nbVotes = faits.filter(f => f.type === "vote").length;
+  /* ON COMPTE DES TEXTES, PAS DES LIGNES. Paris a 18 circonscriptions : le fil
+     portait 18 x 8 = 144 « faits » de vote pour 8 textes, et l'annoncait. 118
+     communes en France elisent plusieurs deputes, et ce sont les plus peuplees.
+     `sc.u` est l'identifiant du scrutin : deux deputes qui votent le meme texte
+     produisent deux lignes et UN texte. */
+  const nbVotes = new Set(faits.filter(f => f.type === "vote").map(f => f.sc.u)).size;
+  const nbDeputes = new Set(faits.filter(f => f.type === "vote").map(f => f.ref)).size;
 
   return (
     <div className="pile">
+      {/* PLUS DE PASTILLE DE COMPTAGE. Elle affichait « 12 FAITS » a Aubervilliers
+          et « 8 FAITS » a Bagnolet : comme le nombre de votes est une constante
+          nationale, le total etait une fonction directe du nombre de projets. Un
+          chiffre unique, mis en exergue, qui classe les communes — exactement ce
+          que la decision D-13 interdit. La garde de l'invariant 3 cherche des mots
+          dans le code ; elle ne pouvait pas voir un nombre. */}
       <Carte echelon="ville" titre={`Ce qui a été décidé pour ${nomCommune}`}
-        sousTitre={ORDRE}
-        tag={faits.length + " fait" + (faits.length > 1 ? "s" : "")}>
+        sousTitre={ORDRE}>
         <p className="tx-note">
           {nbProjets ? `${nbProjets} projet${nbProjets > 1 ? "s" : ""} financé${nbProjets > 1 ? "s" : ""} par l'État` : ""}
           {nbProjets && nbVotes ? " et " : ""}
-          {nbVotes ? `${nbVotes} loi${nbVotes > 1 ? "s" : ""} votée${nbVotes > 1 ? "s" : ""} par votre député` : ""}
+          {nbVotes ? `${nbVotes} texte${nbVotes > 1 ? "s" : ""} voté${nbVotes > 1 ? "s" : ""} à l'Assemblée`
+            + (nbDeputes > 1 ? ` par vos ${nbDeputes} députés` : " par votre député") : ""}
           {". "}
           {nbProjets ? "L'État ne publie que l'année d'un projet, pas le jour : un projet est donc placé à la fin de son année. " : ""}
           Ce fil ne prétend pas dire tout ce qui a été décidé chez vous — il dit ce
           qui est publié en donnée ouverte, et d'où ça vient.
         </p>
+
+        {/* L'ABSENCE PARTIELLE PRODUIT UNE PHRASE, ELLE AUSSI.
+            La doctrine du vide n'etait honoree que pour l'absence TOTALE : si les
+            projets manquaient et que les votes arrivaient, aucune phrase ne le
+            disait. Un habitant de Bagnolet lisait un ecran de huit votes nationaux
+            sous un titre communal, et ne pouvait pas savoir si l'Etat n'avait rien
+            finance ou si Repere ne savait pas. C'est le contraire exact de ce que
+            l'invariant 5 demande, et c'est la faute la plus grave de cet ecran
+            apres l'imputation. */}
+        {!nbProjets ? (
+          <Vide titre={`Sur les exercices publiés, l'État n'a financé aucun projet à ${nomCommune}.`}
+            corps="Ce n'est pas un manque de Repère : le fichier de la Direction générale des collectivités locales ne porte aucune ligne pour cette commune sur ces exercices. Il en portera peut-être pour le suivant."
+            lien={{ texte: "Projets financés par l'État — données publiques", url: DGCL_URL }} />
+        ) : null}
 
         {faits.map((f, i) => {
           /* L'EN-TETE NE SE REPETE PAS, ET C'EST UNE CORRECTION SUR CAPTURE.
@@ -210,7 +252,7 @@ export default function CeQuiADecide({ paquet, index, commune }) {
              confondraient, et « a engage » ne dirait pas qui. */
           const prec = faits[i - 1];
           const nouvelle = !prec || prec.type !== f.type
-            || (f.type === "vote" && prec.qui !== f.qui);
+            || (f.type === "vote" && prec.ref !== f.ref);
           return (
             <div className="ligne fait" key={f.cle}>
               {nouvelle ? (
@@ -231,7 +273,7 @@ export default function CeQuiADecide({ paquet, index, commune }) {
               ) : null}
               {f.type === "projet"
                 ? <LigneProjet p={f.p} dispositifs={(projets && projets.dispositifs) || {}} />
-                : <LigneVote sc={f.sc} position={f.position} base={base} loi />}
+                : <LigneVote sc={f.sc} position={f.position} base={base} loi qui={f.qui} />}
             </div>
           );
         })}

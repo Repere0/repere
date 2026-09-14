@@ -309,6 +309,32 @@ function ChoixCommune({ paquet, nomDepartement, commune, onCommune }) {
   }, [communes, filtre]);
   const vues = trouvees.slice(0, 60);
 
+  /* LE SELECTEUR SE REPLIE DES QUE LA COMMUNE EST CHOISIE.
+   *
+   * MESURE DU 14/09/2026, A L'OEIL SUR CAPTURE : apres le choix, le selecteur de
+   * departement, le champ de recherche et les TRENTE-NEUF pastilles de communes du
+   * 93 occupaient encore environ deux hauteurs d'ecran AVANT le premier contenu, et
+   * cela sur les QUATRE onglets. Le produit avait mesure et celebre « 106 cibles
+   * cliquables ramenees a 2 » a l'ouverture ; il les avait laissees revenir des le
+   * deuxieme ecran. C'est la correction la moins chere du rapport produit et celle
+   * qui rend le plus de place : elle profite aux quatre ecrans a la fois.
+   *
+   * REPLIE, PAS SUPPRIME. Changer de commune reste a un clic, et le bouton dit
+   * laquelle est ouverte — c'est la meme regle que pour le departement, dont la
+   * liste se replie deja apres le choix. */
+  const [deplie, setDeplie] = useState(!commune);
+  const choisie = (commune && paquet.communes[commune] && paquet.communes[commune].nom) || "";
+  if (!deplie && choisie) {
+    return (
+      <div className="choix-commune replie">
+        <button type="button" className="depliant depliant-commune"
+          onClick={() => { setDeplie(true); setFiltre(""); }}>
+          <b>{choisie}</b> — changer de commune
+        </button>
+      </div>
+    );
+  }
+
   return (
     <div className="choix-commune">
       <label className="champ">
@@ -329,7 +355,7 @@ function ChoixCommune({ paquet, nomDepartement, commune, onCommune }) {
             {vues.map(([insee, com]) => (
               <button key={insee} type="button" aria-pressed={insee === commune}
                 className={"puce" + (insee === commune ? " actif" : "")}
-                onClick={() => onCommune(insee)}>{com.nom}</button>
+                onClick={() => { onCommune(insee); setDeplie(false); setFiltre(""); }}>{com.nom}</button>
             ))}
           </div>
           <p className="note" role="status" aria-live="polite">

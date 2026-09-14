@@ -57,21 +57,54 @@ export function decompte(d) {
  * pour un vote de detail, l'intitule officiel EST la ligne. Dans les deux cas :
  * le resultat du scrutin AVANT la position du depute — on lisait « Contre » puis,
  * huit lignes plus bas, que le texte avait ete adopte. */
-export function LigneVote({ sc, position, base, loi }) {
+/* LA POSITION SORT DE LA COLONNE DE DROITE, ET C'EST UNE CORRECTION DE FOND.
+ *
+ * CE QUI ETAIT MESURE. La position etait poussee a droite, en gras,
+ * `white-space: nowrap`, ce qui cassait la phrase de gauche en deux. On lisait
+ * « Texte adopte le 21 juillet 2026 · » puis, isole, « Abstention », puis
+ * « 378 pour, 7 contre, 173 abstentions » juste en dessous. Un lecteur qui ne suit
+ * pas la politique lit « Abstention » comme LE RESULTAT DU SCRUTIN, et repart avec
+ * une idee fausse de ce que son depute a fait. C'etait le seul chiffre qui compte
+ * de l'ecran, et le plus mal place.
+ *
+ * ET HUIT VERDICTS ALIGNES DANS UNE COLONNE SCANNABLE forment une capture d'ecran
+ * prete a l'emploi : un militant recadre la colonne, et Repere a compose l'affiche.
+ * Le produit s'interdit tout jugement ; une colonne de verdicts en produit un par
+ * sa seule forme.
+ *
+ * LA POSITION EST DONC UNE PHRASE PLEINE, sur sa propre ligne, avec le sujet
+ * nomme. Une phrase se lit, elle ne se scanne pas.
+ *
+ * « POSITION NON PORTEE » N'EST PLUS UN VERDICT. Mesure : 17,0 % des positions
+ * solennelles (781 sur 4 592) et 68,3 % des deputes sont concernes — c'est la
+ * ligne la plus frequente du produit apres les titres de loi. Dans une case de
+ * verdict, elle se lit « absent ». Elle devient une note qui dit ce qu'elle ne
+ * dit pas. */
+const RESULTAT = s => (s === "adopté" ? "adopté" : s === "rejeté" ? "rejeté" : s);
+
+export function LigneVote({ sc, position, base, loi, qui }) {
   const proc = procedure(sc.t);
+  const mot = MOTS[position];
+  const sujet = qui || "Votre député";
   return (
     <div className="ligne vote">
       {loi ? <b className="vote-titre">{titreLisible(sc.t)}</b> : null}
-      <div className="ligne-h">
-        <span>
-          Texte {sc.s === "adopté" ? "adopté" : sc.s === "rejeté" ? "rejeté" : sc.s} le {dateFr(sc.d)}
-          {proc ? " · " + proc : ""}
-        </span>
-        <b>{MOTS[position] || "Position non portée"}</b>
+      <p className="vote-position">
+        {mot
+          ? <>{sujet} a voté <b>{mot === "Abstention" ? "l'abstention" : mot.toLowerCase()}</b>.</>
+          : <>{sujet} : le relevé de l'Assemblée ne porte pas de position sur ce scrutin.</>}
+      </p>
+      <div className="ligne-note">
+        Texte {RESULTAT(sc.s)} le {dateFr(sc.d)}{proc ? " · " + proc : ""}
+        {sc.dec ? <> · {decompte(sc.dec)}</> : null}.
       </div>
       <div className="ligne-note">
         {loi ? null : <>{sc.t} </>}
-        {decompte(sc.dec)}.{" "}
+        {!mot ? (
+          <>Une position non portée n'est pas une absence : elle peut couvrir une
+          délégation de vote, une présidence de séance, ou un scrutin auquel le
+          député n'a pas été appelé. Repère n'en déduit rien.{" "}</>
+        ) : null}
         <a className="lien-scrutin" href={base + sc.n} target="_blank" rel="noopener noreferrer">
           Scrutin n° {sc.n} sur le site de l'Assemblée
         </a>
@@ -79,3 +112,48 @@ export function LigneVote({ sc, position, base, loi }) {
     </div>
   );
 }
+
+/* LES POSITIONS SONT APPARIEES, ET L'APPARIEMENT EST VERIFIE.
+ *
+ * LE DEFAUT, TROUVE PAR LA RED TEAM LE 14/09/2026, ETAIT ARME ET NON DECLENCHE.
+ * Les positions sont stockees comme une CHAINE de caracteres dont le rang i
+ * correspond au rang i du catalogue. Or la decision D-12 prevoit explicitement
+ * qu'un releve absent soit remplace par celui de la veille : « la chaine continue
+ * avec le releve de la veille ». Le jour ou le catalogue gagne un scrutin et ou le
+ * fichier des positions echoue, les deux fichiers n'ont plus la meme longueur, et
+ * TOUTES les positions affichees glissent d'un rang — « Pour » sur un texte
+ * rejete, sur un elu nomme, sans aucun signal. Le defaut ne se declenchait pas
+ * parce que les deux relevés portaient la meme date ; il se declencherait le jour
+ * meme ou D-12 s'appliquerait comme prevu.
+ *
+ * LA GARDE : on refuse d'afficher une position des que les deux fichiers ne se
+ * correspondent plus. Refuser est sans danger — la doctrine du vide a une phrase
+ * pour ca ; afficher une position fausse ne l'est pas.
+ *
+ * Elle vit ici, et pas dans un ecran, parce que DEUX ecrans lisent ces positions.
+ * Le banc echoue si une seconde definition apparait. */
+export function positionsFiables(cat, pos) {
+  if (!cat || !pos || !Array.isArray(cat.scrutins) || !pos.positions) return false;
+  const largeur = cat.scrutins.length;
+  /* Une seule longueur fausse suffit a invalider le fichier : c'est le meme
+     relevé pour tous ses deputes. */
+  for (const suite of Object.values(pos.positions)) {
+    if (typeof suite !== "string" || suite.length !== largeur) return false;
+  }
+  /* Deux dates de relevé differentes veulent dire deux collectes differentes,
+     donc un alignement qui n'est plus garanti — meme si les longueurs coincident
+     par hasard. */
+  const dCat = (cat.source && cat.source.releve_le) || "";
+  const dPos = pos.releve_le || "";
+  if (dCat && dPos && dCat !== dPos) return false;
+  return true;
+}
+
+/* La phrase a afficher quand la garde refuse. Elle dit ce qui se passe, elle
+   n'invente pas une panne, et elle renvoie a la source officielle. */
+export const REFUS_APPARIEMENT = {
+  titre: "Les votes ne sont pas affiches : les deux relevés de l'Assemblee ne se correspondent pas.",
+  corps: "Le catalogue des scrutins et les positions des deputes ont ete releves a des"
+    + " dates differentes. Plutot que d'afficher une position qui pourrait etre celle"
+    + " d'un autre scrutin, Repere n'affiche rien. Le reste de l'ecran est complet.",
+};

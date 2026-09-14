@@ -299,8 +299,21 @@ if (aUnDepliant === 1) {
   });
 
   verif("produit — les votes s'affichent, dates et positions",
-    /\d{1,2} \w+ 202\d/.test(votes) && /(Pour|Contre|Abstention|Position non portée)/.test(votes),
+    /\d{1,2} \w+ 202\d/.test(votes)
+    && /a voté (pour|contre|l'abstention)|ne porte pas de position sur ce scrutin/.test(votes),
     votes.slice(0, 300).replace(/\n+/g, " / "));
+
+  /* LA POSITION EST UNE PHRASE, ET LE DEPUTE Y EST NOMME. Mesure du 14/09 : dans
+     une case de verdict alignee a droite, « Abstention » se lisait comme le
+     RESULTAT du scrutin, et huit verdicts alignes faisaient une affiche. Ce
+     controle refuse le retour de la case : la position doit apparaitre dans une
+     phrase qui porte un sujet. */
+  verif("produit — la position du depute est une phrase, jamais une case de verdict",
+    /\S+ a voté (pour|contre|l'abstention)\./.test(votes)
+    || /ne porte pas de position sur ce scrutin/.test(votes),
+    votes.slice(0, 200).replace(/\n+/g, " / "));
+  verif("produit — « position non portée » n'est plus affiche comme un verdict",
+    !/^\s*Position non portée\s*$/m.test(votes), "");
 
   /* Chaque LIGNE doit pouvoir etre verifiee par le lecteur lui-meme. On ne
      ramasse que les liens des lignes de scrutin : le bloc porte aussi le lien

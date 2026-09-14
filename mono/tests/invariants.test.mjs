@@ -1068,3 +1068,106 @@ test("projets — aucun projet n'est publié hors de son département", () => {
   }
   assert.ok(lignes > 0, "aucun projet publié alors que data/projets existe");
 });
+
+test("gardes — main est protégée par git, pas seulement par un script", () => {
+  /* pousser.bat v7 refuse de commiter sur main, mais c'est un script : taper
+     `git commit` à la main le contourne. Les gardes vivent donc dans git, où
+     elles s'appliquent à tout appelant. Ce contrôle vérifie qu'elles existent,
+     qu'elles refusent bien main, et surtout QU'AUCUN SCRIPT DU DÉPÔT NE POSE LA
+     VARIABLE DE SORTIE — sinon la garde serait désarmée par le premier
+     automatisme qui passe, ce qui est exactement la faute d'origine. */
+  const racine = path.resolve(RACINE, "..");
+  const lireRacine = p => fs.readFileSync(path.join(racine, p), "utf8");
+  for (const garde of ["outils/gardes/pre-commit", "outils/gardes/pre-push"]) {
+    assert.ok(fs.existsSync(path.join(racine, garde)), `${garde} est absent`);
+    const s = lireRacine(garde);
+    assert.ok(/main/.test(s) && /exit 1/.test(s), `${garde} ne refuse rien`);
+    assert.ok(/REPERE_FUSION/.test(s), `${garde} n'a pas de sortie explicite`);
+  }
+  /* La sortie doit rester un geste humain, sur une seule commande. */
+  const coupables = [];
+  const marche = d => {
+    for (const e of fs.readdirSync(path.join(racine, d), { withFileTypes: true })) {
+      if (e.name === ".git" || e.name === "node_modules" || e.name === "gardes") continue;
+      const rel = path.join(d, e.name);
+      if (e.isDirectory()) { marche(rel); continue; }
+      if (!/\.(bat|sh|yml|yaml|py|mjs|js)$/.test(e.name)) continue;
+      if (/REPERE_FUSION\s*=/.test(lireRacine(rel))) coupables.push(rel);
+    }
+  };
+  marche("outils"); marche(".github");
+  assert.deepEqual(coupables, [],
+    "un script du dépôt pose REPERE_FUSION et désarme la garde : " + coupables.join(", "));
+  /* Et pousser.bat garde son propre refus : deux gardes vaut mieux qu'une. */
+  assert.ok(/REFUS *: *depot sur main|ne commite jamais sur main/i.test(lireRacine("pousser.bat")),
+    "pousser.bat ne refuse plus de commiter sur main");
+});
+
+test("votes — un élu n'est jamais nommé par son seul patronyme", () => {
+  /* LA FAUTE LA PLUS GRAVE TROUVÉE LE 14/09, et elle existait dans les données
+     livrées. Le maire de Paris dans nos fichiers est Emmanuel GRÉGOIRE ; la
+     députée de la 12ᵉ de Paris est Olivia Grégoire. L'écran affichait « Grégoire a
+     voté Contre » : un lecteur parisien attribuait au maire une position qu'il n'a
+     jamais émise. Deux personnes, deux familles politiques, 2,1 millions de
+     lecteurs. Et 15 patronymes sont partagés par plusieurs députés au national.
+     Imputer publiquement à une personne identifiée une position qu'elle n'a pas
+     prise est une allégation de fait inexacte portant atteinte à sa considération :
+     c'est le terrain de la diffamation, et le prénom était dans le fichier. */
+  const ecran = lire("apps/web/src/routes/CeQuiADecide.jsx");
+  assert.ok(!/qui: *d\.nom\b/.test(ecran),
+    "l'écran nomme un député par son seul patronyme");
+  assert.ok(/d\.prenom/.test(ecran) && /nomComplet/.test(ecran),
+    "le prénom du député n'est pas utilisé alors qu'il est dans le fichier");
+  /* Le regroupement doit comparer un IDENTIFIANT, pas un nom : deux députés
+     homonymes d'une commune à deux circonscriptions verraient sinon leurs votes
+     fusionnés sous un seul en-tête. */
+  assert.ok(/prec\.ref *!== *f\.ref/.test(ecran),
+    "le regroupement des votes compare des noms et non des identifiants");
+});
+
+test("votes — les positions ne s'affichent pas si les deux relevés ne correspondent pas", () => {
+  /* DÉFAUT ARMÉ, PAS DÉCLENCHÉ, trouvé le 14/09. Les positions sont une chaîne
+     dont le rang i correspond au rang i du catalogue. Or D-12 prévoit
+     explicitement qu'un relevé absent soit remplacé par celui de la veille : le
+     jour où le catalogue gagne un scrutin et où les positions échouent, TOUTES les
+     positions glissent d'un rang, sur des élus nommés, sans aucun signal.
+     La garde vit dans lib/votes.jsx — un seul endroit pour deux écrans. */
+  const garde = lire("apps/web/src/lib/votes.jsx");
+  assert.ok(/export function positionsFiables/.test(garde), "la garde n'existe pas");
+  for (const exigence of [/suite\.length *!== *largeur/, /releve_le/]) {
+    assert.ok(exigence.test(garde),
+      "la garde ne vérifie pas " + exigence.source);
+  }
+  for (const ecran of ["apps/web/src/routes/CeQuiADecide.jsx",
+                       "apps/web/src/routes/QuiDecide.jsx"]) {
+    assert.ok(/positionsFiables\(/.test(lire(ecran)),
+      `${ecran} lit des positions sans passer par la garde`);
+  }
+});
+
+test("votes — on compte des textes, pas des lignes de vote", () => {
+  /* Paris a 18 circonscriptions : le fil portait 18 × 8 = 144 « faits » de vote
+     pour 8 textes, et l'annonçait au lecteur. 118 communes en France élisent
+     plusieurs députés, et ce sont les plus peuplées. */
+  const ecran = lire("apps/web/src/routes/CeQuiADecide.jsx");
+  const ligne = /const nbVotes = ([^;]+);/.exec(ecran);
+  assert.ok(ligne, "le comptage des votes est introuvable");
+  assert.ok(/new Set\(/.test(ligne[1]) && /sc\.u/.test(ligne[1]),
+    "nbVotes compte des lignes et non des textes : " + ligne[1]);
+  /* Et la pastille de comptage ne revient pas : « 12 FAITS » contre « 8 FAITS »
+     est un chiffre unique, mis en exergue, qui classe les communes (D-13). */
+  assert.ok(!/tag=\{faits\.length/.test(ecran),
+    "la pastille de comptage de faits est revenue : elle classe les communes");
+});
+
+test("produit — une absence partielle produit une phrase, comme une absence totale", () => {
+  /* L'invariant 5 n'était honoré que pour l'absence TOTALE : si les projets
+     manquaient et que les votes arrivaient, aucune phrase ne disait que l'État
+     n'avait rien financé. Un habitant de Bagnolet ne pouvait pas distinguer
+     « rien » de « pas su ». */
+  const ecran = lire("apps/web/src/routes/CeQuiADecide.jsx");
+  assert.ok(/\{!nbProjets \?/.test(ecran),
+    "l'absence de projets ne produit aucune phrase quand les votes sont là");
+  assert.ok(/n'a financé aucun projet/.test(ecran),
+    "la phrase de l'absence partielle ne dit pas ce qu'elle constate");
+});

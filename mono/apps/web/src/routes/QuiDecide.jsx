@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Carte, Vide, Source, Chargement, dateFr } from "@repere/ui";
 import { Pile } from "@repere/ui/amicro";
-import { LigneVote, estSolennel } from "../lib/votes.jsx";
+import { LigneVote, estSolennel, positionsFiables, REFUS_APPARIEMENT } from "../lib/votes.jsx";
 import {
   chargerDeputes, chargerCatalogueScrutins, chargerVotes, entrer, revenir, ETATS,
 } from "@repere/data-utils";
@@ -155,8 +155,16 @@ function Votes({ dep, acteurRef, nom }) {
       lien={{ texte: "Assemblée nationale — scrutins publics", url: AN_VOTES_URL }} />;
   }
 
-  const suite = pos.positions[acteurRef];
   const s = cat.source || {};
+  /* LA MEME GARDE QUE SUR LE FIL DATE, ET AU MEME ENDROIT DU RAISONNEMENT : avant
+     de lire une position. Le defaut etait ici AUSSI — cet ecran lit les memes
+     chaines par rang depuis le 13/09. Voir positionsFiables() dans lib/votes.jsx. */
+  if (!positionsFiables(cat, pos)) {
+    return <Vide titre={REFUS_APPARIEMENT.titre} corps={REFUS_APPARIEMENT.corps}
+      lien={{ texte: "Assemblée nationale — scrutins publics", url: s.url || AN_VOTES_URL }} />;
+  }
+
+  const suite = pos.positions[acteurRef];
   if (!suite) {
     return <Vide titre={`Le relevé des scrutins ne porte aucune position pour ${nom}.`}
       corps="Un mandat ouvert après la période relevée, un siège pourvu en cours de législature : c'est la source qui est muette sur cette période, et Repère n'en déduit rien."
@@ -187,7 +195,7 @@ function Votes({ dep, acteurRef, nom }) {
             {lois.length === 1 ? "La loi votée" : "Les " + lois.length + " lois votées"}
             {" "}— votes solennels sur l'ensemble d'un texte
           </p>
-          {lois.map(({ sc, p }) => <LigneVote key={sc.u} sc={sc} position={p} base={base} loi />)}
+          {lois.map(({ sc, p }) => <LigneVote key={sc.u} sc={sc} position={p} base={base} loi qui={nom} />)}
         </>
       ) : (
         <p className="tx-note">
@@ -205,7 +213,7 @@ function Votes({ dep, acteurRef, nom }) {
             Ce sont les votes qui construisent un texte ligne à ligne. Ils sont nombreux,
             et leur intitulé est celui de l'Assemblée, sans reformulation.
           </p>
-          {montres.map(({ sc, p }) => <LigneVote key={sc.u} sc={sc} position={p} base={base} />)}
+          {montres.map(({ sc, p }) => <LigneVote key={sc.u} sc={sc} position={p} base={base} qui={nom} />)}
           {reste > 0 ? (
             <button type="button" className="depliant" onClick={() => setCombien(combien + PAR_TRANCHE)}>
               Afficher {Math.min(reste, PAR_TRANCHE)} vote{Math.min(reste, PAR_TRANCHE) > 1 ? "s" : ""} de plus
