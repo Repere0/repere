@@ -1,0 +1,43 @@
+
+34637 communes servies, 104 paquets
+
+--- 1. zeros structurels ------------------------------------
+ECHEC   | zero structurel                    exercice 2021, poste « personnel » : 34563/34563 nuls (100.0 %) — une colonne absente, pas un montant
+
+--- 2. comparabilite des exercices --------------------------
+exercices servis : 2021, 2024, 2025
+ATTENTION| exercices non consecutifs         2021 -> 2024 : 3 ans d'ecart, une evolution sur cette paire saute des annees
+ECHEC   | paire incomparable                 poste « personnel » : l'exercice 2021 ne le porte pas, toute evolution 2021 -> 2025 est une phrase fausse
+ok      | paire recommandee                  2024 -> 2025 : 34468/34637 communes comparables, aucun poste casse
+
+--- 3. coherence inter-sources ------------------------------
+ECHEC   | cumul interdit                     Châteaudun (28088) : « Philippe VIGIER » est aussi le depute du siege 28-4, MEME departement — l'un des deux relevés est perime
+ECHEC   | cumul interdit                     Nogent-le-Rotrou (28280) : « Harold HUWART » est aussi le depute du siege 28-3, MEME departement — l'un des deux relevés est perime
+ECHEC   | cumul interdit                     Vauvert (30341) : « Nicolas MEIZONNET » est aussi le depute du siege 30-2, MEME departement — l'un des deux relevés est perime
+ECHEC   | cumul interdit                     Loiré (49178) : « Patricia MAUSSION » est aussi le depute du siege 49-7, MEME departement — l'un des deux relevés est perime
+ECHEC   | cumul interdit                     Vic-sur-Seille (57712) : « Jérôme END » est aussi le depute du siege 57-4, MEME departement — l'un des deux relevés est perime
+ECHEC   | cumul interdit                     Vaulx-en-Velin (69256) : « Abdelkader LAHMAR » est aussi le depute du siege 69-7, MEME departement — l'un des deux relevés est perime
+ECHEC   | cumul interdit                     Vénissieux (69259) : « Idir BOUMERTIT » est aussi le depute du siege 69-14, MEME departement — l'un des deux relevés est perime
+ECHEC   | cumul interdit                     Carpentras (84031) : « Hervé DE LÉPINAU » est aussi le depute du siege 84-3, MEME departement — l'un des deux relevés est perime
+ECHEC   | cumul interdit                     Saint-Germain-de-Prinçay (85220) : « Dominique PAILLAT » est aussi le depute du siege 85-2, MEME departement — l'un des deux relevés est perime
+ECHEC   | cumul interdit                     La Courneuve (93027) : « Aly DIOUARA » est aussi le depute du siege 93-5, MEME departement — l'un des deux relevés est perime
+ATTENTION| homonyme a verifier               11 maires portent le nom d'un depute d'un AUTRE departement (Patrice MARTIN, Sylvie BONNET, Olivier FAURE...) — homonymie probable, a ne pas afficher comme un cumul
+
+--- 4. fraicheur declaree -----------------------------------
+genere_le : 2026-09-15
+ok      | fraicheur elus                     2026-08-11, 35 jours
+ok      | fraicheur comptes                  2026-07-29, 48 jours
+ATTENTION| date absente                      source circonscriptions : ni releve_le ni maj
+ok      | fraicheur territoires              2026-08-26, 20 jours
+ok      | fraicheur territoires              2026-08-26, 20 jours
+ok      | fraicheur communes                 2026-09-13, 2 jours
+ok      | fraicheur deputes                  2026-08-26, 20 jours
+ok      | fraicheur scrutins                 2026-08-26, 20 jours
+ECHEC   | source absente                     index.sources.projets vaut null : une famille de faits n'est pas servie, et l'ecran ne doit pas l'imputer a la source
+
+--- 5. champs entiers nuls ----------------------------------
+ECHEC   | champ nul suspect                  adjoints == 0 pour 65 communes, concentrees sur {'04': 3, '06': 1, '08': 1, '10': 1, '17': 1, '24': 2, '2B': 1, '36': 1, '37': 3, '38': 1, '39': 1, '41': 2, '44': 1, '47': 1, '53': 1, '54': 4, '55': 1, '57': 1, '61': 2, '65': 1, '67': 2, '70': 2, '74': 1, '76': 2, '77': 10, '97': 17, '98': 1} — un zero juridiquement impossible est une absence de relevé
+
+--------------------------------------------------------------
+14 echec(s) de verite, 3 attention(s).
+VERDICT : NO-GO — un fait affiche serait faux
