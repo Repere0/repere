@@ -5,12 +5,29 @@ import { Pile } from "@repere/ui/amicro";
 /* Le tableau plat des comptes : [population, montant0, parHab0, montant1, ...].
    Six agrégats, deux valeurs chacun. La forme vient du fichier officiel ; on ne
    la devine pas, meta.agregats la porte. */
+/* UN ZERO PUBLIE N'EST PAS UNE ABSENCE, ET LES CONFONDRE FAISAIT DIRE AU PRODUIT
+   LE CONTRAIRE DE LA VERITE.
+ *
+ * CE QUI ETAIT ECRIT : `typeof m === "number" && m !== 0 ? m : null`. Un montant de
+ * zero publie par l'Observatoire devenait donc `null`, et l'ecran affichait
+ * « Non renseigne pour l'exercice 2025. Le fichier ne porte pas cette ligne — ce
+ * n'est pas un montant nul. » Soit exactement l'inverse de ce que la source dit.
+ *
+ * MESURE DU 15/09/2026 : Mulcent (78439) devait 200 000 EUR en 2021 et ne doit PLUS
+ * RIEN en 2024 et 2025. La commune a rembourse sa dette — le fait qu'un habitant
+ * serait le plus heureux d'apprendre — et le produit repondait qu'il ne savait pas. 71 communes franciliennes etaient dans ce cas sur la dette, 5 sur les
+ * salaires, 2 sur l'investissement.
+ *
+ * L'invariant 5 exige que deux causes d'absence differentes produisent deux phrases
+ * differentes. Ici une seule phrase couvrait deux realites opposees, et enoncait la
+ * fausse. `valeur()` distingue donc desormais TROIS etats : un montant, un zero
+ * publie, une absence. */
 function valeur(ex, i) {
   if (!Array.isArray(ex)) return null;
   const m = ex[1 + i * 2], h = ex[2 + i * 2];
-  const mm = typeof m === "number" && m !== 0 ? m : null;
-  const hh = typeof h === "number" && h !== 0 ? h : null;
-  return mm === null && hh === null ? null : { m: mm, hab: hh };
+  const mm = typeof m === "number" ? m : null;
+  const hh = typeof h === "number" ? h : null;
+  return mm === null && hh === null ? null : { m: mm, hab: hh, zero: mm === 0 };
 }
 const population = ex => (Array.isArray(ex) && ex[0] > 0 ? ex[0] : null);
 const pourCent = (a, b) => Math.round((a / b) * 100);
@@ -94,10 +111,23 @@ export default function OuVaArgent({ paquet, index, commune }) {
         </p>
         {agregats.map((a, i) => {
           const v = valeur(exercice.ex, i);
+          /* TROIS ETATS, TROIS PHRASES — voir le commentaire de valeur().
+             L'absence dit qu'on ne sait pas ; le zero dit qu'il n'y a rien. Ce ne
+             sont pas les memes nouvelles, et pour la dette la seconde est bonne. */
           if (!v) return (
             <div className="ligne" key={i}>
               <div className="ligne-h"><span>{a[1]}</span><b>—</b></div>
               <div className="ligne-note">Non renseigné pour l'exercice {exercice.an}. Le fichier ne porte pas cette ligne — ce n'est pas un montant nul.</div>
+            </div>
+          );
+          if (v.zero) return (
+            <div className="ligne" key={i}>
+              <div className="ligne-h"><span>{a[1]}</span><b>0 €</b></div>
+              <div className="ligne-note">
+                {i === 2
+                  ? `L'Observatoire publie un encours de dette nul pour l'exercice ${exercice.an} : cette commune ne doit rien.`
+                  : `L'Observatoire publie un montant nul pour l'exercice ${exercice.an}. Ce n'est pas une donnée manquante : la source écrit zéro.`}
+              </div>
             </div>
           );
           return <BarreEchelon key={i} libelle={a[1]} valeur={v.m} maximum={maxAgregat} echelon="ville" />;

@@ -724,6 +724,39 @@ test("architecture — une seule fabrique d'adresses dans tout le produit", () =
 const BETA_IDF = ["75", "77", "78", "91", "92", "93", "94", "95"];
 const litData = f => JSON.parse(lire(path.join("data", f)));
 
+/* LA SOURCE SANS SES COMMENTAIRES.
+ *
+ * POURQUOI CE LECTEUR EXISTE, ET IL A COÛTÉ SEPT INCIDENTS. Une garde qui cherche un
+ * motif dans le texte brut d'un fichier se déclenche sur sa propre description : le
+ * contrôle de l'invariant 3 a échoué SIX fois sur des commentaires qui expliquaient
+ * ce qu'il interdit, et deux gardes écrites le 15/09 ont échoué la première fois sur
+ * le commentaire qui les documentait. Le commentaire de QuiDecide.jsx le dit déjà :
+ * « la garde ne fait pas la différence entre une violation et sa description ».
+ *
+ * Une garde qu'on ne peut pas décrire dans un commentaire rend le code moins
+ * documentable — c'est-à-dire qu'elle travaille contre la règle qu'elle sert.
+ *
+ * ON NE RETIRE QUE LES COMMENTAIRES, et deux tentatives plus ambitieuses ont été
+ * défaites par la mesure :
+ *   - retirer les littéraux d'expression régulière mangeait du code, parce que
+ *     `det.m / (rec.m / 12)` — une division — en a l'allure, et le nettoyeur
+ *     emportait tout ce qui se trouvait entre les deux barres obliques ;
+ *   - retirer les littéraux entre apostrophes simples mangeait du code aussi : en
+ *     JSX, l'apostrophe du français n'est pas un délimiteur, et le nettoyeur
+ *     avalait tout entre « l'exercice » et « n'est ».
+ * Le piège qui avait motivé ces filtres — une garde qui se déclenche sur le texte de
+ * son propre motif — se désarme autrement : le motif se construit avec `new RegExp`
+ * à partir d'une chaîne, jamais avec un littéral.
+ *
+ * Ce n'est PAS appliqué rétroactivement à l'invariant 3 : desserrer une garde
+ * existante est une décision, pas un nettoyage, et elle se prend à part. */
+function sansCommentaires(p) {
+  return lire(p)
+    .replace(/\/\*[\s\S]*?\*\//g, " ")
+    .replace(/(^|[^:])\/\/[^\n]*/g, "$1 ");
+}
+
+
 test("votes — la chaine commune → circonscription → député → position tient en Île-de-France", () => {
   if (!existe("data/scrutins.json")) return;   /* extraction pas encore lancee */
   const cat = litData("scrutins.json");
@@ -1170,4 +1203,63 @@ test("produit — une absence partielle produit une phrase, comme une absence to
     "l'absence de projets ne produit aucune phrase quand les votes sont là");
   assert.ok(/n'a financé aucun projet/.test(ecran),
     "la phrase de l'absence partielle ne dit pas ce qu'elle constate");
+});
+
+test("argent — un zéro publié n'est jamais présenté comme une absence", () => {
+  /* LE DÉFAUT QUE CE CONTRÔLE GARDE, et c'était une affirmation fausse.
+     `valeur()` faisait `m !== 0 ? m : null` : un montant de zéro publié par
+     l'Observatoire devenait une absence, et l'écran écrivait « le fichier ne porte
+     pas cette ligne — ce n'est pas un montant nul », soit l'inverse exact de ce que
+     la source dit. Mesuré le 15/09 : Mulcent (78439) devait 200 000 € en 2021 et
+     ne doit plus rien en 2024 et 2025 ; 71 communes franciliennes étaient dans ce
+     cas sur la dette. L'invariant 5 exige deux phrases pour deux causes
+     différentes ; une seule couvrait deux réalités opposées. */
+  const ecran = sansCommentaires("apps/web/src/routes/OuVaArgent.jsx");
+  assert.ok(!/m *!== *0 *\? *m *: *null/.test(ecran),
+    "valeur() détruit encore un zéro publié");
+  assert.ok(/zero: *mm === 0/.test(ecran),
+    "valeur() ne distingue pas un zéro publié d'une absence");
+  assert.ok(/v\.zero/.test(ecran) && /ne doit rien/.test(ecran),
+    "l'écran n'a pas de phrase distincte pour un montant nul publié");
+
+  /* Et la donnée existe vraiment : si elle disparaissait des fichiers, ce contrôle
+     deviendrait décoratif sans que rien ne le dise. */
+  if (!existe("data/departments/78.json")) return;
+  const d = litData("departments/78.json");
+  const ag = litData("index.json").agregats.map(a => a[0]);
+  const k = ag.indexOf("Encours de dette");
+  let zeros = 0;
+  for (const c of Object.values(d.communes)) {
+    for (const serie of Object.values(c.comptes || {})) {
+      if (serie[1 + k * 2] === 0) { zeros++; break; }
+    }
+  }
+  assert.ok(zeros > 0,
+    "aucune commune des Yvelines ne publie une dette nulle : le contrôle ne garde plus rien");
+});
+
+test("élus — le nom d'un élu n'est jamais découpé", () => {
+  /* Mesuré le 15/09 : 72 maires d'Île-de-France sur 1 262 portent un nom de plus de
+     deux mots. `nom.split(" ").slice(-1)[0]` transformait « Alexandre DE MEULENAERE »
+     en « MEULENAERE » et, à Paris, écrivait « 36 adjoints siègent avec GRÉGOIRE »
+     deux cartes au-dessus de la députée Olivia Grégoire — le défaut d'imputation
+     corrigé la veille sur l'autre écran, survivant sur celui-ci. Le Répertoire
+     national des élus publie le nom complet : il n'y a rien à découper. */
+  /* Le motif se construit a partir d'une CHAINE, jamais d'un litteral d'expression
+     reguliere : sinon la garde se declencherait sur le texte de son propre motif,
+     qui est le piege exact que sansCommentaires() ne peut pas desarmer. */
+  const motif = new RegExp(
+    "(\\w+(?:\\.\\w+)*)\\s*\\.split\\(\\s*[\"']\\s[\"']\\s*\\)\\s*\\.slice\\(\\s*-1\\s*\\)", "g");
+  for (const f of sourcesEcrites()) {
+    for (const m of sansCommentaires(f).matchAll(motif)) {
+      assert.fail(`${f} découpe « ${m[1]} » pour n'en garder que le dernier mot`);
+    }
+  }
+  /* Et la mesure qui rend ce contrôle non décoratif. */
+  if (!existe("data/departments/77.json")) return;
+  const d = litData("departments/77.json");
+  const composes = Object.values(d.communes)
+    .filter(c => c.maire && c.maire.nom && c.maire.nom.split(" ").length > 2).length;
+  assert.ok(composes > 0,
+    "aucun maire de Seine-et-Marne n'a un nom de plus de deux mots : le contrôle ne garde plus rien");
 });

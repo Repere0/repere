@@ -363,7 +363,16 @@ export default function QuiDecide({ paquet, index, commune }) {
             <div className="ligne-h"><span>{c.maire.fonction}</span><b>{c.maire.nom}</b></div>
             <div className="ligne-note">
               {c.adjoints > 0
-                ? `${c.adjoints} adjoint${c.adjoints > 1 ? "s" : ""} siègent avec ${c.maire.nom.split(" ").slice(-1)[0]}. Ce sont eux qui votent le budget de la commune.`
+                /* LE NOM COMPLET, JAMAIS LE DERNIER MOT.
+                   Mesure du 15/09/2026 : 72 maires d'Ile-de-France sur 1 262 (5,7 %)
+                   portent un nom de plus de deux mots. « Alexandre DE MEULENAERE »
+                   devenait « MEULENAERE », « Jean-Marie VAN LANDEGHEM » devenait
+                   « LANDEGHEM », « Jean-Yves LE MEE » devenait « MEE ». Et a Paris la
+                   ligne disait « 36 adjoints siegent avec GREGOIRE », deux cartes
+                   au-dessus de la deputee Olivia Gregoire — le defaut d'imputation
+                   corrige hier sur l'autre ecran, survivant sur celui-ci.
+                   Le RNE publie le nom complet : il n'y a rien a decouper. */
+                ? `${c.adjoints} adjoint${c.adjoints > 1 ? "s" : ""} siègent avec ${c.maire.nom}. Ce sont eux qui votent le budget de la commune.`
                 : "Aucun adjoint n'est enregistré pour cette commune dans le Répertoire national des élus."}
             </div>
           </div>
