@@ -249,6 +249,32 @@ async function extraire() {
     };
   }
 
+  /* DOCTRINE DU 16/09/2026 : UNE ABSENCE DE NOTRE COTE N'EST JAMAIS DEGUISEE EN
+   * ERREUR DE SAISIE DU LECTEUR.
+   *
+   * MESURE : Ville-d'Avray (92077) existe bel et bien dans le departement des
+   * Hauts-de-Seine — elle est juste absente du Repertoire national des elus, comme
+   * 320 autres communes en France (dont Barbey et Lissy en Seine-et-Marne,
+   * Villecresnes dans le Val-de-Marne). Avant ce correctif, la chercher affichait
+   * « Aucune commune du departement 92 ne porte ce nom » — une affirmation FAUSSE,
+   * puisque la commune porte bien ce nom, seulement Repere n'a pas sa fiche.
+   *
+   * `noms-communes.json` est le SEUL fichier du build qui liste les communes
+   * officielles independamment de ce que le Repertoire des elus a bien voulu
+   * transmettre : il sert donc de reference pour distinguer les deux causes.
+   * Le resultat est petit (0 a quelques dizaines d'entrees par departement) et
+   * MATERIALISE dans le paquet, comme les autres tables de noms — l'ecran ne doit
+   * jamais avoir a deviner une difference entre deux sources au moment du rendu. */
+  if (officiels) {
+    for (const [insee, nomOfficiel] of Object.entries(officiels.noms)) {
+      const d = departementDe(insee);
+      const paquet = paquets.get(d);
+      if (!paquet || paquet.communes[insee]) continue;
+      (paquet.manquantes || (paquet.manquantes = {}))[insee] = nomOfficiel;
+    }
+  }
+  for (const paquet of paquets.values()) if (!paquet.manquantes) paquet.manquantes = {};
+
   /* LES LIBELLES DE SOURCE SONT DU TEXTE AFFICHE.
    *
    * Un des trois blocs porte son libelle sans accents (« Ministere de

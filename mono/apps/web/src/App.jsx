@@ -289,7 +289,24 @@ function ChoixCommune({ paquet, nomDepartement, commune, onCommune }) {
   const communes = useMemo(
     () => Object.entries(paquet.communes).map(([insee, c]) => [insee, c, motsCible(c.nom)]),
     [paquet]);
+  /* DOCTRINE DU 16/09/2026 : ABSENCE CHEZ NOUS N'EST PAS ABSENCE DANS LE MONDE.
+   *
+   * MESURE : chercher « Ville-d'Avray » dans le 92 rendait « Aucune commune du
+   * departement 92 ne porte ce nom » — alors que Ville-d'Avray existe bel et
+   * bien dans les Hauts-de-Seine, elle manque seulement au Repertoire national
+   * des elus. Une commune officiellement nommee dans ce departement (voir
+   * `paquet.manquantes`, pose par extract-html.js depuis le Code officiel
+   * geographique) recoit donc une PHRASE DIFFERENTE d'une commune qui n'existe
+   * nulle part sous ce nom — les deux causes ne sont pas la meme absence. */
+  const manquantes = useMemo(
+    () => Object.entries(paquet.manquantes || {}).map(([insee, nomOff]) => [insee, nomOff, motsCible(nomOff)]),
+    [paquet]);
   const cherches = mots(filtre);
+  const manquanteTrouvee = useMemo(() => {
+    if (!cherches.length) return null;
+    const m = manquantes.find(([, , cible]) => correspond(cherches, cible));
+    return m ? m[1] : null;
+  }, [manquantes, cherches]);
   const trouvees = useMemo(() => {
     const base = cherches.length
       ? communes.filter(([, , cible]) => correspond(cherches, cible))
@@ -347,8 +364,13 @@ function ChoixCommune({ paquet, nomDepartement, commune, onCommune }) {
       </label>
 
       {trouvees.length === 0 ? (
-        <Vide titre={`Aucune commune du département ${paquet.d} ne porte ce nom.`}
-          corps="Ce fichier ne contient que les communes de ce département. Si la vôtre est ailleurs, changez de département au-dessus." />
+        manquanteTrouvee ? (
+          <Vide titre={`${manquanteTrouvee} existe bien dans ce département : c'est nous qui n'avons pas encore sa fiche.`}
+            corps="Le Répertoire national des élus ne porte aucune ligne pour cette commune. Ce n'est pas une erreur de votre part, et ce n'est pas la preuve que la commune n'existe pas." />
+        ) : (
+          <Vide titre={`Aucune commune du département ${paquet.d} ne porte ce nom.`}
+            corps="Ce fichier ne contient que les communes de ce département. Si la vôtre est ailleurs, changez de département au-dessus." />
+        )
       ) : (
         <>
           <div className="rangee liste" role="group" aria-label="Communes trouvées">

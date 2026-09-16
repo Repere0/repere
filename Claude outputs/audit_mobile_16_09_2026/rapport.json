@@ -1,0 +1,62 @@
+[
+  {
+    "id": "petite",
+    "commune": "La Tombe",
+    "dep": "77",
+    "erreurs": [],
+    "notes": [
+      "hauteur de l'ecran Qui decide : 2379 px"
+    ],
+    "trouve_dans_recherche": true
+  },
+  {
+    "id": "moyenne",
+    "commune": "Fontainebleau",
+    "dep": "77",
+    "erreurs": [],
+    "notes": [
+      "hauteur de l'ecran Qui decide : 2407 px"
+    ],
+    "trouve_dans_recherche": true
+  },
+  {
+    "id": "grande",
+    "commune": "Boulogne-Billancourt",
+    "dep": "92",
+    "erreurs": [],
+    "notes": [
+      "hauteur de l'ecran Qui decide : 2751 px"
+    ],
+    "trouve_dans_recherche": true
+  },
+  {
+    "id": "paris",
+    "commune": "Paris",
+    "dep": "75",
+    "erreurs": [],
+    "notes": [
+      "hauteur de l'ecran Qui decide : 5434 px"
+    ],
+    "trouve_dans_recherche": true
+  },
+  {
+    "id": "epci_complexe",
+    "commune": "Créteil",
+    "dep": "94",
+    "erreurs": [],
+    "notes": [
+      "hauteur de l'ecran Qui decide : 2705 px"
+    ],
+    "trouve_dans_recherche": true
+  },
+  {
+    "id": "absente",
+    "commune": "Ville-d'Avray",
+    "dep": "92",
+    "erreurs": [],
+    "notes": [
+      "recherche sans resultat, extrait: REPÈRE | Qui décide chez vous, et où va votre argent. | Les élus, les comptes et la circonscription de votre commune, à partir des sources officielles. Aucun compte, aucun courriel, rien ne quitte votre appareil. | Département 92 · Hauts-de-Seine — changer | Votre commune — département 92 · Hauts-de-Sein"
+    ],
+    "trouve_dans_recherche": false
+  }
+]
