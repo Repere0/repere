@@ -82,6 +82,19 @@ export default function CeQuiADecide({ paquet, index, commune }) {
   const [cat, setCat] = useState(null);
   const [pos, setPos] = useState(null);
   const [deputes, setDeputes] = useState(null);
+  /* DOCTRINE DU 16/09/2026, TROUVEE PAR LA RED TEAM. `!pr.donnees` ne distingue
+   * pas « le fichier a echoue a charger » de « le fichier a charge et ne porte
+   * rien pour cette commune » — INTROUVABLE (404, le pipeline n'a jamais
+   * produit ce fichier pour ce departement) et ECHEC/HORS_LIGNE rendent tous
+   * `donnees: null`, EXACTEMENT comme un fichier SERVI qui ne porte rien.
+   * Consequence mesuree : la collecte des projets n'a jamais tourne pour de
+   * vrai (voir plus bas) ; sans cette distinction, l'ecran affirmait quand
+   * meme « Ce n'est pas un manque de Repere : l'Etat ne publie aucun projet »
+   * — la MEME faute que Ville-d'Avray, une absence chez nous devenue une
+   * affirmation sur l'Etat. On garde donc l'etat de CHAQUE chargement, pas
+   * seulement son contenu. */
+  const [etatProjets, setEtatProjets] = useState(ETATS.EN_COURS);
+  const [etatScrutins, setEtatScrutins] = useState(ETATS.EN_COURS);
 
   const dep = paquet && paquet.d;
   const fiche = commune && paquet && paquet.communes ? paquet.communes[commune] : null;
@@ -103,9 +116,15 @@ export default function CeQuiADecide({ paquet, index, commune }) {
       setDeputes(de.donnees);
       setCat(c.donnees);
       setPos(v.donnees);
+      /* Le volet scrutins demande TROIS fichiers a la fois (catalogue, votes du
+         departement, deputes) : il n'est SERVI que si les trois le sont. */
+      const okProjets = pr.etat === ETATS.SERVI;
+      const okScrutins = c.etat === ETATS.SERVI && v.etat === ETATS.SERVI && de.etat === ETATS.SERVI;
+      setEtatProjets(pr.etat);
+      setEtatScrutins(okScrutins ? ETATS.SERVI : (c.etat !== ETATS.SERVI ? c.etat : (v.etat !== ETATS.SERVI ? v.etat : de.etat)));
       /* Le fil vit avec ce qui arrive : un seul des deux types de faits suffit a
          faire un ecran. Il n'echoue que si les DEUX manquent. */
-      const rienDuTout = !pr.donnees && !c.donnees;
+      const rienDuTout = !okProjets && !okScrutins;
       setEtat(rienDuTout ? (pr.etat === ETATS.HORS_LIGNE ? ETATS.HORS_LIGNE : ETATS.ECHEC)
                          : ETATS.SERVI);
     });
@@ -187,10 +206,22 @@ export default function CeQuiADecide({ paquet, index, commune }) {
   const nomCommune = fiche.nom || "";
 
   if (!faits.length) {
+    /* DEUX CAUSES POSSIBLES, DEUX PHRASES — jamais l'inverse. `etatProjets`/
+     * `etatScrutins` disent lequel des deux volets a vraiment ete SERVI ; seul
+     * un volet SERVI et vide autorise a dire que la source ne publie rien. */
+    const projetsServi = etatProjets === ETATS.SERVI;
+    const scrutinsServi = etatScrutins === ETATS.SERVI;
+    const corps = projetsServi && scrutinsServi
+      ? "Ce n'est pas un retard de Repère : sur la période relevée, l'État ne publie aucun projet financé dans cette commune, et la source des scrutins ne porte aucune position pour son député."
+      : !projetsServi && scrutinsServi
+      ? "La source des scrutins ne porte aucune position pour son député sur la période relevée. Pour les projets financés par l'État, en revanche, Repère n'a pas réussi à obtenir le fichier de ce département — ce n'est ni un « aucun projet », ni une preuve que l'État n'a rien financé ici."
+      : projetsServi && !scrutinsServi
+      ? "L'État ne publie aucun projet financé dans cette commune sur la période relevée. Pour les votes, en revanche, Repère n'a pas réussi à obtenir le relevé des scrutins de ce département — ce silence-là est de notre côté, pas de celui de l'Assemblée."
+      : "Repère n'a pas réussi à obtenir ni le fichier des projets financés, ni le relevé des scrutins pour ce département. Ce n'est pas une information sur ce que l'État ou l'Assemblée ont ou n'ont pas fait — c'est un manque de notre côté.";
     return (
       <div className="pile">
         <Vide titre={`Aucune décision datée n'est publiée pour ${nomCommune}.`}
-          corps="Ce n'est pas un retard de Repère : sur la période relevée, l'État ne publie aucun projet financé dans cette commune, et la source des scrutins ne porte aucune position pour son député. Les autres écrans restent complets."
+          corps={corps + " Les autres écrans restent complets."}
           lien={{ texte: "Projets financés par l'État — données publiques", url: DGCL_URL }} />
       </div>
     );
@@ -234,10 +265,36 @@ export default function CeQuiADecide({ paquet, index, commune }) {
             finance ou si Repere ne savait pas. C'est le contraire exact de ce que
             l'invariant 5 demande, et c'est la faute la plus grave de cet ecran
             apres l'imputation. */}
+        {/* MEME DOCTRINE QU'AU-DESSUS : le titre et la phrase ne peuvent affirmer
+            « l'Etat n'a rien finance » QUE si le fichier des projets a ete
+            reellement SERVI. Sinon, l'absence est chez nous, et le titre le dit. */}
         {!nbProjets ? (
-          <Vide titre={`Sur les exercices publiés, l'État n'a financé aucun projet à ${nomCommune}.`}
-            corps="Ce n'est pas un manque de Repère : le fichier de la Direction générale des collectivités locales ne porte aucune ligne pour cette commune sur ces exercices. Il en portera peut-être pour le suivant."
-            lien={{ texte: "Projets financés par l'État — données publiques", url: DGCL_URL }} />
+          etatProjets === ETATS.SERVI ? (
+            <Vide titre={`Sur les exercices publiés, l'État n'a financé aucun projet à ${nomCommune}.`}
+              corps="Ce n'est pas un manque de Repère : le fichier de la Direction générale des collectivités locales ne porte aucune ligne pour cette commune sur ces exercices. Il en portera peut-être pour le suivant."
+              lien={{ texte: "Projets financés par l'État — données publiques", url: DGCL_URL }} />
+          ) : (
+            <Vide titre="Repère n'a pas réussi à obtenir les projets financés par l'État pour ce département."
+              corps="Ce n'est pas une information sur ce que l'État a ou n'a pas financé à cet endroit : c'est notre chaîne de collecte qui n'a pas le fichier pour ce département. Les votes affichés ci-dessous ne dépendent pas de ce fichier."
+              lien={{ texte: "Projets financés par l'État — données publiques", url: DGCL_URL }} />
+          )
+        ) : null}
+
+        {/* LE TROU SYMETRIQUE, SIGNALE PAR LA RED TEAM DU 16/09/2026 : si les
+            projets arrivent et que les votes echouent, rien ne le disait —
+            silence plutot qu'affirmation fausse, mais la doctrine du vide
+            demande une phrase pour CHAQUE absence, pas seulement celles qui
+            auraient pu devenir une fausse affirmation. */}
+        {!nbVotes ? (
+          etatScrutins === ETATS.SERVI ? (
+            <Vide titre={`Le relevé des scrutins ne porte aucune position pour le député de ${nomCommune}.`}
+              corps="Les projets financés affichés ci-dessus ne dépendent pas de ce fichier."
+              lien={{ texte: "Votes de l'Assemblée nationale — données publiques", url: AN_VOTES_URL }} />
+          ) : (
+            <Vide titre="Repère n'a pas réussi à obtenir le relevé des scrutins pour ce département."
+              corps="Ce n'est pas une information sur ce que votre député a ou n'a pas voté : c'est notre chaîne de collecte qui n'a pas ce fichier pour ce département. Les projets affichés ci-dessus ne dépendent pas de ce fichier."
+              lien={{ texte: "Votes de l'Assemblée nationale — données publiques", url: AN_VOTES_URL }} />
+          )
         ) : null}
 
         {faits.map((f, i) => {
