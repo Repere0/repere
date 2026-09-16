@@ -204,7 +204,7 @@ function Votes({ dep, acteurRef, nom }) {
         <>
           <p className="groupe">
             {lois.length === 1 ? "La loi votée" : "Les " + lois.length + " lois votées"}
-            {" "}— votes solennels sur l'ensemble d'un texte
+            {" "}— <Mot cle="scrutin solennel">votes solennels</Mot> sur l'ensemble d'un texte
           </p>
           {lois.map(({ sc, p }) => <LigneVote key={sc.u} sc={sc} position={p} base={base} loi qui={nom} />)}
         </>
