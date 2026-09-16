@@ -275,6 +275,55 @@ async function extraire() {
   }
   for (const paquet of paquets.values()) if (!paquet.manquantes) paquet.manquantes = {};
 
+  /* REGLE V-1 — BLOCKER 1 DE LA RC DU 15/09/2026, TOUJOURS PAS CORRIGE AVANT CE
+   * PATCH. Mesure : le poste « frais de personnel » de l'exercice 2021 vaut 0
+   * pour 34 563 communes sur 34 563 — cent pour cent. Ce n'est pas une mesure,
+   * c'est une colonne absente du fichier source (aucune derivation tracable
+   * n'explique le bloc OFGL embarque, voir la RC §0 et §C). Publier ce zero
+   * revient a affirmer « cette commune n'a paye aucun salaire en 2021 », ce qui
+   * est faux pour la quasi-totalite des 34 563.
+   *
+   * LE SEUIL DE 95% N'EST PAS FIN, IL EST INDISCUTABLE. Mesure sur les donnees
+   * reelles (RC §0.2) : le ratio zeros/valeurs numeriques par (exercice, poste)
+   * ne prend AUCUNE valeur entre 0,6% et 100% — deux populations disjointes,
+   * jamais une colonne a moitie cassee. Le seuil separe donc les deux sans en
+   * couper aucune, quel que soit l'endroit exact ou on le place entre elles.
+   *
+   * QUAND LA REGLE DECLENCHE, LA COLONNE ENTIERE DEVIENT MISSING (null) POUR
+   * TOUTES LES COMMUNES — pas seulement celles a zero. Une colonne structurel-
+   * lement absente ne redevient pas fiable pour les quelques communes qui, par
+   * coincidence ou erreur de saisie amont, portent un nombre non nul dessus. */
+  {
+    const nbAgregats = (OFGL && OFGL.meta && OFGL.meta.agregats && OFGL.meta.agregats.length) || 0;
+    const toutesCommunes = [...paquets.values()].flatMap(p => Object.values(p.communes));
+    const annees = new Set();
+    for (const c of toutesCommunes) if (c.comptes) for (const an of Object.keys(c.comptes)) annees.add(an);
+    const colonnesMissing = [];
+    for (const an of annees) {
+      for (let i = 0; i < nbAgregats; i++) {
+        const idxM = 1 + i * 2, idxH = 2 + i * 2;
+        let n = 0, t = 0;
+        for (const c of toutesCommunes) {
+          const ex = c.comptes && c.comptes[an];
+          if (!Array.isArray(ex) || typeof ex[idxM] !== "number") continue;
+          t++;
+          if (ex[idxM] === 0) n++;
+        }
+        if (t > 0 && n / t >= 0.95) {
+          colonnesMissing.push({ an, i, n, t });
+          for (const c of toutesCommunes) {
+            const ex = c.comptes && c.comptes[an];
+            if (Array.isArray(ex)) { ex[idxM] = null; ex[idxH] = null; }
+          }
+        }
+      }
+    }
+    if (colonnesMissing.length) {
+      console.log("regle V-1              : " + colonnesMissing.length + " colonne(s) requalifiee(s) en MISSING — "
+        + colonnesMissing.map(x => `exercice ${x.an} poste ${x.i} (${x.n}/${x.t})`).join(", "));
+    }
+  }
+
   /* LES LIBELLES DE SOURCE SONT DU TEXTE AFFICHE.
    *
    * Un des trois blocs porte son libelle sans accents (« Ministere de
