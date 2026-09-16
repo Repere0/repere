@@ -269,3 +269,37 @@
 .echelon-h { display: flex; align-items: baseline; gap: .5rem; }
 .echelon-h b { font-family: var(--t-titre); font-size: .95rem; }
 .ligne.echelon { margin-bottom: .9rem; }
+
+/* LA LANGUE DU CITOYEN. Repris du motif `.gl` du monolithe (app_repere_v18_20.html
+   ligne 648) : un mot souligne en pointille, AUCUNE icone, AUCUNE couleur nouvelle
+   — `--sourd` est deja un jeton neutre gelé dans les deux themes. Un lecteur qui
+   connait deja le mot ne le voit presque pas et continue sa lecture. */
+.mot {
+  display: inline; background: none; border: 0; padding: 2px 2px; margin: 0 -2px;
+  font: inherit; color: inherit; cursor: pointer;
+  text-decoration: underline dotted var(--sourd); text-decoration-thickness: 1.5px;
+  text-underline-offset: 3px;
+}
+.mot:active, .mot:focus-visible { background: var(--voile); border-radius: 4px; }
+
+/* LA FICHE EST UNE PETITE FEUILLE BASSE, PAS UN ECRAN PLEIN. Deux ou trois
+   phrases ne justifient pas de recouvrir tout ce qu'on lisait. `inert` n'est
+   pas pose sur le reste de la page (pas de dependance, pas de polyfill) : le
+   fond assombri + la fermeture au clic exterieur + Echap suffisent, et le
+   focus est renvoye au mot qui a ouvert la fiche a la fermeture. */
+.mot-fond {
+  position: fixed; inset: 0; background: rgba(0, 0, 0, .32); z-index: 40;
+}
+.mot-fiche {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 41;
+  padding: 0 14px calc(14px + env(safe-area-inset-bottom, 0px));
+}
+.mot-fiche-in {
+  background: var(--carte); border-radius: 14px 14px 0 0; padding: 18px 18px 14px;
+  max-width: 520px; margin: 0 auto; box-shadow: var(--ombre);
+}
+.mot-fiche-in b { display: block; font-family: var(--t-titre); font-size: 1.05rem; margin-bottom: 6px; }
+.mot-fiche-in p { margin: 0 0 14px; color: var(--sourd); line-height: 1.45; }
+.mot-fermer { min-height: 44px; padding: 0 16px; border: 1px solid var(--trait); border-radius: 10px;
+  background: none; font: inherit; font-weight: 600; color: var(--encre); cursor: pointer; }
+.mot-fermer:focus-visible { outline: 2px solid var(--e-france, #1d1d1f); outline-offset: 2px; }
