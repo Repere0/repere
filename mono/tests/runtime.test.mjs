@@ -549,6 +549,36 @@ verif("langue — le nom affiche porte son orthographe officielle",
   graphies["evry"] === "Évry-Courcouronnes", JSON.stringify(graphies));
 await pageAcc.context().close();
 
+console.log("\n--- absence chez nous vs absence dans le monde ----------------");
+/* DOCTRINE DU 16/09/2026, PROUVEE ICI. Avant le correctif, chercher une commune
+ * qui existe reellement mais qui manque a nos donnees (Ville-d'Avray, 92077,
+ * absente du Repertoire national des elus comme 320 autres communes en France)
+ * rendait EXACTEMENT la meme phrase qu'une faute de frappe : « Aucune commune du
+ * departement 92 ne porte ce nom. » — une affirmation fausse, puisque la commune
+ * porte bien ce nom. Les deux causes d'absence sont maintenant distinguees via
+ * `paquet.manquantes`, pose par extract-html.js depuis le Code officiel
+ * geographique. Le controle prouve les DEUX branches, pas seulement la corrigee :
+ * une vraie faute de frappe ne doit pas se mettre a afficher la phrase inverse. */
+const pageAbs = await (await nav.newContext()).newPage();
+await pageAbs.goto(base, { waitUntil: "networkidle" });
+await pageAbs.getByLabel(/Où habitez-vous/).fill("hauts-de-seine");
+await pageAbs.waitForTimeout(200);
+await pageAbs.getByRole("button", { name: /^92\b/ }).click();
+await pageAbs.getByLabel(/Votre commune/).fill("Ville-d'Avray");
+await pageAbs.waitForTimeout(300);
+const texteManquante = await pageAbs.evaluate(() => document.querySelector(".choix-commune")?.innerText || "");
+verif("invariant 5 — une commune officielle absente de nos donnees n'est jamais dite inexistante",
+  /existe bien dans ce département/.test(texteManquante) && !/ne porte ce nom/.test(texteManquante),
+  texteManquante.slice(0, 200).replace(/\n+/g, " / "));
+
+await pageAbs.getByLabel(/Votre commune/).fill("Zzznexistepas");
+await pageAbs.waitForTimeout(300);
+const texteFaux = await pageAbs.evaluate(() => document.querySelector(".choix-commune")?.innerText || "");
+verif("invariant 5 — une vraie faute de frappe garde sa phrase d'origine",
+  /ne porte ce nom/.test(texteFaux) && !/existe bien dans ce département/.test(texteFaux),
+  texteFaux.slice(0, 200).replace(/\n+/g, " / "));
+await pageAbs.context().close();
+
 console.log("\n--- mouvement reduit -----------------------------------------");
 /* LA COUPURE DU MOUVEMENT, MESUREE ET PAS DEDUITE. Le controle statique lit le
    CSS ; celui-ci ouvre une page en declarant le reglage systeme « moins
