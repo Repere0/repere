@@ -205,7 +205,15 @@
   border: 1px solid var(--bord, #d9d9de); border-radius: 10px; cursor: pointer;
 }
 .depliant:hover { background: var(--fond-3, #ececf0); }
-.depliant:focus-visible { outline: 2px solid var(--e-national, #1d1d1f); outline-offset: 2px; }
+/* CORRECTIF DU 16/09/2026, BLOCKER 11 DE LA RC DU 15/09. Le jeton
+   `--e-national` n'existe pas — il s'appelle `--e-france` — donc le repli
+   `#1d1d1f` s'appliquait TOUJOURS, y compris en theme sombre : un contour
+   presque noir sur un fond presque noir (ratio mesure 1,02 contre 3,00
+   requis, WCAG 2.4.11). `--e-france` bascule a `#ede9e0` en theme sombre
+   (tokens.css:51,62) — c'est le meme jeton que celui deja repare ailleurs,
+   pas une nouvelle couleur : l'invariant 7 (cinq couleurs d'echelon gelees)
+   n'est pas touche. */
+.depliant:focus-visible { outline: 2px solid var(--e-france, #1d1d1f); outline-offset: 2px; }
 .votes { margin-top: 12px; }
 .votes-h { display: flex; align-items: baseline; justify-content: space-between; gap: .7rem; }
 .votes-h b { font-size: .95rem; }
@@ -213,7 +221,7 @@
   min-height: 44px; padding: 0 10px; font: inherit; font-size: .82rem;
   color: var(--sourd); background: none; border: 0; cursor: pointer; text-decoration: underline;
 }
-.votes-replier:focus-visible { outline: 2px solid var(--e-national, #1d1d1f); outline-offset: 2px; }
+.votes-replier:focus-visible { outline: 2px solid var(--e-france, #1d1d1f); outline-offset: 2px; }
 .votes-portee { margin: .2rem 0 .9rem; }
 /* LE TITRE DE LA LOI PASSE DEVANT LA DATE ET DEVANT LA POSITION. C'est le seul
    endroit du produit ou une ligne de liste porte un titre : un vote solennel

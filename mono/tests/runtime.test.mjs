@@ -854,6 +854,65 @@ verif("accessibilite — en theme sombre, aucun texte sous 3:1 de contraste",
 verif("accessibilite — la mesure de contraste porte bien sur quelque chose",
   contrastes.length >= 5, contrastes.length + " element(s) mesure(s)");
 verif("theme sombre — aucune erreur JavaScript", erreursSombre.length === 0, erreursSombre.join(" | "));
+
+/* BLOCKER 11 DE LA RC DU 15/09, PROUVE ICI. `--e-national` n'existe pas : le
+ * contour de focus des deux commandes qui ouvrent les votes retombait sur son
+ * repli #1d1d1f, presque noir sur un fond presque noir en theme sombre — ratio
+ * mesure 1,02 contre 3,00 exige (WCAG 2.4.11). Le controle de contraste ci-dessus
+ * ne l'aurait jamais vu : il ne mesure QUE la couleur du texte, jamais un
+ * contour. On mesure donc le contour lui-meme, au clavier, pas a la souris —
+ * c'est ce qui distingue :focus-visible de :hover. */
+await pageSombre.getByRole("button", { name: "Qui décide" }).click();
+await pageSombre.waitForTimeout(400);
+const boutonVotes = pageSombre.getByRole("button", { name: /Comment .+ a voté à l'Assemblée/ });
+/* `.focus()` SEUL NE SUFFIT PAS. Mesure : juste apres un clic souris, Chromium
+ * n'active PAS `:focus-visible` sur un focus programmatique — le premier essai
+ * de cette mesure passait donc a tort, quel que soit le CSS. Une touche Tab
+ * fait basculer la modalite d'entree sur clavier pour toute la page ; le focus
+ * programmatique qui suit hérite alors du vrai `:focus-visible`. Verifie avec
+ * `e.matches(':focus-visible')` plus bas, pas suppose. */
+await pageSombre.keyboard.press("Tab");
+await boutonVotes.focus();
+const contourVotes = await pageSombre.evaluate(() => {
+  const rgb = t => (t.match(/\d+(\.\d+)?/g) || []).slice(0, 3).map(Number);
+  const lum = c => {
+    const v = c.map(x => x / 255).map(x => x <= 0.03928 ? x / 12.92 : Math.pow((x + 0.055) / 1.055, 2.4));
+    return 0.2126 * v[0] + 0.7152 * v[1] + 0.0722 * v[2];
+  };
+  const fond = e => {
+    for (let n = e; n; n = n.parentElement) {
+      const c = getComputedStyle(n).backgroundColor;
+      const p = rgb(c);
+      if (p.length === 3 && !/rgba\(0, 0, 0, 0\)|transparent/.test(c)) return p;
+    }
+    return [255, 255, 255];
+  };
+  const rapport = (a, b) => {
+    const [x, y] = [lum(a), lum(b)].sort((p, q) => q - p);
+    return (x + 0.05) / (y + 0.05);
+  };
+  const e = document.activeElement;
+  const s = getComputedStyle(e);
+  /* `fond(e.parentElement)`, PAS `fond(e)`. Un `outline-offset` positif dessine
+   * l'anneau HORS de la boite du bouton : ce qu'un lecteur voit derriere
+   * l'anneau est le fond du PARENT, jamais le remplissage propre du bouton.
+   * Mesure qui a fait echouer une premiere version de ce controle : `.depliant`
+   * porte `background: var(--fond-2, #f5f5f7)`, et `--fond-2` n'existe nulle
+   * part (aucune definition, dans aucun theme) — le repli clair s'applique
+   * donc TOUJOURS, meme en theme sombre. `fond(e)` trouvait ce gris clair et
+   * calculait un contraste de 15:1, masquant le vrai bug (1,02:1) derriere un
+   * defaut qui n'a jamais ete pose. Distinct de ce correctif, non traite ici :
+   * `--fond-2` et `--fond-3` restent a definir pour le theme sombre. */
+  const fondReel = fond(e.parentElement);
+  return { balise: e.className, couleur: s.outlineColor, largeur: s.outlineWidth,
+    visible: e.matches(":focus-visible"),
+    r: Math.round(rapport(rgb(s.outlineColor), fondReel) * 100) / 100 };
+});
+verif("accessibilite — la mesure du contour porte bien sur un vrai :focus-visible",
+  contourVotes.balise === "depliant" && contourVotes.visible === true && contourVotes.largeur !== "0px",
+  JSON.stringify(contourVotes));
+verif("accessibilite — le contour de focus des commandes qui ouvrent les votes atteint 3:1 en theme sombre",
+  contourVotes.r >= 3, JSON.stringify(contourVotes));
 await ctxSombre.close();
 
 console.log("\n--- hors ligne -----------------------------------------------");
