@@ -2434,6 +2434,20 @@ details.plus[open] > *:not(summary){animation:pliOuvre .22s ease both;}
       </div>
     </div>
 
+    <!-- BANDEAU MAQUETTE, pose le 16/09/2026. Tant que la publication ne sert pas
+         encore les faits valides par le pipeline reel (voir data/evenements/), le
+         lecteur ne doit jamais lire une carte comme si elle etait deja la version
+         publique achevee. Couleurs neutres uniquement : --bg-2 et --ink-2 sont deja
+         definis pour les deux themes, aucune couleur nouvelle n'est introduite
+         (invariant 7 : cinq couleurs d'echelon gelees, rien d'autre ne depasse une
+         amplitude de 24 sur les canaux RGB). Ce bandeau se retire dans son propre
+         patch, le jour ou la bascule de publication (§F de la RC du 15/09) est faite
+         et que ce que montre l'ecran est verifie fait pour fait. -->
+    <div class="maquette-bandeau" role="note"
+      style="background:var(--bg-2);color:var(--ink-2);font-size:var(--t-12);line-height:var(--lh-12);padding:8px 14px;text-align:center;border-bottom:1px solid var(--sep, var(--bg-2));">
+      Maquette — contenus fictifs. Cette version de démonstration ne reflète pas encore le fonctionnement final ni des faits tous vérifiés.
+    </div>
+
     <div class="screens">
 
       <!-- ============ FIL ============ -->
@@ -2494,7 +2508,6 @@ details.plus[open] > *:not(summary){animation:pliOuvre .22s ease both;}
 
         <div class="chips" id="chips" role="tablist" aria-label="Filtrer par échelon"></div>
         <div class="chips themes" id="theme-chips" role="group" aria-label="Filtrer par thème"></div>
-        <span class="real-tag">DÉCISIONS ET VOTES RÉELS — sources officielles</span>
         <!-- LOT 6.4 — POURQUOI un squelette et non un blanc : un ecran vide pendant le
              rendu se lit comme une panne. Il annonce la FORME a venir, jamais une valeur,
              et il est efface des le premier rendu (renderFeed vide le conteneur puis
@@ -2940,7 +2953,6 @@ details.plus[open] > *:not(summary){animation:pliOuvre .22s ease both;}
       <div class="screen" id="s-suivis">
         <div class="section-title" style="margin-top:4px;">Textes suivis</div>
         <div class="law">
-          <span class="real-tag">SUIVI RÉEL</span>
           <h3>Loi sur la fin de vie — aide à mourir</h3>
           <div class="sub">Adoptée le 15 juillet 2026. Le Conseil constitutionnel l'a déclarée conforme, avec réserves, le 14 août 2026 (décision n° 2026-910 DC). La promulgation n'est pas vérifiée à ce jour.</div>
           <div class="steps">
@@ -9353,7 +9365,6 @@ function renderFeed() {
           ${f.now ? `<div class="now-block"><b class="k" style="font-size:var(--t-11);letter-spacing:.6px;color:var(--muted);display:block;margin-bottom:3px;">ET MAINTENANT</b>${f.now}</div>` : ""}
           <div class="verif" onclick="openDef('methode')" title="Notre méthode">
             <span class="vb">✓ ${f.verif}</span>
-            <span>Résumé assisté par IA — vérifié par un humain</span>
           </div>
           <div class="actions">
             <button class="share-btn" onclick="openShare(${idx})">${SHARE_ICO} Partager</button>
