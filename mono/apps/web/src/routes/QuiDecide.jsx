@@ -466,10 +466,10 @@ export default function QuiDecide({ paquet, index, commune }) {
       <Carte echelon="dept" titre="Qui d'autre décide pour vous"
         sousTitre="Trois échelons que Repère ne publie pas encore, et ce qu'ils décident">
         <p className="tx-note tx-intro">{ORDRE_DISTANCE}</p>
-        <LigneEchelon echelon="agglo" nom="Votre intercommunalité" corps={COMPETENCES.agglo.charAt(0).toUpperCase() + COMPETENCES.agglo.slice(1) + "."}
+        <LigneEchelon echelon="agglo" nom={<>Votre <Mot cle="intercommunalité">intercommunalité</Mot></>} corps={COMPETENCES.agglo.charAt(0).toUpperCase() + COMPETENCES.agglo.slice(1) + "."}
           note="Vous ne l'élisez pas directement : ce sont les conseillers municipaux qui y siègent." />
-        <LigneEchelon echelon="dept" nom="Votre département" corps={COMPETENCES.dept.charAt(0).toUpperCase() + COMPETENCES.dept.slice(1) + "."} />
-        <LigneEchelon echelon="region" nom="Votre région" corps={COMPETENCES.region.charAt(0).toUpperCase() + COMPETENCES.region.slice(1) + "."} />
+        <LigneEchelon echelon="dept" nom={<>Votre <Mot cle="conseil départemental">département</Mot></>} corps={COMPETENCES.dept.charAt(0).toUpperCase() + COMPETENCES.dept.slice(1) + "."} />
+        <LigneEchelon echelon="region" nom={<>Votre <Mot cle="conseil régional">région</Mot></>} corps={COMPETENCES.region.charAt(0).toUpperCase() + COMPETENCES.region.slice(1) + "."} />
         <p className="tx-note">
           Repère ne nomme pas encore les élus de ces trois échelons : les fichiers officiels
           qui les portent ne sont pas publiés ici. Ce qu'ils décident, en revanche, ne dépend
