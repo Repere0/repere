@@ -100,12 +100,28 @@ def engendrer(html, lien_confidentialite=True):
     # liait. Elle etait mise en cache par le service worker et atteignable seulement
     # en tapant son adresse. Le lien n'est pose QUE dans la version servie, parce que
     # le fichier autonome ouvert depuis un telephone n'a pas cette page a cote de lui.
+    #
+    # CORRECTIF DU 16/09/2026 — PANNE DE 19 JOURS. L'ancre etait un style CSS
+    # (`abo-note` / `text-align:left;margin-top:10px;`), suppose unique. Il ne
+    # l'est plus : v18.20 porte QUATRE paragraphes avec exactement ce style,
+    # dont deux dans des ecrans en veille (s-abo, s-compte-login, retires du DOM
+    # au demarrage — y poser le lien n'aurait servi personne). Mesure sur
+    # site/index.html (dernier build reussi, v9) : l'ancre y etait unique et son
+    # texte disait deja « politique de confidentialite : ecran Sources » — c'est
+    # DANS s-sources que le lien a toujours vecu, le style CSS n'etait qu'une
+    # coincidence qui a fini par se reproduire ailleurs. On ancre donc sur
+    # l'ECRAN, pas sur un style qu'un autre paragraphe peut reprendre demain.
+    assert html.count('id="s-sources"') == 1, "l'ecran Sources n'est pas trouve, ou n'est plus unique"
+    depart = html.index('id="s-sources"')
     ancre_legal = '<p class="abo-note" style="text-align:left;margin-top:10px;">'
-    assert html.count(ancre_legal) == 1, "le repli des mentions legales est introuvable"
+    pos = html.index(ancre_legal, depart)
+    prochain_ecran = html.find('<div class="screen" id="', depart + 1)
+    assert prochain_ecran == -1 or pos < prochain_ecran, (
+        "le paragraphe trouve n'est plus dans l'ecran Sources : l'ancre a glisse")
     lien = ('<p style="margin-top:10px;"><b>Politique de confidentialité.</b> '
             '<a href="confidentialite.html" style="color:var(--ink);text-decoration:underline;'
             'text-underline-offset:2px;">Lire la page complète</a>.</p>\n            ')
-    html = html.replace(ancre_legal, lien + ancre_legal, 1)
+    html = html[:pos] + lien + html[pos:]
     return html
 
 
