@@ -1,5 +1,5 @@
 import React, { Suspense, lazy, useCallback, useEffect, useMemo, useState } from "react";
-import { Chargement, Vide, Puce } from "@repere/ui";
+import { Chargement, Vide, Puce, DefinitionProvider } from "@repere/ui";
 import {
   chargerIndex, chargerDepartement, chargerCommunesBeta, prechargerDepartement,
   annulerPrechargement, entrer, ETATS, PHRASES,
@@ -475,6 +475,7 @@ export default function App() {
   }, [fiche, nomDepartement]);
 
   return (
+    <DefinitionProvider>
     <div className="app">
       <header className="entete">
         <p className="eyebrow">Repère</p>
@@ -567,5 +568,6 @@ export default function App() {
         <p className="invite">Repère ne demande jamais votre adresse : le nom de votre commune suffit, et il ne quitte pas cet appareil.</p>
       )}
     </div>
+    </DefinitionProvider>
   );
 }

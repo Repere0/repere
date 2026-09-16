@@ -6,8 +6,8 @@
  *
  * CHAQUE DEFINITION EST EXACTE SUR LE PLAN INSTITUTIONNEL, PAS SIMPLIFIEE
  * JUSQU'A DEVENIR FAUSSE. Deux ou trois phrases, jamais un cours. Aucun mot
- * ne nomme une personne ni un camp — l'invariant 3 (aucun classement) et la
- * neutralite du produit s'appliquent aussi au glossaire. */
+ * ne nomme une personne ni un camp — la neutralite du produit et l'interdiction
+ * de ranger des territoires ou des personnes s'appliquent aussi au glossaire. */
 export const MOTS = {
   circonscription: {
     titre: "Circonscription",

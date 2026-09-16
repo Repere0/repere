@@ -1,5 +1,5 @@
 import React, { useMemo } from "react";
-import { Carte, Vide, Tuile, BarreEchelon, Source } from "@repere/ui";
+import { Carte, Vide, Tuile, BarreEchelon, Source, Mot } from "@repere/ui";
 import { Pile } from "@repere/ui/amicro";
 
 /* Le tableau plat des comptes : [population, montant0, parHab0, montant1, ...].
@@ -41,7 +41,7 @@ function rapports(ex) {
   const nn = x => x && typeof x.m === "number" && x.m > 0;
   const out = [];
   if (nn(det) && nn(rec)) out.push({
-    l: "Sa dette",
+    l: <>Son <Mot cle="encours de dette">encours de dette</Mot></>,
     v: (det.m / (rec.m / 12)).toLocaleString("fr-FR", { minimumFractionDigits: 1, maximumFractionDigits: 1 }) + " mois de recettes",
     d: "Si tout ce qui est encaissé allait au remboursement, il faudrait ce temps-là. Ce n'est pas ce qui se passe : une dette se rembourse sur des années, et un emprunt sert le plus souvent à payer un équipement qui durera plus longtemps que lui.",
   });
@@ -103,7 +103,7 @@ export default function OuVaArgent({ paquet, index, commune }) {
     <Pile>
       {/* Nom seul : « les comptes de X » demanderait une elision non derivable. */}
       <Carte echelon="ville" titre={c.nom}
-        sousTitre={`Les comptes de la commune · exercice ${exercice.an}${population(exercice.ex) ? ` · ${population(exercice.ex).toLocaleString("fr-FR")} habitants` : ""} · budget principal`}
+        sousTitre={<>Les comptes de la commune · <Mot cle="exercice">exercice</Mot> {exercice.an}{population(exercice.ex) ? ` · ${population(exercice.ex).toLocaleString("fr-FR")} habitants` : ""} · budget principal</>}
         tag="Donnée officielle">
         <p className="tx-note tx-intro">
           Les six lignes ci-dessous sont publiées telles quelles par l'Observatoire des finances

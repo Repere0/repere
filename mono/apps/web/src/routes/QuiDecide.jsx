@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Carte, Vide, Source, Chargement, dateFr } from "@repere/ui";
+import { Carte, Vide, Source, Chargement, dateFr, Mot } from "@repere/ui";
 import { Pile } from "@repere/ui/amicro";
 import { LigneVote, estSolennel, positionsFiables, REFUS_APPARIEMENT } from "../lib/votes.jsx";
 import {
@@ -372,7 +372,7 @@ export default function QuiDecide({ paquet, index, commune }) {
                    au-dessus de la deputee Olivia Gregoire — le defaut d'imputation
                    corrige hier sur l'autre ecran, survivant sur celui-ci.
                    Le RNE publie le nom complet : il n'y a rien a decouper. */
-                ? `${c.adjoints} adjoint${c.adjoints > 1 ? "s" : ""} siègent avec ${c.maire.nom}. Ce sont eux qui votent le budget de la commune.`
+                ? <>{c.adjoints} <Mot cle="adjoint au maire">adjoint{c.adjoints > 1 ? "s" : ""}</Mot> siègent avec {c.maire.nom}. Ce sont eux qui votent le budget de la commune.</>
                 : "Aucun adjoint n'est enregistré pour cette commune dans le Répertoire national des élus."}
             </div>
           </div>
@@ -392,7 +392,7 @@ export default function QuiDecide({ paquet, index, commune }) {
       </Carte>
 
       <Carte echelon="france" titre="À l'Assemblée nationale"
-        sousTitre="Le député est élu par circonscription, pas par commune"
+        sousTitre={<>Le député est élu par <Mot cle="circonscription">circonscription</Mot>, pas par commune</>}
         tag={p.absence ? undefined : "Donnée officielle"}>
         <div className="ligne">
           <div className="ligne-h"><span>Ce que décide votre député</span></div>

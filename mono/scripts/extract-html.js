@@ -756,14 +756,24 @@ async function extraire() {
        complet pour une commune de chaque departement de la beta. */
     const relu = JSON.parse(fs.readFileSync(path.join(SORTIE, "communes-beta.json"), "utf8"));
     const codes = Object.keys(relu.communes);
-    const horsBeta = codes.filter(c => !BETA.includes(c.slice(0, 2)));
+    /* CORRECTIF DU 16/09/2026, TROUVE PAR UN AGENT D'ARCHITECTURE EN CASSANT
+     * LE CONTROLE POUR DE VRAI : `c.slice(0, 2)` ignore la regle des DOM (3
+     * caracteres, 97x/98x) que `departementDe()` porte deja plus haut dans ce
+     * meme fichier. Sans unifier sur cette fonction, etendre un jour `BETA`
+     * aux departements d'outre-mer ferait echouer ce controle avec un faux
+     * positif ("97102 hors beta") — exactement le piege deja documente au §9
+     * du CONTEXTE_PROJET : deux endroits qui derivent la meme regle finissent
+     * par diverger. Sans objet aujourd'hui (BETA ne contient aucun DOM), mais
+     * une garde qui casse a la prochaine extension vaut mieux qu'une garde
+     * fausse decouverte en production. */
+    const horsBeta = codes.filter(c => !BETA.includes(departementDe(c)));
     if (horsBeta.length) {
       console.error("l'index de la beta porte des communes hors beta : " + horsBeta.slice(0, 3).join(", "));
       process.exit(10);
     }
     for (const dep of BETA) {
       const attendues = Object.keys(JSON.parse(fs.readFileSync(path.join(SORTIE, "departments", dep + ".json"), "utf8")).communes);
-      const dedans = codes.filter(c => c.slice(0, 2) === dep);
+      const dedans = codes.filter(c => departementDe(c) === dep);
       if (dedans.length !== attendues.length) {
         console.error(`index de la beta : ${dedans.length} communes pour ${attendues.length} dans le departement ${dep}`);
         process.exit(10);

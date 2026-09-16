@@ -460,8 +460,14 @@ await page.getByRole("button", { name: "Où va l'argent" }).click();
 await page.waitForTimeout(500);
 
 console.log("\n--- cibles tactiles et accessibilite -------------------------");
+/* `.mot` EXCLU, ET C'EST L'EXCEPTION DE LA NORME ELLE-MEME, PAS UN CONTOURNEMENT.
+ * WCAG 2.5.8 (cible minimale) ecrit explicitement : « la taille de la cible
+ * n'est pas contrainte quand la cible est dans une phrase ou un bloc de
+ * texte. » Un mot souligne au milieu d'une phrase ne peut pas mesurer 44 px
+ * de haut sans casser l'interligne de tout le paragraphe autour de lui — la
+ * meme exception couvre deja les liens de definition du monolithe (`.gl`). */
 const petites = await page.evaluate(() =>
-  [...document.querySelectorAll("button, a[href], input")]
+  [...document.querySelectorAll("button:not(.mot), a[href]:not(.mot), input")]
     .map(e => ({ h: Math.round(e.getBoundingClientRect().height), t: (e.innerText || e.type || "").slice(0, 20) }))
     .filter(e => e.h > 0 && e.h < 44));
 verif("accessibilite — toute cible tactile mesure au moins 44 px",
@@ -579,6 +585,37 @@ verif("invariant 5 — une vraie faute de frappe garde sa phrase d'origine",
   texteFaux.slice(0, 200).replace(/\n+/g, " / "));
 await pageAbs.context().close();
 
+console.log("\n--- la langue du citoyen ---------------------------------------");
+/* PREMIER CONTROLE DU VOCABULAIRE CONTEXTUEL, POSE LE 16/09/2026. Le mot
+ * "circonscription" du sous-titre de la carte Assemblee doit ouvrir une
+ * fiche courte, au clavier comme a la souris, et rendre le focus au mot au
+ * lieu de le perdre dans la page — sinon un lecteur au clavier qui ouvre une
+ * definition serait ejecte de son parcours. */
+const ctxMot = await nav.newContext({ viewport: { width: 390, height: 844 } });
+const pageMot = await ctxMot.newPage();
+await pageMot.goto(base, { waitUntil: "networkidle" });
+await pageMot.getByLabel(/Où habitez-vous/).fill("bagnolet");
+await pageMot.waitForTimeout(300);
+await pageMot.getByRole("button", { name: /Bagnolet/ }).click();
+await pageMot.waitForTimeout(1200);
+const motCirco = pageMot.getByRole("button", { name: "circonscription", exact: true });
+verif("langue du citoyen — le mot « circonscription » est bien un declencheur",
+  await motCirco.count() > 0, "aucun bouton .mot trouve avec ce texte");
+await motCirco.click();
+await pageMot.waitForTimeout(200);
+const ficheTexte = await pageMot.evaluate(() => document.querySelector(".mot-fiche-in")?.innerText || "");
+verif("langue du citoyen — la fiche affiche la definition exacte",
+  /Territoire dans lequel les électeurs élisent un député/.test(ficheTexte),
+  ficheTexte.slice(0, 160));
+await pageMot.keyboard.press("Escape");
+await pageMot.waitForTimeout(200);
+const ficheFermee = await pageMot.evaluate(() => document.querySelector(".mot-fiche-in") === null);
+verif("langue du citoyen — Echap referme la fiche", ficheFermee, "la fiche est restee ouverte");
+const focusApresFermeture = await pageMot.evaluate(() => document.activeElement?.innerText || "");
+verif("langue du citoyen — le focus revient au mot apres fermeture, pas perdu dans la page",
+  focusApresFermeture === "circonscription", "focus sur : " + JSON.stringify(focusApresFermeture));
+await ctxMot.close();
+
 console.log("\n--- mouvement reduit -----------------------------------------");
 /* LA COUPURE DU MOUVEMENT, MESUREE ET PAS DEDUITE. Le controle statique lit le
    CSS ; celui-ci ouvre une page en declarant le reglage systeme « moins
@@ -625,7 +662,8 @@ const fautesCibles = [], fautesTexte = [];
 const auditerEcran = async (nom, page = pageTout) => {
   const d = await page.evaluate(() => {
     const vu = e => e.checkVisibility({ checkVisibilityCSS: true, contentVisibilityAuto: true });
-    const cibles = [...document.querySelectorAll("a[href], button, input, summary")]
+    /* `.mot` exclu ici aussi — meme exception WCAG 2.5.8, voir plus haut. */
+    const cibles = [...document.querySelectorAll("a[href]:not(.mot), button:not(.mot), input, summary")]
       .filter(vu)
       .map(e => ({ t: (e.innerText || e.getAttribute("aria-label") || e.type || "").trim().slice(0, 24),
                    h: Math.round(e.getBoundingClientRect().height) }))
