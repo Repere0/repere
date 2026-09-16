@@ -292,7 +292,16 @@ function Depute({ dep, circo }) {
           vôtre dépend de votre adresse — Repère ne la demande pas, et ne la devinera pas.
           Ils sont rangés dans l'ordre des circonscriptions.
         </p>
-        {elus.map(({ n, d }) => (
+        {/* PARIS (18 CIRCONSCRIPTIONS) ETAIT LE CAS EXTREME QUI FAISAIT DOUBLER
+         * LA HAUTEUR DE L'ECRAN — mesure du 16/09/2026 : 5 434 px contre 2 400
+         * a 2 750 px pour une commune a un seul depute. LA REGLE NE CHANGE PAS
+         * (tous les deputes restent lus, listes dans l'ordre des
+         * circonscriptions, aucun mis en avant — c'est ce que la RC du 15/09
+         * avait juge correct) : seule la PREMIERE VUE change. Les trois
+         * premiers restent ouverts d'emblee ; au-dela, un repli standard du
+         * produit (meme motif que .repli ailleurs) — un tap, jamais un
+         * deuxieme ecran, jamais une donnee retiree. */}
+        {elus.slice(0, 3).map(({ n, d }) => (
           <div className="bloc-second" key={n}>
             <div className="ligne">
               <div className="ligne-h">
@@ -306,6 +315,29 @@ function Depute({ dep, circo }) {
             {d.acteurRef ? <Votes dep={dep} acteurRef={d.acteurRef} nom={d.prenom + " " + d.nom} /> : null}
           </div>
         ))}
+        {elus.length > 3 ? (
+          <details className="repli">
+            <summary>
+              <span>{elus.length - 3} autre{elus.length - 3 > 1 ? "s" : ""} circonscription{elus.length - 3 > 1 ? "s" : ""}</span>
+            </summary>
+            <div className="repli-in">
+              {elus.slice(3).map(({ n, d }) => (
+                <div className="bloc-second" key={n}>
+                  <div className="ligne">
+                    <div className="ligne-h">
+                      <span>{ordinal(n)} circonscription</span>
+                      <b>{d.prenom} {d.nom}</b>
+                    </div>
+                    <div className="ligne-note">
+                      Mandat ouvert{d.dateDebut ? " depuis le " + dateFr(d.dateDebut) : ""}, {s.legislature ? s.legislature + "e législature" : "législature en cours"}.
+                    </div>
+                  </div>
+                  {d.acteurRef ? <Votes dep={dep} acteurRef={d.acteurRef} nom={d.prenom + " " + d.nom} /> : null}
+                </div>
+              ))}
+            </div>
+          </details>
+        ) : null}
         <p className="tx-note">
           Ni étiquette politique, ni parcours : le fichier des mandats n'en porte pas.
         </p>

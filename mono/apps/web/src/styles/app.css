@@ -303,3 +303,20 @@
 .mot-fermer { min-height: 44px; padding: 0 16px; border: 1px solid var(--trait); border-radius: 10px;
   background: none; font: inherit; font-weight: 600; color: var(--encre); cursor: pointer; }
 .mot-fermer:focus-visible { outline: 2px solid var(--e-france, #1d1d1f); outline-offset: 2px; }
+
+/* .REPLI — meme famille que .choix (bordure, cible de 44 px, triangle en
+   ::after), mais sans le cadre plein : ce n'est pas un choix a faire, c'est
+   une suite de donnees deja lue une fois qui continue plus bas. Pose le
+   16/09/2026 pour Paris (18 circonscriptions, 5 434 px contre 2 400-2 750
+   ailleurs) : les trois premiers deputes restent ouverts, le reste se replie
+   — aucune donnee retiree, un tap pour la retrouver. */
+.repli { border-top: 1px solid var(--trait); margin-top: .9rem; padding-top: .2rem; }
+.repli > summary {
+  font-family: var(--t-titre); font-size: .85rem; font-weight: 600; color: var(--sourd);
+  padding: .6rem 0; min-height: 44px; cursor: pointer; list-style: none;
+  display: flex; align-items: center; gap: .4rem;
+}
+.repli > summary::-webkit-details-marker { display: none; }
+.repli > summary::after { content: "▾"; margin-left: .4rem; color: var(--sourd); }
+.repli[open] > summary::after { content: "▴"; }
+.repli-in { padding-top: .2rem; }
