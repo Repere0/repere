@@ -138,9 +138,28 @@
 .bloc-second { border-top: 1px solid var(--trait); margin-top: 1rem; padding-top: .9rem; }
 .ligne { margin-bottom: .8rem; }
 .ligne:last-child { margin-bottom: 0; }
-.ligne-h { display: flex; align-items: baseline; justify-content: space-between; gap: .7rem;
+/* TROUVE PAR L'AUDIT WCAG DU 16/09/2026, A 200% DE ZOOM TEXTE — CORRIGE EN
+   TROIS TEMPS, ET C'EST LE TROISIEME QUI TIENT.
+   1. `white-space: nowrap` sur le `<b>` etait pose sans motif ecrit ; retire,
+      parce que rien de ce que ce selecteur affiche (montants courts, mais
+      aussi des noms et la phrase de circonscription) n'en a besoin.
+   2. Retirer nowrap seul ne suffisait pas : un enfant de flex garde
+      `min-width: auto` par defaut et refuse de se retrecir sous la largeur
+      de son texte non coupe. Ajouter `min-width: 0` faisait bien PARAITRE le
+      texte replie sur plusieurs lignes...
+   3. ...mais Chromium continuait de compter la largeur non retrecie du `<b>`
+      dans le debordement scrollable du document : mesure avec un vrai
+      scroll (pas seulement une bounding box), la page restait deplacable de
+      130 px vers la droite, invisible a l'oeil mais bien reel. C'est un
+      ecart documente entre le rendu visuel et le calcul de scrollWidth d'un
+      enfant de flex retreci sous son min-content. La correction qui tient
+      vraiment : `flex-wrap: wrap` sur la ligne elle-meme. Quand l'espace
+      manque, la valeur passe sur SA PROPRE LIGNE pleine largeur au lieu
+      d'etre ecrasee dans une colonne trop etroite — aucun retrecissement
+      force, donc aucun debordement fantome a compter. */
+.ligne-h { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: .15rem .7rem;
   font-size: .93rem; color: var(--sourd); }
-.ligne-h b { color: var(--encre); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.ligne-h b { color: var(--encre); font-variant-numeric: tabular-nums; }
 .ligne-note { font-size: .82rem; color: var(--sourd); margin-top: .25rem; line-height: 1.45; }
 .barre { height: 8px; border-radius: 99px; background: var(--voile); margin-top: .35rem; overflow: hidden; }
 .barre i { display: block; height: 100%; border-radius: 99px; }

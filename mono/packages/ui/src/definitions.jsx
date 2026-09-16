@@ -41,9 +41,20 @@ export function DefinitionProvider({ children }) {
   useEffect(() => {
     if (!cle) return undefined;
     if (boutonFermer.current) boutonFermer.current.focus();
-    const surEchap = e => { if (e.key === "Escape") fermer(); };
-    document.addEventListener("keydown", surEchap);
-    return () => document.removeEventListener("keydown", surEchap);
+    /* PIEGE DE FOCUS, TROUVE MANQUANT PAR L'AUDIT WCAG DU 16/09/2026.
+     * `aria-modal="true"` PROMET a l'assistance technologique qu'on ne peut
+     * pas sortir de la fiche par le clavier — mesure : un seul Tab suffisait
+     * a en sortir. Pas de dependance de piege de focus generique : un seul
+     * element est focusable ici (le bouton Fermer), donc Tab et Maj+Tab
+     * reviennent tout simplement sur lui. Si la fiche gagne un jour un
+     * second element focusable (un lien "en savoir plus"), ce piege devra
+     * cycler entre les deux au lieu de tout ramener au meme bouton. */
+    const surClavier = e => {
+      if (e.key === "Escape") { fermer(); return; }
+      if (e.key === "Tab") { e.preventDefault(); if (boutonFermer.current) boutonFermer.current.focus(); }
+    };
+    document.addEventListener("keydown", surClavier);
+    return () => document.removeEventListener("keydown", surClavier);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [cle]);
 

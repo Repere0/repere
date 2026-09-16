@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Carte, Vide, Source, Chargement, dateFr, Mot } from "@repere/ui";
 import { Pile } from "@repere/ui/amicro";
 import { LigneVote, estSolennel, positionsFiables, REFUS_APPARIEMENT } from "../lib/votes.jsx";
@@ -120,6 +120,17 @@ function Votes({ dep, acteurRef, nom }) {
   const [cat, setCat] = useState(null);
   const [pos, setPos] = useState(null);
   const [combien, setCombien] = useState(PAR_TRANCHE);
+  /* TROUVE PAR L'AUDIT WCAG DU 16/09/2026 : le bloc de votes apparaissait sous
+   * le bouton sans qu'aucun lecteur d'ecran ne l'annonce — aucun aria-live,
+   * et le focus restait sur le bouton qui vient de disparaitre. Un bloc de
+   * plusieurs centaines de mots n'est pas de la matiere pour une region
+   * live (elle relirait tout a chaque changement) ; le patron ARIA
+   * "disclosure" recommande de deplacer le focus dans le contenu qui vient
+   * d'apparaitre, pas de le faire annoncer par-dessus. */
+  const enteteRef = useRef(null);
+  useEffect(() => {
+    if (ouvert && enteteRef.current) enteteRef.current.focus();
+  }, [ouvert, etat]);
 
   useEffect(() => {
     if (!ouvert) return undefined;
@@ -139,7 +150,7 @@ function Votes({ dep, acteurRef, nom }) {
 
   if (!ouvert) {
     return (
-      <button type="button" className="depliant"
+      <button type="button" className="depliant" aria-expanded="false"
         onClick={() => { setOuvert(true); entrer(() => setOuvert(false)); }}>
         Comment {nom} a voté à l'Assemblée
       </button>
@@ -184,9 +195,9 @@ function Votes({ dep, acteurRef, nom }) {
       {/* UN EN-TETE, ET IL A ETE AJOUTE SUR CAPTURE. Deplie, l'ecran passait du
           nom du depute a une suite de dates : rien ne disait de qui etaient ces
           positions, ni sur quelle periode. */}
-      <div className="votes-h">
+      <div className="votes-h" ref={enteteRef} tabIndex={-1}>
         <b>Comment {nom} a voté</b>
-        <button type="button" className="votes-replier" onClick={revenir}>Replier</button>
+        <button type="button" className="votes-replier" aria-expanded="true" onClick={revenir}>Replier</button>
       </div>
 
       {lois.length ? (

@@ -614,6 +614,38 @@ verif("langue du citoyen — Echap referme la fiche", ficheFermee, "la fiche est
 const focusApresFermeture = await pageMot.evaluate(() => document.activeElement?.innerText || "");
 verif("langue du citoyen — le focus revient au mot apres fermeture, pas perdu dans la page",
   focusApresFermeture === "circonscription", "focus sur : " + JSON.stringify(focusApresFermeture));
+
+/* TROIS CORRECTIFS DE L'AUDIT WCAG DU 16/09/2026, PROUVES ICI.
+ * `pageMot` est deja sur Bagnolet, ecran "Qui decide" (mesure du vocabulaire
+ * ci-dessus) : pas besoin de re-choisir la commune, le champ de recherche a
+ * deja disparu au profit du bandeau "commune choisie". */
+const boutonVotesA = pageMot.getByRole("button", { name: /Comment .+ a voté à l'Assemblée/ });
+verif("accessibilite — le bouton des votes annonce son etat ferme (aria-expanded)",
+  await boutonVotesA.getAttribute("aria-expanded") === "false",
+  "aria-expanded=" + JSON.stringify(await boutonVotesA.getAttribute("aria-expanded")));
+await boutonVotesA.click();
+await pageMot.waitForTimeout(600);
+const focusApresOuverture = await pageMot.evaluate(() =>
+  document.activeElement?.closest(".votes-h") !== null);
+verif("accessibilite — ouvrir les votes deplace le focus dans le bloc qui vient d'apparaitre",
+  focusApresOuverture, "le focus n'est pas entre dans .votes-h");
+const boutonReplier = pageMot.getByRole("button", { name: "Replier" });
+verif("accessibilite — le bouton Replier annonce son etat ouvert (aria-expanded)",
+  await boutonReplier.getAttribute("aria-expanded") === "true",
+  "aria-expanded=" + JSON.stringify(await boutonReplier.getAttribute("aria-expanded")));
+
+/* LA FICHE DE VOCABULAIRE PROMET aria-modal="true" : UN TAB NE DOIT PAS EN
+ * SORTIR. Avant le correctif, un seul Tab suffisait a atteindre un element
+ * hors de la fiche (mesure par l'audit). Reouvre "circonscription", deja
+ * prouve declencheur plus haut sur ce meme ecran. */
+await pageMot.getByRole("button", { name: "circonscription", exact: true }).click();
+await pageMot.waitForTimeout(200);
+await pageMot.keyboard.press("Tab");
+const resteDansLaFiche = await pageMot.evaluate(() =>
+  document.activeElement?.closest(".mot-fiche") !== null);
+verif("accessibilite — Tab ne fait pas sortir du dialogue de vocabulaire (piege de focus)",
+  resteDansLaFiche, "le focus est sorti de .mot-fiche apres une tabulation");
+await pageMot.keyboard.press("Escape");
 await ctxMot.close();
 
 console.log("\n--- mouvement reduit -----------------------------------------");
@@ -642,6 +674,28 @@ verif("accessibilite — mouvement reduit demande : aucune animation ne se joue"
 verif("accessibilite — mouvement reduit : le contenu est visible d'emblee",
   !calme.absent && calme.opacite === "1" && calme.visible, JSON.stringify(calme));
 await ctxCalme.close();
+
+console.log("\n--- zoom texte 200% -------------------------------------------");
+/* TROUVE PAR L'AUDIT WCAG DU 16/09/2026 (1.4.4/1.4.10) : a 200% de zoom
+ * texte, l'ecran "Qui decide" defilait horizontalement (726 px de contenu
+ * pour 390 px de viewport) — cause tracee a `.ligne-h b { white-space:
+ * nowrap }` applique a la phrase de circonscription, une valeur bien plus
+ * longue que les noms/montants que cette regle visait. Corrige avec une
+ * classe qui ne touche qu'a cette phrase (`.valeur-longue`). */
+const ctxZoom = await nav.newContext({ viewport: { width: 390, height: 844 } });
+const pageZoom = await ctxZoom.newPage();
+await pageZoom.goto(base, { waitUntil: "networkidle" });
+await pageZoom.getByLabel(/Où habitez-vous/).fill("bagnolet");
+await pageZoom.waitForTimeout(300);
+await pageZoom.getByRole("button", { name: /Bagnolet/ }).click();
+await pageZoom.waitForTimeout(1200);
+await pageZoom.evaluate(() => { document.documentElement.style.fontSize = "200%"; });
+await pageZoom.waitForTimeout(200);
+const debordement = await pageZoom.evaluate(() =>
+  document.documentElement.scrollWidth - document.documentElement.clientWidth);
+verif("accessibilite — a 200% de zoom texte, l'ecran Qui decide ne defile pas horizontalement",
+  debordement <= 1, "debordement de " + debordement + " px");
+await ctxZoom.close();
 
 console.log("\n--- tout le parcours, ecran par ecran ------------------------");
 /* LE CONTROLE DES CIBLES TACTILES NE MESURAIT QU'UN SEUL ECRAN — celui affiche a
