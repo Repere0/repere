@@ -78,12 +78,12 @@ export default function Calendrier() {
           pas avant.
         </p>
         {aVenir.map((e, i) => (
-          <div className="ligne evenement" key={i}>
+          <div className="ligne fait" key={i}>
             <div className="ligne-h">
               <span>{jourFr(e.debut)}</span>
               <b>{heureFr(e.debut)}</b>
             </div>
-            <div className="evenement-titre">{e.titre}</div>
+            <b className="fait-titre">{e.titre}</b>
             <div className="ligne-note">
               {e.categorie ? e.categorie + (e.lieu ? " · " + e.lieu : "") : e.lieu}
             </div>

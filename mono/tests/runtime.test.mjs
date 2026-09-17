@@ -430,6 +430,28 @@ const classement = argent.t.match(/classement|palmar|moyenne nationale|mieux que
 verif("invariant 3 — aucun classement ni comparaison entre territoires",
   classement === null, classement ? classement[0] : "");
 
+console.log("\n--- calendrier citoyen (pilote Senat) -------------------------");
+/* PILOTE DU 17/09/2026 : un seul echelon publie (Senat), aucune commune
+ * requise pour l'ouvrir — comme « Sources ». La donnee est un instantane deja
+ * ecrit dans mono/data/calendrier-senat.json au moment de l'extraction (voir
+ * scripts/calendrier-senat.mjs) : ce controle ne touche jamais le reseau du
+ * vrai Senat, il lit ce que le build a deja capture. */
+await page.getByRole("button", { name: "Ce qui se passe" }).click();
+await page.waitForTimeout(700);
+const cal = await page.evaluate(() => document.body.innerText);
+verif("calendrier — l'ecran s'ouvre sans commune choisie",
+  /Ce qui se passe prochainement/.test(cal), cal.slice(0, 160).replace(/\n+/g, " / "));
+verif("calendrier — au moins un evenement reel est affiche",
+  /Sénat/.test(cal) && /\d{4}/.test(cal), "aucune date ni producteur trouve");
+verif("invariant 4 — le calendrier porte son producteur et sa date de releve",
+  /Sénat/.test(cal) && /relevé le/i.test(cal), cal.slice(-300).replace(/\n+/g, " / "));
+/* LA LICENCE N'EST PAS ACQUISE, ET L'ECRAN DOIT LE DIRE PLUTOT QUE L'OMETTRE
+ * OU L'INVENTER — voir le commentaire de calendrier-senat.mjs. Un ecran qui
+ * n'afficherait aucune mention de licence serait un manquement a
+ * l'invariant 4 tout autant qu'une licence devinee. */
+verif("invariant 4 — la licence non confirmee est dite, pas devinee ni omise",
+  /non précisée/i.test(cal), "la mention de licence non confirmee est absente de l'ecran");
+
 /* La langue : le francais affiche porte ses accents. Faute commise deux fois.
    La mesure ne portait que sur l'ecran des comptes ; l'ecran « Sources », lui,
    affichait « Ministere de l'Interieur ... circonscription legislative » recopie
@@ -450,7 +472,7 @@ verif("rendu — le decoupage et les mandats ne sont pas donnes comme une seule 
 verif("rendu — aucune date de decoupage annoncee comme une mise a jour",
   !/mise à jour du découpage/i.test(texteSources), "« mise a jour du decoupage de 2010 » ne veut rien dire");
 
-const vuPartout = argent.t + "\n" + texteSources + "\n" + qui;
+const vuPartout = argent.t + "\n" + texteSources + "\n" + qui + "\n" + cal;
 const sansAccent = MOTS_A_ACCENTS.filter(m =>
   new RegExp("(?:^|[^A-Za-zÀ-ÿ./-])" + m + "(?![A-Za-zÀ-ÿ./-])").test(vuPartout));
 verif("langue — le francais affiche porte ses accents, sur les trois ecrans",

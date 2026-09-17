@@ -238,8 +238,8 @@ test("invariant 4 — aucune donnée n'est servie sans source déclarée", () =>
   const client = lire("packages/data-utils/src/client.js");
   const composees = [...client.matchAll(/\$\{BASE_DONNEES\}(\/[A-Za-z0-9_${}./-]*)/g)].map(m => m[1]);
   assert.deepEqual([...new Set(composees)].sort(),
-    ["/communes-beta.json", "/departments/${d}.json", "/deputes.json", "/index.json",
-     "/projets/${d}.json", "/scrutins.json", "/scrutins/${d}.json"],
+    ["/calendrier-senat.json", "/communes-beta.json", "/departments/${d}.json", "/deputes.json",
+     "/index.json", "/projets/${d}.json", "/scrutins.json", "/scrutins/${d}.json"],
     "client.js compose une adresse de donnees inattendue : " + composees.join(", "));
   const sources = existe("data/index.json") ? (JSON.parse(lire("data/index.json")).sources || {}) : {};
   for (const attendue of ["elus", "comptes", "circonscriptions", "deputes", "scrutins", "communes"]) {
