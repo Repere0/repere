@@ -3,7 +3,7 @@ import { Carte, Vide, Source, Chargement, dateFr } from "@repere/ui";
 import {
   chargerProjets, chargerDeputes, chargerCatalogueScrutins, chargerVotes, ETATS,
 } from "@repere/data-utils";
-import { LigneVote, estSolennel, positionsFiables, REFUS_APPARIEMENT } from "../lib/votes.jsx";
+import { LigneVote, positionSur, positionsFiables, REFUS_APPARIEMENT } from "../lib/votes.jsx";
 
 const DGCL_URL = "https://www.data.gouv.fr/datasets/projets-finances-par-les-dotations-"
   + "de-soutien-a-linvestissement-des-collectivites-territoriales";
@@ -169,11 +169,14 @@ export default function CeQuiADecide({ paquet, index, commune }) {
                  : (fiche.circo === null || fiche.circo === undefined ? [] : [fiche.circo]);
   const base = (cat && cat.url_scrutin) || "";
   const apparie = positionsFiables(cat, pos);
+  /* BLOCKER M-2 (17/09/2026) : `cat.scrutins` ne contient plus que des scrutins
+     solennels (filtre applique a l'ecriture, extract-html.js) — plus besoin de
+     `estSolennel` ici, et `pos.positions` s'indexe par numero de scrutin, pas
+     par depute : `positionSur()` fait la lecture. */
   if (cat && cat.scrutins && pos && pos.positions && deputes && deputes.deputes && apparie) {
     for (const circo of circos) {
       const d = deputes.deputes[dep + "-" + circo];
-      const suite = d && d.acteurRef ? pos.positions[d.acteurRef] : null;
-      if (!suite) continue;
+      if (!d || !d.acteurRef) continue;
       /* LE NOM COMPLET, ET JAMAIS LE PATRONYME SEUL.
          Trouve par la red team le 14/09/2026, et c'etait une faute grave. Le
          maire de Paris dans nos donnees est Emmanuel GREGOIRE ; la deputee de la
@@ -186,14 +189,14 @@ export default function CeQuiADecide({ paquet, index, commune }) {
          pas prise, c'est le terrain de la diffamation — et le prenom etait dans
          le fichier, a cote, non utilise. */
       const nomComplet = [d.prenom, d.nom].filter(Boolean).join(" ") || d.nom || "";
-      cat.scrutins.forEach((sc, i) => {
-        if (!estSolennel(sc)) return;          // les lois seulement : decision D-08
+      for (const sc of cat.scrutins) {
+        const position = positionSur(pos, d.acteurRef, sc.n);
         faits.push({ cle: "v" + circo + sc.u, quand: sc.d, rang: 1, echelon: "france",
                      /* `ref` et non le nom : deux deputes homonymes d'une commune a
                         deux circonscriptions verraient sinon leurs votes fusionnes
                         sous un seul en-tete. */
-                     type: "vote", sc, position: suite[i], qui: nomComplet, ref: d.acteurRef });
-      });
+                     type: "vote", sc, position, qui: nomComplet, ref: d.acteurRef });
+      }
     }
   }
 

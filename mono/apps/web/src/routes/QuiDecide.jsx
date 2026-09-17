@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Carte, Vide, Source, Chargement, dateFr, Mot } from "@repere/ui";
 import { Pile } from "@repere/ui/amicro";
-import { LigneVote, estSolennel, positionsFiables, REFUS_APPARIEMENT } from "../lib/votes.jsx";
+import { LigneVote, positionSur, positionsFiables, REFUS_APPARIEMENT } from "../lib/votes.jsx";
 import {
   chargerDeputes, chargerCatalogueScrutins, chargerVotes, entrer, revenir, ETATS,
 } from "@repere/data-utils";
@@ -97,7 +97,6 @@ function phraseCirco(nom, circo) {
  *
  * Une commune à cheval sur plusieurs circonscriptions n'affiche personne :
  * laquelle est la vôtre dépend de votre adresse, que Repère ne demande pas. */
-const PAR_TRANCHE = 10;
 
 /* COMMENT IL A VOTE — le bout de chaine que personne d'autre ne donne.
  *
@@ -107,9 +106,10 @@ const PAR_TRANCHE = 10;
  *
  * CE QUI N'EST PAS AFFICHE, ET NE LE SERA PAS : aucun compte (« 12 fois pour »),
  * aucun taux, aucune comparaison avec un groupe ou un autre elu. L'invariant 3
- * l'interdit, et le format des donnees le rend impossible : le fichier ne porte
- * qu'une suite de positions. Un compteur d'absences, lui, ne peut meme pas etre
- * calcule — le releve amont n'embarque aucun non-votant.
+ * l'interdit, et depuis le 17/09/2026 le format des donnees le rend impossible
+ * par construction (BLOCKER M-2) : seuls les scrutins SOLENNELS sont publies,
+ * indexes par leur numero et non par un rang de tableau — aucune valeur rangee
+ * sous une cle qui nomme un depute n'a plus la forme d'un compte ou d'un taux.
  *
  * RIEN NE PART AU RESEAU TANT QUE LE LECTEUR N'A PAS DEMANDE. Le catalogue
  * (28 Ko, toute la France) et les positions du departement (moins de 2 Ko) ne
@@ -119,7 +119,6 @@ function Votes({ dep, acteurRef, nom }) {
   const [etat, setEtat] = useState(ETATS.ABSENT);
   const [cat, setCat] = useState(null);
   const [pos, setPos] = useState(null);
-  const [combien, setCombien] = useState(PAR_TRANCHE);
   /* TROUVE PAR L'AUDIT WCAG DU 16/09/2026 : le bloc de votes apparaissait sous
    * le bouton sans qu'aucun lecteur d'ecran ne l'annonce — aucun aria-live,
    * et le focus restait sur le bouton qui vient de disparaitre. Un bloc de
@@ -175,19 +174,17 @@ function Votes({ dep, acteurRef, nom }) {
       lien={{ texte: "Assemblée nationale — scrutins publics", url: s.url || AN_VOTES_URL }} />;
   }
 
-  const suite = pos.positions[acteurRef];
-  if (!suite) {
+  /* Du plus recent au plus ancien : le catalogue est trie par date croissante.
+     BLOCKER M-2 : `cat.scrutins` ne contient plus que des scrutins solennels
+     (filtre applique a l'ecriture, extract-html.js) — plus de distinction
+     lois/details a faire ici, et plus de rang de tableau : chaque position se
+     lit par le numero du scrutin, jamais par un indice. */
+  const lignes = cat.scrutins.map(sc => ({ sc, p: positionSur(pos, acteurRef, sc.n) })).reverse();
+  if (!lignes.some(l => l.p)) {
     return <Vide titre={`Le relevé des scrutins ne porte aucune position pour ${nom}.`}
       corps="Un mandat ouvert après la période relevée, un siège pourvu en cours de législature : c'est la source qui est muette sur cette période, et Repère n'en déduit rien."
       lien={{ texte: "Assemblée nationale — scrutins publics", url: s.url || AN_VOTES_URL }} />;
   }
-
-  /* Du plus recent au plus ancien : le catalogue est trie par date croissante. */
-  const lignes = cat.scrutins.map((sc, i) => ({ sc, p: suite[i] })).reverse();
-  const lois = lignes.filter(l => estSolennel(l.sc));
-  const details = lignes.filter(l => !estSolennel(l.sc));
-  const montres = details.slice(0, combien);
-  const reste = details.length - montres.length;
   const base = cat.url_scrutin || "";
 
   return (
@@ -200,44 +197,20 @@ function Votes({ dep, acteurRef, nom }) {
         <button type="button" className="votes-replier" aria-expanded="true" onClick={revenir}>Replier</button>
       </div>
 
-      {lois.length ? (
-        <>
-          <p className="groupe">
-            {lois.length === 1 ? "La loi votée" : "Les " + lois.length + " lois votées"}
-            {" "}— <Mot cle="scrutin solennel">votes solennels</Mot> sur l'ensemble d'un texte
-          </p>
-          {lois.map(({ sc, p }) => <LigneVote key={sc.u} sc={sc} position={p} base={base} loi qui={nom} />)}
-        </>
-      ) : (
-        <p className="tx-note">
-          Sur la période relevée, l'Assemblée n'a tenu aucun vote solennel sur l'ensemble
-          d'un texte. Les votes de détail ci-dessous sont les seuls que la source porte.
-        </p>
-      )}
-
-      {details.length ? (
-        <>
-          <p className="groupe">
-            Les {details.length} votes de détail — amendements, motions, articles
-          </p>
-          <p className="tx-note votes-portee">
-            Ce sont les votes qui construisent un texte ligne à ligne. Ils sont nombreux,
-            et leur intitulé est celui de l'Assemblée, sans reformulation.
-          </p>
-          {montres.map(({ sc, p }) => <LigneVote key={sc.u} sc={sc} position={p} base={base} qui={nom} />)}
-          {reste > 0 ? (
-            <button type="button" className="depliant" onClick={() => setCombien(combien + PAR_TRANCHE)}>
-              Afficher {Math.min(reste, PAR_TRANCHE)} vote{Math.min(reste, PAR_TRANCHE) > 1 ? "s" : ""} de plus
-              {" "}({reste} restant{reste > 1 ? "s" : ""})
-            </button>
-          ) : null}
-        </>
-      ) : null}
+      <p className="groupe">
+        {lignes.length === 1 ? "La loi votée" : "Les " + lignes.length + " lois votées"}
+        {" "}— <Mot cle="scrutin solennel">votes solennels</Mot> sur l'ensemble d'un texte
+      </p>
+      {lignes.map(({ sc, p }) => <LigneVote key={sc.u} sc={sc} position={p} base={base} loi qui={nom} />)}
 
       <p className="tx-note">
         {s.portee ? s.portee + ". " : ""}{cat.ecarte}
         {" Une position non portée n'est pas une absence : elle peut couvrir une délégation, "}
-        une présidence de séance, ou un scrutin auquel le député n'a pas été appelé.
+        une présidence de séance, ou un scrutin auquel le député n'a pas été appelé. Repère ne
+        publie que les votes solennels — sur l'ensemble d'un texte — jamais les votes de détail :
+        la plupart d'entre eux sont des votes de procédure à faible participation, et compter les
+        positions non portées produirait un chiffre qui ressemble à un taux de présence sans en
+        être un.
       </p>
       <Source producteur={s.producteur} licence={s.licence}
         mention={s.releve_le ? "relevé le " + dateFr(s.releve_le) : undefined}

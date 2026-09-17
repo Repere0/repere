@@ -765,6 +765,9 @@ test("votes — la chaine commune → circonscription → député → position 
   assert.deepEqual(manquants, [],
     "un departement de la beta n'a pas de fichier de votes : l'ecran afficherait un blanc");
 
+  /* BLOCKER M-2 (17/09/2026) : les positions sont indexees par numero de
+     scrutin, pas par depute — `votes.positions[n][acteurRef]`, jamais
+     `votes.positions[acteurRef]`. */
   let chaines = 0;
   for (const dep of BETA_IDF) {
     const votes = litData(`scrutins/${dep}.json`);
@@ -773,10 +776,8 @@ test("votes — la chaine commune → circonscription → député → position 
       if (typeof c.circo !== "number") continue;
       const m = mandats.deputes[`${dep}-${c.circo}`];
       if (!m || !m.acteurRef) continue;
-      const pos = votes.positions[m.acteurRef];
-      if (!pos) continue;
-      assert.equal(pos.length, cat.scrutins.length,
-        `${dep} : ${m.nom} porte ${pos.length} positions pour ${cat.scrutins.length} scrutins`);
+      const auMoinsUne = Object.values(votes.positions).some(table => m.acteurRef in table);
+      if (!auMoinsUne) continue;
       chaines++;
     }
   }
@@ -807,20 +808,37 @@ test("invariant 4 — les votes publiés portent producteur, licence, date et ad
   assert.match(s.releve_le, /^\d{4}-\d{2}-\d{2}$/, "la date de releve des scrutins n'est pas une date");
 });
 
-test("invariant 3 — le format des positions rend tout classement impossible", () => {
+test("invariant 3/8 — le format des positions rend tout classement impossible", () => {
+  /* CE TEST AVAIT UN NOM JUSTE ET UNE VERIFICATION FAUSSE, ET C'EST EXACTEMENT
+   * CE QU'UN RED TEAM A TROUVE LE 14/09/2026 PUIS RECONFIRME LE 16/09/2026 :
+   * il verifiait `typeof pos === "string"` en croyant qu'« une chaine ne peut
+   * pas porter de compte » (ancien message d'assertion, cite ici pour memoire :
+   * « un objet peut porter un compte, une chaine non »). C'est faux — une
+   * chaine de 80 caracteres p/c/a/. porte un compte aussi bien qu'un objet :
+   * il suffit de compter les caracteres qui ne sont pas un point. Ce test
+   * passait au vert pendant que le blocker M-2 etait en production. La lecon
+   * (deja tiree deux fois dans ce projet, cf CLAUDE.md §9) : une garde se
+   * verifie sur une PROPRIETE demontree, jamais sur un type de donnee suppose
+   * sans danger. La verification qui suit teste la propriete elle-meme :
+   * aucune valeur rangee sous une cle nommant un depute ne peut depasser un
+   * caractere — voir aussi le test dedie « les positions de vote ne peuvent
+   * plus prendre la forme d'un taux ». */
   if (!existe("data/scrutins.json")) return;
-  const largeur = litData("scrutins.json").scrutins.length;
+  const numeros = new Set(litData("scrutins.json").scrutins.map(sc => sc.n));
   let lourd = 0, fichiers = 0;
   for (const f of fs.readdirSync(path.join(RACINE, "data", "scrutins"))) {
     fichiers++;
     const octets = fs.statSync(path.join(RACINE, "data", "scrutins", f)).size;
     if (octets > lourd) lourd = octets;
     const v = JSON.parse(lire(path.join("data", "scrutins", f)));
-    for (const [ref, pos] of Object.entries(v.positions)) {
-      assert.equal(typeof pos, "string",
-        `${f} range autre chose qu'une suite de positions pour ${ref} : un objet peut porter un compte, une chaine non`);
-      assert.equal(pos.length, largeur, `${f} : ${ref} porte ${pos.length} positions pour ${largeur} scrutins`);
-      assert.ok(!/[^pca.]/.test(pos), `${f} : ${ref} porte un caractere qui n'est pas une position`);
+    for (const [n, table] of Object.entries(v.positions)) {
+      assert.ok(numeros.has(n), `${f} porte des positions pour le scrutin ${n}, absent du catalogue`);
+      for (const [ref, lettre] of Object.entries(table)) {
+        assert.equal(typeof lettre, "string", `${f} : ${n}/${ref} n'est pas une chaine`);
+        assert.equal(lettre.length, 1,
+          `${f} : ${n}/${ref} vaut "${lettre}" — une valeur de plus d'un caractere sous une cle nommant un depute`);
+        assert.ok(/^[pca]$/.test(lettre), `${f} : ${n}/${ref} porte un caractere qui n'est pas une position`);
+      }
     }
   }
   assert.ok(fichiers > 100, `seulement ${fichiers} departements ont un fichier de votes`);
@@ -1047,7 +1065,7 @@ test("projets — la lecture d'un scrutin n'est écrite qu'à un seul endroit", 
      plus rien donné pendant des semaines sans que rien ne le signale (D-15).
      Deux écrans lisent maintenant les mêmes scrutins. La règle vit dans
      apps/web/src/lib/votes.jsx, et une seconde définition fait échouer le banc. */
-  for (const nom of ["estSolennel", "titreLisible", "procedure", "decompte", "LigneVote"]) {
+  for (const nom of ["titreLisible", "procedure", "decompte", "LigneVote", "positionSur"]) {
     const definitions = sourcesEcrites().filter(f =>
       new RegExp("(?:function|const)\\s+" + nom + "\\b").test(lire(f)));
     assert.deepEqual(definitions, ["apps/web/src/lib/votes.jsx"],
@@ -1159,15 +1177,19 @@ test("votes — un élu n'est jamais nommé par son seul patronyme", () => {
 });
 
 test("votes — les positions ne s'affichent pas si les deux relevés ne correspondent pas", () => {
-  /* DÉFAUT ARMÉ, PAS DÉCLENCHÉ, trouvé le 14/09. Les positions sont une chaîne
-     dont le rang i correspond au rang i du catalogue. Or D-12 prévoit
+  /* DÉFAUT ARMÉ, PAS DÉCLENCHÉ, trouvé le 14/09. Les positions étaient une
+     chaîne dont le rang i correspondait au rang i du catalogue. Or D-12 prévoit
      explicitement qu'un relevé absent soit remplacé par celui de la veille : le
      jour où le catalogue gagne un scrutin et où les positions échouent, TOUTES les
-     positions glissent d'un rang, sur des élus nommés, sans aucun signal.
+     positions auraient glissé d'un rang, sur des élus nommés, sans aucun signal.
+     Le BLOCKER M-2 (17/09/2026) a change la forme des positions (indexees par
+     numero de scrutin, plus par rang de tableau) et avec elle la garde : elle
+     verifie maintenant qu'aucun numero de scrutin publie n'est absent du
+     catalogue, ce qui rend le glissement de rang structurellement impossible.
      La garde vit dans lib/votes.jsx — un seul endroit pour deux écrans. */
   const garde = lire("apps/web/src/lib/votes.jsx");
   assert.ok(/export function positionsFiables/.test(garde), "la garde n'existe pas");
-  for (const exigence of [/suite\.length *!== *largeur/, /releve_le/]) {
+  for (const exigence of [/numeros\.has\(n\)/, /releve_le/]) {
     assert.ok(exigence.test(garde),
       "la garde ne vérifie pas " + exigence.source);
   }

@@ -3,32 +3,26 @@ import { dateFr } from "@repere/ui";
 
 /* LA LECTURE D'UN SCRUTIN, ECRITE UNE SEULE FOIS.
  *
- * POURQUOI CE FICHIER EXISTE. Deux ecrans lisent maintenant les memes scrutins :
- * « Qui decide » les montre tous, « Ce qui a ete decide » n'en prend que les
- * lois pour son fil date. La recherche de commune avait deja ete derivee deux
- * fois dans ce produit, les deux copies avaient divergé, et « Évry » ne donnait
- * plus aucun resultat pendant des semaines (decision D-15). On ne refait pas
- * cette faute : la regle vit ici, les ecrans l'importent.
+ * POURQUOI CE FICHIER EXISTE. Deux ecrans lisent les memes scrutins : « Qui
+ * decide » les montre tous, « Ce qui a ete decide » les prend pour son fil
+ * date. La recherche de commune avait deja ete derivee deux fois dans ce
+ * produit, les deux copies avaient divergé, et « Évry » ne donnait plus aucun
+ * resultat pendant des semaines (decision D-15). On ne refait pas cette
+ * faute : la regle vit ici, les ecrans l'importent.
  *
- * Le banc echoue si `estSolennel` ou `titreLisible` reapparait ailleurs. */
+ * Le banc echoue si `titreLisible` reapparait ailleurs.
+ *
+ * LE TRI SOLENNEL/DETAIL NE VIT PLUS ICI. Jusqu'au 17/09/2026, `estSolennel`
+ * etait definie dans ce fichier et appelee par les deux ecrans pour ne garder
+ * que les votes sur l'ensemble d'un texte (huit sur quatre-vingts). Le
+ * BLOCKER M-2 a deplace ce filtre a l'ECRITURE (mono/scripts/extract-html.js) :
+ * seuls les scrutins solennels sont desormais publies, donc plus aucun ecran
+ * n'a besoin de refaire le tri — `cat.scrutins` est deja le bon sous-ensemble.
+ * Le predicat `/solennel/i.test(sc.tv)` existe maintenant a un seul endroit,
+ * dans extract-html.js — pas ici, parce que ce fichier de build ne peut pas
+ * importer du JSX (React) sans transpilateur. */
 
 export const MOTS = { p: "Pour", c: "Contre", a: "Abstention" };
-
-/* CE QUE VOIT UN CITOYEN, ET CE QU'IL VOULAIT VOIR. Mesure du 13/09/2026 sur les
- * 80 scrutins publies : 89 % sont des votes de PROCEDURE — amendements,
- * sous-amendements, motions — et 66 sur 80 portent sur un seul et meme texte.
- * L'ecran affichait donc, en tete, « le sous-amendement n° 1233 de Mme X a
- * l'amendement n° 1050 de Mme Y a l'article 5 du projet de loi... ». Personne ne
- * cherche ca. On cherche comment son depute a vote LA LOI.
- *
- * LA SOURCE PORTE DEJA LA DISTINCTION, il n'y avait qu'a la lire : `typeVote`
- * vaut « scrutin public solennel » pour 8 scrutins sur 80, et ces huit-la sont
- * exactement les votes sur l'ensemble d'un texte. Huit lois, huit positions.
- *
- * RIEN N'EST RETIRE : les 72 autres sont derriere un depliant, avec leur intitule
- * officiel intact. Ce n'est pas un tri de valeur — c'est la distinction que
- * l'Assemblee elle-meme etablit entre un vote solennel et un vote ordinaire. */
-export const estSolennel = sc => /solennel/i.test(sc.tv || "");
 
 /* L'INTITULE OFFICIEL, ALLEGE DE SA PROCEDURE — ET DE RIEN D'AUTRE.
  * On retire deux choses, toutes deux redondantes une fois la ligne mise en forme :
@@ -116,37 +110,46 @@ export function LigneVote({ sc, position, base, loi, qui }) {
 /* LES POSITIONS SONT APPARIEES, ET L'APPARIEMENT EST VERIFIE.
  *
  * LE DEFAUT, TROUVE PAR LA RED TEAM LE 14/09/2026, ETAIT ARME ET NON DECLENCHE.
- * Les positions sont stockees comme une CHAINE de caracteres dont le rang i
- * correspond au rang i du catalogue. Or la decision D-12 prevoit explicitement
+ * Les positions etaient stockees comme une CHAINE de caracteres dont le rang i
+ * correspondait au rang i du catalogue. Or la decision D-12 prevoit explicitement
  * qu'un releve absent soit remplace par celui de la veille : « la chaine continue
  * avec le releve de la veille ». Le jour ou le catalogue gagne un scrutin et ou le
- * fichier des positions echoue, les deux fichiers n'ont plus la meme longueur, et
- * TOUTES les positions affichees glissent d'un rang — « Pour » sur un texte
- * rejete, sur un elu nomme, sans aucun signal. Le defaut ne se declenchait pas
- * parce que les deux relevés portaient la meme date ; il se declencherait le jour
- * meme ou D-12 s'appliquerait comme prevu.
+ * fichier des positions echoue, les deux fichiers n'auraient plus eu la meme
+ * longueur, et TOUTES les positions affichees auraient glisse d'un rang —
+ * « Pour » sur un texte rejete, sur un elu nomme, sans aucun signal.
  *
- * LA GARDE : on refuse d'afficher une position des que les deux fichiers ne se
- * correspondent plus. Refuser est sans danger — la doctrine du vide a une phrase
- * pour ca ; afficher une position fausse ne l'est pas.
+ * LE CORRECTIF DU 17/09/2026 (BLOCKER M-2) ELIMINE CETTE CLASSE DE DEFAUT A LA
+ * RACINE : les positions sont desormais indexees par NUMERO DE SCRUTIN, jamais
+ * par un rang de tableau — une position s'identifie par le scrutin qu'elle
+ * concerne, elle ne peut plus glisser. La garde qui suit verifie qu'aucun
+ * fichier de positions ne reference un scrutin absent du catalogue (un
+ * decalage de collecte, pas un decalage de rang) et que les deux relevés
+ * portent la meme date.
  *
  * Elle vit ici, et pas dans un ecran, parce que DEUX ecrans lisent ces positions.
  * Le banc echoue si une seconde definition apparait. */
 export function positionsFiables(cat, pos) {
   if (!cat || !pos || !Array.isArray(cat.scrutins) || !pos.positions) return false;
-  const largeur = cat.scrutins.length;
-  /* Une seule longueur fausse suffit a invalider le fichier : c'est le meme
-     relevé pour tous ses deputes. */
-  for (const suite of Object.values(pos.positions)) {
-    if (typeof suite !== "string" || suite.length !== largeur) return false;
+  const numeros = new Set(cat.scrutins.map(sc => sc.n));
+  for (const n of Object.keys(pos.positions)) {
+    if (!numeros.has(n)) return false;
   }
   /* Deux dates de relevé differentes veulent dire deux collectes differentes,
-     donc un alignement qui n'est plus garanti — meme si les longueurs coincident
-     par hasard. */
+     donc un alignement qui n'est plus garanti. */
   const dCat = (cat.source && cat.source.releve_le) || "";
   const dPos = pos.releve_le || "";
   if (dCat && dPos && dCat !== dPos) return false;
   return true;
+}
+
+/* La position d'un depute sur un scrutin donne — jamais un rang de tableau.
+   `pos.positions` vaut { "8434": { "PA721908": "p" }, ... } : seuls les
+   scrutins SOLENNELS y figurent (BLOCKER M-2). Un depute absent de la table
+   d'un scrutin n'a simplement pas vote, et ce n'est jamais represente par un
+   caractere de remplissage — l'absence de cle EST l'absence de position. */
+export function positionSur(pos, acteurRef, scrutinN) {
+  const table = pos && pos.positions && pos.positions[scrutinN];
+  return table ? table[acteurRef] : undefined;
 }
 
 /* La phrase a afficher quand la garde refuse. Elle dit ce qui se passe, elle
