@@ -36,6 +36,10 @@ export function adresseScrutins() { return `${BASE_DONNEES}/scrutins.json`; }
    sort jamais de la memoire du navigateur, et aucune adresse n'est composee avec
    lui. C'est ce que garde `adresseFautive`. */
 export function adresseCommunesBeta() { return `${BASE_DONNEES}/communes-beta.json`; }
+/* LE CALENDRIER CITOYEN, PILOTE SENAT : un seul fichier, commun a toute la
+   France — un agenda parlementaire n'est pas une donnee territoriale, et ne
+   porte donc jamais de code de departement ni de commune. */
+export function adresseCalendrierSenat() { return `${BASE_DONNEES}/calendrier-senat.json`; }
 /* LES POSITIONS, PAR DEPARTEMENT — jamais par depute, jamais par commune. Une
    adresse par depute dirait au serveur quel elu on regarde, donc, a une
    circonscription pres, ou l'on habite. Deuxieme et derniere fabrique
@@ -229,6 +233,9 @@ export async function chargerVotes(dep, { delaiMs = 8000 } = {}) {
 }
 export async function chargerProjets(dep, { delaiMs = 8000 } = {}) {
   return chargerSocle("proj:" + String(dep).toUpperCase(), adresseProjets(dep), delaiMs);
+}
+export async function chargerCalendrierSenat({ delaiMs = 8000 } = {}) {
+  return chargerSocle("socle:CAL", adresseCalendrierSenat(), delaiMs);
 }
 
 /* Le trajet commun des trois etages, ecrit UNE fois. Les quatre chargements

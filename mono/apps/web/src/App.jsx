@@ -12,6 +12,7 @@ const CeQuiADecide = lazy(() => import("./routes/CeQuiADecide.jsx"));
 const QuiDecide = lazy(() => import("./routes/QuiDecide.jsx"));
 const OuVaArgent = lazy(() => import("./routes/OuVaArgent.jsx"));
 const Sources = lazy(() => import("./routes/Sources.jsx"));
+const Calendrier = lazy(() => import("./routes/Calendrier.jsx"));
 
 const ONGLETS = [
   /* « CE QUI A ETE DECIDE » EST LE PREMIER ONGLET, et cet ordre est la decision.
@@ -23,8 +24,13 @@ const ONGLETS = [
   { id: "decide", libelle: "Ce qui a été décidé", echelon: "ville", charge: () => import("./routes/CeQuiADecide.jsx") },
   { id: "qui", libelle: "Qui décide", echelon: "ville", charge: () => import("./routes/QuiDecide.jsx") },
   { id: "argent", libelle: "Où va l'argent", echelon: "dept", charge: () => import("./routes/OuVaArgent.jsx") },
+  /* CALENDRIER, COMME SOURCES : PAS PROPRE A UNE COMMUNE. Le pilote du
+     17/09/2026 ne publie que le Sénat — un echelon national, aucune raison
+     d'attendre le choix d'une commune pour l'ouvrir. */
+  { id: "calendrier", libelle: "Ce qui se passe", echelon: "france", charge: () => import("./routes/Calendrier.jsx") },
   { id: "sources", libelle: "Sources", echelon: "france", charge: () => import("./routes/Sources.jsx") },
 ];
+const ONGLETS_SANS_COMMUNE = new Set(["sources", "calendrier"]);
 
 /* INVARIANT 2 : une seule clé, nommée, et rien d'autre. Ni compte, ni courriel,
    ni identifiant. Elle ne contient qu'un code de département — jamais une
@@ -550,7 +556,8 @@ export default function App() {
                 <Suspense fallback={<Chargement titre="Ouverture de l'écran."
                   corps="Le code de cet écran est téléchargé à la demande, une seule fois." />}>
                   {onglet === "sources" ? <Sources index={index} paquet={paquet} /> : null}
-                  {onglet !== "sources" && !fiche ? (
+                  {onglet === "calendrier" ? <Calendrier /> : null}
+                  {!ONGLETS_SANS_COMMUNE.has(onglet) && !fiche ? (
                     <p className="invite">
                       Choisissez votre commune ci-dessus : Repère affichera ses élus, sa
                       circonscription et ses comptes.

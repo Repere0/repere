@@ -5,6 +5,7 @@
   "packageManager": "pnpm@8.15.9",
   "scripts": {
     "extract": "node scripts/extract-html.js",
+    "calendrier:senat": "node scripts/calendrier-senat.mjs ./data",
     "dev": "turbo run dev",
     "build": "turbo run build",
     "test": "node --test tests/invariants.test.mjs tests/runtime.test.mjs",
