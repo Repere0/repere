@@ -79,7 +79,12 @@
    sans rien qui laisse deviner qu'on pouvait faire defiler pour l'atteindre. */
 .onglets { display: flex; flex-wrap: wrap; gap: calc(var(--pas) * 2);
   margin: 1rem 0 1.2rem; padding-bottom: 2px; }
-.onglet { border-radius: var(--r); white-space: nowrap; }
+/* Le cinquieme onglet (calendrier, 17/09/2026) a fait passer la barre de deux
+   a trois lignes a 375 px, enfoncant encore le nom du maire. Le remede reste
+   local a .onglet (pas a .puce, qui partage la regle et sert d'autres grilles) :
+   un peu moins de respiration horizontale, jamais moins que la cible tactile
+   de 44 px, mesure a chaque fois dans le vrai navigateur, pas suppose. */
+.onglet { border-radius: var(--r); white-space: nowrap; padding: .5rem .7rem; }
 
 .champ { display: block; margin-bottom: 1rem; }
 .champ > span { display: block; font-family: var(--t-titre); font-size: .84rem; font-weight: 600;

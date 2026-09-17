@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "repere-mono",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["mono/scripts/serveur-statique.mjs", "mono/apps/web/dist", "4174"],
+      "port": 4174
+    }
+  ]
+}
