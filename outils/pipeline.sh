@@ -178,42 +178,62 @@ assert ecart > -21, ("la reunion la plus tardive remonte a %d jours : la source 
 PY
 
 # --------------------------------------------------- 5. reconstruire le site
+# BASCULE PREPAREE LE 19/09/2026, PAS ENCORE PUBLIEE — voir le dry-run de cette
+# date pour les preuves chiffrees.
+#
+# CE QUI CHANGE. `site_engendre` etait rempli par build_pwa_reconstruit.py, qui
+# reconstruit la version SERVIE depuis le HTML autonome — celle-la embarque
+# encore window.REPERE_RNE (6,76 Mo) et window.REPERE_OFGL (8,83 Mo) en clair
+# dans la page, parce que le chargeur asynchrone par departement n'a jamais ete
+# ecrit pour ELLE. Mesure en production le 19/09/2026, sur le site reellement
+# en ligne, avec parametre anti-cache : 16 286 093 octets decodes, 6 022 536
+# transferes, une seule requete. Le monorepo mono/ resout exactement ce trou
+# depuis fin aout — measure du meme jour sur son propre dry-run : environ 48 Ko
+# transferes pour atteindre le maire de Bagnolet (arrivee + recherche + fiche
+# commune + onglet par defaut), verifie fichier par fichier, gzip compris.
+#
+# CE QUI NE CHANGE PAS. Le HTML autonome ($APP) reste construit et eprouve tel
+# quel : c'est le livrable hors-ligne, il n'a pas ce probleme par construction
+# (invariant 1) et rien ici ne le concerne.
+#
+# CE QUI DISPARAIT : l'etape "5 bis" qui copiait site_donnees/ (le decoupage
+# de outils/decouper.py) dans site_engendre/donnees/. mono/ decoupe deja les
+# communes par departement a sa maniere (extract-html.js -> data/departments/),
+# et son application ne lit jamais /donnees/ : garder cette copie aurait publie
+# un second decoupage, jamais lu, pour la meme donnee — exactement le piege
+# "deux endroits qui derivent la meme regle" que ce depot a deja appris a eviter.
+# site_donnees/ continue d'etre PRODUIT plus haut (3 sexies) : rien n'empeche
+# de le lire ou de le supprimer plus tard, ce n'est plus publie, c'est tout.
 APP=$(ls -1 app_repere_v18_*.html | grep -v '\.bak$' | sort -V | tail -1)
-echo "application retenue : $APP"
+echo "application retenue (fichier autonome) : $APP"
 rm -rf site_engendre
-python3 outils/build_pwa_reconstruit.py "$APP" site site_engendre
-
-python3 - "$AUJOURDHUI" <<'PY'
-import json, sys
-today = sys.argv[1]
-d = json.load(open("site_engendre/donnees/agenda_an.json", encoding="utf-8"))
-assert d.get("maj") == today, \
-    "le site servirait un agenda du %r : la substitution n'a pas eu lieu" % d.get("maj")
-print("site : agenda du %s, %d reunions" % (d["maj"], len(d["r"])))
-PY
-
-# --------------------------- 5 bis. poser les donnees decoupees dans le site
-if [ -d site_donnees ]; then
-  mkdir -p site_engendre/donnees
-  cp -r site_donnees/* site_engendre/donnees/ 2>/dev/null || true
-  echo "decoupage publie : $(find site_engendre/donnees -name '*.json' | wc -l) fichiers"
-fi
+(
+  cd mono
+  corepack enable pnpm 2>/dev/null || true
+  node scripts/extract-html.js "../$APP" ./data
+  node scripts/calendrier-senat.mjs ./data \
+    || echo "::warning::calendrier Senat non rafraichi (reseau indisponible ? le releve d'hier reste)"
+  pnpm install --frozen-lockfile
+  pnpm build
+)
+cp -r mono/apps/web/dist site_engendre
+echo "site engendre depuis mono/ : $(find site_engendre -type f | wc -l) fichiers, $(du -sh site_engendre | cut -f1)"
 
 # ------------------------------------------------------------ 6. eprouver
 # LE VERROU DE L'AUTOMATISATION. Si un seul controle tombe, `set -e` arrete tout
 # ici et le deploiement n'a pas lieu. C'est ce qui autorise a publier sans qu'un
 # humain regarde.
 #
-# DEUX SORTIES, DEUX PASSAGES. Le projet produit un fichier autonome qui embarque
-# tout et ne demande rien, et une version servie qui va chercher son agenda, ses
-# evenements et bientot son departement. Jusqu'au 25/08/2026 seule la seconde etait
-# eprouvee : la divergence entre les deux n'etait gardee par rien. Le banc sait les
-# distinguer tout seul — il ne monte son serveur HTTP que si la source declare une
-# adresse — il ne lui manquait qu'une invocation.
+# DEUX BANCS, DEUX LIVRABLES DISTINCTS. Le fichier autonome garde son propre
+# banc (test_repere.mjs, 55 controles) : il ne partage rien avec le monorepo,
+# donc rien ne garantit qu'ils divergent ensemble. site_engendre EST le
+# monorepo depuis cette bascule : c'est son propre banc (98 controles statiques
+# + 56 dans un vrai navigateur, invariants.test.mjs et runtime.test.mjs) qui
+# le garde, pas test_repere.mjs — qui ne connait ni son DOM ni ses classes.
 echo "== banc : le fichier autonome =="
 node test_repere.mjs "$APP"
 
-echo "== banc : la version servie =="
-node test_repere.mjs site_engendre/index.html
+echo "== banc : le monorepo (version publiee) =="
+(cd mono && pnpm test)
 
 echo "== pipeline terminee sans erreur =="
