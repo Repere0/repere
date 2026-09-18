@@ -5,6 +5,7 @@ import { LigneVote, positionSur, positionsFiables, REFUS_APPARIEMENT } from "../
 import {
   chargerDeputes, chargerCatalogueScrutins, chargerVotes, entrer, revenir, ETATS,
 } from "@repere/data-utils";
+import { COMPETENCES } from "../lib/competences.js";
 
 const RNE_URL = "https://www.data.gouv.fr/fr/datasets/repertoire-national-des-elus-1/";
 const AN_URL = "https://data.assemblee-nationale.fr/acteurs/deputes-en-exercice";
@@ -31,14 +32,10 @@ const AN_VOTES_URL = "https://data.assemblee-nationale.fr/travaux-parlementaires
  * l'invariant 3 interdit de hierarchiser des territoires, y compris quand on se
  * contente de le laisser deviner.
  * (Ce commentaire evite le mot que l'invariant 3 cherche dans le code ecrit : la
- *  garde ne fait pas la difference entre une violation et sa description.) */
-const COMPETENCES = {
-  ville: "l'école primaire, la cantine, les permis de construire, la voirie et l'état civil",
-  agglo: "les transports, les déchets, l'eau, et souvent les piscines et les médiathèques",
-  dept: "les collèges, les routes départementales, les aides sociales et la protection de l'enfance",
-  region: "les lycées, les trains du quotidien, la formation professionnelle et le développement économique",
-  france: "les lois qui s'appliquent partout, et le budget de l'État",
-};
+ *  garde ne fait pas la difference entre une violation et sa description.)
+ *
+ * COMPETENCES VIT DANS lib/competences.js DEPUIS LE 19/09/2026 : la direction
+ * "Territoire" dit la meme phrase, jamais une deuxieme formulation. */
 const ORDRE_DISTANCE = "Rangés du plus proche de chez vous au plus lointain. Ce n'est pas un ordre d'importance : c'est un ordre de distance.";
 
 /* Une ligne d'echelon : sa pastille de couleur, son nom, ce qu'il decide. La

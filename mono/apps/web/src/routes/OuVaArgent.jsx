@@ -34,10 +34,39 @@ export default function OuVaArgent({ paquet, index, commune }) {
     );
   }
 
+  /* ORDRE INVERSE DEPUIS LE 19/09/2026 (phase 8 de la mission « conception
+     produit ») : la traduction passe AVANT les six montants bruts. Mesure sur
+     capture reelle qui a motive le changement : un lecteur qui ouvre cet
+     ecran faisait defiler les six lignes source — DONNEE OFFICIELLE, sans
+     hierarchie entre elles — avant d'atteindre « 16,0 mois de recettes », la
+     seule phrase qui repond a « et donc ? ». La preuve doit soutenir la
+     comprehension, pas la precede. Aucune phrase de doctrine n'a change : le
+     zero-vs-absence, le refus de comparer deux communes, la distinction
+     calcul/donnee publiee sont exactement les memes qu'avant, seul l'ordre
+     de lecture change. */
   return (
     <Pile>
+      {rr.length >= 2 ? (
+        <Carte echelon="ville" titre={c.nom}
+          sousTitre={<>Ce que ça représente · <Mot cle="exercice">exercice</Mot> {exercice.an}{population(exercice.ex) ? ` · ${population(exercice.ex).toLocaleString("fr-FR")} habitants` : ""}</>}
+          tag="Calcul Repère">
+          <p className="tx-note tx-intro">
+            Aucun de ces rapports n'est publié : Repère les calcule à partir de six montants
+            publiés par l'Observatoire des finances locales, visibles plus bas sur cette page,
+            et explique sous chacun ce qu'il ne veut pas dire.
+          </p>
+          <div className="tuiles">
+            {rr.map((o, i) => <Tuile key={i} k={o.l} v={o.v} n={o.d} />)}
+          </div>
+          <Source calcul producteur={src ? src.producteur : ""} licence={src ? src.licence : ""} maj={src ? src.maj : ""} />
+        </Carte>
+      ) : (
+        <Vide titre="Pas assez de montants pour traduire ces comptes."
+          corps={`Les rapports se calculent à partir de plusieurs lignes à la fois ; pour l'exercice ${exercice.an}, le fichier officiel n'en porte pas assez.`} />
+      )}
+
       {/* Nom seul : « les comptes de X » demanderait une elision non derivable. */}
-      <Carte echelon="ville" titre={c.nom}
+      <Carte echelon="dept" titre={rr.length >= 2 ? "Le détail publié" : c.nom}
         sousTitre={<>Les comptes de la commune · <Mot cle="exercice">exercice</Mot> {exercice.an}{population(exercice.ex) ? ` · ${population(exercice.ex).toLocaleString("fr-FR")} habitants` : ""} · budget principal</>}
         tag="Donnée officielle">
         <p className="tx-note tx-intro">
@@ -73,24 +102,6 @@ export default function OuVaArgent({ paquet, index, commune }) {
         </p>
         {src ? <Source producteur={src.producteur} licence={src.licence} maj={src.maj} url="https://data.ofgl.fr/" /> : null}
       </Carte>
-
-      {rr.length >= 2 ? (
-        <Carte echelon="dept" titre="Ce que ces chiffres veulent dire"
-          sousTitre={`Les mêmes comptes, exercice ${exercice.an}, rapportés les uns aux autres`}
-          tag="Calcul Repère">
-          <p className="tx-note tx-intro">
-            Aucun de ces rapports n'est publié : Repère les calcule à partir des six montants
-            ci-dessus, et explique sous chacun ce qu'il ne veut pas dire.
-          </p>
-          <div className="tuiles">
-            {rr.map((o, i) => <Tuile key={i} k={o.l} v={o.v} n={o.d} />)}
-          </div>
-          <Source calcul producteur={src ? src.producteur : ""} licence={src ? src.licence : ""} maj={src ? src.maj : ""} />
-        </Carte>
-      ) : (
-        <Vide titre="Pas assez de montants pour traduire ces comptes."
-          corps={`Les rapports se calculent à partir de plusieurs lignes à la fois ; pour l'exercice ${exercice.an}, le fichier officiel n'en porte pas assez.`} />
-      )}
     </Pile>
   );
 }

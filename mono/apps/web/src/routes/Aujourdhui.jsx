@@ -1,181 +1,95 @@
-import React, { useEffect, useState } from "react";
-import { Carte, Vide, Source, Chargement, dateFr } from "@repere/ui";
-import { Pile } from "@repere/ui/amicro";
-import {
-  chargerProjets, chargerDeputes, chargerCatalogueScrutins, chargerVotes,
-  chargerCalendrierSenat, ETATS,
-} from "@repere/data-utils";
+import React from "react";
+import { Vide, Source, Chargement, dateFr } from "@repere/ui";
+import { useAujourdhui } from "../lib/useAujourdhui.js";
 import { LigneVote } from "../lib/votes.jsx";
-import { calculerFaits } from "../lib/faits.js";
-import { rapports, dernierExercice } from "../lib/comptes.jsx";
 
-/* PROTOTYPE, PAS UN SIXIEME ONGLET — pose le 18/09/2026 pour eprouver
- * l'hypothese que Repere est UNE experience territoriale a plusieurs
- * profondeurs, pas cinq bases de donnees cote a cote (mission du porteur du
- * projet, meme date). AUCUNE DONNEE NOUVELLE : chaque fait ci-dessous est
- * calcule par la MEME fonction que l'onglet complet qui le porte
- * (lib/faits.js, lib/comptes.jsx) — jamais un second calcul qui pourrait
- * diverger. Reversible en un fichier + une ligne dans App.jsx (ONGLETS et le
- * useState initial).
+/* « AUJOURD'HUI », DIRECTION RETENUE LE 19/09/2026 — « LA QUESTION ».
  *
- * CE QUE CET ECRAN NE FAIT PAS : il n'invente aucun evenement, ne transforme
- * aucune donnee nationale (le calendrier Senat) en donnee locale, et dit une
- * phrase honnete plutot qu'une carte vide quand un fait manque. */
+ * Trois directions ont ete construites et captees en navigateur reel sur
+ * Bagnolet avant de choisir : celle-ci, AujourdhuiJournal.jsx (« le journal »,
+ * un simple « Bonjour »), et AujourdhuiTerritoire.jsx (« le territoire »,
+ * organise par echelon — trois de ses cinq sections disent « pas encore
+ * publie », ce qui allonge l'ecran sans rien apprendre). Les deux autres
+ * fichiers restent intacts dans le depot : rien n'est supprime, voir le
+ * livrable de cette session pour la comparaison.
+ *
+ * POURQUOI CELLE-CI. La question posee est celle qu'un citoyen qui ne suit
+ * pas la politique se pose deja ("qu'est-ce qui a change chez moi ?"), et la
+ * reponse arrive immediatement — sans salutation, sans decor. C'est le
+ * format le plus proche d'une conversation plutot que d'une navigation dans
+ * une base de donnees, sur la meme quantite de contenu que les deux autres.
+ *
+ * TOUJOURS UN PROTOTYPE, PAS UN SIXIEME ONGLET : atteint par un lien "Voir
+ * aujourd'hui a [commune]" (App.jsx), jamais un bouton de plus dans la barre
+ * — un essai anterieur avec un sixieme bouton avait reproduit la regression
+ * a 3 lignes deja mesuree et corrigee. AUCUNE DONNEE NOUVELLE : chaque fait
+ * vient de lib/useAujourdhui.js, qui appelle les memes chargeurs et les
+ * memes fonctions (lib/faits.js, lib/comptes.jsx) que les ecrans complets. */
 
 const DGCL_URL = "https://www.data.gouv.fr/datasets/projets-finances-par-les-dotations-"
   + "de-soutien-a-linvestissement-des-collectivites-territoriales";
-const AN_VOTES_URL = "https://data.assemblee-nationale.fr/travaux-parlementaires/votes";
-
 function euros(n) { return new Intl.NumberFormat("fr-FR").format(n) + " €"; }
 
-/* LES DEUX VARIANTES DU FAIT D'OUVERTURE (phase 4 de la mission).
- * A : le vote reel et personnalise du depute. B : la traduction financiere.
- * Aucune n'est supprimee — VARIANTE choisit laquelle s'affiche, pour pouvoir
- * capturer les deux dans le meme navigateur reel plutot que de trancher sur
- * une theorie. Voir le livrable pour la comparaison mesuree. */
-const VARIANTE = "A";
-
-function HeroVote({ fait, nomCommune }) {
-  return (
-    <Carte echelon="france" titre="Ce que votre député a réellement voté"
-      sousTitre={`À l'Assemblée nationale, au nom de ${nomCommune}`} tag="Donnée officielle">
-      <LigneVote sc={fait.sc} position={fait.position} base={fait.base} loi qui={fait.qui} />
-    </Carte>
-  );
-}
-
-function HeroArgent({ rapport, nomCommune, exercice, src }) {
-  return (
-    <Carte echelon="ville" titre="Ce que ça représente concrètement"
-      sousTitre={`Les comptes de ${nomCommune}, exercice ${exercice}`} tag="Calcul Repère">
-      <div className="ligne">
-        <div className="ligne-h"><span>{rapport.l}</span><b>{rapport.v}</b></div>
-        <div className="ligne-note">{rapport.d}</div>
-      </div>
-      <Source calcul producteur={src ? src.producteur : ""} licence={src ? src.licence : ""} maj={src ? src.maj : ""} />
-    </Carte>
-  );
-}
-
 export default function Aujourdhui({ paquet, index, commune, aller }) {
-  const [etat, setEtat] = useState(ETATS.EN_COURS);
-  const [projets, setProjets] = useState(null);
-  const [cat, setCat] = useState(null);
-  const [pos, setPos] = useState(null);
-  const [deputes, setDeputes] = useState(null);
-  const [cal, setCal] = useState(null);
-
-  const dep = paquet && paquet.d;
-  const fiche = commune && paquet && paquet.communes ? paquet.communes[commune] : null;
-
-  useEffect(() => {
-    if (!dep || !commune) return undefined;
-    let vivant = true;
-    setEtat(ETATS.EN_COURS);
-    /* MEMES CINQ FICHIERS QUE "Ce qui a ete decide" + "Ou va l'argent" + le
-       calendrier — tous deja en cache des la deuxieme visite d'un onglet
-       classique. Ce prototype n'ajoute AUCUN telechargement nouveau. */
-    Promise.all([
-      chargerProjets(dep), chargerDeputes(), chargerCatalogueScrutins(),
-      chargerVotes(dep), chargerCalendrierSenat(),
-    ]).then(([pr, de, c, v, ca]) => {
-      if (!vivant) return;
-      setProjets(pr.donnees); setDeputes(de.donnees); setCat(c.donnees);
-      setPos(v.donnees); setCal(ca.donnees);
-      setEtat(ETATS.SERVI);
-    });
-    return () => { vivant = false; };
-  }, [dep, commune]);
-
-  if (!fiche) return null;
-  if (etat === ETATS.EN_COURS) {
-    return <Chargement titre="Ouverture d'aujourd'hui chez vous."
+  const a = useAujourdhui(paquet, index, commune);
+  if (!a.fiche) return null;
+  if (!a.pret) {
+    return <Chargement titre="Ouverture de la question du jour."
       corps="Les mêmes fichiers que les autres écrans, une seule fois." />;
   }
-
-  const nomCommune = fiche.nom || "";
-  const faits = calculerFaits({ dep, fiche, projets, commune, cat, pos, deputes });
-  const base = (cat && cat.url_scrutin) || "";
-  const dernierVote = faits.find(f => f.type === "vote" && f.position);
-  const dernierFait = faits[0];
-
-  const agregats = (index && index.agregats) || [];
-  const srcComptes = index && index.sources ? index.sources.comptes : null;
-  const exercice = dernierExercice(fiche, agregats);
-  const rr = exercice ? rapports(exercice.ex) : [];
-  const rapportDette = rr[0];
-
-  const aVenir = cal && Array.isArray(cal.evenements)
-    ? cal.evenements.filter(e => e.debut + ":00" >= new Date().toISOString().slice(0, 16))
-    : [];
-  const prochain = aVenir[0];
-  const srcCal = (cal && cal.source) || {};
+  const { nomCommune, dernierVote, dernierFait, rapportDette, srcComptes,
+          srcProjets, srcScrutins, prochain, srcCal, base } = a;
 
   return (
-    <Pile>
-      <header className="auj-entete">
-        <p className="eyebrow">Aujourd'hui</p>
-        <h2>{nomCommune}</h2>
-      </header>
+    <div className="quest">
+      <p className="quest-lieu">{nomCommune}</p>
+      <h1 className="quest-q">Que s'est-il décidé près de chez vous ?</h1>
 
-      {/* LE FAIT D'OUVERTURE — voir VARIANTE ci-dessus. Aucune des deux cartes
-          n'est affichee si la donnee qu'elle demande n'existe pas : la
-          doctrine du vide s'applique aussi au prototype. */}
-      {VARIANTE === "A" && dernierVote ? (
-        <HeroVote fait={{ ...dernierVote, base }} nomCommune={nomCommune} />
-      ) : VARIANTE === "B" && rapportDette ? (
-        <HeroArgent rapport={rapportDette} nomCommune={nomCommune} exercice={exercice.an} src={srcComptes} />
-      ) : dernierFait ? (
-        <Carte echelon={dernierFait.echelon} titre="Ce qui a été décidé le plus récemment"
-          sousTitre={nomCommune} tag="Donnée officielle">
-          {dernierFait.type === "vote"
-            ? <LigneVote sc={dernierFait.sc} position={dernierFait.position} base={base} loi qui={dernierFait.qui} />
-            : <div className="ligne fait">
-                <b className="fait-titre">{dernierFait.p.intitule}</b>
-                <div className="ligne-h"><span>L'État a engagé {euros(dernierFait.p.subvention)}</span>
-                  <b>exercice {dernierFait.p.annee}</b></div>
-              </div>}
-        </Carte>
+      {/* LA REPONSE — vote si disponible, sinon le dernier projet finance,
+          sinon une phrase honnete. Doctrine du vide, meme ici. */}
+      {dernierVote ? (
+        <div className="quest-r">
+          <LigneVote sc={dernierVote.sc} position={dernierVote.position} base={base} loi qui={dernierVote.qui} />
+          {srcScrutins ? <Source producteur={srcScrutins.producteur} licence={srcScrutins.licence}
+            mention={srcScrutins.releve_le ? "relevé le " + dateFr(srcScrutins.releve_le) : undefined} /> : null}
+        </div>
+      ) : dernierFait && dernierFait.type === "projet" ? (
+        <div className="quest-r">
+          <p><b>{dernierFait.p.intitule}</b></p>
+          <p className="ligne-note">L'État a engagé {euros(dernierFait.p.subvention)}, exercice {dernierFait.p.annee}.</p>
+          {srcProjets ? <Source producteur={srcProjets.producteur} licence={srcProjets.licence} maj={srcProjets.mis_a_jour_le} /> : null}
+        </div>
       ) : (
         <Vide titre={`Aucune décision datée n'est publiée pour ${nomCommune}.`}
           corps="Ni projet financé par l'État, ni vote solennel du député sur la période relevée."
           lien={{ texte: "Projets financés par l'État — données publiques", url: DGCL_URL }} />
       )}
 
-      {/* LA TRADUCTION FINANCIERE, SI CE N'ETAIT PAS DEJA LE FAIT D'OUVERTURE. */}
-      {VARIANTE !== "B" && rapportDette ? (
-        <HeroArgent rapport={rapportDette} nomCommune={nomCommune} exercice={exercice.an} src={srcComptes} />
+      {/* LES QUESTIONS SUIVANTES SONT PLUS DISCRETES — meme structure que la
+          premiere aurait repete trois fois le meme motif (chasse au
+          « look IA », phase 3 de la mission du 19/09). */}
+      {rapportDette ? (
+        <div className="quest-suivante">
+          <p className="quest-q2">Combien ça représente ?</p>
+          <p className="ligne-note">{rapportDette.l} : <b>{rapportDette.v}</b>. {rapportDette.d}</p>
+          <Source calcul producteur={srcComptes ? srcComptes.producteur : ""} licence={srcComptes ? srcComptes.licence : ""} maj={srcComptes ? srcComptes.maj : ""} />
+        </div>
       ) : null}
 
-      {/* CE QUI ARRIVE — le pilote Senat integre au fil, pas un sixieme
-          bouton. Un seul echelon est couvert : on le dit, on n'en invente
-          pas d'autre pour "remplir" l'ecran (phase 7 de la mission). */}
       {prochain ? (
-        <Carte echelon="france" titre="Ce qui arrive"
-          sousTitre="Un seul échelon est couvert pour l'instant : le Sénat">
-          <div className="ligne fait">
-            <b className="fait-titre">{prochain.titre}</b>
-            <div className="ligne-note">
-              {new Date(prochain.debut).toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" })}
-              {prochain.lieu ? " · " + prochain.lieu : ""}
-            </div>
-          </div>
-          <Source producteur={srcCal.producteur_affiche || srcCal.producteur} licence={srcCal.licence}
-            mention={srcCal.releve_le ? "relevé le " + dateFr(srcCal.releve_le) : undefined} url={srcCal.url} />
-        </Carte>
-      ) : (
-        <Vide titre="Aucune séance du Sénat n'est annoncée sur la période relevée."
-          corps="Ce n'est pas un retard de Repère : le Sénat n'a pas encore publié la suite de son agenda." />
-      )}
+        <div className="quest-suivante">
+          <p className="quest-q2">Qu'est-ce qui arrive ?</p>
+          <p className="ligne-note"><b>{prochain.titre}</b>, {new Date(prochain.debut).toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" })}.</p>
+          <Source producteur={srcCal.producteur_affiche || srcCal.producteur} licence={srcCal.licence} url={srcCal.url} />
+        </div>
+      ) : null}
 
-      {/* APPROFONDIR — la profondeur reste entiere, elle change de porte
-          d'entree. Rien n'est retire des cinq ecrans existants. */}
       <nav className="auj-suite" aria-label="Approfondir">
         <button type="button" onClick={() => aller("decide")}>Toutes les décisions</button>
         <button type="button" onClick={() => aller("qui")}>Qui décide</button>
         <button type="button" onClick={() => aller("argent")}>Où va l'argent</button>
         <button type="button" onClick={() => aller("calendrier")}>Le calendrier</button>
       </nav>
-    </Pile>
+    </div>
   );
 }

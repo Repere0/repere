@@ -1005,11 +1005,15 @@ test("produit — chaque échelon affiché dit ce qu'il décide", () => {
      du pouvoir : deux noms sans competence sont deux noms. Ces phrases ne
      dependent d'aucune donnee — c'est la loi qui les fixe — mais leur absence
      rendait l'ecran inutilisable pour qui ne connait pas les institutions. */
-  const src = lire("apps/web/src/routes/QuiDecide.jsx");
+  /* COMPETENCES VIT DANS lib/competences.js DEPUIS LE 19/09/2026 : la
+     direction "Territoire" (AujourdhuiTerritoire.jsx) dit la meme phrase que
+     QuiDecide.jsx, jamais une deuxieme formulation. */
+  const comp = lire("apps/web/src/lib/competences.js");
   for (const echelon of ["ville", "agglo", "dept", "region", "france"]) {
-    assert.match(src, new RegExp(echelon + ":\\s*\"[^\"]{30,}\""),
+    assert.match(comp, new RegExp(echelon + ":\\s*\"[^\"]{30,}\""),
       `l'echelon « ${echelon} » n'a pas de phrase de competence`);
   }
+  const src = lire("apps/web/src/routes/QuiDecide.jsx");
   assert.match(src, /ordre de distance/i,
     "l'ordre des echelons n'est pas explique a l'ecran : le premier passerait pour le plus important");
 });
@@ -1176,10 +1180,19 @@ test("votes — un élu n'est jamais nommé par son seul patronyme", () => {
   assert.ok(/d\.prenom/.test(assemblage) && /nomComplet/.test(assemblage),
     "le prénom du député n'est pas utilisé alors qu'il est dans le fichier");
   /* La lecture des faits ne doit pas se réécrire ailleurs qu'à cet endroit :
-     un écran qui reconstruirait sa propre boucle pourrait oublier la garde. */
-  for (const ecran of ["apps/web/src/routes/CeQuiADecide.jsx", "apps/web/src/routes/Aujourdhui.jsx"]) {
-    assert.ok(/calculerFaits\(/.test(lire(ecran)),
-      `${ecran} n'appelle pas calculerFaits() : il pourrait réimplémenter l'assemblage sans la garde`);
+     un écran qui reconstruirait sa propre boucle pourrait oublier la garde.
+     CeQuiADecide.jsx appelle calculerFaits() directement ; les trois
+     directions "Aujourd'hui" (19/09/2026 : la question, retenue ; le journal
+     et le territoire, explorées et conservées) passent toutes par le même
+     crochet, lib/useAujourdhui.js — qui, lui, appelle la garde. */
+  assert.ok(/calculerFaits\(/.test(lire("apps/web/src/routes/CeQuiADecide.jsx")),
+    "apps/web/src/routes/CeQuiADecide.jsx n'appelle pas calculerFaits() : il pourrait réimplémenter l'assemblage sans la garde");
+  assert.ok(/calculerFaits\(/.test(lire("apps/web/src/lib/useAujourdhui.js")),
+    "apps/web/src/lib/useAujourdhui.js n'appelle pas calculerFaits() : il pourrait réimplémenter l'assemblage sans la garde");
+  for (const ecran of ["apps/web/src/routes/Aujourdhui.jsx", "apps/web/src/routes/AujourdhuiJournal.jsx",
+                       "apps/web/src/routes/AujourdhuiTerritoire.jsx"]) {
+    assert.ok(/useAujourdhui\(/.test(lire(ecran)),
+      `${ecran} ne passe pas par useAujourdhui() : il pourrait relire les fichiers a sa maniere`);
   }
   /* Le regroupement à l'affichage doit comparer un IDENTIFIANT, pas un nom :
      deux députés homonymes d'une commune à deux circonscriptions verraient

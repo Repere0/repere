@@ -199,6 +199,39 @@
 .auj-entete { margin-bottom: .3rem; }
 .auj-entete h2 { margin: 0; font-size: clamp(1.5rem, 5vw, 1.9rem); letter-spacing: -.01em; }
 
+/* DIRECTION A — « LE JOURNAL » (19/09/2026), routes/Aujourdhui.jsx. Zero
+   carte : un trait horizontal separe les faits, un trait vertical colore
+   (le meme jeton d'echelon que partout ailleurs) tient lieu de repere — pas
+   de fond, pas de coin arrondi, pas de badge. Chasse au « look IA » de cette
+   session : un element qui ne portait pas de hierarchie a ete retire plutot
+   que redessine. */
+.jour-fait { padding: 1rem 0 1rem .85rem; border-top: 1px solid var(--trait);
+  border-left: 3px solid var(--e); }
+.jour-fait:first-of-type { border-top: none; padding-top: .3rem; }
+.jour-fait h3 { margin: 0 0 .4rem; font-size: 1.05rem; line-height: 1.35;
+  font-family: var(--t-titre); font-weight: 700; }
+
+/* DIRECTION B — « LE TERRITOIRE » (19/09/2026), routes/AujourdhuiTerritoire.jsx.
+   Meme motif que .jour-fait (trait, pas de carte) : la pastille d'echelon,
+   deja utilisee dans QuiDecide.jsx, remplace ici tout fond colore. */
+.terr-echelon { padding: 1rem 0 1rem .85rem; border-top: 1px solid var(--trait);
+  border-left: 3px solid var(--e); }
+.terr-echelon:first-of-type { border-top: none; padding-top: .3rem; }
+.terr-h { display: flex; align-items: center; gap: .5rem; margin-bottom: .3rem;
+  font-family: var(--t-titre); font-size: 1.02rem; }
+
+/* DIRECTION C — « LA QUESTION » (19/09/2026), routes/AujourdhuiQuestion.jsx.
+   Une question, une reponse, sans carte ni pastille : le format le plus
+   depouille des trois directions, teste pour comparaison. */
+.quest-lieu { font-family: var(--t-titre); font-size: .84rem; font-weight: 700;
+  letter-spacing: .1em; text-transform: uppercase; color: var(--sourd); margin: 0 0 .4rem; }
+.quest-q { margin: 0 0 1rem; font-size: clamp(1.5rem, 6.5vw, 2.05rem);
+  line-height: 1.2; letter-spacing: -.01em; }
+.quest-r { padding-bottom: .6rem; }
+.quest-suivante { margin-top: 1.1rem; padding-top: 1rem; border-top: 1px solid var(--trait); }
+.quest-q2 { font-family: var(--t-titre); font-weight: 700; font-size: .95rem;
+  margin: 0 0 .35rem; color: var(--sourd); }
+
 /* "APPROFONDIR" EST UNE PHRASE, PAS CINQ BOUTONS EGAUX A LA BARRE D'ONGLETS —
    phase 5 de la mission du 18/09 : une source visible vaut plus qu'un badge,
    et une action se voit sans concurrencer cinq boutons du meme poids. Ces
