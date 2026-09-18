@@ -1077,11 +1077,13 @@ test("projets — le fil daté nomme sa règle d'ordre, et ne trie sur aucun mon
   /* PRINCIPE P4 : sans la phrase, le premier de la liste devient le plus
      important dans la tête du lecteur. Et le tri lui-même doit rester celui du
      temps : trier sur `subvention` ferait de l'écran un ordre d'importance que
-     rien n'annonce. */
+     rien n'annonce. La phrase reste affichée par CeQuiADecide.jsx ; le tri
+     lui-même vit dans lib/faits.js depuis le 18/09/2026 (voir les deux tests
+     "votes" plus haut, meme deplacement). */
   const ecran = lire("apps/web/src/routes/CeQuiADecide.jsx");
   assert.ok(/ordre de date/i.test(ecran),
     "l'écran ne dit pas au lecteur dans quel ordre les faits sont rangés");
-  const tri = /faits\.sort\(([^;]*)\);/.exec(ecran);
+  const tri = /faits\.sort\(([^;]*)\);/.exec(lire("apps/web/src/lib/faits.js"));
   assert.ok(tri, "le tri du fil est introuvable");
   for (const interdit of ["subvention", "cout", "montant", "echelon"]) {
     assert.ok(!tri[1].includes(interdit),
@@ -1163,16 +1165,27 @@ test("votes — un élu n'est jamais nommé par son seul patronyme", () => {
      lecteurs. Et 15 patronymes sont partagés par plusieurs députés au national.
      Imputer publiquement à une personne identifiée une position qu'elle n'a pas
      prise est une allégation de fait inexacte portant atteinte à sa considération :
-     c'est le terrain de la diffamation, et le prénom était dans le fichier. */
-  const ecran = lire("apps/web/src/routes/CeQuiADecide.jsx");
-  assert.ok(!/qui: *d\.nom\b/.test(ecran),
-    "l'écran nomme un député par son seul patronyme");
-  assert.ok(/d\.prenom/.test(ecran) && /nomComplet/.test(ecran),
+     c'est le terrain de la diffamation, et le prénom était dans le fichier.
+     DEPLACE DANS lib/faits.js LE 18/09/2026 : l'assemblage des faits (et la
+     sécurité d'imputation avec lui) est sorti de cet écran pour que le
+     prototype "Aujourd'hui" lise exactement le même fait, jamais un calcul
+     parallèle. La garde suit le code, pas le fichier. */
+  const assemblage = lire("apps/web/src/lib/faits.js");
+  assert.ok(!/qui: *d\.nom\b/.test(assemblage),
+    "l'assemblage des faits nomme un député par son seul patronyme");
+  assert.ok(/d\.prenom/.test(assemblage) && /nomComplet/.test(assemblage),
     "le prénom du député n'est pas utilisé alors qu'il est dans le fichier");
-  /* Le regroupement doit comparer un IDENTIFIANT, pas un nom : deux députés
-     homonymes d'une commune à deux circonscriptions verraient sinon leurs votes
-     fusionnés sous un seul en-tête. */
-  assert.ok(/prec\.ref *!== *f\.ref/.test(ecran),
+  /* La lecture des faits ne doit pas se réécrire ailleurs qu'à cet endroit :
+     un écran qui reconstruirait sa propre boucle pourrait oublier la garde. */
+  for (const ecran of ["apps/web/src/routes/CeQuiADecide.jsx", "apps/web/src/routes/Aujourdhui.jsx"]) {
+    assert.ok(/calculerFaits\(/.test(lire(ecran)),
+      `${ecran} n'appelle pas calculerFaits() : il pourrait réimplémenter l'assemblage sans la garde`);
+  }
+  /* Le regroupement à l'affichage doit comparer un IDENTIFIANT, pas un nom :
+     deux députés homonymes d'une commune à deux circonscriptions verraient
+     sinon leurs votes fusionnés sous un seul en-tête. Ce tri d'affichage,
+     lui, est resté dans l'écran : lib/faits.js ne fait que fournir les faits. */
+  assert.ok(/prec\.ref *!== *f\.ref/.test(lire("apps/web/src/routes/CeQuiADecide.jsx")),
     "le regroupement des votes compare des noms et non des identifiants");
 });
 
@@ -1186,18 +1199,20 @@ test("votes — les positions ne s'affichent pas si les deux relevés ne corresp
      numero de scrutin, plus par rang de tableau) et avec elle la garde : elle
      verifie maintenant qu'aucun numero de scrutin publie n'est absent du
      catalogue, ce qui rend le glissement de rang structurellement impossible.
-     La garde vit dans lib/votes.jsx — un seul endroit pour deux écrans. */
+     La garde vit dans lib/votes.jsx — un seul endroit pour deux appelants.
+     DEPUIS LE 18/09/2026, CeQuiADecide.jsx et Aujourdhui.jsx n'appellent plus
+     la garde eux-memes : ils delegent a lib/faits.js, qui l'appelle pour eux
+     (voir le test precedent). QuiDecide.jsx, lui, la lit encore directement. */
   const garde = lire("apps/web/src/lib/votes.jsx");
   assert.ok(/export function positionsFiables/.test(garde), "la garde n'existe pas");
   for (const exigence of [/numeros\.has\(n\)/, /releve_le/]) {
     assert.ok(exigence.test(garde),
       "la garde ne vérifie pas " + exigence.source);
   }
-  for (const ecran of ["apps/web/src/routes/CeQuiADecide.jsx",
-                       "apps/web/src/routes/QuiDecide.jsx"]) {
-    assert.ok(/positionsFiables\(/.test(lire(ecran)),
-      `${ecran} lit des positions sans passer par la garde`);
-  }
+  assert.ok(/positionsFiables\(/.test(lire("apps/web/src/lib/faits.js")),
+    "apps/web/src/lib/faits.js lit des positions sans passer par la garde");
+  assert.ok(/positionsFiables\(/.test(lire("apps/web/src/routes/QuiDecide.jsx")),
+    "apps/web/src/routes/QuiDecide.jsx lit des positions sans passer par la garde");
 });
 
 test("votes — on compte des textes, pas des lignes de vote", () => {
@@ -1235,12 +1250,16 @@ test("argent — un zéro publié n'est jamais présenté comme une absence", ()
      la source dit. Mesuré le 15/09 : Mulcent (78439) devait 200 000 € en 2021 et
      ne doit plus rien en 2024 et 2025 ; 71 communes franciliennes étaient dans ce
      cas sur la dette. L'invariant 5 exige deux phrases pour deux causes
-     différentes ; une seule couvrait deux réalités opposées. */
-  const ecran = sansCommentaires("apps/web/src/routes/OuVaArgent.jsx");
-  assert.ok(!/m *!== *0 *\? *m *: *null/.test(ecran),
+     différentes ; une seule couvrait deux réalités opposées.
+     `valeur()` VIT DANS lib/comptes.jsx DEPUIS LE 18/09/2026 : le prototype
+     "Aujourd'hui" traduit les mêmes comptes que "Où va l'argent", et devait
+     lire la même distinction zéro/absence plutôt qu'en recalculer une autre. */
+  const lecture = sansCommentaires("apps/web/src/lib/comptes.jsx");
+  assert.ok(!/m *!== *0 *\? *m *: *null/.test(lecture),
     "valeur() détruit encore un zéro publié");
-  assert.ok(/zero: *mm === 0/.test(ecran),
+  assert.ok(/zero: *mm === 0/.test(lecture),
     "valeur() ne distingue pas un zéro publié d'une absence");
+  const ecran = sansCommentaires("apps/web/src/routes/OuVaArgent.jsx");
   assert.ok(/v\.zero/.test(ecran) && /ne doit rien/.test(ecran),
     "l'écran n'a pas de phrase distincte pour un montant nul publié");
 

@@ -191,6 +191,34 @@
 .vide a, .vide button { display: inline-block; margin-top: .55rem; font-family: var(--t-titre);
   font-size: .82rem; font-weight: 600; }
 .vide a { min-height: 44px; line-height: 44px; }
+
+/* PROTOTYPE "AUJOURD'HUI" (18/09/2026) — voir routes/Aujourdhui.jsx.
+   Sobre par construction : pas de nouvelle couleur, pas de carte-vedette avec
+   fond distinct — l'eyebrow et un grand titre suffisent a dire "vous etes
+   ici", exactement le meme motif que .entete plus haut, en plus court. */
+.auj-entete { margin-bottom: .3rem; }
+.auj-entete h2 { margin: 0; font-size: clamp(1.5rem, 5vw, 1.9rem); letter-spacing: -.01em; }
+
+/* "APPROFONDIR" EST UNE PHRASE, PAS CINQ BOUTONS EGAUX A LA BARRE D'ONGLETS —
+   phase 5 de la mission du 18/09 : une source visible vaut plus qu'un badge,
+   et une action se voit sans concurrencer cinq boutons du meme poids. Ces
+   liens sont donc du texte souligne, discret, jamais un second rang de
+   pilules qui dupliquerait visuellement la barre d'onglets juste au-dessus. */
+.auj-suite { display: flex; flex-wrap: wrap; gap: .4rem 1.1rem; padding-top: .2rem; }
+.auj-suite button, .auj-retour {
+  /* PAS DE BOUTON NATIF : ce paquet ne pose aucun reset global sur `button`
+     (mesure avant d'ecrire cette regle — voir le grep du 18/09/2026), donc un
+     bouton sans classe dediee garde le cadre gris de Chrome. Vu sur capture
+     avant correction : quatre pastilles grises la ou un lien discret etait
+     voulu. */
+  background: none; border: none; padding: 0; appearance: none;
+  font-family: var(--t-titre); font-size: .86rem; font-weight: 600;
+  color: var(--sourd); text-decoration: underline; text-underline-offset: .2em;
+  cursor: pointer; display: inline-flex; align-items: center; min-height: 44px;
+}
+.auj-suite button:hover, .auj-suite button:focus-visible,
+.auj-retour:hover, .auj-retour:focus-visible { color: var(--encre); }
+.auj-retour { margin: .2rem 0 -.2rem; }
 .vide button { min-height: 44px; padding: .45rem .9rem; border: 1px solid var(--trait);
   border-radius: 99px; background: var(--carte); color: var(--encre); cursor: pointer; }
 .vide.charge b::after {

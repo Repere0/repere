@@ -13,9 +13,16 @@ const QuiDecide = lazy(() => import("./routes/QuiDecide.jsx"));
 const OuVaArgent = lazy(() => import("./routes/OuVaArgent.jsx"));
 const Sources = lazy(() => import("./routes/Sources.jsx"));
 const Calendrier = lazy(() => import("./routes/Calendrier.jsx"));
+const Aujourdhui = lazy(() => import("./routes/Aujourdhui.jsx"));
 
+/* "AUJOURD'HUI" EST UN PROTOTYPE, POSE LE 18/09/2026 — voir Aujourdhui.jsx.
+   Il ne remplace aucun des cinq ecrans ci-dessous (rien n'est retire), il
+   teste l'hypothese qu'ils devraient etre une profondeur plutot que cinq
+   portes egales. Reversible : retirer cette ligne et la ligne "aujourdhui"
+   plus bas suffit a revenir exactement a l'etat d'avant. */
 const ONGLETS = [
-  /* « CE QUI A ETE DECIDE » EST LE PREMIER ONGLET, et cet ordre est la decision.
+  { id: "aujourdhui", libelle: "Aujourd'hui", echelon: "ville", charge: () => import("./routes/Aujourdhui.jsx") },
+  /* « CE QUI A ETE DECIDE » EST LE DEUXIEME ONGLET, et cet ordre est la decision.
      Les trois ecrans d'avant repondaient a des questions d'etat — qui, combien,
      d'ou — toutes vraies le mois suivant. Le fil date est le seul qui change, et
      c'est celui qui doit s'ouvrir. Le libelle est celui arrete en D-03 : le passe
@@ -413,7 +420,14 @@ export default function App() {
      lui, est couvert a 100 % sur les huit departements.
      LA CONDITION POUR BASCULER EST ECRITE : quand la collecte aura tourne et que
      la couverture des projets aura ete mesuree sur les 1 262 communes de la beta,
-     cette ligne devient useState("decide"). Voir la decision D-23. */
+     cette ligne devient useState("decide"). Voir la decision D-23.
+     LE PROTOTYPE "AUJOURD'HUI" (18/09/2026, voir Aujourdhui.jsx) NE CHANGE PAS
+     CETTE LIGNE : le banc entier suppose que ce reglage decrit ce que voit
+     vraiment un lecteur, et le faire pointer sur un ecran neuf, jamais mesure
+     par le banc, aurait rendu cette hypothese fausse silencieusement. Le
+     prototype est un lien en plus ("Voir aujourd'hui", juste en dessous),
+     jamais un remplacement du reglage par defaut — cette decision reste
+     entiere pour l'arbitrage du porteur du projet. */
   const [onglet, setOnglet] = useState("qui");
   const [commune, setCommune] = useState(null);
   const [communesBeta, setCommunesBeta] = useState(null);
@@ -430,6 +444,20 @@ export default function App() {
        recherche par departement continue de fonctionner. */
     chargerCommunesBeta().then(r => { if (vivant && r.donnees) setCommunesBeta(r.donnees); });
     return () => { vivant = false; };
+  }, []);
+
+  /* CHANGER D'ONGLET EST AUSSI UNE ETAPE, DEPUIS LE 18/09/2026. Mesure en
+     navigateur reel la veille : passer de "Qui decide" a "Ou va l'argent" ne
+     pousse rien dans l'historique, donc le retour du telephone ne defait rien
+     — il ejecte carrement de Repere, ou ne fait rien de visible. Meme
+     mecanisme que `ouvrir()` juste en dessous et que le depliant de vote dans
+     QuiDecide.jsx : aucune URL ne bouge, aucun nom de commune n'entre dans
+     l'historique (voir historique.js), seul un compteur est pousse. */
+  const irA = useCallback((id) => {
+    setOnglet(prec => {
+      if (prec !== id) entrer(() => setOnglet(prec));
+      return id;
+    });
   }, []);
 
   /* `insee` est FACULTATIF, et il ne sert qu'a selectionner la commune une fois
@@ -536,21 +564,37 @@ export default function App() {
                 </p>
               ) : null}
 
-              {/* Les onglets apparaissent des que le departement est la. « Sources »
-                  ne parle pas d'une commune : exiger d'en choisir une pour lire
-                  d'ou viennent les donnees rendait le seul ecran de verification du
-                  produit inatteignable tant qu'on n'avait pas fini le parcours. */}
-              <nav className="onglets" aria-label="Ce que vous voulez savoir">
-                {ONGLETS.map(o => (
-                  <button key={o.id} type="button"
-                    className={"onglet" + (onglet === o.id ? " actif" : "")}
-                    aria-current={onglet === o.id ? "page" : undefined}
-                    onMouseEnter={o.charge} onFocus={o.charge}
-                    onClick={() => { o.charge(); setOnglet(o.id); }}>
-                    {o.libelle}
-                  </button>
-                ))}
-              </nav>
+              {/* PROTOTYPE DU 18/09/2026, VOIR Aujourdhui.jsx. Deux choses a
+                  savoir sur cette ligne de lien :
+                  1. "Aujourd'hui" n'est JAMAIS un bouton de plus dans la barre
+                     classique. Le premier essai (sixieme bouton parmi les cinq
+                     autres) a immediatement reproduit la regression mesuree la
+                     veille — six boutons au lieu de cinq, le maire encore plus
+                     enfoui — et prouvait le contraire de l'hypothese testee.
+                  2. Le reglage par defaut plus haut (`useState("qui")`) n'a
+                     PAS bouge : ce lien est une porte D'ENTREE en plus vers le
+                     prototype, jamais un remplacement du parcours que le banc
+                     mesure. Une fois sur "Aujourd'hui", la barre classique
+                     disparait et ce meme lien sert a y revenir — une seule
+                     ligne, deux sens. */}
+              {onglet !== "aujourdhui" && fiche ? (
+                <button type="button" className="auj-retour" onClick={() => irA("aujourdhui")}>
+                  Voir aujourd'hui à {fiche.nom} →
+                </button>
+              ) : null}
+              {onglet !== "aujourdhui" ? (
+                <nav className="onglets" aria-label="Ce que vous voulez savoir">
+                  {ONGLETS.filter(o => o.id !== "aujourdhui").map(o => (
+                    <button key={o.id} type="button"
+                      className={"onglet" + (onglet === o.id ? " actif" : "")}
+                      aria-current={onglet === o.id ? "page" : undefined}
+                      onMouseEnter={o.charge} onFocus={o.charge}
+                      onClick={() => { o.charge(); irA(o.id); }}>
+                      {o.libelle}
+                    </button>
+                  ))}
+                </nav>
+              ) : null}
 
               <main>
                 <Suspense fallback={<Chargement titre="Ouverture de l'écran."
@@ -563,6 +607,7 @@ export default function App() {
                       circonscription et ses comptes.
                     </p>
                   ) : null}
+                  {onglet === "aujourdhui" && fiche ? <Aujourdhui paquet={paquet} index={index} commune={commune} aller={irA} /> : null}
                   {onglet === "decide" && fiche ? <CeQuiADecide paquet={paquet} index={index} commune={commune} /> : null}
                   {onglet === "qui" && fiche ? <QuiDecide paquet={paquet} index={index} commune={commune} /> : null}
                   {onglet === "argent" && fiche ? <OuVaArgent paquet={paquet} index={index} commune={commune} /> : null}

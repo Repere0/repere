@@ -3,7 +3,8 @@ import { Carte, Vide, Source, Chargement, dateFr } from "@repere/ui";
 import {
   chargerProjets, chargerDeputes, chargerCatalogueScrutins, chargerVotes, ETATS,
 } from "@repere/data-utils";
-import { LigneVote, positionSur, positionsFiables, REFUS_APPARIEMENT } from "../lib/votes.jsx";
+import { LigneVote } from "../lib/votes.jsx";
+import { calculerFaits } from "../lib/faits.js";
 
 const DGCL_URL = "https://www.data.gouv.fr/datasets/projets-finances-par-les-dotations-"
   + "de-soutien-a-linvestissement-des-collectivites-territoriales";
@@ -46,10 +47,8 @@ const AN_VOTES_URL = "https://data.assemblee-nationale.fr/travaux-parlementaires
 const ORDRE = "Du plus récent au plus ancien. Ce n'est pas un ordre d'importance : "
   + "c'est un ordre de date.";
 
-/* L'Etat ne publie pas le jour d'un projet, seulement l'exercice budgetaire. On
-   le range donc au 31 decembre de son annee — apres les votes de cette annee —
-   et l'ecran ecrit « exercice 2025 », jamais une date inventee. */
-const finDAnnee = a => `${a}-12-31`;
+/* Pourquoi un projet est date au 31 decembre de son exercice (l'Etat ne publie
+   pas le jour) : voir lib/faits.js, ou vit desormais cette regle. */
 
 function euros(n) {
   return new Intl.NumberFormat("fr-FR").format(n) + " €";
@@ -153,57 +152,12 @@ export default function CeQuiADecide({ paquet, index, commune }) {
   }
 
   /* ---- les faits, chacun ramene a une date ---------------------------------- */
-  const faits = [];
-
+  /* Assemblage et securite d'imputation : voir lib/faits.js — deplace le
+     18/09/2026 pour que le prototype "Aujourd'hui" lise exactement le meme
+     fait le plus recent, jamais un calcul parallele. */
   const sourceProjets = (index && index.sources && index.sources.projets) || null;
-  const listeProjets = (projets && projets.communes && projets.communes[commune]) || [];
-  for (const p of listeProjets) {
-    faits.push({ cle: "p" + p.annee + p.intitule, quand: finDAnnee(p.annee), rang: 0,
-                 echelon: "ville", type: "projet", p });
-  }
-
-  /* Le vote du depute de CETTE commune, et d'aucun autre. Une commune a cheval
-     sur deux circonscriptions porte une liste : on prend les deux, chaque vote
-     etant nomme par son depute. */
-  const circos = Array.isArray(fiche.circo) ? fiche.circo
-                 : (fiche.circo === null || fiche.circo === undefined ? [] : [fiche.circo]);
   const base = (cat && cat.url_scrutin) || "";
-  const apparie = positionsFiables(cat, pos);
-  /* BLOCKER M-2 (17/09/2026) : `cat.scrutins` ne contient plus que des scrutins
-     solennels (filtre applique a l'ecriture, extract-html.js) — plus besoin de
-     `estSolennel` ici, et `pos.positions` s'indexe par numero de scrutin, pas
-     par depute : `positionSur()` fait la lecture. */
-  if (cat && cat.scrutins && pos && pos.positions && deputes && deputes.deputes && apparie) {
-    for (const circo of circos) {
-      const d = deputes.deputes[dep + "-" + circo];
-      if (!d || !d.acteurRef) continue;
-      /* LE NOM COMPLET, ET JAMAIS LE PATRONYME SEUL.
-         Trouve par la red team le 14/09/2026, et c'etait une faute grave. Le
-         maire de Paris dans nos donnees est Emmanuel GREGOIRE ; la deputee de la
-         12e de Paris est Olivia Gregoire. L'ecran affichait « Gregoire a vote
-         Contre » : un lecteur parisien attribuait au MAIRE une position qu'il n'a
-         jamais emise. Deux personnes, deux familles politiques. Et 15 patronymes
-         sont partages par plusieurs deputes au national (Rousseau -> Sandrine
-         75-9 et Aurelien 78-7 ; Cazeneuve -> Jean-Rene 32-1 et Pierre 92-7).
-         Imputer publiquement a une personne identifiee une position qu'elle n'a
-         pas prise, c'est le terrain de la diffamation — et le prenom etait dans
-         le fichier, a cote, non utilise. */
-      const nomComplet = [d.prenom, d.nom].filter(Boolean).join(" ") || d.nom || "";
-      for (const sc of cat.scrutins) {
-        const position = positionSur(pos, d.acteurRef, sc.n);
-        faits.push({ cle: "v" + circo + sc.u, quand: sc.d, rang: 1, echelon: "france",
-                     /* `ref` et non le nom : deux deputes homonymes d'une commune a
-                        deux circonscriptions verraient sinon leurs votes fusionnes
-                        sous un seul en-tete. */
-                     type: "vote", sc, position, qui: nomComplet, ref: d.acteurRef });
-      }
-    }
-  }
-
-  /* L'ORDRE, ET RIEN QUE LUI. `rang` departage un projet (date a l'annee) d'un
-     vote du meme jour : le vote, qui porte un vrai jour, passe avant. Aucune
-     propriete du fait — ni montant, ni echelon — n'entre dans le tri. */
-  faits.sort((a, b) => (a.quand < b.quand ? 1 : a.quand > b.quand ? -1 : a.rang - b.rang));
+  const faits = calculerFaits({ dep, fiche, projets, commune, cat, pos, deputes });
 
   const sourceScrutins = (cat && cat.source) || {};
   const nomCommune = fiche.nom || "";
