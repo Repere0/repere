@@ -59,6 +59,16 @@ export default function Aujourdhui({ paquet, index, commune, aller }) {
           <p className="ligne-note">L'État a engagé {euros(dernierFait.p.subvention)}, exercice {dernierFait.p.annee}.</p>
           {srcProjets ? <Source producteur={srcProjets.producteur} licence={srcProjets.licence} maj={srcProjets.mis_a_jour_le} /> : null}
         </div>
+      ) : dernierFait && dernierFait.type === "editorial" ? (
+        /* FAIT REDACTIONNEL — BLOCKER #3, MISSION DU 22/09/2026. Chaque fait
+           porte sa propre source officielle (e.src/e.srcn) ; la mention
+           supplementaire dit qui a relu et valide le texte, pour ne jamais
+           laisser croire a une detection automatique. */
+        <div className="quest-r">
+          <p><b>{dernierFait.e.t}</b></p>
+          <Source producteur={dernierFait.e.srcn || "Rédaction Repère"} url={dernierFait.e.src}
+            mention={dernierFait.e.conf === "verifie" ? "relu et validé par la rédaction" : "relevé, en attente de confirmation"} />
+        </div>
       ) : (
         <Vide titre={`Aucune décision datée n'est publiée pour ${nomCommune}.`}
           corps="Ni projet financé par l'État, ni vote solennel du député sur la période relevée."

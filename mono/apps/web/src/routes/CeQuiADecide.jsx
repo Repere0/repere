@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Carte, Vide, Source, Chargement, dateFr } from "@repere/ui";
 import {
-  chargerProjets, chargerDeputes, chargerCatalogueScrutins, chargerVotes, ETATS,
+  chargerProjets, chargerDeputes, chargerCatalogueScrutins, chargerVotes, chargerEvenements, ETATS,
 } from "@repere/data-utils";
 import { LigneVote } from "../lib/votes.jsx";
 import { calculerFaits } from "../lib/faits.js";
@@ -94,6 +94,12 @@ export default function CeQuiADecide({ paquet, index, commune }) {
    * seulement son contenu. */
   const [etatProjets, setEtatProjets] = useState(ETATS.EN_COURS);
   const [etatScrutins, setEtatScrutins] = useState(ETATS.EN_COURS);
+  /* TROISIEME VOLET, AJOUTE LE 22/09/2026 (BLOCKER #3) — MEME DOCTRINE QUE LES
+   * DEUX AUTRES : l'etat du CHARGEMENT du fil editorial (arrive ou pas) est
+   * garde separement du nombre de faits qu'il contient pour cette commune,
+   * exactement pour la raison ecrite plus haut a propos des projets. */
+  const [evenements, setEvenements] = useState(null);
+  const [etatEditorial, setEtatEditorial] = useState(ETATS.EN_COURS);
 
   const dep = paquet && paquet.d;
   const fiche = commune && paquet && paquet.communes ? paquet.communes[commune] : null;
@@ -102,28 +108,31 @@ export default function CeQuiADecide({ paquet, index, commune }) {
     if (!dep || !commune) return undefined;
     let vivant = true;
     setEtat(ETATS.EN_COURS);
-    /* QUATRE FICHIERS, UNE SEULE ATTENTE. Tous les quatre sont deja en cache des
-       la deuxieme visite ; le fil ne repart donc pas au reseau pour se
+    /* CINQ FICHIERS, UNE SEULE ATTENTE. Tous sont deja en cache des la
+       deuxieme visite ; le fil ne repart donc pas au reseau pour se
        rafraichir, et c'est voulu : la fraicheur vient de la collecte, pas d'un
        aller-retour a chaque ouverture. */
     Promise.all([
       chargerProjets(dep), chargerDeputes(),
-      chargerCatalogueScrutins(), chargerVotes(dep),
-    ]).then(([pr, de, c, v]) => {
+      chargerCatalogueScrutins(), chargerVotes(dep), chargerEvenements(),
+    ]).then(([pr, de, c, v, ev]) => {
       if (!vivant) return;
       setProjets(pr.donnees);
       setDeputes(de.donnees);
       setCat(c.donnees);
       setPos(v.donnees);
+      setEvenements(ev.donnees);
       /* Le volet scrutins demande TROIS fichiers a la fois (catalogue, votes du
          departement, deputes) : il n'est SERVI que si les trois le sont. */
       const okProjets = pr.etat === ETATS.SERVI;
       const okScrutins = c.etat === ETATS.SERVI && v.etat === ETATS.SERVI && de.etat === ETATS.SERVI;
+      const okEditorial = ev.etat === ETATS.SERVI;
       setEtatProjets(pr.etat);
       setEtatScrutins(okScrutins ? ETATS.SERVI : (c.etat !== ETATS.SERVI ? c.etat : (v.etat !== ETATS.SERVI ? v.etat : de.etat)));
-      /* Le fil vit avec ce qui arrive : un seul des deux types de faits suffit a
-         faire un ecran. Il n'echoue que si les DEUX manquent. */
-      const rienDuTout = !okProjets && !okScrutins;
+      setEtatEditorial(ev.etat);
+      /* Le fil vit avec ce qui arrive : un seul des TROIS types de faits suffit
+         a faire un ecran. Il n'echoue que si les trois manquent. */
+      const rienDuTout = !okProjets && !okScrutins && !okEditorial;
       setEtat(rienDuTout ? (pr.etat === ETATS.HORS_LIGNE ? ETATS.HORS_LIGNE : ETATS.ECHEC)
                          : ETATS.SERVI);
     });
@@ -157,24 +166,31 @@ export default function CeQuiADecide({ paquet, index, commune }) {
      fait le plus recent, jamais un calcul parallele. */
   const sourceProjets = (index && index.sources && index.sources.projets) || null;
   const base = (cat && cat.url_scrutin) || "";
-  const faits = calculerFaits({ dep, fiche, projets, commune, cat, pos, deputes });
+  const faits = calculerFaits({ dep, fiche, projets, commune, cat, pos, deputes, evenements });
 
   const sourceScrutins = (cat && cat.source) || {};
   const nomCommune = fiche.nom || "";
 
   if (!faits.length) {
-    /* DEUX CAUSES POSSIBLES, DEUX PHRASES — jamais l'inverse. `etatProjets`/
-     * `etatScrutins` disent lequel des deux volets a vraiment ete SERVI ; seul
-     * un volet SERVI et vide autorise a dire que la source ne publie rien. */
-    const projetsServi = etatProjets === ETATS.SERVI;
-    const scrutinsServi = etatScrutins === ETATS.SERVI;
-    const corps = projetsServi && scrutinsServi
-      ? "Ce n'est pas un retard de Repère : sur la période relevée, l'État ne publie aucun projet financé dans cette commune, et la source des scrutins ne porte aucune position pour son député."
-      : !projetsServi && scrutinsServi
-      ? "La source des scrutins ne porte aucune position pour son député sur la période relevée. Pour les projets financés par l'État, en revanche, Repère n'a pas réussi à obtenir le fichier de ce département — ce n'est ni un « aucun projet », ni une preuve que l'État n'a rien financé ici."
-      : projetsServi && !scrutinsServi
-      ? "L'État ne publie aucun projet financé dans cette commune sur la période relevée. Pour les votes, en revanche, Repère n'a pas réussi à obtenir le relevé des scrutins de ce département — ce silence-là est de notre côté, pas de celui de l'Assemblée."
-      : "Repère n'a pas réussi à obtenir ni le fichier des projets financés, ni le relevé des scrutins pour ce département. Ce n'est pas une information sur ce que l'État ou l'Assemblée ont ou n'ont pas fait — c'est un manque de notre côté.";
+    /* TROIS CAUSES POSSIBLES, JAMAIS CONFONDUES — un volet SERVI et vide
+     * autorise seul a dire que la source ne publie rien ; un volet non SERVI
+     * dit que le manque est chez nous. COMPOSE, PAS 8 PHRASES ECRITES A LA
+     * MAIN (2^3 combinaisons le 22/09/2026, avec le fil editorial en plus) :
+     * un ternary par cas aurait fini par en oublier un, exactement le piege
+     * que CLAUDE.md nomme "deux endroits qui derivent la meme regle". */
+    const volets = [
+      { nom: "Projets financés par l'État", servi: etatProjets === ETATS.SERVI },
+      { nom: "Relevé des scrutins", servi: etatScrutins === ETATS.SERVI },
+      { nom: "Fil éditorial de la rédaction", servi: etatEditorial === ETATS.SERVI },
+    ];
+    const manquants = volets.filter(v => !v.servi).map(v => v.nom);
+    const videsMaisServis = volets.filter(v => v.servi).map(v => v.nom);
+    const corps = manquants.length === 0
+      ? "Ce n'est pas un retard de Repère : sur la période relevée, aucune des sources suivies ne publie de fait daté pour cette commune."
+      : manquants.length === volets.length
+      ? "Repère n'a réussi à obtenir aucune de ses sources datées pour ce département. Ce n'est pas une information sur ce qui a été décidé ou non — c'est un manque de notre côté."
+      : `Sur la période relevée, aucun fait n'est publié pour cette commune du côté de : ${videsMaisServis.join(", ")} — c'est la source qui est muette. `
+        + `Repère n'a en revanche pas réussi à obtenir : ${manquants.join(", ")} — ce second manque est de notre côté, pas celui de la source.`;
     return (
       <div className="pile">
         <Vide titre={`Aucune décision datée n'est publiée pour ${nomCommune}.`}
@@ -192,6 +208,7 @@ export default function CeQuiADecide({ paquet, index, commune }) {
      produisent deux lignes et UN texte. */
   const nbVotes = new Set(faits.filter(f => f.type === "vote").map(f => f.sc.u)).size;
   const nbDeputes = new Set(faits.filter(f => f.type === "vote").map(f => f.ref)).size;
+  const nbEditoriaux = faits.filter(f => f.type === "editorial").length;
 
   return (
     <div className="pile">
@@ -204,10 +221,12 @@ export default function CeQuiADecide({ paquet, index, commune }) {
       <Carte echelon="ville" titre={`Ce qui a été décidé pour ${nomCommune}`}
         sousTitre={ORDRE}>
         <p className="tx-note">
-          {nbProjets ? `${nbProjets} projet${nbProjets > 1 ? "s" : ""} financé${nbProjets > 1 ? "s" : ""} par l'État` : ""}
-          {nbProjets && nbVotes ? " et " : ""}
-          {nbVotes ? `${nbVotes} texte${nbVotes > 1 ? "s" : ""} voté${nbVotes > 1 ? "s" : ""} à l'Assemblée`
-            + (nbDeputes > 1 ? ` par vos ${nbDeputes} députés` : " par votre député") : ""}
+          {[
+            nbProjets ? `${nbProjets} projet${nbProjets > 1 ? "s" : ""} financé${nbProjets > 1 ? "s" : ""} par l'État` : "",
+            nbVotes ? `${nbVotes} texte${nbVotes > 1 ? "s" : ""} voté${nbVotes > 1 ? "s" : ""} à l'Assemblée`
+              + (nbDeputes > 1 ? ` par vos ${nbDeputes} députés` : " par votre député") : "",
+            nbEditoriaux ? `${nbEditoriaux} fait${nbEditoriaux > 1 ? "s" : ""} relu${nbEditoriaux > 1 ? "s" : ""} et validé${nbEditoriaux > 1 ? "s" : ""} par la rédaction` : "",
+          ].filter(Boolean).join(", ").replace(/,([^,]*)$/, " et$1")}
           {". "}
           {nbProjets ? "L'État ne publie que l'année d'un projet, pas le jour : un projet est donc placé à la fin de son année. " : ""}
           Ce fil ne prétend pas dire tout ce qui a été décidé chez vous — il dit ce
@@ -254,6 +273,19 @@ export default function CeQuiADecide({ paquet, index, commune }) {
           )
         ) : null}
 
+        {/* TROISIEME TROU SYMETRIQUE — BLOCKER #3, MISSION DU 22/09/2026. Meme
+            doctrine que les deux ci-dessus : une absence se dit, et elle dit
+            LAQUELLE des deux causes s'est produite. */}
+        {!nbEditoriaux ? (
+          etatEditorial === ETATS.SERVI ? (
+            <Vide titre="Aucun fait rédactionnel n'est publié pour cette commune sur la période relevée."
+              corps="Les projets et les votes affichés ci-dessus ne dépendent pas de ce fil. La rédaction valide un fait à la fois, à la main : ce n'est pas un flux automatique." />
+          ) : (
+            <Vide titre="Repère n'a pas réussi à obtenir le fil éditorial de la rédaction."
+              corps="Ce n'est pas une information sur ce qui a été décidé ou non : c'est notre chaîne de collecte qui n'a pas ce fichier. Les projets et les votes affichés ci-dessus ne dépendent pas de ce fichier." />
+          )
+        ) : null}
+
         {faits.map((f, i) => {
           /* L'EN-TETE NE SE REPETE PAS, ET C'EST UNE CORRECTION SUR CAPTURE.
              Chaque vote portait sa propre ligne « A l'Assemblee nationale, X a
@@ -264,12 +296,34 @@ export default function CeQuiADecide({ paquet, index, commune }) {
              pas du meme type et du meme auteur. Les projets recoivent la meme
              ligne, pour la meme raison : sans elle, les deux familles se
              confondraient, et « a engage » ne dirait pas qui. */
-          const prec = faits[i - 1];
-          const nouvelle = !prec || prec.type !== f.type
-            || (f.type === "vote" && prec.ref !== f.ref);
+          /* LES FAITS EDITORIAUX N'ONT PAS D'EN-TETE (voir plus bas) : ils ne
+             doivent donc pas non plus INTERROMPRE la suite de vote ou de
+             projet qui les entoure. Mesure du 22/09/2026 : sans ce
+             contournement, un fait editorial glisse entre deux votes du MEME
+             depute et fait reapparaitre leur en-tete une seconde fois — le
+             defaut exact que cette regle interdit. On regarde donc le dernier
+             fait porteur d'un en-tete, pas simplement le fait precedent ; pour
+             un fait editorial lui-meme, la valeur n'est jamais lue (aucun
+             en-tete ne depend d'elle, voir plus bas). */
+          let prec = null;
+          for (let j = i - 1; j >= 0; j--) { if (faits[j].type !== "editorial") { prec = faits[j]; break; } }
+          const nouvelle = !prec || prec.type !== f.type || (f.type === "vote" && prec.ref !== f.ref);
           return (
             <div className="ligne fait" key={f.cle}>
-              {nouvelle ? (
+              {/* LES FAITS EDITORIAUX N'ONT PAS D'EN-TETE DE GROUPE, ET C'EST
+                  DELIBERE — pas un oubli. Contrairement aux votes (qui ont
+                  besoin de dire UNE FOIS qui a vote avant une suite de lois)
+                  ou aux projets (qui ont besoin de dire UNE FOIS que c'est
+                  l'Etat qui finance), un fait editorial s'identifie deja tout
+                  seul : son titre est en gras, et sa propre ligne Source dit
+                  "relu et valide par la redaction" juste dessous. Ajouter un
+                  troisieme en-tete de groupe qui alterne avec les deux autres
+                  au fil des dates cassait l'invariant "au plus trois groupes,
+                  jamais deux fois le meme" — mesure le 22/09/2026 : les faits
+                  editoriaux et les votes ne sont PAS contigus dans le temps,
+                  ils alternent, et un en-tete de plus par alternance aurait
+                  reproduit exactement le defaut que cette regle interdit. */}
+              {nouvelle && f.type !== "editorial" ? (
                 <p className="groupe">
                   {f.type === "vote"
                     ? `À l'Assemblée nationale, ${f.qui} a voté`
@@ -285,15 +339,31 @@ export default function CeQuiADecide({ paquet, index, commune }) {
                   Les intitulés sont recopiés tels que l'État les publie, sans correction.
                 </p>
               ) : null}
-              {f.type === "projet"
-                ? <LigneProjet p={f.p} dispositifs={(projets && projets.dispositifs) || {}} />
-                : <LigneVote sc={f.sc} position={f.position} base={base} loi qui={f.qui} />}
+              {f.type === "projet" ? (
+                <LigneProjet p={f.p} dispositifs={(projets && projets.dispositifs) || {}} />
+              ) : f.type === "vote" ? (
+                <LigneVote sc={f.sc} position={f.position} base={base} loi qui={f.qui} />
+              ) : (
+                /* FAIT REDACTIONNEL — chaque fait porte SA PROPRE source (jamais
+                   une source partagee comme projets/votes) : le producteur
+                   change d'une ligne a l'autre (Conseil constitutionnel, AN...).
+                   La mention "relu et valide" est ce qui empeche de confondre
+                   ce fil avec une detection automatique — voir lib/faits.js. */
+                <>
+                  <b className="fait-titre">{f.e.t}</b>
+                  <Source producteur={f.e.srcn || "voir la source"} url={f.e.src}
+                    mention={f.e.conf === "verifie" ? "relu et validé par la rédaction" : "relevé, en attente de confirmation par la rédaction"} />
+                </>
+              )}
             </div>
           );
         })}
 
-        {/* DEUX FAMILLES DE FAITS, DEUX PROVENANCES. Les melanger sous une seule
-            ligne de source dirait que l'Etat publie les votes de l'Assemblee. */}
+        {/* TROIS FAMILLES DE FAITS, TROIS PROVENANCES DIFFERENTES. Les melanger
+            sous une seule ligne de source dirait que l'Etat publie les votes de
+            l'Assemblee, ou que la redaction est une source officielle au meme
+            titre que les deux autres. Les faits editoriaux portent deja leur
+            propre source ligne par ligne, ci-dessus : aucune ligne commune ici. */}
         {nbProjets && sourceProjets ? (
           <Source producteur={sourceProjets.producteur} licence={sourceProjets.licence}
             maj={sourceProjets.mis_a_jour_le}

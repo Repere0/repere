@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import {
   chargerProjets, chargerDeputes, chargerCatalogueScrutins, chargerVotes,
-  chargerCalendrierSenat, ETATS,
+  chargerCalendrierSenat, chargerEvenements, ETATS,
 } from "@repere/data-utils";
 import { calculerFaits } from "./faits.js";
 import { rapports, dernierExercice } from "./comptes.jsx";
@@ -19,6 +19,7 @@ export function useAujourdhui(paquet, index, commune) {
   const [pos, setPos] = useState(null);
   const [deputes, setDeputes] = useState(null);
   const [cal, setCal] = useState(null);
+  const [evenements, setEvenements] = useState(null);
 
   const dep = paquet && paquet.d;
   const fiche = commune && paquet && paquet.communes ? paquet.communes[commune] : null;
@@ -29,11 +30,11 @@ export function useAujourdhui(paquet, index, commune) {
     setEtat(ETATS.EN_COURS);
     Promise.all([
       chargerProjets(dep), chargerDeputes(), chargerCatalogueScrutins(),
-      chargerVotes(dep), chargerCalendrierSenat(),
-    ]).then(([pr, de, c, v, ca]) => {
+      chargerVotes(dep), chargerCalendrierSenat(), chargerEvenements(),
+    ]).then(([pr, de, c, v, ca, ev]) => {
       if (!vivant) return;
       setProjets(pr.donnees); setDeputes(de.donnees); setCat(c.donnees);
-      setPos(v.donnees); setCal(ca.donnees);
+      setPos(v.donnees); setCal(ca.donnees); setEvenements(ev.donnees);
       setEtat(ETATS.SERVI);
     });
     return () => { vivant = false; };
@@ -44,7 +45,7 @@ export function useAujourdhui(paquet, index, commune) {
   }
 
   const nomCommune = fiche.nom || "";
-  const faits = calculerFaits({ dep, fiche, projets, commune, cat, pos, deputes });
+  const faits = calculerFaits({ dep, fiche, projets, commune, cat, pos, deputes, evenements });
   const base = (cat && cat.url_scrutin) || "";
   const dernierVote = faits.find(f => f.type === "vote" && f.position);
   const dernierFait = faits[0];

@@ -19,7 +19,33 @@ import { positionsFiables, positionSur } from "./votes.jsx";
    et l'ecran ecrit « exercice 2025 », jamais une date inventee. */
 const finDAnnee = a => `${a}-12-31`;
 
-export function calculerFaits({ dep, fiche, projets, commune, cat, pos, deputes }) {
+/* LE FIL EDITORIAL — BLOCKER #3 DE LA MISSION DU 22/09/2026.
+ *
+ * CE QUE C'EST, TRACE JUSQU'A LA SOURCE. `data/evenements/*.md` (a la racine
+ * du depot) porte une entete YAML (titre, date, echelon, source, source_nom,
+ * confiance, valide) et un corps en deux parties, « Le fait » et « Ce que ca
+ * change ». `outils/evenements.py` (Python, execute par outils/pipeline.sh,
+ * jamais depuis ce poste) ne publie QUE les fichiers marques `valide: true`
+ * a la main par un humain, avec une source dans une liste d'institutions
+ * autorisees (jamais un media) — c'est ce geste humain qui rend vraie la
+ * promesse « relu par un humain ». `evenements.json` est le resultat deja
+ * filtre : chaque entree qui arrive ICI a deja passe cette porte.
+ *
+ * CE QUI N'EST PAS FAIT ICI : aucune ligne de ce fichier n'invente une
+ * validation. Le champ `conf` (confiance : "verifie" ou "a_confirmer") est
+ * transporte tel quel jusqu'a l'ecran, qui doit le distinguer — voir
+ * CeQuiADecide.jsx. Ne jamais transformer "a_confirmer" en "verifie", et ne
+ * jamais dire "detecte automatiquement" alors que le geste qui a produit
+ * cette ligne est un humain qui a ecrit `valide: true` dans un fichier. */
+function faitsEditoriaux(evenements, { dep, commune }) {
+  if (!evenements || !Array.isArray(evenements.r)) return [];
+  return evenements.r
+    .filter(e => e.e === "france" || (e.insee && (e.insee === commune || e.insee === dep)))
+    .map(e => ({ cle: "ed" + e.id, quand: e.d, rang: 2, echelon: e.e === "france" ? "france" : "ville",
+                 type: "editorial", e }));
+}
+
+export function calculerFaits({ dep, fiche, projets, commune, cat, pos, deputes, evenements }) {
   const faits = [];
   if (!fiche) return faits;
 
@@ -48,6 +74,8 @@ export function calculerFaits({ dep, fiche, projets, commune, cat, pos, deputes 
       }
     }
   }
+
+  faits.push(...faitsEditoriaux(evenements, { dep, commune }));
 
   /* L'ORDRE, ET RIEN QUE LUI — voir CeQuiADecide.jsx pour la justification
      complete (invariant 3 : ni montant, ni echelon n'entre dans le tri). */
