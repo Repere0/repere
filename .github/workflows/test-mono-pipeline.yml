@@ -1,0 +1,149 @@
+# =============================================================================
+# TEST DU PONT mono/ — SUR LE VRAI RUNNER GITHUB, SANS AUCUNE PUBLICATION.
+#
+# CE WORKFLOW NE PUBLIE RIEN. Il n'existe AUCUNE etape de deploiement dans ce
+# fichier : ni netlify-cli, ni reference a NETLIFY_AUTH_TOKEN ou
+# NETLIFY_SITE_ID, ni push vers une branche autre que celle qui le declenche.
+# La preuve n'est pas "une condition qui empeche le deploiement" — c'est
+# l'ABSENCE de l'etape elle-meme. Rien a desactiver, rien qui puisse etre
+# reactive par erreur.
+#
+# DECLENCHEUR : workflow_dispatch UNIQUEMENT. Ni schedule, ni push, ni pull_request.
+# Un humain (ou un agent explicitement autorise) doit le lancer a la main,
+# chaque fois. Ecrit et lance depuis une branche ISOLEE
+# (ci-test-mono-pipeline), jamais depuis main.
+#
+# CE QUE CE WORKFLOW PROUVE, ET RIEN DE PLUS : que le pont mono/ prepare le
+# 18/09/2026 (pipeline.sh, commit b4737ff, jamais fusionne) fonctionne sur le
+# runner GitHub reel (ubuntu-latest) — pas seulement sur ce poste Windows, ou
+# `corepack enable pnpm` echoue silencieusement (rattrape par || true) et ou
+# pnpm est deja installe par un autre chemin. Trois risques identifies dans
+# MONO_PIPELINE_BRIDGE_2026-09.md sont ici verifies pour la premiere fois :
+#   1. Node et pnpm reellement disponibles et corrects sur ubuntu-latest.
+#   2. `pnpm install` a l'interieur de mono/ installe bien playwright 1.56.0,
+#      DIFFERENT du playwright 1.49.0 installe a la racine par collecte.yml
+#      pour test_repere.mjs — aucune etape existante n'installe le navigateur
+#      Chromium assorti a CETTE version dans mono/. Trouve en auditant ce
+#      workflow avant d'ecrire celui-ci, pas suppose.
+#   3. Le banc mono/ (120 controles inline + 65 node:test) passe reellement
+#      sur l'artefact produit par CE runner, pas seulement sur ce poste.
+#
+# CE QUE CE WORKFLOW NE FAIT PAS, DELIBEREMENT : les etapes 1 a 4 de
+# pipeline.sh (collecte AN, agenda, circonscriptions, projets — toutes en
+# Python) ne sont PAS rejouees ici. Elles sont independantes du pont mono/
+# (extract-html.js lit app_repere_v18_20.html tel qu'il est deja commite,
+# pas leur sortie directe) et deja etablies par ailleurs. Ce workflow isole
+# exactement ce qu'il doit prouver : les etapes 5 et 6 du pipeline reel, sur
+# le runner reel.
+# =============================================================================
+
+name: TEST pont mono (sans publication)
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test-mono:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Recuperer le depot (branche isolee)
+        uses: actions/checkout@v5
+
+      - name: Confirmer l'absence de toute etape de publication dans ce fichier
+        run: |
+          FICHIER=".github/workflows/test-mono-pipeline.yml"
+          echo "::notice::Ce workflow ne contient aucune etape de deploiement."
+          # Motif etroit, deliberement : ce fichier NOMME "netlify" dans ses
+          # propres commentaires et dans CETTE etape pour expliquer son absence —
+          # chercher le simple mot aurait declenche une fausse alerte sur sa
+          # propre documentation, y compris sur cette ligne. On cherche
+          # l'INVOCATION reelle (celle que collecte.yml utilise pour publier),
+          # jamais une mention du nom.
+          if grep -qE "netlify-cli[[:space:]]+deploy|netlify[[:space:]]+deploy|secrets\.NETLIFY" "$FICHIER"; then
+            echo "::error::Une invocation de deploiement Netlify a ete trouvee dans $FICHIER — arret par precaution."
+            exit 1
+          fi
+          echo "PRODUCTION ACTIVEE : NON — aucune etape de ce job ne peut publier."
+
+      - name: Installer Node (version explicite, pas le defaut implicite de l'image)
+        uses: actions/setup-node@v4
+        with:
+          node-version: "lts/*"
+
+      - name: Verifier Node et activer corepack (pnpm epingle par mono/package.json)
+        run: |
+          node --version
+          npm --version
+          corepack enable
+          corepack --version
+
+      - name: Installer les dependances de mono/ (pnpm, epingle par packageManager)
+        working-directory: mono
+        run: pnpm install --frozen-lockfile
+
+      # RISQUE #2 CONFIRME PAR AUDIT, CORRIGE ICI : collecte.yml installe
+      # playwright 1.49.0 A LA RACINE pour test_repere.mjs. mono/package.json
+      # declare playwright 1.56.0 comme devDependency — une version DIFFERENTE,
+      # qui a besoin de SON PROPRE navigateur Chromium. Sans cette etape,
+      # `pnpm test` (plus bas) echouerait sur le runner avec "executable
+      # introuvable", alors que ce meme test passe sur ce poste parce qu'un
+      # Chromium s'y trouve deja installe par un autre chemin.
+      - name: Installer le navigateur du banc mono/ (version assortie a mono/package.json)
+        working-directory: mono
+        run: npx playwright install --with-deps chromium
+
+      - name: Extraire les donnees depuis le fichier source (etape 5 de pipeline.sh)
+        working-directory: mono
+        run: node scripts/extract-html.js ../app_repere_v18_20.html ./data
+
+      - name: Rafraichir le calendrier du Senat (reseau — avertit, ne bloque pas)
+        working-directory: mono
+        run: node scripts/calendrier-senat.mjs ./data || echo "::warning::calendrier Senat non rafraichi (reseau indisponible ? le releve deja extrait reste)"
+
+      - name: Construire mono/ (etape 5 de pipeline.sh)
+        working-directory: mono
+        run: pnpm build
+
+      - name: Assembler l'artefact (meme geste que pipeline.sh : cp -r dist site_engendre)
+        run: |
+          rm -rf site_engendre
+          cp -r mono/apps/web/dist site_engendre
+          FICHIERS=$(find site_engendre -type f | wc -l)
+          POIDS=$(du -sh site_engendre | cut -f1)
+          echo "artefact : $FICHIERS fichiers, $POIDS"
+
+      - name: Inspecter la provenance et la sante ecrites dans l'artefact
+        run: |
+          echo "== data/index.json : build =="
+          node -e "console.log(JSON.stringify(JSON.parse(require('fs').readFileSync('site_engendre/data/index.json','utf8')).build, null, 1))"
+
+      - name: Eprouver — le banc de mono/ (etape 6 de pipeline.sh), sur apps/web/dist
+        working-directory: mono
+        run: pnpm test
+
+      - name: Eprouver — le meme banc navigateur, sur l'artefact reellement copie (site_engendre)
+        working-directory: mono
+        run: node tests/runtime.test.mjs ../site_engendre
+
+      - name: Mesurer le poids reellement transfere (parcours complet, gzip)
+        working-directory: mono
+        run: node tests/poids.mjs ../site_engendre
+
+      - name: Deposer l'artefact CI (inspection seulement — aucune publication)
+        uses: actions/upload-artifact@v4
+        with:
+          name: site_engendre-test-ci
+          path: site_engendre
+          retention-days: 7
+
+      - name: Confirmation finale, explicite
+        if: always()
+        run: |
+          echo "::notice::PRODUCTION ACTIVEE : NON"
+          echo "::notice::PUBLICATION : NON — aucune etape netlify-cli, aucun secret de deploiement reference"
+          echo "::notice::MAIN MODIFIEE : NON — ce workflow ne pousse rien, ne fusionne rien"
