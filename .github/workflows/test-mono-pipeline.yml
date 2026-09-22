@@ -109,7 +109,7 @@ jobs:
         working-directory: mono
         run: pnpm build
 
-      - name: Assembler l'artefact (meme geste que pipeline.sh : cp -r dist site_engendre)
+      - name: Assembler l'artefact (meme geste que pipeline.sh - cp -r dist site_engendre)
         run: |
           rm -rf site_engendre
           cp -r mono/apps/web/dist site_engendre
