@@ -50,6 +50,13 @@ function chargerRegistre() {
    (seuil 10000 octets), reprise ici pour ne pas inventer une deuxieme regle. */
 const SEUIL_TAILLE_SUSPECTE = 10000;
 
+/* La cadence declaree d'une source, en jours — EXPORTEE pour que rapport.mjs
+   juge la fraicheur de la DERNIERE COLLECTE REPERE avec la meme regle que
+   celle-ci juge la fraicheur de la SOURCE elle-meme. Deux endroits qui
+   dériveraient chacun leur propre seuil finiraient par diverger — la lecon
+   deja apprise sur lib/faits.js et lib/comptes.jsx, redite ici. */
+export const CADENCES_JOURS_PAR_CLE = { quotidienne: 1, annuelle: 366, figee: null };
+
 export async function sonder(source) {
   const url = source.url_telechargement || source.url_api || source.url;
   const rec = {
@@ -140,7 +147,7 @@ export async function sonder(source) {
      Last-Modified observe la contredit largement. Seuils volontairement
      larges (x3 la cadence annoncee) pour ne pas crier au loup sur un jour de
      retard normal — voir objectif 2, "date de MaJ anormalement ancienne". */
-  const CADENCES_JOURS = { quotidienne: 1, annuelle: 366, figee: null };
+  const CADENCES_JOURS = CADENCES_JOURS_PAR_CLE;
   const cadenceBrute = (source.frequence_maj_annoncee || "").split(" ")[0];
   const seuilJours = CADENCES_JOURS[cadenceBrute];
   if (seuilJours && rec.last_source_update) {

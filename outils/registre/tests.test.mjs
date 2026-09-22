@@ -14,6 +14,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { sonder } from "./verifier_sources.mjs";
 import { mesurer } from "./couverture.mjs";
+import { etatFinal } from "./rapport.mjs";
 
 const ICI = path.dirname(fileURLToPath(import.meta.url));
 const FIXTURES = path.join(ICI, "fixtures");
@@ -111,4 +112,33 @@ test("couverture — jamais de rapprochement par le nom : 99999 reste inconnue m
   const r = mesurer(FIXTURES);
   assert.ok(r.sources.rne.inconnues.includes("99999"),
     "un code INSEE hors reference doit rester 'inconnu', jamais rattache par son nom");
+});
+
+test("rapport — une source jamais controlee reste DISCOVERED, jamais READY par defaut", () => {
+  assert.equal(etatFinal({ id: "x" }, null), "DISCOVERED");
+});
+
+test("rapport — un HTTP en erreur devient ERROR, quel que soit le statut_cycle du registre", () => {
+  const source = { statut_cycle: "READY_FOR_PRODUCT" };
+  assert.equal(etatFinal(source, { status: "SOURCE_UNAVAILABLE" }), "ERROR");
+  assert.equal(etatFinal(source, { status: "DATA_INVALID" }), "ERROR");
+});
+
+test("rapport — une source jamais integree garde son stade d'integration, jamais STALE", () => {
+  const source = { statut_cycle: "VERIFIED", frequence_maj_annoncee: "annuelle" };
+  assert.equal(etatFinal(source, { status: "READY" }), "VERIFIED",
+    "une source verifiee mais jamais collectee en production ne doit pas etre jugee perimee");
+});
+
+test("rapport — HTTP sain mais collecte tres ancienne pour une cadence quotidienne devient STALE", () => {
+  const ancien = new Date(Date.now() - 30 * 86400000).toISOString().slice(0, 10);
+  const source = { statut_cycle: "READY_FOR_PRODUCT", frequence_maj_annoncee: "quotidienne",
+    derniere_collecte_repere: ancien };
+  assert.equal(etatFinal(source, { status: "READY" }), "STALE");
+});
+
+test("rapport — HTTP sain et collecte recente reste READY", () => {
+  const source = { statut_cycle: "READY_FOR_PRODUCT", frequence_maj_annoncee: "annuelle",
+    derniere_collecte_repere: new Date().toISOString().slice(0, 10) };
+  assert.equal(etatFinal(source, { status: "READY" }), "READY");
 });

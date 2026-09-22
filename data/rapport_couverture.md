@@ -1,28 +1,38 @@
 # Repère — rapport de couverture des données
 
-*Généré le 2026-09-22T08:32:41.078Z. Chaque chiffre vient d'un fichier mesuré, jamais d'une estimation.*
+*Généré le 2026-09-22T08:41:11.067Z. Chaque chiffre vient d'un fichier mesuré, jamais d'une estimation.*
 
 ## Territoire cible
 Île-de-France, 75, 77, 78, 91, 92, 93, 94, 95 — 1266 communes de référence (`mono/data/communes-beta.json`).
 
 ## Sources actives (10)
 
-| source | producteur | catégorie | fraîcheur source | dernière collecte Repère |
-|---|---|---|---|---|
-| rne | Ministere de l'Interieur (DGCL) | elus | 2026-08-11 | 2026-08-11 |
-| ofgl_comptes | Observatoire des finances et de la gestion publique locales (OFGL) | finances | 2026-07-29 | 2026-07-29 |
-| an_agenda | Assemblee nationale | calendrier | 2026-09-22T04:40:50.000Z | jamais |
-| an_amo30 | Assemblee nationale | elus | 2026-09-22T00:34:42.000Z | 2026-08-26 |
-| an_scrutins | Assemblee nationale | votes | 2026-09-22T04:25:24.000Z | 2026-08-26 |
-| dgcl_projets_investissement | DGCL | decisions | 2026-07-24T14:20:21.000Z | jamais |
-| senat_calendrier | Senat | calendrier | 2026-09-22T08:29:10.000Z | 2026-09-22 |
-| circos_ministere | Ministere de l'Interieur | referentiel_territorial | 2017-04-11T12:11:28.000Z | jamais |
-| circos_bureaux_vote | tiers, derive de resultats officiels | referentiel_territorial | 2024-06-12T13:39:14.000Z | jamais |
-| insee_cog_noms_communes | INSEE, republie par Etalab / DINUM | referentiel_territorial | 2026-09-13 | 2026-09-13 |
+| source | état | producteur | catégorie | fraîcheur source | dernière collecte Repère |
+|---|---|---|---|---|---|
+| rne | READY | Ministere de l'Interieur (DGCL) | elus | 2026-08-11 | 2026-08-11 |
+| ofgl_comptes | READY | Observatoire des finances et de la gestion publique locales (OFGL) | finances | 2026-07-29 | 2026-07-29 |
+| an_agenda | READY | Assemblee nationale | calendrier | 2026-09-22T04:40:50.000Z | jamais |
+| an_amo30 | **STALE** | Assemblee nationale | elus | 2026-09-22T00:34:42.000Z | 2026-08-26 |
+| an_scrutins | **STALE** | Assemblee nationale | votes | 2026-09-22T04:25:24.000Z | 2026-08-26 |
+| dgcl_projets_investissement | VERIFIED | DGCL | decisions | 2026-07-24T14:20:21.000Z | jamais |
+| senat_calendrier | READY | Senat | calendrier | 2026-09-22T08:29:10.000Z | 2026-09-22 |
+| circos_ministere | READY | Ministere de l'Interieur | referentiel_territorial | 2017-04-11T12:11:28.000Z | jamais |
+| circos_bureaux_vote | VERIFIED | tiers, derive de resultats officiels | referentiel_territorial | 2024-06-12T13:39:14.000Z | jamais |
+| insee_cog_noms_communes | **STALE** | INSEE, republie par Etalab / DINUM | referentiel_territorial | 2026-09-13 | 2026-09-13 |
+
+## Sources périmées — STALE (3)
+
+*Health check OK, mais la dernière collecte Repère dépasse largement la cadence annoncée de la source — le signe exact qui a révélé les 27 jours de gel de la collecte quotidienne (voir phase P0).*
+
+| source | dernière collecte Repère | fraîcheur source (aujourd'hui) |
+|---|---|---|
+| an_amo30 | 2026-08-26 | 2026-09-22T00:34:42.000Z |
+| an_scrutins | 2026-08-26 | 2026-09-22T04:25:24.000Z |
+| insee_cog_noms_communes | 2026-09-13 | 2026-09-13 |
 
 ## Sources en erreur (0)
 
-Aucune, au dernier contrôle (2026-09-22T08:30:50.689Z).
+Aucune, au dernier contrôle (2026-09-22T08:40:14.709Z).
 
 ## Sources modifiées depuis le registre (2)
 
