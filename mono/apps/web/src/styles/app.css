@@ -123,7 +123,7 @@
    titre reprend toute la largeur, l'etiquette se pose dessous — et l'ordre de
    lecture reste celui du document, titre d'abord. */
 @media (max-width: 480px) {
-  .carte-h > div { flex: 1 1 100%; }
+  .carte-h > div { flex: 1 1 100%; min-width: 0; }
   .carte-h .tag { align-self: flex-start; }
 }
 .carte-h h2 { margin: 0; }
