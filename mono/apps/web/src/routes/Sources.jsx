@@ -60,6 +60,12 @@ export default function Sources({ index, paquet }) {
           mention={(s.projets.exercices ? "exercices " + s.projets.exercices.join(" et ") + ", " : "")
             + "relevé le " + dateFr(s.projets.releve_le)}
           url={s.projets.url} /> : null}
+        {/* LE FIL EDITORIAL N'A PAS UN PRODUCTEUR, IL A UN GESTE : chaque fait
+            porte sa propre source officielle, deja citee ligne par ligne dans
+            « Ce qui a été décidé ». Cette ligne dit ce que les autres ne
+            disent pas — QUI a relu et validé, pas seulement d'où vient le fait. */}
+        {s.evenements ? <Source producteur={s.evenements.producteur} maj={s.evenements.maj}
+          mention="chaque fait porte en outre sa propre source, visible dans « Ce qui a été décidé »" /> : null}
         <div className="tuiles">
           <Tuile k="Département ouvert" v={paquet.d} echelon="dept" />
           <Tuile k="Communes dans ce fichier" v={Object.keys(paquet.communes).length.toLocaleString("fr-FR")} />

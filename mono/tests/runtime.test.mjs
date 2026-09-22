@@ -891,6 +891,7 @@ const fil = await pageTout.evaluate(() => {
     entetes: [...document.querySelectorAll(".ligne.fait .groupe")].map(e => e.innerText),
     annees: [...t.matchAll(/exercice (\d{4})/g)].map(m => Number(m[1])),
     sources: [...document.querySelectorAll(".source")].map(e => e.innerText),
+    sourcesHref: [...document.querySelectorAll(".source a[href]")].map(a => a.href),
     squelettes: document.querySelectorAll("[class*='skeleton'], [class*='squelette'], .shimmer").length,
   };
 });
@@ -917,6 +918,23 @@ verif("invariant 5 — le fil n'affiche aucune forme d'attente",
 verif("invariant 2 — le fil date ne demande aucune adresse portant un code de commune",
   !servies.some(u => /\/(?:projets|scrutins)\/\d{5}/.test(u) || /9300[0-9]|75056/.test(u)),
   servies.filter(u => /projets/.test(u)).join(" "));
+
+/* LE FIL EDITORIAL — BLOCKER #3 DE LA MISSION DU 22/09/2026. Ces deux faits
+ * sont a l'echelon "france" : ils doivent apparaitre pour N'IMPORTE QUELLE
+ * commune, Bagnolet comme une autre — c'est ce que verifie ce controle, pas
+ * seulement que le mecanisme existe en theorie. */
+verif("fil editorial — un fait relu et valide par la redaction est visible",
+  /Le Conseil constitutionnel a déclaré la loi sur l'aide à mourir conforme/.test(fil.texte),
+  fil.texte.slice(0, 400).replace(/\n+/g, " / "));
+verif("fil editorial — la mention distingue explicitement une validation humaine, jamais automatique",
+  /relu et validé par la rédaction/.test(fil.texte),
+  "aucune mention de validation humaine trouvee — un fait redactionnel pourrait passer pour automatique");
+verif("fil editorial — chaque fait pointe vers SA propre source officielle, pas une source partagee",
+  fil.sourcesHref.some(h => /conseil-constitutionnel\.fr/.test(h)),
+  JSON.stringify(fil.sourcesHref.filter(h => /conseil|assemblee/.test(h))));
+verif("invariant 3 — le fil editorial ne classe ni ne compare aucun territoire",
+  !/classement|palmar|moyenne nationale|mieux que|top \d/i.test(fil.texte),
+  "un mot de comparaison est apparu avec le fil editorial");
 
 /* UNE COMMUNE QUI PORTE LES DEUX FAMILLES DE FAITS. Bagnolet, la commune du
  * parcours, n'a aucun projet dans le releve de mesure : le fil n'y montre que des

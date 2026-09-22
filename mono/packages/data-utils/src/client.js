@@ -49,6 +49,12 @@ export function adresseComptesRegions() { return `${BASE_DONNEES}/comptes-region
    France — un agenda parlementaire n'est pas une donnee territoriale, et ne
    porte donc jamais de code de departement ni de commune. */
 export function adresseCalendrierSenat() { return `${BASE_DONNEES}/calendrier-senat.json`; }
+/* LE FIL EDITORIAL — voir lib/faits.js pour la tracabilite complete (source
+   YAML -> geste humain -> outils/evenements.py -> ce fichier). Un seul
+   fichier pour la France entiere, jamais un code de commune dans l'adresse :
+   les evenements a l'echelle d'une commune portent leur "insee" comme CLE a
+   l'interieur du fichier, jamais comme parametre de la requete. */
+export function adresseEvenements() { return `${BASE_DONNEES}/evenements.json`; }
 /* LES POSITIONS, PAR DEPARTEMENT — jamais par depute, jamais par commune. Une
    adresse par depute dirait au serveur quel elu on regarde, donc, a une
    circonscription pres, ou l'on habite. Deuxieme et derniere fabrique
@@ -248,6 +254,9 @@ export async function chargerProjets(dep, { delaiMs = 8000 } = {}) {
 }
 export async function chargerCalendrierSenat({ delaiMs = 8000 } = {}) {
   return chargerSocle("socle:CAL", adresseCalendrierSenat(), delaiMs);
+}
+export async function chargerEvenements({ delaiMs = 8000 } = {}) {
+  return chargerSocle("socle:EVT", adresseEvenements(), delaiMs);
 }
 
 /* Le trajet commun des trois etages, ecrit UNE fois. Les quatre chargements

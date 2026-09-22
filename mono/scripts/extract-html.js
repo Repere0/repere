@@ -137,6 +137,42 @@ function relevesProjets() {
   return d;
 }
 
+/* LE FIL EDITORIAL — BLOCKER #3 DE LA MISSION DU 22/09/2026.
+ *
+ * Ce fichier n'est PAS un bloc `window.REPERE_*` du mono-HTML : il vit a part,
+ * a la racine du depot (`outils/evenements.json`), produit par un script
+ * PYTHON (`outils/evenements.py`) que ce poste ne peut pas executer (aucun
+ * interpreteur Python disponible ici, voir CONTEXTE_PROJET.md §13). On lit
+ * donc le fichier deja produit par la chaine reelle (GitHub Actions), on ne
+ * le regenere jamais depuis ce script.
+ *
+ * CE QUE CE FICHIER N'EST PAS : `window.REPERE_DATA`, le tableau de 6 fiches
+ * embarque directement dans app_repere_v18_20.html, est un AUTRE mecanisme —
+ * plus ancien, au schema different (vote/scope/statut/echeance), qui sert de
+ * repli quand la variante autonome n'a pas de serveur a interroger (voir
+ * build_pwa_reconstruit.py, ligne ~256 : « le fil garde ses cartes ecrites a
+ * la main »). Le confondre avec `evenements.json` publierait dans mono/ un
+ * contenu qui n'a jamais passe la porte `valide: true` de la redaction — Ne
+ * PAS le lire ici, meme si c'est plus de donnees disponibles.
+ *
+ * SANS SOURCE DECLAREE, ON NE PUBLIE PAS DE PHRASE INVENTEE : si le fichier
+ * est absent, l'extraction continue (categorie « chantier qui ne doit pas
+ * bloquer la mise en ligne de ce qui marche »), et CeQuiADecide.jsx affiche
+ * la meme doctrine du vide que pour les projets ou les votes absents. */
+function relevesEvenements() {
+  const f = path.join(path.dirname(ENTREE), "outils", "evenements.json");
+  if (!fs.existsSync(f)) { console.warn("::warning::outils/evenements.json absent : le fil editorial ne publiera aucun fait redactionnel"); return null; }
+  let d;
+  try { d = JSON.parse(fs.readFileSync(f, "utf8")); }
+  catch (e) { console.warn("::warning::outils/evenements.json illisible (" + e.message + ") : le fil editorial ne publiera aucun fait redactionnel"); return null; }
+  if (!d || !Array.isArray(d.r)) { console.warn("::warning::outils/evenements.json n'a pas la forme attendue : le fil editorial ne publiera aucun fait redactionnel"); return null; }
+  const sansPreuve = d.r.filter(e => !e.src || !e.d || !e.t);
+  if (sansPreuve.length) {
+    console.warn(`::warning::${sansPreuve.length} evenement(s) sans titre/date/source dans evenements.json — ecartes`);
+  }
+  return { ...d, r: d.r.filter(e => e.src && e.d && e.t) };
+}
+
 /* LE NOM DE LA COMMUNE, TEL QU'IL S'ECRIT.
  *
  * Le Repertoire national des elus ecrit les communes EN CAPITALES ; le produit les
@@ -356,6 +392,7 @@ async function extraire() {
   const deputes = relevesDeputes();
   const scrutins = relevesScrutins();
   const projets = relevesProjets();
+  const evenements = relevesEvenements();
   const meta = {
     v: 1,
     genere_le: new Date().toISOString().slice(0, 10),
@@ -406,6 +443,15 @@ async function extraire() {
         exercices: projets.source.exercices,
         mis_a_jour_le: projets.source.mis_a_jour_le,
         releve_le: projets.source.releve_le,
+      }) || null,
+      /* PAS UN PRODUCTEUR UNIQUE — chaque fait porte le sien (voir
+         evenements.json, champ src/srcn) — mais un MECANISME a declarer :
+         l'invariant 4 exige de dire d'ou vient une donnee, et ici « d'ou »
+         est autant le geste humain de validation que la source finale. */
+      evenements: (evenements && {
+        producteur: "Repère — rédaction (chaque fait porte en outre sa source officielle propre)",
+        licence: "voir la source de chaque fait",
+        maj: evenements.maj,
       }) || null,
     },
     agregats: (OFGL && OFGL.meta && OFGL.meta.agregats) || [],
@@ -491,6 +537,15 @@ async function extraire() {
   });
   console.log("comptes-regions.json   : " + Object.keys(comptesReg).length + " regions, " + octetsComptesRegions + " octets"
     + " (departements : fondus dans chaque paquet, voir plus haut)");
+
+  /* LE FIL EDITORIAL — BLOCKER #3. Un seul petit fichier pour la France
+     entiere, publie tel que la redaction l'a valide, jamais regenere ici. */
+  if (evenements) {
+    const octetsEvenements = ecrire(path.join(SORTIE, "evenements.json"), evenements);
+    console.log("evenements.json        : " + evenements.r.length + " fait(s) valide(s), " + octetsEvenements + " octets");
+  } else {
+    console.log("evenements.json        : absent — le fil garde sa doctrine du vide habituelle");
+  }
 
   /* Le fichier des deputes est publie A PART, et pas fondu dans index.json :
      l'index part au premier ecran, ce fichier ne part que si le lecteur ouvre

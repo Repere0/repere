@@ -243,12 +243,18 @@ test("invariant 4 — aucune donnée n'est servie sans source déclarée", () =>
      vivent dans /departments/{dep}.json, deja autorisee. Le fichier des
      regions est autorise ici sous la MEME source que la commune — "comptes" —
      deja exigee juste en dessous : ce sont les memes donnees OFGL, seulement a
-     un echelon de plus. */
+     un echelon de plus.
+     La huitieme, /evenements.json, est ajoutee le 22/09/2026 (blocker #3,
+     mission phase 3) : le fil editorial valide a la main, un seul petit
+     fichier pour la France entiere. Sa source « evenements » est exigee plus
+     bas — elle declare un GESTE (la redaction relit et valide), pas un
+     producteur gouvernemental unique : chaque fait porte en plus sa propre
+     source, verifiee ligne par ligne dans CeQuiADecide.jsx. */
   const client = lire("packages/data-utils/src/client.js");
   const composees = [...client.matchAll(/\$\{BASE_DONNEES\}(\/[A-Za-z0-9_${}./-]*)/g)].map(m => m[1]);
   assert.deepEqual([...new Set(composees)].sort(),
     ["/calendrier-senat.json", "/communes-beta.json", "/comptes-regions.json", "/departments/${d}.json",
-     "/deputes.json", "/index.json", "/projets/${d}.json", "/scrutins.json", "/scrutins/${d}.json"],
+     "/deputes.json", "/evenements.json", "/index.json", "/projets/${d}.json", "/scrutins.json", "/scrutins/${d}.json"],
     "client.js compose une adresse de donnees inattendue : " + composees.join(", "));
   const sources = existe("data/index.json") ? (JSON.parse(lire("data/index.json")).sources || {}) : {};
   for (const attendue of ["elus", "comptes", "circonscriptions", "deputes", "scrutins", "communes"]) {
@@ -266,6 +272,15 @@ test("invariant 4 — aucune donnée n'est servie sans source déclarée", () =>
       "des projets sont publies sous data/projets mais index.json ne declare pas leur source");
     assert.ok(sources.projets.mis_a_jour_le && sources.projets.releve_le,
       "la source des projets ne porte pas ses deux dates : publication et releve");
+  }
+  /* Le fil editorial est CONDITIONNEL pour la meme raison que les projets :
+     outils/evenements.json n'existe que si la chaine Python a tourne (elle ne
+     peut pas tourner depuis un poste de developpement). Mais s'il est publie,
+     sa source doit l'etre aussi — sinon un fait redactionnel s'afficherait
+     sans dire qui l'a valide, exactement ce que le blocker #3 devait corriger. */
+  if (existe("data/evenements.json")) {
+    assert.ok(sources.evenements && sources.evenements.producteur,
+      "data/evenements.json est publie mais index.json ne declare pas sa source");
   }
 });
 
