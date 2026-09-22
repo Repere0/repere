@@ -23,6 +23,7 @@ import fs from "node:fs";
 import path from "node:path";
 import readline from "node:readline";
 import { fileURLToPath } from "node:url";
+import { execFileSync } from "node:child_process";
 
 /* LES NOMS DES TERRITOIRES NE SONT PAS DANS LE FICHIER D'ORIGINE.
  *
@@ -34,6 +35,30 @@ import { fileURLToPath } from "node:url";
  * plus. Si le fichier manque, l'extraction continue sans les noms — les codes
  * seuls restent justes. */
 const ICI = path.dirname(fileURLToPath(import.meta.url));
+
+/* PROVENANCE DU BUILD — mission phase 3.2, §8.
+ *
+ * REPOND A « qu'est-ce qui a ete reellement publie ? » sans enquete : le
+ * commit exact, l'instant de construction, et le schema qu'il respecte
+ * (le meme `v` que `SCHEMA_ATTENDU` dans packages/data-utils/src/client.js
+ * — les deux DOIVENT etre lus manuellement ensemble, voir le commentaire
+ * de SCHEMA_ATTENDU). Rien de sensible : un SHA et une date sont deja
+ * publics dans l'historique git.
+ *
+ * `git rev-parse` peut echouer (extraction hors depot, .git absent d'un
+ * artefact copie) : l'absence de provenance est alors ELLE-MEME honnete —
+ * null, jamais une valeur inventee. */
+function informationsBuild() {
+  const tenter = (args) => {
+    try { return execFileSync("git", args, { cwd: ICI, encoding: "utf8" }).trim(); }
+    catch { return null; }
+  };
+  return {
+    commit: tenter(["rev-parse", "HEAD"]),
+    commit_court: tenter(["rev-parse", "--short", "HEAD"]),
+    construit_le: new Date().toISOString(),
+  };
+}
 function nomsTerritoires() {
   const f = path.join(ICI, "noms-territoires.json");
   if (!fs.existsSync(f)) { console.warn("noms-territoires.json absent : index.json n'aura que les codes"); return null; }
@@ -301,9 +326,66 @@ function dateDe(bloc, i) {
   return Array.isArray(bloc) ? bloc[i] : bloc;
 }
 
+/* HEALTH CHECKS DU BUILD — mission phase 3.2, §11.
+ *
+ * TROIS CLASSES, PAS UNE SEULE — le probleme historique de cette chaine est
+ * connu et ecrit dans pipeline.sh : des etapes neuves qui avertissent au
+ * lieu d'echouer, pour ne jamais bloquer la publication de ce qui marche
+ * deja. La regle inverse est tout aussi vraie : une source dont l'absence
+ * TOTALE rendrait le socle de la beta muet ne doit PAS se contenter d'un
+ * avertissement — sinon le pipeline reussit avec un site qui ne dit plus
+ * rien a personne, et rien ne le signale.
+ *
+ *   CRITICAL : absente ou vide -> le build ECHOUE (process.exit). Aujourd'hui,
+ *     seules RNE (elus) et OFGL (comptes) : sans elles, "Qui decide" et "Ou
+ *     va l'argent" — deux des cinq experiences du socle beta — seraient
+ *     vides pour TOUTES les communes, pas seulement certaines.
+ *   IMPORTANT : absente -> avertissement fort + marque dans build.sante,
+ *     le build continue. CIRCOS (circonscriptions) : son absence degrade le
+ *     depute pour toute la France, mais la doctrine du vide deja testee
+ *     ("n'est pas dans le decoupage electoral") reste honnete — ce n'est
+ *     pas un mensonge, c'est un manque dit.
+ *   OPTIONAL : absente -> le build continue sans un mot de plus que ce qui
+ *     existe deja (deputes, scrutins, projets, evenements, calendrier
+ *     Senat) : chacun a deja sa propre doctrine du vide a l'ecran.
+ *
+ * `build.sante` MATERIALISE ce constat dans l'artefact lui-meme : repondre
+ * a "qu'est-ce qui a ete reellement publie" ne doit jamais exiger de
+ * relire les journaux du runner. */
+/* PURE, SANS EFFET DE BORD : ni process.exit, ni console — c'est ce qui la
+   rend testable directement (tests/sante.test.mjs), sans lancer un
+   sous-processus ni risquer de tuer le lanceur de tests. La decision
+   (arreter le build ou continuer) reste au point d'appel, ci-dessous. */
+export function classerSante(RNE, OFGL, CIRCOS) {
+  const nbCommunesOfgl = Object.keys((OFGL && OFGL.ech && OFGL.ech.commune && OFGL.ech.commune.terr) || {}).length;
+  const nbCommunesCircos = Object.keys((CIRCOS && CIRCOS.communes) || {}).length;
+  const critical = {
+    elus: !!(RNE && RNE.cl && Object.keys(RNE.cl).length > 0),
+    comptes: nbCommunesOfgl > 0,
+  };
+  const important = { circonscriptions: nbCommunesCircos > 0 };
+  const manquantesCritiques = Object.entries(critical).filter(([, ok]) => !ok).map(([k]) => k);
+  return { critical, important, manquantesCritiques };
+}
+
+function verifierSante(RNE, OFGL, CIRCOS) {
+  const { critical, important, manquantesCritiques } = classerSante(RNE, OFGL, CIRCOS);
+  if (manquantesCritiques.length) {
+    console.error("::error::source(s) CRITIQUE(S) absente(s) ou vide(s) : " + manquantesCritiques.join(", ")
+      + " — le socle de la beta serait muet pour TOUTES les communes. Build arrete.");
+    process.exit(5);
+  }
+  if (!important.circonscriptions) {
+    console.error("::warning::source IMPORTANTE absente : circonscriptions — le depute sera dit "
+      + "absent pour toute la France (doctrine du vide honnete, pas une erreur, mais a corriger).");
+  }
+  return { critical, important };
+}
+
 async function extraire() {
   const { REPERE_RNE: RNE, REPERE_OFGL: OFGL, REPERE_CIRCOS: CIRCOS } = await lireBlocs(ENTREE);
   if (!RNE) { console.error("bloc REPERE_RNE introuvable — ce fichier n'est pas une application Repere."); process.exit(4); }
+  const sante = verifierSante(RNE, OFGL, CIRCOS);
 
   const libelles = RNE.cl || {};
   const communesOfgl = (OFGL && OFGL.ech && OFGL.ech.commune && OFGL.ech.commune.terr) || {};
@@ -476,6 +558,24 @@ async function extraire() {
   const meta = {
     v: 1,
     genere_le: new Date().toISOString().slice(0, 10),
+    /* SCHEMA_ATTENDU (packages/data-utils/src/client.js) doit rester EGAL
+       a ce `v` : c'est ce qui permet a un navigateur qui a deja visite de
+       detecter un cache perime plutot que de le croire a jour. Ne pas
+       changer l'un sans l'autre — voir le commentaire de SCHEMA_ATTENDU. */
+    build: {
+      ...informationsBuild(),
+      sante: {
+        ...sante.critical,
+        ...sante.important,
+        deputes: !!deputes,
+        scrutins: !!scrutins,
+        projets: !!projets,
+        evenements: !!(evenements && evenements.r && evenements.r.length),
+        /* calendrier-senat.json est copie a part, apres ce fichier (voir plus
+           bas) : sa presence sera verifiee la, pas ici, pour ne pas dupliquer
+           la logique du script qui le copie reellement. */
+      },
+    },
     sources: {
       elus: (RNE.meta && { producteur: reaccentuer(RNE.meta.producteur), licence: RNE.meta.licence, maj: RNE.meta.maj }) || null,
       comptes: (OFGL && OFGL.meta && { producteur: reaccentuer(OFGL.meta.producteur), licence: OFGL.meta.licence, maj: OFGL.meta.maj }) || null,
@@ -1125,4 +1225,12 @@ async function extraire() {
     + (sansNom.length ? "  (sans nom : " + sansNom.join(", ") + ")" : ""));
 }
 
-extraire();
+/* GARDE D'EXECUTION — ajoutee le 22/09/2026 (mission phase 3.2) pour rendre
+ * `classerSante()` testable par un simple import. Sans elle, importer ce
+ * module pour ne lire qu'une fonction pure declenchait la lecture reelle
+ * du mono-HTML et l'ecriture de tout data/ — un effet de bord que
+ * tests/sante.test.mjs n'a jamais demande. Meme motif que
+ * outils/registre/verifier_sources.mjs (deja dans ce depot). */
+if (path.resolve(process.argv[1] || "") === path.resolve(fileURLToPath(import.meta.url))) {
+  extraire();
+}
