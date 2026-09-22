@@ -13,6 +13,38 @@ import { adresseFautive } from "./invariants.js";
 
 export const BASE_DONNEES = "/data";
 
+/* DETTE DE FRAICHEUR, FERMEE LE 22/09/2026 (mission phase 3.2, §7).
+ *
+ * LE DEFAUT TROUVE, EN TESTANT LE PORTAGE DES ELUS LE MEME JOUR : un onglet
+ * qui avait deja visite Repere gardait dans IndexedDB un `index.json` mis en
+ * cache AVANT l'ajout du champ `region_code` — et affichait "aucune donnee
+ * regionale publiee" pour l'Ile-de-France, qui en a pourtant une. Rien ne
+ * comparait jamais la FORME du cache a celle que le code qui tourne
+ * s'attend a lire. Un navigateur revenu le lendemain d'un jour ou le schema
+ * a change aurait garde ce mensonge indefiniment, sans qu'aucun message
+ * d'erreur ne le signale — une panne silencieuse, la plus difficile a voir.
+ *
+ * LE MECANISME, MINIMAL : `index.json` porte deja un champ `v` (pose par
+ * extract-html.js, jamais exploite jusqu'ici). SCHEMA_ATTENDU est LA MEME
+ * VALEUR, mais figee dans le CODE CLIENT — donc dans le paquet JS construit
+ * a un instant donne. Si le cache et le code divergent, le cache est
+ * FAUX PAR CONSTRUCTION, pas seulement perime : on le jette entierement
+ * (pas seulement l'index — un departement mis en cache la meme semaine
+ * appartient a la meme generation de schema) et on repart au reseau.
+ *
+ * CE QUE CE MECANISME NE FAIT PAS : bumper SCHEMA_ATTENDU n'est pas
+ * automatique et ne doit jamais l'etre — un changement qui ne touche pas la
+ * FORME des donnees (un nouveau champ optionnel, une correction de contenu)
+ * n'a pas besoin de vider le cache de tout le monde. C'est une decision
+ * humaine, au moment ou une extraction change reellement de forme.
+ *
+ * DISTINCT DE `build_id` (voir extract-html.js) : SCHEMA_ATTENDU gouverne
+ * la mise au rebut du cache ; `build_id` est une provenance informative
+ * (quel commit a produit ces donnees), qui change tous les jours sans
+ * jamais devoir vider quoi que ce soit — sinon la mise en cache perdrait
+ * tout son sens. */
+export const SCHEMA_ATTENDU = 1;
+
 /* La SEULE fabrique d'adresses du produit. */
 export function adresseDepartement(dep) {
   const d = String(dep).toUpperCase();
@@ -197,7 +229,25 @@ export async function chargerDepartement(dep, { delaiMs = 8000 } = {}) {
 export async function chargerIndex({ delaiMs = 8000 } = {}) {
   const cle = "socle:IDX";
   const enCache = await magasin.lire(cle);
-  if (enCache) return { etat: ETATS.SERVI, donnees: enCache, depuis: "cache" };
+  /* LA GARDE DE FRAICHEUR : un index en cache dont le schema ne correspond
+     plus a celui que ce code attend est traite comme ABSENT, jamais comme
+     SERVI. `enCache.v` peut manquer (cache pose par une version encore plus
+     ancienne, avant meme ce champ) : `!==` le traite alors comme un
+     mismatch, ce qui est le comportement voulu — mieux vaut un aller-retour
+     reseau de trop qu'un mensonge silencieux. */
+  if (enCache && enCache.v === SCHEMA_ATTENDU) {
+    return { etat: ETATS.SERVI, donnees: enCache, depuis: "cache" };
+  }
+  if (enCache) {
+    /* CACHE FAUX PAR CONSTRUCTION, PAS SEULEMENT PERIME : voir le
+       commentaire de SCHEMA_ATTENDU plus haut. On jette tout le magasin,
+       pas seulement cette cle — un departement mis en cache la meme
+       semaine appartient a la meme generation de schema perimee. Un echec
+       de `vider()` (mode prive, quota) n'empeche pas de continuer : la
+       lecture reseau qui suit republiera de toute facon des donnees a jour
+       sous les memes cles, qui les remplaceront. */
+    await magasin.vider().catch(() => {});
+  }
   if (typeof navigator !== "undefined" && navigator.onLine === false) {
     return { etat: ETATS.HORS_LIGNE, donnees: null };
   }

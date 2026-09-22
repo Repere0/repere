@@ -107,7 +107,11 @@ export const magasin = {
     } catch { return [...memoire.keys()]; }
   },
 
-  /* Vider est un geste explicite du lecteur, jamais automatique. */
+  /* Vider est un geste explicite du lecteur — OU un geste automatique du
+     client.js quand le cache est FAUX PAR CONSTRUCTION (schema perime,
+     SCHEMA_ATTENDU dans client.js, ajoute le 22/09/2026). Ce n'est jamais
+     un menage de routine : la seule autre raison d'appeler ceci reste une
+     demande explicite du lecteur. */
   async vider() {
     memoire.clear();
     try { await transaction("readwrite", st => st.clear()); return true; }

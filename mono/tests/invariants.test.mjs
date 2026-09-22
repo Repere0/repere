@@ -1349,3 +1349,33 @@ test("élus — le nom d'un élu n'est jamais découpé", () => {
   assert.ok(composes > 0,
     "aucun maire de Seine-et-Marne n'a un nom de plus de deux mots : le contrôle ne garde plus rien");
 });
+
+test("fraîcheur — SCHEMA_ATTENDU (client.js) et le v émis par extract-html.js ne divergent jamais", () => {
+  /* AJOUTE LE 22/09/2026 (mission phase 3.2, §7). Le mecanisme de detection
+     de cache perime (voir client.js) repose ENTIEREMENT sur le fait que
+     ces deux valeurs restent la meme regle ecrite a deux endroits — le
+     piege exact que ce depot connait deja ("deux endroits qui derivent la
+     meme regle finissent par diverger"). Un `v` bumpe dans extract-html.js
+     sans que SCHEMA_ATTENDU suive rendrait TOUS les caches "perimes" alors
+     qu'ils sont a jour ; l'inverse rendrait la garde totalement inerte. */
+  const client = lire("packages/data-utils/src/client.js");
+  const mClient = /export const SCHEMA_ATTENDU = (\d+);/.exec(client);
+  assert.ok(mClient, "SCHEMA_ATTENDU introuvable ou mal formee dans client.js");
+
+  const extraction = lire("scripts/extract-html.js");
+  const mExtract = /v:\s*(\d+),\n\s*genere_le:/.exec(extraction);
+  assert.ok(mExtract, "le champ v de meta est introuvable ou mal forme dans extract-html.js");
+
+  assert.equal(mClient[1], mExtract[1],
+    `SCHEMA_ATTENDU (client.js) = ${mClient[1]} mais extract-html.js emet v = ${mExtract[1]} : `
+    + "un bump de l'un sans l'autre rendrait la garde de fraicheur fausse.");
+
+  if (!existe("data/index.json")) return;
+  const index = litData("index.json");
+  assert.equal(index.v, Number(mClient[1]),
+    "data/index.json a ete engendre avec un v different de SCHEMA_ATTENDU — reextraire.");
+  assert.ok(index.build && typeof index.build.commit_court === "string",
+    "index.json ne porte pas la provenance du build (build.commit_court)");
+  assert.ok(index.build.sante && typeof index.build.sante.elus === "boolean",
+    "index.json ne porte pas l'etat de sante des sources critiques (build.sante)");
+});

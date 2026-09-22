@@ -311,6 +311,57 @@ verif("invariant 5 — l'absence de delegue d'agglo est dite, pas juste omise",
   texteAmillis.slice(texteAmillis.indexOf("intercommunalité"), texteAmillis.indexOf("intercommunalité") + 300).replace(/\n+/g, " / "));
 await pageAgglo.context().close();
 
+/* DETTE DE FRAICHEUR FERMEE — PREUVE PAR CASSURE DU GARDE-FOU, mission
+ * phase 3.2 §7. Le defaut REEL trouve en testant le portage des elus le
+ * 22/09/2026 : un onglet avec un `index.json` deja en cache, mis en cache
+ * AVANT que `region_code` existe, continuait a l'utiliser silencieusement.
+ * On reproduit ce defaut a la main — un cache dont le schema (`v`) ne
+ * correspond plus a SCHEMA_ATTENDU, contenant une donnee absurde et
+ * detectable (un faux departement "ZZ") — et on verifie que l'application
+ * ne le montre JAMAIS : ni le faux departement, ni un plantage muet. */
+const pageFraicheur = await (await nav.newContext()).newPage();
+await pageFraicheur.goto(base, { waitUntil: "networkidle" });
+await pageFraicheur.evaluate(async () => {
+  const db = await new Promise((res, rej) => {
+    const q = indexedDB.open("repere-donnees");
+    q.onupgradeneeded = () => { if (!q.result.objectStoreNames.contains("departements")) q.result.createObjectStore("departements"); };
+    q.onsuccess = () => res(q.result); q.onerror = () => rej(q.error);
+  });
+  await new Promise((res, rej) => {
+    const tx = db.transaction("departements", "readwrite");
+    tx.objectStore("departements").put(
+      { v: 999, genere_le: "2000-01-01", departements: [{ code: "ZZ", nom: "FAUX-TEST-PERIME", communes: 1, octets: 1 }], sources: {}, agregats: [] },
+      "socle:IDX");
+    tx.oncomplete = res; tx.onerror = () => rej(tx.error);
+  });
+  db.close();
+});
+await pageFraicheur.reload({ waitUntil: "networkidle" });
+await pageFraicheur.waitForTimeout(700);
+const texteFraicheur = await pageFraicheur.evaluate(() => document.body.innerText);
+verif("fraîcheur — un cache dont le schema ne correspond plus a SCHEMA_ATTENDU n'est jamais affiche",
+  !/FAUX-TEST-PERIME/.test(texteFraicheur),
+  "le departement fictif du cache perime est apparu a l'ecran : la garde de fraicheur ne fonctionne pas");
+verif("fraîcheur — apres detection d'un cache perime, l'application affiche les vrais departements",
+  /Ain|Seine-Saint-Denis|Yvelines/.test(texteFraicheur) || /Où habitez-vous/.test(texteFraicheur),
+  texteFraicheur.slice(0, 200).replace(/\n+/g, " / "));
+/* Le cache doit avoir ete REMPLACE, pas seulement ignore cette fois : une
+   seconde visite ne doit pas retomber sur le meme faux departement. */
+const capresPurge = await pageFraicheur.evaluate(async () => {
+  const db = await new Promise(r => { const q = indexedDB.open("repere-donnees"); q.onsuccess = () => r(q.result); q.onerror = () => r(null); });
+  if (!db) return null;
+  const v = await new Promise(r => {
+    const tx = db.transaction("departements", "readonly");
+    const d = tx.objectStore("departements").get("socle:IDX");
+    d.onsuccess = () => r(d.result); d.onerror = () => r(null);
+  });
+  db.close();
+  return v ? v.v : null;
+});
+verif("fraîcheur — le cache perime est remplace par un cache a jour (v = SCHEMA_ATTENDU), pas laisse en place",
+  capresPurge === 1, "v en cache apres coup : " + JSON.stringify(capresPurge));
+await pageFraicheur.context().close();
+
 /* LE PREMIER ECRAN NE PAIE PAS CE FICHIER. Il ne part QUE depuis « Qui decide » :
    la mesure porte sur les adresses reellement demandees depuis l'ouverture. */
 verif("architecture — le fichier des deputes n'est demande qu'une fois, et pas au premier ecran",
