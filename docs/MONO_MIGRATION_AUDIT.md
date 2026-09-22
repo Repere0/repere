@@ -65,9 +65,9 @@ un test réel, exécuté aujourd'hui sauf mention contraire.*
 | Identification commune | implicite | doctrine du vide propre (`paquet.manquantes`) | **PASS** | Non | idem | idem | aucune |
 | Maire | `s-qui`, `s-elus` (doublon) | `QuiDecide.jsx` — `paquet.communes[c].maire` | **PASS** | Non — `s-elus` était un doublon, pas une fonction perdue | RNE | tests runtime "Qui décide" | aucune |
 | **Adjoints, nommés** | `s-qui` — chaque adjoint listé par son nom et son rang (vérifié à l'écran sur Bagnolet : Lauren LOLO, Chawqui HADDAD…) | `QuiDecide.jsx` — **le compte seul** (`adjoints: (...).length`), aucun nom | **PARTIAL, vérifié à l'écran le 22/09 (phase 3.1)** | Oui, réel | RNE (`RNE.adj`, déjà dans le pipeline) | aucun test dédié aux noms | matérialiser les noms dans `extract-html.js` si jugé utile pour la bêta — non fait, décision produit |
-| **Intercommunalité, nommée** | `s-qui` — représentant nommé (Métropole du Grand Paris, vérifié sur Bagnolet) | `QuiDecide.jsx` dit explicitement « Repère ne nomme pas encore » | **FAIL, vérifié à l'écran le 22/09 (phase 3.1), pas seulement supposé** | Oui, réel | RNE (`communes_avec_epci: 20028`) | aucun | à trancher : porter ou documenter le report explicitement |
-| **Conseil départemental, nommé** | `s-qui` — conseillers du canton nommés (Elodie GIRARDET, vérifié sur Bagnolet) | idem, non publié | **FAIL, vérifié à l'écran** | Oui, réel | RNE (`conseillers départementaux : 4037`) | aucun | idem |
-| **Conseil régional, nommé** | `s-qui` — président et conseillers nommés (Valérie Pécresse, vérifié sur Bagnolet) | idem, non publié | **FAIL, vérifié à l'écran** | Oui, réel | RNE (`conseillers régionaux : 1744`) | aucun | idem |
+| **Intercommunalité, nommée** | `s-qui` — délégués QUE LA COMMUNE envoie, nommés (Metropole Du Grand Paris, Edouard DENOUEL, vérifié sur Bagnolet) | **PORTÉ le 22/09/2026 (phase 3.1, option A)** — `QuiDecide.jsx` → `Agglo()`, identique : "Bagnolet envoie 1 élu au conseil de Metropole Du Grand Paris. Conseiller communautaire — Edouard DENOUEL" | **PASS, régression fermée, vérifié à l'écran** | Non — fermée | RNE (`RNE.ecc`), doctrine du vide si absente (~32% des communes IDF) | `runtime.test.mjs` : Ustaritz (présence) + Amillis (absence honnête) | aucune |
+| **Conseil départemental, nommé** | `s-qui` — le mieux classé PARMI LES CONSEILLERS DU CANTON de la commune (pas forcément le président), nommé | **PORTÉ le 22/09/2026** — `QuiDecide.jsx` → `ConseilDepartemental()`, même filtre canton, même tri par rang. Vérifié à l'identique sur Bagnolet : Daniel GUIRAUD (1er vice-président, le mieux classé du canton) en tête, Elodie GIRARDET en second — **ma première lecture visuelle de l'ancien site avait inversé les deux, corrigé en relisant les données RNE brutes** | **PASS, régression fermée, vérifié à l'écran** | Non — fermée | RNE (`RNE.dep`/`depcan`/`ccan`) | `runtime.test.mjs` : Ustaritz (canton Ustaritz-Vallées de Nive et Nivelle) | aucune |
+| **Conseil régional, nommé** | `s-qui` — le mieux classé de tout le conseil (en pratique le président, par le rang de fonction) | **PORTÉ le 22/09/2026** — `QuiDecide.jsx` → `ConseilRegional()`, un fichier par région (`elus-regions/{code}.json`, jamais la France entière — 148 Ko pour 14 régions avant la scission, 17 Ko pour la seule Île-de-France après). Vérifié : Valérie PÉCRESSE (IDF, région 11) et Alain ROUSSET (Nouvelle-Aquitaine, région 75, testé sur Ustaritz) | **PASS, régression fermée, vérifié à l'écran** | Non — fermée | RNE (`RNE.reg`) | `runtime.test.mjs` : Ustaritz | aucune |
 | Circonscription | `s-qui` | `QuiDecide.jsx`, `phraseCirco()` | **PASS** | Non — amélioration (communes multi-circo gérées) | Ministère de l'Intérieur, découpage 2010 | idem | aucune |
 | Député | `s-qui` (attribution non documentée) | `QuiDecide.jsx` → `Depute()`, `data/deputes.json` | **PASS** | Non — amélioration (source déclarée) | Assemblée nationale | idem | aucune |
 | **Comptes commune** | `s-argent` — ville | `OuVaArgent.jsx` — `paquet.communes[c].comptes` | **PASS** | Non | OFGL | tests runtime "l'argent" | aucune |
@@ -94,17 +94,17 @@ un test réel, exécuté aujourd'hui sauf mention contraire.*
 matin) : mentions légales, comptes département/région, fil éditorial — les
 trois désormais PASS, avec preuve et test.**
 
-**Trois nouvelles régressions trouvées cet après-midi (phase 3.1, shadow
-build), vérifiées à l'écran sur Bagnolet et non simplement supposées** :
-intercommunalité, département et région n'ont **aucun élu nommé** dans
-`mono/`, alors que l'ancien build les nomme tous les trois pour la même
-commune, à partir de la même source déjà dans le pipeline (RNE). Ce ne sont
-**pas des blockers pour la bêta** au sens où « Qui décide » reste
-fonctionnel et honnête (il dit explicitement ce qu'il ne publie pas, jamais
-un mensonge) — mais ce sont des régressions réelles à trancher, pas à
-laisser dormir sans décision. Les PARTIAL restants (adjoints non nommés,
-Sources, Calendrier) sont des manques déjà documentés et non bloquants pour
-une bêta fermée.
+**Trois régressions trouvées cet après-midi (phase 3.1, shadow build),
+vérifiées à l'écran sur Bagnolet, et fermées le même jour (décision produit
+option A) : intercommunalité, département et région sont désormais nommés
+dans `mono/`, à partir du même mécanisme RNE que l'ancien build — porté,
+pas réinventé (`rangFonction`, filtre par canton pour le département,
+extraction dans `extract-html.js`).** Vérifié une seconde fois à l'écran
+après le portage : les mêmes personnes, dans le même ordre, pour la même
+commune. Aucune régression bloquante ne reste ouverte. Les PARTIAL restants
+(adjoints non nommés — le compte seul, un choix de densité d'écran plutôt
+qu'un manque de donnée —, Sources, Calendrier) sont des manques déjà
+documentés et non bloquants pour une bêta fermée.
 
 ## 5. Écrans de l'ancien site sans équivalent dans `mono/` — chacun avec sa raison réelle
 
@@ -169,14 +169,44 @@ implicitement) s'ils reviennent un jour.
 
 ## 7. Ce que cet audit NE permet PAS de conclure
 
-- **"mono/ est prêt à remplacer le site actuel"** — faux : deux fonctions
-  PARTIAL touchent directement des invariants du produit (comptes dept/région,
-  fil éditorial), et une fonction est carrément ABSENTE et bloquante (mentions
-  légales).
+*Mis à jour le 22/09/2026, phase 3.1 : les blockers cités dans la première
+version de cette section (mentions légales, comptes dept/région, fil
+éditorial, agglo/département/région sans élu nommé) sont tous fermés
+aujourd'hui, avec preuve et test — voir §4. Ce qui suit reste vrai.*
+
+- **"mono/ est prêt pour une bascule en production"** — pas encore : voir
+  le Release Gate (§8) — les critères I (le pipeline sait publier mono/) et
+  J (validation réelle en ligne) sont à zéro, aucun travail commencé.
 - **"mono/ est plus léger, donc supérieur"** — le poids est mesuré et réel
-  (voir `PERFORMANCE_BASELINE.md`), mais un site plus léger qui ne peut pas
-  légalement être publié n'est pas un candidat à la bascule en l'état.
+  (voir `PERFORMANCE_BASELINE.md`), mais le poids n'est qu'un des dix
+  critères du Release Gate, pas le seul.
 - **Comparaison chiffrée d'accessibilité ancien/mono** — non faite : l'ancien
   site n'a pas été audité WCAG dans cette session (l'agent a listé les
   écrans, pas mesuré leur accessibilité). Ne pas présenter mono comme
   "plus accessible" sans cette mesure côté ancien.
+
+## 8. Release Gate — dix critères, aucun escamoté
+
+*Mission phase 3.1, règle explicite : jamais "prêt pour la production" si
+une catégorie critique n'est pas démontrée. Mis à jour après le portage des
+élus agglo/département/région.*
+
+| critère | état | preuve |
+|---|---|---|
+| A. Fonctionnel (socle bêta) | **PASS** | 117 contrôles statiques/inline + 56 navigateur, verts, reconstruit à froid |
+| B. Données critiques présentes | **PASS** *(était PARTIAL)* | comptes 3 échelons + élus agglo/dept/région, tous nommés et testés aujourd'hui |
+| C. Provenance traçable | **PASS** | chaque carte chiffrée ou nominative porte sa source, testé |
+| D. Fraîcheur (dates de collecte connues) | **PARTIAL** | dates affichées correctement, mais `index.json` n'a aucun mécanisme de version — un lecteur déjà visité ne verrait pas un changement de schéma (trouvé le 22/09, voir `MONO_SHADOW_COMPARISON_2026-09.md` §3) |
+| E. Performance (gain confirmé sur parcours réel) | **PASS** | 140,5 Ko vs 6,02 Mo, ≈43×, mesuré en navigateur réel |
+| F. Accessibilité (parcours critiques utilisables) | **PASS** | 44 px, contraste 3:1, zoom 200 %, focus — testés |
+| G. Parité (aucune fonction critique perdue) | **PASS** *(était PARTIAL)* | les 3 régressions trouvées par le shadow build sont fermées et re-vérifiées à l'écran |
+| H. Réversibilité (retour rapide à l'ancien build) | **PASS** | aucune bascule faite, ancien build intact et toujours servi en production |
+| I. Production (le pipeline sait produire et publier mono/) | **FAIL** | `outils/pipeline.sh` sur `main` construit toujours `build_pwa_reconstruit.py`, pas `mono/` (confirmé dans `PRODUCTION_RUNBOOK.md`) |
+| J. Validation réelle (site publié inspecté après déploiement) | **FAIL** | mono/ n'est déployé sur aucune adresse publique |
+
+**Conclusion** : B et G, les deux critères qui bloquaient hier, sont
+fermés. I et J n'ont reçu aucun travail — ce ne sont pas des régressions,
+c'est simplement la partie du chantier qui n'a pas commencé. Le gate reste
+donc **incomplet**, pas pour une raison produit mais pour une raison de
+publication : décider de brancher `mono/` sur le pipeline réel est une
+décision séparée de celle prise aujourd'hui (fermer les régressions).

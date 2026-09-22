@@ -114,3 +114,36 @@ communes manquantes du RNE (Ville-d'Avray et consorts). Rejouer les cinq
 autres communes représentatives à la main n'aurait pas changé le verdict
 déjà établi par ces tests — l'effort a été mis sur la comparaison à l'écran
 avec l'ancien build, qu'aucun test automatisé ne peut faire à sa place.
+
+## 7. Addendum du 22/09/2026, plus tard le même jour — les 3 régressions fermées
+
+Décision produit (option A) : les trois régressions du §1 (intercommunalité,
+département, région sans élu nommé) ont été portées dans `mono/` le jour
+même — voir `MONO_MIGRATION_AUDIT.md` pour la trace complète du mécanisme
+(`rangFonction`, filtre par canton, `RNE.ecc`/`RNE.dep`/`RNE.reg`) et le
+détail des fichiers touchés.
+
+**Re-vérifié à l'écran sur Bagnolet, cache vidé, après le portage** :
+Metropole Du Grand Paris / Edouard DENOUEL (intercommunalité), Daniel
+GUIRAUD puis Elodie GIRARDET (département, canton de Bagnolet), Valérie
+PÉCRESSE (région) — identique à l'ancien build, dans le même ordre.
+
+**Une erreur de lecture corrigée en cours de route, par honnêteté envers
+ce document** : la première visite de l'ancien site (§1) avait fait dire à
+ce rapport que le conseiller départemental de tête pour Bagnolet était
+Elodie GIRARDET. En relisant les données RNE brutes pour construire le
+portage, il s'est avéré que le premier de la liste, classé par fonction,
+est en réalité **Daniel GUIRAUD (1er vice-président du conseil
+départemental)** — Girardet est la personne classée immédiatement après
+lui, dans le même canton. `mono/` reproduit maintenant cet ordre exact,
+vérifié directement dans `window.REPERE_RNE` plutôt que sur une capture
+d'écran relue trop vite. La conclusion du §1 (le conseil départemental
+n'était pas nommé du tout dans `mono/`) reste exacte ; seul le nom précis
+de la personne attendue en tête était mal identifié dans ce document, pas
+dans le code livré.
+
+**Poids** : 140,5 Ko pour le parcours complet (mesuré, `tests/poids.mjs`),
+contre 135,6 Ko avant le portage — +4,9 Ko pour fermer les trois
+régressions. Ratio vs production (6,02 Mo) : ≈43×, contre ≈44× avant (la
+différence est le prix, mesuré et accepté, d'un contenu réel de plus, pas
+une dérive).

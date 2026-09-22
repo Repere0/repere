@@ -83,3 +83,24 @@ production compressée (6,02 Mo) contre mono/ compressé (135,6 Ko) — le
 tableau du §2 — et ce chiffre local (17,37 Mo, non compressé) sert
 seulement à confirmer que le fichier de travail actuel n'a pas anormalement
 grossi depuis la dernière mesure de production.
+
+## 6. Mise à jour du même jour, plus tard — portage des élus agglo/département/région
+
+*Décision produit (option A, mission phase 3.1 suite) : les trois
+régressions trouvées par le shadow build (§7 de `MONO_SHADOW_COMPARISON_
+2026-09.md`) ont été fermées le jour même. Le tableau du §2 (135,6 Ko) est
+donc lui-même déjà daté de quelques heures — cette section porte le chiffre
+à jour, pas une troisième mesure indépendante.*
+
+| métrique | avant le portage (§2) | après le portage | méthode |
+|---|---:|---:|---|
+| parcours complet, mono/ (gzip) | 135,6 Ko | **140,5 Ko** | `tests/poids.mjs`, mesuré à l'instant |
+| ratio vs production (6,02 Mo) | ≈ 49,6× (mesure du matin) / ≈ 44,4× (après blockers #1-3) | **≈ 42,9×** | calcul : 6 022 600 / 140 500 |
+| coût du portage | — | **+ 4,9 Ko** pour nommer les élus d'intercommunalité, de département et de région, jusque-là absents | mesuré, différence des deux lignes précédentes |
+| fichier le plus lourd ajouté | — | `elus-regions/11.json` (Île-de-France), 17,2 Ko brut | `fs.statSync` — un seul fichier par région, jamais la France entière (148 Ko pour 14 régions avant la scission décidée le même jour) |
+
+**Le ratio baisse à chaque fonctionnalité réelle ajoutée, et c'est
+attendu** : il n'y a pas d'objectif de poids minimal absolu (voir §4) — le
+critère est la valeur apportée par kilo-octet, pas le kilo-octet seul.
+Nommer trois échelons d'élus jusque-là muets pour moins de 5 Ko est, sur ce
+critère, une bonne affaire.
