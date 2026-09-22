@@ -105,6 +105,17 @@ export default function Sources({ index, paquet }) {
           Repère ne mesure rien de ce que vous faites : votre message est le seul moyen
           que nous ayons de l'apprendre.
         </p>
+        {/* MINIMUM BETA POUR "SI UNE CORRECTION A ETE FAITE" — MISSION DU
+         * 22/09/2026, PHASE 3.1 §9. Un vrai journal des corrections n'a pas
+         * de sens tant qu'aucune correction n'a eu lieu : le construire
+         * maintenant serait un chantier documentaire sur du vide. Cette phrase
+         * dit la meme chose honnetement, et changera le jour ou elle deviendra
+         * fausse — c'est a ce moment-la qu'un journal aura un contenu reel a
+         * porter. */}
+        <p className="tx-note">
+          Aucune correction n'a encore été nécessaire dans cette version.
+          Le jour où une erreur signalée sera corrigée, elle sera annoncée ici.
+        </p>
       </Carte>
 
       <MentionsLegales />

@@ -6,6 +6,12 @@
       "runtimeExecutable": "node",
       "runtimeArgs": ["mono/scripts/serveur-statique.mjs", "mono/apps/web/dist", "4174"],
       "port": 4174
+    },
+    {
+      "name": "repere-ancien",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["mono/scripts/serveur-statique.mjs", ".", "4175"],
+      "port": 4175
     }
   ]
 }
