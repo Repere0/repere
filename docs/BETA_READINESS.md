@@ -17,13 +17,13 @@ documentée — pas "ça devrait marcher".*
 | build reproductible | **PARTIAL** | `mono/` : reproductible, testé (98+56 contrôles). Le pipeline `main` (`build_pwa_reconstruit.py`) reproduit aussi, mais publie le mauvais artefact (voir performance) |
 | publication vérifiable (commit ↔ site public) | **PARTIAL** | La fraîcheur (`maj` = date du jour) est vérifiable ; le lien direct "ce SHA a produit ce site" n'existe pas encore — proposé dans `PRODUCTION_RUNBOOK.md`, pas construit |
 | performance acceptable | **BLOCKED** | 16,29 Mo décodés / 6,02 Mo transférés pour une seule commune, mesuré aujourd'hui. Cause identifiée (`PERFORMANCE_AUDIT_2026-09.md`), correctif prêt (`mono/`), **non déployé** |
-| tests automatisés | **DONE** | 98 statiques + 56 navigateur (`mono/`) ; 55 (`test_repere.mjs`, fichier autonome) ; 14 (`outils/registre/`) — tous exécutés aujourd'hui, verts sauf 2 échecs pré-existants documentés (apostrophes typographiques, `deputes.json` absent sur l'ancien `main`) |
+| tests automatisés | **DONE** | 112 statiques/inline + 56 navigateur (`mono/`, mis à jour dans l'après-midi — étaient 100+56 le matin, +12 pour les 3 régressions fermées) ; 55 (`test_repere.mjs`, fichier autonome) ; 14 (`outils/registre/`) — tous exécutés aujourd'hui, verts sauf 2 échecs pré-existants documentés (apostrophes typographiques, `deputes.json` absent sur l'ancien `main`) |
 
 ## DONNÉES
 
 | item | état | preuve |
 |---|---|---|
-| couverture IDF | **PARTIAL** | Dénominateur corrigé (1266, pas 1262, vérifié contre `geo.api.gouv.fr`). RNE/circonscriptions/OFGL : 1262/1266 (99,7 %), 4 communes documentées comme manquantes (RNE incomplet), pas un bug de jointure |
+| couverture IDF | **PARTIAL** | Dénominateur corrigé (1266, pas 1262, vérifié contre `geo.api.gouv.fr`). RNE/circonscriptions/OFGL : 1262/1266 (99,7 %), 4 communes documentées comme manquantes (RNE incomplet), pas un bug de jointure. **Comptes départementaux et régionaux (101 + 17) extraits dans `mono/` cet après-midi** — manquaient ce matin |
 | provenance systématique | **DONE** | Composant `Source` obligatoire (invariant 4, testé), registre `outils/registre/sources.json` pour 10 sources actives |
 | fraîcheur | **BLOCKED** | `an_amo30`/`an_scrutins` : 28 jours de retard (STALE, détecté automatiquement par `outils/registre/rapport.mjs`), cause = le même P0 que la publication — devrait se résoudre avec le run de demain |
 | doctrine du vide | **DONE** | Implémentée et testée sur RNE (Ville-d'Avray et 3 autres communes), OFGL (zéro vs absence), votes (appariement), calendrier (licence non précisée dite explicitement) |
@@ -33,8 +33,8 @@ documentée — pas "ça devrait marcher".*
 | écran | état | preuve |
 |---|---|---|
 | Qui décide | **DONE** | Maire, adjoints, circonscription, député, votes réels et personnalisés — testé en navigateur réel |
-| Ce qui a été décidé | **DONE** | Projets DGCL (jamais collectés en prod, doctrine du vide honnête) + votes solennels réels |
-| Où va mon argent | **DONE** | Traductions avant les chiffres bruts (réordonné le 19/09), doctrine zéro/absence |
+| Ce qui a été décidé | **DONE** | Projets DGCL + votes solennels réels **+ fil éditorial validé à la main (`evenements.json`), ajouté cet après-midi dans `mono/`** — régression fermée, testée (mention "relu et validé par la rédaction" explicite, jamais présentée comme automatique) |
+| Où va mon argent | **DONE** | Traductions avant les chiffres bruts (réordonné le 19/09), doctrine zéro/absence, **et depuis cet après-midi les 3 échelons (commune/département/région) dans `mono/`** — était commune seule le matin même |
 | Aujourd'hui (fil territorial) | **PARTIAL** | 3 directions prototypées et comparées en navigateur réel, une retenue ("la question") — **non activée par défaut**, atteignable seulement par un lien secondaire |
 | Calendrier citoyen | **PARTIAL** | Sénat seul, licence non confirmée affichée honnêtement — Assemblée nationale non fusionnée dans le même écran |
 
@@ -51,7 +51,8 @@ documentée — pas "ça devrait marcher".*
 
 | item | état | preuve |
 |---|---|---|
-| Politique de confidentialité | **DONE** | Page `confidentialite.html`, lien réparé aujourd'hui (l'objet même du correctif poussé) |
+| Politique de confidentialité (site actuel) | **DONE** | Page `confidentialite.html`, lien réparé aujourd'hui (l'objet même du correctif poussé) |
+| Mentions légales (`mono/`, candidat de bascule) | **DONE, cet après-midi** | Étaient **ABSENTES** de `mono/` ce matin (bloquant, régression identifiée en phase 2) — portées et adaptées (pas recopiées : 3 affirmations fausses pour `mono/` corrigées, voir `MONO_MIGRATION_AUDIT.md`), testées par un clic réel sur le `<details>` |
 | Métadonnées (titre, description, favicon) | **NOT VERIFIED** | Non auditées dans cette session |
 | Assets (icônes, manifest) | **PARTIAL** | Présents dans `mono/` (`icone.svg`, `manifest.webmanifest`), non vérifiés pour un store |
 | Build iOS | **NOT STARTED** | Aucune trace de configuration iOS trouvée dans le dépôt |

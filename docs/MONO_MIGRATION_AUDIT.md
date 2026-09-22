@@ -50,32 +50,47 @@ vérifiée avant tout jugement de qualité, comme demandé.*
 
 ## 4. La matrice de parité — fonctions minimales, statut vérifié
 
-*PRESENT = repris et testé. PARTIAL = repris mais avec une couverture ou un
-contenu réduit, précisé. ABSENT = pas repris, avec la raison connue.
-NON APPLICABLE = ne s'applique pas à l'architecture cible. Aucune case n'est
-mise à PRESENT sur une supposition — chacune cite le fichier ou le test.*
+*Mise à jour le 22 septembre 2026, phase 3 de la mission (« parité de
+production avant bascule »). PASS = repris, accessible, fonctionne avec les
+données attendues, conserve sa provenance, testé (règle de parité, §7 de la
+mission). PARTIAL = repris mais couverture réduite, précisée. MISSING /
+BLOCKED = pas repris ou empêché, avec la raison réelle. NOT_TESTED = présent
+mais jamais vérifié. NON APPLICABLE = ne s'applique pas à l'architecture
+cible. Aucune case n'est mise à PASS sans preuve — chacune cite un fichier ou
+un test réel, exécuté aujourd'hui sauf mention contraire.*
 
-| Fonction | Ancien site (`app_repere_v18_20.html`) | `mono/` | Statut | Différence / Risque |
-|---|---|---|---|---|
-| Recherche commune | `s-qui`/plusieurs écrans, pas de champ unifié commune+département avant le 13/09 sur aucune version | `Entree` (`App.jsx`), un seul champ, commune OU département | **PRESENT, amélioré** | Aucun risque connu ; testé sur Ville-d'Avray (commune absente du RNE) |
-| Identification commune | implicite dans chaque écran | idem, doctrine du vide propre (`paquet.manquantes`) | **PRESENT** | — |
-| Maire | `s-qui` (ligne 2645), `s-elus` (doublon, ligne 2833) — `window.REPERE_RNE` | `QuiDecide.jsx` — `paquet.communes[c].maire` | **PRESENT** | `s-elus` (recherche libre de tout élu) n'est pas repris ; l'agent l'a identifié comme doublon fonctionnel de `s-qui`, pas une fonction distincte perdue |
-| Circonscription | `s-qui` | `QuiDecide.jsx`, `phraseCirco()` | **PRESENT, amélioré** | mono gère explicitement les communes à cheval sur plusieurs circonscriptions (Paris, 18) ; rien n'indique que l'ancien site le faisait |
-| Député | `s-qui` (nom seul, pas de source d'attribution circonscription→député documentée dans l'audit) | `QuiDecide.jsx` → `Depute()`, `data/deputes.json` avec producteur/licence/législature | **PRESENT, amélioré** | mono ajoute la source du lien circonscription→député (absente du RNE, expliqué dans `mono/README.md`) |
-| Comptes | `s-argent` (ligne 2866) — **ville ET département ET région**, `window.REPERE_OFGL` | `OuVaArgent.jsx` — **commune seule** | **PARTIAL** | **Risque réel et confirmé** : `data/departments/*.json` ne porte aucun champ de comptes départementaux/régionaux (`Object.keys(communes[x])` = `nom, maire, adjoints, circo, comptes` — `comptes` est celui de la commune). L'ancien site couvrait 101 départements + 17 régions (voir `CONTEXTE_PROJET.md` §7) ; ce n'est pas encore extrait dans `mono/` |
-| Votes | `s-vote` (ligne 2853) — **une seule commune résolue en dur (Fontainebleau/77186)** | `QuiDecide.jsx`/`CeQuiADecide.jsx` — toutes communes, tous députés, filtré aux scrutins solennels | **PRESENT, largement amélioré** | L'ancien écran ne fonctionnait réellement que pour une commune ; mono fonctionne pour les 1 262+ communes de la bêta |
-| Sources | `s-sources` (ligne 3119) — charte de neutralité, fraîcheur/couverture, **journal des corrections**, financement (« aucun revenu ») | `Sources.jsx` — liste des producteurs/licences, 8 invariants, contact | **PARTIAL** | Manquent : la charte de neutralité en texte, le bloc fraîcheur/couverture chiffré, le journal des corrections, la déclaration de financement |
-| Aujourd'hui | n'existait pas sous ce nom (`s-fil` en est l'ancêtre le plus proche) | `Aujourdhui.jsx`, prototype, lien secondaire non par défaut | **PRESENT (prototype)** | Décision produit déjà écrite dans `App.jsx` : reste un lien, pas un onglet, jusqu'à arbitrage |
-| Ce qui a été décidé | `s-fil` (ligne 2454) — `window.REPERE_DATA` (faits éditoriaux validés à la main) + événements | `CeQuiADecide.jsx` — **projets DGCL + votes AN uniquement, aucun fait éditorial** | **PARTIAL** | **Risque réel** : le travail éditorial quotidien (`data/evenements/*.md` → faits validés, décrit comme le trou n°1 du projet dans `CONTEXTE_PROJET.md` §12) n'a aucun point d'entrée dans `mono/` aujourd'hui. Porter `evenements.json` vers `mono/` reste à faire |
-| Où va mon argent | voir "Comptes" ci-dessus | voir ci-dessus | **PARTIAL** | même risque |
-| Calendrier | `s-agenda` (ligne 2554, calendrier général figé) + `s-an` (ligne 3443, agenda AN, async réel) | `Calendrier.jsx` — **Sénat seul** | **PARTIAL** | Assemblée nationale non portée ; c'est un choix déjà écrit (pilote Sénat, 17/09/2026), pas un oubli |
-| Navigation / retour arrière | non audité en détail par l'agent (hors périmètre de sa recherche) | `historique.js` (`entrer()`/`revenir()`), testé : "le retour du téléphone replie les votes", "un second retour ramène à l'écran d'entrée" | **PRESENT, testé** | 2 contrôles navigateur dédiés, verts aujourd'hui |
-| Accessibilité | non chiffré par l'agent pour l'ancien site (hors périmètre) | 44 px cibles tactiles, contraste 3:1 en thème sombre, zoom 200 %, focus visible — **5 contrôles dédiés**, verts | **PRESENT, testé** | Comparaison chiffrée avec l'ancien site non faite ici (nécessiterait un audit WCAG séparé de `app_repere_v18_20.html`, hors périmètre de cette session) |
-| Mobile | non chiffré par l'agent pour l'ancien site | testé à 390 px (viewport du banc), zoom 200 % sans défilement horizontal | **PRESENT, testé** | idem — pas de comparaison chiffrée avec l'ancien |
-| États de données absentes | doctrine du vide déjà en place sur plusieurs écrans (mesuré dans des sessions antérieures) | doctrine du vide sur **chaque** chargeur (`ETATS`/`PHRASES` dans `client.js`), avec distinction "chez nous" vs "la source ne le porte pas" — 6 contrôles dédiés au fil seul | **PRESENT, amélioré, testé** | mono formalise la distinction en code partagé (`ETATS`), l'ancien site la portait cas par cas |
-| Mentions légales | `s-moi` (ligne 3001, repliées) + `s-sources` (repliées) | **aucune occurrence** dans `mono/apps/web/src`, `index.html`, ni `public/` (`grep` exécuté, zéro résultat) | **ABSENT** | **Bloquant pour une publication réelle** : c'est l'exact correctif poussé aujourd'hui sur l'ancien site (`f55d0f5`). Publier `mono/` en l'état publierait sans mentions légales |
-| Bandeau maquette | présent sur l'ancien site (retiré/reformulé par le correctif v9 du jour) | **aucune occurrence** trouvée | **ABSENT** | Si `mono/` sert du contenu de démonstration un jour, rien ne l'annonce. À vérifier : `mono/` semble n'utiliser que des données réelles (RNE/OFGL/AN/Sénat), donc ce bandeau n'est peut-être pas nécessaire — **à trancher, pas à supposer** |
-| Provenance | `Source`-like mentions par écran, incohérentes (l'agent note des doublons entre `s-influence` et `s-sources`) | composant `Source` unique, obligatoire par carte chiffrée, invariant 4 testé explicitement | **PRESENT, amélioré, testé** | — |
+| Fonction | Ancien | Mono | Statut | Régression ? | Source | Test | Action |
+|---|---|---|---|---|---|---|---|
+| Recherche commune | `s-qui`/plusieurs écrans, pas de champ unifié avant le 13/09 | `Entree` (`App.jsx`), un seul champ, commune OU département | **PASS** | Non — amélioration | RNE + Code officiel géographique | `runtime.test.mjs`, Ville-d'Avray | aucune |
+| Identification commune | implicite | doctrine du vide propre (`paquet.manquantes`) | **PASS** | Non | idem | idem | aucune |
+| Maire | `s-qui`, `s-elus` (doublon) | `QuiDecide.jsx` — `paquet.communes[c].maire` | **PASS** | Non — `s-elus` était un doublon, pas une fonction perdue | RNE | tests runtime "Qui décide" | aucune |
+| Circonscription | `s-qui` | `QuiDecide.jsx`, `phraseCirco()` | **PASS** | Non — amélioration (communes multi-circo gérées) | Ministère de l'Intérieur, découpage 2010 | idem | aucune |
+| Député | `s-qui` (attribution non documentée) | `QuiDecide.jsx` → `Depute()`, `data/deputes.json` | **PASS** | Non — amélioration (source déclarée) | Assemblée nationale | idem | aucune |
+| **Comptes commune** | `s-argent` — ville | `OuVaArgent.jsx` — `paquet.communes[c].comptes` | **PASS** | Non | OFGL | tests runtime "l'argent" | aucune |
+| **Comptes département** | `s-argent` — département | **CORRIGÉ AUJOURD'HUI** : `paquet.comptes_departement`, fondu dans chaque paquet départemental (0 requête de plus) | **PASS** | **Régression fermée** — était MISSING ce matin | OFGL, `OFGL.ech.departement.terr` | `runtime.test.mjs` : "comptes — le département de la commune choisie est nommé et traduit" | aucune |
+| **Comptes région** | `s-argent` — région | **CORRIGÉ AUJOURD'HUI** : `data/comptes-regions.json`, 17 régions, 25,2 Ko | **PASS** | **Régression fermée** — était MISSING ce matin | OFGL, `OFGL.ech.region.terr`, lien département→région vérifié par recoupement de population dans `extract-html.js` | `runtime.test.mjs` : "comptes — la région de ce département est nommée et traduite" | aucune |
+| Votes | `s-vote` — une seule commune en dur (Fontainebleau) | `QuiDecide.jsx`/`CeQuiADecide.jsx` — toutes communes | **PASS** | Non — largement amélioré | Assemblée nationale, scrutins solennels | tests existants | aucune |
+| Sources | `s-sources` — charte, fraîcheur/couverture, journal des corrections, financement | `Sources.jsx` — producteurs/licences, 8 invariants, contact | **PARTIAL** | Non, mais incomplet | — | tests existants (liste des producteurs) | manquent : charte de neutralité en texte, bloc fraîcheur/couverture chiffré, journal des corrections, déclaration de financement — aucun n'est bloquant pour une bêta fermée |
+| Aujourd'hui | `s-fil` en est l'ancêtre | `Aujourdhui.jsx`, prototype, lien secondaire | **PASS (prototype)** | Non | — | tests existants | décision produit déjà écrite : reste un lien tant que non arbitré |
+| **Ce qui a été décidé** | `s-fil` — `window.REPERE_DATA` + événements | `CeQuiADecide.jsx` — projets DGCL + votes AN **+ fil éditorial** (`evenements.json`, corrigé aujourd'hui) | **PASS** | **Régression fermée** — le fil éditorial était MISSING ce matin | `data/evenements/*.md` → `outils/evenements.py` → `evenements.json`, chaque fait avec sa propre source officielle | `runtime.test.mjs` : 4 contrôles dédiés ("fil editorial — ...") | aucune |
+| **Fil éditorial (détail)** | `data/evenements/*.md`, `valide: true` humain | idem, lu tel quel, jamais régénéré (pas de Python sur ce poste) | **PASS** | Régression fermée | rédaction Repère + source propre à chaque fait | mention "relu et validé par la rédaction" testée explicitement — jamais présentée comme automatique | aucune |
+| Où va mon argent | voir comptes ci-dessus | voir ci-dessus | **PASS** | Régression fermée | — | — | aucune |
+| Calendrier | `s-agenda` (figé) + `s-an` (AN, async) | `Calendrier.jsx` — Sénat seul | **PARTIAL** | Non — choix déjà écrit (pilote Sénat, 17/09) | Sénat | tests existants | AN à porter quand sa source sera aussi vérifiée |
+| Navigation / retour arrière | non audité côté ancien | `historique.js` (`entrer()`/`revenir()`) | **PASS** | Non | — | 2 contrôles dédiés | aucune |
+| Accessibilité | non chiffré côté ancien | 44 px cibles, contraste 3:1 thème sombre, zoom 200 %, focus visible | **PASS** | Non | — | 5 contrôles dédiés | comparaison chiffrée avec l'ancien site non faite (hors périmètre) |
+| Mobile | non chiffré côté ancien | testé à 390 px, zoom 200 % sans défilement horizontal | **PASS** | Non | — | tests existants | idem |
+| États de données absentes | doctrine du vide déjà en place, cas par cas | doctrine du vide formalisée (`ETATS`/`PHRASES`), 3 familles symétriques dans "Ce qui a été décidé" depuis aujourd'hui | **PASS** | Non — amélioration | — | contrôles dédiés par famille | aucune |
+| **Mentions légales** | `s-moi` + `s-sources`, repliées | **CORRIGÉ AUJOURD'HUI** : `Sources.jsx` → `MentionsLegales()`, adapté (pas recopié — 3 affirmations fausses pour mono corrigées, voir extract-html.js) | **PASS** | **Régression fermée** — était ABSENT (bloquant) ce matin | contenu adapté du bloc validé de l'ancien site | `runtime.test.mjs` : 4 contrôles, dont un clic réel sur le `<details>` | aucune |
+| Bandeau maquette / bêta | présent sur l'ancien (reformulé par le correctif v9 du jour) | **toujours ABSENT** | **MISSING** | Non — mono n'utilise que des données réelles (RNE/OFGL/AN/Sénat), donc aucun contenu fictif à annoncer | — | — | **décision humaine à trancher** : un bandeau "bêta, 8 départements" reste utile même sans contenu fictif (couverture réelle incomplète) — non fait, pas oublié par erreur |
+| Absence de labels « RÉEL » | retirés de l'ancien site par le correctif v9 du jour | jamais présents (`grep` : zéro résultat) | **PASS** | Non | — | `grep` exécuté aujourd'hui | aucune |
+| Absence de phrase IA non justifiée | retirée de l'ancien site par le correctif v9 du jour | jamais présente (`grep` : zéro résultat) | **PASS** | Non | — | idem | aucune |
+| Provenance | incohérente côté ancien (doublons `s-influence`/`s-sources`) | composant `Source` unique, obligatoire, invariant 4 testé | **PASS** | Non — amélioration | — | tests existants | aucune |
+
+**Régressions bloquantes fermées aujourd'hui (les trois de la baseline du
+matin) : mentions légales, comptes département/région, fil éditorial — les
+trois désormais PASS, avec preuve et test.** Aucune régression bloquante
+connue ne reste ouverte ; les PARTIAL restants (Sources, Calendrier) sont des
+manques déjà documentés et non bloquants pour une bêta fermée.
 
 ## 5. Écrans de l'ancien site sans équivalent dans `mono/` — chacun avec sa raison réelle
 
@@ -104,13 +119,16 @@ mise à PRESENT sur une supposition — chacune cite le fichier ou le test.*
 |---|---|---|
 | `index.json` (5-11 Ko : départements, sources, agrégats) | **A** | `chargerIndex()`, appelé au montage de `App.jsx`, avant tout choix |
 | `communes-beta.json` (11 Ko, recherche IDF) | **A** | même montage, en parallèle — sert à chercher une commune sans connaître son département |
-| `data/departments/{dep}.json` (maire, adjoints, circo, comptes commune — 108 à 194 Ko selon le département) | **B** | `chargerDepartement(dep)`, uniquement après le choix d'un département ou d'une commune |
+| `data/departments/{dep}.json` (maire, adjoints, circo, comptes commune **+ comptes département depuis aujourd'hui**, +1,4 Ko — 108 à 194 Ko selon le département) | **B** | `chargerDepartement(dep)`, uniquement après le choix d'un département ou d'une commune |
+| `data/comptes-regions.json` (17 régions, 25,2 Ko, **nouveau aujourd'hui**) | **C** | `chargerComptesRegions()`, seulement dans l'onglet "Où va l'argent" — **jamais** dans le paquet départemental : une région couvre plusieurs départements, la dupliquer partout coûterait plus cher que ce seul fichier |
 | `data/deputes.json` (54 Ko, toute la France) | **C** | `chargerDeputes()`, appelé seulement par `QuiDecide.jsx` → `Depute()`, donc seulement si une commune est choisie et affichée |
 | `data/scrutins.json` (catalogue, 3,4 Ko) + `data/scrutins/{dep}.json` (positions, <2 Ko) | **C** | `chargerCatalogueScrutins()`/`chargerVotes()`, seulement au clic sur "Comment X a voté" (`Votes` dans `QuiDecide.jsx`, ou directement dans `CeQuiADecide.jsx`) |
 | `data/projets/{dep}.json` (DGCL) | **C** | `chargerProjets()`, seulement dans l'onglet "Ce qui a été décidé" |
 | `data/calendrier-senat.json` | **C** | `chargerCalendrierSenat()`, seulement dans l'onglet "Calendrier" |
-| RNE brut (France entière), OFGL brut (France entière) | **D** | jamais servis au navigateur : `scripts/extract-html.js` les lit une fois au build et les découpe ; seule leur part par département existe côté client (catégorie B) |
-| `noms-territoires.json`, métadonnées sources | **D** | fondues dans `index.json` au build, jamais redemandées séparément |
+| `data/evenements.json` (fil éditorial, 1,3 Ko pour 2 faits, **nouveau aujourd'hui**) | **C** | `chargerEvenements()`, seulement dans "Ce qui a été décidé"/"Aujourd'hui" |
+| RNE brut (France entière), OFGL brut (France entière) | **D** | jamais servis au navigateur : `scripts/extract-html.js` les lit une fois au build et les découpe ; seule leur part par département existe côté client (catégorie B), ou par région (catégorie C) |
+| `noms-territoires.json` (+ lien département→région, ajouté aujourd'hui), métadonnées sources | **D** | fondues dans `index.json` au build, jamais redemandées séparément |
+| `outils/evenements.json` (source du fil éditorial, produit par `outils/evenements.py`, Python — jamais exécuté depuis ce poste) | **D côté pipeline, recopié tel quel** | lu par `extract-html.js`, jamais régénéré ici |
 
 **Ce que cette répartition confirme** : aucune donnée volumineuse n'entre
 dans le bundle initial (catégorie A ne contient que 16-22 Ko). C'est
@@ -118,6 +136,22 @@ exactement l'inverse de l'ancien site, où RNE et OFGL France entière (15,2 Mo
 des 16,29 Mo) sont dans la catégorie A par construction — l'invariant 1
 (fonctionner hors ligne) est tenu en embarquant tout, faute d'alternative
 avant `mono/`.
+
+## 7bis. `s-carte` et `s-jeu` — classement KEEP / DEFER / REMOVE, avec preuve
+
+*Demandé explicitement (mission phase 3, §13) : ne rien supprimer sans
+preuve, mais ne pas laisser une absence implicite passer pour une décision.*
+
+| écran | références dans `mono/` (code, nav, tests, doc) | données nécessaires | présent dans le parcours bêta actuel | raison historique | classement |
+|---|---|---|---|---|---|
+| `s-carte` | **zéro** (`grep` exécuté aujourd'hui sur `apps/`, `packages/`, `tests/`, `scripts/`) | découpage administratif (déjà dans `noms-territoires.json` depuis aujourd'hui) + un mode « couleur politique des exécutifs régionaux » qui n'a pas d'équivalent de données dans mono | Non | Carte de France par département, deux modes (couverture / couleur politique) — voir `MONO_MIGRATION_AUDIT.md` §5 | **DEFER** — pas dans les 5 expériences prioritaires de la bêta (Qui décide / Ce qui a été décidé / Aujourd'hui / Où va l'argent / Ce qui se passe) ; son mode politique s'approche de l'invariant 3 (comparaison visuelle de territoires) et de l'invariant 7 (palette gelée) — à concevoir, pas à recopier |
+| `s-jeu` | **zéro** (idem) | questions figées (`JEU_Q`), un carnet de série en `localStorage` — incompatible avec l'invariant 2 de mono (une seule clé, `repere.departement`, jamais un compteur d'usage) | Non | Quiz quotidien « Qui décide quoi ? », carnet de série personnel | **DEFER** — tension réelle avec l'invariant 6 (gamification) même sans score public ; son absence est probablement saine mais n'a jamais été **décidée explicitement**, seulement jamais construite |
+
+**Aucune action irréversible n'est prise ici.** Les deux écrans restent
+intacts dans `app_repere_v18_20.html` ; aucun fichier n'est supprimé. DEFER
+signifie : ne pas les construire dans mono/ tant que la bêta n'a pas
+validé les cinq expériences prioritaires, et trancher explicitement (pas
+implicitement) s'ils reviennent un jour.
 
 ## 7. Ce que cet audit NE permet PAS de conclure
 
