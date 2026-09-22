@@ -198,22 +198,106 @@ pipeline réel). Détail complet des lignes D et I : `MONO_PIPELINE_BRIDGE_2026-
 
 | critère | état | preuve |
 |---|---|---|
-| A. Fonctionnel (socle bêta) | **PASS** | 120 contrôles statiques/inline + 65 `node:test`, verts, reconstruit à froid |
+| A. Fonctionnel (socle bêta) | **PARTIAL** *(était PASS)* | localement : 120 inline + 65 `node:test`, verts. **Sur le runner GitHub réel (ubuntu-latest, 22/09/2026, run 35796632331) : 1 échec réel** — `tests/runtime.test.mjs`, zoom 200 %, débordement de 55 px sur "Qui décide". Jamais vu en local, sur ce même code, avec la même version de Chromium. Voir §9bis. |
 | B. Données critiques présentes | **PASS** | comptes 3 échelons + élus agglo/dept/région, tous nommés et testés |
-| C. Provenance traçable | **PASS** | chaque carte chiffrée ou nominative porte sa source ; l'**artefact lui-même** porte maintenant `build.commit`/`build.construit_le` (nouveau, phase 3.2) |
+| C. Provenance traçable | **PASS** | chaque carte chiffrée ou nominative porte sa source ; l'**artefact lui-même** porte maintenant `build.commit`/`build.construit_le` — **confirmé sur le runner réel** : `{commit_court:"5714be0", sante:{elus:true,comptes:true,circonscriptions:true,deputes:true,scrutins:true,projets:false,evenements:true}}` |
 | D. Fraîcheur (dates de collecte connues) | **PASS** *(était PARTIAL)* | `index.json` porte un schéma versionné (`v`/`SCHEMA_ATTENDU`) ; un cache dont le schéma diverge est détecté et remplacé, prouvé par un test qui casse le garde-fou à la main |
-| E. Performance (gain confirmé sur parcours réel) | **PASS** | 140,7 Ko vs 6,02 Mo, ≈43×, mesuré **sur l'artefact `site_engendre` réellement produit**, pas seulement `apps/web/dist` |
-| F. Accessibilité (parcours critiques utilisables) | **PASS** | 44 px, contraste 3:1, zoom 200 %, focus — testés |
+| E. Performance (gain confirmé sur parcours réel) | **PASS** | 140,7 Ko vs 6,02 Mo, ≈43×, remesuré ce jour en local sur `apps/web/dist` (chiffre identique) ; **pas remesuré sur l'artefact du runner réel** — l'échec de F a empêché l'étape d'upload de s'exécuter, donc rien à télécharger (voir §9bis) |
+| F. Accessibilité (parcours critiques utilisables) | **FAIL** *(était PASS)* | 44 px, contraste 3:1, focus — toujours verts. **Zoom 200 % : casse sur le runner réel, pas en local.** C'est exactement le risque que la Phase 3.3 devait débusquer, et il l'a fait. |
 | G. Parité (aucune fonction critique perdue) | **PASS** | les 3 régressions trouvées par le shadow build sont fermées et re-vérifiées à l'écran |
 | H. Réversibilité (retour rapide à l'ancien build) | **PASS** | procédure exacte documentée : un seul commit (`b4737ff`) à `revert`, jamais fusionné, `build_pwa_reconstruit.py` intact |
-| I. Production (le pipeline sait produire et publier mono/) | **PARTIAL** *(était FAIL)* | le pont existe et a été éprouvé de bout en bout **localement** (extraction → build → banc sur l'artefact réel, 0 échec) ; **jamais exécuté sur le runner GitHub réel** (`ubuntu-latest`) ; sur `origin/main`, toujours `build_pwa_reconstruit.py` |
+| I. Production (le pipeline sait produire et publier mono/) | **PARTIAL** *(inchangé, preuve renforcée)* | **prouvé sur le runner réel le 22/09/2026** : install Node/pnpm/corepack, `pnpm install`, install Chromium dédié, `extract-html.js`, build, assemblage `site_engendre` — **tous verts en 39 s, sur `ubuntu-latest`, pas seulement ce poste**. Le banc, lui, casse sur ce même runner (cf. F). Pas encore PASS : construire fonctionne réellement en CI, éprouver ne passe pas encore en CI. |
 | J. Validation réelle (site publié inspecté après déploiement) | **FAIL** | mono/ n'est déployé sur aucune adresse publique — **volontairement, cette phase ne l'a pas tenté** |
 
-**Conclusion** : sept critères sur dix sont PASS. I passe de FAIL à
-PARTIAL — le pont est construit et prouvé localement, il lui manque
-uniquement une exécution réelle sur le runner GitHub pour passer à PASS.
-J reste FAIL, par choix explicite de cette phase : « construire le pont,
-pas le traverser ». Le gate reste
-donc **incomplet**, pas pour une raison produit mais pour une raison de
-publication : décider de brancher `mono/` sur le pipeline réel est une
-décision séparée de celle prise aujourd'hui (fermer les régressions).
+**Conclusion, réécrite après la Phase 3.3 — dire ce qui ne va pas plutôt
+que ce qui arrange.** Le mouvement est réel : I passe de "jamais testé
+sur le vrai runner" à "construction prouvée sur le vrai runner". Mais F
+et A reculent, parce que la Phase 3.3 a fait exactement ce qu'elle
+devait faire — chercher ce qui ne se voit qu'en conditions réelles, et
+trouver quelque chose. Se dire "le pont marche" sur la seule base du
+succès local aurait été l'erreur exacte que ce document existe pour
+empêcher. Le gate reste **incomplet**, et pour la première fois pas
+seulement par choix (J) mais par une régression mesurée et non fermée
+(F). Rien de tout cela n'a atteint `main` au-delà d'un fichier de
+workflow de test sans étape de déploiement — voir §9bis.
+
+## 9bis. Phase 3.3 — le pont éprouvé sur le runner GitHub réel, 22-23/09/2026
+
+*Mission : prouver que le pont fonctionne sur `ubuntu-latest`, sans aucune
+publication. Détail complet, logs et chronologie : le rapport de session
+correspondant. Ce qui suit est la synthèse qui reste dans ce document.*
+
+**Le run réel** : `gh workflow run test-mono-pipeline.yml --ref
+ci-test-mono-pipeline` → run `35796632331`, déclenché manuellement
+(`workflow_dispatch`), branche `ci-test-mono-pipeline`, commit `5714be0`.
+
+**Ce qui a fonctionné, pour la première fois sur le vrai runner :**
+Node/pnpm/corepack, `pnpm install --frozen-lockfile` dans `mono/`, un
+Chromium dédié installé pour le banc de `mono/` (distinct de celui de
+`test_repere.mjs` à la racine — risque identifié par audit avant
+d'écrire le workflow, pas deviné), `extract-html.js`, `pnpm build`,
+assemblage de `site_engendre`. Tout vert, en 39 secondes. La provenance
+écrite dans l'artefact a été lue directement sur le runner :
+`{"commit_court":"5714be0","sante":{"elus":true,"comptes":true,"circonscriptions":true,"deputes":true,"scrutins":true,"projets":false,"evenements":true}}`
+— `projets:false` est **attendu** (doctrine du vide, santé OPTIONAL, pas
+une panne).
+
+**Ce qui a cassé, uniquement sur le runner réel :** `pnpm test` →
+`tests/runtime.test.mjs`, l'assertion "à 200 % de zoom texte, l'écran Qui
+décide ne défile pas horizontalement" → **débordement de 55 px**. Le même
+test, sur le même commit, avec la même version de Chromium (1.56.0,
+épinglée par `mono/package.json` et confirmée identique sur les deux
+environnements), **passe en local** sur ce poste Windows — vérifié en
+relançant `node tests/runtime.test.mjs apps/web/dist` directement, pas
+supposé.
+
+**Cause la plus probable, mesurée mais pas prouvée à 100 % :** la pile de
+polices déclarée dans `packages/ui/src/tokens.css` —
+`--t-titre: "Bricolage Grotesque", system-ui, -apple-system, "Segoe UI",
+Roboto, sans-serif` — ne contient **aucune police auto-hébergée** (aucun
+`@font-face` dans `app.css`, confirmé par recherche) : "Bricolage
+Grotesque" n'est jamais réellement chargée, sur aucun des deux
+environnements. Sur Windows, la pile retombe sur "Segoe UI", installée.
+Sur le runner Ubuntu (`ubuntu-latest` + `playwright install --with-deps`),
+aucun des noms de la liste n'est probablement installé, et le navigateur
+retombe sur le `sans-serif` générique du système (le plus souvent
+DejaVu Sans sous Linux) — mesurablement plus large. Les blocs élus
+ajoutés en phase 3.1 (fonctions longues type « 1er Vice-président du
+conseil départemental », noms d'EPCI, de cantons) sont les candidats les
+plus probables au débordement, mais **je n'ai pas isolé l'élément exact**
+sur le runner — l'étape d'upload de l'artefact n'a jamais tourné (elle
+suit le banc dans l'ordre du fichier, sans `if: always()`), donc aucun
+artefact CI n'existe pour cette exécution et la comparaison au shadow
+build local (E) n'a pas pu se refaire sur les mêmes fichiers.
+
+**Correctif minimal proposé, non appliqué :** avant tout correctif CSS,
+ajouter une étape de diagnostic (capture d'écran + `getComputedStyle`
+sur l'élément qui déborde) au même workflow de test isolé, pour nommer
+l'élément précis plutôt que de deviner. Piste de correctif la plus
+probable une fois l'élément identifié : `overflow-wrap: break-word` (ou
+équivalent) sur `.ligne-h b`/`.ligne-h span`, qui ne dépend d'aucune
+police et résiste à n'importe quelle substitution système — préférable à
+héberger "Bricolage Grotesque" en local, qui réglerait le symptôme
+observé sans garantir qu'aucune autre substitution de police, sur aucun
+autre runner, ne recrée le même débordement ailleurs.
+
+**Preuve d'absence de publication, vérifiée point par point :**
+- Aucune étape de déploiement dans le fichier (`grep` local + garde-fou
+  interne au workflow, les deux verts).
+- Le job n'a jamais atteint l'étape d'upload d'artefact (annulée par le
+  banc en échec) — rien n'a même été déposé en inspection.
+- `main` n'a reçu, via la PR #10 (`73b534e`), que l'ajout du fichier
+  `.github/workflows/test-mono-pipeline.yml` — 1 fichier, 149 insertions,
+  0 suppression, vérifié par `git show --stat` du commit de fusion.
+  `collecte.yml` et `build-publish.yml` (les deux seules chaînes qui
+  tournent seules) n'ont pas été touchés.
+- Le run lui-même l'annonce explicitement dans ses logs, y compris sur
+  l'exécution qui a échoué (l'étape de confirmation a `if: always()`) :
+  `PRODUCTION ACTIVEE : NON` / `PUBLICATION : NON` / `MAIN MODIFIEE : NON`.
+
+**Prochaine décision humaine, unique :** ajouter l'étape de diagnostic
+CSS ci-dessus sur la branche isolée `ci-test-mono-pipeline` et relancer
+un `workflow_dispatch`, pour nommer l'élément précis avant d'écrire le
+correctif — ou accepter de corriger à l'aveugle (`overflow-wrap`) sans
+cette confirmation. Aucune des deux options ne touche `main` ni ne
+publie ; c'est un choix de méthode, pas un choix à risque.
