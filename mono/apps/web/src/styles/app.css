@@ -123,9 +123,14 @@
    titre reprend toute la largeur, l'etiquette se pose dessous — et l'ordre de
    lecture reste celui du document, titre d'abord. */
 @media (max-width: 480px) {
-  .carte-h > div { flex: 1 1 100%; min-width: 0; }
+  .carte-h > div { flex: 1 1 100%; }
   .carte-h .tag { align-self: flex-start; }
 }
+/* TROUVE PAR LE RUNNER GITHUB REEL LE 22/09/2026, INVISIBLE EN LOCAL : a 200%
+   de zoom, le titre "Votre intercommunalite" deborde de 55px sur ubuntu-latest,
+   0px sur ce poste. Mesure isolee : le mot le plus long d'un titre peut, a lui
+   seul, exceder la largeur de la carte sans cette regle. */
+.carte-h h2, .carte-h p { overflow-wrap: break-word; }
 .carte-h h2 { margin: 0; }
 .carte-s { margin: .2rem 0 0; font-size: .86rem; color: var(--sourd); }
 /* PLANCHER TYPOGRAPHIQUE 13 px, POSE LE 13/09/2026 SUR MESURE. Sur les six
@@ -136,7 +141,11 @@
    tenir a cette taille sans pousser le titre de la carte a la ligne. */
 .tag { font-family: var(--t-titre); font-size: .8125rem; font-weight: 700; letter-spacing: .04em;
   text-transform: uppercase; padding: .3em .65em; border: 1px solid var(--encre);
-  border-radius: 99px; white-space: nowrap; }
+  border-radius: 99px; }
+/* `white-space: nowrap` a ete retire le 22/09/2026 : a 200% de zoom,
+   "DONNEE OFFICIELLE" mesure 302px pour une carte de 276px. Le motif de la
+   ligne 120 (l'etiquette passe sous le titre en dessous de 480px) protege
+   deja la mise en page voulue ; nowrap n'ajoutait qu'un debordement. */
 
 /* Deux blocs de donnees dans une meme carte, avec DEUX producteurs differents :
    sans ce filet, la source du premier se lisait comme celle du second. */
@@ -359,9 +368,18 @@
    ligne 648) : un mot souligne en pointille, AUCUNE icone, AUCUNE couleur nouvelle
    — `--sourd` est deja un jeton neutre gelé dans les deux themes. Un lecteur qui
    connait deja le mot ne le voit presque pas et continue sa lecture. */
+/* `<Mot>` est un <button> : la feuille de style UA du navigateur pose
+   `appearance: auto`, qui prime sur `display: inline` pose ici et fait
+   mesurer l'element comme un widget "inline-block" qui refuse de casser un
+   mot trop long au milieu (mesure le 22/09/2026 sur "intercommunalite",
+   dans un titre de carte a 200% de zoom : 322px pour 276px disponibles).
+   `appearance: none` rend `display: inline` reellement effectif ;
+   `overflow-wrap`/`word-break` autorisent ensuite la coupure a l'interieur
+   du mot, seul recours quand aucun espace ne permet de replier la ligne. */
 .mot {
+  appearance: none; -webkit-appearance: none;
   display: inline; background: none; border: 0; padding: 2px 2px; margin: 0 -2px;
-  font: inherit; color: inherit; cursor: pointer;
+  font: inherit; color: inherit; cursor: pointer; overflow-wrap: break-word; word-break: break-word;
   text-decoration: underline dotted var(--sourd); text-decoration-thickness: 1.5px;
   text-underline-offset: 3px;
 }
