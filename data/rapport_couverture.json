@@ -1,5 +1,5 @@
 {
- "genere_le": "2026-09-22T08:41:11.067Z",
+ "genere_le": "2026-09-22T13:03:30.235Z",
  "territoire_cible": {
   "departements": [
    "75",
@@ -152,8 +152,8 @@
   {
    "id": "banatic_epci",
    "nom": "Banatic — table commune -> intercommunalite",
-   "statut_cycle": "DISCOVERED",
-   "verifie_le": "2026-09-13 (DATA_CATALOG.md, non revérifiée par cette session)"
+   "statut_cycle": "VERIFIED",
+   "verifie_le": "2026-09-22 (API data.gouv.fr, reelle, en direct)"
   },
   {
    "id": "geo_risques_brgm",
@@ -166,6 +166,24 @@
    "nom": "Donnees essentielles de la commande publique (DECP)",
    "statut_cycle": "DISCOVERED",
    "verifie_le": "2026-09-13 (DATA_CATALOG.md, non revérifiée par cette session)"
+  },
+  {
+   "id": "sirene_recherche_entreprises",
+   "nom": "Repertoire SIRENE, via l'API publique recherche-entreprises",
+   "statut_cycle": "DISCOVERED",
+   "verifie_le": "2026-09-22 (API testee en direct)"
+  },
+  {
+   "id": "hubeau_qualite_eau",
+   "nom": "Hub'Eau — qualite de l'eau potable distribuee",
+   "statut_cycle": "VERIFIED",
+   "verifie_le": "2026-09-22 (API testee en direct sur Le Blanc-Mesnil, 93007)"
+  },
+  {
+   "id": "res_equipements_sportifs",
+   "nom": "Recensement des equipements sportifs (RES)",
+   "statut_cycle": "DISCOVERED",
+   "verifie_le": "2026-09-22 (metadonnees data.gouv.fr, en direct)"
   }
  ],
  "sources_modifiees_depuis_le_registre": [

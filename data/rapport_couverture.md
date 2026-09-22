@@ -1,6 +1,6 @@
 # Repère — rapport de couverture des données
 
-*Généré le 2026-09-22T08:41:11.067Z. Chaque chiffre vient d'un fichier mesuré, jamais d'une estimation.*
+*Généré le 2026-09-22T13:03:30.235Z. Chaque chiffre vient d'un fichier mesuré, jamais d'une estimation.*
 
 ## Territoire cible
 Île-de-France, 75, 77, 78, 91, 92, 93, 94, 95 — 1266 communes de référence (`mono/data/communes-beta.json`).
@@ -39,15 +39,18 @@ Aucune, au dernier contrôle (2026-09-22T08:40:14.709Z).
 - **an_agenda** — la source a ete mise a jour depuis la derniere verification du registre (2026-09-21T22:40:48Z -> 2026-09-22T04:40:50.000Z)
 - **senat_calendrier** — la source a ete mise a jour depuis la derniere verification du registre (2026-09-22T07:29:03Z -> 2026-09-22T08:29:10.000Z)
 
-## Sources découvertes, non encore intégrées (5)
+## Sources découvertes, non encore intégrées (8)
 
 | source | stade | vérifiée le |
 |---|---|---|
 | sru_rpls_logement_social | VERIFIED | 2026-09-13 (DATA_CATALOG.md, non revérifiée par cette session) |
 | insee_bpe_equipements | DISCOVERED | 2026-09-13 (DATA_CATALOG.md, non revérifiée par cette session) |
-| banatic_epci | DISCOVERED | 2026-09-13 (DATA_CATALOG.md, non revérifiée par cette session) |
+| banatic_epci | VERIFIED | 2026-09-22 (API data.gouv.fr, reelle, en direct) |
 | geo_risques_brgm | DISCOVERED | 2026-09-13 (DATA_CATALOG.md, non revérifiée par cette session) |
 | decp_marches_publics | DISCOVERED | 2026-09-13 (DATA_CATALOG.md, non revérifiée par cette session) |
+| sirene_recherche_entreprises | DISCOVERED | 2026-09-22 (API testee en direct) |
+| hubeau_qualite_eau | VERIFIED | 2026-09-22 (API testee en direct sur Le Blanc-Mesnil, 93007) |
+| res_equipements_sportifs | DISCOVERED | 2026-09-22 (metadonnees data.gouv.fr, en direct) |
 
 ## Couverture territoriale
 
