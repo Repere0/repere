@@ -269,6 +269,21 @@ verif("invariant 3 — le depute est nomme sans etiquette ni comparaison",
   !/groupe politique|majorité|opposition|classement/i.test(avecDepute),
   avecDepute.slice(0, 400).replace(/\n+/g, " / "));
 
+/* DOCTRINE DU VIDE SUR LES TROIS ECHELONS NON PUBLIES — AJOUTE LE 22/09/2026
+ * (mission phase 3.1, shadow build). Verifie a l'ecran sur Bagnolet (ancien
+ * build) que l'intercommunalite, le departement et la region ONT un elu
+ * nomme, alors que mono/ dit explicitement ne pas les publier — voir
+ * MONO_SHADOW_COMPARISON_2026-09.md. Ce n'est pas une regression a corriger
+ * ici, mais l'absence de phrase honnete, elle, EN SERAIT UNE : si ce bloc
+ * disparaissait un jour d'un refactor sans que la donnee soit ajoutee,
+ * l'ecran redeviendrait muet sur ces trois echelons plutot que honnete — la
+ * meme faute que Ville-d'Avray, ailleurs dans ce fichier. Rien ne testait
+ * cette phrase avant aujourd'hui. */
+verif("invariant 5 — l'absence d'elus agglo/departement/region est dite, pas juste omise",
+  /intercommunalité/i.test(avecDepute) && /département/i.test(avecDepute) && /région/i.test(avecDepute)
+  && /ne (nomme|publie) pas encore/i.test(avecDepute),
+  avecDepute.slice(avecDepute.indexOf("Qui d'autre"), avecDepute.indexOf("Qui d'autre") + 400).replace(/\n+/g, " / "));
+
 /* LE PREMIER ECRAN NE PAIE PAS CE FICHIER. Il ne part QUE depuis « Qui decide » :
    la mesure porte sur les adresses reellement demandees depuis l'ouverture. */
 verif("architecture — le fichier des deputes n'est demande qu'une fois, et pas au premier ecran",

@@ -54,3 +54,32 @@ Il ne dit pas que `mono/` est prêt à publier : voir `MONO_MIGRATION_AUDIT.md`
 fil éditorial). Un site qui pèse 50 fois moins mais ne peut pas être publié
 légalement n'est pas, à ce stade, une option — seulement une preuve que le
 poids n'est plus un problème technique non résolu.
+
+## 5. Mesure directe du fichier source, en local (phase 3.1, 22/09/2026)
+
+*Le tableau ci-dessus compare mono/ à la production réelle (Netlify, gzip,
+commit `f07ddba`). Cette section ajoute une troisième mesure, différente :
+`app_repere_v18_20.html` tel qu'il est SUR CE POSTE aujourd'hui — le fichier
+de travail actuel, pas la production — servi localement sans compression
+(`http://localhost:4175`, `performance.getEntriesByType("navigation")`).*
+
+| mesure | valeur | méthode |
+|---|---:|---|
+| `decodedBodySize` / `transferSize` (sans gzip, serveur local) | **17 366 722 o** (identiques : pas de compression sur ce serveur statique minimal) | mesuré dans le navigateur, 22/09/2026 |
+| nombre de requêtes | 1 | idem |
+| `domContentLoaded` / `loadComplete` (réseau local, sans latence) | 650 ms / 652 ms | idem — non comparable à un temps réel sur un réseau mobile |
+
+**Pourquoi ce chiffre (17,37 Mo) diffère du chiffre de production (16,29 Mo
+décodés)** : ce fichier local est plus récent que celui publié — il porte le
+correctif v9 poussé aujourd'hui (`7c7ceac`), jamais encore construit par la
+chaîne réelle. La différence (+1,08 Mo) est cohérente avec les ajouts de
+contenu déjà documentés (circonscriptions, bandeau maquette reformulé), pas
+une anomalie.
+
+**Pourquoi ne pas comparer ce chiffre brut à mono/ directement** : ce
+serveur local ne compresse rien, alors que la production réelle et `mono/`
+sont tous deux mesurés avec gzip. La comparaison qui tient est donc :
+production compressée (6,02 Mo) contre mono/ compressé (135,6 Ko) — le
+tableau du §2 — et ce chiffre local (17,37 Mo, non compressé) sert
+seulement à confirmer que le fichier de travail actuel n'a pas anormalement
+grossi depuis la dernière mesure de production.
