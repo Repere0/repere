@@ -45,6 +45,19 @@ export function adresseCommunesBeta() { return `${BASE_DONNEES}/communes-beta.js
    France entiere et jamais adresse par code de commune ou de departement. Il
    ne part qu'a l'ouverture de « Ou va l'argent ». */
 export function adresseComptesRegions() { return `${BASE_DONNEES}/comptes-regions.json`; }
+/* LE CONSEIL REGIONAL, UN FICHIER PAR REGION — jamais un fichier France
+   entiere (mesure le 22/09/2026 : 148 Ko pour 14 regions contre 17 Ko pour
+   la seule Ile-de-France, voir extract-html.js). Le code de region n'est
+   PAS un code de commune ni un code de departement : deux caracteres qui
+   ne peuvent jamais coincider avec un code INSEE a cinq chiffres, la meme
+   propriete que la garde `adresseFautive` verifie ailleurs. */
+export function adresseElusRegion(code) {
+  const c = String(code);
+  if (!/^\d{2}$/.test(c)) throw new Error("code de region invalide : " + code);
+  const url = `${BASE_DONNEES}/elus-regions/${c}.json`;
+  if (adresseFautive(url)) throw new Error("adresse fautive composee : " + url);
+  return url;
+}
 /* LE CALENDRIER CITOYEN, PILOTE SENAT : un seul fichier, commun a toute la
    France — un agenda parlementaire n'est pas une donnee territoriale, et ne
    porte donc jamais de code de departement ni de commune. */
@@ -242,6 +255,9 @@ export async function chargerCommunesBeta({ delaiMs = 8000 } = {}) {
 }
 export async function chargerComptesRegions({ delaiMs = 8000 } = {}) {
   return chargerSocle("socle:CTR", adresseComptesRegions(), delaiMs);
+}
+export async function chargerElusRegion(code, { delaiMs = 8000 } = {}) {
+  return chargerSocle("reg:" + String(code).toUpperCase(), adresseElusRegion(code), delaiMs);
 }
 export async function chargerCatalogueScrutins({ delaiMs = 8000 } = {}) {
   return chargerSocle("socle:SCR", adresseScrutins(), delaiMs);

@@ -246,6 +246,61 @@ function ecrire(fichier, valeur) {
   return fs.statSync(fichier).size;
 }
 
+/* ELUS D'INTERCOMMUNALITE, DE DEPARTEMENT ET DE REGION — PORTES LE 22/09/2026
+ * (decision produit : option A, mission phase 3.1 suite).
+ *
+ * TRACE DANS LA SOURCE, PAS SUPPOSE. app_repere_v18_20.html (fonctions
+ * rneRangFonction, renderQui, lignes ~3923-4017 et ~6449) fait ceci, et rien
+ * d'autre :
+ *   - AGGLO : `RNE.ecc[insee]` = [index EPCI, ref date, [[prenom,nom,fonction],..]]
+ *     — les DELEGUES QUE CETTE COMMUNE ENVOIE, jamais les delegues des voisins.
+ *     Le premier affiche est le mieux classe PARMI CEUX DE LA COMMUNE — pas le
+ *     president de l'EPCI si ce n'est pas lui qui la represente.
+ *   - DEPARTEMENT : `RNE.dep[dep]` porte TOUT le conseil ; `RNE.depcan[dep]` est
+ *     un tableau PARALLELE (meme index) donnant le canton de chaque ligne.
+ *     `RNE.ccan[insee]` donne le ou les cantons de la commune. Le premier
+ *     affiche est le mieux classe PARMI LES CONSEILLERS DU CANTON DE LA
+ *     COMMUNE — jamais le president du departement, sauf s'il se trouve que
+ *     c'est aussi le conseiller du canton. « Mon canton d'abord » est une
+ *     decision produit deja ecrite dans la source : deux conseillers nommes
+ *     disent plus qu'une quarantaine de noms anonymes.
+ *   - REGION : `RNE.reg[regionCode]` porte tout le conseil, sans decoupage par
+ *     canton (aucun equivalent de canton pour la region dans cette source).
+ *     Le premier affiche est donc le mieux classe DE TOUT LE CONSEIL — dans les
+ *     faits, presque toujours le president, parce que le rang de fonction le
+ *     place en tete.
+ * Le rang qui determine cet ordre est `rneRangFonction` : president=0
+ * (1 si c'est le president de l'organe executif d'une collectivite unique,
+ * cas hors perimetre IDF), vice-president n=100+n, vice=600/700, conseiller
+ * simple=999. Porte ici a l'identique, sans simplification. */
+function rangFonction(lib) {
+  const f = String(lib || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/-/g, " ");
+  const exec = f.indexOf("organe executif") !== -1;
+  if (f.indexOf("president") === 0) return exec ? 1 : 0;
+  const m = /^(\d+)\s*(?:er|ere|eme|e)?\s+vice/.exec(f);
+  if (m) return 100 + parseInt(m[1], 10);
+  if (f.indexOf("vice") !== -1) return exec ? 700 : 600;
+  if (exec) return 800;
+  return 999;
+}
+/* Une ligne RNE = [index prenom, index nom, index fonction]. `dateIdx` est
+   deja resolu (un entier, jamais le bloc brut) par l'appelant : ddep/dreg/ecc
+   melangent une date unique pour toute l'equipe et un tableau par personne,
+   et cette resolution reste au point d'appel comme dans la source. */
+function personneDe(RNE, ligne, dateIdx) {
+  return {
+    nom: [(RNE.p || [])[ligne[0]], (RNE.n || [])[ligne[1]]].filter(Boolean).join(" ") || "Nom non renseigné",
+    fonction: (RNE.f || [])[ligne[2]] || "",
+    debut: (dateIdx != null && dateIdx >= 0 && RNE.d) ? (RNE.d[dateIdx] || null) : null,
+  };
+}
+/* ddep/dreg : un entier (meme date pour toute l'equipe) ou un tableau (une
+   date par personne) — meme lecture que rneDateDe dans la source. */
+function dateDe(bloc, i) {
+  if (bloc == null) return null;
+  return Array.isArray(bloc) ? bloc[i] : bloc;
+}
+
 async function extraire() {
   const { REPERE_RNE: RNE, REPERE_OFGL: OFGL, REPERE_CIRCOS: CIRCOS } = await lireBlocs(ENTREE);
   if (!RNE) { console.error("bloc REPERE_RNE introuvable — ce fichier n'est pas une application Repere."); process.exit(4); }
@@ -276,12 +331,37 @@ async function extraire() {
     const officiel = officiels && officiels.noms[insee];
     if (officiel && officiel !== libelles[insee]) redresses++;
     else if (!officiel) sansLibelleOfficiel.push(insee);
+
+    /* AGGLO — les delegues QUE CETTE COMMUNE envoie a son intercommunalite,
+       jamais ceux d'une commune voisine. Absent pour ~32% des communes IDF
+       de la beta (mesure le 22/09/2026) : la source elle-meme ne les liste
+       pas partout, ce n'est pas un manque de mono/ — la doctrine du vide
+       s'applique donc a l'affichage, pas a l'extraction (voir QuiDecide.jsx). */
+    const ecc = (RNE.ecc || {})[insee];
+    let agglo = null;
+    if (ecc && Array.isArray(ecc[2]) && ecc[2].length) {
+      const dateRef = ecc[1];
+      const delegues = ecc[2]
+        .map(l => personneDe(RNE, l, dateRef))
+        .sort((a, b) => rangFonction(a.fonction) - rangFonction(b.fonction));
+      agglo = { nom: (RNE.e || [])[ecc[0]] || null, delegues };
+    }
+
+    /* CANTON — necessaire pour filtrer le conseil departemental cote client
+       (voir QuiDecide.jsx) sans jamais transmettre le conseil entier par
+       commune : un ou plusieurs codes, jamais un code de commune. */
+    const ccanBrut = (RNE.ccan || {})[insee];
+    const canton = (ccanBrut == null) ? null
+      : (Array.isArray(ccanBrut) ? ccanBrut : [ccanBrut]);
+
     paquets.get(d).communes[insee] = {
       nom: officiel || libelles[insee],
       maire: maire ? { nom: nom(maire[0], maire[1]), fonction: fonction(maire[2]) } : null,
       adjoints: ((RNE.adj || {})[insee] || []).length,
       circo: circos[insee] !== undefined ? circos[insee] : null,
       comptes: communesOfgl[insee] ? communesOfgl[insee].ex : null,
+      agglo,
+      canton,
     };
   }
 
@@ -498,6 +578,44 @@ async function extraire() {
     paquet.comptes_departement = comptesDept[d] ? comptesDept[d].comptes : null;
   }
 
+  /* CONSEIL DEPARTEMENTAL COMPLET — un par departement, fonde dans le paquet
+   * (categorie B : deja telecharge pour le reste du departement, zero
+   * requete de plus — meme raisonnement que comptes_departement). Le
+   * filtrage par canton (« mon canton d'abord ») se fait cote client
+   * (QuiDecide.jsx), avec `canton` deja pose sur chaque commune ci-dessus :
+   * porter cette liste ENTIERE mais UNE SEULE FOIS par departement, jamais
+   * par commune, est ce qui rend ce portage leger (40 conseillers, ~2,8 Ko,
+   * mesure plus bas) plutot que de la dupliquer 39 fois par commune.
+   *
+   * L'ALIAS ALSACIEN. Bas-Rhin (67) et Haut-Rhin (68) n'ont plus de conseil
+   * departemental propre depuis 2021 ; leurs elus sont ranges sous le code
+   * "6AE" (Collectivite europeenne d'Alsace) dans le RNE — pas une deduction,
+   * le code ecrit tel quel dans la source (voir renderQui, meme alias). Hors
+   * perimetre des 8 departements IDF de la beta aujourd'hui, mais porte ici
+   * pour que l'extraction ne mente pas silencieusement si un departement
+   * alsacien entrait un jour dans le decoupage publie. */
+  for (const [d, paquet] of paquets) {
+    const depRne = (d === "67" || d === "68") ? "6AE" : d;
+    const ligne = (RNE.dep || {})[depRne];
+    if (!ligne || !ligne.length) { paquet.conseil_departemental = null; continue; }
+    const dcan = (RNE.depcan || {})[depRne] || [];
+    const ddep = (RNE.ddep || {})[depRne];
+    paquet.conseil_departemental = ligne
+      .map((l, i) => ({ ...personneDe(RNE, l, dateDe(ddep, i)), canton: dcan[i] != null ? dcan[i] : null }))
+      .sort((a, b) => rangFonction(a.fonction) - rangFonction(b.fonction));
+
+    /* NOMS DE CANTONS — seulement ceux que ce departement utilise (son
+       conseil, plus les cantons de ses propres communes), jamais la table
+       nationale entiere : `RNE.cn` est un tableau global, l'embarquer sans
+       filtre republierait la France pour un departement. */
+    const codes = new Set(dcan.filter(c => c != null));
+    for (const c of Object.values(paquet.communes)) {
+      if (c.canton) for (const code of c.canton) codes.add(code);
+    }
+    const cn = RNE.cn || [];
+    paquet.cantons = Object.fromEntries([...codes].map(c => [c, cn[c] || null]));
+  }
+
   const departements = [...paquets.keys()].sort();
   const tailles = {};
   for (const d of departements) {
@@ -537,6 +655,41 @@ async function extraire() {
   });
   console.log("comptes-regions.json   : " + Object.keys(comptesReg).length + " regions, " + octetsComptesRegions + " octets"
     + " (departements : fondus dans chaque paquet, voir plus haut)");
+
+  /* CONSEIL REGIONAL — UN FICHIER PAR REGION, PAS UN SEUL FICHIER FRANCE.
+   *
+   * PREMIERE VERSION MESUREE, PUIS CORRIGEE LE MEME JOUR (meme genre de
+   * mesure qu'au moment de comptes-regions.json, voir plus haut) : un seul
+   * fichier pour les 14 regions qui ont des elus dans cette source pesait
+   * 147 363 o — alors qu'un departement de la beta n'a jamais besoin que
+   * d'UNE region. mono/ extrait deja les 104 departements de France (pas
+   * seulement les 8 de la beta) : `index.departements` porte donc 14 codes
+   * de region differents, et republier les 13 non pertinentes a chaque
+   * ouverture de « Qui decide » aurait ete exactement le defaut que « ne pas
+   * reembarquer la France » interdit. Ile-de-France seule (la region de la
+   * beta) pese 16,8 Ko — c'est elle, et elle seule, qui part au reseau pour
+   * une commune d'Ile-de-France. */
+  const codesRegionUtilises = new Set(
+    (index.departements || []).map(d => d.region_code).filter(Boolean));
+  let nbRegionsEcrites = 0, totalElusRegions = 0, totalOctetsRegions = 0;
+  for (const code of codesRegionUtilises) {
+    const ligne = (RNE.reg || {})[code];
+    if (!ligne || !ligne.length) continue;
+    const dreg = (RNE.dreg || {})[code];
+    const elus = ligne
+      .map((l, i) => personneDe(RNE, l, dateDe(dreg, i)))
+      .sort((a, b) => rangFonction(a.fonction) - rangFonction(b.fonction));
+    const octets = ecrire(path.join(SORTIE, "elus-regions", code + ".json"), {
+      v: 1,
+      source: index.sources.elus,
+      elus,
+    });
+    nbRegionsEcrites++; totalElusRegions += elus.length; totalOctetsRegions += octets;
+  }
+  console.log("elus-regions/{code}.json : " + nbRegionsEcrites + " fichier(s), "
+    + totalElusRegions + " elu(s) au total, " + totalOctetsRegions + " octets au total"
+    + " (Ile-de-France seule : " + (fs.existsSync(path.join(SORTIE, "elus-regions", "11.json"))
+      ? fs.statSync(path.join(SORTIE, "elus-regions", "11.json")).size + " octets" : "absente") + ")");
 
   /* LE FIL EDITORIAL — BLOCKER #3. Un seul petit fichier pour la France
      entiere, publie tel que la redaction l'a valide, jamais regenere ici. */

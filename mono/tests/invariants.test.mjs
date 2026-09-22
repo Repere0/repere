@@ -249,12 +249,20 @@ test("invariant 4 — aucune donnée n'est servie sans source déclarée", () =>
      fichier pour la France entiere. Sa source « evenements » est exigee plus
      bas — elle declare un GESTE (la redaction relit et valide), pas un
      producteur gouvernemental unique : chaque fait porte en plus sa propre
-     source, verifiee ligne par ligne dans CeQuiADecide.jsx. */
+     source, verifiee ligne par ligne dans CeQuiADecide.jsx.
+     La neuvieme, /elus-regions/{code}.json, est ajoutee le 22/09/2026
+     (decision produit option A, mission phase 3.1 suite) : le conseil
+     regional, UN FICHIER PAR REGION plutot qu'un fichier France entiere —
+     mesure a 148 Ko pour 14 regions contre 17 Ko pour la seule Ile-de-France
+     avant cette scission. Sa source reste « elus », deja exigee ci-dessous :
+     ce sont les memes donnees RNE que le maire et les adjoints, seulement a
+     un echelon de plus. */
   const client = lire("packages/data-utils/src/client.js");
   const composees = [...client.matchAll(/\$\{BASE_DONNEES\}(\/[A-Za-z0-9_${}./-]*)/g)].map(m => m[1]);
   assert.deepEqual([...new Set(composees)].sort(),
     ["/calendrier-senat.json", "/communes-beta.json", "/comptes-regions.json", "/departments/${d}.json",
-     "/deputes.json", "/evenements.json", "/index.json", "/projets/${d}.json", "/scrutins.json", "/scrutins/${d}.json"],
+     "/deputes.json", "/elus-regions/${c}.json", "/evenements.json", "/index.json",
+     "/projets/${d}.json", "/scrutins.json", "/scrutins/${d}.json"],
     "client.js compose une adresse de donnees inattendue : " + composees.join(", "));
   const sources = existe("data/index.json") ? (JSON.parse(lire("data/index.json")).sources || {}) : {};
   for (const attendue of ["elus", "comptes", "circonscriptions", "deputes", "scrutins", "communes"]) {

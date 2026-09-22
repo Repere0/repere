@@ -269,20 +269,47 @@ verif("invariant 3 — le depute est nomme sans etiquette ni comparaison",
   !/groupe politique|majorité|opposition|classement/i.test(avecDepute),
   avecDepute.slice(0, 400).replace(/\n+/g, " / "));
 
-/* DOCTRINE DU VIDE SUR LES TROIS ECHELONS NON PUBLIES — AJOUTE LE 22/09/2026
- * (mission phase 3.1, shadow build). Verifie a l'ecran sur Bagnolet (ancien
- * build) que l'intercommunalite, le departement et la region ONT un elu
- * nomme, alors que mono/ dit explicitement ne pas les publier — voir
- * MONO_SHADOW_COMPARISON_2026-09.md. Ce n'est pas une regression a corriger
- * ici, mais l'absence de phrase honnete, elle, EN SERAIT UNE : si ce bloc
- * disparaissait un jour d'un refactor sans que la donnee soit ajoutee,
- * l'ecran redeviendrait muet sur ces trois echelons plutot que honnete — la
- * meme faute que Ville-d'Avray, ailleurs dans ce fichier. Rien ne testait
- * cette phrase avant aujourd'hui. */
-verif("invariant 5 — l'absence d'elus agglo/departement/region est dite, pas juste omise",
-  /intercommunalité/i.test(avecDepute) && /département/i.test(avecDepute) && /région/i.test(avecDepute)
-  && /ne (nomme|publie) pas encore/i.test(avecDepute),
-  avecDepute.slice(avecDepute.indexOf("Qui d'autre"), avecDepute.indexOf("Qui d'autre") + 400).replace(/\n+/g, " / "));
+/* AGGLO, DEPARTEMENT, REGION — PORTES LE 22/09/2026 (decision produit,
+ * option A, mission phase 3.1 suite). Le 3 aout ce meme controle affirmait
+ * l'inverse (« ne nomme pas encore ») ; le shadow build sur Bagnolet a
+ * prouve que l'ancien site les nomme bien a partir de la meme RNE deja
+ * dans le pipeline mono/ (voir MONO_SHADOW_COMPARISON_2026-09.md). Verifie
+ * ici sur Ustaritz, dont les trois noms reels ont ete relus directement
+ * dans data/departments/64.json et data/elus-regions/75.json avant
+ * d'ecrire ce controle — jamais devines. */
+await page.waitForTimeout(900);   // chargerElusRegion() est asynchrone
+const avecElus = await page.evaluate(() => document.body.innerText);
+verif("elus locaux — l'intercommunalite d'Ustaritz est nommee (delegue de la commune)",
+  /Ca Du Pays Basque/.test(avecElus) && /Jérémy Lucien MANGUIN|Bruno CENDRES|Hélène MARTY-CHALEON/.test(avecElus),
+  avecElus.slice(avecElus.indexOf("intercommunalité"), avecElus.indexOf("intercommunalité") + 300).replace(/\n+/g, " / "));
+verif("elus locaux — le conseiller departemental DU CANTON d'Ustaritz est nomme, pas un autre canton",
+  /Philippe ECHEVERRIA|Bénédicte LUBERRIAGA/.test(avecElus),
+  avecElus.slice(avecElus.indexOf("département"), avecElus.indexOf("département") + 300).replace(/\n+/g, " / "));
+verif("elus locaux — le conseil regional est nomme (Alain Rousset, president, en tete par son rang)",
+  /Alain ROUSSET/.test(avecElus) && /Président du conseil régional/i.test(avecElus),
+  avecElus.slice(avecElus.indexOf("région"), avecElus.indexOf("région") + 300).replace(/\n+/g, " / "));
+verif("invariant 3 — les elus locaux sont nommes sans etiquette ni comparaison",
+  !/groupe politique|majorité|opposition|classement|mieux que/i.test(avecElus.slice(avecElus.indexOf("intercommunalité"))),
+  "");
+
+/* DOCTRINE DU VIDE — L'INTERCOMMUNALITE MANQUE POUR ENVIRON UN TIERS DES
+ * COMMUNES DE LA BETA (mesure le 22/09/2026, extract-html.js). Amillis
+ * (77002) est un cas reel, pas fabrique : `data/departments/77.json` ne
+ * porte aucun delegue pour elle. Si l'ecran restait muet plutot que de le
+ * dire, ce serait la meme faute que Ville-d'Avray, ailleurs dans ce fichier. */
+const pageAgglo = await (await nav.newContext()).newPage();
+await pageAgglo.goto(base, { waitUntil: "networkidle" });
+await pageAgglo.getByLabel(/Où habitez-vous/).fill("Amillis");
+await pageAgglo.waitForTimeout(300);
+await pageAgglo.getByRole("button", { name: /^Amillis\b/ }).click();
+await pageAgglo.waitForTimeout(1200);
+await pageAgglo.getByRole("button", { name: "Qui décide" }).click();
+await pageAgglo.waitForTimeout(700);
+const texteAmillis = await pageAgglo.evaluate(() => document.body.innerText);
+verif("invariant 5 — l'absence de delegue d'agglo est dite, pas juste omise",
+  /ne porte pas de délégué pour cette commune/i.test(texteAmillis),
+  texteAmillis.slice(texteAmillis.indexOf("intercommunalité"), texteAmillis.indexOf("intercommunalité") + 300).replace(/\n+/g, " / "));
+await pageAgglo.context().close();
 
 /* LE PREMIER ECRAN NE PAIE PAS CE FICHIER. Il ne part QUE depuis « Qui decide » :
    la mesure porte sur les adresses reellement demandees depuis l'ouverture. */
@@ -406,7 +433,9 @@ const magasins = await page.evaluate(async () => {
 verif("invariant 2 — un seul magasin, et il ne porte que des paquets departementaux",
   !magasins.inconnu
   && (magasins.magasins || []).every(m => m === "departements")
-  && (magasins.cles || []).every(c => /^(dep|vote|socle):[0-9A-Z]{1,3}$/.test(c)),
+  /* "reg" rejoint dep/vote/socle le 22/09/2026 : le conseil regional, range
+     par region (deux chiffres), meme garde que store.js. */
+  && (magasins.cles || []).every(c => /^(dep|vote|reg|socle):[0-9A-Z]{1,3}$/.test(c)),
   JSON.stringify(magasins));
 
 console.log("\n--- l'argent -------------------------------------------------");

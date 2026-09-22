@@ -3,7 +3,8 @@ import { Carte, Vide, Source, Chargement, dateFr, Mot } from "@repere/ui";
 import { Pile } from "@repere/ui/amicro";
 import { LigneVote, positionSur, positionsFiables, REFUS_APPARIEMENT } from "../lib/votes.jsx";
 import {
-  chargerDeputes, chargerCatalogueScrutins, chargerVotes, entrer, revenir, ETATS,
+  chargerDeputes, chargerCatalogueScrutins, chargerVotes, chargerElusRegion,
+  entrer, revenir, ETATS,
 } from "@repere/data-utils";
 import { COMPETENCES } from "../lib/competences.js";
 
@@ -37,20 +38,6 @@ const AN_VOTES_URL = "https://data.assemblee-nationale.fr/travaux-parlementaires
  * COMPETENCES VIT DANS lib/competences.js DEPUIS LE 19/09/2026 : la direction
  * "Territoire" dit la meme phrase, jamais une deuxieme formulation. */
 const ORDRE_DISTANCE = "Rangés du plus proche de chez vous au plus lointain. Ce n'est pas un ordre d'importance : c'est un ordre de distance.";
-
-/* Une ligne d'echelon : sa pastille de couleur, son nom, ce qu'il decide. La
-   pastille reprend le jeton gele de l'echelon — aucune autre couleur n'entre. */
-function LigneEchelon({ echelon, nom, corps, note }) {
-  return (
-    <div className="ligne echelon">
-      <div className="echelon-h">
-        <span className="pastille" style={{ background: `var(--e-${echelon})` }} aria-hidden="true" />
-        <b>{nom}</b>
-      </div>
-      <div className="ligne-note">{corps}{note ? " " + note : ""}</div>
-    </div>
-  );
-}
 
 function ordinal(n) { return n === 1 ? "1re" : n + "e"; }
 
@@ -356,6 +343,155 @@ function Depute({ dep, circo }) {
   );
 }
 
+/* AGGLO, DEPARTEMENT, REGION — PORTES LE 22/09/2026 (decision produit,
+ * option A, mission phase 3.1 suite). L'ancien site les nommait a partir
+ * du Repertoire national des elus ; mono/ disait ne pas les publier encore.
+ * Trace complete du mecanisme porte (jamais invente) dans extract-html.js,
+ * au moment ou `agglo`, `canton`, `conseil_departemental` et
+ * `elus-regions/{code}.json` sont ecrits. */
+
+/* Une ligne d'elu, meme gabarit partout : nom, fonction, date de debut. */
+function LigneElu({ e }) {
+  return (
+    <div className="ligne">
+      <div className="ligne-h"><span>{e.fonction || "Fonction non précisée"}</span><b>{e.nom}</b></div>
+      <div className="ligne-note">
+        Mandat ouvert{e.debut ? " depuis le " + dateFr(e.debut) : ""}. Ni étiquette politique,
+        ni parcours : le Répertoire national des élus n'en porte pas.
+      </div>
+    </div>
+  );
+}
+
+/* AGGLO — les delegues QUE CETTE COMMUNE envoie a son intercommunalite.
+ * Absent pour environ un tiers des communes de la beta (mesure le
+ * 22/09/2026, extract-html.js) : la source RNE elle-meme ne les liste pas
+ * partout — ce n'est pas un manque de Repere, et la phrase le dit. */
+function Agglo({ c, src }) {
+  if (!c.agglo || !c.agglo.delegues || !c.agglo.delegues.length) {
+    return (
+      <Vide titre="Le Répertoire national des élus ne porte pas de délégué pour cette commune à son intercommunalité."
+        corps="C'est la source qui est incomplète, pas la commune qui n'en a pas : cette édition du Répertoire ne liste des conseillers communautaires que pour une partie des communes de France."
+        lien={{ texte: "Répertoire national des élus", url: RNE_URL }} />
+    );
+  }
+  const [tete, ...reste] = c.agglo.delegues;
+  return (
+    <>
+      {/* LE NOM DE L'EPCI, RECOPIE TEL QUE LA SOURCE L'ECRIT — principe P15,
+          deja applique aux intitules de projets ailleurs dans le produit
+          (CeQuiADecide.jsx) : le RNE le capitalise de facon inhabituelle
+          (« Ca Du Pays Basque »), et deviner la bonne casse serait ecrire
+          un nom que la source n'a pas publie ainsi. Trouve en testant : ce
+          nom manquait purement et simplement avant ce correctif. */}
+      {c.agglo.nom ? <p className="tx-note tx-intro">{c.nom} envoie {c.agglo.delegues.length} élu{c.agglo.delegues.length > 1 ? "s" : ""} au conseil de {c.agglo.nom}.</p> : null}
+      <LigneElu e={tete} />
+      {reste.length ? (
+        <details className="repli">
+          <summary><span>{reste.length} autre{reste.length > 1 ? "s" : ""} délégué{reste.length > 1 ? "s" : ""} de {c.nom}</span></summary>
+          <div className="repli-in">{reste.map((e, i) => <LigneElu key={i} e={e} />)}</div>
+        </details>
+      ) : null}
+      {src ? <Source producteur={src.producteur} licence={src.licence} maj={src.maj} url={RNE_URL} /> : null}
+    </>
+  );
+}
+
+/* DEPARTEMENT — « mon canton d'abord », exactement la decision produit deja
+ * ecrite dans l'ancien site : le conseiller de VOTRE canton passe avant le
+ * president du departement, sauf s'il n'y a pas de lien de canton pour
+ * cette commune (alors le mieux classe de tout le conseil, en pratique le
+ * president, prend sa place). */
+function ConseilDepartemental({ paquet, c, src }) {
+  const conseil = paquet.conseil_departemental;
+  if (!conseil || !conseil.length) {
+    return (
+      <Vide titre="Le Répertoire national des élus ne porte pas de conseil départemental pour ce territoire."
+        corps="C'est la source qui est incomplète, pas le département qui n'en a pas."
+        lien={{ texte: "Répertoire national des élus", url: RNE_URL }} />
+    );
+  }
+  const mesCantons = c.canton || [];
+  const duCanton = mesCantons.length ? conseil.filter(e => mesCantons.includes(e.canton)) : [];
+  const cantonNom = duCanton.length ? (paquet.cantons || {})[duCanton[0].canton] : null;
+  const tete = duCanton.length ? duCanton[0] : conseil[0];
+  const propreCanton = duCanton.slice(1); // les autres elus DU MEME canton, jamais caches derriere "les autres du departement"
+  const resteDept = conseil.filter(e => e !== tete && propreCanton.indexOf(e) === -1);
+  return (
+    <>
+      {duCanton.length ? (
+        <p className="tx-note tx-intro">
+          Vos conseillers départementaux ne sont pas élus sur tout le département : ils le sont
+          sur le canton{cantonNom ? " de " + cantonNom : ""}, avec vos voisins.
+        </p>
+      ) : null}
+      <LigneElu e={tete} />
+      {propreCanton.length ? (
+        <details className="repli">
+          <summary><span>{propreCanton.length} autre{propreCanton.length > 1 ? "s" : ""} conseiller{propreCanton.length > 1 ? "s" : ""} du même canton</span></summary>
+          <div className="repli-in">{propreCanton.map((e, i) => <LigneElu key={i} e={e} />)}</div>
+        </details>
+      ) : null}
+      {resteDept.length ? (
+        <details className="repli">
+          <summary><span>{resteDept.length} autre{resteDept.length > 1 ? "s" : ""} du conseil départemental</span></summary>
+          <div className="repli-in">{resteDept.map((e, i) => <LigneElu key={i} e={e} />)}</div>
+        </details>
+      ) : null}
+      {src ? <Source producteur={src.producteur} licence={src.licence} maj={src.maj} url={RNE_URL} /> : null}
+    </>
+  );
+}
+
+/* REGION — aucun decoupage par canton dans la source : le mieux classe de
+ * tout le conseil regional est affiche, et c'est en pratique presque
+ * toujours le president (le rang de fonction le place en tete). Un seul
+ * petit fichier par region (jamais la France entiere, voir client.js). */
+function ConseilRegional({ index, paquet, src }) {
+  const [etat, setEtat] = useState(ETATS.EN_COURS);
+  const [conseil, setConseil] = useState(null);
+  const territoireDept = index && paquet ? index.departements.find(d => d.code === paquet.d) : null;
+  const codeRegion = territoireDept && territoireDept.region_code;
+
+  useEffect(() => {
+    if (!codeRegion) { setEtat(ETATS.INTROUVABLE); return undefined; }
+    let vivant = true;
+    setEtat(ETATS.EN_COURS);
+    chargerElusRegion(codeRegion).then(r => {
+      if (!vivant) return;
+      setEtat(r.etat);
+      setConseil(r.donnees && r.donnees.elus);
+    });
+    return () => { vivant = false; };
+  }, [codeRegion]);
+
+  if (!codeRegion) {
+    return <Vide titre="Aucun conseil régional n'est publié pour ce département."
+      corps="Le Répertoire national des élus ne porte pas de ligne « région » pour ce territoire — ce n'est pas un manque de Repère." />;
+  }
+  if (etat === ETATS.EN_COURS) {
+    return <Chargement titre="Recherche du conseil régional." corps="Un seul petit fichier pour votre région, une seule fois." />;
+  }
+  if (etat !== ETATS.SERVI || !conseil || !conseil.length) {
+    return <Vide titre="Le conseil régional n'est pas arrivé jusqu'à cet appareil."
+      corps="Les échelons ci-dessus, eux, sont complets."
+      lien={{ texte: "Répertoire national des élus", url: RNE_URL }} />;
+  }
+  const [tete, ...reste] = conseil;
+  return (
+    <>
+      <LigneElu e={tete} />
+      {reste.length ? (
+        <details className="repli">
+          <summary><span>{reste.length} autres du conseil régional</span></summary>
+          <div className="repli-in">{reste.map((e, i) => <LigneElu key={i} e={e} />)}</div>
+        </details>
+      ) : null}
+      {src ? <Source producteur={src.producteur} licence={src.licence} maj={src.maj} url={RNE_URL} /> : null}
+    </>
+  );
+}
+
 export default function QuiDecide({ paquet, index, commune }) {
   const c = commune ? paquet.communes[commune] : null;
   if (!c) return null;
@@ -439,23 +575,31 @@ export default function QuiDecide({ paquet, index, commune }) {
         )}
       </Carte>
 
-      {/* LES ECHELONS QUE REPERE NE PUBLIE PAS ENCORE. On ne nomme personne — les
-          donnees ne sont pas la — mais on dit ce que ces echelons decident. Se
-          taire laisserait croire qu'entre la commune et l'Assemblee il n'y a
-          rien, alors que c'est la que se decident les transports, les colleges
-          et les lycees. Une absence se dit, elle ne s'escamote pas. */}
-      <Carte echelon="dept" titre="Qui d'autre décide pour vous"
-        sousTitre="Trois échelons que Repère ne publie pas encore, et ce qu'ils décident">
-        <p className="tx-note tx-intro">{ORDRE_DISTANCE}</p>
-        <LigneEchelon echelon="agglo" nom={<>Votre <Mot cle="intercommunalité">intercommunalité</Mot></>} corps={COMPETENCES.agglo.charAt(0).toUpperCase() + COMPETENCES.agglo.slice(1) + "."}
-          note="Vous ne l'élisez pas directement : ce sont les conseillers municipaux qui y siègent." />
-        <LigneEchelon echelon="dept" nom={<>Votre <Mot cle="conseil départemental">département</Mot></>} corps={COMPETENCES.dept.charAt(0).toUpperCase() + COMPETENCES.dept.slice(1) + "."} />
-        <LigneEchelon echelon="region" nom={<>Votre <Mot cle="conseil régional">région</Mot></>} corps={COMPETENCES.region.charAt(0).toUpperCase() + COMPETENCES.region.slice(1) + "."} />
-        <p className="tx-note">
-          Repère ne nomme pas encore les élus de ces trois échelons : les fichiers officiels
-          qui les portent ne sont pas publiés ici. Ce qu'ils décident, en revanche, ne dépend
-          d'aucune donnée — c'est la loi qui le fixe.
-        </p>
+      {/* QUI D'AUTRE DECIDE POUR VOUS — PORTE LE 22/09/2026 (option A). Trois
+          cartes, memes principes que le reste de l'ecran : celui qui
+          represente VOTRE commune ou canton en tete, ce que l'echelon
+          decide toujours affiche meme quand personne n'est nomme, et une
+          absence dite plutot que devinee quand la source ne porte pas la
+          donnee (l'intercommunalite, en particulier, manque a la source
+          pour une commune sur trois de la beta). */}
+      <p className="tx-note tx-intro">{ORDRE_DISTANCE}</p>
+
+      <Carte echelon="agglo" titre={<>Votre <Mot cle="intercommunalité">intercommunalité</Mot></>}
+        sousTitre={COMPETENCES.agglo.charAt(0).toUpperCase() + COMPETENCES.agglo.slice(1) + ". Vous ne l'élisez pas directement : ce sont les conseillers municipaux qui y siègent."}
+        tag={c.agglo ? "Donnée officielle" : undefined}>
+        <Agglo c={c} src={src} />
+      </Carte>
+
+      <Carte echelon="dept" titre={<>Votre <Mot cle="conseil départemental">département</Mot></>}
+        sousTitre={COMPETENCES.dept.charAt(0).toUpperCase() + COMPETENCES.dept.slice(1) + "."}
+        tag={paquet.conseil_departemental ? "Donnée officielle" : undefined}>
+        <ConseilDepartemental paquet={paquet} c={c} src={src} />
+      </Carte>
+
+      <Carte echelon="region" titre={<>Votre <Mot cle="conseil régional">région</Mot></>}
+        sousTitre={COMPETENCES.region.charAt(0).toUpperCase() + COMPETENCES.region.slice(1) + "."}
+        tag="Donnée officielle">
+        <ConseilRegional index={index} paquet={paquet} src={src} />
       </Carte>
     </Pile>
   );
