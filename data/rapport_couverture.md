@@ -1,9 +1,9 @@
 # Repère — rapport de couverture des données
 
-*Généré le 2026-09-22T07:59:30.987Z. Chaque chiffre vient d'un fichier mesuré, jamais d'une estimation.*
+*Généré le 2026-09-22T08:32:41.078Z. Chaque chiffre vient d'un fichier mesuré, jamais d'une estimation.*
 
 ## Territoire cible
-Île-de-France, 75, 77, 78, 91, 92, 93, 94, 95 — 1262 communes de référence (`mono/data/communes-beta.json`).
+Île-de-France, 75, 77, 78, 91, 92, 93, 94, 95 — 1266 communes de référence (`mono/data/communes-beta.json`).
 
 ## Sources actives (10)
 
@@ -11,22 +11,23 @@
 |---|---|---|---|---|
 | rne | Ministere de l'Interieur (DGCL) | elus | 2026-08-11 | 2026-08-11 |
 | ofgl_comptes | Observatoire des finances et de la gestion publique locales (OFGL) | finances | 2026-07-29 | 2026-07-29 |
-| an_agenda | Assemblee nationale | calendrier | 2026-09-21T22:40:48.000Z | jamais |
+| an_agenda | Assemblee nationale | calendrier | 2026-09-22T04:40:50.000Z | jamais |
 | an_amo30 | Assemblee nationale | elus | 2026-09-22T00:34:42.000Z | 2026-08-26 |
 | an_scrutins | Assemblee nationale | votes | 2026-09-22T04:25:24.000Z | 2026-08-26 |
 | dgcl_projets_investissement | DGCL | decisions | 2026-07-24T14:20:21.000Z | jamais |
-| senat_calendrier | Senat | calendrier | 2026-09-22T07:29:03.000Z | 2026-09-22 |
+| senat_calendrier | Senat | calendrier | 2026-09-22T08:29:10.000Z | 2026-09-22 |
 | circos_ministere | Ministere de l'Interieur | referentiel_territorial | 2017-04-11T12:11:28.000Z | jamais |
 | circos_bureaux_vote | tiers, derive de resultats officiels | referentiel_territorial | 2024-06-12T13:39:14.000Z | jamais |
 | insee_cog_noms_communes | INSEE, republie par Etalab / DINUM | referentiel_territorial | 2026-09-13 | 2026-09-13 |
 
 ## Sources en erreur (0)
 
-Aucune, au dernier contrôle (2026-09-22T07:57:57.090Z).
+Aucune, au dernier contrôle (2026-09-22T08:30:50.689Z).
 
-## Sources modifiées depuis le registre (0)
+## Sources modifiées depuis le registre (2)
 
-Aucune source n'a changé depuis la dernière vérification enregistrée.
+- **an_agenda** — la source a ete mise a jour depuis la derniere verification du registre (2026-09-21T22:40:48Z -> 2026-09-22T04:40:50.000Z)
+- **senat_calendrier** — la source a ete mise a jour depuis la derniere verification du registre (2026-09-22T07:29:03Z -> 2026-09-22T08:29:10.000Z)
 
 ## Sources découvertes, non encore intégrées (5)
 
@@ -42,9 +43,11 @@ Aucune source n'a changé depuis la dernière vérification enregistrée.
 
 | source | trouvées | attendues | taux |
 |---|---:|---:|---:|
-| rne | 1262 | 1262 | 100% |
-| circos_ministere | 1262 | 1262 | 100% |
-| ofgl_comptes | 1262 | 1262 | 100% |
+| rne | 1262 | 1266 | 99.7% |
+| circos_ministere | 1262 | 1266 | 99.7% |
+| ofgl_comptes | 1262 | 1266 | 99.7% |
+
+**Communes documentées comme manquantes** (absence expliquée : le Répertoire national des élus n'a aucune ligne pour ces communes, ce n'est pas un défaut de Repère) : Barbey, Lissy, Ville-d'Avray, Villecresnes.
 
 **Homonymes détectés** (deux communes IDF portant le même nom, jamais rapprochées par le nom seul dans le produit) : Blandy, Marolles-en-Brie, Mondreville, Saint-Martin-des-Champs.
 

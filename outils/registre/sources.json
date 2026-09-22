@@ -32,7 +32,7 @@
       "taille_verifiee_le": "2026-09-22",
       "nb_lignes_observe": null,
       "tests_disponibles": ["mono/tests/invariants.test.mjs (structure des donnees extraites)"],
-      "notes": "Risque connu et documente : aucune reingestion automatique. Un mandat qui change (deces, demission, elections) ne se voit qu'a la prochaine injection manuelle. Ne pas publier de fiche nominative indexee sans reingestion (regle deja ecrite dans CONTEXTE_PROJET.md section 12).",
+      "notes": "Risque connu et documente : aucune reingestion automatique. Un mandat qui change (deces, demission, elections) ne se voit qu'a la prochaine injection manuelle. Ne pas publier de fiche nominative indexee sans reingestion (regle deja ecrite dans CONTEXTE_PROJET.md section 12). En IDF specifiquement, 4 communes sur 1266 n'ont AUCUNE ligne dans ce fichier (Ville-d'Avray 92077, Barbey 77021, Lissy 77253, Villecresnes 94075) — corrige le 22/09/2026 pour que ces communes restent trouvables dans la recherche avec une phrase honnete plutot que 'rien ne correspond'.",
       "provenance": "primaire"
     },
     {
@@ -55,14 +55,14 @@
       "methode_collecte": "MANUELLE — meme situation que le RNE : bloc figé (patch_17_argent.py, patch_20_decoupage_ofgl.py), aucun ingesteur automatique. Repertorie dans collecte.py sous SOURCES_LOURDES, jamais active (poids annonce 3,9 Go).",
       "identifiants_territoriaux": "code_insee",
       "couverture_attendue": "34875 communes + 101 departements + 17 regions",
-      "couverture_observee": "100% sur les 1262 communes IDF, mesure anterieure (DATA_CATALOG.md, 13/09/2026) — non remesuree aujourd'hui",
+      "couverture_observee": "1262/1266 communes IDF (99,7%), mesure du 22/09/2026 (outils/registre/couverture.mjs) — le denominateur 1262 utilise avant cette date etait lui-meme faux, voir notes",
       "statut_cycle": "READY_FOR_PRODUCT",
       "version_schema": "non verifiee",
       "hash": null,
       "taille_observee_octets": null,
       "nb_lignes_observe": null,
       "tests_disponibles": ["mono/tests/invariants.test.mjs (zero publie vs absence)"],
-      "notes": "Le site data.ofgl.fr repond HTTP 200 aujourd'hui (verifie le 22/09/2026), mais c'est la page d'accueil du portail, pas un point d'entree automatisable identifie. Regle V-1 deja codee dans extract-html.js : une colonne a >=95% de valeurs identiques est requalifiee en absence structurelle plutot qu'en zero (trouve : exercice 2021 poste 4, frais de personnel).",
+      "notes": "Le site data.ofgl.fr repond HTTP 200 aujourd'hui (verifie le 22/09/2026), mais c'est la page d'accueil du portail, pas un point d'entree automatisable identifie. Regle V-1 deja codee dans extract-html.js : une colonne a >=95% de valeurs identiques est requalifiee en absence structurelle plutot qu'en zero (trouve : exercice 2021 poste 4, frais de personnel). Les 4 communes manquantes (Ville-d'Avray, Barbey, Lissy, Villecresnes) le sont parce qu'elles sont absentes du RNE lui-meme, donc de tout `paquet.communes` — pas une limite propre a l'OFGL.",
       "provenance": "primaire"
     },
     {

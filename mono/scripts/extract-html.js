@@ -768,11 +768,28 @@ async function extraire() {
   let octetsBeta = 0;
   if (BETA.length) {
     const communesBeta = {};
+    /* MESURE DU 22/09/2026 : geo.api.gouv.fr donne 1266 communes pour les huit
+     * departements de la beta ; ce fichier n'en portait que 1262. Les 4
+     * manquantes (Ville-d'Avray, Barbey, Lissy, Villecresnes) sont exactement
+     * les 4 dejA nommees par `paquet.manquantes` plus haut — la doctrine du
+     * 16/09/2026 qui distingue "absente du Repertoire des elus" de "n'existe
+     * pas". Elle protegeait deja la recherche APRES le choix d'un departement
+     * (ChoixCommune, App.jsx) ; elle ne protegeait pas encore CETTE recherche,
+     * la premiere que tape un lecteur. Tapee en direct : "Ville-d'Avray" sur
+     * le premier ecran repondait "Rien ne correspond... Hors d'Ile-de-France,
+     * cherchez d'abord votre departement" — une phrase fausse pour une
+     * habitante d'Ile-de-France. Meme donnee, meme phrase honnete desormais
+     * aux deux endroits — pas une deuxieme regle qui pourrait diverger. */
+    const manquantesBeta = {};
     for (const dep of BETA) {
       const f = path.join(SORTIE, "departments", dep + ".json");
       if (!fs.existsSync(f)) { console.warn(`::warning::departement ${dep} de la beta absent`); continue; }
-      for (const [insee, c] of Object.entries(JSON.parse(fs.readFileSync(f, "utf8")).communes)) {
+      const paquetDep = JSON.parse(fs.readFileSync(f, "utf8"));
+      for (const [insee, c] of Object.entries(paquetDep.communes)) {
         communesBeta[insee] = c.nom;
+      }
+      for (const [insee, nomOff] of Object.entries(paquetDep.manquantes || {})) {
+        manquantesBeta[insee] = nomOff;
       }
     }
     octetsBeta = ecrire(path.join(SORTIE, "communes-beta.json"), {
@@ -782,6 +799,7 @@ async function extraire() {
       departements: BETA,
       source: index.sources.communes || null,
       communes: communesBeta,
+      manquantes: manquantesBeta,
     });
 
     /* CONTROLE INDEPENDANT : on relit le fichier ecrit et on refait le trajet
@@ -812,7 +830,11 @@ async function extraire() {
       }
     }
     console.log("index de la beta      : " + Math.round(octetsBeta / 1024) + " Ko, "
-      + codes.length + " communes sur " + BETA.length + " departements");
+      + codes.length + " communes sur " + BETA.length + " departements"
+      + (Object.keys(manquantesBeta).length
+         ? " (+ " + Object.keys(manquantesBeta).length + " nommees comme manquantes : "
+           + Object.values(manquantesBeta).join(", ") + ")"
+         : ""));
   }
 
   const sansNom = index.departements.filter(d => !d.nom).map(d => d.code);

@@ -86,6 +86,7 @@ function main() {
     sources_nouvelles_non_integrees: nouvelles,
     sources_modifiees_depuis_le_registre: modifiees,
     couverture_territoriale: couverture ? couverture.sources : "non mesuree",
+    communes_manquantes_documentees: couverture ? couverture.communes_manquantes_documentees : [],
     homonymes_detectes: couverture ? couverture.homonymes : [],
     donnees_disponibles_par_domaine: domaines,
   };
@@ -145,6 +146,12 @@ function main() {
     md.push("|---|---:|---:|---:|");
     for (const [id, m] of Object.entries(couverture.sources)) {
       md.push("| " + id + " | " + m.trouvees + " | " + m.attendues + " | " + m.taux_couverture + "% |");
+    }
+    if (couverture.communes_manquantes_documentees.length) {
+      md.push("");
+      md.push("**Communes documentées comme manquantes** (absence expliquée : le Répertoire "
+        + "national des élus n'a aucune ligne pour ces communes, ce n'est pas un défaut de "
+        + "Repère) : " + couverture.communes_manquantes_documentees.map(c => c.nom).join(", ") + ".");
     }
     if (couverture.homonymes.length) {
       md.push("");

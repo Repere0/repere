@@ -1,5 +1,5 @@
 {
- "genere_le": "2026-09-22T07:59:30.987Z",
+ "genere_le": "2026-09-22T08:32:41.078Z",
  "territoire_cible": {
   "departements": [
    "75",
@@ -11,7 +11,7 @@
    "94",
    "95"
   ],
-  "communes_attendues": 1262,
+  "communes_attendues": 1266,
   "reference": "mono/data/communes-beta.json"
  },
  "sources_actives": [
@@ -38,7 +38,7 @@
    "nom": "Agenda de l'Assemblee nationale (seances, commissions, auditions)",
    "producteur": "Assemblee nationale",
    "categorie": "calendrier",
-   "fraicheur_source": "2026-09-21T22:40:48.000Z",
+   "fraicheur_source": "2026-09-22T04:40:50.000Z",
    "derniere_collecte_repere": "jamais",
    "statut": "READY"
   },
@@ -74,7 +74,7 @@
    "nom": "Agenda public du Senat (flux iCalendar Aglae)",
    "producteur": "Senat",
    "categorie": "calendrier",
-   "fraicheur_source": "2026-09-22T07:29:03.000Z",
+   "fraicheur_source": "2026-09-22T08:29:10.000Z",
    "derniere_collecte_repere": "2026-09-22",
    "statut": "READY"
   },
@@ -139,33 +139,116 @@
    "verifie_le": "2026-09-13 (DATA_CATALOG.md, non revérifiée par cette session)"
   }
  ],
- "sources_modifiees_depuis_le_registre": [],
+ "sources_modifiees_depuis_le_registre": [
+  {
+   "id": "an_agenda",
+   "nom": "Agenda de l'Assemblee nationale (seances, commissions, auditions)",
+   "constat": "la source a ete mise a jour depuis la derniere verification du registre (2026-09-21T22:40:48Z -> 2026-09-22T04:40:50.000Z)"
+  },
+  {
+   "id": "senat_calendrier",
+   "nom": "Agenda public du Senat (flux iCalendar Aglae)",
+   "constat": "la source a ete mise a jour depuis la derniere verification du registre (2026-09-22T07:29:03Z -> 2026-09-22T08:29:10.000Z)"
+  }
+ ],
  "couverture_territoriale": {
   "rne": {
-   "attendues": 1262,
+   "attendues": 1266,
    "trouvees": 1262,
-   "absentes": 0,
-   "absentes_liste": [],
+   "absentes": 4,
+   "absentes_documentees": [
+    {
+     "insee": "77021",
+     "nom": "Barbey"
+    },
+    {
+     "insee": "77253",
+     "nom": "Lissy"
+    },
+    {
+     "insee": "92077",
+     "nom": "Ville-d'Avray"
+    },
+    {
+     "insee": "94075",
+     "nom": "Villecresnes"
+    }
+   ],
+   "absentes_inexpliquees": [],
    "inconnues": [],
-   "taux_couverture": 100
+   "taux_couverture": 99.7
   },
   "circos_ministere": {
-   "attendues": 1262,
+   "attendues": 1266,
    "trouvees": 1262,
-   "absentes": 0,
-   "absentes_liste": [],
+   "absentes": 4,
+   "absentes_documentees": [
+    {
+     "insee": "77021",
+     "nom": "Barbey"
+    },
+    {
+     "insee": "77253",
+     "nom": "Lissy"
+    },
+    {
+     "insee": "92077",
+     "nom": "Ville-d'Avray"
+    },
+    {
+     "insee": "94075",
+     "nom": "Villecresnes"
+    }
+   ],
+   "absentes_inexpliquees": [],
    "inconnues": [],
-   "taux_couverture": 100
+   "taux_couverture": 99.7
   },
   "ofgl_comptes": {
-   "attendues": 1262,
+   "attendues": 1266,
    "trouvees": 1262,
-   "absentes": 0,
-   "absentes_liste": [],
+   "absentes": 4,
+   "absentes_documentees": [
+    {
+     "insee": "77021",
+     "nom": "Barbey"
+    },
+    {
+     "insee": "77253",
+     "nom": "Lissy"
+    },
+    {
+     "insee": "92077",
+     "nom": "Ville-d'Avray"
+    },
+    {
+     "insee": "94075",
+     "nom": "Villecresnes"
+    }
+   ],
+   "absentes_inexpliquees": [],
    "inconnues": [],
-   "taux_couverture": 100
+   "taux_couverture": 99.7
   }
  },
+ "communes_manquantes_documentees": [
+  {
+   "insee": "77021",
+   "nom": "Barbey"
+  },
+  {
+   "insee": "77253",
+   "nom": "Lissy"
+  },
+  {
+   "insee": "92077",
+   "nom": "Ville-d'Avray"
+  },
+  {
+   "insee": "94075",
+   "nom": "Villecresnes"
+  }
+ ],
  "homonymes_detectes": [
   {
    "nom": "Blandy",

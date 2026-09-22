@@ -42,7 +42,20 @@ const SOURCES_TERRITORIALES = [
 export function mesurer(dossierDonnees) {
   const beta = lireJSON(path.join(dossierDonnees, "communes-beta.json"));
   const departements = beta.departements;
-  const attendues = new Map(Object.entries(beta.communes)); // insee -> nom officiel
+  /* CORRECTIF DU 22/09/2026 — LE DENOMINATEUR LUI-MEME ETAIT FAUX. Mesure
+     contre geo.api.gouv.fr (l'API officielle, region 11) : l'Ile-de-France
+     compte 1266 communes aujourd'hui, pas 1262. L'ecart est EXACTEMENT les
+     4 communes de `beta.manquantes` (Ville-d'Avray, Barbey, Lissy,
+     Villecresnes) — absentes du Repertoire national des elus, donc absentes
+     de communes-beta.json AVANT le correctif du meme jour, donc absentes du
+     denominateur lui-meme. Un taux de couverture calcule sur un denominateur
+     qui exclut deja ses propres trous est circulaire (voir
+     docs/REDTEAM_BETA_15_09_2026.md, deja signale le 15/09, jamais corrige
+     jusqu'ici). `attendues` est donc desormais l'union des deux : la
+     reference officielle complete, pas seulement ce que Repere a reussi a
+     nommer. */
+  const documentees = new Map(Object.entries(beta.manquantes || {}));
+  const attendues = new Map([...Object.entries(beta.communes), ...documentees]); // insee -> nom officiel
 
   const parSource = {};
   for (const s of SOURCES_TERRITORIALES) {
@@ -100,17 +113,19 @@ export function mesurer(dossierDonnees) {
   };
   for (const s of SOURCES_TERRITORIALES) {
     const p = parSource[s.id];
-    const doublons = p.absentes.length + p.trouvees > attendues.size
-      ? p.absentes.length + p.trouvees - attendues.size : 0;
+    const absentesDocumentees = p.absentes.filter(i => documentees.has(i));
+    const absentesInexpliquees = p.absentes.filter(i => !documentees.has(i));
     resultat.sources[s.id] = {
       attendues: p.attendues,
       trouvees: p.trouvees,
       absentes: p.absentes.length,
-      absentes_liste: p.absentes.slice(0, 20),
+      absentes_documentees: absentesDocumentees.map(i => ({ insee: i, nom: documentees.get(i) })),
+      absentes_inexpliquees: absentesInexpliquees.slice(0, 20),
       inconnues: [...new Set(p.inconnues)],
       taux_couverture: Math.round((p.trouvees / p.attendues) * 1000) / 10,
     };
   }
+  resultat.communes_manquantes_documentees = [...documentees.entries()].map(([insee, nom]) => ({ insee, nom }));
   return resultat;
 }
 
@@ -123,8 +138,13 @@ function main() {
   if (resultat.homonymes.length) {
     console.log("homonymes detectes : " + resultat.homonymes.map(h => h.nom).join(", "));
   }
+  if (resultat.communes_manquantes_documentees.length) {
+    console.log("communes documentees comme manquantes (absence expliquee, pas un trou muet) : "
+      + resultat.communes_manquantes_documentees.map(c => c.nom).join(", "));
+  }
   for (const [id, m] of Object.entries(resultat.sources)) {
     console.log(id.padEnd(20) + m.trouvees + "/" + m.attendues + " (" + m.taux_couverture + "%)"
+      + (m.absentes_inexpliquees.length ? " — " + m.absentes_inexpliquees.length + " absente(s) INEXPLIQUEE(S)" : "")
       + (m.inconnues.length ? " — " + m.inconnues.length + " code(s) INSEE inconnu(s)" : ""));
   }
   console.log("\nrapport ecrit : " + path.relative(RACINE, SORTIE));

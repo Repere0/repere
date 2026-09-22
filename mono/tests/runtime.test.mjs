@@ -607,6 +607,30 @@ verif("invariant 5 — une vraie faute de frappe garde sa phrase d'origine",
   texteFaux.slice(0, 200).replace(/\n+/g, " / "));
 await pageAbs.context().close();
 
+/* MEME DOCTRINE, POSEE UN ECRAN PLUS TOT LE 22/09/2026. Mesure en direct :
+ * taper "Ville-d'Avray" sur le TOUT PREMIER ecran (avant meme de choisir un
+ * departement) rendait "Rien ne correspond... Hors d'Ile-de-France, cherchez
+ * d'abord votre departement" — une phrase fausse pour une commune francilienne
+ * reelle. Le correctif ci-dessus (paquet.manquantes) protegeait deja la
+ * recherche APRES le choix d'un departement ; il ne protegeait pas encore
+ * celle-ci, la plus emprunte des deux. */
+const pageAbs1 = await (await nav.newContext()).newPage();
+await pageAbs1.goto(base, { waitUntil: "networkidle" });
+await pageAbs1.getByLabel(/Où habitez-vous/).fill("Ville-d'Avray");
+await pageAbs1.waitForTimeout(300);
+const texteEntree = await pageAbs1.evaluate(() => document.querySelector(".entree")?.innerText || "");
+verif("invariant 5 — le premier ecran distingue aussi une absence chez nous d'une commune inexistante",
+  /existe bien en Île-de-France/.test(texteEntree) && !/Rien ne correspond/.test(texteEntree),
+  texteEntree.slice(0, 200).replace(/\n+/g, " / "));
+
+await pageAbs1.getByLabel(/Où habitez-vous/).fill("Zzznexistepas");
+await pageAbs1.waitForTimeout(300);
+const texteEntreeFaux = await pageAbs1.evaluate(() => document.querySelector(".entree")?.innerText || "");
+verif("invariant 5 — et garde la vraie phrase d'absence pour une vraie faute de frappe",
+  /Rien ne correspond/.test(texteEntreeFaux) && !/existe bien en Île-de-France/.test(texteEntreeFaux),
+  texteEntreeFaux.slice(0, 200).replace(/\n+/g, " / "));
+await pageAbs1.context().close();
+
 console.log("\n--- la langue du citoyen ---------------------------------------");
 /* PREMIER CONTROLE DU VOCABULAIRE CONTEXTUEL, POSE LE 16/09/2026. Le mot
  * "circonscription" du sous-titre de la carte Assemblee doit ouvrir une

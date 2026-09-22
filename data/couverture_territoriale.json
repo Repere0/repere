@@ -1,5 +1,5 @@
 {
- "genere_le": "2026-09-22T08:02:00.058Z",
+ "genere_le": "2026-09-22T08:30:50.804Z",
  "reference": "mono/data/communes-beta.json",
  "departements": [
   "75",
@@ -11,7 +11,7 @@
   "94",
   "95"
  ],
- "communes_attendues": 1262,
+ "communes_attendues": 1266,
  "homonymes": [
   {
    "nom": "Blandy",
@@ -44,28 +44,100 @@
  ],
  "sources": {
   "rne": {
-   "attendues": 1262,
+   "attendues": 1266,
    "trouvees": 1262,
-   "absentes": 0,
-   "absentes_liste": [],
+   "absentes": 4,
+   "absentes_documentees": [
+    {
+     "insee": "77021",
+     "nom": "Barbey"
+    },
+    {
+     "insee": "77253",
+     "nom": "Lissy"
+    },
+    {
+     "insee": "92077",
+     "nom": "Ville-d'Avray"
+    },
+    {
+     "insee": "94075",
+     "nom": "Villecresnes"
+    }
+   ],
+   "absentes_inexpliquees": [],
    "inconnues": [],
-   "taux_couverture": 100
+   "taux_couverture": 99.7
   },
   "circos_ministere": {
-   "attendues": 1262,
+   "attendues": 1266,
    "trouvees": 1262,
-   "absentes": 0,
-   "absentes_liste": [],
+   "absentes": 4,
+   "absentes_documentees": [
+    {
+     "insee": "77021",
+     "nom": "Barbey"
+    },
+    {
+     "insee": "77253",
+     "nom": "Lissy"
+    },
+    {
+     "insee": "92077",
+     "nom": "Ville-d'Avray"
+    },
+    {
+     "insee": "94075",
+     "nom": "Villecresnes"
+    }
+   ],
+   "absentes_inexpliquees": [],
    "inconnues": [],
-   "taux_couverture": 100
+   "taux_couverture": 99.7
   },
   "ofgl_comptes": {
-   "attendues": 1262,
+   "attendues": 1266,
    "trouvees": 1262,
-   "absentes": 0,
-   "absentes_liste": [],
+   "absentes": 4,
+   "absentes_documentees": [
+    {
+     "insee": "77021",
+     "nom": "Barbey"
+    },
+    {
+     "insee": "77253",
+     "nom": "Lissy"
+    },
+    {
+     "insee": "92077",
+     "nom": "Ville-d'Avray"
+    },
+    {
+     "insee": "94075",
+     "nom": "Villecresnes"
+    }
+   ],
+   "absentes_inexpliquees": [],
    "inconnues": [],
-   "taux_couverture": 100
+   "taux_couverture": 99.7
   }
- }
+ },
+ "communes_manquantes_documentees": [
+  {
+   "insee": "77021",
+   "nom": "Barbey"
+  },
+  {
+   "insee": "77253",
+   "nom": "Lissy"
+  },
+  {
+   "insee": "92077",
+   "nom": "Ville-d'Avray"
+  },
+  {
+   "insee": "94075",
+   "nom": "Villecresnes"
+  }
+ ]
 }

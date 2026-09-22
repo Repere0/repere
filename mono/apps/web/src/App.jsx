@@ -105,6 +105,20 @@ function Entree({ index, communesBeta, departement, onOuvrir, onCommuneDirecte, 
       .map(([insee, nom]) => [insee, nom, motsCible(nom)]);
   }, [communesBeta]);
 
+  /* MEME DOCTRINE QU'A ChoixCommune (16/09/2026), POSEE ICI LE 22/09/2026.
+   * Mesure en direct : taper "Ville-d'Avray" sur cet ecran — le premier —
+   * repondait "Rien ne correspond... Hors d'Ile-de-France, cherchez d'abord
+   * votre departement", alors que Ville-d'Avray EST en Ile-de-France, dans
+   * les Hauts-de-Seine : elle manque seulement au Repertoire national des
+   * elus, comme 320 autres communes en France. Meme donnee que
+   * `paquet.manquantes` (extract-html.js), agregee ici pour les huit
+   * departements de la beta — jamais une deuxieme regle qui pourrait diverger. */
+  const manquantes = useMemo(() => {
+    if (!communesBeta || !communesBeta.manquantes) return [];
+    return Object.entries(communesBeta.manquantes)
+      .map(([insee, nom]) => [insee, nom, motsCible(nom)]);
+  }, [communesBeta]);
+
   /* L'ORDRE DES RESULTATS EST CELUI DE LA RECHERCHE, PAS UN ORDRE DE VALEUR.
    *
    * Defaut trouve a l'oeil le 13/09/2026 : taper « paris » proposait
@@ -134,7 +148,12 @@ function Entree({ index, communesBeta, departement, onOuvrir, onCommuneDirecte, 
   const trouvesD = cherches.length
     ? index.departements.filter(d => correspond(cherches, motsCible(d.code + " " + (d.nom || ""))))
     : [];
-  const rien = cherches.length > 0 && trouveesC.length === 0 && trouvesD.length === 0;
+  const manquanteTrouvee = useMemo(() => {
+    if (!cherches.length) return null;
+    const m = manquantes.find(([, , cible]) => correspond(cherches, cible));
+    return m ? m[1] : null;
+  }, [manquantes, cherches]);
+  const rien = cherches.length > 0 && trouveesC.length === 0 && trouvesD.length === 0 && !manquanteTrouvee;
   const nomDep = code => {
     const d = index.departements.find(x => x.code === code);
     return d && d.nom ? d.nom : "département " + code;
@@ -148,6 +167,11 @@ function Entree({ index, communesBeta, departement, onOuvrir, onCommuneDirecte, 
           placeholder="Bagnolet, Créteil, Meaux…"
           onChange={e => setFiltre(e.target.value)} />
       </label>
+
+      {manquanteTrouvee ? (
+        <Vide titre={`${manquanteTrouvee} existe bien en Île-de-France : c'est nous qui n'avons pas encore sa fiche.`}
+          corps="Le Répertoire national des élus ne porte aucune ligne pour cette commune. Ce n'est pas une erreur de votre part, et ce n'est pas la preuve que la commune n'existe pas." />
+      ) : null}
 
       {rien ? (
         <Vide titre={`Rien ne correspond à « ${filtre.trim()} ».`}
