@@ -290,20 +290,25 @@ async function extraire() {
    * couper aucune, quel que soit l'endroit exact ou on le place entre elles.
    *
    * QUAND LA REGLE DECLENCHE, LA COLONNE ENTIERE DEVIENT MISSING (null) POUR
-   * TOUTES LES COMMUNES — pas seulement celles a zero. Une colonne structurel-
-   * lement absente ne redevient pas fiable pour les quelques communes qui, par
-   * coincidence ou erreur de saisie amont, portent un nombre non nul dessus. */
-  {
-    const nbAgregats = (OFGL && OFGL.meta && OFGL.meta.agregats && OFGL.meta.agregats.length) || 0;
-    const toutesCommunes = [...paquets.values()].flatMap(p => Object.values(p.communes));
+   * TOUS LES TERRITOIRES DE CET ECHELON — pas seulement ceux a zero. Une
+   * colonne structurellement absente ne redevient pas fiable pour les quelques
+   * territoires qui, par coincidence ou erreur de saisie amont, portent un
+   * nombre non nul dessus.
+   *
+   * FACTORISEE LE 22/09/2026 (mission phase 3, blocker #2) : la regle doit
+   * s'appliquer separement aux trois echelons (commune, departement, region)
+   * — melanger leurs populations fausserait le ratio de chacun — et une seule
+   * fonction evite qu'un futur echelon la re-derive et diverge. */
+  const nbAgregats = (OFGL && OFGL.meta && OFGL.meta.agregats && OFGL.meta.agregats.length) || 0;
+  function appliquerRegleV1(porteurs, etiquette) {
     const annees = new Set();
-    for (const c of toutesCommunes) if (c.comptes) for (const an of Object.keys(c.comptes)) annees.add(an);
+    for (const c of porteurs) if (c.comptes) for (const an of Object.keys(c.comptes)) annees.add(an);
     const colonnesMissing = [];
     for (const an of annees) {
       for (let i = 0; i < nbAgregats; i++) {
         const idxM = 1 + i * 2, idxH = 2 + i * 2;
         let n = 0, t = 0;
-        for (const c of toutesCommunes) {
+        for (const c of porteurs) {
           const ex = c.comptes && c.comptes[an];
           if (!Array.isArray(ex) || typeof ex[idxM] !== "number") continue;
           t++;
@@ -311,7 +316,7 @@ async function extraire() {
         }
         if (t > 0 && n / t >= 0.95) {
           colonnesMissing.push({ an, i, n, t });
-          for (const c of toutesCommunes) {
+          for (const c of porteurs) {
             const ex = c.comptes && c.comptes[an];
             if (Array.isArray(ex)) { ex[idxM] = null; ex[idxH] = null; }
           }
@@ -319,10 +324,11 @@ async function extraire() {
       }
     }
     if (colonnesMissing.length) {
-      console.log("regle V-1              : " + colonnesMissing.length + " colonne(s) requalifiee(s) en MISSING — "
+      console.log(`regle V-1 (${etiquette})`.padEnd(23) + ": " + colonnesMissing.length + " colonne(s) requalifiee(s) en MISSING — "
         + colonnesMissing.map(x => `exercice ${x.an} poste ${x.i} (${x.n}/${x.t})`).join(", "));
     }
   }
+  appliquerRegleV1([...paquets.values()].flatMap(p => Object.values(p.communes)), "commune");
 
   /* LES LIBELLES DE SOURCE SONT DU TEXTE AFFICHE.
    *
@@ -405,6 +411,47 @@ async function extraire() {
     agregats: (OFGL && OFGL.meta && OFGL.meta.agregats) || [],
   };
 
+  /* COMPTES DEPARTEMENTAUX ET REGIONAUX — BLOCKER #2 DE LA MISSION DU
+   * 22/09/2026, CORRIGE ICI.
+   *
+   * CE QUI MANQUAIT, TRACE JUSQU'A LA CAUSE. `window.REPERE_OFGL.ech` porte
+   * TROIS echelons (mesure directe sur le fichier source, pas une supposition) :
+   * `commune`, `departement`, `region`, tous les trois de la MEME forme
+   * `{terr:{code:{ex:{annee:[...]}}}}`. Ce module n'a jamais lu que
+   * `ech.commune.terr` (voir `communesOfgl` plus haut) : les deux autres
+   * echelons existent dans la source depuis le debut et n'etaient simplement
+   * jamais extraits. L'ancien site, lui, les affiche (ecran s-argent, chips
+   * de filtre ville/departement/region) — ce que mono/ ne pouvait pas encore
+   * faire, faute d'extraction.
+   *
+   * OU VIT CHAQUE ECHELON, ET POURQUOI CE N'EST PLUS LE MEME ENDROIT POUR LES
+   * DEUX. Premiere version de ce correctif (mesuree, puis corrigee le meme
+   * jour) : un seul fichier `comptes-territoires.json` avec les 101
+   * departements ET les 17 regions — 165 Ko, dont 140 Ko de departements.
+   * Mesure reelle (tests/poids.mjs) : ce fichier partait EN ENTIER a chaque
+   * ouverture de « Ou va l'argent », pour n'en lire qu'UNE ligne sur 101 — la
+   * categorie C ("a la demande") etait respectee, mais sans le "seulement ce
+   * qui est necessaire" que la mission exige. Un departement ne pese que
+   * 1,4 Ko : ses comptes rejoignent donc le paquet departemental, deja
+   * telecharge pour toute autre raison, zero requete de plus. Les regions,
+   * elles, restent a part (24,7 Ko pour les 17 — une region couvre plusieurs
+   * departements, la dupliquer dans chacun couterait plus cher que la garder
+   * commune). */
+  const OFGL_ECH = (OFGL && OFGL.ech) || {};
+  function extraireEchelon(cle) {
+    const terr = (OFGL_ECH[cle] && OFGL_ECH[cle].terr) || {};
+    const out = {};
+    for (const [code, v] of Object.entries(terr)) out[code] = { comptes: v.ex || null };
+    return out;
+  }
+  const comptesDept = extraireEchelon("departement");
+  const comptesReg = extraireEchelon("region");
+  appliquerRegleV1(Object.values(comptesDept), "departement");
+  appliquerRegleV1(Object.values(comptesReg), "region");
+  for (const [d, paquet] of paquets) {
+    paquet.comptes_departement = comptesDept[d] ? comptesDept[d].comptes : null;
+  }
+
   const departements = [...paquets.keys()].sort();
   const tailles = {};
   for (const d of departements) {
@@ -418,12 +465,32 @@ async function extraire() {
         code: d,
         /* Un code sans nom garde le code : on n'invente pas de libelle. */
         ...(t ? { nom: t.nom, type: t.type } : {}),
+        /* La region et son code numerique OFGL : ajoutes le 22/09/2026 pour que
+           « Ou va l'argent » sache quelle ligne lire dans comptes-regions.json
+           sans requete supplementaire. Absents pour les collectivites d'outre-
+           mer qui ne sont pas des departements (975, 987, 988) et pour Mayotte
+           (aucune region dans OFGL). */
+        ...(t && t.region ? { region: t.region, region_code: t.region_code } : {}),
         communes: Object.keys(paquets.get(d).communes).length,
         octets: tailles[d],
       };
     }),
   };
   ecrire(path.join(SORTIE, "index.json"), index);
+
+  /* Les regions restent a part de index.json pour la meme raison que les
+     deputes ou les scrutins : rien n'en a besoin avant l'ouverture de
+     « Ou va l'argent ». Voir le commentaire complet plus haut, au moment de
+     l'extraction des echelons departement/region. */
+  const nomsRegions = (noms && noms.regions) || {};
+  const octetsComptesRegions = ecrire(path.join(SORTIE, "comptes-regions.json"), {
+    v: 1,
+    source: index.sources.comptes,
+    regions: Object.fromEntries(Object.entries(comptesReg).map(([code, v]) => [code, v.comptes])),
+    noms_regions: nomsRegions,
+  });
+  console.log("comptes-regions.json   : " + Object.keys(comptesReg).length + " regions, " + octetsComptesRegions + " octets"
+    + " (departements : fondus dans chaque paquet, voir plus haut)");
 
   /* Le fichier des deputes est publie A PART, et pas fondu dans index.json :
      l'index part au premier ecran, ce fichier ne part que si le lecteur ouvre

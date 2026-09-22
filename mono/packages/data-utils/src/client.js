@@ -36,6 +36,15 @@ export function adresseScrutins() { return `${BASE_DONNEES}/scrutins.json`; }
    sort jamais de la memoire du navigateur, et aucune adresse n'est composee avec
    lui. C'est ce que garde `adresseFautive`. */
 export function adresseCommunesBeta() { return `${BASE_DONNEES}/communes-beta.json`; }
+/* LES COMPTES REGIONAUX : un seul petit fichier, commun a toute la France —
+   comme scrutins.json. Les comptes DEPARTEMENTAUX, eux, vivent directement
+   dans chaque paquet departemental (`adresseDepartement`) : un departement ne
+   pese que 1,4 Ko de plus, et le paquet est deja telecharge pour toute autre
+   raison. Une region couvre plusieurs departements — la dupliquer dans chacun
+   coalescerait plus cher que ce seul fichier, encore une fois commun a la
+   France entiere et jamais adresse par code de commune ou de departement. Il
+   ne part qu'a l'ouverture de « Ou va l'argent ». */
+export function adresseComptesRegions() { return `${BASE_DONNEES}/comptes-regions.json`; }
 /* LE CALENDRIER CITOYEN, PILOTE SENAT : un seul fichier, commun a toute la
    France — un agenda parlementaire n'est pas une donnee territoriale, et ne
    porte donc jamais de code de departement ni de commune. */
@@ -224,6 +233,9 @@ export async function chargerDeputes({ delaiMs = 8000 } = {}) {
    mesure des dix etapes en tete de scripts/extract-html.js. */
 export async function chargerCommunesBeta({ delaiMs = 8000 } = {}) {
   return chargerSocle("socle:CMB", adresseCommunesBeta(), delaiMs);
+}
+export async function chargerComptesRegions({ delaiMs = 8000 } = {}) {
+  return chargerSocle("socle:CTR", adresseComptesRegions(), delaiMs);
 }
 export async function chargerCatalogueScrutins({ delaiMs = 8000 } = {}) {
   return chargerSocle("socle:SCR", adresseScrutins(), delaiMs);

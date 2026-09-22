@@ -234,12 +234,21 @@ test("invariant 4 — aucune donnée n'est servie sans source déclarée", () =>
      « Ce qui a ete decide ». C'est la donnee la plus indiscrete du produit — elle
      est propre a UNE commune — et c'est pour cela qu'elle est servie par
      DEPARTEMENT : une adresse par commune aurait dit au serveur ou habite celui
-     qui lit. La source « projets » est exigee juste en dessous. */
+     qui lit. La source « projets » est exigee juste en dessous.
+     La septieme, /comptes-regions.json, est ajoutee le 22/09/2026 (blocker #2,
+     mission phase 3) : les comptes REGIONAUX, un seul petit fichier pour toute
+     la France, jamais un code de commune ni de departement dans l'ADRESSE
+     elle-meme (les codes de region sont des cles a l'interieur du fichier).
+     Les comptes DEPARTEMENTAUX, eux, ne composent AUCUNE adresse a part : ils
+     vivent dans /departments/{dep}.json, deja autorisee. Le fichier des
+     regions est autorise ici sous la MEME source que la commune — "comptes" —
+     deja exigee juste en dessous : ce sont les memes donnees OFGL, seulement a
+     un echelon de plus. */
   const client = lire("packages/data-utils/src/client.js");
   const composees = [...client.matchAll(/\$\{BASE_DONNEES\}(\/[A-Za-z0-9_${}./-]*)/g)].map(m => m[1]);
   assert.deepEqual([...new Set(composees)].sort(),
-    ["/calendrier-senat.json", "/communes-beta.json", "/departments/${d}.json", "/deputes.json",
-     "/index.json", "/projets/${d}.json", "/scrutins.json", "/scrutins/${d}.json"],
+    ["/calendrier-senat.json", "/communes-beta.json", "/comptes-regions.json", "/departments/${d}.json",
+     "/deputes.json", "/index.json", "/projets/${d}.json", "/scrutins.json", "/scrutins/${d}.json"],
     "client.js compose une adresse de donnees inattendue : " + composees.join(", "));
   const sources = existe("data/index.json") ? (JSON.parse(lire("data/index.json")).sources || {}) : {};
   for (const attendue of ["elus", "comptes", "circonscriptions", "deputes", "scrutins", "communes"]) {

@@ -1,7 +1,8 @@
-import React, { useMemo } from "react";
-import { Carte, Vide, Tuile, BarreEchelon, Source, Mot } from "@repere/ui";
+import React, { useEffect, useMemo, useState } from "react";
+import { Carte, Vide, Tuile, BarreEchelon, Source, Mot, Chargement } from "@repere/ui";
 import { Pile } from "@repere/ui/amicro";
 import { valeur, rapports, population, dernierExercice } from "../lib/comptes.jsx";
+import { chargerComptesRegions, ETATS } from "@repere/data-utils";
 
 /* `valeur`, `rapports`, `population`, `dernierExercice` VIVENT DANS
  * lib/comptes.jsx DEPUIS LE 18/09/2026 — voir ce fichier pour l'historique de
@@ -9,12 +10,65 @@ import { valeur, rapports, population, dernierExercice } from "../lib/comptes.js
  * le prototype "Aujourd'hui" a besoin exactement des memes traductions, pour
  * le meme exercice de la meme commune. */
 
+/* COMPTES DEPARTEMENTAUX ET REGIONAUX — BLOCKER #2 DE LA MISSION DU
+ * 22/09/2026. Meme composant que pour la commune, meme fonctions de
+ * traduction (rapports/valeur/dernierExercice) : la seule difference est la
+ * source des donnees et l'echelon affiche sur la pastille. Ne PAS dupliquer
+ * la traduction ici — c'est exactement le piege que lib/comptes.jsx evite.
+ * Le departement lit `paquet.comptes_departement` (deja telecharge avec le
+ * reste du departement, zero requete de plus) ; la region seule vient d'un
+ * petit fichier a part (voir chargerComptesRegions ci-dessous) — mesure qui a
+ * fait deplacer les comptes departementaux hors de ce fichier le jour meme
+ * (voir extract-html.js pour le detail des deux versions mesurees). */
+function CompteTerritoire({ titre, echelon, exerciceAn, ex, agregats, src }) {
+  const rr = rapports(ex);
+  const maxAgregat = Math.max(...agregats.map((_, i) => (valeur(ex, i) || {}).m || 0));
+  return (
+    <Carte echelon={echelon} titre={titre}
+      sousTitre={<>Ce que ça représente · <Mot cle="exercice">exercice</Mot> {exerciceAn}{population(ex) ? ` · ${population(ex).toLocaleString("fr-FR")} habitants` : ""}</>}
+      tag={rr.length ? "Calcul Repère" : undefined}>
+      {rr.length >= 2 ? (
+        <>
+          <div className="tuiles">{rr.map((o, i) => <Tuile key={i} k={o.l} v={o.v} n={o.d} />)}</div>
+          <Source calcul producteur={src ? src.producteur : ""} licence={src ? src.licence : ""} maj={src ? src.maj : ""} />
+        </>
+      ) : (
+        <Vide titre={`Pas assez de montants publiés pour traduire les comptes de ce territoire (exercice ${exerciceAn}).`}
+          corps="Repère ne calcule un rapport qu'à partir d'au moins deux montants publiés." />
+      )}
+    </Carte>
+  );
+}
+
 export default function OuVaArgent({ paquet, index, commune }) {
   const agregats = (index && index.agregats) || [];
   const src = index && index.sources ? index.sources.comptes : null;
 
   const c = commune ? paquet.communes[commune] : null;
   const exercice = useMemo(() => dernierExercice(c, agregats), [c, agregats]);
+
+  /* Le departement est deja dans le paquet en cours (aucune requete de plus) ;
+     seule la region vient d'un petit fichier a part, commun a la France
+     entiere, charge une fois quel que soit le nombre de communes visitees
+     ensuite. */
+  const [etatTerr, setEtatTerr] = useState(ETATS.EN_COURS);
+  const [regions, setRegions] = useState(null);
+  useEffect(() => {
+    let vivant = true;
+    chargerComptesRegions().then(r => { if (vivant) { setEtatTerr(r.etat); setRegions(r.donnees); } });
+    return () => { vivant = false; };
+  }, []);
+
+  const territoireDept = index && paquet ? index.departements.find(d => d.code === paquet.d) : null;
+  const exerciceDept = useMemo(() => {
+    if (!paquet || !paquet.comptes_departement) return null;
+    return dernierExercice({ comptes: paquet.comptes_departement }, agregats);
+  }, [paquet, agregats]);
+  const exerciceRegion = useMemo(() => {
+    if (!regions || !regions.regions || !territoireDept || !territoireDept.region_code) return null;
+    const ex = regions.regions[territoireDept.region_code];
+    return ex ? dernierExercice({ comptes: ex }, agregats) : null;
+  }, [regions, territoireDept, agregats]);
 
   if (!c) return null;
 
@@ -102,6 +156,53 @@ export default function OuVaArgent({ paquet, index, commune }) {
         </p>
         {src ? <Source producteur={src.producteur} licence={src.licence} maj={src.maj} url="https://data.ofgl.fr/" /> : null}
       </Carte>
+
+      {/* COMPTES DU DEPARTEMENT — BLOCKER #2 DE LA MISSION DU 22/09/2026.
+       * L'ancien site les affichait (chips ville/departement/region), mono/
+       * ne le pouvait pas avant l'extraction. Aucun etat de chargement ici :
+       * `paquet.comptes_departement` est deja arrive avec le reste du
+       * departement, avant meme l'ouverture de cet ecran. */}
+      {territoireDept ? (
+        exerciceDept ? (
+          <CompteTerritoire titre={territoireDept.nom || `Département ${territoireDept.code}`}
+            echelon="dept" exerciceAn={exerciceDept.an} ex={exerciceDept.ex} agregats={agregats} src={src} />
+        ) : (
+          <Vide titre={`${territoireDept.nom || "Ce département"} : ses comptes ne figurent pas dans le fichier officiel.`}
+            corps="Un montant absent n'est pas un montant nul : Repère n'affiche rien plutôt qu'un zéro qui pourrait être faux." />
+        )
+      ) : null}
+
+      {/* COMPTES DE LA REGION — seul echelon qui demande encore une requete
+          (voir client.js) : une region couvre plusieurs departements, ses
+          comptes ne peuvent pas vivre dans un seul paquet departemental. */}
+      {etatTerr === ETATS.EN_COURS ? (
+        <Chargement titre="Chargement des comptes de la région."
+          corps="Un seul petit fichier pour toute la France, une seule fois." />
+      ) : null}
+      {etatTerr !== ETATS.SERVI && etatTerr !== ETATS.EN_COURS ? (
+        <Vide titre="Les comptes de la région n'ont pas pu être obtenus."
+          corps="Ceux de votre commune et de votre département, ci-dessus, restent complets." />
+      ) : null}
+      {etatTerr === ETATS.SERVI && territoireDept && territoireDept.region_code ? (
+        exerciceRegion ? (
+          <CompteTerritoire titre={territoireDept.region || `Région ${territoireDept.region_code}`}
+            echelon="region" exerciceAn={exerciceRegion.an} ex={exerciceRegion.ex} agregats={agregats} src={src} />
+        ) : (
+          <Vide titre={`${territoireDept.region || "Cette région"} : ses comptes ne figurent pas dans le fichier officiel.`}
+            corps="Un montant absent n'est pas un montant nul : Repère n'affiche rien plutôt qu'un zéro qui pourrait être faux." />
+        )
+      ) : null}
+      {/* MAYOTTE, ET ELLE SEULE : L'ABSENCE EST DE LA SOURCE, PAS DE MONO/.
+          window.REPERE_OFGL.ech.region ne porte aucune ligne pour Mayotte
+          (verifie le 22/09/2026, voir extract-html.js) — le departement 976
+          n'a donc jamais de region_code, et la doctrine du vide l'exige dit
+          ici plutot que de se taire. Hors du perimetre IDF de la beta : ce
+          cas ne peut se produire que si mono/ publie un jour au-dela des huit
+          departements d'Ile-de-France. */}
+      {etatTerr === ETATS.SERVI && territoireDept && !territoireDept.region_code ? (
+        <Vide titre="Aucune donnée régionale n'est publiée pour ce département."
+          corps="L'Observatoire des finances locales ne porte pas de ligne « région » pour ce territoire dans le fichier source — ce n'est pas un manque de Repère." />
+      ) : null}
     </Pile>
   );
 }

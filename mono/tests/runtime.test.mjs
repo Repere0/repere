@@ -430,6 +430,27 @@ const classement = argent.t.match(/classement|palmar|moyenne nationale|mieux que
 verif("invariant 3 — aucun classement ni comparaison entre territoires",
   classement === null, classement ? classement[0] : "");
 
+/* COMPTES DEPARTEMENTAUX ET REGIONAUX — BLOCKER #2 DE LA MISSION DU
+ * 22/09/2026. Ustaritz est dans le departement 64 (Pyrenees-Atlantiques),
+ * region Nouvelle-Aquitaine — verifie par recoupement de population dans
+ * extract-html.js, jamais copie sans preuve. Ce controle echoue si
+ * l'extraction casse (comptes_departement dans le paquet, comptes-regions.json
+ * a part) ou si l'ecran perd un echelon qu'il vient de gagner. */
+await page.waitForTimeout(600);   // chargerComptesRegions() est asynchrone
+const argentTerritoires = await page.evaluate(() => document.body.innerText);
+verif("comptes — le departement de la commune choisie est nomme et traduit",
+  /Pyrénées-Atlantiques/.test(argentTerritoires),
+  argentTerritoires.slice(0, 400).replace(/\n+/g, " / "));
+verif("comptes — la region de ce departement est nomee et traduite",
+  /Nouvelle-Aquitaine/.test(argentTerritoires),
+  argentTerritoires.slice(0, 400).replace(/\n+/g, " / "));
+const nbCalculRepere = (argentTerritoires.match(/CALCUL REPÈRE/gi) || []).length;
+verif("comptes — trois echelons calcules (commune, departement, region), pas un seul",
+  nbCalculRepere >= 3, "seulement " + nbCalculRepere + " etiquette(s) « Calcul Repere » trouvee(s)");
+verif("invariant 3 — les comptes du departement et de la region ne comparent aucun territoire entre eux",
+  !/classement|palmar|moyenne nationale|mieux que|top \d/i.test(argentTerritoires),
+  "un mot de comparaison est apparu avec les nouveaux echelons");
+
 console.log("\n--- calendrier citoyen (pilote Senat) -------------------------");
 /* PILOTE DU 17/09/2026 : un seul echelon publie (Senat), aucune commune
  * requise pour l'ouvrir — comme « Sources ». La donnee est un instantane deja
@@ -472,7 +493,36 @@ verif("rendu — le decoupage et les mandats ne sont pas donnes comme une seule 
 verif("rendu — aucune date de decoupage annoncee comme une mise a jour",
   !/mise à jour du découpage/i.test(texteSources), "« mise a jour du decoupage de 2010 » ne veut rien dire");
 
-const vuPartout = argent.t + "\n" + texteSources + "\n" + qui + "\n" + cal;
+/* MENTIONS LEGALES — POSEES LE 22/09/2026 (BLOCKER #1, MISSION PHASE 3).
+ *
+ * "Une simple occurrence textuelle ne suffit pas — le contenu doit etre
+ * reellement accessible depuis l'app." Le premier controle mesure donc le
+ * TITRE, visible sans rien deplier (une carte de l'ecran Sources, pas un
+ * repli dans un repli comme sur le site de reference). Le second clique
+ * reellement sur le <details> et relit le DOM APRES l'ouverture : du texte
+ * present dans le JSX mais jamais rendu visible ne passerait pas ce controle,
+ * parce qu'un <details> ferme n'entre pas dans document.body.innerText. */
+verif("mentions legales — le titre est visible sur l'ecran Sources sans rien deplier",
+  /Mentions légales, CGU et confidentialité/.test(texteSources),
+  texteSources.slice(0, 300).replace(/\n+/g, " / "));
+
+await page.locator("#mentions-legales > summary").click();
+await page.waitForTimeout(300);
+const texteLegal = await page.evaluate(() => document.body.innerText);
+verif("mentions legales — le contenu s'ouvre reellement au clic, pas seulement present dans le code source",
+  /Éditeur\./.test(texteLegal) && /repere\.departement/.test(texteLegal) && /repere-donnees/.test(texteLegal),
+  "editeur/repere.departement/repere-donnees absents du texte une fois le repli ouvert");
+verif("mentions legales — le contact correspond a celui affiche ailleurs sur Sources",
+  /repere0@protonmail\.com/.test(texteLegal), "adresse de contact absente du bloc legal");
+/* GARDE CONTRE UNE PROMESSE NON TENUE (meme defaut que celui corrige sur le
+   site de reference le 22/09/2026, ligne 3203 de app_repere_v18_20.html) :
+   mono/ n'est deploye nulle part publiquement et ne tient pas de journal des
+   corrections aujourd'hui — nommer un hebergeur reel ou promettre ce journal
+   serait une fausse declaration, pas une erreur mineure. */
+verif("mentions legales — aucun hebergeur non deploye n'est affirme comme reel",
+  !/Netlify/i.test(texteLegal), "mono ne doit pas nommer un hebergeur qu'il n'utilise pas encore");
+
+const vuPartout = argentTerritoires + "\n" + texteSources + "\n" + texteLegal + "\n" + qui + "\n" + cal;
 const sansAccent = MOTS_A_ACCENTS.filter(m =>
   new RegExp("(?:^|[^A-Za-zÀ-ÿ./-])" + m + "(?![A-Za-zÀ-ÿ./-])").test(vuPartout));
 verif("langue — le francais affiche porte ses accents, sur les trois ecrans",
