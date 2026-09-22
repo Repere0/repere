@@ -1,0 +1,88 @@
+# PROTOTYPE — Surveillance des sources de donnees (objectif 7 de la mission
+# "doctrine data", 22/09/2026). N'EST PAS ACTIF : ce fichier est un .txt dans
+# docs/, exactement comme les brouillons collecte_workflow_v2.yml.txt a v8
+# qui l'ont precede — la convention du depot pour proposer un changement de
+# .github/workflows/ sans y toucher directement (dossier protege en ecriture
+# contre les outils distants).
+#
+# CE QUE CE PROTOTYPE FAIT, ET RIEN DE PLUS :
+#   1. verifier_sources.mjs (sonde chaque source du registre, HEAD/GET leger,
+#      jamais de telechargement complet) ;
+#   2. couverture.mjs (mesure la couverture IDF a partir de mono/data/, deja
+#      produit par le pipeline existant) ;
+#   3. rapport.mjs (assemble les deux en JSON + Markdown lisible) ;
+#   4. publie les trois fichiers comme ARTEFACT du run — PAS de commit, PAS
+#      de push. Une surveillance qui ecrirait dans le depot toute seule est
+#      une automatisation de plus a valider separement (voir objectif 22 de
+#      la mission precedente : "publication" et "migration" restent hors de
+#      la decision autonome).
+#
+# CE QUE CE PROTOTYPE NE FAIT PAS ENCORE, ET QUI RESTE A DECIDER :
+#   - alerter (issue GitHub, notification) quand une source passe en erreur ;
+#   - commiter le rapport dans le depot pour qu'il soit lisible sans ouvrir
+#     l'onglet Actions ;
+#   - tourner sur un horaire propre — pour l'instant, `workflow_dispatch`
+#     seulement, pour ne rien declencher tout seul avant validation.
+#
+# POUR L'ACTIVER (geste humain, volontaire) :
+#   cp docs/data_watcher_workflow_v1.yml.txt .github/workflows/data_watcher.yml
+# puis ajuster le declencheur `on:` selon ce qui est decide.
+
+name: Surveillance des sources (prototype)
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  sante-des-sources:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Recuperer le depot
+        uses: actions/checkout@v5
+
+      - name: Verifier chaque source du registre
+        # continue-on-error : une source cassee doit produire un rapport
+        # complet, pas interrompre le job avant que les autres soient sondees.
+        continue-on-error: true
+        run: node outils/registre/verifier_sources.mjs
+
+      - name: Mesurer la couverture territoriale
+        # Suppose que mono/data/ existe deja dans le depot (extrait par le
+        # pipeline principal) — ce prototype ne relance pas extract-html.js :
+        # il lit ce qui est deja la, comme rapport.mjs le fait pour le reste.
+        continue-on-error: true
+        run: |
+          if [ -d mono/data ]; then
+            node outils/registre/couverture.mjs
+          else
+            echo "::warning::mono/data absent sur ce runner — couverture non mesuree par ce prototype"
+          fi
+
+      - name: Assembler le rapport
+        continue-on-error: true
+        run: node outils/registre/rapport.mjs
+
+      - name: Publier les rapports en artefact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rapport-couverture-donnees
+          path: |
+            data/journal_sante_sources.json
+            data/couverture_territoriale.json
+            data/rapport_couverture.json
+            data/rapport_couverture.md
+          retention-days: 30
+
+      - name: Resume visible dans l'onglet Actions
+        if: always()
+        run: |
+          if [ -f data/rapport_couverture.md ]; then
+            cat data/rapport_couverture.md >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "::error::rapport_couverture.md non produit — voir les etapes precedentes" >> "$GITHUB_STEP_SUMMARY"
+          fi

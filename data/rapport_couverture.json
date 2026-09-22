@@ -1,0 +1,223 @@
+{
+ "genere_le": "2026-09-22T07:59:30.987Z",
+ "territoire_cible": {
+  "departements": [
+   "75",
+   "77",
+   "78",
+   "91",
+   "92",
+   "93",
+   "94",
+   "95"
+  ],
+  "communes_attendues": 1262,
+  "reference": "mono/data/communes-beta.json"
+ },
+ "sources_actives": [
+  {
+   "id": "rne",
+   "nom": "Repertoire national des elus",
+   "producteur": "Ministere de l'Interieur (DGCL)",
+   "categorie": "elus",
+   "fraicheur_source": "2026-08-11",
+   "derniere_collecte_repere": "2026-08-11",
+   "statut": "READY"
+  },
+  {
+   "id": "ofgl_comptes",
+   "nom": "Comptes des collectivites locales",
+   "producteur": "Observatoire des finances et de la gestion publique locales (OFGL)",
+   "categorie": "finances",
+   "fraicheur_source": "2026-07-29",
+   "derniere_collecte_repere": "2026-07-29",
+   "statut": "READY"
+  },
+  {
+   "id": "an_agenda",
+   "nom": "Agenda de l'Assemblee nationale (seances, commissions, auditions)",
+   "producteur": "Assemblee nationale",
+   "categorie": "calendrier",
+   "fraicheur_source": "2026-09-21T22:40:48.000Z",
+   "derniere_collecte_repere": "jamais",
+   "statut": "READY"
+  },
+  {
+   "id": "an_amo30",
+   "nom": "Acteurs, mandats et organes (deputes, historique complet)",
+   "producteur": "Assemblee nationale",
+   "categorie": "elus",
+   "fraicheur_source": "2026-09-22T00:34:42.000Z",
+   "derniere_collecte_repere": "2026-08-26",
+   "statut": "READY"
+  },
+  {
+   "id": "an_scrutins",
+   "nom": "Scrutins publics de l'Assemblee nationale",
+   "producteur": "Assemblee nationale",
+   "categorie": "votes",
+   "fraicheur_source": "2026-09-22T04:25:24.000Z",
+   "derniere_collecte_repere": "2026-08-26",
+   "statut": "READY"
+  },
+  {
+   "id": "dgcl_projets_investissement",
+   "nom": "Projets finances par les dotations de soutien a l'investissement local (DETR, DSIL, DPV, DSID)",
+   "producteur": "DGCL",
+   "categorie": "decisions",
+   "fraicheur_source": "2026-07-24T14:20:21.000Z",
+   "derniere_collecte_repere": "jamais",
+   "statut": "READY"
+  },
+  {
+   "id": "senat_calendrier",
+   "nom": "Agenda public du Senat (flux iCalendar Aglae)",
+   "producteur": "Senat",
+   "categorie": "calendrier",
+   "fraicheur_source": "2026-09-22T07:29:03.000Z",
+   "derniere_collecte_repere": "2026-09-22",
+   "statut": "READY"
+  },
+  {
+   "id": "circos_ministere",
+   "nom": "Communes et cantons par circonscription legislative",
+   "producteur": "Ministere de l'Interieur",
+   "categorie": "referentiel_territorial",
+   "fraicheur_source": "2017-04-11T12:11:28.000Z",
+   "derniere_collecte_repere": "jamais",
+   "statut": "READY"
+  },
+  {
+   "id": "circos_bureaux_vote",
+   "nom": "Bureaux de vote et circonscription legislative (derive des legislatives 2022)",
+   "producteur": "tiers, derive de resultats officiels",
+   "categorie": "referentiel_territorial",
+   "fraicheur_source": "2024-06-12T13:39:14.000Z",
+   "derniere_collecte_repere": "jamais",
+   "statut": "READY"
+  },
+  {
+   "id": "insee_cog_noms_communes",
+   "nom": "Decoupage administratif — noms officiels des communes (Code officiel geographique)",
+   "producteur": "INSEE, republie par Etalab / DINUM",
+   "categorie": "referentiel_territorial",
+   "fraicheur_source": "2026-09-13",
+   "derniere_collecte_repere": "2026-09-13",
+   "statut": "READY"
+  }
+ ],
+ "sources_en_erreur": [],
+ "sources_nouvelles_non_integrees": [
+  {
+   "id": "sru_rpls_logement_social",
+   "nom": "Logement social — RPLS communal + inventaire SRU",
+   "statut_cycle": "VERIFIED",
+   "verifie_le": "2026-09-13 (DATA_CATALOG.md, non revérifiée par cette session)"
+  },
+  {
+   "id": "insee_bpe_equipements",
+   "nom": "Base permanente des equipements (BPE)",
+   "statut_cycle": "DISCOVERED",
+   "verifie_le": "2026-09-13 (DATA_CATALOG.md, non revérifiée par cette session)"
+  },
+  {
+   "id": "banatic_epci",
+   "nom": "Banatic — table commune -> intercommunalite",
+   "statut_cycle": "DISCOVERED",
+   "verifie_le": "2026-09-13 (DATA_CATALOG.md, non revérifiée par cette session)"
+  },
+  {
+   "id": "geo_risques_brgm",
+   "nom": "API Geo-risques (arretes de catastrophe naturelle)",
+   "statut_cycle": "DISCOVERED",
+   "verifie_le": "2026-09-13 (DATA_CATALOG.md, non revérifiée par cette session)"
+  },
+  {
+   "id": "decp_marches_publics",
+   "nom": "Donnees essentielles de la commande publique (DECP)",
+   "statut_cycle": "DISCOVERED",
+   "verifie_le": "2026-09-13 (DATA_CATALOG.md, non revérifiée par cette session)"
+  }
+ ],
+ "sources_modifiees_depuis_le_registre": [],
+ "couverture_territoriale": {
+  "rne": {
+   "attendues": 1262,
+   "trouvees": 1262,
+   "absentes": 0,
+   "absentes_liste": [],
+   "inconnues": [],
+   "taux_couverture": 100
+  },
+  "circos_ministere": {
+   "attendues": 1262,
+   "trouvees": 1262,
+   "absentes": 0,
+   "absentes_liste": [],
+   "inconnues": [],
+   "taux_couverture": 100
+  },
+  "ofgl_comptes": {
+   "attendues": 1262,
+   "trouvees": 1262,
+   "absentes": 0,
+   "absentes_liste": [],
+   "inconnues": [],
+   "taux_couverture": 100
+  }
+ },
+ "homonymes_detectes": [
+  {
+   "nom": "Blandy",
+   "insee": [
+    "77034",
+    "91067"
+   ]
+  },
+  {
+   "nom": "Marolles-en-Brie",
+   "insee": [
+    "77278",
+    "94048"
+   ]
+  },
+  {
+   "nom": "Mondreville",
+   "insee": [
+    "77297",
+    "78413"
+   ]
+  },
+  {
+   "nom": "Saint-Martin-des-Champs",
+   "insee": [
+    "77423",
+    "78565"
+   ]
+  }
+ ],
+ "donnees_disponibles_par_domaine": {
+  "elus": [
+   "rne",
+   "an_amo30"
+  ],
+  "finances": [
+   "ofgl_comptes"
+  ],
+  "calendrier": [
+   "an_agenda",
+   "senat_calendrier"
+  ],
+  "votes": [
+   "an_scrutins"
+  ],
+  "decisions": [
+   "dgcl_projets_investissement"
+  ],
+  "referentiel_territorial": [
+   "circos_ministere",
+   "circos_bureaux_vote",
+   "insee_cog_noms_communes"
+  ]
+ }
+}

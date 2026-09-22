@@ -1,0 +1,11 @@
+{
+  "v": 1,
+  "departements": ["99"],
+  "source": {"producteur": "fixture de test", "releve_le": "2026-01-01"},
+  "communes": {
+    "99001": "Alpha",
+    "99002": "Beta",
+    "99003": "Homonyme",
+    "99004": "Homonyme"
+  }
+}

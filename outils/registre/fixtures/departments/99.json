@@ -1,0 +1,9 @@
+{
+  "d": "99",
+  "communes": {
+    "99001": { "nom": "Alpha", "maire": { "nom": "X", "fonction": "Maire" }, "circo": 1, "comptes": { "2025": [1] } },
+    "99002": { "nom": "Beta", "maire": null, "circo": 2, "comptes": { "2025": [1] } },
+    "99003": { "nom": "Homonyme", "maire": { "nom": "Y", "fonction": "Maire" }, "circo": null, "comptes": {} },
+    "99999": { "nom": "Inconnue", "maire": { "nom": "Z", "fonction": "Maire" }, "circo": 3, "comptes": { "2025": [1] } }
+  }
+}

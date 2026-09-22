@@ -1,0 +1,71 @@
+{
+ "genere_le": "2026-09-22T08:02:00.058Z",
+ "reference": "mono/data/communes-beta.json",
+ "departements": [
+  "75",
+  "77",
+  "78",
+  "91",
+  "92",
+  "93",
+  "94",
+  "95"
+ ],
+ "communes_attendues": 1262,
+ "homonymes": [
+  {
+   "nom": "Blandy",
+   "insee": [
+    "77034",
+    "91067"
+   ]
+  },
+  {
+   "nom": "Marolles-en-Brie",
+   "insee": [
+    "77278",
+    "94048"
+   ]
+  },
+  {
+   "nom": "Mondreville",
+   "insee": [
+    "77297",
+    "78413"
+   ]
+  },
+  {
+   "nom": "Saint-Martin-des-Champs",
+   "insee": [
+    "77423",
+    "78565"
+   ]
+  }
+ ],
+ "sources": {
+  "rne": {
+   "attendues": 1262,
+   "trouvees": 1262,
+   "absentes": 0,
+   "absentes_liste": [],
+   "inconnues": [],
+   "taux_couverture": 100
+  },
+  "circos_ministere": {
+   "attendues": 1262,
+   "trouvees": 1262,
+   "absentes": 0,
+   "absentes_liste": [],
+   "inconnues": [],
+   "taux_couverture": 100
+  },
+  "ofgl_comptes": {
+   "attendues": 1262,
+   "trouvees": 1262,
+   "absentes": 0,
+   "absentes_liste": [],
+   "inconnues": [],
+   "taux_couverture": 100
+  }
+ }
+}
