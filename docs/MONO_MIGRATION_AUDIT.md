@@ -64,6 +64,10 @@ un test réel, exécuté aujourd'hui sauf mention contraire.*
 | Recherche commune | `s-qui`/plusieurs écrans, pas de champ unifié avant le 13/09 | `Entree` (`App.jsx`), un seul champ, commune OU département | **PASS** | Non — amélioration | RNE + Code officiel géographique | `runtime.test.mjs`, Ville-d'Avray | aucune |
 | Identification commune | implicite | doctrine du vide propre (`paquet.manquantes`) | **PASS** | Non | idem | idem | aucune |
 | Maire | `s-qui`, `s-elus` (doublon) | `QuiDecide.jsx` — `paquet.communes[c].maire` | **PASS** | Non — `s-elus` était un doublon, pas une fonction perdue | RNE | tests runtime "Qui décide" | aucune |
+| **Adjoints, nommés** | `s-qui` — chaque adjoint listé par son nom et son rang (vérifié à l'écran sur Bagnolet : Lauren LOLO, Chawqui HADDAD…) | `QuiDecide.jsx` — **le compte seul** (`adjoints: (...).length`), aucun nom | **PARTIAL, vérifié à l'écran le 22/09 (phase 3.1)** | Oui, réel | RNE (`RNE.adj`, déjà dans le pipeline) | aucun test dédié aux noms | matérialiser les noms dans `extract-html.js` si jugé utile pour la bêta — non fait, décision produit |
+| **Intercommunalité, nommée** | `s-qui` — représentant nommé (Métropole du Grand Paris, vérifié sur Bagnolet) | `QuiDecide.jsx` dit explicitement « Repère ne nomme pas encore » | **FAIL, vérifié à l'écran le 22/09 (phase 3.1), pas seulement supposé** | Oui, réel | RNE (`communes_avec_epci: 20028`) | aucun | à trancher : porter ou documenter le report explicitement |
+| **Conseil départemental, nommé** | `s-qui` — conseillers du canton nommés (Elodie GIRARDET, vérifié sur Bagnolet) | idem, non publié | **FAIL, vérifié à l'écran** | Oui, réel | RNE (`conseillers départementaux : 4037`) | aucun | idem |
+| **Conseil régional, nommé** | `s-qui` — président et conseillers nommés (Valérie Pécresse, vérifié sur Bagnolet) | idem, non publié | **FAIL, vérifié à l'écran** | Oui, réel | RNE (`conseillers régionaux : 1744`) | aucun | idem |
 | Circonscription | `s-qui` | `QuiDecide.jsx`, `phraseCirco()` | **PASS** | Non — amélioration (communes multi-circo gérées) | Ministère de l'Intérieur, découpage 2010 | idem | aucune |
 | Député | `s-qui` (attribution non documentée) | `QuiDecide.jsx` → `Depute()`, `data/deputes.json` | **PASS** | Non — amélioration (source déclarée) | Assemblée nationale | idem | aucune |
 | **Comptes commune** | `s-argent` — ville | `OuVaArgent.jsx` — `paquet.communes[c].comptes` | **PASS** | Non | OFGL | tests runtime "l'argent" | aucune |
@@ -88,9 +92,19 @@ un test réel, exécuté aujourd'hui sauf mention contraire.*
 
 **Régressions bloquantes fermées aujourd'hui (les trois de la baseline du
 matin) : mentions légales, comptes département/région, fil éditorial — les
-trois désormais PASS, avec preuve et test.** Aucune régression bloquante
-connue ne reste ouverte ; les PARTIAL restants (Sources, Calendrier) sont des
-manques déjà documentés et non bloquants pour une bêta fermée.
+trois désormais PASS, avec preuve et test.**
+
+**Trois nouvelles régressions trouvées cet après-midi (phase 3.1, shadow
+build), vérifiées à l'écran sur Bagnolet et non simplement supposées** :
+intercommunalité, département et région n'ont **aucun élu nommé** dans
+`mono/`, alors que l'ancien build les nomme tous les trois pour la même
+commune, à partir de la même source déjà dans le pipeline (RNE). Ce ne sont
+**pas des blockers pour la bêta** au sens où « Qui décide » reste
+fonctionnel et honnête (il dit explicitement ce qu'il ne publie pas, jamais
+un mensonge) — mais ce sont des régressions réelles à trancher, pas à
+laisser dormir sans décision. Les PARTIAL restants (adjoints non nommés,
+Sources, Calendrier) sont des manques déjà documentés et non bloquants pour
+une bêta fermée.
 
 ## 5. Écrans de l'ancien site sans équivalent dans `mono/` — chacun avec sa raison réelle
 
