@@ -31,6 +31,14 @@ CE QUI est publié. Le run de demain, s'il réussit, republiera le HTML
 autonome (~16 Mo), pas le monorepo léger. La bascule vers `mono/` reste une
 décision séparée, non prise.
 
+**Précision ajoutée le 22/09/2026, phase 3.2 — ne pas confondre les deux
+branches.** Ce qui précède décrit `origin/main`. Sur la branche de travail
+`audit-finalisation-repere`, `outils/pipeline.sh` a **déjà** été modifié le
+18/09/2026 (commit `b4737ff`, jamais fusionné) pour construire
+`site_engendre` depuis `mono/` — préparé, testé de bout en bout aujourd'hui,
+toujours pas activé sur `main`. Détail complet, matrice ancien→mono et
+procédure de retour en arrière : `docs/MONO_PIPELINE_BRIDGE_2026-09.md`.
+
 ## 1. Ce que `outils/pipeline.sh` exécute réellement, dans l'ordre
 
 | # | étape | script | peut échouer silencieusement ? |

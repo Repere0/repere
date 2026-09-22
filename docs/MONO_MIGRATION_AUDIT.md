@@ -193,20 +193,27 @@ une catégorie critique n'est pas démontrée. Mis à jour après le portage des
 
 | critère | état | preuve |
 |---|---|---|
-| A. Fonctionnel (socle bêta) | **PASS** | 117 contrôles statiques/inline + 56 navigateur, verts, reconstruit à froid |
-| B. Données critiques présentes | **PASS** *(était PARTIAL)* | comptes 3 échelons + élus agglo/dept/région, tous nommés et testés aujourd'hui |
-| C. Provenance traçable | **PASS** | chaque carte chiffrée ou nominative porte sa source, testé |
-| D. Fraîcheur (dates de collecte connues) | **PARTIAL** | dates affichées correctement, mais `index.json` n'a aucun mécanisme de version — un lecteur déjà visité ne verrait pas un changement de schéma (trouvé le 22/09, voir `MONO_SHADOW_COMPARISON_2026-09.md` §3) |
-| E. Performance (gain confirmé sur parcours réel) | **PASS** | 140,5 Ko vs 6,02 Mo, ≈43×, mesuré en navigateur réel |
-| F. Accessibilité (parcours critiques utilisables) | **PASS** | 44 px, contraste 3:1, zoom 200 %, focus — testés |
-| G. Parité (aucune fonction critique perdue) | **PASS** *(était PARTIAL)* | les 3 régressions trouvées par le shadow build sont fermées et re-vérifiées à l'écran |
-| H. Réversibilité (retour rapide à l'ancien build) | **PASS** | aucune bascule faite, ancien build intact et toujours servi en production |
-| I. Production (le pipeline sait produire et publier mono/) | **FAIL** | `outils/pipeline.sh` sur `main` construit toujours `build_pwa_reconstruit.py`, pas `mono/` (confirmé dans `PRODUCTION_RUNBOOK.md`) |
-| J. Validation réelle (site publié inspecté après déploiement) | **FAIL** | mono/ n'est déployé sur aucune adresse publique |
+*Mis à jour une seconde fois le 22/09/2026, phase 3.2 (pont vers le
+pipeline réel). Détail complet des lignes D et I : `MONO_PIPELINE_BRIDGE_2026-09.md`.*
 
-**Conclusion** : B et G, les deux critères qui bloquaient hier, sont
-fermés. I et J n'ont reçu aucun travail — ce ne sont pas des régressions,
-c'est simplement la partie du chantier qui n'a pas commencé. Le gate reste
+| critère | état | preuve |
+|---|---|---|
+| A. Fonctionnel (socle bêta) | **PASS** | 120 contrôles statiques/inline + 65 `node:test`, verts, reconstruit à froid |
+| B. Données critiques présentes | **PASS** | comptes 3 échelons + élus agglo/dept/région, tous nommés et testés |
+| C. Provenance traçable | **PASS** | chaque carte chiffrée ou nominative porte sa source ; l'**artefact lui-même** porte maintenant `build.commit`/`build.construit_le` (nouveau, phase 3.2) |
+| D. Fraîcheur (dates de collecte connues) | **PASS** *(était PARTIAL)* | `index.json` porte un schéma versionné (`v`/`SCHEMA_ATTENDU`) ; un cache dont le schéma diverge est détecté et remplacé, prouvé par un test qui casse le garde-fou à la main |
+| E. Performance (gain confirmé sur parcours réel) | **PASS** | 140,7 Ko vs 6,02 Mo, ≈43×, mesuré **sur l'artefact `site_engendre` réellement produit**, pas seulement `apps/web/dist` |
+| F. Accessibilité (parcours critiques utilisables) | **PASS** | 44 px, contraste 3:1, zoom 200 %, focus — testés |
+| G. Parité (aucune fonction critique perdue) | **PASS** | les 3 régressions trouvées par le shadow build sont fermées et re-vérifiées à l'écran |
+| H. Réversibilité (retour rapide à l'ancien build) | **PASS** | procédure exacte documentée : un seul commit (`b4737ff`) à `revert`, jamais fusionné, `build_pwa_reconstruit.py` intact |
+| I. Production (le pipeline sait produire et publier mono/) | **PARTIAL** *(était FAIL)* | le pont existe et a été éprouvé de bout en bout **localement** (extraction → build → banc sur l'artefact réel, 0 échec) ; **jamais exécuté sur le runner GitHub réel** (`ubuntu-latest`) ; sur `origin/main`, toujours `build_pwa_reconstruit.py` |
+| J. Validation réelle (site publié inspecté après déploiement) | **FAIL** | mono/ n'est déployé sur aucune adresse publique — **volontairement, cette phase ne l'a pas tenté** |
+
+**Conclusion** : sept critères sur dix sont PASS. I passe de FAIL à
+PARTIAL — le pont est construit et prouvé localement, il lui manque
+uniquement une exécution réelle sur le runner GitHub pour passer à PASS.
+J reste FAIL, par choix explicite de cette phase : « construire le pont,
+pas le traverser ». Le gate reste
 donc **incomplet**, pas pour une raison produit mais pour une raison de
 publication : décider de brancher `mono/` sur le pipeline réel est une
 décision séparée de celle prise aujourd'hui (fermer les régressions).
