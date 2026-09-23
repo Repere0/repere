@@ -1277,6 +1277,55 @@ verif("accessibilite — le contour de focus des commandes qui ouvrent les votes
   contourVotes.r >= 3, JSON.stringify(contourVotes));
 await ctxSombre.close();
 
+console.log("\n--- aujourd'hui : fraicheur de la semaine ----------------------");
+/* PROUVE LE BLOC "Quoi d'autre cette semaine ?" (Aujourdhui.jsx) EN LE
+   FORCANT A APPARAITRE. Avec les donnees reelles/fixtures d'aujourd'hui,
+   ce bloc est INERT la plupart du temps : le dernier vote solennel date du
+   21/07/2026, le dernier fait editorial du 14/08/2026, et les projets sont
+   dates de fin d'exercice 2024/2025 — tous hors d'une fenetre de sept jours
+   depuis longtemps. C'est un choix delibere (ne pas paraitre plus actif que
+   la donnee reelle ne l'est), mais ca veut dire qu'un banc qui ne visite
+   jamais ce cas ne prouverait rien : on injecte donc UN fait editorial
+   national date d'aujourd'hui, on verifie qu'il apparait avec sa source, et
+   on restaure le fichier avant la fin du bloc. */
+const fEvenements = path.join(DIST, "data", "evenements.json");
+const evenementsOriginal = fs.readFileSync(fEvenements, "utf8");
+const ctxAuj = await nav.newContext({ viewport: { width: 390, height: 844 } });
+const pageAuj = await ctxAuj.newPage();
+try {
+  const evMute = JSON.parse(evenementsOriginal);
+  evMute.r = [...evMute.r, {
+    id: "banc-fraicheur-semaine", t: "Fait de banc pour prouver la fraicheur de la semaine",
+    d: new Date().toISOString().slice(0, 10), e: "france",
+    src: "https://exemple.test/banc", srcn: "Source de banc", conf: "verifie", insee: "",
+  }];
+  fs.writeFileSync(fEvenements, JSON.stringify(evMute));
+
+  await pageAuj.goto(base, { waitUntil: "networkidle" });
+  await pageAuj.getByLabel(/Où habitez-vous/i).fill("64");
+  await pageAuj.waitForTimeout(300);
+  await pageAuj.getByRole("button", { name: /^64\b/ }).click();
+  await pageAuj.waitForTimeout(800);
+  await pageAuj.getByLabel(/Votre commune/i).fill("Ustaritz");
+  await pageAuj.waitForTimeout(300);
+  await pageAuj.getByRole("button", { name: "Ustaritz", exact: true }).click();
+  await pageAuj.waitForTimeout(700);
+  await pageAuj.getByRole("button", { name: /Voir aujourd.hui à Ustaritz/i }).click();
+  await pageAuj.waitForTimeout(900);
+
+  const texteAuj = await pageAuj.evaluate(() => document.body.innerText);
+  verif("aujourd'hui — le bloc de fraicheur hebdomadaire apparait quand un fait recent existe",
+    /Quoi d.autre cette semaine/.test(texteAuj)
+    && /Fait de banc pour prouver la fraicheur de la semaine/.test(texteAuj),
+    texteAuj.slice(0, 300).replace(/\n+/g, " / "));
+  verif("invariant 4 — le fait de la semaine porte sa propre source",
+    /Source de banc/.test(texteAuj) && /voir à la source/.test(texteAuj),
+    texteAuj.slice(0, 300).replace(/\n+/g, " / "));
+} finally {
+  fs.writeFileSync(fEvenements, evenementsOriginal);
+  await ctxAuj.close();
+}
+
 console.log("\n--- hors ligne -----------------------------------------------");
 const sw = await page.evaluate(async () => {
   const r = await navigator.serviceWorker.getRegistration();
