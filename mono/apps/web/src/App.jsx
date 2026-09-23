@@ -1,4 +1,4 @@
-import React, { Suspense, lazy, useCallback, useEffect, useMemo, useState } from "react";
+import React, { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Chargement, Vide, Puce, DefinitionProvider } from "@repere/ui";
 import {
   chargerIndex, chargerDepartement, chargerCommunesBeta, prechargerDepartement,
@@ -41,17 +41,38 @@ const ONGLETS = [
 const ONGLETS_SANS_COMMUNE = new Set(["sources", "calendrier"]);
 
 /* INVARIANT 2 : une seule clé, nommée, et rien d'autre. Ni compte, ni courriel,
-   ni identifiant. Elle ne contient qu'un code de département — jamais une
-   commune, jamais un horodatage d'usage. La commune choisie, elle, ne survit
-   PAS au rechargement, et c'est délibéré : elle désignerait le domicile du
-   lecteur, ce que Repère refuse d'écrire sur son appareil. */
+   ni identifiant. La commune choisie, elle, ne survit PAS au rechargement, et
+   c'est délibéré : elle désignerait le domicile du lecteur, ce que Repère
+   refuse d'écrire sur son appareil.
+ *
+ * LA CLE PORTE DESORMAIS UN DEPARTEMENT ET UN INSTANT DE VISITE — decision
+ * produit du 23/09/2026, prise pour "depuis votre derniere visite" (voir
+ * Aujourdhui.jsx). Ce que cette ligne disait avant ("jamais un horodatage
+ * d'usage") n'est plus vrai a la lettre, et c'est assume, pas glisse en
+ * silence : cet horodatage ne designe AUCUN lieu (contrairement a la
+ * commune, expressement exclue ci-dessus), ne quitte jamais l'appareil, et
+ * ne sert qu'a distinguer "deja vu" de "nouveau" dans le calcul de faits
+ * qui tourne deja pour "Ce qui a ete decide". Une seule cle, toujours ; ce
+ * qu'elle contient a change. */
 const CLE = "repere.departement";
 
-function lireDepartement() {
-  try { return localStorage.getItem(CLE) || ""; } catch { return ""; }
+function lireEtatStocke() {
+  try {
+    const brut = localStorage.getItem(CLE);
+    if (!brut) return { d: "", v: null };
+    try {
+      const j = JSON.parse(brut);
+      if (j && typeof j === "object" && typeof j.d === "string") {
+        return { d: j.d, v: typeof j.v === "string" ? j.v : null };
+      }
+    } catch { /* ancien format : une chaine nue de departement, pas du JSON */ }
+    return { d: brut, v: null }; /* compatibilite avec un lecteur deja installe avant ce jour */
+  } catch { return { d: "", v: null }; } /* mode prive, quota, ou stockage desactive */
 }
-function ecrireDepartement(d) {
-  try { d ? localStorage.setItem(CLE, d) : localStorage.removeItem(CLE); } catch { /* mode privé */ }
+function lireDepartement() { return lireEtatStocke().d; }
+function ecrireDepartement(d, v) {
+  try { d ? localStorage.setItem(CLE, JSON.stringify({ d, v: v || null })) : localStorage.removeItem(CLE); }
+  catch { /* mode privé */ }
 }
 
 /* Comparer « Pyrenees at » et « Pyrénées-Atlantiques » : au clavier, personne ne
@@ -433,6 +454,18 @@ export default function App() {
   const [index, setIndex] = useState(null);
   const [etatIndex, setEtatIndex] = useState(ETATS.EN_COURS);
   const [departement, setDepartement] = useState(lireDepartement);
+  /* GELE UNE SEULE FOIS, AU PREMIER RENDU — AVANT que quoi que ce soit
+   * n'ecrive dans le stockage. C'est ce qui permet de repondre a "depuis
+   * QUAND" pour toute la duree de cette visite : si on relisait le
+   * stockage plus tard, on y trouverait deja l'instant present, ecrit par
+   * cette meme visite (voir vSessionRef ci-dessous), et "depuis votre
+   * derniere visite" deviendrait "depuis il y a deux secondes". */
+  const [derniereVisite] = useState(() => lireEtatStocke().v);
+  /* L'INSTANT DE CETTE VISITE, A ECRIRE DESORMAIS A CHAQUE fois que la cle
+   * est reecrite (un changement de departement, par exemple) — jamais mis
+   * a jour APRES ce premier calcul : une seule "derniere visite" par
+   * ouverture de l'application, pas une qui glisse a chaque interaction. */
+  const vSessionRef = useRef(new Date().toISOString());
   const [paquet, setPaquet] = useState(null);
   const [etat, setEtat] = useState(ETATS.ABSENT);
   /* L'ONGLET OUVERT PAR DEFAUT RESTE « QUI DECIDE », ET CE N'EST PAS UN OUBLI.
@@ -499,7 +532,7 @@ export default function App() {
       }
       return dep;
     });
-    ecrireDepartement(dep);
+    ecrireDepartement(dep, vSessionRef.current);
     setEtat(ETATS.EN_COURS);
     setPaquet(null);
     setCommune(null);
@@ -634,7 +667,10 @@ export default function App() {
                       circonscription et ses comptes.
                     </p>
                   ) : null}
-                  {onglet === "aujourdhui" && fiche ? <Aujourdhui paquet={paquet} index={index} commune={commune} aller={irA} /> : null}
+                  {onglet === "aujourdhui" && fiche ? (
+                    <Aujourdhui paquet={paquet} index={index} commune={commune} aller={irA}
+                      derniereVisite={derniereVisite} />
+                  ) : null}
                   {onglet === "decide" && fiche ? <CeQuiADecide paquet={paquet} index={index} commune={commune} /> : null}
                   {onglet === "qui" && fiche ? <QuiDecide paquet={paquet} index={index} commune={commune} /> : null}
                   {onglet === "argent" && fiche ? <OuVaArgent paquet={paquet} index={index} commune={commune} /> : null}
