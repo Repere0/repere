@@ -198,28 +198,27 @@ pipeline réel). Détail complet des lignes D et I : `MONO_PIPELINE_BRIDGE_2026-
 
 | critère | état | preuve |
 |---|---|---|
-| A. Fonctionnel (socle bêta) | **PARTIAL** *(était PASS)* | localement : 120 inline + 65 `node:test`, verts. **Sur le runner GitHub réel (ubuntu-latest, 22/09/2026, run 35796632331) : 1 échec réel** — `tests/runtime.test.mjs`, zoom 200 %, débordement de 55 px sur "Qui décide". Jamais vu en local, sur ce même code, avec la même version de Chromium. Voir §9bis. |
+| A. Fonctionnel (socle bêta) | **PASS** *(re-confirmé)* | 120 inline + 65 `node:test`, verts en local **et sur le runner GitHub réel** (`ubuntu-latest`, run `35799649140`, commit `8a5256d`) — sur `apps/web/dist` **et** sur `site_engendre` réellement copié. |
 | B. Données critiques présentes | **PASS** | comptes 3 échelons + élus agglo/dept/région, tous nommés et testés |
-| C. Provenance traçable | **PASS** | chaque carte chiffrée ou nominative porte sa source ; l'**artefact lui-même** porte maintenant `build.commit`/`build.construit_le` — **confirmé sur le runner réel** : `{commit_court:"5714be0", sante:{elus:true,comptes:true,circonscriptions:true,deputes:true,scrutins:true,projets:false,evenements:true}}` |
-| D. Fraîcheur (dates de collecte connues) | **PASS** *(était PARTIAL)* | `index.json` porte un schéma versionné (`v`/`SCHEMA_ATTENDU`) ; un cache dont le schéma diverge est détecté et remplacé, prouvé par un test qui casse le garde-fou à la main |
-| E. Performance (gain confirmé sur parcours réel) | **PASS** | 140,7 Ko vs 6,02 Mo, ≈43×, remesuré ce jour en local sur `apps/web/dist` (chiffre identique) ; **pas remesuré sur l'artefact du runner réel** — l'échec de F a empêché l'étape d'upload de s'exécuter, donc rien à télécharger (voir §9bis) |
-| F. Accessibilité (parcours critiques utilisables) | **FAIL** *(était PASS)* | 44 px, contraste 3:1, focus — toujours verts. **Zoom 200 % : casse sur le runner réel, pas en local.** C'est exactement le risque que la Phase 3.3 devait débusquer, et il l'a fait. |
+| C. Provenance traçable | **PASS** | chaque carte chiffrée ou nominative porte sa source ; l'**artefact lui-même** porte `build.commit`/`build.construit_le` — confirmé sur le runner réel et par téléchargement direct de l'artefact : `{commit_court:"8a5256d", sante:{elus:true,comptes:true,circonscriptions:true,deputes:true,scrutins:true,projets:false,evenements:true}}` |
+| D. Fraîcheur (dates de collecte connues) | **PASS** | `index.json` porte un schéma versionné (`v`/`SCHEMA_ATTENDU`) ; un cache dont le schéma diverge est détecté et remplacé, prouvé par un test qui casse le garde-fou à la main |
+| E. Performance (gain confirmé sur parcours réel) | **PASS** | 140,7 Ko en local, **140,8 Ko sur l'artefact réellement produit et téléchargé du runner** (252 fichiers, 20 Mo stockés — vérifié indépendamment des logs, pas seulement lu) — écart de 0,1 Ko, négligeable |
+| F. Accessibilité (parcours critiques utilisables) | **PASS** *(re-confirmé)* | 44 px, contraste 3:1, focus, **et zoom 200 % — cassé sur le runner réel le 22/09 (55 px), fermé et re-confirmé vert sur le runner réel le 22/09 (0 px), sur `apps/web/dist` et sur `site_engendre`.** Cause identifiée par mesure (pas de police en cause : un badge en `white-space:nowrap` et un `<button>` de glossaire dont `appearance:auto` empêchait le mot de casser), corrigée à la source. Détail : §9bis. |
 | G. Parité (aucune fonction critique perdue) | **PASS** | les 3 régressions trouvées par le shadow build sont fermées et re-vérifiées à l'écran |
 | H. Réversibilité (retour rapide à l'ancien build) | **PASS** | procédure exacte documentée : un seul commit (`b4737ff`) à `revert`, jamais fusionné, `build_pwa_reconstruit.py` intact |
-| I. Production (le pipeline sait produire et publier mono/) | **PARTIAL** *(inchangé, preuve renforcée)* | **prouvé sur le runner réel le 22/09/2026** : install Node/pnpm/corepack, `pnpm install`, install Chromium dédié, `extract-html.js`, build, assemblage `site_engendre` — **tous verts en 39 s, sur `ubuntu-latest`, pas seulement ce poste**. Le banc, lui, casse sur ce même runner (cf. F). Pas encore PASS : construire fonctionne réellement en CI, éprouver ne passe pas encore en CI. |
+| I. Production (le pipeline sait produire et publier mono/) | **PASS** *(était PARTIAL)* | **le pont complet, prouvé sur le runner GitHub réel, de bout en bout** : install Node/pnpm/corepack, dépendances, Chromium dédié, extraction, build, assemblage `site_engendre`, banc (statique + navigateur, sur l'artefact réel), mesure de poids, upload d'inspection — **17 étapes vertes, run `35799649140`**, aucune non exécutée. Reste PARTIAL uniquement pour la publication elle-même (J), jamais tentée par choix. |
 | J. Validation réelle (site publié inspecté après déploiement) | **FAIL** | mono/ n'est déployé sur aucune adresse publique — **volontairement, cette phase ne l'a pas tenté** |
 
-**Conclusion, réécrite après la Phase 3.3 — dire ce qui ne va pas plutôt
-que ce qui arrange.** Le mouvement est réel : I passe de "jamais testé
-sur le vrai runner" à "construction prouvée sur le vrai runner". Mais F
-et A reculent, parce que la Phase 3.3 a fait exactement ce qu'elle
-devait faire — chercher ce qui ne se voit qu'en conditions réelles, et
-trouver quelque chose. Se dire "le pont marche" sur la seule base du
-succès local aurait été l'erreur exacte que ce document existe pour
-empêcher. Le gate reste **incomplet**, et pour la première fois pas
-seulement par choix (J) mais par une régression mesurée et non fermée
-(F). Rien de tout cela n'a atteint `main` au-delà d'un fichier de
-workflow de test sans étape de déploiement — voir §9bis.
+**Conclusion, après la boucle complète de la Phase 3.3.** Les deux
+critères qui avaient reculé (A, F) sont revenus à PASS, pas par
+arrondi : par une régression réellement fermée et réellement
+re-vérifiée sur le même runner qui l'avait trouvée. I passe à PASS —
+c'est la première fois que le pont est prouvé construire ET s'éprouver
+sur `ubuntu-latest`, pas seulement sur ce poste. Le gate reste
+**incomplet** sur un seul point, J, et par choix explicite de cette
+phase : « construire et éprouver le pont, pas encore le publier ».
+Rien de tout cela n'a atteint `main` au-delà d'un fichier de workflow
+de test sans étape de déploiement — voir §9bis.
 
 ## 9bis. Phase 3.3 — le pont éprouvé sur le runner GitHub réel, 22-23/09/2026
 
@@ -295,9 +294,61 @@ autre runner, ne recrée le même débordement ailleurs.
   l'exécution qui a échoué (l'étape de confirmation a `if: always()`) :
   `PRODUCTION ACTIVEE : NON` / `PUBLICATION : NON` / `MAIN MODIFIEE : NON`.
 
-**Prochaine décision humaine, unique :** ajouter l'étape de diagnostic
-CSS ci-dessus sur la branche isolée `ci-test-mono-pipeline` et relancer
-un `workflow_dispatch`, pour nommer l'élément précis avant d'écrire le
-correctif — ou accepter de corriger à l'aveugle (`overflow-wrap`) sans
-cette confirmation. Aucune des deux options ne touche `main` ni ne
-publie ; c'est un choix de méthode, pas un choix à risque.
+**Prochaine décision humaine, unique (au moment où ce qui précède a été
+écrit) :** ajouter l'étape de diagnostic CSS et relancer un
+`workflow_dispatch` pour nommer l'élément précis avant d'écrire le
+correctif. C'est la voie qui a été suivie — voici ce qu'elle a trouvé.
+
+### Résolution, même jour — l'hypothèse police était fausse
+
+Le diagnostic DOM (inspection systématique `rect`/`scrollWidth`/
+`getComputedStyle`, temporaire, dans le test) a nommé l'élément
+responsable sans avoir besoin du runner : **reproductible en local**, en
+forçant le diagnostic à s'exécuter même quand le débordement document
+reste à 0 — deux causes réelles, mesurées, **aucune liée à une police** :
+
+1. **`.tag { white-space: nowrap }`** — le badge "DONNÉE OFFICIELLE"
+   mesure 302 px à 200 % de zoom, pour une carte de 276 px. Présent sur
+   4 des 5 cartes de "Qui décide" (26 px de débordement interne
+   constant, contenu localement par le flex-wrap déjà en place, jamais
+   par hasard). Retiré : la règle de repli sous 480 px (déjà en place)
+   protégeait déjà la mise en page voulue, `nowrap` n'ajoutait qu'un
+   débordement.
+2. **`<Mot>` (le terme de glossaire, ex. "intercommunalité") est un
+   `<button>`** : la feuille de style du navigateur pose
+   `appearance: auto`, qui prime sur `display: inline` posé dans le
+   CSS du projet et empêche le mot de casser au milieu — 46 px de trop,
+   mesuré précisément sur le seul titre de carte qui utilise `<Mot>`
+   (celui de "Votre intercommunalité", ajouté en phase 3.1 : c'est
+   pourquoi cette régression n'existait pas avant). `appearance: none`
+   + `overflow-wrap`/`word-break: break-word` corrigent à la source.
+
+Correctif appliqué dans `mono/apps/web/src/styles/app.css`, testé en
+local (débordement interne des cartes 48 px/26 px → 0-2 px résiduel de
+padding, document 0 px, 120+65 tests verts), puis **confirmé sur le
+runner GitHub réel** : run `35799649140`, commit `8a5256d`, **17
+étapes vertes, y compris pour la première fois le banc sur l'artefact
+`site_engendre` réellement copié, la mesure de poids et l'upload
+d'inspection** — aucune étape non exécutée. Artefact téléchargé et
+vérifié indépendamment des logs : 252 fichiers, 20 Mo stockés, 140,8 Ko
+transférés sur le parcours complet (140,7 Ko en local — écart de 0,1 Ko,
+négligeable).
+
+Diagnostic temporaire retiré une fois la cause fermée (commit
+`9daf130`) : le comportement reste protégé par l'assertion déjà
+existante (débordement document ≤ 1 px à 200 %), qui a mesuré les deux
+bugs et détectera tout retour de l'un, de l'autre, ou d'un cas
+similaire — pas besoin d'un test dédié à une classe CSS précise.
+
+**Incident annexe, sans consequence :** la tâche planifiée horaire a
+auto-commité et poussé un état intermédiaire abandonné pendant
+l'exploration (`857df15` : une capture d'écran de travail et une
+version antérieure, moins efficace, du correctif) — sur la branche
+isolée, jamais sur `main`, rien perdu. Corrigé par-dessus avec les
+commits finaux, sans réécriture d'historique.
+
+**Prochaine décision humaine, unique (état actuel) :** décider quand
+basculer `outils/pipeline.sh` sur `main` pour publier réellement depuis
+`mono/` (critère J du Release Gate, le seul qui reste FAIL, par choix).
+Cette phase a délibérément prouvé que le pont construit et s'éprouve
+sur le runner réel — elle n'a pas décidé de l'emprunter pour de vrai.
