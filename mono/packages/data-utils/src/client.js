@@ -94,6 +94,7 @@ export function adresseElusRegion(code) {
    France — un agenda parlementaire n'est pas une donnee territoriale, et ne
    porte donc jamais de code de departement ni de commune. */
 export function adresseCalendrierSenat() { return `${BASE_DONNEES}/calendrier-senat.json`; }
+export function adresseAgendaAN() { return `${BASE_DONNEES}/agenda-an.json`; }
 /* LE FIL EDITORIAL — voir lib/faits.js pour la tracabilite complete (source
    YAML -> geste humain -> outils/evenements.py -> ce fichier). Un seul
    fichier pour la France entiere, jamais un code de commune dans l'adresse :
@@ -320,6 +321,9 @@ export async function chargerProjets(dep, { delaiMs = 8000 } = {}) {
 }
 export async function chargerCalendrierSenat({ delaiMs = 8000 } = {}) {
   return chargerSocle("socle:CAL", adresseCalendrierSenat(), delaiMs);
+}
+export async function chargerAgendaAN({ delaiMs = 8000 } = {}) {
+  return chargerSocle("socle:AGA", adresseAgendaAN(), delaiMs);
 }
 export async function chargerEvenements({ delaiMs = 8000 } = {}) {
   return chargerSocle("socle:EVT", adresseEvenements(), delaiMs);

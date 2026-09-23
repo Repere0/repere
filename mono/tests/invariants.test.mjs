@@ -256,11 +256,18 @@ test("invariant 4 — aucune donnée n'est servie sans source déclarée", () =>
      mesure a 148 Ko pour 14 regions contre 17 Ko pour la seule Ile-de-France
      avant cette scission. Sa source reste « elus », deja exigee ci-dessous :
      ce sont les memes donnees RNE que le maire et les adjoints, seulement a
-     un echelon de plus. */
+     un echelon de plus.
+     La dixieme, /agenda-an.json, est ajoutee le 23/09/2026 (chantier « Ce qui
+     se passe » : Assemblee nationale, apres le Senat) : MEME REGIME que
+     /calendrier-senat.json juste au-dessus - la provenance vit DANS le
+     fichier lui-meme (source.producteur/licence/releve_le, voir
+     scripts/agenda-an.mjs), pas dans index.json. Aucune source « agenda_an »
+     n'est donc exigee plus bas, exactement comme aucune n'existe pour le
+     Senat. */
   const client = lire("packages/data-utils/src/client.js");
   const composees = [...client.matchAll(/\$\{BASE_DONNEES\}(\/[A-Za-z0-9_${}./-]*)/g)].map(m => m[1]);
   assert.deepEqual([...new Set(composees)].sort(),
-    ["/calendrier-senat.json", "/communes-beta.json", "/comptes-regions.json", "/departments/${d}.json",
+    ["/agenda-an.json", "/calendrier-senat.json", "/communes-beta.json", "/comptes-regions.json", "/departments/${d}.json",
      "/deputes.json", "/elus-regions/${c}.json", "/evenements.json", "/index.json",
      "/projets/${d}.json", "/scrutins.json", "/scrutins/${d}.json"],
     "client.js compose une adresse de donnees inattendue : " + composees.join(", "));
