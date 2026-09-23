@@ -2,6 +2,12 @@
   "name": "api",
   "private": true,
   "type": "module",
-  "scripts": { "dev": "node server.js" },
-  "dependencies": { "fastify": "^4.28.1", "@fastify/static": "^7.0.4" }
+  "scripts": {
+    "dev": "node server.js"
+  },
+  "dependencies": {
+    "fastify": "^4.28.1",
+    "@fastify/static": "^7.0.4",
+    "@repere/data-utils": "workspace:*"
+  }
 }

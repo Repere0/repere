@@ -83,6 +83,46 @@ python3 outils/circos.py data/circos_ministere.xlsx outils/circos.json "$APP_CIR
 python3 outils/scrutins_an.py data/brut_Scrutins outils/scrutins_an.json 80 \
   || echo "::warning::scrutins_an.py a echoue — les scrutins ne sont pas produits"
 
+# ------------- 3 quater bis. LES DEUX RELEVES DU MONOREPO, REFAITS ICI
+# Ils etaient poses a la main, tous les deux dates du 26 aout, pendant que la source
+# publiait chaque jour : l'ecran « Qui decide » servait donc un depute et des votes
+# de plus en plus vieux sans que rien ne le dise. Le script refuse d'ecraser un
+# releve valide par un fichier vide — une source manquante avertit, elle ne casse
+# rien, et la chaine continue avec le releve de la veille.
+# L'AUTOTEST PASSE D'ABORD, ET C'EST LUI QUI AUTORISE L'ECRITURE. La lecture du
+# referentiel des acteurs ne peut pas etre eprouvee ailleurs : l'archive AMO30
+# n'existe que sur le runner. Si ses huit cas ne passent pas — un format qui a
+# change, un champ qui devient une liste — on ne regenere rien et on garde le
+# releve de la veille.
+# LE NOM DE LA COMMUNE, TEL QU'IL S'ECRIT. Une commune sur quatre s'affichait mal
+# avant le 13/09/2026 : article interne en majuscule, initiale desaccentuee. Le
+# libelle officiel vient du Code officiel geographique, par le paquet du decoupage
+# administratif d'Etalab — que le runner sait joindre, contrairement au conteneur.
+# Le script refuse d'ecraser un fichier valide par un fichier maigre.
+python3 outils/noms_communes.py . \
+  || echo "::warning::les noms officiels des communes n'ont pas ete rafraichis"
+
+python3 outils/mono_donnees.py --test \
+  && python3 outils/mono_donnees.py . \
+  || echo "::warning::les releves du monorepo n'ont pas ete rafraichis (voir les avertissements ci-dessus)"
+
+# ------------------- 3 quater bis. les projets finances par l'Etat
+# LE PREMIER FAIT DATE DU PRODUIT. L'ecran « Ce qui a ete decide » n'a rien a
+# montrer sans ce releve : la DGCL publie chaque annee les ~20 000 projets
+# d'investissement qu'elle subventionne, avec le code INSEE du beneficiaire.
+#
+# NON BLOQUANT, ET C'EST LA REGLE DE TOUTE LA CHAINE (decision D-12) : si la
+# source ne repond pas, le releve de la veille reste, l'extraction le republie,
+# et l'ecran continue de dire la date de ce qu'il montre. Un fichier vide, lui,
+# serait bien pire qu'un fichier d'hier.
+#
+# L'AUTOTEST PASSE AVANT LA COLLECTE, comme pour mono_donnees.py : il joue neuf
+# lignes recopiees de la source, dont celle de la Ville de Paris qui n'a pas de
+# code INSEE. Si la source change de forme, on le sait avant d'ecrire.
+python3 outils/projets_etat.py --test \
+  && python3 outils/projets_etat.py . \
+  || echo "::warning::les projets finances par l'Etat n'ont pas ete rafraichis (voir ci-dessus)"
+
 # ------------------- 3 quinquies. decrire les acteurs (pour nommer les references)
 # Les scrutins designent les deputes par une reference opaque (PA1234). Le referentiel
 # AMO30 porte les noms et les circonscriptions. On le fait decrire avant d'ecrire le
@@ -138,42 +178,73 @@ assert ecart > -21, ("la reunion la plus tardive remonte a %d jours : la source 
 PY
 
 # --------------------------------------------------- 5. reconstruire le site
+# BASCULE PREPAREE LE 19/09/2026, PAS ENCORE PUBLIEE — voir le dry-run de cette
+# date pour les preuves chiffrees.
+#
+# CE QUI CHANGE. `site_engendre` etait rempli par build_pwa_reconstruit.py, qui
+# reconstruit la version SERVIE depuis le HTML autonome — celle-la embarque
+# encore window.REPERE_RNE (6,76 Mo) et window.REPERE_OFGL (8,83 Mo) en clair
+# dans la page, parce que le chargeur asynchrone par departement n'a jamais ete
+# ecrit pour ELLE. Mesure en production le 19/09/2026, sur le site reellement
+# en ligne, avec parametre anti-cache : 16 286 093 octets decodes, 6 022 536
+# transferes, une seule requete. Le monorepo mono/ resout exactement ce trou
+# depuis fin aout — measure du meme jour sur son propre dry-run : environ 48 Ko
+# transferes pour atteindre le maire de Bagnolet (arrivee + recherche + fiche
+# commune + onglet par defaut), verifie fichier par fichier, gzip compris.
+#
+# CE QUI NE CHANGE PAS. Le HTML autonome ($APP) reste construit et eprouve tel
+# quel : c'est le livrable hors-ligne, il n'a pas ce probleme par construction
+# (invariant 1) et rien ici ne le concerne.
+#
+# CE QUI DISPARAIT : l'etape "5 bis" qui copiait site_donnees/ (le decoupage
+# de outils/decouper.py) dans site_engendre/donnees/. mono/ decoupe deja les
+# communes par departement a sa maniere (extract-html.js -> data/departments/),
+# et son application ne lit jamais /donnees/ : garder cette copie aurait publie
+# un second decoupage, jamais lu, pour la meme donnee — exactement le piege
+# "deux endroits qui derivent la meme regle" que ce depot a deja appris a eviter.
+# site_donnees/ continue d'etre PRODUIT plus haut (3 sexies) : rien n'empeche
+# de le lire ou de le supprimer plus tard, ce n'est plus publie, c'est tout.
 APP=$(ls -1 app_repere_v18_*.html | grep -v '\.bak$' | sort -V | tail -1)
-echo "application retenue : $APP"
+echo "application retenue (fichier autonome) : $APP"
 rm -rf site_engendre
-python3 outils/build_pwa_reconstruit.py "$APP" site site_engendre
-
-python3 - "$AUJOURDHUI" <<'PY'
-import json, sys
-today = sys.argv[1]
-d = json.load(open("site_engendre/donnees/agenda_an.json", encoding="utf-8"))
-assert d.get("maj") == today, \
-    "le site servirait un agenda du %r : la substitution n'a pas eu lieu" % d.get("maj")
-print("site : agenda du %s, %d reunions" % (d["maj"], len(d["r"])))
-PY
-
-# --------------------------- 5 bis. poser les donnees decoupees dans le site
-if [ -d site_donnees ]; then
-  mkdir -p site_engendre/donnees
-  cp -r site_donnees/* site_engendre/donnees/ 2>/dev/null || true
-  echo "decoupage publie : $(find site_engendre/donnees -name '*.json' | wc -l) fichiers"
-fi
+(
+  cd mono
+  corepack enable pnpm 2>/dev/null || true
+  node scripts/extract-html.js "../$APP" ./data
+  node scripts/calendrier-senat.mjs ./data \
+    || echo "::warning::calendrier Senat non rafraichi (reseau indisponible ? le releve d'hier reste)"
+  pnpm install --frozen-lockfile
+  # RISQUE CONFIRME PAR AUDIT LE 22/09/2026, PAS SUPPOSE : ce bloc n'installait
+  # aucun Chromium pour mono/. Le premier essai reel sur le runner GitHub
+  # (workflow_dispatch de test, run 35796632331) a echoue exactement ici -
+  # `pnpm test` plus bas ne trouvait pas d'executable, alors qu'un Chromium se
+  # trouve deja installe sur ce poste par un autre chemin, ce qui masquait le
+  # trou en local. mono/package.json epingle playwright 1.56.0, different du
+  # 1.49.0 installe plus haut pour test_repere.mjs — deux Chromium distincts,
+  # deux installations distinctes.
+  npx playwright install --with-deps chromium
+  pnpm build
+)
+cp -r mono/apps/web/dist site_engendre
+echo "site engendre depuis mono/ : $(find site_engendre -type f | wc -l) fichiers, $(du -sh site_engendre | cut -f1)"
 
 # ------------------------------------------------------------ 6. eprouver
 # LE VERROU DE L'AUTOMATISATION. Si un seul controle tombe, `set -e` arrete tout
 # ici et le deploiement n'a pas lieu. C'est ce qui autorise a publier sans qu'un
 # humain regarde.
 #
-# DEUX SORTIES, DEUX PASSAGES. Le projet produit un fichier autonome qui embarque
-# tout et ne demande rien, et une version servie qui va chercher son agenda, ses
-# evenements et bientot son departement. Jusqu'au 25/08/2026 seule la seconde etait
-# eprouvee : la divergence entre les deux n'etait gardee par rien. Le banc sait les
-# distinguer tout seul — il ne monte son serveur HTTP que si la source declare une
-# adresse — il ne lui manquait qu'une invocation.
+# DEUX BANCS, DEUX LIVRABLES DISTINCTS. Le fichier autonome garde son propre
+# banc (test_repere.mjs, 55 controles) : il ne partage rien avec le monorepo,
+# donc rien ne garantit qu'ils divergent ensemble. site_engendre EST le
+# monorepo depuis cette bascule : c'est son propre banc (`pnpm test` -
+# invariants.test.mjs + sante.test.mjs + runtime.test.mjs, mesure le
+# 22/09/2026 sur le runner GitHub reel : 120 controles inline + 65 node:test,
+# 0 echec) qui le garde, pas test_repere.mjs — qui ne connait ni son DOM ni
+# ses classes.
 echo "== banc : le fichier autonome =="
 node test_repere.mjs "$APP"
 
-echo "== banc : la version servie =="
-node test_repere.mjs site_engendre/index.html
+echo "== banc : le monorepo (version publiee) =="
+(cd mono && pnpm test)
 
 echo "== pipeline terminee sans erreur =="

@@ -1,0 +1,129 @@
+{
+ "source": {
+  "producteur_affiche": "FIXTURE DE BANC — NE PAS PUBLIER",
+  "producteur_citoyen": "FIXTURE",
+  "licence": "FIXTURE",
+  "url": "https://www.data.gouv.fr/datasets/projets-finances-par-les-dotations-de-soutien-a-linvestissement-des-collectivites-territoriales",
+  "exercices": [
+   "2025",
+   "2024"
+  ],
+  "mis_a_jour_le": "2026-07-24",
+  "releve_le": "2026-09-14"
+ },
+ "dispositifs": {
+  "DETR": "Dotation d'équipement des territoires ruraux",
+  "DSIL": "Dotation de soutien à l'investissement local",
+  "DPV": "Dotation politique de la ville",
+  "DSID": "Dotation de soutien à l'investissement des départements"
+ },
+ "communes": {
+  "93001": [
+   {
+    "annee": 2025,
+    "dispositif": "DPV",
+    "intitule": "Renovation de la halle du Montfort",
+    "subvention": 533466,
+    "cout": 1333667
+   },
+   {
+    "annee": 2025,
+    "dispositif": "DPV",
+    "intitule": "Renovation thermique de plusieurs GS (Jaures, Gemier, Babeuf et Hugo) et batiments communaux (CTM, CCAS, CMA Cyclisme et batiment administratif)",
+    "subvention": 433333,
+    "cout": 1083333
+   },
+   {
+    "annee": 2025,
+    "dispositif": "DPV",
+    "intitule": "Mise aux normes hygienes et sanitaires de plusieurs GS (Curie-Langevin, Guedes-Jaures et ecole Babeuf)",
+    "subvention": 372826,
+    "cout": 466033
+   },
+   {
+    "annee": 2024,
+    "dispositif": "DSIL",
+    "intitule": "Accessibilite des batiments recevant du public",
+    "subvention": 100000,
+    "cout": 125000
+   }
+  ],
+  "75056": [
+   {
+    "annee": 2025,
+    "dispositif": "DSIL",
+    "intitule": "Creation de 3 sites de baignade en milieu naturel, amenages, securises et surveilles",
+    "subvention": 1700346,
+    "cout": 11085751
+   }
+  ],
+  "93066": [
+   {
+    "annee": 2025,
+    "dispositif": "DPV",
+    "intitule": "Restructuration du groupe scolaire",
+    "subvention": 420000,
+    "cout": 1050000
+   },
+   {
+    "annee": 2024,
+    "dispositif": "DETR",
+    "intitule": "Refection de la toiture du gymnase",
+    "subvention": 88000
+   }
+  ],
+  "77284": [
+   {
+    "annee": 2025,
+    "dispositif": "DETR",
+    "intitule": "Amenagement de la place de la mairie",
+    "subvention": 120000,
+    "cout": 400000
+   }
+  ],
+  "78646": [
+   {
+    "annee": 2025,
+    "dispositif": "DSIL",
+    "intitule": "Renovation energetique de l'ecole elementaire",
+    "subvention": 210000,
+    "cout": 700000
+   }
+  ],
+  "91228": [
+   {
+    "annee": 2024,
+    "dispositif": "DSIL",
+    "intitule": "Creation d'une maison de sante",
+    "subvention": 340000,
+    "cout": 1200000
+   }
+  ],
+  "92050": [
+   {
+    "annee": 2025,
+    "dispositif": "DPV",
+    "intitule": "Securisation des abords des ecoles",
+    "subvention": 95000,
+    "cout": 190000
+   }
+  ],
+  "94028": [
+   {
+    "annee": 2025,
+    "dispositif": "DSIL",
+    "intitule": "Reamenagement du centre technique municipal",
+    "subvention": 260000,
+    "cout": 900000
+   }
+  ],
+  "95127": [
+   {
+    "annee": 2024,
+    "dispositif": "DSIL",
+    "intitule": "Renovation thermique du gymnase",
+    "subvention": 150000
+   }
+  ]
+ }
+}

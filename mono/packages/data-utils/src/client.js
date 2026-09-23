@@ -13,6 +13,38 @@ import { adresseFautive } from "./invariants.js";
 
 export const BASE_DONNEES = "/data";
 
+/* DETTE DE FRAICHEUR, FERMEE LE 22/09/2026 (mission phase 3.2, §7).
+ *
+ * LE DEFAUT TROUVE, EN TESTANT LE PORTAGE DES ELUS LE MEME JOUR : un onglet
+ * qui avait deja visite Repere gardait dans IndexedDB un `index.json` mis en
+ * cache AVANT l'ajout du champ `region_code` — et affichait "aucune donnee
+ * regionale publiee" pour l'Ile-de-France, qui en a pourtant une. Rien ne
+ * comparait jamais la FORME du cache a celle que le code qui tourne
+ * s'attend a lire. Un navigateur revenu le lendemain d'un jour ou le schema
+ * a change aurait garde ce mensonge indefiniment, sans qu'aucun message
+ * d'erreur ne le signale — une panne silencieuse, la plus difficile a voir.
+ *
+ * LE MECANISME, MINIMAL : `index.json` porte deja un champ `v` (pose par
+ * extract-html.js, jamais exploite jusqu'ici). SCHEMA_ATTENDU est LA MEME
+ * VALEUR, mais figee dans le CODE CLIENT — donc dans le paquet JS construit
+ * a un instant donne. Si le cache et le code divergent, le cache est
+ * FAUX PAR CONSTRUCTION, pas seulement perime : on le jette entierement
+ * (pas seulement l'index — un departement mis en cache la meme semaine
+ * appartient a la meme generation de schema) et on repart au reseau.
+ *
+ * CE QUE CE MECANISME NE FAIT PAS : bumper SCHEMA_ATTENDU n'est pas
+ * automatique et ne doit jamais l'etre — un changement qui ne touche pas la
+ * FORME des donnees (un nouveau champ optionnel, une correction de contenu)
+ * n'a pas besoin de vider le cache de tout le monde. C'est une decision
+ * humaine, au moment ou une extraction change reellement de forme.
+ *
+ * DISTINCT DE `build_id` (voir extract-html.js) : SCHEMA_ATTENDU gouverne
+ * la mise au rebut du cache ; `build_id` est une provenance informative
+ * (quel commit a produit ces donnees), qui change tous les jours sans
+ * jamais devoir vider quoi que ce soit — sinon la mise en cache perdrait
+ * tout son sens. */
+export const SCHEMA_ATTENDU = 1;
+
 /* La SEULE fabrique d'adresses du produit. */
 export function adresseDepartement(dep) {
   const d = String(dep).toUpperCase();
@@ -24,18 +56,92 @@ export function adresseDepartement(dep) {
   return url;
 }
 export function adresseIndex() { return `${BASE_DONNEES}/index.json`; }
-export function adresseDeputes() {
-  return `${BASE_DONNEES}/deputes.json`;
+/* Le fichier des deputes ne porte AUCUN code de commune, et n'est demande que
+   par l'ecran qui l'affiche : la maille reste la circonscription. */
+export function adresseDeputes() { return `${BASE_DONNEES}/deputes.json`; }
+/* LE CATALOGUE DES SCRUTINS : ce sur quoi on a vote, sans aucune position.
+   Commun a toute la France, demande une seule fois, et seulement par l'ecran
+   qui affiche les votes. */
+export function adresseScrutins() { return `${BASE_DONNEES}/scrutins.json`; }
+/* L'INDEX DE LA BETA : nom de commune -> code INSEE, pour les huit departements
+   d'Ile-de-France. Il ne sert QU'A trouver un departement : le code INSEE ne
+   sort jamais de la memoire du navigateur, et aucune adresse n'est composee avec
+   lui. C'est ce que garde `adresseFautive`. */
+export function adresseCommunesBeta() { return `${BASE_DONNEES}/communes-beta.json`; }
+/* LES COMPTES REGIONAUX : un seul petit fichier, commun a toute la France —
+   comme scrutins.json. Les comptes DEPARTEMENTAUX, eux, vivent directement
+   dans chaque paquet departemental (`adresseDepartement`) : un departement ne
+   pese que 1,4 Ko de plus, et le paquet est deja telecharge pour toute autre
+   raison. Une region couvre plusieurs departements — la dupliquer dans chacun
+   coalescerait plus cher que ce seul fichier, encore une fois commun a la
+   France entiere et jamais adresse par code de commune ou de departement. Il
+   ne part qu'a l'ouverture de « Ou va l'argent ». */
+export function adresseComptesRegions() { return `${BASE_DONNEES}/comptes-regions.json`; }
+/* LE CONSEIL REGIONAL, UN FICHIER PAR REGION — jamais un fichier France
+   entiere (mesure le 22/09/2026 : 148 Ko pour 14 regions contre 17 Ko pour
+   la seule Ile-de-France, voir extract-html.js). Le code de region n'est
+   PAS un code de commune ni un code de departement : deux caracteres qui
+   ne peuvent jamais coincider avec un code INSEE a cinq chiffres, la meme
+   propriete que la garde `adresseFautive` verifie ailleurs. */
+export function adresseElusRegion(code) {
+  const c = String(code);
+  if (!/^\d{2}$/.test(c)) throw new Error("code de region invalide : " + code);
+  const url = `${BASE_DONNEES}/elus-regions/${c}.json`;
+  if (adresseFautive(url)) throw new Error("adresse fautive composee : " + url);
+  return url;
+}
+/* LE CALENDRIER CITOYEN, PILOTE SENAT : un seul fichier, commun a toute la
+   France — un agenda parlementaire n'est pas une donnee territoriale, et ne
+   porte donc jamais de code de departement ni de commune. */
+export function adresseCalendrierSenat() { return `${BASE_DONNEES}/calendrier-senat.json`; }
+/* LE FIL EDITORIAL — voir lib/faits.js pour la tracabilite complete (source
+   YAML -> geste humain -> outils/evenements.py -> ce fichier). Un seul
+   fichier pour la France entiere, jamais un code de commune dans l'adresse :
+   les evenements a l'echelle d'une commune portent leur "insee" comme CLE a
+   l'interieur du fichier, jamais comme parametre de la requete. */
+export function adresseEvenements() { return `${BASE_DONNEES}/evenements.json`; }
+/* LES POSITIONS, PAR DEPARTEMENT — jamais par depute, jamais par commune. Une
+   adresse par depute dirait au serveur quel elu on regarde, donc, a une
+   circonscription pres, ou l'on habite. Deuxieme et derniere fabrique
+   d'adresses departementales : elle passe la meme garde que la premiere. */
+export function adresseVotes(dep) {
+  const d = String(dep).toUpperCase();
+  if (!/^(\d{2,3}|2[AB])$/.test(d)) throw new Error("code de departement invalide : " + dep);
+  const url = `${BASE_DONNEES}/scrutins/${d}.json`;
+  if (adresseFautive(url)) throw new Error("adresse fautive composee : " + url);
+  return url;
+}
+/* LES PROJETS FINANCES PAR L'ETAT, PAR DEPARTEMENT — et surtout pas par
+   commune. C'est la seule donnee du produit qui soit propre a UNE commune et
+   non a un territoire entier : une adresse par commune aurait donc dit au
+   serveur, exactement, ou habite celui qui regarde. Le paquet departemental
+   porte les projets de toutes ses communes, et le tri se fait dans le
+   navigateur. Troisieme et derniere fabrique d'adresses departementales. */
+export function adresseProjets(dep) {
+  const d = String(dep).toUpperCase();
+  if (!/^(\d{2,3}|2[AB])$/.test(d)) throw new Error("code de departement invalide : " + dep);
+  const url = `${BASE_DONNEES}/projets/${d}.json`;
+  if (adresseFautive(url)) throw new Error("adresse fautive composee : " + url);
+  return url;
 }
 
-export async function chargerDeputes({ delaiMs = 8000 } = {}) {
-  try {
-    const donnees = await auReseau(adresseDeputes(), delaiMs);
-    return { etat: ETATS.SERVI, donnees, depuis: "reseau" };
-  } catch (e) {
-    return { etat: e.etat || ETATS.ECHEC, donnees: null, raison: e.message };
-  }
-}
+/* CE QUI A ETE RETIRE ICI, PUIS REMIS, ET POURQUOI.
+ *
+ * Un chargement de `data/deputes.json` vivait a cet endroit. Il partait au
+ * reseau des l'ouverture de l'application — 87 Ko avant meme le choix d'un
+ * departement — sans cache, sans test de coupure reseau, et l'ecran qui devait
+ * l'afficher ne le lisait jamais. Surtout : ce fichier ne declarait ni
+ * producteur, ni licence, ni date, alors que l'invariant 4 exige que chaque
+ * information affichee porte sa source. Il a donc ete retire.
+ *
+ * Il revient le 28 aout 2026, avec les quatre choses qui lui manquaient : le
+ * releve est versionne dans scripts/deputes.json avec son producteur, sa
+ * licence, sa legislature et sa date, l'extraction refuse de publier un fichier
+ * qui n'en porterait pas, et il traverse maintenant les trois etages — memoire,
+ * IndexedDB, reseau — comme un departement. Il ne part QUE si le lecteur ouvre
+ * « Qui decide » : le premier ecran ne le demande pas.
+ */
+
 const enVol = new Map();   /* dédoublonne les requêtes simultanées */
 
 export const ETATS = Object.freeze({
@@ -108,28 +214,181 @@ export async function chargerDepartement(dep, { delaiMs = 8000 } = {}) {
   return promesse;
 }
 
+/* L'INDEX SURVIT A LA COUPURE, COMME LES DEPARTEMENTS.
+ *
+ * Il ne le faisait pas : il n'etait garde qu'en memoire, donc perdu au premier
+ * rechargement. Mesure hors ligne, serveur eteint : le departement revenait bien
+ * du magasin, mais la liste des departements, elle, manquait — et l'application
+ * affichait « Repere n'a pas reussi a joindre le serveur » avec un bouton
+ * Reessayer, au-dessus de donnees parfaitement presentes. Le message mentait sur
+ * l'etat reel, et le lecteur ne pouvait plus changer de departement hors ligne.
+ *
+ * La cle `socle:IDX` passe deja la garde du magasin (`^(dep|socle):[0-9A-Z]{1,3}$`)
+ * et le controle runtime l'accepte : rien n'est assoupli ici, l'index est
+ * simplement range ou il aurait toujours du l'etre. */
 export async function chargerIndex({ delaiMs = 8000 } = {}) {
   const cle = "socle:IDX";
   const enCache = await magasin.lire(cle);
-  if (enCache) return { etat: ETATS.SERVI, donnees: enCache, depuis: "cache" };
+  /* LA GARDE DE FRAICHEUR : un index en cache dont le schema ne correspond
+     plus a celui que ce code attend est traite comme ABSENT, jamais comme
+     SERVI. `enCache.v` peut manquer (cache pose par une version encore plus
+     ancienne, avant meme ce champ) : `!==` le traite alors comme un
+     mismatch, ce qui est le comportement voulu — mieux vaut un aller-retour
+     reseau de trop qu'un mensonge silencieux. */
+  if (enCache && enCache.v === SCHEMA_ATTENDU) {
+    return { etat: ETATS.SERVI, donnees: enCache, depuis: "cache" };
+  }
+  if (enCache) {
+    /* CACHE FAUX PAR CONSTRUCTION, PAS SEULEMENT PERIME : voir le
+       commentaire de SCHEMA_ATTENDU plus haut. On jette tout le magasin,
+       pas seulement cette cle — un departement mis en cache la meme
+       semaine appartient a la meme generation de schema perimee. Un echec
+       de `vider()` (mode prive, quota) n'empeche pas de continuer : la
+       lecture reseau qui suit republiera de toute facon des donnees a jour
+       sous les memes cles, qui les remplaceront. */
+    await magasin.vider().catch(() => {});
+  }
+  if (typeof navigator !== "undefined" && navigator.onLine === false) {
+    return { etat: ETATS.HORS_LIGNE, donnees: null };
+  }
   try {
     const donnees = await auReseau(adresseIndex(), delaiMs);
-    /* L'index n'est pas un paquet departemental : on le garde en memoire seule,
-       plutot que d'assouplir la garde du magasin pour lui faire une place. */
+    await magasin.ecrire(cle, donnees).catch(() => {});
     return { etat: ETATS.SERVI, donnees, depuis: "reseau" };
   } catch (e) {
     return { etat: e.etat || ETATS.ECHEC, donnees: null, raison: e.message };
   }
 }
 
+/* LES DÉPUTÉS, comme l'index et les départements : mémoire, IndexedDB, réseau.
+ *
+ * Un seul fichier pour toute la France — 53 Ko —, demandé une seule fois, et
+ * seulement par l'écran « Qui décide ». Hors ligne sans l'avoir jamais reçu, on
+ * ne ment pas : l'état revient HORS_LIGNE et l'écran écrit une phrase, pas un
+ * nom deviné. */
+export async function chargerDeputes({ delaiMs = 8000 } = {}) {
+  const cle = "socle:DEP";
+  const enCache = await magasin.lire(cle);
+  if (enCache) return { etat: ETATS.SERVI, donnees: enCache, depuis: "cache" };
+  if (enVol.has(cle)) return enVol.get(cle);
+
+  const promesse = (async () => {
+    if (typeof navigator !== "undefined" && navigator.onLine === false) {
+      return { etat: ETATS.HORS_LIGNE, donnees: null };
+    }
+    try {
+      const donnees = await auReseau(adresseDeputes(), delaiMs);
+      await magasin.ecrire(cle, donnees).catch(() => {});
+      return { etat: ETATS.SERVI, donnees, depuis: "reseau" };
+    } catch (e) {
+      return { etat: e.etat || ETATS.ECHEC, donnees: null, raison: e.message };
+    } finally { enVol.delete(cle); }
+  })();
+
+  enVol.set(cle, promesse);
+  return promesse;
+}
+
+/* LE CATALOGUE ET LES POSITIONS, memoire -> IndexedDB -> reseau, comme le reste.
+ *
+ * Deux fichiers et non un seul : le catalogue (28 Ko) est le meme pour tout le
+ * monde, les positions d'un departement pesent moins de deux kilo-octets. Un
+ * lecteur qui change de commune dans son departement ne retelecharge rien.
+ *
+ * Ils ne partent QUE si le lecteur deplie « Comment il a vote » : ni le premier
+ * ecran, ni « Qui decide » a l'ouverture ne les demandent. */
+/* 11 Ko compresses, demandes au premier ecran et une seule fois. C'est ce qui
+   permet de taper « Bagnolet » sans savoir qu'on habite dans le 93 : voir la
+   mesure des dix etapes en tete de scripts/extract-html.js. */
+export async function chargerCommunesBeta({ delaiMs = 8000 } = {}) {
+  return chargerSocle("socle:CMB", adresseCommunesBeta(), delaiMs);
+}
+export async function chargerComptesRegions({ delaiMs = 8000 } = {}) {
+  return chargerSocle("socle:CTR", adresseComptesRegions(), delaiMs);
+}
+export async function chargerElusRegion(code, { delaiMs = 8000 } = {}) {
+  return chargerSocle("reg:" + String(code).toUpperCase(), adresseElusRegion(code), delaiMs);
+}
+export async function chargerCatalogueScrutins({ delaiMs = 8000 } = {}) {
+  return chargerSocle("socle:SCR", adresseScrutins(), delaiMs);
+}
+export async function chargerVotes(dep, { delaiMs = 8000 } = {}) {
+  return chargerSocle("vote:" + String(dep).toUpperCase(), adresseVotes(dep), delaiMs);
+}
+export async function chargerProjets(dep, { delaiMs = 8000 } = {}) {
+  return chargerSocle("proj:" + String(dep).toUpperCase(), adresseProjets(dep), delaiMs);
+}
+export async function chargerCalendrierSenat({ delaiMs = 8000 } = {}) {
+  return chargerSocle("socle:CAL", adresseCalendrierSenat(), delaiMs);
+}
+export async function chargerEvenements({ delaiMs = 8000 } = {}) {
+  return chargerSocle("socle:EVT", adresseEvenements(), delaiMs);
+}
+
+/* Le trajet commun des trois etages, ecrit UNE fois. Les quatre chargements
+   au-dessus le repetaient mot pour mot ; la quatrieme copie est celle de trop. */
+async function chargerSocle(cle, url, delaiMs) {
+  const enCache = await magasin.lire(cle);
+  if (enCache) return { etat: ETATS.SERVI, donnees: enCache, depuis: "cache" };
+  if (enVol.has(cle)) return enVol.get(cle);
+  const promesse = (async () => {
+    if (typeof navigator !== "undefined" && navigator.onLine === false) {
+      return { etat: ETATS.HORS_LIGNE, donnees: null };
+    }
+    try {
+      const donnees = await auReseau(url, delaiMs);
+      await magasin.ecrire(cle, donnees).catch(() => {});
+      return { etat: ETATS.SERVI, donnees, depuis: "reseau" };
+    } catch (e) {
+      return { etat: e.etat || ETATS.ECHEC, donnees: null, raison: e.message };
+    } finally { enVol.delete(cle); }
+  })();
+  enVol.set(cle, promesse);
+  return promesse;
+}
+
 /* Préchargement : quand le navigateur est inactif, et JAMAIS en réseau mesuré.
    Un préchargement qui consomme le forfait de quelqu'un sans le lui demander
-   est un abus, même s'il rend l'application plus rapide. */
+   est un abus, même s'il rend l'application plus rapide.
+ *
+ * DEUX GARDES AJOUTEES, ET LA MESURE QUI LES A IMPOSEES. Le prechargement se
+ * declenchait au survol ET au focus, sans delai ni plafond. Au clavier, traverser
+ * la liste des cent quatre territoires met le focus sur chacun d'eux : cent
+ * quatre paquets departementaux mis en file, une centaine de kilo-octets chacun,
+ * une douzaine de mega-octets pour quelqu'un qui cherchait simplement le sien a
+ * la tabulation. La fonction violait donc exactement ce que son commentaire
+ * interdit.
+ *
+ *   1. UNE INTENTION A LA FOIS. Chaque appel annule le precedent : il faut que
+ *      le survol ou le focus SE POSE un quart de seconde pour que quoi que ce
+ *      soit parte. Traverser la liste ne declenche plus rien.
+ *   2. UN PLAFOND. Un lecteur a un departement, parfois deux quand il hesite.
+ *      Au-dela de trois paquets reellement telecharges d'avance, on s'arrete et
+ *      on attend un vrai clic. Les lectures qui viennent du cache ne comptent
+ *      pas : elles ne coutent rien.
+ */
+const DELAI_INTENTION = 250;
+const PLAFOND_PRECHARGEMENTS = 3;
+let minuteurIntention = null;
+let prechargesAuReseau = 0;
+
+export function annulerPrechargement() {
+  if (minuteurIntention !== null) { clearTimeout(minuteurIntention); minuteurIntention = null; }
+}
+
 export function prechargerDepartement(dep) {
   if (typeof navigator === "undefined") return;
   const c = navigator.connection;
   if (c && (c.saveData || /2g/.test(c.effectiveType || ""))) return;
-  const lancer = () => chargerDepartement(dep).catch(() => {});
-  if (typeof requestIdleCallback === "function") requestIdleCallback(lancer, { timeout: 2000 });
-  else setTimeout(lancer, 300);
+  if (prechargesAuReseau >= PLAFOND_PRECHARGEMENTS) return;
+
+  annulerPrechargement();
+  minuteurIntention = setTimeout(() => {
+    minuteurIntention = null;
+    const lancer = () => chargerDepartement(dep)
+      .then(r => { if (r && r.depuis === "reseau") prechargesAuReseau++; })
+      .catch(() => {});
+    if (typeof requestIdleCallback === "function") requestIdleCallback(lancer, { timeout: 2000 });
+    else setTimeout(lancer, 300);
+  }, DELAI_INTENTION);
 }

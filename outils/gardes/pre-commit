@@ -1,0 +1,38 @@
+#!/bin/sh
+# GARDE 1 — AUCUN COMMIT SUR main.
+#
+# POURQUOI ELLE EXISTE. pousser.bat v7 refuse de commiter sur main, mais c'est un
+# script : il suffit de taper `git commit` a la main, ou qu'un autre outil le
+# fasse, pour que la protection ne s'applique pas. Un garde-fou qui vit dans UN
+# script ne garde que ce script. Celui-ci vit dans git : il s'applique a tout ce
+# qui commite dans ce depot, quel que soit l'appelant.
+#
+# CE QU'ELLE N'EST PAS. Elle ne remplace pas la protection de branche cote
+# GitHub, qui est la seule a empecher un push distant. Les deux sont
+# necessaires : celle-ci arrete la faute, celle de GitHub arrete sa propagation.
+#
+# COMMENT FUSIONNER QUAND C'EST VOULU :
+#     REPERE_FUSION=1 git merge --ff-only <branche>
+# La variable doit etre posee a la main, sur une seule commande. Aucun script du
+# depot ne la pose, et le banc echoue si l'un d'eux s'y met.
+
+BRANCHE=$(git symbolic-ref --short HEAD 2>/dev/null)
+
+if [ "$BRANCHE" = "main" ] && [ "$REPERE_FUSION" != "1" ]; then
+  echo ""
+  echo "  REFUS : ce depot ne commite pas sur main."
+  echo ""
+  echo "  Fusionner dans main est une DECISION, et une decision se prend a la"
+  echo "  main. Un script d'entretien a deja laisse le depot sur main ; la tache"
+  echo "  horaire s'y est executee, a pousse un commit, et l'avance rapide est"
+  echo "  devenue impossible pendant huit heures."
+  echo ""
+  echo "  Remets-toi sur ta branche de travail :"
+  echo "      git checkout audit-finalisation-repere"
+  echo ""
+  echo "  Si tu fusionnes vraiment, et en le sachant :"
+  echo "      REPERE_FUSION=1 git merge --ff-only <branche>"
+  echo ""
+  exit 1
+fi
+exit 0

@@ -1,0 +1,29 @@
+# LES FINS DE LIGNE SONT LE MEME OCTET PARTOUT.
+#
+# Le depot est ecrit depuis Windows et construit sous Linux. Sans cette regle,
+# les memes fichiers pesaient 314 octets de plus d'un cote que de l'autre — un
+# octet par ligne — et le moindre aller-retour produisait un diff integral ou
+# rien n'avait change. Mesure du 26 aout 2026, App.jsx : 15 522 octets ici,
+# 15 836 la-bas, pour un contenu identique.
+#
+# `text=auto eol=lf` : Git normalise en LF dans l'historique. Les editeurs
+# Windows modernes lisent le LF sans broncher.
+* text=auto eol=lf
+
+# Ce qui n'est pas du texte ne doit JAMAIS etre normalise : une conversion de
+# fin de ligne dans un PNG le corrompt silencieusement.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.webp binary
+*.ico binary
+*.woff binary
+*.woff2 binary
+*.pdf binary
+*.zst binary
+
+# Les scripts PowerShell restent en CRLF : c'est ce qu'attend l'hote qui les
+# lance, et ils ne quittent pas Windows.
+*.ps1 text eol=crlf
+*.bat text eol=crlf
+*.cmd text eol=crlf
