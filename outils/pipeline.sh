@@ -220,6 +220,16 @@ rm -rf site_engendre
   # Senat continuerait seul si CE fichier-ci manquait a l'inverse.
   node scripts/agenda-an.mjs ./data \
     || echo "::warning::agenda de l'Assemblee non rafraichi - le calendrier continue avec le Senat seul"
+  # SCRUTINS SOLENNELS (23/09/2026) - lit directement data/brut_Scrutins
+  # (depile a l'etape 1 de ce meme script, encore present a ce stade),
+  # jamais outils/scrutins_an.json : la fenetre glissante de 80 scrutins de
+  # ce dernier n'a pas de sens ici, le but est de garder TOUS les scrutins
+  # solennels depuis le debut de la legislature. Mesure sur l'archive
+  # complete le 23/09/2026 : 95 scrutins sur 8434 (72 solennels + 23
+  # motions de censure), 29,8 Ko - pas les ~843 qu'un echantillon de 80
+  # scrutins recents avait suggere a tort avant cette mesure.
+  node scripts/scrutins-solennels.mjs ./data \
+    || echo "::warning::scrutins solennels non rafraichis - le reste de l'application continue"
   pnpm install --frozen-lockfile
   # RISQUE CONFIRME PAR AUDIT LE 22/09/2026, PAS SUPPOSE : ce bloc n'installait
   # aucun Chromium pour mono/. Le premier essai reel sur le runner GitHub
