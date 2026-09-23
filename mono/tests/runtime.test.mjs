@@ -870,9 +870,18 @@ console.log("\n--- zoom texte 200% -------------------------------------------")
 /* TROUVE PAR L'AUDIT WCAG DU 16/09/2026 (1.4.4/1.4.10) : a 200% de zoom
  * texte, l'ecran "Qui decide" defilait horizontalement (726 px de contenu
  * pour 390 px de viewport) — cause tracee a `.ligne-h b { white-space:
- * nowrap }` applique a la phrase de circonscription, une valeur bien plus
- * longue que les noms/montants que cette regle visait. Corrige avec une
- * classe qui ne touche qu'a cette phrase (`.valeur-longue`). */
+ * nowrap }`. Le correctif qui tient : `flex-wrap: wrap` sur `.ligne-h`
+ * (voir l'historique complet dans app.css).
+ *
+ * REGRESSION TROUVEE LE 22/09/2026 PAR LE RUNNER GITHUB REEL, INVISIBLE SUR
+ * CE POSTE (0px local, 55px sur ubuntu-latest, meme Chromium) : deux causes
+ * distinctes dans app.css, aucune liee a une police —
+ *   1. `.tag { white-space: nowrap }` : "DONNEE OFFICIELLE" depassait la
+ *      carte de 26px a 200%.
+ *   2. `<Mot>` est un <button> : `appearance: auto` de la feuille UA
+ *      empechait "intercommunalite" de casser au milieu du mot, 46px de trop.
+ * Ce test est ce qui a mesure les deux — c'est lui qui doit continuer a
+ * detecter tout retour de l'un ou l'autre, ou d'un troisieme cas similaire. */
 const ctxZoom = await nav.newContext({ viewport: { width: 390, height: 844 } });
 const pageZoom = await ctxZoom.newPage();
 await pageZoom.goto(base, { waitUntil: "networkidle" });
@@ -884,56 +893,6 @@ await pageZoom.evaluate(() => { document.documentElement.style.fontSize = "200%"
 await pageZoom.waitForTimeout(200);
 const debordement = await pageZoom.evaluate(() =>
   document.documentElement.scrollWidth - document.documentElement.clientWidth);
-
-/* DIAGNOSTIC TEMPORAIRE — PHASE 3.3bis, a retirer une fois la cause corrigee.
- * Ne s'execute QUE si le debordement est reellement mesure : aucun cout sur
- * un run vert. Objectif : nommer l'element responsable au lieu de deviner
- * une cause (police, flex, min-width...) sans preuve. */
-if (debordement > 1) {
-  const diagnostic = await pageZoom.evaluate(() => {
-    const vpWidth = document.documentElement.clientWidth;
-    const suspects = [];
-    document.querySelectorAll("body *").forEach(el => {
-      const r = el.getBoundingClientRect();
-      const depasseADroite = r.right > vpWidth + 0.5;
-      const depasseAGauche = r.left < -0.5;
-      const debordeSoiMeme = el.scrollWidth > el.clientWidth + 0.5;
-      if (!depasseADroite && !depasseAGauche && !debordeSoiMeme) return;
-      const cs = getComputedStyle(el);
-      const parent = el.parentElement;
-      const csParent = parent ? getComputedStyle(parent) : null;
-      suspects.push({
-        ampleur: Math.max(r.right - vpWidth, -r.left, el.scrollWidth - el.clientWidth),
-        tag: el.tagName.toLowerCase(),
-        classes: el.className || "",
-        texte: (el.textContent || "").trim().slice(0, 70),
-        rect: { x: Math.round(r.x), right: Math.round(r.right), width: Math.round(r.width) },
-        scrollWidth: el.scrollWidth, clientWidth: el.clientWidth,
-        style: { width: cs.width, minWidth: cs.minWidth, maxWidth: cs.maxWidth,
-          display: cs.display, position: cs.position, overflow: cs.overflow,
-          whiteSpace: cs.whiteSpace, flexShrink: cs.flexShrink,
-          fontFamily: cs.fontFamily, fontSize: cs.fontSize, transform: cs.transform },
-        parent: parent ? { tag: parent.tagName.toLowerCase(), classes: parent.className || "",
-          display: csParent.display, flexWrap: csParent.flexWrap } : null,
-      });
-    });
-    suspects.sort((a, b) => b.ampleur - a.ampleur);
-    return { vpWidth, docScrollWidth: document.documentElement.scrollWidth, top5: suspects.slice(0, 5) };
-  });
-  console.log("\n  DIAGNOSTIC DEBORDEMENT (" + debordement + " px) — viewport " + diagnostic.vpWidth +
-    " px, document.scrollWidth " + diagnostic.docScrollWidth + " px");
-  diagnostic.top5.forEach((s, i) => {
-    console.log("  #" + (i + 1) + " ampleur=" + Math.round(s.ampleur) + "px  <" + s.tag +
-      (s.classes ? " class=\"" + s.classes + "\"" : "") + ">  texte=\"" + s.texte + "\"");
-    console.log("      rect=" + JSON.stringify(s.rect) + "  scrollWidth=" + s.scrollWidth +
-      " clientWidth=" + s.clientWidth);
-    console.log("      style=" + JSON.stringify(s.style));
-    console.log("      parent=" + JSON.stringify(s.parent));
-  });
-  await pageZoom.screenshot({ path: "tests/_diag_debordement_200.png", fullPage: true });
-  console.log("  capture : tests/_diag_debordement_200.png");
-}
-
 verif("accessibilite — a 200% de zoom texte, l'ecran Qui decide ne defile pas horizontalement",
   debordement <= 1, "debordement de " + debordement + " px");
 await ctxZoom.close();
