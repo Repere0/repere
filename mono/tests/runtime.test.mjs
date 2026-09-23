@@ -772,6 +772,131 @@ verif("invariant 2 — l'entree par commune ne fait fuiter aucun code de commune
   vues.join(" "));
 await ctxDirect.close();
 
+console.log("\n--- aujourd'hui : fraicheur de la semaine ----------------------");
+/* PROUVE LE BLOC "Quoi d'autre cette semaine ?" (Aujourdhui.jsx) EN LE
+   FORCANT A APPARAITRE. Avec les donnees reelles/fixtures d'aujourd'hui,
+   ce bloc est INERT la plupart du temps : le dernier vote solennel date du
+   21/07/2026, le dernier fait editorial du 14/08/2026, et les projets sont
+   dates de fin d'exercice 2024/2025 — tous hors d'une fenetre de sept jours
+   depuis longtemps. C'est un choix delibere (ne pas paraitre plus actif que
+   la donnee reelle ne l'est), mais ca veut dire qu'un banc qui ne visite
+   jamais ce cas ne prouverait rien : on injecte donc UN fait editorial
+   national date d'aujourd'hui, on verifie qu'il apparait avec sa source, et
+   on restaure le fichier avant la fin du bloc. */
+const fEvenements = path.join(DIST, "data", "evenements.json");
+const evenementsOriginal = fs.readFileSync(fEvenements, "utf8");
+const ctxAuj = await nav.newContext({ viewport: { width: 390, height: 844 } });
+const pageAuj = await ctxAuj.newPage();
+try {
+  const evMute = JSON.parse(evenementsOriginal);
+  evMute.r = [...evMute.r, {
+    id: "banc-fraicheur-semaine", t: "Fait de banc pour prouver la fraicheur de la semaine",
+    d: new Date().toISOString().slice(0, 10), e: "france",
+    src: "https://exemple.test/banc", srcn: "Source de banc", conf: "verifie", insee: "",
+  }];
+  fs.writeFileSync(fEvenements, JSON.stringify(evMute));
+
+  await pageAuj.goto(base, { waitUntil: "networkidle" });
+  await pageAuj.getByLabel(/Où habitez-vous/i).fill("64");
+  await pageAuj.waitForTimeout(300);
+  await pageAuj.getByRole("button", { name: /^64\b/ }).click();
+  await pageAuj.waitForTimeout(800);
+  await pageAuj.getByLabel(/Votre commune/i).fill("Ustaritz");
+  await pageAuj.waitForTimeout(300);
+  await pageAuj.getByRole("button", { name: "Ustaritz", exact: true }).click();
+  await pageAuj.waitForTimeout(700);
+  await pageAuj.getByRole("button", { name: /Voir aujourd.hui à Ustaritz/i }).click();
+  await pageAuj.waitForTimeout(900);
+
+  const texteAuj = await pageAuj.evaluate(() => document.body.innerText);
+  verif("aujourd'hui — le bloc de fraicheur hebdomadaire apparait quand un fait recent existe",
+    /Quoi d.autre cette semaine/.test(texteAuj)
+    && /Fait de banc pour prouver la fraicheur de la semaine/.test(texteAuj),
+    texteAuj.slice(0, 300).replace(/\n+/g, " / "));
+  verif("invariant 4 — le fait de la semaine porte sa propre source",
+    /Source de banc/.test(texteAuj) && /voir à la source/.test(texteAuj),
+    texteAuj.slice(0, 300).replace(/\n+/g, " / "));
+} finally {
+  fs.writeFileSync(fEvenements, evenementsOriginal);
+  await ctxAuj.close();
+}
+
+console.log("\n--- retention : depuis votre derniere visite -------------------");
+/* PROUVE TROIS CHOSES DISTINCTES, PAS UNE SEULE : (1) un ancien lecteur dont
+   le stockage porte encore l'ancien format (une chaine nue de departement,
+   pose avant le 23/09/2026) continue de fonctionner — aucune migration
+   silencieuse ne doit le faire echouer ; (2) une fois un instant de visite
+   REEL enregistre, le calcul compare bien A CET INSTANT, pas a une fenetre
+   fixe — un fait plus vieux que la visite reste EXCLU, un fait plus recent
+   apparait ; (3) la cle reste unique et ne porte toujours qu'un departement
+   et un instant, jamais une commune (verifie plus haut, invariant 2). */
+console.log("  (1) compatibilite avec l'ancien format — une chaine nue)");
+const ctxAncien = await nav.newContext({ viewport: { width: 390, height: 844 } });
+const pageAncien = await ctxAncien.newPage();
+await pageAncien.addInitScript(() => localStorage.setItem("repere.departement", "64"));
+await pageAncien.goto(base, { waitUntil: "networkidle" });
+await pageAncien.waitForTimeout(1200);
+const texteAncien = await pageAncien.evaluate(() => document.body.innerText);
+verif("retention — l'ancien format (chaine nue) continue d'ouvrir le bon departement",
+  /Pyrénées-Atlantiques/.test(texteAncien),
+  texteAncien.slice(0, 200).replace(/\n+/g, " / "));
+const stockeApresAncien = await pageAncien.evaluate(() => localStorage.getItem("repere.departement"));
+let migre = null;
+try { migre = JSON.parse(stockeApresAncien); } catch { /* migre restera null, le controle echouera a raison */ }
+verif("retention — l'ancien format est remplace par {d, v} des cette visite, sans perdre le departement",
+  migre && migre.d === "64" && typeof migre.v === "string",
+  String(stockeApresAncien));
+await ctxAncien.close();
+
+console.log("  (2) la comparaison se fait a l'instant de visite REEL, pas a une fenetre fixe");
+const hier = new Date(Date.now() - 24 * 60 * 60 * 1000);
+const avantHier = new Date(Date.now() - 2 * 24 * 60 * 60 * 1000);
+const fEvenementsRetention = path.join(DIST, "data", "evenements.json");
+const evenementsAvantRetention = fs.readFileSync(fEvenementsRetention, "utf8");
+const ctxRetention = await nav.newContext({ viewport: { width: 390, height: 844 } });
+const pageRetention = await ctxRetention.newPage();
+try {
+  const evMuteRetention = JSON.parse(evenementsAvantRetention);
+  evMuteRetention.r = [...evMuteRetention.r,
+    { id: "banc-retention-apres", t: "Fait de banc survenu APRES la derniere visite",
+      d: new Date().toISOString().slice(0, 10), e: "france",
+      src: "https://exemple.test/banc-apres", srcn: "Source de banc", conf: "verifie", insee: "" },
+    { id: "banc-retention-avant", t: "Fait de banc survenu AVANT la derniere visite",
+      d: avantHier.toISOString().slice(0, 10), e: "france",
+      src: "https://exemple.test/banc-avant", srcn: "Source de banc", conf: "verifie", insee: "" },
+  ];
+  fs.writeFileSync(fEvenementsRetention, JSON.stringify(evMuteRetention));
+
+  /* L'INSTANT DE VISITE EST INJECTE DIRECTEMENT, PAS REJOUE PAR UN VRAI ALLER-
+     RETOUR : ce controle isole le calcul d'affichage (le sujet de ce test),
+     pas le mecanisme d'ecriture (deja prouve par le controle (1) ci-dessus et
+     par invariant 2 plus haut dans ce fichier). */
+  await pageRetention.addInitScript(([cle, valeur]) => localStorage.setItem(cle, valeur),
+    ["repere.departement", JSON.stringify({ d: "64", v: hier.toISOString() })]);
+  await pageRetention.goto(base, { waitUntil: "networkidle" });
+  await pageRetention.waitForTimeout(300);
+  await pageRetention.getByLabel(/Votre commune/i).fill("Ustaritz");
+  await pageRetention.waitForTimeout(300);
+  await pageRetention.getByRole("button", { name: "Ustaritz", exact: true }).click();
+  await pageRetention.waitForTimeout(700);
+  await pageRetention.getByRole("button", { name: /Voir aujourd.hui à Ustaritz/i }).click();
+  await pageRetention.waitForTimeout(900);
+
+  const texteRetention = await pageRetention.evaluate(() => document.body.innerText);
+  verif("retention — le titre annonce la vraie date de la derniere visite, pas une fenetre fixe",
+    new RegExp("Depuis votre visite du " + dateFr(hier.toISOString().slice(0, 10))).test(texteRetention),
+    texteRetention.slice(0, 200).replace(/\n+/g, " / "));
+  verif("retention — un fait survenu apres la derniere visite apparait",
+    /Fait de banc survenu APRES la derniere visite/.test(texteRetention),
+    texteRetention.slice(0, 300).replace(/\n+/g, " / "));
+  verif("retention — un fait survenu avant la derniere visite reste exclu (ni relegue, ni ignore : absent)",
+    !/Fait de banc survenu AVANT la derniere visite/.test(texteRetention),
+    texteRetention.slice(0, 300).replace(/\n+/g, " / "));
+} finally {
+  fs.writeFileSync(fEvenementsRetention, evenementsAvantRetention);
+  await ctxRetention.close();
+}
+
 console.log("\n--- recherche et accents -------------------------------------");
 /* LA RECHERCHE NE DOIT PAS DEPENDRE DES ACCENTS, DANS LES DEUX SENS. Depuis que
    les libelles portent leur orthographe officielle, une comparaison brute
@@ -1297,131 +1422,6 @@ verif("accessibilite — la mesure du contour porte bien sur un vrai :focus-visi
 verif("accessibilite — le contour de focus des commandes qui ouvrent les votes atteint 3:1 en theme sombre",
   contourVotes.r >= 3, JSON.stringify(contourVotes));
 await ctxSombre.close();
-
-console.log("\n--- aujourd'hui : fraicheur de la semaine ----------------------");
-/* PROUVE LE BLOC "Quoi d'autre cette semaine ?" (Aujourdhui.jsx) EN LE
-   FORCANT A APPARAITRE. Avec les donnees reelles/fixtures d'aujourd'hui,
-   ce bloc est INERT la plupart du temps : le dernier vote solennel date du
-   21/07/2026, le dernier fait editorial du 14/08/2026, et les projets sont
-   dates de fin d'exercice 2024/2025 — tous hors d'une fenetre de sept jours
-   depuis longtemps. C'est un choix delibere (ne pas paraitre plus actif que
-   la donnee reelle ne l'est), mais ca veut dire qu'un banc qui ne visite
-   jamais ce cas ne prouverait rien : on injecte donc UN fait editorial
-   national date d'aujourd'hui, on verifie qu'il apparait avec sa source, et
-   on restaure le fichier avant la fin du bloc. */
-const fEvenements = path.join(DIST, "data", "evenements.json");
-const evenementsOriginal = fs.readFileSync(fEvenements, "utf8");
-const ctxAuj = await nav.newContext({ viewport: { width: 390, height: 844 } });
-const pageAuj = await ctxAuj.newPage();
-try {
-  const evMute = JSON.parse(evenementsOriginal);
-  evMute.r = [...evMute.r, {
-    id: "banc-fraicheur-semaine", t: "Fait de banc pour prouver la fraicheur de la semaine",
-    d: new Date().toISOString().slice(0, 10), e: "france",
-    src: "https://exemple.test/banc", srcn: "Source de banc", conf: "verifie", insee: "",
-  }];
-  fs.writeFileSync(fEvenements, JSON.stringify(evMute));
-
-  await pageAuj.goto(base, { waitUntil: "networkidle" });
-  await pageAuj.getByLabel(/Où habitez-vous/i).fill("64");
-  await pageAuj.waitForTimeout(300);
-  await pageAuj.getByRole("button", { name: /^64\b/ }).click();
-  await pageAuj.waitForTimeout(800);
-  await pageAuj.getByLabel(/Votre commune/i).fill("Ustaritz");
-  await pageAuj.waitForTimeout(300);
-  await pageAuj.getByRole("button", { name: "Ustaritz", exact: true }).click();
-  await pageAuj.waitForTimeout(700);
-  await pageAuj.getByRole("button", { name: /Voir aujourd.hui à Ustaritz/i }).click();
-  await pageAuj.waitForTimeout(900);
-
-  const texteAuj = await pageAuj.evaluate(() => document.body.innerText);
-  verif("aujourd'hui — le bloc de fraicheur hebdomadaire apparait quand un fait recent existe",
-    /Quoi d.autre cette semaine/.test(texteAuj)
-    && /Fait de banc pour prouver la fraicheur de la semaine/.test(texteAuj),
-    texteAuj.slice(0, 300).replace(/\n+/g, " / "));
-  verif("invariant 4 — le fait de la semaine porte sa propre source",
-    /Source de banc/.test(texteAuj) && /voir à la source/.test(texteAuj),
-    texteAuj.slice(0, 300).replace(/\n+/g, " / "));
-} finally {
-  fs.writeFileSync(fEvenements, evenementsOriginal);
-  await ctxAuj.close();
-}
-
-console.log("\n--- retention : depuis votre derniere visite -------------------");
-/* PROUVE TROIS CHOSES DISTINCTES, PAS UNE SEULE : (1) un ancien lecteur dont
-   le stockage porte encore l'ancien format (une chaine nue de departement,
-   pose avant le 23/09/2026) continue de fonctionner — aucune migration
-   silencieuse ne doit le faire echouer ; (2) une fois un instant de visite
-   REEL enregistre, le calcul compare bien A CET INSTANT, pas a une fenetre
-   fixe — un fait plus vieux que la visite reste EXCLU, un fait plus recent
-   apparait ; (3) la cle reste unique et ne porte toujours qu'un departement
-   et un instant, jamais une commune (verifie plus haut, invariant 2). */
-console.log("  (1) compatibilite avec l'ancien format — une chaine nue)");
-const ctxAncien = await nav.newContext({ viewport: { width: 390, height: 844 } });
-const pageAncien = await ctxAncien.newPage();
-await pageAncien.addInitScript(() => localStorage.setItem("repere.departement", "64"));
-await pageAncien.goto(base, { waitUntil: "networkidle" });
-await pageAncien.waitForTimeout(1200);
-const texteAncien = await pageAncien.evaluate(() => document.body.innerText);
-verif("retention — l'ancien format (chaine nue) continue d'ouvrir le bon departement",
-  /Pyrénées-Atlantiques/.test(texteAncien),
-  texteAncien.slice(0, 200).replace(/\n+/g, " / "));
-const stockeApresAncien = await pageAncien.evaluate(() => localStorage.getItem("repere.departement"));
-let migre = null;
-try { migre = JSON.parse(stockeApresAncien); } catch { /* migre restera null, le controle echouera a raison */ }
-verif("retention — l'ancien format est remplace par {d, v} des cette visite, sans perdre le departement",
-  migre && migre.d === "64" && typeof migre.v === "string",
-  String(stockeApresAncien));
-await ctxAncien.close();
-
-console.log("  (2) la comparaison se fait a l'instant de visite REEL, pas a une fenetre fixe");
-const hier = new Date(Date.now() - 24 * 60 * 60 * 1000);
-const avantHier = new Date(Date.now() - 2 * 24 * 60 * 60 * 1000);
-const fEvenementsRetention = path.join(DIST, "data", "evenements.json");
-const evenementsAvantRetention = fs.readFileSync(fEvenementsRetention, "utf8");
-const ctxRetention = await nav.newContext({ viewport: { width: 390, height: 844 } });
-const pageRetention = await ctxRetention.newPage();
-try {
-  const evMuteRetention = JSON.parse(evenementsAvantRetention);
-  evMuteRetention.r = [...evMuteRetention.r,
-    { id: "banc-retention-apres", t: "Fait de banc survenu APRES la derniere visite",
-      d: new Date().toISOString().slice(0, 10), e: "france",
-      src: "https://exemple.test/banc-apres", srcn: "Source de banc", conf: "verifie", insee: "" },
-    { id: "banc-retention-avant", t: "Fait de banc survenu AVANT la derniere visite",
-      d: avantHier.toISOString().slice(0, 10), e: "france",
-      src: "https://exemple.test/banc-avant", srcn: "Source de banc", conf: "verifie", insee: "" },
-  ];
-  fs.writeFileSync(fEvenementsRetention, JSON.stringify(evMuteRetention));
-
-  /* L'INSTANT DE VISITE EST INJECTE DIRECTEMENT, PAS REJOUE PAR UN VRAI ALLER-
-     RETOUR : ce controle isole le calcul d'affichage (le sujet de ce test),
-     pas le mecanisme d'ecriture (deja prouve par le controle (1) ci-dessus et
-     par invariant 2 plus haut dans ce fichier). */
-  await pageRetention.addInitScript(([cle, valeur]) => localStorage.setItem(cle, valeur),
-    ["repere.departement", JSON.stringify({ d: "64", v: hier.toISOString() })]);
-  await pageRetention.goto(base, { waitUntil: "networkidle" });
-  await pageRetention.waitForTimeout(300);
-  await pageRetention.getByLabel(/Votre commune/i).fill("Ustaritz");
-  await pageRetention.waitForTimeout(300);
-  await pageRetention.getByRole("button", { name: "Ustaritz", exact: true }).click();
-  await pageRetention.waitForTimeout(700);
-  await pageRetention.getByRole("button", { name: /Voir aujourd.hui à Ustaritz/i }).click();
-  await pageRetention.waitForTimeout(900);
-
-  const texteRetention = await pageRetention.evaluate(() => document.body.innerText);
-  verif("retention — le titre annonce la vraie date de la derniere visite, pas une fenetre fixe",
-    new RegExp("Depuis votre visite du " + dateFr(hier.toISOString().slice(0, 10))).test(texteRetention),
-    texteRetention.slice(0, 200).replace(/\n+/g, " / "));
-  verif("retention — un fait survenu apres la derniere visite apparait",
-    /Fait de banc survenu APRES la derniere visite/.test(texteRetention),
-    texteRetention.slice(0, 300).replace(/\n+/g, " / "));
-  verif("retention — un fait survenu avant la derniere visite reste exclu (ni relegue, ni ignore : absent)",
-    !/Fait de banc survenu AVANT la derniere visite/.test(texteRetention),
-    texteRetention.slice(0, 300).replace(/\n+/g, " / "));
-} finally {
-  fs.writeFileSync(fEvenementsRetention, evenementsAvantRetention);
-  await ctxRetention.close();
-}
 
 console.log("\n--- hors ligne -----------------------------------------------");
 const sw = await page.evaluate(async () => {
