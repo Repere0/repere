@@ -1082,15 +1082,27 @@ async function extraire() {
     let lignes = 0, communesServies = 0;
     for (const dep of depsAvecProjets) {
       const f = JSON.parse(fs.readFileSync(path.join(SORTIE, "projets", dep + ".json"), "utf8"));
-      const habitantes = JSON.parse(fs.readFileSync(
-        path.join(SORTIE, "departments", dep + ".json"), "utf8")).communes;
+      const paquetDep = JSON.parse(fs.readFileSync(
+        path.join(SORTIE, "departments", dep + ".json"), "utf8"));
+      const habitantes = paquetDep.communes;
+      /* TROUVE EN PRODUCTION LE 23/09/2026, PREMIER RUN REEL : 92077
+         (Ville-d'Avray) porte un projet DGCL mais n'est pas dans `communes`,
+         qui ne liste que les communes couvertes par le RNE. Ville-d'Avray
+         existe reellement - c'est exactement la distinction que
+         `paquet.manquantes` existe deja pour faire (voir plus haut, et le
+         test "absence chez nous vs absence dans le monde" du 16/09/2026) :
+         une commune officiellement nommee mais absente du RNE n'est pas une
+         commune qui n'existe pas. Le controle continue de refuser un code
+         qui n'est NI dans l'un NI dans l'autre - une vraie cle mal formee. */
+      const officiellementNommee = insee =>
+        habitantes[insee] || (paquetDep.manquantes && paquetDep.manquantes[insee]);
       for (const [insee, liste] of Object.entries(f.communes)) {
         const attendu = insee.startsWith("97") ? insee.slice(0, 3) : insee.slice(0, 2);
         if (attendu !== dep) {
           console.error(`ECHEC : ${insee} publie dans le paquet ${dep}`);
           process.exit(10);
         }
-        if (!habitantes[insee]) {
+        if (!officiellementNommee(insee)) {
           console.error(`ECHEC : ${insee} porte des projets mais n'existe pas dans ${dep}.json`);
           process.exit(10);
         }
