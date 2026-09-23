@@ -4,17 +4,17 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build && node ../../scripts/empreinte-sw.mjs dist",
+    "build": "vite build && node ../../scripts/copier-donnees.mjs ../../data dist/data && node ../../scripts/empreinte-sw.mjs dist",
     "preview": "vite preview --port 4173"
   },
   "dependencies": {
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1",
+    "@repere/data-utils": "workspace:*",
     "@repere/ui": "workspace:*",
-    "@repere/data-utils": "workspace:*"
+    "preact": "10.27.2",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
   },
   "devDependencies": {
-    "@vitejs/plugin-react": "^4.3.1",
     "vite": "^5.4.0"
   }
 }

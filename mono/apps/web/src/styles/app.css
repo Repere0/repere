@@ -2,7 +2,7 @@
 .app { max-width: 820px; margin: 0 auto; padding: clamp(24px, 5vw, 56px) clamp(16px, 4vw, 32px) 88px; }
 
 .entete { border-bottom: 1px solid var(--trait); padding-bottom: 1.6rem; margin-bottom: 1.6rem; }
-.eyebrow { font-size: .72rem; font-weight: 700; letter-spacing: .14em; text-transform: uppercase;
+.eyebrow { font-size: .82rem; font-weight: 700; letter-spacing: .14em; text-transform: uppercase;
   color: var(--sourd); margin: 0 0 .7rem; }
 .chapeau { color: var(--sourd); max-width: 58ch; margin-bottom: 0; }
 .invite { color: var(--sourd); }
@@ -10,6 +10,25 @@
 .rangee { display: flex; flex-wrap: wrap; gap: calc(var(--pas) * 2); }
 .rangee.liste { max-height: 15rem; overflow-y: auto; padding: 2px; }
 .departements { margin-bottom: 1.4rem; }
+
+/* L'ECRAN D'ENTREE. Un champ, deux groupes de resultats, et le mur des 104
+   departements replie. Le libelle du champ est plus gros que les autres : c'est
+   la seule question que le produit pose. */
+.entree .champ > span { font-size: 1rem; color: var(--encre); }
+.entree .champ input { font-size: 1.05rem; }
+/* « Communes » / « Departements » : un intitule de groupe, pas un titre de
+   section — il n'entre pas dans le plan de la page pour un lecteur d'ecran, le
+   role="group" et son aria-label s'en chargent. */
+.groupe {
+  font-family: var(--t-titre); font-size: .82rem; font-weight: 700;
+  letter-spacing: .04em; color: var(--sourd); margin: 1rem 0 .45rem;
+}
+/* Dans une puce de commune, le departement est une precision, pas le nom. */
+.entree .liste .puce { max-width: 100%; }
+.entree .liste .puce .puce-code { font-size: .82rem; color: var(--sourd); font-family: var(--t-titre); }
+.entree .liste .puce.actif .puce-code { color: inherit; }
+.entree .liste .puce .puce-nom { color: var(--encre); font-weight: 600; }
+.entree .rangee.liste { max-height: 19rem; }
 /* Le choix du departement se replie une fois fait. Cent quatre pastilles
    deployees en permanence enterraient le contenu sous le moyen d'y acceder. */
 .choix { border: 1px solid var(--trait); border-radius: var(--r); background: var(--carte); }
@@ -19,10 +38,29 @@
   display: flex; align-items: center; gap: .4rem;
 }
 .choix > summary::-webkit-details-marker { display: none; }
-.choix > summary::after { content: "▾"; margin-left: auto; color: var(--sourd); }
+.choix-libelle { flex: 1 1 auto; min-width: 0; }
+.choix-action { color: var(--sourd); font-weight: 500; }
+.choix > summary::after { content: "▾"; margin-left: .6rem; flex: 0 0 auto; color: var(--sourd); }
 .choix[open] > summary::after { content: "▴"; }
 .choix > summary b { color: var(--e-dept); }
-.liste-dept { max-height: 13rem; overflow-y: auto; padding: 0 1rem 1rem; }
+.dedans-choix { padding: 0 1rem 1rem; }
+.dedans-choix .champ { margin-bottom: .7rem; }
+.dedans-choix .note { display: block; align-self: auto; margin: .5rem 0 0; }
+.liste-dept { max-height: 15rem; overflow-y: auto; padding: 2px; }
+/* Le numero reste lisible d'un coup d'oeil, le nom l'explique. */
+.puce-code { font-variant-numeric: tabular-nums; }
+.puce-nom { font-weight: 500; color: var(--sourd); }
+.puce.actif .puce-nom { color: inherit; }
+
+/* « JE SUIS OU ». Une ligne qui ne bouge plus quand on change d'onglet : sans
+   elle, les ecrans se ressemblaient assez pour qu'on oublie quelle commune on
+   regarde. */
+.choix-commune { margin-bottom: 1.2rem; }
+.choix-commune .note { display: block; align-self: auto; margin: .5rem 0 0; }
+.situe { font-family: var(--t-titre); font-size: .95rem; color: var(--sourd);
+  border-left: 4px solid var(--e-ville); padding: .1rem 0 .1rem .7rem; margin: 1.2rem 0 0; }
+.situe b { color: var(--encre); }
+.tx-intro { margin-top: 0; margin-bottom: .9rem; }
 
 .puce, .onglet {
   font-family: var(--t-titre); font-size: .88rem; font-weight: 600;
@@ -36,12 +74,20 @@
 .puce.actif, .onglet.actif { background: var(--encre); color: var(--sol); border-color: var(--encre); }
 .pastille { width: 8px; height: 8px; border-radius: 99px; flex: 0 0 auto; }
 
-.onglets { display: flex; gap: calc(var(--pas) * 2); margin: 1.4rem 0 1.2rem;
-  overflow-x: auto; padding-bottom: 2px; }
-.onglet { border-radius: var(--r); white-space: nowrap; }
+/* Les onglets PASSENT A LA LIGNE plutot que de defiler. A 390 px les trois ne
+   tiennent pas sur une ligne : le troisieme etait coupe par le bord de l'ecran,
+   sans rien qui laisse deviner qu'on pouvait faire defiler pour l'atteindre. */
+.onglets { display: flex; flex-wrap: wrap; gap: calc(var(--pas) * 2);
+  margin: 1rem 0 1.2rem; padding-bottom: 2px; }
+/* Le cinquieme onglet (calendrier, 17/09/2026) a fait passer la barre de deux
+   a trois lignes a 375 px, enfoncant encore le nom du maire. Le remede reste
+   local a .onglet (pas a .puce, qui partage la regle et sert d'autres grilles) :
+   un peu moins de respiration horizontale, jamais moins que la cible tactile
+   de 44 px, mesure a chaque fois dans le vrai navigateur, pas suppose. */
+.onglet { border-radius: var(--r); white-space: nowrap; padding: .5rem .7rem; }
 
 .champ { display: block; margin-bottom: 1rem; }
-.champ > span { display: block; font-family: var(--t-titre); font-size: .78rem; font-weight: 600;
+.champ > span { display: block; font-family: var(--t-titre); font-size: .84rem; font-weight: 600;
   letter-spacing: .04em; color: var(--sourd); margin-bottom: .35rem; }
 .champ input {
   width: 100%; min-height: 44px; padding: .55rem .8rem; font: inherit;
@@ -51,23 +97,83 @@
 
 .pile { display: flex; flex-direction: column; gap: 1rem; }
 
+/* LA COULEUR D'ECHELON PORTE SUR LE FILET, ET SUR LE TITRE QUAND ELLE EST
+   LISIBLE. En theme clair les cinq echelons passent le seuil de contraste sur
+   fond de carte (3,2 a 16,8) ; en theme sombre deux d'entre eux tombent sous le
+   seuil — « france » a 1,02, « region » a 2,42. Le filet, lui, reste colore :
+   c'est un trait decoratif, pas du texte. */
 .carte {
-  background: var(--carte); border: 1px solid var(--trait); border-left: 4px solid var(--sourd);
+  background: var(--carte); border: 1px solid var(--trait);
+  border-left: 4px solid var(--e, var(--sourd));
   border-radius: var(--r); padding: 1.05rem 1.2rem; box-shadow: var(--ombre);
 }
+.carte h2 { color: var(--e, var(--encre)); }
+.tuile-v { color: var(--e, var(--encre)); }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .carte h2,
+  :root:not([data-theme="light"]) .tuile-v { color: var(--encre); }
+}
+:root[data-theme="dark"] .carte h2,
+:root[data-theme="dark"] .tuile-v { color: var(--encre); }
 .carte-h { display: flex; align-items: flex-start; justify-content: space-between; gap: .8rem;
-  margin-bottom: .8rem; }
+  flex-wrap: wrap; margin-bottom: .8rem; }
+/* SUR UN TELEPHONE, L'ETIQUETTE PASSE SOUS LE TITRE. Vu sur capture apres le
+   relevement du plancher typographique : a 13 px, « DONNÉE OFFICIELLE » a cote du
+   titre reduisait « À l'Assemblée nationale » a trois lignes de trois mots. Le
+   titre reprend toute la largeur, l'etiquette se pose dessous — et l'ordre de
+   lecture reste celui du document, titre d'abord. */
+@media (max-width: 480px) {
+  .carte-h > div { flex: 1 1 100%; }
+  .carte-h .tag { align-self: flex-start; }
+}
+/* TROUVE PAR LE RUNNER GITHUB REEL LE 22/09/2026, INVISIBLE EN LOCAL : a 200%
+   de zoom, le titre "Votre intercommunalite" deborde de 55px sur ubuntu-latest,
+   0px sur ce poste. Mesure isolee : le mot le plus long d'un titre peut, a lui
+   seul, exceder la largeur de la carte sans cette regle. */
+.carte-h h2, .carte-h p { overflow-wrap: break-word; }
 .carte-h h2 { margin: 0; }
 .carte-s { margin: .2rem 0 0; font-size: .86rem; color: var(--sourd); }
-.tag { font-family: var(--t-titre); font-size: .62rem; font-weight: 700; letter-spacing: .09em;
+/* PLANCHER TYPOGRAPHIQUE 13 px, POSE LE 13/09/2026 SUR MESURE. Sur les six
+   ecrans du parcours, 46 a 63 % du texte etait sous 14 px, avec des crans a
+   9,92 px (cette etiquette) et 10,56 px (les intitules de tuiles). La regle du
+   projet dit « aucun texte porteur de sens sous 13 px » ; elle etait ecrite et
+   n'etait appliquee nulle part. L'etiquette perd son interlettrage serre pour
+   tenir a cette taille sans pousser le titre de la carte a la ligne. */
+.tag { font-family: var(--t-titre); font-size: .8125rem; font-weight: 700; letter-spacing: .04em;
   text-transform: uppercase; padding: .3em .65em; border: 1px solid var(--encre);
-  border-radius: 99px; white-space: nowrap; }
+  border-radius: 99px; }
+/* `white-space: nowrap` a ete retire le 22/09/2026 : a 200% de zoom,
+   "DONNEE OFFICIELLE" mesure 302px pour une carte de 276px. Le motif de la
+   ligne 120 (l'etiquette passe sous le titre en dessous de 480px) protege
+   deja la mise en page voulue ; nowrap n'ajoutait qu'un debordement. */
 
+/* Deux blocs de donnees dans une meme carte, avec DEUX producteurs differents :
+   sans ce filet, la source du premier se lisait comme celle du second. */
+.bloc-second { border-top: 1px solid var(--trait); margin-top: 1rem; padding-top: .9rem; }
 .ligne { margin-bottom: .8rem; }
 .ligne:last-child { margin-bottom: 0; }
-.ligne-h { display: flex; align-items: baseline; justify-content: space-between; gap: .7rem;
+/* TROUVE PAR L'AUDIT WCAG DU 16/09/2026, A 200% DE ZOOM TEXTE — CORRIGE EN
+   TROIS TEMPS, ET C'EST LE TROISIEME QUI TIENT.
+   1. `white-space: nowrap` sur le `<b>` etait pose sans motif ecrit ; retire,
+      parce que rien de ce que ce selecteur affiche (montants courts, mais
+      aussi des noms et la phrase de circonscription) n'en a besoin.
+   2. Retirer nowrap seul ne suffisait pas : un enfant de flex garde
+      `min-width: auto` par defaut et refuse de se retrecir sous la largeur
+      de son texte non coupe. Ajouter `min-width: 0` faisait bien PARAITRE le
+      texte replie sur plusieurs lignes...
+   3. ...mais Chromium continuait de compter la largeur non retrecie du `<b>`
+      dans le debordement scrollable du document : mesure avec un vrai
+      scroll (pas seulement une bounding box), la page restait deplacable de
+      130 px vers la droite, invisible a l'oeil mais bien reel. C'est un
+      ecart documente entre le rendu visuel et le calcul de scrollWidth d'un
+      enfant de flex retreci sous son min-content. La correction qui tient
+      vraiment : `flex-wrap: wrap` sur la ligne elle-meme. Quand l'espace
+      manque, la valeur passe sur SA PROPRE LIGNE pleine largeur au lieu
+      d'etre ecrasee dans une colonne trop etroite — aucun retrecissement
+      force, donc aucun debordement fantome a compter. */
+.ligne-h { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: .15rem .7rem;
   font-size: .93rem; color: var(--sourd); }
-.ligne-h b { color: var(--encre); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.ligne-h b { color: var(--encre); font-variant-numeric: tabular-nums; }
 .ligne-note { font-size: .82rem; color: var(--sourd); margin-top: .25rem; line-height: 1.45; }
 .barre { height: 8px; border-radius: 99px; background: var(--voile); margin-top: .35rem; overflow: hidden; }
 .barre i { display: block; height: 100%; border-radius: 99px; }
@@ -75,7 +181,7 @@
 .tuiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
   gap: .7rem; margin-top: .3rem; }
 .tuile { background: var(--voile); border-radius: 8px; padding: .75rem .85rem; }
-.tuile-k { display: block; font-size: .66rem; font-weight: 700; letter-spacing: .1em;
+.tuile-k { display: block; font-size: .8125rem; font-weight: 700; letter-spacing: .1em;
   text-transform: uppercase; color: var(--sourd); margin-bottom: .25rem; }
 .tuile-v { display: block; font-size: 1.15rem; font-weight: 700; letter-spacing: -.015em;
   font-variant-numeric: tabular-nums; line-height: 1.2; }
@@ -86,8 +192,75 @@
   font-size: .92rem; line-height: 1.55; }
 .vide b { display: block; margin-bottom: .3rem; color: var(--encre); }
 .vide span { color: var(--sourd); }
+/* 44 px POUR LE LIEN D'UN ETAT VIDE, ET IL MANQUAIT DEPUIS TOUJOURS.
+   Le bouton portait `min-height: 44px`, le lien non : il n'atteignait 44 px que
+   lorsque son libelle passait a la ligne. Une phrase de vide plus courte, ecrite
+   le 14/09, l'a fait tomber a 41 px — et le controle des sept ecrans l'a vu. Tous
+   les etats vides du produit en beneficient, pas seulement le nouveau. */
 .vide a, .vide button { display: inline-block; margin-top: .55rem; font-family: var(--t-titre);
   font-size: .82rem; font-weight: 600; }
+.vide a { min-height: 44px; line-height: 44px; }
+
+/* PROTOTYPE "AUJOURD'HUI" (18/09/2026) — voir routes/Aujourdhui.jsx.
+   Sobre par construction : pas de nouvelle couleur, pas de carte-vedette avec
+   fond distinct — l'eyebrow et un grand titre suffisent a dire "vous etes
+   ici", exactement le meme motif que .entete plus haut, en plus court. */
+.auj-entete { margin-bottom: .3rem; }
+.auj-entete h2 { margin: 0; font-size: clamp(1.5rem, 5vw, 1.9rem); letter-spacing: -.01em; }
+
+/* DIRECTION A — « LE JOURNAL » (19/09/2026), routes/Aujourdhui.jsx. Zero
+   carte : un trait horizontal separe les faits, un trait vertical colore
+   (le meme jeton d'echelon que partout ailleurs) tient lieu de repere — pas
+   de fond, pas de coin arrondi, pas de badge. Chasse au « look IA » de cette
+   session : un element qui ne portait pas de hierarchie a ete retire plutot
+   que redessine. */
+.jour-fait { padding: 1rem 0 1rem .85rem; border-top: 1px solid var(--trait);
+  border-left: 3px solid var(--e); }
+.jour-fait:first-of-type { border-top: none; padding-top: .3rem; }
+.jour-fait h3 { margin: 0 0 .4rem; font-size: 1.05rem; line-height: 1.35;
+  font-family: var(--t-titre); font-weight: 700; }
+
+/* DIRECTION B — « LE TERRITOIRE » (19/09/2026), routes/AujourdhuiTerritoire.jsx.
+   Meme motif que .jour-fait (trait, pas de carte) : la pastille d'echelon,
+   deja utilisee dans QuiDecide.jsx, remplace ici tout fond colore. */
+.terr-echelon { padding: 1rem 0 1rem .85rem; border-top: 1px solid var(--trait);
+  border-left: 3px solid var(--e); }
+.terr-echelon:first-of-type { border-top: none; padding-top: .3rem; }
+.terr-h { display: flex; align-items: center; gap: .5rem; margin-bottom: .3rem;
+  font-family: var(--t-titre); font-size: 1.02rem; }
+
+/* DIRECTION C — « LA QUESTION » (19/09/2026), routes/AujourdhuiQuestion.jsx.
+   Une question, une reponse, sans carte ni pastille : le format le plus
+   depouille des trois directions, teste pour comparaison. */
+.quest-lieu { font-family: var(--t-titre); font-size: .84rem; font-weight: 700;
+  letter-spacing: .1em; text-transform: uppercase; color: var(--sourd); margin: 0 0 .4rem; }
+.quest-q { margin: 0 0 1rem; font-size: clamp(1.5rem, 6.5vw, 2.05rem);
+  line-height: 1.2; letter-spacing: -.01em; }
+.quest-r { padding-bottom: .6rem; }
+.quest-suivante { margin-top: 1.1rem; padding-top: 1rem; border-top: 1px solid var(--trait); }
+.quest-q2 { font-family: var(--t-titre); font-weight: 700; font-size: .95rem;
+  margin: 0 0 .35rem; color: var(--sourd); }
+
+/* "APPROFONDIR" EST UNE PHRASE, PAS CINQ BOUTONS EGAUX A LA BARRE D'ONGLETS —
+   phase 5 de la mission du 18/09 : une source visible vaut plus qu'un badge,
+   et une action se voit sans concurrencer cinq boutons du meme poids. Ces
+   liens sont donc du texte souligne, discret, jamais un second rang de
+   pilules qui dupliquerait visuellement la barre d'onglets juste au-dessus. */
+.auj-suite { display: flex; flex-wrap: wrap; gap: .4rem 1.1rem; padding-top: .2rem; }
+.auj-suite button, .auj-retour {
+  /* PAS DE BOUTON NATIF : ce paquet ne pose aucun reset global sur `button`
+     (mesure avant d'ecrire cette regle — voir le grep du 18/09/2026), donc un
+     bouton sans classe dediee garde le cadre gris de Chrome. Vu sur capture
+     avant correction : quatre pastilles grises la ou un lien discret etait
+     voulu. */
+  background: none; border: none; padding: 0; appearance: none;
+  font-family: var(--t-titre); font-size: .86rem; font-weight: 600;
+  color: var(--sourd); text-decoration: underline; text-underline-offset: .2em;
+  cursor: pointer; display: inline-flex; align-items: center; min-height: 44px;
+}
+.auj-suite button:hover, .auj-suite button:focus-visible,
+.auj-retour:hover, .auj-retour:focus-visible { color: var(--encre); }
+.auj-retour { margin: .2rem 0 -.2rem; }
 .vide button { min-height: 44px; padding: .45rem .9rem; border: 1px solid var(--trait);
   border-radius: 99px; background: var(--carte); color: var(--encre); cursor: pointer; }
 .vide.charge b::after {
@@ -95,8 +268,16 @@
   border-radius: 99px; background: var(--e-ville); animation: pouls 1.4s ease-in-out infinite;
 }
 @keyframes pouls { 0%, 100% { opacity: .25; } 50% { opacity: 1; } }
+/* LE POULS SE COUPE AUSSI, et il ne le faisait pas. Trouve le 13/09/2026 par le
+   controle etendu aux animations CSS : la pastille du chargement clignotait sans
+   fin chez quelqu'un qui a demande a son appareil de ne plus animer les
+   interfaces. Eteinte, elle reste visible — c'est le clignotement qu'on retire,
+   pas l'indication. */
+@media (prefers-reduced-motion: reduce) {
+  .vide.charge b::after { animation: none; opacity: .6; }
+}
 
-.source, .tx-note { font-size: .8rem; color: var(--sourd); line-height: 1.5; margin: .8rem 0 0; }
+.source, .tx-note { font-size: .84rem; color: var(--sourd); line-height: 1.5; margin: .8rem 0 0; }
 /* Un lien de source est petit par nature, et il reste une cible tactile : on lui
    donne 44 px de haut sans casser le fil du paragraphe. Mesure a l'appui — il
    faisait 33 px, et le controle d'accessibilite l'a vu. */
@@ -106,3 +287,139 @@
 .invariants { margin: 0; padding-left: 1.1rem; }
 .invariants li { margin-bottom: .6rem; font-size: .9rem; }
 .invariants b { display: block; font-weight: 600; }
+
+/* LES VOTES. Aucune couleur ne distingue « pour » de « contre » : ce serait un
+   jugement peint sur une donnee neutre, et l'invariant des couleurs reserve la
+   teinte aux echelons. Ce sont les MOTS qui distinguent, et rien d'autre. */
+.depliant {
+  display: block; width: 100%; min-height: 44px; margin-top: 12px;
+  padding: 11px 14px; text-align: left;
+  font: inherit; font-weight: 600; color: var(--tx, #1d1d1f);
+  background: var(--fond-2, #f5f5f7);
+  border: 1px solid var(--bord, #d9d9de); border-radius: 10px; cursor: pointer;
+}
+.depliant:hover { background: var(--fond-3, #ececf0); }
+/* CORRECTIF DU 16/09/2026, BLOCKER 11 DE LA RC DU 15/09. Le jeton
+   `--e-national` n'existe pas — il s'appelle `--e-france` — donc le repli
+   `#1d1d1f` s'appliquait TOUJOURS, y compris en theme sombre : un contour
+   presque noir sur un fond presque noir (ratio mesure 1,02 contre 3,00
+   requis, WCAG 2.4.11). `--e-france` bascule a `#ede9e0` en theme sombre
+   (tokens.css:51,62) — c'est le meme jeton que celui deja repare ailleurs,
+   pas une nouvelle couleur : l'invariant 7 (cinq couleurs d'echelon gelees)
+   n'est pas touche. */
+.depliant:focus-visible { outline: 2px solid var(--e-france, #1d1d1f); outline-offset: 2px; }
+.votes { margin-top: 12px; }
+.votes-h { display: flex; align-items: baseline; justify-content: space-between; gap: .7rem; }
+.votes-h b { font-size: .95rem; }
+.votes-replier {
+  min-height: 44px; padding: 0 10px; font: inherit; font-size: .82rem;
+  color: var(--sourd); background: none; border: 0; cursor: pointer; text-decoration: underline;
+}
+.votes-replier:focus-visible { outline: 2px solid var(--e-france, #1d1d1f); outline-offset: 2px; }
+.votes-portee { margin: .2rem 0 .9rem; }
+/* LE TITRE DE LA LOI PASSE DEVANT LA DATE ET DEVANT LA POSITION. C'est le seul
+   endroit du produit ou une ligne de liste porte un titre : un vote solennel
+   n'est pas un element de plus dans une enumeration, c'est une loi. */
+.vote-titre { display: block; font-family: var(--t-titre); font-size: .98rem;
+  line-height: 1.35; margin-bottom: .3rem; }
+.votes .ligne.vote { margin-bottom: 1.1rem; }
+/* UN FAIT DU FIL DATE. Le titre reprend EXACTEMENT les valeurs de .vote-titre,
+   et ce n'est pas une economie de lignes : le principe P12 interdit de
+   hierarchiser deux objets de MEME NATURE par la typographie. Dans le fil, un
+   gymnase renove et une loi votee sont deux faits dates ; donner au second un
+   titre plus gros dirait au lecteur lequel compte, et ce serait un jugement. */
+.fait-titre { display: block; font-family: var(--t-titre); font-size: .98rem;
+  line-height: 1.35; margin-bottom: .3rem; }
+.ligne.fait { margin-bottom: 1.3rem; }
+.ligne.fait .ligne.vote { margin-bottom: 0; }
+.ligne.fait .groupe { margin-bottom: .35rem; }
+.ligne.fait .groupe:first-child { margin-top: 1.4rem; }
+.ligne.fait:first-of-type .groupe:first-child { margin-top: .6rem; }
+.projets-note { margin: -.15rem 0 .55rem; }
+/* LA POSITION EST UNE PHRASE, PAS UNE CASE. Elle occupe sa propre ligne, en
+   pleine largeur, et ne se laisse pas scanner en colonne : voir le commentaire de
+   LigneVote dans lib/votes.jsx. Le gras porte le seul mot qui compte. */
+.vote-position { margin: .1rem 0 .35rem; font-size: .93rem; color: var(--sourd); }
+.vote-position b { color: var(--encre); }
+/* Le selecteur replie : un seul bouton, pleine largeur, 44 px garantis. */
+.choix-commune.replie { margin-bottom: 1rem; }
+.depliant-commune { width: 100%; text-align: left; }
+/* Le montant ne doit pas passer a la ligne au milieu d'un nombre. */
+.ligne.fait .ligne-h span { font-variant-numeric: tabular-nums; }
+/* 44 px DE ZONE D'APPUI SANS CASSER LE FIL DU PARAGRAPHE. Mesure du 13/09 : les
+   dix liens « Scrutin n° … » faisaient moins de 44 px de haut, et le controle du
+   banc ne les voyait pas — il ne mesurait qu'un seul ecran. */
+.lien-scrutin { display: inline-block; min-height: 44px; line-height: 44px; }
+/* Le lien de contact est le SEUL canal de retour du produit — Repere ne mesure
+   rien. Il ne peut pas etre la seule cible de l'application trop petite pour un
+   pouce. */
+.tx-note a { display: inline-block; min-height: 44px; line-height: 44px; }
+.votes .ligne + .ligne { margin-top: 2px; }
+.votes a { color: inherit; }
+
+/* Les echelons : la pastille porte la couleur gelee de l'echelon, le nom la
+   suit. Aucune autre couleur, et la pastille n'est jamais seule porteuse de
+   sens — le nom est ecrit a cote. */
+.echelon-h { display: flex; align-items: baseline; gap: .5rem; }
+.echelon-h b { font-family: var(--t-titre); font-size: .95rem; }
+.ligne.echelon { margin-bottom: .9rem; }
+
+/* LA LANGUE DU CITOYEN. Repris du motif `.gl` du monolithe (app_repere_v18_20.html
+   ligne 648) : un mot souligne en pointille, AUCUNE icone, AUCUNE couleur nouvelle
+   — `--sourd` est deja un jeton neutre gelé dans les deux themes. Un lecteur qui
+   connait deja le mot ne le voit presque pas et continue sa lecture. */
+/* `<Mot>` est un <button> : la feuille de style UA du navigateur pose
+   `appearance: auto`, qui prime sur `display: inline` pose ici et fait
+   mesurer l'element comme un widget "inline-block" qui refuse de casser un
+   mot trop long au milieu (mesure le 22/09/2026 sur "intercommunalite",
+   dans un titre de carte a 200% de zoom : 322px pour 276px disponibles).
+   `appearance: none` rend `display: inline` reellement effectif ;
+   `overflow-wrap`/`word-break` autorisent ensuite la coupure a l'interieur
+   du mot, seul recours quand aucun espace ne permet de replier la ligne. */
+.mot {
+  appearance: none; -webkit-appearance: none;
+  display: inline; background: none; border: 0; padding: 2px 2px; margin: 0 -2px;
+  font: inherit; color: inherit; cursor: pointer; overflow-wrap: break-word; word-break: break-word;
+  text-decoration: underline dotted var(--sourd); text-decoration-thickness: 1.5px;
+  text-underline-offset: 3px;
+}
+.mot:active, .mot:focus-visible { background: var(--voile); border-radius: 4px; }
+
+/* LA FICHE EST UNE PETITE FEUILLE BASSE, PAS UN ECRAN PLEIN. Deux ou trois
+   phrases ne justifient pas de recouvrir tout ce qu'on lisait. `inert` n'est
+   pas pose sur le reste de la page (pas de dependance, pas de polyfill) : le
+   fond assombri + la fermeture au clic exterieur + Echap suffisent, et le
+   focus est renvoye au mot qui a ouvert la fiche a la fermeture. */
+.mot-fond {
+  position: fixed; inset: 0; background: rgba(0, 0, 0, .32); z-index: 40;
+}
+.mot-fiche {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 41;
+  padding: 0 14px calc(14px + env(safe-area-inset-bottom, 0px));
+}
+.mot-fiche-in {
+  background: var(--carte); border-radius: 14px 14px 0 0; padding: 18px 18px 14px;
+  max-width: 520px; margin: 0 auto; box-shadow: var(--ombre);
+}
+.mot-fiche-in b { display: block; font-family: var(--t-titre); font-size: 1.05rem; margin-bottom: 6px; }
+.mot-fiche-in p { margin: 0 0 14px; color: var(--sourd); line-height: 1.45; }
+.mot-fermer { min-height: 44px; padding: 0 16px; border: 1px solid var(--trait); border-radius: 10px;
+  background: none; font: inherit; font-weight: 600; color: var(--encre); cursor: pointer; }
+.mot-fermer:focus-visible { outline: 2px solid var(--e-france, #1d1d1f); outline-offset: 2px; }
+
+/* .REPLI — meme famille que .choix (bordure, cible de 44 px, triangle en
+   ::after), mais sans le cadre plein : ce n'est pas un choix a faire, c'est
+   une suite de donnees deja lue une fois qui continue plus bas. Pose le
+   16/09/2026 pour Paris (18 circonscriptions, 5 434 px contre 2 400-2 750
+   ailleurs) : les trois premiers deputes restent ouverts, le reste se replie
+   — aucune donnee retiree, un tap pour la retrouver. */
+.repli { border-top: 1px solid var(--trait); margin-top: .9rem; padding-top: .2rem; }
+.repli > summary {
+  font-family: var(--t-titre); font-size: .85rem; font-weight: 600; color: var(--sourd);
+  padding: .6rem 0; min-height: 44px; cursor: pointer; list-style: none;
+  display: flex; align-items: center; gap: .4rem;
+}
+.repli > summary::-webkit-details-marker { display: none; }
+.repli > summary::after { content: "▾"; margin-left: .4rem; color: var(--sourd); }
+.repli[open] > summary::after { content: "▴"; }
+.repli-in { padding-top: .2rem; }

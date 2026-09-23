@@ -22,6 +22,211 @@
 import fs from "node:fs";
 import path from "node:path";
 import readline from "node:readline";
+import { fileURLToPath } from "node:url";
+import { execFileSync } from "node:child_process";
+
+/* LES NOMS DES TERRITOIRES NE SONT PAS DANS LE FICHIER D'ORIGINE.
+ *
+ * Il ne connait que les codes. Le premier ecran demandait donc au lecteur de
+ * savoir que sa commune est « dans le 64 ». Les noms viennent d'un fichier
+ * releve une fois aupres de sources officielles (voir scripts/noms-territoires.json,
+ * qui porte ses sources et ses licences) et sont fondus dans index.json : le
+ * build ne touche pas au reseau, et l'application ne demande pas un fichier de
+ * plus. Si le fichier manque, l'extraction continue sans les noms — les codes
+ * seuls restent justes. */
+const ICI = path.dirname(fileURLToPath(import.meta.url));
+
+/* PROVENANCE DU BUILD — mission phase 3.2, §8.
+ *
+ * REPOND A « qu'est-ce qui a ete reellement publie ? » sans enquete : le
+ * commit exact, l'instant de construction, et le schema qu'il respecte
+ * (le meme `v` que `SCHEMA_ATTENDU` dans packages/data-utils/src/client.js
+ * — les deux DOIVENT etre lus manuellement ensemble, voir le commentaire
+ * de SCHEMA_ATTENDU). Rien de sensible : un SHA et une date sont deja
+ * publics dans l'historique git.
+ *
+ * `git rev-parse` peut echouer (extraction hors depot, .git absent d'un
+ * artefact copie) : l'absence de provenance est alors ELLE-MEME honnete —
+ * null, jamais une valeur inventee. */
+function informationsBuild() {
+  const tenter = (args) => {
+    try { return execFileSync("git", args, { cwd: ICI, encoding: "utf8" }).trim(); }
+    catch { return null; }
+  };
+  return {
+    commit: tenter(["rev-parse", "HEAD"]),
+    commit_court: tenter(["rev-parse", "--short", "HEAD"]),
+    construit_le: new Date().toISOString(),
+  };
+}
+function nomsTerritoires() {
+  const f = path.join(ICI, "noms-territoires.json");
+  if (!fs.existsSync(f)) { console.warn("noms-territoires.json absent : index.json n'aura que les codes"); return null; }
+  try { return JSON.parse(fs.readFileSync(f, "utf8")); }
+  catch (e) { console.error("noms-territoires.json illisible : " + e.message); process.exit(6); }
+}
+
+/* LE DEPUTE ELU N'EST PAS DANS LE FICHIER D'ORIGINE NON PLUS.
+ *
+ * Le fichier mono-HTML porte la circonscription d'une commune ; il ne dit pas
+ * qui y a ete elu, et le Repertoire national des elus ne porte pas ce lien.
+ * L'Assemblee nationale, elle, le publie. Le releve est versionne dans
+ * scripts/deputes.json AVEC son producteur, sa licence, sa legislature et sa
+ * date : sans ces quatre choses, l'invariant 4 interdit de l'afficher. Il est
+ * recopie dans data/deputes.json — le build ne touche pas au reseau, et la
+ * chaine publique reconstruit le meme fichier. */
+function relevesDeputes() {
+  const f = path.join(ICI, "deputes.json");
+  if (!fs.existsSync(f)) { console.warn("deputes.json absent : aucun depute ne sera publie"); return null; }
+  let d;
+  try { d = JSON.parse(fs.readFileSync(f, "utf8")); }
+  catch (e) { console.error("deputes.json illisible : " + e.message); process.exit(7); }
+  const s = d && d.source;
+  /* Un fichier sans source ne s'affiche pas : mieux vaut echouer au build que
+     publier un nom d'elu que rien ne date ni ne rattache a un producteur. */
+  if (!s || !s.producteur_affiche || !s.licence || !s.releve_le || !s.legislature) {
+    console.error("deputes.json sans producteur, licence, legislature ou date");
+    process.exit(7);
+  }
+  if (!d.deputes || !Object.keys(d.deputes).length) {
+    console.error("deputes.json ne porte aucun depute");
+    process.exit(7);
+  }
+  return d;
+}
+
+/* LES VOTES : LE CHAINON QUI MANQUAIT ENTRE UNE COMMUNE ET CE QUI SE DECIDE.
+ *
+ * Une commune donne une circonscription, une circonscription donne un depute :
+ * jusqu'ici la chaine s'arretait au nom. Elle continue maintenant jusqu'a ce que
+ * ce depute a VOTE — c'est la seule chose que l'electeur ne peut pas obtenir
+ * ailleurs en moins de dix minutes.
+ *
+ * CE FICHIER NE PORTE PAS DE JUGEMENT, ET LE FORMAT L'INTERDIT : aucune somme,
+ * aucun taux, aucun compte par depute. Une position par scrutin, dans l'ordre du
+ * catalogue, et le lien vers le scrutin officiel. Le releve amont (scrutins_an.py)
+ * ecarte deja les non-votants : un silence dans ce fichier veut dire « la source
+ * ne porte pas de position pour ce depute sur ce scrutin », jamais « absent ».
+ *
+ * Comme pour les deputes : sans producteur, licence, url et date, on n'ecrit rien. */
+function relevesScrutins() {
+  const f = path.join(ICI, "scrutins.json");
+  if (!fs.existsSync(f)) { console.warn("scrutins.json absent : aucun vote ne sera publie"); return null; }
+  let d;
+  try { d = JSON.parse(fs.readFileSync(f, "utf8")); }
+  catch (e) { console.error("scrutins.json illisible : " + e.message); process.exit(8); }
+  const s = d && d.source;
+  if (!s || !s.producteur_affiche || !s.licence || !s.url || !s.releve_le || !s.legislature) {
+    console.error("scrutins.json sans producteur, licence, url, legislature ou date");
+    process.exit(8);
+  }
+  if (!Array.isArray(d.r) || !d.r.length || !Array.isArray(d.acteurs) || !d.acteurs.length) {
+    console.error("scrutins.json ne porte aucun scrutin");
+    process.exit(8);
+  }
+  return d;
+}
+
+/* LES PROJETS FINANCES PAR L'ETAT — le premier fait DATE du produit.
+ *
+ * Jusqu'ici Repere ne montrait que des etats : qui est maire, combien depense la
+ * commune. Rien ne changeait entre deux visites, et rien ne justifiait de rouvrir
+ * l'application. Un projet finance porte un intitule, un montant et une annee :
+ * c'est le premier objet que l'on peut ranger dans le temps.
+ *
+ * LA MAILLE EST LE DEPARTEMENT, comme pour les votes, et pour la meme raison :
+ * une adresse par commune dirait au serveur ou habite celui qui lit. Le paquet
+ * departemental porte les projets de toutes ses communes ; le navigateur choisit.
+ *
+ * L'INTITULE EST RECOPIE MOT POUR MOT. La source ecrit « Renovation de la halle
+ * du Montfort » sans accents : les remettre serait reecrire un intitule officiel.
+ *
+ * Comme partout : sans producteur, licence, url et date, on n'ecrit rien. Mais
+ * l'absence du fichier n'arrete PAS le build — elle retire l'ecran date, elle ne
+ * casse pas le reste du produit. Voir outils/projets_etat.py. */
+function relevesProjets() {
+  const f = path.join(ICI, "projets.json");
+  if (!fs.existsSync(f)) { console.warn("::warning::projets.json absent : aucun projet finance ne sera publie (voir outils/projets_etat.py)"); return null; }
+  let d;
+  try { d = JSON.parse(fs.readFileSync(f, "utf8")); }
+  catch (e) { console.error("projets.json illisible : " + e.message); process.exit(10); }
+  const s = d && d.source;
+  if (!s || !s.producteur_affiche || !s.licence || !s.url || !s.releve_le) {
+    console.error("projets.json sans producteur, licence, url ou date");
+    process.exit(10);
+  }
+  if (!d.communes || !Object.keys(d.communes).length) {
+    console.error("projets.json ne porte aucune commune");
+    process.exit(10);
+  }
+  return d;
+}
+
+/* LE FIL EDITORIAL — BLOCKER #3 DE LA MISSION DU 22/09/2026.
+ *
+ * Ce fichier n'est PAS un bloc `window.REPERE_*` du mono-HTML : il vit a part,
+ * a la racine du depot (`outils/evenements.json`), produit par un script
+ * PYTHON (`outils/evenements.py`) que ce poste ne peut pas executer (aucun
+ * interpreteur Python disponible ici, voir CONTEXTE_PROJET.md §13). On lit
+ * donc le fichier deja produit par la chaine reelle (GitHub Actions), on ne
+ * le regenere jamais depuis ce script.
+ *
+ * CE QUE CE FICHIER N'EST PAS : `window.REPERE_DATA`, le tableau de 6 fiches
+ * embarque directement dans app_repere_v18_20.html, est un AUTRE mecanisme —
+ * plus ancien, au schema different (vote/scope/statut/echeance), qui sert de
+ * repli quand la variante autonome n'a pas de serveur a interroger (voir
+ * build_pwa_reconstruit.py, ligne ~256 : « le fil garde ses cartes ecrites a
+ * la main »). Le confondre avec `evenements.json` publierait dans mono/ un
+ * contenu qui n'a jamais passe la porte `valide: true` de la redaction — Ne
+ * PAS le lire ici, meme si c'est plus de donnees disponibles.
+ *
+ * SANS SOURCE DECLAREE, ON NE PUBLIE PAS DE PHRASE INVENTEE : si le fichier
+ * est absent, l'extraction continue (categorie « chantier qui ne doit pas
+ * bloquer la mise en ligne de ce qui marche »), et CeQuiADecide.jsx affiche
+ * la meme doctrine du vide que pour les projets ou les votes absents. */
+function relevesEvenements() {
+  const f = path.join(path.dirname(ENTREE), "outils", "evenements.json");
+  if (!fs.existsSync(f)) { console.warn("::warning::outils/evenements.json absent : le fil editorial ne publiera aucun fait redactionnel"); return null; }
+  let d;
+  try { d = JSON.parse(fs.readFileSync(f, "utf8")); }
+  catch (e) { console.warn("::warning::outils/evenements.json illisible (" + e.message + ") : le fil editorial ne publiera aucun fait redactionnel"); return null; }
+  if (!d || !Array.isArray(d.r)) { console.warn("::warning::outils/evenements.json n'a pas la forme attendue : le fil editorial ne publiera aucun fait redactionnel"); return null; }
+  const sansPreuve = d.r.filter(e => !e.src || !e.d || !e.t);
+  if (sansPreuve.length) {
+    console.warn(`::warning::${sansPreuve.length} evenement(s) sans titre/date/source dans evenements.json — ecartes`);
+  }
+  return { ...d, r: d.r.filter(e => e.src && e.d && e.t) };
+}
+
+/* LE NOM DE LA COMMUNE, TEL QU'IL S'ECRIT.
+ *
+ * Le Repertoire national des elus ecrit les communes EN CAPITALES ; le produit les
+ * recapitalisait lettre par lettre, et cette transformation etait fautive pour UNE
+ * COMMUNE SUR QUATRE — 9 198 sur 34 637, mesure du 13/09/2026. Deux fautes :
+ * « Choisy-Le-Roi » au lieu de « Choisy-le-Roi », et « Evry-Courcouronnes » au lieu
+ * d'« Évry-Courcouronnes ». La premiere se corrigerait avec une liste de mots ; la
+ * seconde, non — aucune regle ne sait qu'Evry prend un accent et Ermont pas. On
+ * prend donc le libelle officiel entier, ou on ne touche a rien.
+ *
+ * SANS SOURCE, PAS DE SUBSTITUTION : le fichier doit porter producteur, licence et
+ * date, sinon on garde les noms d'origine et on le dit. Voir outils/noms_communes.py. */
+function nomsOfficiels() {
+  const f = path.join(ICI, "noms-communes.json");
+  if (!fs.existsSync(f)) { console.warn("::warning::noms-communes.json absent : les noms de communes restent ceux du Repertoire national des elus"); return null; }
+  let d;
+  try { d = JSON.parse(fs.readFileSync(f, "utf8")); }
+  catch (e) { console.error("noms-communes.json illisible : " + e.message); process.exit(9); }
+  const s = d && d.source;
+  if (!s || !s.producteur_affiche || !s.licence || !s.releve_le || !d.noms) {
+    console.error("noms-communes.json sans producteur, licence, date ou libelles");
+    process.exit(9);
+  }
+  return d;
+}
+
+/* LES HUIT DEPARTEMENTS DE LA BETA. Ecrits une fois, ici, et repris par le banc :
+   deux listes qui divergent produiraient un index incomplet que rien ne verrait. */
+const BETA = ["75", "77", "78", "91", "92", "93", "94", "95"];
 
 const ENTREE = process.argv[2] || "./input/index.html";
 const SORTIE = process.argv[3] || "./data";
@@ -66,9 +271,121 @@ function ecrire(fichier, valeur) {
   return fs.statSync(fichier).size;
 }
 
+/* ELUS D'INTERCOMMUNALITE, DE DEPARTEMENT ET DE REGION — PORTES LE 22/09/2026
+ * (decision produit : option A, mission phase 3.1 suite).
+ *
+ * TRACE DANS LA SOURCE, PAS SUPPOSE. app_repere_v18_20.html (fonctions
+ * rneRangFonction, renderQui, lignes ~3923-4017 et ~6449) fait ceci, et rien
+ * d'autre :
+ *   - AGGLO : `RNE.ecc[insee]` = [index EPCI, ref date, [[prenom,nom,fonction],..]]
+ *     — les DELEGUES QUE CETTE COMMUNE ENVOIE, jamais les delegues des voisins.
+ *     Le premier affiche est le mieux classe PARMI CEUX DE LA COMMUNE — pas le
+ *     president de l'EPCI si ce n'est pas lui qui la represente.
+ *   - DEPARTEMENT : `RNE.dep[dep]` porte TOUT le conseil ; `RNE.depcan[dep]` est
+ *     un tableau PARALLELE (meme index) donnant le canton de chaque ligne.
+ *     `RNE.ccan[insee]` donne le ou les cantons de la commune. Le premier
+ *     affiche est le mieux classe PARMI LES CONSEILLERS DU CANTON DE LA
+ *     COMMUNE — jamais le president du departement, sauf s'il se trouve que
+ *     c'est aussi le conseiller du canton. « Mon canton d'abord » est une
+ *     decision produit deja ecrite dans la source : deux conseillers nommes
+ *     disent plus qu'une quarantaine de noms anonymes.
+ *   - REGION : `RNE.reg[regionCode]` porte tout le conseil, sans decoupage par
+ *     canton (aucun equivalent de canton pour la region dans cette source).
+ *     Le premier affiche est donc le mieux classe DE TOUT LE CONSEIL — dans les
+ *     faits, presque toujours le president, parce que le rang de fonction le
+ *     place en tete.
+ * Le rang qui determine cet ordre est `rneRangFonction` : president=0
+ * (1 si c'est le president de l'organe executif d'une collectivite unique,
+ * cas hors perimetre IDF), vice-president n=100+n, vice=600/700, conseiller
+ * simple=999. Porte ici a l'identique, sans simplification. */
+function rangFonction(lib) {
+  const f = String(lib || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/-/g, " ");
+  const exec = f.indexOf("organe executif") !== -1;
+  if (f.indexOf("president") === 0) return exec ? 1 : 0;
+  const m = /^(\d+)\s*(?:er|ere|eme|e)?\s+vice/.exec(f);
+  if (m) return 100 + parseInt(m[1], 10);
+  if (f.indexOf("vice") !== -1) return exec ? 700 : 600;
+  if (exec) return 800;
+  return 999;
+}
+/* Une ligne RNE = [index prenom, index nom, index fonction]. `dateIdx` est
+   deja resolu (un entier, jamais le bloc brut) par l'appelant : ddep/dreg/ecc
+   melangent une date unique pour toute l'equipe et un tableau par personne,
+   et cette resolution reste au point d'appel comme dans la source. */
+function personneDe(RNE, ligne, dateIdx) {
+  return {
+    nom: [(RNE.p || [])[ligne[0]], (RNE.n || [])[ligne[1]]].filter(Boolean).join(" ") || "Nom non renseigné",
+    fonction: (RNE.f || [])[ligne[2]] || "",
+    debut: (dateIdx != null && dateIdx >= 0 && RNE.d) ? (RNE.d[dateIdx] || null) : null,
+  };
+}
+/* ddep/dreg : un entier (meme date pour toute l'equipe) ou un tableau (une
+   date par personne) — meme lecture que rneDateDe dans la source. */
+function dateDe(bloc, i) {
+  if (bloc == null) return null;
+  return Array.isArray(bloc) ? bloc[i] : bloc;
+}
+
+/* HEALTH CHECKS DU BUILD — mission phase 3.2, §11.
+ *
+ * TROIS CLASSES, PAS UNE SEULE — le probleme historique de cette chaine est
+ * connu et ecrit dans pipeline.sh : des etapes neuves qui avertissent au
+ * lieu d'echouer, pour ne jamais bloquer la publication de ce qui marche
+ * deja. La regle inverse est tout aussi vraie : une source dont l'absence
+ * TOTALE rendrait le socle de la beta muet ne doit PAS se contenter d'un
+ * avertissement — sinon le pipeline reussit avec un site qui ne dit plus
+ * rien a personne, et rien ne le signale.
+ *
+ *   CRITICAL : absente ou vide -> le build ECHOUE (process.exit). Aujourd'hui,
+ *     seules RNE (elus) et OFGL (comptes) : sans elles, "Qui decide" et "Ou
+ *     va l'argent" — deux des cinq experiences du socle beta — seraient
+ *     vides pour TOUTES les communes, pas seulement certaines.
+ *   IMPORTANT : absente -> avertissement fort + marque dans build.sante,
+ *     le build continue. CIRCOS (circonscriptions) : son absence degrade le
+ *     depute pour toute la France, mais la doctrine du vide deja testee
+ *     ("n'est pas dans le decoupage electoral") reste honnete — ce n'est
+ *     pas un mensonge, c'est un manque dit.
+ *   OPTIONAL : absente -> le build continue sans un mot de plus que ce qui
+ *     existe deja (deputes, scrutins, projets, evenements, calendrier
+ *     Senat) : chacun a deja sa propre doctrine du vide a l'ecran.
+ *
+ * `build.sante` MATERIALISE ce constat dans l'artefact lui-meme : repondre
+ * a "qu'est-ce qui a ete reellement publie" ne doit jamais exiger de
+ * relire les journaux du runner. */
+/* PURE, SANS EFFET DE BORD : ni process.exit, ni console — c'est ce qui la
+   rend testable directement (tests/sante.test.mjs), sans lancer un
+   sous-processus ni risquer de tuer le lanceur de tests. La decision
+   (arreter le build ou continuer) reste au point d'appel, ci-dessous. */
+export function classerSante(RNE, OFGL, CIRCOS) {
+  const nbCommunesOfgl = Object.keys((OFGL && OFGL.ech && OFGL.ech.commune && OFGL.ech.commune.terr) || {}).length;
+  const nbCommunesCircos = Object.keys((CIRCOS && CIRCOS.communes) || {}).length;
+  const critical = {
+    elus: !!(RNE && RNE.cl && Object.keys(RNE.cl).length > 0),
+    comptes: nbCommunesOfgl > 0,
+  };
+  const important = { circonscriptions: nbCommunesCircos > 0 };
+  const manquantesCritiques = Object.entries(critical).filter(([, ok]) => !ok).map(([k]) => k);
+  return { critical, important, manquantesCritiques };
+}
+
+function verifierSante(RNE, OFGL, CIRCOS) {
+  const { critical, important, manquantesCritiques } = classerSante(RNE, OFGL, CIRCOS);
+  if (manquantesCritiques.length) {
+    console.error("::error::source(s) CRITIQUE(S) absente(s) ou vide(s) : " + manquantesCritiques.join(", ")
+      + " — le socle de la beta serait muet pour TOUTES les communes. Build arrete.");
+    process.exit(5);
+  }
+  if (!important.circonscriptions) {
+    console.error("::warning::source IMPORTANTE absente : circonscriptions — le depute sera dit "
+      + "absent pour toute la France (doctrine du vide honnete, pas une erreur, mais a corriger).");
+  }
+  return { critical, important };
+}
+
 async function extraire() {
   const { REPERE_RNE: RNE, REPERE_OFGL: OFGL, REPERE_CIRCOS: CIRCOS } = await lireBlocs(ENTREE);
   if (!RNE) { console.error("bloc REPERE_RNE introuvable — ce fichier n'est pas une application Repere."); process.exit(4); }
+  const sante = verifierSante(RNE, OFGL, CIRCOS);
 
   const libelles = RNE.cl || {};
   const communesOfgl = (OFGL && OFGL.ech && OFGL.ech.commune && OFGL.ech.commune.terr) || {};
@@ -81,30 +398,323 @@ async function extraire() {
   const nom = (p, n) => [(RNE.p || [])[p], (RNE.n || [])[n]].filter(Boolean).join(" ");
   const fonction = f => (RNE.f || [])[f] || "";
 
+  /* Lu AVANT la boucle qui remplit les paquets : c'est elle qui s'en sert. */
+  const officiels = nomsOfficiels();
+  let redresses = 0;
+  const sansLibelleOfficiel = [];
   const paquets = new Map();
   for (const insee of Object.keys(libelles)) {
     const d = departementDe(insee);
     if (!paquets.has(d)) paquets.set(d, { d, communes: {} });
     const maire = (RNE.com || {})[insee];
+    /* Le libelle officiel s'il existe, celui du Repertoire sinon — jamais un
+       melange des deux, et jamais un nom fabrique. Les cas sans correspondance
+       sont comptes et annonces plus bas. */
+    const officiel = officiels && officiels.noms[insee];
+    if (officiel && officiel !== libelles[insee]) redresses++;
+    else if (!officiel) sansLibelleOfficiel.push(insee);
+
+    /* AGGLO — les delegues QUE CETTE COMMUNE envoie a son intercommunalite,
+       jamais ceux d'une commune voisine. Absent pour ~32% des communes IDF
+       de la beta (mesure le 22/09/2026) : la source elle-meme ne les liste
+       pas partout, ce n'est pas un manque de mono/ — la doctrine du vide
+       s'applique donc a l'affichage, pas a l'extraction (voir QuiDecide.jsx). */
+    const ecc = (RNE.ecc || {})[insee];
+    let agglo = null;
+    if (ecc && Array.isArray(ecc[2]) && ecc[2].length) {
+      const dateRef = ecc[1];
+      const delegues = ecc[2]
+        .map(l => personneDe(RNE, l, dateRef))
+        .sort((a, b) => rangFonction(a.fonction) - rangFonction(b.fonction));
+      agglo = { nom: (RNE.e || [])[ecc[0]] || null, delegues };
+    }
+
+    /* CANTON — necessaire pour filtrer le conseil departemental cote client
+       (voir QuiDecide.jsx) sans jamais transmettre le conseil entier par
+       commune : un ou plusieurs codes, jamais un code de commune. */
+    const ccanBrut = (RNE.ccan || {})[insee];
+    const canton = (ccanBrut == null) ? null
+      : (Array.isArray(ccanBrut) ? ccanBrut : [ccanBrut]);
+
     paquets.get(d).communes[insee] = {
-      nom: libelles[insee],
+      nom: officiel || libelles[insee],
       maire: maire ? { nom: nom(maire[0], maire[1]), fonction: fonction(maire[2]) } : null,
       adjoints: ((RNE.adj || {})[insee] || []).length,
       circo: circos[insee] !== undefined ? circos[insee] : null,
       comptes: communesOfgl[insee] ? communesOfgl[insee].ex : null,
+      agglo,
+      canton,
     };
   }
 
+  /* DOCTRINE DU 16/09/2026 : UNE ABSENCE DE NOTRE COTE N'EST JAMAIS DEGUISEE EN
+   * ERREUR DE SAISIE DU LECTEUR.
+   *
+   * MESURE : Ville-d'Avray (92077) existe bel et bien dans le departement des
+   * Hauts-de-Seine — elle est juste absente du Repertoire national des elus, comme
+   * 320 autres communes en France (dont Barbey et Lissy en Seine-et-Marne,
+   * Villecresnes dans le Val-de-Marne). Avant ce correctif, la chercher affichait
+   * « Aucune commune du departement 92 ne porte ce nom » — une affirmation FAUSSE,
+   * puisque la commune porte bien ce nom, seulement Repere n'a pas sa fiche.
+   *
+   * `noms-communes.json` est le SEUL fichier du build qui liste les communes
+   * officielles independamment de ce que le Repertoire des elus a bien voulu
+   * transmettre : il sert donc de reference pour distinguer les deux causes.
+   * Le resultat est petit (0 a quelques dizaines d'entrees par departement) et
+   * MATERIALISE dans le paquet, comme les autres tables de noms — l'ecran ne doit
+   * jamais avoir a deviner une difference entre deux sources au moment du rendu. */
+  if (officiels) {
+    for (const [insee, nomOfficiel] of Object.entries(officiels.noms)) {
+      const d = departementDe(insee);
+      const paquet = paquets.get(d);
+      if (!paquet || paquet.communes[insee]) continue;
+      (paquet.manquantes || (paquet.manquantes = {}))[insee] = nomOfficiel;
+    }
+  }
+  for (const paquet of paquets.values()) if (!paquet.manquantes) paquet.manquantes = {};
+
+  /* REGLE V-1 — BLOCKER 1 DE LA RC DU 15/09/2026, TOUJOURS PAS CORRIGE AVANT CE
+   * PATCH. Mesure : le poste « frais de personnel » de l'exercice 2021 vaut 0
+   * pour 34 563 communes sur 34 563 — cent pour cent. Ce n'est pas une mesure,
+   * c'est une colonne absente du fichier source (aucune derivation tracable
+   * n'explique le bloc OFGL embarque, voir la RC §0 et §C). Publier ce zero
+   * revient a affirmer « cette commune n'a paye aucun salaire en 2021 », ce qui
+   * est faux pour la quasi-totalite des 34 563.
+   *
+   * LE SEUIL DE 95% N'EST PAS FIN, IL EST INDISCUTABLE. Mesure sur les donnees
+   * reelles (RC §0.2) : le ratio zeros/valeurs numeriques par (exercice, poste)
+   * ne prend AUCUNE valeur entre 0,6% et 100% — deux populations disjointes,
+   * jamais une colonne a moitie cassee. Le seuil separe donc les deux sans en
+   * couper aucune, quel que soit l'endroit exact ou on le place entre elles.
+   *
+   * QUAND LA REGLE DECLENCHE, LA COLONNE ENTIERE DEVIENT MISSING (null) POUR
+   * TOUS LES TERRITOIRES DE CET ECHELON — pas seulement ceux a zero. Une
+   * colonne structurellement absente ne redevient pas fiable pour les quelques
+   * territoires qui, par coincidence ou erreur de saisie amont, portent un
+   * nombre non nul dessus.
+   *
+   * FACTORISEE LE 22/09/2026 (mission phase 3, blocker #2) : la regle doit
+   * s'appliquer separement aux trois echelons (commune, departement, region)
+   * — melanger leurs populations fausserait le ratio de chacun — et une seule
+   * fonction evite qu'un futur echelon la re-derive et diverge. */
+  const nbAgregats = (OFGL && OFGL.meta && OFGL.meta.agregats && OFGL.meta.agregats.length) || 0;
+  function appliquerRegleV1(porteurs, etiquette) {
+    const annees = new Set();
+    for (const c of porteurs) if (c.comptes) for (const an of Object.keys(c.comptes)) annees.add(an);
+    const colonnesMissing = [];
+    for (const an of annees) {
+      for (let i = 0; i < nbAgregats; i++) {
+        const idxM = 1 + i * 2, idxH = 2 + i * 2;
+        let n = 0, t = 0;
+        for (const c of porteurs) {
+          const ex = c.comptes && c.comptes[an];
+          if (!Array.isArray(ex) || typeof ex[idxM] !== "number") continue;
+          t++;
+          if (ex[idxM] === 0) n++;
+        }
+        if (t > 0 && n / t >= 0.95) {
+          colonnesMissing.push({ an, i, n, t });
+          for (const c of porteurs) {
+            const ex = c.comptes && c.comptes[an];
+            if (Array.isArray(ex)) { ex[idxM] = null; ex[idxH] = null; }
+          }
+        }
+      }
+    }
+    if (colonnesMissing.length) {
+      console.log(`regle V-1 (${etiquette})`.padEnd(23) + ": " + colonnesMissing.length + " colonne(s) requalifiee(s) en MISSING — "
+        + colonnesMissing.map(x => `exercice ${x.an} poste ${x.i} (${x.n}/${x.t})`).join(", "));
+    }
+  }
+  appliquerRegleV1([...paquets.values()].flatMap(p => Object.values(p.communes)), "commune");
+
+  /* LES LIBELLES DE SOURCE SONT DU TEXTE AFFICHE.
+   *
+   * Un des trois blocs porte son libelle sans accents (« Ministere de
+   * l'Interieur — communes et cantons par circonscription legislative ») et
+   * l'ecran « Sources » le rendait tel quel. La regle du projet est explicite :
+   * les commentaires du code sont sans accents, le texte affiche jamais.
+   * On ne renomme personne : seuls les mots de la table ci-dessous sont touches,
+   * un mot absent de la table est recopie tel quel. Un controle statique relit
+   * data/index.json et echoue si un libelle affiche reste sans accents. */
+  const ACCENTS = {
+    Ministere: "Ministère", ministere: "ministère",
+    Interieur: "Intérieur", interieur: "intérieur",
+    legislative: "législative", legislatives: "législatives",
+    Repertoire: "Répertoire", repertoire: "répertoire",
+    elus: "élus", Elus: "Élus",
+    donnees: "données", Donnees: "Données",
+    generale: "générale", Generale: "Générale",
+    decoupage: "découpage", Decoupage: "Découpage",
+    financiere: "financière", publiques: "publiques",
+  };
+  const reaccentuer = t => String(t || "").replace(/[A-Za-z]+/g, m => ACCENTS[m] || m);
+
+  const noms = nomsTerritoires();
+  const deputes = relevesDeputes();
+  const scrutins = relevesScrutins();
+  const projets = relevesProjets();
+  const evenements = relevesEvenements();
   const meta = {
     v: 1,
     genere_le: new Date().toISOString().slice(0, 10),
+    /* SCHEMA_ATTENDU (packages/data-utils/src/client.js) doit rester EGAL
+       a ce `v` : c'est ce qui permet a un navigateur qui a deja visite de
+       detecter un cache perime plutot que de le croire a jour. Ne pas
+       changer l'un sans l'autre — voir le commentaire de SCHEMA_ATTENDU. */
+    build: {
+      ...informationsBuild(),
+      sante: {
+        ...sante.critical,
+        ...sante.important,
+        deputes: !!deputes,
+        scrutins: !!scrutins,
+        projets: !!projets,
+        evenements: !!(evenements && evenements.r && evenements.r.length),
+        /* calendrier-senat.json est copie a part, apres ce fichier (voir plus
+           bas) : sa presence sera verifiee la, pas ici, pour ne pas dupliquer
+           la logique du script qui le copie reellement. */
+      },
+    },
     sources: {
-      elus: (RNE.meta && { producteur: RNE.meta.producteur, licence: RNE.meta.licence, maj: RNE.meta.maj }) || null,
-      comptes: (OFGL && OFGL.meta && { producteur: OFGL.meta.producteur, licence: OFGL.meta.licence, maj: OFGL.meta.maj }) || null,
-      circonscriptions: (CIRCOS && { producteur: CIRCOS.source, licence: CIRCOS.licence, decoupage: CIRCOS.decoupage }) || null,
+      elus: (RNE.meta && { producteur: reaccentuer(RNE.meta.producteur), licence: RNE.meta.licence, maj: RNE.meta.maj }) || null,
+      comptes: (OFGL && OFGL.meta && { producteur: reaccentuer(OFGL.meta.producteur), licence: OFGL.meta.licence, maj: OFGL.meta.maj }) || null,
+      circonscriptions: (CIRCOS && { producteur: reaccentuer(CIRCOS.source), licence: CIRCOS.licence, decoupage: CIRCOS.decoupage }) || null,
+      territoires: (noms && noms.sources) || null,
+      /* Les libelles de communes ont leur propre producteur, distinct de celui des
+         elus : ce sont deux jeux de donnees, releves a deux dates. */
+      communes: (officiels && {
+        producteur: officiels.source.producteur_affiche,
+        licence: officiels.source.licence,
+        url: officiels.source.url,
+        portee: officiels.source.portee,
+        releve_le: officiels.source.releve_le,
+      }) || null,
+      /* La source des deputes est annoncee dans l'index — donc sur l'ecran
+         « Sources » — meme si le fichier des deputes, lui, n'est demande que
+         par l'ecran qui l'affiche. */
+      deputes: (deputes && {
+        producteur: deputes.source.producteur_affiche,
+        licence: deputes.source.licence,
+        url: deputes.source.url,
+        legislature: deputes.source.legislature,
+        portee: deputes.source.portee,
+        releve_le: deputes.source.releve_le,
+      }) || null,
+      /* Annoncee sur l'ecran « Sources » comme les autres, meme si le catalogue
+         des scrutins n'est demande que par l'ecran qui l'affiche. */
+      scrutins: (scrutins && {
+        producteur: scrutins.source.producteur_affiche,
+        licence: scrutins.source.licence,
+        url: scrutins.source.url,
+        legislature: scrutins.source.legislature,
+        portee: scrutins.source.portee,
+        releve_le: scrutins.source.releve_le,
+      }) || null,
+      /* La source des projets finances porte DEUX dates a ne pas confondre :
+         `mis_a_jour_le`, quand l'Etat a publie, et `releve_le`, quand Repere est
+         alle le chercher. L'ecran affiche la premiere — c'est celle qui dit
+         l'age du fait — et « Sources » les montre toutes les deux. */
+      projets: (projets && {
+        producteur: projets.source.producteur_affiche,
+        producteur_citoyen: projets.source.producteur_citoyen,
+        licence: projets.source.licence,
+        url: projets.source.url,
+        exercices: projets.source.exercices,
+        mis_a_jour_le: projets.source.mis_a_jour_le,
+        releve_le: projets.source.releve_le,
+      }) || null,
+      /* PAS UN PRODUCTEUR UNIQUE — chaque fait porte le sien (voir
+         evenements.json, champ src/srcn) — mais un MECANISME a declarer :
+         l'invariant 4 exige de dire d'ou vient une donnee, et ici « d'ou »
+         est autant le geste humain de validation que la source finale. */
+      evenements: (evenements && {
+        producteur: "Repère — rédaction (chaque fait porte en outre sa source officielle propre)",
+        licence: "voir la source de chaque fait",
+        maj: evenements.maj,
+      }) || null,
     },
     agregats: (OFGL && OFGL.meta && OFGL.meta.agregats) || [],
   };
+
+  /* COMPTES DEPARTEMENTAUX ET REGIONAUX — BLOCKER #2 DE LA MISSION DU
+   * 22/09/2026, CORRIGE ICI.
+   *
+   * CE QUI MANQUAIT, TRACE JUSQU'A LA CAUSE. `window.REPERE_OFGL.ech` porte
+   * TROIS echelons (mesure directe sur le fichier source, pas une supposition) :
+   * `commune`, `departement`, `region`, tous les trois de la MEME forme
+   * `{terr:{code:{ex:{annee:[...]}}}}`. Ce module n'a jamais lu que
+   * `ech.commune.terr` (voir `communesOfgl` plus haut) : les deux autres
+   * echelons existent dans la source depuis le debut et n'etaient simplement
+   * jamais extraits. L'ancien site, lui, les affiche (ecran s-argent, chips
+   * de filtre ville/departement/region) — ce que mono/ ne pouvait pas encore
+   * faire, faute d'extraction.
+   *
+   * OU VIT CHAQUE ECHELON, ET POURQUOI CE N'EST PLUS LE MEME ENDROIT POUR LES
+   * DEUX. Premiere version de ce correctif (mesuree, puis corrigee le meme
+   * jour) : un seul fichier `comptes-territoires.json` avec les 101
+   * departements ET les 17 regions — 165 Ko, dont 140 Ko de departements.
+   * Mesure reelle (tests/poids.mjs) : ce fichier partait EN ENTIER a chaque
+   * ouverture de « Ou va l'argent », pour n'en lire qu'UNE ligne sur 101 — la
+   * categorie C ("a la demande") etait respectee, mais sans le "seulement ce
+   * qui est necessaire" que la mission exige. Un departement ne pese que
+   * 1,4 Ko : ses comptes rejoignent donc le paquet departemental, deja
+   * telecharge pour toute autre raison, zero requete de plus. Les regions,
+   * elles, restent a part (24,7 Ko pour les 17 — une region couvre plusieurs
+   * departements, la dupliquer dans chacun couterait plus cher que la garder
+   * commune). */
+  const OFGL_ECH = (OFGL && OFGL.ech) || {};
+  function extraireEchelon(cle) {
+    const terr = (OFGL_ECH[cle] && OFGL_ECH[cle].terr) || {};
+    const out = {};
+    for (const [code, v] of Object.entries(terr)) out[code] = { comptes: v.ex || null };
+    return out;
+  }
+  const comptesDept = extraireEchelon("departement");
+  const comptesReg = extraireEchelon("region");
+  appliquerRegleV1(Object.values(comptesDept), "departement");
+  appliquerRegleV1(Object.values(comptesReg), "region");
+  for (const [d, paquet] of paquets) {
+    paquet.comptes_departement = comptesDept[d] ? comptesDept[d].comptes : null;
+  }
+
+  /* CONSEIL DEPARTEMENTAL COMPLET — un par departement, fonde dans le paquet
+   * (categorie B : deja telecharge pour le reste du departement, zero
+   * requete de plus — meme raisonnement que comptes_departement). Le
+   * filtrage par canton (« mon canton d'abord ») se fait cote client
+   * (QuiDecide.jsx), avec `canton` deja pose sur chaque commune ci-dessus :
+   * porter cette liste ENTIERE mais UNE SEULE FOIS par departement, jamais
+   * par commune, est ce qui rend ce portage leger (40 conseillers, ~2,8 Ko,
+   * mesure plus bas) plutot que de la dupliquer 39 fois par commune.
+   *
+   * L'ALIAS ALSACIEN. Bas-Rhin (67) et Haut-Rhin (68) n'ont plus de conseil
+   * departemental propre depuis 2021 ; leurs elus sont ranges sous le code
+   * "6AE" (Collectivite europeenne d'Alsace) dans le RNE — pas une deduction,
+   * le code ecrit tel quel dans la source (voir renderQui, meme alias). Hors
+   * perimetre des 8 departements IDF de la beta aujourd'hui, mais porte ici
+   * pour que l'extraction ne mente pas silencieusement si un departement
+   * alsacien entrait un jour dans le decoupage publie. */
+  for (const [d, paquet] of paquets) {
+    const depRne = (d === "67" || d === "68") ? "6AE" : d;
+    const ligne = (RNE.dep || {})[depRne];
+    if (!ligne || !ligne.length) { paquet.conseil_departemental = null; continue; }
+    const dcan = (RNE.depcan || {})[depRne] || [];
+    const ddep = (RNE.ddep || {})[depRne];
+    paquet.conseil_departemental = ligne
+      .map((l, i) => ({ ...personneDe(RNE, l, dateDe(ddep, i)), canton: dcan[i] != null ? dcan[i] : null }))
+      .sort((a, b) => rangFonction(a.fonction) - rangFonction(b.fonction));
+
+    /* NOMS DE CANTONS — seulement ceux que ce departement utilise (son
+       conseil, plus les cantons de ses propres communes), jamais la table
+       nationale entiere : `RNE.cn` est un tableau global, l'embarquer sans
+       filtre republierait la France pour un departement. */
+    const codes = new Set(dcan.filter(c => c != null));
+    for (const c of Object.values(paquet.communes)) {
+      if (c.canton) for (const code of c.canton) codes.add(code);
+    }
+    const cn = RNE.cn || [];
+    paquet.cantons = Object.fromEntries([...codes].map(c => [c, cn[c] || null]));
+  }
 
   const departements = [...paquets.keys()].sort();
   const tailles = {};
@@ -113,13 +723,235 @@ async function extraire() {
   }
   const index = {
     ...meta,
-    departements: departements.map(d => ({
-      code: d,
-      communes: Object.keys(paquets.get(d).communes).length,
-      octets: tailles[d],
-    })),
+    departements: departements.map(d => {
+      const t = noms && noms.territoires ? noms.territoires[d] : null;
+      return {
+        code: d,
+        /* Un code sans nom garde le code : on n'invente pas de libelle. */
+        ...(t ? { nom: t.nom, type: t.type } : {}),
+        /* La region et son code numerique OFGL : ajoutes le 22/09/2026 pour que
+           « Ou va l'argent » sache quelle ligne lire dans comptes-regions.json
+           sans requete supplementaire. Absents pour les collectivites d'outre-
+           mer qui ne sont pas des departements (975, 987, 988) et pour Mayotte
+           (aucune region dans OFGL). */
+        ...(t && t.region ? { region: t.region, region_code: t.region_code } : {}),
+        communes: Object.keys(paquets.get(d).communes).length,
+        octets: tailles[d],
+      };
+    }),
   };
   ecrire(path.join(SORTIE, "index.json"), index);
+
+  /* Les regions restent a part de index.json pour la meme raison que les
+     deputes ou les scrutins : rien n'en a besoin avant l'ouverture de
+     « Ou va l'argent ». Voir le commentaire complet plus haut, au moment de
+     l'extraction des echelons departement/region. */
+  const nomsRegions = (noms && noms.regions) || {};
+  const octetsComptesRegions = ecrire(path.join(SORTIE, "comptes-regions.json"), {
+    v: 1,
+    source: index.sources.comptes,
+    regions: Object.fromEntries(Object.entries(comptesReg).map(([code, v]) => [code, v.comptes])),
+    noms_regions: nomsRegions,
+  });
+  console.log("comptes-regions.json   : " + Object.keys(comptesReg).length + " regions, " + octetsComptesRegions + " octets"
+    + " (departements : fondus dans chaque paquet, voir plus haut)");
+
+  /* CONSEIL REGIONAL — UN FICHIER PAR REGION, PAS UN SEUL FICHIER FRANCE.
+   *
+   * PREMIERE VERSION MESUREE, PUIS CORRIGEE LE MEME JOUR (meme genre de
+   * mesure qu'au moment de comptes-regions.json, voir plus haut) : un seul
+   * fichier pour les 14 regions qui ont des elus dans cette source pesait
+   * 147 363 o — alors qu'un departement de la beta n'a jamais besoin que
+   * d'UNE region. mono/ extrait deja les 104 departements de France (pas
+   * seulement les 8 de la beta) : `index.departements` porte donc 14 codes
+   * de region differents, et republier les 13 non pertinentes a chaque
+   * ouverture de « Qui decide » aurait ete exactement le defaut que « ne pas
+   * reembarquer la France » interdit. Ile-de-France seule (la region de la
+   * beta) pese 16,8 Ko — c'est elle, et elle seule, qui part au reseau pour
+   * une commune d'Ile-de-France. */
+  const codesRegionUtilises = new Set(
+    (index.departements || []).map(d => d.region_code).filter(Boolean));
+  let nbRegionsEcrites = 0, totalElusRegions = 0, totalOctetsRegions = 0;
+  for (const code of codesRegionUtilises) {
+    const ligne = (RNE.reg || {})[code];
+    if (!ligne || !ligne.length) continue;
+    const dreg = (RNE.dreg || {})[code];
+    const elus = ligne
+      .map((l, i) => personneDe(RNE, l, dateDe(dreg, i)))
+      .sort((a, b) => rangFonction(a.fonction) - rangFonction(b.fonction));
+    const octets = ecrire(path.join(SORTIE, "elus-regions", code + ".json"), {
+      v: 1,
+      source: index.sources.elus,
+      elus,
+    });
+    nbRegionsEcrites++; totalElusRegions += elus.length; totalOctetsRegions += octets;
+  }
+  console.log("elus-regions/{code}.json : " + nbRegionsEcrites + " fichier(s), "
+    + totalElusRegions + " elu(s) au total, " + totalOctetsRegions + " octets au total"
+    + " (Ile-de-France seule : " + (fs.existsSync(path.join(SORTIE, "elus-regions", "11.json"))
+      ? fs.statSync(path.join(SORTIE, "elus-regions", "11.json")).size + " octets" : "absente") + ")");
+
+  /* LE FIL EDITORIAL — BLOCKER #3. Un seul petit fichier pour la France
+     entiere, publie tel que la redaction l'a valide, jamais regenere ici. */
+  if (evenements) {
+    const octetsEvenements = ecrire(path.join(SORTIE, "evenements.json"), evenements);
+    console.log("evenements.json        : " + evenements.r.length + " fait(s) valide(s), " + octetsEvenements + " octets");
+  } else {
+    console.log("evenements.json        : absent — le fil garde sa doctrine du vide habituelle");
+  }
+
+  /* Le fichier des deputes est publie A PART, et pas fondu dans index.json :
+     l'index part au premier ecran, ce fichier ne part que si le lecteur ouvre
+     « Qui decide ». Il emporte sa source avec lui, pour que l'ecran n'ait pas a
+     aller la chercher ailleurs. */
+  let octetsDeputes = 0;
+  if (deputes) {
+    octetsDeputes = ecrire(path.join(SORTIE, "deputes.json"), {
+      v: 1,
+      source: index.sources.deputes,
+      deputes: deputes.deputes,
+    });
+  }
+
+  /* LES VOTES, PUBLIES EN DEUX MORCEAUX, ET C'EST LE POINT DE L'AFFAIRE.
+   *
+   *   data/scrutins.json        le catalogue : ce sur quoi on a vote. Commun a
+   *                             toute la France, aucune position dedans.
+   *   data/scrutins/{dep}.json  les positions des SEULS deputes de ce
+   *                             departement, indexees par scrutin.
+   *
+   * Pourquoi pas un seul fichier : decoupe par departement, la Seine-Saint-
+   * Denis pese moins de deux kilo-octets. La maille reste le departement — jamais
+   * la commune, jamais le depute : le serveur ne doit pas apprendre qui on lit.
+   *
+   * BLOCKER M-2 DE LA RC DU 15/09/2026, CORRIGE LE 17/09/2026 — TROUVE PAR UN
+   * RED TEAM SUR UN AUTRE CHANTIER, PAS ENCORE TRAITE JUSQU'ICI.
+   *
+   * CE QUI ETAIT PUBLIE AVANT : une chaine de 80 caracteres par depute, un par
+   * scrutin du catalogue (« p », « c », « a », ou « . » si la source ne porte
+   * pas de position). Mesure : la mediane est de 65 positions non portees sur
+   * 80 par depute, parce que 89% des 80 scrutins sont des votes de procedure a
+   * faible participation — normal et attendu, pas un signe d'absence. Un tiers
+   * qui aurait divise le nombre de lettres non-point par 80 aurait obtenu un
+   * « taux de presence » de 19% pour le depute median, un chiffre FAUX rendu
+   * possible par la seule FORME du fichier — l'invariant 8 (jamais de donnee
+   * de presence) etait enfreint sans qu'aucun mot ne le revele a une garde qui
+   * cherche des noms de champs.
+   *
+   * LA CORRECTION, EN DEUX TEMPS : (1) le catalogue et les positions ne portent
+   * plus que les scrutins SOLENNELS (votes sur l'ensemble d'un texte — huit sur
+   * quatre-vingts aujourd'hui), la ou l'absence de position est deja rare
+   * (17% mesure sur ces huit-la) et donc dite sans risque de deformer le
+   * lecteur ; (2) la forme change : la cle n'est plus le depute mais le
+   * scrutin — { "8434": { "PA721908": "p" } } — pour qu'aucune valeur rangee
+   * sous une cle qui nomme une personne ne puisse plus prendre la forme d'un
+   * compte ou d'un taux. Les 72 scrutins de detail restent dans scripts/scrutins.json
+   * (l'archive brute) mais ne sont plus publies : l'ecran qui les listait est
+   * retire en meme temps (voir apps/web/src/lib/votes.jsx et QuiDecide.jsx). */
+  let octetsScrutins = 0, positionsEcrites = 0;
+  const depsAvecVotes = [];
+  if (scrutins && deputes) {
+    const solennels = scrutins.r.filter(e => /solennel/i.test(e.tv || ""));
+    const catalogue = solennels.map(e => ({
+      u: e.u, n: e.n, d: e.d, t: e.t, s: e.s, sl: e.sl, tv: e.tv, dec: e.dec, nv: e.nv,
+    }));
+    octetsScrutins = ecrire(path.join(SORTIE, "scrutins.json"), {
+      v: 1,
+      source: index.sources.scrutins,
+      url_scrutin: scrutins.source.url_scrutin,
+      ecarte: scrutins.source.ecarte,
+      total_source: scrutins.total_source,
+      scrutins: catalogue,
+    });
+
+    /* Position par scrutin solennel, jamais par depute : { acteurRef: lettre } */
+    const parScrutin = new Map();
+    for (const e of solennels) {
+      const table = {};
+      for (const [champ, lettre] of [["p", "p"], ["c", "c"], ["a", "a"]]) {
+        for (const idx of e[champ] || []) {
+          const ref = scrutins.acteurs[idx];
+          if (ref) table[ref] = lettre;
+        }
+      }
+      parScrutin.set(e.n, table);
+    }
+
+    /* Un depute appartient au departement de sa circonscription : la cle du
+       fichier des mandats porte les deux (« 93-6 »). Aucune autre derivation.
+       On ne pose que les positions des deputes de CE departement — jamais le
+       tableau complet de 576 deputes dans chaque fichier. */
+    const parDep = new Map();
+    for (const [cle, d] of Object.entries(deputes.deputes)) {
+      const dep = cle.slice(0, cle.lastIndexOf("-"));
+      if (!d.acteurRef) continue;
+      for (const [n, table] of parScrutin) {
+        if (!(d.acteurRef in table)) continue;
+        if (!parDep.has(dep)) parDep.set(dep, {});
+        if (!parDep.get(dep)[n]) parDep.get(dep)[n] = {};
+        parDep.get(dep)[n][d.acteurRef] = table[d.acteurRef];
+      }
+    }
+    for (const dep of [...parDep.keys()].sort()) {
+      ecrire(path.join(SORTIE, "scrutins", dep + ".json"), {
+        v: 1, d: dep, releve_le: scrutins.source.releve_le, positions: parDep.get(dep),
+      });
+      depsAvecVotes.push(dep);
+      positionsEcrites += new Set(Object.values(parDep.get(dep)).flatMap(t => Object.keys(t))).size;
+    }
+  }
+
+  /* LES PROJETS, DECOUPES PAR DEPARTEMENT.
+   *
+   *   data/projets/{dep}.json   { insee : [ {annee, dispositif, intitule,
+   *                               subvention, cout} ] }
+   *
+   * On ne trie RIEN ici, et c'est voulu : le fil est ordonne dans le navigateur,
+   * par annee decroissante puis dans l'ordre ou l'Etat publie ses lignes. Trier
+   * par montant mettrait le plus gros projet en tete, et l'ecran le presenterait
+   * comme un ordre d'importance.
+   *
+   * Le code INSEE ne sert que de cle A L'INTERIEUR du fichier : il n'entre dans
+   * aucune adresse. C'est ce que garde l'invariant 2. */
+  const depsAvecProjets = [];
+  let projetsEcrits = 0;
+  /* UNE DONNEE DONT LA SOURCE A DISPARU NE DOIT PAS SURVIVRE AU RELEVE.
+     Trouve par le banc le 14/09/2026 : projets.json retire, l'extraction a
+     poursuivi sans lui — et data/projets/ est reste sur le disque avec ses
+     fichiers de la veille, publies, pendant qu'index.json ne declarait plus
+     aucune source pour eux. C'est la faute exacte que l'invariant 4 existe pour
+     empecher, et elle etait invisible : les fichiers etaient valides, seulement
+     orphelins. On efface donc ce qui n'a plus de source, et on le dit. */
+  if (!projets && fs.existsSync(path.join(SORTIE, "projets"))) {
+    fs.rmSync(path.join(SORTIE, "projets"), { recursive: true, force: true });
+    console.warn("::warning::data/projets efface : le releve a disparu, ses fichiers ne doivent pas lui survivre");
+  }
+  if (projets) {
+    const parDepProjets = new Map();
+    for (const [insee, liste] of Object.entries(projets.communes)) {
+      if (!Array.isArray(liste) || !liste.length) continue;
+      /* Le departement d'un code INSEE : deux caracteres, trois en outre-mer.
+         Aucune autre derivation, et une commune hors des paquets connus est
+         ecartee plutot que rangee au hasard. */
+      const dep = insee.startsWith("97") ? insee.slice(0, 3) : insee.slice(0, 2);
+      if (!paquets.has(dep)) continue;
+      if (!parDepProjets.has(dep)) parDepProjets.set(dep, {});
+      parDepProjets.get(dep)[insee] = liste;
+    }
+    for (const dep of [...parDepProjets.keys()].sort()) {
+      ecrire(path.join(SORTIE, "projets", dep + ".json"), {
+        v: 1, d: dep,
+        mis_a_jour_le: projets.source.mis_a_jour_le,
+        releve_le: projets.source.releve_le,
+        exercices: projets.source.exercices,
+        dispositifs: projets.dispositifs || {},
+        communes: parDepProjets.get(dep),
+      });
+      depsAvecProjets.push(dep);
+      projetsEcrits += Object.values(parDepProjets.get(dep))
+        .reduce((n, l) => n + l.length, 0);
+    }
+  }
 
   /* CONTRÔLE INDÉPENDANT : on relit ce qu'on vient d'écrire, sans réutiliser une
      variable d'au-dessus. Son absence côté comptes a déjà laissé passer 103
@@ -141,7 +973,264 @@ async function extraire() {
   console.log("departement median    : " + Math.round(median / 1024) + " Ko");
   console.log("le plus lourd         : " + Math.round(octets[octets.length - 1] / 1024) + " Ko");
   console.log("source d'origine      : " + Math.round(fs.statSync(ENTREE).size / 1048576) + " Mo");
+  /* CONTROLE INDEPENDANT DU LIEN COMMUNE -> CIRCONSCRIPTION -> DEPUTE.
+     Il relit les DEUX fichiers ecrits sur le disque, sans reutiliser une
+     variable d'au-dessus, et compte les communes dont la circonscription unique
+     trouve un depute. Un jour ou le format des cles changera, ce compte
+     tombera a zero et le dira — l'ecran, lui, ne dirait rien. */
+  if (deputes) {
+    const relu = JSON.parse(fs.readFileSync(path.join(SORTIE, "deputes.json"), "utf8"));
+    const cles = Object.keys(relu.deputes);
+    const malFormees = cles.filter(k => !/^(\d{1,3}|2[AB])-\d{1,2}$/.test(k));
+    if (malFormees.length) {
+      console.error("cles de deputes mal formees : " + malFormees.slice(0, 5).join(", "));
+      process.exit(7);
+    }
+    let avec = 0, sans = 0, plusieurs = 0;
+    for (const d of departements) {
+      const p = JSON.parse(fs.readFileSync(path.join(SORTIE, "departments", d + ".json"), "utf8"));
+      for (const c of Object.values(p.communes)) {
+        if (Array.isArray(c.circo)) { plusieurs++; continue; }
+        if (c.circo === null || c.circo === undefined) { sans++; continue; }
+        if (relu.deputes[d + "-" + c.circo]) avec++; else sans++;
+      }
+    }
+    if (avec === 0) { console.error("ECHEC : aucune commune ne trouve son depute"); process.exit(7); }
+    console.log("deputes.json          : " + Math.round(octetsDeputes / 1024) + " Ko, " + cles.length + " circonscriptions");
+    console.log("communes -> depute    : " + avec + " nommees, " + plusieurs + " a cheval sur plusieurs circos, " + sans + " sans");
+  }
+
+  /* CONTROLE INDEPENDANT DE LA CHAINE COMPLETE : commune -> circo -> depute ->
+     position. Il relit les TROIS fichiers sur le disque et refait le trajet pour
+     une commune reelle de chaque departement de la beta. Un jour ou une cle
+     changera de forme, ce compte tombera et le build s'arretera — l'ecran, lui,
+     afficherait simplement un blanc. */
+  if (scrutins && deputes && depsAvecVotes.length) {
+    const cat = JSON.parse(fs.readFileSync(path.join(SORTIE, "scrutins.json"), "utf8"));
+    const mandats = JSON.parse(fs.readFileSync(path.join(SORTIE, "deputes.json"), "utf8"));
+    const numeros = new Set(cat.scrutins.map(sc => sc.n));
+    let chaines = 0;
+    const deputesVus = new Set();
+    const horsCommunes = [];
+    for (const dep of depsAvecVotes) {
+      const v = JSON.parse(fs.readFileSync(path.join(SORTIE, "scrutins", dep + ".json"), "utf8"));
+      /* CHAQUE CLE DE PREMIER NIVEAU EST UN NUMERO DE SCRUTIN DU CATALOGUE — plus
+         un rang de tableau. Aucune derive possible entre deux relevés qui
+         glisseraient d'un cran : chaque position s'identifie par le scrutin
+         qu'elle concerne, jamais par sa position dans une liste. */
+      for (const [n, table] of Object.entries(v.positions)) {
+        if (!numeros.has(n)) {
+          console.error(`ECHEC : ${dep} porte des positions pour le scrutin ${n}, absent du catalogue`);
+          process.exit(8);
+        }
+        for (const [ref, lettre] of Object.entries(table)) {
+          deputesVus.add(dep + "-" + ref);
+          if (!/^[pca]$/.test(lettre)) {
+            console.error(`ECHEC : ${dep}/${n}/${ref} porte un caractere qui n'est pas une position`);
+            process.exit(8);
+          }
+        }
+      }
+      /* 099 = les Francais etablis hors de France : onze circonscriptions, aucune
+         commune. Leurs deputes votent comme les autres et leur fichier de votes
+         est publie ; il n'y a simplement pas de commune d'ou partir. Sauter en
+         silence serait un trou muet — on le compte et on l'annonce. */
+      const fichierCommunes = path.join(SORTIE, "departments", dep + ".json");
+      if (!fs.existsSync(fichierCommunes)) { horsCommunes.push(dep); continue; }
+      const p = JSON.parse(fs.readFileSync(fichierCommunes, "utf8"));
+      for (const c of Object.values(p.communes)) {
+        if (typeof c.circo !== "number") continue;
+        const m = mandats.deputes[dep + "-" + c.circo];
+        if (m && Object.values(v.positions).some(t => m.acteurRef in t)) chaines++;
+      }
+    }
+    if (chaines === 0) {
+      console.error("ECHEC : aucune commune ne remonte jusqu'a une position de vote");
+      process.exit(8);
+    }
+    const octets = depsAvecVotes.map(d => fs.statSync(path.join(SORTIE, "scrutins", d + ".json")).size);
+    console.log("scrutins.json         : " + Math.round(octetsScrutins / 1024) + " Ko, " + numeros.size + " scrutins solennels");
+    console.log("votes par departement : " + depsAvecVotes.length + " fichiers, "
+      + deputesVus.size + " deputes, le plus lourd " + Math.round(Math.max(...octets) / 1024) + " Ko");
+    /* LA FRAICHEUR SE DIT, ET ELLE S'ANNONCE QUAND ELLE MANQUE.
+       Les deux releves ont ete poses a la main, tous deux dates du 26 aout, et
+       l'ecran a servi des votes vieillissants pendant deux semaines sans que rien
+       ne le signale. La collecte les refait maintenant chaque matin ; ce controle
+       est ce qui dira le jour ou elle cessera de le faire. Il AVERTIT, il n'arrete
+       pas : des donnees officielles d'il y a trois semaines restent publiables tant
+       que leur date est affichee au lecteur — et elle l'est. */
+    const jours = d => Math.round((Date.now() - Date.parse(d)) / 86400000);
+    for (const [quoi, releve] of [["mandats", mandats.source && mandats.source.releve_le],
+                                  ["scrutins", cat.source && cat.source.releve_le]]) {
+      if (!releve) continue;
+      const age = jours(releve);
+      if (age > 7) {
+        console.warn(`::warning::le releve des ${quoi} date du ${releve}, soit ${age} jours : `
+          + "la collecte quotidienne ne le rafraichit plus (voir outils/mono_donnees.py dans le journal du pipeline)");
+      }
+    }
+    console.log("communes -> position  : " + chaines
+      + (horsCommunes.length ? "  (sans commune : " + horsCommunes.join(", ") + ")" : ""));
+  }
+
+  /* CONTROLE INDEPENDANT DES PROJETS : on relit sur le disque, on refait le
+     trajet commune -> projets, et on verifie qu'aucune ligne publiee ne sort de
+     son departement. Une cle mal formee afficherait chez un habitant une
+     decision qui n'est pas la sienne — c'est la faute la plus grave que cet
+     ecran puisse commettre, donc elle arrete le build et n'avertit pas. */
+  if (projets && depsAvecProjets.length) {
+    let lignes = 0, communesServies = 0;
+    for (const dep of depsAvecProjets) {
+      const f = JSON.parse(fs.readFileSync(path.join(SORTIE, "projets", dep + ".json"), "utf8"));
+      const habitantes = JSON.parse(fs.readFileSync(
+        path.join(SORTIE, "departments", dep + ".json"), "utf8")).communes;
+      for (const [insee, liste] of Object.entries(f.communes)) {
+        const attendu = insee.startsWith("97") ? insee.slice(0, 3) : insee.slice(0, 2);
+        if (attendu !== dep) {
+          console.error(`ECHEC : ${insee} publie dans le paquet ${dep}`);
+          process.exit(10);
+        }
+        if (!habitantes[insee]) {
+          console.error(`ECHEC : ${insee} porte des projets mais n'existe pas dans ${dep}.json`);
+          process.exit(10);
+        }
+        communesServies++;
+        for (const pr of liste) {
+          lignes++;
+          if (!pr.intitule || typeof pr.subvention !== "number" || !pr.annee) {
+            console.error(`ECHEC : ${insee} porte une ligne sans intitule, sans montant ou sans annee`);
+            process.exit(10);
+          }
+        }
+      }
+    }
+    const octets = depsAvecProjets.map(d => fs.statSync(path.join(SORTIE, "projets", d + ".json")).size);
+    console.log("projets par departement: " + depsAvecProjets.length + " fichiers, "
+      + lignes + " projets sur " + communesServies + " communes, le plus lourd "
+      + Math.round(Math.max(...octets) / 1024) + " Ko");
+    /* Meme regle de fraicheur que pour les votes : la source est ANNUELLE, donc
+       le seuil n'est pas sept jours mais quatorze mois. Au-dela, l'Etat a publie
+       un nouvel exercice que la collecte n'est pas allee chercher. */
+    const moisDepuis = d => (Date.now() - Date.parse(d)) / 2629800000;
+    const maj = projets.source.mis_a_jour_le;
+    if (maj && moisDepuis(maj) > 14) {
+      console.warn(`::warning::les projets finances datent de la publication du ${maj}, `
+        + `soit ${Math.round(moisDepuis(maj))} mois : un exercice plus recent existe `
+        + "probablement (voir outils/projets_etat.py)");
+    }
+  } else if (projets) {
+    console.warn("::warning::projets.json lu mais aucun departement servi : verifier les codes INSEE");
+  }
+
+  /* L'INDEX DE LA BETA : CHERCHER SA COMMUNE SANS SAVOIR SON DEPARTEMENT.
+   *
+   * MESURE DU 13/09/2026 : entre l'ouverture et « je sais comment mon depute a
+   * vote », il y avait dix etapes, dont TROIS n'existaient que parce que les
+   * fichiers sont decoupes par departement — il fallait savoir qu'on habite
+   * « dans le 93 » avant de pouvoir taper « Bagnolet ». Personne ne pense comme
+   * ca. Le decoupage des donnees avait fuite dans l'interface.
+   *
+   * CE FICHIER LE REPARE SANS RIEN CHANGER AU DECOUPAGE. Il porte le nom et le
+   * code de chaque commune des huit departements de la beta ; l'ecran cherche
+   * dedans, en deduit le DEPARTEMENT, et demande le fichier departemental
+   * habituel. Le serveur n'apprend donc toujours que le departement — l'invariant
+   * tient, et il est garde par le controle des adresses.
+   *
+   * POURQUOI L'ILE-DE-FRANCE SEULEMENT, mesure a l'appui : 1 262 communes pesent
+   * 11 Ko compresses, la France entiere en pesant 271. On ne fait pas payer
+   * 271 Ko au premier ecran de tout le monde pour supprimer une etape. Les autres
+   * departements gardent leur parcours actuel, qui n'est pas retire. */
+  let octetsBeta = 0;
+  if (BETA.length) {
+    const communesBeta = {};
+    /* MESURE DU 22/09/2026 : geo.api.gouv.fr donne 1266 communes pour les huit
+     * departements de la beta ; ce fichier n'en portait que 1262. Les 4
+     * manquantes (Ville-d'Avray, Barbey, Lissy, Villecresnes) sont exactement
+     * les 4 dejA nommees par `paquet.manquantes` plus haut — la doctrine du
+     * 16/09/2026 qui distingue "absente du Repertoire des elus" de "n'existe
+     * pas". Elle protegeait deja la recherche APRES le choix d'un departement
+     * (ChoixCommune, App.jsx) ; elle ne protegeait pas encore CETTE recherche,
+     * la premiere que tape un lecteur. Tapee en direct : "Ville-d'Avray" sur
+     * le premier ecran repondait "Rien ne correspond... Hors d'Ile-de-France,
+     * cherchez d'abord votre departement" — une phrase fausse pour une
+     * habitante d'Ile-de-France. Meme donnee, meme phrase honnete desormais
+     * aux deux endroits — pas une deuxieme regle qui pourrait diverger. */
+    const manquantesBeta = {};
+    for (const dep of BETA) {
+      const f = path.join(SORTIE, "departments", dep + ".json");
+      if (!fs.existsSync(f)) { console.warn(`::warning::departement ${dep} de la beta absent`); continue; }
+      const paquetDep = JSON.parse(fs.readFileSync(f, "utf8"));
+      for (const [insee, c] of Object.entries(paquetDep.communes)) {
+        communesBeta[insee] = c.nom;
+      }
+      for (const [insee, nomOff] of Object.entries(paquetDep.manquantes || {})) {
+        manquantesBeta[insee] = nomOff;
+      }
+    }
+    octetsBeta = ecrire(path.join(SORTIE, "communes-beta.json"), {
+      v: 1,
+      /* Le departement se DEDUIT du code INSEE, il n'est pas stocke : deux
+         caracteres par commune economises, et surtout une seule verite. */
+      departements: BETA,
+      source: index.sources.communes || null,
+      communes: communesBeta,
+      manquantes: manquantesBeta,
+    });
+
+    /* CONTROLE INDEPENDANT : on relit le fichier ecrit et on refait le trajet
+       complet pour une commune de chaque departement de la beta. */
+    const relu = JSON.parse(fs.readFileSync(path.join(SORTIE, "communes-beta.json"), "utf8"));
+    const codes = Object.keys(relu.communes);
+    /* CORRECTIF DU 16/09/2026, TROUVE PAR UN AGENT D'ARCHITECTURE EN CASSANT
+     * LE CONTROLE POUR DE VRAI : `c.slice(0, 2)` ignore la regle des DOM (3
+     * caracteres, 97x/98x) que `departementDe()` porte deja plus haut dans ce
+     * meme fichier. Sans unifier sur cette fonction, etendre un jour `BETA`
+     * aux departements d'outre-mer ferait echouer ce controle avec un faux
+     * positif ("97102 hors beta") — exactement le piege deja documente au §9
+     * du CONTEXTE_PROJET : deux endroits qui derivent la meme regle finissent
+     * par diverger. Sans objet aujourd'hui (BETA ne contient aucun DOM), mais
+     * une garde qui casse a la prochaine extension vaut mieux qu'une garde
+     * fausse decouverte en production. */
+    const horsBeta = codes.filter(c => !BETA.includes(departementDe(c)));
+    if (horsBeta.length) {
+      console.error("l'index de la beta porte des communes hors beta : " + horsBeta.slice(0, 3).join(", "));
+      process.exit(10);
+    }
+    for (const dep of BETA) {
+      const attendues = Object.keys(JSON.parse(fs.readFileSync(path.join(SORTIE, "departments", dep + ".json"), "utf8")).communes);
+      const dedans = codes.filter(c => departementDe(c) === dep);
+      if (dedans.length !== attendues.length) {
+        console.error(`index de la beta : ${dedans.length} communes pour ${attendues.length} dans le departement ${dep}`);
+        process.exit(10);
+      }
+    }
+    console.log("index de la beta      : " + Math.round(octetsBeta / 1024) + " Ko, "
+      + codes.length + " communes sur " + BETA.length + " departements"
+      + (Object.keys(manquantesBeta).length
+         ? " (+ " + Object.keys(manquantesBeta).length + " nommees comme manquantes : "
+           + Object.values(manquantesBeta).join(", ") + ")"
+         : ""));
+  }
+
+  const sansNom = index.departements.filter(d => !d.nom).map(d => d.code);
+  if (officiels) {
+    console.log("noms officiels        : " + redresses + " libelles redresses"
+      + (sansLibelleOfficiel.length
+          ? ", " + sansLibelleOfficiel.length + " sans correspondance (gardes tels quels : "
+            + sansLibelleOfficiel.slice(0, 3).join(", ") + ")"
+          : ", aucune commune sans correspondance"));
+  }
   console.log("index.json            : " + Math.round(fs.statSync(path.join(SORTIE, "index.json")).size / 1024) + " Ko");
+  console.log("territoires nommes    : " + (index.departements.length - sansNom.length) + "/" + index.departements.length
+    + (sansNom.length ? "  (sans nom : " + sansNom.join(", ") + ")" : ""));
 }
 
-extraire();
+/* GARDE D'EXECUTION — ajoutee le 22/09/2026 (mission phase 3.2) pour rendre
+ * `classerSante()` testable par un simple import. Sans elle, importer ce
+ * module pour ne lire qu'une fonction pure declenchait la lecture reelle
+ * du mono-HTML et l'ecriture de tout data/ — un effet de bord que
+ * tests/sante.test.mjs n'a jamais demande. Meme motif que
+ * outils/registre/verifier_sources.mjs (deja dans ce depot). */
+if (path.resolve(process.argv[1] || "") === path.resolve(fileURLToPath(import.meta.url))) {
+  extraire();
+}

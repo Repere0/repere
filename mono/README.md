@@ -5,24 +5,30 @@
 > La chaîne `collecte.yml` continue de publier le site actuel ; celle du monorepo
 > construit et éprouve **sans publier**, tant que la bascule n'est pas décidée.
 
-Qui décide chez vous, et où va votre argent. Pour les 34 875 communes de France,
+Qui décide chez vous, et où va votre argent. Pour les 34 637 communes que portent les fichiers officiels,
 à partir des sources officielles.
 
 ## Ce que fait ce dépôt
 
 Il transforme le fichier mono-HTML de Repère (17,3 Mo) en un site qui charge
-**54 Ko compressés** au premier écran, puis **une centaine de kilo-octets** par
+**21 Ko compressés** au premier écran, puis **une centaine de kilo-octets** par
 département — et qui fonctionne hors ligne.
 
-| mesure du 25 août 2026 | valeur |
+| mesure du 26 août 2026 | valeur |
 |---|---|
-| premier écran | 164 Ko, **54 Ko compressés** |
-| + un département (le 64) | 186 Ko, 70 Ko compressés |
+| premier écran | 57 Ko, **21 Ko compressés** |
+| dont le socle de rendu | 19,5 Ko, 7,8 Ko compressés |
+| + un département (le 64) | 248 Ko, 93 Ko compressés |
 | fichier mono-HTML actuel | 16,5 Mo |
-| départements produits | 104 |
+| départements et collectivités | 104, tous nommés |
 | communes réparties | 34 637 |
 | département médian | 108 Ko |
-| contrôles d'invariants | **13 statiques + 21 dans un navigateur** |
+| circonscriptions avec leur député | 577, pour 34 508 communes |
+| contrôles d'invariants | **29 statiques + 42 dans un navigateur** |
+
+Le premier écran ne demande qu'un seul fichier de données : `data/index.json`.
+Aucun paquet départemental n'est téléchargé avant que le lecteur ait choisi son
+département.
 
 ## Démarrer
 
@@ -33,11 +39,13 @@ pnpm dev                                                # web + api de dev
 ```
 
 ```bash
-pnpm test                        # invariants statiques, sans navigateur
-pnpm build && cp -r data apps/web/dist/data
-node scripts/empreinte-sw.mjs apps/web/dist
-node tests/runtime.test.mjs apps/web/dist   # invariants dans un navigateur
+pnpm build          # vite + copie de data/ dans dist/ + empreinte du service worker
+pnpm test           # 29 contrôles statiques, puis 42 dans un vrai navigateur
 ```
+
+`pnpm build` copie `data/` dans `dist/` lui-même, avec un script Node : la
+commande est la même sous Windows, sous macOS et sous Linux. `pnpm test` a besoin
+d'un `pnpm extract` (pour `data/`) et d'un `pnpm build` (pour le banc navigateur).
 
 ## Les décisions qui ne se discutent pas
 
@@ -51,11 +59,89 @@ node tests/runtime.test.mjs apps/web/dist   # invariants dans un navigateur
 3. **Deux caches, pas un.** La coquille est versionnée par le build ; les données
    ne le sont pas. Sinon la publication quotidienne effacerait le département de
    chaque lecteur chaque matin.
-4. **Aucune police chargée depuis un hôte tiers.** Un lien vers `fonts.googleapis.com`
+4. **Le préchargement demande une intention, pas un passage.** Survoler ou
+   traverser la liste des territoires ne télécharge rien : il faut que le survol
+   ou le focus s'y pose un quart de seconde, et pas plus de trois paquets sont
+   pris d'avance. Un préchargement qui consomme le forfait de quelqu'un sans le
+   lui demander est un abus, même s'il rend l'application plus rapide.
+5. **Aucune police chargée depuis un hôte tiers.** Un lien vers `fonts.googleapis.com`
    ferait connaître à Google l'adresse IP de chaque lecteur, à chaque ouverture.
-5. **IndexedDB ne reçoit que de la donnée publique.** Une garde refuse toute
+6. **IndexedDB ne reçoit que de la donnée publique.** Une garde refuse toute
    écriture qui n'est pas un paquet départemental, et un contrôle vérifie qu'il
    n'existe qu'un seul magasin.
+7. **Deux thèmes, un seul seuil de lisibilité.** Le thème sombre n'est pas une
+   variante décorative : un contrôle mesure le contraste réel de chaque texte
+   coloré dans un navigateur en thème sombre, et refuse tout ce qui passe sous
+   3:1. La couleur d'échelon reste sur le filet des cartes ; elle ne porte le
+   titre que là où elle est lisible.
+
+## Ce que le lecteur voit, dans cet ordre
+
+1. **Où je suis** — un département, puis une commune. Le département se cherche
+   par son nom autant que par son numéro (« pyrenees at », « cotes armor », « 64 ») :
+   savoir qu'on habite « dans le 64 » n'est pas un prérequis pour entrer.
+   Le choix de la commune est fait UNE fois : il ne se refait pas à chaque
+   onglet, une ligne le rappelle au-dessus des onglets, et le titre de l'onglet
+   du navigateur porte le nom de la commune ouverte.
+2. **Qui décide** — le maire, ses adjoints, la circonscription législative, et
+   le député qui y a été élu.
+3. **Où va l'argent** — six montants publiés, puis ce qu'ils veulent dire.
+4. **D'où ça vient** — chaque carte porte sa source, son producteur et sa date.
+5. **Donnée ou calcul** — deux étiquettes qui ne se confondent pas :
+   « Donnée officielle » pour ce qui est publié tel quel, « Calcul Repère » pour
+   ce que Repère déduit. Un contrôle navigateur vérifie que les deux sont là et
+   qu'elles diffèrent.
+
+## Le banc tourne-t-il ailleurs qu'ici ?
+
+Pas encore, et c'est le dernier trou. `ci/banc.yml` est prêt : il installe,
+extrait, construit et éprouve sur **Linux et Windows**, puis vérifie que deux
+constructions successives produisent les mêmes empreintes. Il attend d'être
+déplacé dans `.github/workflows/` à la racine du dépôt, à côté de `collecte.yml`.
+
+Pourquoi ça compte : en une journée, trois défauts n'ont été vus que parce qu'une
+deuxième machine a lancé le banc — `xcopy` qui ne construit que sous Windows, un
+motif de fichiers que `cmd.exe` ne développe pas, et des chemins comparés avec
+des barres obliques quand Windows en met à l'envers. Aucun n'était un défaut du
+produit ; tous les trois seraient arrivés en production.
+
+## Le socle de rendu
+
+`preact/compat`, par alias dans `apps/web/vite.config.js`. Le socle React pesait
+141,8 Ko — 82 % du premier écran d'un produit dont l'argument est de peser peu.
+Repère n'utilise de React que `createRoot`, `StrictMode`, `lazy`, `Suspense` et
+les hooks d'état : preact les implémente pour 19,5 Ko. Aucun fichier de
+l'application n'a changé, et le banc navigateur mesure le résultat sur
+l'application réelle. Un contrôle statique refuse un alias incomplet et un socle
+qui regrossirait.
+
+## D'où vient le nom du député
+
+Le fichier mono-HTML porte la circonscription d'une commune ; il ne dit pas qui y
+a été élu, et le Répertoire national des élus ne porte pas ce lien. L'Assemblée
+nationale, elle, le publie. Le relevé est versionné dans `scripts/deputes.json`
+**avec son producteur, sa licence, sa législature et sa date** : sans ces quatre
+champs, `extract-html.js` refuse de publier le fichier, parce que l'invariant 4
+interdit d'afficher un nom d'élu que rien ne date ni ne rattache à un producteur.
+C'est pour cette raison exacte que ce fichier avait été débranché le 26 août ; il
+revient avec ce qui lui manquait.
+
+Il ne part au réseau **que** depuis l'écran « Qui décide » — 53 Ko, une fois,
+pour toute la France — et il traverse les trois étages comme un département :
+mémoire, IndexedDB, réseau. Une commune à cheval sur plusieurs circonscriptions
+n'affiche personne : laquelle est la vôtre dépend de votre adresse, que Repère ne
+demande pas. Un contrôle d'extraction relit les deux fichiers écrits sur le
+disque et compte les communes qui trouvent leur député (34 508 au 28 août) ; s'il
+tombe à zéro, l'extraction échoue au lieu de publier un écran muet.
+
+## D'où viennent les noms des départements
+
+Le fichier mono-HTML ne porte que des codes. Les noms sont relevés **une fois**
+auprès de sources officielles et rangés dans `scripts/noms-territoires.json`,
+avec leur producteur, leur licence et la date du relevé ; `extract-html.js` les
+fond dans `index.json`. Le build ne touche donc pas au réseau, l'application ne
+demande pas un fichier de plus, et l'écran « Sources » affiche ces producteurs
+comme les autres. Un contrôle refuse un territoire publié sans nom.
 
 ## Les huit invariants
 
@@ -66,11 +152,13 @@ qui le garde — un invariant sans contrôle est une intention, pas une règle.
 ## Arborescence
 
 ```
-apps/web            React + Vite. Écrans chargés à la demande.
+apps/web            Preact + Vite. Écrans chargés à la demande.
+                    public/ : service worker, manifeste, icônes de la PWA.
 apps/api            serveur de DÉVELOPPEMENT uniquement.
 packages/ui         jetons CSS et composants. Aucun composant « squelette ».
 packages/data-utils invariants, magasin IndexedDB, client de données.
-scripts/            extraction et empreinte du service worker.
-tests/              13 contrôles statiques + 21 dans un navigateur.
+scripts/            extraction, copie de data/ et empreinte du service worker.
+ci/                 la chaine du banc, a deplacer dans .github/workflows/.
+tests/              29 contrôles statiques + 42 dans un navigateur.
 data/               engendré. Ne pas modifier à la main.
 ```

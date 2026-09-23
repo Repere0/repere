@@ -1,135 +1,208 @@
-import React, { useMemo, useState } from "react";
-import { Carte, Vide, Tuile, BarreEchelon, Source } from "@repere/ui";
+import React, { useEffect, useMemo, useState } from "react";
+import { Carte, Vide, Tuile, BarreEchelon, Source, Mot, Chargement } from "@repere/ui";
+import { Pile } from "@repere/ui/amicro";
+import { valeur, rapports, population, dernierExercice } from "../lib/comptes.jsx";
+import { chargerComptesRegions, ETATS } from "@repere/data-utils";
 
-/* Le tableau plat des comptes : [population, montant0, parHab0, montant1, ...].
-   Six agrégats, deux valeurs chacun. La forme vient du fichier officiel ; on ne
-   la devine pas, meta.agregats la porte. */
-function valeur(ex, i) {
-  if (!Array.isArray(ex)) return null;
-  const m = ex[1 + i * 2], h = ex[2 + i * 2];
-  const mm = typeof m === "number" && m !== 0 ? m : null;
-  const hh = typeof h === "number" && h !== 0 ? h : null;
-  return mm === null && hh === null ? null : { m: mm, hab: hh };
-}
-const population = ex => (Array.isArray(ex) && ex[0] > 0 ? ex[0] : null);
-const pourCent = (a, b) => Math.round((a / b) * 100);
+/* `valeur`, `rapports`, `population`, `dernierExercice` VIVENT DANS
+ * lib/comptes.jsx DEPUIS LE 18/09/2026 — voir ce fichier pour l'historique de
+ * la garde zero/absence (15/09/2026, Mulcent 78439) et la raison du partage :
+ * le prototype "Aujourd'hui" a besoin exactement des memes traductions, pour
+ * le meme exercice de la meme commune. */
 
-/* TRADUIRE, pas afficher. Chaque phrase porte ce qu'elle NE veut PAS dire :
-   c'est la moitié du travail, et celle qui manque partout ailleurs. Aucun de ces
-   rapports ne sort du territoire affiché — invariant 3. */
-function rapports(ex) {
-  const v = i => valeur(ex, i);
-  const [rec, dep, det, inv, sal, imp] = [0, 1, 2, 3, 4, 5].map(v);
-  const nn = x => x && typeof x.m === "number" && x.m > 0;
-  const out = [];
-  if (nn(det) && nn(rec)) out.push({
-    l: "Sa dette",
-    v: (det.m / (rec.m / 12)).toLocaleString("fr-FR", { minimumFractionDigits: 1, maximumFractionDigits: 1 }) + " mois de recettes",
-    d: "Si tout ce qui est encaissé allait au remboursement, il faudrait ce temps-là. Ce n'est pas ce qui se passe : une dette se rembourse sur des années, et un emprunt sert le plus souvent à payer un équipement qui durera plus longtemps que lui.",
-  });
-  if (nn(sal) && nn(dep)) out.push({
-    l: "Sur 100 € dépensés", v: pourCent(sal.m, dep.m) + " € de salaires",
-    d: "Ce sont les agents qui tiennent l'école, la cantine, l'état civil, les espaces verts. Une part élevée n'est pas un gaspillage : c'est souvent le signe d'une collectivité qui rend ses services elle-même plutôt que de les acheter à l'extérieur.",
-  });
-  if (nn(inv) && nn(dep)) out.push({
-    l: "Sur 100 € dépensés", v: pourCent(inv.m, dep.m) + " € d'investissement",
-    d: "Les travaux et les équipements : une école, une voirie, une salle. Cette part bouge beaucoup d'une année à l'autre — haute l'année d'un chantier, basse ensuite. Une seule année ne dit rien d'une tendance.",
-  });
-  if (nn(imp) && nn(rec)) {
-    const p = pourCent(imp.m, rec.m);
-    out.push({
-      l: "Sur 100 € encaissés", v: p + " € d'impôts et taxes",
-      d: `Les ${100 - p} € restants viennent d'ailleurs : dotations versées par l'État, subventions d'autres collectivités, sommes payées par les usagers de certains services. Repère ne détaille pas cette composition — le fichier ne la porte pas.`,
-    });
-  }
-  if (nn(dep)) out.push({
-    l: "Ses dépenses", v: Math.round(dep.m / 365).toLocaleString("fr-FR") + " € par jour",
-    d: "Moyenne sur l'année, pas un rythme réel : les dépenses d'une collectivité sont très irrégulières. C'est une façon de rendre un total annuel imaginable, rien de plus.",
-  });
-  return out;
+/* COMPTES DEPARTEMENTAUX ET REGIONAUX — BLOCKER #2 DE LA MISSION DU
+ * 22/09/2026. Meme composant que pour la commune, meme fonctions de
+ * traduction (rapports/valeur/dernierExercice) : la seule difference est la
+ * source des donnees et l'echelon affiche sur la pastille. Ne PAS dupliquer
+ * la traduction ici — c'est exactement le piege que lib/comptes.jsx evite.
+ * Le departement lit `paquet.comptes_departement` (deja telecharge avec le
+ * reste du departement, zero requete de plus) ; la region seule vient d'un
+ * petit fichier a part (voir chargerComptesRegions ci-dessous) — mesure qui a
+ * fait deplacer les comptes departementaux hors de ce fichier le jour meme
+ * (voir extract-html.js pour le detail des deux versions mesurees). */
+function CompteTerritoire({ titre, echelon, exerciceAn, ex, agregats, src }) {
+  const rr = rapports(ex);
+  const maxAgregat = Math.max(...agregats.map((_, i) => (valeur(ex, i) || {}).m || 0));
+  return (
+    <Carte echelon={echelon} titre={titre}
+      sousTitre={<>Ce que ça représente · <Mot cle="exercice">exercice</Mot> {exerciceAn}{population(ex) ? ` · ${population(ex).toLocaleString("fr-FR")} habitants` : ""}</>}
+      tag={rr.length ? "Calcul Repère" : undefined}>
+      {rr.length >= 2 ? (
+        <>
+          <div className="tuiles">{rr.map((o, i) => <Tuile key={i} k={o.l} v={o.v} n={o.d} />)}</div>
+          <Source calcul producteur={src ? src.producteur : ""} licence={src ? src.licence : ""} maj={src ? src.maj : ""} />
+        </>
+      ) : (
+        <Vide titre={`Pas assez de montants publiés pour traduire les comptes de ce territoire (exercice ${exerciceAn}).`}
+          corps="Repère ne calcule un rapport qu'à partir d'au moins deux montants publiés." />
+      )}
+    </Carte>
+  );
 }
 
-export default function OuVaArgent({ paquet, index }) {
-  const [filtre, setFiltre] = useState("");
-  const [choisie, setChoisie] = useState(null);
+export default function OuVaArgent({ paquet, index, commune }) {
   const agregats = (index && index.agregats) || [];
   const src = index && index.sources ? index.sources.comptes : null;
 
-  const vues = useMemo(() => {
-    const q = filtre.trim().toLowerCase();
-    return Object.entries(paquet.communes)
-      .filter(([, c]) => c.comptes && (!q || c.nom.toLowerCase().includes(q)))
-      .sort((a, b) => a[1].nom.localeCompare(b[1].nom, "fr"))
-      .slice(0, 60);
-  }, [paquet, filtre]);
+  const c = commune ? paquet.communes[commune] : null;
+  const exercice = useMemo(() => dernierExercice(c, agregats), [c, agregats]);
 
-  const c = choisie ? paquet.communes[choisie] : null;
-  const exercice = useMemo(() => {
-    if (!c || !c.comptes) return null;
-    const ans = Object.keys(c.comptes).filter(a => /^\d{4}$/.test(a)).sort();
-    for (let i = ans.length - 1; i >= 0; i--) {
-      if (agregats.some((_, j) => valeur(c.comptes[ans[i]], j))) return { an: ans[i], ex: c.comptes[ans[i]] };
-    }
-    return null;
-  }, [c, agregats]);
+  /* Le departement est deja dans le paquet en cours (aucune requete de plus) ;
+     seule la region vient d'un petit fichier a part, commun a la France
+     entiere, charge une fois quel que soit le nombre de communes visitees
+     ensuite. */
+  const [etatTerr, setEtatTerr] = useState(ETATS.EN_COURS);
+  const [regions, setRegions] = useState(null);
+  useEffect(() => {
+    let vivant = true;
+    chargerComptesRegions().then(r => { if (vivant) { setEtatTerr(r.etat); setRegions(r.donnees); } });
+    return () => { vivant = false; };
+  }, []);
+
+  const territoireDept = index && paquet ? index.departements.find(d => d.code === paquet.d) : null;
+  const exerciceDept = useMemo(() => {
+    if (!paquet || !paquet.comptes_departement) return null;
+    return dernierExercice({ comptes: paquet.comptes_departement }, agregats);
+  }, [paquet, agregats]);
+  const exerciceRegion = useMemo(() => {
+    if (!regions || !regions.regions || !territoireDept || !territoireDept.region_code) return null;
+    const ex = regions.regions[territoireDept.region_code];
+    return ex ? dernierExercice({ comptes: ex }, agregats) : null;
+  }, [regions, territoireDept, agregats]);
+
+  if (!c) return null;
 
   const rr = exercice ? rapports(exercice.ex) : [];
   const maxAgregat = exercice
     ? Math.max(...agregats.map((_, i) => (valeur(exercice.ex, i) || {}).m || 0))
     : 0;
 
+  if (!exercice) {
+    /* DOCTRINE DU VIDE. Avant, les communes sans comptes disparaissaient
+       simplement de la liste : le lecteur cherchait la sienne, ne la trouvait
+       pas, et rien ne lui disait pourquoi. Une absence se dit. */
+    return (
+      <Vide titre={`${c.nom} : ses comptes ne figurent pas dans le fichier officiel.`}
+        corps="Un montant absent n'est pas un montant nul : Repère n'affiche rien plutôt qu'un zéro qui pourrait être faux. Les très petites communes et celles qui viennent de fusionner manquent souvent à ce fichier."
+        lien={{ texte: "Chercher cette commune dans les comptes publics", url: "https://data.ofgl.fr/" }} />
+    );
+  }
+
+  /* ORDRE INVERSE DEPUIS LE 19/09/2026 (phase 8 de la mission « conception
+     produit ») : la traduction passe AVANT les six montants bruts. Mesure sur
+     capture reelle qui a motive le changement : un lecteur qui ouvre cet
+     ecran faisait defiler les six lignes source — DONNEE OFFICIELLE, sans
+     hierarchie entre elles — avant d'atteindre « 16,0 mois de recettes », la
+     seule phrase qui repond a « et donc ? ». La preuve doit soutenir la
+     comprehension, pas la precede. Aucune phrase de doctrine n'a change : le
+     zero-vs-absence, le refus de comparer deux communes, la distinction
+     calcul/donnee publiee sont exactement les memes qu'avant, seul l'ordre
+     de lecture change. */
   return (
-    <div className="pile">
-      <label className="champ">
-        <span>Les comptes d'une commune du département {paquet.d}</span>
-        <input type="search" value={filtre} placeholder="Ustaritz, Bayonne…"
-          onChange={e => { setFiltre(e.target.value); setChoisie(null); }} />
-      </label>
+    <Pile>
+      {rr.length >= 2 ? (
+        <Carte echelon="ville" titre={c.nom}
+          sousTitre={<>Ce que ça représente · <Mot cle="exercice">exercice</Mot> {exercice.an}{population(exercice.ex) ? ` · ${population(exercice.ex).toLocaleString("fr-FR")} habitants` : ""}</>}
+          tag="Calcul Repère">
+          <p className="tx-note tx-intro">
+            Aucun de ces rapports n'est publié : Repère les calcule à partir de six montants
+            publiés par l'Observatoire des finances locales, visibles plus bas sur cette page,
+            et explique sous chacun ce qu'il ne veut pas dire.
+          </p>
+          <div className="tuiles">
+            {rr.map((o, i) => <Tuile key={i} k={o.l} v={o.v} n={o.d} />)}
+          </div>
+          <Source calcul producteur={src ? src.producteur : ""} licence={src ? src.licence : ""} maj={src ? src.maj : ""} />
+        </Carte>
+      ) : (
+        <Vide titre="Pas assez de montants pour traduire ces comptes."
+          corps={`Les rapports se calculent à partir de plusieurs lignes à la fois ; pour l'exercice ${exercice.an}, le fichier officiel n'en porte pas assez.`} />
+      )}
 
-      <div className="rangee liste">
-        {vues.map(([insee, com]) => (
-          <button key={insee} type="button"
-            className={"puce" + (insee === choisie ? " actif" : "")}
-            onClick={() => setChoisie(insee)}>{com.nom}</button>
-        ))}
-      </div>
-
-      {c && !exercice ? (
-        <Vide titre={`Les comptes de ${c.nom} ne figurent pas dans le fichier officiel.`}
-          corps="Un montant absent n'est pas un montant nul : Repère n'affiche rien plutôt qu'un zéro qui pourrait être faux."
-          lien={{ texte: "Consulter les comptes", url: "https://data.ofgl.fr/" }} />
-      ) : null}
-
-      {c && exercice ? (
-        <>
-          <Carte echelon="ville" titre={c.nom} sousTitre={`Comptes de l'exercice ${exercice.an}${population(exercice.ex) ? ` · ${population(exercice.ex).toLocaleString("fr-FR")} habitants` : ""} · budget principal`} tag="Chiffres vérifiés">
-            {agregats.map((a, i) => {
-              const v = valeur(exercice.ex, i);
-              if (!v) return (
-                <div className="ligne" key={i}>
-                  <div className="ligne-h"><span>{a[1]}</span><b>—</b></div>
-                  <div className="ligne-note">Non renseigné pour l'exercice {exercice.an}.</div>
-                </div>
-              );
-              return <BarreEchelon key={i} libelle={a[1]} valeur={v.m} maximum={maxAgregat} echelon="ville" />;
-            })}
-            {src ? <Source producteur={src.producteur} licence={src.licence} maj={src.maj} url="https://data.ofgl.fr/" /> : null}
-          </Carte>
-
-          {rr.length >= 2 ? (
-            <Carte echelon="dept" titre="Ce que ces chiffres veulent dire"
-              sousTitre={`Les mêmes comptes, exercice ${exercice.an}, rapportés les uns aux autres`}>
-              <div className="tuiles">
-                {rr.map((o, i) => <Tuile key={i} k={o.l} v={o.v} n={o.d} />)}
+      {/* Nom seul : « les comptes de X » demanderait une elision non derivable. */}
+      <Carte echelon="dept" titre={rr.length >= 2 ? "Le détail publié" : c.nom}
+        sousTitre={<>Les comptes de la commune · <Mot cle="exercice">exercice</Mot> {exercice.an}{population(exercice.ex) ? ` · ${population(exercice.ex).toLocaleString("fr-FR")} habitants` : ""} · budget principal</>}
+        tag="Donnée officielle">
+        <p className="tx-note tx-intro">
+          Les six lignes ci-dessous sont publiées telles quelles par l'Observatoire des finances
+          locales. Elles sont en euros, pour cette commune seule, sur une seule année.
+        </p>
+        {agregats.map((a, i) => {
+          const v = valeur(exercice.ex, i);
+          /* TROIS ETATS, TROIS PHRASES — voir le commentaire de valeur().
+             L'absence dit qu'on ne sait pas ; le zero dit qu'il n'y a rien. Ce ne
+             sont pas les memes nouvelles, et pour la dette la seconde est bonne. */
+          if (!v) return (
+            <div className="ligne" key={i}>
+              <div className="ligne-h"><span>{a[1]}</span><b>—</b></div>
+              <div className="ligne-note">Non renseigné pour l'exercice {exercice.an}. Le fichier ne porte pas cette ligne — ce n'est pas un montant nul.</div>
+            </div>
+          );
+          if (v.zero) return (
+            <div className="ligne" key={i}>
+              <div className="ligne-h"><span>{a[1]}</span><b>0 €</b></div>
+              <div className="ligne-note">
+                {i === 2
+                  ? `L'Observatoire publie un encours de dette nul pour l'exercice ${exercice.an} : cette commune ne doit rien.`
+                  : `L'Observatoire publie un montant nul pour l'exercice ${exercice.an}. Ce n'est pas une donnée manquante : la source écrit zéro.`}
               </div>
-              <Source calcul producteur={src ? src.producteur : ""} licence={src ? src.licence : ""} maj={src ? src.maj : ""} />
-            </Carte>
-          ) : (
-            <Vide titre="Pas assez de montants pour traduire ces comptes."
-              corps={`Les rapports se calculent à partir de plusieurs lignes à la fois ; pour l'exercice ${exercice.an}, le fichier officiel n'en porte pas assez.`} />
-          )}
-        </>
+            </div>
+          );
+          return <BarreEchelon key={i} libelle={a[1]} valeur={v.m} maximum={maxAgregat} echelon="ville" />;
+        })}
+        <p className="tx-note">
+          La longueur des barres compare ces six montants entre eux, pour cette commune uniquement.
+          Repère ne compare jamais deux communes.
+        </p>
+        {src ? <Source producteur={src.producteur} licence={src.licence} maj={src.maj} url="https://data.ofgl.fr/" /> : null}
+      </Carte>
+
+      {/* COMPTES DU DEPARTEMENT — BLOCKER #2 DE LA MISSION DU 22/09/2026.
+       * L'ancien site les affichait (chips ville/departement/region), mono/
+       * ne le pouvait pas avant l'extraction. Aucun etat de chargement ici :
+       * `paquet.comptes_departement` est deja arrive avec le reste du
+       * departement, avant meme l'ouverture de cet ecran. */}
+      {territoireDept ? (
+        exerciceDept ? (
+          <CompteTerritoire titre={territoireDept.nom || `Département ${territoireDept.code}`}
+            echelon="dept" exerciceAn={exerciceDept.an} ex={exerciceDept.ex} agregats={agregats} src={src} />
+        ) : (
+          <Vide titre={`${territoireDept.nom || "Ce département"} : ses comptes ne figurent pas dans le fichier officiel.`}
+            corps="Un montant absent n'est pas un montant nul : Repère n'affiche rien plutôt qu'un zéro qui pourrait être faux." />
+        )
       ) : null}
-    </div>
+
+      {/* COMPTES DE LA REGION — seul echelon qui demande encore une requete
+          (voir client.js) : une region couvre plusieurs departements, ses
+          comptes ne peuvent pas vivre dans un seul paquet departemental. */}
+      {etatTerr === ETATS.EN_COURS ? (
+        <Chargement titre="Chargement des comptes de la région."
+          corps="Un seul petit fichier pour toute la France, une seule fois." />
+      ) : null}
+      {etatTerr !== ETATS.SERVI && etatTerr !== ETATS.EN_COURS ? (
+        <Vide titre="Les comptes de la région n'ont pas pu être obtenus."
+          corps="Ceux de votre commune et de votre département, ci-dessus, restent complets." />
+      ) : null}
+      {etatTerr === ETATS.SERVI && territoireDept && territoireDept.region_code ? (
+        exerciceRegion ? (
+          <CompteTerritoire titre={territoireDept.region || `Région ${territoireDept.region_code}`}
+            echelon="region" exerciceAn={exerciceRegion.an} ex={exerciceRegion.ex} agregats={agregats} src={src} />
+        ) : (
+          <Vide titre={`${territoireDept.region || "Cette région"} : ses comptes ne figurent pas dans le fichier officiel.`}
+            corps="Un montant absent n'est pas un montant nul : Repère n'affiche rien plutôt qu'un zéro qui pourrait être faux." />
+        )
+      ) : null}
+      {/* MAYOTTE, ET ELLE SEULE : L'ABSENCE EST DE LA SOURCE, PAS DE MONO/.
+          window.REPERE_OFGL.ech.region ne porte aucune ligne pour Mayotte
+          (verifie le 22/09/2026, voir extract-html.js) — le departement 976
+          n'a donc jamais de region_code, et la doctrine du vide l'exige dit
+          ici plutot que de se taire. Hors du perimetre IDF de la beta : ce
+          cas ne peut se produire que si mono/ publie un jour au-dela des huit
+          departements d'Ile-de-France. */}
+      {etatTerr === ETATS.SERVI && territoireDept && !territoireDept.region_code ? (
+        <Vide titre="Aucune donnée régionale n'est publiée pour ce département."
+          corps="L'Observatoire des finances locales ne porte pas de ligne « région » pour ce territoire dans le fichier source — ce n'est pas un manque de Repère." />
+      ) : null}
+    </Pile>
   );
 }

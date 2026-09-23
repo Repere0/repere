@@ -18,6 +18,22 @@ set "JOURNAL=%~dp0journal_pousser.txt"
 echo.>> "%JOURNAL%"
 echo ===== %DATE% %TIME% =====>> "%JOURNAL%"
 
+rem GARDE — VERSION 4 (23/09/2026). Ce script commite sur la branche laissee
+rem ouverte, quelle qu elle soit : c est le comportement voulu pour la tache
+rem horaire. Le risque connu (voir CLAUDE.md, incident du 14/09/2026) est que
+rem le depot soit laisse sur main par accident, et que la tache y commite et
+rem pousse sans qu un humain le decide. outils/gardes/pre-commit fait deja ce
+rem refus au niveau de git, ou il s applique a tout appelant ; celui-ci est le
+rem meme refus, ecrit ici en second, pour le cas ou les hooks git n auraient
+rem pas ete installes sur ce poste (outils/gardes/installer.bat). Miroir
+rem volontaire, pas une dependance : chacun fonctionne seul.
+for /f "delims=" %%B in ('git symbolic-ref --short HEAD 2^>nul') do set "BRANCHE=%%B"
+if /I "%BRANCHE%"=="main" if not "%REPERE_FUSION%"=="1" (
+  echo REFUS : ce depot ne commite jamais sur main.
+  echo REFUS main>> "%JOURNAL%"
+  exit /b 1
+)
+
 rem Nettoyage prealable : reste d une execution interrompue. 2>nul car l absence
 rem de la reference est le cas NORMAL, pas une erreur.
 git update-ref -d MERGE_AUTOSTASH 2>nul

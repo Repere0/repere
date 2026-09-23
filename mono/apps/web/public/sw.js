@@ -36,11 +36,18 @@ const A_PRECHARGER = ["/", "/index.html", "/manifest.webmanifest", "/data/index.
 
 self.addEventListener("install", e => {
   e.waitUntil((async () => {
-    const c = await caches.open(COQUILLE);
+    const coquille = await caches.open(COQUILLE);
+    const donnees = await caches.open(DONNEES);
+    /* CHAQUE FICHIER VA DANS LE CACHE OU IL SERA RELU.
+       Tout le prechargement atterrissait dans COQUILLE, y compris
+       /data/index.json — que la regle « donnees » relit ensuite dans DONNEES.
+       Il n'y etait jamais : hors ligne, la liste des departements repondait 503
+       alors qu'elle avait bien ete telechargee a l'installation. */
+    const cachePour = u => (u.startsWith("/data/") ? donnees : coquille);
     /* cache: "reload" : on prend la coquille au réseau, jamais au cache HTTP du
        navigateur — sinon un déploiement peut installer une version déjà périmée. */
     await Promise.allSettled(
-      A_PRECHARGER.map(u => c.add(new Request(u, { cache: "reload" }))));
+      A_PRECHARGER.map(u => cachePour(u).add(new Request(u, { cache: "reload" }))));
     await self.skipWaiting();
   })());
 });

@@ -4,6 +4,12 @@
   "private": true,
   "type": "module",
   "main": "src/index.js",
-  "exports": { ".": "./src/index.js", "./tokens.css": "./src/tokens.css" },
-  "peerDependencies": { "react": "^18.0.0" }
+  "exports": {
+    ".": "./src/index.js",
+    "./tokens.css": "./src/tokens.css",
+    "./amicro": "./src/amicro.jsx"
+  },
+  "peerDependencies": {
+    "react": "^18.0.0"
+  }
 }

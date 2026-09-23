@@ -18,9 +18,12 @@
 import Fastify from "fastify";
 import fs from "node:fs";
 import path from "node:path";
-import { adresseFautive } from "../../packages/data-utils/src/invariants.js";
+import { fileURLToPath } from "node:url";
+import { adresseFautive } from "@repere/data-utils/invariants";
 
-const RACINE = path.resolve(process.cwd(), "../../data");
+/* La racine se deduit de l'emplacement DE CE FICHIER, pas du dossier courant :
+   `pnpm dev` lance depuis la racine du depot ne trouvait plus data/. */
+const RACINE = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", "..", "data");
 const app = Fastify({ logger: false });   /* pas de journal : rien à enregistrer */
 
 app.addHook("onRequest", async (req, rep) => {
@@ -35,6 +38,17 @@ app.addHook("onRequest", async (req, rep) => {
 app.get("/data/index.json", async (req, rep) => {
   const f = path.join(RACINE, "index.json");
   if (!fs.existsSync(f)) return rep.code(404).send({ erreur: "index absent", quoi_faire: "lancer `pnpm extract`" });
+  return rep.type("application/json").send(fs.readFileSync(f, "utf8"));
+});
+
+/* LE DEV DOIT SERVIR LES MEMES CHEMINS QUE LA PRODUCTION, sinon il ment.
+   Cette route manquait le 28/08 : en `pnpm dev`, le fichier des deputes
+   repondait 404 et l'ecran affichait sa phrase de repli — un defaut visible
+   seulement en developpement, donc exactement celui qu'on corrige trois fois
+   avant de comprendre qu'il n'a jamais existe en production. */
+app.get("/data/deputes.json", async (req, rep) => {
+  const f = path.join(RACINE, "deputes.json");
+  if (!fs.existsSync(f)) return rep.code(404).send({ erreur: "deputes absents", quoi_faire: "lancer `pnpm extract`" });
   return rep.type("application/json").send(fs.readFileSync(f, "utf8"));
 });
 

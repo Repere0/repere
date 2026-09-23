@@ -28,7 +28,13 @@ export const VERSION_BASE = 1;
 /* La forme d'un paquet départemental. Une écriture qui ne la respecte pas est
    refusée : c'est la garde qui empêche ce magasin de devenir autre chose. */
 export function estDonneePublique(cle, valeur) {
-  if (!/^(dep|socle):[0-9A-Z]{1,3}$/.test(String(cle))) return false;
+  /* « vote » rejoint « dep » et « socle » le 13/09/2026 : les positions de vote
+     sont rangees par DEPARTEMENT, exactement comme les elus. La garde reste ce
+     qu'elle est — au plus trois caracteres, majuscules et chiffres — pour qu'un
+     code INSEE de commune (cinq caracteres) ne puisse pas y entrer.
+     « reg » rejoint les trois le 22/09/2026 : le conseil regional, range par
+     REGION (deux chiffres, jamais un departement ni une commune). */
+  if (!/^(dep|vote|reg|socle):[0-9A-Z]{1,3}$/.test(String(cle))) return false;
   if (!valeur || typeof valeur !== "object") return false;
   if ("insee" in valeur && !("communes" in valeur)) return false;
   const interdits = ["utilisateur", "user", "email", "id_client", "session",
@@ -101,7 +107,11 @@ export const magasin = {
     } catch { return [...memoire.keys()]; }
   },
 
-  /* Vider est un geste explicite du lecteur, jamais automatique. */
+  /* Vider est un geste explicite du lecteur — OU un geste automatique du
+     client.js quand le cache est FAUX PAR CONSTRUCTION (schema perime,
+     SCHEMA_ATTENDU dans client.js, ajoute le 22/09/2026). Ce n'est jamais
+     un menage de routine : la seule autre raison d'appeler ceci reste une
+     demande explicite du lecteur. */
   async vider() {
     memoire.clear();
     try { await transaction("readwrite", st => st.clear()); return true; }
