@@ -95,6 +95,16 @@ export default function Aujourdhui({ paquet, index, commune, aller, derniereVisi
           <p><b>{dernierFait.e.t}</b></p>
           <Source producteur={dernierFait.e.srcn || "Rédaction Repère"} url={dernierFait.e.src}
             mention={dernierFait.e.conf === "verifie" ? "relu et validé par la rédaction" : "relevé, en attente de confirmation"} />
+          {/* GRANDS AXES, SOURCE DISTINCTE DU VOTE — meme motif que CeQuiADecide.jsx,
+              voir ce fichier pour le detail. */}
+          {dernierFait.e.axes ? (
+            <>
+              <p className="ligne-note">{dernierFait.e.axes}</p>
+              {dernierFait.e.axes_src ? (
+                <Source producteur={dernierFait.e.axes_srcn || "voir la source"} url={dernierFait.e.axes_src} />
+              ) : null}
+            </>
+          ) : null}
         </div>
       ) : (
         <Vide titre={`Aucune décision datée n'est publiée pour ${nomCommune}.`}
