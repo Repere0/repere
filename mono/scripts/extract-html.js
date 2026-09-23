@@ -1080,31 +1080,40 @@ async function extraire() {
      ecran puisse commettre, donc elle arrete le build et n'avertit pas. */
   if (projets && depsAvecProjets.length) {
     let lignes = 0, communesServies = 0;
+    const codesIgnores = [];
     for (const dep of depsAvecProjets) {
       const f = JSON.parse(fs.readFileSync(path.join(SORTIE, "projets", dep + ".json"), "utf8"));
       const paquetDep = JSON.parse(fs.readFileSync(
         path.join(SORTIE, "departments", dep + ".json"), "utf8"));
       const habitantes = paquetDep.communes;
-      /* TROUVE EN PRODUCTION LE 23/09/2026, PREMIER RUN REEL : 92077
-         (Ville-d'Avray) porte un projet DGCL mais n'est pas dans `communes`,
-         qui ne liste que les communes couvertes par le RNE. Ville-d'Avray
-         existe reellement - c'est exactement la distinction que
-         `paquet.manquantes` existe deja pour faire (voir plus haut, et le
-         test "absence chez nous vs absence dans le monde" du 16/09/2026) :
-         une commune officiellement nommee mais absente du RNE n'est pas une
-         commune qui n'existe pas. Le controle continue de refuser un code
-         qui n'est NI dans l'un NI dans l'autre - une vraie cle mal formee. */
-      const officiellementNommee = insee =>
-        habitantes[insee] || (paquetDep.manquantes && paquetDep.manquantes[insee]);
+      /* TROUVE EN PRODUCTION LE 23/09/2026, PREMIER RUN REEL, DEUX FOIS DE
+         SUITE (92077 Ville-d'Avray, puis 93059 - deux causes DIFFERENTES) :
+         un code INSEE porteur de projets peut echapper a `communes` (qui ne
+         liste que les communes couvertes par le RNE) pour deux raisons bien
+         distinctes.
+         1. La commune existe reellement mais le RNE ne la couvre pas -
+            exactement la distinction que `paquet.manquantes` existe deja
+            pour faire (voir plus haut, et le test "absence chez nous vs
+            absence dans le monde" du 16/09/2026). Ville-d'Avray est ce cas :
+            on l'accepte.
+         2. Le code n'est reconnu NULLE PART, pas meme dans le referentiel
+            officiel des communes (noms-communes.json) - 93059 est ce cas :
+            un code invalide ou retire cote source DGCL, pas une faute du
+            pipeline. Le arreter TOUT le build pour UNE ligne suspecte
+            revient a publier zero donnee a cause d'une seule ligne
+            douteuse - le mauvais compromis. On l'IGNORE, bruyamment, et on
+            continue : c'est le meme choix que outils/circos.py fait deja
+            pour les "codes non reconnus (communes fusionnees depuis 2017)". */
       for (const [insee, liste] of Object.entries(f.communes)) {
         const attendu = insee.startsWith("97") ? insee.slice(0, 3) : insee.slice(0, 2);
         if (attendu !== dep) {
           console.error(`ECHEC : ${insee} publie dans le paquet ${dep}`);
           process.exit(10);
         }
-        if (!officiellementNommee(insee)) {
-          console.error(`ECHEC : ${insee} porte des projets mais n'existe pas dans ${dep}.json`);
-          process.exit(10);
+        if (!habitantes[insee] && !(paquetDep.manquantes && paquetDep.manquantes[insee])) {
+          console.warn(`::warning::${insee} porte des projets mais n'est reconnue nulle part (RNE, manquantes, ni le referentiel officiel) - ligne ignoree, pas le reste`);
+          codesIgnores.push(insee);
+          continue;
         }
         communesServies++;
         for (const pr of liste) {
@@ -1119,7 +1128,8 @@ async function extraire() {
     const octets = depsAvecProjets.map(d => fs.statSync(path.join(SORTIE, "projets", d + ".json")).size);
     console.log("projets par departement: " + depsAvecProjets.length + " fichiers, "
       + lignes + " projets sur " + communesServies + " communes, le plus lourd "
-      + Math.round(Math.max(...octets) / 1024) + " Ko");
+      + Math.round(Math.max(...octets) / 1024) + " Ko"
+      + (codesIgnores.length ? "  (" + codesIgnores.length + " code(s) ignore(s) : " + codesIgnores.join(", ") + ")" : ""));
     /* Meme regle de fraicheur que pour les votes : la source est ANNUELLE, donc
        le seuil n'est pas sept jours mais quatorze mois. Au-dela, l'Etat a publie
        un nouvel exercice que la collecte n'est pas allee chercher. */
