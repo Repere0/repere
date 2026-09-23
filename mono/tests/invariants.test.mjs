@@ -263,13 +263,19 @@ test("invariant 4 — aucune donnée n'est servie sans source déclarée", () =>
      fichier lui-meme (source.producteur/licence/releve_le, voir
      scripts/agenda-an.mjs), pas dans index.json. Aucune source « agenda_an »
      n'est donc exigee plus bas, exactement comme aucune n'existe pour le
-     Senat. */
+     Senat.
+     La onzieme, /scrutins-solennels.json, est ajoutee le 23/09/2026
+     (chantier scrutins solennels) : MEME REGIME encore - la provenance vit
+     dans le fichier (voir scripts/scrutins-solennels.mjs), independant de
+     la fenetre glissante de /scrutins.json. Mesure sur l'archive complete
+     avant d'ecrire ce filtre : 95 scrutins sur 8434 (72 solennels + 23
+     motions de censure), pas un chiffre suppose. */
   const client = lire("packages/data-utils/src/client.js");
   const composees = [...client.matchAll(/\$\{BASE_DONNEES\}(\/[A-Za-z0-9_${}./-]*)/g)].map(m => m[1]);
   assert.deepEqual([...new Set(composees)].sort(),
     ["/agenda-an.json", "/calendrier-senat.json", "/communes-beta.json", "/comptes-regions.json", "/departments/${d}.json",
      "/deputes.json", "/elus-regions/${c}.json", "/evenements.json", "/index.json",
-     "/projets/${d}.json", "/scrutins.json", "/scrutins/${d}.json"],
+     "/projets/${d}.json", "/scrutins-solennels.json", "/scrutins.json", "/scrutins/${d}.json"],
     "client.js compose une adresse de donnees inattendue : " + composees.join(", "));
   const sources = existe("data/index.json") ? (JSON.parse(lire("data/index.json")).sources || {}) : {};
   for (const attendue of ["elus", "comptes", "circonscriptions", "deputes", "scrutins", "communes"]) {

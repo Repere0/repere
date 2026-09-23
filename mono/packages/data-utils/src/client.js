@@ -95,6 +95,7 @@ export function adresseElusRegion(code) {
    porte donc jamais de code de departement ni de commune. */
 export function adresseCalendrierSenat() { return `${BASE_DONNEES}/calendrier-senat.json`; }
 export function adresseAgendaAN() { return `${BASE_DONNEES}/agenda-an.json`; }
+export function adresseScrutinsSolennels() { return `${BASE_DONNEES}/scrutins-solennels.json`; }
 /* LE FIL EDITORIAL — voir lib/faits.js pour la tracabilite complete (source
    YAML -> geste humain -> outils/evenements.py -> ce fichier). Un seul
    fichier pour la France entiere, jamais un code de commune dans l'adresse :
@@ -324,6 +325,9 @@ export async function chargerCalendrierSenat({ delaiMs = 8000 } = {}) {
 }
 export async function chargerAgendaAN({ delaiMs = 8000 } = {}) {
   return chargerSocle("socle:AGA", adresseAgendaAN(), delaiMs);
+}
+export async function chargerScrutinsSolennels({ delaiMs = 8000 } = {}) {
+  return chargerSocle("socle:SOL", adresseScrutinsSolennels(), delaiMs);
 }
 export async function chargerEvenements({ delaiMs = 8000 } = {}) {
   return chargerSocle("socle:EVT", adresseEvenements(), delaiMs);
