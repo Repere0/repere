@@ -1,7 +1,31 @@
 import { defineConfig } from "vite";
 import path from "node:path";
+import fs from "node:fs";
+
+/* LE COMMIT FIGE AU BUILD — mission phase 2, §2, 23/09/2026.
+ *
+ * REUTILISE CE QUI EXISTE DEJA : extract-html.js ecrit deja `build.commit_court`
+ * dans data/index.json, pour une autre raison (la provenance, §8 de la mission
+ * precedente). Le pipeline le produit AVANT `pnpm build` (voir outils/pipeline.sh) :
+ * ce fichier est donc deja la quand Vite demarre. Aucun nouveau fichier, aucun
+ * nouveau format — juste la MEME valeur, lue une seconde fois, figee dans le
+ * JavaScript qui va s'executer dans le navigateur.
+ *
+ * POURQUOI FIGER, PAS RELIRE A CHAQUE FOIS : ce commit doit rester celui du JS
+ * REELLEMENT EN COURS D'EXECUTION dans l'onglet — c'est justement ce qu'on
+ * compare a ce que le serveur sert MAINTENANT (voir NouvelleVersion.jsx).
+ * Absent (build local sans passer par extract-html.js) : null, honnete. */
+function commitFige() {
+  try {
+    const j = JSON.parse(fs.readFileSync(path.resolve("../../data/index.json"), "utf8"));
+    return (j.build && j.build.commit_court) || null;
+  } catch { return null; }
+}
 
 export default defineConfig({
+  define: {
+    __REPERE_BUILD__: JSON.stringify(commitFige()),
+  },
   /* PREACT A LA PLACE DE REACT.
    *
    * Mesure : le socle React pesait 141,8 Ko (45,4 Ko compresses), soit 82 % du

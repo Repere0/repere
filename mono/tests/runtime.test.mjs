@@ -1277,6 +1277,62 @@ verif("accessibilite — le contour de focus des commandes qui ouvrent les votes
   contourVotes.r >= 3, JSON.stringify(contourVotes));
 await ctxSombre.close();
 
+console.log("\n--- bandeau de nouvelle version --------------------------------");
+/* PROUVE LE MECANISME DE NouvelleVersion.jsx EN LE CASSANT REELLEMENT : on
+   modifie sur disque le commit_court que le serveur de mesure sert dans
+   data/index.json, SANS toucher au JS deja construit (qui garde le commit
+   figé au build) — exactement la situation reelle d'un onglet ouvert avant
+   un nouveau deploiement. Le fichier est restaure avant la fin du bloc, quoi
+   qu'il arrive : ce n'est pas une fixture qui doit survivre au-dela de ce
+   controle, contrairement a celle des projets plus haut dans ce fichier. */
+const fIndexVersion = path.join(DIST, "data", "index.json");
+const indexOriginal = fs.readFileSync(fIndexVersion, "utf8");
+const ctxVersion = await nav.newContext({ viewport: { width: 390, height: 844 } });
+const pageVersion = await ctxVersion.newPage();
+try {
+  await pageVersion.goto(base, { waitUntil: "networkidle" });
+  await pageVersion.evaluate(() => document.dispatchEvent(new Event("visibilitychange")));
+  await pageVersion.waitForTimeout(400);
+  const avant = await pageVersion.evaluate(() => document.body.innerText);
+  verif("bandeau de version — absent quand le commit servi correspond au build",
+    !/nouvelle version de Repère/i.test(avant), avant.slice(0, 80).replace(/\n+/g, " / "));
+
+  const indexMute = JSON.parse(indexOriginal);
+  indexMute.build = indexMute.build || {};
+  indexMute.build.commit_court = "0000000";
+  fs.writeFileSync(fIndexVersion, JSON.stringify(indexMute));
+
+  await pageVersion.evaluate(() => document.dispatchEvent(new Event("visibilitychange")));
+  await pageVersion.waitForTimeout(600);
+  const apresDecalage = await pageVersion.evaluate(() => document.body.innerText);
+  verif("bandeau de version — un decalage de commit fait apparaitre le bandeau",
+    /nouvelle version de Repère/i.test(apresDecalage),
+    apresDecalage.slice(0, 200).replace(/\n+/g, " / "));
+
+  const roleStatut = await pageVersion.evaluate(() => {
+    const b = [...document.querySelectorAll('[role="status"]')]
+      .find(e => /nouvelle version de Repère/i.test(e.textContent || ""));
+    return !!b;
+  });
+  verif("bandeau de version — porte role=status, annonce sans etre agressif", roleStatut);
+
+  const boutonActualiser = pageVersion.getByRole("button", { name: "Actualiser" });
+  verif("bandeau de version — un vrai bouton clavier, pas une bannière muette",
+    (await boutonActualiser.count()) > 0);
+
+  fs.writeFileSync(fIndexVersion, indexOriginal); /* le commit redevient coherent AVANT le clic */
+  await boutonActualiser.click();
+  await pageVersion.waitForLoadState("networkidle");
+  await pageVersion.waitForTimeout(400);
+  const apresActualisation = await pageVersion.evaluate(() => document.body.innerText);
+  verif("bandeau de version — Actualiser recharge, et le bandeau disparait une fois le commit coherent",
+    !/nouvelle version de Repère/i.test(apresActualisation),
+    apresActualisation.slice(0, 80).replace(/\n+/g, " / "));
+} finally {
+  fs.writeFileSync(fIndexVersion, indexOriginal);
+  await ctxVersion.close();
+}
+
 console.log("\n--- hors ligne -----------------------------------------------");
 const sw = await page.evaluate(async () => {
   const r = await navigator.serviceWorker.getRegistration();

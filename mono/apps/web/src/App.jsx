@@ -4,6 +4,7 @@ import {
   chargerIndex, chargerDepartement, chargerCommunesBeta, prechargerDepartement,
   annulerPrechargement, entrer, ETATS, PHRASES,
 } from "@repere/data-utils";
+import { NouvelleVersion } from "./NouvelleVersion.jsx";
 
 /* CHARGEMENT PARESSEUX DES ÉCRANS. Chacun est un module séparé : ouvrir « Qui
    décide » ne télécharge pas le code de « Où va mon argent ». Le socle React est
@@ -543,6 +544,8 @@ export default function App() {
           officielles. Aucun compte, aucun courriel, rien ne quitte votre appareil.
         </p>
       </header>
+
+      <NouvelleVersion />
 
       <nav className="departements" aria-label="Choisir un département">
         {etatIndex === ETATS.EN_COURS && !index
