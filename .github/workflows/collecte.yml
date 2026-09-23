@@ -27,6 +27,7 @@ on:
 
 permissions:
   contents: write
+  issues: write
 
 jobs:
   collecte:
@@ -185,6 +186,30 @@ jobs:
             echo "::error::La publication n'a PAS ETE TENTEE : une etape precedente a echoue et GitHub a saute celle-ci. Cherche la croix rouge plus haut, pas ici."
           else
             echo "::error::La publication sur Netlify a ECHOUE (le site en ligne est inchange). Lis la ligne « sonde Netlify » de l'etape : HTTP 200 = ni le jeton ni le site ne sont en cause, HTTP 401 = jeton, HTTP 403 = jeton d'un autre compte, HTTP 404 = identifiant du site."
+          fi
+
+      - name: Mettre a jour l'etat de sante visible (issue GitHub)
+        # LE TROU QUI A LAISSE LA PROD FIGEE 29 JOURS (13/09 au 22/09/2026) :
+        # rien ne signalait l'echec sans aller lire les Actions a la main.
+        # Une seule issue, toujours ouverte, dont le TITRE seul dit l'etat -
+        # visible dans la liste des issues sans clic, y compris depuis un
+        # telephone. Toute la logique vit dans outils/ (voir ce fichier),
+        # pas ici : cette etape ne fait que declencher, comme le reste de la
+        # chaine.
+        if: always()
+        # Best-effort : un incident reseau sur gh/curl ici ne doit pas, lui,
+        # mettre le job au rouge - ce serait le comble pour une etape dont le
+        # seul but est de signaler l'etat, pas de le decider.
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if [ "${{ steps.deploy.outcome }}" = "success" ]; then
+            bash outils/sante_publique.sh succes "${{ github.sha }}" \
+              "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          else
+            bash outils/sante_publique.sh echec "${{ github.sha }}" \
+              "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
           fi
 
       - name: Mettre le job au rouge si quelque chose a echoue
