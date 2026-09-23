@@ -12,6 +12,18 @@ import path from "node:path";
 import http from "node:http";
 import { adresseFautive, MOTS_A_ACCENTS } from "../packages/data-utils/src/invariants.js";
 
+/* COPIE VOLONTAIRE DE dateFr (packages/ui/src/composants.jsx) — ce fichier de
+   controle tourne en Node pur, sans transformation JSX, et composants.jsx en
+   contient. Meme algorithme, jamais une approximation : ce controle doit
+   pouvoir se tromper si l'un des deux change sans l'autre. */
+function dateFr(v) {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(v || ""));
+  if (!m) return v;
+  const mois = ["janvier", "février", "mars", "avril", "mai", "juin", "juillet",
+                "août", "septembre", "octobre", "novembre", "décembre"];
+  return Number(m[3]) + (m[3] === "01" ? "er" : "") + " " + mois[Number(m[2]) - 1] + " " + m[1];
+}
+
 /* Playwright est une devDependency de la racine : il se resout normalement.
    Le repli precedent pointait un chemin absolu propre a une machine — il ne
    pouvait fonctionner nulle part ailleurs, et masquait la vraie cause quand
@@ -232,9 +244,18 @@ const apres = await page.evaluate(() => ({
   valeur: localStorage.getItem("repere.departement"),
   session: Object.keys(sessionStorage),
 }));
-verif("invariant 2 — une seule cle, nommee, et elle ne porte qu'un departement",
+/* LA VALEUR EST DEVENUE UN OBJET JSON {d, v} LE 23/09/2026 (retention "depuis
+   votre derniere visite", voir Aujourdhui.jsx) — UNE SEULE CLE TOUJOURS, mais
+   son contenu a change, et ce controle doit lire la forme REELLE plutot que
+   deviner. `v` est un horodatage de VISITE, jamais de lieu : ce controle
+   verifie qu'aucune de ses deux valeurs ne ressemble a une commune. */
+let valeurParsee = null;
+try { valeurParsee = JSON.parse(apres.valeur || "null"); } catch { /* laisse null, le controle echouera a raison */ }
+verif("invariant 2 — une seule cle, nommee, et elle ne porte qu'un departement et un instant de visite",
   apres.local.length === 1 && apres.local[0] === "repere.departement"
-  && /^(\d{2,3}|2[AB])$/.test(apres.valeur || ""),
+  && valeurParsee && Object.keys(valeurParsee).sort().join(",") === "d,v"
+  && /^(\d{2,3}|2[AB])$/.test(valeurParsee.d || "")
+  && (valeurParsee.v === null || /^\d{4}-\d{2}-\d{2}T/.test(valeurParsee.v)),
   JSON.stringify(apres));
 verif("invariant 2 — sessionStorage reste vide", apres.session.length === 0, apres.session.join(","));
 
@@ -1324,6 +1345,82 @@ try {
 } finally {
   fs.writeFileSync(fEvenements, evenementsOriginal);
   await ctxAuj.close();
+}
+
+console.log("\n--- retention : depuis votre derniere visite -------------------");
+/* PROUVE TROIS CHOSES DISTINCTES, PAS UNE SEULE : (1) un ancien lecteur dont
+   le stockage porte encore l'ancien format (une chaine nue de departement,
+   pose avant le 23/09/2026) continue de fonctionner — aucune migration
+   silencieuse ne doit le faire echouer ; (2) une fois un instant de visite
+   REEL enregistre, le calcul compare bien A CET INSTANT, pas a une fenetre
+   fixe — un fait plus vieux que la visite reste EXCLU, un fait plus recent
+   apparait ; (3) la cle reste unique et ne porte toujours qu'un departement
+   et un instant, jamais une commune (verifie plus haut, invariant 2). */
+console.log("  (1) compatibilite avec l'ancien format — une chaine nue)");
+const ctxAncien = await nav.newContext({ viewport: { width: 390, height: 844 } });
+const pageAncien = await ctxAncien.newPage();
+await pageAncien.addInitScript(() => localStorage.setItem("repere.departement", "64"));
+await pageAncien.goto(base, { waitUntil: "networkidle" });
+await pageAncien.waitForTimeout(1200);
+const texteAncien = await pageAncien.evaluate(() => document.body.innerText);
+verif("retention — l'ancien format (chaine nue) continue d'ouvrir le bon departement",
+  /Pyrénées-Atlantiques/.test(texteAncien),
+  texteAncien.slice(0, 200).replace(/\n+/g, " / "));
+const stockeApresAncien = await pageAncien.evaluate(() => localStorage.getItem("repere.departement"));
+let migre = null;
+try { migre = JSON.parse(stockeApresAncien); } catch { /* migre restera null, le controle echouera a raison */ }
+verif("retention — l'ancien format est remplace par {d, v} des cette visite, sans perdre le departement",
+  migre && migre.d === "64" && typeof migre.v === "string",
+  String(stockeApresAncien));
+await ctxAncien.close();
+
+console.log("  (2) la comparaison se fait a l'instant de visite REEL, pas a une fenetre fixe");
+const hier = new Date(Date.now() - 24 * 60 * 60 * 1000);
+const avantHier = new Date(Date.now() - 2 * 24 * 60 * 60 * 1000);
+const fEvenementsRetention = path.join(DIST, "data", "evenements.json");
+const evenementsAvantRetention = fs.readFileSync(fEvenementsRetention, "utf8");
+const ctxRetention = await nav.newContext({ viewport: { width: 390, height: 844 } });
+const pageRetention = await ctxRetention.newPage();
+try {
+  const evMuteRetention = JSON.parse(evenementsAvantRetention);
+  evMuteRetention.r = [...evMuteRetention.r,
+    { id: "banc-retention-apres", t: "Fait de banc survenu APRES la derniere visite",
+      d: new Date().toISOString().slice(0, 10), e: "france",
+      src: "https://exemple.test/banc-apres", srcn: "Source de banc", conf: "verifie", insee: "" },
+    { id: "banc-retention-avant", t: "Fait de banc survenu AVANT la derniere visite",
+      d: avantHier.toISOString().slice(0, 10), e: "france",
+      src: "https://exemple.test/banc-avant", srcn: "Source de banc", conf: "verifie", insee: "" },
+  ];
+  fs.writeFileSync(fEvenementsRetention, JSON.stringify(evMuteRetention));
+
+  /* L'INSTANT DE VISITE EST INJECTE DIRECTEMENT, PAS REJOUE PAR UN VRAI ALLER-
+     RETOUR : ce controle isole le calcul d'affichage (le sujet de ce test),
+     pas le mecanisme d'ecriture (deja prouve par le controle (1) ci-dessus et
+     par invariant 2 plus haut dans ce fichier). */
+  await pageRetention.addInitScript(([cle, valeur]) => localStorage.setItem(cle, valeur),
+    ["repere.departement", JSON.stringify({ d: "64", v: hier.toISOString() })]);
+  await pageRetention.goto(base, { waitUntil: "networkidle" });
+  await pageRetention.waitForTimeout(300);
+  await pageRetention.getByLabel(/Votre commune/i).fill("Ustaritz");
+  await pageRetention.waitForTimeout(300);
+  await pageRetention.getByRole("button", { name: "Ustaritz", exact: true }).click();
+  await pageRetention.waitForTimeout(700);
+  await pageRetention.getByRole("button", { name: /Voir aujourd.hui à Ustaritz/i }).click();
+  await pageRetention.waitForTimeout(900);
+
+  const texteRetention = await pageRetention.evaluate(() => document.body.innerText);
+  verif("retention — le titre annonce la vraie date de la derniere visite, pas une fenetre fixe",
+    new RegExp("Depuis votre visite du " + dateFr(hier.toISOString().slice(0, 10))).test(texteRetention),
+    texteRetention.slice(0, 200).replace(/\n+/g, " / "));
+  verif("retention — un fait survenu apres la derniere visite apparait",
+    /Fait de banc survenu APRES la derniere visite/.test(texteRetention),
+    texteRetention.slice(0, 300).replace(/\n+/g, " / "));
+  verif("retention — un fait survenu avant la derniere visite reste exclu (ni relegue, ni ignore : absent)",
+    !/Fait de banc survenu AVANT la derniere visite/.test(texteRetention),
+    texteRetention.slice(0, 300).replace(/\n+/g, " / "));
+} finally {
+  fs.writeFileSync(fEvenementsRetention, evenementsAvantRetention);
+  await ctxRetention.close();
 }
 
 console.log("\n--- hors ligne -----------------------------------------------");

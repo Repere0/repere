@@ -30,7 +30,7 @@ const DGCL_URL = "https://www.data.gouv.fr/datasets/projets-finances-par-les-dot
   + "de-soutien-a-linvestissement-des-collectivites-territoriales";
 function euros(n) { return new Intl.NumberFormat("fr-FR").format(n) + " €"; }
 
-export default function Aujourdhui({ paquet, index, commune, aller }) {
+export default function Aujourdhui({ paquet, index, commune, aller, derniereVisite }) {
   const a = useAujourdhui(paquet, index, commune);
   if (!a.fiche) return null;
   if (!a.pret) {
@@ -40,24 +40,32 @@ export default function Aujourdhui({ paquet, index, commune, aller }) {
   const { nomCommune, dernierVote, dernierFait, faits, rapportDette, srcComptes,
           srcProjets, srcScrutins, prochain, srcCal, base } = a;
 
-  /* "CETTE SEMAINE", PAS "DEPUIS VOTRE DERNIERE VISITE" — decision produit,
-   * 23/09/2026. La vraie comparaison a la derniere visite demande un
-   * marqueur persistant, et la seule cle de stockage autorisee
-   * (repere.departement) ne porte aujourd'hui qu'un code de departement :
-   * lui faire porter autre chose est une decision d'invariant, pas un
-   * detail — voir docs/PRODUCT_MAP_V1_2026-09-23.md, section J. Cette
-   * fenetre de sept jours, elle, ne persiste RIEN : un pur calcul sur des
-   * faits deja charges par useAujourdhui.js, la meme fonction que "Ce qui
-   * a ete decide". Elle teste une partie de l'hypothese (presenter par
-   * fraicheur plutot que par liste) sans en payer le cout architectural. */
+  /* "DEPUIS VOTRE DERNIERE VISITE", SINON "CETTE SEMAINE" — decision produit,
+   * 23/09/2026. `derniereVisite` vient d'App.jsx : un instant de visite, geleì
+   * au demarrage de CETTE session, lu depuis la meme cle de stockage que le
+   * departement (voir la note d'invariant 2 dans App.jsx). Trois etats
+   * possibles, et les trois sont geres proprement plutot que devines :
+   *   - un marqueur existe (visite precedente reelle) -> on compare a LUI ;
+   *   - aucun marqueur (premiere visite depuis que cette fonction existe, ou
+   *     stockage indisponible — mode prive, quota) -> on retombe sur une
+   *     fenetre de sept jours, qui ne pretend jamais connaitre une visite
+   *     passee qu'elle n'a pas vue.
+   * Dans les deux cas, un pur calcul sur des faits deja charges par
+   * useAujourdhui.js (lib/faits.js, partage avec "Ce qui a ete decide") —
+   * aucune deuxieme source, aucun deuxieme calcul qui pourrait diverger. */
   const ilYA7Jours = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+  const depuisVisite = !!derniereVisite;
+  const seuil = depuisVisite ? derniereVisite.slice(0, 10) : ilYA7Jours;
   const faitPrincipalCle = dernierVote ? dernierVote.cle
     : (dernierFait && (dernierFait.type === "projet" || dernierFait.type === "editorial") ? dernierFait.cle : null);
-  const cetteSemaine = (faits || [])
-    .filter(f => f.quand >= ilYA7Jours && f.cle !== faitPrincipalCle)
+  const nouveautes = (faits || [])
+    .filter(f => (depuisVisite ? f.quand > seuil : f.quand >= seuil) && f.cle !== faitPrincipalCle)
     .slice(0, 4);
-  const semaineProjets = cetteSemaine.some(f => f.type === "projet");
-  const semaineVotes = cetteSemaine.some(f => f.type === "vote");
+  const titreNouveautes = depuisVisite
+    ? `Depuis votre visite du ${dateFr(seuil)}`
+    : "Quoi d'autre cette semaine ?";
+  const nouveautesProjets = nouveautes.some(f => f.type === "projet");
+  const nouveautesVotes = nouveautes.some(f => f.type === "vote");
 
   return (
     <div className="quest">
@@ -105,22 +113,22 @@ export default function Aujourdhui({ paquet, index, commune, aller }) {
         </div>
       ) : null}
 
-      {cetteSemaine.length > 0 ? (
+      {nouveautes.length > 0 ? (
         <div className="quest-suivante">
-          <p className="quest-q2">Quoi d'autre cette semaine ?</p>
-          {cetteSemaine.map(f => (
+          <p className="quest-q2">{titreNouveautes}</p>
+          {nouveautes.map(f => (
             <p className="ligne-note" key={f.cle}>
               {f.type === "projet" ? f.p.intitule : f.type === "vote" ? f.sc.t : f.e.t}
             </p>
           ))}
-          {semaineProjets && srcProjets ? (
+          {nouveautesProjets && srcProjets ? (
             <Source producteur={srcProjets.producteur} licence={srcProjets.licence} maj={srcProjets.mis_a_jour_le} />
           ) : null}
-          {semaineVotes && srcScrutins ? (
+          {nouveautesVotes && srcScrutins ? (
             <Source producteur={srcScrutins.producteur} licence={srcScrutins.licence}
               mention={srcScrutins.releve_le ? "relevé le " + dateFr(srcScrutins.releve_le) : undefined} />
           ) : null}
-          {cetteSemaine.filter(f => f.type === "editorial").map(f => (
+          {nouveautes.filter(f => f.type === "editorial").map(f => (
             <Source key={f.cle} producteur={f.e.srcn || "voir la source"} url={f.e.src}
               mention={f.e.conf === "verifie" ? "relu et validé par la rédaction" : "relevé, en attente de confirmation par la rédaction"} />
           ))}
