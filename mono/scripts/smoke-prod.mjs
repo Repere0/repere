@@ -70,9 +70,10 @@ if (reponseIndex.ok) {
       index.build && index.build.commit_court === COMMIT_ATTENDU,
       "servi=" + (index.build && index.build.commit_court) + " attendu=" + COMMIT_ATTENDU);
   }
+  const sante = index.build && index.build.sante;
   verif("sante : aucune source CRITIQUE manquante",
-    index.build && index.build.elus && index.build.comptes,
-    JSON.stringify(index.build && index.build.sante || index.build));
+    !!(sante && sante.elus && sante.comptes),
+    JSON.stringify(sante));
 }
 
 console.log("\n--- l'application, dans un vrai navigateur ---------------------");
@@ -104,11 +105,19 @@ verif("poids transfere au premier ecran raisonnable (< 300 Ko)",
   poidsTransfere <= 300 * 1024, Math.round(poidsTransfere / 1024) + " Ko");
 
 console.log("\n--- cas connu : Ustaritz (64) --------------------------------");
-await page.getByLabel(/Où habitez-vous/).fill("ustaritz").catch(() => {});
+/* Le parcours reel, repris a l'identique de mono/tests/runtime.test.mjs (pas
+   devine) : la recherche globale "Ou habitez-vous ?" ne couvre QUE l'Ile-de-
+   France - hors IDF, elle attend un departement (nom ou numero), qui ouvre
+   ALORS un second champ "Votre commune" propre a ce departement. */
+await page.getByLabel(/Où habitez-vous/i).fill("64").catch(() => {});
 await page.waitForTimeout(300);
-const boutonUstaritz = page.getByRole("button", { name: /Ustaritz/i }).first();
+await page.getByRole("button", { name: /^64\b/ }).click().catch(() => {});
+await page.waitForTimeout(300);
+await page.getByLabel(/Votre commune/i).fill("Ustaritz").catch(() => {});
+await page.waitForTimeout(300);
+const boutonUstaritz = page.getByRole("button", { name: "Ustaritz", exact: true }).first();
 const trouve = await boutonUstaritz.count() > 0;
-verif("la recherche trouve la commune de reference", trouve, "aucun resultat pour 'ustaritz'");
+verif("la recherche trouve la commune de reference", trouve, "aucun resultat pour 'Ustaritz' dans le departement 64");
 if (trouve) {
   await boutonUstaritz.click();
   await page.waitForTimeout(1200);
