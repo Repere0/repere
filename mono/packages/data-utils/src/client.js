@@ -96,6 +96,13 @@ export function adresseElusRegion(code) {
 export function adresseCalendrierSenat() { return `${BASE_DONNEES}/calendrier-senat.json`; }
 export function adresseAgendaAN() { return `${BASE_DONNEES}/agenda-an.json`; }
 export function adresseScrutinsSolennels() { return `${BASE_DONNEES}/scrutins-solennels.json`; }
+/* COUCHE 1, PAS COUCHE 2 — le teaser (8 plus recents, titre tronque) que
+   "Ce qui se passe" charge d'emblee avec le Senat et l'Assemblee, PAS le
+   detail complet des 95 (celui-ci n'arrive qu'au clic "Voir tous les
+   scrutins recents", via chargerScrutinsSolennels ci-dessus). Mesure le
+   23/09/2026 : 1,3-1,9 Ko contre 29,8 Ko pour le fichier complet — c'est
+   cet ecart qui justifie deux fichiers plutot qu'un. */
+export function adresseScrutinsSolennelsRecents() { return `${BASE_DONNEES}/scrutins-solennels-recents.json`; }
 /* LE FIL EDITORIAL — voir lib/faits.js pour la tracabilite complete (source
    YAML -> geste humain -> outils/evenements.py -> ce fichier). Un seul
    fichier pour la France entiere, jamais un code de commune dans l'adresse :
@@ -328,6 +335,9 @@ export async function chargerAgendaAN({ delaiMs = 8000 } = {}) {
 }
 export async function chargerScrutinsSolennels({ delaiMs = 8000 } = {}) {
   return chargerSocle("socle:SOL", adresseScrutinsSolennels(), delaiMs);
+}
+export async function chargerScrutinsSolennelsRecents({ delaiMs = 8000 } = {}) {
+  return chargerSocle("socle:SOR", adresseScrutinsSolennelsRecents(), delaiMs);
 }
 export async function chargerEvenements({ delaiMs = 8000 } = {}) {
   return chargerSocle("socle:EVT", adresseEvenements(), delaiMs);
