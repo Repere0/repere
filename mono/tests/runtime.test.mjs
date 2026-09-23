@@ -546,27 +546,41 @@ verif("invariant 3 — les comptes du departement et de la region ne comparent a
   !/classement|palmar|moyenne nationale|mieux que|top \d/i.test(argentTerritoires),
   "un mot de comparaison est apparu avec les nouveaux echelons");
 
-console.log("\n--- calendrier citoyen (pilote Senat) -------------------------");
-/* PILOTE DU 17/09/2026 : un seul echelon publie (Senat), aucune commune
- * requise pour l'ouvrir — comme « Sources ». La donnee est un instantane deja
- * ecrit dans mono/data/calendrier-senat.json au moment de l'extraction (voir
- * scripts/calendrier-senat.mjs) : ce controle ne touche jamais le reseau du
- * vrai Senat, il lit ce que le build a deja capture. */
+console.log("\n--- calendrier citoyen (Senat + Assemblee nationale) ----------");
+/* PILOTE DU 17/09/2026 (Senat), ETENDU LE 23/09/2026 (Assemblee nationale) :
+ * deux echelons publies, aucune commune requise pour l'ouvrir — comme
+ * « Sources ». Les deux donnees sont des instantanes deja ecrits dans
+ * mono/data/ au moment de l'extraction (calendrier-senat.mjs,
+ * agenda-an.mjs) : ce controle ne touche jamais le reseau des vraies
+ * institutions, il lit ce que le build a deja capture. */
 await page.getByRole("button", { name: "Ce qui se passe" }).click();
-await page.waitForTimeout(700);
+await page.waitForTimeout(900);
 const cal = await page.evaluate(() => document.body.innerText);
 verif("calendrier — l'ecran s'ouvre sans commune choisie",
   /Ce qui se passe prochainement/.test(cal), cal.slice(0, 160).replace(/\n+/g, " / "));
 verif("calendrier — au moins un evenement reel est affiche",
   /Sénat/.test(cal) && /\d{4}/.test(cal), "aucune date ni producteur trouve");
 verif("invariant 4 — le calendrier porte son producteur et sa date de releve",
-  /Sénat/.test(cal) && /relevé le/i.test(cal), cal.slice(-300).replace(/\n+/g, " / "));
+  /Sénat/.test(cal) && /relevé le/i.test(cal), cal.slice(-500).replace(/\n+/g, " / "));
 /* LA LICENCE N'EST PAS ACQUISE, ET L'ECRAN DOIT LE DIRE PLUTOT QUE L'OMETTRE
  * OU L'INVENTER — voir le commentaire de calendrier-senat.mjs. Un ecran qui
  * n'afficherait aucune mention de licence serait un manquement a
  * l'invariant 4 tout autant qu'une licence devinee. */
 verif("invariant 4 — la licence non confirmee est dite, pas devinee ni omise",
   /non précisée/i.test(cal), "la mention de licence non confirmee est absente de l'ecran");
+
+/* LES DEUX INSTITUTIONS, DANS LE MEME ECRAN. Le controle porte sur des
+ * proprietes structurelles (l'institution est nommee, la categorie « Séance
+ * publique » apparait, une seconde licence distincte est citee) plutot que
+ * sur l'intitule exact d'une seance — celui-ci change chaque jour avec le
+ * vrai agenda, un texte fige dans le test deviendrait faux sans que rien ne
+ * le signale. */
+verif("calendrier — l'Assemblee nationale apparait aux cotes du Senat",
+  /Assemblée nationale/.test(cal), cal.slice(0, 400).replace(/\n+/g, " / "));
+verif("calendrier — au moins une seance publique de l'Assemblee est nommee",
+  /Séance publique/.test(cal), "aucune categorie « Séance publique » trouvee");
+verif("invariant 4 — la source Assemblee nationale porte sa propre licence",
+  /Licence ouverte/.test(cal), "la licence de l'Assemblee n'apparait pas separement de celle du Senat");
 
 /* La langue : le francais affiche porte ses accents. Faute commise deux fois.
    La mesure ne portait que sur l'ecran des comptes ; l'ecran « Sources », lui,

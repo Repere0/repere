@@ -213,6 +213,13 @@ rm -rf site_engendre
   node scripts/extract-html.js "../$APP" ./data
   node scripts/calendrier-senat.mjs ./data \
     || echo "::warning::calendrier Senat non rafraichi (reseau indisponible ? le releve d'hier reste)"
+  # AGENDA ASSEMBLEE NATIONALE (23/09/2026) - pas de reseau ici, contrairement
+  # au Senat : lit outils/agenda_an.json, deja produit par l'etape 2 de ce
+  # meme script (agenda_an.py). Si ce fichier manque ou est mal forme, le
+  # script avertit et rend une main vide - le Senat continue seul, comme le
+  # Senat continuerait seul si CE fichier-ci manquait a l'inverse.
+  node scripts/agenda-an.mjs ./data \
+    || echo "::warning::agenda de l'Assemblee non rafraichi - le calendrier continue avec le Senat seul"
   pnpm install --frozen-lockfile
   # RISQUE CONFIRME PAR AUDIT LE 22/09/2026, PAS SUPPOSE : ce bloc n'installait
   # aucun Chromium pour mono/. Le premier essai reel sur le runner GitHub
