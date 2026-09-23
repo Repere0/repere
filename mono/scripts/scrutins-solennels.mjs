@@ -26,6 +26,25 @@
  * scrutins ordinaires (mono/scripts/scrutins.json) - une extension
  * naturelle, mais une decision de portee separee, pas empilee ici.
  *
+ * DEUX FICHIERS, PAS UN - DECISION PRISE SUR MESURE, PAS SUR HYPOTHESE
+ * (23/09/2026, decision produit : couche d'exploration dans "Ce qui se
+ * passe", pas un ecran isole). Mesure reelle sur les trois options :
+ *   A. tout embarque a l'ouverture de l'onglet  : +29,8 Ko immediats
+ *   B. tout a la demande, aucun teaser          : +0 Ko, mais invisible
+ *   C. teaser (8 recents) + detail complet      : +1,3 Ko immediats
+ * B est invisible : sans indice, personne ne sait que les scrutins
+ * existent. A double le poids de l'onglet pour un contenu que la plupart
+ * des lecteurs ne consulteront jamais. C coute 4,7 % de plus que B a
+ * l'ouverture et resout sa decouvrabilite - c'est le seul qui satisfait
+ * a la fois "leger au premier chargement" et "on sait que c'est la".
+ * `scrutins-solennels-recents.json` (Couche 1, ~1,3 Ko, charge avec
+ * l'agenda AN et le Senat a l'ouverture de l'onglet) porte les 8 plus
+ * recents, titre tronque, avec DEJA le lien source (l'utilisateur ne doit
+ * jamais attendre le detail complet pour verifier a la source).
+ * `scrutins-solennels.json` (Couche 2, ~29,8 Ko, les 95 depuis le debut de
+ * la legislature) ne se charge qu'au clic "Voir tous les scrutins
+ * recents" - inchange, c'etait deja son role.
+ *
  * Usage : node scripts/scrutins-solennels.mjs [./data] [chemin vers data/brut_Scrutins]
  */
 import fs from "node:fs";
@@ -35,6 +54,12 @@ const SORTIE = process.argv[2] || "./data";
 const ENTREE = process.argv[3] || "../data/brut_Scrutins";
 const TYPES_RETENUS = new Set(["scrutin public solennel", "motion de censure"]);
 const URL_SCRUTINS = "https://data.assemblee-nationale.fr/travaux-parlementaires/votes";
+/* Un lien PRECIS par scrutin (pas la page generique) - verifie reellement
+   dans les brouillons editoriaux existants (data/auto/*.md), qui pointent
+   tous vers ce meme format ; contrairement au lien de secours de l'agenda
+   AN (voir agenda-an.mjs), celui-ci n'est pas une supposition. */
+const URL_SCRUTIN_UN = "https://www.assemblee-nationale.fr/dyn/17/scrutins/";
+const NB_RECENTS = 8;
 
 function fichiersJson(dir) {
   let res = [];
@@ -72,6 +97,7 @@ function principal() {
       pour: dec.pour != null ? Number(dec.pour) : null,
       contre: dec.contre != null ? Number(dec.contre) : null,
       abstentions: dec.abstentions != null ? Number(dec.abstentions) : null,
+      url: `${URL_SCRUTIN_UN}${d.numero}`,
     });
   }
   retenus.sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : (a.numero || "").localeCompare(b.numero || "", "fr", { numeric: true })));
@@ -96,6 +122,23 @@ function principal() {
   console.log(`scrutins-solennels.json : ${retenus.length} retenu(s) sur ${totalSource} scrutins publics`
     + " (" + Object.entries(parType).map(([t, n]) => n + " " + t).join(", ") + ")");
   if (retenus.length) console.log(`  du ${retenus[0].date} au ${retenus[retenus.length - 1].date}`);
+
+  /* COUCHE 1 - le teaser, meme releve_le que le detail complet (meme
+     execution, meme instant) : les deux niveaux ne peuvent jamais diverger
+     en fraicheur, contrairement a deux fichiers ecrits par deux scripts a
+     des moments differents. Titre tronque a 70 caracteres pour rester un
+     vrai teaser, pas une deuxieme copie du detail. */
+  const recents = retenus.slice(-NB_RECENTS).map(r => ({
+    n: r.numero,
+    d: r.date,
+    t: r.titre.length > 70 ? r.titre.slice(0, 67) + "..." : r.titre,
+    ty: r.type === "motion de censure" ? "censure" : "solennel",
+    url: r.url,
+  }));
+  const paquetRecents = { v: 1, source: paquet.source, recents };
+  fs.writeFileSync(path.join(SORTIE, "scrutins-solennels-recents.json"), JSON.stringify(paquetRecents));
+  console.log(`scrutins-solennels-recents.json : ${recents.length} teaser(s), `
+    + Buffer.byteLength(JSON.stringify(paquetRecents)) + " octets");
 }
 
 principal();

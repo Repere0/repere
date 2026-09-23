@@ -269,13 +269,20 @@ test("invariant 4 — aucune donnée n'est servie sans source déclarée", () =>
      dans le fichier (voir scripts/scrutins-solennels.mjs), independant de
      la fenetre glissante de /scrutins.json. Mesure sur l'archive complete
      avant d'ecrire ce filtre : 95 scrutins sur 8434 (72 solennels + 23
-     motions de censure), pas un chiffre suppose. */
+     motions de censure), pas un chiffre suppose.
+     La douzieme, /scrutins-solennels-recents.json, complete la onzieme le
+     meme jour (decision produit : couche d'exploration dans "Ce qui se
+     passe") - le teaser des 8 plus recents (~1,3 Ko, mesure), charge avec
+     le Senat et l'Assemblee a l'ouverture de l'onglet, quand le detail
+     complet (~29,8 Ko) n'arrive qu'au clic. Meme fichier source, meme
+     execution du script, meme releve_le : les deux niveaux ne peuvent pas
+     diverger en fraicheur l'un de l'autre. */
   const client = lire("packages/data-utils/src/client.js");
   const composees = [...client.matchAll(/\$\{BASE_DONNEES\}(\/[A-Za-z0-9_${}./-]*)/g)].map(m => m[1]);
   assert.deepEqual([...new Set(composees)].sort(),
     ["/agenda-an.json", "/calendrier-senat.json", "/communes-beta.json", "/comptes-regions.json", "/departments/${d}.json",
      "/deputes.json", "/elus-regions/${c}.json", "/evenements.json", "/index.json",
-     "/projets/${d}.json", "/scrutins-solennels.json", "/scrutins.json", "/scrutins/${d}.json"],
+     "/projets/${d}.json", "/scrutins-solennels-recents.json", "/scrutins-solennels.json", "/scrutins.json", "/scrutins/${d}.json"],
     "client.js compose une adresse de donnees inattendue : " + composees.join(", "));
   const sources = existe("data/index.json") ? (JSON.parse(lire("data/index.json")).sources || {}) : {};
   for (const attendue of ["elus", "comptes", "circonscriptions", "deputes", "scrutins", "communes"]) {

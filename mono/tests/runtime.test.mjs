@@ -582,6 +582,44 @@ verif("calendrier — au moins une seance publique de l'Assemblee est nommee",
 verif("invariant 4 — la source Assemblee nationale porte sa propre licence",
   /Licence ouverte/.test(cal), "la licence de l'Assemblee n'apparait pas separement de celle du Senat");
 
+console.log("\n--- scrutins solennels : couche d'exploration -----------------");
+/* HYBRIDE, PAS UN ECRAN A PART (decision produit, 23/09/2026). Le teaser
+ * doit etre visible SANS action (couche 1), le detail complet SEULEMENT
+ * apres le clic (couche 2) - ce test verifie les deux etats, pas
+ * seulement le premier, et verifie explicitement qu'AVANT le clic les
+ * chiffres pour/contre/abstentions ne sont PAS deja charges (sinon
+ * l'architecture hybride mesuree n'est qu'une illusion visuelle). */
+const avantClic = await page.evaluate(() => document.body.innerText);
+verif("scrutins — le teaser des scrutins recents est visible sans action",
+  /Les derniers scrutins importants/.test(avantClic) && /Scrutin solennel|Motion de censure/.test(avantClic),
+  avantClic.slice(-500).replace(/\n+/g, " / "));
+verif("scrutins — chaque ligne du teaser porte deja un lien source direct",
+  /source officielle/.test(avantClic), "aucun lien source direct trouve dans le teaser");
+verif("invariant hybride — le detail complet (pour/contre) n'est PAS charge avant le clic",
+  !/Pour : \d+ · Contre/.test(avantClic),
+  "les chiffres detailles apparaissent AVANT le clic : la couche 2 n'est plus separee de la couche 1");
+
+/* Le NOM du bouton change avec son etat (« Voir » -> « Masquer ») : un
+   locator resolu sur le nom exact avant le clic ne retrouverait plus rien
+   apres, puisque son texte a change - piege reel, rencontre en ecrivant
+   ce test. Le regex couvre les deux etats du meme bouton. */
+const boutonDetails = page.getByRole("button", { name: /Voir les détails complets|Masquer les détails complets/ });
+verif("scrutins — le bouton de details annonce son etat ferme (aria-expanded=false)",
+  await boutonDetails.getAttribute("aria-expanded") === "false", "aria-expanded n'est pas 'false' avant le clic");
+await boutonDetails.click();
+await page.waitForTimeout(600);
+verif("scrutins — le bouton annonce son etat ouvert apres le clic (aria-expanded=true)",
+  await boutonDetails.getAttribute("aria-expanded") === "true", "aria-expanded n'est pas passe a 'true'");
+const apresClic = await page.evaluate(() => document.body.innerText);
+verif("scrutins — le detail complet (pour/contre/abstentions) apparait apres le clic",
+  /Pour : \d+ · Contre : \d+ · Abstentions : \d+/.test(apresClic),
+  apresClic.slice(-600).replace(/\n+/g, " / "));
+/* Le clavier doit pouvoir tout faire : la cible du focus ne doit pas se
+   perdre quand le contenu change sous elle. */
+const focusApres = await page.evaluate(() => document.activeElement.textContent);
+verif("accessibilite — le focus reste sur le bouton apres le chargement du detail",
+  /Masquer les détails complets/.test(focusApres || ""), "le focus a quitte le bouton : " + focusApres);
+
 /* La langue : le francais affiche porte ses accents. Faute commise deux fois.
    La mesure ne portait que sur l'ecran des comptes ; l'ecran « Sources », lui,
    affichait « Ministere de l'Interieur ... circonscription legislative » recopie
