@@ -58,6 +58,33 @@ def sansAccent(t):
 # commencant deja par « L'Assemblée nationale a ». Table indexee sur la forme mesuree.
 SORTS = {"adopte": "adopté", "rejete": "rejeté"}
 
+# PREMIERE BRIQUE DE DETECTION — mission phase 3, 23-24/09/2026.
+#
+# MESURE, PAS SUPPOSE : les 14 derniers candidats poses par ce script (avant ce
+# correctif) ont ete relus un par un le 24/09/2026 pour construire le poste de
+# validation. Resultat : les 7 valables (adoption finale d'un texte, a publier
+# vite ou apres contextualisation) portent TOUS `tv: "scrutin public solennel"`
+# dans outils/scrutins_an.json ; les 7 a ecarter (motions de rejet prealable,
+# amendements, sous-amendements, vote de prolongation de seance) portent TOUS
+# `tv: "scrutin public ordinaire"` — sans exception, dans un sens comme dans
+# l'autre. Le champ existe deja dans la source, et le meme champ (sous le nom
+# `typeVote.libelleTypeVote` dans l'archive complete) est deja le filtre prouve
+# de mono/scripts/scrutins-solennels.mjs. Ce correctif applique la MEME regle
+# ici plutot que d'en inventer une seconde qui pourrait un jour diverger.
+#
+# CE QUE CA NE FAIT PAS : ca ne juge pas le contenu d'un scrutin solennel, et ca
+# n'automatise aucune formulation — "Ce que ca change" reste vide, a ecrire par
+# un humain. Ca reduit le nombre de brouillons qu'un humain doit lire pour n'en
+# garder aucun : mesure sur ce lot (reproduction fidele en Node, Python absent
+# de ce poste), 80 scrutins recents ne portent que 8 candidats solennels au
+# lieu de 14 melanges a 72 ordinaires — et ca fait ressortir le scrutin 8427
+# (vote final d'urgence agricole), solennel lui aussi, qu'un ancien tirage
+# COMBIEN=10 sans filtre avait laisse de cote sans que rien ne le signale.
+#
+# `motion de censure` est retenue par coherence avec scrutins-solennels.mjs,
+# meme si aucun n'apparait dans la fenetre des 80 scrutins recents a ce jour.
+TYPES_RETENUS = {"scrutin public solennel", "motion de censure"}
+
 
 def titre_de(objet):
     """L'objet du scrutin est une phrase de proces-verbal : minuscule initiale et point
@@ -65,8 +92,12 @@ def titre_de(objet):
     t = (objet or "").strip().rstrip(".").strip()
     return (t[:1].upper() + t[1:]) if t else t
 
+ecarte_type = 0
+candidats_retenus = [e for e in d["r"] if e.get("tv") in TYPES_RETENUS]
+ecarte_type = len(d["r"]) - len(candidats_retenus)
+
 ecrits, deja, poses = 0, 0, []
-for e in sorted(d["r"], key=lambda x: x["d"], reverse=True)[:COMBIEN]:
+for e in sorted(candidats_retenus, key=lambda x: x["d"], reverse=True)[:COMBIEN]:
     nom = "scrutin-%s-%s.md" % (e["d"], str(e["n"]).rjust(4, "0"))
     chemin = os.path.join(DEST, nom)
     # On n'ecrase JAMAIS : un candidat deja pose a peut-etre ete relu et corrige.
@@ -121,6 +152,7 @@ for f in sorted(os.listdir(DEST)):
             a_deplacer.append(f)
 
 print("candidats ecrits        : %d" % ecrits)
+print("ecartes (type ordinaire): %d" % ecarte_type)
 print("deja presents, intacts  : %d" % deja)
 print("en attente de relecture : %d" % len([f for f in os.listdir(DEST) if f.endswith('.md')]))
 if a_deplacer:
