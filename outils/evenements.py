@@ -97,21 +97,48 @@ for f in fichiers:
     # seul qui reponde a « en quoi ca me concerne ». Un brouillon valide sans l'avoir
     # rempli publierait un intertitre suivi de rien — un contenant sans contenu, ce que
     # la doctrine du vide interdit precisement. On refuse, on ne complete pas.
-    m_chg = re.search(r"Ce que [cç]a change\s*:(.*)$", corps, re.S)
-    if m_chg is not None and not m_chg.group(1).strip():
+    #
+    # DEUX GABARITS COEXISTENT DANS data/evenements/, ET LE MOTIF LES RECONNAIT TOUS
+    # LES DEUX (24/09/2026) : « Ce que ca change : texte » (gabarit des scrutins) et
+    # « ## Ce que ca change\n\ntexte » (gabarit "Le fait / Ce que ca change" du premier
+    # fait editorial). L'ancien motif, ancre sur un « : » litteral, ne reconnaissait que
+    # le premier — le second passait la porte SANS jamais etre verifie, un angle mort
+    # trouve en construisant ce meme controle, pas une regression qu'il introduit.
+    m_chg = re.search(r"#{0,2}\s*Ce que [cç]a change\s*:?\s*\n*(.*)$", corps, re.S)
+    axes = m_chg.group(1).strip() if m_chg else ""
+    if not axes:
         refus["« ce que ca change » vide"] += 1
         detail.append((nom, "l'intertitre est la, le texte manque")); continue
-    retenus.append({
+    entree = {
         "id": os.path.splitext(nom)[0],
         "t": meta["titre"],
         "d": str(meta["date"]),
+        "axes": axes,
         "e": meta["echelon"],
         "src": src,
         "srcn": meta.get("source_nom", ""),
         "conf": conf,
         "insee": str(meta.get("insee", "")),
         "txt": corps,
-    })
+    }
+    # SOURCE PROPRE POUR LES GRANDS AXES — optionnelle, mission phase 3, 24/09/2026.
+    # Le vote et son explication pedagogique n'ont pas forcement la meme provenance
+    # (le scrutin vient de l'Assemblee, le resume des mesures vient souvent du Senat
+    # ou de vie-publique.fr) : les confondre laisserait croire qu'une seule source
+    # publie a la fois le vote ET explique la loi. `axes_src`/`axes_srcn` restent
+    # ABSENTS quand le fichier ne declare pas `axes_source` — c'est ce qui garde le
+    # rendu correct pour les deux faits deja publies, qui n'ont pas ce champ.
+    # `axes`, lui, est desormais toujours pose (voir plus haut) : c'est le correctif
+    # lui-meme, le texte de "Ce que ca change" existait deja mais n'etait affiche
+    # nulle part cote client avant ce chantier.
+    if meta.get("axes_source"):
+        axes_src = str(meta["axes_source"])
+        if not any(d in axes_src for d in DOMAINES):
+            refus["source des axes non officielle"] += 1
+            detail.append((nom, "axes_source hors liste : " + axes_src[:70])); continue
+        entree["axes_src"] = axes_src
+        entree["axes_srcn"] = meta.get("axes_source_nom", "")
+    retenus.append(entree)
 
 retenus.sort(key=lambda e: (e["d"], e["id"]), reverse=True)
 paquet = {"v": 1,
@@ -122,8 +149,11 @@ brut = json.dumps(paquet, ensure_ascii=False, separators=(",", ":"))
 # controle independant : on relit sans reutiliser une variable d'au-dessus
 relu = json.loads(brut)
 assert all(e["src"] and e["d"] and e["e"] for e in relu["r"]), "un evenement sans preuve a passe"
+assert all(e.get("axes") for e in relu["r"]), "un evenement sans grands axes a passe"
 assert relu["r"] == sorted(relu["r"], key=lambda e: (e["d"], e["id"]), reverse=True)
 assert all(any(d in e["src"] for d in DOMAINES) for e in relu["r"]), "une source hors liste a passe"
+assert all(not e.get("axes_src") or any(d in e["axes_src"] for d in DOMAINES)
+           for e in relu["r"]), "une source d'axes hors liste a passe"
 
 os.makedirs(os.path.dirname(SORTIE) or ".", exist_ok=True)
 io.open(SORTIE, "w", encoding="utf-8").write(brut)
