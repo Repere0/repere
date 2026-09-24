@@ -353,6 +353,23 @@ export default function CeQuiADecide({ paquet, index, commune }) {
                   <b className="fait-titre">{f.e.t}</b>
                   <Source producteur={f.e.srcn || "voir la source"} url={f.e.src}
                     mention={f.e.conf === "verifie" ? "relu et validé par la rédaction" : "relevé, en attente de confirmation par la rédaction"} />
+                  {/* LES GRANDS AXES, SEPARES DU FAIT OFFICIEL — mission phase 3,
+                      24/09/2026. Le vote (ci-dessus) et son explication pedagogique
+                      n'ont pas forcement la meme provenance : le scrutin vient de
+                      l'Assemblee, le resume des mesures vient souvent du Senat ou de
+                      vie-publique.fr. Une deuxieme ligne Source, distincte, plutot
+                      que fondre les deux dans une seule citation qui laisserait
+                      croire a une source unique. `f.e.axes` existait deja dans le
+                      texte du fait (voir evenements.py) mais n'etait affiche nulle
+                      part avant ce chantier. */}
+                  {f.e.axes ? (
+                    <div className="fait-axes">
+                      <p className="ligne-note">{f.e.axes}</p>
+                      {f.e.axes_src ? (
+                        <Source producteur={f.e.axes_srcn || "voir la source"} url={f.e.axes_src} />
+                      ) : null}
+                    </div>
+                  ) : null}
                 </>
               )}
             </div>

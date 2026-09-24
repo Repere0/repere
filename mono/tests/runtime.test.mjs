@@ -897,6 +897,88 @@ try {
   await ctxRetention.close();
 }
 
+console.log("\n--- faits editoriaux : grands axes et 2e source ----------------");
+/* DONNEES REELLES DU DEPOT (data/evenements/*.md), PAS UNE FIXTURE : ce bloc
+   verifie ce qui est reellement servi. Sept faits valides, un huitieme
+   (8430, protection des enfants, premiere lecture) VOLONTAIREMENT retenu en
+   `valide: false` faute de source citable pour tout le resume. */
+const ctxAxes = await nav.newContext({ viewport: { width: 390, height: 844 } });
+const pageAxes = await ctxAxes.newPage();
+await pageAxes.addInitScript(() => localStorage.setItem("repere.departement", "64"));
+await pageAxes.goto(base, { waitUntil: "networkidle" });
+await pageAxes.waitForTimeout(400);
+await pageAxes.getByLabel(/Votre commune/i).fill("Ustaritz");
+await pageAxes.waitForTimeout(300);
+await pageAxes.getByRole("button", { name: "Ustaritz", exact: true }).click();
+await pageAxes.waitForTimeout(700);
+await pageAxes.getByRole("button", { name: "Ce qui a été décidé" }).click();
+await pageAxes.waitForTimeout(1200);
+const axes = await pageAxes.evaluate(() => {
+  const cartes = [...document.querySelectorAll(".fait")];
+  const c = cartes.find(e => e.querySelector(".fait-axes") && /patrimoine immobilier de l.État/.test(e.innerText));
+  return {
+    texte: document.body.innerText,
+    carte: c ? c.innerText : "",
+    liens: c ? [...c.querySelectorAll("a")].map(a => a.href) : [],
+    nbAxes: document.querySelectorAll(".fait-axes").length,
+  };
+});
+verif("grands axes — le resume pedagogique est affiche (il ne l'etait nulle part avant)",
+  /foncière de l.État/.test(axes.carte), axes.carte.slice(0, 200));
+verif("grands axes — le fait officiel (scrutin) et l'explication ont deux sources DISTINCTES",
+  axes.liens.some(h => /assemblee-nationale\.fr\/dyn\/17\/scrutins\/8434/.test(h))
+  && axes.liens.some(h => /senat\.fr\/travaux-parlementaires/.test(h)), axes.liens.join(" | "));
+verif("grands axes — la source des axes est nommee a l'ecran",
+  /Sénat — La loi en clair/.test(axes.carte), axes.carte.slice(0, 300));
+verif("grands axes — le fait sans 2e source (aide a mourir) n'affiche qu'une seule ligne de source, sans bloc vide",
+  (() => { const m = axes.texte.split("aide à mourir")[1] || ""; return !/La loi en clair/.test(m.slice(0, 500)); })(),
+  "");
+verif("grands axes — six faits portent leurs axes, aucun bloc vide",
+  axes.nbAxes >= 7 && !/undefined|null/.test(axes.texte), String(axes.nbAxes));
+verif("censure — 8431 distingue ce qui a ete vote de ce que le Conseil constitutionnel a censure",
+  /a censuré cette disposition le 14 août 2026 \(décision n° 2026-911 DC\)/.test(axes.texte),
+  axes.texte.slice(0, 200));
+verif("neutralite — 8433 decrit des mesures sans qualificatif d'opinion",
+  /délit d.inhalation de protoxyde d.azote/.test(axes.texte)
+  && !/(dangereu|liberticide|nécessaire|indispensable|scandaleu|efficace)/i.test(axes.carte + axes.texte.split("protoxyde")[1]?.slice(0, 600)),
+  "");
+verif("premiere lecture — 8430 n'est PAS publie tant que son resume n'est pas valide",
+  !/transmis au Sénat le 22 juillet 2026/.test(axes.texte), "");
+await ctxAxes.close();
+
+console.log("\n--- retention avec les faits reels : 0, quelques-unes, plusieurs -");
+async function auj(marqueur) {
+  const c = await nav.newContext({ viewport: { width: 390, height: 844 } });
+  const p = await c.newPage();
+  await p.addInitScript(([k, v]) => localStorage.setItem(k, v),
+    ["repere.departement", JSON.stringify({ d: "64", v: marqueur })]);
+  await p.goto(base, { waitUntil: "networkidle" });
+  await p.waitForTimeout(400);
+  await p.getByLabel(/Votre commune/i).fill("Ustaritz");
+  await p.waitForTimeout(300);
+  await p.getByRole("button", { name: "Ustaritz", exact: true }).click();
+  await p.waitForTimeout(700);
+  await p.getByRole("button", { name: /Voir aujourd.hui à Ustaritz/i }).click();
+  await p.waitForTimeout(1000);
+  const t = await p.evaluate(() => document.body.innerText);
+  await c.close();
+  return t;
+}
+const zero = await auj("2026-09-01T10:00:00.000Z");
+verif("retention (0 nouveaute) — rien de nouveau depuis la visite : aucun bloc, aucun « 0 », aucune fausse nouveaute",
+  !/Depuis votre visite/.test(zero) && !/\b0 nouveaut/.test(zero), zero.slice(0, 300).replace(/\n+/g, " / "));
+const quelques = await auj("2026-07-20T10:00:00.000Z");
+verif("retention (quelques) — depuis le 20/07 : les faits du 21/07 apparaissent, ceux du 20/07 non",
+  /Depuis votre visite du 20 juillet 2026/.test(quelques)
+  && /phénomènes troublant l.ordre public/.test(quelques)
+  && !/montagne vivante et souveraine/.test(quelques.split("Depuis votre visite")[1] || ""),
+  quelques.slice(0, 300).replace(/\n+/g, " / "));
+const plusieurs = await auj("2026-07-01T10:00:00.000Z");
+const bloc = (plusieurs.split("Depuis votre visite du")[1] || "");
+verif("retention (plusieurs) — le bloc reste borne (au plus 4 lignes), calme, sans decompte alarmiste",
+  /Depuis votre visite du 1er juillet 2026/.test(plusieurs) && !/\d+ (nouveaut|choses)/i.test(plusieurs)
+  && !/[!]/.test(bloc.slice(0, 400)), plusieurs.slice(0, 300).replace(/\n+/g, " / "));
+
 console.log("\n--- recherche et accents -------------------------------------");
 /* LA RECHERCHE NE DOIT PAS DEPENDRE DES ACCENTS, DANS LES DEUX SENS. Depuis que
    les libelles portent leur orthographe officielle, une comparaison brute
