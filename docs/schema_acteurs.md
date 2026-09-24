@@ -38,39 +38,39 @@ une seule fois sont reprises a part, plus bas.
 | `acteur.profession.libelleCourant` | texte | 2085 | Ancien directeur d'une société de recrutement · Inspecteur général de l'équipement |
 | `acteur.profession.socProcINSEE.catSocPro` | texte | 2106 | Anciens artisans, commerçants, chefs d'entreprise · Cadres de la fonction publique, professions intellectuelles et  artistiques |
 | `acteur.profession.socProcINSEE.famSocPro` | texte | 2106 | Retraités · Cadres et professions intellectuelles supérieures |
-| `acteur.uri_hatvp.@xmlns:xsi` | texte | 2466 | http://www.w3.org/2001/XMLSchema-instance |
-| `acteur.uri_hatvp.@xsi:nil` | texte | 2466 | true |
+| `acteur.uri_hatvp.@xmlns:xsi` | texte | 2465 | http://www.w3.org/2001/XMLSchema-instance |
+| `acteur.uri_hatvp.@xsi:nil` | texte | 2465 | true |
 | `acteur.adresses.adresse[]` | liste | 2085 | de 2 a 11 entrees |
-| `acteur.adresses.adresse[].@xmlns:xsi` | texte | 9008 | http://www.w3.org/2001/XMLSchema-instance |
-| `acteur.adresses.adresse[].@xsi:type` | texte | 9008 | AdressePostale_Type · AdresseTelephonique_Type |
-| `acteur.adresses.adresse[].uid` | texte | 9008 | AD386857 · AD395657 |
-| `acteur.adresses.adresse[].type` | texte | 9008 | 0 · 11 |
-| `acteur.adresses.adresse[].typeLibelle` | texte | 9008 | Adresse officielle · Téléphone |
-| `acteur.adresses.adresse[].poids` | texte/vide | 9008 | 1 · 22 |
-| `acteur.adresses.adresse[].adresseDeRattachement` | texte/vide | 9008 | AD386857 · AD726542 |
-| `acteur.adresses.adresse[].intitule` | texte/vide | 2808 | Assemblée nationale, · Casier de la Poste, |
-| `acteur.adresses.adresse[].numeroRue` | texte/vide | 2808 | 126 · 7 |
-| `acteur.adresses.adresse[].nomRue` | texte/vide | 2808 | Rue de l'Université, · Avenue Roger Schwob |
-| `acteur.adresses.adresse[].complementAdresse` | texte/vide | 2808 | Palais Bourbon, · BP 49 |
-| `acteur.adresses.adresse[].codePostal` | texte/vide | 2808 | 75355 · 33150 |
-| `acteur.adresses.adresse[].ville` | texte/vide | 2808 | Paris 07 SP · Cenon |
-| `acteur.adresses.adresse[].valElec` | texte/vide | 6200 | 01 40 63 75 53 · 01 40 63 79 37 |
+| `acteur.adresses.adresse[].@xmlns:xsi` | texte | 9006 | http://www.w3.org/2001/XMLSchema-instance |
+| `acteur.adresses.adresse[].@xsi:type` | texte | 9006 | AdressePostale_Type · AdresseTelephonique_Type |
+| `acteur.adresses.adresse[].uid` | texte | 9006 | AD386857 · AD395657 |
+| `acteur.adresses.adresse[].type` | texte | 9006 | 0 · 11 |
+| `acteur.adresses.adresse[].typeLibelle` | texte | 9006 | Adresse officielle · Téléphone |
+| `acteur.adresses.adresse[].poids` | texte/vide | 9006 | 1 · 22 |
+| `acteur.adresses.adresse[].adresseDeRattachement` | texte/vide | 9006 | AD386857 · AD726542 |
+| `acteur.adresses.adresse[].intitule` | texte/vide | 2807 | Assemblée nationale, · Casier de la Poste, |
+| `acteur.adresses.adresse[].numeroRue` | texte/vide | 2807 | 126 · 7 |
+| `acteur.adresses.adresse[].nomRue` | texte/vide | 2807 | Rue de l'Université, · Avenue Roger Schwob |
+| `acteur.adresses.adresse[].complementAdresse` | texte/vide | 2807 | Palais Bourbon, · BP 49 |
+| `acteur.adresses.adresse[].codePostal` | texte/vide | 2807 | 75355 · 33150 |
+| `acteur.adresses.adresse[].ville` | texte/vide | 2807 | Paris 07 SP · Cenon |
+| `acteur.adresses.adresse[].valElec` | texte/vide | 6199 | 01 40 63 75 53 · 01 40 63 79 37 |
 | `acteur.mandats.mandat[]` | liste | 2995 | de 2 a 814 entrees |
-| `acteur.mandats.mandat[].@xmlns:xsi` | texte | 97323 | http://www.w3.org/2001/XMLSchema-instance |
-| `acteur.mandats.mandat[].@xsi:type` | texte | 97323 | MandatSimple_Type · MandatMission_Type |
-| `acteur.mandats.mandat[].uid` | texte | 97323 | PM391145 · PM778068 |
-| `acteur.mandats.mandat[].acteurRef` | texte | 97323 | PA1001 · PA1002 |
-| `acteur.mandats.mandat[].legislature` | texte/vide | 97323 | 13 · 14 |
-| `acteur.mandats.mandat[].typeOrgane` | texte | 97323 | DELEGBUREAU · DELEGSENAT |
-| `acteur.mandats.mandat[].dateDebut` | texte | 97323 | 2007-06-28 · 2020-10-20 |
-| `acteur.mandats.mandat[].datePublication` | texte/vide | 97323 | 2010-03-23 · 2012-06-27 |
-| `acteur.mandats.mandat[].dateFin` | texte/vide | 97323 | 2008-10-08 · 2010-11-13 |
-| `acteur.mandats.mandat[].preseance` | texte/vide | 97323 | 24 · 4 |
-| `acteur.mandats.mandat[].nominPrincipale` | texte | 97323 | 0 · 1 |
-| `acteur.mandats.mandat[].infosQualite.codeQualite` | texte/vide | 97323 | Membre · membre |
-| `acteur.mandats.mandat[].infosQualite.libQualite` | texte | 97323 | Membre · membre |
-| `acteur.mandats.mandat[].infosQualite.libQualiteSex` | texte/vide | 97323 | Membre · membre |
-| `acteur.mandats.mandat[].organes.organeRef` | texte | 97203 | PO391141 · PO420388 |
+| `acteur.mandats.mandat[].@xmlns:xsi` | texte | 97334 | http://www.w3.org/2001/XMLSchema-instance |
+| `acteur.mandats.mandat[].@xsi:type` | texte | 97334 | MandatSimple_Type · MandatMission_Type |
+| `acteur.mandats.mandat[].uid` | texte | 97334 | PM391145 · PM778068 |
+| `acteur.mandats.mandat[].acteurRef` | texte | 97334 | PA1001 · PA1002 |
+| `acteur.mandats.mandat[].legislature` | texte/vide | 97334 | 13 · 14 |
+| `acteur.mandats.mandat[].typeOrgane` | texte | 97334 | DELEGBUREAU · DELEGSENAT |
+| `acteur.mandats.mandat[].dateDebut` | texte | 97334 | 2007-06-28 · 2020-10-20 |
+| `acteur.mandats.mandat[].datePublication` | texte/vide | 97334 | 2010-03-23 · 2012-06-27 |
+| `acteur.mandats.mandat[].dateFin` | texte/vide | 97334 | 2008-10-08 · 2010-11-13 |
+| `acteur.mandats.mandat[].preseance` | texte/vide | 97334 | 24 · 4 |
+| `acteur.mandats.mandat[].nominPrincipale` | texte | 97334 | 0 · 1 |
+| `acteur.mandats.mandat[].infosQualite.codeQualite` | texte/vide | 97334 | Membre · membre |
+| `acteur.mandats.mandat[].infosQualite.libQualite` | texte | 97334 | Membre · membre |
+| `acteur.mandats.mandat[].infosQualite.libQualiteSex` | texte/vide | 97334 | Membre · membre |
+| `acteur.mandats.mandat[].organes.organeRef` | texte | 97214 | PO391141 · PO420388 |
 | `acteur.mandats.mandat[].libelle` | texte/vide | 5995 | Mise en place du plan de relance · La pratique d'une activité physique et sportive pour les élèves et les étudiants |
 | `acteur.mandats.mandat[].missionSuivanteRef` | texte/vide | 5995 | PM773756 · PM789978 |
 | `acteur.mandats.mandat[].missionPrecedenteRef` | texte/vide | 5995 | PM769451 · PM786854 |
@@ -91,7 +91,7 @@ une seule fois sont reprises a part, plus bas.
 | `acteur.etatCivil.infoNaissance.paysNais.@xmlns:xsi` | texte | 1207 | http://www.w3.org/2001/XMLSchema-instance |
 | `acteur.etatCivil.infoNaissance.paysNais.@xsi:nil` | texte | 1207 | true |
 | `acteur.etatCivil.ident.trigramme` | texte | 535 | ADA · JGD |
-| `acteur.uri_hatvp` | texte | 534 | https://www.hatvp.fr/pages_nominatives/david-alain · https://www.hatvp.fr/pages_nominatives/guedj-jerome |
+| `acteur.uri_hatvp` | texte | 535 | https://www.hatvp.fr/pages_nominatives/david-alain · https://www.hatvp.fr/pages_nominatives/guedj-jerome |
 | `acteur.etatCivil.dateDeces` | texte | 265 | 2025-02-16 · 2022-01-01 |
 | `acteur.mandats.mandat[].suppleants.suppleant.dateDebut` | texte | 1065 | 2002-06-19 · 2002-12-15 |
 | `acteur.mandats.mandat[].suppleants.suppleant.dateFin` | texte/vide | 1065 | 2007-06-19 · 2012-06-19 |
@@ -123,11 +123,11 @@ une seule fois sont reprises a part, plus bas.
 | `acteur.adresses.adresse.codePostal` | texte | 31 | 75355 |
 | `acteur.adresses.adresse.ville` | texte | 31 | Paris 07 SP |
 | `acteur.mandats.mandat[].collaborateurs.collaborateur[]` | liste | 140 | de 2 a 6 entrees |
-| `acteur.mandats.mandat[].collaborateurs.collaborateur[].qualite` | texte | 497 | M. · Mme |
-| `acteur.mandats.mandat[].collaborateurs.collaborateur[].prenom` | texte | 497 | Thomas · Bernard |
-| `acteur.mandats.mandat[].collaborateurs.collaborateur[].nom` | texte | 497 | Jacquelin · Combes |
-| `acteur.mandats.mandat[].collaborateurs.collaborateur[].dateDebut` | vide | 497 |  |
-| `acteur.mandats.mandat[].collaborateurs.collaborateur[].dateFin` | vide | 497 |  |
+| `acteur.mandats.mandat[].collaborateurs.collaborateur[].qualite` | texte | 498 | M. · Mme |
+| `acteur.mandats.mandat[].collaborateurs.collaborateur[].prenom` | texte | 498 | Thomas · Bernard |
+| `acteur.mandats.mandat[].collaborateurs.collaborateur[].nom` | texte | 498 | Jacquelin · Combes |
+| `acteur.mandats.mandat[].collaborateurs.collaborateur[].dateDebut` | vide | 498 |  |
+| `acteur.mandats.mandat[].collaborateurs.collaborateur[].dateFin` | vide | 498 |  |
 | `acteur.adresses.@xmlns:xsi` | texte | 77 | http://www.w3.org/2001/XMLSchema-instance |
 | `acteur.adresses.@xsi:nil` | texte | 77 | true |
 | `acteur.mandats.mandat.@xmlns:xsi` | texte | 5 | http://www.w3.org/2001/XMLSchema-instance |
