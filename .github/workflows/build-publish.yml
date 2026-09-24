@@ -1,15 +1,15 @@
 name: Construire, éprouver, publier
 
 on:
+  pull_request:
+    branches: [main]
   schedule:
     # 06h23 UTC, apres la collecte de 05h47, et volontairement pas rond : les
     # runners GitHub sont satures a :00.
     - cron: "23 6 * * *"
   workflow_dispatch:
-  # PAS DE DECLENCHEMENT SUR PUSH, et c'est une decision : la collecte quotidienne
-  # pousse elle-meme un commit chaque matin. Un declenchement sur push ferait donc
-  # tourner cette chaine deux fois par jour pour rien. Le bouton « Run workflow »
-  # reste disponible quand on veut la lancer a la main.
+  # PAS DE DECLENCHEMENT SUR PUSH : la collecte quotidienne pousse elle-meme
+  # un commit chaque matin. Un push ferait tourner cette chaine deux fois.
 
 concurrency:
   group: publication
@@ -17,11 +17,7 @@ concurrency:
 
 # CETTE CHAINE NE PUBLIE PAS ENCORE, ET C'EST VOLONTAIRE.
 # `collecte.yml` continue de construire et de publier le site a partir du fichier
-# mono-HTML : c'est lui qui sert les lecteurs aujourd'hui. Celle-ci construit le
-# monorepo et l'eprouve, sans rien mettre en ligne. Basculer la publication de
-# l'une a l'autre est une decision separee, qui se prendra quand cette chaine
-# aura tourne au vert plusieurs jours de suite sur les donnees reelles.
-# Deux chaines qui publient en meme temps se marcheraient dessus en silence.
+# mono-HTML. Celle-ci construit le monorepo et l'eprouve, sans rien mettre en ligne.
 
 defaults:
   run:
@@ -35,29 +31,20 @@ jobs:
 
       - uses: pnpm/action-setup@v4
         with:
-          version: 8
+          version: 8.15.9
       - uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: pnpm
-          # `defaults.working-directory` ne s'applique QU'AUX ETAPES `run:`.
-          # Une action, elle, part toujours de la racine du depot : sans cette
-          # ligne, setup-node cherchait pnpm-lock.yaml a la racine et echouait
-          # avec « Dependencies lock file is not found ». Mesure du 26/08.
           cache-dependency-path: mono/pnpm-lock.yaml
 
       - run: pnpm install --frozen-lockfile
 
       # ------------------------------------------------ 1. les données
-      # L'extraction lit les blocs REPERE_* du fichier mono-HTML. Elle échoue
-      # bruyamment si le fichier n'en porte aucun : produire un index vide sans
-      # rien dire est le pire des cas, parce que le site se publierait quand même.
       - name: Extraire les données par département
         run: node scripts/extract-html.js "$(ls -1 ../app_repere_v18_*.html | grep -v '\.bak$' | sort -V | tail -1)" ./data
 
       # ------------------------------------------------ 2. le banc, avant le build
-      # Les invariants statiques ne demandent ni navigateur ni build : ils tournent
-      # d'abord, parce qu'échouer en trente secondes vaut mieux qu'en cinq minutes.
       - name: Invariants — contrôles statiques
         run: node --test tests/invariants.test.mjs
 
@@ -67,21 +54,12 @@ jobs:
         run: cp -r data apps/web/dist/data && node scripts/empreinte-sw.mjs apps/web/dist
 
       # ------------------------------------------------ 4. LE VERROU
-      # Service worker installé, serveur ÉTEINT, parcours complet. C'est ce
-      # contrôle qui autorise à publier sans qu'un humain regarde.
-      # `pnpm dlx` aurait installe le NAVIGATEUR mais pas le paquet : le banc fait
-      # `import("playwright")`, qui aurait echoue faute de le trouver dans
-      # node_modules. Playwright est donc une devDependency du monorepo, et on
-      # installe seulement son navigateur ici.
       - name: Installer le navigateur du banc
         run: pnpm exec playwright install --with-deps chromium
       - name: Invariants — contrôles dans un navigateur
         run: node tests/runtime.test.mjs apps/web/dist
 
-      # ------------------------------------------------ 5. publier
-      # Aucun serveur applicatif : le site est un dossier de fichiers.
-      # Pas de publication tant que la bascule n'est pas decidee : on garde la
-      # sortie en artefact, consultable, sans toucher au site en ligne.
+      # ------------------------------------------------ 5. conserver la sortie
       - name: Garder la sortie en artefact
         uses: actions/upload-artifact@v4
         with:
