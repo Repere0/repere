@@ -38,7 +38,7 @@ export default function Aujourdhui({ paquet, index, commune, aller, derniereVisi
       corps="Les mêmes fichiers que les autres écrans, une seule fois." />;
   }
   const { nomCommune, dernierVote, dernierFait, faits, rapportDette, srcComptes,
-          srcProjets, srcScrutins, prochains, prochainsDansLaSemaine, base,
+          srcProjets, srcScrutins, prochains, prochainsDansLaSemaine, semaineSelectionnee, semaineTotal, base,
           nbCircos, nomDep, dernierProjet } = a;
 
   /* "DEPUIS VOTRE DERNIERE VISITE", SINON "CETTE SEMAINE" — decision produit,
@@ -82,7 +82,6 @@ export default function Aujourdhui({ paquet, index, commune, aller, derniereVisi
 
   return (
     <div className="quest">
-      <p className="quest-lieu">{nomCommune}</p>
       <h1 className="quest-q">Que s'est-il décidé près de chez vous ?</h1>
       {rienDepuisVisite ? (
         <p className="ligne-note auj-rien">
@@ -189,6 +188,12 @@ export default function Aujourdhui({ paquet, index, commune, aller, derniereVisi
       {prochains && prochains.length ? (
         <div className="quest-suivante auj-a-venir">
           <p className="quest-q2">{prochainsDansLaSemaine ? "Qu'est-ce qui arrive cette semaine ?" : "Qu'est-ce qui arrive ?"}</p>
+          {prochainsDansLaSemaine && semaineSelectionnee ? (
+            <p className="ligne-note auj-regle">
+              3 rendez-vous sur {semaineTotal} cette semaine. Les séances publiques passent en premier : c'est là que
+              chaque assemblée débat et vote les textes. Tout le reste est dans le calendrier.
+            </p>
+          ) : null}
           {prochains.map((e, i) => (
             <p className="ligne-note" key={i}>
               {jourFr(e.debut)}

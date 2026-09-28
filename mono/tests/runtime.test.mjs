@@ -1022,6 +1022,20 @@ console.log("\n--- aujourd'hui : ce qui arrive, Senat ET Assemblee ------------"
     verif("a venir — semaine vide : on montre le prochain rendez-vous, sans pretendre qu'il est cette semaine",
       /Qu'est-ce qui arrive \?/.test(t2) && !/arrive cette semaine/.test(t2) && /dans vingt jours/.test(t2),
       (t2.split("Qu'est-ce qui arrive")[1] || "").slice(0, 200).replace(/\n+/g, " / "));
+    /* 28/09/2026 : trois auditions de commission remplissaient les trois places,
+       l'ouverture de la session de l'Assemblee etait coupee. */
+    const aud = (t, j) => ({ ...ev(t, dans(j, 9)), categorie: "Commission des lois" });
+    fs.writeFileSync(fSen, avec(origSen, [aud("Audition de banc un", 1), aud("Audition de banc deux", 1), aud("Audition de banc trois", 2)]));
+    fs.writeFileSync(fAN, avec(origAN, [ev("Seance publique de banc vendredi", dans(4, 13))]));
+    const t3 = await auj(null);
+    const bloc3 = t3.split("Qu'est-ce qui arrive")[1] || "";
+    verif("a venir — une seance publique n'est jamais coupee par des auditions de commission",
+      /Seance publique de banc vendredi/.test(bloc3) && (bloc3.match(/Audition de banc/g) || []).length === 2,
+      bloc3.slice(0, 300).replace(/\n+/g, " / "));
+    verif("a venir — la regle de choix est ecrite a l'ecran (principe P4), avec le nombre total",
+      /3 rendez-vous sur 4 cette semaine\. Les séances publiques passent en premier/.test(bloc3), "");
+    verif("a venir — les trois retenus restent dans l'ordre du calendrier",
+      bloc3.indexOf("Audition de banc un") < bloc3.indexOf("Seance publique de banc vendredi"), "");
   } finally {
     fs.writeFileSync(fAN, origAN); fs.writeFileSync(fSen, origSen);
   }
@@ -1074,6 +1088,53 @@ async function aujCommune(dep, nom) {
   } else {
     verif("local — donnees de projets 93 presentes pour eprouver le bloc", false, "aucune commune du 93 avec projet");
   }
+}
+
+console.log("\n--- hierarchie mobile : le contenu avant le decor ---------------");
+/* 28/09/2026, mesure a 390 px : l'en-tete (titre, chapeau, selecteurs) prenait
+   environ 460 px sur 800 sur chaque ecran, et « Ce qui se passe » faisait 19
+   hauteurs d'ecran. */
+{
+  const c = await nav.newContext({ viewport: { width: 390, height: 800 } });
+  const p = await c.newPage();
+  await p.goto(base, { waitUntil: "networkidle" });
+  const premier = await p.evaluate(() => ({ chapeau: !!document.querySelector(".chapeau"), texte: document.body.innerText }));
+  verif("hierarchie — au premier ecran, la promesse est lue (rien ne quitte votre appareil)",
+    premier.chapeau && /rien ne quitte votre appareil/.test(premier.texte), "");
+  await p.evaluate(() => localStorage.setItem("repere.departement", JSON.stringify({ d: "64", v: null })));
+  await p.goto(base, { waitUntil: "networkidle" });
+  await p.waitForTimeout(500);
+  await p.getByLabel(/Votre commune/i).fill("Ustaritz"); await p.waitForTimeout(300);
+  await p.getByRole("button", { name: "Ustaritz", exact: true }).click(); await p.waitForTimeout(900);
+  const apres = await p.evaluate(() => ({
+    chapeau: !!document.querySelector(".chapeau"),
+    h1: document.querySelectorAll("h1").length,
+    entete: Math.round(document.querySelector(".entete").getBoundingClientRect().height),
+    onglets: Math.round(document.querySelector(".onglets").getBoundingClientRect().top),
+  }));
+  verif("hierarchie — commune choisie : l'en-tete se reduit (chapeau retire, un seul titre de niveau 1 conserve)",
+    !apres.chapeau && apres.h1 === 1 && apres.entete < 110, JSON.stringify(apres));
+  verif("hierarchie — commune choisie : la barre des ecrans est dans la premiere moitie du telephone",
+    apres.onglets < 800 / 2, JSON.stringify(apres));
+  await p.getByRole("button", { name: "Ce qui se passe" }).click(); await p.waitForTimeout(1500);
+  const cal = await p.evaluate(() => {
+    const d = document.querySelector("details.plus-tard");
+    return {
+      hauteur: document.documentElement.scrollHeight,
+      resume: d ? d.querySelector("summary").innerText : null,
+      ouvert: d ? d.open : null,
+      lignesVisibles: [...document.querySelectorAll(".ligne.fait")].filter(e => e.checkVisibility()).length,
+      lignesTotal: document.querySelectorAll(".ligne.fait").length,
+    };
+  });
+  verif("ce qui se passe — au-dela de deux semaines, les rendez-vous sont replies, pas retires",
+    cal.resume === null || (cal.ouvert === false && cal.lignesTotal > cal.lignesVisibles), JSON.stringify(cal));
+  verif("ce qui se passe — le repli dit combien de rendez-vous il contient, par institution, et jusqu'a quand",
+    cal.resume === null || /^Plus tard : \d+ rendez-vous jusqu'au \d+(er)? [a-zéû]+ \d{4} \((\d+ à l'Assemblée nationale|\d+ au Sénat)(, (\d+ à l'Assemblée nationale|\d+ au Sénat))?\)$/.test(cal.resume.trim()),
+    String(cal.resume));
+  verif("ce qui se passe — l'ecran tient en moins de 12 hauteurs de telephone (etait 19)",
+    cal.hauteur < 12 * 800, String(cal.hauteur));
+  await c.close();
 }
 
 console.log("\n--- recherche et accents -------------------------------------");

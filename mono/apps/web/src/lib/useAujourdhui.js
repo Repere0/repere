@@ -80,7 +80,17 @@ export function useAujourdhui(paquet, index, commune) {
     }
   }
   aVenir.sort((a, b) => (a.debut < b.debut ? -1 : a.debut > b.debut ? 1 : 0));
-  const cetteSemaine = aVenir.filter(e => e.debut <= dansSeptJours).slice(0, 3);
+  /* LES SEANCES PUBLIQUES D'ABORD — 28/09/2026. Mesure : la semaine du 28/09
+     affichait trois auditions de commission du Senat, et l'ouverture de la
+     session de l'Assemblee (jeudi) etait coupee par la limite de trois. La
+     categorie vient des deux fichiers sources, rien n'est interprete ; l'ecran
+     ecrit la regle (principe P4), et les trois retenus restent dans l'ordre
+     du calendrier. */
+  const semaine = aVenir.filter(e => e.debut <= dansSeptJours);
+  const estSeance = e => /^Séance publique$/.test(e.categorie || "");
+  const cetteSemaine = [...semaine.filter(estSeance), ...semaine.filter(e => !estSeance(e))]
+    .slice(0, 3)
+    .sort((a, b) => (a.debut < b.debut ? -1 : a.debut > b.debut ? 1 : 0));
   const prochains = cetteSemaine.length ? cetteSemaine : aVenir.slice(0, 1);
   const prochain = aVenir[0];
   const srcCal = (prochain && prochain.source) || (cal && cal.source) || {};
@@ -102,6 +112,7 @@ export function useAujourdhui(paquet, index, commune) {
     etat, pret: true, fiche, nomCommune, dep, base, faits, nbCircos, nomDep, dernierProjet,
     dernierVote, dernierFait, exercice, rapportsComptes: rr, rapportDette,
     prochain, prochains, prochainsDansLaSemaine: cetteSemaine.length > 0,
+    semaineSelectionnee: semaine.length > cetteSemaine.length, semaineTotal: semaine.length,
     srcComptes, srcProjets, srcScrutins, srcCal,
   };
 }

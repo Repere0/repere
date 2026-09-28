@@ -201,29 +201,60 @@ export default function Calendrier() {
     .filter(({ inst }) => fusion.some(e => e.cle === inst.cle))
     .map(({ r }) => r.donnees.source || {});
 
+  /* DEUX SEMAINES DEPLIEES, LE RESTE REPLIE — 28/09/2026. Mesure sur telephone
+     (390 px) : l'ecran faisait 19 hauteurs d'ecran, soit une soixantaine de
+     rendez-vous a plat, du plus proche au plus lointain. Personne ne lit la
+     troisieme semaine avant d'avoir compris la premiere. L'ordre reste celui du
+     calendrier ; rien n'est retire, le repli dit combien de rendez-vous il
+     contient et pour quelle institution, pour qu'aucune ne disparaisse de
+     l'ecran. Si les deux semaines sont vides, on deplie les premiers suivants
+     plutot que d'afficher un ecran vide au-dessus d'un repli. */
+  const limite = new Date(Date.now() + 14 * 864e5).toISOString().slice(0, 16);
+  let proches = fusion.filter(e => e.debut < limite);
+  let plusTard = fusion.filter(e => e.debut >= limite);
+  if (!proches.length) { proches = plusTard.slice(0, 5); plusTard = plusTard.slice(5); }
+  const compte = (liste, cle) => liste.filter(e => e.cle === cle).length;
+  const resumeTard = INSTITUTIONS
+    .map(inst => [inst.nom, compte(plusTard, inst.cle)])
+    .filter(([, n]) => n > 0)
+    .map(([nom, n]) => `${n} ${nom === "Sénat" ? "au Sénat" : "à l'Assemblée nationale"}`)
+    .join(", ");
+  const ligne = (e, i) => (
+    <div className="ligne fait" key={i}>
+      <div className="ligne-h">
+        <span>{jourFr(e.debut)}</span>
+        <b>{heureFr(e.debut)}</b>
+      </div>
+      <div className="tag">{e.institution}</div>
+      <b className="fait-titre">{e.titre}</b>
+      <div className="ligne-note">
+        {e.categorie ? e.categorie + (e.lieu ? " · " + e.lieu : "") : e.lieu}
+      </div>
+      {e.description ? (
+        <details className="repli">
+          <summary><span>En savoir plus</span></summary>
+          <div className="repli-in"><p className="tx-note">{e.description}</p></div>
+        </details>
+      ) : null}
+    </div>
+  );
+
   return (
     <div className="pile">
       <Carte echelon="france" titre="Ce qui se passe prochainement"
         sousTitre="Séances et travaux du Sénat et de l'Assemblée nationale, dans l'ordre du calendrier">
-        {fusion.map((e, i) => (
-          <div className="ligne fait" key={i}>
-            <div className="ligne-h">
-              <span>{jourFr(e.debut)}</span>
-              <b>{heureFr(e.debut)}</b>
-            </div>
-            <div className="tag">{e.institution}</div>
-            <b className="fait-titre">{e.titre}</b>
-            <div className="ligne-note">
-              {e.categorie ? e.categorie + (e.lieu ? " · " + e.lieu : "") : e.lieu}
-            </div>
-            {e.description ? (
-              <details className="repli">
-                <summary><span>En savoir plus</span></summary>
-                <div className="repli-in"><p className="tx-note">{e.description}</p></div>
-              </details>
-            ) : null}
-          </div>
-        ))}
+        {proches.map(ligne)}
+        {plusTard.length ? (
+          <details className="repli plus-tard">
+            <summary>
+              <span>
+                Plus tard : {plusTard.length} rendez-vous jusqu'au {dateFr(plusTard[plusTard.length - 1].debut.slice(0, 10))}
+                {resumeTard ? " (" + resumeTard + ")" : ""}
+              </span>
+            </summary>
+            <div className="repli-in">{plusTard.map((e, i) => ligne(e, "t" + i))}</div>
+          </details>
+        ) : null}
         {sourcesAffichees.map((s, i) => (
           <Source key={i} producteur={s.producteur_affiche || s.producteur} licence={s.licence}
             mention={s.releve_le ? "relevé le " + dateFr(s.releve_le) : undefined}
