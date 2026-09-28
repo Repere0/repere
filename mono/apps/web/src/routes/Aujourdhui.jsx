@@ -38,10 +38,10 @@ export default function Aujourdhui({ paquet, index, commune, aller, derniereVisi
       corps="Les mêmes fichiers que les autres écrans, une seule fois." />;
   }
   const { nomCommune, dernierVote, dernierFait, faits, rapportDette, srcComptes,
-          srcProjets, srcScrutins, prochain, srcCal, base } = a;
+          srcProjets, srcScrutins, prochains, prochainsDansLaSemaine, base } = a;
 
   /* "DEPUIS VOTRE DERNIERE VISITE", SINON "CETTE SEMAINE" — decision produit,
-   * 23/09/2026. `derniereVisite` vient d'App.jsx : un instant de visite, geleì
+   * 23/09/2026. `derniereVisite` vient d'App.jsx : un instant de visite, gele
    * au demarrage de CETTE session, lu depuis la meme cle de stockage que le
    * departement (voir la note d'invariant 2 dans App.jsx). Trois etats
    * possibles, et les trois sont geres proprement plutot que devines :
@@ -66,11 +66,29 @@ export default function Aujourdhui({ paquet, index, commune, aller, derniereVisi
     : "Quoi d'autre cette semaine ?";
   const nouveautesProjets = nouveautes.some(f => f.type === "projet");
   const nouveautesVotes = nouveautes.some(f => f.type === "vote");
+  /* RIEN DE NOUVEAU SE DIT — doctrine du vide, 28/09/2026. Mesure en
+   * production : un lecteur revenu apres sa visite voyait la meme page qu'au
+   * premier passage, sans que rien ne lui dise qu'aucun fait n'avait ete
+   * publie entre-temps. Une absence doit produire une phrase. Le test porte
+   * sur TOUS les faits, y compris la reponse principale : si elle est
+   * elle-meme posterieure a la visite, il y a du nouveau, et la phrase
+   * serait fausse. */
+  const rienDepuisVisite = depuisVisite && !(faits || []).some(f => f.quand > seuil);
+  const sourcesAVenir = [];
+  for (const e of prochains || []) {
+    if (!sourcesAVenir.some(s => s.institution === e.institution)) sourcesAVenir.push({ institution: e.institution, s: e.source });
+  }
 
   return (
     <div className="quest">
       <p className="quest-lieu">{nomCommune}</p>
       <h1 className="quest-q">Que s'est-il décidé près de chez vous ?</h1>
+      {rienDepuisVisite ? (
+        <p className="ligne-note auj-rien">
+          Rien de nouveau depuis votre visite du {dateFr(seuil)} : aucune décision datée n'a été publiée
+          pour {nomCommune} entre-temps.{faitPrincipalCle ? " Voici la plus récente." : ""}
+        </p>
+      ) : null}
 
       {/* LA REPONSE — vote si disponible, sinon le dernier projet finance,
           sinon une phrase honnete. Doctrine du vide, meme ici. */}
@@ -145,11 +163,19 @@ export default function Aujourdhui({ paquet, index, commune, aller, derniereVisi
         </div>
       ) : null}
 
-      {prochain ? (
-        <div className="quest-suivante">
-          <p className="quest-q2">Qu'est-ce qui arrive ?</p>
-          <p className="ligne-note"><b>{prochain.titre}</b>, {new Date(prochain.debut).toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" })}.</p>
-          <Source producteur={srcCal.producteur_affiche || srcCal.producteur} licence={srcCal.licence} url={srcCal.url} />
+      {prochains && prochains.length ? (
+        <div className="quest-suivante auj-a-venir">
+          <p className="quest-q2">{prochainsDansLaSemaine ? "Qu'est-ce qui arrive cette semaine ?" : "Qu'est-ce qui arrive ?"}</p>
+          {prochains.map((e, i) => (
+            <p className="ligne-note" key={i}>
+              {new Date(e.debut).toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" })}
+              {" — "}{e.institution} : <b>{e.titre}</b>
+            </p>
+          ))}
+          {sourcesAVenir.map(({ institution, s }) => (
+            <Source key={institution} producteur={s.producteur_affiche || s.producteur || institution} licence={s.licence}
+              mention={s.releve_le ? "relevé le " + dateFr(s.releve_le) : undefined} url={s.url} />
+          ))}
         </div>
       ) : null}
 
