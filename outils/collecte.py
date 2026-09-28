@@ -19,7 +19,7 @@ Usage :
     python3 outils/collecte.py --liste    # affiche les sources sans rien telecharger
     python3 outils/collecte.py agenda_an  # une seule source
 """
-import sys, os, io, json, time, hashlib, urllib.request, urllib.error
+import sys, os, io, json, time, hashlib, urllib.request, urllib.error, zipfile
 
 RACINE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DEST = os.path.join(RACINE, "data")
@@ -135,6 +135,15 @@ def empreinte(chemin):
     return h.hexdigest()[:16]
 
 
+def zip_valide(chemin):
+    """Vrai si le fichier est une archive zip dont chaque membre se relit sans erreur de CRC."""
+    try:
+        with zipfile.ZipFile(chemin) as z:
+            return z.testzip() is None
+    except (zipfile.BadZipFile, OSError, EOFError):
+        return False
+
+
 def telecharger(src):
     """Retourne un enregistrement de journal, que le telechargement reussisse ou non."""
     debut = time.time()
@@ -162,6 +171,15 @@ def telecharger(src):
         if octets < 10000:
             rec["ok"] = False
             rec["erreur"] = "reponse anormalement petite (%d octets) : probablement une page d'erreur" % octets
+            os.remove(dest)
+        # LA TAILLE NE PROUVE PAS QU'UNE ARCHIVE EN EST UNE — 28/09/2026. Deux epreuves
+        # de PR sont tombees sur un Agenda.json.zip de plus de 10 Ko qui n'etait pas un
+        # zip. On l'ouvre et on relit chaque membre (CRC) : sinon on le refuse ici, avec
+        # un message clair au journal, plutot que de laisser unzip casser la chaine.
+        elif dest.endswith(".zip") and not zip_valide(dest):
+            rec["ok"] = False
+            rec["erreur"] = ("archive zip invalide ou tronquee (%d octets) : probablement une "
+                             "page d'erreur ou un telechargement interrompu" % octets)
             os.remove(dest)
         else:
             rec["ok"] = True

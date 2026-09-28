@@ -105,6 +105,14 @@ for e in lignes:
 # quotidienne recommettrait le fichier entier, soit ~230 Mo de depot en un an. Avec
 # un retour a la ligne par reunion, git ne garde que les lignes qui changent. Le
 # poids servi ne bouge pas : la compression du serveur absorbe les retours a la ligne.
+# UN AGENDA VIDE N'EST PAS UN AGENDA FRAIS — 28/09/2026. Si l'archive n'a pas pu
+# etre depilee (page d'erreur servie a la place du zip, telechargement tronque),
+# aucune reunion n'est lue : ecrire quand meme produirait un fichier vide date
+# d'aujourd'hui, que la chaine publierait comme a jour. On refuse d'ecrire : la
+# version d'hier, deja versionnee, reste en place et dit sa propre date.
+if stats["total"] == 0:
+    sys.exit("agenda_an : aucune reunion lue sous %s — rien n'est ecrit, la version precedente de %s est conservee" % (AGENDA, SORTIE))
+
 paquet_org = json.dumps(table, ensure_ascii=False, separators=(",", ":"))
 corps = ",\n".join(json.dumps(e, ensure_ascii=False, separators=(",", ":")) for e in lignes)
 # POURQUOI une date de collecte DANS le fichier : sans elle, l'application ne peut pas

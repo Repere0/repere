@@ -21,18 +21,31 @@ AUJOURDHUI=$(date -u +%Y-%m-%d)
 echo "== pipeline Repere — $AUJOURDHUI =="
 
 # ---------------------------------------------------------------- 1. depiler
+# UNE ARCHIVE ILLISIBLE N'ARRETE PLUS TOUTE LA CHAINE — 28/09/2026. Mesure : deux
+# epreuves de PR sont tombees ce jour-la sur « Agenda.json.zip : not a zipfile »
+# (reponse du serveur qui n'etait pas une archive), avant meme le build. Le meme
+# incident aurait bloque la publication quotidienne pour un seul fichier. On depile
+# dans un dossier temporaire : si l'archive est illisible, l'ancien dossier n'est
+# pas detruit, on le dit, et chaque etape qui en depend garde sa sortie d'hier
+# (voir agenda_an.py, scrutins_an.py, mono_donnees.py : aucune n'ecrit sur du vide).
 cd data
 for z in *.zip; do
   [ -e "$z" ] || continue
   dossier="${z%.json.zip}"; dossier="${dossier%.zip}"
-  rm -rf "brut_$dossier"; mkdir -p "brut_$dossier"
-  unzip -oq "$z" -d "brut_$dossier"
-  echo "depile : $z -> brut_$dossier"
+  rm -rf "brut_$dossier.tmp"; mkdir -p "brut_$dossier.tmp"
+  if unzip -oq "$z" -d "brut_$dossier.tmp"; then
+    rm -rf "brut_$dossier"; mv "brut_$dossier.tmp" "brut_$dossier"
+    echo "depile : $z -> brut_$dossier"
+  else
+    rm -rf "brut_$dossier.tmp"
+    echo "::warning::$z est illisible (pas une archive zip valide) — non depile, les sorties qui en dependent gardent leur version precedente"
+  fi
 done
 cd ..
 
 # ------------------------------------------------- 2. normaliser l'agenda
-python3 outils/agenda_an.py data/brut_Agenda/json data/brut_AMO30/json outils/agenda_an.json
+python3 outils/agenda_an.py data/brut_Agenda/json data/brut_AMO30/json outils/agenda_an.json \
+  || echo "::warning::agenda de l'Assemblee non renormalise — outils/agenda_an.json garde sa version et sa date precedentes"
 
 # ------------------------------- 3. decrire le schema des scrutins (documentaire)
 # Ne doit jamais faire tomber la chaine : c'est de la documentation.

@@ -32,9 +32,14 @@ on:
 permissions:
   contents: read
 
+# UNE EPREUVE A LA FOIS, dans l'ordre d'arrivee (28/09/2026). Trois PR ouvertes a la
+# meme minute ont lance trois telechargements simultanes des archives de
+# l'Assemblee ; deux ont recu une reponse qui n'etait pas un zip. On ne sait pas si
+# le serveur a limite les appels, mais rien ne justifie de le solliciter trois fois
+# en parallele : les epreuves attendent leur tour, aucune n'est annulee.
 concurrency:
-  group: epreuve-${{ github.ref }}
-  cancel-in-progress: true
+  group: epreuve-sources-publiques
+  cancel-in-progress: false
 
 jobs:
   epreuve:
