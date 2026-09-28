@@ -71,9 +71,9 @@ une seule fois sont reprises a part, plus bas.
 | `acteur.mandats.mandat[].infosQualite.libQualite` | texte | 97352 | Membre · membre |
 | `acteur.mandats.mandat[].infosQualite.libQualiteSex` | texte/vide | 97352 | Membre · membre |
 | `acteur.mandats.mandat[].organes.organeRef` | texte | 97232 | PO391141 · PO420388 |
-| `acteur.mandats.mandat[].libelle` | texte/vide | 6029 | Mise en place du plan de relance · La pratique d'une activité physique et sportive pour les élèves et les étudiants |
-| `acteur.mandats.mandat[].missionSuivanteRef` | texte/vide | 6029 | PM773756 · PM789978 |
-| `acteur.mandats.mandat[].missionPrecedenteRef` | texte/vide | 6029 | PM769451 · PM786854 |
+| `acteur.mandats.mandat[].libelle` | texte/vide | 6033 | Mise en place du plan de relance · La pratique d'une activité physique et sportive pour les élèves et les étudiants |
+| `acteur.mandats.mandat[].missionSuivanteRef` | texte/vide | 6033 | PM773756 · PM789978 |
+| `acteur.mandats.mandat[].missionPrecedenteRef` | texte/vide | 6033 | PM769451 · PM786854 |
 | `acteur.mandats.mandat[].suppleants` | vide | 4695 |  |
 | `acteur.mandats.mandat[].chambre` | vide | 3272 |  |
 | `acteur.mandats.mandat[].election.lieu.region` | texte/vide | 3274 | Auvergne-Rhône-Alpes · Hauts-de-France |
@@ -123,11 +123,11 @@ une seule fois sont reprises a part, plus bas.
 | `acteur.adresses.adresse.codePostal` | texte | 31 | 75355 |
 | `acteur.adresses.adresse.ville` | texte | 31 | Paris 07 SP |
 | `acteur.mandats.mandat[].collaborateurs.collaborateur[]` | liste | 140 | de 2 a 6 entrees |
-| `acteur.mandats.mandat[].collaborateurs.collaborateur[].qualite` | texte | 497 | M. · Mme |
-| `acteur.mandats.mandat[].collaborateurs.collaborateur[].prenom` | texte | 497 | Thomas · Bernard |
-| `acteur.mandats.mandat[].collaborateurs.collaborateur[].nom` | texte | 497 | Jacquelin · Combes |
-| `acteur.mandats.mandat[].collaborateurs.collaborateur[].dateDebut` | vide | 497 |  |
-| `acteur.mandats.mandat[].collaborateurs.collaborateur[].dateFin` | vide | 497 |  |
+| `acteur.mandats.mandat[].collaborateurs.collaborateur[].qualite` | texte | 499 | M. · Mme |
+| `acteur.mandats.mandat[].collaborateurs.collaborateur[].prenom` | texte | 499 | Thomas · Bernard |
+| `acteur.mandats.mandat[].collaborateurs.collaborateur[].nom` | texte | 499 | Jacquelin · Combes |
+| `acteur.mandats.mandat[].collaborateurs.collaborateur[].dateDebut` | vide | 499 |  |
+| `acteur.mandats.mandat[].collaborateurs.collaborateur[].dateFin` | vide | 499 |  |
 | `acteur.adresses.@xmlns:xsi` | texte | 77 | http://www.w3.org/2001/XMLSchema-instance |
 | `acteur.adresses.@xsi:nil` | texte | 77 | true |
 | `acteur.mandats.mandat.@xmlns:xsi` | texte | 5 | http://www.w3.org/2001/XMLSchema-instance |
