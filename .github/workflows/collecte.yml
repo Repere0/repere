@@ -163,8 +163,12 @@ jobs:
       - name: Dire si l'enregistrement a abouti
         if: always()
         run: |
+          # skipped = l'etape n'a pas ete tentee (une etape precedente a echoue) :
+          # dire « push refuse » dans ce cas envoyait chercher au mauvais endroit (28/09/2026).
           if [ "${{ steps.commit.outcome }}" = "success" ]; then
             echo "::notice::Depot a jour."
+          elif [ "${{ steps.commit.outcome }}" = "skipped" ]; then
+            echo "::warning::Rien n'a ete enregistre dans le depot : l'etape n'a pas ete tentee, une etape precedente a echoue (voir la croix rouge plus haut)."
           else
             echo "::warning::L'enregistrement dans le depot a echoue (push refuse ?). La publication, elle, n'en depend pas."
           fi
