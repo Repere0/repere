@@ -70,7 +70,7 @@ export function calculerFaits({ dep, fiche, projets, commune, cat, pos, deputes,
       for (const sc of cat.scrutins) {
         const position = positionSur(pos, d.acteurRef, sc.n);
         faits.push({ cle: "v" + circo + sc.u, quand: sc.d, rang: 1, echelon: "france",
-                     type: "vote", sc, position, qui: nomComplet, ref: d.acteurRef });
+                     type: "vote", sc, position, qui: nomComplet, ref: d.acteurRef, circo });
       }
     }
   }

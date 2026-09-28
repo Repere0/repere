@@ -107,6 +107,16 @@ export function dateFr(v) {
   return Number(m[3]) + (m[3] === "01" ? "er" : "") + " " + mois[Number(m[2]) - 1] + " " + m[1];
 }
 
+/* Deplace de Calendrier.jsx le 28/09/2026 pour servir aussi a Aujourdhui.jsx : « jeudi 1er octobre 2026 »,
+   jamais « jeudi 1 octobre » comme le produisait toLocaleDateString. */
+export function jourFr(iso) {
+  const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(iso || "");
+  if (!m) return "";
+  const jours = ["dimanche", "lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi"];
+  const d = new Date(iso);
+  return jours[d.getDay()] + " " + dateFr(`${m[1]}-${m[2]}-${m[3]}`);
+}
+
 /* `maj` est une date de publication ; `mention` est une precision de temps qui
    n'en est pas une (« decoupage de 2010 »). Les melanger produisait « mise a jour
    du decoupage de 2010 », qui ne veut rien dire. */

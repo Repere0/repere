@@ -1,7 +1,7 @@
 import React from "react";
-import { Vide, Source, Chargement, dateFr } from "@repere/ui";
+import { Vide, Source, Chargement, dateFr, jourFr } from "@repere/ui";
 import { useAujourdhui } from "../lib/useAujourdhui.js";
-import { LigneVote } from "../lib/votes.jsx";
+import { LigneVote, ordinal } from "../lib/votes.jsx";
 
 /* « AUJOURD'HUI », DIRECTION RETENUE LE 19/09/2026 — « LA QUESTION ».
  *
@@ -38,10 +38,11 @@ export default function Aujourdhui({ paquet, index, commune, aller, derniereVisi
       corps="Les mêmes fichiers que les autres écrans, une seule fois." />;
   }
   const { nomCommune, dernierVote, dernierFait, faits, rapportDette, srcComptes,
-          srcProjets, srcScrutins, prochain, srcCal, base } = a;
+          srcProjets, srcScrutins, prochains, prochainsDansLaSemaine, base,
+          nbCircos, nomDep, dernierProjet } = a;
 
   /* "DEPUIS VOTRE DERNIERE VISITE", SINON "CETTE SEMAINE" — decision produit,
-   * 23/09/2026. `derniereVisite` vient d'App.jsx : un instant de visite, geleì
+   * 23/09/2026. `derniereVisite` vient d'App.jsx : un instant de visite, gele
    * au demarrage de CETTE session, lu depuis la meme cle de stockage que le
    * departement (voir la note d'invariant 2 dans App.jsx). Trois etats
    * possibles, et les trois sont geres proprement plutot que devines :
@@ -66,16 +67,43 @@ export default function Aujourdhui({ paquet, index, commune, aller, derniereVisi
     : "Quoi d'autre cette semaine ?";
   const nouveautesProjets = nouveautes.some(f => f.type === "projet");
   const nouveautesVotes = nouveautes.some(f => f.type === "vote");
+  /* RIEN DE NOUVEAU SE DIT — doctrine du vide, 28/09/2026. Mesure en
+   * production : un lecteur revenu apres sa visite voyait la meme page qu'au
+   * premier passage, sans que rien ne lui dise qu'aucun fait n'avait ete
+   * publie entre-temps. Une absence doit produire une phrase. Le test porte
+   * sur TOUS les faits, y compris la reponse principale : si elle est
+   * elle-meme posterieure a la visite, il y a du nouveau, et la phrase
+   * serait fausse. */
+  const rienDepuisVisite = depuisVisite && !(faits || []).some(f => f.quand > seuil);
+  const sourcesAVenir = [];
+  for (const e of prochains || []) {
+    if (!sourcesAVenir.some(s => s.institution === e.institution)) sourcesAVenir.push({ institution: e.institution, s: e.source });
+  }
 
   return (
     <div className="quest">
       <p className="quest-lieu">{nomCommune}</p>
       <h1 className="quest-q">Que s'est-il décidé près de chez vous ?</h1>
+      {rienDepuisVisite ? (
+        <p className="ligne-note auj-rien">
+          Rien de nouveau depuis votre visite du {dateFr(seuil)} : aucune décision datée n'a été publiée
+          pour {nomCommune} entre-temps.{faitPrincipalCle ? " Voici la plus récente." : ""}
+        </p>
+      ) : null}
 
       {/* LA REPONSE — vote si disponible, sinon le dernier projet finance,
           sinon une phrase honnete. Doctrine du vide, meme ici. */}
       {dernierVote ? (
         <div className="quest-r">
+          {/* QUI, ET POURQUOI CE VOTE ME CONCERNE : c'est le depute elu dans la
+              circonscription du lecteur. Une commune partagee entre plusieurs
+              circonscriptions ne permet pas de dire laquelle est la sienne :
+              on le dit, plutot que d'ecrire « votre depute » au hasard. */}
+          <p className="ligne-note auj-qui">
+            {nbCircos > 1
+              ? `${nomCommune} est partagée entre ${nbCircos} circonscriptions. Vote du député élu dans la ${ordinal(dernierVote.circo)} :`
+              : `Vote du député élu dans votre circonscription (${ordinal(dernierVote.circo)} circonscription${nomDep ? " — " + nomDep : ""}), à l'Assemblée nationale :`}
+          </p>
           <LigneVote sc={dernierVote.sc} position={dernierVote.position} base={base} loi qui={dernierVote.qui} />
           {srcScrutins ? <Source producteur={srcScrutins.producteur} licence={srcScrutins.licence}
             mention={srcScrutins.releve_le ? "relevé le " + dateFr(srcScrutins.releve_le) : undefined} /> : null}
@@ -115,6 +143,19 @@ export default function Aujourdhui({ paquet, index, commune, aller, derniereVisi
       {/* LES QUESTIONS SUIVANTES SONT PLUS DISCRETES — meme structure que la
           premiere aurait repete trois fois le meme motif (chasse au
           « look IA », phase 3 de la mission du 19/09). */}
+      {/* LE FAIT REELLEMENT LOCAL, QUAND IL EXISTE ET N'EST PAS DEJA LA
+          REPONSE CI-DESSUS. Meme donnee et meme formulation que la branche
+          « projet » plus haut ; l'exercice est dit, le jour ne l'est pas (la
+          source ne le publie pas). */}
+      {dernierProjet && dernierProjet.cle !== faitPrincipalCle ? (
+        <div className="quest-suivante auj-local">
+          <p className="quest-q2">Et dans votre commune ?</p>
+          <p className="ligne-note"><b>{dernierProjet.p.intitule}</b></p>
+          <p className="ligne-note">L'État a engagé {euros(dernierProjet.p.subvention)} à {nomCommune}, exercice {dernierProjet.p.annee}.</p>
+          {srcProjets ? <Source producteur={srcProjets.producteur} licence={srcProjets.licence} maj={srcProjets.mis_a_jour_le} /> : null}
+        </div>
+      ) : null}
+
       {rapportDette ? (
         <div className="quest-suivante">
           <p className="quest-q2">Combien ça représente ?</p>
@@ -145,11 +186,19 @@ export default function Aujourdhui({ paquet, index, commune, aller, derniereVisi
         </div>
       ) : null}
 
-      {prochain ? (
-        <div className="quest-suivante">
-          <p className="quest-q2">Qu'est-ce qui arrive ?</p>
-          <p className="ligne-note"><b>{prochain.titre}</b>, {new Date(prochain.debut).toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" })}.</p>
-          <Source producteur={srcCal.producteur_affiche || srcCal.producteur} licence={srcCal.licence} url={srcCal.url} />
+      {prochains && prochains.length ? (
+        <div className="quest-suivante auj-a-venir">
+          <p className="quest-q2">{prochainsDansLaSemaine ? "Qu'est-ce qui arrive cette semaine ?" : "Qu'est-ce qui arrive ?"}</p>
+          {prochains.map((e, i) => (
+            <p className="ligne-note" key={i}>
+              {jourFr(e.debut)}
+              {" — "}{e.institution} : <b>{e.titre}</b>
+            </p>
+          ))}
+          {sourcesAVenir.map(({ institution, s }) => (
+            <Source key={institution} producteur={s.producteur_affiche || s.producteur || institution} licence={s.licence}
+              mention={s.releve_le ? "relevé le " + dateFr(s.releve_le) : undefined} url={s.url} />
+          ))}
         </div>
       ) : null}
 

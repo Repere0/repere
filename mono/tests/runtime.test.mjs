@@ -967,6 +967,12 @@ async function auj(marqueur) {
 const zero = await auj("2026-09-01T10:00:00.000Z");
 verif("retention (0 nouveaute) — rien de nouveau depuis la visite : aucun bloc, aucun « 0 », aucune fausse nouveaute",
   !/Depuis votre visite/.test(zero) && !/\b0 nouveaut/.test(zero), zero.slice(0, 300).replace(/\n+/g, " / "));
+/* 28/09/2026 : une absence produit une phrase. Avant, le lecteur revenu voyait
+   la meme page qu'au premier passage, sans rien qui lui dise qu'aucun fait
+   n'avait ete publie depuis. */
+verif("retention (0 nouveaute) — le dit en une phrase datee, sans alarme",
+  /Rien de nouveau depuis votre visite du 1er septembre 2026 : aucune décision datée n.a été publiée pour Ustaritz entre-temps\. Voici la plus récente\./.test(zero),
+  zero.slice(0, 300).replace(/\n+/g, " / "));
 const quelques = await auj("2026-07-20T10:00:00.000Z");
 verif("retention (quelques) — depuis le 20/07 : les faits du 21/07 apparaissent, ceux du 20/07 non",
   /Depuis votre visite du 20 juillet 2026/.test(quelques)
@@ -978,6 +984,97 @@ const bloc = (plusieurs.split("Depuis votre visite du")[1] || "");
 verif("retention (plusieurs) — le bloc reste borne (au plus 4 lignes), calme, sans decompte alarmiste",
   /Depuis votre visite du 1er juillet 2026/.test(plusieurs) && !/\d+ (nouveaut|choses)/i.test(plusieurs)
   && !/[!]/.test(bloc.slice(0, 400)), plusieurs.slice(0, 300).replace(/\n+/g, " / "));
+verif("retention — « rien de nouveau » n'apparait JAMAIS quand il y a du nouveau",
+  !/Rien de nouveau/.test(quelques) && !/Rien de nouveau/.test(plusieurs), "");
+
+console.log("\n--- aujourd'hui : ce qui arrive, Senat ET Assemblee ------------");
+/* 28/09/2026 : « Qu'est-ce qui arrive ? » ne lisait que le Senat. Fixture posee
+   dans le build de mesure, puis restauree quoi qu'il arrive. */
+{
+  const fAN = path.join(DIST, "data", "agenda-an.json");
+  const fSen = path.join(DIST, "data", "calendrier-senat.json");
+  const origAN = fs.readFileSync(fAN, "utf8"), origSen = fs.readFileSync(fSen, "utf8");
+  const dans = (j, h) => { const d = new Date(Date.now() + j * 864e5); d.setUTCHours(h, 0, 0, 0); return d.toISOString().slice(0, 16); };
+  const avec = (orig, evs) => { const j = JSON.parse(orig); j.evenements = evs; return JSON.stringify(j); };
+  const ev = (titre, debut) => ({ titre, debut, fin: null, categorie: "Séance publique", lieu: null, description: null });
+  try {
+    fs.writeFileSync(fAN, avec(origAN, [ev("Séance de banc AN demain", dans(1, 13))]));
+    fs.writeFileSync(fSen, avec(origSen, [ev("Séance de banc Sénat dans deux jours", dans(2, 12)), ev("Séance de banc Sénat dans vingt jours", dans(20, 12))]));
+    const t1 = await auj(null);
+    const bloc1 = t1.split("Qu'est-ce qui arrive")[1] || "";
+    verif("a venir — les deux institutions, dans l'ordre du calendrier",
+      /cette semaine \?/.test(bloc1) && bloc1.indexOf("Séance de banc AN demain") >= 0
+      && bloc1.indexOf("Séance de banc AN demain") < bloc1.indexOf("Séance de banc Sénat dans deux jours"),
+      bloc1.slice(0, 300).replace(/\n+/g, " / "));
+    verif("a venir — chaque evenement nomme son institution",
+      /Assemblée nationale : Séance de banc AN demain/.test(bloc1) && /Sénat : Séance de banc Sénat dans deux jours/.test(bloc1), "");
+    verif("a venir — les dates s'ecrivent comme dans « Ce qui se passe » (jour, quantieme, mois, annee ; jamais « 1 octobre »)",
+      /(lundi|mardi|mercredi|jeudi|vendredi|samedi|dimanche) (1er|\d{1,2}) [a-zéû]+ \d{4} — Assemblée nationale/.test(bloc1)
+      && !/\b1 (janvier|février|mars|avril|mai|juin|juillet|août|septembre|octobre|novembre|décembre)\b/.test(bloc1),
+      bloc1.slice(0, 200).replace(/\n+/g, " / "));
+    verif("a venir — au-dela de sept jours, rien n'est montre quand la semaine a deja du contenu",
+      !/dans vingt jours/.test(bloc1), "");
+    verif("invariant 4 — une source par institution affichee, jamais une seule pour deux",
+      /Assemblée nationale — agenda/.test(bloc1) && /Sénat — agenda/.test(bloc1), bloc1.slice(0, 400).replace(/\n+/g, " / "));
+    fs.writeFileSync(fAN, avec(origAN, []));
+    fs.writeFileSync(fSen, avec(origSen, [ev("Séance de banc Sénat dans vingt jours", dans(20, 12))]));
+    const t2 = await auj(null);
+    verif("a venir — semaine vide : on montre le prochain rendez-vous, sans pretendre qu'il est cette semaine",
+      /Qu'est-ce qui arrive \?/.test(t2) && !/arrive cette semaine/.test(t2) && /dans vingt jours/.test(t2),
+      (t2.split("Qu'est-ce qui arrive")[1] || "").slice(0, 200).replace(/\n+/g, " / "));
+  } finally {
+    fs.writeFileSync(fAN, origAN); fs.writeFileSync(fSen, origSen);
+  }
+}
+
+console.log("\n--- aujourd'hui : qui, et ce qui est vraiment local -----------");
+/* 28/09/2026 : pour 1 257 communes sur 1 262, la reponse a « Que s'est-il decide
+   pres de chez vous ? » est un vote national du depute, sans que l'ecran dise
+   que c'est LE depute du lecteur ; le projet finance par l'Etat dans la commune
+   n'etait montre que pour 2 des 778 communes qui en ont un. */
+async function aujCommune(dep, nom) {
+  const c = await nav.newContext({ viewport: { width: 390, height: 844 } });
+  const p = await c.newPage();
+  await p.addInitScript(([k, v]) => localStorage.setItem(k, v), ["repere.departement", JSON.stringify({ d: dep, v: null })]);
+  await p.goto(base, { waitUntil: "networkidle" });
+  await p.waitForTimeout(500);
+  await p.getByLabel(/Votre commune/i).fill(nom);
+  await p.waitForTimeout(400);
+  await p.getByRole("button", { name: nom, exact: true }).first().click();
+  await p.waitForTimeout(800);
+  await p.getByRole("button", { name: new RegExp("Voir aujourd.hui à " + nom.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")) }).click();
+  await p.waitForTimeout(1200);
+  const t = await p.evaluate(() => (document.querySelector(".quest") || document.body).innerText);
+  await c.close();
+  return t;
+}
+{
+  const u = await aujCommune("64", "Ustaritz");
+  verif("qui — une commune a une circonscription : le vote est celui du depute de SA circonscription, dit comme tel",
+    /Vote du député élu dans votre circonscription \(6e circonscription — Pyrénées-Atlantiques\), à l.Assemblée nationale :/.test(u),
+    u.slice(0, 300).replace(/\n+/g, " / "));
+  verif("local — sans projet finance dans la commune, aucun bloc « Et dans votre commune ? »",
+    !/Et dans votre commune/.test(u), "");
+  const paris = await aujCommune("75", "Paris");
+  verif("qui — commune partagee (Paris, 18 circonscriptions) : jamais « votre circonscription » au hasard",
+    /Paris est partagée entre 18 circonscriptions\. Vote du député élu dans la \d+(re|e) :/.test(paris) && !/votre circonscription/.test(paris),
+    paris.slice(0, 300).replace(/\n+/g, " / "));
+  const pr93 = JSON.parse(fs.readFileSync(path.join(DIST, "data", "projets", "93.json"), "utf8"));
+  const p93 = JSON.parse(fs.readFileSync(path.join(DIST, "data", "departments", "93.json"), "utf8"));
+  const [insee, liste] = Object.entries(pr93.communes).find(([i, l]) => l.length && p93.communes[i]) || [];
+  if (insee) {
+    const nom = p93.communes[insee].nom;
+    const plusRecent = [...liste].sort((a, b) => b.annee - a.annee)[0];
+    const t = await aujCommune("93", nom);
+    verif(`local — ${nom} : son projet finance par l'Etat apparait sur Aujourd'hui, intitule recopie tel quel`,
+      /Et dans votre commune \?/.test(t) && t.includes(plusRecent.intitule.trim()) && new RegExp("exercice " + plusRecent.annee).test(t),
+      t.slice(0, 400).replace(/\n+/g, " / "));
+    verif("invariant 4 — le projet local porte sa source", /Et dans votre commune[\s\S]*Direction générale des collectivités locales|Et dans votre commune[\s\S]*DGCL/.test(t),
+      (t.split("Et dans votre commune")[1] || "").slice(0, 300).replace(/\n+/g, " / "));
+  } else {
+    verif("local — donnees de projets 93 presentes pour eprouver le bloc", false, "aucune commune du 93 avec projet");
+  }
+}
 
 console.log("\n--- recherche et accents -------------------------------------");
 /* LA RECHERCHE NE DOIT PAS DEPENDRE DES ACCENTS, DANS LES DEUX SENS. Depuis que
