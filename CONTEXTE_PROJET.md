@@ -440,13 +440,15 @@ mesurés en local, au kilo-octet près.
 5. **Aucun composant « squelette ».** Un contrôle refuse les mots `skeleton` et
    `shimmer` : une forme grise qui palpite est un contenant sans contenu.
 
-**Les deux chaînes coexistent, et une seule publie.** `collecte.yml` continue de
-construire et de mettre en ligne le site à partir du mono-HTML : c'est lui qui
-sert les lecteurs. `build-publish.yml` construit le monorepo, l'éprouve, et garde
-sa sortie en artefact **sans rien publier**. Basculer la publication est une
-décision séparée, à prendre quand cette chaîne aura tourné au vert plusieurs jours
-de suite sur les données réelles. Deux chaînes qui publient en même temps se
-marcheraient dessus en silence.
+**Une seule chaîne de vérité (mis à jour le 28/09/2026).** La bascule a eu lieu :
+`collecte.yml` construit le site **depuis `mono/`** (via `outils/pipeline.sh`),
+lance le banc complet après le build, et publie. Le mono-HTML reste la source des
+données (`extract-html.js` lit ses blocs `REPERE_*`). L'ancien `build-publish.yml`,
+qui construisait le monorepo par ses propres étapes « en attendant la bascule »,
+divergeait de la vraie chaîne et était rouge chaque jour depuis le 23/09 (invariants
+relisant `dist/` lancés avant le build). Il est remplacé par `epreuve.yml` : les
+mêmes étapes que `collecte.yml` jusqu'au banc inclus, **sans rien publier**, sur
+chaque pull request vers `main` et à la demande.
 
 **Défauts trouvés le premier jour, par les contrôles eux-mêmes :**
 
