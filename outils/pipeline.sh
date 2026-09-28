@@ -76,11 +76,15 @@ python3 outils/circos.py data/circos_ministere.xlsx outils/circos.json "$APP_CIR
   || echo "::warning::la table des circonscriptions n'a pas ete produite ou posee"
 
 # ---------------------------------------- 3 quater. les scrutins, position par depute
-# 80 derniers scrutins. Ni non-votants, ni mise au point, ni agregat par depute :
-# les raisons sont ecrites en tete de outils/scrutins_an.py, et le script se controle
-# lui-meme — il refuse de produire un fichier ou un non-votant serait compte comme
-# votant.
-python3 outils/scrutins_an.py data/brut_Scrutins outils/scrutins_an.json 80 \
+# Les 12 derniers scrutins SOLENNELS ou de censure, choisis sur l'archive entiere
+# (28/09/2026 : la fenetre des 80 derniers tous types confondus ne contenait aucun
+# solennel 56 % des jours de vote — voir outils/scrutins_an.py). 12, soit environ
+# trois a quatre mois de votes sur l'ensemble d'un texte : une commune de Paris
+# (18 deputes) en lit 216 lignes, contre 144 avec les 8 servis jusqu'ici.
+# Ni non-votants, ni mise au point, ni agregat par depute : les raisons sont ecrites
+# en tete de outils/scrutins_an.py, et le script se controle lui-meme — il refuse de
+# produire un fichier ou un non-votant serait compte comme votant.
+python3 outils/scrutins_an.py data/brut_Scrutins outils/scrutins_an.json 12 \
   || echo "::warning::scrutins_an.py a echoue — les scrutins ne sont pas produits"
 
 # ------------- 3 quater bis. LES DEUX RELEVES DU MONOREPO, REFAITS ICI

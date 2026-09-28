@@ -61,7 +61,27 @@ for f in fichiers:
     brut_tous.append((date, d))
 
 brut_tous.sort(key=lambda x: (x[0], txt(x[1], "numero").rjust(6)))
-retenus = brut_tous[-GARDES:]
+
+# LA FENETRE PORTE SUR LES SCRUTINS QUI SERONT AFFICHES, PAS SUR TOUS — 28/09/2026.
+#
+# Avant : les N derniers scrutins TOUS TYPES CONFONDUS, parmi lesquels
+# extract-html.js ne garde ensuite que les solennels (seuls publies, voir sa note
+# sur l'invariant 8). Rejoue sur l'archive reelle de la 17e legislature (8 434
+# scrutins, 240 jours de vote) : ce jour-la, la fenetre des 80 derniers ne
+# contenait AUCUN scrutin solennel 134 jours sur 240 (56 %), et 22 jours sur 41
+# pendant le budget de l'automne 2025 — les votes d'amendement chassent les votes
+# sur l'ensemble d'un texte. Ces jours-la, aucune commune n'aurait vu un seul vote
+# de son depute. Les 8 solennels servis le 28/09/2026 ne sont qu'un hasard de
+# calendrier : la session s'est arretee juste apres une serie de votes finaux.
+#
+# Apres : les N derniers scrutins SOLENNELS ou MOTIONS DE CENSURE, choisis sur
+# l'archive entiere. La censure est gardee ici pour outils/candidats.py (qui la
+# retient deja) ; l'affichage, lui, reste limite aux solennels par extract-html.js.
+# Le meme filtre (champ typeVote.libelleTypeVote) sert deja dans
+# mono/scripts/scrutins-solennels.mjs : une seule regle, pas deux.
+TYPES_RETENUS = ("scrutin public solennel", "motion de censure")
+eligibles = [x for x in brut_tous if txt(x[1], "typeVote", "libelleTypeVote") in TYPES_RETENUS]
+retenus = eligibles[-GARDES:]
 
 acteurs, idx = [], {}
 def ref(a):
@@ -138,6 +158,10 @@ assert relu["r"] == sorted(relu["r"], key=lambda e: (e["d"], e["n"].rjust(6))), 
 assert all(0 <= i < len(relu["acteurs"]) for e in relu["r"] for s in "pca" for i in e[s]), \
     "un index d'acteur sort de la table"
 assert "miseAuPoint" not in brut and "numPlace" not in brut and "mandatRef" not in brut
+assert all(e["tv"] in TYPES_RETENUS for e in relu["r"]), \
+    "un scrutin ni solennel ni de censure est entre dans la fenetre"
+assert not eligibles or relu["r"][-1]["n"] == txt(eligibles[-1][1], "numero"), \
+    "le scrutin solennel le plus recent de l'archive manque a la sortie"
 for e in relu["r"]:
     doublons = [x for x in (e["p"] + e["c"] + e["a"])
                 if (e["p"] + e["c"] + e["a"]).count(x) > 1]
@@ -146,7 +170,7 @@ for e in relu["r"]:
 os.makedirs(os.path.dirname(SORTIE) or ".", exist_ok=True)
 io.open(SORTIE, "w", encoding="utf-8").write(brut)
 
-print("scrutins dans la source  : %d" % len(brut_tous))
+print("scrutins dans la source  : %d (dont %d solennels ou de censure)" % (len(brut_tous), len(eligibles)))
 print("scrutins retenus         : %d (du %s au %s)"
       % (len(sortie), sortie[0]["d"] if sortie else "-", sortie[-1]["d"] if sortie else "-"))
 print("deputes distincts        : %d" % len(acteurs))
