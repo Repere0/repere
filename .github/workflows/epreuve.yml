@@ -1,0 +1,74 @@
+name: Épreuve (chaîne de publication, sans publier)
+
+# UNE SEULE CHAINE DE VERITE — 28/09/2026.
+#
+# Ce fichier remplace build-publish.yml. Celui-ci construisait le monorepo par
+# ses propres etapes, « en attendant la bascule » : la bascule a eu lieu
+# (collecte.yml publie depuis mono/ via outils/pipeline.sh), mais la seconde
+# chaine a continue de tourner chaque jour, en divergeant de la premiere. Elle
+# lancait les invariants statiques AVANT le build, alors que deux d'entre eux
+# relisent dist/ (« aucune ressource d'un autre hote », « le service worker
+# precharge exactement ce que le build a produit ») : rouge tous les jours
+# depuis le 23/09/2026, pendant que la vraie chaine publiait au vert. Elle ne
+# lancait pas non plus les releves Senat, agenda AN et scrutins solennels : son
+# artefact n'etait pas le site publie. Les tests avaient raison ; c'est l'ordre
+# des etapes qui etait faux.
+#
+# CE QUE FAIT CETTE EPREUVE : exactement les etapes de collecte.yml qui
+# construisent et eprouvent le site (telecharger les sources, puis
+# outils/pipeline.sh, qui contient le banc complet APRES le build) — et rien de
+# ce qui publie : ni commit, ni Netlify, ni issue. Aucun secret n'est lu.
+#
+# QUAND : sur chaque pull request vers main (jusqu'ici, aucune PR n'etait
+# eprouvee avant fusion : seuls les essais locaux de l'auteur le faisaient),
+# et a la demande. Plus de declenchement planifie : collecte.yml eprouve deja
+# main chaque matin, avant de publier.
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: epreuve-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  epreuve:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Recuperer le depot
+        uses: actions/checkout@v5
+
+      - name: Installer Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      # Memes etapes, dans le meme ordre, que collecte.yml : une divergence ici
+      # reproduirait exactement le defaut que ce fichier corrige.
+      - name: Installer le navigateur du banc
+        run: |
+          node --version || { echo "::error::Node absent de l'image du runner."; exit 1; }
+          npm install --no-save playwright@1.49.0
+          npx playwright install --with-deps chromium
+
+      - name: Telecharger les sources
+        continue-on-error: true
+        run: python3 outils/collecte.py
+
+      - name: Executer la chaine (construire et eprouver, sans publier)
+        run: bash outils/pipeline.sh
+
+      - name: Garder le site construit en artefact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: site-epreuve
+          path: site_engendre
+          retention-days: 7
+          if-no-files-found: warn
