@@ -1125,6 +1125,10 @@ console.log("\n--- hierarchie mobile : le contenu avant le decor ---------------
       ouvert: d ? d.open : null,
       lignesVisibles: [...document.querySelectorAll(".ligne.fait")].filter(e => e.checkVisibility()).length,
       lignesTotal: document.querySelectorAll(".ligne.fait").length,
+      /* dates des rendez-vous du calendrier reellement visibles (data-debut),
+         hors teaser des scrutins qui partage la meme classe */
+      debutsVisibles: [...document.querySelectorAll(".ligne.fait[data-debut]")].filter(e => e.checkVisibility()).map(e => e.dataset.debut),
+      limite: new Date(Date.now() + 14 * 864e5).toISOString().slice(0, 16),
     };
   });
   verif("ce qui se passe — au-dela de deux semaines, les rendez-vous sont replies, pas retires",
@@ -1132,8 +1136,19 @@ console.log("\n--- hierarchie mobile : le contenu avant le decor ---------------
   verif("ce qui se passe — le repli dit combien de rendez-vous il contient, par institution, et jusqu'a quand",
     cal.resume === null || /^Plus tard : \d+ rendez-vous jusqu'au \d+(er)? [a-zéû]+ \d{4} \((\d+ à l'Assemblée nationale|\d+ au Sénat)(, (\d+ à l'Assemblée nationale|\d+ au Sénat))?\)$/.test(cal.resume.trim()),
     String(cal.resume));
-  verif("ce qui se passe — l'ecran tient en moins de 12 hauteurs de telephone (etait 19)",
-    cal.hauteur < 12 * 800, String(cal.hauteur));
+  /* CE CONTROLE REMPLACE « l'ecran tient en moins de 12 hauteurs », du meme
+     jour. Cette version-la mesurait le VOLUME de donnees, pas le comportement :
+     calibree sur les donnees locales (11,6 hauteurs), elle a echoue sur le
+     runner des que la reprise des seances a ajoute des rendez-vous dans les deux
+     semaines (9 836 px), et a bloque la publication du 28/09 au soir. La
+     garantie reelle, independante du volume : rien au-dela de deux semaines
+     n'est deplie — sauf le repli de secours (au plus 5) quand les deux semaines
+     sont vides. Cassee pour de vrai : sans le repli, elle tombe. */
+  const auDela = cal.debutsVisibles.filter(x => x >= cal.limite);
+  const secours = !cal.debutsVisibles.some(x => x < cal.limite);
+  verif("ce qui se passe — aucun rendez-vous au-dela de deux semaines n'est deplie (sauf 5 au plus quand les deux semaines sont vides)",
+    cal.debutsVisibles.length > 0 && (secours ? auDela.length <= 5 : auDela.length === 0),
+    JSON.stringify({ visibles: cal.debutsVisibles.length, auDela: auDela.length, secours }));
   await c.close();
 }
 

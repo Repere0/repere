@@ -220,7 +220,7 @@ export default function Calendrier() {
     .map(([nom, n]) => `${n} ${nom === "Sénat" ? "au Sénat" : "à l'Assemblée nationale"}`)
     .join(", ");
   const ligne = (e, i) => (
-    <div className="ligne fait" key={i}>
+    <div className="ligne fait" key={i} data-debut={e.debut}>
       <div className="ligne-h">
         <span>{jourFr(e.debut)}</span>
         <b>{heureFr(e.debut)}</b>
