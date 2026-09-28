@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useId } from "react";
-import { Carte, Vide, Source, Chargement, dateFr } from "@repere/ui";
+import { Carte, Vide, Source, Chargement, dateFr, jourFr } from "@repere/ui";
 import {
   chargerCalendrierSenat, chargerAgendaAN,
   chargerScrutinsSolennelsRecents, chargerScrutinsSolennels, ETATS,
@@ -25,13 +25,6 @@ import {
 function heureFr(iso) {
   const m = /T(\d{2}):(\d{2})/.exec(iso || "");
   return m ? `${m[1]}h${m[2]}` : "";
-}
-function jourFr(iso) {
-  const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(iso || "");
-  if (!m) return "";
-  const jours = ["dimanche", "lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi"];
-  const d = new Date(iso);
-  return jours[d.getDay()] + " " + dateFr(`${m[1]}-${m[2]}-${m[3]}`);
 }
 
 /* COUCHE D'EXPLORATION, PAS UN ECRAN A PART (decision produit, 23/09/2026).

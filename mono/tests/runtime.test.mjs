@@ -1008,6 +1008,10 @@ console.log("\n--- aujourd'hui : ce qui arrive, Senat ET Assemblee ------------"
       bloc1.slice(0, 300).replace(/\n+/g, " / "));
     verif("a venir — chaque evenement nomme son institution",
       /Assemblée nationale : Séance de banc AN demain/.test(bloc1) && /Sénat : Séance de banc Sénat dans deux jours/.test(bloc1), "");
+    verif("a venir — les dates s'ecrivent comme dans « Ce qui se passe » (jour, quantieme, mois, annee ; jamais « 1 octobre »)",
+      /(lundi|mardi|mercredi|jeudi|vendredi|samedi|dimanche) (1er|\d{1,2}) [a-zéû]+ \d{4} — Assemblée nationale/.test(bloc1)
+      && !/\b1 (janvier|février|mars|avril|mai|juin|juillet|août|septembre|octobre|novembre|décembre)\b/.test(bloc1),
+      bloc1.slice(0, 200).replace(/\n+/g, " / "));
     verif("a venir — au-dela de sept jours, rien n'est montre quand la semaine a deja du contenu",
       !/dans vingt jours/.test(bloc1), "");
     verif("invariant 4 — une source par institution affichee, jamais une seule pour deux",
@@ -1020,6 +1024,55 @@ console.log("\n--- aujourd'hui : ce qui arrive, Senat ET Assemblee ------------"
       (t2.split("Qu'est-ce qui arrive")[1] || "").slice(0, 200).replace(/\n+/g, " / "));
   } finally {
     fs.writeFileSync(fAN, origAN); fs.writeFileSync(fSen, origSen);
+  }
+}
+
+console.log("\n--- aujourd'hui : qui, et ce qui est vraiment local -----------");
+/* 28/09/2026 : pour 1 257 communes sur 1 262, la reponse a « Que s'est-il decide
+   pres de chez vous ? » est un vote national du depute, sans que l'ecran dise
+   que c'est LE depute du lecteur ; le projet finance par l'Etat dans la commune
+   n'etait montre que pour 2 des 778 communes qui en ont un. */
+async function aujCommune(dep, nom) {
+  const c = await nav.newContext({ viewport: { width: 390, height: 844 } });
+  const p = await c.newPage();
+  await p.addInitScript(([k, v]) => localStorage.setItem(k, v), ["repere.departement", JSON.stringify({ d: dep, v: null })]);
+  await p.goto(base, { waitUntil: "networkidle" });
+  await p.waitForTimeout(500);
+  await p.getByLabel(/Votre commune/i).fill(nom);
+  await p.waitForTimeout(400);
+  await p.getByRole("button", { name: nom, exact: true }).first().click();
+  await p.waitForTimeout(800);
+  await p.getByRole("button", { name: new RegExp("Voir aujourd.hui à " + nom.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")) }).click();
+  await p.waitForTimeout(1200);
+  const t = await p.evaluate(() => (document.querySelector(".quest") || document.body).innerText);
+  await c.close();
+  return t;
+}
+{
+  const u = await aujCommune("64", "Ustaritz");
+  verif("qui — une commune a une circonscription : le vote est celui du depute de SA circonscription, dit comme tel",
+    /Vote du député élu dans votre circonscription \(6e circonscription — Pyrénées-Atlantiques\), à l.Assemblée nationale :/.test(u),
+    u.slice(0, 300).replace(/\n+/g, " / "));
+  verif("local — sans projet finance dans la commune, aucun bloc « Et dans votre commune ? »",
+    !/Et dans votre commune/.test(u), "");
+  const paris = await aujCommune("75", "Paris");
+  verif("qui — commune partagee (Paris, 18 circonscriptions) : jamais « votre circonscription » au hasard",
+    /Paris est partagée entre 18 circonscriptions\. Vote du député élu dans la \d+(re|e) :/.test(paris) && !/votre circonscription/.test(paris),
+    paris.slice(0, 300).replace(/\n+/g, " / "));
+  const pr93 = JSON.parse(fs.readFileSync(path.join(DIST, "data", "projets", "93.json"), "utf8"));
+  const p93 = JSON.parse(fs.readFileSync(path.join(DIST, "data", "departments", "93.json"), "utf8"));
+  const [insee, liste] = Object.entries(pr93.communes).find(([i, l]) => l.length && p93.communes[i]) || [];
+  if (insee) {
+    const nom = p93.communes[insee].nom;
+    const plusRecent = [...liste].sort((a, b) => b.annee - a.annee)[0];
+    const t = await aujCommune("93", nom);
+    verif(`local — ${nom} : son projet finance par l'Etat apparait sur Aujourd'hui, intitule recopie tel quel`,
+      /Et dans votre commune \?/.test(t) && t.includes(plusRecent.intitule.trim()) && new RegExp("exercice " + plusRecent.annee).test(t),
+      t.slice(0, 400).replace(/\n+/g, " / "));
+    verif("invariant 4 — le projet local porte sa source", /Et dans votre commune[\s\S]*Direction générale des collectivités locales|Et dans votre commune[\s\S]*DGCL/.test(t),
+      (t.split("Et dans votre commune")[1] || "").slice(0, 300).replace(/\n+/g, " / "));
+  } else {
+    verif("local — donnees de projets 93 presentes pour eprouver le bloc", false, "aucune commune du 93 avec projet");
   }
 }
 

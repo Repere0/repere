@@ -23,6 +23,8 @@ import { dateFr } from "@repere/ui";
  * importer du JSX (React) sans transpilateur. */
 
 export const MOTS = { p: "Pour", c: "Contre", a: "Abstention" };
+/* Deplace de QuiDecide.jsx le 28/09/2026 pour servir aussi a Aujourdhui.jsx : une seule regle d'ecriture des rangs. */
+export function ordinal(n) { return n === 1 ? "1re" : n + "e"; }
 
 /* L'INTITULE OFFICIEL, ALLEGE DE SA PROCEDURE — ET DE RIEN D'AUTRE.
  * On retire deux choses, toutes deux redondantes une fois la ligne mise en forme :

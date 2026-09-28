@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Carte, Vide, Source, Chargement, dateFr, Mot } from "@repere/ui";
 import { Pile } from "@repere/ui/amicro";
-import { LigneVote, positionSur, positionsFiables, REFUS_APPARIEMENT } from "../lib/votes.jsx";
+import { LigneVote, positionSur, positionsFiables, REFUS_APPARIEMENT, ordinal } from "../lib/votes.jsx";
 import {
   chargerDeputes, chargerCatalogueScrutins, chargerVotes, chargerElusRegion,
   entrer, revenir, ETATS,
@@ -39,7 +39,6 @@ const AN_VOTES_URL = "https://data.assemblee-nationale.fr/travaux-parlementaires
  * "Territoire" dit la meme phrase, jamais une deuxieme formulation. */
 const ORDRE_DISTANCE = "Rangés du plus proche de chez vous au plus lointain. Ce n'est pas un ordre d'importance : c'est un ordre de distance.";
 
-function ordinal(n) { return n === 1 ? "1re" : n + "e"; }
 
 /* AUCUN ARTICLE devant un nom de departement, AUCUN ACCORD sur un nom de
    commune : ni l'un ni l'autre ne se derive du nom (du Calvados, de l'Ain, des

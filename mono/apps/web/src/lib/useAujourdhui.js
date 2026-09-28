@@ -85,8 +85,21 @@ export function useAujourdhui(paquet, index, commune) {
   const prochain = aVenir[0];
   const srcCal = (prochain && prochain.source) || (cal && cal.source) || {};
 
+  /* POUR DIRE QUI, ET POURQUOI CE VOTE ME CONCERNE — 28/09/2026. Mesure en
+     production : la reponse a « Que s'est-il decide pres de chez vous ? » est
+     un vote national du depute pour 1 257 communes sur 1 262, sans que l'ecran
+     dise que c'est LE depute de la circonscription du lecteur ; et le projet
+     finance par l'Etat DANS la commune, seul fait reellement local, n'etait
+     montre que pour 2 des 778 communes qui en ont un. Rien de nouveau n'est
+     calcule ici : le nombre de circonscriptions vient de la fiche, le nom du
+     departement de l'index, le projet de lib/faits.js. */
+  const nbCircos = Array.isArray(fiche.circo) ? fiche.circo.length : (fiche.circo == null ? 0 : 1);
+  const depIndex = index && Array.isArray(index.departements) ? index.departements.find(x => x.code === dep) : null;
+  const nomDep = depIndex ? depIndex.nom : "";
+  const dernierProjet = faits.find(f => f.type === "projet");
+
   return {
-    etat, pret: true, fiche, nomCommune, dep, base, faits,
+    etat, pret: true, fiche, nomCommune, dep, base, faits, nbCircos, nomDep, dernierProjet,
     dernierVote, dernierFait, exercice, rapportsComptes: rr, rapportDette,
     prochain, prochains, prochainsDansLaSemaine: cetteSemaine.length > 0,
     srcComptes, srcProjets, srcScrutins, srcCal,
