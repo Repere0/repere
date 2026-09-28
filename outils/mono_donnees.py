@@ -138,8 +138,12 @@ def scrutins():
             "url_scrutin": "https://www.assemblee-nationale.fr/dyn/17/scrutins/",
             "legislature": 17,
             "releve_le": d.get("maj") or AUJ,
-            "portee": "les %d derniers scrutins publics de la 17e législature, sur %d publiés à la date du relevé"
-                      % (len(d["r"]), d.get("total_source") or len(d["r"])),
+            # Le libelle decrit ce qui est AFFICHE (les solennels), pas ce qui est
+            # releve : il annoncait « les 80 derniers scrutins publics » a l'ecran
+            # alors que seuls les solennels etaient montres (8 sur 80).
+            "portee": "les %d derniers scrutins solennels (votes sur l'ensemble d'un texte) de la 17e législature, sur %d scrutins publics publiés à la date du relevé"
+                      % (sum(1 for e in d["r"] if "solennel" in (e.get("tv") or "")),
+                         d.get("total_source") or len(d["r"])),
             "ecarte": "aucune liste de non-votants, aucun agrégat par député, aucune mise au point : "
                       "la source les porte, Repère ne les republie pas.",
         },

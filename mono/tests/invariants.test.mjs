@@ -899,6 +899,24 @@ test("invariant 3/8 — le format des positions rend tout classement impossible"
   assert.ok(lourd < 8192, `le plus lourd fichier de votes pese ${lourd} octets`);
 });
 
+test("votes — le scrutin solennel le plus récent de l'archive est toujours dans le catalogue servi", () => {
+  /* 28/09/2026. La fenetre des votes portait sur les 80 derniers scrutins TOUS
+     TYPES, filtres ensuite aux solennels : rejouee sur la legislature, elle n'en
+     contenait aucun 56 % des jours de vote (les amendements chassent les votes
+     sur l'ensemble d'un texte). scrutins-solennels.json est calcule sur l'archive
+     ENTIERE, par un autre chemin : son dernier solennel doit figurer au
+     catalogue des votes par depute, sinon le lecteur verrait le vote dans « Ce
+     qui se passe » et pas celui de son depute. */
+  if (!existe("data/scrutins.json") || !existe("data/scrutins-solennels.json")) return;
+  const archive = litData("scrutins-solennels.json").scrutins.filter(s => /solennel/.test(s.type));
+  if (!archive.length) return;
+  const dernier = archive[archive.length - 1];
+  const catalogue = new Set(litData("scrutins.json").scrutins.map(sc => sc.n));
+  assert.ok(catalogue.size > 0, "le catalogue des votes par depute est vide alors que l'archive porte des scrutins solennels");
+  assert.ok(catalogue.has(String(dernier.numero)),
+    `le dernier scrutin solennel de l'archive (n° ${dernier.numero}, ${dernier.date}) manque au catalogue servi`);
+});
+
 test("bêta Île-de-France — aucune commune ne reste sans député nommable", () => {
   if (!existe("data/deputes.json")) return;
   /* CE CONTROLE EXISTE A CAUSE DE PARIS. Une commune a cheval sur plusieurs
