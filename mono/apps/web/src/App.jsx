@@ -569,13 +569,21 @@ export default function App() {
   return (
     <DefinitionProvider>
     <div className="app">
-      <header className="entete">
+      {/* L'EN-TETE SE FAIT PETIT UNE FOIS LA COMMUNE CHOISIE — 28/09/2026. Mesure a
+          390 px : titre, chapeau et selecteurs occupaient environ 460 px sur 800
+          sur CHAQUE ecran, et le contenu commencait sous la ligne de flottaison.
+          La promesse (« rien ne quitte votre appareil ») reste lue au premier
+          ecran, la ou elle decide de l'usage ; ensuite, la place revient a ce
+          que le lecteur est venu voir. */}
+      <header className={"entete" + (fiche ? " compacte" : "")}>
         <p className="eyebrow">Repère</p>
         <h1>Qui décide chez vous, et où va votre argent.</h1>
-        <p className="chapeau">
-          Les élus, les comptes et la circonscription de votre commune, à partir des sources
-          officielles. Aucun compte, aucun courriel, rien ne quitte votre appareil.
-        </p>
+        {fiche ? null : (
+          <p className="chapeau">
+            Les élus, les comptes et la circonscription de votre commune, à partir des sources
+            officielles. Aucun compte, aucun courriel, rien ne quitte votre appareil.
+          </p>
+        )}
       </header>
 
       <NouvelleVersion />
