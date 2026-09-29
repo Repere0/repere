@@ -227,6 +227,12 @@ PY
 python3 outils/ofgl.py --produire \
   || echo "::warning::comptes des communes non releves - le bloc fige du 29/07/2026 reste en place"
 
+# LES MAIRES, RELEVES A LA SOURCE (29/09/2026). Ecrit mono/scripts/maires.json,
+# que extract-html.js prefere au bloc fige quand il est complet. Avertit s'il
+# echoue : le bloc fige reste alors en place.
+python3 outils/rne.py --produire \
+  || echo "::warning::maires non releves - le bloc fige reste en place"
+
 APP=$(ls -1 app_repere_v18_*.html | grep -v '\.bak$' | sort -V | tail -1)
 echo "application retenue (fichier autonome) : $APP"
 rm -rf site_engendre

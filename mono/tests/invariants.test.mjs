@@ -584,7 +584,10 @@ test("données — chaque paquet départemental a la forme que l'application att
       assert.ok(typeof c.nom === "string" && c.nom.length > 0, `${f} : ${insee} sans nom`);
       assert.ok(c.maire === null || (c.maire && typeof c.maire.nom === "string"),
         `${f} : ${insee} porte un maire de forme inattendue`);
-      assert.ok(Number.isInteger(c.adjoints) && c.adjoints >= 0,
+      /* null = inconnu (29/09/2026) : apres un changement de maire, le compte
+         d'adjoints du bloc fige n'est plus un fait tant que la source n'a pas
+         ete relue. L'ecran a une phrase pour ce cas. */
+      assert.ok(c.adjoints === null || (Number.isInteger(c.adjoints) && c.adjoints >= 0),
         `${f} : ${insee} porte un nombre d'adjoints inattendu`);
       assert.ok(c.circo === null || Number.isInteger(c.circo) || Array.isArray(c.circo),
         `${f} : ${insee} porte une circonscription de forme inattendue`);

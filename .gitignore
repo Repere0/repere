@@ -34,3 +34,4 @@ data/*.zip
 data/brut_*/
 mono/scripts/comptes-communes.json
 mono/scripts/comptes-territoires.json
+mono/scripts/maires.json

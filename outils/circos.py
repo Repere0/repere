@@ -140,6 +140,24 @@ def lire_csv(chemin):
 
 
 LIBELLES = communes_de_reference(APP)
+# LE REFERENTIEL OFFICIEL ELARGIT LA REFERENCE (29/09/2026). Le bloc RNE a perdu
+# 230 communes que le Repertoire publie bel et bien (mesure outils/rne_fraicheur.py),
+# dont Barbey (77021) et Lissy (77253). Juger les codes du ministere contre le seul
+# bloc les ecartait donc aussi d'ici, comme « communes fusionnees » : ce n'en sont
+# pas. La liste des communes actuelles du Code officiel geographique
+# (mono/scripts/noms-communes.json) completes la reference ; un code qu'aucune des
+# deux ne connait reste ecarte.
+_officiels = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "mono", "scripts", "noms-communes.json")
+if LIBELLES is not None and os.path.exists(_officiels):
+    with io.open(_officiels, encoding="utf-8") as f:
+        _noms = json.load(f).get("noms", {})
+    AJOUTS = {c: n for c, n in _noms.items() if c not in LIBELLES}
+    print("reference elargie       : %d communes du referentiel officiel absentes du bloc RNE" % len(AJOUTS))
+else:
+    AJOUTS = {}
+# La couverture et la liste des absentes restent mesurees contre le bloc : les
+# communes creees depuis 2017 ne sont pas dans le fichier du ministere, et les
+# compter ici ferait baisser une couverture qui n'a pas change.
 REF = set(LIBELLES) if LIBELLES is not None else None
 source_est_xlsx = SRC.lower().endswith(".xlsx")
 lignes = lire_xlsx(SRC) if source_est_xlsx else lire_csv(SRC)
@@ -155,7 +173,7 @@ for code, nom, circ in lignes:
     if code is None:
         ecartees["hors Code officiel geographique"] += 1
         continue
-    if REF is not None and code not in REF:
+    if REF is not None and code not in REF and code not in AJOUTS:
         # Commune fusionnee depuis 2017, ou code faux. La liste de reference tranche.
         inconnues[code[:2]] += 1
         continue
@@ -167,7 +185,7 @@ assert len(par_commune) > 30000, "seulement %d communes rattachees" % len(par_co
 
 # --------------------------------------------------------- controles independants
 if REF is not None:
-    couverture = len(par_commune) / float(len(REF))
+    couverture = len([c for c in par_commune if c in REF]) / float(len(REF))
     assert couverture > 0.99, "couverture de %.2f %% seulement" % (100 * couverture)
     # Les collectivites d'outre-mer sont le seul endroit ou la reconstruction du code
     # INSEE est une REGLE et non une concatenation. Si une seule regle etait fausse,
@@ -212,6 +230,8 @@ assert relu["v"] == 1
 assert len(relu["communes"]) == len(par_commune)
 assert all(isinstance(v, int) or (isinstance(v, list) and len(v) > 1)
            for v in relu["communes"].values()), "une forme intermediaire s'est glissee"
+retrouvees = sorted(c for c in par_commune if c in AJOUTS)
+print("communes retrouvees     : %d hors bloc RNE (%s)" % (len(retrouvees), ", ".join(retrouvees[:10])))
 assert not (set(relu["communes"]) & set(relu["sans_circonscription"])), \
     "une commune est a la fois rattachee et declaree absente"
 

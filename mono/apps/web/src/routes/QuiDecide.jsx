@@ -521,7 +521,13 @@ export default function QuiDecide({ paquet, index, commune }) {
                    corrige hier sur l'autre ecran, survivant sur celui-ci.
                    Le RNE publie le nom complet : il n'y a rien a decouper. */
                 ? <>{c.adjoints} <Mot cle="adjoint au maire">adjoint{c.adjoints > 1 ? "s" : ""}</Mot> siègent avec {c.maire.nom}. Ce sont eux qui votent le budget de la commune.</>
-                : "Aucun adjoint n'est enregistré pour cette commune dans le Répertoire national des élus."}
+                : c.adjoints === null
+                  /* INCONNU, PAS ZERO (29/09/2026) : le maire vient du releve de
+                     la source, mais la table de ses adjoints n'a pas pu etre
+                     relue ; le compte d'avant le changement de maire n'est
+                     plus un fait. Deux causes, deux phrases (invariant 5). */
+                  ? "Le nombre d'adjoints n'a pas pu être relu dans le Répertoire national des élus depuis l'élection de ce maire."
+                  : "Aucun adjoint n'est enregistré pour cette commune dans le Répertoire national des élus."}
             </div>
           </div>
         ) : (
