@@ -98,8 +98,8 @@ export function positionSur(pos, acteurRef, scrutinN) {
 /* La phrase a afficher quand la garde refuse. Elle dit ce qui se passe, elle
    n'invente pas une panne, et elle renvoie a la source officielle. */
 export const REFUS_APPARIEMENT = {
-  titre: "Les votes ne sont pas affiches : les deux relevés de l'Assemblee ne se correspondent pas.",
-  corps: "Le catalogue des scrutins et les positions des deputes ont ete releves a des"
-    + " dates differentes. Plutot que d'afficher une position qui pourrait etre celle"
-    + " d'un autre scrutin, Repere n'affiche rien. Le reste de l'ecran est complet.",
+  titre: "Les votes ne sont pas affichés : les deux relevés de l'Assemblée ne se correspondent pas.",
+  corps: "Le catalogue des scrutins et les positions des députés ont été relevés à des"
+    + " dates différentes. Plutôt que d'afficher une position qui pourrait être celle"
+    + " d'un autre scrutin, Repère n'affiche rien. Le reste de l'écran est complet.",
 };

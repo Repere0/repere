@@ -11,7 +11,7 @@ import path from "node:path";
 import {
   dateFr, jourFr, euros, titreLisible, procedure, decompte, positionsFiables, positionSur,
   calculerFaits, valeur, rapports, dernierExercice, evolution, deriverAujourdhui,
-  mots, motsCible, correspond,
+  mots, motsCible, correspond, trouverCommunes,
 } from "../packages/core/src/index.js";
 
 const RACINE = path.resolve(import.meta.dirname, "..");
@@ -95,4 +95,20 @@ test("core — la recherche ignore accents, traits d'union et apostrophes", () =
   assert.ok(correspond(mots("val doise"), motsCible("Val-d'Oise")));
   assert.ok(correspond(mots("pyrenees at"), motsCible("Pyrénées-Atlantiques")));
   assert.ok(!correspond(mots("paris"), motsCible("Pantin")));
+});
+
+test("recherche : « paris » donne Paris avant Cormeilles-en-Parisis (defaut du 13/09/2026)", () => {
+  const liste = ["Cormeilles-en-Parisis", "Fontenay-en-Parisis", "Paris"].map((n, i) => ["0000" + i, n, motsCible(n)]);
+  const r = trouverCommunes(liste, mots("paris"));
+  assert.equal(r[0][1], "Paris");
+  assert.equal(r.length, 3);
+  assert.deepEqual(trouverCommunes(liste, []), []);
+});
+
+test("core — la phrase de refus d'appariement porte ses accents (texte affiché)", async () => {
+  const { REFUS_APPARIEMENT } = await import("../packages/core/src/index.js");
+  const { MOTS_A_ACCENTS } = await import("../packages/data-utils/src/invariants.js");
+  const texte = REFUS_APPARIEMENT.titre + " " + REFUS_APPARIEMENT.corps;
+  const fautes = MOTS_A_ACCENTS.filter(m => new RegExp("\\b" + m + "\\b").test(texte));
+  assert.deepEqual(fautes, []);
 });

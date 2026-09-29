@@ -1,6 +1,6 @@
 import React, { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Chargement, Vide, Puce, DefinitionProvider } from "@repere/ui";
-import { mots, motsCible, correspond } from "@repere/core";
+import { mots, motsCible, correspond, trouverCommunes } from "@repere/core";
 import {
   chargerIndex, chargerDepartement, chargerCommunesBeta, prechargerDepartement,
   annulerPrechargement, entrer, ETATS, PHRASES,
@@ -140,18 +140,9 @@ function Entree({ index, communesBeta, departement, onOuvrir, onCommuneDirecte, 
    * d'importance entre territoires, que l'invariant 3 interdit : c'est la reponse
    * a ce que le lecteur vient d'ecrire, et elle ne depend d'aucune propriete de la
    * commune — ni sa taille, ni sa population, ni rien qui la compare a une autre. */
-  const rang = (nom) => {
-    const n = mots(nom).join(" ");
-    const q = cherches.join(" ");
-    if (n === q) return 0;
-    if (n.startsWith(q)) return 1;
-    return 2;
-  };
-  const trouveesC = cherches.length
-    ? communes.filter(([, , cible]) => correspond(cherches, cible))
-        .sort((a, b) => rang(a[1]) - rang(b[1]) || a[1].localeCompare(b[1], "fr"))
-        .slice(0, 30)
-    : [];
+  /* La regle de rang vit dans @repere/core (rangRecherche, trouverCommunes)
+     depuis le 29/09/2026 : l'application mobile trouve les memes communes. */
+  const trouveesC = trouverCommunes(communes, cherches);
   const trouvesD = cherches.length
     ? index.departements.filter(d => correspond(cherches, motsCible(d.code + " " + (d.nom || ""))))
     : [];

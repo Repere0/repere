@@ -18,3 +18,24 @@ export function motsCible(t) {
 export function correspond(cherches, cible) {
   return cherches.every(m => cible.some(w => w.startsWith(m)));
 }
+
+/* L'ORDRE DES RESULTATS EST CELUI DE LA RECHERCHE, PAS UN ORDRE DE VALEUR.
+ * Deplace depuis apps/web/src/App.jsx le 29/09/2026 (voir l'historique complet
+ * la-bas, defaut « paris » -> « Cormeilles-en-Parisis » du 13/09/2026) : le
+ * nom exact d'abord, puis ceux qui commencent par la saisie, puis le reste.
+ * Aucune propriete de la commune n'entre dans ce rang (invariant 3). */
+export function rangRecherche(nom, cherches) {
+  const n = mots(nom).join(" ");
+  const q = cherches.join(" ");
+  if (n === q) return 0;
+  if (n.startsWith(q)) return 1;
+  return 2;
+}
+/* `liste` : [[insee, nom, motsCible(nom)], ...]. Rend les 30 premieres
+   correspondances, dans l'ordre de la recherche puis l'ordre alphabetique. */
+export function trouverCommunes(liste, cherches, max = 30) {
+  if (!cherches.length) return [];
+  return liste.filter(([, , cible]) => correspond(cherches, cible))
+    .sort((a, b) => rangRecherche(a[1], cherches) - rangRecherche(b[1], cherches) || a[1].localeCompare(b[1], "fr"))
+    .slice(0, max);
+}
