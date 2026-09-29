@@ -35,9 +35,12 @@ function sourcesEcrites() {
     for (const e of fs.readdirSync(path.join(RACINE, d), { withFileTypes: true })) {
       const rel = path.join(d, e.name);
       if (e.isDirectory()) {
-        if (["node_modules", "dist", ".git", "data", ".turbo"].includes(e.name)) continue;
+        /* .expo, dist-web, ios, android : engendres par Expo (apps/mobile), jamais ecrits a la main. */
+        if (["node_modules", "dist", ".git", "data", ".turbo", ".expo", "dist-web", "ios", "android"].includes(e.name)) continue;
         marche(rel);
-      } else if (/\.(js|jsx|mjs|css|html|svg|webmanifest)$/.test(e.name)) {
+      /* .ts et .tsx depuis le 29/09/2026 : l'application mobile (apps/mobile) est
+           ecrite en TypeScript, et un fichier non lu est un fichier non garde. */
+      } else if (/\.(js|jsx|mjs|ts|tsx|css|html|svg|webmanifest)$/.test(e.name)) {
         /* CHEMINS EN BARRES OBLIQUES, SUR LES DEUX SYSTEMES. `path.join` rend
            « apps\\web\\index.html » sous Windows : les comparaisons et les
            messages d'echec de ce fichier differaient donc d'un poste a l'autre,
@@ -517,7 +520,7 @@ test("banc — le balayage voit tout le depot, pas une copie amputee", () => {
    * en silence. */
   const balayes = sourcesEcrites();
   const racines = ["apps/web/src", "apps/web/public", "apps/api", "packages/ui/src",
-                   "packages/data-utils/src", "scripts", "tests", "orchestrator"];
+                   "packages/data-utils/src", "packages/core/src", "apps/mobile/src", "scripts", "tests", "orchestrator"];
   for (const r of racines) {
     assert.ok(balayes.some(f => f.startsWith(r + "/")),
       `aucune source lue sous ${r}/ : la copie de travail est incomplete, ` +
@@ -526,7 +529,7 @@ test("banc — le balayage voit tout le depot, pas une copie amputee", () => {
   assert.ok(balayes.length >= 20,
     `seulement ${balayes.length} sources balayees : un banc vert ne prouverait presque rien`);
   /* Et il ne doit PAS lire ce qui n'est pas ecrit a la main. */
-  for (const interdit of ["node_modules", "/dist/", "data/departments"]) {
+  for (const interdit of ["node_modules", "/dist/", "/dist-web/", "/.expo/", "data/departments"]) {
     assert.deepEqual(balayes.filter(f => f.includes(interdit)), [],
       `le balayage lit ${interdit}, qui n'est pas du code ecrit a la main`);
   }
@@ -802,6 +805,19 @@ test("invariant 1 — le service worker précharge exactement ce que le build a 
     assert.ok(existe(path.join(DIST, u.replace(/^\//, ""))),
       `le service worker precharge ${u}, qui n'existe pas dans le build`);
   }
+});
+
+test("mobile — l'application ne demande rien au reseau par elle-meme", () => {
+  /* 29/09/2026. Toute requete de l'application mobile passe par
+     @repere/data-utils (client.js), seul endroit ou une adresse se compose et
+     ou la garde de l'invariant 2 s'applique. Un `fetch` ou un `XMLHttpRequest`
+     ecrit dans apps/mobile/src contournerait les deux. */
+  const fautifs = sourcesEcrites()
+    .filter(f => f.startsWith("apps/mobile/src/"))
+    .filter(f => /\b(fetch|XMLHttpRequest|WebSocket|EventSource)\s*\(|new\s+(XMLHttpRequest|WebSocket|EventSource)\b/.test(lire(f)));
+  assert.deepEqual(fautifs, [], "l'application mobile compose ses propres requetes : " + fautifs.join(", "));
+  assert.ok(sourcesEcrites().some(f => f === "apps/mobile/src/lib/donnees.ts"),
+    "apps/mobile/src/lib/donnees.ts n'est pas relu : ce controle ne mesure rien");
 });
 
 test("architecture — une seule fabrique d'adresses dans tout le produit", () => {
