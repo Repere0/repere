@@ -11,7 +11,21 @@
 import { magasin } from "./store.js";
 import { adresseFautive } from "./invariants.js";
 
-export const BASE_DONNEES = "/data";
+export let BASE_DONNEES = "/data";
+
+/* L'APPLICATION MOBILE LIT LES MEMES FICHIERS, SUR LE MEME HOTE (29/09/2026).
+ * Le site les sert a cote de lui (« /data ») ; l'application, qui n'a pas
+ * d'hote a elle, les lit a l'adresse publique du site. Seule la BASE change :
+ * les chemins, la garde de chaque adresse (aucun code de commune) et la
+ * lecture restent ceux de ce fichier, la seule fabrique d'adresses du produit.
+ * Une base qui porterait elle-meme un code de commune est refusee. */
+export function configurerBase(base) {
+  const b = String(base || "").replace(/\/+$/, "");
+  if (!/^(https:\/\/[a-z0-9.-]+(:\d+)?)?(\/[A-Za-z0-9_-]+)*$/.test(b) || adresseFautive(b + "/")) {
+    throw new Error("base de donnees refusee : " + base);
+  }
+  BASE_DONNEES = b;
+}
 
 /* DETTE DE FRAICHEUR, FERMEE LE 22/09/2026 (mission phase 3.2, §7).
  *

@@ -1188,11 +1188,17 @@ test("projets — la lecture d'un scrutin n'est écrite qu'à un seul endroit", 
      avait été dérivée deux fois ; les deux copies ont divergé, et « Évry » n'a
      plus rien donné pendant des semaines sans que rien ne le signale (D-15).
      Deux écrans lisent maintenant les mêmes scrutins. La règle vit dans
-     apps/web/src/lib/votes.jsx, et une seconde définition fait échouer le banc. */
-  for (const nom of ["titreLisible", "procedure", "decompte", "LigneVote", "positionSur"]) {
+     packages/core/src/votes.js depuis le 29/09/2026 (le web ET l'application
+     mobile la lisent) ; ce qui rend, LigneVote, reste dans le web. Une seconde
+     définition, où que ce soit — y compris dans l'application mobile — fait
+     échouer le banc. */
+  const LIEU = { titreLisible: "packages/core/src/votes.js", procedure: "packages/core/src/votes.js",
+    decompte: "packages/core/src/votes.js", positionSur: "packages/core/src/votes.js",
+    LigneVote: "apps/web/src/lib/votes.jsx" };
+  for (const [nom, lieu] of Object.entries(LIEU)) {
     const definitions = sourcesEcrites().filter(f =>
       new RegExp("(?:function|const)\\s+" + nom + "\\b").test(lire(f)));
-    assert.deepEqual(definitions, ["apps/web/src/lib/votes.jsx"],
+    assert.deepEqual(definitions, [lieu],
       `« ${nom} » est défini ${definitions.length} fois : ` + definitions.join(", "));
   }
 });
@@ -1207,7 +1213,7 @@ test("projets — le fil daté nomme sa règle d'ordre, et ne trie sur aucun mon
   const ecran = lire("apps/web/src/routes/CeQuiADecide.jsx");
   assert.ok(/ordre de date/i.test(ecran),
     "l'écran ne dit pas au lecteur dans quel ordre les faits sont rangés");
-  const tri = /faits\.sort\(([^;]*)\);/.exec(lire("apps/web/src/lib/faits.js"));
+  const tri = /faits\.sort\(([^;]*)\);/.exec(lire("packages/core/src/faits.js"));
   assert.ok(tri, "le tri du fil est introuvable");
   for (const interdit of ["subvention", "cout", "montant", "echelon"]) {
     assert.ok(!tri[1].includes(interdit),
@@ -1294,7 +1300,7 @@ test("votes — un élu n'est jamais nommé par son seul patronyme", () => {
      sécurité d'imputation avec lui) est sorti de cet écran pour que le
      prototype "Aujourd'hui" lise exactement le même fait, jamais un calcul
      parallèle. La garde suit le code, pas le fichier. */
-  const assemblage = lire("apps/web/src/lib/faits.js");
+  const assemblage = lire("packages/core/src/faits.js");
   assert.ok(!/qui: *d\.nom\b/.test(assemblage),
     "l'assemblage des faits nomme un député par son seul patronyme");
   assert.ok(/d\.prenom/.test(assemblage) && /nomComplet/.test(assemblage),
@@ -1307,8 +1313,12 @@ test("votes — un élu n'est jamais nommé par son seul patronyme", () => {
      crochet, lib/useAujourdhui.js — qui, lui, appelle la garde. */
   assert.ok(/calculerFaits\(/.test(lire("apps/web/src/routes/CeQuiADecide.jsx")),
     "apps/web/src/routes/CeQuiADecide.jsx n'appelle pas calculerFaits() : il pourrait réimplémenter l'assemblage sans la garde");
-  assert.ok(/calculerFaits\(/.test(lire("apps/web/src/lib/useAujourdhui.js")),
-    "apps/web/src/lib/useAujourdhui.js n'appelle pas calculerFaits() : il pourrait réimplémenter l'assemblage sans la garde");
+  /* Depuis le 29/09/2026, le crochet web charge et delegue la derivation a
+     packages/core/src/aujourdhui.js, que l'application mobile appelle aussi. */
+  assert.ok(/calculerFaits\(/.test(lire("packages/core/src/aujourdhui.js")),
+    "packages/core/src/aujourdhui.js n'appelle pas calculerFaits() : il pourrait réimplémenter l'assemblage sans la garde");
+  assert.ok(/deriverAujourdhui\(/.test(lire("apps/web/src/lib/useAujourdhui.js")),
+    "apps/web/src/lib/useAujourdhui.js ne passe pas par deriverAujourdhui() : il pourrait deriver a sa maniere");
   for (const ecran of ["apps/web/src/routes/Aujourdhui.jsx", "apps/web/src/routes/AujourdhuiJournal.jsx",
                        "apps/web/src/routes/AujourdhuiTerritoire.jsx"]) {
     assert.ok(/useAujourdhui\(/.test(lire(ecran)),
@@ -1336,14 +1346,14 @@ test("votes — les positions ne s'affichent pas si les deux relevés ne corresp
      DEPUIS LE 18/09/2026, CeQuiADecide.jsx et Aujourdhui.jsx n'appellent plus
      la garde eux-memes : ils delegent a lib/faits.js, qui l'appelle pour eux
      (voir le test precedent). QuiDecide.jsx, lui, la lit encore directement. */
-  const garde = lire("apps/web/src/lib/votes.jsx");
+  const garde = lire("packages/core/src/votes.js");
   assert.ok(/export function positionsFiables/.test(garde), "la garde n'existe pas");
   for (const exigence of [/numeros\.has\(n\)/, /releve_le/]) {
     assert.ok(exigence.test(garde),
       "la garde ne vérifie pas " + exigence.source);
   }
-  assert.ok(/positionsFiables\(/.test(lire("apps/web/src/lib/faits.js")),
-    "apps/web/src/lib/faits.js lit des positions sans passer par la garde");
+  assert.ok(/positionsFiables\(/.test(lire("packages/core/src/faits.js")),
+    "packages/core/src/faits.js lit des positions sans passer par la garde");
   assert.ok(/positionsFiables\(/.test(lire("apps/web/src/routes/QuiDecide.jsx")),
     "apps/web/src/routes/QuiDecide.jsx lit des positions sans passer par la garde");
 });
@@ -1387,7 +1397,7 @@ test("argent — un zéro publié n'est jamais présenté comme une absence", ()
      `valeur()` VIT DANS lib/comptes.jsx DEPUIS LE 18/09/2026 : le prototype
      "Aujourd'hui" traduit les mêmes comptes que "Où va l'argent", et devait
      lire la même distinction zéro/absence plutôt qu'en recalculer une autre. */
-  const lecture = sansCommentaires("apps/web/src/lib/comptes.jsx");
+  const lecture = sansCommentaires("packages/core/src/comptes.js");
   assert.ok(!/m *!== *0 *\? *m *: *null/.test(lecture),
     "valeur() détruit encore un zéro publié");
   assert.ok(/zero: *mm === 0/.test(lecture),

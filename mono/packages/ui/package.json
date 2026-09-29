@@ -11,5 +11,8 @@
   },
   "peerDependencies": {
     "react": "^18.0.0"
+  },
+  "dependencies": {
+    "@repere/core": "workspace:*"
   }
 }
