@@ -499,7 +499,8 @@ async function extraire() {
   const officiels = nomsOfficiels();
   const maires = releveMaires();
   const normNom = t => (t || "").normalize("NFKD").replace(/[^A-Za-z]/g, "").toUpperCase();
-  let mairesChanges = 0, adjointsInconnus = 0;
+  let mairesChanges = 0, adjointsInconnus = 0, adjointsDifferents = 0;
+  const exemplesAdjoints = [];
   const exemplesChanges = [];
   let redresses = 0;
   const sansLibelleOfficiel = [];
@@ -550,6 +551,10 @@ async function extraire() {
       const change = !duBloc || normNom(duBloc.nom) !== normNom(releve.maire);
       if (change) { mairesChanges++; if (exemplesChanges.length < 8) exemplesChanges.push(insee); }
       ficheAdjoints = Number.isInteger(releve.adjoints) ? releve.adjoints : (change ? null : adjBloc);
+      if (Number.isInteger(releve.adjoints) && releve.adjoints !== adjBloc) {
+        adjointsDifferents++;
+        if (exemplesAdjoints.length < 6) exemplesAdjoints.push(insee + " " + adjBloc + "->" + releve.adjoints);
+      }
       if (ficheAdjoints === null) adjointsInconnus++;
     }
     paquets.get(d).communes[insee] = {
@@ -589,7 +594,14 @@ async function extraire() {
   if (maires) {
     console.log("maires du releve      : " + mairesChanges + " different(s) du bloc" + (exemplesChanges.length ? " (" + exemplesChanges.join(", ") + (mairesChanges > exemplesChanges.length ? ", ..." : "") + ")" : "")
       + ", " + ajoutees.length + " commune(s) retrouvee(s)" + (ajoutees.length ? " (" + ajoutees.slice(0, 8).join(", ") + (ajoutees.length > 8 ? ", ..." : "") + ")" : "")
-      + ", " + adjointsInconnus + " nombre(s) d'adjoints inconnu(s)");
+      + ", " + adjointsInconnus + " nombre(s) d'adjoints inconnu(s), " + adjointsDifferents + " nombre(s) d'adjoints different(s) du bloc"
+      + (exemplesAdjoints.length ? " (" + exemplesAdjoints.join(", ") + ")" : ""));
+    /* Meme ligne en annotation : c'est le seul canal que l'on relit depuis le
+       conteneur de travail, et ce chiffre dit si le releve change ce que lit
+       le citoyen. */
+    console.log("::notice title=maires-releve::" + mairesChanges + " maires differents du bloc (" + exemplesChanges.join(", ")
+      + ") ; " + ajoutees.length + " communes retrouvees (" + ajoutees.filter(c => BETA.includes(departementDe(c))).join(", ")
+      + " en IDF) ; adjoints : " + adjointsDifferents + " comptes differents du bloc (" + exemplesAdjoints.join(", ") + "), " + adjointsInconnus + " inconnus");
   }
 
   /* DOCTRINE DU 16/09/2026 : UNE ABSENCE DE NOTRE COTE N'EST JAMAIS DEGUISEE EN
