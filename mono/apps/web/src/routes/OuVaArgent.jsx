@@ -55,7 +55,7 @@ function Evolution({ e, nom, src }) {
         un chantier qui commence ou s'achève, un emprunt, une compétence transférée à
         l'intercommunalité suffisent à la faire varier.
       </p>
-      <Source calcul producteur={src ? src.producteur : ""} licence={src ? src.licence : ""} maj={src ? src.maj : ""} />
+      <Source calcul producteur={src ? src.producteur : ""} licence={src ? src.licence : ""} maj={src ? src.maj : ""} url={src ? src.url : undefined} />
     </Carte>
   );
 }
