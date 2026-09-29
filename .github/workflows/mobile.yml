@@ -1,0 +1,111 @@
+name: Mobile (application, socle partagé)
+
+# LA VERIFICATION DE L'APPLICATION MOBILE — 29/09/2026.
+#
+# Separee de collecte.yml et d'epreuve.yml par construction : elle ne telecharge
+# aucune source publique, ne lance pas outils/pipeline.sh, ne publie rien et ne
+# lit aucun secret. Les donnees sont extraites du fichier mono-HTML du depot,
+# hors reseau (scripts/extract-html.js), exactement comme la chaine le fait
+# avant d'y ajouter les releves du jour.
+#
+# QUAND :
+#   - une PR touche l'application, le socle partage (core, data-utils) ou les
+#     controles qui les gardent -> ce fichier ;
+#   - une PR touche le site -> epreuve.yml (inchange, sauf qu'il ignore
+#     desormais une PR qui ne touche QUE apps/mobile) ;
+#   - une PR touche le socle -> les deux, puisque core est dans les chemins
+#     d'ici et n'est pas ignore la-bas.
+#   Pas de filtre de branche : les PR empilees (base autre que main) sont
+#   verifiees aussi, contrairement a epreuve.yml.
+#
+# CE QU'ELLE VERIFIE, dans l'ordre ou une panne serait la moins chere :
+#   1. installation reproductible (npm ci sur le verrou de l'application) ;
+#   2. types (tsc --noEmit) ;
+#   3. socle et invariants (core.test, invariants.test, sante.test), apres
+#      construction du site : deux invariants relisent le site construit ;
+#   4. construction iOS, Android et web de l'application (expo export) ;
+#   5. le parcours dans un navigateur a 360/390/430 px, pannes comprises.
+
+on:
+  pull_request:
+    paths:
+      - "mono/apps/mobile/**"
+      - "mono/packages/core/**"
+      - "mono/packages/data-utils/**"
+      - "mono/tests/**"
+      - "mono/scripts/extract-html.js"
+      - ".github/workflows/mobile.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: mobile-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  mobile:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    defaults:
+      run:
+        working-directory: mono
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: mono/apps/mobile/package-lock.json
+
+      - name: Installer l'application (verrou exact)
+        working-directory: mono/apps/mobile
+        run: npm ci --no-audit --no-fund
+
+      - name: Types
+        working-directory: mono/apps/mobile
+        run: npx tsc --noEmit
+
+      - name: Extraire les donnees du depot (hors reseau)
+        run: |
+          APP=$(cd .. && ls -1 app_repere_v18_*.html | grep -v '\.bak$' | sort -V | tail -1)
+          echo "fichier autonome : $APP"
+          node scripts/extract-html.js "../$APP" ./data
+
+      - name: Construire le site (deux invariants relisent sa sortie)
+        run: |
+          corepack enable pnpm
+          pnpm install --frozen-lockfile
+          pnpm build
+
+      - name: Socle partage et invariants
+        run: node --test --test-concurrency=1 tests/core.test.mjs tests/invariants.test.mjs tests/sante.test.mjs
+
+      - name: Construire l'application (iOS, Android, web)
+        working-directory: mono/apps/mobile
+        env:
+          CI: "1"
+          EXPO_OFFLINE: "1"
+        run: |
+          npx expo export --platform ios --platform android --output-dir dist
+          EXPO_PUBLIC_REPERE_DONNEES=/data npx expo export --platform web --output-dir dist-web
+          cp -r ../../data dist-web/data
+          ls -la dist/_expo/static/js/ios dist/_expo/static/js/android
+
+      - name: Parcours dans un navigateur (360 / 390 / 430 px, pannes)
+        run: |
+          npx playwright install --with-deps chromium
+          node scripts/serveur-statique.mjs apps/mobile/dist-web 8811 &
+          for i in $(seq 1 20); do curl -sf http://localhost:8811/ >/dev/null && break; sleep 0.5; done
+          node apps/mobile/tests/parcours-web.mjs http://localhost:8811 apps/mobile/captures
+
+      - name: Garder les captures
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mobile-captures
+          path: mono/apps/mobile/captures
+          retention-days: 7
+          if-no-files-found: ignore

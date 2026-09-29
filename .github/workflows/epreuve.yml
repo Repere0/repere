@@ -27,6 +27,13 @@ name: Épreuve (chaîne de publication, sans publier)
 on:
   pull_request:
     branches: [main]
+    # UNE PR QUI NE TOUCHE QUE L'APPLICATION MOBILE n'est pas eprouvee ici
+    # (29/09/2026) : elle ne change rien de ce que cette chaine construit ou
+    # publie, et mobile.yml la verifie, invariants compris. Une PR qui touche
+    # AUSSI autre chose (le socle core, le site) passe ici comme avant : le
+    # filtre n'ignore que si TOUS les fichiers modifies sont sous apps/mobile.
+    paths-ignore:
+      - "mono/apps/mobile/**"
   workflow_dispatch:
 
 permissions:
