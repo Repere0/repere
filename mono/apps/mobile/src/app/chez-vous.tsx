@@ -20,6 +20,7 @@ import { CarteMaire } from "../cartes/CarteMaire";
 import { CarteProjet } from "../cartes/CarteProjet";
 import { CarteDepute } from "../cartes/CarteDepute";
 import { CarteMemoire } from "../cartes/CarteMemoire";
+import { CarteArgent } from "../cartes/CarteArgent";
 import { couleurs, PAS } from "../lib/theme";
 
 const revenir = () => (router.canGoBack() ? router.back() : router.replace("/"));
@@ -61,6 +62,9 @@ export default function ChezVous() {
       <CarteMaire fiche={d.fiche} nomCommune={d.nomCommune} srcElus={r.srcElus} />
       <CarteProjet d={d} lu={r.projetsLus} onReessayer={reessayer} />
       <CarteDepute d={d} lus={r.votesLus} fiables={r.votesFiables} onReessayer={reessayer} />
+      {/* Apres le depute, pour ne pas repousser encore le vote sous le pli (voir
+          docs/architecture/ux-parcours-20-secondes.md) ; l'ordre sera revu au lot M2. */}
+      <CarteArgent d={d} />
       <CarteMemoire choix={choix} />
       <Text style={s.fin}>
         Chaque ligne ci-dessus porte sa source officielle. Repère ne classe ni ne note personne.

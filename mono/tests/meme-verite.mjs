@@ -22,7 +22,7 @@ import path from "node:path";
 import { createRequire } from "node:module";
 import {
   deriverAujourdhui, titreLisible, texteDe, phraseAdjoints, phraseCirconscription, phrasePosition,
-  ligneScrutin, lienScrutin, ligneSource, phraseProjetLocal, euros, dateFr,
+  ligneScrutin, lienScrutin, ligneSource, phraseProjetLocal, euros, dateFr, rapports, sousTitreRapports, CALCUL_REPERE,
 } from "../packages/core/src/index.js";
 
 const require = createRequire(import.meta.url);
@@ -81,6 +81,17 @@ function attendus({ dep, insee, attendu }) {
     f("source des projets (date)", ligneSource({ producteur: d.srcProjets.producteur, licence: d.srcProjets.licence, maj: d.srcProjets.mis_a_jour_le }));
     if (d.dernierVote) f("projet (phrase)", phraseProjetLocal(p, d.nomCommune));
   }
+  /* OU VA L'ARGENT (30/09/2026, lot M1) : l'exercice, la population et chaque
+     rapport — sa valeur ET ce qu'il ne veut pas dire — sur les deux supports. */
+  if (d.exercice) {
+    f("comptes (exercice, habitants)", sousTitreRapports(d.exercice.an, d.exercice.ex));
+    for (const o of rapports(d.exercice.ex)) {
+      f(`comptes (${o.l} : valeur)`, o.v);
+      f(`comptes (${o.l} : ce que ça ne veut pas dire)`, o.d);
+    }
+    f("comptes (calcul annoncé comme tel)", CALCUL_REPERE);
+    f("source des comptes (date)", ligneSource({ producteur: d.srcComptes.producteur, licence: d.srcComptes.licence, maj: d.srcComptes.maj }));
+  }
   /* La commune a-t-elle toujours la particularite pour laquelle elle a ete choisie ? */
   const garde = {
     "plusieurs circonscriptions": d.nbCircos > 1 && !!d.dernierVote,
@@ -101,11 +112,16 @@ async function texteSite(nav, { dep, nom }) {
   await p.getByRole("button", { name: nom, exact: true }).first().click();
   await p.waitForTimeout(1200);
   const qui = await p.evaluate(() => document.body.innerText);           /* « Qui décide », ecran par defaut */
+  /* « Où va l'argent » AVANT « Aujourd'hui » : la barre d'onglets est masquee
+     sur l'ecran Aujourd'hui (App.jsx). */
+  await p.getByRole("button", { name: "Où va l'argent", exact: true }).first().click();
+  await p.waitForTimeout(1500);
+  const argent = await p.evaluate(() => document.body.innerText);
   await p.getByRole("button", { name: /Voir aujourd.hui à/ }).click();
   await p.waitForTimeout(1500);
   const auj = await p.evaluate(() => document.body.innerText);
   await c.close();
-  return net(qui + "\n" + auj);
+  return net(qui + "\n" + auj + "\n" + argent);
 }
 
 async function texteApp(nav, { nom }) {
@@ -134,6 +150,6 @@ for (const commune of COMMUNES) {
   }
 }
 await nav.close();
-verifier(compares >= 40, `${compares} faits comparés (au moins 40 attendus : sinon ce contrôle ne mesure presque rien)`);
+verifier(compares >= 100, `${compares} faits comparés (au moins 100 attendus : sinon ce contrôle ne mesure presque rien)`);
 console.log(echecs ? `${echecs} échec(s)` : "même vérité sur le site et dans l'application, zéro échec");
 process.exit(echecs ? 1 : 0);

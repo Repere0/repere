@@ -3,6 +3,9 @@ import { Carte, Vide, Tuile, BarreEchelon, Source, Mot, Chargement } from "@repe
 import { Pile } from "@repere/ui/amicro";
 import { valeur, rapports, population, dernierExercice, evolution } from "../lib/comptes.jsx";
 import { chargerComptesRegions, ETATS } from "@repere/data-utils";
+/* Les phrases de cet ecran vivent dans @repere/core (phrases.js) depuis le
+   30/09/2026 : l'application mobile ecrit les memes, mot pour mot. */
+import { introRapports, comptesAbsents, comptesInsuffisants, exercicesEcartes, phraseEcartes as phraseDesEcartes, comptesIncoherents } from "@repere/core";
 
 /* `valeur`, `rapports`, `population`, `dernierExercice` VIVENT DANS
  * lib/comptes.jsx DEPUIS LE 18/09/2026 — voir ce fichier pour l'historique de
@@ -122,17 +125,12 @@ export default function OuVaArgent({ paquet, index, commune }) {
      fichier les porte, mais leurs montants ne correspondent pas a la population
      publiee sur la meme ligne. C'est une autre cause d'absence que « le fichier
      ne porte pas cette commune » : elle a donc sa propre phrase. */
-  const ecartes = (c && Array.isArray(c.comptes_ecartes) ? c.comptes_ecartes : [])
-    .filter(an => !exercice || an > exercice.an).sort();
-  const phraseEcartes = ecartes.length
-    ? `Le fichier officiel porte des comptes pour ${ecartes.length > 1 ? "les exercices " + ecartes.join(" et ") : "l'exercice " + ecartes[0]}, mais leurs montants ne correspondent pas à la population publiée sur la même ligne. Repère ne les affiche pas plutôt que de risquer d'attribuer à ${c ? c.nom : "cette commune"} des chiffres qui ne sont pas les siens.`
-    : null;
+  const ecartes = exercicesEcartes(c, exercice);
+  const phraseEcartes = phraseDesEcartes(ecartes, c ? c.nom : null);
 
   if (!exercice && phraseEcartes) {
     return (
-      <Vide titre={`${c.nom} : ses comptes publiés ne sont pas cohérents.`}
-        corps={phraseEcartes}
-        lien={{ texte: "Vérifier dans les comptes publics", url: "https://data.ofgl.fr/" }} />
+      <Vide {...comptesIncoherents(c.nom, phraseEcartes)} />
     );
   }
 
@@ -141,9 +139,7 @@ export default function OuVaArgent({ paquet, index, commune }) {
        simplement de la liste : le lecteur cherchait la sienne, ne la trouvait
        pas, et rien ne lui disait pourquoi. Une absence se dit. */
     return (
-      <Vide titre={`${c.nom} : ses comptes ne figurent pas dans le fichier officiel.`}
-        corps="Un montant absent n'est pas un montant nul : Repère n'affiche rien plutôt qu'un zéro qui pourrait être faux. Les très petites communes et celles qui viennent de fusionner manquent souvent à ce fichier."
-        lien={{ texte: "Chercher cette commune dans les comptes publics", url: "https://data.ofgl.fr/" }} />
+      <Vide {...comptesAbsents(c.nom)} />
     );
   }
 
@@ -163,19 +159,14 @@ export default function OuVaArgent({ paquet, index, commune }) {
         <Carte echelon="ville" titre={c.nom}
           sousTitre={<>Ce que ça représente · <Mot cle="exercice">exercice</Mot> {exercice.an}{population(exercice.ex) ? ` · ${population(exercice.ex).toLocaleString("fr-FR")} habitants` : ""}</>}
           tag="Calcul Repère">
-          <p className="tx-note tx-intro">
-            Aucun de ces rapports n'est publié : Repère les calcule à partir de six montants
-            publiés par l'Observatoire des finances locales, visibles plus bas sur cette page,
-            et explique sous chacun ce qu'il ne veut pas dire.
-          </p>
+          <p className="tx-note tx-intro">{introRapports({ detailPlusBas: true })}</p>
           <div className="tuiles">
             {rr.map((o, i) => <Tuile key={i} k={o.l} v={o.v} n={o.d} />)}
           </div>
           <Source calcul producteur={src ? src.producteur : ""} licence={src ? src.licence : ""} maj={src ? src.maj : ""} url={src ? src.url : undefined} />
         </Carte>
       ) : (
-        <Vide titre="Pas assez de montants pour traduire ces comptes."
-          corps={`Les rapports se calculent à partir de plusieurs lignes à la fois ; pour l'exercice ${exercice.an}, le fichier officiel n'en porte pas assez.`} />
+        <Vide {...comptesInsuffisants(exercice.an)} />
       )}
 
       {evo ? <Evolution e={evo} nom={c.nom} src={src} /> : null}

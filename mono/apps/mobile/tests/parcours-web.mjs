@@ -101,6 +101,10 @@ for (const largeur of [360, 390, 430]) {
   verifier(/est maire de Meaux/.test(mesure.texte), `${largeur}px : le maire est nommé`);
   verifier(/Source : .*mise à jour du/.test(mesure.texte), `${largeur}px : une source datée est affichée`);
   verifier(/Votre député|député élu/.test(mesure.texte), `${largeur}px : la carte du député est présente`);
+  /* Lot M1 (30/09/2026) : la promesse de l'accueil est tenue, et le calcul se dit calcul. */
+  verifier(/Où va l'argent de la commune/i.test(mesure.brut) && /mois de recettes/.test(mesure.texte)
+    && /Calculé par Repère/.test(mesure.texte) && /ce n'est pas un chiffre publié/.test(mesure.texte),
+    `${largeur}px : les comptes de la commune s'affichent, annoncés comme un calcul`);
   const sansAccents = MOTS_A_ACCENTS.filter(m => new RegExp("(^|[^\\p{L}])" + m + "($|[^\\p{L}])", "u").test(mesure.brut));
   verifier(sansAccents.length === 0, `${largeur}px : aucun mot affiché sans ses accents ${JSON.stringify(sansAccents)}`);
   const fautives = demandees.filter(u => adresseFautive(u));
