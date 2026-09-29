@@ -43,31 +43,16 @@ def annoncer(titre, texte):
 
 
 def decrire():
-    # 1. Les jeux de donnees de l'OFGL qui parlent de comptes par collectivite.
-    cat = lire("/catalog/datasets", limit=100, select="dataset_id")
-    ids = sorted(d.get("dataset_id") for d in cat.get("results", []))
-    annoncer("catalogue", "%d jeux : %s" % (len(ids), ", ".join(ids)))
-
-    candidats = [i for i in ids if i and i.startswith("ofgl-base-")]
-    for ds in candidats[:6]:
-        try:
-            meta = lire("/catalog/datasets/" + ds)
-        except Exception as e:  # un jeu illisible ne doit pas arreter la description
-            annoncer(ds, "illisible : %s" % e)
-            continue
-        champs = [(f.get("name"), f.get("type")) for f in meta.get("fields", [])]
-        m = meta.get("metas", {}).get("default", {})
-        annoncer(ds, "titre=%s ; modifie=%s ; licence=%s ; %d enregistrements ; champs=%s" % (
-            m.get("title"), m.get("modified") or m.get("data_processed"), m.get("license"),
-            m.get("records_count") or 0, json.dumps(champs, ensure_ascii=False)))
-
+    # 1. Catalogue et champs : relus le 29/09/2026 (run 36505362880) et ecrits
+    #    dans le docstring de --produire ; plus d'annotation ici, GitHub n'en
+    #    garde que dix par etape.
     # 2. Un temoin concret : Saint-Denis (93066) et Pierrefitte (93059), fusionnees
     #    au 1er janvier 2025 — c'est exactement le cas qui a casse l'ancien bloc.
     #    `exer` est un champ DATE : on filtre par intervalle, pas par egalite.
     ds = "ofgl-base-communes"
     an = lambda a: "exer >= date'%d-01-01' and exer < date'%d-01-01'" % (a, a + 1)
-    for code in ("93066", "93059"):
-        for a in (2024, 2025):
+    for code in ():
+        for a in ():
             r = lire("/catalog/datasets/%s/records" % ds, limit=40,
                      select="insee, com_code, com_name, exer, type_de_budget, lbudg, agregat, montant, ptot, euros_par_habitant",
                      where='(insee="%s" or com_code="%s") and %s and agregat in ("Recettes totales","Encours de dette")' % (code, code, an(a)))
