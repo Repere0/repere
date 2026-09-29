@@ -3,16 +3,13 @@
 *29/09/2026. Expo SDK 57 (expo 57.0.26, React Native 0.86.3, React 19.2.3, TypeScript 6.0),
 Expo Router. Versions lues dans le gabarit `create-expo-app` du jour, pas de mémoire.*
 
-## Tester sur son téléphone, en cinq minutes
+## Tester sur son téléphone
 
-1. Installer **Expo Go** (App Store ou Play Store) sur le téléphone.
-2. Sur le PC : `cd mono/apps/mobile && npm install && npm run telephone`
-   (`expo start --tunnel` : le téléphone n'a pas besoin d'être sur le même Wi-Fi).
-3. Scanner le QR code affiché : appareil photo sur iPhone, Expo Go sur Android.
-
-L'application lit les **données de production** (`https://repereapp.netlify.app/data`).
-Pour une copie locale : `EXPO_PUBLIC_REPERE_DONNEES=https://…/data npm run telephone`
-(l'adresse doit être en `https` ou un chemin ; `configurerBase` refuse le reste).
+Procédure complète, dépannage et ce qui a été vérifié : `mono/apps/mobile/README.md`.
+En bref : Expo Go sur le téléphone (compte Expo gratuit sur iPhone depuis le SDK 57),
+puis `npm install && npm run telephone` dans `mono/apps/mobile`, et scanner le QR code.
+Données de production par défaut ; `EXPO_PUBLIC_REPERE_DONNEES` pour une autre copie
+(`https` ou un chemin : `configurerBase` refuse le reste).
 
 ## Pourquoi l'application est hors de l'espace de travail pnpm
 
@@ -44,7 +41,9 @@ phase 4 de la feuille de route, pas un détail.
 apps/mobile/
   src/app/_layout.tsx    coquille : zones sûres, barre d'état, pile, bouton retour 48 px
   src/app/index.tsx      ouverture + recherche de commune (trouverCommunes de core)
-  src/app/chez-vous.tsx  « Voici ce qui se passe chez vous » (deriverAujourdhui de core)
+  src/app/chez-vous.tsx  « Voici ce qui se passe chez vous » : assemble, ne calcule rien
+  src/cartes/            une carte par bloc (maire, projet, député) — réutilisables
+  src/lib/useCommune.ts  charge les fichiers d'une commune, état PAR SOURCE
   src/lib/donnees.ts     configurerBase + ré-export de data-utils — seule porte réseau
   src/lib/selection.tsx  la commune choisie, EN MÉMOIRE (jamais dans l'adresse)
   src/lib/composants.tsx Carte, Texte, Source, Vide, Bouton, LienSortant
@@ -56,6 +55,9 @@ apps/mobile/
 
 - **La commune ne va jamais dans l'adresse d'un écran.** Sur la version web de l'app, un
   rechargement enverrait ce code au serveur (invariant 2). Elle vit dans `selection.tsx`.
+- **Une panne n'est pas une absence.** Chaque source a son état (`useCommune`) : « pas
+  arrivé, Réessayer » ne se confond jamais avec « la source ne le porte pas ». Contrôlé
+  par `tests/parcours-web.mjs`, qui coupe les projets, les votes, puis le département.
 - **Aucun `fetch` dans `src/`** : tout passe par `@repere/data-utils`. Contrôle :
   `mobile — l'application ne demande rien au reseau par elle-meme`.
 - **Cibles tactiles ≥ 44 px** (`CIBLE = 48`), **libellé d'accessibilité** sur chaque

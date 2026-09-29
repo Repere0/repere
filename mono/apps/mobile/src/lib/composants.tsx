@@ -24,12 +24,15 @@ export function Texte({ children, fort, sourd }: { children: ReactNode; fort?: b
 
 /* Un lien qui sort de l'application. Le lecteur doit le savoir avant de
    toucher : le libelle d'accessibilite le dit, la fleche aussi. */
-export function LienSortant({ url, texte }: { url: string; texte: string }) {
+/* `etiquette` : ce que lit VoiceOver / TalkBack quand le texte visible est le
+   meme d'une carte a l'autre (« Voir a la source » trois fois ne dit pas
+   laquelle). Audit de #45, 29/09/2026. */
+export function LienSortant({ url, texte, etiquette }: { url: string; texte: string; etiquette?: string }) {
   return (
     <Pressable
       onPress={() => Linking.openURL(url)}
       accessibilityRole="link"
-      accessibilityLabel={texte + ", ouvre le site de la source"}
+      accessibilityLabel={(etiquette || texte) + ", ouvre un site externe"}
       style={({ pressed }) => [s.lien, pressed && { opacity: 0.6 }]}
       hitSlop={8}
     >
@@ -45,7 +48,7 @@ export function Source({ producteur, licence, maj, mention, url, calcul }: Sourc
     <View style={s.source}>
       {calcul ? <Text style={[s.sourceTexte, s.fort]}>Calculé par Repère à partir des montants ci-dessus — ce n'est pas un chiffre publié.</Text> : null}
       <Text style={s.sourceTexte}>Source : {ligne}</Text>
-      {url ? <LienSortant url={url} texte="Voir à la source" /> : null}
+      {url ? <LienSortant url={url} texte="Voir à la source" etiquette={producteur ? "Voir à la source : " + producteur : undefined} /> : null}
     </View>
   );
 }
