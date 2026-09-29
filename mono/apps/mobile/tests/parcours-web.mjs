@@ -81,10 +81,18 @@ for (const largeur of [360, 390, 430]) {
         .filter(c => c.h < 44),
       sansNom: cibles.filter(e => !(e.getAttribute("aria-label") || e.textContent || "").trim()).length,
       texte: document.body.innerText,
-      /* textContent, pas innerText : un titre en capitales (textTransform)
-         cacherait « DEPUTE » a une recherche de « depute ». Mesure le 29/09/2026 :
-         le controle ne tirait pas sur un titre de carte casse expres. */
-      brut: document.body.textContent,
+      /* Le texte SANS les capitales de style : sous textTransform, « DEPUTE »
+         echappait a la recherche de « depute » (mesure le 29/09/2026, titre de
+         carte casse expres). textContent ne convient pas non plus : il colle
+         les blocs voisins (« RepereQui »), et le mot entier n'est plus trouve. */
+      brut: (() => {
+        const st = document.createElement("style");
+        st.textContent = "*{text-transform:none!important}";
+        document.head.appendChild(st);
+        const t = document.body.innerText;
+        st.remove();
+        return t;
+      })(),
     };
   });
   verifier(!mesure.deborde, `${largeur}px : aucun débordement horizontal`);

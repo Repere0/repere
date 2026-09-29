@@ -101,7 +101,7 @@ export function BarreEchelon({ libelle, valeur, maximum, unite = "€", echelon 
    packages/core/src/format.js), pour que l'application mobile ecrive les dates
    exactement comme le web. Re-exportees ici : les ecrans n'ont rien a changer. */
 export { dateFr, jourFr } from "@repere/core";
-import { dateFr } from "@repere/core";
+import { dateFr, ligneSource, CALCUL_REPERE } from "@repere/core";
 
 /* `maj` est une date de publication ; `mention` est une precision de temps qui
    n'en est pas une (« decoupage de 2010 »). Les melanger produisait « mise a jour
@@ -109,10 +109,9 @@ import { dateFr } from "@repere/core";
 export function Source({ producteur, licence, maj, mention, url, calcul }) {
   return (
     <p className="source">
-      {calcul ? <b>Calculé par Repère à partir des montants ci-dessus — ce n'est pas un chiffre publié. </b> : null}
-      {producteur}{licence ? " · " + licence : ""}
-      {maj ? " · mise à jour du " + dateFr(maj) : ""}
-      {mention ? " · " + mention : ""}
+      {/* Texte ecrit dans @repere/core (ligneSource) : l'application mobile ecrit la meme ligne. */}
+      {calcul ? <b>{CALCUL_REPERE} </b> : null}
+      {ligneSource({ producteur, licence, maj, mention })}
       {url ? <> · <a href={url} target="_blank" rel="noopener">voir à la source ↗</a></> : null}
     </p>
   );

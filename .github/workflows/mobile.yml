@@ -15,6 +15,9 @@ name: Mobile (application, socle partagé)
 #     desormais une PR qui ne touche QUE apps/mobile) ;
 #   - une PR touche le socle -> les deux, puisque core est dans les chemins
 #     d'ici et n'est pas ignore la-bas.
+#   - une PR touche le site (apps/web/src, packages/ui) -> les deux aussi
+#     depuis le 29/09/2026 : une phrase changee sur le site seul casserait la
+#     « meme verite » (etape 6), et c'est ici qu'elle se mesure.
 #   Pas de filtre de branche : les PR empilees (base autre que main) sont
 #   verifiees aussi, contrairement a epreuve.yml.
 #
@@ -25,6 +28,8 @@ name: Mobile (application, socle partagé)
 #      construction du site : deux invariants relisent le site construit ;
 #   4. construction iOS, Android et web de l'application (expo export) ;
 #   5. le parcours dans un navigateur a 360/390/430 px, pannes comprises.
+#   6. meme verite : le site et l'application affichent les memes faits
+#      (tests/meme-verite.mjs), pour cinq communes representatives.
 
 on:
   pull_request:
@@ -33,6 +38,8 @@ on:
       - "mono/packages/core/**"
       - "mono/packages/data-utils/**"
       - "mono/tests/**"
+      - "mono/apps/web/src/**"
+      - "mono/packages/ui/**"
       - "mono/scripts/extract-html.js"
       - ".github/workflows/mobile.yml"
   workflow_dispatch:
@@ -100,6 +107,19 @@ jobs:
           node scripts/serveur-statique.mjs apps/mobile/dist-web 8811 &
           for i in $(seq 1 20); do curl -sf http://localhost:8811/ >/dev/null && break; sleep 0.5; done
           node apps/mobile/tests/parcours-web.mjs http://localhost:8811 apps/mobile/captures
+
+      - name: Meme verite sur le site et dans l'application
+        # Pour cinq communes representatives, le maire, les adjoints, la
+        # circonscription, le depute, le vote, son explication, les sources
+        # et leurs dates doivent etre lus a l'identique dans les deux rendus.
+        # L'attendu est calcule depuis les donnees, jamais recopie d'un rendu.
+        run: |
+          rm -rf apps/web/dist/data && cp -r data apps/web/dist/data
+          node scripts/empreinte-sw.mjs apps/web/dist
+          node scripts/serveur-statique.mjs apps/web/dist 8821 &
+          curl -sf http://localhost:8811/ >/dev/null || (node scripts/serveur-statique.mjs apps/mobile/dist-web 8811 &)
+          for i in $(seq 1 20); do curl -sf http://localhost:8821/ >/dev/null && curl -sf http://localhost:8811/ >/dev/null && break; sleep 0.5; done
+          node tests/meme-verite.mjs http://localhost:8821 http://localhost:8811
 
       - name: Garder les captures
         if: always()
