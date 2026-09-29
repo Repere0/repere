@@ -844,6 +844,26 @@ test("meme verite — les phrases du vote, du maire et du projet ne s'ecrivent q
   assert.ok(lire("packages/core/src/phrases.js").includes("siègent avec"), "phrases.js ne porte plus les phrases : ce controle ne mesure rien");
 });
 
+test("mobile — un seul endroit garde quelque chose sur le telephone", () => {
+  /* 29/09/2026 (D-M3). L'application ne garde qu'une chose : la commune que le
+     lecteur a demande de retenir, dans lib/memoire.ts (un fichier du cache, ou
+     la cle unique sur la version web). Tout autre stockage — AsyncStorage,
+     SecureStore, SQLite, MMKV, un second fichier — est refuse ici. */
+  const STOCKAGES = /@react-native-async-storage|expo-secure-store|expo-sqlite|react-native-mmkv|expo-file-system|localStorage|indexedDB|document\.cookie/;
+  const fautifs = sourcesEcrites()
+    .filter(f => f.startsWith("apps/mobile/src/") && f !== "apps/mobile/src/lib/memoire.ts")
+    .filter(f => STOCKAGES.test(lire(f).replace(/\/\*[\s\S]*?\*\//g, "").replace(/\/\/.*$/gm, "")));
+  assert.deepEqual(fautifs, [], "stockage hors de lib/memoire.ts : " + fautifs.join(", "));
+  const m = lire("apps/mobile/src/lib/memoire.ts");
+  assert.ok(/export const CLE = "repere\.departement";/.test(m), "memoire.ts ne porte plus la cle unique du produit");
+  assert.ok(/Paths\.cache/.test(m) && !/Paths\.document/.test(m),
+    "la commune doit rester dans le cache, exclu des sauvegardes iCloud et Google");
+  const deps = JSON.parse(lire("apps/mobile/package.json")).dependencies;
+  for (const interdit of ["@react-native-async-storage/async-storage", "expo-secure-store", "expo-sqlite", "react-native-mmkv"]) {
+    assert.ok(!deps[interdit], "l'application depend de " + interdit + " : un second stockage");
+  }
+});
+
 test("architecture — une seule fabrique d'adresses dans tout le produit", () => {
   const fautifs = [];
   for (const f of sourcesEcrites()) {

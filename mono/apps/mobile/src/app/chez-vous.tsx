@@ -19,6 +19,7 @@ import { useCommune } from "../lib/useCommune";
 import { CarteMaire } from "../cartes/CarteMaire";
 import { CarteProjet } from "../cartes/CarteProjet";
 import { CarteDepute } from "../cartes/CarteDepute";
+import { CarteMemoire } from "../cartes/CarteMemoire";
 import { couleurs, PAS } from "../lib/theme";
 
 const revenir = () => (router.canGoBack() ? router.back() : router.replace("/"));
@@ -60,6 +61,7 @@ export default function ChezVous() {
       <CarteMaire fiche={d.fiche} nomCommune={d.nomCommune} srcElus={r.srcElus} />
       <CarteProjet d={d} lu={r.projetsLus} onReessayer={reessayer} />
       <CarteDepute d={d} lus={r.votesLus} fiables={r.votesFiables} onReessayer={reessayer} />
+      <CarteMemoire choix={choix} />
       <Text style={s.fin}>
         Chaque ligne ci-dessus porte sa source officielle. Repère ne classe ni ne note personne.
       </Text>

@@ -144,6 +144,58 @@ async function ouvrirAvecPanne(motif) {
     "panne du département : phrase d'échec et bouton Réessayer");
 }
 
+/* SE SOUVENIR DE LA COMMUNE, SEULEMENT SI LE LECTEUR LE DEMANDE — D-M3,
+   29/09/2026. Mesure sur la version web de l'application (sur telephone, le
+   meme code ecrit un fichier du cache, voir lib/memoire.ts) :
+   rien n'est garde avant la demande ; apres, une seule cle, deux codes
+   publics ; la commune est proposee au retour ; « Oublier » efface tout ;
+   et aucune requete ne porte jamais le code de la commune. */
+{
+  const ctx = await navigateur.newContext({ viewport: { width: 390, height: 800 }, isMobile: true, hasTouch: true });
+  const page = await ctx.newPage();
+  const demandees = [];
+  page.on("request", r => demandees.push(r.url()));
+  const stockage = () => page.evaluate(() => ({
+    ls: Object.fromEntries(Object.keys(localStorage).map(k => [k, localStorage.getItem(k)])),
+    ss: sessionStorage.length, cookies: document.cookie,
+  }));
+  await page.goto(BASE + "/", { waitUntil: "networkidle" });
+  await page.getByLabel(/Où habitez-vous/).fill(COMMUNE.saisie);
+  await page.getByRole("button", { name: new RegExp("^" + COMMUNE.nom + ",") }).first().click();
+  await page.getByText("Voici ce qui se passe chez vous").waitFor({ timeout: 15000 });
+  let st = await stockage();
+  verifier(Object.keys(st.ls).length === 0, "mémoire : rien n'est gardé tant que le lecteur ne l'a pas demandé " + JSON.stringify(st.ls));
+  await page.getByRole("button", { name: "Retenir Meaux sur ce téléphone" }).click();
+  await page.getByText(/Meaux est retenue sur ce téléphone/).waitFor({ timeout: 5000 });
+  st = await stockage();
+  verifier(JSON.stringify(st.ls) === JSON.stringify({ "repere.departement": '{"d":"77","c":"77284"}' }),
+    "mémoire : une seule clé, deux codes publics, rien d'autre " + JSON.stringify(st.ls));
+  verifier(st.ss === 0 && st.cookies === "", "mémoire : ni sessionStorage, ni cookie");
+  await page.goto(BASE + "/", { waitUntil: "networkidle" });
+  const reprendre = page.getByRole("button", { name: "Voir ce qui se passe à Meaux" });
+  await reprendre.waitFor({ timeout: 10000 });
+  verifier(true, "mémoire : Meaux est proposée à la réouverture");
+  await reprendre.click();
+  await page.getByText("Voici ce qui se passe chez vous").waitFor({ timeout: 15000 });
+  verifier(true, "mémoire : un geste suffit pour retrouver sa commune");
+  await page.getByRole("button", { name: "Oublier Meaux" }).click();
+  st = await stockage();
+  verifier(Object.keys(st.ls).length === 0, "mémoire : « Oublier » efface tout " + JSON.stringify(st.ls));
+  await page.goto(BASE + "/", { waitUntil: "networkidle" });
+  await page.getByText("Où habitez-vous ?").waitFor({ timeout: 10000 });
+  verifier(await page.getByText("Votre commune, sur ce téléphone").count() === 0, "mémoire : oubliée, elle n'est plus proposée");
+  /* Une valeur trafiquee n'est jamais affichee : elle est effacee. */
+  await page.evaluate(() => localStorage.setItem("repere.departement", '{"d":"77","c":"<script>"}'));
+  await page.goto(BASE + "/", { waitUntil: "networkidle" });
+  await page.getByText("Où habitez-vous ?").waitFor({ timeout: 10000 });
+  st = await stockage();
+  verifier(Object.keys(st.ls).length === 0 && await page.getByText("Votre commune, sur ce téléphone").count() === 0,
+    "mémoire : une valeur mal formée est effacée, jamais affichée");
+  const fautives = demandees.filter(u => adresseFautive(u) || /77284/.test(u));
+  verifier(fautives.length === 0, "mémoire : aucune requête ne porte le code de la commune " + JSON.stringify(fautives));
+  await ctx.close();
+}
+
 await navigateur.close();
 if (CAPTURES) console.log("captures : " + fs.readdirSync(CAPTURES).filter(f => f.endsWith(".png")).join(", "));
 console.log(echecs ? `${echecs} échec(s)` : "parcours complet, zéro échec");
