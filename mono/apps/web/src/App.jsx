@@ -1,5 +1,6 @@
 import React, { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Chargement, Vide, Puce, DefinitionProvider } from "@repere/ui";
+import { mots, motsCible, correspond } from "@repere/core";
 import {
   chargerIndex, chargerDepartement, chargerCommunesBeta, prechargerDepartement,
   annulerPrechargement, entrer, ETATS, PHRASES,
@@ -75,24 +76,8 @@ function ecrireDepartement(d, v) {
   catch { /* mode privé */ }
 }
 
-/* Comparer « Pyrenees at » et « Pyrénées-Atlantiques » : au clavier, personne ne
-   tape les accents, et le trait d'union se tape en espace une fois sur deux. On
-   ramene donc tout a des mots nus, et on demande que chaque mot cherche soit le
-   debut d'un mot du territoire — « cotes armor », « val doise », « 64 ». */
-function mots(t) {
-  return String(t || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase().replace(/[^a-z0-9]+/g, " ").trim().split(" ").filter(Boolean);
-}
-/* L'apostrophe se tape rarement : « val doise » doit trouver Val-d'Oise, et
-   « cote dor » la Cote-d'Or. On indexe donc aussi la forme sans apostrophe, ou
-   « d'Oise » devient un seul mot. */
-function motsCible(t) {
-  return [...new Set([...mots(t), ...mots(String(t || "").replace(/['\u2019]/g, ""))])];
-}
-function correspond(cherches, cible) {
-  return cherches.every(m => cible.some(w => w.startsWith(m)));
-}
-
+/* LA REGLE DE RECHERCHE (mots, motsCible, correspond) VIT DANS @repere/core
+   DEPUIS LE 29/09/2026 : l'application mobile cherche exactement comme le site. */
 /* OU HABITEZ-VOUS — UN SEUL CHAMP, ET C'EST LA CORRECTION LA PLUS IMPORTANTE
  * DE CETTE VERSION.
  *

@@ -10,6 +10,7 @@
  *   faits.js      assemblage et ordre des faits dates d'une commune
  *   comptes.js    lecture des comptes, rapports en texte, evolution
  *   aujourdhui.js derivation de l'ecran « Aujourd'hui »
+ *   recherche.js  la regle de recherche d'une commune ou d'un departement
  *
  * Les chargeurs (reseau, cache) vivent dans @repere/data-utils, qui ne depend
  * pas non plus du DOM et sert aussi a l'application mobile. */
@@ -18,3 +19,4 @@ export * from "./votes.js";
 export * from "./faits.js";
 export * from "./comptes.js";
 export * from "./aujourdhui.js";
+export * from "./recherche.js";

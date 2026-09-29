@@ -11,6 +11,7 @@ import path from "node:path";
 import {
   dateFr, jourFr, euros, titreLisible, procedure, decompte, positionsFiables, positionSur,
   calculerFaits, valeur, rapports, dernierExercice, evolution, deriverAujourdhui,
+  mots, motsCible, correspond,
 } from "../packages/core/src/index.js";
 
 const RACINE = path.resolve(import.meta.dirname, "..");
@@ -87,4 +88,11 @@ test("core — sur les donnees reelles : les faits sont dans l'ordre du temps et
   assert.equal(a.prochains[0].institution, "Assemblée nationale");
   assert.ok(a.dernierExercice === undefined, "deriverAujourdhui n'expose pas de fonction");
   assert.ok(a.exercice && dernierExercice(fiche, index.agregats).an === a.exercice.an);
+});
+
+test("core — la recherche ignore accents, traits d'union et apostrophes", () => {
+  assert.ok(correspond(mots("evry"), motsCible("Évry-Courcouronnes")));
+  assert.ok(correspond(mots("val doise"), motsCible("Val-d'Oise")));
+  assert.ok(correspond(mots("pyrenees at"), motsCible("Pyrénées-Atlantiques")));
+  assert.ok(!correspond(mots("paris"), motsCible("Pantin")));
 });
