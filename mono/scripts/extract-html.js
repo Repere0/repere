@@ -224,6 +224,35 @@ function nomsOfficiels() {
   return d;
 }
 
+/* LES COMPTES DES COMMUNES, RELEVES A LA SOURCE (BLOCKER 8, 29/09/2026).
+ *
+ * Le bloc REPERE_OFGL du mono-HTML est un artefact fige du 29/07/2026, produit
+ * par un script qui n'existe plus. outils/ofgl.py le refait depuis l'API de
+ * l'OFGL sur le runner et ecrit comptes-communes.json. Mesure a la premiere
+ * execution : il reproduit le bloc a l'identique sauf deux choses, toutes deux
+ * des corrections — les frais de personnel 2021 (a zero dans le bloc pour
+ * toutes les communes) et les communes fusionnees (population d'une
+ * collectivite, montants d'une autre).
+ *
+ * Il n'est retenu que complet et source : producteur, licence, url, date de la
+ * source, plus de 30 000 collectivites. Sinon on garde le bloc fige et on le
+ * dit — un releve rate ne doit jamais faire disparaitre des comptes. */
+function releveComptesCommunes() {
+  const f = path.join(ICI, "comptes-communes.json");
+  if (!fs.existsSync(f)) { console.warn("::warning::comptes-communes.json absent : les comptes des communes restent ceux du bloc fige du 29/07/2026 (voir outils/ofgl.py)"); return null; }
+  let d;
+  try { d = JSON.parse(fs.readFileSync(f, "utf8")); }
+  catch (e) { console.warn("::warning::comptes-communes.json illisible (" + e.message + ") : bloc fige conserve"); return null; }
+  const s = d && d.source;
+  const n = d && d.terr ? Object.keys(d.terr).length : 0;
+  if (!s || !s.producteur || !s.licence || !s.url || !s.modifie || !s.releve_le || n < 30000 || !Array.isArray(d.exercices)) {
+    console.warn("::warning::comptes-communes.json incomplet (" + n + " collectivites) : bloc fige conserve");
+    return null;
+  }
+  console.log("comptes des communes  : releve OFGL du " + s.releve_le + " (source modifiee le " + s.modifie + "), " + n + " collectivites");
+  return d;
+}
+
 /* LES HUIT DEPARTEMENTS DE LA BETA. Ecrits une fois, ici, et repris par le banc :
    deux listes qui divergent produiraient un index incomplet que rien ne verrait. */
 const BETA = ["75", "77", "78", "91", "92", "93", "94", "95"];
@@ -388,6 +417,18 @@ async function extraire() {
   const sante = verifierSante(RNE, OFGL, CIRCOS);
 
   const libelles = RNE.cl || {};
+  const releveOfgl = releveComptesCommunes();
+  if (releveOfgl && OFGL && OFGL.ech && OFGL.ech.commune) {
+    /* Le releve remplace les comptes COMMUNAUX du bloc fige, et eux seuls :
+       departements et regions restent ceux du bloc, et la source affichee le
+       dit (voir `comptes` dans index.json plus bas). */
+    OFGL.ech.commune.terr = Object.fromEntries(Object.entries(releveOfgl.terr).map(([c, ex]) => [c, { ex }]));
+    OFGL.ech.commune.exercices = releveOfgl.exercices;
+    OFGL.meta = { ...OFGL.meta, maj: releveOfgl.source.modifie, releve_le: releveOfgl.source.releve_le,
+      source: releveOfgl.source.url, communes_relevees: true };
+  } else if (OFGL && OFGL.meta) {
+    OFGL.meta = { ...OFGL.meta, communes_relevees: false };
+  }
   const communesOfgl = (OFGL && OFGL.ech && OFGL.ech.commune && OFGL.ech.commune.terr) || {};
   const circos = (CIRCOS && CIRCOS.communes) || {};
 
@@ -636,7 +677,8 @@ async function extraire() {
     },
     sources: {
       elus: (RNE.meta && { producteur: reaccentuer(RNE.meta.producteur), licence: RNE.meta.licence, maj: RNE.meta.maj }) || null,
-      comptes: (OFGL && OFGL.meta && { producteur: reaccentuer(OFGL.meta.producteur), licence: OFGL.meta.licence, maj: OFGL.meta.maj }) || null,
+      comptes: (OFGL && OFGL.meta && { producteur: reaccentuer(OFGL.meta.producteur), licence: OFGL.meta.licence, maj: OFGL.meta.maj,
+        ...(OFGL.meta.communes_relevees ? { releve_le: OFGL.meta.releve_le } : {}) }) || null,
       circonscriptions: (CIRCOS && { producteur: reaccentuer(CIRCOS.source), licence: CIRCOS.licence, decoupage: CIRCOS.decoupage }) || null,
       territoires: (noms && noms.sources) || null,
       /* Les libelles de communes ont leur propre producteur, distinct de celui des
