@@ -253,6 +253,29 @@ function releveComptesCommunes() {
   return d;
 }
 
+/* LES COMPTES DES DEPARTEMENTS ET DES REGIONS, RELEVES A LA SOURCE (29/09/2026).
+ * Meme regle que pour les communes : retenus seulement complets et sources.
+ * Les exercices ou plusieurs collectivites partagent un code (Bas-Rhin et
+ * Haut-Rhin sous « 67A » jusqu'en 2020, anciennes regions jusqu'en 2015) y
+ * sont deja a null : ce ne sont pas les comptes d'un seul territoire. */
+function releveComptesTerritoires() {
+  const f = path.join(ICI, "comptes-territoires.json");
+  if (!fs.existsSync(f)) { console.warn("::warning::comptes-territoires.json absent : departements et regions restent ceux du bloc fige (voir outils/ofgl.py)"); return null; }
+  let d;
+  try { d = JSON.parse(fs.readFileSync(f, "utf8")); }
+  catch (e) { console.warn("::warning::comptes-territoires.json illisible (" + e.message + ") : bloc fige conserve"); return null; }
+  const s = d && d.source, e = d && d.echelons;
+  const nD = e && e.departement ? Object.keys(e.departement.terr || {}).length : 0;
+  const nR = e && e.region ? Object.keys(e.region.terr || {}).length : 0;
+  if (!s || !s.producteur || !s.licence || !s.releve_le || nD < 90 || nR < 13
+      || !e.departement.modifie || !e.region.modifie) {
+    console.warn("::warning::comptes-territoires.json incomplet (" + nD + " departements, " + nR + " regions) : bloc fige conserve");
+    return null;
+  }
+  console.log("comptes territoires   : releve OFGL du " + s.releve_le + ", " + nD + " departements, " + nR + " regions");
+  return d;
+}
+
 /* LES HUIT DEPARTEMENTS DE LA BETA. Ecrits une fois, ici, et repris par le banc :
    deux listes qui divergent produiraient un index incomplet que rien ne verrait. */
 const BETA = ["75", "77", "78", "91", "92", "93", "94", "95"];
@@ -428,6 +451,14 @@ async function extraire() {
       source: releveOfgl.source.url, communes_relevees: true };
   } else if (OFGL && OFGL.meta) {
     OFGL.meta = { ...OFGL.meta, communes_relevees: false };
+  }
+  const releveTerr = releveComptesTerritoires();
+  if (releveTerr && OFGL && OFGL.ech) {
+    for (const ech of ["departement", "region"]) {
+      if (!OFGL.ech[ech]) continue;
+      OFGL.ech[ech].terr = Object.fromEntries(Object.entries(releveTerr.echelons[ech].terr).map(([c, ex]) => [c, { ex }]));
+    }
+    OFGL.meta = { ...OFGL.meta, territoires_releves_le: releveTerr.source.releve_le };
   }
   const communesOfgl = (OFGL && OFGL.ech && OFGL.ech.commune && OFGL.ech.commune.terr) || {};
   const circos = (CIRCOS && CIRCOS.communes) || {};
@@ -678,7 +709,8 @@ async function extraire() {
     sources: {
       elus: (RNE.meta && { producteur: reaccentuer(RNE.meta.producteur), licence: RNE.meta.licence, maj: RNE.meta.maj }) || null,
       comptes: (OFGL && OFGL.meta && { producteur: reaccentuer(OFGL.meta.producteur), licence: OFGL.meta.licence, maj: OFGL.meta.maj,
-        ...(OFGL.meta.communes_relevees ? { releve_le: OFGL.meta.releve_le } : {}) }) || null,
+        ...(OFGL.meta.communes_relevees ? { releve_le: OFGL.meta.releve_le } : {}),
+        ...(OFGL.meta.territoires_releves_le ? { territoires_releves_le: OFGL.meta.territoires_releves_le } : {}) }) || null,
       circonscriptions: (CIRCOS && { producteur: reaccentuer(CIRCOS.source), licence: CIRCOS.licence, decoupage: CIRCOS.decoupage }) || null,
       territoires: (noms && noms.sources) || null,
       /* Les libelles de communes ont leur propre producteur, distinct de celui des

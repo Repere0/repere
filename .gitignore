@@ -33,3 +33,4 @@ node_modules/
 data/*.zip
 data/brut_*/
 mono/scripts/comptes-communes.json
+mono/scripts/comptes-territoires.json

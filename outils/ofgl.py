@@ -225,9 +225,16 @@ def ecrire(terr):
 # Meme methode que les communes (29/09/2026, reprise du matin) : le bloc fige
 # porte aussi 101 departements et 17 regions, exercices 2012 a 2025, et la
 # regle V-2 en ecarte 9 (Alsace « 67A ») et 28 (regions d'avant la fusion de
-# 2016) : population d'une collectivite, montants d'une autre. On releve chaque
-# echelon avec SA cle de collectivite, on refuse les doublons au lieu
-# d'ecraser, et on compare au bloc avant d'ecrire quoi que ce soit.
+# 2016) : population d'une collectivite, montants d'une autre.
+# MESURE SUR LE RUNNER (run 36534374379) : la source elle-meme range sous le code
+# ACTUEL les collectivites d'avant la fusion — `dep_code` 67A porte le Bas-Rhin
+# ET le Haut-Rhin jusqu'en 2020, `reg_code` 27, 28, 32, 44, 75 portent les
+# anciennes regions jusqu'en 2015. Il n'existe donc PAS de comptes « de
+# l'Alsace » en 2018 : il en existe deux. Hors de ces exercices, le releve est
+# identique au bloc (1 366 exercices departementaux, 210 regionaux).
+# Regle : un exercice ou plusieurs collectivites (plusieurs SIREN) partagent le
+# code n'est pas publie — ses valeurs sont null et son annee est listee dans
+# `ecartes`, pour que l'ecran puisse dire pourquoi.
 DEST_TERR = "mono/scripts/comptes-territoires.json"
 TERRITOIRES = (
     ("departement", "ofgl-base-departements", ("dep_code", "code_dep")),
@@ -240,16 +247,27 @@ def releve_territoire(ds, champs_cle):
     meta = lire("/catalog/datasets/" + ds)
     noms = {f.get("name") for f in meta.get("fields", [])}
     cle = next((c for c in champs_cle if c in noms), None)
-    if not cle or "type_de_budget" not in noms:
+    ident = next((c for c in ("siren", "ident", "lbudg") if c in noms), None)
+    if not cle or not ident or "type_de_budget" not in noms:
         raise RuntimeError("%s : champs inattendus %s" % (ds, sorted(noms)))
     m = meta.get("metas", {}).get("default", {})
     modifie = str(m.get("modified") or m.get("data_processed") or "")[:10]
     ags = ", ".join('"%s"' % a for a in AGREGATS)
-    texte = exporter(ds, "%s, exer, agregat, montant, ptot, euros_par_habitant" % cle,
+    texte = exporter(ds, "%s, %s, exer, agregat, montant, ptot, euros_par_habitant" % (cle, ident),
                      'type_de_budget="Budget principal" and agregat in (%s)' % ags)
-    terr, doublons = {}, []
-    for l in csv.DictReader(io.StringIO(texte), delimiter=";"):
+    lignes = list(csv.DictReader(io.StringIO(texte), delimiter=";"))
+    identites = {}
+    for l in lignes:
+        identites.setdefault((l[cle], str(l["exer"])[:4]), set()).add(l[ident])
+    partages = {k for k, v in identites.items() if len(v) > 1}
+    terr, doublons, ecartes = {}, [], {}
+    for code, an in sorted(partages):
+        terr.setdefault(code, {})[an] = [None] * (1 + 2 * len(AGREGATS))
+        ecartes.setdefault(code, []).append(an)
+    for l in lignes:
         code, an = l[cle], str(l["exer"])[:4]
+        if (code, an) in partages:
+            continue
         k = AGREGATS.index(l["agregat"])
         ex = terr.setdefault(code, {}).setdefault(an, [None] * (1 + 2 * len(AGREGATS)))
         if ex[1 + 2 * k] is not None:
@@ -261,7 +279,7 @@ def releve_territoire(ds, champs_cle):
         ex[2 + 2 * k] = round(h) if h is not None else None
         if ex[0] is None and pt is not None:
             ex[0] = int(pt)
-    return cle, modifie, terr, doublons
+    return cle, modifie, terr, doublons, ecartes
 
 
 def comparer_territoire(ech, terr, bloc):
@@ -274,6 +292,8 @@ def comparer_territoire(ech, terr, bloc):
             b = (terr.get(code) or {}).get(an)
             if a is not None and b is not None and list(a) == list(b):
                 egaux += 1
+                continue
+            if b is not None and all(v is None for v in b):
                 continue
             diff += 1
             if len(exemples) < 12:
@@ -292,13 +312,14 @@ def produire_territoires():
     sortie, lignes, arret = {}, [], False
     for ech, ds, champs in TERRITOIRES:
         try:
-            cle, modifie, terr, doublons = releve_territoire(ds, champs)
+            cle, modifie, terr, doublons, ecartes = releve_territoire(ds, champs)
         except Exception as e:
             lignes.append("%s : echec %r" % (ech, e)); arret = True; continue
         if doublons:
             lignes.append("%s : ARRET, %d doublons (cle %s), ex. %s" % (ech, len(doublons), cle, doublons[:6])); arret = True
-        lignes.append(comparer_territoire(ech, terr, bloc))
-        sortie[ech] = {"jeu": ds, "cle": cle, "modifie": modifie, "terr": terr}
+        lignes.append(comparer_territoire(ech, terr, bloc) + " ; ecartes (plusieurs collectivites sous un code) : %s" % (
+            ", ".join("%s/%s" % (c, "+".join(a)) for c, a in sorted(ecartes.items())) or "aucun"))
+        sortie[ech] = {"jeu": ds, "cle": cle, "modifie": modifie, "terr": terr, "ecartes": ecartes}
     annoncer("territoires", " || ".join(lignes))
     if arret or len(sortie.get("departement", {}).get("terr", {})) < 90 or len(sortie.get("region", {}).get("terr", {})) < 13:
         annoncer("territoires ARRET", "rien n'est ecrit")
