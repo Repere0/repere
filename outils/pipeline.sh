@@ -318,6 +318,7 @@ echo "site engendre depuis mono/ : $(find site_engendre -type f | wc -l) fichier
 # 22/09/2026 sur le runner GitHub reel : 120 controles inline + 65 node:test,
 # 0 echec) qui le garde, pas test_repere.mjs — qui ne connait ni son DOM ni
 # ses classes.
+banc "preuve" bash -c 'echo " ok | avant"; echo " ECHEC | echec volontaire de preuve -> 42 %"; exit 1'
 echo "== banc : le fichier autonome =="
 banc "fichier autonome" node test_repere.mjs "$APP"
 
