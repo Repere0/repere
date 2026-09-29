@@ -98,6 +98,38 @@ for (const largeur of [360, 390, 430]) {
   verifier(true, `${largeur}px : retour à l'accueil`);
   await page.close();
 }
+/* LES PANNES PARTIELLES DISENT « PAS ARRIVE », JAMAIS « ABSENT » — audit de
+   #45, 29/09/2026. Avant correction, un fichier de projets ou de votes coupe
+   faisait afficher « Aucun projet ... n'est publie » : une phrase fausse. */
+async function ouvrirAvecPanne(motif) {
+  const page = await navigateur.newPage({ viewport: { width: 390, height: 800 }, isMobile: true, hasTouch: true });
+  await page.route(motif, r => r.abort());
+  await page.goto(BASE + "/", { waitUntil: "networkidle" });
+  await page.getByLabel(/Où habitez-vous/).fill(COMMUNE.saisie);
+  await page.getByRole("button", { name: new RegExp("^" + COMMUNE.nom + ",") }).first().click();
+  await page.waitForTimeout(1500);
+  await page.waitForLoadState("networkidle");
+  const texte = await page.evaluate(() => document.body.textContent);
+  await page.close();
+  return texte;
+}
+{
+  const t = await ouvrirAvecPanne("**/data/projets/**");
+  verifier(/projets financés par l'État ne sont pas arrivés/.test(t) && !/Aucun projet financé/.test(t),
+    "panne des projets : « pas arrivés », jamais « aucun projet »");
+  verifier(/est maire de Meaux/.test(t), "panne des projets : le reste de l'écran s'affiche");
+}
+{
+  const t = await ouvrirAvecPanne("**/data/scrutins/**");
+  verifier(/votes de l'Assemblée ne sont pas arrivés/.test(t) && !/Aucun vote solennel/.test(t),
+    "panne des votes : « pas arrivés », jamais « aucun vote »");
+}
+{
+  const t = await ouvrirAvecPanne("**/data/departments/**");
+  verifier(/n'a pas réussi à joindre le serveur/.test(t) && /Réessayer/.test(t),
+    "panne du département : phrase d'échec et bouton Réessayer");
+}
+
 await navigateur.close();
 if (CAPTURES) console.log("captures : " + fs.readdirSync(CAPTURES).filter(f => f.endsWith(".png")).join(", "));
 console.log(echecs ? `${echecs} échec(s)` : "parcours complet, zéro échec");
