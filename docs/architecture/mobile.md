@@ -28,7 +28,7 @@ une panne d'installation qui ne le concerne pas. L'application relie `@repere/co
 | faits, votes, comptes, recherche, « Aujourd'hui » | `@repere/core` | idem, importé |
 | composants (Source, Vide, Carte…) | `packages/ui` (DOM) | `src/lib/composants.tsx` (React Native) |
 | navigation | onglets maison + `historique.js` | Expo Router (pile native, geste retour) |
-| stockage | IndexedDB (une base, un magasin, garde) | **mémoire seulement** pour l'instant |
+| stockage | IndexedDB (une base, un magasin, garde) | données en mémoire ; la commune, **seulement si le lecteur le demande**, dans un fichier du cache (`lib/memoire.ts`, seul stockage autorisé par les invariants) |
 
 Le stockage mobile : `store.js` retombe en mémoire quand IndexedDB manque. Donc **pas de
 hors-ligne sur téléphone aujourd'hui**. Le brancher (fichier ou SQLite d'Expo) exige de

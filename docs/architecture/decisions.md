@@ -16,7 +16,7 @@
 
 | n° | question | ce qui en dépend |
 |---|---|---|
-| D-M3 | Se souvenir de la commune d'une ouverture à l'autre (sur l'appareil seulement) ? | étape 9 du parcours de décembre ; aujourd'hui l'app repart de zéro |
+| D-M3 | Se souvenir de la commune d'une ouverture à l'autre (sur l'appareil seulement) ? **Préparé dans la PR « mémoire de la commune », non fusionné** : sur demande explicite du lecteur, deux codes publics dans le cache (exclu des sauvegardes), « Oublier » d'un geste. À valider : le principe, et la phrase de confidentialité de l'app (le texte du site dit qu'on ne garde que le département). | étape 9 du parcours de décembre |
 | D-M7 | Identifiant d'application définitif (le dossier Play Store du 25/08 proposait `fr.repere.app`) | ne change **plus jamais** après la première publication ; laissé vide dans `app.json` |
 | D-M8 | Publier sur l'App Store : 99 €/an | **contredit l'arbitrage du 25/08** (Play Store 25 € + PWA sur iOS, Apple jugé trop cher et incertain) ; ~40 % du budget total chaque année ; exige un éditeur identifié |
 | D-M9 | Structure juridique de l'éditeur | les deux magasins affichent un éditeur ; prérequis de la phase 8 |

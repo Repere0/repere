@@ -11,7 +11,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { router } from "expo-router";
 import { mots, motsCible, correspond, trouverCommunes } from "@repere/core";
 import { chargerCommunesBeta, chargerIndex, ETATS, PHRASES } from "../lib/donnees";
-import { Vide } from "../lib/composants";
+import { Bouton, Carte, Texte, Vide } from "../lib/composants";
 import { useSelection } from "../lib/selection";
 import { couleurs, CIBLE, PAS } from "../lib/theme";
 
@@ -21,7 +21,7 @@ type Index = { departements: { code: string; nom?: string }[] };
 
 export default function Accueil() {
   const marges = useSafeAreaInsets();
-  const { choisir } = useSelection();
+  const { choisir, retenue, oublier } = useSelection();
   const [etat, setEtat] = useState<string>(ETATS.EN_COURS);
   const [beta, setBeta] = useState<Beta | null>(null);
   const [index, setIndex] = useState<Index | null>(null);
@@ -64,6 +64,11 @@ export default function Accueil() {
     router.push("/chez-vous");
   };
 
+  /* La commune retenue sur ce telephone, si le lecteur l'a demande
+     (lib/memoire.ts). Son nom vient de la liste publiee : si elle n'y figure
+     plus, on ne propose rien plutot qu'un code nu. */
+  const nomRetenue = retenue && beta ? beta.communes[retenue.c] : undefined;
+
   const phrase = PHRASES[etat as keyof typeof PHRASES] as { titre: string; corps: string; action?: string } | undefined;
 
   return (
@@ -77,7 +82,14 @@ export default function Accueil() {
           <View style={s.tete}>
             <Text style={s.marque} accessibilityRole="header">Repère</Text>
             <Text style={s.promesse}>Qui décide chez vous, et où va votre argent. Chaque chiffre porte sa source officielle.</Text>
-            <Text style={s.question} nativeID="question">Où habitez-vous ?</Text>
+            {retenue && nomRetenue ? (
+              <Carte echelon="ville" titre="Votre commune, sur ce téléphone">
+                <Texte fort>{nomRetenue}</Texte>
+                <Bouton texte={`Voir ce qui se passe à ${nomRetenue}`} onPress={() => ouvrir(retenue.c, nomRetenue)} />
+                <Bouton texte={`Oublier ${nomRetenue}`} discret onPress={oublier} />
+              </Carte>
+            ) : null}
+            <Text style={s.question} nativeID="question">{retenue && nomRetenue ? "Une autre commune ?" : "Où habitez-vous ?"}</Text>
             <TextInput
               value={filtre}
               onChangeText={setFiltre}
