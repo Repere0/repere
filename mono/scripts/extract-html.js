@@ -928,16 +928,43 @@ async function extraire() {
   }
   if (projets) {
     const parDepProjets = new Map();
-    for (const [insee, liste] of Object.entries(projets.communes)) {
+    /* UN PROJET D'UNE COMMUNE FUSIONNEE VA A LA COMMUNE D'AUJOURD'HUI (29/09/2026).
+       Mesure en production : 93059 (Pierrefitte-sur-Seine) portait un projet de
+       l'exercice 2024 et etait ignore, parce que Pierrefitte est commune deleguee
+       de Saint-Denis (93066) depuis le 1er janvier 2025. Le code etait VALIDE a
+       l'exercice publie ; c'est le territoire qui a change. La table vient du Code
+       officiel geographique (`successeurs` de noms-communes.json, voir
+       outils/noms_communes.py) : rien n'est devine. La ligne garde son intitule
+       tel quel et porte l'ancien code et l'ancien nom, pour que l'ecran dise
+       pour quelle commune l'Etat l'avait engagee. Un successeur hors du
+       departement n'est jamais suivi : la ligne changerait de paquet sans que
+       personne ne l'ait decide. */
+    const successeurs = (officiels && officiels.successeurs) || {};
+    const rattaches = [];
+    for (const [code, liste] of Object.entries(projets.communes)) {
       if (!Array.isArray(liste) || !liste.length) continue;
+      let insee = code;
+      let lignes = liste;
+      const suite = successeurs[code];
+      if (suite && !(officiels && officiels.noms[code])) {
+        const depAncien = code.startsWith("97") ? code.slice(0, 3) : code.slice(0, 2);
+        const depSuite = suite.code.startsWith("97") ? suite.code.slice(0, 3) : suite.code.slice(0, 2);
+        if (depAncien === depSuite) {
+          insee = suite.code;
+          lignes = liste.map(l => ({ ...l, ancien_code: code, ancienne_commune: suite.nom || null }));
+          rattaches.push(code + " -> " + suite.code);
+        }
+      }
       /* Le departement d'un code INSEE : deux caracteres, trois en outre-mer.
          Aucune autre derivation, et une commune hors des paquets connus est
          ecartee plutot que rangee au hasard. */
       const dep = insee.startsWith("97") ? insee.slice(0, 3) : insee.slice(0, 2);
       if (!paquets.has(dep)) continue;
       if (!parDepProjets.has(dep)) parDepProjets.set(dep, {});
-      parDepProjets.get(dep)[insee] = liste;
+      const cible = parDepProjets.get(dep);
+      cible[insee] = (cible[insee] || []).concat(lignes);
     }
+    if (rattaches.length) console.log("projets rattaches a la commune d'aujourd'hui : " + rattaches.join(", "));
     for (const dep of [...parDepProjets.keys()].sort()) {
       ecrire(path.join(SORTIE, "projets", dep + ".json"), {
         v: 1, d: dep,
@@ -1097,9 +1124,11 @@ async function extraire() {
             absence dans le monde" du 16/09/2026). Ville-d'Avray est ce cas :
             on l'accepte.
          2. Le code n'est reconnu NULLE PART, pas meme dans le referentiel
-            officiel des communes (noms-communes.json) - 93059 est ce cas :
-            un code invalide ou retire cote source DGCL, pas une faute du
-            pipeline. Le arreter TOUT le build pour UNE ligne suspecte
+            officiel des communes (noms-communes.json). CORRECTION DU 29/09/2026 :
+            93059 n'etait PAS ce cas - c'etait Pierrefitte-sur-Seine, fusionnee
+            dans Saint-Denis au 1er janvier 2025, et ses projets sont desormais
+            rattaches plus haut par la table officielle des successeurs. Ce qui
+            reste ici serait un code qu'aucune table ne connait. Le arreter TOUT le build pour UNE ligne suspecte
             revient a publier zero donnee a cause d'une seule ligne
             douteuse - le mauvais compromis. On l'IGNORE, bruyamment, et on
             continue : c'est le meme choix que outils/circos.py fait deja
@@ -1121,6 +1150,15 @@ async function extraire() {
           if (!pr.intitule || typeof pr.subvention !== "number" || !pr.annee) {
             console.error(`ECHEC : ${insee} porte une ligne sans intitule, sans montant ou sans annee`);
             process.exit(10);
+          }
+          /* Une ligne rattachee doit l'etre par la table officielle, et rester
+             dans son departement : relu ici sans reutiliser la boucle d'ecriture. */
+          if (pr.ancien_code) {
+            const table = JSON.parse(fs.readFileSync(path.join(ICI, "noms-communes.json"), "utf8")).successeurs || {};
+            if (!table[pr.ancien_code] || table[pr.ancien_code].code !== insee) {
+              console.error(`ECHEC : ${insee} porte une ligne de ${pr.ancien_code} sans rattachement officiel`);
+              process.exit(10);
+            }
           }
         }
       }

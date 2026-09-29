@@ -66,6 +66,33 @@ except Exception as e:
 
 noms = {c["code"]: c["nom"] for c in communes if c.get("type") == "commune-actuelle" and c.get("nom")}
 
+# LES ANCIENS CODES ET LEUR COMMUNE D'AUJOURD'HUI (29/09/2026). Mesure : le seul
+# code des projets finances par l'Etat que le build ignorait etait 93059,
+# Pierrefitte-sur-Seine, commune deleguee de Saint-Denis (93066) depuis la
+# fusion du 1er janvier 2025. Son projet de 2024 (3,9 M EUR, groupe scolaire)
+# disparaissait de l'ecran de Saint-Denis, avec un commentaire qui accusait la
+# source d'un « code invalide ». La source avait raison : le code etait valide a
+# l'exercice 2024. La table vient du meme paquet (`anciensCodes` de chaque commune
+# actuelle, derive du Code officiel geographique) : rien n'est devine. Un ancien
+# code qui designe encore une commune actuelle, ou qui aurait deux successeurs,
+# n'est pas retenu.
+anciens_noms = {c["code"]: c["nom"] for c in communes
+                if c.get("type") in ("commune-deleguee", "commune-associee") and c.get("nom")}
+candidats = {}
+for c in communes:
+    if c.get("type") != "commune-actuelle":
+        continue
+    for ancien in c.get("anciensCodes") or []:
+        if ancien != c["code"] and ancien not in noms:
+            candidats.setdefault(ancien, set()).add(c["code"])
+successeurs = {}
+for ancien, actuels in sorted(candidats.items()):
+    if len(actuels) != 1:
+        print("::warning::ancien code %s rattache a plusieurs communes (%s) - non retenu"
+              % (ancien, ", ".join(sorted(actuels))))
+        continue
+    successeurs[ancien] = {"code": actuels.pop(), "nom": anciens_noms.get(ancien)}
+
 # ON N'ECRASE PAS UN FICHIER VALIDE PAR UN FICHIER MAIGRE. La France compte environ
 # 34 900 communes ; en dessous de 30 000, la source a change de forme et il vaut
 # mieux garder le releve de la veille que publier des noms manquants.
@@ -86,6 +113,7 @@ paquet = {
         "portee": "libellé officiel des %d communes actuelles" % len(noms),
     },
     "noms": dict(sorted(noms.items())),
+    "successeurs": successeurs,
 }
 os.makedirs(os.path.dirname(DEST), exist_ok=True)
 brut = json.dumps(paquet, ensure_ascii=False, separators=(",", ":"))
@@ -100,5 +128,10 @@ for code, attendu in temoins.items():
     obtenu = relu["noms"].get(code)
     assert obtenu == attendu, "temoin %s : « %s » au lieu de « %s »" % (code, obtenu, attendu)
 
+# Temoin des successeurs : le cas mesure qui a motive la table.
+assert relu["successeurs"].get("93059", {}).get("code") == "93066", "temoin 93059 -> 93066 absent"
+assert not (set(relu["successeurs"]) & set(relu["noms"])), "un ancien code designe encore une commune actuelle"
+
 print("noms officiels             %s  (%.0f Ko, %d communes, paquet %s)"
       % (DEST, len(brut.encode("utf-8")) / 1024, len(noms), version))
+print("anciens codes rattaches    %d" % len(successeurs))

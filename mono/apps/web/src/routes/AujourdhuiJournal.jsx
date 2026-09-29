@@ -2,6 +2,7 @@ import React from "react";
 import { Vide, Source, Chargement, dateFr } from "@repere/ui";
 import { useAujourdhui } from "../lib/useAujourdhui.js";
 import { LigneVote } from "../lib/votes.jsx";
+import { noteRattachement } from "../lib/faits.js";
 
 /* DIRECTION A — « LE JOURNAL » (19/09/2026), NON RETENUE POUR LA VERSION
  * BRANCHEE — voir Aujourdhui.jsx (direction C, « la question ») pour celle
@@ -65,7 +66,7 @@ export default function AujourdhuiJournal({ paquet, index, commune, aller }) {
             mention={srcScrutins.releve_le ? "relevé le " + dateFr(srcScrutins.releve_le) : undefined} /> : null} />
       ) : dernierFait && dernierFait.type === "projet" ? (
         <Fait echelon="ville" titre={dernierFait.p.intitule}
-          enfants={<p className="ligne-note">L'État a engagé {euros(dernierFait.p.subvention)}, exercice {dernierFait.p.annee}.</p>}
+          enfants={<p className="ligne-note">L'État a engagé {euros(dernierFait.p.subvention)}, exercice {dernierFait.p.annee}.{noteRattachement(dernierFait.p) ? " " + noteRattachement(dernierFait.p) : ""}</p>}
           source={srcProjets ? <Source producteur={srcProjets.producteur} licence={srcProjets.licence} maj={srcProjets.mis_a_jour_le} /> : null} />
       ) : (
         <Vide titre={`Aucune décision datée n'est publiée pour ${nomCommune}.`}
