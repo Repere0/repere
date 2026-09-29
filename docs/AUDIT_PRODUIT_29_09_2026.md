@@ -57,7 +57,7 @@ département est rappelé, et la commune doit être choisie à nouveau.
 | P1 | « Aujourd'hui » : 3 lignes de source sur 4 sans lien ; « Où va l'argent » : 3 sur 4 | #42 (4/4) |
 | P1 | l'écran par défaut répond à 2 questions sur 6 ; « Aujourd'hui », qui en couvre 4 à 5, n'est qu'un lien | **décision** |
 | P1 | au retour, la commune n'est pas rappelée : la boucle « depuis votre visite » demande de retaper sa commune | **décision** |
-| P2 | la barre des 5 écrans prend 3 lignes à 360 et 390 px (≈ 150 px) | à faire |
+| P2 | la barre des 5 écrans prend 3 lignes à 360 et 390 px (≈ 150 px) | non touché : le défilement horizontal a déjà été écarté (on ne voyait pas qu'il y avait une suite) ; seule piste restante, des libellés plus courts, qui sont une décision de formulation |
 | P2 | « Ce qui a été décidé » fait 10 hauteurs d'écran à 360 px ; « Ce qui se passe », 8 | à faire |
 | P2 | « Aujourd'hui », commune avec projet : le « à venir » passe sous la ligne de flottaison | à faire |
 | P3 | les intitulés de projets sans accents (« Renovation ») : recopiés tels quels, c'est voulu | — |
