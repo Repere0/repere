@@ -3,6 +3,7 @@ import { Vide, Source, Chargement, dateFr } from "@repere/ui";
 import { useAujourdhui } from "../lib/useAujourdhui.js";
 import { LigneVote } from "../lib/votes.jsx";
 import { COMPETENCES } from "../lib/competences.js";
+import { noteRattachement } from "../lib/faits.js";
 
 /* DIRECTION B — « LE TERRITOIRE » (19/09/2026), NON RETENUE — voir
  * Aujourdhui.jsx (direction C, « la question ») pour celle qui l'est, et
@@ -63,6 +64,7 @@ export default function AujourdhuiTerritoire({ paquet, index, commune, aller }) 
             {dernierFait && dernierFait.type === "projet" ? (
               <>
                 <p className="ligne-note"><b>{dernierFait.p.intitule}</b></p>
+                {noteRattachement(dernierFait.p) ? <p className="ligne-note">{noteRattachement(dernierFait.p)}</p> : null}
                 {srcProjets ? <Source producteur={srcProjets.producteur} licence={srcProjets.licence} maj={srcProjets.mis_a_jour_le} /> : null}
               </>
             ) : null}

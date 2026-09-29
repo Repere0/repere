@@ -4,7 +4,7 @@ import {
   chargerProjets, chargerDeputes, chargerCatalogueScrutins, chargerVotes, chargerEvenements, ETATS,
 } from "@repere/data-utils";
 import { LigneVote } from "../lib/votes.jsx";
-import { calculerFaits } from "../lib/faits.js";
+import { calculerFaits, noteRattachement } from "../lib/faits.js";
 
 const DGCL_URL = "https://www.data.gouv.fr/datasets/projets-finances-par-les-dotations-"
   + "de-soutien-a-linvestissement-des-collectivites-territoriales";
@@ -71,6 +71,7 @@ function LigneProjet({ p, dispositifs }) {
         {nom}{p.dispositif && nom !== p.dispositif ? " (" + p.dispositif + ")" : ""}
         {p.cout ? ` · coût total du projet annoncé : ${euros(p.cout)} hors taxes` : ""}
       </div>
+      {noteRattachement(p) ? <div className="ligne-note">{noteRattachement(p)}</div> : null}
     </div>
   );
 }
