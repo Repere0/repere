@@ -9,6 +9,9 @@
 | [decisions.md](decisions.md) | avant de reproposer quelque chose : ce qui est tranché, ce qui attend le porteur |
 | [tests.md](tests.md) | avant de dire « c'est vert » |
 | [conventions.md](conventions.md) | avant d'écrire du code ou du texte affiché |
+| [hors-ligne.md](hors-ligne.md) | avant de proposer un mode hors ligne sur téléphone |
+| [identite-et-magasins.md](identite-et-magasins.md) | avant toute publication, identifiant, dépense de magasin |
+| [ux-parcours-20-secondes.md](ux-parcours-20-secondes.md) | avant de toucher au parcours mobile |
 
 ## Le produit en une phrase
 
