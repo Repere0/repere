@@ -1240,6 +1240,36 @@ console.log("\n--- hierarchie mobile : le contenu avant le decor ---------------
   await c.close();
 }
 
+console.log("\n--- chaque source mene a la source ---------------------------");
+/* 29/09/2026 : sur « Aujourd'hui », ecran d'entree de la demonstration, 1 ligne
+   de source sur 4 permettait d'aller verifier ; sur « Ou va l'argent », 1 sur 4.
+   Nommer une source sans y mener, c'est demander d'etre cru. Mesure sur une
+   commune du 93 qui a un projet finance (cherchee dans la donnee publiee). */
+{
+  const pr = JSON.parse(fs.readFileSync(path.join(DIST, "data", "projets", "93.json"), "utf8")).communes;
+  const pq = JSON.parse(fs.readFileSync(path.join(DIST, "data", "departments", "93.json"), "utf8")).communes;
+  const [, f] = Object.entries(pq).find(([c]) => pr[c]) || [];
+  if (!f) {
+    verif("sources — une commune du 93 avec projet pour eprouver les liens", false, "aucune");
+  } else {
+    const c = await nav.newContext({ viewport: { width: 390, height: 844 } });
+    const p = await c.newPage();
+    await p.addInitScript(([k, v]) => localStorage.setItem(k, v), ["repere.departement", JSON.stringify({ d: "93", v: null })]);
+    await p.goto(base, { waitUntil: "networkidle" }); await p.waitForTimeout(500);
+    await p.getByLabel(/Votre commune/i).fill(f.nom); await p.waitForTimeout(300);
+    await p.getByRole("button", { name: f.nom, exact: true }).first().click(); await p.waitForTimeout(900);
+    const sansLien = () => p.evaluate(() => [...document.querySelectorAll(".source")]
+      .filter(s => !s.querySelector("a[href^='http']")).map(s => s.innerText.slice(0, 60)));
+    await p.getByRole("button", { name: "Où va l'argent", exact: true }).click(); await p.waitForTimeout(1300);
+    const argent = await sansLien();
+    await p.getByRole("button", { name: /Voir aujourd.hui/ }).click(); await p.waitForTimeout(1500);
+    const auj = await sansLien();
+    await c.close();
+    verif(`invariant 4 — Aujourd'hui (${f.nom}) : chaque ligne de source mene a la source`, auj.length === 0, auj.join(" | "));
+    verif(`invariant 4 — Ou va l'argent (${f.nom}) : chaque ligne de source mene a la source`, argent.length === 0, argent.join(" | "));
+  }
+}
+
 console.log("\n--- recherche et accents -------------------------------------");
 /* LA RECHERCHE NE DOIT PAS DEPENDRE DES ACCENTS, DANS LES DEUX SENS. Depuis que
    les libelles portent leur orthographe officielle, une comparaison brute

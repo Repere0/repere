@@ -564,7 +564,7 @@ export default function QuiDecide({ paquet, index, commune }) {
           </div>
         )}
         {srcCirco ? (
-          <Source producteur={srcCirco.producteur} licence={srcCirco.licence}
+          <Source producteur={srcCirco.producteur} licence={srcCirco.licence} url={srcCirco.url}
             mention={"découpage de " + srcCirco.decoupage} />
         ) : null}
 

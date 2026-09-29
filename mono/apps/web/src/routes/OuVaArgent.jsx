@@ -70,7 +70,7 @@ function CompteTerritoire({ titre, echelon, exerciceAn, ex, agregats, src }) {
       {rr.length >= 2 ? (
         <>
           <div className="tuiles">{rr.map((o, i) => <Tuile key={i} k={o.l} v={o.v} n={o.d} />)}</div>
-          <Source calcul producteur={src ? src.producteur : ""} licence={src ? src.licence : ""} maj={src ? src.maj : ""} />
+          <Source calcul producteur={src ? src.producteur : ""} licence={src ? src.licence : ""} maj={src ? src.maj : ""} url={src ? src.url : undefined} />
         </>
       ) : (
         <Vide titre={`Pas assez de montants publiés pour traduire les comptes de ce territoire (exercice ${exerciceAn}).`}
@@ -171,7 +171,7 @@ export default function OuVaArgent({ paquet, index, commune }) {
           <div className="tuiles">
             {rr.map((o, i) => <Tuile key={i} k={o.l} v={o.v} n={o.d} />)}
           </div>
-          <Source calcul producteur={src ? src.producteur : ""} licence={src ? src.licence : ""} maj={src ? src.maj : ""} />
+          <Source calcul producteur={src ? src.producteur : ""} licence={src ? src.licence : ""} maj={src ? src.maj : ""} url={src ? src.url : undefined} />
         </Carte>
       ) : (
         <Vide titre="Pas assez de montants pour traduire ces comptes."

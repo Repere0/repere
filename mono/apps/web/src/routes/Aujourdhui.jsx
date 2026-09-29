@@ -105,7 +105,7 @@ export default function Aujourdhui({ paquet, index, commune, aller, derniereVisi
               : `Vote du député élu dans votre circonscription (${ordinal(dernierVote.circo)} circonscription${nomDep ? " — " + nomDep : ""}), à l'Assemblée nationale :`}
           </p>
           <LigneVote sc={dernierVote.sc} position={dernierVote.position} base={base} loi qui={dernierVote.qui} />
-          {srcScrutins ? <Source producteur={srcScrutins.producteur} licence={srcScrutins.licence}
+          {srcScrutins ? <Source producteur={srcScrutins.producteur} licence={srcScrutins.licence} url={srcScrutins.url}
             mention={srcScrutins.releve_le ? "relevé le " + dateFr(srcScrutins.releve_le) : undefined} /> : null}
         </div>
       ) : dernierFait && dernierFait.type === "projet" ? (
@@ -113,7 +113,7 @@ export default function Aujourdhui({ paquet, index, commune, aller, derniereVisi
           <p><b>{dernierFait.p.intitule}</b></p>
           <p className="ligne-note">L'État a engagé {euros(dernierFait.p.subvention)}, exercice {dernierFait.p.annee}.</p>
           {noteRattachement(dernierFait.p) ? <p className="ligne-note">{noteRattachement(dernierFait.p)}</p> : null}
-          {srcProjets ? <Source producteur={srcProjets.producteur} licence={srcProjets.licence} maj={srcProjets.mis_a_jour_le} /> : null}
+          {srcProjets ? <Source producteur={srcProjets.producteur} licence={srcProjets.licence} maj={srcProjets.mis_a_jour_le} url={srcProjets.url} /> : null}
         </div>
       ) : dernierFait && dernierFait.type === "editorial" ? (
         /* FAIT REDACTIONNEL — BLOCKER #3, MISSION DU 22/09/2026. Chaque fait
@@ -153,7 +153,7 @@ export default function Aujourdhui({ paquet, index, commune, aller, derniereVisi
           <p className="quest-q2">Et dans votre commune ?</p>
           <p className="ligne-note"><b>{dernierProjet.p.intitule}</b></p>
           <p className="ligne-note">L'État a engagé {euros(dernierProjet.p.subvention)} à {ancienneCommune(dernierProjet.p) ? `${ancienneCommune(dernierProjet.p)} (aujourd'hui rattachée à ${nomCommune})` : nomCommune}, exercice {dernierProjet.p.annee}.</p>
-          {srcProjets ? <Source producteur={srcProjets.producteur} licence={srcProjets.licence} maj={srcProjets.mis_a_jour_le} /> : null}
+          {srcProjets ? <Source producteur={srcProjets.producteur} licence={srcProjets.licence} maj={srcProjets.mis_a_jour_le} url={srcProjets.url} /> : null}
         </div>
       ) : null}
 
@@ -161,7 +161,7 @@ export default function Aujourdhui({ paquet, index, commune, aller, derniereVisi
         <div className="quest-suivante">
           <p className="quest-q2">Combien ça représente ?</p>
           <p className="ligne-note">{rapportDette.l} : <b>{rapportDette.v}</b>. {rapportDette.d}</p>
-          <Source calcul producteur={srcComptes ? srcComptes.producteur : ""} licence={srcComptes ? srcComptes.licence : ""} maj={srcComptes ? srcComptes.maj : ""} />
+          <Source calcul url={srcComptes ? srcComptes.url : undefined} producteur={srcComptes ? srcComptes.producteur : ""} licence={srcComptes ? srcComptes.licence : ""} maj={srcComptes ? srcComptes.maj : ""} />
         </div>
       ) : null}
 
@@ -174,10 +174,10 @@ export default function Aujourdhui({ paquet, index, commune, aller, derniereVisi
             </p>
           ))}
           {nouveautesProjets && srcProjets ? (
-            <Source producteur={srcProjets.producteur} licence={srcProjets.licence} maj={srcProjets.mis_a_jour_le} />
+            <Source producteur={srcProjets.producteur} licence={srcProjets.licence} maj={srcProjets.mis_a_jour_le} url={srcProjets.url} />
           ) : null}
           {nouveautesVotes && srcScrutins ? (
-            <Source producteur={srcScrutins.producteur} licence={srcScrutins.licence}
+            <Source producteur={srcScrutins.producteur} licence={srcScrutins.licence} url={srcScrutins.url}
               mention={srcScrutins.releve_le ? "relevé le " + dateFr(srcScrutins.releve_le) : undefined} />
           ) : null}
           {nouveautes.filter(f => f.type === "editorial").map(f => (

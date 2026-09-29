@@ -792,12 +792,22 @@ async function extraire() {
       },
     },
     sources: {
+      /* CHAQUE SOURCE PORTE SON ADRESSE (29/09/2026). Mesure : sur « Aujourd'hui »,
+         l'ecran d'entree de la demonstration, 1 ligne de source sur 4 menait a la
+         source ; les trois autres la nommaient sans permettre de la verifier.
+         Les adresses sont celles que les donnees portent deja : bloc RNE, bloc
+         CIRCOS, et pour les comptes celle du releve s'il a ete fait, sinon celle
+         du jeu des comptes des communes porte par le bloc OFGL. */
       elus: (RNE.meta && { producteur: reaccentuer(RNE.meta.producteur), licence: RNE.meta.licence, maj: RNE.meta.maj,
+        url: RNE.meta.source || "https://www.data.gouv.fr/datasets/repertoire-national-des-elus-1/",
         ...(maires ? { maires_releves_le: maires.source.releve_le, maires_maj: maires.source.modifie } : {}) }) || null,
       comptes: (OFGL && OFGL.meta && { producteur: reaccentuer(OFGL.meta.producteur), licence: OFGL.meta.licence, maj: OFGL.meta.maj,
+        ...((OFGL.meta.communes_relevees && OFGL.meta.source) ? { url: OFGL.meta.source }
+          : (OFGL.ech && OFGL.ech.commune && OFGL.ech.commune.source) ? { url: OFGL.ech.commune.source } : {}),
         ...(OFGL.meta.communes_relevees ? { releve_le: OFGL.meta.releve_le } : {}),
         ...(OFGL.meta.territoires_releves_le ? { territoires_releves_le: OFGL.meta.territoires_releves_le } : {}) }) || null,
-      circonscriptions: (CIRCOS && { producteur: reaccentuer(CIRCOS.source), licence: CIRCOS.licence, decoupage: CIRCOS.decoupage }) || null,
+      circonscriptions: (CIRCOS && { producteur: reaccentuer(CIRCOS.source), licence: CIRCOS.licence, decoupage: CIRCOS.decoupage,
+        ...(CIRCOS.source_url ? { url: CIRCOS.source_url } : {}) }) || null,
       territoires: (noms && noms.sources) || null,
       /* Les libelles de communes ont leur propre producteur, distinct de celui des
          elus : ce sont deux jeux de donnees, releves a deux dates. */
