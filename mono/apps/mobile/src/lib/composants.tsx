@@ -6,7 +6,7 @@
  * reecrite : elle vient de @repere/core. */
 import type { ReactNode } from "react";
 import { Linking, Pressable, StyleSheet, Text, View } from "react-native";
-import { dateFr } from "@repere/core";
+import { ligneSource, CALCUL_REPERE } from "@repere/core";
 import { couleurs, CIBLE, PAS } from "./theme";
 
 export function Carte({ echelon, children, titre }: { echelon?: keyof typeof couleurs; children: ReactNode; titre?: string }) {
@@ -16,6 +16,13 @@ export function Carte({ echelon, children, titre }: { echelon?: keyof typeof cou
       {children}
     </View>
   );
+}
+
+/* Une phrase de @repere/core (phrases.js) : texte, gras, mot du dictionnaire.
+   Le dictionnaire n'existe pas encore sur mobile : le mot s'affiche en texte. */
+export type Segment = { t: string; fort?: boolean; mot?: string };
+export function Segments({ s: seg }: { s: Segment[] }) {
+  return <>{seg.map((x, i) => (x.fort ? <Text key={i} style={s.fort}>{x.t}</Text> : <Text key={i}>{x.t}</Text>))}</>;
 }
 
 export function Texte({ children, fort, sourd }: { children: ReactNode; fort?: boolean; sourd?: boolean }) {
@@ -43,10 +50,11 @@ export function LienSortant({ url, texte, etiquette }: { url: string; texte: str
 
 type SourceProps = { producteur?: string; licence?: string; maj?: string; mention?: string; url?: string; calcul?: boolean };
 export function Source({ producteur, licence, maj, mention, url, calcul }: SourceProps) {
-  const ligne = [producteur, licence, maj ? "mise à jour du " + dateFr(maj) : "", mention].filter(Boolean).join(" · ");
+  /* La ligne est celle du site, ecrite dans @repere/core (ligneSource). */
+  const ligne = ligneSource({ producteur, licence, maj, mention });
   return (
     <View style={s.source}>
-      {calcul ? <Text style={[s.sourceTexte, s.fort]}>Calculé par Repère à partir des montants ci-dessus — ce n'est pas un chiffre publié.</Text> : null}
+      {calcul ? <Text style={[s.sourceTexte, s.fort]}>{CALCUL_REPERE}</Text> : null}
       <Text style={s.sourceTexte}>Source : {ligne}</Text>
       {url ? <LienSortant url={url} texte="Voir à la source" etiquette={producteur ? "Voir à la source : " + producteur : undefined} /> : null}
     </View>

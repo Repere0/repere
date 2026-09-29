@@ -672,8 +672,12 @@ test("langue — aucun nom de commune ne s'affiche sans ses accents", () => {
 test("invariant 4 — le composant Source existe et sait annoncer un calcul", () => {
   const s = lire("packages/ui/src/composants.jsx");
   assert.ok(/export function Source/.test(s), "aucun composant Source");
-  assert.ok(s.includes("ce n'est pas un chiffre publié"),
+  /* Depuis le 29/09/2026, la phrase vit dans @repere/core (CALCUL_REPERE), partagee
+     avec l'application mobile : Source doit l'afficher, et elle doit dire la chose. */
+  assert.ok(/\{calcul \? <b>\{CALCUL_REPERE\}/.test(s),
     "Source ne distingue pas un calcul d'une donnee publiee : l'invariant 4 tombe");
+  assert.ok(lire("packages/core/src/phrases.js").includes("ce n'est pas un chiffre publié"),
+    "la phrase du calcul ne dit plus que ce n'est pas un chiffre publie");
 });
 
 test("invariant 5 — chaque état d'absence a sa phrase, et elles diffèrent", () => {
@@ -818,6 +822,26 @@ test("mobile — l'application ne demande rien au reseau par elle-meme", () => {
   assert.deepEqual(fautifs, [], "l'application mobile compose ses propres requetes : " + fautifs.join(", "));
   assert.ok(sourcesEcrites().some(f => f === "apps/mobile/src/lib/donnees.ts"),
     "apps/mobile/src/lib/donnees.ts n'est pas relu : ce controle ne mesure rien");
+});
+
+test("meme verite — les phrases du vote, du maire et du projet ne s'ecrivent qu'a un endroit", () => {
+  /* 29/09/2026. Le site et l'application ecrivaient chacun leurs phrases ; a la
+     relecture de #45 ils disaient deja deux choses differentes sur les
+     adjoints. Elles vivent dans packages/core/src/phrases.js ; ce controle
+     refuse leur reapparition ailleurs (web, ui, mobile). tests/meme-verite.mjs
+     verifie ensuite, sur le rendu, que les deux supports les affichent. */
+  const SIGNATURES = [
+    "siègent avec", "ne porte pas de position sur ce scrutin", "Vote du député élu",
+    "Une position non portée n'est pas une absence : elle peut couvrir une délégation de vote", "L'État a engagé ${", "L'État a engagé {",
+  ];
+  const fautifs = [];
+  for (const f of sourcesEcrites()) {
+    if (f === "packages/core/src/phrases.js" || f.startsWith("tests/") || !/^(apps|packages)\//.test(f)) continue;
+    const src = lire(f);
+    for (const sig of SIGNATURES) if (src.includes(sig)) fautifs.push(f + " : « " + sig + " »");
+  }
+  assert.deepEqual(fautifs, [], "une phrase partagee est reecrite hors de @repere/core : " + fautifs.join(" ; "));
+  assert.ok(lire("packages/core/src/phrases.js").includes("siègent avec"), "phrases.js ne porte plus les phrases : ce controle ne mesure rien");
 });
 
 test("architecture — une seule fabrique d'adresses dans tout le produit", () => {

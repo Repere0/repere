@@ -112,3 +112,10 @@ test("core — la phrase de refus d'appariement porte ses accents (texte affich�
   const fautes = MOTS_A_ACCENTS.filter(m => new RegExp("\\b" + m + "\\b").test(texte));
   assert.deepEqual(fautes, []);
 });
+
+test("phrases — les adjoints ne votent pas seuls le budget (CGCT L2312-1)", async () => {
+  const { phraseAdjoints, texteDe } = await import("../packages/core/src/index.js");
+  const t = texteDe(phraseAdjoints(3, "Jeanne DUPONT"));
+  assert.match(t, /conseil municipal, qui vote le budget/);
+  assert.doesNotMatch(t, /Ce sont eux qui votent le budget/);
+});

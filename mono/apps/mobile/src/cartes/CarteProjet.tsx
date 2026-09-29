@@ -2,11 +2,10 @@
  * l'Etat a soutenus (DGCL), meme choix et meme phrase que le site.
  * Deux absences distinctes : le fichier n'est pas arrive, ou la source ne
  * porte aucun projet pour cette commune. */
-import { ancienneCommune, euros, noteRattachement } from "@repere/core";
+import { noteRattachement, phraseProjetLocal, DGCL_URL } from "@repere/core";
 import { Carte, Source, Texte, Vide } from "../lib/composants";
 import type { Ouvert } from "../lib/useCommune";
 
-const DGCL_URL = "https://www.data.gouv.fr/datasets/projets-finances-par-les-dotations-de-soutien-a-linvestissement-des-collectivites-territoriales";
 
 export function CarteProjet({ d, lu, onReessayer }: { d: Ouvert; lu: boolean; onReessayer: () => void }) {
   const projet = d.dernierProjet;
@@ -19,9 +18,7 @@ export function CarteProjet({ d, lu, onReessayer }: { d: Ouvert; lu: boolean; on
       ) : projet ? (
         <>
           <Texte fort>{projet.p.intitule}</Texte>
-          <Texte>
-            L'État a engagé {euros(projet.p.subvention)} à {ancienneCommune(projet.p) ? `${ancienneCommune(projet.p)} (aujourd'hui rattachée à ${d.nomCommune})` : d.nomCommune}, exercice {projet.p.annee}.
-          </Texte>
+          <Texte>{phraseProjetLocal(projet.p, d.nomCommune)}</Texte>
           {noteRattachement(projet.p) ? <Texte sourd>{noteRattachement(projet.p)}</Texte> : null}
           {d.srcProjets ? <Source producteur={d.srcProjets.producteur} licence={d.srcProjets.licence} maj={d.srcProjets.mis_a_jour_le} url={d.srcProjets.url} /> : null}
         </>

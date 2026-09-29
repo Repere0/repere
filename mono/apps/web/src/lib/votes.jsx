@@ -1,6 +1,6 @@
 import React from "react";
-import { dateFr } from "@repere/ui";
-import { MOTS, titreLisible, procedure, decompte } from "@repere/core";
+import { MOTS, titreLisible, phrasePosition, ligneScrutin, POSITION_NON_PORTEE, lienScrutin } from "@repere/core";
+import { Segments } from "./segments.jsx";
 
 /* LA LECTURE D'UN SCRUTIN VIT DANS @repere/core DEPUIS LE 29/09/2026 (voir
  * packages/core/src/votes.js), pour que l'application mobile lise exactement
@@ -39,34 +39,21 @@ export {
  * ligne la plus frequente du produit apres les titres de loi. Dans une case de
  * verdict, elle se lit « absent ». Elle devient une note qui dit ce qu'elle ne
  * dit pas. */
-const RESULTAT = s => (s === "adopté" ? "adopté" : s === "rejeté" ? "rejeté" : s);
 
 export function LigneVote({ sc, position, base, loi, qui }) {
-  const proc = procedure(sc.t);
+  /* Les phrases viennent de @repere/core (phrases.js) : l'application mobile
+     ecrit les memes, mot pour mot. Seul l'habillage est ici. */
   const mot = MOTS[position];
-  const sujet = qui || "Votre député";
+  const lien = lienScrutin(base, sc);
   return (
     <div className="ligne vote">
       {loi ? <b className="vote-titre">{titreLisible(sc.t)}</b> : null}
-      <p className="vote-position">
-        {mot
-          ? <>{sujet} a voté <b>{mot === "Abstention" ? "l'abstention" : mot.toLowerCase()}</b>.</>
-          : <>{sujet} : le relevé de l'Assemblée ne porte pas de position sur ce scrutin.</>}
-      </p>
-      <div className="ligne-note">
-        Texte {RESULTAT(sc.s)} le {dateFr(sc.d)}{proc ? " · " + proc : ""}
-        {sc.dec ? <> · {decompte(sc.dec)}</> : null}.
-      </div>
+      <p className="vote-position"><Segments s={phrasePosition(position, qui)} /></p>
+      <div className="ligne-note">{ligneScrutin(sc)}</div>
       <div className="ligne-note">
         {loi ? null : <>{sc.t} </>}
-        {!mot ? (
-          <>Une position non portée n'est pas une absence : elle peut couvrir une
-          délégation de vote, une présidence de séance, ou un scrutin auquel le
-          député n'a pas été appelé. Repère n'en déduit rien.{" "}</>
-        ) : null}
-        <a className="lien-scrutin" href={base + sc.n} target="_blank" rel="noopener noreferrer">
-          Scrutin n° {sc.n} sur le site de l'Assemblée
-        </a>
+        {!mot ? <>{POSITION_NON_PORTEE}{" "}</> : null}
+        <a className="lien-scrutin" href={lien.url} target="_blank" rel="noopener noreferrer">{lien.texte}</a>
       </div>
     </div>
   );

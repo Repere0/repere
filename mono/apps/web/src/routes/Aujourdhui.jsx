@@ -1,8 +1,9 @@
 import React from "react";
 import { Vide, Source, Chargement, dateFr, jourFr } from "@repere/ui";
 import { useAujourdhui } from "../lib/useAujourdhui.js";
-import { LigneVote, ordinal } from "../lib/votes.jsx";
-import { ancienneCommune, noteRattachement } from "../lib/faits.js";
+import { LigneVote } from "../lib/votes.jsx";
+import { noteRattachement } from "../lib/faits.js";
+import { phraseCirconscription, phraseProjet, phraseProjetLocal, DGCL_URL } from "@repere/core";
 
 /* « AUJOURD'HUI », DIRECTION RETENUE LE 19/09/2026 — « LA QUESTION ».
  *
@@ -27,9 +28,8 @@ import { ancienneCommune, noteRattachement } from "../lib/faits.js";
  * vient de lib/useAujourdhui.js, qui appelle les memes chargeurs et les
  * memes fonctions (lib/faits.js, lib/comptes.jsx) que les ecrans complets. */
 
-const DGCL_URL = "https://www.data.gouv.fr/datasets/projets-finances-par-les-dotations-"
-  + "de-soutien-a-linvestissement-des-collectivites-territoriales";
-function euros(n) { return new Intl.NumberFormat("fr-FR").format(n) + " €"; }
+/* DGCL_URL, et les phrases du vote et du projet, viennent de @repere/core
+   (phrases.js) depuis le 29/09/2026 : l'application mobile ecrit les memes. */
 
 export default function Aujourdhui({ paquet, index, commune, aller, derniereVisite }) {
   const a = useAujourdhui(paquet, index, commune);
@@ -100,9 +100,7 @@ export default function Aujourdhui({ paquet, index, commune, aller, derniereVisi
               circonscriptions ne permet pas de dire laquelle est la sienne :
               on le dit, plutot que d'ecrire « votre depute » au hasard. */}
           <p className="ligne-note auj-qui">
-            {nbCircos > 1
-              ? `${nomCommune} est partagée entre ${nbCircos} circonscriptions. Vote du député élu dans la ${ordinal(dernierVote.circo)} :`
-              : `Vote du député élu dans votre circonscription (${ordinal(dernierVote.circo)} circonscription${nomDep ? " — " + nomDep : ""}), à l'Assemblée nationale :`}
+            {phraseCirconscription({ nbCircos, nomCommune, nomDep }, dernierVote.circo)}
           </p>
           <LigneVote sc={dernierVote.sc} position={dernierVote.position} base={base} loi qui={dernierVote.qui} />
           {srcScrutins ? <Source producteur={srcScrutins.producteur} licence={srcScrutins.licence} url={srcScrutins.url}
@@ -111,7 +109,7 @@ export default function Aujourdhui({ paquet, index, commune, aller, derniereVisi
       ) : dernierFait && dernierFait.type === "projet" ? (
         <div className="quest-r">
           <p><b>{dernierFait.p.intitule}</b></p>
-          <p className="ligne-note">L'État a engagé {euros(dernierFait.p.subvention)}, exercice {dernierFait.p.annee}.</p>
+          <p className="ligne-note">{phraseProjet(dernierFait.p)}</p>
           {noteRattachement(dernierFait.p) ? <p className="ligne-note">{noteRattachement(dernierFait.p)}</p> : null}
           {srcProjets ? <Source producteur={srcProjets.producteur} licence={srcProjets.licence} maj={srcProjets.mis_a_jour_le} url={srcProjets.url} /> : null}
         </div>
@@ -152,7 +150,7 @@ export default function Aujourdhui({ paquet, index, commune, aller, derniereVisi
         <div className="quest-suivante auj-local">
           <p className="quest-q2">Et dans votre commune ?</p>
           <p className="ligne-note"><b>{dernierProjet.p.intitule}</b></p>
-          <p className="ligne-note">L'État a engagé {euros(dernierProjet.p.subvention)} à {ancienneCommune(dernierProjet.p) ? `${ancienneCommune(dernierProjet.p)} (aujourd'hui rattachée à ${nomCommune})` : nomCommune}, exercice {dernierProjet.p.annee}.</p>
+          <p className="ligne-note">{phraseProjetLocal(dernierProjet.p, nomCommune)}</p>
           {srcProjets ? <Source producteur={srcProjets.producteur} licence={srcProjets.licence} maj={srcProjets.mis_a_jour_le} url={srcProjets.url} /> : null}
         </div>
       ) : null}

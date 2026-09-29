@@ -5,6 +5,7 @@ import {
 } from "@repere/data-utils";
 import { LigneVote } from "../lib/votes.jsx";
 import { calculerFaits, noteRattachement } from "../lib/faits.js";
+import { montantEngage } from "@repere/core";
 
 const DGCL_URL = "https://www.data.gouv.fr/datasets/projets-finances-par-les-dotations-"
   + "de-soutien-a-linvestissement-des-collectivites-territoriales";
@@ -64,7 +65,7 @@ function LigneProjet({ p, dispositifs }) {
     <div className="ligne fait">
       <b className="fait-titre">{p.intitule}</b>
       <div className="ligne-h">
-        <span>L'État a engagé {euros(p.subvention)}</span>
+        <span>{montantEngage(p)}</span>
         <b>exercice {p.annee}</b>
       </div>
       <div className="ligne-note">
