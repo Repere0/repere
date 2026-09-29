@@ -2,6 +2,7 @@ import React from "react";
 import { Vide, Source, Chargement, dateFr, jourFr } from "@repere/ui";
 import { useAujourdhui } from "../lib/useAujourdhui.js";
 import { LigneVote, ordinal } from "../lib/votes.jsx";
+import { ancienneCommune, noteRattachement } from "../lib/faits.js";
 
 /* « AUJOURD'HUI », DIRECTION RETENUE LE 19/09/2026 — « LA QUESTION ».
  *
@@ -111,6 +112,7 @@ export default function Aujourdhui({ paquet, index, commune, aller, derniereVisi
         <div className="quest-r">
           <p><b>{dernierFait.p.intitule}</b></p>
           <p className="ligne-note">L'État a engagé {euros(dernierFait.p.subvention)}, exercice {dernierFait.p.annee}.</p>
+          {noteRattachement(dernierFait.p) ? <p className="ligne-note">{noteRattachement(dernierFait.p)}</p> : null}
           {srcProjets ? <Source producteur={srcProjets.producteur} licence={srcProjets.licence} maj={srcProjets.mis_a_jour_le} /> : null}
         </div>
       ) : dernierFait && dernierFait.type === "editorial" ? (
@@ -150,7 +152,7 @@ export default function Aujourdhui({ paquet, index, commune, aller, derniereVisi
         <div className="quest-suivante auj-local">
           <p className="quest-q2">Et dans votre commune ?</p>
           <p className="ligne-note"><b>{dernierProjet.p.intitule}</b></p>
-          <p className="ligne-note">L'État a engagé {euros(dernierProjet.p.subvention)} à {nomCommune}, exercice {dernierProjet.p.annee}.</p>
+          <p className="ligne-note">L'État a engagé {euros(dernierProjet.p.subvention)} à {ancienneCommune(dernierProjet.p) ? `${ancienneCommune(dernierProjet.p)} (aujourd'hui rattachée à ${nomCommune})` : nomCommune}, exercice {dernierProjet.p.annee}.</p>
           {srcProjets ? <Source producteur={srcProjets.producteur} licence={srcProjets.licence} maj={srcProjets.mis_a_jour_le} /> : null}
         </div>
       ) : null}

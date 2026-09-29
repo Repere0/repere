@@ -19,6 +19,21 @@ import { positionsFiables, positionSur } from "./votes.jsx";
    et l'ecran ecrit « exercice 2025 », jamais une date inventee. */
 const finDAnnee = a => `${a}-12-31`;
 
+/* UN PROJET ENGAGE AVANT UNE FUSION DE COMMUNES (29/09/2026). extract-html.js
+   rattache a la commune d'aujourd'hui les projets d'un ancien code (table du
+   Code officiel geographique) et marque la ligne `ancien_code` /
+   `ancienne_commune`. L'Etat les avait engages pour l'ancienne commune : l'ecran
+   doit le dire, jamais les attribuer en silence a la commune actuelle. Une seule
+   formulation, ici, pour tous les ecrans qui montrent un projet. */
+export function ancienneCommune(p) {
+  if (!p || !p.ancien_code) return null;
+  return p.ancienne_commune || `l'ancienne commune ${p.ancien_code}`;
+}
+export function noteRattachement(p) {
+  const a = ancienneCommune(p);
+  return a ? `Engagé pour ${a}, commune aujourd'hui rattachée à celle-ci.` : null;
+}
+
 /* LE FIL EDITORIAL — BLOCKER #3 DE LA MISSION DU 22/09/2026.
  *
  * CE QUE C'EST, TRACE JUSQU'A LA SOURCE. `data/evenements/*.md` (a la racine

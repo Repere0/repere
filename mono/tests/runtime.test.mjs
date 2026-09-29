@@ -1090,6 +1090,54 @@ async function aujCommune(dep, nom) {
   }
 }
 
+console.log("\n--- projets d'une commune fusionnee : rattaches, et dits comme tels ---");
+/* 29/09/2026 : le projet 2024 de Pierrefitte-sur-Seine (93059), commune deleguee
+   de Saint-Denis depuis le 1er janvier 2025, etait ignore par le build. Il est
+   desormais rattache a la commune d'aujourd'hui par la table du Code officiel
+   geographique. Ce qu'on garde : la ligne est servie sous une commune REELLE du
+   paquet, et l'ecran dit pour quelle commune l'Etat l'avait engagee — jamais
+   attribuee en silence a la commune actuelle. Le cas est cherche dans la donnee
+   publiee, pas ecrit en dur. */
+{
+  const dossier = path.join(DIST, "data", "projets");
+  let cas = null;
+  const orphelines = [];
+  for (const f of fs.readdirSync(dossier)) {
+    const pr = JSON.parse(fs.readFileSync(path.join(dossier, f), "utf8"));
+    const pq = JSON.parse(fs.readFileSync(path.join(DIST, "data", "departments", f), "utf8"));
+    for (const [insee, liste] of Object.entries(pr.communes)) {
+      for (const l of liste) {
+        if (!l.ancien_code) continue;
+        if (!pq.communes[insee]) orphelines.push(insee + " <- " + l.ancien_code);
+        else if (!cas && l.ancienne_commune) cas = { dep: pr.d, nom: pq.communes[insee].nom, l };
+      }
+    }
+  }
+  verif("fusion — toute ligne rattachee est servie sous une commune reelle du paquet",
+    orphelines.length === 0, orphelines.join(", "));
+  if (cas) {
+    const c = await nav.newContext({ viewport: { width: 390, height: 844 } });
+    const p = await c.newPage();
+    await p.addInitScript(([k, v]) => localStorage.setItem(k, v), ["repere.departement", JSON.stringify({ d: cas.dep, v: null })]);
+    await p.goto(base, { waitUntil: "networkidle" });
+    await p.waitForTimeout(500);
+    await p.getByLabel(/Votre commune/i).fill(cas.nom);
+    await p.waitForTimeout(400);
+    await p.getByRole("button", { name: cas.nom, exact: true }).first().click();
+    await p.waitForTimeout(800);
+    await p.getByRole("button", { name: "Ce qui a été décidé" }).click();
+    await p.waitForTimeout(1600);
+    const t = await p.evaluate(() => document.body.innerText);
+    await c.close();
+    const apres = t.split(cas.l.intitule.trim())[1] || "";
+    verif(`fusion — ${cas.nom} : le projet de ${cas.l.ancienne_commune} est affiche, et dit engage pour elle`,
+      t.includes(cas.l.intitule.trim()) && apres.slice(0, 400).includes("Engagé pour " + cas.l.ancienne_commune),
+      apres.slice(0, 300).replace(/\n+/g, " / "));
+  } else {
+    console.log("   (aucune ligne rattachee dans le releve publie : rien a montrer, rien a verifier a l'ecran)");
+  }
+}
+
 console.log("\n--- hierarchie mobile : le contenu avant le decor ---------------");
 /* 28/09/2026, mesure a 390 px : l'en-tete (titre, chapeau, selecteurs) prenait
    environ 460 px sur 800 sur chaque ecran, et « Ce qui se passe » faisait 19
