@@ -63,24 +63,29 @@ def decrire():
 
     # 2. Un temoin concret : Saint-Denis (93066) et Pierrefitte (93059), fusionnees
     #    au 1er janvier 2025 — c'est exactement le cas qui a casse l'ancien bloc.
+    #    `exer` est un champ DATE : on filtre par intervalle, pas par egalite.
     ds = "ofgl-base-communes"
-    if ds in ids:
-        meta = lire("/catalog/datasets/" + ds)
-        noms = {f.get("name") for f in meta.get("fields", [])}
-        cle = next((c for c in ("insee", "com_code", "code_insee", "inseecom") if c in noms), None)
-        exer = next((c for c in ("exer", "exercice", "annee") if c in noms), None)
-        annoncer("cles", "commune=%s ; exercice=%s" % (cle, exer))
-        if cle and exer:
-            for code in ("93066", "93059"):
-                r = lire("/catalog/datasets/%s/records" % ds, limit=20,
-                         where='%s="%s" and %s=2024' % (cle, code, exer))
-                annoncer("temoin %s 2024" % code, "%s lignes : %s" % (
-                    r.get("total_count"), json.dumps(r.get("results", [])[:8], ensure_ascii=False)))
-            agg = next((c for c in ("agregat", "agr_lib", "libelle_agregat") if c in noms), None)
-            if agg:
-                g = lire("/catalog/datasets/%s/records" % ds, group_by=agg, limit=100,
-                         select="%s, count(*) as n" % agg, where="%s=2024" % exer)
-                annoncer("agregats 2024", json.dumps(g.get("results", []), ensure_ascii=False))
+    an = lambda a: "exer >= date'%d-01-01' and exer < date'%d-01-01'" % (a, a + 1)
+    for code in ("93066", "93059"):
+        for a in (2024, 2025):
+            r = lire("/catalog/datasets/%s/records" % ds, limit=40,
+                     select="insee, com_code, com_name, exer, type_de_budget, lbudg, agregat, montant, ptot, euros_par_habitant",
+                     where='(insee="%s" or com_code="%s") and %s and agregat in ("Recettes totales","Encours de dette")' % (code, code, an(a)))
+            annoncer("temoin %s %d" % (code, a), "%s lignes : %s" % (
+                r.get("total_count"), json.dumps(r.get("results", []), ensure_ascii=False)))
+    g = lire("/catalog/datasets/%s/records" % ds, group_by="type_de_budget", limit=20,
+             select="type_de_budget, count(*) as n", where=an(2024))
+    annoncer("types de budget 2024", json.dumps(g.get("results", []), ensure_ascii=False))
+    g = lire("/catalog/datasets/%s/records" % ds, group_by="agregat", limit=100,
+             select="agregat, count(*) as n", where=an(2024) + ' and type_de_budget="Budget principal"')
+    annoncer("agregats 2024 budget principal", json.dumps(g.get("results", []), ensure_ascii=False))
+    g = lire("/catalog/datasets/%s/records" % ds, group_by="year(exer) as a", limit=20,
+             select="year(exer) as a, count(*) as n")
+    annoncer("exercices", json.dumps(g.get("results", []), ensure_ascii=False))
+    # 3. L'export complet est-il joignable, et combien de lignes ferait le releve utile ?
+    n = lire("/catalog/datasets/%s/records" % ds, limit=0,
+             where='type_de_budget="Budget principal" and agregat in ("Recettes totales","Dépenses totales","Encours de dette","Dépenses d\'investissement","Frais de personnel","Impôts et taxes") and (%s or %s or %s)' % (an(2021), an(2024), an(2025)))
+    annoncer("volume utile", "lignes budget principal, 6 agregats, 2021/2024/2025 : %s" % n.get("total_count"))
 
 
 if __name__ == "__main__":
