@@ -77,6 +77,24 @@ export default function OuVaArgent({ paquet, index, commune }) {
     ? Math.max(...agregats.map((_, i) => (valeur(exercice.ex, i) || {}).m || 0))
     : 0;
 
+  /* EXERCICES ECARTES PAR LA REGLE V-2 (29/09/2026, voir extract-html.js) : le
+     fichier les porte, mais leurs montants ne correspondent pas a la population
+     publiee sur la meme ligne. C'est une autre cause d'absence que « le fichier
+     ne porte pas cette commune » : elle a donc sa propre phrase. */
+  const ecartes = (c && Array.isArray(c.comptes_ecartes) ? c.comptes_ecartes : [])
+    .filter(an => !exercice || an > exercice.an).sort();
+  const phraseEcartes = ecartes.length
+    ? `Le fichier officiel porte des comptes pour ${ecartes.length > 1 ? "les exercices " + ecartes.join(" et ") : "l'exercice " + ecartes[0]}, mais leurs montants ne correspondent pas à la population publiée sur la même ligne. Repère ne les affiche pas plutôt que de risquer d'attribuer à ${c ? c.nom : "cette commune"} des chiffres qui ne sont pas les siens.`
+    : null;
+
+  if (!exercice && phraseEcartes) {
+    return (
+      <Vide titre={`${c.nom} : ses comptes publiés ne sont pas cohérents.`}
+        corps={phraseEcartes}
+        lien={{ texte: "Vérifier dans les comptes publics", url: "https://data.ofgl.fr/" }} />
+    );
+  }
+
   if (!exercice) {
     /* DOCTRINE DU VIDE. Avant, les communes sans comptes disparaissaient
        simplement de la liste : le lecteur cherchait la sienne, ne la trouvait
@@ -127,6 +145,7 @@ export default function OuVaArgent({ paquet, index, commune }) {
           Les six lignes ci-dessous sont publiées telles quelles par l'Observatoire des finances
           locales. Elles sont en euros, pour cette commune seule, sur une seule année.
         </p>
+        {phraseEcartes ? <p className="tx-note">{phraseEcartes}</p> : null}
         {agregats.map((a, i) => {
           const v = valeur(exercice.ex, i);
           /* TROIS ETATS, TROIS PHRASES — voir le commentaire de valeur().

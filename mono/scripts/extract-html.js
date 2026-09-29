@@ -526,6 +526,64 @@ async function extraire() {
         + colonnesMissing.map(x => `exercice ${x.an} poste ${x.i} (${x.n}/${x.t})`).join(", "));
     }
   }
+  /* REGLE V-2 — UN EXERCICE DONT LES MONTANTS NE CORRESPONDENT PAS A SA
+   * PROPRE POPULATION N'EST PAS PUBLIE (29/09/2026).
+   *
+   * Mesure sur le bloc OFGL embarque : chaque exercice porte la population et,
+   * pour chaque poste, le montant ET le montant par habitant. Sur 104 515
+   * exercices communaux, 104 396 sont coherents (montant / par habitant =
+   * population, a l'arrondi pres). 119 ne le sont pas, et 9 exercices du
+   * departement « 67A », 28 exercices regionaux (2012-2015 : regions
+   * fusionnees en 2016). Exemple : Saint-Denis (93066), exercice 2024 :
+   * population 32 426, mais 233 543 980 EUR de recettes a 2 035 EUR par
+   * habitant, soit ~114 800 habitants. La population est celle d'une
+   * collectivite, les montants ceux d'une autre : deux lignes d'avant une
+   * fusion ont ete ecrasees sous le meme code par l'ingestion d'origine
+   * (introuvable dans le depot). Publier ces montants, c'est attribuer a un
+   * territoire les comptes d'un autre.
+   *
+   * La regle se garde par une PROPRIETE des donnees, pas par une liste de
+   * codes : un poste est incoherent si la population deduite (montant / par
+   * habitant) s'ecarte de plus de 2 % de la population publiee ET si l'ecart
+   * sur le montant par habitant depasse 1,5 EUR (ce second seuil absorbe
+   * l'arrondi a l'euro des tres petites communes). Un seul poste incoherent
+   * suffit : l'exercice entier est ecarte (valeurs a null), et son annee est
+   * notee dans `comptes_ecartes` pour que l'ecran dise POURQUOI il ne l'affiche
+   * pas — une autre cause d'absence que « le fichier ne porte pas la ligne ». */
+  function exerciceIncoherent(ex) {
+    if (!Array.isArray(ex) || typeof ex[0] !== "number" || ex[0] <= 0) return false;
+    const pop = ex[0];
+    for (let i = 0; i < nbAgregats; i++) {
+      const m = ex[1 + i * 2], h = ex[2 + i * 2];
+      if (typeof m !== "number" || typeof h !== "number" || m === 0 || h === 0) continue;
+      if (Math.abs(m / h - pop) / pop > 0.02 && Math.abs(m / pop - h) > 1.5) return true;
+    }
+    return false;
+  }
+  function appliquerRegleV2(porteurs, etiquette) {
+    let n = 0;
+    const exemples = [];
+    for (const [code, c] of porteurs) {
+      if (!c || !c.comptes) continue;
+      for (const [an, ex] of Object.entries(c.comptes)) {
+        if (!exerciceIncoherent(ex)) continue;
+        c.comptes[an] = ex.map(() => null);
+        (c.comptes_ecartes || (c.comptes_ecartes = [])).push(an);
+        n++;
+        if (exemples.length < 6) exemples.push(code + "/" + an);
+      }
+    }
+    if (n) console.log(`regle V-2 (${etiquette})`.padEnd(23) + ": " + n + " exercice(s) ecarte(s), montants incompatibles avec leur population — " + exemples.join(", ") + (n > exemples.length ? ", ..." : ""));
+    return n;
+  }
+  /* Les tableaux viennent du bloc OFGL et sont partages : on travaille sur des
+     copies pour que la regle ne modifie jamais la source relue plus loin. */
+  for (const p of paquets.values()) {
+    for (const c of Object.values(p.communes)) {
+      if (c.comptes) c.comptes = Object.fromEntries(Object.entries(c.comptes).map(([a, e]) => [a, Array.isArray(e) ? e.slice() : e]));
+    }
+  }
+  appliquerRegleV2([...paquets.values()].flatMap(p => Object.entries(p.communes)), "commune");
   appliquerRegleV1([...paquets.values()].flatMap(p => Object.values(p.communes)), "commune");
 
   /* LES LIBELLES DE SOURCE SONT DU TEXTE AFFICHE.
@@ -667,11 +725,15 @@ async function extraire() {
   function extraireEchelon(cle) {
     const terr = (OFGL_ECH[cle] && OFGL_ECH[cle].terr) || {};
     const out = {};
-    for (const [code, v] of Object.entries(terr)) out[code] = { comptes: v.ex || null };
+    for (const [code, v] of Object.entries(terr)) {
+      out[code] = { comptes: v.ex ? Object.fromEntries(Object.entries(v.ex).map(([a, e]) => [a, Array.isArray(e) ? e.slice() : e])) : null };
+    }
     return out;
   }
   const comptesDept = extraireEchelon("departement");
   const comptesReg = extraireEchelon("region");
+  appliquerRegleV2(Object.entries(comptesDept), "departement");
+  appliquerRegleV2(Object.entries(comptesReg), "region");
   appliquerRegleV1(Object.values(comptesDept), "departement");
   appliquerRegleV1(Object.values(comptesReg), "region");
   for (const [d, paquet] of paquets) {
