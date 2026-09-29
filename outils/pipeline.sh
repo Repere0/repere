@@ -21,6 +21,7 @@ AUJOURDHUI=$(date -u +%Y-%m-%d)
 echo "== pipeline Repere — $AUJOURDHUI =="
 # EXPERIMENTAL, branche exp/ofgl-decrire seulement : decrire la source OFGL (annotations).
 python3 outils/ofgl.py --decrire || echo "::warning::ofgl --decrire a echoue"
+python3 outils/rne_fraicheur.py || echo "::warning::rne_fraicheur a echoue"
 
 # ---------------------------------------------------------------- 1. depiler
 # UNE ARCHIVE ILLISIBLE N'ARRETE PLUS TOUTE LA CHAINE — 28/09/2026. Mesure : deux
