@@ -20,7 +20,7 @@ set -euo pipefail
 AUJOURDHUI=$(date -u +%Y-%m-%d)
 echo "== pipeline Repere — $AUJOURDHUI =="
 # EXPERIMENTAL, branche exp/ofgl-decrire seulement : decrire la source OFGL (annotations).
-python3 outils/ofgl.py --decrire || echo "::warning::ofgl --decrire a echoue"
+python3 outils/ofgl.py --produire || echo "::warning::ofgl --produire a echoue"
 python3 outils/rne_fraicheur.py || echo "::warning::rne_fraicheur a echoue"
 
 # ---------------------------------------------------------------- 1. depiler

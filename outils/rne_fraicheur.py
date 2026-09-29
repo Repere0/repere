@@ -90,6 +90,7 @@ def main():
         return 1
 
     source = {}
+    lignes_par_code = {}
     for l in lignes[1:]:
         if len(l) <= max(c_com, c_nom, c_pre):
             continue
@@ -97,6 +98,7 @@ def main():
         if c_dep is not None and len(code) < 5:
             code = l[c_dep].strip().zfill(2) + code.zfill(3)
         source[code] = (l[c_pre], l[c_nom])
+        lignes_par_code[code] = l
 
     communs = set(source) & set(embarque)
     diff = sorted(c for c in communs if (norm(source[c][0]), norm(source[c][1])) != (norm(embarque[c][0]), norm(embarque[c][1])))
@@ -104,6 +106,14 @@ def main():
     annoncer("ecart", "communes comparees %d ; maire different %d (%.2f %%) ; en Ile-de-France %d ; absentes de la source %d ; absentes du bloc %d" % (
         len(communs), len(diff), 100.0 * len(diff) / max(1, len(communs)), len(diff_idf),
         len(set(embarque) - set(source)), len(set(source) - set(embarque))))
+    c_deb = col("debut", "fonction")
+    lib = col("libelle", "commune")
+    absents_idf = sorted(c for c in set(source) - set(embarque) if c[:2] in IDF)
+    annoncer("absentes du bloc (IDF)", "%d : %s" % (len(absents_idf), "; ".join(
+        "%s %s (maire %s %s)" % (c, lignes_par_code[c][lib] if lib is not None else "", source[c][0], source[c][1]) for c in absents_idf[:40])))
+    annoncer("maires differents (France, echantillon)", "; ".join(
+        "%s : %s %s -> %s %s (debut fonction %s)" % (c, embarque[c][0], embarque[c][1], source[c][0], source[c][1],
+                                                     lignes_par_code[c][c_deb] if c_deb is not None else "?") for c in diff[:30]))
     annoncer("ecart IDF", "; ".join("%s : %s %s -> %s %s" % (c, embarque[c][0], embarque[c][1], source[c][0], source[c][1])
                                      for c in diff_idf[:40]))
     return 0

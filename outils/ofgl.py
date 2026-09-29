@@ -73,8 +73,117 @@ def decrire():
     annoncer("volume utile", "lignes budget principal, 6 agregats, 2021/2024/2025 : %s" % n.get("total_count"))
 
 
+# ---------------------------------------------------------------- produire
+# SCHEMA MESURE SUR LE RUNNER LE 29/09/2026 (runs 36505362880 et 36506444166) :
+#   jeu `ofgl-base-communes`, 21 857 255 lignes, modifie le 2026-07-29 ;
+#   une ligne = (exer [date], insee, com_code, type_de_budget, agregat, montant,
+#   ptot, euros_par_habitant) ; `type_de_budget` vaut « Budget principal » ou
+#   « Budget annexe » ; les six agregats de Repere existent sous ces libelles
+#   exacts, pour 34 932 budgets principaux en 2024.
+# LE PIEGE QUI A CASSE L'ANCIEN BLOC, MESURE SUR SAINT-DENIS 2024 : deux lignes
+#   par agregat sous com_code = 93066 — Saint-Denis (insee 93066, ptot 114 782)
+#   et Pierrefitte-sur-Seine (insee 93059, ptot 32 426). `com_code` est le code
+#   de la commune D'AUJOURD'HUI, `insee` celui de la collectivite qui a tenu le
+#   budget cette annee-la. L'ancien bloc indexait par com_code : il a garde la
+#   population de l'une et les montants de l'autre. On indexe donc par `insee`,
+#   et une cle vue deux fois pour le meme exercice et le meme agregat ARRETE le
+#   releve au lieu d'ecraser.
+AGREGATS = ["Recettes totales", "Dépenses totales", "Encours de dette",
+            "Dépenses d'investissement", "Frais de personnel", "Impôts et taxes"]
+EXERCICES = (2021, 2024, 2025)
+
+
+def exporter(ds, select, where):
+    url = API + "/catalog/datasets/%s/exports/csv?" % ds + urllib.parse.urlencode(
+        {"select": select, "where": where, "delimiter": ";"})
+    req = urllib.request.Request(url, headers=UA)
+    with urllib.request.urlopen(req, timeout=900) as r:
+        return r.read().decode("utf-8-sig")
+
+
+def produire():
+    import csv, io
+    ans = " or ".join("(exer >= date'%d-01-01' and exer < date'%d-01-01')" % (a, a + 1) for a in EXERCICES)
+    ags = ", ".join('"%s"' % a for a in AGREGATS)
+    texte = exporter("ofgl-base-communes",
+                     "insee, com_code, exer, agregat, montant, ptot, euros_par_habitant",
+                     'type_de_budget="Budget principal" and agregat in (%s) and (%s)' % (ags, ans))
+    lignes = list(csv.DictReader(io.StringIO(texte), delimiter=";"))
+    annoncer("export", "%d lignes lues" % len(lignes))
+    terr, doublons, pops = {}, [], {}
+    for l in lignes:
+        code, an = l["insee"], str(l["exer"])[:4]
+        k = AGREGATS.index(l["agregat"])
+        ex = terr.setdefault(code, {}).setdefault(an, [None] * (1 + 2 * len(AGREGATS)))
+        if ex[1 + 2 * k] is not None:
+            doublons.append("%s/%s/%s" % (code, an, l["agregat"]))
+            continue
+        m = float(l["montant"]) if l["montant"] not in ("", None) else None
+        h = float(l["euros_par_habitant"]) if l["euros_par_habitant"] not in ("", None) else None
+        ex[1 + 2 * k] = round(m) if m is not None else None
+        ex[2 + 2 * k] = round(h) if h is not None else None
+        p = int(float(l["ptot"])) if l["ptot"] not in ("", None) else None
+        if ex[0] is None:
+            ex[0] = p
+        elif p is not None and p != ex[0]:
+            pops.setdefault(code + "/" + an, set()).update({p, ex[0]})
+    if doublons:
+        annoncer("ARRET doublons", "%d cles vues deux fois, ex. %s" % (len(doublons), ", ".join(doublons[:10])))
+        raise SystemExit(3)
+    if pops:
+        annoncer("ARRET populations", "%d exercices avec deux populations, ex. %s" % (len(pops), list(pops.items())[:5]))
+        raise SystemExit(3)
+    return terr
+
+
+def comparer(terr, html):
+    s = open(html, encoding="utf-8", errors="ignore").read()
+    i = s.index("window.REPERE_OFGL =", s.index("/* REPERE_OFGL_DEBUT */"))
+    i = s.index("=", i) + 1
+    bloc = json.loads(s[i:s.index("/* REPERE_OFGL_FIN */", i)].strip().rstrip(";"))
+    fige = bloc["ech"]["commune"]["terr"]
+    egaux = diff = 0
+    ex_diff, seul_fige, seul_src = [], [], []
+    postes = [0] * 13
+    for code in sorted(set(fige) | set(terr)):
+        for an in ("2021", "2024", "2025"):
+            a = (fige.get(code) or {}).get("ex", {}).get(an)
+            b = (terr.get(code) or {}).get(an)
+            if a is None and b is None:
+                continue
+            if a is None:
+                seul_src.append(code + "/" + an); continue
+            if b is None:
+                seul_fige.append(code + "/" + an); continue
+            if list(a) == list(b):
+                egaux += 1
+            else:
+                diff += 1
+                for j in range(13):
+                    if a[j] != b[j]:
+                        postes[j] += 1
+                if len(ex_diff) < 12 or code[:2] in ("75", "93"):
+                    if len(ex_diff) < 30:
+                        ex_diff.append("%s/%s fige=%s source=%s" % (code, an, a[:5], b[:5]))
+    annoncer("comparaison", "exercices identiques %d ; differents %d ; seulement dans le bloc fige %d ; seulement a la source %d ; differences par position [pop, m0,h0 ...] %s" % (
+        egaux, diff, len(seul_fige), len(seul_src), postes))
+    annoncer("exemples de differences", " ; ".join(ex_diff))
+    annoncer("seulement fige / seulement source", "%s || %s" % (", ".join(seul_fige[:25]), ", ".join(seul_src[:25])))
+
+
 if __name__ == "__main__":
-    if "--decrire" in sys.argv:
+    if "--produire" in sys.argv:
+        try:
+            t = produire()
+            annoncer("releve", "%d collectivites" % len(t))
+            import glob
+            comparer(t, sorted(glob.glob("app_repere_v18_*.html"))[-1])
+        except SystemExit:
+            raise
+        except Exception as e:
+            annoncer("echec produire", repr(e))
+            sys.exit(1)
+    elif "--decrire" in sys.argv:
         try:
             decrire()
         except Exception as e:
