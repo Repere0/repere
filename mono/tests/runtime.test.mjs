@@ -1041,6 +1041,46 @@ console.log("\n--- aujourd'hui : ce qui arrive, Senat ET Assemblee ------------"
   }
 }
 
+console.log("\n--- comptes : d'un exercice a l'autre -------------------------");
+/* 29/09/2026 : deux montants dates, la difference en euros, aucun pourcentage.
+   La commune est cherchee dans la donnee publiee (deux exercices consecutifs,
+   population stable, tous postes presents) plutot qu'ecrite en dur. */
+{
+  const p93 = JSON.parse(fs.readFileSync(path.join(DIST, "data", "departments", "93.json"), "utf8"));
+  const cas = Object.entries(p93.communes).find(([, c]) => c.comptes && Array.isArray(c.comptes["2024"]) && Array.isArray(c.comptes["2025"])
+    && c.comptes["2024"].every(v => typeof v === "number") && c.comptes["2025"].every(v => typeof v === "number")
+    && Math.abs(c.comptes["2025"][0] - c.comptes["2024"][0]) / c.comptes["2024"][0] < 0.05);
+  if (!cas) {
+    verif("evolution — une commune du 93 a deux exercices consecutifs complets", false, "aucune");
+  } else {
+    const [, c] = cas;
+    const ctx = await nav.newContext({ viewport: { width: 390, height: 844 } });
+    const p = await ctx.newPage();
+    await p.addInitScript(([k, v]) => localStorage.setItem(k, v), ["repere.departement", JSON.stringify({ d: "93", v: null })]);
+    await p.goto(base, { waitUntil: "networkidle" });
+    await p.waitForTimeout(500);
+    await p.getByLabel(/Votre commune/i).fill(c.nom);
+    await p.waitForTimeout(400);
+    await p.getByRole("button", { name: c.nom, exact: true }).first().click();
+    await p.waitForTimeout(800);
+    await p.getByRole("button", { name: "Où va l'argent" }).click();
+    await p.waitForTimeout(1200);
+    const carte = await p.evaluate(() => {
+      const t = [...document.querySelectorAll(".carte, section, article, div")].map(e => e.innerText)
+        .filter(x => /^D.un exercice à l.autre/m.test(x) && /soustraction/.test(x) && / : \d/.test(x)).sort((a, b) => a.length - b.length)[0];
+      return t || "";
+    });
+    await ctx.close();
+    const recettes = Math.round(c.comptes["2025"][1]) - Math.round(c.comptes["2024"][1]);
+    const attendu = (recettes > 0 ? "+ " : recettes < 0 ? "− " : "") + Math.abs(recettes).toLocaleString("fr-FR") + " €";
+    verif(`evolution — ${c.nom} : la carte montre 2024, 2025 et la difference des recettes en euros`,
+      /2024 : /.test(carte) && /2025 : /.test(carte) && (recettes === 0 ? /inchangé/.test(carte) : carte.includes(attendu)),
+      carte.slice(0, 300).replace(/\n+/g, " / "));
+    verif("evolution — aucun pourcentage dans la carte", carte.length > 0 && !/%/.test(carte), carte.slice(0, 200));
+    verif("invariant 4 — la difference est annoncee comme un calcul", /Calcul Repère/i.test(carte) && /soustraction/.test(carte), "");
+  }
+}
+
 console.log("\n--- aujourd'hui : qui, et ce qui est vraiment local -----------");
 /* 28/09/2026 : pour 1 257 communes sur 1 262, la reponse a « Que s'est-il decide
    pres de chez vous ? » est un vote national du depute, sans que l'ecran dise

@@ -66,3 +66,39 @@ export function dernierExercice(c, agregats) {
   }
   return null;
 }
+
+/* D'UN EXERCICE A L'AUTRE (29/09/2026) — l'ecran que la reprise du 16/09 designait
+ * comme celui qui rendrait Repere utile, et pas seulement vrai : « deux montants
+ * dates, la difference en euros, aucun pourcentage ».
+ *
+ * CE QUI EST COMPARE : les deux exercices publies les plus recents, s'ils se
+ * suivent (2024 et 2025 aujourd'hui ; 2021 n'est jamais compare a 2024 — trois
+ * ans d'ecart ne disent pas « depuis l'an dernier »).
+ *
+ * CE QUI N'EST PAS COMPARE : deux exercices dont la population differe de plus
+ * de 10 %. Mesure : une population legale bouge de quelques pour cent par an ;
+ * au-dela, le territoire a change (fusion de communes, comme Saint-Denis et
+ * Pierrefitte au 1er janvier 2025) et la difference mesurerait la fusion, pas
+ * la gestion. On le dit au lieu de soustraire.
+ *
+ * AUCUN POURCENTAGE, AUCUNE COULEUR DE JUGEMENT : une hausse n'est ni bonne ni
+ * mauvaise. La difference est un calcul de Repere, annonce comme tel. */
+export const SEUIL_PERIMETRE = 0.10;
+export function evolution(c, agregats) {
+  if (!c || !c.comptes) return null;
+  const ans = Object.keys(c.comptes).filter(a => /^\d{4}$/.test(a)
+    && agregats.some((_, j) => valeur(c.comptes[a], j))).sort();
+  if (ans.length < 2) return null;
+  const an2 = ans[ans.length - 1], an1 = ans[ans.length - 2];
+  if (Number(an2) - Number(an1) !== 1) return null;
+  const ex1 = c.comptes[an1], ex2 = c.comptes[an2];
+  const p1 = population(ex1), p2 = population(ex2);
+  const perimetreChange = !!(p1 && p2 && Math.abs(p2 - p1) / p1 > SEUIL_PERIMETRE);
+  const lignes = agregats.map((a, i) => {
+    const v1 = valeur(ex1, i), v2 = valeur(ex2, i);
+    const m1 = v1 && typeof v1.m === "number" ? v1.m : null;
+    const m2 = v2 && typeof v2.m === "number" ? v2.m : null;
+    return { libelle: a[1], m1, m2, diff: m1 !== null && m2 !== null ? m2 - m1 : null };
+  });
+  return { an1, an2, p1, p2, perimetreChange, lignes };
+}
