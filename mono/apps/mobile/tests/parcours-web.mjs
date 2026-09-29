@@ -23,12 +23,18 @@ import { createRequire } from "node:module";
 import path from "node:path";
 import fs from "node:fs";
 
-const require = createRequire(path.resolve(import.meta.dirname, "../../../package.json"));
-const { chromium } = require("playwright");
+/* Playwright : celui de l'application si elle l'a (CI mobile), sinon celui de
+   mono/ (poste de developpement ou il est deja installe par pnpm). */
+let chromium;
+for (const racine of ["../package.json", "../../../package.json"]) {
+  try { ({ chromium } = createRequire(path.resolve(import.meta.dirname, racine))("playwright")); break; } catch { /* suivant */ }
+}
+if (!chromium) { console.error("playwright introuvable"); process.exit(2); }
 const { adresseFautive, MOTS_A_ACCENTS } = await import("../../../packages/data-utils/src/invariants.js");
 
 const BASE = process.argv[2] || "http://localhost:8811";
 const CAPTURES = process.argv[3] || null;
+if (CAPTURES) fs.mkdirSync(CAPTURES, { recursive: true });
 const COMMUNE = { saisie: "meaux", nom: "Meaux" };
 let echecs = 0;
 const verifier = (ok, texte) => { console.log((ok ? "ok   " : "ECHEC") + " " + texte); if (!ok) echecs++; };

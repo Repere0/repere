@@ -6,3 +6,4 @@ android/
 expo-env.d.ts
 *.tsbuildinfo
 dist-web/
+captures/
