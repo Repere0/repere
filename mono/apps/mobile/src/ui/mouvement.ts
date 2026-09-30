@@ -9,13 +9,26 @@ import { useEffect, useRef, useState } from "react";
 import { AccessibilityInfo, Animated, Easing } from "react-native";
 import { DUREE } from "../lib/theme";
 
-export function useMouvementReduit(): boolean {
-  const [reduit, setReduit] = useState(false);
+/* LE REGLAGE EST LU UNE FOIS, POUR TOUTE L'APPLICATION (01/10/2026).
+ * Avant : chaque composant le demandait au systeme, de facon asynchrone, en
+ * partant de « animations permises » — une barre pouvait donc commencer a
+ * s'etirer avant que le reglage « reduire les animations » ne soit connu, et
+ * chaque composant ouvrait son propre abonnement. Maintenant : une seule
+ * lecture au demarrage, un seul abonnement, et tant que la reponse n'est pas
+ * arrivee (null), aucune animation ne demarre. */
+let reduitConnu: boolean | null = null;
+const abonnes = new Set<(r: boolean) => void>();
+const poser = (r: boolean) => { reduitConnu = r; abonnes.forEach(f => f(r)); };
+AccessibilityInfo.isReduceMotionEnabled().then(r => poser(!!r)).catch(() => poser(false));
+AccessibilityInfo.addEventListener("reduceMotionChanged", r => poser(!!r));
+
+/* null tant que le systeme n'a pas repondu : l'appelant n'anime rien. */
+export function useMouvementReduit(): boolean | null {
+  const [reduit, setReduit] = useState<boolean | null>(reduitConnu);
   useEffect(() => {
-    let vivant = true;
-    AccessibilityInfo.isReduceMotionEnabled().then(r => { if (vivant) setReduit(!!r); }).catch(() => {});
-    const abo = AccessibilityInfo.addEventListener("reduceMotionChanged", r => setReduit(!!r));
-    return () => { vivant = false; abo.remove(); };
+    abonnes.add(setReduit);
+    if (reduitConnu !== null) setReduit(reduitConnu);
+    return () => { abonnes.delete(setReduit); };
   }, []);
   return reduit;
 }
@@ -27,6 +40,7 @@ export function useApparition(delai = 0): Animated.Value {
   const reduit = useMouvementReduit();
   const v = useRef(new Animated.Value(0)).current;
   useEffect(() => {
+    if (reduit === null) return;             /* reglage pas encore connu : on attend */
     if (reduit) { v.setValue(1); return; }
     const a = Animated.timing(v, {
       toValue: 1, duration: DUREE.remplissage, delay: delai,
@@ -44,6 +58,7 @@ export function useCompteur(cible: number): number {
   const reduit = useMouvementReduit();
   const [n, setN] = useState(reduit ? cible : 0);
   useEffect(() => {
+    if (reduit === null) return;             /* reglage pas encore connu : on attend */
     if (reduit || !Number.isFinite(cible)) { setN(cible); return; }
     const v = new Animated.Value(0);
     const id = v.addListener(({ value }) => setN(Math.round(value)));

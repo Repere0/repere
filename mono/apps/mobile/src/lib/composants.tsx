@@ -8,7 +8,6 @@ import type { ReactNode } from "react";
 import { Linking, Pressable, StyleSheet, Text, View } from "react-native";
 import { ligneSource, CALCUL_REPERE } from "@repere/core";
 import { couleurs, CIBLE, PAS, RAYON, OMBRE, TYPO, type Echelon } from "./theme";
-import { AVEC_EMOJIS, Emoji } from "../ui/resume";
 
 /* Refonte du 30/09/2026 : plus de filet de couleur a gauche ; l'echelon se
    dit par un point de couleur devant l'etiquette, et la carte prend de l'air. */
@@ -22,33 +21,6 @@ export function Carte({ echelon, children, titre }: { echelon?: Echelon; childre
         </View>
       ) : null}
       {children}
-    </View>
-  );
-}
-
-/* UNE QUESTION, UNE REPONSE — la carte de l'ecran d'accueil (niveau 1).
-   Question en etiquette, reponse lisible en trois secondes, un visuel, la
-   pastille de source, et un seul geste pour approfondir. */
-export function CarteQuestion({ echelon, question, reponse, children, pied, action, emoji }: {
-  echelon: Echelon; question: string; reponse: ReactNode; children?: ReactNode; pied?: ReactNode;
-  action?: { texte: string; onPress: () => void }; emoji?: string;
-}) {
-  return (
-    <View style={[s.carte, { backgroundColor: couleurs.carte }]}>
-      <View style={s.carteTete}>
-        {emoji && AVEC_EMOJIS ? <Emoji c={emoji} /> : <View style={[s.point, { backgroundColor: couleurs[echelon] }]} />}
-        <Text style={s.carteTitre} accessibilityRole="header">{question}</Text>
-      </View>
-      {!reponse ? null : typeof reponse === "string" ? <Text style={TYPO.reponse}>{reponse}</Text> : reponse}
-      {children}
-      {pied}
-      {action ? (
-        <Pressable onPress={action.onPress} accessibilityRole="button" accessibilityLabel={action.texte}
-          style={({ pressed }) => [s.action, pressed && { opacity: 0.6 }]}>
-          <Text style={s.actionTexte}>{action.texte}</Text>
-          <Text style={s.actionTexte} accessibilityElementsHidden importantForAccessibility="no">›</Text>
-        </Pressable>
-      ) : null}
     </View>
   );
 }
@@ -80,19 +52,6 @@ export function LienSortant({ url, texte, etiquette }: { url: string; texte: str
     >
       <Text style={s.lienTexte}>{texte} ↗</Text>
     </Pressable>
-  );
-}
-
-type SourceProps = { producteur?: string; licence?: string; maj?: string; mention?: string; url?: string; calcul?: boolean };
-export function Source({ producteur, licence, maj, mention, url, calcul }: SourceProps) {
-  /* La ligne est celle du site, ecrite dans @repere/core (ligneSource). */
-  const ligne = ligneSource({ producteur, licence, maj, mention });
-  return (
-    <View style={s.source}>
-      {calcul ? <Text style={[s.sourceTexte, s.fort]}>{CALCUL_REPERE}</Text> : null}
-      <Text style={s.sourceTexte}>Source : {ligne}</Text>
-      {url ? <LienSortant url={url} texte="Voir à la source" etiquette={producteur ? "Voir à la source : " + producteur : undefined} /> : null}
-    </View>
   );
 }
 

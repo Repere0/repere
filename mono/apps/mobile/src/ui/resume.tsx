@@ -12,21 +12,14 @@ import type { ReactNode } from "react";
 import { Text, View } from "react-native";
 import { couleurs, PAS, TYPO } from "../lib/theme";
 
-/* Decision du 30/09/2026 : pas d'emojis pour l'instant. Ils ne reviennent
-   que construits avec EXPO_PUBLIC_REPERE_EMOJIS=1, pour un test qui
-   demontrerait leur fonction. */
-export const AVEC_EMOJIS = process.env.EXPO_PUBLIC_REPERE_EMOJIS === "1";
+/* Pas d'emojis (decision du porteur du 30/09/2026) : le drapeau
+   EXPO_PUBLIC_REPERE_EMOJIS et le composant Emoji sont retires le 01/10/2026 —
+   code eteint par defaut, donc jamais eprouve. */
 
-export function Emoji({ c, taille = 16 }: { c: string; taille?: number }) {
-  if (!AVEC_EMOJIS) return null;
-  return <Text style={{ fontSize: taille }} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">{c}</Text>;
-}
-
-/* Une etiquette de categorie : emoji (optionnel) + libelle en capitales de style. */
-export function Etiquette({ emoji, texte, couleur }: { emoji?: string; texte: string; couleur?: string }) {
+/* Une etiquette de categorie : un libelle en capitales de style. */
+export function Etiquette({ texte, couleur }: { texte: string; couleur?: string }) {
   return (
     <View style={{ flexDirection: "row", alignItems: "center", gap: PAS * 2 }}>
-      {emoji ? <Emoji c={emoji} /> : null}
       <Text style={[TYPO.etiquette, couleur ? { color: couleur } : null, { flex: 1 }]} accessibilityRole="header">{texte}</Text>
     </View>
   );

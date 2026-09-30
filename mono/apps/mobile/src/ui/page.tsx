@@ -27,10 +27,10 @@ export function Page({ children }: { children: ReactNode }) {
    point d'interrogation ne tombe jamais seul a la ligne (vu sur capture). */
 export const insecable = (t: string) => t.replace(/ ([?!:;])/g, "\u00a0$1");
 
-export function Question({ etiquette, question, sous, emoji }: { etiquette?: string; question: string; sous?: string; emoji?: string }) {
+export function Question({ etiquette, question, sous }: { etiquette?: string; question: string; sous?: string }) {
   return (
     <View style={{ gap: PAS * 2, marginBottom: PAS * 2 }}>
-      {etiquette ? <Etiquette emoji={emoji} texte={etiquette} /> : null}
+      {etiquette ? <Etiquette texte={etiquette} /> : null}
       <Text style={TYPO.question} accessibilityRole="header">{insecable(question)}</Text>
       {sous ? <Text style={TYPO.note}>{sous}</Text> : null}
     </View>

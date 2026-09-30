@@ -83,7 +83,7 @@ export function FeuilleSource({ source, visible, onFermer }: { source: InfoSourc
   return (
     <Modal visible={visible} animationType="slide" presentationStyle="pageSheet" onRequestClose={onFermer}>
       <ScrollView style={{ backgroundColor: couleurs.sol }} contentContainerStyle={[s.feuille, { paddingBottom: marges.bottom + PAS * 8 }]}>
-        <Etiquette emoji="🔎" texte="D'où vient cette information ?" />
+        <Etiquette texte="D'où vient cette information ?" />
         <Text style={TYPO.question} accessibilityRole="header">{source.producteur}</Text>
         {date ? <Text style={[TYPO.corps, { fontWeight: "600" }]}>{date}</Text> : null}
         {traite ? <Text style={TYPO.note}>Traitées par Repère le {dateFr(traite)}</Text> : null}

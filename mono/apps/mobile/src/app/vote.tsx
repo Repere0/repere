@@ -33,7 +33,7 @@ export default function Vote() {
     <AvecDonnees rendu={r => {
       const { d } = r;
       const vote: FaitVote | undefined = d.dernierVote;
-      const entete = <Question emoji="🗳️" etiquette="Votre député" question="Qu'a voté votre député ?" />;
+      const entete = <Question etiquette="Votre député" question="Qu'a voté votre député ?" />;
       if (!r.votesLus) return <Page>{entete}<Vide {...VOTES_PAS_ARRIVES} action="Réessayer" onAction={reessayer} /></Page>;
       if (!r.votesFiables) return <Page>{entete}<Vide titre={REFUS_APPARIEMENT.titre} corps={REFUS_APPARIEMENT.corps} /></Page>;
       if (!vote) return <Page>{entete}<Vide {...(d.nbCircos === 0 ? circoInconnue(d.nomCommune) : { ...VOTE_AUCUN, corps: POSITION_NON_PORTEE })} /></Page>;

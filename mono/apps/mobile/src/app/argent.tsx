@@ -25,7 +25,7 @@ import { useCommuneChoisie } from "../lib/useCommune";
 import { couleurs, PAS, TYPO } from "../lib/theme";
 import { AvecDonnees, Page, Question } from "../ui/page";
 import { PastilleSource } from "../ui/source";
-import { Emoji, Resume } from "../ui/resume";
+import { Resume } from "../ui/resume";
 import { BarrePart, Compteur, DeuxAnnees, Depli, Financement, Mois } from "../ui/visuels";
 
 type Rapport = { l: string; v: string; d: string };
@@ -61,7 +61,7 @@ export default function Argent() {
       return (
         <Page>
           <Stack.Screen options={{ title: "Où va l'argent" }} />
-          <Question emoji="💶" etiquette="L'argent de la commune" question={`Où va l'argent de ${nom} ?`} />
+          <Question etiquette="L'argent de la commune" question={`Où va l'argent de ${nom} ?`} />
 
           {!ex ? (
             <Vide {...(phraseEc ? comptesIncoherents(nom, phraseEc) : comptesAbsents(nom))} />
@@ -172,10 +172,7 @@ export default function Argent() {
 
           {/* LES PROJETS AIDES PAR L'ETAT */}
           <View style={{ gap: PAS * 3 }}>
-            <View style={{ flexDirection: "row", gap: PAS * 2, alignItems: "center" }}>
-              <Emoji c="🏗️" taille={24} />
-              <Text style={[TYPO.question, { flex: 1 }]} accessibilityRole="header">Les projets aidés par l'État</Text>
-            </View>
+            <Text style={TYPO.question} accessibilityRole="header">Les projets aidés par l'État</Text>
             {!r.projetsLus ? (
               <Vide {...PROJETS_PAS_ARRIVES} action="Réessayer" onAction={reessayer} />
             ) : !listeProjets.length ? (

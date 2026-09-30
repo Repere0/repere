@@ -58,7 +58,7 @@ export default function QuiDecide() {
       return (
         <Page>
           <Stack.Screen options={{ title: "Qui décide" }} />
-          <Question emoji="🏛️" etiquette="Qui décide" question={`Qui décide pour ${d.nomCommune} ?`}
+          <Question etiquette="Qui décide" question={`Qui décide pour ${d.nomCommune} ?`}
             sous="Du plus proche de chez vous au plus lointain. Ce n'est pas un ordre d'importance : c'est un ordre de distance." />
           <Chaine niveaux={niveaux} />
           <PastilleSource source={srcElus(r.srcElus ? { ...r.srcElus, url: r.srcElus.url || RNE_URL } : null)} />

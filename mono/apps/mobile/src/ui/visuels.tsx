@@ -169,35 +169,33 @@ export type Niveau = {
   echelon: Echelon; niveau: string; institution: string; lieu?: string | null;
   personne?: { nom: string; role: string } | null; decide?: string; note?: string; pied?: ReactNode;
 };
-export function Chaine({ niveaux, compact }: { niveaux: Niveau[]; compact?: boolean }) {
+export function Chaine({ niveaux }: { niveaux: Niveau[] }) {
   return (
     <View>
       {niveaux.map((n, i) => (
-        <View key={n.echelon} style={s.jalon}
-          accessible={compact}
-          accessibilityLabel={compact ? `${n.niveau} : ${n.personne ? n.personne.nom + ", " + n.personne.role : n.institution}` : undefined}>
+        <View key={n.echelon} style={s.jalon}>
           <View style={s.jalonAxe}>
             <View style={[s.maillon, { backgroundColor: couleurs[n.echelon] }]} />
             {i < niveaux.length - 1 ? <View style={[s.jalonTrait, { backgroundColor: couleurs.trait }]} /> : null}
           </View>
-          {/* Palette B : chaque echelon dans sa teinte — c'est ici que la palette
-              « territoriale » dit quelque chose (qui decide, a quel niveau). */}
-          <View style={[{ flex: 1, paddingBottom: compact ? PAS * 3 : PAS * 6, gap: 2 },
-            !compact ? { backgroundColor: TEINTES[n.echelon], borderRadius: RAYON.bloc, padding: PAS * 3, marginBottom: PAS * 3 } : null]}>
+          {/* Palette B partiel : chaque echelon dans sa teinte — le seul endroit ou
+              la palette « territoriale » dit quelque chose (qui decide, a quel niveau). */}
+          <View style={[{ flex: 1, paddingBottom: PAS * 6, gap: 2 },
+            { backgroundColor: TEINTES[n.echelon], borderRadius: RAYON.bloc, padding: PAS * 3, marginBottom: PAS * 3 }]}>
             {/* La couleur d'echelon est portee par le maillon, pas par le texte :
                 en 13 px, l'intercommunalite (#0891b2) faisait 3,21:1 sur le fond
                 et le departement 4,38:1 — sous le seuil AA de 4,5:1 (mesure du
                 30/09/2026, controle « contraste AA » du parcours). */}
-            <Text style={TYPO.etiquette}>{n.niveau}{n.lieu && !compact ? " · " + n.lieu : ""}</Text>
+            <Text style={TYPO.etiquette}>{n.niveau}{n.lieu ? " · " + n.lieu : ""}</Text>
             {n.personne ? (
-              <Text style={compact ? [TYPO.corps, { fontWeight: "700" }] : TYPO.reponse}>{n.personne.nom}</Text>
+              <Text style={TYPO.reponse}>{n.personne.nom}</Text>
             ) : (
-              <Text style={compact ? TYPO.corps : TYPO.reponse}>{n.institution}</Text>
+              <Text style={TYPO.reponse}>{n.institution}</Text>
             )}
-            {!compact && n.personne ? <Text style={TYPO.note}>{n.personne.role}</Text> : null}
-            {!compact && n.decide ? <Text style={TYPO.corps}>Décide : {n.decide}.</Text> : null}
-            {!compact && n.note ? <Text style={TYPO.note}>{n.note}</Text> : null}
-            {!compact && n.pied ? n.pied : null}
+            {n.personne ? <Text style={TYPO.note}>{n.personne.role}</Text> : null}
+            {n.decide ? <Text style={TYPO.corps}>Décide : {n.decide}.</Text> : null}
+            {n.note ? <Text style={TYPO.note}>{n.note}</Text> : null}
+            {n.pied ? n.pied : null}
           </View>
         </View>
       ))}
