@@ -172,3 +172,49 @@ export function datePublication(index) {
   const m = /^(\d{4}-\d{2}-\d{2})/.exec(String(g || ""));
   return m ? m[1] : null;
 }
+
+/* --- les grands nombres, lisibles d'un coup d'oeil (spike du 30/09/2026) ---- */
+
+/* « 121,3 M€ », « 726 800 € ». Arrondi dit par `arrondi: true` : l'ecran
+   l'annonce (le lecteur d'ecran lit la valeur exacte). */
+export function montantCourt(n) {
+  if (typeof n !== "number" || !Number.isFinite(n)) return null;
+  const a = Math.abs(n);
+  if (a >= 1e9) return { texte: (n / 1e9).toLocaleString("fr-FR", { maximumFractionDigits: 1 }) + " Md€", arrondi: true };
+  if (a >= 1e6) return { texte: (n / 1e6).toLocaleString("fr-FR", { maximumFractionDigits: 1 }) + " M€", arrondi: true };
+  return { texte: Math.round(n).toLocaleString("fr-FR") + " €", arrondi: false };
+}
+
+/* Une part en mots, pour la phrase humaine. N'arrondit jamais au-dela de 3
+   points de la VRAIE fraction (un tiers = 33,33) : 47 % -> « près de la
+   moitié », 30 % -> rien (3,33 points d'un tiers). partReperee rend null hors
+   des reperes : la phrase passe alors aux euros (« Pour 100 €, 30 € … »), la
+   forme retenue le 16/09 ; partEnMots garde le pourcentage exact. */
+const REPERES_PART = [
+  [25, "un quart", "près d'un quart", "un peu plus d'un quart"],
+  [100 / 3, "un tiers", "près d'un tiers", "un peu plus d'un tiers"],
+  [50, "la moitié", "près de la moitié", "un peu plus de la moitié"],
+  [200 / 3, "deux tiers", "près des deux tiers", "un peu plus des deux tiers"],
+  [75, "trois quarts", "près des trois quarts", "un peu plus des trois quarts"],
+  [100, "la totalité", "près de la totalité", null],
+];
+export function partReperee(pct) {
+  if (typeof pct !== "number" || pct < 0 || pct > 100) return null;
+  for (const [v, exact, presDe, plus] of REPERES_PART) {
+    if (Math.abs(pct - v) < 0.5) return exact;
+    if (pct < v && v - pct <= 3) return presDe;
+    if (pct > v && pct - v <= 3 && plus) return plus;
+  }
+  return null;
+}
+export function partEnMots(pct) {
+  if (typeof pct !== "number" || pct < 0 || pct > 100) return null;
+  return partReperee(pct) || pct + " %";
+}
+
+/* Les montants PAR HABITANT publies par l'OFGL (deuxieme colonne de chaque
+   agregat) : une donnee officielle, pas un calcul de Repere. */
+export function parHabitant(ex) {
+  const h = i => { const x = valeur(ex, i); return x && typeof x.hab === "number" ? x.hab : null; };
+  return { recettes: h(0), depenses: h(1), dette: h(2), investissement: h(3), salaires: h(4), impots: h(5) };
+}

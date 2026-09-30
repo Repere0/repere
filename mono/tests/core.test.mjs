@@ -188,3 +188,29 @@ test("visuels — financement, vote, parcours d'une loi, chaine : denominateurs 
   assert.deepEqual(ch.map(n => n.echelon), ["ville", "agglo", "dept", "region", "france"]);
   assert.ok(ch.every(n => n.personne === null), "sans source, personne n'est nomme");
 });
+
+test("visuels — grands nombres et parts en mots : jamais plus de 3 points d'arrondi", async () => {
+  const m = await import("../packages/core/src/index.js");
+  assert.equal(m.montantCourt(121272659).texte, "121,3 M€");
+  assert.equal(m.montantCourt(121272659).arrondi, true);
+  assert.equal(m.montantCourt(726800).arrondi, false);
+  assert.equal(m.partEnMots(47), "près de la moitié");
+  assert.equal(m.partEnMots(52), "un peu plus de la moitié");
+  assert.equal(m.partEnMots(31), "près d'un tiers");
+  assert.equal(m.partEnMots(30), "30 %", "3,33 points d'un tiers : trop loin pour le dire en mots");
+  assert.equal(m.partEnMots(33), "un tiers");
+  assert.equal(m.partReperee(45), null, "hors des reperes, la phrase passe aux euros");
+  assert.equal(m.partReperee(47), "près de la moitié");
+  assert.equal(m.partEnMots(60), "60 %", "hors des reperes, le pourcentage exact");
+  for (let p = 0; p <= 100; p++) {
+    const t = m.partEnMots(p);
+    /* Les VRAIES fractions : un tiers vaut 33,33, pas 33 (30/09/2026 : la
+       premiere version comparait a 33 et laissait dire « près d'un tiers » pour
+       30 %, soit 3,33 points). */
+    const vraie = { "un quart": 25, "un tiers": 100 / 3, "la moitié": 50, "deux tiers": 200 / 3, "trois quarts": 75, "la totalité": 100 };
+    const cle = Object.keys(vraie).find(k => t.endsWith(k));
+    if (cle) assert.ok(Math.abs(vraie[cle] - p) <= 3, `${p} % dit « ${t} »`);
+  }
+  const ph = m.parHabitant([1000, 10, 11, 20, 22, null, null]);
+  assert.equal(ph.recettes, 11); assert.equal(ph.dette, null);
+});
