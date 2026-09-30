@@ -15,7 +15,50 @@
 # humaine revient a parier ; avec lui, 40 controles dont la moitie mesurent le
 # rendu dans un vrai navigateur disent non a notre place.
 # =============================================================================
-set -euo pipefail
+set -eEuo pipefail
+
+# L'ECHEC SE LIT SANS OUVRIR LE JOURNAL (29/09/2026). Le 28/09, la collecte a
+# echoue sur un seul controle du banc ; l'etape disait « exit code 1 » et rien
+# d'autre, et le journal complet n'est lisible ni depuis le conteneur de travail
+# ni depuis un telephone. Deux choses rendent desormais l'echec visible dans les
+# annotations du run (page du run, API check-runs) :
+#   - toute commande qui fait tomber la chaine est nommee, avec sa ligne ;
+#   - un banc qui echoue remonte ses propres lignes d'echec (voir banc()).
+# Rien n'est rendu plus permissif : le code de sortie reste celui de l'echec.
+annoter() {  # annoter <titre> <fichier> : une annotation d'erreur, lignes preservees
+  local corps
+  corps=$(sed -e 's/%/%25/g' "$2" | awk 'BEGIN{ORS="%0A"} {print}' | cut -c1-3900)
+  echo "::error title=$1::$corps"
+}
+trap 'rc=$?; echo "::error title=pipeline::la chaine s arrete ligne $LINENO (code $rc) : $BASH_COMMAND"' ERR
+
+# banc <etiquette> <commande...> : lance un banc, garde sa sortie, et en cas
+# d'echec remonte les lignes qui disent POURQUOI (ECHEC, not ok, erreurs
+# d'assertion), sinon ses 25 dernieres lignes.
+banc() {
+  local etiquette=$1; shift
+  local journal rc
+  journal=$(mktemp)
+  # Le piege ERR se tait pendant le banc : c'est banc() qui dit pourquoi, puis le
+  # piege nomme la ligne quand le code d'echec remonte.
+  local piege
+  piege=$(trap -p ERR)
+  trap - ERR
+  set +e
+  "$@" 2>&1 | tee "$journal"
+  rc=${PIPESTATUS[0]}
+  set -e
+  if [ "$rc" -ne 0 ]; then
+    local extrait
+    extrait=$(mktemp)
+    grep -E 'ECHEC|^not ok|AssertionError|Error:|✗|FAIL' "$journal" | head -30 > "$extrait" || true
+    [ -s "$extrait" ] || tail -25 "$journal" > "$extrait"
+    annoter "banc $etiquette" "$extrait"
+  fi
+  rm -f "$journal"
+  eval "$piege"
+  return "$rc"
+}
 
 AUJOURDHUI=$(date -u +%Y-%m-%d)
 echo "== pipeline Repere — $AUJOURDHUI =="
@@ -227,6 +270,12 @@ PY
 python3 outils/ofgl.py --produire \
   || echo "::warning::comptes des communes non releves - le bloc fige du 29/07/2026 reste en place"
 
+# LES MAIRES, RELEVES A LA SOURCE (29/09/2026). Ecrit mono/scripts/maires.json,
+# que extract-html.js prefere au bloc fige quand il est complet. Avertit s'il
+# echoue : le bloc fige reste alors en place.
+python3 outils/rne.py --produire \
+  || echo "::warning::maires non releves - le bloc fige reste en place"
+
 APP=$(ls -1 app_repere_v18_*.html | grep -v '\.bak$' | sort -V | tail -1)
 echo "application retenue (fichier autonome) : $APP"
 rm -rf site_engendre
@@ -281,10 +330,17 @@ echo "site engendre depuis mono/ : $(find site_engendre -type f | wc -l) fichier
 # 22/09/2026 sur le runner GitHub reel : 120 controles inline + 65 node:test,
 # 0 echec) qui le garde, pas test_repere.mjs — qui ne connait ni son DOM ni
 # ses classes.
+# CONTEXTE DES AGENTS (29/09/2026) : CLAUDE.md, AGENTS.md, skills. Il n'entre
+# pas dans le site publie, donc il AVERTIT et ne bloque jamais la publication ;
+# sur une pull request, l'avertissement se lit dans l'epreuve.
+echo "== contexte des agents =="
+node outils/derive_contexte.mjs \
+  || echo "::warning::le contexte des agents a derive (voir outils/derive_contexte.mjs ci-dessus)"
+
 echo "== banc : le fichier autonome =="
-node test_repere.mjs "$APP"
+banc "fichier autonome" node test_repere.mjs "$APP"
 
 echo "== banc : le monorepo (version publiee) =="
-(cd mono && pnpm test)
+banc "monorepo" bash -c 'cd mono && pnpm test'
 
 echo "== pipeline terminee sans erreur =="

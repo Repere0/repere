@@ -1,8 +1,12 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { Carte, Vide, Tuile, BarreEchelon, Source, Mot, Chargement } from "@repere/ui";
+import { Carte, Vide, Tuile, BarreEchelon, Source, Chargement } from "@repere/ui";
 import { Pile } from "@repere/ui/amicro";
 import { valeur, rapports, population, dernierExercice, evolution } from "../lib/comptes.jsx";
 import { chargerComptesRegions, ETATS } from "@repere/data-utils";
+/* Les phrases de cet ecran vivent dans @repere/core (phrases.js) depuis le
+   30/09/2026 : l'application mobile ecrit les memes, mot pour mot. */
+import { introRapports, comptesAbsents, comptesInsuffisants, exercicesEcartes, phraseEcartes as phraseDesEcartes, comptesIncoherents,
+  INTRO_EVOLUTION, NOTE_EVOLUTION, diffEuros, perimetreChange } from "@repere/core";
 
 /* `valeur`, `rapports`, `population`, `dernierExercice` VIVENT DANS
  * lib/comptes.jsx DEPUIS LE 18/09/2026 — voir ce fichier pour l'historique de
@@ -25,37 +29,27 @@ const euros = n => Math.round(n).toLocaleString("fr-FR") + " €";
 /* D'UN EXERCICE A L'AUTRE — voir evolution() dans lib/comptes.jsx. */
 function Evolution({ e, nom, src }) {
   if (e.perimetreChange) {
-    return (
-      <Vide titre={`D'un exercice à l'autre : ${nom} n'est pas comparable à elle-même.`}
-        corps={`La population publiée passe de ${e.p1.toLocaleString("fr-FR")} habitants (exercice ${e.an1}) à ${e.p2.toLocaleString("fr-FR")} (exercice ${e.an2}). Un écart de cette taille signale un changement de territoire, par exemple une fusion de communes : comparer les deux années mesurerait ce changement, pas l'évolution des comptes. Repère ne fait donc pas la différence.`} />
-    );
+    return <Vide {...perimetreChange(e, nom)} />;
   }
   return (
-    <Carte echelon="ville" titre="D'un exercice à l'autre"
-      sousTitre={<><Mot cle="exercice">exercice</Mot> {e.an1} → <Mot cle="exercice">exercice</Mot> {e.an2} · budget principal</>}
+    <Carte echelon="ville" titre="D'une année à l'autre"
+      sousTitre={<>comptes {e.an1} → comptes {e.an2} · budget principal</>}
       tag="Calcul Repère">
-      <p className="tx-note tx-intro">
-        Les deux montants sont publiés par l'Observatoire des finances locales ; la différence
-        est une soustraction faite par Repère.
-      </p>
+      <p className="tx-note tx-intro">{INTRO_EVOLUTION}</p>
       {e.lignes.map((l, i) => (
         <div className="ligne evolution" key={i}>
           <div className="ligne-h"><span>{l.libelle}</span>
-            <b>{l.diff === null ? "—" : l.diff === 0 ? "inchangé" : (l.diff > 0 ? "+ " : "− ") + euros(Math.abs(l.diff))}</b>
+            <b>{diffEuros(l.diff)}</b>
           </div>
           <div className="ligne-note">
             {l.diff === null
-              ? `Non comparable : le fichier ne porte pas cette ligne pour l'exercice ${l.m1 === null ? e.an1 : e.an2}.`
+              ? `Non comparable : le fichier ne porte pas cette ligne pour ${l.m1 === null ? e.an1 : e.an2}.`
               : `${e.an1} : ${euros(l.m1)} · ${e.an2} : ${euros(l.m2)}`}
           </div>
         </div>
       ))}
-      <p className="tx-note">
-        Une différence d'une année sur l'autre ne dit pas si la commune est bien ou mal gérée :
-        un chantier qui commence ou s'achève, un emprunt, une compétence transférée à
-        l'intercommunalité suffisent à la faire varier.
-      </p>
-      <Source calcul producteur={src ? src.producteur : ""} licence={src ? src.licence : ""} maj={src ? src.maj : ""} />
+      <p className="tx-note">{NOTE_EVOLUTION}</p>
+      <Source calcul producteur={src ? src.producteur : ""} licence={src ? src.licence : ""} maj={src ? src.maj : ""} url={src ? src.url : undefined} />
     </Carte>
   );
 }
@@ -65,12 +59,12 @@ function CompteTerritoire({ titre, echelon, exerciceAn, ex, agregats, src }) {
   const maxAgregat = Math.max(...agregats.map((_, i) => (valeur(ex, i) || {}).m || 0));
   return (
     <Carte echelon={echelon} titre={titre}
-      sousTitre={<>Ce que ça représente · <Mot cle="exercice">exercice</Mot> {exerciceAn}{population(ex) ? ` · ${population(ex).toLocaleString("fr-FR")} habitants` : ""}</>}
+      sousTitre={<>Ce que ça représente · comptes {exerciceAn}{population(ex) ? ` · ${population(ex).toLocaleString("fr-FR")} habitants` : ""}</>}
       tag={rr.length ? "Calcul Repère" : undefined}>
       {rr.length >= 2 ? (
         <>
           <div className="tuiles">{rr.map((o, i) => <Tuile key={i} k={o.l} v={o.v} n={o.d} />)}</div>
-          <Source calcul producteur={src ? src.producteur : ""} licence={src ? src.licence : ""} maj={src ? src.maj : ""} />
+          <Source calcul producteur={src ? src.producteur : ""} licence={src ? src.licence : ""} maj={src ? src.maj : ""} url={src ? src.url : undefined} />
         </>
       ) : (
         <Vide titre={`Pas assez de montants publiés pour traduire les comptes de ce territoire (exercice ${exerciceAn}).`}
@@ -122,17 +116,12 @@ export default function OuVaArgent({ paquet, index, commune }) {
      fichier les porte, mais leurs montants ne correspondent pas a la population
      publiee sur la meme ligne. C'est une autre cause d'absence que « le fichier
      ne porte pas cette commune » : elle a donc sa propre phrase. */
-  const ecartes = (c && Array.isArray(c.comptes_ecartes) ? c.comptes_ecartes : [])
-    .filter(an => !exercice || an > exercice.an).sort();
-  const phraseEcartes = ecartes.length
-    ? `Le fichier officiel porte des comptes pour ${ecartes.length > 1 ? "les exercices " + ecartes.join(" et ") : "l'exercice " + ecartes[0]}, mais leurs montants ne correspondent pas à la population publiée sur la même ligne. Repère ne les affiche pas plutôt que de risquer d'attribuer à ${c ? c.nom : "cette commune"} des chiffres qui ne sont pas les siens.`
-    : null;
+  const ecartes = exercicesEcartes(c, exercice);
+  const phraseEcartes = phraseDesEcartes(ecartes, c ? c.nom : null);
 
   if (!exercice && phraseEcartes) {
     return (
-      <Vide titre={`${c.nom} : ses comptes publiés ne sont pas cohérents.`}
-        corps={phraseEcartes}
-        lien={{ texte: "Vérifier dans les comptes publics", url: "https://data.ofgl.fr/" }} />
+      <Vide {...comptesIncoherents(c.nom, phraseEcartes)} />
     );
   }
 
@@ -141,9 +130,7 @@ export default function OuVaArgent({ paquet, index, commune }) {
        simplement de la liste : le lecteur cherchait la sienne, ne la trouvait
        pas, et rien ne lui disait pourquoi. Une absence se dit. */
     return (
-      <Vide titre={`${c.nom} : ses comptes ne figurent pas dans le fichier officiel.`}
-        corps="Un montant absent n'est pas un montant nul : Repère n'affiche rien plutôt qu'un zéro qui pourrait être faux. Les très petites communes et celles qui viennent de fusionner manquent souvent à ce fichier."
-        lien={{ texte: "Chercher cette commune dans les comptes publics", url: "https://data.ofgl.fr/" }} />
+      <Vide {...comptesAbsents(c.nom)} />
     );
   }
 
@@ -161,28 +148,23 @@ export default function OuVaArgent({ paquet, index, commune }) {
     <Pile>
       {rr.length >= 2 ? (
         <Carte echelon="ville" titre={c.nom}
-          sousTitre={<>Ce que ça représente · <Mot cle="exercice">exercice</Mot> {exercice.an}{population(exercice.ex) ? ` · ${population(exercice.ex).toLocaleString("fr-FR")} habitants` : ""}</>}
+          sousTitre={<>Ce que ça représente · comptes {exercice.an}{population(exercice.ex) ? ` · ${population(exercice.ex).toLocaleString("fr-FR")} habitants` : ""}</>}
           tag="Calcul Repère">
-          <p className="tx-note tx-intro">
-            Aucun de ces rapports n'est publié : Repère les calcule à partir de six montants
-            publiés par l'Observatoire des finances locales, visibles plus bas sur cette page,
-            et explique sous chacun ce qu'il ne veut pas dire.
-          </p>
+          <p className="tx-note tx-intro">{introRapports({ detailPlusBas: true })}</p>
           <div className="tuiles">
             {rr.map((o, i) => <Tuile key={i} k={o.l} v={o.v} n={o.d} />)}
           </div>
-          <Source calcul producteur={src ? src.producteur : ""} licence={src ? src.licence : ""} maj={src ? src.maj : ""} />
+          <Source calcul producteur={src ? src.producteur : ""} licence={src ? src.licence : ""} maj={src ? src.maj : ""} url={src ? src.url : undefined} />
         </Carte>
       ) : (
-        <Vide titre="Pas assez de montants pour traduire ces comptes."
-          corps={`Les rapports se calculent à partir de plusieurs lignes à la fois ; pour l'exercice ${exercice.an}, le fichier officiel n'en porte pas assez.`} />
+        <Vide {...comptesInsuffisants(exercice.an)} />
       )}
 
       {evo ? <Evolution e={evo} nom={c.nom} src={src} /> : null}
 
       {/* Nom seul : « les comptes de X » demanderait une elision non derivable. */}
       <Carte echelon="dept" titre={rr.length >= 2 ? "Le détail publié" : c.nom}
-        sousTitre={<>Les comptes de la commune · <Mot cle="exercice">exercice</Mot> {exercice.an}{population(exercice.ex) ? ` · ${population(exercice.ex).toLocaleString("fr-FR")} habitants` : ""} · budget principal</>}
+        sousTitre={<>Les comptes de la commune · comptes {exercice.an}{population(exercice.ex) ? ` · ${population(exercice.ex).toLocaleString("fr-FR")} habitants` : ""} · budget principal</>}
         tag="Donnée officielle">
         <p className="tx-note tx-intro">
           Les six lignes ci-dessous sont publiées telles quelles par l'Observatoire des finances
@@ -197,7 +179,7 @@ export default function OuVaArgent({ paquet, index, commune }) {
           if (!v) return (
             <div className="ligne" key={i}>
               <div className="ligne-h"><span>{a[1]}</span><b>—</b></div>
-              <div className="ligne-note">Non renseigné pour l'exercice {exercice.an}. Le fichier ne porte pas cette ligne — ce n'est pas un montant nul.</div>
+              <div className="ligne-note">Non renseigné dans les comptes {exercice.an}. Le fichier ne porte pas cette ligne — ce n'est pas un montant nul.</div>
             </div>
           );
           if (v.zero) return (

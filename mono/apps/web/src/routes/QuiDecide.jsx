@@ -7,8 +7,10 @@ import {
   entrer, revenir, ETATS,
 } from "@repere/data-utils";
 import { COMPETENCES } from "../lib/competences.js";
+import { phraseAdjoints, MAIRE_ABSENT, RNE_URL, teteDepartement } from "@repere/core";
+import { Segments } from "../lib/segments.jsx";
 
-const RNE_URL = "https://www.data.gouv.fr/fr/datasets/repertoire-national-des-elus-1/";
+/* RNE_URL vient de @repere/core (phrases.js) depuis le 29/09/2026. */
 const AN_URL = "https://data.assemblee-nationale.fr/acteurs/deputes-en-exercice";
 const AN_VOTES_URL = "https://data.assemblee-nationale.fr/travaux-parlementaires/votes";
 
@@ -410,10 +412,9 @@ function ConseilDepartemental({ paquet, c, src }) {
         lien={{ texte: "Répertoire national des élus", url: RNE_URL }} />
     );
   }
-  const mesCantons = c.canton || [];
-  const duCanton = mesCantons.length ? conseil.filter(e => mesCantons.includes(e.canton)) : [];
-  const cantonNom = duCanton.length ? (paquet.cantons || {})[duCanton[0].canton] : null;
-  const tete = duCanton.length ? duCanton[0] : conseil[0];
+  /* La regle « mon canton d'abord » vit dans @repere/core (teteDepartement)
+     depuis le 30/09/2026 : l'application mobile nomme le meme elu. */
+  const { tete, duCanton, cantonNom } = teteDepartement(paquet, c);
   const propreCanton = duCanton.slice(1); // les autres elus DU MEME canton, jamais caches derriere "les autres du departement"
   const resteDept = conseil.filter(e => e !== tete && propreCanton.indexOf(e) === -1);
   return (
@@ -510,23 +511,23 @@ export default function QuiDecide({ paquet, index, commune }) {
           <div className="ligne">
             <div className="ligne-h"><span>{c.maire.fonction}</span><b>{c.maire.nom}</b></div>
             <div className="ligne-note">
-              {c.adjoints > 0
-                /* LE NOM COMPLET, JAMAIS LE DERNIER MOT.
-                   Mesure du 15/09/2026 : 72 maires d'Ile-de-France sur 1 262 (5,7 %)
-                   portent un nom de plus de deux mots. « Alexandre DE MEULENAERE »
-                   devenait « MEULENAERE », « Jean-Marie VAN LANDEGHEM » devenait
-                   « LANDEGHEM », « Jean-Yves LE MEE » devenait « MEE ». Et a Paris la
-                   ligne disait « 36 adjoints siegent avec GREGOIRE », deux cartes
-                   au-dessus de la deputee Olivia Gregoire — le defaut d'imputation
-                   corrige hier sur l'autre ecran, survivant sur celui-ci.
-                   Le RNE publie le nom complet : il n'y a rien a decouper. */
-                ? <>{c.adjoints} <Mot cle="adjoint au maire">adjoint{c.adjoints > 1 ? "s" : ""}</Mot> siègent avec {c.maire.nom}. Ce sont eux qui votent le budget de la commune.</>
-                : "Aucun adjoint n'est enregistré pour cette commune dans le Répertoire national des élus."}
+              {/* LE NOM COMPLET, JAMAIS LE DERNIER MOT.
+                  Mesure du 15/09/2026 : 72 maires d'Ile-de-France sur 1 262 (5,7 %)
+                  portent un nom de plus de deux mots. « Alexandre DE MEULENAERE »
+                  devenait « MEULENAERE », « Jean-Marie VAN LANDEGHEM » devenait
+                  « LANDEGHEM », « Jean-Yves LE MEE » devenait « MEE ». Et a Paris la
+                  ligne disait « 36 adjoints siegent avec GREGOIRE », deux cartes
+                  au-dessus de la deputee Olivia Gregoire — le defaut d'imputation
+                  corrige hier sur l'autre ecran, survivant sur celui-ci.
+                  Le RNE publie le nom complet : il n'y a rien a decouper.
+                  Les trois phrases (adjoints / compte INCONNU, pas zero / aucun)
+                  vivent dans @repere/core (phraseAdjoints) depuis le 29/09/2026 :
+                  l'application mobile les ecrit mot pour mot. */}
+              <Segments s={phraseAdjoints(c.adjoints, c.maire.nom)} />
             </div>
           </div>
         ) : (
-          <Vide titre="Le Répertoire national des élus ne porte pas de maire pour cette commune."
-            corps="C'est la source qui est incomplète, pas la commune qui n'en a pas."
+          <Vide titre={MAIRE_ABSENT.titre} corps={MAIRE_ABSENT.corps}
             lien={{ texte: "Répertoire national des élus", url: RNE_URL }} />
         )}
         <div className="ligne">
@@ -558,7 +559,7 @@ export default function QuiDecide({ paquet, index, commune }) {
           </div>
         )}
         {srcCirco ? (
-          <Source producteur={srcCirco.producteur} licence={srcCirco.licence}
+          <Source producteur={srcCirco.producteur} licence={srcCirco.licence} url={srcCirco.url}
             mention={"découpage de " + srcCirco.decoupage} />
         ) : null}
 

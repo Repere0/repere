@@ -32,6 +32,9 @@ importers:
 
   apps/web:
     dependencies:
+      '@repere/core':
+        specifier: workspace:*
+        version: link:../../packages/core
       '@repere/data-utils':
         specifier: workspace:*
         version: link:../../packages/data-utils
@@ -52,10 +55,15 @@ importers:
         specifier: ^5.4.0
         version: 5.4.21
 
+  packages/core: {}
+
   packages/data-utils: {}
 
   packages/ui:
     dependencies:
+      '@repere/core':
+        specifier: workspace:*
+        version: link:../core
       react:
         specifier: ^18.0.0
         version: 18.3.1

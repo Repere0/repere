@@ -4,6 +4,12 @@
 tout modèle de langage qui reprend le projet. Il est écrit pour être collé tel
 quel en début de session.
 
+> **Lire d'abord `CLAUDE.md`** (29/09/2026) : c'est l'état courant, court. Ce
+> document-ci se lit à la demande. Ses sections 4 à 8 et 12 décrivent l'ère du
+> fichier unique, **avant la bascule de la production vers `mono/` le 23/09/2026** :
+> les chiffres du banc, la carte des fichiers et l'ordre de travail qu'elles donnent
+> sont historiques.
+
 - **Dernière mise à jour :** 26 août 2026
 - **Version de l'application :** `app_repere_v18_20.html`
 - **Dépôt :** `C:\Users\APina\repere` (Windows) — la chaîne tourne sur GitHub Actions
@@ -449,6 +455,16 @@ divergeait de la vraie chaîne et était rouge chaque jour depuis le 23/09 (inva
 relisant `dist/` lancés avant le build). Il est remplacé par `epreuve.yml` : les
 mêmes étapes que `collecte.yml` jusqu'au banc inclus, **sans rien publier**, sur
 chaque pull request vers `main` et à la demande.
+
+**Qui écrit sur `main` (29/09/2026).** `main` est protégée : pull request
+obligatoire, aucun contournement humain. La collecte quotidienne y écrit par une
+identité dédiée, l'App GitHub `repere-collecte` (permission Contents seulement,
+installée sur ce seul dépôt), seule inscrite en contournement. Son jeton dure une
+heure et n'est jamais stocké. Une **liste blanche** dans `collecte.yml` refuse tout
+chemin qui n'est pas une sortie de la chaîne (jamais `data/evenements/`, jamais le
+code) et nomme le fichier refusé ; prouvée en la cassant. Sans les secrets
+`COLLECTE_APP_ID` / `COLLECTE_APP_KEY`, la collecte se replie sur le jeton du
+workflow et le dit.
 
 **Défauts trouvés le premier jour, par les contrôles eux-mêmes :**
 

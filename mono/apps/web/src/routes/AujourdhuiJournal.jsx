@@ -2,6 +2,8 @@ import React from "react";
 import { Vide, Source, Chargement, dateFr } from "@repere/ui";
 import { useAujourdhui } from "../lib/useAujourdhui.js";
 import { LigneVote } from "../lib/votes.jsx";
+import { noteRattachement } from "../lib/faits.js";
+import { phraseProjet } from "@repere/core";
 
 /* DIRECTION A — « LE JOURNAL » (19/09/2026), NON RETENUE POUR LA VERSION
  * BRANCHEE — voir Aujourdhui.jsx (direction C, « la question ») pour celle
@@ -25,7 +27,6 @@ import { LigneVote } from "../lib/votes.jsx";
 
 const DGCL_URL = "https://www.data.gouv.fr/datasets/projets-finances-par-les-dotations-"
   + "de-soutien-a-linvestissement-des-collectivites-territoriales";
-function euros(n) { return new Intl.NumberFormat("fr-FR").format(n) + " €"; }
 
 /* UN FAIT, PAS UNE CARTE. `echelon` ne colore qu'un trait vertical de 3px —
    le meme code couleur que le reste du produit, sans fond ni bordure. */
@@ -65,7 +66,7 @@ export default function AujourdhuiJournal({ paquet, index, commune, aller }) {
             mention={srcScrutins.releve_le ? "relevé le " + dateFr(srcScrutins.releve_le) : undefined} /> : null} />
       ) : dernierFait && dernierFait.type === "projet" ? (
         <Fait echelon="ville" titre={dernierFait.p.intitule}
-          enfants={<p className="ligne-note">L'État a engagé {euros(dernierFait.p.subvention)}, exercice {dernierFait.p.annee}.</p>}
+          enfants={<p className="ligne-note">{phraseProjet(dernierFait.p)}{noteRattachement(dernierFait.p) ? " " + noteRattachement(dernierFait.p) : ""}</p>}
           source={srcProjets ? <Source producteur={srcProjets.producteur} licence={srcProjets.licence} maj={srcProjets.mis_a_jour_le} /> : null} />
       ) : (
         <Vide titre={`Aucune décision datée n'est publiée pour ${nomCommune}.`}

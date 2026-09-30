@@ -15,7 +15,7 @@ export default function Sources({ index, paquet }) {
         {s.comptes ? <Source producteur={"Comptes — " + s.comptes.producteur} licence={s.comptes.licence} maj={s.comptes.maj}
           url="https://data.ofgl.fr/" /> : null}
         {s.circonscriptions ? <Source producteur={"Circonscriptions — " + s.circonscriptions.producteur}
-          licence={s.circonscriptions.licence} mention={"découpage de " + s.circonscriptions.decoupage} /> : null}
+          licence={s.circonscriptions.licence} mention={"découpage de " + s.circonscriptions.decoupage} url={s.circonscriptions.url} /> : null}
         {/* Le decoupage dit dans quelle circonscription vote une commune ; le
             fichier des mandats dit qui y siege. Deux producteurs, deux lignes :
             les confondre laisserait croire que le ministere publie le nom des
@@ -57,7 +57,7 @@ export default function Sources({ index, paquet }) {
         {s.projets ? <Source producteur={"Projets financés par l'État — " + s.projets.producteur}
           licence={s.projets.licence}
           maj={s.projets.mis_a_jour_le}
-          mention={(s.projets.exercices ? "exercices " + s.projets.exercices.join(" et ") + ", " : "")
+          mention={(s.projets.exercices ? "années " + s.projets.exercices.join(" et ") + ", " : "")
             + "relevé le " + dateFr(s.projets.releve_le)}
           url={s.projets.url} /> : null}
         {/* LE FIL EDITORIAL N'A PAS UN PRODUCTEUR, IL A UN GESTE : chaque fait

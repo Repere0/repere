@@ -41,6 +41,10 @@ jobs:
     env:
       NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
       NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+      # Identifiant (non secret en soi) de l'App « repere-collecte », seule identite
+      # autorisee a contourner la protection de main. Au niveau du job pour la meme
+      # raison que les deux lignes au-dessus : le if: d'une etape ne lit pas son env.
+      COLLECTE_APP_ID: ${{ secrets.COLLECTE_APP_ID }}
 
     steps:
       - name: Recuperer le depot
@@ -76,8 +80,26 @@ jobs:
         # Tout est dans outils/pipeline.sh — c'est la qu'on modifie, pas ici.
         run: bash outils/pipeline.sh
 
+      # UNE IDENTITE DEDIEE POUR ECRIRE SUR MAIN — 29/09/2026.
+      # main est protegee (PR obligatoire, epreuve obligatoire). Seule l'App
+      # « repere-collecte » (permission Contents : lecture et ecriture, installee sur
+      # ce seul depot) figure dans la liste de contournement ; aucun role humain.
+      # Jeton valable une heure, demande ici, jamais stocke. Sans les secrets (avant
+      # la mise en place de l'App), l'etape est sautee et le commit se replie sur le
+      # jeton du workflow, comme avant — l'etape suivante le dit.
+      - name: Obtenir le jeton du bot de collecte
+        id: jeton
+        if: env.COLLECTE_APP_ID != ''
+        continue-on-error: true
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ secrets.COLLECTE_APP_ID }}
+          private-key: ${{ secrets.COLLECTE_APP_KEY }}
+
       - name: Committer ce qui a change
         id: commit
+        env:
+          JETON_BOT: ${{ steps.jeton.outputs.token }}
         # continue-on-error, et c'est le correctif du 20/08/2026. Sans lui, un push
         # refuse — parce qu'une main humaine avait pousse entre-temps — faisait tomber
         # l'etape, et GitHub SAUTAIT alors « Publier sur Netlify » sans un mot. Le site
@@ -94,6 +116,41 @@ jobs:
           # pas ecrire. Le .gitignore fait le tri — il exclut deja site_engendre/,
           # les archives brutes et le journal de pousser.bat.
           git add -A
+          # LE BOT N'ECRIT QUE CE QUE LA CHAINE PRODUIT — 29/09/2026. Il contourne la
+          # protection de main : il ne doit donc jamais pouvoir y porter autre chose
+          # que des sorties generees. Liste etablie sur les 26 commits de collecte de
+          # l'historique (tous les chemins jamais ecrits). Jamais data/evenements/ :
+          # un fait n'est publie que par un humain. Un chemin hors liste : rien n'est
+          # enregistre, le fichier est nomme, et la publication (etape suivante,
+          # independante) n'est pas bloquee. Un nouvel artefact legitime s'ajoute ici,
+          # par une PR eprouvee.
+          hors_liste=""
+          while IFS= read -r f; do
+            [ -z "$f" ] && continue
+            case "$f" in
+              data/journal_collecte.json|data/circos_ministere.xlsx) ;;
+              data/auto/*.md) ;;
+              docs/schema_*.md) ;;
+              outils/agenda_an.json|outils/evenements.json|outils/scrutins_an.json|outils/circos.json) ;;
+              mono/scripts/deputes.json|mono/scripts/noms-communes.json|mono/scripts/projets.json|mono/scripts/scrutins.json) ;;
+              site_donnees/*) ;;
+              *) hors_liste="$hors_liste $f" ;;
+            esac
+          done < <(git -c core.quotePath=false diff --cached --name-only)
+          if [ -n "$hors_liste" ]; then
+            git reset -q
+            echo "::error::Le bot de collecte refuse d'enregistrer des chemins qui ne sont pas des sorties de la chaine :$hors_liste"
+            exit 1
+          fi
+          if [ -n "$JETON_BOT" ]; then
+            # actions/checkout a pose le jeton du workflow en en-tete HTTP : il
+            # l'emporterait sur celui de l'URL. On le retire avant de pousser.
+            git config --unset-all http.https://github.com/.extraheader || true
+            git remote set-url origin "https://x-access-token:${JETON_BOT}@github.com/${{ github.repository }}.git"
+            echo "Enregistrement par l'App repere-collecte."
+          else
+            echo "::warning::Secrets de l'App repere-collecte absents : enregistrement avec le jeton du workflow, qui sera refuse si main est protegee."
+          fi
           if git diff --cached --quiet; then
             echo "Rien de nouveau aujourd'hui."
           else
@@ -170,7 +227,7 @@ jobs:
           elif [ "${{ steps.commit.outcome }}" = "skipped" ]; then
             echo "::warning::Rien n'a ete enregistre dans le depot : l'etape n'a pas ete tentee, une etape precedente a echoue (voir la croix rouge plus haut)."
           else
-            echo "::warning::L'enregistrement dans le depot a echoue (push refuse ?). La publication, elle, n'en depend pas."
+            echo "::warning::L'enregistrement dans le depot a echoue : chemin hors liste blanche ou push refuse, l'erreur de l'etape « Committer » dit lequel. La publication, elle, n'en depend pas."
           fi
 
       - name: Dire ce qui a ete publie, ou pourquoi rien ne l'a ete

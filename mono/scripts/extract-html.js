@@ -253,6 +253,54 @@ function releveComptesCommunes() {
   return d;
 }
 
+/* LES COMPTES DES DEPARTEMENTS ET DES REGIONS, RELEVES A LA SOURCE (29/09/2026).
+ * Meme regle que pour les communes : retenus seulement complets et sources.
+ * Les exercices ou plusieurs collectivites partagent un code (Bas-Rhin et
+ * Haut-Rhin sous « 67A » jusqu'en 2020, anciennes regions jusqu'en 2015) y
+ * sont deja a null : ce ne sont pas les comptes d'un seul territoire. */
+function releveComptesTerritoires() {
+  const f = path.join(ICI, "comptes-territoires.json");
+  if (!fs.existsSync(f)) { console.warn("::warning::comptes-territoires.json absent : departements et regions restent ceux du bloc fige (voir outils/ofgl.py)"); return null; }
+  let d;
+  try { d = JSON.parse(fs.readFileSync(f, "utf8")); }
+  catch (e) { console.warn("::warning::comptes-territoires.json illisible (" + e.message + ") : bloc fige conserve"); return null; }
+  const s = d && d.source, e = d && d.echelons;
+  const nD = e && e.departement ? Object.keys(e.departement.terr || {}).length : 0;
+  const nR = e && e.region ? Object.keys(e.region.terr || {}).length : 0;
+  if (!s || !s.producteur || !s.licence || !s.releve_le || nD < 90 || nR < 13
+      || !e.departement.modifie || !e.region.modifie) {
+    console.warn("::warning::comptes-territoires.json incomplet (" + nD + " departements, " + nR + " regions) : bloc fige conserve");
+    return null;
+  }
+  console.log("comptes territoires   : releve OFGL du " + s.releve_le + ", " + nD + " departements, " + nR + " regions");
+  return d;
+}
+
+/* LES MAIRES, RELEVES A LA SOURCE (29/09/2026).
+ *
+ * Le bloc REPERE_RNE est un artefact fige, produit par un script qui n'existe
+ * plus. Mesure sur le runner contre la table des maires du RNE : 62 maires
+ * affiches ne sont plus ceux de la source (dont Mouy-sur-Seine et Saint-Brice
+ * en Seine-et-Marne), et 230 communes de la source manquent au bloc (dont
+ * Barbey et Lissy, que la beta disait « absentes du Repertoire »).
+ * outils/rne.py ecrit maires.json sur le runner ; il n'est retenu que complet
+ * et source, sinon le bloc reste et on le dit. */
+function releveMaires() {
+  const f = path.join(ICI, "maires.json");
+  if (!fs.existsSync(f)) { console.warn("::warning::maires.json absent : les maires restent ceux du bloc fige (voir outils/rne.py)"); return null; }
+  let d;
+  try { d = JSON.parse(fs.readFileSync(f, "utf8")); }
+  catch (e) { console.warn("::warning::maires.json illisible (" + e.message + ") : bloc fige conserve"); return null; }
+  const s = d && d.source;
+  const n = d && d.communes ? Object.keys(d.communes).length : 0;
+  if (!s || !s.producteur || !s.licence || !s.url || !s.modifie || !s.releve_le || n < 30000) {
+    console.warn("::warning::maires.json incomplet (" + n + " communes) : bloc fige conserve");
+    return null;
+  }
+  console.log("maires                : releve RNE du " + s.releve_le + " (table modifiee le " + s.modifie + "), " + n + " communes");
+  return d;
+}
+
 /* LES HUIT DEPARTEMENTS DE LA BETA. Ecrits une fois, ici, et repris par le banc :
    deux listes qui divergent produiraient un index incomplet que rien ne verrait. */
 const BETA = ["75", "77", "78", "91", "92", "93", "94", "95"];
@@ -429,6 +477,14 @@ async function extraire() {
   } else if (OFGL && OFGL.meta) {
     OFGL.meta = { ...OFGL.meta, communes_relevees: false };
   }
+  const releveTerr = releveComptesTerritoires();
+  if (releveTerr && OFGL && OFGL.ech) {
+    for (const ech of ["departement", "region"]) {
+      if (!OFGL.ech[ech]) continue;
+      OFGL.ech[ech].terr = Object.fromEntries(Object.entries(releveTerr.echelons[ech].terr).map(([c, ex]) => [c, { ex }]));
+    }
+    OFGL.meta = { ...OFGL.meta, territoires_releves_le: releveTerr.source.releve_le };
+  }
   const communesOfgl = (OFGL && OFGL.ech && OFGL.ech.commune && OFGL.ech.commune.terr) || {};
   const circos = (CIRCOS && CIRCOS.communes) || {};
 
@@ -441,6 +497,11 @@ async function extraire() {
 
   /* Lu AVANT la boucle qui remplit les paquets : c'est elle qui s'en sert. */
   const officiels = nomsOfficiels();
+  const maires = releveMaires();
+  const normNom = t => (t || "").normalize("NFKD").replace(/[^A-Za-z]/g, "").toUpperCase();
+  let mairesChanges = 0, adjointsInconnus = 0, adjointsDifferents = 0;
+  const exemplesAdjoints = [];
+  const exemplesChanges = [];
   let redresses = 0;
   const sansLibelleOfficiel = [];
   const paquets = new Map();
@@ -477,15 +538,70 @@ async function extraire() {
     const canton = (ccanBrut == null) ? null
       : (Array.isArray(ccanBrut) ? ccanBrut : [ccanBrut]);
 
+    /* LE MAIRE DU RELEVE PASSE AVANT CELUI DU BLOC. Ses adjoints aussi, quand
+       la table des conseillers a pu etre lue. Sinon on ne garde le nombre du
+       bloc que si le maire n'a pas change : apres un changement de maire, le
+       compte d'adjoints d'avant n'est plus un fait, il vaut null (inconnu). */
+    const duBloc = maire ? { nom: nom(maire[0], maire[1]), fonction: fonction(maire[2]) } : null;
+    const adjBloc = ((RNE.adj || {})[insee] || []).length;
+    const releve = maires && maires.communes[insee];
+    let ficheMaire = duBloc, ficheAdjoints = adjBloc;
+    if (releve && releve.maire) {
+      ficheMaire = { nom: releve.maire, fonction: "Maire" };
+      const change = !duBloc || normNom(duBloc.nom) !== normNom(releve.maire);
+      if (change) { mairesChanges++; if (exemplesChanges.length < 8) exemplesChanges.push(insee); }
+      ficheAdjoints = Number.isInteger(releve.adjoints) ? releve.adjoints : (change ? null : adjBloc);
+      if (Number.isInteger(releve.adjoints) && releve.adjoints !== adjBloc) {
+        adjointsDifferents++;
+        if (exemplesAdjoints.length < 6) exemplesAdjoints.push(insee + " " + adjBloc + "->" + releve.adjoints);
+      }
+      if (ficheAdjoints === null) adjointsInconnus++;
+    }
     paquets.get(d).communes[insee] = {
       nom: officiel || libelles[insee],
-      maire: maire ? { nom: nom(maire[0], maire[1]), fonction: fonction(maire[2]) } : null,
-      adjoints: ((RNE.adj || {})[insee] || []).length,
+      maire: ficheMaire,
+      adjoints: ficheAdjoints,
       circo: circos[insee] !== undefined ? circos[insee] : null,
       comptes: communesOfgl[insee] ? communesOfgl[insee].ex : null,
       agglo,
       canton,
     };
+  }
+
+  /* LES COMMUNES QUE LE BLOC AVAIT PERDUES. Une commune au releve des maires ET
+     au referentiel officiel des communes, mais absente du bloc, recoit une fiche :
+     son nom officiel, son maire, sa circonscription et ses comptes s'ils sont
+     connus. Ce qui manque (intercommunalite, canton) reste null, et l'ecran le
+     dit deja pour les autres communes (doctrine du vide). */
+  const ajoutees = [];
+  if (maires && officiels) {
+    for (const [insee, r] of Object.entries(maires.communes)) {
+      if (libelles[insee] || !officiels.noms[insee] || !r.maire) continue;
+      const d = departementDe(insee);
+      if (!paquets.has(d)) continue;
+      paquets.get(d).communes[insee] = {
+        nom: officiels.noms[insee],
+        maire: { nom: r.maire, fonction: "Maire" },
+        adjoints: Number.isInteger(r.adjoints) ? r.adjoints : null,
+        circo: circos[insee] !== undefined ? circos[insee] : null,
+        comptes: communesOfgl[insee] ? communesOfgl[insee].ex : null,
+        agglo: null,
+        canton: null,
+      };
+      ajoutees.push(insee);
+    }
+  }
+  if (maires) {
+    console.log("maires du releve      : " + mairesChanges + " different(s) du bloc" + (exemplesChanges.length ? " (" + exemplesChanges.join(", ") + (mairesChanges > exemplesChanges.length ? ", ..." : "") + ")" : "")
+      + ", " + ajoutees.length + " commune(s) retrouvee(s)" + (ajoutees.length ? " (" + ajoutees.slice(0, 8).join(", ") + (ajoutees.length > 8 ? ", ..." : "") + ")" : "")
+      + ", " + adjointsInconnus + " nombre(s) d'adjoints inconnu(s), " + adjointsDifferents + " nombre(s) d'adjoints different(s) du bloc"
+      + (exemplesAdjoints.length ? " (" + exemplesAdjoints.join(", ") + ")" : ""));
+    /* Meme ligne en annotation : c'est le seul canal que l'on relit depuis le
+       conteneur de travail, et ce chiffre dit si le releve change ce que lit
+       le citoyen. */
+    console.log("::notice title=maires-releve::" + mairesChanges + " maires differents du bloc (" + exemplesChanges.join(", ")
+      + ") ; " + ajoutees.length + " communes retrouvees (" + ajoutees.filter(c => BETA.includes(departementDe(c))).join(", ")
+      + " en IDF) ; adjoints : " + adjointsDifferents + " comptes differents du bloc (" + exemplesAdjoints.join(", ") + "), " + adjointsInconnus + " inconnus");
   }
 
   /* DOCTRINE DU 16/09/2026 : UNE ABSENCE DE NOTRE COTE N'EST JAMAIS DEGUISEE EN
@@ -676,10 +792,22 @@ async function extraire() {
       },
     },
     sources: {
-      elus: (RNE.meta && { producteur: reaccentuer(RNE.meta.producteur), licence: RNE.meta.licence, maj: RNE.meta.maj }) || null,
+      /* CHAQUE SOURCE PORTE SON ADRESSE (29/09/2026). Mesure : sur « Aujourd'hui »,
+         l'ecran d'entree de la demonstration, 1 ligne de source sur 4 menait a la
+         source ; les trois autres la nommaient sans permettre de la verifier.
+         Les adresses sont celles que les donnees portent deja : bloc RNE, bloc
+         CIRCOS, et pour les comptes celle du releve s'il a ete fait, sinon celle
+         du jeu des comptes des communes porte par le bloc OFGL. */
+      elus: (RNE.meta && { producteur: reaccentuer(RNE.meta.producteur), licence: RNE.meta.licence, maj: RNE.meta.maj,
+        url: RNE.meta.source || "https://www.data.gouv.fr/datasets/repertoire-national-des-elus-1/",
+        ...(maires ? { maires_releves_le: maires.source.releve_le, maires_maj: maires.source.modifie } : {}) }) || null,
       comptes: (OFGL && OFGL.meta && { producteur: reaccentuer(OFGL.meta.producteur), licence: OFGL.meta.licence, maj: OFGL.meta.maj,
-        ...(OFGL.meta.communes_relevees ? { releve_le: OFGL.meta.releve_le } : {}) }) || null,
-      circonscriptions: (CIRCOS && { producteur: reaccentuer(CIRCOS.source), licence: CIRCOS.licence, decoupage: CIRCOS.decoupage }) || null,
+        ...((OFGL.meta.communes_relevees && OFGL.meta.source) ? { url: OFGL.meta.source }
+          : (OFGL.ech && OFGL.ech.commune && OFGL.ech.commune.source) ? { url: OFGL.ech.commune.source } : {}),
+        ...(OFGL.meta.communes_relevees ? { releve_le: OFGL.meta.releve_le } : {}),
+        ...(OFGL.meta.territoires_releves_le ? { territoires_releves_le: OFGL.meta.territoires_releves_le } : {}) }) || null,
+      circonscriptions: (CIRCOS && { producteur: reaccentuer(CIRCOS.source), licence: CIRCOS.licence, decoupage: CIRCOS.decoupage,
+        ...(CIRCOS.source_url ? { url: CIRCOS.source_url } : {}) }) || null,
       territoires: (noms && noms.sources) || null,
       /* Les libelles de communes ont leur propre producteur, distinct de celui des
          elus : ce sont deux jeux de donnees, releves a deux dates. */
@@ -1032,16 +1160,43 @@ async function extraire() {
   }
   if (projets) {
     const parDepProjets = new Map();
-    for (const [insee, liste] of Object.entries(projets.communes)) {
+    /* UN PROJET D'UNE COMMUNE FUSIONNEE VA A LA COMMUNE D'AUJOURD'HUI (29/09/2026).
+       Mesure en production : 93059 (Pierrefitte-sur-Seine) portait un projet de
+       l'exercice 2024 et etait ignore, parce que Pierrefitte est commune deleguee
+       de Saint-Denis (93066) depuis le 1er janvier 2025. Le code etait VALIDE a
+       l'exercice publie ; c'est le territoire qui a change. La table vient du Code
+       officiel geographique (`successeurs` de noms-communes.json, voir
+       outils/noms_communes.py) : rien n'est devine. La ligne garde son intitule
+       tel quel et porte l'ancien code et l'ancien nom, pour que l'ecran dise
+       pour quelle commune l'Etat l'avait engagee. Un successeur hors du
+       departement n'est jamais suivi : la ligne changerait de paquet sans que
+       personne ne l'ait decide. */
+    const successeurs = (officiels && officiels.successeurs) || {};
+    const rattaches = [];
+    for (const [code, liste] of Object.entries(projets.communes)) {
       if (!Array.isArray(liste) || !liste.length) continue;
+      let insee = code;
+      let lignes = liste;
+      const suite = successeurs[code];
+      if (suite && !(officiels && officiels.noms[code])) {
+        const depAncien = code.startsWith("97") ? code.slice(0, 3) : code.slice(0, 2);
+        const depSuite = suite.code.startsWith("97") ? suite.code.slice(0, 3) : suite.code.slice(0, 2);
+        if (depAncien === depSuite) {
+          insee = suite.code;
+          lignes = liste.map(l => ({ ...l, ancien_code: code, ancienne_commune: suite.nom || null }));
+          rattaches.push(code + " -> " + suite.code);
+        }
+      }
       /* Le departement d'un code INSEE : deux caracteres, trois en outre-mer.
          Aucune autre derivation, et une commune hors des paquets connus est
          ecartee plutot que rangee au hasard. */
       const dep = insee.startsWith("97") ? insee.slice(0, 3) : insee.slice(0, 2);
       if (!paquets.has(dep)) continue;
       if (!parDepProjets.has(dep)) parDepProjets.set(dep, {});
-      parDepProjets.get(dep)[insee] = liste;
+      const cible = parDepProjets.get(dep);
+      cible[insee] = (cible[insee] || []).concat(lignes);
     }
+    if (rattaches.length) console.log("projets rattaches a la commune d'aujourd'hui : " + rattaches.join(", "));
     for (const dep of [...parDepProjets.keys()].sort()) {
       ecrire(path.join(SORTIE, "projets", dep + ".json"), {
         v: 1, d: dep,
@@ -1065,8 +1220,9 @@ async function extraire() {
     const p = JSON.parse(fs.readFileSync(path.join(SORTIE, "departments", d + ".json"), "utf8"));
     relues += Object.keys(p.communes).length;
   }
-  if (relues !== Object.keys(libelles).length) {
-    console.error(`ECHEC : ${relues} communes reparties pour ${Object.keys(libelles).length} attendues`);
+  const attendues = Object.keys(libelles).length + ajoutees.length;
+  if (relues !== attendues) {
+    console.error(`ECHEC : ${relues} communes reparties pour ${attendues} attendues`);
     process.exit(5);
   }
 
@@ -1201,9 +1357,11 @@ async function extraire() {
             absence dans le monde" du 16/09/2026). Ville-d'Avray est ce cas :
             on l'accepte.
          2. Le code n'est reconnu NULLE PART, pas meme dans le referentiel
-            officiel des communes (noms-communes.json) - 93059 est ce cas :
-            un code invalide ou retire cote source DGCL, pas une faute du
-            pipeline. Le arreter TOUT le build pour UNE ligne suspecte
+            officiel des communes (noms-communes.json). CORRECTION DU 29/09/2026 :
+            93059 n'etait PAS ce cas - c'etait Pierrefitte-sur-Seine, fusionnee
+            dans Saint-Denis au 1er janvier 2025, et ses projets sont desormais
+            rattaches plus haut par la table officielle des successeurs. Ce qui
+            reste ici serait un code qu'aucune table ne connait. Le arreter TOUT le build pour UNE ligne suspecte
             revient a publier zero donnee a cause d'une seule ligne
             douteuse - le mauvais compromis. On l'IGNORE, bruyamment, et on
             continue : c'est le meme choix que outils/circos.py fait deja
@@ -1225,6 +1383,15 @@ async function extraire() {
           if (!pr.intitule || typeof pr.subvention !== "number" || !pr.annee) {
             console.error(`ECHEC : ${insee} porte une ligne sans intitule, sans montant ou sans annee`);
             process.exit(10);
+          }
+          /* Une ligne rattachee doit l'etre par la table officielle, et rester
+             dans son departement : relu ici sans reutiliser la boucle d'ecriture. */
+          if (pr.ancien_code) {
+            const table = JSON.parse(fs.readFileSync(path.join(ICI, "noms-communes.json"), "utf8")).successeurs || {};
+            if (!table[pr.ancien_code] || table[pr.ancien_code].code !== insee) {
+              console.error(`ECHEC : ${insee} porte une ligne de ${pr.ancien_code} sans rattachement officiel`);
+              process.exit(10);
+            }
           }
         }
       }

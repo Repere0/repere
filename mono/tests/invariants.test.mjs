@@ -35,9 +35,12 @@ function sourcesEcrites() {
     for (const e of fs.readdirSync(path.join(RACINE, d), { withFileTypes: true })) {
       const rel = path.join(d, e.name);
       if (e.isDirectory()) {
-        if (["node_modules", "dist", ".git", "data", ".turbo"].includes(e.name)) continue;
+        /* .expo, dist-web, ios, android : engendres par Expo (apps/mobile), jamais ecrits a la main. */
+        if (["node_modules", "dist", ".git", "data", ".turbo", ".expo", "dist-web", "ios", "android"].includes(e.name)) continue;
         marche(rel);
-      } else if (/\.(js|jsx|mjs|css|html|svg|webmanifest)$/.test(e.name)) {
+      /* .ts et .tsx depuis le 29/09/2026 : l'application mobile (apps/mobile) est
+           ecrite en TypeScript, et un fichier non lu est un fichier non garde. */
+      } else if (/\.(js|jsx|mjs|ts|tsx|css|html|svg|webmanifest)$/.test(e.name)) {
         /* CHEMINS EN BARRES OBLIQUES, SUR LES DEUX SYSTEMES. `path.join` rend
            « apps\\web\\index.html » sous Windows : les comparaisons et les
            messages d'echec de ce fichier differaient donc d'un poste a l'autre,
@@ -517,7 +520,7 @@ test("banc — le balayage voit tout le depot, pas une copie amputee", () => {
    * en silence. */
   const balayes = sourcesEcrites();
   const racines = ["apps/web/src", "apps/web/public", "apps/api", "packages/ui/src",
-                   "packages/data-utils/src", "scripts", "tests", "orchestrator"];
+                   "packages/data-utils/src", "packages/core/src", "apps/mobile/src", "scripts", "tests", "orchestrator"];
   for (const r of racines) {
     assert.ok(balayes.some(f => f.startsWith(r + "/")),
       `aucune source lue sous ${r}/ : la copie de travail est incomplete, ` +
@@ -526,7 +529,7 @@ test("banc — le balayage voit tout le depot, pas une copie amputee", () => {
   assert.ok(balayes.length >= 20,
     `seulement ${balayes.length} sources balayees : un banc vert ne prouverait presque rien`);
   /* Et il ne doit PAS lire ce qui n'est pas ecrit a la main. */
-  for (const interdit of ["node_modules", "/dist/", "data/departments"]) {
+  for (const interdit of ["node_modules", "/dist/", "/dist-web/", "/.expo/", "data/departments"]) {
     assert.deepEqual(balayes.filter(f => f.includes(interdit)), [],
       `le balayage lit ${interdit}, qui n'est pas du code ecrit a la main`);
   }
@@ -584,7 +587,10 @@ test("données — chaque paquet départemental a la forme que l'application att
       assert.ok(typeof c.nom === "string" && c.nom.length > 0, `${f} : ${insee} sans nom`);
       assert.ok(c.maire === null || (c.maire && typeof c.maire.nom === "string"),
         `${f} : ${insee} porte un maire de forme inattendue`);
-      assert.ok(Number.isInteger(c.adjoints) && c.adjoints >= 0,
+      /* null = inconnu (29/09/2026) : apres un changement de maire, le compte
+         d'adjoints du bloc fige n'est plus un fait tant que la source n'a pas
+         ete relue. L'ecran a une phrase pour ce cas. */
+      assert.ok(c.adjoints === null || (Number.isInteger(c.adjoints) && c.adjoints >= 0),
         `${f} : ${insee} porte un nombre d'adjoints inattendu`);
       assert.ok(c.circo === null || Number.isInteger(c.circo) || Array.isArray(c.circo),
         `${f} : ${insee} porte une circonscription de forme inattendue`);
@@ -666,8 +672,12 @@ test("langue — aucun nom de commune ne s'affiche sans ses accents", () => {
 test("invariant 4 — le composant Source existe et sait annoncer un calcul", () => {
   const s = lire("packages/ui/src/composants.jsx");
   assert.ok(/export function Source/.test(s), "aucun composant Source");
-  assert.ok(s.includes("ce n'est pas un chiffre publié"),
+  /* Depuis le 29/09/2026, la phrase vit dans @repere/core (CALCUL_REPERE), partagee
+     avec l'application mobile : Source doit l'afficher, et elle doit dire la chose. */
+  assert.ok(/\{calcul \? <b>\{CALCUL_REPERE\}/.test(s),
     "Source ne distingue pas un calcul d'une donnee publiee : l'invariant 4 tombe");
+  assert.ok(lire("packages/core/src/source.js").includes("ce n'est pas un chiffre publié"),
+    "la phrase du calcul ne dit plus que ce n'est pas un chiffre publie");
 });
 
 test("invariant 5 — chaque état d'absence a sa phrase, et elles diffèrent", () => {
@@ -798,6 +808,62 @@ test("invariant 1 — le service worker précharge exactement ce que le build a 
     if (u === "/" || u.startsWith("/data/")) continue;
     assert.ok(existe(path.join(DIST, u.replace(/^\//, ""))),
       `le service worker precharge ${u}, qui n'existe pas dans le build`);
+  }
+});
+
+test("mobile — l'application ne demande rien au reseau par elle-meme", () => {
+  /* 29/09/2026. Toute requete de l'application mobile passe par
+     @repere/data-utils (client.js), seul endroit ou une adresse se compose et
+     ou la garde de l'invariant 2 s'applique. Un `fetch` ou un `XMLHttpRequest`
+     ecrit dans apps/mobile/src contournerait les deux. */
+  const fautifs = sourcesEcrites()
+    .filter(f => f.startsWith("apps/mobile/src/"))
+    .filter(f => /\b(fetch|XMLHttpRequest|WebSocket|EventSource)\s*\(|new\s+(XMLHttpRequest|WebSocket|EventSource)\b/.test(lire(f)));
+  assert.deepEqual(fautifs, [], "l'application mobile compose ses propres requetes : " + fautifs.join(", "));
+  assert.ok(sourcesEcrites().some(f => f === "apps/mobile/src/lib/donnees.ts"),
+    "apps/mobile/src/lib/donnees.ts n'est pas relu : ce controle ne mesure rien");
+});
+
+test("meme verite — les phrases du vote, du maire et du projet ne s'ecrivent qu'a un endroit", () => {
+  /* 29/09/2026. Le site et l'application ecrivaient chacun leurs phrases ; a la
+     relecture de #45 ils disaient deja deux choses differentes sur les
+     adjoints. Elles vivent dans packages/core/src/phrases.js ; ce controle
+     refuse leur reapparition ailleurs (web, ui, mobile). tests/meme-verite.mjs
+     verifie ensuite, sur le rendu, que les deux supports les affichent. */
+  const SIGNATURES = [
+    "siègent avec", "ne porte pas de position sur ce scrutin", "Vote du député élu",
+    "Une position non portée n'est pas une absence : elle peut couvrir une délégation de vote", "L'État a engagé ${", "L'État a engagé {",
+    /* 30/09/2026, lot M1 : les phrases des comptes. */
+    "Aucun de ces rapports n'est publié", "Pas assez de montants pour traduire ces comptes",
+    "mais leurs montants ne correspondent pas à la population publiée", "Calculé par Repère à partir",
+  ];
+  const fautifs = [];
+  for (const f of sourcesEcrites()) {
+    if (/^packages\/core\/src\/(phrases|phrases-comptes|source)\.js$/.test(f) || f.startsWith("tests/") || !/^(apps|packages)\//.test(f)) continue;
+    const src = lire(f);
+    for (const sig of SIGNATURES) if (src.includes(sig)) fautifs.push(f + " : « " + sig + " »");
+  }
+  assert.deepEqual(fautifs, [], "une phrase partagee est reecrite hors de @repere/core : " + fautifs.join(" ; "));
+  assert.ok(lire("packages/core/src/phrases.js").includes("siègent avec"), "phrases.js ne porte plus les phrases : ce controle ne mesure rien");
+});
+
+test("mobile — un seul endroit garde quelque chose sur le telephone", () => {
+  /* 29/09/2026 (D-M3). L'application ne garde qu'une chose : la commune que le
+     lecteur a demande de retenir, dans lib/memoire.ts (un fichier du cache, ou
+     la cle unique sur la version web). Tout autre stockage — AsyncStorage,
+     SecureStore, SQLite, MMKV, un second fichier — est refuse ici. */
+  const STOCKAGES = /@react-native-async-storage|expo-secure-store|expo-sqlite|react-native-mmkv|expo-file-system|localStorage|indexedDB|document\.cookie/;
+  const fautifs = sourcesEcrites()
+    .filter(f => f.startsWith("apps/mobile/src/") && f !== "apps/mobile/src/lib/memoire.ts")
+    .filter(f => STOCKAGES.test(lire(f).replace(/\/\*[\s\S]*?\*\//g, "").replace(/\/\/.*$/gm, "")));
+  assert.deepEqual(fautifs, [], "stockage hors de lib/memoire.ts : " + fautifs.join(", "));
+  const m = lire("apps/mobile/src/lib/memoire.ts");
+  assert.ok(/export const CLE = "repere\.departement";/.test(m), "memoire.ts ne porte plus la cle unique du produit");
+  assert.ok(/Paths\.cache/.test(m) && !/Paths\.document/.test(m),
+    "la commune doit rester dans le cache, exclu des sauvegardes iCloud et Google");
+  const deps = JSON.parse(lire("apps/mobile/package.json")).dependencies;
+  for (const interdit of ["@react-native-async-storage/async-storage", "expo-secure-store", "expo-sqlite", "react-native-mmkv"]) {
+    assert.ok(!deps[interdit], "l'application depend de " + interdit + " : un second stockage");
   }
 });
 
@@ -1125,7 +1191,12 @@ test("produit — chaque échelon affiché dit ce qu'il décide", () => {
   /* COMPETENCES VIT DANS lib/competences.js DEPUIS LE 19/09/2026 : la
      direction "Territoire" (AujourdhuiTerritoire.jsx) dit la meme phrase que
      QuiDecide.jsx, jamais une deuxieme formulation. */
-  const comp = lire("apps/web/src/lib/competences.js");
+  /* ... ET DANS @repere/core (visuels.js) DEPUIS LE 30/09/2026, pour que
+     l'application mobile dise les memes phrases ; lib/competences.js les
+     re-exporte. Le controle suit la source, il ne s'assouplit pas. */
+  const comp = lire("packages/core/src/visuels.js");
+  assert.match(lire("apps/web/src/lib/competences.js"), /export \{ COMPETENCES \} from "@repere\/core"/,
+    "le site ne lit plus les competences du socle commun");
   for (const echelon of ["ville", "agglo", "dept", "region", "france"]) {
     assert.match(comp, new RegExp(echelon + ":\\s*\"[^\"]{30,}\""),
       `l'echelon « ${echelon} » n'a pas de phrase de competence`);
@@ -1185,11 +1256,17 @@ test("projets — la lecture d'un scrutin n'est écrite qu'à un seul endroit", 
      avait été dérivée deux fois ; les deux copies ont divergé, et « Évry » n'a
      plus rien donné pendant des semaines sans que rien ne le signale (D-15).
      Deux écrans lisent maintenant les mêmes scrutins. La règle vit dans
-     apps/web/src/lib/votes.jsx, et une seconde définition fait échouer le banc. */
-  for (const nom of ["titreLisible", "procedure", "decompte", "LigneVote", "positionSur"]) {
+     packages/core/src/votes.js depuis le 29/09/2026 (le web ET l'application
+     mobile la lisent) ; ce qui rend, LigneVote, reste dans le web. Une seconde
+     définition, où que ce soit — y compris dans l'application mobile — fait
+     échouer le banc. */
+  const LIEU = { titreLisible: "packages/core/src/votes.js", procedure: "packages/core/src/votes.js",
+    decompte: "packages/core/src/votes.js", positionSur: "packages/core/src/votes.js",
+    LigneVote: "apps/web/src/lib/votes.jsx" };
+  for (const [nom, lieu] of Object.entries(LIEU)) {
     const definitions = sourcesEcrites().filter(f =>
       new RegExp("(?:function|const)\\s+" + nom + "\\b").test(lire(f)));
-    assert.deepEqual(definitions, ["apps/web/src/lib/votes.jsx"],
+    assert.deepEqual(definitions, [lieu],
       `« ${nom} » est défini ${definitions.length} fois : ` + definitions.join(", "));
   }
 });
@@ -1204,7 +1281,7 @@ test("projets — le fil daté nomme sa règle d'ordre, et ne trie sur aucun mon
   const ecran = lire("apps/web/src/routes/CeQuiADecide.jsx");
   assert.ok(/ordre de date/i.test(ecran),
     "l'écran ne dit pas au lecteur dans quel ordre les faits sont rangés");
-  const tri = /faits\.sort\(([^;]*)\);/.exec(lire("apps/web/src/lib/faits.js"));
+  const tri = /faits\.sort\(([^;]*)\);/.exec(lire("packages/core/src/faits.js"));
   assert.ok(tri, "le tri du fil est introuvable");
   for (const interdit of ["subvention", "cout", "montant", "echelon"]) {
     assert.ok(!tri[1].includes(interdit),
@@ -1291,7 +1368,7 @@ test("votes — un élu n'est jamais nommé par son seul patronyme", () => {
      sécurité d'imputation avec lui) est sorti de cet écran pour que le
      prototype "Aujourd'hui" lise exactement le même fait, jamais un calcul
      parallèle. La garde suit le code, pas le fichier. */
-  const assemblage = lire("apps/web/src/lib/faits.js");
+  const assemblage = lire("packages/core/src/faits.js");
   assert.ok(!/qui: *d\.nom\b/.test(assemblage),
     "l'assemblage des faits nomme un député par son seul patronyme");
   assert.ok(/d\.prenom/.test(assemblage) && /nomComplet/.test(assemblage),
@@ -1304,8 +1381,12 @@ test("votes — un élu n'est jamais nommé par son seul patronyme", () => {
      crochet, lib/useAujourdhui.js — qui, lui, appelle la garde. */
   assert.ok(/calculerFaits\(/.test(lire("apps/web/src/routes/CeQuiADecide.jsx")),
     "apps/web/src/routes/CeQuiADecide.jsx n'appelle pas calculerFaits() : il pourrait réimplémenter l'assemblage sans la garde");
-  assert.ok(/calculerFaits\(/.test(lire("apps/web/src/lib/useAujourdhui.js")),
-    "apps/web/src/lib/useAujourdhui.js n'appelle pas calculerFaits() : il pourrait réimplémenter l'assemblage sans la garde");
+  /* Depuis le 29/09/2026, le crochet web charge et delegue la derivation a
+     packages/core/src/aujourdhui.js, que l'application mobile appelle aussi. */
+  assert.ok(/calculerFaits\(/.test(lire("packages/core/src/aujourdhui.js")),
+    "packages/core/src/aujourdhui.js n'appelle pas calculerFaits() : il pourrait réimplémenter l'assemblage sans la garde");
+  assert.ok(/deriverAujourdhui\(/.test(lire("apps/web/src/lib/useAujourdhui.js")),
+    "apps/web/src/lib/useAujourdhui.js ne passe pas par deriverAujourdhui() : il pourrait deriver a sa maniere");
   for (const ecran of ["apps/web/src/routes/Aujourdhui.jsx", "apps/web/src/routes/AujourdhuiJournal.jsx",
                        "apps/web/src/routes/AujourdhuiTerritoire.jsx"]) {
     assert.ok(/useAujourdhui\(/.test(lire(ecran)),
@@ -1333,14 +1414,14 @@ test("votes — les positions ne s'affichent pas si les deux relevés ne corresp
      DEPUIS LE 18/09/2026, CeQuiADecide.jsx et Aujourdhui.jsx n'appellent plus
      la garde eux-memes : ils delegent a lib/faits.js, qui l'appelle pour eux
      (voir le test precedent). QuiDecide.jsx, lui, la lit encore directement. */
-  const garde = lire("apps/web/src/lib/votes.jsx");
+  const garde = lire("packages/core/src/votes.js");
   assert.ok(/export function positionsFiables/.test(garde), "la garde n'existe pas");
   for (const exigence of [/numeros\.has\(n\)/, /releve_le/]) {
     assert.ok(exigence.test(garde),
       "la garde ne vérifie pas " + exigence.source);
   }
-  assert.ok(/positionsFiables\(/.test(lire("apps/web/src/lib/faits.js")),
-    "apps/web/src/lib/faits.js lit des positions sans passer par la garde");
+  assert.ok(/positionsFiables\(/.test(lire("packages/core/src/faits.js")),
+    "packages/core/src/faits.js lit des positions sans passer par la garde");
   assert.ok(/positionsFiables\(/.test(lire("apps/web/src/routes/QuiDecide.jsx")),
     "apps/web/src/routes/QuiDecide.jsx lit des positions sans passer par la garde");
 });
@@ -1384,7 +1465,7 @@ test("argent — un zéro publié n'est jamais présenté comme une absence", ()
      `valeur()` VIT DANS lib/comptes.jsx DEPUIS LE 18/09/2026 : le prototype
      "Aujourd'hui" traduit les mêmes comptes que "Où va l'argent", et devait
      lire la même distinction zéro/absence plutôt qu'en recalculer une autre. */
-  const lecture = sansCommentaires("apps/web/src/lib/comptes.jsx");
+  const lecture = sansCommentaires("packages/core/src/comptes.js");
   assert.ok(!/m *!== *0 *\? *m *: *null/.test(lecture),
     "valeur() détruit encore un zéro publié");
   assert.ok(/zero: *mm === 0/.test(lecture),

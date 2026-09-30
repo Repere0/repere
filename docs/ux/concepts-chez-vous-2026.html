@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><title>Concepts Chez vous</title>
+<style>
+/* Trois concepts pour « Chez vous », chiffres reels de Meaux (donnees du 29/09/2026).
+   Chaque telephone fait 390 px de large ; la ligne rouge marque la fin du premier
+   ecran (780 px de contenu visible a 390 x 844, mesure sur l'application). */
+* { box-sizing: border-box; margin: 0; }
+body { font-family: -apple-system, "Segoe UI", Roboto, Arial, sans-serif; background: #d9d6cf; padding: 24px; color: #1d1d1f; }
+.grille { display: grid; grid-template-columns: repeat(3, 390px); gap: 28px; align-items: start; }
+h1 { font: 800 16px/1.3 "Bricolage Grotesque", system-ui, sans-serif; margin-bottom: 10px; }
+.tel { position: relative; background: #f2efe9; border-radius: 26px; padding: 18px 16px 28px; height: 1260px; overflow: hidden; }
+.pli { position: absolute; left: 0; right: 0; top: 780px; border-top: 2px dashed #b3261e; }
+.pli span { position: absolute; right: 10px; top: -20px; font: 700 11px/1 system-ui; color: #b3261e; background: #f2efe9; padding: 2px 4px; }
+.etq { font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: #6b675f; }
+.ville { font: 800 36px/1.05 "Bricolage Grotesque", system-ui, sans-serif; }
+.note { font-size: 14px; color: #6b675f; line-height: 1.35; }
+.carte { background: #fff; border-radius: 20px; padding: 16px; display: flex; flex-direction: column; gap: 8px; margin-top: 12px; }
+.rep { font: 800 19px/1.25 "Bricolage Grotesque", system-ui, sans-serif; }
+.piste { height: 10px; border-radius: 5px; background: #ece8e0; overflow: hidden; }
+.piste > div { height: 100%; background: #0e7490; }
+.pied { display: flex; justify-content: space-between; font-size: 13px; font-weight: 600; color: #6b675f; padding-top: 4px; }
+.pied b { color: #0e7490; }
+.vote { display: flex; height: 14px; border-radius: 5px; overflow: hidden; }
+.chiffre { font: 800 34px/1 "Bricolage Grotesque", system-ui, sans-serif; }
+.fil { border-left: 2px solid #ddd8ce; margin-left: 6px; padding-left: 14px; display: flex; flex-direction: column; gap: 14px; margin-top: 14px; }
+.date { font-size: 12px; font-weight: 700; color: #6b675f; }
+.tuiles { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 12px; }
+.tuile { background: #fff; border-radius: 14px; padding: 10px; min-height: 86px; display: flex; flex-direction: column; gap: 4px; }
+.tuile .v { font: 800 20px/1.1 "Bricolage Grotesque", system-ui, sans-serif; }
+.alerte { color: #b3261e; font-weight: 700; }
+.plus { margin-top: 14px; display: flex; flex-direction: column; gap: 2px; }
+.plus div { background: #fff; padding: 12px 14px; font-weight: 600; color: #0e7490; display: flex; justify-content: space-between; }
+.plus div:first-child { border-radius: 14px 14px 0 0; } .plus div:last-child { border-radius: 0 0 14px 14px; }
+</style></head><body><div class="grille">
+
+<div><h1>A · Votre territoire en 3 réponses</h1><div class="tel">
+  <div class="ville">Meaux</div>
+  <div class="note">57 121 habitants · Seine-et-Marne</div>
+  <div class="note" style="font-size:12px">Mis à jour par Repère le 29 septembre 2026</div>
+  <div class="carte">
+    <div class="etq">Ce qui se fait ici</div>
+    <div class="rep">En 2025, l'État a engagé 726 800 € pour la construction d'un pôle médical à Beauval.</div>
+    <div class="piste"><div style="width:47.4%"></div></div>
+    <div class="note">Près de la moitié du coût annoncé (1 533 500 €).</div>
+    <div class="pied"><span>ⓘ Calculé par Repère · source</span><b>Qui paie le reste ? ›</b></div>
+  </div>
+  <div class="carte">
+    <div class="etq">Qui décide, et avec quel argent</div>
+    <div class="rep">Le conseil municipal, autour du maire Jean-François COPE, a dépensé 2 123 € par habitant en 2025.</div>
+    <div class="pied"><span>ⓘ Source</span><b>Où va cet argent ? ›</b></div>
+  </div>
+  <div class="carte">
+    <div class="etq">À l'Assemblée nationale</div>
+    <div class="rep">Le 21 juillet 2026, Béatrice Roullaud, qui représente votre circonscription, a voté pour.</div>
+    <div class="note">Projet de loi relatif à la protection des enfants — adopté, 378 pour, 7 contre.</div>
+    <div class="vote"><div style="width:67.7%;background:#1d1d1f"></div><div style="width:1.3%;background:#6b675f"></div><div style="width:31%;background:#ddd8ce"></div></div>
+    <div class="pied"><span>ⓘ Source</span><b>Comprendre ce vote ›</b></div>
+  </div>
+  <div class="plus"><div>Qui décide de quoi <span>›</span></div><div>Ce qui arrive au Parlement <span>›</span></div><div>Toutes les sources <span>›</span></div></div>
+  <div class="pli"><span>fin du premier écran</span></div>
+</div></div>
+
+<div><h1>B · Le fil de ce qui se passe chez vous</h1><div class="tel">
+  <div class="ville">Meaux</div>
+  <div class="note">Ce qui s'est passé, du plus récent au plus ancien</div>
+  <div class="fil">
+    <div><div class="date">1er OCTOBRE 2026 · À VENIR</div><div class="rep">Ouverture de la session ordinaire du Parlement.</div><div class="note">Assemblée nationale — national, pas propre à Meaux.</div></div>
+    <div><div class="date">29 JUILLET 2026 · <span class="alerte">date de publication, pas du fait</span></div><div class="rep">Les comptes 2025 de Meaux sont publiés : 2 123 € par habitant.</div></div>
+    <div><div class="date">21 JUILLET 2026</div><div class="rep">Béatrice Roullaud a voté pour le projet de loi relatif à la protection des enfants.</div><div class="vote" style="margin-top:6px"><div style="width:67.7%;background:#1d1d1f"></div><div style="width:1.3%;background:#6b675f"></div><div style="width:31%;background:#ddd8ce"></div></div></div>
+    <div><div class="date">21 JUILLET 2026</div><div class="rep">Elle a voté pour deux autres textes le même jour.</div></div>
+    <div><div class="date">2025 · <span class="alerte">année seule</span></div><div class="rep">L'État a engagé 726 800 € pour un pôle médical à Beauval.</div></div>
+    <div><div class="date">2025</div><div class="rep">L'État a engagé 70 000 € pour le centre de supervision urbain.</div></div>
+  </div>
+  <div class="pli"><span>fin du premier écran</span></div>
+</div></div>
+
+<div><h1>C · La carte d'identité vivante</h1><div class="tel">
+  <div class="ville">Meaux</div>
+  <div class="note">Seine-et-Marne · Île-de-France · 6e circonscription</div>
+  <div class="tuiles">
+    <div class="tuile"><span class="etq">Habitants</span><span class="v">57 121</span></div>
+    <div class="tuile"><span class="etq">Maire</span><span class="v">Jean-François COPE</span></div>
+    <div class="tuile"><span class="etq">Intercommunalité</span><span class="v">Ca Du Pays De Meaux</span></div>
+    <div class="tuile"><span class="etq">Député (6e)</span><span class="v">Béatrice Roullaud</span></div>
+    <div class="tuile"><span class="etq">Dépenses 2025</span><span class="v">2 123 €</span><span class="note">par habitant</span></div>
+    <div class="tuile"><span class="etq">Salaires</span><span class="v">47 €</span><span class="note">sur 100 € dépensés</span></div>
+    <div class="tuile"><span class="etq">Dette</span><span class="v">7,6 mois</span><span class="note">de recettes</span></div>
+    <div class="tuile"><span class="etq">Aides de l'État</span><span class="v">5 projets</span><span class="note">2024–2025</span></div>
+    <div class="tuile"><span class="etq">Dernier vote</span><span class="v">Pour</span><span class="note">21 juillet 2026</span></div>
+    <div class="tuile"><span class="etq">Au Parlement</span><span class="v">10 rendez-vous</span><span class="note">cette semaine</span></div>
+  </div>
+  <div class="pli"><span>fin du premier écran</span></div>
+</div></div>
+
+</div></body></html>

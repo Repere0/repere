@@ -221,6 +221,127 @@ def ecrire(terr):
         DEST, len(terr), modifie, os.path.getsize(DEST) / 1e6))
 
 
+# ------------------------------------------------ departements et regions
+# Meme methode que les communes (29/09/2026, reprise du matin) : le bloc fige
+# porte aussi 101 departements et 17 regions, exercices 2012 a 2025, et la
+# regle V-2 en ecarte 9 (Alsace « 67A ») et 28 (regions d'avant la fusion de
+# 2016) : population d'une collectivite, montants d'une autre.
+# MESURE SUR LE RUNNER (run 36534374379) : la source elle-meme range sous le code
+# ACTUEL les collectivites d'avant la fusion — `dep_code` 67A porte le Bas-Rhin
+# ET le Haut-Rhin jusqu'en 2020, `reg_code` 27, 28, 32, 44, 75 portent les
+# anciennes regions jusqu'en 2015. Il n'existe donc PAS de comptes « de
+# l'Alsace » en 2018 : il en existe deux. Hors de ces exercices, le releve est
+# identique au bloc (1 366 exercices departementaux, 210 regionaux).
+# Regle : un exercice ou plusieurs collectivites (plusieurs SIREN) partagent le
+# code n'est pas publie — ses valeurs sont null et son annee est listee dans
+# `ecartes`, pour que l'ecran puisse dire pourquoi.
+DEST_TERR = "mono/scripts/comptes-territoires.json"
+TERRITOIRES = (
+    ("departement", "ofgl-base-departements", ("dep_code", "code_dep")),
+    ("region", "ofgl-base-regions", ("reg_code", "code_reg", "region_code")),
+)
+
+
+def releve_territoire(ds, champs_cle):
+    import csv, io
+    meta = lire("/catalog/datasets/" + ds)
+    noms = {f.get("name") for f in meta.get("fields", [])}
+    cle = next((c for c in champs_cle if c in noms), None)
+    ident = next((c for c in ("siren", "ident", "lbudg") if c in noms), None)
+    if not cle or not ident or "type_de_budget" not in noms:
+        raise RuntimeError("%s : champs inattendus %s" % (ds, sorted(noms)))
+    m = meta.get("metas", {}).get("default", {})
+    modifie = str(m.get("modified") or m.get("data_processed") or "")[:10]
+    ags = ", ".join('"%s"' % a for a in AGREGATS)
+    texte = exporter(ds, "%s, %s, exer, agregat, montant, ptot, euros_par_habitant" % (cle, ident),
+                     'type_de_budget="Budget principal" and agregat in (%s)' % ags)
+    lignes = list(csv.DictReader(io.StringIO(texte), delimiter=";"))
+    identites = {}
+    for l in lignes:
+        identites.setdefault((l[cle], str(l["exer"])[:4]), set()).add(l[ident])
+    partages = {k for k, v in identites.items() if len(v) > 1}
+    terr, doublons, ecartes = {}, [], {}
+    for code, an in sorted(partages):
+        terr.setdefault(code, {})[an] = [None] * (1 + 2 * len(AGREGATS))
+        ecartes.setdefault(code, []).append(an)
+    for l in lignes:
+        code, an = l[cle], str(l["exer"])[:4]
+        if (code, an) in partages:
+            continue
+        k = AGREGATS.index(l["agregat"])
+        ex = terr.setdefault(code, {}).setdefault(an, [None] * (1 + 2 * len(AGREGATS)))
+        if ex[1 + 2 * k] is not None:
+            doublons.append("%s/%s/%s" % (code, an, l["agregat"]))
+            continue
+        num = lambda v: float(v) if v not in ("", None) else None
+        mo, h, pt = num(l["montant"]), num(l["euros_par_habitant"]), num(l["ptot"])
+        ex[1 + 2 * k] = round(mo) if mo is not None else None
+        ex[2 + 2 * k] = round(h) if h is not None else None
+        if ex[0] is None and pt is not None:
+            ex[0] = int(pt)
+    return cle, modifie, terr, doublons, ecartes
+
+
+def comparer_territoire(ech, terr, bloc):
+    fige = bloc["ech"][ech]["terr"]
+    egaux = diff = 0
+    exemples = []
+    for code in sorted(set(fige) | set(terr)):
+        for an in sorted(set((fige.get(code) or {}).get("ex", {})) | set(terr.get(code) or {})):
+            a = (fige.get(code) or {}).get("ex", {}).get(an)
+            b = (terr.get(code) or {}).get(an)
+            if a is not None and b is not None and list(a) == list(b):
+                egaux += 1
+                continue
+            if b is not None and all(v is None for v in b):
+                continue
+            diff += 1
+            if len(exemples) < 12:
+                exemples.append("%s/%s fige=%s source=%s" % (code, an, (a or [None])[:3], (b or [None])[:3]))
+    return "%s : identiques %d, differents ou absents d'un cote %d ; codes fige %s ; codes source %s ; ex. %s" % (
+        ech, egaux, diff, len(fige), len(terr), " ; ".join(exemples))
+
+
+def produire_territoires():
+    import datetime, glob, os
+    html = sorted(glob.glob("app_repere_v18_*.html"))[-1]
+    s = open(html, encoding="utf-8", errors="ignore").read()
+    i = s.index("window.REPERE_OFGL =", s.index("/* REPERE_OFGL_DEBUT */"))
+    i = s.index("=", i) + 1
+    bloc = json.loads(s[i:s.index("/* REPERE_OFGL_FIN */", i)].strip().rstrip(";"))
+    sortie, lignes, arret = {}, [], False
+    for ech, ds, champs in TERRITOIRES:
+        try:
+            cle, modifie, terr, doublons, ecartes = releve_territoire(ds, champs)
+        except Exception as e:
+            lignes.append("%s : echec %r" % (ech, e)); arret = True; continue
+        if doublons:
+            lignes.append("%s : ARRET, %d doublons (cle %s), ex. %s" % (ech, len(doublons), cle, doublons[:6])); arret = True
+        lignes.append(comparer_territoire(ech, terr, bloc) + " ; ecartes (plusieurs collectivites sous un code) : %s" % (
+            ", ".join("%s/%s" % (c, "+".join(a)) for c, a in sorted(ecartes.items())) or "aucun"))
+        sortie[ech] = {"jeu": ds, "cle": cle, "modifie": modifie, "terr": terr, "ecartes": ecartes}
+    annoncer("territoires", " || ".join(lignes))
+    if arret or len(sortie.get("departement", {}).get("terr", {})) < 90 or len(sortie.get("region", {}).get("terr", {})) < 13:
+        annoncer("territoires ARRET", "rien n'est ecrit")
+        return
+    paquet = {
+        "v": 1,
+        "source": {
+            "producteur": "Observatoire des finances et de la gestion publique locales (OFGL)",
+            "licence": "Licence Ouverte 2.0",
+            "url": "https://data.ofgl.fr/",
+            "budget": "Budget principal seulement (budgets annexes exclus)",
+            "releve_le": datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%d"),
+        },
+        "echelons": sortie,
+    }
+    os.makedirs(os.path.dirname(DEST_TERR), exist_ok=True)
+    with open(DEST_TERR, "w", encoding="utf-8") as f:
+        json.dump(paquet, f, ensure_ascii=False, separators=(",", ":"))
+    relu = json.load(open(DEST_TERR, encoding="utf-8"))
+    assert relu["echelons"]["departement"]["terr"], "relu vide"
+
+
 if __name__ == "__main__":
     if "--produire" in sys.argv:
         try:
@@ -228,6 +349,10 @@ if __name__ == "__main__":
             import glob
             comparer(t, sorted(glob.glob("app_repere_v18_*.html"))[-1])
             ecrire(t)
+            try:
+                produire_territoires()
+            except Exception as e:  # les communes sont ecrites : un echec ici ne les annule pas
+                annoncer("territoires echec", repr(e))
         except SystemExit:
             raise
         except Exception as e:

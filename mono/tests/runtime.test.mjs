@@ -101,6 +101,21 @@ process.on("exit", retirerFixture);
 for (const sig of ["SIGINT", "SIGTERM"]) process.on(sig, () => { retirerFixture(); process.exit(1); });
 
 const resultats = [];
+/* LE TEXTE AFFICHE, SANS LES CAPITALES DE STYLE — 29/09/2026. innerText rend
+   « REPÈRE » sous `text-transform: uppercase` ; textContent colle les blocs
+   voisins (« RepereQui decide »), et la recherche de mot entier echoue aussi.
+   Les deux ont ete essayes et prouves aveugles sur « Repere » ecrit expres dans
+   l'en-tete. On neutralise donc le style le temps de lire innerText. */
+async function texteSansCapitales(p) {
+  return p.evaluate(() => {
+    const st = document.createElement("style");
+    st.textContent = "*{text-transform:none!important}";
+    document.head.appendChild(st);
+    const t = document.body.innerText;
+    st.remove();
+    return t;
+  });
+}
 function verif(nom, condition, detail) {
   resultats.push({ nom, ok: !!condition, detail: condition ? "" : (detail || "") });
   console.log((condition ? "  ok  " : " ECHEC") + " | " + nom + (condition ? "" : "  -> " + (detail || "")));
@@ -148,7 +163,10 @@ page.on("console", m => {
   if (m.type() !== "error") return;
   const t = m.text().slice(0, 140);
   if (horsLignePhase && estReseau(t)) { reseauCoupe.push(t); return; }
-  erreurs.push("console: " + t);
+  /* LA RESSOURCE EST NOMMEE — 29/09/2026. « Failed to load resource : 404 »
+     ne disait pas QUEL fichier manquait ; un echec doit dire qui il refuse. */
+  const ou = (m.location() && m.location().url) || "";
+  erreurs.push("console: " + t + (ou ? " [" + ou.replace(/^https?:\/\/[^/]+/, "") + "]" : ""));
 });
 
 const adresses = [];
@@ -265,6 +283,7 @@ await page.getByRole("button", { name: "Ustaritz", exact: true }).click();
 await page.waitForTimeout(700);
 
 const qui = await page.evaluate(() => document.body.innerText);
+const quiBrut = await texteSansCapitales(page);
 verif("rendu — le maire de la commune choisie s'affiche",
   /Piero ROUGET/.test(qui), qui.slice(0, 120).replace(/\n+/g, " / "));
 verif("rendu — la circonscription de la commune s'affiche",
@@ -554,6 +573,7 @@ verif("invariant 3 — aucun classement ni comparaison entre territoires",
  * a part) ou si l'ecran perd un echelon qu'il vient de gagner. */
 await page.waitForTimeout(600);   // chargerComptesRegions() est asynchrone
 const argentTerritoires = await page.evaluate(() => document.body.innerText);
+const argentTerritoiresBrut = await texteSansCapitales(page);
 verif("comptes — le departement de la commune choisie est nomme et traduit",
   /Pyrénées-Atlantiques/.test(argentTerritoires),
   argentTerritoires.slice(0, 400).replace(/\n+/g, " / "));
@@ -577,6 +597,7 @@ console.log("\n--- calendrier citoyen (Senat + Assemblee nationale) ----------")
 await page.getByRole("button", { name: "Ce qui se passe" }).click();
 await page.waitForTimeout(900);
 const cal = await page.evaluate(() => document.body.innerText);
+const calBrut = await texteSansCapitales(page);
 verif("calendrier — l'ecran s'ouvre sans commune choisie",
   /Ce qui se passe prochainement/.test(cal), cal.slice(0, 160).replace(/\n+/g, " / "));
 verif("calendrier — au moins un evenement reel est affiche",
@@ -625,21 +646,32 @@ verif("invariant hybride — le detail complet (pour/contre) n'est PAS charge av
    apres, puisque son texte a change - piege reel, rencontre en ecrivant
    ce test. Le regex couvre les deux etats du meme bouton. */
 const boutonDetails = page.getByRole("button", { name: /Voir les détails complets|Masquer les détails complets/ });
-verif("scrutins — le bouton de details annonce son etat ferme (aria-expanded=false)",
-  await boutonDetails.getAttribute("aria-expanded") === "false", "aria-expanded n'est pas 'false' avant le clic");
-await boutonDetails.click();
-await page.waitForTimeout(600);
-verif("scrutins — le bouton annonce son etat ouvert apres le clic (aria-expanded=true)",
-  await boutonDetails.getAttribute("aria-expanded") === "true", "aria-expanded n'est pas passe a 'true'");
-const apresClic = await page.evaluate(() => document.body.innerText);
-verif("scrutins — le detail complet (pour/contre/abstentions) apparait apres le clic",
-  /Pour : \d+ · Contre : \d+ · Abstentions : \d+/.test(apresClic),
-  apresClic.slice(-600).replace(/\n+/g, " / "));
-/* Le clavier doit pouvoir tout faire : la cible du focus ne doit pas se
-   perdre quand le contenu change sous elle. */
-const focusApres = await page.evaluate(() => document.activeElement.textContent);
-verif("accessibilite — le focus reste sur le bouton apres le chargement du detail",
-  /Masquer les détails complets/.test(focusApres || ""), "le focus a quitte le bouton : " + focusApres);
+/* UN ELEMENT ABSENT EST UN ECHEC NOMME, PAS UN ARRET DU BANC — 29/09/2026.
+   Mesure en local, donnees sans scrutins solennels : `getAttribute` attendait
+   30 s un bouton qui n'existait pas, puis levait une exception qui arretait le
+   banc au 52e controle. Les controles suivants — accents, sources, invariant 1
+   hors ligne — ne tournaient plus du tout, sans qu'aucune ligne ne le dise.
+   Les quatre controles du bouton echouent desormais par leur nom, et le banc
+   continue. Rien n'est assoupli : un bouton absent reste un echec. */
+const boutonPresent = (await boutonDetails.count()) > 0;
+verif("scrutins — le bouton de details existe", boutonPresent, "aucun bouton « Voir les détails complets »");
+if (boutonPresent) {
+  verif("scrutins — le bouton de details annonce son etat ferme (aria-expanded=false)",
+    await boutonDetails.getAttribute("aria-expanded") === "false", "aria-expanded n'est pas 'false' avant le clic");
+  await boutonDetails.click();
+  await page.waitForTimeout(600);
+  verif("scrutins — le bouton annonce son etat ouvert apres le clic (aria-expanded=true)",
+    await boutonDetails.getAttribute("aria-expanded") === "true", "aria-expanded n'est pas passe a 'true'");
+  const apresClic = await page.evaluate(() => document.body.innerText);
+  verif("scrutins — le detail complet (pour/contre/abstentions) apparait apres le clic",
+    /Pour : \d+ · Contre : \d+ · Abstentions : \d+/.test(apresClic),
+    apresClic.slice(-600).replace(/\n+/g, " / "));
+  /* Le clavier doit pouvoir tout faire : la cible du focus ne doit pas se
+     perdre quand le contenu change sous elle. */
+  const focusApres = await page.evaluate(() => document.activeElement.textContent);
+  verif("accessibilite — le focus reste sur le bouton apres le chargement du detail",
+    /Masquer les détails complets/.test(focusApres || ""), "le focus a quitte le bouton : " + focusApres);
+}
 
 /* La langue : le francais affiche porte ses accents. Faute commise deux fois.
    La mesure ne portait que sur l'ecran des comptes ; l'ecran « Sources », lui,
@@ -648,6 +680,7 @@ verif("accessibilite — le focus reste sur le bouton apres le chargement du det
 await page.getByRole("button", { name: "Sources" }).click();
 await page.waitForTimeout(700);
 const texteSources = await page.evaluate(() => document.body.innerText);
+const texteSourcesBrut = await texteSansCapitales(page);
 verif("rendu — l'ecran Sources nomme chacun de ses producteurs",
   /Élus —/.test(texteSources) && /Comptes —/.test(texteSources)
   && /Circonscriptions —/.test(texteSources) && /Députés —/.test(texteSources),
@@ -690,7 +723,12 @@ verif("mentions legales — le contact correspond a celui affiche ailleurs sur S
 verif("mentions legales — aucun hebergeur non deploye n'est affirme comme reel",
   !/Netlify/i.test(texteLegal), "mono ne doit pas nommer un hebergeur qu'il n'utilise pas encore");
 
-const vuPartout = argentTerritoires + "\n" + texteSources + "\n" + texteLegal + "\n" + qui + "\n" + cal;
+/* LE TEXTE EST AUSSI LU SANS LES CAPITALES DE STYLE — 29/09/2026 : sous
+   `text-transform: uppercase`, « DEPUTE » echappait a la recherche de
+   « depute ». Le site a quatre classes en capitales (.eyebrow, .tag, .tuile-k,
+   .quest-lieu). Voir texteSansCapitales. */
+const vuPartout = argentTerritoires + "\n" + texteSources + "\n" + texteLegal + "\n" + qui + "\n" + cal
+  + "\n" + argentTerritoiresBrut + "\n" + texteSourcesBrut + "\n" + quiBrut + "\n" + calBrut;
 const sansAccent = MOTS_A_ACCENTS.filter(m =>
   new RegExp("(?:^|[^A-Za-zÀ-ÿ./-])" + m + "(?![A-Za-zÀ-ÿ./-])").test(vuPartout));
 verif("langue — le francais affiche porte ses accents, sur les trois ecrans",
@@ -993,6 +1031,15 @@ console.log("\n--- aujourd'hui : ce qui arrive, Senat ET Assemblee ------------"
 {
   const fAN = path.join(DIST, "data", "agenda-an.json");
   const fSen = path.join(DIST, "data", "calendrier-senat.json");
+  /* UN FICHIER ABSENT EST UN ECHEC NOMME, PAS UN ARRET DU BANC — 29/09/2026.
+     Mesure en local, donnees extraites sans reseau : calendrier-senat.json
+     n'existe pas (la chaine le produit en ligne), readFileSync levait ENOENT
+     et le banc s'arretait ici, sans que les controles suivants — comptes,
+     projets, hors ligne — ne tournent ni ne soient comptes. */
+  const manquants = [fAN, fSen].filter(f => !fs.existsSync(f)).map(f => path.basename(f));
+  verif("a venir — les deux calendriers sont dans le build de mesure", manquants.length === 0,
+    "absent(s) : " + manquants.join(", ") + " — produits par la chaine quotidienne, avec reseau");
+  if (!manquants.length) {
   const origAN = fs.readFileSync(fAN, "utf8"), origSen = fs.readFileSync(fSen, "utf8");
   const dans = (j, h) => { const d = new Date(Date.now() + j * 864e5); d.setUTCHours(h, 0, 0, 0); return d.toISOString().slice(0, 16); };
   const avec = (orig, evs) => { const j = JSON.parse(orig); j.evenements = evs; return JSON.stringify(j); };
@@ -1040,6 +1087,7 @@ console.log("\n--- aujourd'hui : ce qui arrive, Senat ET Assemblee ------------"
     fs.writeFileSync(fAN, origAN); fs.writeFileSync(fSen, origSen);
   }
 }
+}
 
 console.log("\n--- comptes : d'un exercice a l'autre -------------------------");
 /* 29/09/2026 : deux montants dates, la difference en euros, aucun pourcentage.
@@ -1067,7 +1115,7 @@ console.log("\n--- comptes : d'un exercice a l'autre -------------------------")
     await p.waitForTimeout(1200);
     const carte = await p.evaluate(() => {
       const t = [...document.querySelectorAll(".carte, section, article, div")].map(e => e.innerText)
-        .filter(x => /^D.un exercice à l.autre/m.test(x) && /soustraction/.test(x) && / : \d/.test(x)).sort((a, b) => a.length - b.length)[0];
+        .filter(x => /^D.une année à l.autre/m.test(x) && /soustraction/.test(x) && / : \d/.test(x)).sort((a, b) => a.length - b.length)[0];
       return t || "";
     });
     await ctx.close();
@@ -1121,12 +1169,60 @@ async function aujCommune(dep, nom) {
     const plusRecent = [...liste].sort((a, b) => b.annee - a.annee)[0];
     const t = await aujCommune("93", nom);
     verif(`local — ${nom} : son projet finance par l'Etat apparait sur Aujourd'hui, intitule recopie tel quel`,
-      /Et dans votre commune \?/.test(t) && t.includes(plusRecent.intitule.trim()) && new RegExp("exercice " + plusRecent.annee).test(t),
+      /Et dans votre commune \?/.test(t) && t.includes(plusRecent.intitule.trim()) && new RegExp("en " + plusRecent.annee).test(t),
       t.slice(0, 400).replace(/\n+/g, " / "));
     verif("invariant 4 — le projet local porte sa source", /Et dans votre commune[\s\S]*Direction générale des collectivités locales|Et dans votre commune[\s\S]*DGCL/.test(t),
       (t.split("Et dans votre commune")[1] || "").slice(0, 300).replace(/\n+/g, " / "));
   } else {
     verif("local — donnees de projets 93 presentes pour eprouver le bloc", false, "aucune commune du 93 avec projet");
+  }
+}
+
+console.log("\n--- projets d'une commune fusionnee : rattaches, et dits comme tels ---");
+/* 29/09/2026 : le projet 2024 de Pierrefitte-sur-Seine (93059), commune deleguee
+   de Saint-Denis depuis le 1er janvier 2025, etait ignore par le build. Il est
+   desormais rattache a la commune d'aujourd'hui par la table du Code officiel
+   geographique. Ce qu'on garde : la ligne est servie sous une commune REELLE du
+   paquet, et l'ecran dit pour quelle commune l'Etat l'avait engagee — jamais
+   attribuee en silence a la commune actuelle. Le cas est cherche dans la donnee
+   publiee, pas ecrit en dur. */
+{
+  const dossier = path.join(DIST, "data", "projets");
+  let cas = null;
+  const orphelines = [];
+  for (const f of fs.readdirSync(dossier)) {
+    const pr = JSON.parse(fs.readFileSync(path.join(dossier, f), "utf8"));
+    const pq = JSON.parse(fs.readFileSync(path.join(DIST, "data", "departments", f), "utf8"));
+    for (const [insee, liste] of Object.entries(pr.communes)) {
+      for (const l of liste) {
+        if (!l.ancien_code) continue;
+        if (!pq.communes[insee]) orphelines.push(insee + " <- " + l.ancien_code);
+        else if (!cas && l.ancienne_commune) cas = { dep: pr.d, nom: pq.communes[insee].nom, l };
+      }
+    }
+  }
+  verif("fusion — toute ligne rattachee est servie sous une commune reelle du paquet",
+    orphelines.length === 0, orphelines.join(", "));
+  if (cas) {
+    const c = await nav.newContext({ viewport: { width: 390, height: 844 } });
+    const p = await c.newPage();
+    await p.addInitScript(([k, v]) => localStorage.setItem(k, v), ["repere.departement", JSON.stringify({ d: cas.dep, v: null })]);
+    await p.goto(base, { waitUntil: "networkidle" });
+    await p.waitForTimeout(500);
+    await p.getByLabel(/Votre commune/i).fill(cas.nom);
+    await p.waitForTimeout(400);
+    await p.getByRole("button", { name: cas.nom, exact: true }).first().click();
+    await p.waitForTimeout(800);
+    await p.getByRole("button", { name: "Ce qui a été décidé" }).click();
+    await p.waitForTimeout(1600);
+    const t = await p.evaluate(() => document.body.innerText);
+    await c.close();
+    const apres = t.split(cas.l.intitule.trim())[1] || "";
+    verif(`fusion — ${cas.nom} : le projet de ${cas.l.ancienne_commune} est affiche, et dit engage pour elle`,
+      t.includes(cas.l.intitule.trim()) && apres.slice(0, 400).includes("Engagé pour " + cas.l.ancienne_commune),
+      apres.slice(0, 300).replace(/\n+/g, " / "));
+  } else {
+    console.log("   (aucune ligne rattachee dans le releve publie : rien a montrer, rien a verifier a l'ecran)");
   }
 }
 
@@ -1156,6 +1252,23 @@ console.log("\n--- hierarchie mobile : le contenu avant le decor ---------------
     !apres.chapeau && apres.h1 === 1 && apres.entete < 110, JSON.stringify(apres));
   verif("hierarchie — commune choisie : la barre des ecrans est dans la premiere moitie du telephone",
     apres.onglets < 800 / 2, JSON.stringify(apres));
+  /* 29/09/2026 : trois lignes disaient ou l'on est (departement, commune,
+     « situe »). Une seule doit le dire, avec le moyen d'en changer ; et
+     « changer » doit rouvrir le choix de la commune ET celui du departement. */
+  const lieu = await p.evaluate(() => ({
+    lignes: document.querySelectorAll(".situe").length,
+    dept: !!document.querySelector("details.choix"),
+    champ: !!document.querySelector(".choix-commune input"),
+    changer: [...document.querySelectorAll(".situe button")].map(b => b.innerText.trim()),
+  }));
+  verif("hierarchie — commune choisie : une seule ligne dit ou l'on est, avec « changer »",
+    lieu.lignes === 1 && !lieu.dept && !lieu.champ && lieu.changer.includes("changer"), JSON.stringify(lieu));
+  await p.getByRole("button", { name: "changer", exact: true }).click(); await p.waitForTimeout(300);
+  const rouvert = await p.evaluate(() => ({ dept: !!document.querySelector("details.choix"), champ: !!document.querySelector(".choix-commune input") }));
+  verif("hierarchie — « changer » rouvre le choix de la commune et celui du departement",
+    rouvert.dept && rouvert.champ, JSON.stringify(rouvert));
+  await p.getByLabel(/Votre commune/i).fill("Ustaritz"); await p.waitForTimeout(300);
+  await p.getByRole("button", { name: "Ustaritz", exact: true }).click(); await p.waitForTimeout(700);
   await p.getByRole("button", { name: "Ce qui se passe" }).click(); await p.waitForTimeout(1500);
   const cal = await p.evaluate(() => {
     const d = document.querySelector("details.plus-tard");
@@ -1190,6 +1303,36 @@ console.log("\n--- hierarchie mobile : le contenu avant le decor ---------------
     cal.debutsVisibles.length > 0 && (secours ? auDela.length <= 5 : auDela.length === 0),
     JSON.stringify({ visibles: cal.debutsVisibles.length, auDela: auDela.length, secours }));
   await c.close();
+}
+
+console.log("\n--- chaque source mene a la source ---------------------------");
+/* 29/09/2026 : sur « Aujourd'hui », ecran d'entree de la demonstration, 1 ligne
+   de source sur 4 permettait d'aller verifier ; sur « Ou va l'argent », 1 sur 4.
+   Nommer une source sans y mener, c'est demander d'etre cru. Mesure sur une
+   commune du 93 qui a un projet finance (cherchee dans la donnee publiee). */
+{
+  const pr = JSON.parse(fs.readFileSync(path.join(DIST, "data", "projets", "93.json"), "utf8")).communes;
+  const pq = JSON.parse(fs.readFileSync(path.join(DIST, "data", "departments", "93.json"), "utf8")).communes;
+  const [, f] = Object.entries(pq).find(([c]) => pr[c]) || [];
+  if (!f) {
+    verif("sources — une commune du 93 avec projet pour eprouver les liens", false, "aucune");
+  } else {
+    const c = await nav.newContext({ viewport: { width: 390, height: 844 } });
+    const p = await c.newPage();
+    await p.addInitScript(([k, v]) => localStorage.setItem(k, v), ["repere.departement", JSON.stringify({ d: "93", v: null })]);
+    await p.goto(base, { waitUntil: "networkidle" }); await p.waitForTimeout(500);
+    await p.getByLabel(/Votre commune/i).fill(f.nom); await p.waitForTimeout(300);
+    await p.getByRole("button", { name: f.nom, exact: true }).first().click(); await p.waitForTimeout(900);
+    const sansLien = () => p.evaluate(() => [...document.querySelectorAll(".source")]
+      .filter(s => !s.querySelector("a[href^='http']")).map(s => s.innerText.slice(0, 60)));
+    await p.getByRole("button", { name: "Où va l'argent", exact: true }).click(); await p.waitForTimeout(1300);
+    const argent = await sansLien();
+    await p.getByRole("button", { name: /Voir aujourd.hui/ }).click(); await p.waitForTimeout(1500);
+    const auj = await sansLien();
+    await c.close();
+    verif(`invariant 4 — Aujourd'hui (${f.nom}) : chaque ligne de source mene a la source`, auj.length === 0, auj.join(" | "));
+    verif(`invariant 4 — Ou va l'argent (${f.nom}) : chaque ligne de source mene a la source`, argent.length === 0, argent.join(" | "));
+  }
 }
 
 console.log("\n--- recherche et accents -------------------------------------");
@@ -1486,7 +1629,8 @@ const fil = await pageTout.evaluate(() => {
     faits: faits.length,
     titres: faits.map(f => (f.querySelector(".fait-titre, .vote-titre") || {}).innerText || ""),
     entetes: [...document.querySelectorAll(".ligne.fait .groupe")].map(e => e.innerText),
-    annees: [...t.matchAll(/exercice (\d{4})/g)].map(m => Number(m[1])),
+    /* lot lexique (30/09/2026) : l'annee est lue sur son element, plus sur le mot « exercice » */
+    annees: [...document.querySelectorAll(".fait-annee")].map(e => Number(e.innerText)),
     sources: [...document.querySelectorAll(".source")].map(e => e.innerText),
     sourcesHref: [...document.querySelectorAll(".source a[href]")].map(a => a.href),
     squelettes: document.querySelectorAll("[class*='skeleton'], [class*='squelette'], .shimmer").length,
@@ -1499,7 +1643,8 @@ verif("surface datee — la regle d'ordre est ecrite a l'ecran (principe P4)",
   /ordre de date/i.test(fil.texte) && /plus récent au plus ancien/i.test(fil.texte),
   fil.texte.slice(0, 200).replace(/\n+/g, " / "));
 verif("surface datee — les exercices se lisent du plus recent au plus ancien",
-  fil.annees.every((a, i) => i === 0 || fil.annees[i - 1] >= a), JSON.stringify(fil.annees));
+  /* au moins une annee lue : sans elle, « every » sur une liste vide passerait en silence */
+  fil.annees.length > 0 && fil.annees.every((a, i) => i === 0 || fil.annees[i - 1] >= a), JSON.stringify(fil.annees));
 /* TROUVE A L'OEIL SUR CAPTURE, PAS PAR UNE ASSERTION : « A l'Assemblee nationale,
    X a vote » etait repete devant CHACUN des huit votes, soit huit fois de suite,
    et repoussait les titres de plusieurs hauteurs d'ecran. L'en-tete ne doit

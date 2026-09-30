@@ -1,5 +1,6 @@
 import React, { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Chargement, Vide, Puce, DefinitionProvider } from "@repere/ui";
+import { mots, motsCible, correspond, trouverCommunes } from "@repere/core";
 import {
   chargerIndex, chargerDepartement, chargerCommunesBeta, prechargerDepartement,
   annulerPrechargement, entrer, ETATS, PHRASES,
@@ -75,24 +76,8 @@ function ecrireDepartement(d, v) {
   catch { /* mode privé */ }
 }
 
-/* Comparer « Pyrenees at » et « Pyrénées-Atlantiques » : au clavier, personne ne
-   tape les accents, et le trait d'union se tape en espace une fois sur deux. On
-   ramene donc tout a des mots nus, et on demande que chaque mot cherche soit le
-   debut d'un mot du territoire — « cotes armor », « val doise », « 64 ». */
-function mots(t) {
-  return String(t || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase().replace(/[^a-z0-9]+/g, " ").trim().split(" ").filter(Boolean);
-}
-/* L'apostrophe se tape rarement : « val doise » doit trouver Val-d'Oise, et
-   « cote dor » la Cote-d'Or. On indexe donc aussi la forme sans apostrophe, ou
-   « d'Oise » devient un seul mot. */
-function motsCible(t) {
-  return [...new Set([...mots(t), ...mots(String(t || "").replace(/['\u2019]/g, ""))])];
-}
-function correspond(cherches, cible) {
-  return cherches.every(m => cible.some(w => w.startsWith(m)));
-}
-
+/* LA REGLE DE RECHERCHE (mots, motsCible, correspond) VIT DANS @repere/core
+   DEPUIS LE 29/09/2026 : l'application mobile cherche exactement comme le site. */
 /* OU HABITEZ-VOUS — UN SEUL CHAMP, ET C'EST LA CORRECTION LA PLUS IMPORTANTE
  * DE CETTE VERSION.
  *
@@ -155,18 +140,9 @@ function Entree({ index, communesBeta, departement, onOuvrir, onCommuneDirecte, 
    * d'importance entre territoires, que l'invariant 3 interdit : c'est la reponse
    * a ce que le lecteur vient d'ecrire, et elle ne depend d'aucune propriete de la
    * commune — ni sa taille, ni sa population, ni rien qui la compare a une autre. */
-  const rang = (nom) => {
-    const n = mots(nom).join(" ");
-    const q = cherches.join(" ");
-    if (n === q) return 0;
-    if (n.startsWith(q)) return 1;
-    return 2;
-  };
-  const trouveesC = cherches.length
-    ? communes.filter(([, , cible]) => correspond(cherches, cible))
-        .sort((a, b) => rang(a[1]) - rang(b[1]) || a[1].localeCompare(b[1], "fr"))
-        .slice(0, 30)
-    : [];
+  /* La regle de rang vit dans @repere/core (rangRecherche, trouverCommunes)
+     depuis le 29/09/2026 : l'application mobile trouve les memes communes. */
+  const trouveesC = trouverCommunes(communes, cherches);
   const trouvesD = cherches.length
     ? index.departements.filter(d => correspond(cherches, motsCible(d.code + " " + (d.nom || ""))))
     : [];
@@ -332,7 +308,7 @@ function ChoixDepartement({ index, departement, onOuvrir, onSurvol }) {
  * choix, et les deux écrans pouvaient afficher deux communes différentes en même
  * temps. Le lecteur perdait sa place à chaque va-et-vient. Le choix vit donc
  * ici, au-dessus des onglets, et les écrans le reçoivent. */
-function ChoixCommune({ paquet, nomDepartement, commune, onCommune }) {
+function ChoixCommune({ paquet, nomDepartement, commune, onCommune, deplie, setDeplie }) {
   const [filtre, setFiltre] = useState("");
   /* LA MEME REGLE QUE POUR LES DEPARTEMENTS, ET ELLE NE L'ETAIT PAS.
    *
@@ -398,18 +374,12 @@ function ChoixCommune({ paquet, nomDepartement, commune, onCommune }) {
    * REPLIE, PAS SUPPRIME. Changer de commune reste a un clic, et le bouton dit
    * laquelle est ouverte — c'est la meme regle que pour le departement, dont la
    * liste se replie deja apres le choix. */
-  const [deplie, setDeplie] = useState(!commune);
+  /* REPLIE : PLUS RIEN ICI (29/09/2026). La commune choisie et le moyen d'en
+     changer tiennent desormais sur UNE ligne, rendue par App (« .situe ») : voir
+     le commentaire qui l'accompagne. L'etat « deplie » vit dans App, qui en a
+     besoin pour montrer aussi le choix du departement. */
   const choisie = (commune && paquet.communes[commune] && paquet.communes[commune].nom) || "";
-  if (!deplie && choisie) {
-    return (
-      <div className="choix-commune replie">
-        <button type="button" className="depliant depliant-commune"
-          onClick={() => { setDeplie(true); setFiltre(""); }}>
-          <b>{choisie}</b> — changer de commune
-        </button>
-      </div>
-    );
-  }
+  if (!deplie && choisie) return null;
 
   return (
     <div className="choix-commune">
@@ -488,6 +458,10 @@ export default function App() {
      entiere pour l'arbitrage du porteur du projet. */
   const [onglet, setOnglet] = useState("qui");
   const [commune, setCommune] = useState(null);
+  /* Le choix de commune est-il ouvert ? Replie des qu'une commune est choisie ;
+     rouvert par « changer ». Tant qu'il est ouvert, le choix du departement
+     l'est aussi (on change de departement en changeant de commune). */
+  const [choixOuvert, setChoixOuvert] = useState(true);
   const [communesBeta, setCommunesBeta] = useState(null);
 
   useEffect(() => {
@@ -536,13 +510,14 @@ export default function App() {
     setEtat(ETATS.EN_COURS);
     setPaquet(null);
     setCommune(null);
+    setChoixOuvert(true);
     const r = await chargerDepartement(dep);
     setEtat(r.etat);
     setPaquet(r.donnees);
     /* On ne selectionne que si la commune est bien dans le paquet recu : un code
        venu d'un index plus recent que le fichier departemental ne doit pas
        produire un ecran vide. */
-    if (insee && r.donnees && r.donnees.communes && r.donnees.communes[insee]) setCommune(insee);
+    if (insee && r.donnees && r.donnees.communes && r.donnees.communes[insee]) { setCommune(insee); setChoixOuvert(false); }
   }, []);
 
   /* Un département déjà choisi se recharge tout seul : le lecteur ne redit pas
@@ -606,7 +581,14 @@ export default function App() {
           <Entree index={index} communesBeta={communesBeta} departement={departement}
             onOuvrir={ouvrir} onCommuneDirecte={ouvrir} onSurvol={prechargerDepartement} />
         ) : null}
-        {index && departement ? (
+        {/* OU SUIS-JE, EN UNE LIGNE (29/09/2026). Mesure a 360 et 390 px, commune
+            choisie : trois lignes disaient la meme chose — « Departement 93 ·
+            Seine-Saint-Denis — changer », « Aubervilliers — changer de commune »,
+            « Aubervilliers · Seine-Saint-Denis (93) » — soit environ 230 px avant
+            la barre des ecrans, sur CHAQUE ecran. Une fois la commune choisie, le
+            choix du departement se replie avec celui de la commune, derriere un
+            seul « changer ». Rien n'est retire : « changer » rouvre les deux. */}
+        {index && departement && (!fiche || choixOuvert) ? (
           <ChoixDepartement index={index} departement={departement}
             onOuvrir={ouvrir} onSurvol={prechargerDepartement} />
         ) : null}
@@ -622,13 +604,19 @@ export default function App() {
           {etat === ETATS.SERVI && paquet ? (
             <>
               <ChoixCommune paquet={paquet} nomDepartement={nomDepartement}
-                commune={commune} onCommune={setCommune} />
+                commune={commune} onCommune={setCommune}
+                deplie={choixOuvert || !fiche} setDeplie={setChoixOuvert} />
 
               {/* JE SUIS OÙ. Une seule ligne, toujours au même endroit, qui ne
-                  bouge plus quand on change d'onglet. */}
+                  bouge plus quand on change d'onglet — et qui porte le moyen d'en
+                  changer, commune comme département. */}
               {fiche ? (
                 <p className="situe" role="status" aria-live="polite">
                   <b>{fiche.nom}</b> · {nomDepartement ? nomDepartement + " (" + paquet.d + ")" : "département " + paquet.d}
+                  {!choixOuvert ? (
+                    <> {" "}<button type="button" className="situe-changer"
+                      onClick={() => setChoixOuvert(true)}>changer</button></>
+                  ) : null}
                 </p>
               ) : null}
 
