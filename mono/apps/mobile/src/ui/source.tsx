@@ -16,7 +16,8 @@
 import { useState } from "react";
 import { Linking, Modal, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { CALCUL_REPERE, dateFr, ligneSource } from "@repere/core";
+import { CALCUL_REPERE, dateFr, datePublication, ligneSource } from "@repere/core";
+import { useCommuneChoisie } from "../lib/useCommune";
 import { couleurs, CIBLE, PAS, RAYON, TYPO } from "../lib/theme";
 import { Etiquette } from "./resume";
 
@@ -46,7 +47,10 @@ export function producteurCourt(p?: string): string {
 const dateDite = (s: InfoSource) =>
   s.maj ? `Données publiées le ${dateFr(s.maj)}` : s.releve ? `Données relevées le ${dateFr(s.releve)}` : null;
 
-export function PastilleSource({ source }: { source: InfoSource | null | undefined }) {
+/* `quoi` : quand une reponse s'appuie sur deux sources (« des comptes », « des élus »). */
+/* `court` : sur l'accueil, ou la pastille partage une ligne avec la question suivante ;
+   `nom` y remplace « Source » quand une reponse en a deux (« ⓘ Comptes », « ⓘ Élus »). */
+export function PastilleSource({ source, quoi, court, nom }: { source: InfoSource | null | undefined; quoi?: string; court?: boolean; nom?: string }) {
   const [ouverte, setOuverte] = useState(false);
   if (!source || !source.producteur) return null;
   const date = dateDite(source);
@@ -61,7 +65,7 @@ export function PastilleSource({ source }: { source: InfoSource | null | undefin
       >
         {/* Invariant 4 : un calcul se dit calcul, a l'oeil aussi, pas seulement
             au lecteur d'ecran ni derriere un geste. */}
-        <Text style={s.lien}>{source.methode ? "ⓘ Calculé par Repère · source" : "ⓘ Source"}</Text>
+        <Text style={s.lien}>{source.methode ? (court ? "ⓘ Calcul Repère" : "ⓘ Calculé par Repère · source") : `ⓘ ${nom || "Source"}`}{quoi ? " " + quoi : ""}</Text>
       </Pressable>
       <FeuilleSource source={source} visible={ouverte} onFermer={() => setOuverte(false)} />
     </>
@@ -71,6 +75,10 @@ export function PastilleSource({ source }: { source: InfoSource | null | undefin
 export function FeuilleSource({ source, visible, onFermer }: { source: InfoSource; visible: boolean; onFermer: () => void }) {
   const marges = useSafeAreaInsets();
   const date = dateDite(source);
+  /* DEUX DATES, JAMAIS CONFONDUES (30/09/2026) : celle de la source (publiee
+     ou relevee) et celle ou Repere a traite les fichiers. */
+  const { r } = useCommuneChoisie();
+  const traite = r.pret ? datePublication(r.index) : null;
   const detail = ligneSource(source.releve && !source.mention ? { ...source, mention: "relevé le " + dateFr(source.releve) } : source);
   return (
     <Modal visible={visible} animationType="slide" presentationStyle="pageSheet" onRequestClose={onFermer}>
@@ -78,6 +86,7 @@ export function FeuilleSource({ source, visible, onFermer }: { source: InfoSourc
         <Etiquette emoji="🔎" texte="D'où vient cette information ?" />
         <Text style={TYPO.question} accessibilityRole="header">{source.producteur}</Text>
         {date ? <Text style={[TYPO.corps, { fontWeight: "600" }]}>{date}</Text> : null}
+        {traite ? <Text style={TYPO.note}>Traitées par Repère le {dateFr(traite)}</Text> : null}
 
         <View style={s.bloc}>
           <Text style={TYPO.etiquette}>Comment Repère l'utilise</Text>

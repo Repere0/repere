@@ -1,34 +1,50 @@
-/* « CHEZ VOUS » — LE COEUR DE REPERE (refonte du 30/09/2026, spike visuel).
+/* « CHEZ VOUS » — RÉPONSES D'ABORD (30/09/2026).
  *
- * La question de l'ecran : « Qu'est-ce que j'ai besoin de savoir aujourd'hui
- * sur mon territoire ? ». Cinq cartes. Chacune suit le meme ordre :
- *   phrase humaine -> chiffre cle -> visuel -> « En clair » -> ⓘ Source
- *   -> un geste pour approfondir.
- * Les phrases sont factuelles et viennent de regles de @repere/core
- * (partEnMots, montantCourt, phrasePosition…) : aucune n'est redigee au cas
- * par cas, aucune ne qualifie un fait de bon ou de mauvais.
+ * La question de l'ecran : « Qu'est-ce que le citoyen apprend en ouvrant
+ * Repere ? ». Trois reponses, pas cinq rubriques, qui suivent la progression
+ * d'un lecteur qui ne connait rien a la politique locale :
+ *   1. ce que l'Etat finance ici        (-> pourquoi, combien : « Où va l'argent »)
+ *   2. qui decide, et avec quel argent  (-> « Où va cet argent ? »)
+ *   3. ce qu'a vote le depute           (-> « Comprendre ce vote »)
+ * puis « Aller plus loin » : qui decide de quoi, ce qui arrive au Parlement
+ * (national, dit comme tel), d'ou viennent ces informations.
  *
- * RIEN N'EST CALCULE ICI : les nombres viennent de @repere/core (visuels.js,
- * deriverAujourdhui), les absences de lib/absences.ts. */
+ * Chaque phrase a ete verifiee contre les donnees (spike du 30/09/2026) :
+ * - « a engage » et non « un projet de 726 800 € » : 726 800 € est l'aide,
+ *   le projet coute 1 533 500 € ;
+ * - une position de vote (pour, contre, abstention), jamais « a participe » :
+ *   une donnee de presence est interdite (invariant 8) ;
+ * - jamais « dernier vote » : le vote affiche n'est pas forcement le plus
+ *   recent d'une meme journee ; on dit sa date ;
+ * - une commune partagee entre plusieurs circonscriptions ne se voit jamais
+ *   attribuer UN depute : « votre depute depend de votre adresse ».
+ *
+ * Trois dates, jamais confondues : celle du fait dans la phrase (« en 2025 »,
+ * « le 21 juillet 2026 ») ; celle de la source dans la feuille « D'où vient
+ * cette information ? » ; celle du traitement par Repere en en-tete.
+ *
+ * RIEN N'EST CALCULE ICI : @repere/core derive, lib/absences.ts dit les absences. */
 import { Text, View } from "react-native";
 import { router, Stack } from "expo-router";
 import {
-  chaineDecision, chiffresComptes, datePublication, dateFr, euros, financementProjet, heureFr, jourFr,
-  montantCourt, parHabitant, partReperee, phrasePosition, repartitionVote, texteDe, titreLisible, REFUS_APPARIEMENT,
+  dateFr, datePublication, decompte, euros, financementProjet, montantCourt, ordinal, parHabitant, partReperee, phrasePosition,
+  repartitionVote, texteDe,
+  titreLisible, REFUS_APPARIEMENT,
 } from "@repere/core";
-import { CarteQuestion, Vide } from "../lib/composants";
+import { Vide } from "../lib/composants";
 import { CarteMemoire } from "../cartes/CarteMemoire";
 import { useSelection } from "../lib/selection";
 import { useCommuneChoisie } from "../lib/useCommune";
 import {
-  PROJETS_PAS_ARRIVES, projetsAucun, VOTES_PAS_ARRIVES, circoInconnue, VOTE_AUCUN, AGENDA_PAS_ARRIVE, AGENDA_VIDE,
+  PROJETS_PAS_ARRIVES, projetsAucun, VOTES_PAS_ARRIVES, circoInconnue, VOTE_AUCUN,
 } from "../lib/absences";
-import { srcAgenda, srcComptes, srcElus, srcProjets, srcVote } from "../lib/sources";
-import { couleurs, PAS, RAYON, TYPO } from "../lib/theme";
+import { srcComptesPublies, srcElus, srcProjets, srcVote } from "../lib/sources";
+import { PAS, TYPO } from "../lib/theme";
 import { AvecDonnees, Page } from "../ui/page";
 import { PastilleSource } from "../ui/source";
-import { Etiquette, Resume } from "../ui/resume";
-import { BarrePart, Chaine, Financement, Frise, Repartition, type Niveau } from "../ui/visuels";
+import { Etiquette } from "../ui/resume";
+import { Plus, Reponse } from "../ui/reponse";
+import { BarrePart, Repartition } from "../ui/visuels";
 
 export default function ChezVous() {
   const { choix } = useSelection();
@@ -41,133 +57,100 @@ export default function ChezVous() {
       const depIndex = r.index.departements.find((x: { code: string }) => x.code === d.dep);
       const projet = d.dernierProjet;
       const f = projet ? financementProjet(projet.p) : null;
+      const cout = f && f.cout ? montantCourt(f.cout) : null;
+      const nbProjets = r.projetsLus ? (d.faits || []).filter((x: { type: string }) => x.type === "projet").length : 0;
       const vote = d.dernierVote;
       const rep = vote ? repartitionVote(vote.sc) : null;
-      const ch = d.exercice ? chiffresComptes(d.exercice.ex) : null;
       const hab = d.exercice ? parHabitant(d.exercice.ex) : null;
-      const chaine = chaineDecision({ fiche: d.fiche, paquet: r.paquet, index: r.index, deputes: r.deputes, elusRegion: r.elusRegion, dep: d.dep });
-      const prochains = (d.prochains || []) as { titre: string; debut: string; institution: string; source: unknown }[];
-      const depenses = ch && ch.depenses !== null ? montantCourt(ch.depenses) : null;
+      const maire = d.fiche && d.fiche.maire && d.fiche.maire.nom ? d.fiche.maire.nom : null;
       return (
         <Page>
           <Stack.Screen options={{ title: nom }} />
-          {/* JE SUIS ICI */}
-          <View style={{ gap: PAS }}>
-            <Etiquette emoji="📍" texte="Chez vous" />
+          {/* OU JE SUIS, ET DE QUAND DATE CE QUE JE LIS */}
+          {/* Pas d'etiquette « Chez vous » au-dessus du nom : 20 px gagnes, et la
+             troisieme reponse de Paris revient dans le premier ecran (mesure). */}
+          <View style={{ gap: 2 }}>
             <Text style={TYPO.affiche} accessibilityRole="header">{nom}</Text>
             <Text style={TYPO.note}>{[depIndex && depIndex.nom, depIndex && depIndex.region].filter(Boolean).join(" · ")}</Text>
-            {publie ? (
-              <View style={{ alignSelf: "flex-start", marginTop: PAS * 2, paddingHorizontal: 12, paddingVertical: 6, borderRadius: RAYON.pastille, backgroundColor: couleurs.voile }}>
-                <Text style={[TYPO.micro, { fontWeight: "600" }]}>Mis à jour par Repère le {dateFr(publie)}</Text>
-              </View>
-            ) : null}
+            {publie ? <Text style={TYPO.micro}>Mis à jour par Repère le {dateFr(publie)}</Text> : null}
           </View>
 
-          {/* 1. UN PROJET PRES DE CHEZ VOUS */}
-          <CarteQuestion echelon="ville" emoji="🏗️" question="Un projet chez vous"
-            reponse={null}
-            action={r.projetsLus && projet ? { texte: "Voir tous les projets et le budget", onPress: () => router.push("/argent") } : undefined}>
-            {!r.projetsLus ? (
-              <Vide {...PROJETS_PAS_ARRIVES} action="Réessayer" onAction={reessayer} />
-            ) : projet && f ? (
-              <>
-                <Resume
-                  phrase={f.partPct === null ? `L'État apporte ${euros(f.subvention)} à ce projet.`
-                    : partReperee(f.partPct) ? `L'État finance ${partReperee(f.partPct)} de ce projet.`
-                    : `Pour 100 € de ce projet, ${f.partPct} € viennent de l'État.`}>
-                  <Text style={TYPO.corps}>{projet.p.intitule} · {projet.p.annee}</Text>
-                  {f.cout && f.partPct !== null ? (
-                    <Financement subvention={f.subvention} cout={f.cout} partPct={f.partPct}
-                      subventionTexte={`${euros(f.subvention)} sur ${euros(f.cout)}`}
-                      resteTexte={`${euros(f.reste as number)}, financement non détaillé par la source`} />
-                  ) : null}
-                </Resume>
-                <PastilleSource source={srcProjets(d, f.partPct !== null)} />
-              </>
-            ) : (
-              <Vide {...projetsAucun(nom)} />
-            )}
-          </CarteQuestion>
+          <View style={{ gap: PAS * 3 }}>
+          {/* 1. CE QUE L'ETAT FINANCE ICI — la part se dit en mots pres d'un repere
+             vrai, sinon en euros ; le cout est arrondi dans la phrase et exact
+             dans la note. */}
+          {!r.projetsLus ? (
+            <Vide {...PROJETS_PAS_ARRIVES} action="Réessayer" onAction={reessayer} />
+          ) : projet && f ? (
+            <Reponse echelon="ville"
+              phrase={f.partPct !== null && cout
+                ? (partReperee(f.partPct)
+                  ? `L'État finance ${partReperee(f.partPct)} d'un projet de ${cout.texte} à ${nom}.`
+                  : `Pour 100 € d'un projet de ${cout.texte} à ${nom}, l'État en apporte ${f.partPct}.`)
+                : `L'État apporte ${euros(f.subvention)} à un projet à ${nom}.`}
+              preuve={f.partPct !== null ? <BarrePart sansLibelle part={f.partPct} libelle="Part de l'État dans le coût annoncé" valeur={`${f.partPct} € sur 100 €`} /> : undefined}
+              note={`« ${projet.p.intitule} » : ${euros(f.subvention)} engagés par l'État en ${projet.p.annee}${f.cout ? ` sur ${euros(f.cout)} annoncés` : ""}.`}
+              sources={<PastilleSource court source={srcProjets(d, f.partPct !== null)} />}
+              suite={{ texte: nbProjets > 1 ? `${nbProjets} projets aidés` : "Le projet", onPress: () => router.push("/argent") }} />
+          ) : (
+            <Reponse echelon="ville" phrase={projetsAucun(nom).titre} note={projetsAucun(nom).corps}
+              sources={<PastilleSource court source={srcProjets(d)} />} />
+          )}
 
-          {/* 2. CE QU'A VOTE VOTRE DEPUTE */}
-          <CarteQuestion echelon="france" emoji="🗳️" question="Ce qu'a voté votre député"
-            reponse={null}
-            action={r.votesLus && r.votesFiables && vote ? { texte: "Comprendre ce vote", onPress: () => router.push("/vote") } : undefined}>
-            {!r.votesLus ? (
-              <Vide {...VOTES_PAS_ARRIVES} action="Réessayer" onAction={reessayer} />
-            ) : !r.votesFiables ? (
-              <Vide titre={REFUS_APPARIEMENT.titre} corps={REFUS_APPARIEMENT.corps} />
-            ) : vote && rep ? (
-              <>
-                <Resume phrase={texteDe(phrasePosition(vote.position, vote.qui))}
-                  enClair={`Le texte a été ${vote.sc.s} le ${dateFr(vote.sc.d)}.`}>
-                  <Text style={TYPO.corps}>{titreLisible(vote.sc.t)}</Text>
-                  <Repartition segments={rep.segments} total={rep.total} position={vote.position} qui={vote.qui} />
-                </Resume>
-                <PastilleSource source={srcVote(d, vote.sc)} />
-              </>
-            ) : d.nbCircos === 0 ? (
-              <Vide {...circoInconnue(nom)} />
-            ) : (
-              <Vide {...VOTE_AUCUN} />
-            )}
-          </CarteQuestion>
+          {/* 2. QUI DECIDE, ET AVEC QUEL ARGENT — montant par habitant PUBLIE par
+             l'OFGL ; le nom du maire vient du RNE : deux sources, deux pastilles.
+             « prépare / vote » est la regle du code general des collectivites. */}
+          {d.exercice && hab && hab.depenses !== null ? (
+            <Reponse echelon="ville"
+              phrase={`En ${d.exercice.an}, ${nom} a dépensé ${hab.depenses.toLocaleString("fr-FR")} € par habitant.`}
+              note={maire ? `Le maire, ${maire}, prépare ce budget ; le conseil municipal le vote.` : "Le maire prépare ce budget ; le conseil municipal le vote."}
+              sources={<>
+                <PastilleSource court nom="Comptes" source={srcComptesPublies(d)} />
+                {maire ? <PastilleSource court nom="Élus" source={srcElus(r.srcElus)} /> : null}
+              </>}
+              suite={{ texte: "Où va cet argent ?", onPress: () => router.push("/argent") }} />
+          ) : (
+            <Reponse echelon="ville"
+              phrase={`Les comptes de ${nom} ne permettent pas de dire combien la commune dépense par habitant.`}
+              suite={{ texte: "Pourquoi ?", onPress: () => router.push("/argent") }} />
+          )}
 
-          {/* 3. L'ARGENT DE LA COMMUNE */}
-          <CarteQuestion echelon="ville" emoji="💶" question="L'argent de la commune"
-            reponse={null}
-            action={{ texte: "Où va l'argent, en détail", onPress: () => router.push("/argent") }}>
-            {ch && depenses && d.exercice ? (
-              <>
-                <Resume phrase={`En ${d.exercice.an}, ${nom} a dépensé ${depenses.texte}.`}
-                  chiffre={hab && hab.depenses !== null ? `${hab.depenses.toLocaleString("fr-FR")} €` : null}
-                  legende="par habitant, sur l'année"
-                  enClair="Les autres dépenses ne sont pas détaillées par la source.">
-                  {ch.partSalaires !== null ? <BarrePart part={ch.partSalaires} libelle="Salaires" valeur={`${ch.partSalaires} € sur 100 € dépensés`} /> : null}
-                  {ch.partInvestissement !== null ? <BarrePart part={ch.partInvestissement} libelle="Travaux et équipements" valeur={`${ch.partInvestissement} € sur 100 € dépensés`} delai={120} /> : null}
-                </Resume>
-                <PastilleSource source={srcComptes(d)} />
-              </>
-            ) : (
-              <Text style={TYPO.corps}>Les comptes de {nom} ne permettent pas ce calcul : l'écran de détail dit pourquoi.</Text>
-            )}
-          </CarteQuestion>
+          {/* 3. A L'ASSEMBLEE NATIONALE — une position, jamais une presence ; une
+             date, jamais « dernier » ; plusieurs circonscriptions, jamais UN depute. */}
+          {!r.votesLus ? (
+            <Vide {...VOTES_PAS_ARRIVES} action="Réessayer" onAction={reessayer} />
+          ) : !r.votesFiables ? (
+            <Vide titre={REFUS_APPARIEMENT.titre} corps={REFUS_APPARIEMENT.corps} />
+          ) : vote && rep ? (
+            <Reponse echelon="france"
+              phrase={d.nbCircos > 1
+                ? `${nom} est partagée entre ${d.nbCircos} circonscriptions : votre député dépend de votre adresse.`
+                : `Le ${dateFr(vote.sc.d)}, ${texteDe(phrasePosition(vote.position, `${vote.qui}, qui représente votre circonscription,`))}`}
+              preuve={<Repartition compact segments={rep.segments} total={rep.total} position={vote.position} qui={vote.qui} />}
+              note={d.nbCircos > 1
+                ? `Par exemple, dans la ${ordinal(vote.circo)}, le ${dateFr(vote.sc.d)}, ${texteDe(phrasePosition(vote.position, vote.qui)).replace(/\.$/, "")} (texte ${vote.sc.s}).`
+                : `${titreLisible(vote.sc.t)} : ${vote.sc.s}, ${decompte(vote.sc.dec)}.`}
+              sources={<PastilleSource court source={srcVote(d, vote.sc)} />}
+              suite={{ texte: "Comprendre ce vote", onPress: () => router.push("/vote") }} />
+          ) : d.nbCircos === 0 ? (
+            <Vide {...circoInconnue(nom)} />
+          ) : (
+            <Vide {...VOTE_AUCUN} />
+          )}
+          </View>
 
-          {/* 4. QUI DECIDE */}
-          <CarteQuestion echelon="dept" emoji="🏛️" question="Qui décide"
-            reponse={null}
-            action={{ texte: "Qui décide de quoi", onPress: () => router.push("/qui-decide") }}>
-            <Resume phrase={`Cinq niveaux décident pour ${nom}, de la mairie à l'Assemblée nationale.`}>
-              <Chaine compact niveaux={chaine as Niveau[]} />
-            </Resume>
-            <PastilleSource source={srcElus(r.srcElus)} />
-          </CarteQuestion>
-
-          {/* 5. CE QUI ARRIVE (fichiers republies chaque jour, jamais embarques) */}
-          <CarteQuestion echelon="france" emoji="📅" question="Ce qui arrive au Parlement" reponse={null}>
-            {!r.agendaLu ? (
-              <Vide {...AGENDA_PAS_ARRIVE} action="Réessayer" onAction={reessayer} />
-            ) : prochains.length ? (
-              <>
-                <Resume phrase={d.prochainsDansLaSemaine
-                  ? `${d.semaineTotal} rendez-vous au Parlement cette semaine${d.semaineSelectionnee ? " ; voici les séances publiques" : ""}.`
-                  : "Le prochain rendez-vous au Parlement :"}>
-                  <Frise etiquette="Les prochaines séances" jalons={prochains.map((e, i) => ({
-                    cle: e.debut + i, date: `${jourFr(e.debut)}${heureFr(e.debut) ? " · " + heureFr(e.debut) : ""}`,
-                    titre: e.titre, texte: e.institution, echelon: "france", actif: i === 0,
-                  }))} />
-                </Resume>
-                <PastilleSource source={srcAgenda(prochains[0].source)} />
-              </>
-            ) : (
-              <Vide {...AGENDA_VIDE} />
-            )}
-          </CarteQuestion>
+          {/* ALLER PLUS LOIN */}
+          <View style={{ gap: PAS * 2 }}>
+            <Etiquette texte="Aller plus loin" />
+            <View>
+              <Plus premier texte="Qui décide de quoi" onPress={() => router.push("/qui-decide")} />
+              <Plus texte="Ce qui arrive au Parlement" onPress={() => router.push("/a-venir")} />
+              <Plus dernier texte="D'où viennent ces informations" onPress={() => router.push("/sources")} />
+            </View>
+          </View>
 
           {choix ? <CarteMemoire choix={choix} /> : null}
-          <Text style={TYPO.note}>
-            Chaque information a sa source : touchez « ⓘ ». Repère ne classe ni ne note personne.
-          </Text>
+          <Text style={TYPO.note}>Repère ne classe ni ne note personne, et ne compare jamais deux communes.</Text>
         </Page>
       );
     }} />

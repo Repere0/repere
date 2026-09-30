@@ -68,6 +68,8 @@ export default function Coquille() {
             <Stack.Screen name="argent" options={{ title: "Où va l'argent", headerLeft: () => <Retour texte="Chez vous" etiquette="Revenir à l'écran Chez vous" /> }} />
             <Stack.Screen name="vote" options={{ title: "Votre député", headerLeft: () => <Retour texte="Chez vous" etiquette="Revenir à l'écran Chez vous" /> }} />
             <Stack.Screen name="qui-decide" options={{ title: "Qui décide", headerLeft: () => <Retour texte="Chez vous" etiquette="Revenir à l'écran Chez vous" /> }} />
+            <Stack.Screen name="a-venir" options={{ title: "Au Parlement", headerLeft: () => <Retour texte="Chez vous" etiquette="Revenir à l'écran Chez vous" /> }} />
+            <Stack.Screen name="sources" options={{ title: "Sources", headerLeft: () => <Retour texte="Chez vous" etiquette="Revenir à l'écran Chez vous" /> }} />
           </Stack>
         </AvecCommune>
       </FournisseurSelection>

@@ -58,7 +58,7 @@ for (const largeur of [360, 390, 430]) {
   if (CAPTURES) await page.screenshot({ path: path.join(CAPTURES, `accueil-${largeur}.png`), fullPage: true });
   await resultat.click();
 
-  await page.getByText("Un projet chez vous").first().waitFor({ timeout: 15000 });
+  await page.getByText("Aller plus loin").first().waitFor({ timeout: 15000 });
   await page.waitForLoadState("networkidle");
   /* Le ScrollView de React Native defile a l'interieur de la page : une capture
      « pleine page » n'en montrerait que le haut. On le fait defiler. */
@@ -139,13 +139,16 @@ for (const largeur of [360, 390, 430]) {
   communs(mesure, "Chez vous");
   verifier(new RegExp(MAIRE).test(mesure.texte), `${largeur}px : le maire est nommé (${MAIRE})`);
   verifier(/Mis à jour par Repère le \d/.test(mesure.texte), `${largeur}px : la date de mise à jour est dite`);
-  verifier((mesure.etiquettes.match(/D'où vient cette information/g) || []).length >= 4, `${largeur}px : au moins quatre pastilles de source sur l'accueil`);
+  verifier((mesure.etiquettes.match(/D'où vient cette information/g) || []).length >= 3, `${largeur}px : chaque réponse de l'accueil porte sa source`);
   verifier(/a voté (pour|contre|l'abstention)/.test(mesure.texte) && /députés ayant pris part au vote/.test(mesure.etiquettes),
     `${largeur}px : le vote du député s'affiche, et sa répartition se lit aussi en phrase`);
-  verifier(/par habitant/.test(mesure.texte) && /€ sur 100 € dépensés/.test(mesure.texte), `${largeur}px : l'argent de la commune s'affiche en visuels`);
+  verifier(/a dépensé [\d\s]+€ par habitant/.test(mesure.texte), `${largeur}px : l'argent de la commune se dit en une phrase`);
+  /* « Réponses d'abord » (30/09/2026) : une reponse, pas une rubrique ; jamais
+     une donnee de presence, jamais « dernier ». */
+  verifier(!/a participé|n'a pas participé|dernier vote/i.test(mesure.brut), `${largeur}px : aucune donnée de présence, aucun « dernier vote »`);
   /* Spike du 30/09/2026 : la source devient discrete, mais un calcul se dit
      calcul A L'OEIL (invariant 4), pas seulement dans la feuille. */
-  verifier(/Calculé par Repère · source/.test(mesure.texte), `${largeur}px : un chiffre calculé se dit calculé sans ouvrir la feuille`);
+  verifier(/Calcul Repère/.test(mesure.texte), `${largeur}px : un chiffre calculé se dit calculé sans ouvrir la feuille`);
   verifier(/Ce qui arrive au Parlement/i.test(mesure.brut), `${largeur}px : la carte « ce qui arrive » est présente (ou sa phrase d'absence)`);
   const fautives = demandees.filter(u => adresseFautive(u));
   verifier(fautives.length === 0, `${largeur}px : aucune adresse ne porte un code de commune ${JSON.stringify(fautives)}`);
@@ -157,14 +160,17 @@ for (const largeur of [360, 390, 430]) {
   const feuille = await page.evaluate(() => document.body.innerText);
   verifier(/Données publiées le \d/.test(feuille) && /↗/.test(feuille),
     `${largeur}px : une pastille ouvre la feuille de source : producteur, date, usage et lien vers la donnée originale`);
+  verifier(/Traitées par Repère le \d/.test(feuille), `${largeur}px : la feuille distingue la date de la source de celle du traitement par Repère`);
   await page.getByRole("button", { name: "Fermer" }).first().click();
   await page.waitForTimeout(400);
 
-  /* LES TROIS QUESTIONS DE DETAIL */
+  /* LES QUESTIONS SUIVANTES : trois depuis les reponses, deux depuis « Aller plus loin » */
   for (const [action, question, preuve] of [
-    ["Où va l'argent, en détail", /Où va l'argent de Meaux/, /Sur 100 € dépensés, \d+ € vont aux salaires/],
+    ["Où va cet argent ?", /Où va l'argent de Meaux/, /Sur 100 € dépensés, \d+ € vont aux salaires/],
     ["Comprendre ce vote", /Qu'a voté votre député/, /Le parcours d'une loi|Où en est ce texte/],
     ["Qui décide de quoi", /Qui décide pour Meaux/, /Décide : /],
+    ["Ce qui arrive au Parlement", /Qu'est-ce qui arrive/, /concernent tout le pays/],
+    ["D'où viennent ces informations", /Repère a traité ces fichiers/, /Repère a traité ces fichiers le \d.*Données publiées le \d.*Données relevées le \d/s],
   ]) {
     await page.getByRole("button", { name: action }).first().click();
     await page.getByText(question).first().waitFor({ timeout: 10000 });
@@ -172,7 +178,7 @@ for (const largeur of [360, 390, 430]) {
     const m = await mesurer();
     communs(m, action);
     verifier(preuve.test(m.brut), `${largeur}px · ${action} : l'écran répond à sa question`);
-    verifier(/D'où vient cette information/.test(m.etiquettes), `${largeur}px · ${action} : la source est à portée de doigt`);
+    if (!/informations/.test(action)) verifier(/D'où vient cette information/.test(m.etiquettes) || /Le calendrier n'est arrivé/.test(m.texte), `${largeur}px · ${action} : la source est à portée de doigt`);
     if (/argent/.test(action)) {
       verifier(/Calculé par Repère · source/.test(m.texte), `${largeur}px · ${action} : les parts calculées se disent calculées`);
       await page.getByRole("button", { name: "Détails du calcul" }).first().click();
@@ -180,7 +186,7 @@ for (const largeur of [360, 390, 430]) {
       verifier(true, `${largeur}px · ${action} : le détail du calcul s'ouvre`);
     }
     await page.getByRole("button", { name: "Revenir à l'écran Chez vous" }).last().click();
-    await page.getByText("Un projet chez vous").first().waitFor({ timeout: 5000 });
+    await page.getByText("Aller plus loin").first().waitFor({ timeout: 5000 });
   }
 
   await page.getByRole("button", { name: "Revenir à l'accueil" }).last().click();
@@ -231,7 +237,7 @@ async function montantA100ms(reduit) {
   await page.getByLabel(/Où habitez-vous/).fill(COMMUNE.saisie);
   await page.getByRole("button", { name: new RegExp("^" + COMMUNE.nom + ",") }).first().click();
   /* Depuis le spike du 30/09/2026, le compteur anime vit sur l'ecran « Où va l'argent ». */
-  await page.getByRole("button", { name: "Où va l'argent, en détail" }).first().click();
+  await page.getByRole("button", { name: "Où va cet argent ?" }).first().click();
   const cible = page.locator('[aria-label$="€ par jour"]').first();
   await cible.waitFor({ timeout: 15000 });
   await page.waitForTimeout(100);
@@ -265,7 +271,7 @@ async function montantA100ms(reduit) {
   await page.goto(BASE + "/", { waitUntil: "networkidle" });
   await page.getByLabel(/Où habitez-vous/).fill(COMMUNE.saisie);
   await page.getByRole("button", { name: new RegExp("^" + COMMUNE.nom + ",") }).first().click();
-  await page.getByText("Un projet chez vous").first().waitFor({ timeout: 15000 });
+  await page.getByText("Aller plus loin").first().waitFor({ timeout: 15000 });
   let st = await stockage();
   verifier(Object.keys(st.ls).length === 0, "mémoire : rien n'est gardé tant que le lecteur ne l'a pas demandé " + JSON.stringify(st.ls));
   await page.getByRole("button", { name: "Retenir Meaux sur ce téléphone" }).click();
@@ -279,7 +285,7 @@ async function montantA100ms(reduit) {
   await reprendre.waitFor({ timeout: 10000 });
   verifier(true, "mémoire : Meaux est proposée à la réouverture");
   await reprendre.click();
-  await page.getByText("Un projet chez vous").first().waitFor({ timeout: 15000 });
+  await page.getByText("Aller plus loin").first().waitFor({ timeout: 15000 });
   verifier(true, "mémoire : un geste suffit pour retrouver sa commune");
   await page.getByRole("button", { name: "Oublier Meaux" }).click();
   st = await stockage();
@@ -297,6 +303,24 @@ async function montantA100ms(reduit) {
   const fautives = demandees.filter(u => adresseFautive(u) || /77284/.test(u));
   verifier(fautives.length === 0, "mémoire : aucune requête ne porte le code de la commune " + JSON.stringify(fautives));
   await ctx.close();
+}
+
+/* RÉPONSES D'ABORD — 30/09/2026. A 390 x 844 (iPhone 12 a 16), les trois
+   reponses de Meaux tiennent entieres dans le premier ecran, sans defiler.
+   Mesure honnete des limites, ecrite dans docs/ux/reponses-dabord-2026.md :
+   a 360 x 740, deux reponses seulement ; un intitule de projet tres long
+   (Boulogne-Billancourt) repousse la troisieme de 36 px. */
+{
+  const HAUTEUR = Number(process.env.REPERE_HAUTEUR_PLI || 844);
+  const page = await navigateur.newPage({ viewport: { width: 390, height: HAUTEUR }, deviceScaleFactor: 2, isMobile: true, hasTouch: true, reducedMotion: "reduce" });
+  await page.goto(BASE + "/", { waitUntil: "networkidle" });
+  await page.getByLabel(/Où habitez-vous/).fill(COMMUNE.saisie);
+  await page.getByRole("button", { name: new RegExp("^" + COMMUNE.nom + ",") }).first().click();
+  await page.getByText("Aller plus loin").first().waitFor({ timeout: 15000 });
+  await page.waitForTimeout(600);
+  const bas = await page.evaluate(() => [...document.querySelectorAll('[data-testid="reponse"]')].filter(e => e.offsetParent).map(e => Math.round(e.getBoundingClientRect().bottom)));
+  verifier(bas.length === 3 && bas.every(b => b <= HAUTEUR), `390 x ${HAUTEUR} : les trois réponses tiennent dans le premier écran ${JSON.stringify(bas)}`);
+  await page.close();
 }
 
 await navigateur.close();

@@ -7,14 +7,14 @@
 import type { ReactNode } from "react";
 import { Linking, Pressable, StyleSheet, Text, View } from "react-native";
 import { ligneSource, CALCUL_REPERE } from "@repere/core";
-import { couleurs, CIBLE, PAS, RAYON, OMBRE, TYPO, type Echelon } from "./theme";
+import { couleurs, CIBLE, fondCarte, PAS, RAYON, OMBRE, TYPO, type Echelon } from "./theme";
 import { AVEC_EMOJIS, Emoji } from "../ui/resume";
 
 /* Refonte du 30/09/2026 : plus de filet de couleur a gauche ; l'echelon se
    dit par un point de couleur devant l'etiquette, et la carte prend de l'air. */
 export function Carte({ echelon, children, titre }: { echelon?: Echelon; children: ReactNode; titre?: string }) {
   return (
-    <View style={s.carte}>
+    <View style={[s.carte, { backgroundColor: fondCarte(echelon) }]}>
       {titre ? (
         <View style={s.carteTete}>
           {echelon ? <View style={[s.point, { backgroundColor: couleurs[echelon] }]} /> : null}
@@ -34,7 +34,7 @@ export function CarteQuestion({ echelon, question, reponse, children, pied, acti
   action?: { texte: string; onPress: () => void }; emoji?: string;
 }) {
   return (
-    <View style={s.carte}>
+    <View style={[s.carte, { backgroundColor: fondCarte(echelon) }]}>
       <View style={s.carteTete}>
         {emoji && AVEC_EMOJIS ? <Emoji c={emoji} /> : <View style={[s.point, { backgroundColor: couleurs[echelon] }]} />}
         <Text style={s.carteTitre} accessibilityRole="header">{question}</Text>
@@ -133,14 +133,16 @@ const s = StyleSheet.create({
     minHeight: CIBLE, flexDirection: "row", alignItems: "center", justifyContent: "space-between",
     borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: couleurs.trait, marginTop: PAS,
   },
-  actionTexte: { fontSize: 17, fontWeight: "600", color: couleurs.ville },
+  actionTexte: { fontSize: 17, fontWeight: "600", color: couleurs.lien },
   texte: { fontSize: 17, lineHeight: 24, color: couleurs.encre },
   fort: { fontWeight: "700" },
   sourd: { color: couleurs.sourd, fontSize: 15, lineHeight: 21 },
   source: { gap: PAS, paddingTop: PAS * 2, borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: couleurs.trait },
   sourceTexte: { fontSize: 13, lineHeight: 18, color: couleurs.sourd },
   lien: { minHeight: CIBLE, justifyContent: "center" },
-  lienTexte: { fontSize: 15, color: couleurs.ville, textDecorationLine: "underline" },
+  /* En encre, souligne : la couleur de ville sur le gris d'une phrase d'absence
+     faisait 4,38:1 (mesure du 30/09/2026), sous le seuil AA. */
+  lienTexte: { fontSize: 15, color: couleurs.encre, textDecorationLine: "underline" },
   vide: { gap: PAS * 2, padding: PAS * 4, backgroundColor: couleurs.voile, borderRadius: RAYON.bloc },
   bouton: {
     minHeight: CIBLE + 4, borderRadius: RAYON.bloc, paddingHorizontal: PAS * 4, alignItems: "center", justifyContent: "center",

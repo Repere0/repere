@@ -81,7 +81,7 @@ function attendus({ dep, insee, attendu }) {
     const p = d.dernierProjet.p;
     f("projet (intitulé)", p.intitule);
     f("projet (montant)", euros(p.subvention));
-    f("projet (année, avec son intitulé)", "exercice " + p.annee, p.intitule + " · " + p.annee);
+    f("projet (année, avec son intitulé)", "exercice " + p.annee, "« " + p.intitule + " » : " + euros(p.subvention) + " engagés par l'État en " + p.annee);
     f("source des projets (date)", ligneSource({ producteur: d.srcProjets.producteur, licence: d.srcProjets.licence, maj: d.srcProjets.mis_a_jour_le }));
     if (d.dernierVote) f("projet (phrase)", phraseProjetLocal(p, d.nomCommune));
   }
@@ -157,10 +157,10 @@ async function texteApp(nav, { nom }) {
   await p.goto(APP, { waitUntil: "networkidle" });
   await p.getByLabel(/Où habitez-vous/).fill(nom);
   await p.getByRole("button", { name: new RegExp("^" + nom.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + ",") }).first().click();
-  await p.getByText("Un projet chez vous").first().waitFor({ timeout: 15000 });
+  await p.getByText("Aller plus loin").first().waitFor({ timeout: 15000 });
   await p.waitForLoadState("networkidle");
   let { t, n: feuilles } = await toutLire(p);
-  for (const action of ["Où va l'argent, en détail", "Comprendre ce vote", "Qui décide de quoi"]) {
+  for (const action of ["Où va cet argent ?", "Comprendre ce vote", "Qui décide de quoi", "Ce qui arrive au Parlement", "D'où viennent ces informations"]) {
     const b = p.getByRole("button", { name: action });
     if (!(await b.count())) continue;              /* absence dite par une phrase sur l'accueil */
     await b.first().click();

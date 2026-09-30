@@ -8,7 +8,7 @@
  * L'ordre est un ordre de distance, pas d'importance : c'est ecrit. */
 import { Pressable, Text } from "react-native";
 import { router, Stack } from "expo-router";
-import { chaineDecision, MAIRE_ABSENT, phraseAdjoints, RNE_URL } from "@repere/core";
+import { chaineDecision, dateFr, MAIRE_ABSENT, phraseAdjoints, RNE_URL } from "@repere/core";
 import { Segments } from "../lib/composants";
 import { REGION_PAS_ARRIVEE } from "../lib/absences";
 import { srcElus } from "../lib/sources";
@@ -43,9 +43,13 @@ export default function QuiDecide() {
         if (n.echelon === "france") {
           return { ...n, note: n.autresCircos ? `${d.nomCommune} est partagée entre plusieurs circonscriptions : un seul député est nommé ici.` : undefined,
             pied: n.personne && r.votesLus ? (
-              <Pressable onPress={() => router.push("/vote")} accessibilityRole="button" accessibilityLabel="Voir son dernier vote"
+              /* Jamais « dernier » : le vote affiche n'est pas forcement le plus
+                 recent (8430 affiche, 8433 et 8434 le meme jour — mesure du
+                 30/09/2026). On dit sa date. */
+              <Pressable onPress={() => router.push("/vote")} accessibilityRole="button"
+                accessibilityLabel={d.dernierVote ? `Voir son vote du ${dateFr(d.dernierVote.sc.d)}` : "Voir ses votes"}
                 style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", opacity: pressed ? 0.6 : 1 })}>
-                <Text style={[TYPO.corps, { color: couleurs.ville, fontWeight: "600" }]}>Voir son dernier vote ›</Text>
+                <Text style={[TYPO.corps, { color: couleurs.lien, fontWeight: "600" }]}>{d.dernierVote ? `Voir son vote du ${dateFr(d.dernierVote.sc.d)}` : "Voir ses votes"} ›</Text>
               </Pressable>
             ) : undefined };
         }

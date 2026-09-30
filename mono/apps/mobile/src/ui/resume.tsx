@@ -12,7 +12,10 @@ import type { ReactNode } from "react";
 import { Text, View } from "react-native";
 import { couleurs, PAS, TYPO } from "../lib/theme";
 
-export const AVEC_EMOJIS = process.env.EXPO_PUBLIC_REPERE_EMOJIS !== "0";
+/* Decision du 30/09/2026 : pas d'emojis pour l'instant. Ils ne reviennent
+   que construits avec EXPO_PUBLIC_REPERE_EMOJIS=1, pour un test qui
+   demontrerait leur fonction. */
+export const AVEC_EMOJIS = process.env.EXPO_PUBLIC_REPERE_EMOJIS === "1";
 
 export function Emoji({ c, taille = 16 }: { c: string; taille?: number }) {
   if (!AVEC_EMOJIS) return null;
@@ -44,7 +47,7 @@ export function Resume({ phrase, chiffre, legende, enClair, children }: {
       {children}
       {enClair ? (
         <View style={{ flexDirection: "row", gap: PAS * 2, paddingTop: PAS }}>
-          <Text style={[TYPO.corps, { fontWeight: "800", color: couleurs.ville }]}>En clair</Text>
+          <Text style={[TYPO.corps, { fontWeight: "800", color: couleurs.lien }]}>En clair</Text>
           <Text style={[TYPO.corps, { flex: 1 }]}>{enClair}</Text>
         </View>
       ) : null}

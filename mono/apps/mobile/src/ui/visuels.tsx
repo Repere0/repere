@@ -11,7 +11,7 @@
  * Construites avec des View : aucune bibliotheque de graphiques. */
 import { useState, type ReactNode } from "react";
 import { Animated, Pressable, StyleSheet, Text, View } from "react-native";
-import { couleurs, GRIS_VOTE, PAS, RAYON, TYPO, CIBLE, type Echelon } from "../lib/theme";
+import { couleurs, GRIS_VOTE, PAS, PALETTE, RAYON, TEINTES, TYPO, CIBLE, type Echelon } from "../lib/theme";
 import { useApparition, useCompteur } from "./mouvement";
 
 const largeur = (v: Animated.Value, pct: number) =>
@@ -29,16 +29,18 @@ export function Compteur({ valeur, suffixe }: { valeur: number; suffixe: string 
 }
 
 /* ── Une part de 100 (« sur 100 € dépensés, 47 € de salaires ») ─────────── */
-export function BarrePart({ part, libelle, valeur, echelon = "ville", delai = 0 }: {
+export function BarrePart({ part, libelle, valeur, echelon = "ville", delai = 0, sansLibelle }: {
   part: number; libelle: string; valeur: string; echelon?: Echelon; delai?: number;
+  /* la phrase au-dessus dit deja la part : la barre seule, le libelle reste pour le lecteur d'ecran */
+  sansLibelle?: boolean;
 }) {
   const v = useApparition(delai);
   return (
     <View accessible accessibilityLabel={`${libelle} : ${valeur}`} style={{ gap: 6 }}>
-      <View style={s.ligneH}>
+      {sansLibelle ? null : <View style={s.ligneH}>
         <Text style={TYPO.note}>{libelle}</Text>
         <Text style={[TYPO.corps, { fontWeight: "700" }]}>{valeur}</Text>
-      </View>
+      </View>}
       <View style={s.piste}>
         <Animated.View style={[s.rempli, { width: largeur(v, part), backgroundColor: couleurs[echelon] }]} />
       </View>
@@ -65,8 +67,10 @@ export function Mois({ mois, echelon = "ville" }: { mois: number; echelon?: Eche
 
 /* ── La repartition d'un scrutin ───────────────────────────────────────── */
 type Segment = { cle: string; libelle: string; nombre: number; part: number };
-export function Repartition({ segments, total, position, qui }: {
+export function Repartition({ segments, total, position, qui, compact }: {
   segments: Segment[]; total: number; position?: string; qui?: string;
+  /* compact : la barre et une ligne de decompte, pour une reponse de l'accueil */
+  compact?: boolean;
 }) {
   const v = useApparition(80);
   const phrase = segments.map(x => `${x.libelle} : ${x.nombre}`).join(", ")
@@ -78,7 +82,7 @@ export function Repartition({ segments, total, position, qui }: {
           <Animated.View key={x.cle} style={{ width: largeur(v, x.part * 100), backgroundColor: GRIS_VOTE[x.cle as keyof typeof GRIS_VOTE] }} />
         ))}
       </View>
-      <View style={{ gap: PAS * 2 }}>
+      {compact ? null : <View style={{ gap: PAS * 2 }}>
         {segments.map(x => (
           <View key={x.cle} style={s.legende}>
             <View style={[s.pastilleCouleur, { backgroundColor: GRIS_VOTE[x.cle as keyof typeof GRIS_VOTE] }]} />
@@ -87,7 +91,7 @@ export function Repartition({ segments, total, position, qui }: {
             <Text style={[TYPO.corps, { fontWeight: "700", minWidth: 44, textAlign: "right" }]}>{x.nombre}</Text>
           </View>
         ))}
-      </View>
+      </View>}
     </View>
   );
 }
@@ -104,7 +108,7 @@ export function Financement({ subvention, cout, partPct, subventionTexte, resteT
         <Animated.View style={[s.rempli, { width: largeur(v, (subvention / cout) * 100), backgroundColor: couleurs.ville }]} />
       </View>
       <View style={s.ligneH}>
-        <Text style={TYPO.note}><Text style={{ color: couleurs.ville, fontWeight: "700" }}>État · {partPct} %</Text>  {subventionTexte}</Text>
+        <Text style={TYPO.note}><Text style={{ color: couleurs.lien, fontWeight: "700" }}>État · {partPct} %</Text>  {subventionTexte}</Text>
       </View>
       <Text style={TYPO.note}>Reste · {resteTexte}</Text>
     </View>
@@ -176,7 +180,10 @@ export function Chaine({ niveaux, compact }: { niveaux: Niveau[]; compact?: bool
             <View style={[s.maillon, { backgroundColor: couleurs[n.echelon] }]} />
             {i < niveaux.length - 1 ? <View style={[s.jalonTrait, { backgroundColor: couleurs.trait }]} /> : null}
           </View>
-          <View style={{ flex: 1, paddingBottom: compact ? PAS * 3 : PAS * 6, gap: 2 }}>
+          {/* Palette B : chaque echelon dans sa teinte — c'est ici que la palette
+              « territoriale » dit quelque chose (qui decide, a quel niveau). */}
+          <View style={[{ flex: 1, paddingBottom: compact ? PAS * 3 : PAS * 6, gap: 2 },
+            PALETTE === "b" && !compact ? { backgroundColor: TEINTES[n.echelon], borderRadius: RAYON.bloc, padding: PAS * 3, marginBottom: PAS * 3 } : null]}>
             {/* La couleur d'echelon est portee par le maillon, pas par le texte :
                 en 13 px, l'intercommunalite (#0891b2) faisait 3,21:1 sur le fond
                 et le departement 4,38:1 — sous le seuil AA de 4,5:1 (mesure du
@@ -205,8 +212,8 @@ export function Depli({ titre, children }: { titre: string; children: ReactNode 
     <View>
       <Pressable onPress={() => setOuvert(o => !o)} accessibilityRole="button"
         accessibilityState={{ expanded: ouvert }} style={({ pressed }) => [s.depli, pressed && { opacity: 0.6 }]}>
-        <Text style={[TYPO.note, { color: couleurs.ville, fontWeight: "600", flex: 1 }]}>{titre.replace(/ ([?!:;])/g, "\u00a0$1")}</Text>
-        <Text style={[TYPO.note, { color: couleurs.ville }]} accessibilityElementsHidden importantForAccessibility="no">{ouvert ? "−" : "+"}</Text>
+        <Text style={[TYPO.note, { color: couleurs.lien, fontWeight: "600", flex: 1 }]}>{titre.replace(/ ([?!:;])/g, "\u00a0$1")}</Text>
+        <Text style={[TYPO.note, { color: couleurs.lien }]} accessibilityElementsHidden importantForAccessibility="no">{ouvert ? "−" : "+"}</Text>
       </Pressable>
       {ouvert ? <View style={{ gap: PAS * 2, paddingBottom: PAS * 2 }}>{children}</View> : null}
     </View>
