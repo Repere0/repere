@@ -676,7 +676,7 @@ test("invariant 4 — le composant Source existe et sait annoncer un calcul", ()
      avec l'application mobile : Source doit l'afficher, et elle doit dire la chose. */
   assert.ok(/\{calcul \? <b>\{CALCUL_REPERE\}/.test(s),
     "Source ne distingue pas un calcul d'une donnee publiee : l'invariant 4 tombe");
-  assert.ok(lire("packages/core/src/phrases.js").includes("ce n'est pas un chiffre publié"),
+  assert.ok(lire("packages/core/src/source.js").includes("ce n'est pas un chiffre publié"),
     "la phrase du calcul ne dit plus que ce n'est pas un chiffre publie");
 });
 
@@ -833,10 +833,13 @@ test("meme verite — les phrases du vote, du maire et du projet ne s'ecrivent q
   const SIGNATURES = [
     "siègent avec", "ne porte pas de position sur ce scrutin", "Vote du député élu",
     "Une position non portée n'est pas une absence : elle peut couvrir une délégation de vote", "L'État a engagé ${", "L'État a engagé {",
+    /* 30/09/2026, lot M1 : les phrases des comptes. */
+    "Aucun de ces rapports n'est publié", "Pas assez de montants pour traduire ces comptes",
+    "mais leurs montants ne correspondent pas à la population publiée", "Calculé par Repère à partir",
   ];
   const fautifs = [];
   for (const f of sourcesEcrites()) {
-    if (f === "packages/core/src/phrases.js" || f.startsWith("tests/") || !/^(apps|packages)\//.test(f)) continue;
+    if (/^packages\/core\/src\/(phrases|phrases-comptes|source)\.js$/.test(f) || f.startsWith("tests/") || !/^(apps|packages)\//.test(f)) continue;
     const src = lire(f);
     for (const sig of SIGNATURES) if (src.includes(sig)) fautifs.push(f + " : « " + sig + " »");
   }

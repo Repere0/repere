@@ -119,3 +119,17 @@ test("phrases — les adjoints ne votent pas seuls le budget (CGCT L2312-1)", as
   assert.match(t, /conseil municipal, qui vote le budget/);
   assert.doesNotMatch(t, /Ce sont eux qui votent le budget/);
 });
+
+test("phrases des comptes — trois absences, trois phrases, et le calcul s'annonce sans renvoyer a un montant absent", async () => {
+  const m = await import("../packages/core/src/index.js");
+  const a = m.comptesAbsents("Meaux"), i = m.comptesInsuffisants("2025");
+  const e = m.comptesIncoherents("Meaux", m.phraseEcartes(["2025"], "Meaux"));
+  assert.equal(new Set([a.titre, i.titre, e.titre]).size, 3);
+  assert.match(e.corps, /l'exercice 2025, mais leurs montants ne correspondent pas/);
+  assert.equal(m.phraseEcartes([], "Meaux"), null);
+  assert.deepEqual(m.exercicesEcartes({ comptes_ecartes: ["2024", "2021"] }, { an: "2021" }), ["2024"]);
+  assert.equal(m.sousTitreRapports("2025", [1234]), "Ce que ça représente · exercice 2025 · 1 234 habitants".replace(" 234", " 234"));
+  assert.doesNotMatch(m.introRapports({ detailPlusBas: false }), /plus bas/);
+  assert.doesNotMatch(m.CALCUL_REPERE, /ci-dessus/);
+  assert.match(m.CALCUL_REPERE, /ce n'est pas un chiffre publié/);
+});

@@ -92,10 +92,3 @@ export function phraseProjetLocal(p, nomCommune) {
   const ancienne = ancienneCommune(p);
   return `${montantEngage(p)} à ${ancienne ? `${ancienne} (aujourd'hui rattachée à ${nomCommune})` : nomCommune}, exercice ${p.annee}.`;
 }
-
-/* --- la source ---------------------------------------------------------- */
-
-export const CALCUL_REPERE = "Calculé par Repère à partir des montants ci-dessus — ce n'est pas un chiffre publié.";
-export function ligneSource({ producteur, licence, maj, mention } = {}) {
-  return `${producteur || ""}${licence ? " · " + licence : ""}${maj ? " · mise à jour du " + dateFr(maj) : ""}${mention ? " · " + mention : ""}`;
-}
