@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { etatFraicheur, surFraicheur, FRAICHEUR, PHRASES_FRAICHEUR, verifierPublication } from "@repere/data-utils";
+import { etatFraicheur, surFraicheur, verifierPublication } from "@repere/data-utils";
+import { phraseFraicheur } from "@repere/core";
 
 /* INVARIANT 9 — FRAICHEUR (decision du porteur, 30/09/2026).
  *
@@ -11,7 +12,7 @@ import { etatFraicheur, surFraicheur, FRAICHEUR, PHRASES_FRAICHEUR, verifierPubl
  *   - PRECEDENTE : une partie date d'une publication precedente ;
  *   - INCONNUE : le serveur n'a pas pu confirmer qu'il n'y a rien de plus recent ;
  *   - une publication parue pendant la lecture : proposee, jamais imposee.
- * Memes phrases que l'application mobile (PHRASES_FRAICHEUR).
+ * Memes phrases que l'application mobile (@repere/core, phraseFraicheur).
  *
  * REVERIFICATION AU RETOUR DU LECTEUR : un onglet laisse ouvert plusieurs
  * jours ne redemandait jamais l'index (faille F-2 du 30/09). Au retour sur
@@ -24,10 +25,10 @@ export function Fraicheur() {
     document.addEventListener("visibilitychange", surRetour);
     return () => { desabonner(); document.removeEventListener("visibilitychange", surRetour); };
   }, []);
-  if (e.etat !== FRAICHEUR.PRECEDENTE && e.etat !== FRAICHEUR.INCONNUE) return null;
-  const p = e.nouvelle ? PHRASES_FRAICHEUR.nouvelle : PHRASES_FRAICHEUR[e.etat];
+  const p = phraseFraicheur(e);
+  if (!p) return null;
   return (
-    <div className="fraicheur" role="status" data-etat={e.nouvelle ? "nouvelle" : e.etat}>
+    <div className="fraicheur" role="status" data-etat={p.etat}>
       <b>{p.titre}</b> <span>{p.corps}</span>
       {p.action ? <button type="button" onClick={() => location.reload()}>{p.action}</button> : null}
     </div>

@@ -341,8 +341,9 @@ async function montantA100ms(reduit) {
   verifier(enLigne.bandeau === 0, "fraîcheur : en ligne, publication vérifiée, aucun bandeau");
   await ctx.route("**/data/**", r => r.abort("internetdisconnected"));
   const coupe = await ouvrir();
-  verifier(coupe.bandeau === 1 && /n'a pas pu vérifier s'il existe une publication plus récente/.test(coupe.texte),
-    "fraîcheur : serveur injoignable, l'écran dit que la publication n'a pas pu être vérifiée");
+  verifier(coupe.bandeau === 1 && /Repère n'a pas pu joindre le serveur : ce qui s'affiche vient de la publication du/.test(coupe.texte)
+    && /plus récente existe peut-être/.test(coupe.texte),
+    "fraîcheur : serveur injoignable, l'écran dit de quand date ce qu'il montre et qu'il ne peut pas vérifier");
   verifier(new RegExp(MAIRE).test(coupe.texte), "fraîcheur : serveur injoignable, la donnée gardée reste lisible");
   verifier(!/Mis à jour/.test(coupe.texte), "fraîcheur : aucun « mis à jour » affiché quand rien n'a pu être vérifié");
   await ctx.close();

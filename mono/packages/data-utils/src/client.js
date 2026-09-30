@@ -272,41 +272,36 @@ const horsLigne = () => typeof navigator !== "undefined" && navigator.onLine ===
  *   INCONNUE    l'index n'a pas pu etre verifie aupres du serveur : on ne
  *               pretend pas que c'est a jour.
  * EN_COURS tant que l'index n'a pas repondu (rien a dire encore). Le site et
- * l'application affichent les MEMES phrases (PHRASES_FRAICHEUR). */
+ * l'application affichent les MEMES phrases (@repere/core, phraseFraicheur). */
 export const FRAICHEUR = Object.freeze({
   EN_COURS: "en cours", ACTUELLE: "actuelle", PRECEDENTE: "precedente", INCONNUE: "inconnue",
 });
-export const PHRASES_FRAICHEUR = Object.freeze({
-  [FRAICHEUR.PRECEDENTE]: {
-    titre: "Une partie de ce qui s'affiche date d'une publication précédente.",
-    corps: "Le réseau n'a pas permis de tout mettre à jour. Rien n'est inventé : ces données ont été publiées, mais ce ne sont pas les dernières.",
-  },
-  [FRAICHEUR.INCONNUE]: {
-    titre: "Repère n'a pas pu vérifier s'il existe une publication plus récente.",
-    corps: "Sans connexion au serveur, ce qui s'affiche est la dernière publication reçue sur cet appareil.",
-  },
-  nouvelle: {
-    titre: "Une publication plus récente est disponible.",
-    corps: "Ce qui s'affiche date de la publication précédente.",
-    action: "Mettre à jour",
-  },
-});
+/* Les phrases ne sont plus ici : @repere/core `phraseFraicheur(etat)` les ecrit
+   une fois pour le site et l'application, datees (01/10/2026). */
 let indexVerifie = null;                 /* null : pas encore de reponse */
 let nouvelleParue = false;
-const clesPrecedentes = new Set();
+let indexHorsLigne = false;              /* l'appareil se savait hors connexion */
+/* cle -> generation de la copie servie (null si inconnue) : de quand elle date */
+const clesPrecedentes = new Map();
 const abonnes = new Set();
 function annoncer() { const e = etatFraicheur(); abonnes.forEach(f => { try { f(e); } catch { /* un abonne en faute n'en prive pas les autres */ } }); }
+/* `depuis` : la date de ce qui est a l'ecran — la plus ancienne des copies
+   servies faute de mieux, sinon la generation de l'index. `horsLigne` :
+   l'appareil se savait hors connexion (deux causes, deux phrases). */
 export function etatFraicheur() {
-  if (indexVerifie === null) return { etat: FRAICHEUR.EN_COURS, nouvelle: false, generation: GENERATION };
-  if (nouvelleParue) return { etat: FRAICHEUR.PRECEDENTE, nouvelle: true, generation: GENERATION };
-  if (!indexVerifie) return { etat: FRAICHEUR.INCONNUE, nouvelle: false, generation: GENERATION };
-  return { etat: clesPrecedentes.size ? FRAICHEUR.PRECEDENTE : FRAICHEUR.ACTUELLE, nouvelle: false, generation: GENERATION };
+  const base = { nouvelle: false, generation: GENERATION, depuis: GENERATION, horsLigne: indexHorsLigne };
+  if (indexVerifie === null) return { ...base, etat: FRAICHEUR.EN_COURS };
+  if (nouvelleParue) return { ...base, etat: FRAICHEUR.PRECEDENTE, nouvelle: true };
+  if (!indexVerifie) return { ...base, etat: FRAICHEUR.INCONNUE };
+  if (!clesPrecedentes.size) return { ...base, etat: FRAICHEUR.ACTUELLE };
+  const dates = [...clesPrecedentes.values()].filter(Boolean).sort();
+  return { ...base, etat: FRAICHEUR.PRECEDENTE, depuis: dates[0] || null };
 }
 export function surFraicheur(f) { abonnes.add(f); return () => abonnes.delete(f); }
-function marquer(cle, precedente) {
+function marquer(cle, precedente, generationCopie = null) {
   const avant = clesPrecedentes.has(cle);
-  if (precedente) clesPrecedentes.add(cle); else clesPrecedentes.delete(cle);
-  if (avant !== precedente) annoncer();
+  if (precedente) clesPrecedentes.set(cle, generationCopie); else clesPrecedentes.delete(cle);
+  if (avant !== precedente || precedente) annoncer();
 }
 
 /* REVERIFIER EN COURS DE ROUTE — un onglet ou une application ouverts
@@ -378,12 +373,13 @@ export async function chargerIndex({ delaiMs = 8000 } = {}) {
       GENERATION = generationDe(r.donnees);
       if (r.depuis === "reseau") indexSession = r;
       indexVerifie = r.depuis === "reseau";
+      indexHorsLigne = horsLigne();
       annoncer();
       return r;
     };
     if (horsLigne()) {
       if (enCache) return retenir({ etat: ETATS.SERVI, donnees: enCache, depuis: "cache" });
-      indexVerifie = false; annoncer();
+      indexVerifie = false; indexHorsLigne = true; annoncer();
       return { etat: ETATS.HORS_LIGNE, donnees: null };
     }
     try {
@@ -469,14 +465,15 @@ async function chargerSocle(cle, url, delaiMs) {
   /* La generation d'abord : sans elle, on ne sait pas si le magasin est a jour. */
   if (GENERATION === null) await chargerIndex().catch(() => {});
   const enCache = await magasin.lire(cle);
-  const aJour = enCache && (GENERATION === null || (await generationsGardees())[cle] === GENERATION);
+  const gardees = await generationsGardees();
+  const aJour = enCache && (GENERATION === null || gardees[cle] === GENERATION);
   if (aJour) { marquer(cle, false); return { etat: ETATS.SERVI, donnees: enCache, depuis: "cache" }; }
   if (enVol.has(cle)) return enVol.get(cle);
   /* Une copie d'une autre generation, servie faute de mieux : PRECEDENTE si
      l'on sait qu'une publication plus recente existe (index verifie) ; sinon
      l'etat INCONNUE de l'index le dit deja. */
   const faute = (donnees, raison) => {
-    marquer(cle, indexVerifie === true);
+    marquer(cle, indexVerifie === true, gardees[cle] || null);
     return { etat: ETATS.SERVI, donnees, depuis: "cache", perime: true, raison };
   };
   const promesse = (async () => {
@@ -507,7 +504,7 @@ async function chargerSocle(cle, url, delaiMs) {
    IndexedDB — n'est pas touche : c'est ce qui survit a une reouverture. */
 export function nouvelleSessionPourTest() {
   GENERATION = null; indexSession = null; indexEnCours = null; enVol.clear();
-  indexVerifie = null; nouvelleParue = false; clesPrecedentes.clear();
+  indexVerifie = null; nouvelleParue = false; indexHorsLigne = false; clesPrecedentes.clear();
   oublierMemoire();
   fileGenerations = Promise.resolve();
 }

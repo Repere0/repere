@@ -466,8 +466,8 @@ await pageFraicheur.context().close();
   verif("fraîcheur — une nouvelle publication atteint le lecteur deja venu, des la visite suivante",
     /PUBLICATION-NEUVE-TEST/.test(apres),
     "le nouveau maire n'est pas a l'ecran : " + apres.slice(0, 400).replace(/\n+/g, " / "));
-  verif("invariant 9 — un fichier non recu apres une nouvelle publication reste lisible, et l'ecran dit qu'il date d'une publication precedente",
-    /PUBLICATION-NEUVE-TEST/.test(precedente) && /date d'une publication précédente/.test(precedente),
+  verif("invariant 9 — un fichier non recu apres une nouvelle publication reste lisible, et l'ecran dit de QUELLE publication il date",
+    /PUBLICATION-NEUVE-TEST/.test(precedente) && /date de la publication du \d{1,2}(er)? \S+ \d{4}/.test(precedente),
     precedente.slice(0, 400).replace(/\n+/g, " / "));
 }
 
@@ -2047,8 +2047,9 @@ verif("invariant 5 — hors ligne, aucun message d'echec au-dessus de donnees pr
   horsLigne.texte.slice(0, 200).replace(/\n+/g, " / "));
 /* INVARIANT 9 : hors ligne, les donnees gardees s'affichent, mais l'ecran ne
    pretend pas qu'elles sont a jour. */
-verif("invariant 9 — hors ligne, l'ecran dit que Repere n'a pas pu verifier s'il existe une publication plus recente",
-  /n'a pas pu vérifier s'il existe une publication plus récente/.test(horsLigne.texte),
+verif("invariant 9 — hors ligne, l'ecran dit qu'il est hors connexion, de quand date ce qu'il montre, et qu'il ne peut pas verifier",
+  /Vous êtes hors connexion : ce qui s'affiche vient de la publication du/.test(horsLigne.texte)
+  && /plus récente existe peut-être/.test(horsLigne.texte),
   horsLigne.texte.slice(0, 300).replace(/\n+/g, " / "));
 
 /* SCENARIO 6 : hors ligne, un departement JAMAIS telecharge. Le produit doit

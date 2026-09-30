@@ -16,9 +16,10 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import {
   chargerIndex, chargerDepartement, chargerProjets, ETATS, PHRASES, nouvelleSessionPourTest,
-  FRAICHEUR, PHRASES_FRAICHEUR, etatFraicheur, surFraicheur, verifierPublication, publicationPriseEnCompte,
+  FRAICHEUR, etatFraicheur, surFraicheur, verifierPublication, publicationPriseEnCompte,
 } from "../packages/data-utils/src/client.js";
 import { magasin, configurerStockage } from "../packages/data-utils/src/store.js";
+import { phraseFraicheur } from "../packages/core/src/fraicheur.js";
 
 /* Un faux disque : ce qui survit a une reouverture de l'application. */
 const disque = new Map();
@@ -227,9 +228,31 @@ test("faille F-2 — une publication parue pendant la session est detectee au re
   desabonner();
 });
 
-test("fraicheur — trois phrases distinctes, les memes pour le site et l'application", () => {
-  const t = [PHRASES_FRAICHEUR[FRAICHEUR.PRECEDENTE], PHRASES_FRAICHEUR[FRAICHEUR.INCONNUE], PHRASES_FRAICHEUR.nouvelle].map(x => x && x.titre);
-  assert.ok(t.every(Boolean));
-  assert.equal(new Set(t).size, 3);
-  assert.ok(!/à jour\./.test(PHRASES_FRAICHEUR[FRAICHEUR.INCONNUE].titre), "l'etat inconnu ne pretend pas que c'est a jour");
+test("fraicheur — phrases distinctes, datees, les memes pour le site et l'application (@repere/core)", () => {
+  const g = "2026-10-01T05:47:00Z";
+  const pr = phraseFraicheur({ etat: FRAICHEUR.PRECEDENTE, depuis: "2026-09-29T05:47:00Z", generation: g });
+  const inc = phraseFraicheur({ etat: FRAICHEUR.INCONNUE, depuis: g, generation: g, horsLigne: false });
+  const hors = phraseFraicheur({ etat: FRAICHEUR.INCONNUE, depuis: g, generation: g, horsLigne: true });
+  const nouv = phraseFraicheur({ etat: FRAICHEUR.PRECEDENTE, nouvelle: true, depuis: g, generation: g });
+  assert.equal(phraseFraicheur({ etat: FRAICHEUR.ACTUELLE, depuis: g }), null, "actuelle : rien a dire");
+  assert.equal(phraseFraicheur({ etat: FRAICHEUR.EN_COURS }), null, "avant la reponse de l'index : rien a dire");
+  assert.equal(new Set([pr, inc, hors, nouv].map(x => x.titre)).size, 4, "quatre situations, quatre phrases");
+  assert.match(pr.titre, /publication du 29 septembre 2026/, "la date dite est celle de la copie");
+  assert.match(hors.titre, /^Vous êtes hors connexion/);
+  assert.match(inc.titre, /^Repère n'a pas pu joindre le serveur/);
+  assert.ok(!/à jour\./.test(inc.titre), "l'etat inconnu ne pretend pas que c'est a jour");
+  assert.equal(nouv.action, "Mettre à jour");
+});
+
+test("fraicheur — la date d'une copie precedente est celle de SA publication", async () => {
+  await toutEffacer();
+  reponses = { "/data/index.json": index("2026-10-01T05:47:00Z"), "/data/departments/77.json": dep("A") };
+  await chargerDepartement("77");
+  ouvrirApplication();
+  reponses = { "/data/index.json": index("2026-10-02T05:47:00Z") };
+  await chargerDepartement("77");
+  const e = etatFraicheur();
+  assert.equal(e.etat, FRAICHEUR.PRECEDENTE);
+  assert.equal(e.depuis, "2026-10-01T05:47:00Z");
+  assert.match(phraseFraicheur(e).titre, /publication du 1er octobre 2026/);
 });
