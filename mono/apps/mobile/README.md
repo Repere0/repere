@@ -1,6 +1,6 @@
 # Repère sur ton téléphone
 
-*Vérifié le 29/09/2026 (voir « Ce qui a été vérifié » plus bas).*
+*Vérifié le 29/09/2026 ; procédure du Wi-Fi validée sur ton iPhone le 30/09/2026.*
 
 ## Une seule fois
 
@@ -14,39 +14,45 @@
 ```
 cd C:\Users\APina
 git -C repere fetch origin
-git -C repere worktree add C:\Users\APina\repere-mobile origin/feat/mobile-memoire-commune
+git -C repere worktree add C:\Users\APina\repere-mobile origin/feat/mobile-ux-revolution
 ```
 
-(`feat/mobile-memoire-commune` est le haut de la pile #45 → #50 : tout ce qui a été
-fait sur le mobile. Pour mettre à jour plus tard :
-`git -C C:\Users\APina\repere-mobile checkout --detach origin/feat/mobile-memoire-commune`
+(`feat/mobile-ux-revolution` est le haut de la pile : la refonte de l'expérience, avec
+tout ce qui précède. Pour mettre à jour plus tard :
+`git -C C:\Users\APina\repere-mobile checkout --detach origin/feat/mobile-ux-revolution`
 après un `git -C repere fetch origin`.)
 
 ## À chaque test
 
 ```
 cd C:\Users\APina\repere-mobile\mono\apps\mobile
-npm install
-npx expo login          (iPhone seulement, la première fois)
-npm run telephone
+npm.cmd install
+npm.cmd start
 ```
+
+Téléphone et PC sur le **même Wi-Fi**. (`npm.cmd` et pas `npm` : PowerShell bloque les
+scripts `.ps1`. Le tunnel, `npm run telephone`, n'a pas fonctionné chez toi ; le Wi-Fi, si.)
 
 Scanner le QR code : appareil photo sur iPhone, Expo Go sur Android. Taper une commune
 d'Île-de-France. Les données sont celles du site en production.
 
 ## Ce que tu dois voir (5 minutes)
 
-| taper | tu dois lire |
+| geste | tu dois voir |
 |---|---|
-| `meaux` | le maire, un projet financé par l'État, le vote de la députée de la 6e circonscription, une source datée sous chaque bloc (le 29/09 : Jean-François COPE ; 726 800 € en 2025 ; Béatrice Roullaud, pour, le 21 juillet 2026 — un vote plus récent peut l'avoir remplacé) |
-| `paris` | « Paris est partagée entre … circonscriptions » : l'app ne devine pas laquelle est la tienne |
-| `amponville` | une phrase qui dit qu'aucun projet n'est publié, pas une carte vide |
-| en bas de l'écran | « Retenir … sur ce téléphone », puis fermer et rouvrir Expo Go : la commune est proposée ; « Oublier » l'efface |
-| un lien « Voir à la source » | il ouvre le site officiel |
-| VoiceOver (iPhone) ou TalkBack (Android) | chaque bouton se lit avec un nom clair ; les titres de carte sont annoncés comme titres |
+| ouvrir l'app | « Ce qui se passe chez vous, expliqué simplement. », puis « Où habitez-vous ? » et une ligne : pas de compte, rien de gardé sans ton accord |
+| taper `meaux` | l'écran **Meaux** : la date des données, puis cinq cartes — un projet (barre : la part de l'État dans le coût), le vote de la députée (barre pour / contre / abstention), l'argent (montant par jour qui se compte, deux barres « sur 100 € »), qui décide (cinq points de couleur), ce qui arrive au Parlement (frise) |
+| toucher une pastille « ⓘ » | une feuille « D'où vient cette information ? » : producteur, date, méthode si c'est un calcul, lien officiel |
+| « Comprendre le budget de la commune » | la question en grand, les barres, « Ce que ça ne veut pas dire » qui s'ouvre, 2024 → 2025, tous les projets |
+| « Comprendre ce vote » | la position en grand, la répartition, pourquoi c'est ta députée, le parcours d'une loi avec l'étape du vote surlignée |
+| « Qui décide de quoi » | la chaîne commune → Assemblée, et ce que chaque niveau décide |
+| glisser depuis le bord gauche | retour à l'écran précédent |
+| Réglages > Accessibilité > Mouvement > Réduire les animations | les montants s'affichent d'un coup, les barres pleines d'emblée |
+| VoiceOver | chaque graphique se lit en une phrase (« Pour : 378, contre : 7… ») |
 
 Ce qui est normal aujourd'hui : pas de fonctionnement hors ligne ; la source du maire n'a pas
-encore de lien (il arrive avec #42) ; l'app n'existe qu'en mode clair.
+encore de lien (il arrive avec #42) ; l'app n'existe qu'en mode clair ; Paris et les
+communes à plusieurs circonscriptions ne nomment qu'un député dans « Qui décide ».
 
 ## Si ça bloque
 
