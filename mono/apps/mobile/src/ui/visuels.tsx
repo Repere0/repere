@@ -177,7 +177,11 @@ export function Chaine({ niveaux, compact }: { niveaux: Niveau[]; compact?: bool
             {i < niveaux.length - 1 ? <View style={[s.jalonTrait, { backgroundColor: couleurs.trait }]} /> : null}
           </View>
           <View style={{ flex: 1, paddingBottom: compact ? PAS * 3 : PAS * 6, gap: 2 }}>
-            <Text style={[TYPO.etiquette, { color: couleurs[n.echelon] }]}>{n.niveau}{n.lieu && !compact ? " · " + n.lieu : ""}</Text>
+            {/* La couleur d'echelon est portee par le maillon, pas par le texte :
+                en 13 px, l'intercommunalite (#0891b2) faisait 3,21:1 sur le fond
+                et le departement 4,38:1 — sous le seuil AA de 4,5:1 (mesure du
+                30/09/2026, controle « contraste AA » du parcours). */}
+            <Text style={TYPO.etiquette}>{n.niveau}{n.lieu && !compact ? " · " + n.lieu : ""}</Text>
             {n.personne ? (
               <Text style={compact ? [TYPO.corps, { fontWeight: "700" }] : TYPO.reponse}>{n.personne.nom}</Text>
             ) : (

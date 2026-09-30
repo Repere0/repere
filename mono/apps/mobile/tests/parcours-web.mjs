@@ -58,7 +58,7 @@ for (const largeur of [360, 390, 430]) {
   if (CAPTURES) await page.screenshot({ path: path.join(CAPTURES, `accueil-${largeur}.png`), fullPage: true });
   await resultat.click();
 
-  await page.getByText("Ce qui se passe près de chez vous").first().waitFor({ timeout: 15000 });
+  await page.getByText("Un projet chez vous").first().waitFor({ timeout: 15000 });
   await page.waitForLoadState("networkidle");
   /* Le ScrollView de React Native defile a l'interieur de la page : une capture
      « pleine page » n'en montrerait que le haut. On le fait defiler. */
@@ -90,6 +90,29 @@ for (const largeur of [360, 390, 430]) {
       sansNom: cibles.filter(e => !(e.getAttribute("aria-label") || e.textContent || "").trim()).length,
       texte: document.body.innerText,
       etiquettes: [...document.querySelectorAll("[aria-label]")].map(e => e.getAttribute("aria-label")).join(" | "),
+      /* CONTRASTE AA MESURE SUR LE RENDU (spike du 30/09/2026) : chaque texte
+         visible contre le premier fond opaque de ses parents. 4,5:1, ou 3:1 pour
+         le grand texte (24 px, ou 18,66 px gras). Il a trouve, au premier tour,
+         les libelles d'echelon de la chaine : l'intercommunalite a 3,21:1. */
+      contrastes: (() => {
+        const rgb = x => (x.match(/[\d.]+/g) || []).map(Number);
+        const lum = ([r, g, b]) => [r, g, b].map(v => { v /= 255; return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; })
+          .reduce((a, v, i) => a + v * [0.2126, 0.7152, 0.0722][i], 0);
+        const fond = e => { for (; e; e = e.parentElement) { const c = rgb(getComputedStyle(e).backgroundColor); if (c.length >= 3 && (c.length < 4 || c[3] > 0.5)) return c; } return [255, 255, 255]; };
+        const out = new Set();
+        const w = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+        for (let n; (n = w.nextNode());) {
+          const t = n.textContent.trim(), e = n.parentElement;
+          if (!t || !e || e.offsetParent === null) continue;
+          const st = getComputedStyle(e), c = rgb(st.color);
+          if (c.length >= 4 && c[3] < 1) continue;
+          const [a, b] = [lum(c), lum(fond(e))].sort((x, y) => y - x);
+          const r = (a + 0.05) / (b + 0.05), px = parseFloat(st.fontSize);
+          const seuil = px >= 24 || (Number(st.fontWeight) >= 700 && px >= 18.66) ? 3 : 4.5;
+          if (r < seuil) out.add(`${r.toFixed(2)}:1 « ${t.slice(0, 30)} »`);
+        }
+        return [...out];
+      })(),
       /* Le texte SANS les capitales de style : sous textTransform, « DEPUTE »
          echappait a la recherche de « depute » (29/09/2026). */
       brut: (() => {
@@ -106,6 +129,7 @@ for (const largeur of [360, 390, 430]) {
     verifier(!m.deborde, `${largeur}px · ${ecran} : aucun débordement horizontal`);
     verifier(m.petites.length === 0, `${largeur}px · ${ecran} : cibles tactiles >= 44 px ${JSON.stringify(m.petites)}`);
     verifier(m.sansNom === 0, `${largeur}px · ${ecran} : chaque contrôle a un nom accessible (${m.sansNom} sans nom)`);
+    verifier(m.contrastes.length === 0, `${largeur}px · ${ecran} : tout texte visible atteint le contraste AA ${JSON.stringify(m.contrastes)}`);
     const sansAccents = MOTS_A_ACCENTS.filter(x => new RegExp("(^|[^\\p{L}])" + x + "($|[^\\p{L}])", "u").test(m.brut));
     verifier(sansAccents.length === 0, `${largeur}px · ${ecran} : aucun mot affiché sans ses accents ${JSON.stringify(sansAccents)}`);
   };
@@ -114,11 +138,14 @@ for (const largeur of [360, 390, 430]) {
   const mesure = await mesurer();
   communs(mesure, "Chez vous");
   verifier(new RegExp(MAIRE).test(mesure.texte), `${largeur}px : le maire est nommé (${MAIRE})`);
-  verifier(/Données publiées le \d/.test(mesure.texte), `${largeur}px : la date de publication des données est dite`);
+  verifier(/Mis à jour par Repère le \d/.test(mesure.texte), `${largeur}px : la date de mise à jour est dite`);
   verifier((mesure.etiquettes.match(/D'où vient cette information/g) || []).length >= 4, `${largeur}px : au moins quatre pastilles de source sur l'accueil`);
   verifier(/a voté (pour|contre|l'abstention)/.test(mesure.texte) && /députés ayant pris part au vote/.test(mesure.etiquettes),
     `${largeur}px : le vote du député s'affiche, et sa répartition se lit aussi en phrase`);
-  verifier(/par jour/.test(mesure.texte) && /sur 100 € dépensés/.test(mesure.texte), `${largeur}px : l'argent de la commune s'affiche en visuels`);
+  verifier(/par habitant/.test(mesure.texte) && /€ sur 100 € dépensés/.test(mesure.texte), `${largeur}px : l'argent de la commune s'affiche en visuels`);
+  /* Spike du 30/09/2026 : la source devient discrete, mais un calcul se dit
+     calcul A L'OEIL (invariant 4), pas seulement dans la feuille. */
+  verifier(/Calculé par Repère · source/.test(mesure.texte), `${largeur}px : un chiffre calculé se dit calculé sans ouvrir la feuille`);
   verifier(/Ce qui arrive au Parlement/i.test(mesure.brut), `${largeur}px : la carte « ce qui arrive » est présente (ou sa phrase d'absence)`);
   const fautives = demandees.filter(u => adresseFautive(u));
   verifier(fautives.length === 0, `${largeur}px : aucune adresse ne porte un code de commune ${JSON.stringify(fautives)}`);
@@ -126,14 +153,16 @@ for (const largeur of [360, 390, 430]) {
 
   /* LA FEUILLE DE SOURCE (niveau 4) */
   await page.getByRole("button", { name: /D'où vient cette information/ }).first().click();
-  await page.getByText("Voir la source officielle ↗").first().waitFor({ timeout: 5000 });
-  verifier(true, `${largeur}px : une pastille ouvre la feuille de source, avec le lien officiel`);
+  await page.getByText("Comment Repère l'utilise").first().waitFor({ timeout: 5000 });
+  const feuille = await page.evaluate(() => document.body.innerText);
+  verifier(/Données publiées le \d/.test(feuille) && /↗/.test(feuille),
+    `${largeur}px : une pastille ouvre la feuille de source : producteur, date, usage et lien vers la donnée originale`);
   await page.getByRole("button", { name: "Fermer" }).first().click();
   await page.waitForTimeout(400);
 
   /* LES TROIS QUESTIONS DE DETAIL */
   for (const [action, question, preuve] of [
-    ["Comprendre le budget de la commune", /Où va l'argent de Meaux/, /Calculé par Repère.*ce n'est pas un chiffre publié/s],
+    ["Où va l'argent, en détail", /Où va l'argent de Meaux/, /Sur 100 € dépensés, \d+ € vont aux salaires/],
     ["Comprendre ce vote", /Qu'a voté votre député/, /Le parcours d'une loi|Où en est ce texte/],
     ["Qui décide de quoi", /Qui décide pour Meaux/, /Décide : /],
   ]) {
@@ -143,9 +172,15 @@ for (const largeur of [360, 390, 430]) {
     const m = await mesurer();
     communs(m, action);
     verifier(preuve.test(m.brut), `${largeur}px · ${action} : l'écran répond à sa question`);
-    verifier(/Source : /.test(m.texte), `${largeur}px · ${action} : la source complète est en bas de l'écran`);
+    verifier(/D'où vient cette information/.test(m.etiquettes), `${largeur}px · ${action} : la source est à portée de doigt`);
+    if (/argent/.test(action)) {
+      verifier(/Calculé par Repère · source/.test(m.texte), `${largeur}px · ${action} : les parts calculées se disent calculées`);
+      await page.getByRole("button", { name: "Détails du calcul" }).first().click();
+      await page.getByText(/ce n'est pas un chiffre publié/).first().waitFor({ timeout: 5000 });
+      verifier(true, `${largeur}px · ${action} : le détail du calcul s'ouvre`);
+    }
     await page.getByRole("button", { name: "Revenir à l'écran Chez vous" }).last().click();
-    await page.getByText("Ce qui se passe près de chez vous").first().waitFor({ timeout: 5000 });
+    await page.getByText("Un projet chez vous").first().waitFor({ timeout: 5000 });
   }
 
   await page.getByRole("button", { name: "Revenir à l'accueil" }).last().click();
@@ -195,7 +230,9 @@ async function montantA100ms(reduit) {
   await page.goto(BASE + "/", { waitUntil: "networkidle" });
   await page.getByLabel(/Où habitez-vous/).fill(COMMUNE.saisie);
   await page.getByRole("button", { name: new RegExp("^" + COMMUNE.nom + ",") }).first().click();
-  const cible = page.locator('[aria-label$="€ dépensés par jour"]').first();
+  /* Depuis le spike du 30/09/2026, le compteur anime vit sur l'ecran « Où va l'argent ». */
+  await page.getByRole("button", { name: "Où va l'argent, en détail" }).first().click();
+  const cible = page.locator('[aria-label$="€ par jour"]').first();
   await cible.waitFor({ timeout: 15000 });
   await page.waitForTimeout(100);
   const r = await cible.evaluate(e => ({ final: e.getAttribute("aria-label"), vu: e.innerText }));
@@ -228,7 +265,7 @@ async function montantA100ms(reduit) {
   await page.goto(BASE + "/", { waitUntil: "networkidle" });
   await page.getByLabel(/Où habitez-vous/).fill(COMMUNE.saisie);
   await page.getByRole("button", { name: new RegExp("^" + COMMUNE.nom + ",") }).first().click();
-  await page.getByText("Ce qui se passe près de chez vous").first().waitFor({ timeout: 15000 });
+  await page.getByText("Un projet chez vous").first().waitFor({ timeout: 15000 });
   let st = await stockage();
   verifier(Object.keys(st.ls).length === 0, "mémoire : rien n'est gardé tant que le lecteur ne l'a pas demandé " + JSON.stringify(st.ls));
   await page.getByRole("button", { name: "Retenir Meaux sur ce téléphone" }).click();
@@ -242,7 +279,7 @@ async function montantA100ms(reduit) {
   await reprendre.waitFor({ timeout: 10000 });
   verifier(true, "mémoire : Meaux est proposée à la réouverture");
   await reprendre.click();
-  await page.getByText("Ce qui se passe près de chez vous").first().waitFor({ timeout: 15000 });
+  await page.getByText("Un projet chez vous").first().waitFor({ timeout: 15000 });
   verifier(true, "mémoire : un geste suffit pour retrouver sa commune");
   await page.getByRole("button", { name: "Oublier Meaux" }).click();
   st = await stockage();

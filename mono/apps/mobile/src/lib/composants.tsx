@@ -8,6 +8,7 @@ import type { ReactNode } from "react";
 import { Linking, Pressable, StyleSheet, Text, View } from "react-native";
 import { ligneSource, CALCUL_REPERE } from "@repere/core";
 import { couleurs, CIBLE, PAS, RAYON, OMBRE, TYPO, type Echelon } from "./theme";
+import { AVEC_EMOJIS, Emoji } from "../ui/resume";
 
 /* Refonte du 30/09/2026 : plus de filet de couleur a gauche ; l'echelon se
    dit par un point de couleur devant l'etiquette, et la carte prend de l'air. */
@@ -28,14 +29,14 @@ export function Carte({ echelon, children, titre }: { echelon?: Echelon; childre
 /* UNE QUESTION, UNE REPONSE — la carte de l'ecran d'accueil (niveau 1).
    Question en etiquette, reponse lisible en trois secondes, un visuel, la
    pastille de source, et un seul geste pour approfondir. */
-export function CarteQuestion({ echelon, question, reponse, children, pied, action }: {
+export function CarteQuestion({ echelon, question, reponse, children, pied, action, emoji }: {
   echelon: Echelon; question: string; reponse: ReactNode; children?: ReactNode; pied?: ReactNode;
-  action?: { texte: string; onPress: () => void };
+  action?: { texte: string; onPress: () => void }; emoji?: string;
 }) {
   return (
     <View style={s.carte}>
       <View style={s.carteTete}>
-        <View style={[s.point, { backgroundColor: couleurs[echelon] }]} />
+        {emoji && AVEC_EMOJIS ? <Emoji c={emoji} /> : <View style={[s.point, { backgroundColor: couleurs[echelon] }]} />}
         <Text style={s.carteTitre} accessibilityRole="header">{question}</Text>
       </View>
       {!reponse ? null : typeof reponse === "string" ? <Text style={TYPO.reponse}>{reponse}</Text> : reponse}

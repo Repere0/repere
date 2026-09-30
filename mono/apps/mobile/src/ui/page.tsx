@@ -10,6 +10,7 @@ import { Bouton, Vide } from "../lib/composants";
 import { useSelection } from "../lib/selection";
 import { useCommuneChoisie, type EtatCommune } from "../lib/useCommune";
 import { PAS, TYPO } from "../lib/theme";
+import { Etiquette } from "./resume";
 
 export function Page({ children }: { children: ReactNode }) {
   const marges = useSafeAreaInsets();
@@ -24,10 +25,10 @@ export function Page({ children }: { children: ReactNode }) {
    point d'interrogation ne tombe jamais seul a la ligne (vu sur capture). */
 export const insecable = (t: string) => t.replace(/ ([?!:;])/g, "\u00a0$1");
 
-export function Question({ etiquette, question, sous }: { etiquette?: string; question: string; sous?: string }) {
+export function Question({ etiquette, question, sous, emoji }: { etiquette?: string; question: string; sous?: string; emoji?: string }) {
   return (
     <View style={{ gap: PAS * 2, marginBottom: PAS * 2 }}>
-      {etiquette ? <Text style={TYPO.etiquette}>{etiquette}</Text> : null}
+      {etiquette ? <Etiquette emoji={emoji} texte={etiquette} /> : null}
       <Text style={TYPO.question} accessibilityRole="header">{insecable(question)}</Text>
       {sous ? <Text style={TYPO.note}>{sous}</Text> : null}
     </View>

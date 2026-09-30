@@ -59,7 +59,11 @@ function attendus({ dep, insee, attendu }) {
     maintenant: new Date(),
   });
   const faits = [];
-  const f = (nom, texte) => faits.push({ nom, texte: net(texte) });
+  /* texteApp : quand l'application traduit un mot de la source en francais
+     courant (spike du 30/09/2026 : « exercice 2024 » -> « 2024 »), le FAIT
+     compare reste le meme, sa forme ecrite differe. On le dit ici, fait par
+     fait, au lieu d'assouplir la comparaison pour tous. */
+  const f = (nom, texte, texteApp) => faits.push({ nom, texte: net(texte), texteApp: texteApp ? net(texteApp) : null });
   f("maire", fiche.maire.nom);
   f("adjoints", texteDe(phraseAdjoints(fiche.adjoints, fiche.maire.nom)));
   f("source des élus (producteur, licence, date)", ligneSource(index.sources.elus));
@@ -77,7 +81,7 @@ function attendus({ dep, insee, attendu }) {
     const p = d.dernierProjet.p;
     f("projet (intitulé)", p.intitule);
     f("projet (montant)", euros(p.subvention));
-    f("projet (exercice)", "exercice " + p.annee);
+    f("projet (année, avec son intitulé)", "exercice " + p.annee, p.intitule + " · " + p.annee);
     f("source des projets (date)", ligneSource({ producteur: d.srcProjets.producteur, licence: d.srcProjets.licence, maj: d.srcProjets.mis_a_jour_le }));
     if (d.dernierVote) f("projet (phrase)", phraseProjetLocal(p, d.nomCommune));
   }
@@ -124,29 +128,51 @@ async function texteSite(nav, { dep, nom }) {
   return net(qui + "\n" + auj + "\n" + argent);
 }
 
+/* Tout ce qu'un ecran de l'application dit, replis ouverts ET feuilles de
+   source ouvertes une a une (spike du 30/09/2026 : la ligne de source complete
+   et le calcul vivent desormais dans la feuille « D'où vient cette
+   information ? » et dans « Détails du calcul »). */
+async function toutLire(p) {
+  for (const depli of await p.getByRole("button", { name: /Ce que ça ne veut pas dire|Détails du calcul/ }).filter({ visible: true }).all()) await depli.click();
+  let t = await p.evaluate(() => document.body.innerText);
+  const pastilles = p.getByRole("button", { name: /D'où vient cette information/ }).filter({ visible: true });
+  const n = await pastilles.count();
+  for (let i = 0; i < n; i++) {
+    await pastilles.nth(i).click();
+    const feuille = p.getByText("Comment Repère l'utilise").first();
+    await feuille.waitFor({ timeout: 5000 });
+    t += "\n" + await p.evaluate(() => document.body.innerText);
+    await p.getByRole("button", { name: "Fermer" }).first().click();
+    await feuille.waitFor({ state: "hidden", timeout: 5000 });
+  }
+  return { t, n };
+}
+
 async function texteApp(nav, { nom }) {
   /* Refonte du 30/09/2026 : l'application montre l'essentiel sur « Chez vous »
      et le detail dans trois ecrans (argent, vote, qui decide), avec des
-     explications repliees. On lit les quatre ecrans, replis ouverts. */
+     explications repliees. On lit les quatre ecrans, replis et sources ouverts. */
   const c = await nav.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, reducedMotion: "reduce" });
   const p = await c.newPage();
   await p.goto(APP, { waitUntil: "networkidle" });
   await p.getByLabel(/Où habitez-vous/).fill(nom);
   await p.getByRole("button", { name: new RegExp("^" + nom.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + ",") }).first().click();
-  await p.getByText("Ce qui se passe près de chez vous").first().waitFor({ timeout: 15000 });
+  await p.getByText("Un projet chez vous").first().waitFor({ timeout: 15000 });
   await p.waitForLoadState("networkidle");
-  let t = await p.evaluate(() => document.body.innerText);
-  for (const action of ["Comprendre le budget de la commune", "Comprendre ce vote", "Qui décide de quoi"]) {
+  let { t, n: feuilles } = await toutLire(p);
+  for (const action of ["Où va l'argent, en détail", "Comprendre ce vote", "Qui décide de quoi"]) {
     const b = p.getByRole("button", { name: action });
     if (!(await b.count())) continue;              /* absence dite par une phrase sur l'accueil */
     await b.first().click();
     await p.waitForTimeout(900);
-    for (const depli of await p.getByRole("button", { name: /Ce que ça ne veut pas dire/ }).all()) await depli.click();
-    t += "\n" + await p.evaluate(() => document.body.innerText);
+    const lu = await toutLire(p);
+    t += "\n" + lu.t;
+    feuilles += lu.n;
     await p.getByRole("button", { name: "Revenir à l'écran Chez vous" }).last().click();
     await p.waitForTimeout(500);
   }
   await c.close();
+  verifier(feuilles >= 3, `${nom} : ${feuilles} feuilles de source ouvertes et lues dans l'application`);
   return net(t);
 }
 
@@ -156,10 +182,10 @@ for (const commune of COMMUNES) {
   const { faits, garde } = attendus(commune);
   verifier(garde, `${commune.nom} : a toujours la particularité « ${commune.attendu} »`);
   const [site, app] = await Promise.all([texteSite(nav, commune), texteApp(nav, commune)]);
-  for (const { nom, texte } of faits) {
-    const s = site.includes(texte), a = app.includes(texte);
+  for (const { nom, texte, texteApp } of faits) {
+    const s = site.includes(texte), a = app.includes(texteApp || texte);
     compares++;
-    verifier(s && a, `${commune.nom} · ${nom} : ${s ? "site ✓" : "site ✗"} ${a ? "app ✓" : "app ✗"}${s && a ? "" : " — attendu « " + texte + " »"}`);
+    verifier(s && a, `${commune.nom} · ${nom} : ${s ? "site ✓" : "site ✗"} ${a ? "app ✓" : "app ✗"}${s && a ? "" : " — attendu « " + texte + " »" + (texteApp ? " / « " + texteApp + " »" : "")}`);
   }
 }
 await nav.close();

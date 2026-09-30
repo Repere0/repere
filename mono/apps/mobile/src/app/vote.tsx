@@ -12,13 +12,13 @@
 import { Text, View } from "react-native";
 import { Stack } from "expo-router";
 import {
-  CONSTITUTION_45_URL, dateFr, ETAPES_LOI, etapeDuScrutin, lienScrutin, ligneScrutin, motPosition,
+  CONSTITUTION_45_URL, dateFr, ETAPES_LOI, etapeDuScrutin, ligneScrutin, motPosition,
   phraseCirconscription, phraseDenominateurVote, phrasePosition, POSITION_NON_PORTEE, procedure,
   repartitionVote, REFUS_APPARIEMENT, titreLisible, MOTS,
 } from "@repere/core";
-import { Carte, LienSortant, Segments, Source, Vide } from "../lib/composants";
+import { Carte, Segments, Vide } from "../lib/composants";
 import { circoInconnue, VOTE_AUCUN, VOTES_PAS_ARRIVES } from "../lib/absences";
-import { srcScrutins } from "../lib/sources";
+import { srcScrutins, srcVote } from "../lib/sources";
 import { useCommuneChoisie } from "../lib/useCommune";
 import { PAS, TYPO } from "../lib/theme";
 import { AvecDonnees, Page, Question } from "../ui/page";
@@ -33,7 +33,7 @@ export default function Vote() {
     <AvecDonnees rendu={r => {
       const { d } = r;
       const vote: FaitVote | undefined = d.dernierVote;
-      const entete = <Question etiquette="Votre député" question="Qu'a voté votre député ?" />;
+      const entete = <Question emoji="🗳️" etiquette="Votre député" question="Qu'a voté votre député ?" />;
       if (!r.votesLus) return <Page>{entete}<Vide {...VOTES_PAS_ARRIVES} action="Réessayer" onAction={reessayer} /></Page>;
       if (!r.votesFiables) return <Page>{entete}<Vide titre={REFUS_APPARIEMENT.titre} corps={REFUS_APPARIEMENT.corps} /></Page>;
       if (!vote) return <Page>{entete}<Vide {...(d.nbCircos === 0 ? circoInconnue(d.nomCommune) : { ...VOTE_AUCUN, corps: POSITION_NON_PORTEE })} /></Page>;
@@ -41,7 +41,6 @@ export default function Vote() {
       const rep = repartitionVote(vote.sc);
       const mot = (MOTS as Record<string, string>)[vote.position || ""];
       const etape = etapeDuScrutin(procedure(vote.sc.t));
-      const lien = d.base ? lienScrutin(d.base, vote.sc) : null;
       const autres = (d.faits as FaitVote[]).filter(x => x.type === "vote" && x.cle !== vote.cle && x.circo === vote.circo).slice(0, 4);
       const depIndex = r.index.departements.find((x: { code: string }) => x.code === d.dep);
       return (
@@ -56,6 +55,7 @@ export default function Vote() {
             <Text style={[TYPO.reponse, { fontSize: 19, lineHeight: 25 }]}>{titreLisible(vote.sc.t)}</Text>
             <Text style={TYPO.note}>{ligneScrutin(vote.sc)}</Text>
             {!mot ? <Text style={TYPO.note}>{POSITION_NON_PORTEE}</Text> : null}
+            <PastilleSource source={srcVote(d, vote.sc)} />
           </Carte>
 
           {/* NIVEAU 2 : le scrutin, visuellement */}
@@ -63,7 +63,7 @@ export default function Vote() {
             <Carte echelon="france" titre="Comment l'Assemblée a voté">
               <Repartition segments={rep.segments} total={rep.total} position={vote.position} qui={vote.qui} />
               <Text style={TYPO.micro}>{phraseDenominateurVote(rep.total)}</Text>
-              {lien ? <LienSortant url={lien.url} texte={lien.texte} /> : null}
+              <PastilleSource source={srcVote(d, vote.sc)} />
             </Carte>
           ) : null}
 
@@ -105,8 +105,6 @@ export default function Vote() {
             </Carte>
           ) : null}
 
-          {d.srcScrutins ? <Source producteur={d.srcScrutins.producteur} licence={d.srcScrutins.licence} url={d.srcScrutins.url}
-            mention={d.srcScrutins.releve_le ? "relevé le " + dateFr(d.srcScrutins.releve_le) : undefined} /> : null}
           <PastilleSource source={srcScrutins(d)} />
         </Page>
       );

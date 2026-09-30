@@ -9,7 +9,7 @@
 import { Pressable, Text } from "react-native";
 import { router, Stack } from "expo-router";
 import { chaineDecision, MAIRE_ABSENT, phraseAdjoints, RNE_URL } from "@repere/core";
-import { LienSortant, Segments, Source } from "../lib/composants";
+import { Segments } from "../lib/composants";
 import { REGION_PAS_ARRIVEE } from "../lib/absences";
 import { srcElus } from "../lib/sources";
 import { CIBLE, couleurs, TYPO } from "../lib/theme";
@@ -54,12 +54,10 @@ export default function QuiDecide() {
       return (
         <Page>
           <Stack.Screen options={{ title: "Qui décide" }} />
-          <Question etiquette="Qui décide" question={`Qui décide pour ${d.nomCommune} ?`}
+          <Question emoji="🏛️" etiquette="Qui décide" question={`Qui décide pour ${d.nomCommune} ?`}
             sous="Du plus proche de chez vous au plus lointain. Ce n'est pas un ordre d'importance : c'est un ordre de distance." />
           <Chaine niveaux={niveaux} />
-          {r.srcElus ? <Source producteur={r.srcElus.producteur} licence={r.srcElus.licence} maj={r.srcElus.maj} url={r.srcElus.url || RNE_URL} /> : null}
-          <PastilleSource source={srcElus(r.srcElus)} />
-          <LienSortant url={RNE_URL} texte="Le Répertoire national des élus" />
+          <PastilleSource source={srcElus(r.srcElus ? { ...r.srcElus, url: r.srcElus.url || RNE_URL } : null)} />
         </Page>
       );
     }} />
