@@ -23,6 +23,7 @@ import { createRequire } from "node:module";
 import {
   deriverAujourdhui, titreLisible, texteDe, phraseAdjoints, phraseCirconscription, phrasePosition,
   ligneScrutin, lienScrutin, ligneSource, phraseProjetLocal, euros, dateFr, rapports, sousTitreRapports, CALCUL_REPERE,
+  sansComparaison,
 } from "../packages/core/src/index.js";
 
 const require = createRequire(import.meta.url);
@@ -42,6 +43,10 @@ const COMMUNES = [
   { dep: "77", insee: "77284", nom: "Meaux", attendu: "maire, projet et vote" },
   { dep: "77", insee: "77003", nom: "Amponville", attendu: "aucun projet" },
   { dep: "78", insee: "78586", nom: "Sartrouville", attendu: "aucun vote" },
+  /* 01/10/2026, ecart 1 de #38 : des comptes, mais pas deux annees consecutives
+     (dans les donnees extraites du bloc fige : 2021 et 2024 ecartes par V-2,
+     la population de Pierrefitte portee par Saint-Denis). */
+  { dep: "93", insee: "93066", nom: "Saint-Denis", attendu: "pas de comparaison d'une annee a l'autre" },
 ];
 
 const lire = f => JSON.parse(fs.readFileSync(path.join(DONNEES, f), "utf8"));
@@ -96,12 +101,20 @@ function attendus({ dep, insee, attendu }) {
     f("comptes (calcul annoncé comme tel)", CALCUL_REPERE);
     f("source des comptes (date)", ligneSource({ producteur: d.srcComptes.producteur, licence: d.srcComptes.licence, maj: d.srcComptes.maj }));
   }
+  /* D'une annee a l'autre, quand on ne peut pas comparer : la meme phrase sur
+     les deux supports, jamais un silence (ecart 1 de #38). */
+  const sc = sansComparaison(fiche, fiche.nom);
+  if (sc) {
+    f("comptes (pas de comparaison : titre)", sc.titre);
+    f("comptes (pas de comparaison : raison)", sc.corps);
+  }
   /* La commune a-t-elle toujours la particularite pour laquelle elle a ete choisie ? */
   const garde = {
     "plusieurs circonscriptions": d.nbCircos > 1 && !!d.dernierVote,
     "maire, projet et vote": !!(fiche.maire && d.dernierProjet && d.dernierVote),
     "aucun projet": !d.dernierProjet,
     "aucun vote": !d.dernierVote,
+    "pas de comparaison d'une annee a l'autre": !!sc,
   }[attendu];
   return { faits, garde };
 }

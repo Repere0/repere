@@ -6,7 +6,7 @@ import { chargerComptesRegions, ETATS } from "@repere/data-utils";
 /* Les phrases de cet ecran vivent dans @repere/core (phrases.js) depuis le
    30/09/2026 : l'application mobile ecrit les memes, mot pour mot. */
 import { introRapports, comptesAbsents, comptesInsuffisants, exercicesEcartes, phraseEcartes as phraseDesEcartes, comptesIncoherents,
-  INTRO_EVOLUTION, NOTE_EVOLUTION, diffEuros, perimetreChange } from "@repere/core";
+  INTRO_EVOLUTION, NOTE_EVOLUTION, diffEuros, perimetreChange, sansComparaison, ligneNonComparable } from "@repere/core";
 
 /* `valeur`, `rapports`, `population`, `dernierExercice` VIVENT DANS
  * lib/comptes.jsx DEPUIS LE 18/09/2026 — voir ce fichier pour l'historique de
@@ -43,7 +43,7 @@ function Evolution({ e, nom, src }) {
           </div>
           <div className="ligne-note">
             {l.diff === null
-              ? `Non comparable : le fichier ne porte pas cette ligne pour ${l.m1 === null ? e.an1 : e.an2}.`
+              ? ligneNonComparable(l, e.an1, e.an2)
               : `${e.an1} : ${euros(l.m1)} · ${e.an2} : ${euros(l.m2)}`}
           </div>
         </div>
@@ -160,7 +160,10 @@ export default function OuVaArgent({ paquet, index, commune }) {
         <Vide {...comptesInsuffisants(exercice.an)} />
       )}
 
-      {evo ? <Evolution e={evo} nom={c.nom} src={src} /> : null}
+      {/* Ecart 1 de #38, ferme le 01/10/2026 : sans deux annees consecutives,
+          l'ecran le dit au lieu de se taire (invariant 5). */}
+      {evo ? <Evolution e={evo} nom={c.nom} src={src} />
+        : sansComparaison(c, c.nom) ? <Vide {...sansComparaison(c, c.nom)} /> : null}
 
       {/* Nom seul : « les comptes de X » demanderait une elision non derivable. */}
       <Carte echelon="dept" titre={rr.length >= 2 ? "Le détail publié" : c.nom}

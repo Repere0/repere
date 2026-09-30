@@ -214,3 +214,34 @@ test("visuels — grands nombres et parts en mots : jamais plus de 3 points d'ar
   const ph = m.parHabitant([1000, 10, 11, 20, 22, null, null]);
   assert.equal(ph.recettes, 11); assert.equal(ph.dette, null);
 });
+
+/* ECARTS DE #38, FERMES LE 01/10/2026 ------------------------------------ */
+import { sansComparaison, ligneNonComparable } from "../packages/core/src/index.js";
+const ex = (pop, m) => [pop, m, 1, m, 1, m, 1, m, 1, m, 1, m, 1];
+test("d'une annee a l'autre — deux annees consecutives : rien a dire, la carte le fait", () => {
+  const c = { nom: "A", comptes: { "2024": ex(100, 10), "2025": ex(101, 11) } };
+  assert.equal(sansComparaison(c, "A"), null);
+  assert.ok(evolution(c, [["x", "x"]]), "la comparaison existe bien");
+});
+test("d'une annee a l'autre — pas deux annees consecutives : une phrase, jamais un silence", () => {
+  const c = { nom: "A", comptes: { "2021": ex(100, 10), "2024": ex(101, 11) } };
+  const p = sansComparaison(c, "A");
+  assert.ok(p, "145 communes n'avaient ni carte ni phrase");
+  assert.match(p.titre, /pas de comparaison possible pour A/);
+  assert.match(p.corps, /années publiées : 2021, 2024/);
+  assert.doesNotMatch(p.corps, /écartés/, "rien n'a ete ecarte : ne pas le dire");
+});
+test("d'une annee a l'autre — une annee ecartee est dite comme telle, pas comme absente", () => {
+  const c = { nom: "Saint-Denis", comptes: { "2025": ex(149781, 10) }, comptes_ecartes: ["2024", "2021"] };
+  const p = sansComparaison(c, "Saint-Denis");
+  assert.match(p.corps, /année publiée : 2025/);
+  assert.match(p.corps, /Les comptes 2021 et 2024 ont été écartés/);
+});
+test("d'une annee a l'autre — aucun compte : pas cette phrase, comptesAbsents le dit deja", () => {
+  assert.equal(sansComparaison({ nom: "A" }, "A"), null);
+  assert.equal(sansComparaison({ nom: "A", comptes: {} }, "A"), null);
+});
+test("ligne non comparable — la meme phrase sur le site et l'application, l'annee manquante nommee", () => {
+  assert.equal(ligneNonComparable({ m1: null, m2: 5 }, "2024", "2025"), "Non comparable : le fichier ne porte pas cette ligne pour 2024.");
+  assert.equal(ligneNonComparable({ m1: 5, m2: null }, "2024", "2025"), "Non comparable : le fichier ne porte pas cette ligne pour 2025.");
+});

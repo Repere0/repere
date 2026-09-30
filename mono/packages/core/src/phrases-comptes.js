@@ -65,3 +65,35 @@ export const perimetreChange = (e, nom) => ({
   titre: `D'une année à l'autre : ${nom} n'est pas comparable à elle-même.`,
   corps: `La population publiée passe de ${e.p1.toLocaleString("fr-FR")} habitants (exercice ${e.an1}) à ${e.p2.toLocaleString("fr-FR")} (exercice ${e.an2}). Un écart de cette taille signale un changement de territoire, par exemple une fusion de communes : comparer les deux années mesurerait ce changement, pas l'évolution des comptes. Repère ne fait donc pas la différence.`,
 });
+
+/* D'UNE ANNEE A L'AUTRE, QUAND ON NE PEUT PAS COMPARER — ecart 1 de #38, ferme
+ * le 01/10/2026. Mesure sur les donnees extraites (regles V-1 et V-2) : 145
+ * communes sur 34 637 ont des comptes mais pas deux annees consecutives — 96
+ * sans comptes 2025, 6 sans comptes 2024, 43 dont un exercice a ete ecarte.
+ * Le site et l'application n'affichaient alors RIEN : ni carte, ni phrase
+ * (invariant 5). Rend null si la comparaison est possible, ou si la commune n'a
+ * aucun compte (`comptesAbsents` le dit deja). Deux causes, dites dans la
+ * phrase : l'annee absente du fichier, ou l'annee ecartee. Rien n'est devine sur
+ * les annees que la source publie pour les autres communes. */
+export function sansComparaison(c, nom) {
+  if (!c || !c.comptes) return null;
+  const ans = Object.keys(c.comptes)
+    .filter(a => /^\d{4}$/.test(a) && Array.isArray(c.comptes[a]) && c.comptes[a].slice(1).some(v => typeof v === "number"))
+    .sort();
+  if (!ans.length) return null;
+  if (ans.length >= 2 && Number(ans[ans.length - 1]) - Number(ans[ans.length - 2]) === 1) return null;
+  const ecartes = Array.isArray(c.comptes_ecartes) ? [...c.comptes_ecartes].sort() : [];
+  return {
+    titre: `D'une année à l'autre : pas de comparaison possible pour ${nom || "cette commune"}.`,
+    corps: `Le fichier officiel ne porte pas deux années de comptes qui se suivent pour cette commune (${ans.length > 1 ? "années publiées" : "année publiée"} : ${ans.join(", ")}). Repère ne compare que deux années consécutives : un écart plus long mêlerait plusieurs années.`
+      + (ecartes.length ? ` Les comptes ${ecartes.join(" et ")} ont été écartés : leurs montants ne correspondent pas à la population publiée sur la même ligne.` : ""),
+  };
+}
+
+/* Une ligne presente une annee et pas l'autre — ecart 2 de #38 : le site le
+   disait, l'application masquait la ligne. Mesure du 01/10 : 0 cas aujourd'hui
+   sur 2024-2025 ; la phrase est commune pour que les deux surfaces disent la
+   meme chose le jour ou le cas se presente. */
+export function ligneNonComparable(l, an1, an2) {
+  return `Non comparable : le fichier ne porte pas cette ligne pour ${l && l.m1 === null ? an1 : an2}.`;
+}

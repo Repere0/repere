@@ -16,7 +16,7 @@ import {
   chiffresComptes, comptesAbsents, comptesIncoherents, comptesInsuffisants, diffEuros, eurosArrondis,
   evolution, exercicesEcartes, financementProjet, INTRO_EVOLUTION, introRapports, montantCourt, noteRattachement,
   NOTE_EVOLUTION, NOTE_FINANCEMENT, nomDispositif, parHabitant, partReperee, perimetreChange, phraseEcartes,
-  phraseProjetLocal, rapports, sousTitreRapports, euros, CALCUL_REPERE,
+  phraseProjetLocal, rapports, sousTitreRapports, euros, CALCUL_REPERE, sansComparaison, ligneNonComparable,
 } from "@repere/core";
 import { Carte, Vide } from "../lib/composants";
 import { PROJETS_PAS_ARRIVES, projetsAucun } from "../lib/absences";
@@ -153,16 +153,22 @@ export default function Argent() {
             ) : (
               <Carte echelon="ville" titre={`Ce qui a changé entre ${evo.an1} et ${evo.an2}`}>
                 <Text style={TYPO.note}>{INTRO_EVOLUTION}</Text>
-                {[1, 0, 2].map(i => evo.lignes[i]).filter(l => l && l.m1 !== null && l.m2 !== null).map((l: { libelle: string; m1: number; m2: number; diff: number }) => (
-                  <DeuxAnnees key={l.libelle} libelle={l.libelle} an1={evo.an1} an2={evo.an2} m1={l.m1} m2={l.m2}
-                    texte1={eurosArrondis(l.m1)} texte2={eurosArrondis(l.m2)} diffTexte={diffEuros(l.diff)} />
+                {/* Ecart 2 de #38 : une ligne sans ses deux annees n'est plus masquee,
+                    elle est dite, avec la phrase du site. */}
+                {[1, 0, 2].map(i => evo.lignes[i]).filter(Boolean).map((l: { libelle: string; m1: number | null; m2: number | null; diff: number | null }) => (
+                  l.m1 !== null && l.m2 !== null && l.diff !== null ? (
+                    <DeuxAnnees key={l.libelle} libelle={l.libelle} an1={evo.an1} an2={evo.an2} m1={l.m1} m2={l.m2}
+                      texte1={eurosArrondis(l.m1)} texte2={eurosArrondis(l.m2)} diffTexte={diffEuros(l.diff)} />
+                  ) : (
+                    <Text key={l.libelle} style={TYPO.note}>{l.libelle} — {ligneNonComparable(l, evo.an1, evo.an2)}</Text>
+                  )
                 ))}
                 <Text style={TYPO.micro}>Chaque paire de barres a sa propre échelle : on compare une ligne à elle-même, jamais deux lignes entre elles.</Text>
                 <Depli titre="Ce que ça ne veut pas dire (évolution)"><Text style={TYPO.corps}>{NOTE_EVOLUTION}</Text></Depli>
                 <PastilleSource source={srcComptes(d)} />
               </Carte>
             )
-          ) : null}
+          ) : sansComparaison(d.fiche, nom) ? <Vide {...(sansComparaison(d.fiche, nom) as { titre: string; corps: string })} /> : null}
 
           {/* LES PROJETS AIDES PAR L'ETAT */}
           <View style={{ gap: PAS * 3 }}>
