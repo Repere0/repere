@@ -10,13 +10,15 @@
  * le premier ecran (tests/parcours-web.mjs). */
 import type { ReactNode } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
-import { couleurs, CIBLE, fondCarte, OMBRE, PAS, RAYON, TYPO, type Echelon } from "../lib/theme";
+import { couleurs, CIBLE, OMBRE, PAS, RAYON, TYPO, type Echelon } from "../lib/theme";
 
 /* Espace insecable devant « ? ! : ; € » : ni le point d'interrogation ni le
    symbole euro ne tombent seuls a la ligne (vu sur capture : « 332 372 / € »). */
 const typo = (t: string) => t.replace(/ ([?!:;€»])/g, "\u00a0$1").replace(/« /g, "«\u00a0");
 
-export function Reponse({ echelon, phrase, preuve, note, sources, suite }: {
+export function Reponse({ phrase, preuve, note, sources, suite }: {
+  /* l'echelon qui decide : porte par la donnee, pas encore par le rendu
+     (cartes blanches en palette B partiel) ; la PR « Chez vous » s'en servira. */
   echelon: Echelon; phrase: string; preuve?: ReactNode; note?: ReactNode;
   sources?: ReactNode; suite?: { texte: string; onPress: () => void };
 }) {
@@ -25,7 +27,7 @@ export function Reponse({ echelon, phrase, preuve, note, sources, suite }: {
      phrase est le titre de la carte pour le lecteur d'ecran, qui peut ainsi
      sauter d'une reponse a l'autre. */
   return (
-    <View testID="reponse" style={[s.carte, { backgroundColor: fondCarte(echelon) }]}>
+    <View testID="reponse" style={[s.carte, { backgroundColor: couleurs.carte }]}>
       <Text style={s.phrase} accessibilityRole="header">{typo(phrase)}</Text>
       {preuve}
       {note ? (typeof note === "string" ? <Text style={TYPO.note}>{typo(note)}</Text> : note) : null}

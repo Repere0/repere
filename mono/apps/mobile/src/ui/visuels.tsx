@@ -11,7 +11,7 @@
  * Construites avec des View : aucune bibliotheque de graphiques. */
 import { useState, type ReactNode } from "react";
 import { Animated, Pressable, StyleSheet, Text, View } from "react-native";
-import { couleurs, GRIS_VOTE, PAS, PALETTE, RAYON, TEINTES, TYPO, CIBLE, type Echelon } from "../lib/theme";
+import { couleurs, GRIS_VOTE, PAS, RAYON, TEINTES, TYPO, CIBLE, type Echelon } from "../lib/theme";
 import { useApparition, useCompteur } from "./mouvement";
 
 const largeur = (v: Animated.Value, pct: number) =>
@@ -183,7 +183,7 @@ export function Chaine({ niveaux, compact }: { niveaux: Niveau[]; compact?: bool
           {/* Palette B : chaque echelon dans sa teinte — c'est ici que la palette
               « territoriale » dit quelque chose (qui decide, a quel niveau). */}
           <View style={[{ flex: 1, paddingBottom: compact ? PAS * 3 : PAS * 6, gap: 2 },
-            PALETTE === "b" && !compact ? { backgroundColor: TEINTES[n.echelon], borderRadius: RAYON.bloc, padding: PAS * 3, marginBottom: PAS * 3 } : null]}>
+            !compact ? { backgroundColor: TEINTES[n.echelon], borderRadius: RAYON.bloc, padding: PAS * 3, marginBottom: PAS * 3 } : null]}>
             {/* La couleur d'echelon est portee par le maillon, pas par le texte :
                 en 13 px, l'intercommunalite (#0891b2) faisait 3,21:1 sur le fond
                 et le departement 4,38:1 — sous le seuil AA de 4,5:1 (mesure du

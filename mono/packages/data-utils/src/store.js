@@ -33,8 +33,14 @@ export function estDonneePublique(cle, valeur) {
      qu'elle est — au plus trois caracteres, majuscules et chiffres — pour qu'un
      code INSEE de commune (cinq caracteres) ne puisse pas y entrer.
      « reg » rejoint les trois le 22/09/2026 : le conseil regional, range par
-     REGION (deux chiffres, jamais un departement ni une commune). */
-  if (!/^(dep|vote|reg|socle):[0-9A-Z]{1,3}$/.test(String(cle))) return false;
+     REGION (deux chiffres, jamais un departement ni une commune).
+     « proj » rejoint les quatre le 30/09/2026 : les projets sont ranges par
+     DEPARTEMENT (client.js les demande sous « proj:77 » depuis le 13/09). La
+     garde les refusait, en silence : `ecrire` levait, l'appelant avalait
+     l'erreur, et les projets n'etaient jamais gardes, pas meme en memoire —
+     jamais disponibles hors ligne. Mesure en lisant le code, prouve par
+     tests/donnees.test.mjs. */
+  if (!/^(dep|vote|reg|proj|socle):[0-9A-Z]{1,3}$/.test(String(cle))) return false;
   if (!valeur || typeof valeur !== "object") return false;
   if ("insee" in valeur && !("communes" in valeur)) return false;
   const interdits = ["utilisateur", "user", "email", "id_client", "session",
@@ -72,9 +78,35 @@ async function transaction(mode, travail) {
 
 const memoire = new Map();
 
+/* UN AUTRE SUPPORT QU'INDEXEDDB, SOUS LA MEME GARDE (30/09/2026).
+ * L'application mobile n'a pas d'IndexedDB : elle fournit un stockage sur
+ * disque (apps/mobile/src/lib/cache.ts) de meme forme — lire, ecrire, cles,
+ * vider. La garde reste ICI, dans `magasin.ecrire`, avant tout appel au
+ * support : un seul endroit decide de ce qui peut etre garde sur un appareil,
+ * quel que soit l'appareil. Decision du porteur du 30/09/2026 : sur le
+ * telephone, seulement des fichiers publics publies par Repere. */
+let stockage = null;
+/* La memoire de session seulement — pas le support. Pour les tests : simuler
+   une application qu'on rouvre. */
+export function oublierMemoire() { memoire.clear(); }
+export function configurerStockage(s) {
+  if (!s || ["lire", "ecrire", "cles", "vider"].some(m => typeof s[m] !== "function")) {
+    throw new Error("stockage refuse : il faut lire, ecrire, cles et vider");
+  }
+  stockage = s;
+}
+
 export const magasin = {
   async lire(cle) {
     if (memoire.has(cle)) return memoire.get(cle);
+    if (stockage) {
+      try {
+        const v = await stockage.lire(cle);
+        /* Relu, donc revalide : un fichier que la garde refuserait n'est pas servi. */
+        if (v !== undefined && v !== null && estDonneePublique(cle, v)) { memoire.set(cle, v); return v; }
+      } catch { /* support illisible : on repart au reseau */ }
+      return undefined;
+    }
     try {
       const v = await transaction("readonly", (st, rendre) => {
         const d = st.get(cle);
@@ -94,11 +126,13 @@ export const magasin = {
         "departementale (cle recue : " + String(cle) + ")");
     }
     memoire.set(cle, valeur);
+    if (stockage) { try { await stockage.ecrire(cle, valeur); return true; } catch { return false; } }
     try { await transaction("readwrite", st => st.put(valeur, cle)); return true; }
     catch { return false; }   /* la memoire suffit pour la session en cours */
   },
 
   async cles() {
+    if (stockage) { try { return await stockage.cles(); } catch { return [...memoire.keys()]; } }
     try {
       return await transaction("readonly", (st, rendre) => {
         const d = st.getAllKeys();
@@ -114,6 +148,7 @@ export const magasin = {
      demande explicite du lecteur. */
   async vider() {
     memoire.clear();
+    if (stockage) { try { await stockage.vider(); return true; } catch { return false; } }
     try { await transaction("readwrite", st => st.clear()); return true; }
     catch { return false; }
   },

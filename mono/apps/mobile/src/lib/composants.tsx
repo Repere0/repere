@@ -7,14 +7,14 @@
 import type { ReactNode } from "react";
 import { Linking, Pressable, StyleSheet, Text, View } from "react-native";
 import { ligneSource, CALCUL_REPERE } from "@repere/core";
-import { couleurs, CIBLE, fondCarte, PAS, RAYON, OMBRE, TYPO, type Echelon } from "./theme";
+import { couleurs, CIBLE, PAS, RAYON, OMBRE, TYPO, type Echelon } from "./theme";
 import { AVEC_EMOJIS, Emoji } from "../ui/resume";
 
 /* Refonte du 30/09/2026 : plus de filet de couleur a gauche ; l'echelon se
    dit par un point de couleur devant l'etiquette, et la carte prend de l'air. */
 export function Carte({ echelon, children, titre }: { echelon?: Echelon; children: ReactNode; titre?: string }) {
   return (
-    <View style={[s.carte, { backgroundColor: fondCarte(echelon) }]}>
+    <View style={[s.carte, { backgroundColor: couleurs.carte }]}>
       {titre ? (
         <View style={s.carteTete}>
           {echelon ? <View style={[s.point, { backgroundColor: couleurs[echelon] }]} /> : null}
@@ -34,7 +34,7 @@ export function CarteQuestion({ echelon, question, reponse, children, pied, acti
   action?: { texte: string; onPress: () => void }; emoji?: string;
 }) {
   return (
-    <View style={[s.carte, { backgroundColor: fondCarte(echelon) }]}>
+    <View style={[s.carte, { backgroundColor: couleurs.carte }]}>
       <View style={s.carteTete}>
         {emoji && AVEC_EMOJIS ? <Emoji c={emoji} /> : <View style={[s.point, { backgroundColor: couleurs[echelon] }]} />}
         <Text style={s.carteTitre} accessibilityRole="header">{question}</Text>

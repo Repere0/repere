@@ -8,7 +8,7 @@
  * dérivent la même règle finissent toujours par diverger, et ici la règle est
  * un invariant — aucune adresse ne doit porter un code de commune.
  */
-import { magasin } from "./store.js";
+import { magasin, oublierMemoire } from "./store.js";
 import { adresseFautive } from "./invariants.js";
 
 export let BASE_DONNEES = "/data";
@@ -170,15 +170,22 @@ const enVol = new Map();   /* dédoublonne les requêtes simultanées */
 export const ETATS = Object.freeze({
   ABSENT: "absent", EN_COURS: "en cours", SERVI: "servi",
   ECHEC: "echec", HORS_LIGNE: "hors ligne", INTROUVABLE: "introuvable",
+  INVALIDE: "invalide",
 });
 
 /* Les phrases de la doctrine du vide. Chaque état a la sienne, et elles disent
    des choses DIFFÉRENTES : confondre « pas encore arrivé » avec « la source ne
-   le porte pas » ferait mentir le produit à l'endroit où il demande d'être cru. */
+   le porte pas » ferait mentir le produit à l'endroit où il demande d'être cru.
+   QUATRE CAUSES D'ECHEC, QUATRE PHRASES (30/09/2026) : le reseau n'a pas
+   abouti (ECHEC), l'appareil se sait hors ligne (HORS_LIGNE), le fichier
+   manque (INTROUVABLE, 404), ou le serveur a repondu autre chose qu'un jeu de
+   donnees (INVALIDE : page HTML servie en 200, JSON illisible). Jusqu'ici ce
+   dernier cas disait « Repère n'a pas réussi à joindre le serveur » : faux, le
+   serveur avait repondu. */
 export const PHRASES = Object.freeze({
   [ETATS.EN_COURS]: {
     titre: "Chargement des données de votre département.",
-    corps: "Quelques centaines de kilo-octets, une seule fois. Ensuite, Repère fonctionne sans réseau.",
+    corps: "Quelques centaines de kilo-octets. Ensuite, Repère fonctionne sans réseau.",
   },
   [ETATS.ECHEC]: {
     titre: "Repère n'a pas réussi à joindre le serveur.",
@@ -194,122 +201,135 @@ export const PHRASES = Object.freeze({
     corps: "Le réseau fonctionne : c'est le fichier qui manque, et c'est de notre côté.",
     lien: { texte: "Voir la source officielle", url: "https://www.data.gouv.fr/" },
   },
+  [ETATS.INVALIDE]: {
+    titre: "Le serveur a répondu, mais pas avec les données attendues.",
+    corps: "Le réseau fonctionne : c'est le fichier publié qui pose problème, et c'est de notre côté.",
+    action: "Réessayer",
+  },
 });
 
-async function auReseau(url, delaiMs) {
+/* `revalider` : demander au reseau une version a jour, en passant outre les
+   caches HTTP et celui du service worker (voir sw.js, regle « no-cache »). */
+async function auReseau(url, delaiMs, revalider = false) {
   const ctrl = new AbortController();
   const minuteur = setTimeout(() => ctrl.abort(), delaiMs);
+  let rep;
   try {
-    const rep = await fetch(url, { credentials: "omit", signal: ctrl.signal });
+    rep = await fetch(url, { credentials: "omit", signal: ctrl.signal, cache: revalider ? "no-cache" : "default" });
+  } catch (e) {
+    clearTimeout(minuteur);
+    throw e;   /* reseau coupe, delai depasse : ECHEC */
+  }
+  try {
     if (rep.status === 404) { const e = new Error("introuvable"); e.etat = ETATS.INTROUVABLE; throw e; }
     if (!rep.ok) throw new Error("HTTP " + rep.status);
     const type = rep.headers.get("content-type") || "";
     /* Une page d'erreur renvoyée en 200 par un hébergeur n'est pas un jeu de
        données. Le produit a déjà été cassé une fois par ce cas exact. */
-    if (type.indexOf("json") === -1) throw new Error("type inattendu : " + type);
-    return await rep.json();
+    if (type.indexOf("json") === -1) { const e = new Error("type inattendu : " + type); e.etat = ETATS.INVALIDE; throw e; }
+    try { return await rep.json(); }
+    catch (err) { const e = new Error("JSON illisible : " + err.message); e.etat = ETATS.INVALIDE; throw e; }
   } finally { clearTimeout(minuteur); }
+}
+
+const horsLigne = () => typeof navigator !== "undefined" && navigator.onLine === false;
+
+/* LA GENERATION DES DONNEES — CE QUI FAIT QU'UN CACHE SE RAFRAICHIT (30/09/2026).
+ *
+ * LE DEFAUT, TROUVE EN LISANT CE FICHIER : chaque chargement lisait le magasin
+ * d'abord et ne touchait JAMAIS le reseau si le magasin repondait. Seul un
+ * changement de schema (decision humaine, SCHEMA_ATTENDU) le vidait. Un
+ * lecteur venu une fois gardait donc pour toujours les elus et les comptes de
+ * sa premiere visite, alors que la chaine publie chaque nuit : un maire change,
+ * un exercice corrige, rien ne lui parvenait. Et le service worker, qui sert
+ * lui aussi le cache d'abord, avait une visite de retard.
+ *
+ * LA REGLE : `index.json` est redemande au reseau a chaque ouverture (17 Ko).
+ * Sa date de construction (`build.construit_le`) est la GENERATION courante.
+ * Chaque fichier garde note de la generation sous laquelle il a ete recu
+ * (cle `socle:GEN` du magasin, qui passe la garde). Un fichier d'une autre
+ * generation est redemande au reseau ; si le reseau echoue, le fichier garde
+ * est servi quand meme, marque `perime`, pour que l'ecran puisse le dire —
+ * jamais un ecran vide a la place d'une donnee presente.
+ *
+ * HORS LIGNE, rien ne change : l'index garde donne la generation, et tout ce
+ * qui a ete recu sous elle est servi depuis l'appareil. */
+const CLE_GENERATIONS = "socle:GEN";
+let GENERATION = null;
+let indexSession = null;       /* l'index de cette session, une fois etabli */
+let indexEnCours = null;
+let fileGenerations = Promise.resolve();
+const generationDe = ix => (ix && ix.build && ix.build.construit_le) || (ix && ix.genere_le) || null;
+
+async function generationsGardees() {
+  const g = await magasin.lire(CLE_GENERATIONS).catch(() => null);
+  return g && g.cles && typeof g.cles === "object" ? g.cles : {};
+}
+/* Les notes de generation s'ecrivent l'une apres l'autre : huit fichiers recus
+   en meme temps ne doivent pas s'ecraser mutuellement leur note. */
+function noterGeneration(cle) {
+  const g = GENERATION;
+  if (!g) return Promise.resolve();
+  fileGenerations = fileGenerations.then(async () => {
+    const cles = await generationsGardees();
+    await magasin.ecrire(CLE_GENERATIONS, { cles: { ...cles, [cle]: g } }).catch(() => {});
+  }).catch(() => {});
+  return fileGenerations;
+}
+
+/* L'INDEX : redemande au reseau a chaque session, le magasin en secours.
+ *
+ * Il survit a la coupure, comme les departements (defaut mesure et corrige le
+ * 22/09 : sans lui, hors ligne, l'application affichait « Repere n'a pas reussi
+ * a joindre le serveur » au-dessus de donnees presentes). La garde de schema
+ * reste : un index en cache dont le schema ne correspond plus a SCHEMA_ATTENDU
+ * est FAUX PAR CONSTRUCTION, et tout le magasin est jete. */
+export async function chargerIndex({ delaiMs = 8000 } = {}) {
+  if (indexSession) return indexSession;
+  if (indexEnCours) return indexEnCours;
+  indexEnCours = (async () => {
+    const cle = "socle:IDX";
+    let enCache = await magasin.lire(cle);
+    if (enCache && enCache.v !== SCHEMA_ATTENDU) {
+      /* `enCache.v` peut manquer (cache d'avant ce champ) : `!==` le traite
+         comme un schema different, ce qui est voulu. Un echec de `vider()`
+         n'empeche pas de continuer : la lecture reseau republiera sous les
+         memes cles. */
+      await magasin.vider().catch(() => {});
+      enCache = null;
+    }
+    const retenir = (r) => { GENERATION = generationDe(r.donnees); if (r.depuis === "reseau") indexSession = r; return r; };
+    if (horsLigne()) {
+      if (enCache) return retenir({ etat: ETATS.SERVI, donnees: enCache, depuis: "cache" });
+      return { etat: ETATS.HORS_LIGNE, donnees: null };
+    }
+    try {
+      /* Avec un index garde, on n'attend pas le reseau plus de trois secondes. */
+      const donnees = await auReseau(adresseIndex(), enCache ? Math.min(delaiMs, 3000) : delaiMs, true);
+      await magasin.ecrire(cle, donnees).catch(() => {});
+      return retenir({ etat: ETATS.SERVI, donnees, depuis: "reseau" });
+    } catch (e) {
+      if (enCache) return retenir({ etat: ETATS.SERVI, donnees: enCache, depuis: "cache", raison: e.message });
+      return { etat: e.etat || ETATS.ECHEC, donnees: null, raison: e.message };
+    }
+  })();
+  try { return await indexEnCours; } finally { indexEnCours = null; }
 }
 
 /* Charge un département. Ne relance JAMAIS toute seule après un échec : une
    relance invisible dans un tunnel est un cul-de-sac pour le lecteur. */
 export async function chargerDepartement(dep, { delaiMs = 8000 } = {}) {
-  const cle = "dep:" + String(dep).toUpperCase();
-  const enCache = await magasin.lire(cle);
-  if (enCache) return { etat: ETATS.SERVI, donnees: enCache, depuis: "cache" };
-
-  if (enVol.has(cle)) return enVol.get(cle);
-
-  const promesse = (async () => {
-    if (typeof navigator !== "undefined" && navigator.onLine === false) {
-      return { etat: ETATS.HORS_LIGNE, donnees: null };
-    }
-    try {
-      const donnees = await auReseau(adresseDepartement(dep), delaiMs);
-      await magasin.ecrire(cle, donnees).catch(() => {});
-      return { etat: ETATS.SERVI, donnees, depuis: "reseau" };
-    } catch (e) {
-      return { etat: e.etat || ETATS.ECHEC, donnees: null, raison: e.message };
-    } finally { enVol.delete(cle); }
-  })();
-
-  enVol.set(cle, promesse);
-  return promesse;
+  return chargerSocle("dep:" + String(dep).toUpperCase(), adresseDepartement(dep), delaiMs);
 }
 
-/* L'INDEX SURVIT A LA COUPURE, COMME LES DEPARTEMENTS.
- *
- * Il ne le faisait pas : il n'etait garde qu'en memoire, donc perdu au premier
- * rechargement. Mesure hors ligne, serveur eteint : le departement revenait bien
- * du magasin, mais la liste des departements, elle, manquait — et l'application
- * affichait « Repere n'a pas reussi a joindre le serveur » avec un bouton
- * Reessayer, au-dessus de donnees parfaitement presentes. Le message mentait sur
- * l'etat reel, et le lecteur ne pouvait plus changer de departement hors ligne.
- *
- * La cle `socle:IDX` passe deja la garde du magasin (`^(dep|socle):[0-9A-Z]{1,3}$`)
- * et le controle runtime l'accepte : rien n'est assoupli ici, l'index est
- * simplement range ou il aurait toujours du l'etre. */
-export async function chargerIndex({ delaiMs = 8000 } = {}) {
-  const cle = "socle:IDX";
-  const enCache = await magasin.lire(cle);
-  /* LA GARDE DE FRAICHEUR : un index en cache dont le schema ne correspond
-     plus a celui que ce code attend est traite comme ABSENT, jamais comme
-     SERVI. `enCache.v` peut manquer (cache pose par une version encore plus
-     ancienne, avant meme ce champ) : `!==` le traite alors comme un
-     mismatch, ce qui est le comportement voulu — mieux vaut un aller-retour
-     reseau de trop qu'un mensonge silencieux. */
-  if (enCache && enCache.v === SCHEMA_ATTENDU) {
-    return { etat: ETATS.SERVI, donnees: enCache, depuis: "cache" };
-  }
-  if (enCache) {
-    /* CACHE FAUX PAR CONSTRUCTION, PAS SEULEMENT PERIME : voir le
-       commentaire de SCHEMA_ATTENDU plus haut. On jette tout le magasin,
-       pas seulement cette cle — un departement mis en cache la meme
-       semaine appartient a la meme generation de schema perimee. Un echec
-       de `vider()` (mode prive, quota) n'empeche pas de continuer : la
-       lecture reseau qui suit republiera de toute facon des donnees a jour
-       sous les memes cles, qui les remplaceront. */
-    await magasin.vider().catch(() => {});
-  }
-  if (typeof navigator !== "undefined" && navigator.onLine === false) {
-    return { etat: ETATS.HORS_LIGNE, donnees: null };
-  }
-  try {
-    const donnees = await auReseau(adresseIndex(), delaiMs);
-    await magasin.ecrire(cle, donnees).catch(() => {});
-    return { etat: ETATS.SERVI, donnees, depuis: "reseau" };
-  } catch (e) {
-    return { etat: e.etat || ETATS.ECHEC, donnees: null, raison: e.message };
-  }
-}
-
-/* LES DÉPUTÉS, comme l'index et les départements : mémoire, IndexedDB, réseau.
+/* LES DÉPUTÉS, comme l'index et les départements : mémoire, magasin, réseau.
  *
  * Un seul fichier pour toute la France — 53 Ko —, demandé une seule fois, et
  * seulement par l'écran « Qui décide ». Hors ligne sans l'avoir jamais reçu, on
  * ne ment pas : l'état revient HORS_LIGNE et l'écran écrit une phrase, pas un
  * nom deviné. */
 export async function chargerDeputes({ delaiMs = 8000 } = {}) {
-  const cle = "socle:DEP";
-  const enCache = await magasin.lire(cle);
-  if (enCache) return { etat: ETATS.SERVI, donnees: enCache, depuis: "cache" };
-  if (enVol.has(cle)) return enVol.get(cle);
-
-  const promesse = (async () => {
-    if (typeof navigator !== "undefined" && navigator.onLine === false) {
-      return { etat: ETATS.HORS_LIGNE, donnees: null };
-    }
-    try {
-      const donnees = await auReseau(adresseDeputes(), delaiMs);
-      await magasin.ecrire(cle, donnees).catch(() => {});
-      return { etat: ETATS.SERVI, donnees, depuis: "reseau" };
-    } catch (e) {
-      return { etat: e.etat || ETATS.ECHEC, donnees: null, raison: e.message };
-    } finally { enVol.delete(cle); }
-  })();
-
-  enVol.set(cle, promesse);
-  return promesse;
+  return chargerSocle("socle:DEP", adresseDeputes(), delaiMs);
 }
 
 /* LE CATALOGUE ET LES POSITIONS, memoire -> IndexedDB -> reseau, comme le reste.
@@ -357,26 +377,43 @@ export async function chargerEvenements({ delaiMs = 8000 } = {}) {
   return chargerSocle("socle:EVT", adresseEvenements(), delaiMs);
 }
 
-/* Le trajet commun des trois etages, ecrit UNE fois. Les quatre chargements
-   au-dessus le repetaient mot pour mot ; la quatrieme copie est celle de trop. */
+/* Le trajet commun des trois etages, ecrit UNE fois : memoire, magasin, reseau,
+   avec la regle de generation ci-dessus. */
 async function chargerSocle(cle, url, delaiMs) {
+  /* La generation d'abord : sans elle, on ne sait pas si le magasin est a jour. */
+  if (GENERATION === null) await chargerIndex().catch(() => {});
   const enCache = await magasin.lire(cle);
-  if (enCache) return { etat: ETATS.SERVI, donnees: enCache, depuis: "cache" };
+  const aJour = enCache && (GENERATION === null || (await generationsGardees())[cle] === GENERATION);
+  if (aJour) return { etat: ETATS.SERVI, donnees: enCache, depuis: "cache" };
   if (enVol.has(cle)) return enVol.get(cle);
   const promesse = (async () => {
-    if (typeof navigator !== "undefined" && navigator.onLine === false) {
+    if (horsLigne()) {
+      if (enCache) return { etat: ETATS.SERVI, donnees: enCache, depuis: "cache", perime: true };
       return { etat: ETATS.HORS_LIGNE, donnees: null };
     }
     try {
-      const donnees = await auReseau(url, delaiMs);
+      const donnees = await auReseau(url, delaiMs, !!enCache);
       await magasin.ecrire(cle, donnees).catch(() => {});
+      await noterGeneration(cle);
       return { etat: ETATS.SERVI, donnees, depuis: "reseau" };
     } catch (e) {
+      /* Le reseau a echoue, mais une version precedente est la : on la sert,
+         marquee, plutot qu'un ecran vide sur une donnee presente. */
+      if (enCache) return { etat: ETATS.SERVI, donnees: enCache, depuis: "cache", perime: true, raison: e.message };
       return { etat: e.etat || ETATS.ECHEC, donnees: null, raison: e.message };
     } finally { enVol.delete(cle); }
   })();
   enVol.set(cle, promesse);
   return promesse;
+}
+
+/* Pour les tests seulement : simuler une application qu'on rouvre (generation,
+   index, requetes en vol, memoire de session). Le support — disque ou
+   IndexedDB — n'est pas touche : c'est ce qui survit a une reouverture. */
+export function nouvelleSessionPourTest() {
+  GENERATION = null; indexSession = null; indexEnCours = null; enVol.clear();
+  oublierMemoire();
+  fileGenerations = Promise.resolve();
 }
 
 /* Préchargement : quand le navigateur est inactif, et JAMAIS en réseau mesuré.
