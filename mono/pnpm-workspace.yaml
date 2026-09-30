@@ -1,3 +1,9 @@
+# L'application mobile (apps/mobile) est HORS de l'espace pnpm, volontairement
+# (29/09/2026) : elle a sa propre installation (npm, package-lock.json), pour que
+# la chaine quotidienne (`pnpm install --frozen-lockfile` dans outils/pipeline.sh)
+# n'installe jamais React Native et ne puisse pas tomber a cause de lui. Elle lit
+# packages/core et packages/data-utils par chemin (voir apps/mobile/package.json).
 packages:
   - "apps/*"
+  - "!apps/mobile"
   - "packages/*"

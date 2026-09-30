@@ -1041,6 +1041,46 @@ console.log("\n--- aujourd'hui : ce qui arrive, Senat ET Assemblee ------------"
   }
 }
 
+console.log("\n--- comptes : d'un exercice a l'autre -------------------------");
+/* 29/09/2026 : deux montants dates, la difference en euros, aucun pourcentage.
+   La commune est cherchee dans la donnee publiee (deux exercices consecutifs,
+   population stable, tous postes presents) plutot qu'ecrite en dur. */
+{
+  const p93 = JSON.parse(fs.readFileSync(path.join(DIST, "data", "departments", "93.json"), "utf8"));
+  const cas = Object.entries(p93.communes).find(([, c]) => c.comptes && Array.isArray(c.comptes["2024"]) && Array.isArray(c.comptes["2025"])
+    && c.comptes["2024"].every(v => typeof v === "number") && c.comptes["2025"].every(v => typeof v === "number")
+    && Math.abs(c.comptes["2025"][0] - c.comptes["2024"][0]) / c.comptes["2024"][0] < 0.05);
+  if (!cas) {
+    verif("evolution — une commune du 93 a deux exercices consecutifs complets", false, "aucune");
+  } else {
+    const [, c] = cas;
+    const ctx = await nav.newContext({ viewport: { width: 390, height: 844 } });
+    const p = await ctx.newPage();
+    await p.addInitScript(([k, v]) => localStorage.setItem(k, v), ["repere.departement", JSON.stringify({ d: "93", v: null })]);
+    await p.goto(base, { waitUntil: "networkidle" });
+    await p.waitForTimeout(500);
+    await p.getByLabel(/Votre commune/i).fill(c.nom);
+    await p.waitForTimeout(400);
+    await p.getByRole("button", { name: c.nom, exact: true }).first().click();
+    await p.waitForTimeout(800);
+    await p.getByRole("button", { name: "Où va l'argent" }).click();
+    await p.waitForTimeout(1200);
+    const carte = await p.evaluate(() => {
+      const t = [...document.querySelectorAll(".carte, section, article, div")].map(e => e.innerText)
+        .filter(x => /^D.un exercice à l.autre/m.test(x) && /soustraction/.test(x) && / : \d/.test(x)).sort((a, b) => a.length - b.length)[0];
+      return t || "";
+    });
+    await ctx.close();
+    const recettes = Math.round(c.comptes["2025"][1]) - Math.round(c.comptes["2024"][1]);
+    const attendu = (recettes > 0 ? "+ " : recettes < 0 ? "− " : "") + Math.abs(recettes).toLocaleString("fr-FR") + " €";
+    verif(`evolution — ${c.nom} : la carte montre 2024, 2025 et la difference des recettes en euros`,
+      /2024 : /.test(carte) && /2025 : /.test(carte) && (recettes === 0 ? /inchangé/.test(carte) : carte.includes(attendu)),
+      carte.slice(0, 300).replace(/\n+/g, " / "));
+    verif("evolution — aucun pourcentage dans la carte", carte.length > 0 && !/%/.test(carte), carte.slice(0, 200));
+    verif("invariant 4 — la difference est annoncee comme un calcul", /Calcul Repère/i.test(carte) && /soustraction/.test(carte), "");
+  }
+}
+
 console.log("\n--- aujourd'hui : qui, et ce qui est vraiment local -----------");
 /* 28/09/2026 : pour 1 257 communes sur 1 262, la reponse a « Que s'est-il decide
    pres de chez vous ? » est un vote national du depute, sans que l'ecran dise
@@ -1087,6 +1127,54 @@ async function aujCommune(dep, nom) {
       (t.split("Et dans votre commune")[1] || "").slice(0, 300).replace(/\n+/g, " / "));
   } else {
     verif("local — donnees de projets 93 presentes pour eprouver le bloc", false, "aucune commune du 93 avec projet");
+  }
+}
+
+console.log("\n--- projets d'une commune fusionnee : rattaches, et dits comme tels ---");
+/* 29/09/2026 : le projet 2024 de Pierrefitte-sur-Seine (93059), commune deleguee
+   de Saint-Denis depuis le 1er janvier 2025, etait ignore par le build. Il est
+   desormais rattache a la commune d'aujourd'hui par la table du Code officiel
+   geographique. Ce qu'on garde : la ligne est servie sous une commune REELLE du
+   paquet, et l'ecran dit pour quelle commune l'Etat l'avait engagee — jamais
+   attribuee en silence a la commune actuelle. Le cas est cherche dans la donnee
+   publiee, pas ecrit en dur. */
+{
+  const dossier = path.join(DIST, "data", "projets");
+  let cas = null;
+  const orphelines = [];
+  for (const f of fs.readdirSync(dossier)) {
+    const pr = JSON.parse(fs.readFileSync(path.join(dossier, f), "utf8"));
+    const pq = JSON.parse(fs.readFileSync(path.join(DIST, "data", "departments", f), "utf8"));
+    for (const [insee, liste] of Object.entries(pr.communes)) {
+      for (const l of liste) {
+        if (!l.ancien_code) continue;
+        if (!pq.communes[insee]) orphelines.push(insee + " <- " + l.ancien_code);
+        else if (!cas && l.ancienne_commune) cas = { dep: pr.d, nom: pq.communes[insee].nom, l };
+      }
+    }
+  }
+  verif("fusion — toute ligne rattachee est servie sous une commune reelle du paquet",
+    orphelines.length === 0, orphelines.join(", "));
+  if (cas) {
+    const c = await nav.newContext({ viewport: { width: 390, height: 844 } });
+    const p = await c.newPage();
+    await p.addInitScript(([k, v]) => localStorage.setItem(k, v), ["repere.departement", JSON.stringify({ d: cas.dep, v: null })]);
+    await p.goto(base, { waitUntil: "networkidle" });
+    await p.waitForTimeout(500);
+    await p.getByLabel(/Votre commune/i).fill(cas.nom);
+    await p.waitForTimeout(400);
+    await p.getByRole("button", { name: cas.nom, exact: true }).first().click();
+    await p.waitForTimeout(800);
+    await p.getByRole("button", { name: "Ce qui a été décidé" }).click();
+    await p.waitForTimeout(1600);
+    const t = await p.evaluate(() => document.body.innerText);
+    await c.close();
+    const apres = t.split(cas.l.intitule.trim())[1] || "";
+    verif(`fusion — ${cas.nom} : le projet de ${cas.l.ancienne_commune} est affiche, et dit engage pour elle`,
+      t.includes(cas.l.intitule.trim()) && apres.slice(0, 400).includes("Engagé pour " + cas.l.ancienne_commune),
+      apres.slice(0, 300).replace(/\n+/g, " / "));
+  } else {
+    console.log("   (aucune ligne rattachee dans le releve publie : rien a montrer, rien a verifier a l'ecran)");
   }
 }
 
@@ -1150,6 +1238,36 @@ console.log("\n--- hierarchie mobile : le contenu avant le decor ---------------
     cal.debutsVisibles.length > 0 && (secours ? auDela.length <= 5 : auDela.length === 0),
     JSON.stringify({ visibles: cal.debutsVisibles.length, auDela: auDela.length, secours }));
   await c.close();
+}
+
+console.log("\n--- chaque source mene a la source ---------------------------");
+/* 29/09/2026 : sur « Aujourd'hui », ecran d'entree de la demonstration, 1 ligne
+   de source sur 4 permettait d'aller verifier ; sur « Ou va l'argent », 1 sur 4.
+   Nommer une source sans y mener, c'est demander d'etre cru. Mesure sur une
+   commune du 93 qui a un projet finance (cherchee dans la donnee publiee). */
+{
+  const pr = JSON.parse(fs.readFileSync(path.join(DIST, "data", "projets", "93.json"), "utf8")).communes;
+  const pq = JSON.parse(fs.readFileSync(path.join(DIST, "data", "departments", "93.json"), "utf8")).communes;
+  const [, f] = Object.entries(pq).find(([c]) => pr[c]) || [];
+  if (!f) {
+    verif("sources — une commune du 93 avec projet pour eprouver les liens", false, "aucune");
+  } else {
+    const c = await nav.newContext({ viewport: { width: 390, height: 844 } });
+    const p = await c.newPage();
+    await p.addInitScript(([k, v]) => localStorage.setItem(k, v), ["repere.departement", JSON.stringify({ d: "93", v: null })]);
+    await p.goto(base, { waitUntil: "networkidle" }); await p.waitForTimeout(500);
+    await p.getByLabel(/Votre commune/i).fill(f.nom); await p.waitForTimeout(300);
+    await p.getByRole("button", { name: f.nom, exact: true }).first().click(); await p.waitForTimeout(900);
+    const sansLien = () => p.evaluate(() => [...document.querySelectorAll(".source")]
+      .filter(s => !s.querySelector("a[href^='http']")).map(s => s.innerText.slice(0, 60)));
+    await p.getByRole("button", { name: "Où va l'argent", exact: true }).click(); await p.waitForTimeout(1300);
+    const argent = await sansLien();
+    await p.getByRole("button", { name: /Voir aujourd.hui/ }).click(); await p.waitForTimeout(1500);
+    const auj = await sansLien();
+    await c.close();
+    verif(`invariant 4 — Aujourd'hui (${f.nom}) : chaque ligne de source mene a la source`, auj.length === 0, auj.join(" | "));
+    verif(`invariant 4 — Ou va l'argent (${f.nom}) : chaque ligne de source mene a la source`, argent.length === 0, argent.join(" | "));
+  }
 }
 
 console.log("\n--- recherche et accents -------------------------------------");

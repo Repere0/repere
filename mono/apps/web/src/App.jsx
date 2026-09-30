@@ -1,5 +1,6 @@
 import React, { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Chargement, Vide, Puce, DefinitionProvider } from "@repere/ui";
+import { mots, motsCible, correspond, trouverCommunes } from "@repere/core";
 import {
   chargerIndex, chargerDepartement, chargerCommunesBeta, prechargerDepartement,
   annulerPrechargement, entrer, ETATS, PHRASES,
@@ -75,24 +76,8 @@ function ecrireDepartement(d, v) {
   catch { /* mode privé */ }
 }
 
-/* Comparer « Pyrenees at » et « Pyrénées-Atlantiques » : au clavier, personne ne
-   tape les accents, et le trait d'union se tape en espace une fois sur deux. On
-   ramene donc tout a des mots nus, et on demande que chaque mot cherche soit le
-   debut d'un mot du territoire — « cotes armor », « val doise », « 64 ». */
-function mots(t) {
-  return String(t || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase().replace(/[^a-z0-9]+/g, " ").trim().split(" ").filter(Boolean);
-}
-/* L'apostrophe se tape rarement : « val doise » doit trouver Val-d'Oise, et
-   « cote dor » la Cote-d'Or. On indexe donc aussi la forme sans apostrophe, ou
-   « d'Oise » devient un seul mot. */
-function motsCible(t) {
-  return [...new Set([...mots(t), ...mots(String(t || "").replace(/['\u2019]/g, ""))])];
-}
-function correspond(cherches, cible) {
-  return cherches.every(m => cible.some(w => w.startsWith(m)));
-}
-
+/* LA REGLE DE RECHERCHE (mots, motsCible, correspond) VIT DANS @repere/core
+   DEPUIS LE 29/09/2026 : l'application mobile cherche exactement comme le site. */
 /* OU HABITEZ-VOUS — UN SEUL CHAMP, ET C'EST LA CORRECTION LA PLUS IMPORTANTE
  * DE CETTE VERSION.
  *
@@ -155,18 +140,9 @@ function Entree({ index, communesBeta, departement, onOuvrir, onCommuneDirecte, 
    * d'importance entre territoires, que l'invariant 3 interdit : c'est la reponse
    * a ce que le lecteur vient d'ecrire, et elle ne depend d'aucune propriete de la
    * commune — ni sa taille, ni sa population, ni rien qui la compare a une autre. */
-  const rang = (nom) => {
-    const n = mots(nom).join(" ");
-    const q = cherches.join(" ");
-    if (n === q) return 0;
-    if (n.startsWith(q)) return 1;
-    return 2;
-  };
-  const trouveesC = cherches.length
-    ? communes.filter(([, , cible]) => correspond(cherches, cible))
-        .sort((a, b) => rang(a[1]) - rang(b[1]) || a[1].localeCompare(b[1], "fr"))
-        .slice(0, 30)
-    : [];
+  /* La regle de rang vit dans @repere/core (rangRecherche, trouverCommunes)
+     depuis le 29/09/2026 : l'application mobile trouve les memes communes. */
+  const trouveesC = trouverCommunes(communes, cherches);
   const trouvesD = cherches.length
     ? index.departements.filter(d => correspond(cherches, motsCible(d.code + " " + (d.nom || ""))))
     : [];

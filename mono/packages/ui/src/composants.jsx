@@ -97,25 +97,11 @@ export function BarreEchelon({ libelle, valeur, maximum, unite = "€", echelon 
 }
 
 /* INVARIANT 4 : aucun chiffre ne s'affiche sans ce composant à côté. */
-/* « mise a jour du 2026-07-29 » est une date de machine. Vu sur une capture : un
-   ecran qui explique des comptes publics ne peut pas ecrire ses dates en ISO. */
-export function dateFr(v) {
-  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(v || ""));
-  if (!m) return v;
-  const mois = ["janvier", "février", "mars", "avril", "mai", "juin", "juillet",
-                "août", "septembre", "octobre", "novembre", "décembre"];
-  return Number(m[3]) + (m[3] === "01" ? "er" : "") + " " + mois[Number(m[2]) - 1] + " " + m[1];
-}
-
-/* Deplace de Calendrier.jsx le 28/09/2026 pour servir aussi a Aujourdhui.jsx : « jeudi 1er octobre 2026 »,
-   jamais « jeudi 1 octobre » comme le produisait toLocaleDateString. */
-export function jourFr(iso) {
-  const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(iso || "");
-  if (!m) return "";
-  const jours = ["dimanche", "lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi"];
-  const d = new Date(iso);
-  return jours[d.getDay()] + " " + dateFr(`${m[1]}-${m[2]}-${m[3]}`);
-}
+/* dateFr et jourFr VIVENT DANS @repere/core DEPUIS LE 29/09/2026 (voir
+   packages/core/src/format.js), pour que l'application mobile ecrive les dates
+   exactement comme le web. Re-exportees ici : les ecrans n'ont rien a changer. */
+export { dateFr, jourFr } from "@repere/core";
+import { dateFr, ligneSource, CALCUL_REPERE } from "@repere/core";
 
 /* `maj` est une date de publication ; `mention` est une precision de temps qui
    n'en est pas une (« decoupage de 2010 »). Les melanger produisait « mise a jour
@@ -123,10 +109,9 @@ export function jourFr(iso) {
 export function Source({ producteur, licence, maj, mention, url, calcul }) {
   return (
     <p className="source">
-      {calcul ? <b>Calculé par Repère à partir des montants ci-dessus — ce n'est pas un chiffre publié. </b> : null}
-      {producteur}{licence ? " · " + licence : ""}
-      {maj ? " · mise à jour du " + dateFr(maj) : ""}
-      {mention ? " · " + mention : ""}
+      {/* Texte ecrit dans @repere/core (ligneSource) : l'application mobile ecrit la meme ligne. */}
+      {calcul ? <b>{CALCUL_REPERE} </b> : null}
+      {ligneSource({ producteur, licence, maj, mention })}
       {url ? <> · <a href={url} target="_blank" rel="noopener">voir à la source ↗</a></> : null}
     </p>
   );

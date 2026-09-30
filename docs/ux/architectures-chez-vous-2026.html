@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><title>Architectures Chez vous</title>
+<style>
+/* Quatre architectures pour « Chez vous », chiffres reels de Meaux (donnees du
+   29/09/2026 : OFGL 2025, DGCL, Assemblee scrutin 8430, RNE). Maquettes de
+   decision, pas du code produit. Ligne rouge : fin du premier ecran (780 px). */
+* { box-sizing: border-box; margin: 0; }
+body { font-family: -apple-system, "Segoe UI", Roboto, Arial, sans-serif; background: #d9d6cf; padding: 22px; color: #1a1917; }
+.grille { display: grid; grid-template-columns: repeat(5, 390px); gap: 24px; align-items: start; }
+h1 { font: 800 16px/1.3 "Bricolage Grotesque", system-ui, sans-serif; margin-bottom: 8px; }
+h1 small { font-weight: 600; color: #6b675f; }
+.tel { position: relative; background: #f2efe9; border-radius: 26px; padding: 20px 20px 28px; height: 1180px; overflow: hidden; }
+.pli { position: absolute; left: 0; right: 0; top: 780px; border-top: 2px dashed #b3261e; }
+.pli span { position: absolute; right: 10px; top: -19px; font: 700 11px/1 system-ui; color: #b3261e; background: #f2efe9; padding: 2px 4px; }
+.nom { font: 800 34px/1 "Bricolage Grotesque", system-ui, sans-serif; }
+.sous { font-size: 14px; color: #6b675f; margin-top: 4px; }
+.puces { display: flex; gap: 6px; margin: 14px 0 6px; flex-wrap: wrap; }
+.puce { font-size: 13px; font-weight: 600; padding: 7px 11px; border-radius: 999px; background: #fff; }
+.puce.on { background: #1a1917; color: #fff; }
+.chap { padding: 22px 0 18px; border-top: 1px solid #ddd8ce; }
+.q { font-size: 13px; font-weight: 700; color: #6b675f; }
+.rep { font: 800 23px/1.2 "Bricolage Grotesque", system-ui, sans-serif; margin-top: 6px; }
+.hero { font: 800 64px/0.95 "Bricolage Grotesque", system-ui, sans-serif; letter-spacing: -1.5px; margin-top: 10px; font-variant-numeric: tabular-nums; }
+.unite { font-size: 15px; color: #6b675f; margin-top: 4px; }
+.bascule { display: flex; gap: 6px; margin-top: 12px; }
+.bascule span { font-size: 12px; font-weight: 600; padding: 6px 10px; border-radius: 999px; border: 1px solid #ddd8ce; }
+.bascule span.on { border-color: #1a1917; background: #1a1917; color: #fff; }
+.src { font-size: 13px; font-weight: 600; color: #6b675f; margin-top: 12px; }
+.suite { font-size: 15px; font-weight: 700; margin-top: 6px; }
+.points { display: grid; grid-template-columns: repeat(10, 1fr); gap: 5px; margin-top: 14px; width: 250px; }
+.points i { width: 20px; height: 20px; border-radius: 50%; background: #e4e0d8; display: block; }
+.points i.e { background: #0e7490; }
+.poupees { position: relative; height: 230px; margin-top: 14px; }
+.poupees div { position: absolute; border-radius: 18px; border: 2px solid; padding: 7px 10px; font-size: 11px; font-weight: 700; }
+.vote { display: flex; height: 26px; border-radius: 6px; overflow: hidden; margin-top: 14px; }
+.vote div { height: 100%; }
+.hach { background: repeating-linear-gradient(135deg, #cfcac0 0 3px, #ece8e0 3px 7px); }
+.leg { display: flex; justify-content: space-between; font-size: 12px; color: #6b675f; margin-top: 6px; }
+.marque { font-size: 12px; font-weight: 700; margin-top: 8px; }
+.jour { font: 800 13px/1 system-ui; color: #6b675f; text-transform: none; margin-top: 16px; }
+.ligne { background: #fff; border-radius: 16px; padding: 14px; margin-top: 10px; }
+.ligne b { display: block; font-size: 16px; }
+.vide { background: #ece8e0; border-radius: 16px; padding: 14px; margin-top: 10px; font-size: 15px; }
+.onglets { display: flex; background: #e6e2da; border-radius: 12px; padding: 3px; margin: 12px 0; }
+.onglets span { flex: 1; text-align: center; font-size: 13px; font-weight: 700; padding: 8px 0; border-radius: 10px; color: #6b675f; }
+.onglets span.on { background: #fff; color: #1a1917; }
+.carteid { background: #fff; border-radius: 22px; padding: 16px; margin-top: 14px; }
+.kv { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 10px; margin-top: 14px; }
+.kv .k { font-size: 12px; color: #6b675f; } .kv .v { font: 800 20px/1.1 "Bricolage Grotesque", system-ui, sans-serif; }
+.deplie { background: #fff; border-radius: 22px; padding: 18px; margin-top: 12px; box-shadow: 0 6px 18px rgba(26,25,23,.08); }
+.etape { font-size: 14px; margin-top: 10px; display: flex; gap: 8px; align-items: baseline; }
+.etape b { font: 800 22px/1 "Bricolage Grotesque", system-ui, sans-serif; min-width: 110px; }
+.fleche { color: #6b675f; font-size: 13px; margin: 4px 0 0 4px; }
+</style></head><body><div class="grille">
+
+<!-- A · FLUX NARRATIF -->
+<div><h1>A · Flux narratif <small>(recommandé)</small></h1><div class="tel">
+  <div class="nom">Meaux</div>
+  <div class="sous">57 121 habitants · Seine-et-Marne</div>
+  <div class="puces"><span class="puce on">L'argent</span><span class="puce">Un projet</span><span class="puce">Qui décide</span><span class="puce">Votre député</span></div>
+  <div class="chap" style="border-top:0">
+    <div class="q">Combien dépense votre commune ?</div>
+    <div class="rep">En 2025, Meaux a dépensé</div>
+    <div class="hero">2 123 €</div>
+    <div class="unite">par habitant, sur l'année</div>
+    <div class="bascule"><span>au total</span><span class="on">par habitant</span><span>par jour</span></div>
+    <div class="src">ⓘ Source</div>
+    <div class="suite">Où va cet argent ? ›</div>
+  </div>
+  <div class="chap">
+    <div class="q">Qu'est-ce que l'État finance ici ?</div>
+    <div class="rep">L'État finance près de la moitié d'un projet de 1,5 M€ à Meaux.</div>
+    <div class="points">
+      <i class="e"></i><i class="e"></i><i class="e"></i><i class="e"></i><i class="e"></i><i class="e"></i><i class="e"></i><i class="e"></i><i class="e"></i><i class="e"></i>
+      <i class="e"></i><i class="e"></i><i class="e"></i><i class="e"></i><i class="e"></i><i class="e"></i><i class="e"></i><i class="e"></i><i class="e"></i><i class="e"></i>
+      <i class="e"></i><i class="e"></i><i class="e"></i><i class="e"></i><i class="e"></i><i class="e"></i><i class="e"></i><i class="e"></i><i class="e"></i><i class="e"></i>
+      <i class="e"></i><i class="e"></i><i class="e"></i><i class="e"></i><i class="e"></i><i class="e"></i><i class="e"></i><i class="e"></i><i class="e"></i><i class="e"></i>
+      <i class="e"></i><i class="e"></i><i class="e"></i><i class="e"></i><i class="e"></i><i class="e"></i><i class="e"></i><i></i><i></i><i></i>
+      <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+      <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+      <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+      <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+      <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+    </div>
+    <div class="unite">47 points sur 100 : la part de l'État dans le coût annoncé</div>
+  </div>
+  <div class="pli"><span>fin du premier écran</span></div>
+</div></div>
+
+<!-- A · DEUXIEME ETAT : on touche la donnee -->
+<div><h1>A · on touche « 47 » <small>(la donnée se transforme)</small></h1><div class="tel">
+  <div class="q">Qu'est-ce que l'État finance ici ?</div>
+  <div class="deplie">
+    <div class="rep" style="margin-top:0">Pour 100 € de ce projet,<br>47 € viennent de l'État.</div>
+    <div class="etape"><b>1 533 500 €</b><span>coût annoncé</span></div>
+    <div class="fleche">↓ dont</div>
+    <div class="etape"><b>726 800 €</b><span>engagés par l'État en 2025</span></div>
+    <div class="fleche">↓ reste</div>
+    <div class="etape"><b>806 700 €</b><span>la source ne dit pas qui les paie</span></div>
+    <div class="unite" style="margin-top:14px">« Construction d'un pole medical au sein du quartier Beauval » · aide DPV</div>
+    <div class="src">ⓘ Calculé par Repère · source</div>
+    <div class="suite">Les 5 projets aidés à Meaux ›</div>
+  </div>
+  <div class="chap" style="margin-top:18px">
+    <div class="q">Qui décide pour Meaux ?</div>
+    <div class="rep">Cinq niveaux, du plus proche au plus lointain.</div>
+    <div class="poupees">
+      <div style="inset:0;border-color:#1d1d1f">France · Béatrice Roullaud, élue de votre circonscription</div>
+      <div style="inset:32px 10px 0 10px;border-color:#6d28d9">Région · Valérie PÉCRESSE</div>
+      <div style="inset:64px 20px 0 20px;border-color:#b45309">Département · Jean-François PARIGI</div>
+      <div style="inset:96px 30px 0 30px;border-color:#0891b2">Intercommunalité · 34 élus de Meaux</div>
+      <div style="inset:128px 40px 0 40px;border-color:#0e7490;background:#fff">Commune · Jean-François COPE</div>
+    </div>
+  </div>
+  <div class="pli"><span>fin du premier écran</span></div>
+</div></div>
+
+<!-- B · AUJOURD'HUI CHEZ VOUS -->
+<div><h1>B · Aujourd'hui chez vous</h1><div class="tel">
+  <div class="nom">Meaux</div>
+  <div class="sous">Mercredi 30 septembre 2026</div>
+  <div class="jour">DEPUIS VOTRE DERNIÈRE VISITE</div>
+  <div class="vide">Rien de nouveau publié pour Meaux. Les comptes 2025 datent du 29 juillet ; le dernier projet aidé, de 2025.</div>
+  <div class="jour">CETTE SEMAINE AU PARLEMENT (national)</div>
+  <div class="ligne"><b>10 rendez-vous</b>dont l'ouverture de la session ordinaire, jeudi 1er octobre.</div>
+  <div class="jour">CE QU'A VOTÉ VOTRE DÉPUTÉ</div>
+  <div class="ligne"><b>Pour, le 21 juillet</b>Projet de loi relatif à la protection des enfants — adopté.</div>
+  <div class="jour">À RETENIR</div>
+  <div class="ligne"><b>2 123 € par habitant</b>dépensés par la commune en 2025.</div>
+  <div class="pli"><span>fin du premier écran</span></div>
+</div></div>
+
+<!-- C · CARTE D'IDENTITE VIVANTE -->
+<div><h1>C · Carte d'identité vivante</h1><div class="tel">
+  <div class="carteid">
+    <div class="nom">Meaux</div>
+    <div class="sous">57 121 habitants · Seine-et-Marne · 6e circonscription</div>
+    <div class="poupees" style="height:200px">
+      <div style="inset:0;border-color:#1d1d1f">France</div>
+      <div style="inset:28px 10px 0 10px;border-color:#6d28d9">Île-de-France</div>
+      <div style="inset:56px 20px 0 20px;border-color:#b45309">Seine-et-Marne</div>
+      <div style="inset:84px 30px 0 30px;border-color:#0891b2">Pays de Meaux</div>
+      <div style="inset:112px 40px 0 40px;border-color:#0e7490;background:#f2efe9">Meaux · J.-F. COPE</div>
+    </div>
+    <div class="kv">
+      <div><div class="k">Dépense par habitant</div><div class="v">2 123 €</div></div>
+      <div><div class="k">Dette</div><div class="v">7,6 mois</div></div>
+      <div><div class="k">Projets aidés</div><div class="v">5</div></div>
+      <div><div class="k">Vote du 21/07</div><div class="v">Pour</div></div>
+    </div>
+  </div>
+  <div class="unite" style="margin-top:12px">Touchez un niveau ou un chiffre pour l'ouvrir.</div>
+  <div class="pli"><span>fin du premier écran</span></div>
+</div></div>
+
+<!-- D · MIX -->
+<div><h1>D · Réponses + fil + explorer</h1><div class="tel">
+  <div class="nom">Meaux</div>
+  <div class="onglets"><span class="on">Réponses</span><span>Fil</span><span>Explorer</span></div>
+  <div class="ligne"><b>2 123 € par habitant</b>dépensés par la commune en 2025.</div>
+  <div class="ligne"><b>L'État finance près de la moitié</b>d'un projet de 1,5 M€ à Meaux.</div>
+  <div class="ligne"><b>Pour, le 21 juillet</b>Béatrice Roullaud, projet de loi relatif à la protection des enfants.</div>
+  <div class="jour">EXPLORER</div>
+  <div class="puces"><span class="puce">Budget</span><span class="puce">Élus</span><span class="puce">Votes</span><span class="puce">Projets</span><span class="puce">Agenda</span><span class="puce">Sources</span></div>
+  <div class="pli"><span>fin du premier écran</span></div>
+</div></div>
+
+</div></body></html>
