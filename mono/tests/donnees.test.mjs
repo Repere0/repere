@@ -19,7 +19,7 @@ import {
   FRAICHEUR, etatFraicheur, surFraicheur, verifierPublication, publicationPriseEnCompte,
 } from "../packages/data-utils/src/client.js";
 import { magasin, configurerStockage } from "../packages/data-utils/src/store.js";
-import { phraseFraicheur } from "../packages/core/src/fraicheur.js";
+import { phraseFraicheur, etatFraicheurEnClair } from "../packages/core/src/fraicheur.js";
 
 /* Un faux disque : ce qui survit a une reouverture de l'application. */
 const disque = new Map();
@@ -255,4 +255,16 @@ test("fraicheur — la date d'une copie precedente est celle de SA publication",
   assert.equal(e.etat, FRAICHEUR.PRECEDENTE);
   assert.equal(e.depuis, "2026-10-01T05:47:00Z");
   assert.match(phraseFraicheur(e).titre, /publication du 1er octobre 2026/);
+});
+
+test("fraicheur — la provenance nomme toujours l'etat, en positif quand il est verifie", () => {
+  const g = "2026-10-01T05:47:00Z";
+  const a = etatFraicheurEnClair({ etat: FRAICHEUR.ACTUELLE, depuis: g, generation: g });
+  const p = etatFraicheurEnClair({ etat: FRAICHEUR.PRECEDENTE, depuis: "2026-09-29", generation: g });
+  const i = etatFraicheurEnClair({ etat: FRAICHEUR.INCONNUE, depuis: g, generation: g });
+  assert.match(a, /vérifiée auprès du serveur — c'est la plus récente/);
+  assert.match(p, /29 septembre 2026 ; il en existe une plus récente/);
+  assert.match(i, /non vérifiable/);
+  assert.ok(!/plus récente\.$/.test(i) && !/vérifiée/.test(i), "l'etat inconnu ne se dit jamais verifie");
+  assert.equal(etatFraicheurEnClair({ etat: FRAICHEUR.EN_COURS }), null);
 });

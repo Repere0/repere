@@ -16,7 +16,8 @@
 import { useState } from "react";
 import { Linking, Modal, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { CALCUL_REPERE, dateFr, datePublication, ligneSource } from "@repere/core";
+import { CALCUL_REPERE, dateFr, datePublication, etatFraicheurEnClair, ligneSource } from "@repere/core";
+import { useFraicheur } from "./fraicheur";
 import { useCommuneChoisie } from "../lib/useCommune";
 import { couleurs, CIBLE, PAS, RAYON, TYPO } from "../lib/theme";
 import { Etiquette } from "./resume";
@@ -79,6 +80,8 @@ export function FeuilleSource({ source, visible, onFermer }: { source: InfoSourc
      ou relevee) et celle ou Repere a traite les fichiers. */
   const { r } = useCommuneChoisie();
   const traite = r.pret ? datePublication(r.index) : null;
+  /* La troisieme information de la provenance (invariant 9) : l'etat. */
+  const etat = etatFraicheurEnClair(useFraicheur());
   const detail = ligneSource(source.releve && !source.mention ? { ...source, mention: "relevé le " + dateFr(source.releve) } : source);
   return (
     <Modal visible={visible} animationType="slide" presentationStyle="pageSheet" onRequestClose={onFermer}>
@@ -87,6 +90,7 @@ export function FeuilleSource({ source, visible, onFermer }: { source: InfoSourc
         <Text style={TYPO.question} accessibilityRole="header">{source.producteur}</Text>
         {date ? <Text style={[TYPO.corps, { fontWeight: "600" }]}>{date}</Text> : null}
         {traite ? <Text style={TYPO.note}>Traitées par Repère le {dateFr(traite)}</Text> : null}
+        {etat ? <Text style={TYPO.note} testID="etat-fraicheur">{etat}</Text> : null}
 
         <View style={s.bloc}>
           <Text style={TYPO.etiquette}>Comment Repère l'utilise</Text>

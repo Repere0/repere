@@ -6,7 +6,9 @@
  * les fichiers. Ne jamais les confondre. */
 import { Text, View } from "react-native";
 import { Stack } from "expo-router";
-import { dateFr, datePublication } from "@repere/core";
+import { dateFr, datePublication, etatFraicheurEnClair } from "@repere/core";
+import type { Source } from "@repere/core/domaine";
+import { useFraicheur } from "../ui/fraicheur";
 import { Carte, LienSortant } from "../lib/composants";
 import { PAS, TYPO } from "../lib/theme";
 import { AvecDonnees, Page, Question } from "../ui/page";
@@ -14,6 +16,8 @@ import { AvecDonnees, Page, Question } from "../ui/page";
 type Ligne = { quoi: string; producteur?: string; maj?: string; releve?: string; url?: string; usage: string };
 
 export default function Sources() {
+  /* Hors du rendu conditionnel : un crochet s'appelle toujours dans le meme ordre. */
+  const etat = etatFraicheurEnClair(useFraicheur());
   return (
     <AvecDonnees rendu={r => {
       const s = (r.index && r.index.sources) || {};
@@ -31,6 +35,7 @@ export default function Sources() {
           <Stack.Screen options={{ title: "Sources" }} />
           <Question etiquette="Sources" question="D'où viennent ces informations ?"
             sous={traite ? `Repère a traité ces fichiers le ${dateFr(traite)}. Chaque source a sa propre date, écrite ci-dessous : c'est celle de la donnée.` : undefined} />
+          {etat ? <Text style={TYPO.note} testID="etat-fraicheur">{etat}</Text> : null}
           {lignes.map(l => (
             <Carte key={l.quoi} titre={l.quoi}>
               <Text style={[TYPO.corps, { fontWeight: "700" }]}>{l.producteur}</Text>
@@ -47,8 +52,7 @@ export default function Sources() {
   );
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function pick(x: any): { producteur?: string; maj?: string; releve?: string; url?: string } {
+function pick(x: (Partial<Source> & { releve?: string }) | null | undefined): { producteur?: string; maj?: string; releve?: string; url?: string } {
   if (!x) return {};
   return { producteur: x.producteur, maj: x.maj, releve: x.releve || x.releve_le, url: x.url };
 }

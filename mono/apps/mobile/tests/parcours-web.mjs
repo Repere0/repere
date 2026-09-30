@@ -339,6 +339,13 @@ async function montantA100ms(reduit) {
   };
   const enLigne = await ouvrir();
   verifier(enLigne.bandeau === 0, "fraîcheur : en ligne, publication vérifiée, aucun bandeau");
+  /* La provenance nomme l'etat meme quand il n'y a rien a signaler : les trois
+     etats sont toujours distinguables (invariant 9), pas seulement deux. */
+  await page.getByText("D'où viennent ces informations").first().click();
+  await page.getByTestId("etat-fraicheur").first().waitFor({ timeout: 10000 });
+  const etatSources = await page.getByTestId("etat-fraicheur").first().innerText();
+  verifier(/^État : publication du .+, vérifiée auprès du serveur — c'est la plus récente\.$/.test(etatSources),
+    "fraîcheur : l'écran des sources dit en clair que la publication est vérifiée (« " + etatSources + " »)");
   await ctx.route("**/data/**", r => r.abort("internetdisconnected"));
   const coupe = await ouvrir();
   verifier(coupe.bandeau === 1 && /Repère n'a pas pu joindre le serveur : ce qui s'affiche vient de la publication du/.test(coupe.texte)

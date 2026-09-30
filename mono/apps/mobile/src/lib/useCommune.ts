@@ -30,15 +30,20 @@ import {
   chargerVotes, chargerElusRegion, chargerCalendrierSenat, chargerAgendaAN, ETATS,
 } from "./donnees";
 import type { Choix } from "./selection";
+import type {
+  Deputes, ElusRegion, IndexPublie, PaquetDepartement, PaquetProjets, Source,
+} from "@repere/core/domaine";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type Ouvert = any; /* fichiers publies non types : chaque absence est traitee comme une absence */
+/* Ce que l'accueil derive d'une commune (@repere/core, deriverAujourdhui). Les
+   fichiers publies, eux, sont types par le modele de domaine (domaine.d.ts),
+   verifie contre les fichiers reels par tests/forme.test.mjs. */
+export type Aujourdhui = ReturnType<typeof deriverAujourdhui>;
 
 export type EtatCommune =
   | { etat: string; pret: false }
   | {
-      etat: string; pret: true; d: Ouvert; srcElus: Ouvert;
-      index: Ouvert; paquet: Ouvert; projets: Ouvert; deputes: Ouvert; elusRegion: Ouvert;
+      etat: string; pret: true; d: Aujourdhui; srcElus: Source | null;
+      index: IndexPublie; paquet: PaquetDepartement; projets: PaquetProjets | null; deputes: Deputes | null; elusRegion: ElusRegion | null;
       /* true si le fichier est arrive ; false : il n'est PAS arrive (panne), ce qui n'est pas une absence */
       projetsLus: boolean; votesLus: boolean; votesFiables: boolean; regionLue: boolean;
       /* le calendrier : arrive pour au moins une institution */
@@ -62,14 +67,14 @@ export function useCommune(choix: Choix, essai: number): EtatCommune {
         chargerCalendrierSenat(), chargerAgendaAN(),
       ]);
       if (!vivant) return;
-      const paquet: Ouvert = pq.donnees;
+      const paquet = pq.donnees as PaquetDepartement | null;
       const fiche = paquet && paquet.communes ? paquet.communes[insee] : null;
       /* Sans le departement, rien a montrer. Sans l'index, les sources des
          elus manqueraient : un nom sans source n'est pas affiche (invariant 4). */
       if (!fiche) { setEtat({ etat: pq.donnees ? ETATS.INTROUVABLE : pq.etat, pret: false }); return; }
       if (!ix.donnees) { setEtat({ etat: ix.etat, pret: false }); return; }
-      const index: Ouvert = ix.donnees;
-      const depIndex = Array.isArray(index.departements) ? index.departements.find((x: Ouvert) => x.code === dep) : null;
+      const index = ix.donnees as IndexPublie;
+      const depIndex = Array.isArray(index.departements) ? index.departements.find(x => x.code === dep) : null;
       const reg = depIndex && depIndex.region_code ? await chargerElusRegion(depIndex.region_code) : { etat: ETATS.INTROUVABLE, donnees: null };
       if (!vivant) return;
       const votesLus = arrive(de) && arrive(c) && arrive(v);
@@ -83,8 +88,9 @@ export function useCommune(choix: Choix, essai: number): EtatCommune {
       setEtat({
         etat: ETATS.SERVI, pret: true, d,
         srcElus: index.sources ? index.sources.elus : null,
-        index, paquet, projets: arrive(pr) ? pr.donnees : null, deputes: arrive(de) ? de.donnees : null,
-        elusRegion: arrive(reg) ? reg.donnees : null,
+        index, paquet: paquet as PaquetDepartement,
+        projets: arrive(pr) ? (pr.donnees as PaquetProjets) : null, deputes: arrive(de) ? (de.donnees as Deputes) : null,
+        elusRegion: arrive(reg) ? (reg.donnees as ElusRegion) : null,
         projetsLus: arrive(pr), votesLus, regionLue: arrive(reg),
         votesFiables: votesLus ? positionsFiables(c.donnees, v.donnees) : true,
         agendaLu: arrive(ca) || arrive(an),

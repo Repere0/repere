@@ -50,3 +50,14 @@ export function phraseFraicheur(e) {
     corps: "Une publication plus récente existe peut-être. Repère ne peut pas le vérifier sans connexion.",
   };
 }
+
+/* L'ETAT EN UNE LIGNE, pour la feuille « D'où vient cette information ? » et
+   l'ecran des sources (01/10/2026). La ou le bandeau ne dit rien (actuelle), la
+   provenance le dit quand meme, en positif : trois etats toujours nommes. */
+export function etatFraicheurEnClair(e) {
+  if (!e || e.etat === "en cours") return null;
+  const date = dateDe(e.depuis);
+  if (e.etat === "actuelle") return date ? `État : publication du ${date}, vérifiée auprès du serveur — c'est la plus récente.` : "État : publication vérifiée auprès du serveur — c'est la plus récente.";
+  if (e.etat === "precedente" || e.nouvelle) return date ? `État : une partie date de la publication du ${date} ; il en existe une plus récente.` : "État : une partie date d'une publication précédente ; il en existe une plus récente.";
+  return date ? `État : publication du ${date}, non vérifiable pour l'instant.` : "État : non vérifiable pour l'instant.";
+}

@@ -134,7 +134,7 @@ jobs:
           pnpm install --frozen-lockfile
           pnpm build
       - name: Socle partage et invariants
-        run: node --test --test-concurrency=1 tests/core.test.mjs tests/invariants.test.mjs tests/sante.test.mjs tests/donnees.test.mjs
+        run: node --test --test-concurrency=1 tests/core.test.mjs tests/invariants.test.mjs tests/sante.test.mjs tests/donnees.test.mjs tests/forme.test.mjs
       - name: Construire l'application (iOS, Android, web)
         working-directory: mono/apps/mobile
         env:

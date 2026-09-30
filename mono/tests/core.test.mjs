@@ -21,6 +21,9 @@ test("core — aucune dependance d'interface, de reseau ou de stockage", () => {
   for (const f of fs.readdirSync(path.join(RACINE, "packages/core/src"))) {
     const s = fs.readFileSync(path.join(RACINE, "packages/core/src", f), "utf8");
     for (const interdit of [/from ["']react/, /document\./, /window\./, /\bfetch\(/, /indexedDB/, /localStorage/, /<[A-Z][A-Za-z]*[ >]/]) {
+      /* Une balise d'interface ne se cherche que dans le JavaScript : un fichier
+         de types (domaine.d.ts, 01/10/2026) ecrit `Charge<T>`, qui n'affiche rien. */
+      if (f.endsWith(".d.ts") && interdit.source.startsWith("<")) continue;
       assert.ok(!interdit.test(s.replace(/\/\*[\s\S]*?\*\//g, "")), `${f} utilise ${interdit.source}`);
     }
   }

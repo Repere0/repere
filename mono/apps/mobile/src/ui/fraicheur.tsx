@@ -18,6 +18,14 @@ import { phraseFraicheur } from "@repere/core";
 import { useCommuneChoisie } from "../lib/useCommune";
 import { CIBLE, couleurs, PAS, RAYON, TYPO } from "../lib/theme";
 
+/* L'etat de fraicheur de la session, pour qui doit le dire (bandeau, feuille
+   de source, ecran des sources). */
+export function useFraicheur() {
+  const [e, setE] = useState(etatFraicheur());
+  useEffect(() => { const arreter = surFraicheur(setE); return () => { arreter(); }; }, []);
+  return e;
+}
+
 export function BandeauFraicheur() {
   const [e, setE] = useState(etatFraicheur());
   const { reessayer } = useCommuneChoisie();
