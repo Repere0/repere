@@ -1,46 +1,75 @@
-/* La coquille de l'application : zones sures (encoche, barre d'accueil),
- * barre d'etat, et une pile de navigation a deux ecrans. Le geste retour
- * natif (glisser sur iOS, bouton retour d'Android) ramene a l'accueil. */
+/* LA COQUILLE — refonte du 30/09/2026.
+ *
+ * Architecture : un accueil (« Où habitez-vous ? »), un ecran central
+ * (« Chez vous »), et trois ecrans qui repondent chacun a UNE question
+ * (« Où va l'argent ? », « Qu'a voté votre député ? », « Qui décide ? »).
+ * Une pile, pas d'onglets : l'ecran central est le sommaire, chaque question
+ * s'ouvre par un geste et se referme par le geste retour natif.
+ *
+ * Les donnees d'une commune sont lues une fois (FournisseurCommune) et
+ * partagees par les quatre ecrans. La police de Repere est embarquee dans
+ * l'application : aucune requete vers un hote tiers. */
 import "../lib/donnees";
 import { router, Stack } from "expo-router";
 import { Pressable, Text } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import { SafeAreaProvider } from "react-native-safe-area-context";
-import { FournisseurSelection } from "../lib/selection";
+import { useFonts } from "expo-font";
+import { BricolageGrotesque_800ExtraBold } from "@expo-google-fonts/bricolage-grotesque/800ExtraBold";
+import { BricolageGrotesque_600SemiBold } from "@expo-google-fonts/bricolage-grotesque/600SemiBold";
+import type { ReactNode } from "react";
+import { FournisseurSelection, useSelection } from "../lib/selection";
+import { FournisseurCommune } from "../lib/useCommune";
 import { couleurs, CIBLE } from "../lib/theme";
 
-/* LE BOUTON RETOUR, A 48 PX — 29/09/2026. Celui de la barre de navigation
-   mesurait 30 px de haut sur l'export web (tests/parcours-web.mjs). Le geste
-   natif (glisser sur iOS, retour d'Android) reste actif en plus. */
-function Retour() {
+/* LE BOUTON RETOUR, A 48 PX — la fleche native de la barre mesurait 30 px sur
+   l'export web (tests/parcours-web.mjs). Le geste natif reste actif. */
+function Retour({ texte, etiquette }: { texte: string; etiquette: string }) {
   return (
     <Pressable
       onPress={() => (router.canGoBack() ? router.back() : router.replace("/"))}
       accessibilityRole="button"
-      accessibilityLabel="Revenir à l'accueil"
+      accessibilityLabel={etiquette}
       style={({ pressed }) => ({ minHeight: CIBLE, minWidth: CIBLE, justifyContent: "center", paddingHorizontal: 8, opacity: pressed ? 0.6 : 1 })}
     >
-      <Text style={{ fontSize: 17, color: couleurs.ville }}>‹ Accueil</Text>
+      <Text style={{ fontSize: 17, color: couleurs.ville, fontWeight: "600" }}>‹ {texte}</Text>
     </Pressable>
   );
 }
 
+function AvecCommune({ children }: { children: ReactNode }) {
+  const { choix } = useSelection();
+  return <FournisseurCommune choix={choix}>{children}</FournisseurCommune>;
+}
+
 export default function Coquille() {
+  /* Le rendu attend la police (quelques millisecondes, fichier local) : un
+     titre qui change de forme sous les yeux du lecteur gene davantage qu'un
+     instant de plus sur l'ecran de demarrage. En cas d'echec, la police du
+     systeme. */
+  const [polices, erreur] = useFonts({ BricolageGrotesque_800ExtraBold, BricolageGrotesque_600SemiBold });
+  if (!polices && !erreur) return null;
   return (
     <SafeAreaProvider>
       <FournisseurSelection>
-        <StatusBar style="dark" />
-        <Stack
-          screenOptions={{
-            headerStyle: { backgroundColor: couleurs.sol },
-            headerTintColor: couleurs.encre,
-            headerShadowVisible: false,
-            contentStyle: { backgroundColor: couleurs.sol },
-          }}
-        >
-          <Stack.Screen name="index" options={{ headerShown: false, title: "Repère" }} />
-          <Stack.Screen name="chez-vous" options={{ title: "Chez vous", headerLeft: () => <Retour /> }} />
-        </Stack>
+        <AvecCommune>
+          <StatusBar style="dark" />
+          <Stack
+            screenOptions={{
+              headerStyle: { backgroundColor: couleurs.sol },
+              headerTintColor: couleurs.encre,
+              headerShadowVisible: false,
+              headerTitle: "",
+              contentStyle: { backgroundColor: couleurs.sol },
+            }}
+          >
+            <Stack.Screen name="index" options={{ headerShown: false, title: "Repère" }} />
+            <Stack.Screen name="chez-vous" options={{ title: "Chez vous", headerLeft: () => <Retour texte="Communes" etiquette="Revenir à l'accueil pour changer de commune" /> }} />
+            <Stack.Screen name="argent" options={{ title: "Où va l'argent", headerLeft: () => <Retour texte="Chez vous" etiquette="Revenir à l'écran Chez vous" /> }} />
+            <Stack.Screen name="vote" options={{ title: "Votre député", headerLeft: () => <Retour texte="Chez vous" etiquette="Revenir à l'écran Chez vous" /> }} />
+            <Stack.Screen name="qui-decide" options={{ title: "Qui décide", headerLeft: () => <Retour texte="Chez vous" etiquette="Revenir à l'écran Chez vous" /> }} />
+          </Stack>
+        </AvecCommune>
       </FournisseurSelection>
     </SafeAreaProvider>
   );
