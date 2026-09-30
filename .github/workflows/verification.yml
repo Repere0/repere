@@ -1,0 +1,184 @@
+# UNE PULL REQUEST, UNE VERIFICATION, UN VERDICT — 01/10/2026.
+#
+# Remplace epreuve.yml et mobile.yml, qui donnaient chacun leur statut : il
+# fallait ouvrir chaque job pour savoir si une PR pouvait entrer. Ici, le
+# dernier job, « Verdict », dit en une ligne :
+#   VERT  = cette PR respecte le socle ;
+#   ROUGE = quelque chose bloque — et quoi.
+# C'est lui que la protection de main doit exiger.
+#
+# RIEN N'EST RETIRE DE CE QUI ETAIT VERIFIE. Les deux parties reprennent, etape
+# pour etape, les deux anciens fichiers :
+#   - CHAINE : la vraie collecte (sources publiques), outils/pipeline.sh, les
+#     bancs, SANS publier. Sautee seulement si la PR ne touche QUE l'application
+#     mobile — la meme regle que l'ancien `paths-ignore` d'epreuve.yml.
+#   - MOBILE : types, socle et invariants, exports iOS/Android/web, parcours,
+#     meme verite. Lancee des que la PR touche l'application, le socle partage,
+#     le site ou les controles — la meme liste que l'ancien mobile.yml, plus
+#     tout apps/web (sw.js en fait partie).
+# « Sautee » veut dire « non concernee », jamais « echouee » : c'est dit dans le
+# resume du verdict (outils/verdict_ci.sh, eprouve hors de GitHub).
+#
+# collecte.yml (la publication de chaque nuit) n'est pas touche.
+
+name: Vérification
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  quoi:
+    name: Ce que la PR touche
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      chaine: ${{ steps.tri.outputs.chaine }}
+      mobile: ${{ steps.tri.outputs.mobile }}
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      - name: Trier les fichiers modifies
+        id: tri
+        env:
+          BASE: ${{ github.event.pull_request.base.sha }}
+          EVENEMENT: ${{ github.event_name }}
+        run: |
+          if [ "$EVENEMENT" != "pull_request" ] || [ -z "$BASE" ]; then
+            echo "Lancement a la demande : tout est verifie."
+            echo "chaine=true" >> "$GITHUB_OUTPUT"; echo "mobile=true" >> "$GITHUB_OUTPUT"; exit 0
+          fi
+          fichiers=$(git -c core.quotePath=false diff --name-only "$BASE"...HEAD)
+          echo "$fichiers" | sed 's/^/  /'
+          # Chaine : tout sauf une PR qui ne toucherait QUE l'application mobile.
+          if echo "$fichiers" | grep -qv '^mono/apps/mobile/'; then chaine=true; else chaine=false; fi
+          # Mobile : l'application, le socle partage, le site, les controles.
+          if echo "$fichiers" | grep -qE '^(mono/apps/mobile/|mono/packages/(core|data-utils|ui)/|mono/tests/|mono/apps/web/|mono/scripts/extract-html\.js|\.github/workflows/verification\.yml|outils/verdict_ci\.sh)'; then mobile=true; else mobile=false; fi
+          echo "chaine=$chaine" | tee -a "$GITHUB_OUTPUT"
+          echo "mobile=$mobile" | tee -a "$GITHUB_OUTPUT"
+
+  chaine:
+    name: Chaîne de publication (sans publier)
+    needs: quoi
+    if: needs.quoi.outputs.chaine == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    # Une seule epreuve a la fois : elle telecharge les sources publiques.
+    concurrency:
+      group: epreuve-sources-publiques
+      cancel-in-progress: false
+    steps:
+      - name: Recuperer le depot
+        uses: actions/checkout@v5
+      - name: Installer Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - name: Installer le navigateur du banc
+        run: |
+          node --version || { echo "::error::Node absent de l'image du runner."; exit 1; }
+          npm install --no-save playwright@1.49.0
+          npx playwright install --with-deps chromium
+      - name: Telecharger les sources
+        continue-on-error: true
+        run: python3 outils/collecte.py
+      - name: Executer la chaine (construire et eprouver, sans publier)
+        run: bash outils/pipeline.sh
+      - name: Garder le site construit en artefact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: site-epreuve
+          path: site_engendre
+          retention-days: 7
+          if-no-files-found: warn
+
+  mobile:
+    name: Application mobile
+    needs: quoi
+    if: needs.quoi.outputs.mobile == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    concurrency:
+      group: mobile-${{ github.ref }}
+      cancel-in-progress: true
+    defaults:
+      run:
+        working-directory: mono
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: mono/apps/mobile/package-lock.json
+      - name: Installer l'application (verrou exact)
+        working-directory: mono/apps/mobile
+        run: npm ci --no-audit --no-fund
+      - name: Types
+        working-directory: mono/apps/mobile
+        run: npx tsc --noEmit
+      - name: Extraire les donnees du depot (hors reseau)
+        run: |
+          APP=$(cd .. && ls -1 app_repere_v18_*.html | grep -v '\.bak$' | sort -V | tail -1)
+          echo "fichier autonome : $APP"
+          node scripts/extract-html.js "../$APP" ./data
+      - name: Construire le site (deux invariants relisent sa sortie)
+        run: |
+          corepack enable pnpm
+          pnpm install --frozen-lockfile
+          pnpm build
+      - name: Socle partage et invariants
+        run: node --test --test-concurrency=1 tests/core.test.mjs tests/invariants.test.mjs tests/sante.test.mjs tests/donnees.test.mjs
+      - name: Construire l'application (iOS, Android, web)
+        working-directory: mono/apps/mobile
+        env:
+          CI: "1"
+          EXPO_OFFLINE: "1"
+        run: |
+          npx expo export --platform ios --platform android --output-dir dist
+          EXPO_PUBLIC_REPERE_DONNEES=/data npx expo export --platform web --output-dir dist-web
+          cp -r ../../data dist-web/data
+          ls -la dist/_expo/static/js/ios dist/_expo/static/js/android
+      - name: Parcours dans un navigateur (360 / 390 / 430 px, pannes)
+        run: |
+          npx playwright install --with-deps chromium
+          node scripts/serveur-statique.mjs apps/mobile/dist-web 8811 &
+          for i in $(seq 1 20); do curl -sf http://localhost:8811/ >/dev/null && break; sleep 0.5; done
+          node apps/mobile/tests/parcours-web.mjs http://localhost:8811 apps/mobile/captures
+      - name: Meme verite sur le site et dans l'application
+        run: |
+          rm -rf apps/web/dist/data && cp -r data apps/web/dist/data
+          node scripts/empreinte-sw.mjs apps/web/dist
+          node scripts/serveur-statique.mjs apps/web/dist 8821 &
+          curl -sf http://localhost:8811/ >/dev/null || (node scripts/serveur-statique.mjs apps/mobile/dist-web 8811 &)
+          for i in $(seq 1 20); do curl -sf http://localhost:8821/ >/dev/null && curl -sf http://localhost:8811/ >/dev/null && break; sleep 0.5; done
+          node tests/meme-verite.mjs http://localhost:8821 http://localhost:8811
+      - name: Garder les captures
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mobile-captures
+          path: mono/apps/mobile/captures
+          retention-days: 7
+          if-no-files-found: ignore
+
+  verdict:
+    name: Verdict
+    needs: [quoi, chaine, mobile]
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v5
+      - name: VERT = la PR respecte le socle ; ROUGE = quelque chose bloque
+        env:
+          QUOI: ${{ needs.quoi.result }}
+          CHAINE: ${{ needs.chaine.result }}
+          MOBILE: ${{ needs.mobile.result }}
+        run: bash outils/verdict_ci.sh

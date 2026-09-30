@@ -68,9 +68,10 @@ explicite du porteur les change ; la PR qui l'applique met alors à jour
   par `mono/scripts/extract-html.js`. Ne jamais éditer un bloc à la main.
 - **Fil éditorial** : `data/evenements/*.md` (validés par le porteur) ;
   `data/auto/*.md` = brouillons machine, jamais affichés.
-- **`main` est protégée** : tout passe par une pull request, que
-  `.github/workflows/epreuve.yml` rejoue sans publier. Ne jamais fusionner ni
-  pousser sur `main` sans l'accord du porteur.
+- **`main` est protégée** : tout passe par une pull request, vérifiée par
+  `.github/workflows/verification.yml` (chaîne sans publier + application
+  mobile) ; son job **Verdict** dit VERT ou ROUGE, et ce qui bloque. Ne jamais
+  fusionner ni pousser sur `main` sans l'accord du porteur.
 - **Banc** : l'ordre exact est celui de la fin de `outils/pipeline.sh` (build de
   `mono/`, puis `pnpm test`, puis `test_repere.mjs` sur le fichier autonome).
   Jamais `playwright install` dans le conteneur (`PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers`).
