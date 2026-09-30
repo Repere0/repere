@@ -51,7 +51,7 @@ export default function Vote() {
 
           {/* NIVEAU 1 : la position */}
           <Carte echelon="france" titre={`Le ${dateFr(vote.sc.d)}`}>
-            <Text style={TYPO.question}><Segments s={phrasePosition(vote.position, vote.qui)} /></Text>
+            <Text style={TYPO.question} maxFontSizeMultiplier={1.4}><Segments s={phrasePosition(vote.position, vote.qui)} /></Text>
             <Text style={[TYPO.reponse, { fontSize: 19, lineHeight: 25 }]}>{titreLisible(vote.sc.t)}</Text>
             <Text style={TYPO.note}>{ligneScrutin(vote.sc)}</Text>
             {!mot ? <Text style={TYPO.note}>{POSITION_NON_PORTEE}</Text> : null}

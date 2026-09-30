@@ -70,7 +70,7 @@ export default function ChezVous() {
           {/* Pas d'etiquette « Chez vous » au-dessus du nom : 20 px gagnes, et la
              troisieme reponse de Paris revient dans le premier ecran (mesure). */}
           <View style={{ gap: 2 }}>
-            <Text style={TYPO.affiche} accessibilityRole="header">{nom}</Text>
+            <Text style={TYPO.affiche} maxFontSizeMultiplier={1.4} accessibilityRole="header">{nom}</Text>
             <Text style={TYPO.note}>{[depIndex && depIndex.nom, depIndex && depIndex.region].filter(Boolean).join(" · ")}</Text>
             {/* « Publication » et non « mis a jour » : la date est celle de la
                publication affichee, vraie dans les trois etats de l'invariant 9

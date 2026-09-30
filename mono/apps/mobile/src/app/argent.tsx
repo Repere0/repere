@@ -172,7 +172,7 @@ export default function Argent() {
 
           {/* LES PROJETS AIDES PAR L'ETAT */}
           <View style={{ gap: PAS * 3 }}>
-            <Text style={TYPO.question} accessibilityRole="header">Les projets aidés par l'État</Text>
+            <Text style={TYPO.question} maxFontSizeMultiplier={1.4} accessibilityRole="header">Les projets aidés par l'État</Text>
             {!r.projetsLus ? (
               <Vide {...PROJETS_PAS_ARRIVES} action="Réessayer" onAction={reessayer} />
             ) : !listeProjets.length ? (

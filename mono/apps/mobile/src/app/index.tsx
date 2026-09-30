@@ -82,7 +82,7 @@ export default function Accueil() {
           <View style={s.tete}>
             <Text style={s.marque}>Repère</Text>
             {/* CE QU'EST REPERE, EN UNE PHRASE ; POURQUOI C'EST UTILE, EN UNE LIGNE */}
-            <Text style={TYPO.affiche} accessibilityRole="header">Ce qui se passe chez vous, expliqué simplement.</Text>
+            <Text style={TYPO.affiche} maxFontSizeMultiplier={1.4} accessibilityRole="header">Ce qui se passe chez vous, expliqué simplement.</Text>
             <Text style={s.promesse}>Qui décide, où va l'argent, ce qu'a voté votre député, ce qui arrive. Chaque chiffre avec sa source officielle.</Text>
             {retenue && nomRetenue ? (
               <Carte echelon="ville" titre="Votre commune, sur ce téléphone">

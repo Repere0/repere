@@ -59,6 +59,12 @@ export const POLICE = {
   titre: "BricolageGrotesque_600SemiBold",
 } as const;
 
+/* GRANDS TEXTES (Dynamic Type, taille de police Android — 01/10/2026). Le texte
+   courant grossit sans limite. Les titres d'affiche, de question et les grands
+   chiffres, deja gros, plafonnent a 1,4 fois (maxFontSizeMultiplier, pose sur
+   chaque <Text>) : mesure a 200 % sur 320 px, un nom long en police d'affiche
+   se cassait au milieu des mots (« Boulo / gne- / Billan / court »). Aucun
+   contenu n'etait perdu ; il etait penible a lire. */
 export const TYPO = {
   /* le nom de la commune, les grands nombres */
   affiche: { fontFamily: POLICE.affiche, fontSize: 40, lineHeight: 44, color: couleurs.encre, letterSpacing: -0.5 },

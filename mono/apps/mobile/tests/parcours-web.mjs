@@ -323,6 +323,68 @@ async function montantA100ms(reduit) {
   await page.close();
 }
 
+/* COMMUNES DIFFICILES, ACCESSIBILITE, GRANDS TEXTES — 01/10/2026.
+   Le parcours ne visitait que Meaux. Paris (18 circonscriptions), Amponville
+   (aucun projet publie) et Boulogne-Billancourt (nom long) sont les cas ou un
+   ecran peut mentir ou se casser. */
+async function accueil(saisie, nom, options = {}) {
+  const ctx = await navigateur.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, reducedMotion: "reduce", ...options });
+  const page = await ctx.newPage();
+  await page.goto(BASE + "/", { waitUntil: "networkidle" });
+  await page.getByLabel(/Où habitez-vous/).fill(saisie);
+  await page.getByRole("button", { name: new RegExp("^" + nom + ",") }).first().click();
+  await page.getByText("Aller plus loin").first().waitFor({ timeout: 15000 });
+  await page.waitForTimeout(500);
+  return { ctx, page };
+}
+{
+  const { ctx, page } = await accueil("Paris", "Paris");
+  const t = await page.evaluate(() => document.body.innerText);
+  verifier(/Paris est partagée entre 18 circonscriptions\s:\svotre député dépend de votre adresse/.test(t),
+    "Paris : le partage en 18 circonscriptions est dit avant tout nom");
+  verifier(!/qui représente votre circonscription/.test(t) && /Par exemple, dans la \d+(re|e)/.test(t),
+    "Paris : aucun député n'est présenté comme « le vôtre » ; l'exemple est dit comme tel");
+  /* Chaque visuel de preuve a son equivalent texte : un lecteur d'ecran ne lit
+     pas une barre. On cherche, dans chaque reponse, un libelle accessible qui
+     porte les nombres de la barre. */
+  const visuels = await page.$$eval('[data-testid="reponse"]', rs => rs.map(r => {
+    const rails = [...r.querySelectorAll("div")].filter(d => { const h = parseFloat(getComputedStyle(d).height); return getComputedStyle(d).overflow === "hidden" && h >= 8 && h <= 24 && d.children.length > 0; });
+    if (!rails.length) return null;
+    /* La barre ELLE-MEME doit etre sous un libelle chiffre, dans la reponse :
+       un autre libelle de la carte (« 5 projets aides ») ne la decrit pas. */
+    return rails.every(rail => {
+      for (let e = rail; e && e !== r; e = e.parentElement) {
+        const l = e.getAttribute("aria-label");
+        if (l && /\d/.test(l) && !/^D'où vient/.test(l) && !e.matches("button, a, [role=button], [role=link]")) return true;
+      }
+      return false;
+    });
+  }).filter(v => v !== null));
+  verifier(visuels.length >= 2 && visuels.every(Boolean),
+    `accessibilité : chaque barre de l'accueil a un équivalent texte chiffré (${visuels.filter(Boolean).length}/${visuels.length})`);
+  await ctx.close();
+}
+{
+  const { ctx, page } = await accueil("Amponville", "Amponville");
+  const t = await page.evaluate(() => document.body.innerText);
+  verifier(/Aucun projet financé par l'État n'est publié pour Amponville/.test(t) && !/Part de l'État/.test(t),
+    "Amponville : l'absence de projet est dite, sans barre vide ni zéro");
+  await ctx.close();
+}
+{
+  /* 200 % : la page est rendue dans une fenetre deux fois plus etroite, grossie
+     deux fois (320 px -> 160 px CSS). Aucun debordement, aucun texte coupe. */
+  const { ctx, page } = await accueil("Boulogne", "Boulogne-Billancourt", { viewport: { width: 160, height: 422 }, deviceScaleFactor: 2 });
+  const m = await page.evaluate(() => {
+    const doc = document.scrollingElement || document.documentElement;
+    const coupes = [...document.querySelectorAll('[data-testid="reponse"] *')].filter(e => e.children.length === 0 && e.innerText
+      && e.scrollWidth > e.clientWidth + 1 && getComputedStyle(e).overflow !== "visible").length;
+    return { deborde: doc.scrollWidth > doc.clientWidth + 1, coupes, reponses: document.querySelectorAll('[data-testid="reponse"]').length };
+  });
+  verifier(!m.deborde && m.coupes === 0 && m.reponses === 3, "grands textes : à 200 % sur 320 px, rien ne déborde ni n'est coupé " + JSON.stringify(m));
+  await ctx.close();
+}
+
 /* INVARIANT 9 — FRAICHEUR (30/09/2026). Serveur injoignable apres une premiere
    lecture : la donnee gardee reste lisible, mais l'ecran ne pretend pas qu'elle
    est a jour. En ligne, aucun bandeau : rien a signaler. */
