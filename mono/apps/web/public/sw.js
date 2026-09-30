@@ -109,14 +109,21 @@ self.addEventListener("fetch", e => {
   if (url.pathname.startsWith("/data/")) {
     e.respondWith((async () => {
       const cache = await caches.open(DONNEES);
-      if (r.cache === "no-cache" || r.cache === "reload") {
+      if (r.cache === "no-cache" || r.cache === "reload" || r.cache === "no-store") {
         try {
           const rep = await fetch(r);
           if (estBonne(rep) && estDonnees(rep)) cache.put(r, rep.clone());
           return rep;
         } catch {
-          const secours = await cache.match(r, { ignoreVary: true });
-          if (secours) return secours;
+          /* LA COPIE DE SECOURS EST MARQUEE (invariant 9, 30/09/2026) : le
+             client la sert, mais comme publication precedente — jamais comme
+             la publication courante. */
+          const copie = await cache.match(r, { ignoreVary: true });
+          if (copie) {
+            const entetes = new Headers(copie.headers);
+            entetes.set("x-repere-secours", "1");
+            return new Response(await copie.blob(), { status: copie.status, statusText: copie.statusText, headers: entetes });
+          }
           return new Response(JSON.stringify({ erreur: "hors ligne", chemin: url.pathname }),
             { status: 503, headers: { "content-type": "application/json" } });
         }

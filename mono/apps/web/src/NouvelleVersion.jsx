@@ -57,7 +57,7 @@ export function NouvelleVersion() {
   if (!disponible) return null;
   return (
     <Vide titre="Une nouvelle version de Repère est disponible."
-      corps="Vos données restent les mêmes ; seule l'application se rafraîchit."
+      corps="Actualisez pour charger la nouvelle version de l'application."
       action="Actualiser" onAction={() => location.reload()} />
   );
 }

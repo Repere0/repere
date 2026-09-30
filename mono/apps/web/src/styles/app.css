@@ -435,3 +435,13 @@
 .repli > summary::after { content: "▾"; margin-left: .4rem; color: var(--sourd); }
 .repli[open] > summary::after { content: "▴"; }
 .repli-in { padding-top: .2rem; }
+
+/* INVARIANT 9 — FRAICHEUR. Un avis sobre, lu avant le contenu : pas une alerte
+   (rien n'est faux), pas un detail cache (le lecteur doit le comprendre
+   immediatement). Filet a gauche en encre, jamais une couleur de jugement. */
+.fraicheur { border-left: 3px solid var(--encre); background: var(--voile); border-radius: 0 8px 8px 0;
+  padding: .6rem .85rem; margin: 0 0 1rem; font-size: .95rem; line-height: 1.4; }
+.fraicheur b { color: var(--encre); }
+.fraicheur span { color: var(--sourd); }
+.fraicheur button { display: block; margin-top: .5rem; min-height: 44px; padding: 0 1rem; border-radius: 8px;
+  border: 1px solid var(--encre); background: transparent; color: var(--encre); font: inherit; font-weight: 600; cursor: pointer; }

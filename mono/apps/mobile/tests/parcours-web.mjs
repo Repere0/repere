@@ -138,7 +138,7 @@ for (const largeur of [360, 390, 430]) {
   const mesure = await mesurer();
   communs(mesure, "Chez vous");
   verifier(new RegExp(MAIRE).test(mesure.texte), `${largeur}px : le maire est nommé (${MAIRE})`);
-  verifier(/Mis à jour par Repère le \d/.test(mesure.texte), `${largeur}px : la date de mise à jour est dite`);
+  verifier(/Publication Repère du \d/.test(mesure.texte), `${largeur}px : la date de la publication affichée est dite`);
   verifier((mesure.etiquettes.match(/D'où vient cette information/g) || []).length >= 3, `${largeur}px : chaque réponse de l'accueil porte sa source`);
   verifier(/a voté (pour|contre|l'abstention)/.test(mesure.texte) && /députés ayant pris part au vote/.test(mesure.etiquettes),
     `${largeur}px : le vote du député s'affiche, et sa répartition se lit aussi en phrase`);
@@ -321,6 +321,31 @@ async function montantA100ms(reduit) {
   const bas = await page.evaluate(() => [...document.querySelectorAll('[data-testid="reponse"]')].filter(e => e.offsetParent).map(e => Math.round(e.getBoundingClientRect().bottom)));
   verifier(bas.length === 3 && bas.every(b => b <= HAUTEUR), `390 x ${HAUTEUR} : les trois réponses tiennent dans le premier écran ${JSON.stringify(bas)}`);
   await page.close();
+}
+
+/* INVARIANT 9 — FRAICHEUR (30/09/2026). Serveur injoignable apres une premiere
+   lecture : la donnee gardee reste lisible, mais l'ecran ne pretend pas qu'elle
+   est a jour. En ligne, aucun bandeau : rien a signaler. */
+{
+  const ctx = await navigateur.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, reducedMotion: "reduce" });
+  const page = await ctx.newPage();
+  const ouvrir = async () => {
+    await page.goto(BASE + "/", { waitUntil: "networkidle" });
+    await page.getByLabel(/Où habitez-vous/).fill(COMMUNE.saisie);
+    await page.getByRole("button", { name: new RegExp("^" + COMMUNE.nom + ",") }).first().click();
+    await page.getByText("Aller plus loin").first().waitFor({ timeout: 15000 });
+    await page.waitForTimeout(600);
+    return { texte: await page.evaluate(() => document.body.innerText), bandeau: await page.getByTestId("fraicheur").count() };
+  };
+  const enLigne = await ouvrir();
+  verifier(enLigne.bandeau === 0, "fraîcheur : en ligne, publication vérifiée, aucun bandeau");
+  await ctx.route("**/data/**", r => r.abort("internetdisconnected"));
+  const coupe = await ouvrir();
+  verifier(coupe.bandeau === 1 && /n'a pas pu vérifier s'il existe une publication plus récente/.test(coupe.texte),
+    "fraîcheur : serveur injoignable, l'écran dit que la publication n'a pas pu être vérifiée");
+  verifier(new RegExp(MAIRE).test(coupe.texte), "fraîcheur : serveur injoignable, la donnée gardée reste lisible");
+  verifier(!/Mis à jour/.test(coupe.texte), "fraîcheur : aucun « mis à jour » affiché quand rien n'a pu être vérifié");
+  await ctx.close();
 }
 
 await navigateur.close();

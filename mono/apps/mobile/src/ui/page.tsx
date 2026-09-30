@@ -11,11 +11,13 @@ import { useSelection } from "../lib/selection";
 import { useCommuneChoisie, type EtatCommune } from "../lib/useCommune";
 import { PAS, TYPO } from "../lib/theme";
 import { Etiquette } from "./resume";
+import { BandeauFraicheur } from "./fraicheur";
 
 export function Page({ children }: { children: ReactNode }) {
   const marges = useSafeAreaInsets();
   return (
     <ScrollView contentContainerStyle={[s.page, { paddingBottom: marges.bottom + PAS * 10 }]}>
+      <BandeauFraicheur />
       {children}
     </ScrollView>
   );

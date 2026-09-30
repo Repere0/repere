@@ -43,9 +43,6 @@ export type EtatCommune =
       projetsLus: boolean; votesLus: boolean; votesFiables: boolean; regionLue: boolean;
       /* le calendrier : arrive pour au moins une institution */
       agendaLu: boolean;
-      /* au moins un fichier vient d'une publication precedente : le reseau n'a
-         pas permis de le mettre a jour (packages/data-utils/src/client.js) */
-      perime: boolean;
     };
 
 const arrive = (r: { etat: string }) => r.etat === ETATS.SERVI;
@@ -91,7 +88,6 @@ export function useCommune(choix: Choix, essai: number): EtatCommune {
         projetsLus: arrive(pr), votesLus, regionLue: arrive(reg),
         votesFiables: votesLus ? positionsFiables(c.donnees, v.donnees) : true,
         agendaLu: arrive(ca) || arrive(an),
-        perime: [ix, pq, pr, de, c, v, ca, an, reg].some((x: { perime?: boolean }) => !!x.perime),
       });
     })().catch(() => {
       if (vivant) setEtat({ etat: ETATS.ECHEC, pret: false });

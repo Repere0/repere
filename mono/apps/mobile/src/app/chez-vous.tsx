@@ -72,12 +72,10 @@ export default function ChezVous() {
           <View style={{ gap: 2 }}>
             <Text style={TYPO.affiche} accessibilityRole="header">{nom}</Text>
             <Text style={TYPO.note}>{[depIndex && depIndex.nom, depIndex && depIndex.region].filter(Boolean).join(" · ")}</Text>
-            {publie ? <Text style={TYPO.micro}>Mis à jour par Repère le {dateFr(publie)}</Text> : null}
-            {r.perime ? (
-              <Text style={TYPO.micro} testID="perime">
-                Le réseau n'a pas permis de tout mettre à jour : une partie de ce qui suit date d'une publication précédente.
-              </Text>
-            ) : null}
+            {/* « Publication » et non « mis a jour » : la date est celle de la
+               publication affichee, vraie dans les trois etats de l'invariant 9
+               — y compris hors ligne, ou rien n'est « a jour » (BandeauFraicheur). */}
+            {publie ? <Text style={TYPO.micro}>Publication Repère du {dateFr(publie)}</Text> : null}
           </View>
 
           <View style={{ gap: PAS * 3 }}>

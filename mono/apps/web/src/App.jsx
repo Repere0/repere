@@ -6,6 +6,7 @@ import {
   annulerPrechargement, entrer, ETATS, PHRASES,
 } from "@repere/data-utils";
 import { NouvelleVersion } from "./NouvelleVersion.jsx";
+import { Fraicheur } from "./Fraicheur.jsx";
 
 /* CHARGEMENT PARESSEUX DES ÉCRANS. Chacun est un module séparé : ouvrir « Qui
    décide » ne télécharge pas le code de « Où va mon argent ». Le socle React est
@@ -562,6 +563,7 @@ export default function App() {
       </header>
 
       <NouvelleVersion />
+      <Fraicheur />
 
       <nav className="departements" aria-label="Choisir un département">
         {etatIndex === ETATS.EN_COURS && !index

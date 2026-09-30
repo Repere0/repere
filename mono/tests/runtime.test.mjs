@@ -432,7 +432,7 @@ await pageFraicheur.context().close();
     await pagePub.waitForTimeout(800);
     return pagePub.evaluate(() => document.body.innerText);
   };
-  let avant = "", apres = "";
+  let avant = "", apres = "", precedente = "";
   try {
     await pagePub.goto(base, { waitUntil: "networkidle" });
     avant = await ouvrirAmillis();
@@ -448,6 +448,14 @@ await pageFraicheur.context().close();
     fs.writeFileSync(f77, JSON.stringify(d77));
     await pagePub.goto(base, { waitUntil: "networkidle" });
     apres = await ouvrirAmillis();
+    /* Une publication encore plus recente, mais le fichier du departement
+       n'arrive pas : la copie gardee reste lisible, ET l'ecran dit qu'elle
+       date d'une publication precedente (invariant 9). */
+    ix.build = { ...ix.build, construit_le: "2099-02-01T00:00:00.000Z" };
+    fs.writeFileSync(fIx, JSON.stringify(ix));
+    fs.rmSync(f77);
+    await pagePub.goto(base, { waitUntil: "networkidle" });
+    precedente = await ouvrirAmillis();
   } finally {
     fs.writeFileSync(fIx, ixAvant);
     fs.writeFileSync(f77, d77Avant);
@@ -458,6 +466,9 @@ await pageFraicheur.context().close();
   verif("fraîcheur — une nouvelle publication atteint le lecteur deja venu, des la visite suivante",
     /PUBLICATION-NEUVE-TEST/.test(apres),
     "le nouveau maire n'est pas a l'ecran : " + apres.slice(0, 400).replace(/\n+/g, " / "));
+  verif("invariant 9 — un fichier non recu apres une nouvelle publication reste lisible, et l'ecran dit qu'il date d'une publication precedente",
+    /PUBLICATION-NEUVE-TEST/.test(precedente) && /date d'une publication précédente/.test(precedente),
+    precedente.slice(0, 400).replace(/\n+/g, " / "));
 }
 
 /* LE PREMIER ECRAN NE PAIE PAS CE FICHIER. Il ne part QUE depuis « Qui decide » :
@@ -2034,6 +2045,11 @@ verif("invariant 1 — hors ligne, on peut encore changer de departement",
 verif("invariant 5 — hors ligne, aucun message d'echec au-dessus de donnees presentes",
   !/n'a pas réussi à joindre le serveur/.test(horsLigne.texte),
   horsLigne.texte.slice(0, 200).replace(/\n+/g, " / "));
+/* INVARIANT 9 : hors ligne, les donnees gardees s'affichent, mais l'ecran ne
+   pretend pas qu'elles sont a jour. */
+verif("invariant 9 — hors ligne, l'ecran dit que Repere n'a pas pu verifier s'il existe une publication plus recente",
+  /n'a pas pu vérifier s'il existe une publication plus récente/.test(horsLigne.texte),
+  horsLigne.texte.slice(0, 300).replace(/\n+/g, " / "));
 
 /* SCENARIO 6 : hors ligne, un departement JAMAIS telecharge. Le produit doit
    dire « vous etes hors ligne », pas « le serveur n'a pas repondu » — et surtout

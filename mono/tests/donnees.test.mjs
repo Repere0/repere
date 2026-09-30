@@ -16,6 +16,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import {
   chargerIndex, chargerDepartement, chargerProjets, ETATS, PHRASES, nouvelleSessionPourTest,
+  FRAICHEUR, PHRASES_FRAICHEUR, etatFraicheur, surFraicheur, verifierPublication, publicationPriseEnCompte,
 } from "../packages/data-utils/src/client.js";
 import { magasin, configurerStockage } from "../packages/data-utils/src/store.js";
 
@@ -40,10 +41,10 @@ globalThis.fetch = async (url, options = {}) => {
   if (typeof r === "function") return r();
   return reponse(200, "application/json", JSON.stringify(r));
 };
-function reponse(status, type, texte) {
+function reponse(status, type, texte, secours = false) {
   return {
     status, ok: status >= 200 && status < 300,
-    headers: { get: h => (h.toLowerCase() === "content-type" ? type : null) },
+    headers: { get: h => (h.toLowerCase() === "content-type" ? type : h.toLowerCase() === "x-repere-secours" && secours ? "1" : null) },
     json: async () => JSON.parse(texte),
   };
 }
@@ -152,4 +153,83 @@ test("la garde refuse AVANT que le support ne recoive quoi que ce soit", async (
     await assert.rejects(() => magasin.ecrire(cle, valeur), /refus d'ecriture/, cle);
   }
   assert.deepEqual(ecritures, [], "le support a recu une ecriture que la garde refuse");
+});
+
+
+/* ---------------------------------------------------------------------------
+   INVARIANT 9 — FRAICHEUR (decision du porteur, 30/09/2026) : actuelle,
+   publication precedente, impossible a verifier — toujours distinguables. */
+
+test("fraicheur — publication verifiee et tout a jour : ACTUELLE", async () => {
+  await toutEffacer();
+  reponses = { "/data/index.json": index("2026-10-04T05:00:00Z"), "/data/departments/77.json": dep("C") };
+  assert.equal(etatFraicheur().etat, FRAICHEUR.EN_COURS, "rien a dire avant la reponse de l'index");
+  await chargerDepartement("77");
+  assert.equal(etatFraicheur().etat, FRAICHEUR.ACTUELLE);
+});
+
+test("fraicheur — le serveur injoignable : IMPOSSIBLE A VERIFIER, jamais « a jour »", async () => {
+  ouvrirApplication();
+  reponses = {};
+  const d = await chargerDepartement("77");
+  assert.equal(d.etat, ETATS.SERVI, "la donnee gardee reste lisible hors ligne");
+  assert.equal(etatFraicheur().etat, FRAICHEUR.INCONNUE);
+});
+
+test("fraicheur — publication plus recente mais fichier non recu : PUBLICATION PRECEDENTE", async () => {
+  ouvrirApplication();
+  reponses = { "/data/index.json": index("2026-10-05T05:00:00Z") };
+  const d = await chargerDepartement("77");
+  assert.equal(d.perime, true);
+  assert.equal(etatFraicheur().etat, FRAICHEUR.PRECEDENTE);
+});
+
+test("faille F-1 — la copie de secours du service worker n'est jamais notee comme actuelle", async () => {
+  await toutEffacer();
+  reponses = {
+    "/data/index.json": index("2026-10-06T05:00:00Z"),
+    /* le magasin est vide, le service worker rend sa vieille copie, marquee */
+    "/data/projets/77.json": () => reponse(200, "application/json", JSON.stringify(projets), true),
+  };
+  const p = await chargerProjets("77");
+  assert.equal(p.etat, ETATS.SERVI);
+  assert.equal(p.perime, true, "une copie de secours est une publication precedente");
+  assert.ok(!(disque.get("socle:GEN") || { cles: {} }).cles["proj:77"], "la copie de secours ne doit pas etre notee sous la generation courante");
+  assert.equal(etatFraicheur().etat, FRAICHEUR.PRECEDENTE);
+  assert.ok(appels.every(a => a.cache === "no-cache"), "toute demande passe outre les caches : " + JSON.stringify(appels));
+});
+
+test("faille F-1 — un index rendu par le secours du service worker : IMPOSSIBLE A VERIFIER", async () => {
+  await toutEffacer();
+  reponses = { "/data/index.json": () => reponse(200, "application/json", JSON.stringify(index("2026-10-07T05:00:00Z")), true) };
+  const ix = await chargerIndex();
+  assert.equal(ix.depuis, "cache");
+  assert.equal(etatFraicheur().etat, FRAICHEUR.INCONNUE);
+});
+
+test("faille F-2 — une publication parue pendant la session est detectee au retour du lecteur", async () => {
+  await toutEffacer();
+  reponses = { "/data/index.json": index("2026-10-08T05:00:00Z"), "/data/departments/77.json": dep("D") };
+  await chargerDepartement("77");
+  const vus = [];
+  const desabonner = surFraicheur(e => vus.push(e.etat));
+  assert.equal(await verifierPublication(), false, "rien de neuf : aucune alerte");
+  reponses["/data/index.json"] = index("2026-10-09T05:00:00Z");
+  reponses["/data/departments/77.json"] = dep("E");
+  assert.equal(await verifierPublication(), true);
+  assert.equal(etatFraicheur().etat, FRAICHEUR.PRECEDENTE, "ce qui est a l'ecran date de la publication precedente");
+  assert.equal(etatFraicheur().nouvelle, true);
+  assert.ok(vus.includes(FRAICHEUR.PRECEDENTE), "l'ecran abonne est prevenu");
+  publicationPriseEnCompte();
+  const d = await chargerDepartement("77");
+  assert.equal(d.donnees.communes["77284"].maire.nom, "E", "apres « Mettre a jour », la nouvelle publication est lue");
+  assert.equal(etatFraicheur().etat, FRAICHEUR.ACTUELLE);
+  desabonner();
+});
+
+test("fraicheur — trois phrases distinctes, les memes pour le site et l'application", () => {
+  const t = [PHRASES_FRAICHEUR[FRAICHEUR.PRECEDENTE], PHRASES_FRAICHEUR[FRAICHEUR.INCONNUE], PHRASES_FRAICHEUR.nouvelle].map(x => x && x.titre);
+  assert.ok(t.every(Boolean));
+  assert.equal(new Set(t).size, 3);
+  assert.ok(!/à jour\./.test(PHRASES_FRAICHEUR[FRAICHEUR.INCONNUE].titre), "l'etat inconnu ne pretend pas que c'est a jour");
 });
