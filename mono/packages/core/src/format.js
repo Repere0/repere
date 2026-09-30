@@ -27,3 +27,10 @@ export function jourFr(iso) {
 export function euros(n) {
   return new Intl.NumberFormat("fr-FR").format(n) + " €";
 }
+
+/* « 9 h », « 15 h 30 » (typographie francaise), depuis une date ISO locale. */
+export function heureFr(iso) {
+  const m = /T(\d{2}):(\d{2})/.exec(iso || "");
+  if (!m) return "";
+  return Number(m[1]) + " h" + (m[2] === "00" ? "" : " " + m[2]);
+}

@@ -51,3 +51,17 @@ export const comptesIncoherents = (nom, phrase) => ({
   corps: phrase,
   lien: { texte: "Vérifier dans les comptes publics", url: OFGL_URL },
 });
+
+/* --- d'un exercice a l'autre (deplace de OuVaArgent.jsx, Evolution) --------- */
+const eurosRonds = n => Math.round(n).toLocaleString("fr-FR") + " €";
+export const eurosArrondis = eurosRonds;
+export const INTRO_EVOLUTION = "Les deux montants sont publiés par l'Observatoire des finances locales ; la différence est une soustraction faite par Repère.";
+export const NOTE_EVOLUTION = "Une différence d'une année sur l'autre ne dit pas si la commune est bien ou mal gérée : un chantier qui commence ou s'achève, un emprunt, une compétence transférée à l'intercommunalité suffisent à la faire varier.";
+export function diffEuros(diff) {
+  if (diff === null || diff === undefined) return "—";
+  return diff === 0 ? "inchangé" : (diff > 0 ? "+ " : "− ") + eurosRonds(Math.abs(diff));
+}
+export const perimetreChange = (e, nom) => ({
+  titre: `D'un exercice à l'autre : ${nom} n'est pas comparable à elle-même.`,
+  corps: `La population publiée passe de ${e.p1.toLocaleString("fr-FR")} habitants (exercice ${e.an1}) à ${e.p2.toLocaleString("fr-FR")} (exercice ${e.an2}). Un écart de cette taille signale un changement de territoire, par exemple une fusion de communes : comparer les deux années mesurerait ce changement, pas l'évolution des comptes. Repère ne fait donc pas la différence.`,
+});

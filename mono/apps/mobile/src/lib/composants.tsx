@@ -7,13 +7,47 @@
 import type { ReactNode } from "react";
 import { Linking, Pressable, StyleSheet, Text, View } from "react-native";
 import { ligneSource, CALCUL_REPERE } from "@repere/core";
-import { couleurs, CIBLE, PAS } from "./theme";
+import { couleurs, CIBLE, PAS, RAYON, OMBRE, TYPO, type Echelon } from "./theme";
 
-export function Carte({ echelon, children, titre }: { echelon?: keyof typeof couleurs; children: ReactNode; titre?: string }) {
+/* Refonte du 30/09/2026 : plus de filet de couleur a gauche ; l'echelon se
+   dit par un point de couleur devant l'etiquette, et la carte prend de l'air. */
+export function Carte({ echelon, children, titre }: { echelon?: Echelon; children: ReactNode; titre?: string }) {
   return (
-    <View style={[s.carte, echelon ? { borderLeftColor: couleurs[echelon], borderLeftWidth: 4 } : null]}>
-      {titre ? <Text style={s.carteTitre} accessibilityRole="header">{titre}</Text> : null}
+    <View style={s.carte}>
+      {titre ? (
+        <View style={s.carteTete}>
+          {echelon ? <View style={[s.point, { backgroundColor: couleurs[echelon] }]} /> : null}
+          <Text style={s.carteTitre} accessibilityRole="header">{titre}</Text>
+        </View>
+      ) : null}
       {children}
+    </View>
+  );
+}
+
+/* UNE QUESTION, UNE REPONSE — la carte de l'ecran d'accueil (niveau 1).
+   Question en etiquette, reponse lisible en trois secondes, un visuel, la
+   pastille de source, et un seul geste pour approfondir. */
+export function CarteQuestion({ echelon, question, reponse, children, pied, action }: {
+  echelon: Echelon; question: string; reponse: ReactNode; children?: ReactNode; pied?: ReactNode;
+  action?: { texte: string; onPress: () => void };
+}) {
+  return (
+    <View style={s.carte}>
+      <View style={s.carteTete}>
+        <View style={[s.point, { backgroundColor: couleurs[echelon] }]} />
+        <Text style={s.carteTitre} accessibilityRole="header">{question}</Text>
+      </View>
+      {!reponse ? null : typeof reponse === "string" ? <Text style={TYPO.reponse}>{reponse}</Text> : reponse}
+      {children}
+      {pied}
+      {action ? (
+        <Pressable onPress={action.onPress} accessibilityRole="button" accessibilityLabel={action.texte}
+          style={({ pressed }) => [s.action, pressed && { opacity: 0.6 }]}>
+          <Text style={s.actionTexte}>{action.texte}</Text>
+          <Text style={s.actionTexte} accessibilityElementsHidden importantForAccessibility="no">›</Text>
+        </Pressable>
+      ) : null}
     </View>
   );
 }
@@ -90,11 +124,15 @@ export function Bouton({ texte, onPress, discret }: { texte: string; onPress: ()
 }
 
 const s = StyleSheet.create({
-  carte: {
-    backgroundColor: couleurs.carte, borderRadius: 10, padding: PAS * 4, gap: PAS * 2,
-    borderWidth: StyleSheet.hairlineWidth, borderColor: couleurs.trait,
+  carte: { backgroundColor: couleurs.carte, borderRadius: RAYON.carte, padding: PAS * 5, gap: PAS * 3, ...OMBRE },
+  carteTete: { flexDirection: "row", alignItems: "center", gap: PAS * 2 },
+  point: { width: 10, height: 10, borderRadius: 5 },
+  carteTitre: { ...TYPO.etiquette, flex: 1 },
+  action: {
+    minHeight: CIBLE, flexDirection: "row", alignItems: "center", justifyContent: "space-between",
+    borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: couleurs.trait, marginTop: PAS,
   },
-  carteTitre: { fontSize: 13, fontWeight: "700", letterSpacing: 0.4, textTransform: "uppercase", color: couleurs.sourd },
+  actionTexte: { fontSize: 17, fontWeight: "600", color: couleurs.ville },
   texte: { fontSize: 17, lineHeight: 24, color: couleurs.encre },
   fort: { fontWeight: "700" },
   sourd: { color: couleurs.sourd, fontSize: 15, lineHeight: 21 },
@@ -102,11 +140,11 @@ const s = StyleSheet.create({
   sourceTexte: { fontSize: 13, lineHeight: 18, color: couleurs.sourd },
   lien: { minHeight: CIBLE, justifyContent: "center" },
   lienTexte: { fontSize: 15, color: couleurs.ville, textDecorationLine: "underline" },
-  vide: { gap: PAS * 2, padding: PAS * 4, backgroundColor: couleurs.voile, borderRadius: 10 },
+  vide: { gap: PAS * 2, padding: PAS * 4, backgroundColor: couleurs.voile, borderRadius: RAYON.bloc },
   bouton: {
-    minHeight: CIBLE, borderRadius: 10, paddingHorizontal: PAS * 4, alignItems: "center", justifyContent: "center",
+    minHeight: CIBLE + 4, borderRadius: RAYON.bloc, paddingHorizontal: PAS * 4, alignItems: "center", justifyContent: "center",
     backgroundColor: couleurs.ville,
   },
   boutonDiscret: { backgroundColor: couleurs.voile },
-  boutonTexte: { color: "#ffffff", fontSize: 17, fontWeight: "600" },
+  boutonTexte: { color: couleurs.blanc, fontSize: 17, fontWeight: "700" },
 });

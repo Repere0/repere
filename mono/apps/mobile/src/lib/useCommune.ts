@@ -13,18 +13,21 @@
  *    chargeurs ne rejettent pas, mais une exception levee avant eux (code de
  *    departement refuse par la fabrique d'adresses) n'etait pas rattrapee.
  *
- * Seuls les fichiers que l'ecran affiche sont demandes : le calendrier du
- * Senat, l'agenda de l'Assemblee et les faits editoriaux ne servent pas a
- * cette tranche (deriverAujourdhui les accepte absents). Moins de requetes,
- * moins de pannes possibles sur un reseau mobile.
+ * Refonte du 30/09/2026 : l'accueil montre aussi « ce qui arrive » (agenda de
+ * l'Assemblee, calendrier du Senat — fichiers produits CHAQUE JOUR par la
+ * chaine, jamais embarques) et « qui decide » jusqu'a la region (un petit
+ * fichier par region). Chacun porte son propre etat : un calendrier absent ne
+ * fait jamais dire « aucune seance annoncee ». Les faits editoriaux restent
+ * hors de cet ecran.
  *
  * La DERIVATION reste celle du site (@repere/core) : ce crochet ne calcule
  * aucun fait. */
-import { useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
+import { createElement } from "react";
 import { deriverAujourdhui, positionsFiables } from "@repere/core";
 import {
   chargerIndex, chargerDepartement, chargerProjets, chargerDeputes, chargerCatalogueScrutins,
-  chargerVotes, ETATS,
+  chargerVotes, chargerElusRegion, chargerCalendrierSenat, chargerAgendaAN, ETATS,
 } from "./donnees";
 import type { Choix } from "./selection";
 
@@ -35,8 +38,11 @@ export type EtatCommune =
   | { etat: string; pret: false }
   | {
       etat: string; pret: true; d: Ouvert; srcElus: Ouvert;
+      index: Ouvert; paquet: Ouvert; projets: Ouvert; deputes: Ouvert; elusRegion: Ouvert;
       /* true si le fichier est arrive ; false : il n'est PAS arrive (panne), ce qui n'est pas une absence */
-      projetsLus: boolean; votesLus: boolean; votesFiables: boolean;
+      projetsLus: boolean; votesLus: boolean; votesFiables: boolean; regionLue: boolean;
+      /* le calendrier : arrive pour au moins une institution */
+      agendaLu: boolean;
     };
 
 const arrive = (r: { etat: string }) => r.etat === ETATS.SERVI;
@@ -49,10 +55,12 @@ export function useCommune(choix: Choix, essai: number): EtatCommune {
     let vivant = true;
     setEtat({ etat: ETATS.EN_COURS, pret: false });
     const { dep, insee } = choix;
-    Promise.all([
-      chargerIndex(), chargerDepartement(dep), chargerProjets(dep),
-      chargerDeputes(), chargerCatalogueScrutins(), chargerVotes(dep),
-    ]).then(([ix, pq, pr, de, c, v]) => {
+    (async () => {
+      const [ix, pq, pr, de, c, v, ca, an] = await Promise.all([
+        chargerIndex(), chargerDepartement(dep), chargerProjets(dep),
+        chargerDeputes(), chargerCatalogueScrutins(), chargerVotes(dep),
+        chargerCalendrierSenat(), chargerAgendaAN(),
+      ]);
       if (!vivant) return;
       const paquet: Ouvert = pq.donnees;
       const fiche = paquet && paquet.communes ? paquet.communes[insee] : null;
@@ -61,20 +69,27 @@ export function useCommune(choix: Choix, essai: number): EtatCommune {
       if (!fiche) { setEtat({ etat: pq.donnees ? ETATS.INTROUVABLE : pq.etat, pret: false }); return; }
       if (!ix.donnees) { setEtat({ etat: ix.etat, pret: false }); return; }
       const index: Ouvert = ix.donnees;
+      const depIndex = Array.isArray(index.departements) ? index.departements.find((x: Ouvert) => x.code === dep) : null;
+      const reg = depIndex && depIndex.region_code ? await chargerElusRegion(depIndex.region_code) : { etat: ETATS.INTROUVABLE, donnees: null };
+      if (!vivant) return;
       const votesLus = arrive(de) && arrive(c) && arrive(v);
       const d = deriverAujourdhui({
         fiche, commune: insee, dep, index,
         projets: arrive(pr) ? pr.donnees : null,
         cat: votesLus ? c.donnees : null, pos: votesLus ? v.donnees : null, deputes: votesLus ? de.donnees : null,
-        cal: null, agendaAN: null, evenements: null, maintenant: new Date(),
+        cal: arrive(ca) ? ca.donnees : null, agendaAN: arrive(an) ? an.donnees : null,
+        evenements: null, maintenant: new Date(),
       });
       setEtat({
         etat: ETATS.SERVI, pret: true, d,
         srcElus: index.sources ? index.sources.elus : null,
-        projetsLus: arrive(pr), votesLus,
+        index, paquet, projets: arrive(pr) ? pr.donnees : null, deputes: arrive(de) ? de.donnees : null,
+        elusRegion: arrive(reg) ? reg.donnees : null,
+        projetsLus: arrive(pr), votesLus, regionLue: arrive(reg),
         votesFiables: votesLus ? positionsFiables(c.donnees, v.donnees) : true,
+        agendaLu: arrive(ca) || arrive(an),
       });
-    }).catch(() => {
+    })().catch(() => {
       if (vivant) setEtat({ etat: ETATS.ECHEC, pret: false });
     });
     return () => { vivant = false; };
@@ -82,3 +97,15 @@ export function useCommune(choix: Choix, essai: number): EtatCommune {
 
   return etat;
 }
+
+/* Une seule lecture par commune, partagee par l'accueil et les ecrans de
+   detail : ouvrir « Ou va l'argent » ne recharge rien. */
+const Contexte = createContext<{ r: EtatCommune; reessayer: () => void }>({
+  r: { etat: ETATS.EN_COURS, pret: false }, reessayer: () => {},
+});
+export function FournisseurCommune({ choix, children }: { choix: Choix; children: ReactNode }) {
+  const [essai, setEssai] = useState(0);
+  const r = useCommune(choix, essai);
+  return createElement(Contexte.Provider, { value: { r, reessayer: () => setEssai(n => n + 1) } }, children);
+}
+export const useCommuneChoisie = () => useContext(Contexte);

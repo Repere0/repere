@@ -13,7 +13,7 @@ import { mots, motsCible, correspond, trouverCommunes } from "@repere/core";
 import { chargerCommunesBeta, chargerIndex, ETATS, PHRASES } from "../lib/donnees";
 import { Bouton, Carte, Texte, Vide } from "../lib/composants";
 import { useSelection } from "../lib/selection";
-import { couleurs, CIBLE, PAS } from "../lib/theme";
+import { couleurs, CIBLE, PAS, POLICE, RAYON, TYPO } from "../lib/theme";
 
 type Ligne = [string, string, string[]];
 type Beta = { communes: Record<string, string>; manquantes?: Record<string, string>; source?: { producteur?: string } };
@@ -80,8 +80,10 @@ export default function Accueil() {
         contentContainerStyle={[s.page, { paddingTop: marges.top + PAS * 6, paddingBottom: marges.bottom + PAS * 6 }]}
         ListHeaderComponent={
           <View style={s.tete}>
-            <Text style={s.marque} accessibilityRole="header">Repère</Text>
-            <Text style={s.promesse}>Qui décide chez vous, et où va votre argent. Chaque chiffre porte sa source officielle.</Text>
+            <Text style={s.marque}>Repère</Text>
+            {/* CE QU'EST REPERE, EN UNE PHRASE ; POURQUOI C'EST UTILE, EN UNE LIGNE */}
+            <Text style={TYPO.affiche} accessibilityRole="header">Ce qui se passe chez vous, expliqué simplement.</Text>
+            <Text style={s.promesse}>Qui décide, où va l'argent, ce qu'a voté votre député, ce qui arrive. Chaque chiffre avec sa source officielle.</Text>
             {retenue && nomRetenue ? (
               <Carte echelon="ville" titre="Votre commune, sur ce téléphone">
                 <Texte fort>{nomRetenue}</Texte>
@@ -107,7 +109,16 @@ export default function Accueil() {
                 action={etat === ETATS.EN_COURS ? undefined : "Réessayer"} onAction={() => setEssai(n => n + 1)} />
             ) : null}
             {etat === ETATS.SERVI && !cherches.length ? (
-              <Text style={s.note}>La bêta couvre les {communes.length} communes d'Île-de-France qui ont une fiche.</Text>
+              <>
+                <Text style={s.note}>La bêta couvre les {communes.length} communes d'Île-de-France qui ont une fiche.</Text>
+                {/* CE QUE REPERE SAIT DE VOUS : rien. Phrase vraie a la lettre :
+                    les adresses se composent par departement (client.js), et la
+                    commune n'est gardee que sur demande (lib/memoire.ts). */}
+                <View style={s.confiance}>
+                  <Text style={[s.note, { color: couleurs.encre, fontWeight: "600" }]}>Pas de compte, pas d'e-mail.</Text>
+                  <Text style={s.note}>Repère ne sait pas qui vous êtes. Pour afficher votre commune, il télécharge le fichier public de tout votre département, et ne garde votre commune sur ce téléphone que si vous le lui demandez.</Text>
+                </View>
+              </>
             ) : null}
             {manquante ? (
               <Vide titre={`${manquante[1]} existe bien en Île-de-France : c'est nous qui n'avons pas encore sa fiche.`}
@@ -140,11 +151,12 @@ export default function Accueil() {
 const s = StyleSheet.create({
   page: { paddingHorizontal: PAS * 4, gap: PAS * 2, maxWidth: 640, width: "100%", alignSelf: "center" },
   tete: { gap: PAS * 3, marginBottom: PAS * 2 },
-  marque: { fontSize: 34, fontWeight: "800", color: couleurs.ville },
+  marque: { fontFamily: POLICE.affiche, fontSize: 22, color: couleurs.ville, marginBottom: PAS * 4 },
+  confiance: { gap: PAS, padding: PAS * 4, borderRadius: RAYON.bloc, backgroundColor: couleurs.voile, marginTop: PAS * 2 },
   promesse: { fontSize: 17, lineHeight: 24, color: couleurs.encre },
-  question: { fontSize: 22, fontWeight: "700", color: couleurs.encre, marginTop: PAS * 4 },
+  question: { fontFamily: POLICE.titre, fontSize: 24, lineHeight: 30, color: couleurs.encre, marginTop: PAS * 6 },
   champ: {
-    minHeight: CIBLE + 4, borderRadius: 10, borderWidth: 1, borderColor: couleurs.trait,
+    minHeight: CIBLE + 8, borderRadius: RAYON.bloc, borderWidth: 1.5, borderColor: couleurs.trait,
     backgroundColor: couleurs.carte, paddingHorizontal: PAS * 4, fontSize: 18, color: couleurs.encre,
     /* Sur l'export web, le contour de focus par defaut du navigateur est orange :
        une sixieme couleur (invariant 7). Le focus reste visible, dans la couleur
@@ -154,8 +166,7 @@ const s = StyleSheet.create({
   note: { fontSize: 15, color: couleurs.sourd },
   resultat: {
     minHeight: CIBLE + 8, flexDirection: "row", alignItems: "center", gap: PAS * 3,
-    paddingHorizontal: PAS * 3, borderRadius: 10, backgroundColor: couleurs.carte,
-    borderWidth: StyleSheet.hairlineWidth, borderColor: couleurs.trait,
+    paddingHorizontal: PAS * 4, borderRadius: RAYON.bloc, backgroundColor: couleurs.carte,
   },
   pastille: { width: 10, height: 10, borderRadius: 5, backgroundColor: couleurs.ville },
   resultatNom: { flex: 1, fontSize: 17, color: couleurs.encre, fontWeight: "600" },

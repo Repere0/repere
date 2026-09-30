@@ -125,14 +125,27 @@ async function texteSite(nav, { dep, nom }) {
 }
 
 async function texteApp(nav, { nom }) {
-  const c = await nav.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
+  /* Refonte du 30/09/2026 : l'application montre l'essentiel sur « Chez vous »
+     et le detail dans trois ecrans (argent, vote, qui decide), avec des
+     explications repliees. On lit les quatre ecrans, replis ouverts. */
+  const c = await nav.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, reducedMotion: "reduce" });
   const p = await c.newPage();
   await p.goto(APP, { waitUntil: "networkidle" });
   await p.getByLabel(/Où habitez-vous/).fill(nom);
   await p.getByRole("button", { name: new RegExp("^" + nom.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + ",") }).first().click();
-  await p.getByText("Voici ce qui se passe chez vous").waitFor({ timeout: 15000 });
+  await p.getByText("Ce qui se passe près de chez vous").first().waitFor({ timeout: 15000 });
   await p.waitForLoadState("networkidle");
-  const t = await p.evaluate(() => document.body.innerText);
+  let t = await p.evaluate(() => document.body.innerText);
+  for (const action of ["Comprendre le budget de la commune", "Comprendre ce vote", "Qui décide de quoi"]) {
+    const b = p.getByRole("button", { name: action });
+    if (!(await b.count())) continue;              /* absence dite par une phrase sur l'accueil */
+    await b.first().click();
+    await p.waitForTimeout(900);
+    for (const depli of await p.getByRole("button", { name: /Ce que ça ne veut pas dire/ }).all()) await depli.click();
+    t += "\n" + await p.evaluate(() => document.body.innerText);
+    await p.getByRole("button", { name: "Revenir à l'écran Chez vous" }).last().click();
+    await p.waitForTimeout(500);
+  }
   await c.close();
   return net(t);
 }

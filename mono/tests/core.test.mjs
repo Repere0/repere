@@ -133,3 +133,58 @@ test("phrases des comptes — trois absences, trois phrases, et le calcul s'anno
   assert.doesNotMatch(m.CALCUL_REPERE, /ci-dessus/);
   assert.match(m.CALCUL_REPERE, /ce n'est pas un chiffre publié/);
 });
+
+test("visuels — les nombres dessines sont ceux des phrases, et aucune part ne depasse 100 %", async () => {
+  const m = await import("../packages/core/src/index.js");
+  const ix = data("index.json");
+  if (!ix) return;
+  let vus = 0;
+  for (const dep of ["75", "77", "93"]) {
+    const pq = data(`departments/${dep}.json`);
+    for (const c of Object.values(pq.communes)) {
+      const e = m.dernierExercice(c, ix.agregats);
+      if (!e) continue;
+      const ch = m.chiffresComptes(e.ex);
+      const texte = m.rapports(e.ex).map(o => o.v).join(" | ");
+      if (ch.partSalaires !== null) assert.ok(texte.includes(ch.partSalaires + " € de salaires"), texte);
+      if (ch.parJour !== null) assert.ok(texte.includes(ch.parJour.toLocaleString("fr-FR") + " € par jour"), texte);
+      for (const k of ["partSalaires", "partInvestissement", "partImpots"]) {
+        assert.ok(ch[k] === null || (ch[k] >= 0 && ch[k] <= 100), k + " hors bornes : " + ch[k]);
+      }
+      vus++;
+    }
+  }
+  assert.ok(vus > 500, "trop peu de communes controlees : " + vus);
+});
+
+test("visuels — financement, vote, parcours d'une loi, chaine : denominateurs dits, rien d'invente", async () => {
+  const m = await import("../packages/core/src/index.js");
+  const f = m.financementProjet({ subvention: 726800, cout: 1533500 });
+  assert.equal(f.partPct, 47); assert.equal(f.reste, 806700);
+  assert.equal(m.financementProjet({ subvention: 10, cout: 5 }).part, null, "une subvention superieure au cout n'est pas dessinee");
+  assert.equal(m.financementProjet({ subvention: 10 }).part, null);
+  assert.equal(m.financementProjet({ subvention: 0, cout: 5 }), null);
+  const r = m.repartitionVote({ dec: { pour: "359", contre: "1", abstentions: "81" } });
+  assert.equal(r.total, 441);
+  assert.equal(Math.round(r.segments.reduce((a, s) => a + s.part, 0) * 1000), 1000);
+  assert.equal(m.repartitionVote({ dec: { pour: "x", contre: "1", abstentions: "1" } }), null);
+  assert.match(m.phraseDenominateurVote(441), /ayant pris part au vote/);
+  assert.equal(m.etapeDuScrutin("texte de la commission mixte paritaire"), "texte de la commission mixte paritaire");
+  assert.equal(m.etapeDuScrutin("seconde délibération"), "première lecture");
+  /* Defaut trouve sur capture le 30/09 : la cle sans accent ne correspondait
+     jamais a procedure(), qui rend « première lecture » : aucune etape n'etait
+     surlignee. On verifie donc sur les VRAIS intitules du catalogue. */
+  const cat = data("scrutins.json");
+  if (cat) {
+    const etapes = cat.scrutins.map(sc => m.etapeDuScrutin(m.procedure(sc.t))).filter(Boolean);
+    const avecProcedure = cat.scrutins.filter(sc => m.procedure(sc.t)).length;
+    assert.equal(etapes.length, avecProcedure, "une procedure du catalogue n'a pas d'etape sur la frise");
+    assert.ok(etapes.length > 0);
+  }
+  assert.equal(m.etapeDuScrutin(""), null, "sans procedure dans l'intitule, aucune etape n'est surlignee");
+  assert.equal(m.datePublication({ genere_le: "2026-09-29" }), "2026-09-29");
+  assert.equal(m.datePublication({}), null);
+  const ch = m.chaineDecision({ fiche: { nom: "X", circo: null, canton: [] }, paquet: {}, index: null, deputes: null, elusRegion: null, dep: "77" });
+  assert.deepEqual(ch.map(n => n.echelon), ["ville", "agglo", "dept", "region", "france"]);
+  assert.ok(ch.every(n => n.personne === null), "sans source, personne n'est nomme");
+});
