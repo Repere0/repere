@@ -33,10 +33,13 @@ explicite du porteur les change ; la PR qui l'applique met alors à jour
 <!-- INVARIANTS:DEBUT -->
 1. **Autonomie.** L'application fonctionne hors ligne, sans serveur applicatif.
 2. **Une seule clé de stockage local** (`repere.departement` dans `mono/`, qui porte
-   `{d, v}` depuis le 23/09/2026). Aucun compte, email, traceur, cookie. IndexedDB :
-   uniquement de la donnée publique déjà téléchargée, dans un magasin unique.
-   Aucune adresse réseau ne porte un code de commune : données découpées **par
-   département**.
+   `{d, v}` depuis le 23/09/2026). Aucun compte, email, traceur, cookie. Le
+   magasin de données (IndexedDB sur le site, dossier cache de l'application sur
+   le téléphone — décision du 30/09/2026) ne garde que les fichiers publics
+   publiés par Repère, sous une garde unique (`store.js`) : aucune adresse,
+   aucun identifiant, aucune trace du lecteur. La commune choisie reste la seule
+   donnée propre au lecteur. Aucune adresse réseau ne porte un code de commune :
+   données découpées **par département**.
 3. **Aucun classement**, score, ou tri numérique de personnes, de partis ou de
    territoires.
 4. **Chaque chiffre porte sa source officielle et sa date** (producteur, licence,
@@ -47,6 +50,13 @@ explicite du porteur les change ; la PR qui l'applique met alors à jour
 7. **Cinq couleurs d'échelon gelées** ; aucune autre couleur ne dépasse une
    amplitude de 24 sur les canaux RGB.
 8. **Jamais le patrimoine d'un élu, jamais de donnée de présence ou d'absence.**
+9. **Fraîcheur** (décision du porteur, 30/09/2026). Une donnée gardée sur
+   l'appareil peut être affichée pour préserver l'accès hors ligne, mais jamais
+   présentée comme actuelle si elle ne l'est pas. Trois états, toujours
+   distinguables à l'écran : **actuelle** (publication courante, vérifiée),
+   **publication précédente** (le lecteur le comprend immédiatement), **impossible
+   à vérifier** (on ne prétend pas que c'est à jour). La confiance passe avant
+   l'impression de fluidité.
 <!-- INVARIANTS:FIN -->
 
 ## Où vit quoi (état du 29/09/2026)
