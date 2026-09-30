@@ -595,6 +595,53 @@ test("données — chaque paquet départemental a la forme que l'application att
   assert.ok(communesLues > 30000, `seulement ${communesLues} communes relues`);
 });
 
+test("invariant 4 — aucun exercice publié n'a des montants incompatibles avec sa population", () => {
+  /* 29/09/2026 : 151 exercices du bloc OFGL (dont Saint-Denis 2024 : population
+     32 426, recettes a 2 035 EUR par habitant pour 233,5 M EUR, soit ~114 800
+     habitants) portaient la population d'une collectivite et les montants d'une
+     autre. extract-html.js les ecarte (regle V-2). Ce controle ne reutilise pas
+     sa fonction : il refait le calcul sur ce qui est reellement publie, pour les
+     trois echelons, et verifie qu'un exercice ecarte ne porte plus aucun chiffre. */
+  if (!existe("data/index.json")) return;
+  const fautifs = [];
+  const verifier = (ou, comptes) => {
+    for (const [an, ex] of Object.entries(comptes || {})) {
+      if (!Array.isArray(ex) || !(ex[0] > 0)) continue;
+      for (let i = 1; i + 1 < ex.length; i += 2) {
+        const m = ex[i], h = ex[i + 1];
+        if (typeof m !== "number" || typeof h !== "number" || !m || !h) continue;
+        const popDeduite = m / h;
+        if (Math.abs(popDeduite - ex[0]) / ex[0] > 0.02 && Math.abs(m / ex[0] - h) > 1.5) {
+          fautifs.push(`${ou}/${an} (population ${ex[0]}, deduite ${Math.round(popDeduite)})`);
+          break;
+        }
+      }
+    }
+  };
+  let ecartesVerifies = 0;
+  for (const f of fs.readdirSync(path.join(RACINE, "data/departments")).filter(f => f.endsWith(".json"))) {
+    const p = JSON.parse(lire(path.join("data/departments", f)));
+    verifier("departement " + p.d, p.comptes_departement);
+    for (const [insee, c] of Object.entries(p.communes)) {
+      verifier(insee, c.comptes);
+      for (const an of c.comptes_ecartes || []) {
+        const ex = c.comptes && c.comptes[an];
+        assert.ok(Array.isArray(ex) && ex.every(v => v === null),
+          `${insee}/${an} est declare ecarte mais porte encore des chiffres`);
+        ecartesVerifies++;
+      }
+    }
+  }
+  if (existe("data/comptes-regions.json")) {
+    const r = JSON.parse(lire("data/comptes-regions.json"));
+    for (const [code, comptes] of Object.entries(r.regions || {})) verifier("region " + code, comptes);
+  }
+  assert.deepEqual(fautifs.slice(0, 10), [], `${fautifs.length} exercice(s) publies incoherents`);
+  /* Pas d'assertion sur le NOMBRE d'exercices ecartes : une ingestion propre
+     devra le faire tomber a zero, et ce controle ne doit pas l'en empecher. */
+  void ecartesVerifies;
+});
+
 test("langue — aucun nom de commune ne s'affiche sans ses accents", () => {
   /* Les noms viennent de la source et s'affichent tels quels : ils sont du texte
      francais au meme titre que le reste. Le controle existant ne regardait que

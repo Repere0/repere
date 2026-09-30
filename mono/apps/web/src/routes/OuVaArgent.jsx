@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Carte, Vide, Tuile, BarreEchelon, Source, Mot, Chargement } from "@repere/ui";
 import { Pile } from "@repere/ui/amicro";
-import { valeur, rapports, population, dernierExercice } from "../lib/comptes.jsx";
+import { valeur, rapports, population, dernierExercice, evolution } from "../lib/comptes.jsx";
 import { chargerComptesRegions, ETATS } from "@repere/data-utils";
 
 /* `valeur`, `rapports`, `population`, `dernierExercice` VIVENT DANS
@@ -20,6 +20,46 @@ import { chargerComptesRegions, ETATS } from "@repere/data-utils";
  * petit fichier a part (voir chargerComptesRegions ci-dessous) — mesure qui a
  * fait deplacer les comptes departementaux hors de ce fichier le jour meme
  * (voir extract-html.js pour le detail des deux versions mesurees). */
+const euros = n => Math.round(n).toLocaleString("fr-FR") + " €";
+
+/* D'UN EXERCICE A L'AUTRE — voir evolution() dans lib/comptes.jsx. */
+function Evolution({ e, nom, src }) {
+  if (e.perimetreChange) {
+    return (
+      <Vide titre={`D'un exercice à l'autre : ${nom} n'est pas comparable à elle-même.`}
+        corps={`La population publiée passe de ${e.p1.toLocaleString("fr-FR")} habitants (exercice ${e.an1}) à ${e.p2.toLocaleString("fr-FR")} (exercice ${e.an2}). Un écart de cette taille signale un changement de territoire, par exemple une fusion de communes : comparer les deux années mesurerait ce changement, pas l'évolution des comptes. Repère ne fait donc pas la différence.`} />
+    );
+  }
+  return (
+    <Carte echelon="ville" titre="D'un exercice à l'autre"
+      sousTitre={<><Mot cle="exercice">exercice</Mot> {e.an1} → <Mot cle="exercice">exercice</Mot> {e.an2} · budget principal</>}
+      tag="Calcul Repère">
+      <p className="tx-note tx-intro">
+        Les deux montants sont publiés par l'Observatoire des finances locales ; la différence
+        est une soustraction faite par Repère.
+      </p>
+      {e.lignes.map((l, i) => (
+        <div className="ligne evolution" key={i}>
+          <div className="ligne-h"><span>{l.libelle}</span>
+            <b>{l.diff === null ? "—" : l.diff === 0 ? "inchangé" : (l.diff > 0 ? "+ " : "− ") + euros(Math.abs(l.diff))}</b>
+          </div>
+          <div className="ligne-note">
+            {l.diff === null
+              ? `Non comparable : le fichier ne porte pas cette ligne pour l'exercice ${l.m1 === null ? e.an1 : e.an2}.`
+              : `${e.an1} : ${euros(l.m1)} · ${e.an2} : ${euros(l.m2)}`}
+          </div>
+        </div>
+      ))}
+      <p className="tx-note">
+        Une différence d'une année sur l'autre ne dit pas si la commune est bien ou mal gérée :
+        un chantier qui commence ou s'achève, un emprunt, une compétence transférée à
+        l'intercommunalité suffisent à la faire varier.
+      </p>
+      <Source calcul producteur={src ? src.producteur : ""} licence={src ? src.licence : ""} maj={src ? src.maj : ""} />
+    </Carte>
+  );
+}
+
 function CompteTerritoire({ titre, echelon, exerciceAn, ex, agregats, src }) {
   const rr = rapports(ex);
   const maxAgregat = Math.max(...agregats.map((_, i) => (valeur(ex, i) || {}).m || 0));
@@ -46,6 +86,7 @@ export default function OuVaArgent({ paquet, index, commune }) {
 
   const c = commune ? paquet.communes[commune] : null;
   const exercice = useMemo(() => dernierExercice(c, agregats), [c, agregats]);
+  const evo = useMemo(() => evolution(c, agregats), [c, agregats]);
 
   /* Le departement est deja dans le paquet en cours (aucune requete de plus) ;
      seule la region vient d'un petit fichier a part, commun a la France
@@ -76,6 +117,24 @@ export default function OuVaArgent({ paquet, index, commune }) {
   const maxAgregat = exercice
     ? Math.max(...agregats.map((_, i) => (valeur(exercice.ex, i) || {}).m || 0))
     : 0;
+
+  /* EXERCICES ECARTES PAR LA REGLE V-2 (29/09/2026, voir extract-html.js) : le
+     fichier les porte, mais leurs montants ne correspondent pas a la population
+     publiee sur la meme ligne. C'est une autre cause d'absence que « le fichier
+     ne porte pas cette commune » : elle a donc sa propre phrase. */
+  const ecartes = (c && Array.isArray(c.comptes_ecartes) ? c.comptes_ecartes : [])
+    .filter(an => !exercice || an > exercice.an).sort();
+  const phraseEcartes = ecartes.length
+    ? `Le fichier officiel porte des comptes pour ${ecartes.length > 1 ? "les exercices " + ecartes.join(" et ") : "l'exercice " + ecartes[0]}, mais leurs montants ne correspondent pas à la population publiée sur la même ligne. Repère ne les affiche pas plutôt que de risquer d'attribuer à ${c ? c.nom : "cette commune"} des chiffres qui ne sont pas les siens.`
+    : null;
+
+  if (!exercice && phraseEcartes) {
+    return (
+      <Vide titre={`${c.nom} : ses comptes publiés ne sont pas cohérents.`}
+        corps={phraseEcartes}
+        lien={{ texte: "Vérifier dans les comptes publics", url: "https://data.ofgl.fr/" }} />
+    );
+  }
 
   if (!exercice) {
     /* DOCTRINE DU VIDE. Avant, les communes sans comptes disparaissaient
@@ -119,6 +178,8 @@ export default function OuVaArgent({ paquet, index, commune }) {
           corps={`Les rapports se calculent à partir de plusieurs lignes à la fois ; pour l'exercice ${exercice.an}, le fichier officiel n'en porte pas assez.`} />
       )}
 
+      {evo ? <Evolution e={evo} nom={c.nom} src={src} /> : null}
+
       {/* Nom seul : « les comptes de X » demanderait une elision non derivable. */}
       <Carte echelon="dept" titre={rr.length >= 2 ? "Le détail publié" : c.nom}
         sousTitre={<>Les comptes de la commune · <Mot cle="exercice">exercice</Mot> {exercice.an}{population(exercice.ex) ? ` · ${population(exercice.ex).toLocaleString("fr-FR")} habitants` : ""} · budget principal</>}
@@ -127,6 +188,7 @@ export default function OuVaArgent({ paquet, index, commune }) {
           Les six lignes ci-dessous sont publiées telles quelles par l'Observatoire des finances
           locales. Elles sont en euros, pour cette commune seule, sur une seule année.
         </p>
+        {phraseEcartes ? <p className="tx-note">{phraseEcartes}</p> : null}
         {agregats.map((a, i) => {
           const v = valeur(exercice.ex, i);
           /* TROIS ETATS, TROIS PHRASES — voir le commentaire de valeur().

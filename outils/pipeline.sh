@@ -221,6 +221,12 @@ PY
 # "deux endroits qui derivent la meme regle" que ce depot a deja appris a eviter.
 # site_donnees/ continue d'etre PRODUIT plus haut (3 sexies) : rien n'empeche
 # de le lire ou de le supprimer plus tard, ce n'est plus publie, c'est tout.
+# LES COMPTES DES COMMUNES, RELEVES A LA SOURCE (blocker 8, 29/09/2026). Ecrit
+# mono/scripts/comptes-communes.json, que extract-html.js prefere au bloc fige
+# quand il est complet. Avertit s'il echoue : le bloc fige reste alors en place.
+python3 outils/ofgl.py --produire \
+  || echo "::warning::comptes des communes non releves - le bloc fige du 29/07/2026 reste en place"
+
 APP=$(ls -1 app_repere_v18_*.html | grep -v '\.bak$' | sort -V | tail -1)
 echo "application retenue (fichier autonome) : $APP"
 rm -rf site_engendre
