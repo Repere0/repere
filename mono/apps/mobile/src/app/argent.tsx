@@ -87,10 +87,10 @@ export default function Argent() {
                   <Resume phrase={ch.partSalaires !== null ? `Sur 100 € dépensés, ${ch.partSalaires} € vont aux salaires des agents.` : "Deux postes que la source permet de suivre."}
                     enClair="Le reste des dépenses n'est pas détaillé par la source.">
                     {ch.partSalaires !== null ? <BarrePart part={ch.partSalaires} libelle="Salaires des agents" valeur={rap(/salaires/)?.v || ""} /> : null}
-                    {ch.partInvestissement !== null ? <BarrePart part={ch.partInvestissement} libelle="Travaux et équipements" valeur={rap(/investissement/)?.v || ""} delai={120} /> : null}
+                    {ch.partInvestissement !== null ? <BarrePart part={ch.partInvestissement} libelle="Investissements : travaux, équipements…" valeur={rap(/investir/)?.v || ""} delai={120} /> : null}
                   </Resume>
                   <PasCeQueCaDit r={rap(/salaires/)} sujet="salaires" />
-                  <PasCeQueCaDit r={rap(/investissement/)} sujet="travaux et équipements" />
+                  <PasCeQueCaDit r={rap(/investir/)} sujet="investissements" />
                   <PastilleSource source={srcComptes(d)} />
                 </Carte>
               ) : null}

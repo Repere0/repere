@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { Carte, Vide, Tuile, BarreEchelon, Source, Mot, Chargement } from "@repere/ui";
+import { Carte, Vide, Tuile, BarreEchelon, Source, Chargement } from "@repere/ui";
 import { Pile } from "@repere/ui/amicro";
 import { valeur, rapports, population, dernierExercice, evolution } from "../lib/comptes.jsx";
 import { chargerComptesRegions, ETATS } from "@repere/data-utils";
@@ -32,8 +32,8 @@ function Evolution({ e, nom, src }) {
     return <Vide {...perimetreChange(e, nom)} />;
   }
   return (
-    <Carte echelon="ville" titre="D'un exercice à l'autre"
-      sousTitre={<><Mot cle="exercice">exercice</Mot> {e.an1} → <Mot cle="exercice">exercice</Mot> {e.an2} · budget principal</>}
+    <Carte echelon="ville" titre="D'une année à l'autre"
+      sousTitre={<>comptes {e.an1} → comptes {e.an2} · budget principal</>}
       tag="Calcul Repère">
       <p className="tx-note tx-intro">{INTRO_EVOLUTION}</p>
       {e.lignes.map((l, i) => (
@@ -43,7 +43,7 @@ function Evolution({ e, nom, src }) {
           </div>
           <div className="ligne-note">
             {l.diff === null
-              ? `Non comparable : le fichier ne porte pas cette ligne pour l'exercice ${l.m1 === null ? e.an1 : e.an2}.`
+              ? `Non comparable : le fichier ne porte pas cette ligne pour ${l.m1 === null ? e.an1 : e.an2}.`
               : `${e.an1} : ${euros(l.m1)} · ${e.an2} : ${euros(l.m2)}`}
           </div>
         </div>
@@ -59,7 +59,7 @@ function CompteTerritoire({ titre, echelon, exerciceAn, ex, agregats, src }) {
   const maxAgregat = Math.max(...agregats.map((_, i) => (valeur(ex, i) || {}).m || 0));
   return (
     <Carte echelon={echelon} titre={titre}
-      sousTitre={<>Ce que ça représente · <Mot cle="exercice">exercice</Mot> {exerciceAn}{population(ex) ? ` · ${population(ex).toLocaleString("fr-FR")} habitants` : ""}</>}
+      sousTitre={<>Ce que ça représente · comptes {exerciceAn}{population(ex) ? ` · ${population(ex).toLocaleString("fr-FR")} habitants` : ""}</>}
       tag={rr.length ? "Calcul Repère" : undefined}>
       {rr.length >= 2 ? (
         <>
@@ -148,7 +148,7 @@ export default function OuVaArgent({ paquet, index, commune }) {
     <Pile>
       {rr.length >= 2 ? (
         <Carte echelon="ville" titre={c.nom}
-          sousTitre={<>Ce que ça représente · <Mot cle="exercice">exercice</Mot> {exercice.an}{population(exercice.ex) ? ` · ${population(exercice.ex).toLocaleString("fr-FR")} habitants` : ""}</>}
+          sousTitre={<>Ce que ça représente · comptes {exercice.an}{population(exercice.ex) ? ` · ${population(exercice.ex).toLocaleString("fr-FR")} habitants` : ""}</>}
           tag="Calcul Repère">
           <p className="tx-note tx-intro">{introRapports({ detailPlusBas: true })}</p>
           <div className="tuiles">
@@ -164,7 +164,7 @@ export default function OuVaArgent({ paquet, index, commune }) {
 
       {/* Nom seul : « les comptes de X » demanderait une elision non derivable. */}
       <Carte echelon="dept" titre={rr.length >= 2 ? "Le détail publié" : c.nom}
-        sousTitre={<>Les comptes de la commune · <Mot cle="exercice">exercice</Mot> {exercice.an}{population(exercice.ex) ? ` · ${population(exercice.ex).toLocaleString("fr-FR")} habitants` : ""} · budget principal</>}
+        sousTitre={<>Les comptes de la commune · comptes {exercice.an}{population(exercice.ex) ? ` · ${population(exercice.ex).toLocaleString("fr-FR")} habitants` : ""} · budget principal</>}
         tag="Donnée officielle">
         <p className="tx-note tx-intro">
           Les six lignes ci-dessous sont publiées telles quelles par l'Observatoire des finances
@@ -179,7 +179,7 @@ export default function OuVaArgent({ paquet, index, commune }) {
           if (!v) return (
             <div className="ligne" key={i}>
               <div className="ligne-h"><span>{a[1]}</span><b>—</b></div>
-              <div className="ligne-note">Non renseigné pour l'exercice {exercice.an}. Le fichier ne porte pas cette ligne — ce n'est pas un montant nul.</div>
+              <div className="ligne-note">Non renseigné dans les comptes {exercice.an}. Le fichier ne porte pas cette ligne — ce n'est pas un montant nul.</div>
             </div>
           );
           if (v.zero) return (

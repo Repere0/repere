@@ -33,8 +33,8 @@ export function rapports(ex) {
     d: "Ce sont les agents qui tiennent l'école, la cantine, l'état civil, les espaces verts. Une part élevée n'est pas un gaspillage : c'est souvent le signe d'une collectivité qui rend ses services elle-même plutôt que de les acheter à l'extérieur.",
   });
   if (nn(inv) && nn(dep)) out.push({
-    l: "Sur 100 € dépensés", v: pourCent(inv.m, dep.m) + " € d'investissement",
-    d: "Les travaux et les équipements : une école, une voirie, une salle. Cette part bouge beaucoup d'une année à l'autre — haute l'année d'un chantier, basse ensuite. Une seule année ne dit rien d'une tendance.",
+    l: "Sur 100 € dépensés", v: pourCent(inv.m, dep.m) + " € pour investir",
+    d: "Investir, c'est payer ce qui durera : des travaux, des bâtiments, des équipements, et parfois une aide versée au projet d'un autre. Cette part bouge beaucoup d'une année à l'autre — haute l'année d'un chantier, basse ensuite. Une seule année ne dit rien d'une tendance.",
   });
   if (nn(imp) && nn(rec)) {
     const p = pourCent(imp.m, rec.m);

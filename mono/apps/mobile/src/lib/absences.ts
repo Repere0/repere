@@ -9,7 +9,7 @@ export const PROJETS_PAS_ARRIVES = {
   corps: "Le fichier existe, il n'a pas pu être chargé. Ce n'est pas une absence de projet.",
 };
 export const projetsAucun = (nom: string) => ({
-  titre: `Aucun projet financé par l'État n'est publié pour ${nom} sur les exercices relevés.`,
+  titre: `Aucun projet financé par l'État n'est publié pour ${nom} sur les années relevées.`,
   corps: "La source ne couvre que les dotations d'investissement de l'État : une commune finance aussi des projets par elle-même.",
   lien: { texte: "Projets financés par l'État — données publiques", url: DGCL_URL },
 });

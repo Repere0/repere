@@ -124,7 +124,7 @@ export default function ChezVous() {
                   legende="par habitant, sur l'année"
                   enClair="Les autres dépenses ne sont pas détaillées par la source.">
                   {ch.partSalaires !== null ? <BarrePart part={ch.partSalaires} libelle="Salaires" valeur={`${ch.partSalaires} € sur 100 € dépensés`} /> : null}
-                  {ch.partInvestissement !== null ? <BarrePart part={ch.partInvestissement} libelle="Travaux et équipements" valeur={`${ch.partInvestissement} € sur 100 € dépensés`} delai={120} /> : null}
+                  {ch.partInvestissement !== null ? <BarrePart part={ch.partInvestissement} libelle="Investissements" valeur={`${ch.partInvestissement} € sur 100 € dépensés`} delai={120} /> : null}
                 </Resume>
                 <PastilleSource source={srcComptes(d)} />
               </>

@@ -19,7 +19,7 @@ import { positionsFiables, positionSur } from "./votes.js";
 
 /* L'Etat ne publie pas le jour d'un projet, seulement l'exercice budgetaire. On
    le range donc au 31 decembre de son annee — apres les votes de cette annee —
-   et l'ecran ecrit « exercice 2025 », jamais une date inventee. */
+   et l'ecran ecrit « en 2025 », jamais une date inventee. */
 const finDAnnee = a => `${a}-12-31`;
 
 /* UN PROJET ENGAGE AVANT UNE FUSION DE COMMUNES (29/09/2026). extract-html.js

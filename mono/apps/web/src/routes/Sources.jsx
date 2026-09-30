@@ -57,7 +57,7 @@ export default function Sources({ index, paquet }) {
         {s.projets ? <Source producteur={"Projets financés par l'État — " + s.projets.producteur}
           licence={s.projets.licence}
           maj={s.projets.mis_a_jour_le}
-          mention={(s.projets.exercices ? "exercices " + s.projets.exercices.join(" et ") + ", " : "")
+          mention={(s.projets.exercices ? "années " + s.projets.exercices.join(" et ") + ", " : "")
             + "relevé le " + dateFr(s.projets.releve_le)}
           url={s.projets.url} /> : null}
         {/* LE FIL EDITORIAL N'A PAS UN PRODUCTEUR, IL A UN GESTE : chaque fait

@@ -66,7 +66,7 @@ function LigneProjet({ p, dispositifs }) {
       <b className="fait-titre">{p.intitule}</b>
       <div className="ligne-h">
         <span>{montantEngage(p)}</span>
-        <b>exercice {p.annee}</b>
+        <b className="fait-annee">{p.annee}</b>
       </div>
       <div className="ligne-note">
         {nom}{p.dispositif && nom !== p.dispositif ? " (" + p.dispositif + ")" : ""}
@@ -248,8 +248,8 @@ export default function CeQuiADecide({ paquet, index, commune }) {
             reellement SERVI. Sinon, l'absence est chez nous, et le titre le dit. */}
         {!nbProjets ? (
           etatProjets === ETATS.SERVI ? (
-            <Vide titre={`Sur les exercices publiés, l'État n'a financé aucun projet à ${nomCommune}.`}
-              corps="Ce n'est pas un manque de Repère : le fichier de la Direction générale des collectivités locales ne porte aucune ligne pour cette commune sur ces exercices. Il en portera peut-être pour le suivant."
+            <Vide titre={`Sur les années publiées, l'État n'a financé aucun projet à ${nomCommune}.`}
+              corps="Ce n'est pas un manque de Repère : le fichier de la Direction générale des collectivités locales ne porte aucune ligne pour cette commune sur ces années. Il en portera peut-être pour la suivante."
               lien={{ texte: "Projets financés par l'État — données publiques", url: DGCL_URL }} />
           ) : (
             <Vide titre="Repère n'a pas réussi à obtenir les projets financés par l'État pour ce département."
@@ -386,7 +386,7 @@ export default function CeQuiADecide({ paquet, index, commune }) {
         {nbProjets && sourceProjets ? (
           <Source producteur={sourceProjets.producteur} licence={sourceProjets.licence}
             maj={sourceProjets.mis_a_jour_le}
-            mention={sourceProjets.exercices ? "exercices " + sourceProjets.exercices.join(" et ") : undefined}
+            mention={sourceProjets.exercices ? "années " + sourceProjets.exercices.join(" et ") : undefined}
             url={sourceProjets.url || DGCL_URL} />
         ) : null}
         {nbVotes ? (

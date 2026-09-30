@@ -87,8 +87,10 @@ export const DGCL_URL = "https://www.data.gouv.fr/datasets/projets-finances-par-
 /* Deux formes, toutes deux sur le site : sans le lieu quand le projet EST la
    reponse principale, avec le lieu (et l'ancienne commune rattachee) sinon. */
 export const montantEngage = p => `L'État a engagé ${euros(p.subvention)}`;
-export const phraseProjet = p => `${montantEngage(p)}, exercice ${p.annee}.`;
+/* « en 2025 » et non « exercice 2025 » (lot lexique du 30/09/2026) : l'annee
+   de l'aide, dite en francais courant ; le mot comptable reste dans le dictionnaire. */
+export const phraseProjet = p => `${montantEngage(p)} en ${p.annee}.`;
 export function phraseProjetLocal(p, nomCommune) {
   const ancienne = ancienneCommune(p);
-  return `${montantEngage(p)} à ${ancienne ? `${ancienne} (aujourd'hui rattachée à ${nomCommune})` : nomCommune}, exercice ${p.annee}.`;
+  return `${montantEngage(p)} à ${ancienne ? `${ancienne} (aujourd'hui rattachée à ${nomCommune})` : nomCommune} en ${p.annee}.`;
 }
