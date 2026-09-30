@@ -1115,7 +1115,7 @@ console.log("\n--- comptes : d'un exercice a l'autre -------------------------")
     await p.waitForTimeout(1200);
     const carte = await p.evaluate(() => {
       const t = [...document.querySelectorAll(".carte, section, article, div")].map(e => e.innerText)
-        .filter(x => /^D.un exercice à l.autre/m.test(x) && /soustraction/.test(x) && / : \d/.test(x)).sort((a, b) => a.length - b.length)[0];
+        .filter(x => /^D.une année à l.autre/m.test(x) && /soustraction/.test(x) && / : \d/.test(x)).sort((a, b) => a.length - b.length)[0];
       return t || "";
     });
     await ctx.close();
@@ -1169,7 +1169,7 @@ async function aujCommune(dep, nom) {
     const plusRecent = [...liste].sort((a, b) => b.annee - a.annee)[0];
     const t = await aujCommune("93", nom);
     verif(`local — ${nom} : son projet finance par l'Etat apparait sur Aujourd'hui, intitule recopie tel quel`,
-      /Et dans votre commune \?/.test(t) && t.includes(plusRecent.intitule.trim()) && new RegExp("exercice " + plusRecent.annee).test(t),
+      /Et dans votre commune \?/.test(t) && t.includes(plusRecent.intitule.trim()) && new RegExp("en " + plusRecent.annee).test(t),
       t.slice(0, 400).replace(/\n+/g, " / "));
     verif("invariant 4 — le projet local porte sa source", /Et dans votre commune[\s\S]*Direction générale des collectivités locales|Et dans votre commune[\s\S]*DGCL/.test(t),
       (t.split("Et dans votre commune")[1] || "").slice(0, 300).replace(/\n+/g, " / "));
@@ -1629,7 +1629,8 @@ const fil = await pageTout.evaluate(() => {
     faits: faits.length,
     titres: faits.map(f => (f.querySelector(".fait-titre, .vote-titre") || {}).innerText || ""),
     entetes: [...document.querySelectorAll(".ligne.fait .groupe")].map(e => e.innerText),
-    annees: [...t.matchAll(/exercice (\d{4})/g)].map(m => Number(m[1])),
+    /* lot lexique (30/09/2026) : l'annee est lue sur son element, plus sur le mot « exercice » */
+    annees: [...document.querySelectorAll(".fait-annee")].map(e => Number(e.innerText)),
     sources: [...document.querySelectorAll(".source")].map(e => e.innerText),
     sourcesHref: [...document.querySelectorAll(".source a[href]")].map(a => a.href),
     squelettes: document.querySelectorAll("[class*='skeleton'], [class*='squelette'], .shimmer").length,
@@ -1642,7 +1643,8 @@ verif("surface datee — la regle d'ordre est ecrite a l'ecran (principe P4)",
   /ordre de date/i.test(fil.texte) && /plus récent au plus ancien/i.test(fil.texte),
   fil.texte.slice(0, 200).replace(/\n+/g, " / "));
 verif("surface datee — les exercices se lisent du plus recent au plus ancien",
-  fil.annees.every((a, i) => i === 0 || fil.annees[i - 1] >= a), JSON.stringify(fil.annees));
+  /* au moins une annee lue : sans elle, « every » sur une liste vide passerait en silence */
+  fil.annees.length > 0 && fil.annees.every((a, i) => i === 0 || fil.annees[i - 1] >= a), JSON.stringify(fil.annees));
 /* TROUVE A L'OEIL SUR CAPTURE, PAS PAR UNE ASSERTION : « A l'Assemblee nationale,
    X a vote » etait repete devant CHACUN des huit votes, soit huit fois de suite,
    et repoussait les titres de plusieurs hauteurs d'ecran. L'en-tete ne doit

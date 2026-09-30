@@ -81,7 +81,7 @@ function attendus({ dep, insee, attendu }) {
     const p = d.dernierProjet.p;
     f("projet (intitulé)", p.intitule);
     f("projet (montant)", euros(p.subvention));
-    f("projet (année, avec son intitulé)", "exercice " + p.annee, "« " + p.intitule + " » : " + euros(p.subvention) + " engagés par l'État en " + p.annee);
+    f("projet (année dite « en », avec son intitulé)", phraseProjetLocal(p, d.nomCommune), "« " + p.intitule + " » : " + euros(p.subvention) + " engagés par l'État en " + p.annee);
     f("source des projets (date)", ligneSource({ producteur: d.srcProjets.producteur, licence: d.srcProjets.licence, maj: d.srcProjets.mis_a_jour_le }));
     if (d.dernierVote) f("projet (phrase)", phraseProjetLocal(p, d.nomCommune));
   }

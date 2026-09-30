@@ -14,7 +14,7 @@ export const OFGL_URL = "https://data.ofgl.fr/";
 /* « Ce que ça représente · exercice 2025 · 13 409 habitants » */
 export function sousTitreRapports(an, ex) {
   const pop = population(ex);
-  return `Ce que ça représente · exercice ${an}${pop ? ` · ${pop.toLocaleString("fr-FR")} habitants` : ""}`;
+  return `Ce que ça représente · comptes ${an}${pop ? ` · ${pop.toLocaleString("fr-FR")} habitants` : ""}`;
 }
 
 /* `detailPlusBas` : le site affiche les six montants bruts sous les rapports,
@@ -34,7 +34,7 @@ export const comptesAbsents = nom => ({
 });
 export const comptesInsuffisants = an => ({
   titre: "Pas assez de montants pour traduire ces comptes.",
-  corps: `Les rapports se calculent à partir de plusieurs lignes à la fois ; pour l'exercice ${an}, le fichier officiel n'en porte pas assez.`,
+  corps: `Les rapports se calculent à partir de plusieurs lignes à la fois ; pour les comptes ${an}, le fichier officiel n'en porte pas assez.`,
 });
 /* Exercices publies mais ecartes (montants incoherents avec la population,
    voir extract-html.js) posterieurs au dernier exercice affiche. */
@@ -44,7 +44,7 @@ export function exercicesEcartes(c, exercice) {
 }
 export function phraseEcartes(ecartes, nom) {
   if (!ecartes.length) return null;
-  return `Le fichier officiel porte des comptes pour ${ecartes.length > 1 ? "les exercices " + ecartes.join(" et ") : "l'exercice " + ecartes[0]}, mais leurs montants ne correspondent pas à la population publiée sur la même ligne. Repère ne les affiche pas plutôt que de risquer d'attribuer à ${nom || "cette commune"} des chiffres qui ne sont pas les siens.`;
+  return `Le fichier officiel porte des comptes pour ${ecartes.join(" et ")}, mais leurs montants ne correspondent pas à la population publiée sur la même ligne. Repère ne les affiche pas plutôt que de risquer d'attribuer à ${nom || "cette commune"} des chiffres qui ne sont pas les siens.`;
 }
 export const comptesIncoherents = (nom, phrase) => ({
   titre: `${nom} : ses comptes publiés ne sont pas cohérents.`,
@@ -62,6 +62,6 @@ export function diffEuros(diff) {
   return diff === 0 ? "inchangé" : (diff > 0 ? "+ " : "− ") + eurosRonds(Math.abs(diff));
 }
 export const perimetreChange = (e, nom) => ({
-  titre: `D'un exercice à l'autre : ${nom} n'est pas comparable à elle-même.`,
+  titre: `D'une année à l'autre : ${nom} n'est pas comparable à elle-même.`,
   corps: `La population publiée passe de ${e.p1.toLocaleString("fr-FR")} habitants (exercice ${e.an1}) à ${e.p2.toLocaleString("fr-FR")} (exercice ${e.an2}). Un écart de cette taille signale un changement de territoire, par exemple une fusion de communes : comparer les deux années mesurerait ce changement, pas l'évolution des comptes. Repère ne fait donc pas la différence.`,
 });
