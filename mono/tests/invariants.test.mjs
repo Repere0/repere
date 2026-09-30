@@ -1191,7 +1191,12 @@ test("produit — chaque échelon affiché dit ce qu'il décide", () => {
   /* COMPETENCES VIT DANS lib/competences.js DEPUIS LE 19/09/2026 : la
      direction "Territoire" (AujourdhuiTerritoire.jsx) dit la meme phrase que
      QuiDecide.jsx, jamais une deuxieme formulation. */
-  const comp = lire("apps/web/src/lib/competences.js");
+  /* ... ET DANS @repere/core (visuels.js) DEPUIS LE 30/09/2026, pour que
+     l'application mobile dise les memes phrases ; lib/competences.js les
+     re-exporte. Le controle suit la source, il ne s'assouplit pas. */
+  const comp = lire("packages/core/src/visuels.js");
+  assert.match(lire("apps/web/src/lib/competences.js"), /export \{ COMPETENCES \} from "@repere\/core"/,
+    "le site ne lit plus les competences du socle commun");
   for (const echelon of ["ville", "agglo", "dept", "region", "france"]) {
     assert.match(comp, new RegExp(echelon + ":\\s*\"[^\"]{30,}\""),
       `l'echelon « ${echelon} » n'a pas de phrase de competence`);

@@ -5,7 +5,8 @@ import { valeur, rapports, population, dernierExercice, evolution } from "../lib
 import { chargerComptesRegions, ETATS } from "@repere/data-utils";
 /* Les phrases de cet ecran vivent dans @repere/core (phrases.js) depuis le
    30/09/2026 : l'application mobile ecrit les memes, mot pour mot. */
-import { introRapports, comptesAbsents, comptesInsuffisants, exercicesEcartes, phraseEcartes as phraseDesEcartes, comptesIncoherents } from "@repere/core";
+import { introRapports, comptesAbsents, comptesInsuffisants, exercicesEcartes, phraseEcartes as phraseDesEcartes, comptesIncoherents,
+  INTRO_EVOLUTION, NOTE_EVOLUTION, diffEuros, perimetreChange } from "@repere/core";
 
 /* `valeur`, `rapports`, `population`, `dernierExercice` VIVENT DANS
  * lib/comptes.jsx DEPUIS LE 18/09/2026 — voir ce fichier pour l'historique de
@@ -28,23 +29,17 @@ const euros = n => Math.round(n).toLocaleString("fr-FR") + " €";
 /* D'UN EXERCICE A L'AUTRE — voir evolution() dans lib/comptes.jsx. */
 function Evolution({ e, nom, src }) {
   if (e.perimetreChange) {
-    return (
-      <Vide titre={`D'un exercice à l'autre : ${nom} n'est pas comparable à elle-même.`}
-        corps={`La population publiée passe de ${e.p1.toLocaleString("fr-FR")} habitants (exercice ${e.an1}) à ${e.p2.toLocaleString("fr-FR")} (exercice ${e.an2}). Un écart de cette taille signale un changement de territoire, par exemple une fusion de communes : comparer les deux années mesurerait ce changement, pas l'évolution des comptes. Repère ne fait donc pas la différence.`} />
-    );
+    return <Vide {...perimetreChange(e, nom)} />;
   }
   return (
     <Carte echelon="ville" titre="D'un exercice à l'autre"
       sousTitre={<><Mot cle="exercice">exercice</Mot> {e.an1} → <Mot cle="exercice">exercice</Mot> {e.an2} · budget principal</>}
       tag="Calcul Repère">
-      <p className="tx-note tx-intro">
-        Les deux montants sont publiés par l'Observatoire des finances locales ; la différence
-        est une soustraction faite par Repère.
-      </p>
+      <p className="tx-note tx-intro">{INTRO_EVOLUTION}</p>
       {e.lignes.map((l, i) => (
         <div className="ligne evolution" key={i}>
           <div className="ligne-h"><span>{l.libelle}</span>
-            <b>{l.diff === null ? "—" : l.diff === 0 ? "inchangé" : (l.diff > 0 ? "+ " : "− ") + euros(Math.abs(l.diff))}</b>
+            <b>{diffEuros(l.diff)}</b>
           </div>
           <div className="ligne-note">
             {l.diff === null
@@ -53,11 +48,7 @@ function Evolution({ e, nom, src }) {
           </div>
         </div>
       ))}
-      <p className="tx-note">
-        Une différence d'une année sur l'autre ne dit pas si la commune est bien ou mal gérée :
-        un chantier qui commence ou s'achève, un emprunt, une compétence transférée à
-        l'intercommunalité suffisent à la faire varier.
-      </p>
+      <p className="tx-note">{NOTE_EVOLUTION}</p>
       <Source calcul producteur={src ? src.producteur : ""} licence={src ? src.licence : ""} maj={src ? src.maj : ""} url={src ? src.url : undefined} />
     </Carte>
   );

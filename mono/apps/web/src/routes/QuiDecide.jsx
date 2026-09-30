@@ -7,7 +7,7 @@ import {
   entrer, revenir, ETATS,
 } from "@repere/data-utils";
 import { COMPETENCES } from "../lib/competences.js";
-import { phraseAdjoints, MAIRE_ABSENT, RNE_URL } from "@repere/core";
+import { phraseAdjoints, MAIRE_ABSENT, RNE_URL, teteDepartement } from "@repere/core";
 import { Segments } from "../lib/segments.jsx";
 
 /* RNE_URL vient de @repere/core (phrases.js) depuis le 29/09/2026. */
@@ -412,10 +412,9 @@ function ConseilDepartemental({ paquet, c, src }) {
         lien={{ texte: "Répertoire national des élus", url: RNE_URL }} />
     );
   }
-  const mesCantons = c.canton || [];
-  const duCanton = mesCantons.length ? conseil.filter(e => mesCantons.includes(e.canton)) : [];
-  const cantonNom = duCanton.length ? (paquet.cantons || {})[duCanton[0].canton] : null;
-  const tete = duCanton.length ? duCanton[0] : conseil[0];
+  /* La regle « mon canton d'abord » vit dans @repere/core (teteDepartement)
+     depuis le 30/09/2026 : l'application mobile nomme le meme elu. */
+  const { tete, duCanton, cantonNom } = teteDepartement(paquet, c);
   const propreCanton = duCanton.slice(1); // les autres elus DU MEME canton, jamais caches derriere "les autres du departement"
   const resteDept = conseil.filter(e => e !== tete && propreCanton.indexOf(e) === -1);
   return (
