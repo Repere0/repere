@@ -1252,6 +1252,23 @@ console.log("\n--- hierarchie mobile : le contenu avant le decor ---------------
     !apres.chapeau && apres.h1 === 1 && apres.entete < 110, JSON.stringify(apres));
   verif("hierarchie — commune choisie : la barre des ecrans est dans la premiere moitie du telephone",
     apres.onglets < 800 / 2, JSON.stringify(apres));
+  /* 29/09/2026 : trois lignes disaient ou l'on est (departement, commune,
+     « situe »). Une seule doit le dire, avec le moyen d'en changer ; et
+     « changer » doit rouvrir le choix de la commune ET celui du departement. */
+  const lieu = await p.evaluate(() => ({
+    lignes: document.querySelectorAll(".situe").length,
+    dept: !!document.querySelector("details.choix"),
+    champ: !!document.querySelector(".choix-commune input"),
+    changer: [...document.querySelectorAll(".situe button")].map(b => b.innerText.trim()),
+  }));
+  verif("hierarchie — commune choisie : une seule ligne dit ou l'on est, avec « changer »",
+    lieu.lignes === 1 && !lieu.dept && !lieu.champ && lieu.changer.includes("changer"), JSON.stringify(lieu));
+  await p.getByRole("button", { name: "changer", exact: true }).click(); await p.waitForTimeout(300);
+  const rouvert = await p.evaluate(() => ({ dept: !!document.querySelector("details.choix"), champ: !!document.querySelector(".choix-commune input") }));
+  verif("hierarchie — « changer » rouvre le choix de la commune et celui du departement",
+    rouvert.dept && rouvert.champ, JSON.stringify(rouvert));
+  await p.getByLabel(/Votre commune/i).fill("Ustaritz"); await p.waitForTimeout(300);
+  await p.getByRole("button", { name: "Ustaritz", exact: true }).click(); await p.waitForTimeout(700);
   await p.getByRole("button", { name: "Ce qui se passe" }).click(); await p.waitForTimeout(1500);
   const cal = await p.evaluate(() => {
     const d = document.querySelector("details.plus-tard");

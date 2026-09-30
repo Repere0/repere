@@ -64,6 +64,14 @@
 .situe { font-family: var(--t-titre); font-size: .95rem; color: var(--sourd);
   border-left: 4px solid var(--e-ville); padding: .1rem 0 .1rem .7rem; margin: 1.2rem 0 0; }
 .situe b { color: var(--encre); }
+/* « changer » tient sur la ligne « ou suis-je » (29/09/2026) : cible tactile de
+   44 px, meme aspect que le lien « Voir aujourd'hui ». */
+.situe { display: flex; flex-wrap: wrap; align-items: center; column-gap: .4rem; }
+.situe-changer { background: none; border: none; padding: 0 .2rem; appearance: none;
+  font-family: var(--t-titre); font-size: .86rem; font-weight: 600; color: var(--sourd);
+  text-decoration: underline; text-underline-offset: .2em; cursor: pointer;
+  min-height: 44px; min-width: 44px; }
+.situe-changer:hover, .situe-changer:focus-visible { color: var(--encre); }
 .tx-intro { margin-top: 0; margin-bottom: .9rem; }
 
 .puce, .onglet {
