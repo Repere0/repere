@@ -107,6 +107,14 @@ self.addEventListener("fetch", e => {
         passe alors d'abord, et le cache ne sert qu'en secours — sinon le
         client recevrait la meme copie perimee, et la noterait comme neuve. */
   if (url.pathname.startsWith("/data/")) {
+    /* UNE COPIE DU CACHE SE DIT COMME TELLE (01/10/2026) : l'en-tete
+       `x-repere-origine: cache` permet au client de ne jamais la prendre pour
+       une reponse du reseau (invariant 9, fraicheur). */
+    const marquer = async (rep) => {
+      const h = new Headers(rep.headers);
+      h.set("x-repere-origine", "cache");
+      return new Response(await rep.blob(), { status: rep.status, statusText: rep.statusText, headers: h });
+    };
     e.respondWith((async () => {
       const cache = await caches.open(DONNEES);
       if (r.cache === "no-cache" || r.cache === "reload") {
@@ -116,7 +124,7 @@ self.addEventListener("fetch", e => {
           return rep;
         } catch {
           const secours = await cache.match(r, { ignoreVary: true });
-          if (secours) return secours;
+          if (secours) return marquer(secours);
           return new Response(JSON.stringify({ erreur: "hors ligne", chemin: url.pathname }),
             { status: 503, headers: { "content-type": "application/json" } });
         }
@@ -126,7 +134,7 @@ self.addEventListener("fetch", e => {
         if (estBonne(rep) && estDonnees(rep)) cache.put(r, rep.clone());
         return rep;
       });
-      if (enCache) { e.waitUntil(reseau.catch(() => {})); return enCache; }
+      if (enCache) { e.waitUntil(reseau.catch(() => {})); return marquer(enCache); }
       return reseau.catch(() => new Response(
         JSON.stringify({ erreur: "hors ligne", chemin: url.pathname }),
         { status: 503, headers: { "content-type": "application/json" } }));

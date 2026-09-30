@@ -204,6 +204,13 @@
   font-size: .92rem; line-height: 1.55; }
 .vide b { display: block; margin-bottom: .3rem; color: var(--encre); }
 .vide span { color: var(--sourd); }
+/* Invariant 9 (01/10/2026) : une donnee qui n'est pas celle de la publication
+   courante se dit comme telle. Le trait a gauche la distingue d'un message
+   d'absence (.vide), sans couleur nouvelle (invariant 7). */
+.fraicheur { background: var(--voile); border-left: 3px solid var(--encre); border-radius: 8px;
+  padding: .7rem .9rem; margin: .5rem 0 .75rem; }
+.fraicheur-titre { margin: 0 0 .2rem; font-weight: 600; color: var(--encre); }
+.fraicheur-corps { margin: 0; color: var(--sourd); }
 /* 44 px POUR LE LIEN D'UN ETAT VIDE, ET IL MANQUAIT DEPUIS TOUJOURS.
    Le bouton portait `min-height: 44px`, le lien non : il n'atteignait 44 px que
    lorsque son libelle passait a la ligne. Une phrase de vide plus courte, ecrite

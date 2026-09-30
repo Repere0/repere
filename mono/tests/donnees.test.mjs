@@ -15,8 +15,9 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import {
-  chargerIndex, chargerDepartement, chargerProjets, ETATS, PHRASES, nouvelleSessionPourTest,
+  chargerIndex, chargerDepartement, chargerProjets, ETATS, PHRASES, nouvelleSessionPourTest, etatFraicheur,
 } from "../packages/data-utils/src/client.js";
+import { phraseFraicheur } from "../packages/core/src/fraicheur.js";
 import { magasin, configurerStockage } from "../packages/data-utils/src/store.js";
 
 /* Un faux disque : ce qui survit a une reouverture de l'application. */
@@ -40,10 +41,10 @@ globalThis.fetch = async (url, options = {}) => {
   if (typeof r === "function") return r();
   return reponse(200, "application/json", JSON.stringify(r));
 };
-function reponse(status, type, texte) {
+function reponse(status, type, texte, entetes = {}) {
   return {
     status, ok: status >= 200 && status < 300,
-    headers: { get: h => (h.toLowerCase() === "content-type" ? type : null) },
+    headers: { get: h => (h.toLowerCase() === "content-type" ? type : (entetes[h.toLowerCase()] ?? null)) },
     json: async () => JSON.parse(texte),
   };
 }
@@ -152,4 +153,78 @@ test("la garde refuse AVANT que le support ne recoive quoi que ce soit", async (
     await assert.rejects(() => magasin.ecrire(cle, valeur), /refus d'ecriture/, cle);
   }
   assert.deepEqual(ecritures, [], "le support a recu une ecriture que la garde refuse");
+});
+
+/* ---------------------------------------------------------------------------
+ * INVARIANT 9 — FRAICHEUR (decision du porteur du 30/09/2026). Trois etats,
+ * distinguables : actuelle, precedente, inconnue. Jamais une donnee ancienne
+ * presentee comme actuelle.
+ * ------------------------------------------------------------------------- */
+const copieSW = obj => () => reponse(200, "application/json", JSON.stringify(obj), { "x-repere-origine": "cache" });
+
+test("fraicheur — index verifie, fichier recu : « actuelle », et rien a dire au lecteur", async () => {
+  await toutEffacer();
+  reponses = { "/data/index.json": index("2026-10-01T05:47:00Z"), "/data/departments/77.json": dep("A") };
+  await chargerDepartement("77");
+  const e = etatFraicheur();
+  assert.equal(e.etat, "actuelle");
+  assert.equal(phraseFraicheur(e), null);
+});
+
+test("fraicheur — une copie d'une publication precedente est dite, avec sa date", async () => {
+  ouvrirApplication();
+  reponses = { "/data/index.json": index("2026-10-02T05:47:00Z") };
+  const d = await chargerDepartement("77");
+  assert.equal(d.perime, true);
+  const e = etatFraicheur();
+  assert.equal(e.etat, "precedente");
+  assert.equal(e.depuis, "2026-10-01T05:47:00Z", "la date dite est celle de la copie, pas celle de l'index");
+  assert.match(phraseFraicheur(e).titre, /publication du 1er octobre 2026/);
+});
+
+test("fraicheur — serveur injoignable : « inconnue », jamais « actuelle »", async () => {
+  ouvrirApplication();
+  reponses = {};
+  const d = await chargerDepartement("77");
+  assert.equal(d.etat, ETATS.SERVI, "la donnee gardee reste lisible hors ligne");
+  const e = etatFraicheur();
+  assert.equal(e.etat, "inconnue");
+  assert.match(phraseFraicheur(e).titre, /n'a pas pu joindre le serveur/);
+  assert.match(phraseFraicheur(e).corps, /plus récente existe peut-être/);
+});
+
+test("fraicheur — un index servi par le service worker n'est pas une verification", async () => {
+  ouvrirApplication();
+  reponses = { "/data/index.json": copieSW(index("2026-10-09T05:47:00Z")) };
+  await chargerIndex();
+  assert.equal(etatFraicheur().etat, "inconnue", "une copie du cache ne prouve pas que la publication est la derniere");
+  assert.notEqual(disque.get("socle:IDX").build.construit_le, "2026-10-09T05:47:00Z", "la copie ne remplace pas l'index garde");
+});
+
+test("fraicheur — un fichier servi par le service worker n'est jamais note comme courant", async () => {
+  await toutEffacer();
+  reponses = { "/data/index.json": index("2026-10-03T05:47:00Z"), "/data/departments/64.json": copieSW({ d: "64", communes: {} }) };
+  const d = await chargerDepartement("64");
+  assert.equal(d.etat, ETATS.SERVI);
+  assert.equal(d.perime, true);
+  assert.ok(!(disque.get("socle:GEN") && disque.get("socle:GEN").cles["dep:64"]),
+    "une copie d'une generation inconnue a ete notee comme la generation courante : une donnee ancienne passerait pour actuelle");
+  assert.equal(etatFraicheur().etat, "precedente");
+});
+
+test("fraicheur — les trois phrases sont differentes, et « actuelle » n'en a pas", () => {
+  const g = "2026-10-01T05:47:00Z";
+  const p = phraseFraicheur({ etat: "precedente", generation: g, depuis: g });
+  const i = phraseFraicheur({ etat: "inconnue", generation: g, depuis: g });
+  assert.equal(phraseFraicheur({ etat: "actuelle", generation: g, depuis: g }), null);
+  assert.ok(p && i && p.titre !== i.titre && p.corps !== i.corps);
+  assert.equal(phraseFraicheur(null), null, "avant toute donnee, rien a dire");
+});
+
+test("fraicheur — hors connexion et serveur injoignable sont deux phrases differentes", () => {
+  const g = "2026-10-01T05:47:00Z";
+  const hors = phraseFraicheur({ etat: "inconnue", horsLigne: true, generation: g, depuis: g });
+  const serveur = phraseFraicheur({ etat: "inconnue", horsLigne: false, generation: g, depuis: g });
+  assert.match(hors.titre, /^Vous êtes hors connexion/);
+  assert.match(serveur.titre, /^Repère n'a pas pu joindre le serveur/);
 });

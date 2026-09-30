@@ -879,6 +879,24 @@ test("mobile — deux endroits seulement gardent quelque chose sur le telephone"
   }
 });
 
+test("invariant 9 — le site et l'application disent la fraicheur, avec la meme phrase", () => {
+  /* 01/10/2026, decision du porteur : jamais une donnee ancienne presentee comme
+     actuelle. L'etat vient du client partage, la phrase de @repere/core ; ce
+     controle verifie que les deux surfaces l'affichent, et qu'aucune ne la
+     reecrit. Le comportement est mesure ailleurs : tests/donnees.test.mjs
+     (etats) et runtime.test.mjs (ecran, service worker compris). */
+  const sans = t => t.replace(/\/\*[\s\S]*?\*\//g, "").replace(/\/\/.*$/gm, "");
+  const app = sans(lire("apps/web/src/App.jsx"));
+  assert.ok(/<Fraicheur \/>/.test(app), "le site n'affiche plus la fraicheur");
+  const page = sans(lire("apps/mobile/src/ui/page.tsx"));
+  assert.ok(/<Fraicheur \/>/.test(page), "l'application n'affiche plus la fraicheur en tete de ses ecrans");
+  for (const f of ["apps/web/src/Fraicheur.jsx", "apps/mobile/src/ui/fraicheur.tsx"]) {
+    const t = sans(lire(f));
+    assert.ok(/phraseFraicheur\(/.test(t) && /abonnerFraicheur\(/.test(t), f + " ne lit plus l'etat partage ou la phrase partagee");
+    assert.ok(!/publication précédente|pas pu joindre/.test(t), f + " reecrit une phrase de fraicheur au lieu de celle de @repere/core");
+  }
+});
+
 test("architecture — une seule fabrique d'adresses dans tout le produit", () => {
   const fautifs = [];
   for (const f of sourcesEcrites()) {

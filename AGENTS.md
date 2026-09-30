@@ -33,8 +33,9 @@ explicite du porteur les change ; la PR qui l'applique met alors à jour
 <!-- INVARIANTS:DEBUT -->
 1. **Autonomie.** L'application fonctionne hors ligne, sans serveur applicatif.
 2. **Une seule clé de stockage local** (`repere.departement` dans `mono/`, qui porte
-   `{d, v}` depuis le 23/09/2026). Aucun compte, email, traceur, cookie. IndexedDB :
-   uniquement de la donnée publique déjà téléchargée, dans un magasin unique.
+   `{d, v}` depuis le 23/09/2026). Aucun compte, email, traceur, cookie. IndexedDB
+   (site) et dossier cache (téléphone, décision du 30/09/2026) : uniquement les
+   fichiers publics publiés par Repère, sous la garde unique de `store.js`.
    Aucune adresse réseau ne porte un code de commune : données découpées **par
    département**.
 3. **Aucun classement**, score, ou tri numérique de personnes, de partis ou de
@@ -47,6 +48,11 @@ explicite du porteur les change ; la PR qui l'applique met alors à jour
 7. **Cinq couleurs d'échelon gelées** ; aucune autre couleur ne dépasse une
    amplitude de 24 sur les canaux RGB.
 8. **Jamais le patrimoine d'un élu, jamais de donnée de présence ou d'absence.**
+9. **Fraîcheur** (décision du porteur du 30/09/2026). Une donnée gardée peut être
+   montrée pour rester lisible hors ligne, mais **jamais présentée comme actuelle**
+   si elle ne l'est pas. Trois états distinguables à l'écran : actuelle, issue
+   d'une publication précédente, impossible à vérifier. La confiance passe avant
+   l'impression de fluidité.
 <!-- INVARIANTS:FIN -->
 
 ## Où vit quoi (état du 29/09/2026)

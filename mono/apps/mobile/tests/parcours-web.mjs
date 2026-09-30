@@ -226,6 +226,31 @@ async function ouvrirAvecPanne(motif) {
     "panne du département : phrase d'échec et bouton Réessayer");
 }
 
+/* INVARIANT 9 — FRAICHEUR (01/10/2026). Une premiere visite garde les donnees ;
+   a la suivante, l'index ne repond plus : l'ecran montre les donnees gardees ET
+   dit qu'il ne peut pas verifier qu'elles sont a jour. Jamais presentees comme
+   actuelles. Meme contexte de navigateur pour les deux visites : c'est lui qui
+   porte le magasin. */
+{
+  const ctxF = await navigateur.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
+  const ouvrirMeaux = async (page) => {
+    await page.goto(BASE + "/", { waitUntil: "networkidle" });
+    await page.getByLabel(/Où habitez-vous/).fill(COMMUNE.saisie);
+    await page.getByRole("button", { name: new RegExp("^" + COMMUNE.nom + ",") }).first().click();
+    await page.waitForTimeout(1500);
+    await page.waitForLoadState("networkidle");
+    return page.evaluate(() => document.body.textContent);
+  };
+  const t1 = await ouvrirMeaux(await ctxF.newPage());
+  verifier(!/ces informations viennent de/.test(t1), "fraicheur : donnee actuelle, aucun avertissement");
+  const p2 = await ctxF.newPage();
+  await p2.route("**/data/index.json", r => r.abort());
+  const t2 = await ouvrirMeaux(p2);
+  verifier(new RegExp(MAIRE).test(t2) && /n'a pas pu joindre le serveur : ces informations viennent de la publication du/.test(t2),
+    "fraicheur : index injoignable, donnees gardees montrees ET dites non verifiables");
+  await ctxF.close();
+}
+
 /* MOUVEMENT REDUIT (refonte du 30/09/2026) : quand le systeme demande moins
    d'animations, le montant s'affiche d'emblee a sa valeur finale. Mesure a
    100 ms, bien avant la fin d'une animation (520 ms). Et sans reduction, le

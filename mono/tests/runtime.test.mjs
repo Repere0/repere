@@ -432,7 +432,7 @@ await pageFraicheur.context().close();
     await pagePub.waitForTimeout(800);
     return pagePub.evaluate(() => document.body.innerText);
   };
-  let avant = "", apres = "";
+  let avant = "", apres = "", precedente = "", inconnue = "";
   try {
     await pagePub.goto(base, { waitUntil: "networkidle" });
     avant = await ouvrirAmillis();
@@ -448,6 +448,23 @@ await pageFraicheur.context().close();
     fs.writeFileSync(f77, JSON.stringify(d77));
     await pagePub.goto(base, { waitUntil: "networkidle" });
     apres = await ouvrirAmillis();
+    /* INVARIANT 9 (01/10/2026) — une publication plus recente existe, mais le
+       fichier du departement ne vient pas : la copie gardee est montree, ET
+       dite comme venant d'une publication precedente. */
+    const ix2 = { ...ix, build: { ...ix.build, construit_le: "2099-02-01T00:00:00.000Z" } };
+    fs.writeFileSync(fIx, JSON.stringify(ix2));
+    fs.renameSync(f77, f77 + ".absent");
+    try {
+      await pagePub.goto(base, { waitUntil: "networkidle" });
+      precedente = await ouvrirAmillis();
+    } finally { fs.renameSync(f77 + ".absent", f77); }
+    /* L'index lui-meme ne vient pas : rien ne permet de verifier la
+       publication. La donnee gardee reste lisible, sans jamais se dire a jour. */
+    fs.renameSync(fIx, fIx + ".absent");
+    try {
+      await pagePub.goto(base, { waitUntil: "networkidle" });
+      inconnue = await ouvrirAmillis();
+    } finally { fs.renameSync(fIx + ".absent", fIx); }
   } finally {
     fs.writeFileSync(fIx, ixAvant);
     fs.writeFileSync(f77, d77Avant);
@@ -458,6 +475,14 @@ await pageFraicheur.context().close();
   verif("fraîcheur — une nouvelle publication atteint le lecteur deja venu, des la visite suivante",
     /PUBLICATION-NEUVE-TEST/.test(apres),
     "le nouveau maire n'est pas a l'ecran : " + apres.slice(0, 400).replace(/\n+/g, " / "));
+  verif("invariant 9 — donnee actuelle : aucun avertissement de fraicheur",
+    !/ces informations (date|viennent) de/.test(apres), apres.slice(0, 300).replace(/\n+/g, " / "));
+  verif("invariant 9 — copie d'une publication precedente : montree ET dite comme telle",
+    /PUBLICATION-NEUVE-TEST/.test(precedente) && /Une partie de ces informations date de la publication du/.test(precedente),
+    precedente.slice(0, 400).replace(/\n+/g, " / "));
+  verif("invariant 9 — publication impossible a verifier : jamais presentee comme a jour",
+    /PUBLICATION-NEUVE-TEST/.test(inconnue) && /n'a pas pu joindre le serveur : ces informations viennent de la publication du/.test(inconnue),
+    inconnue.slice(0, 400).replace(/\n+/g, " / "));
 }
 
 /* LE PREMIER ECRAN NE PAIE PAS CE FICHIER. Il ne part QUE depuis « Qui decide » :
@@ -2031,6 +2056,9 @@ verif("invariant 1 — hors ligne, on peut encore changer de departement",
 /* Le message doit dire la verite sur l'etat reel. Un « Repere n'a pas reussi a
    joindre le serveur » affiche AU-DESSUS de donnees presentes est un mensonge,
    et le bouton Reessayer un cul-de-sac dans un tunnel. */
+verif("invariant 9 — hors ligne, la page dit de quand datent les donnees et qu'elle ne peut pas le verifier",
+  /Vous êtes hors connexion : ces informations viennent de la publication du/.test(horsLigne.texte),
+  horsLigne.texte.slice(0, 300).replace(/\n+/g, " / "));
 verif("invariant 5 — hors ligne, aucun message d'echec au-dessus de donnees presentes",
   !/n'a pas réussi à joindre le serveur/.test(horsLigne.texte),
   horsLigne.texte.slice(0, 200).replace(/\n+/g, " / "));

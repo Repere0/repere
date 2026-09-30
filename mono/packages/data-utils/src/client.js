@@ -227,7 +227,12 @@ async function auReseau(url, delaiMs, revalider = false) {
     /* Une page d'erreur renvoyée en 200 par un hébergeur n'est pas un jeu de
        données. Le produit a déjà été cassé une fois par ce cas exact. */
     if (type.indexOf("json") === -1) { const e = new Error("type inattendu : " + type); e.etat = ETATS.INVALIDE; throw e; }
-    try { return await rep.json(); }
+    /* LE SERVICE WORKER DIT QUAND IL REPOND A LA PLACE DU RESEAU (01/10/2026).
+       Sans cet en-tete, une copie tiree de son cache ressemblait a une reponse
+       fraiche : le client la notait « generation courante », et une donnee
+       ancienne passait pour actuelle (invariant 9). */
+    const origine = rep.headers.get("x-repere-origine") === "cache" ? "cache-sw" : "reseau";
+    try { return { donnees: await rep.json(), origine }; }
     catch (err) { const e = new Error("JSON illisible : " + err.message); e.etat = ETATS.INVALIDE; throw e; }
   } finally { clearTimeout(minuteur); }
 }
@@ -255,6 +260,33 @@ const horsLigne = () => typeof navigator !== "undefined" && navigator.onLine ===
  * HORS LIGNE, rien ne change : l'index garde donne la generation, et tout ce
  * qui a ete recu sous elle est servi depuis l'appareil. */
 const CLE_GENERATIONS = "socle:GEN";
+
+/* INVARIANT 9 — FRAICHEUR (decision du porteur du 30/09/2026). Repere peut
+ * servir une donnee gardee pour rester lisible hors ligne, mais ne la presente
+ * JAMAIS comme actuelle si elle ne l'est pas. Trois etats, distinguables a
+ * l'ecran (phrases dans @repere/core, `phraseFraicheur`) :
+ *   « actuelle »   l'index a ete verifie aupres du serveur dans cette session,
+ *                  et chaque fichier servi appartient a sa generation ;
+ *   « precedente » au moins un fichier servi vient d'une publication
+ *                  anterieure (le reseau n'a pas permis de le remplacer) ;
+ *   « inconnue »   l'index n'a pas pu etre verifie : on ne pretend pas que
+ *                  la donnee est a jour.
+ * Un seul etat pour toute la session, lu par le site et par l'application. */
+const fraicheur = { indexVerifie: false, horsLigne: false, generation: null, precedentes: new Map(), abonnes: new Set() };
+export function etatFraicheur() {
+  const etat = !fraicheur.indexVerifie ? "inconnue" : fraicheur.precedentes.size ? "precedente" : "actuelle";
+  const anciennes = [...fraicheur.precedentes.values()].filter(Boolean).sort();
+  return { etat, horsLigne: fraicheur.horsLigne, generation: fraicheur.generation, depuis: etat === "precedente" ? (anciennes[0] || null) : fraicheur.generation };
+}
+function signalerFraicheur() {
+  const e = etatFraicheur();
+  for (const f of fraicheur.abonnes) { try { f(e); } catch { /* un abonne en erreur n'arrete pas les autres */ } }
+}
+export function abonnerFraicheur(f) {
+  fraicheur.abonnes.add(f);
+  f(etatFraicheur());
+  return () => { fraicheur.abonnes.delete(f); };
+}
 let GENERATION = null;
 let indexSession = null;       /* l'index de cette session, une fois etabli */
 let indexEnCours = null;
@@ -298,14 +330,25 @@ export async function chargerIndex({ delaiMs = 8000 } = {}) {
       await magasin.vider().catch(() => {});
       enCache = null;
     }
-    const retenir = (r) => { GENERATION = generationDe(r.donnees); if (r.depuis === "reseau") indexSession = r; return r; };
+    const retenir = (r) => {
+      GENERATION = generationDe(r.donnees);
+      fraicheur.generation = GENERATION;
+      fraicheur.indexVerifie = r.depuis === "reseau";
+      fraicheur.horsLigne = horsLigne();
+      if (r.depuis === "reseau") indexSession = r;
+      signalerFraicheur();
+      return r;
+    };
     if (horsLigne()) {
       if (enCache) return retenir({ etat: ETATS.SERVI, donnees: enCache, depuis: "cache" });
       return { etat: ETATS.HORS_LIGNE, donnees: null };
     }
     try {
       /* Avec un index garde, on n'attend pas le reseau plus de trois secondes. */
-      const donnees = await auReseau(adresseIndex(), enCache ? Math.min(delaiMs, 3000) : delaiMs, true);
+      const { donnees, origine } = await auReseau(adresseIndex(), enCache ? Math.min(delaiMs, 3000) : delaiMs, true);
+      /* Une copie du service worker n'est pas une verification : l'etat reste
+         « inconnue », et le magasin garde ce qu'il avait. */
+      if (origine === "cache-sw") return retenir({ etat: ETATS.SERVI, donnees: enCache || donnees, depuis: "cache" });
       await magasin.ecrire(cle, donnees).catch(() => {});
       return retenir({ etat: ETATS.SERVI, donnees, depuis: "reseau" });
     } catch (e) {
@@ -383,23 +426,43 @@ async function chargerSocle(cle, url, delaiMs) {
   /* La generation d'abord : sans elle, on ne sait pas si le magasin est a jour. */
   if (GENERATION === null) await chargerIndex().catch(() => {});
   const enCache = await magasin.lire(cle);
-  const aJour = enCache && (GENERATION === null || (await generationsGardees())[cle] === GENERATION);
+  const gardees = await generationsGardees();
+  const aJour = enCache && (GENERATION === null || gardees[cle] === GENERATION);
   if (aJour) return { etat: ETATS.SERVI, donnees: enCache, depuis: "cache" };
+  /* Une copie d'une autre generation, servie faute de mieux : l'etat de la
+     session devient « precedente », date de sa propre generation. */
+  const servirPerimee = (raison) => {
+    fraicheur.precedentes.set(cle, gardees[cle] || null);
+    signalerFraicheur();
+    return { etat: ETATS.SERVI, donnees: enCache, depuis: "cache", perime: true, raison };
+  };
   if (enVol.has(cle)) return enVol.get(cle);
   const promesse = (async () => {
     if (horsLigne()) {
-      if (enCache) return { etat: ETATS.SERVI, donnees: enCache, depuis: "cache", perime: true };
+      if (enCache) return servirPerimee("hors ligne");
       return { etat: ETATS.HORS_LIGNE, donnees: null };
     }
     try {
-      const donnees = await auReseau(url, delaiMs, !!enCache);
+      /* TOUJOURS une revalidation (01/10/2026) : sans elle, un fichier absent du
+         magasin mais present dans le cache du service worker revenait tel quel,
+         d'une generation quelconque, et etait note comme courant. */
+      const { donnees, origine } = await auReseau(url, delaiMs, true);
+      if (origine === "cache-sw") {
+        /* Le reseau n'a pas repondu, le service worker a servi sa copie : elle
+           n'est pas notee comme courante, et l'ecran le dira. */
+        if (enCache) return servirPerimee("copie du service worker");
+        fraicheur.precedentes.set(cle, null);
+        signalerFraicheur();
+        return { etat: ETATS.SERVI, donnees, depuis: "cache", perime: true };
+      }
       await magasin.ecrire(cle, donnees).catch(() => {});
       await noterGeneration(cle);
+      if (fraicheur.precedentes.delete(cle)) signalerFraicheur();
       return { etat: ETATS.SERVI, donnees, depuis: "reseau" };
     } catch (e) {
       /* Le reseau a echoue, mais une version precedente est la : on la sert,
          marquee, plutot qu'un ecran vide sur une donnee presente. */
-      if (enCache) return { etat: ETATS.SERVI, donnees: enCache, depuis: "cache", perime: true, raison: e.message };
+      if (enCache) return servirPerimee(e.message);
       return { etat: e.etat || ETATS.ECHEC, donnees: null, raison: e.message };
     } finally { enVol.delete(cle); }
   })();
@@ -412,6 +475,7 @@ async function chargerSocle(cle, url, delaiMs) {
    IndexedDB — n'est pas touche : c'est ce qui survit a une reouverture. */
 export function nouvelleSessionPourTest() {
   GENERATION = null; indexSession = null; indexEnCours = null; enVol.clear();
+  fraicheur.indexVerifie = false; fraicheur.horsLigne = false; fraicheur.generation = null; fraicheur.precedentes.clear();
   oublierMemoire();
   fileGenerations = Promise.resolve();
 }
