@@ -100,10 +100,27 @@ self.addEventListener("fetch", e => {
   }
 
   /* 2. Données : le cache d'abord, puis rafraîchissement silencieux. Le lecteur
-        voit son département tout de suite, même en 3G, même hors ligne. */
+        voit son département tout de suite, même en 3G, même hors ligne.
+        SAUF quand le client demande une version a jour (`cache: "no-cache"`,
+        30/09/2026) : c'est qu'il sait sa copie d'une generation precedente
+        (voir « generation » dans packages/data-utils/src/client.js). Le reseau
+        passe alors d'abord, et le cache ne sert qu'en secours — sinon le
+        client recevrait la meme copie perimee, et la noterait comme neuve. */
   if (url.pathname.startsWith("/data/")) {
     e.respondWith((async () => {
       const cache = await caches.open(DONNEES);
+      if (r.cache === "no-cache" || r.cache === "reload") {
+        try {
+          const rep = await fetch(r);
+          if (estBonne(rep) && estDonnees(rep)) cache.put(r, rep.clone());
+          return rep;
+        } catch {
+          const secours = await cache.match(r, { ignoreVary: true });
+          if (secours) return secours;
+          return new Response(JSON.stringify({ erreur: "hors ligne", chemin: url.pathname }),
+            { status: 503, headers: { "content-type": "application/json" } });
+        }
+      }
       const enCache = await cache.match(r);
       const reseau = fetch(r).then(rep => {
         if (estBonne(rep) && estDonnees(rep)) cache.put(r, rep.clone());

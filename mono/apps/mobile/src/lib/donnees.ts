@@ -9,8 +9,14 @@
  * EXPO_PUBLIC_REPERE_DONNEES permet de pointer une copie locale (tests,
  * apercu web) ; par defaut, les donnees publiees en production. */
 import { configurerBase } from "@repere/data-utils";
+import { brancherCacheDisque } from "./cache";
 
 const PRODUCTION = "https://repereapp.netlify.app/data";
 configurerBase(process.env.EXPO_PUBLIC_REPERE_DONNEES || PRODUCTION);
+/* Les fichiers publics recus restent sur le telephone, sous la garde du
+   magasin partage (lib/cache.ts) : hors ligne, le lecteur retrouve son
+   departement ; en ligne, un fichier d'une generation precedente est
+   redemande (packages/data-utils/src/client.js). */
+brancherCacheDisque();
 
 export * from "@repere/data-utils";

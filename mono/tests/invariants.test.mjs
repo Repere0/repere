@@ -847,16 +847,28 @@ test("meme verite — les phrases du vote, du maire et du projet ne s'ecrivent q
   assert.ok(lire("packages/core/src/phrases.js").includes("siègent avec"), "phrases.js ne porte plus les phrases : ce controle ne mesure rien");
 });
 
-test("mobile — un seul endroit garde quelque chose sur le telephone", () => {
-  /* 29/09/2026 (D-M3). L'application ne garde qu'une chose : la commune que le
-     lecteur a demande de retenir, dans lib/memoire.ts (un fichier du cache, ou
-     la cle unique sur la version web). Tout autre stockage — AsyncStorage,
-     SecureStore, SQLite, MMKV, un second fichier — est refuse ici. */
+test("mobile — deux endroits seulement gardent quelque chose sur le telephone", () => {
+  /* 29/09/2026 (D-M3). La commune que le lecteur a demande de retenir, dans
+     lib/memoire.ts (un fichier du cache, ou la cle unique sur la version web).
+     30/09/2026, DECISION DU PORTEUR : aussi les fichiers publics publies par
+     Repere, dans lib/cache.ts — branche SOUS le magasin partage, dont la garde
+     refuse tout le reste avant d'ecrire. Tout autre stockage — AsyncStorage,
+     SecureStore, SQLite, MMKV, un troisieme fichier — est refuse ici. */
   const STOCKAGES = /@react-native-async-storage|expo-secure-store|expo-sqlite|react-native-mmkv|expo-file-system|localStorage|indexedDB|document\.cookie/;
+  const AUTORISES = ["apps/mobile/src/lib/memoire.ts", "apps/mobile/src/lib/cache.ts"];
   const fautifs = sourcesEcrites()
-    .filter(f => f.startsWith("apps/mobile/src/") && f !== "apps/mobile/src/lib/memoire.ts")
+    .filter(f => f.startsWith("apps/mobile/src/") && !AUTORISES.includes(f))
     .filter(f => STOCKAGES.test(lire(f).replace(/\/\*[\s\S]*?\*\//g, "").replace(/\/\/.*$/gm, "")));
-  assert.deepEqual(fautifs, [], "stockage hors de lib/memoire.ts : " + fautifs.join(", "));
+  assert.deepEqual(fautifs, [], "stockage hors de lib/memoire.ts et lib/cache.ts : " + fautifs.join(", "));
+  const c = lire("apps/mobile/src/lib/cache.ts").replace(/\/\*[\s\S]*?\*\//g, "");
+  assert.ok(/configurerStockage\(stockageDisque\)/.test(c),
+    "lib/cache.ts doit etre branche SOUS le magasin partage (configurerStockage), jamais appele en direct");
+  assert.ok(/Paths\.cache/.test(c) && !/Paths\.document/.test(c),
+    "les donnees gardees restent dans le cache, exclu des sauvegardes iCloud et Google");
+  const appelsDirects = sourcesEcrites()
+    .filter(f => f.startsWith("apps/mobile/src/") && f !== "apps/mobile/src/lib/cache.ts")
+    .filter(f => /stockageDisque/.test(lire(f).replace(/\/\*[\s\S]*?\*\//g, "")));
+  assert.deepEqual(appelsDirects, [], "le stockage disque est appele sans passer par la garde : " + appelsDirects.join(", "));
   const m = lire("apps/mobile/src/lib/memoire.ts");
   assert.ok(/export const CLE = "repere\.departement";/.test(m), "memoire.ts ne porte plus la cle unique du produit");
   assert.ok(/Paths\.cache/.test(m) && !/Paths\.document/.test(m),

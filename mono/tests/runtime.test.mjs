@@ -402,6 +402,64 @@ verif("fraîcheur — le cache perime est remplace par un cache a jour (v = SCHE
   capresPurge === 1, "v en cache apres coup : " + JSON.stringify(capresPurge));
 await pageFraicheur.context().close();
 
+/* FRAICHEUR — UNE NOUVELLE PUBLICATION ATTEINT UN LECTEUR DEJA VENU (30/09/2026).
+ * Le defaut corrige ce jour-la : le client lisait son magasin d'abord et ne
+ * redemandait JAMAIS le reseau ; le service worker, lui aussi « cache d'abord »,
+ * avait une visite de retard. Un lecteur venu une fois gardait pour toujours
+ * les elus de sa premiere visite. On le mesure de bout en bout, service worker
+ * compris : premiere visite, publication d'un nouveau maire (fichiers du build
+ * reecrits, puis restaures), visite suivante. */
+{
+  const fIx = path.join(DIST, "data", "index.json");
+  const f77 = path.join(DIST, "data", "departments", "77.json");
+  const ixAvant = fs.readFileSync(fIx, "utf8");
+  const d77Avant = fs.readFileSync(f77, "utf8");
+  const ctxPub = await nav.newContext({ viewport: { width: 390, height: 844 } });
+  const pagePub = await ctxPub.newPage();
+  const ouvrirAmillis = async () => {
+    /* A la visite suivante, la commune est deja retenue : pas de recherche. */
+    await pagePub.waitForTimeout(600);
+    const champ = pagePub.getByLabel(/Où habitez-vous/);
+    if (await champ.isVisible().catch(() => false)) {
+      await champ.fill("Amillis");
+      await pagePub.waitForTimeout(300);
+    }
+    /* Premiere visite : le resultat de la recherche. Visites suivantes : le
+       departement est retenu, la commune se choisit dans sa liste. */
+    await pagePub.getByRole("button", { name: /^Amillis\b/ }).first().click();
+    await pagePub.waitForTimeout(1200);
+    await pagePub.getByRole("button", { name: "Qui décide" }).click();
+    await pagePub.waitForTimeout(800);
+    return pagePub.evaluate(() => document.body.innerText);
+  };
+  let avant = "", apres = "";
+  try {
+    await pagePub.goto(base, { waitUntil: "networkidle" });
+    avant = await ouvrirAmillis();
+    /* Une seconde visite a l'identique : le service worker controle la page
+       et porte les donnees dans son propre cache. */
+    await pagePub.goto(base, { waitUntil: "networkidle" });
+    await ouvrirAmillis();
+    const ix = JSON.parse(ixAvant);
+    ix.build = { ...(ix.build || {}), construit_le: "2099-01-01T00:00:00.000Z" };
+    const d77 = JSON.parse(d77Avant);
+    d77.communes["77002"].maire.nom = "PUBLICATION-NEUVE-TEST";
+    fs.writeFileSync(fIx, JSON.stringify(ix));
+    fs.writeFileSync(f77, JSON.stringify(d77));
+    await pagePub.goto(base, { waitUntil: "networkidle" });
+    apres = await ouvrirAmillis();
+  } finally {
+    fs.writeFileSync(fIx, ixAvant);
+    fs.writeFileSync(f77, d77Avant);
+    await ctxPub.close();
+  }
+  verif("fraîcheur — avant la publication, le lecteur voit le maire publie",
+    /TASD'HOMME/.test(avant), avant.slice(0, 200).replace(/\n+/g, " / "));
+  verif("fraîcheur — une nouvelle publication atteint le lecteur deja venu, des la visite suivante",
+    /PUBLICATION-NEUVE-TEST/.test(apres),
+    "le nouveau maire n'est pas a l'ecran : " + apres.slice(0, 400).replace(/\n+/g, " / "));
+}
+
 /* LE PREMIER ECRAN NE PAIE PAS CE FICHIER. Il ne part QUE depuis « Qui decide » :
    la mesure porte sur les adresses reellement demandees depuis l'ouverture. */
 verif("architecture — le fichier des deputes n'est demande qu'une fois, et pas au premier ecran",
@@ -526,7 +584,7 @@ verif("invariant 2 — un seul magasin, et il ne porte que des paquets departeme
   && (magasins.magasins || []).every(m => m === "departements")
   /* "reg" rejoint dep/vote/socle le 22/09/2026 : le conseil regional, range
      par region (deux chiffres), meme garde que store.js. */
-  && (magasins.cles || []).every(c => /^(dep|vote|reg|socle):[0-9A-Z]{1,3}$/.test(c)),
+  && (magasins.cles || []).every(c => /^(dep|vote|reg|proj|socle):[0-9A-Z]{1,3}$/.test(c)),
   JSON.stringify(magasins));
 
 console.log("\n--- l'argent -------------------------------------------------");

@@ -73,6 +73,11 @@ export default function ChezVous() {
             <Text style={TYPO.affiche} accessibilityRole="header">{nom}</Text>
             <Text style={TYPO.note}>{[depIndex && depIndex.nom, depIndex && depIndex.region].filter(Boolean).join(" · ")}</Text>
             {publie ? <Text style={TYPO.micro}>Mis à jour par Repère le {dateFr(publie)}</Text> : null}
+            {r.perime ? (
+              <Text style={TYPO.micro} testID="perime">
+                Le réseau n'a pas permis de tout mettre à jour : une partie de ce qui suit date d'une publication précédente.
+              </Text>
+            ) : null}
           </View>
 
           <View style={{ gap: PAS * 3 }}>
