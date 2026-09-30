@@ -4,6 +4,12 @@
 tout modèle de langage qui reprend le projet. Il est écrit pour être collé tel
 quel en début de session.
 
+> **Lire d'abord `CLAUDE.md`** (29/09/2026) : c'est l'état courant, court. Ce
+> document-ci se lit à la demande. Ses sections 4 à 8 et 12 décrivent l'ère du
+> fichier unique, **avant la bascule de la production vers `mono/` le 23/09/2026** :
+> les chiffres du banc, la carte des fichiers et l'ordre de travail qu'elles donnent
+> sont historiques.
+
 - **Dernière mise à jour :** 26 août 2026
 - **Version de l'application :** `app_repere_v18_20.html`
 - **Dépôt :** `C:\Users\APina\repere` (Windows) — la chaîne tourne sur GitHub Actions

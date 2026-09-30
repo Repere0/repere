@@ -287,6 +287,13 @@ echo "site engendre depuis mono/ : $(find site_engendre -type f | wc -l) fichier
 # 22/09/2026 sur le runner GitHub reel : 120 controles inline + 65 node:test,
 # 0 echec) qui le garde, pas test_repere.mjs — qui ne connait ni son DOM ni
 # ses classes.
+# CONTEXTE DES AGENTS (29/09/2026) : CLAUDE.md, AGENTS.md, skills. Il n'entre
+# pas dans le site publie, donc il AVERTIT et ne bloque jamais la publication ;
+# sur une pull request, l'avertissement se lit dans l'epreuve.
+echo "== contexte des agents =="
+node outils/derive_contexte.mjs \
+  || echo "::warning::le contexte des agents a derive (voir outils/derive_contexte.mjs ci-dessus)"
+
 echo "== banc : le fichier autonome =="
 node test_repere.mjs "$APP"
 
