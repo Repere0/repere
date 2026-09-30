@@ -456,6 +456,16 @@ relisant `dist/` lancés avant le build). Il est remplacé par `epreuve.yml` : l
 mêmes étapes que `collecte.yml` jusqu'au banc inclus, **sans rien publier**, sur
 chaque pull request vers `main` et à la demande.
 
+**Qui écrit sur `main` (29/09/2026).** `main` est protégée : pull request
+obligatoire, aucun contournement humain. La collecte quotidienne y écrit par une
+identité dédiée, l'App GitHub `repere-collecte` (permission Contents seulement,
+installée sur ce seul dépôt), seule inscrite en contournement. Son jeton dure une
+heure et n'est jamais stocké. Une **liste blanche** dans `collecte.yml` refuse tout
+chemin qui n'est pas une sortie de la chaîne (jamais `data/evenements/`, jamais le
+code) et nomme le fichier refusé ; prouvée en la cassant. Sans les secrets
+`COLLECTE_APP_ID` / `COLLECTE_APP_KEY`, la collecte se replie sur le jeton du
+workflow et le dit.
+
 **Défauts trouvés le premier jour, par les contrôles eux-mêmes :**
 
 - l'application **ne s'ouvrait pas hors ligne** — le service worker s'enregistre
