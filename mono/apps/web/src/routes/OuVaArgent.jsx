@@ -6,7 +6,7 @@ import { chargerComptesRegions, ETATS } from "@repere/data-utils";
 /* Les phrases de cet ecran vivent dans @repere/core (phrases.js) depuis le
    30/09/2026 : l'application mobile ecrit les memes, mot pour mot. */
 import { introRapports, comptesAbsents, comptesInsuffisants, exercicesEcartes, phraseEcartes as phraseDesEcartes, comptesIncoherents,
-  INTRO_EVOLUTION, NOTE_EVOLUTION, diffEuros, perimetreChange, sansComparaison, ligneNonComparable } from "@repere/core";
+  INTRO_EVOLUTION, NOTE_EVOLUTION, diffEuros, ecartEnMots, perimetreChange, sansComparaison, ligneNonComparable } from "@repere/core";
 
 /* `valeur`, `rapports`, `population`, `dernierExercice` VIVENT DANS
  * lib/comptes.jsx DEPUIS LE 18/09/2026 — voir ce fichier pour l'historique de
@@ -39,9 +39,11 @@ function Evolution({ e, nom, src }) {
       {e.lignes.map((l, i) => (
         <div className="ligne evolution" key={i}>
           <div className="ligne-h"><span>{l.libelle}</span>
-            <b>{diffEuros(l.diff)}</b>
+            <b>{(ecartEnMots(l, e.an1, e.an2, nom) || {}).chiffre || diffEuros(l.diff)}</b>
           </div>
+          {ecartEnMots(l, e.an1, e.an2, nom) ? <p className="ligne-phrase">{ecartEnMots(l, e.an1, e.an2, nom).phrase}</p> : null}
           <div className="ligne-note">
+            {l.diff !== null && (ecartEnMots(l, e.an1, e.an2, nom) || {}).chiffre ? `Écart : ${diffEuros(l.diff)} · ` : ""}
             {l.diff === null
               ? ligneNonComparable(l, e.an1, e.an2)
               : `${e.an1} : ${euros(l.m1)} · ${e.an2} : ${euros(l.m2)}`}

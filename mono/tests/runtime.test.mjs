@@ -1193,7 +1193,26 @@ console.log("\n--- comptes : d'un exercice a l'autre -------------------------")
     verif(`evolution — ${c.nom} : la carte montre 2024, 2025 et la difference des recettes en euros`,
       /2024 : /.test(carte) && /2025 : /.test(carte) && (recettes === 0 ? /inchangé/.test(carte) : carte.includes(attendu)),
       carte.slice(0, 300).replace(/\n+/g, " / "));
-    verif("evolution — aucun pourcentage dans la carte", carte.length > 0 && !/%/.test(carte), carte.slice(0, 200));
+    /* 01/10/2026 — REGLE REMPLACEE, PAS RETIREE. Le 16/09 : « aucun pourcentage »
+       (choix de conception, pas un invariant). Le porteur demande le 01/10 le
+       pourcentage et une phrase. Ce controle garde maintenant ce qui rend un
+       pourcentage honnete : la difference en euros reste (controle ci-dessus),
+       le pourcentage des recettes est EXACTEMENT celui des donnees (une
+       decimale), et aucun pourcentage de 100 ou plus n'est affiche (au-dela,
+       « multiplie par »). */
+    const m1 = c.comptes["2024"][1], m2 = c.comptes["2025"][1];
+    const pctAttendu = m1 > 0 && m2 !== m1 && Math.abs((m2 - m1) / m1) < 1
+      ? (m2 > m1 ? "+ " : "− ") + (Math.abs(m2 - m1) / m1 * 100).toLocaleString("fr-FR", { minimumFractionDigits: 1, maximumFractionDigits: 1 }) + " %"
+      : null;
+    const pcts = (carte.match(/\d[\d\s ]*(,\d+)? %/g) || []).map(x => parseFloat(x.replace(/[\s ]/g, "").replace(",", ".")));
+    /* SUR LA LIGNE DES RECETTES, et pas n'importe ou dans la carte : la premiere
+       version cherchait le pourcentage dans toute la carte, et la casse (+1 point
+       sur chaque ligne) est passee — l'impot (2,1 % devenu 3,1 %) affichait par
+       hasard le pourcentage attendu des recettes. */
+    const apresRecettes = (carte.split(/Ce qu.elle encaisse/)[1] || "").trim();
+    verif("evolution — le pourcentage des recettes est celui des données, et aucun pourcentage n'atteint 100",
+      carte.length > 0 && (pctAttendu === null || apresRecettes.startsWith(pctAttendu)) && pcts.every(v => v < 100),
+      (pctAttendu || "pas de pourcentage attendu") + " · " + carte.slice(0, 200));
     verif("invariant 4 — la difference est annoncee comme un calcul", /Calcul Repère/i.test(carte) && /soustraction/.test(carte), "");
   }
 }

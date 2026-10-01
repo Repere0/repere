@@ -129,7 +129,7 @@ export default function ChezVous() {
               phrase={d.nbCircos > 1
                 ? `${nom} est partagée entre ${d.nbCircos} circonscriptions : votre député dépend de votre adresse.`
                 : `Le ${dateFr(vote.sc.d)}, ${texteDe(phrasePosition(vote.position, `${vote.qui}, qui représente votre circonscription,`))}`}
-              preuve={<Repartition compact segments={rep.segments} total={rep.total} position={vote.position} qui={vote.qui} />}
+              preuve={<Repartition segments={rep.segments} total={rep.total} position={vote.position} qui={vote.qui} />}
               note={d.nbCircos > 1
                 ? `Par exemple, dans la ${ordinal(vote.circo)}, le ${dateFr(vote.sc.d)}, ${texteDe(phrasePosition(vote.position, vote.qui)).replace(/\.$/, "")} (texte ${vote.sc.s}).`
                 : `${titreLisible(vote.sc.t)} : ${vote.sc.s}, ${decompte(vote.sc.dec)}.`}
@@ -147,6 +147,7 @@ export default function ChezVous() {
             <Etiquette texte="Aller plus loin" />
             <View>
               <Plus premier texte="Qui décide de quoi" onPress={() => router.push("/qui-decide")} />
+              <Plus texte="Ce qui a été décidé" onPress={() => router.push("/ce-qui-se-passe")} />
               <Plus texte="Ce qui arrive au Parlement" onPress={() => router.push("/a-venir")} />
               <Plus dernier texte="D'où viennent ces informations" onPress={() => router.push("/sources")} />
             </View>

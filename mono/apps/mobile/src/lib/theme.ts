@@ -43,10 +43,10 @@ export const couleurs = {
   lien: "#1a1917",
 } as const;
 
-/* Les trois gris d'une repartition de vote, du plus fonce au plus clair : ils
-   se distinguent aussi par leur libelle et leur nombre, jamais par la couleur
-   seule (accessibilite). */
-export const GRIS_VOTE = { p: couleurs.encre, c: couleurs.sourd, a: couleurs.trait } as const;
+/* UN VOTE N'A QU'UN GRIS (01/10/2026). Les trois gris d'avant (pour en encre,
+   contre en gris moyen, abstention en gris clair) rendaient « pour » plus
+   visible que les deux autres positions. Les barres de vote utilisent
+   couleurs.sourd, et se distinguent par leur libelle et leur longueur. */
 
 /* 44 points : cible tactile minimale d'Apple, au-dessus des 48 dp d'Android
    une fois la marge interne comptee. */

@@ -187,6 +187,7 @@
   font-size: .93rem; color: var(--sourd); }
 .ligne-h b { color: var(--encre); font-variant-numeric: tabular-nums; }
 .ligne-note { font-size: .82rem; color: var(--sourd); margin-top: .25rem; line-height: 1.45; }
+.ligne-phrase { margin: .2rem 0 0; font-size: 1rem; line-height: 1.45; }
 .barre { height: 8px; border-radius: 99px; background: var(--voile); margin-top: .35rem; overflow: hidden; }
 .barre i { display: block; height: 100%; border-radius: 99px; }
 

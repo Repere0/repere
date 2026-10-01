@@ -248,3 +248,50 @@ test("ligne non comparable — la meme phrase sur le site et l'application, l'an
   assert.equal(ligneNonComparable({ m1: null, m2: 5 }, "2024", "2025"), "Non comparable : le fichier ne porte pas cette ligne pour 2024.");
   assert.equal(ligneNonComparable({ m1: 5, m2: null }, "2024", "2025"), "Non comparable : le fichier ne porte pas cette ligne pour 2025.");
 });
+
+import { quiADecide, partieDuFait, faitsDuFil } from "../packages/core/src/index.js";
+test("fait — QUI seulement quand celui qui publie a decide ; jamais devine", () => {
+  assert.equal(quiADecide({ src: "https://www.conseil-constitutionnel.fr/decision/2026/2026910DC.htm" }), "Le Conseil constitutionnel");
+  assert.equal(quiADecide({ src: "https://www.assemblee-nationale.fr/dyn/17/scrutins/8434" }), "L'Assemblée nationale");
+  assert.equal(quiADecide({ src: "https://www.senat.fr/scrutin-public/2025/scr2025-1.html" }), "Le Sénat");
+  assert.equal(quiADecide({ src: "https://www.legifrance.gouv.fr/jorf/id/X" }), null, "Legifrance publie, ne decide pas");
+  assert.equal(quiADecide({ src: "https://faux-assemblee-nationale.fr.example.com/x" }), null, "un hote qui imite n'est pas l'institution");
+  assert.equal(quiADecide({ src: "pas une adresse" }), null);
+  assert.equal(quiADecide({}), null);
+});
+test("fait — les deux parties du corps, rendues sans retouche ; le fil trie du plus recent au plus ancien", () => {
+  const e = { txt: "## Le fait\n\nSaisi après l'adoption,\nle Conseil l'a déclarée conforme.\n\n## Ce que ça change\n\nLa loi peut être promulguée." };
+  assert.equal(partieDuFait(e, "Le fait"), "Saisi après l'adoption, le Conseil l'a déclarée conforme.");
+  assert.equal(partieDuFait(e, "Ce que ça change"), "La loi peut être promulguée.");
+  assert.equal(partieDuFait({ txt: "rien" }, "Le fait"), null);
+  const fil = faitsDuFil({ r: [{ id: "a", d: "2026-07-20", e: "france" }, { id: "b", d: "2026-08-14", e: "france" },
+    { id: "c", d: "2026-09-01", e: "ville", insee: "99999" }, { id: "d", d: "2026-09-02", e: "ville", insee: "77284" }] }, { dep: "77", commune: "77284" });
+  assert.deepEqual(fil.map(x => x.id), ["d", "b", "a"], "la commune d'un autre lecteur n'entre pas ; ordre du temps seulement");
+});
+
+import { ecartEnMots } from "../packages/core/src/index.js";
+test("ecart en mots — pourcentage exact, accorde, sans adjectif (Meaux 2024 -> 2025, chiffres reels)", () => {
+  const d = ecartEnMots({ libelle: "Ce qu'elle dépense", m1: 117405193, m2: 121272659 }, "2024", "2025", "Meaux");
+  assert.equal(d.chiffre, "+ 3,3 %");
+  assert.equal(d.phrase, "Les dépenses de Meaux ont augmenté de 3,3 % entre 2024 et 2025.");
+  const dette = ecartEnMots({ libelle: "Ce qu'elle doit", m1: 68535560, m2: 75790376 }, "2024", "2025", "Meaux");
+  assert.equal(dette.phrase, "La dette de Meaux a augmenté de 10,6 % entre 2024 et 2025.");
+  const baisse = ecartEnMots({ libelle: "Ce qu'elle encaisse", m1: 200, m2: 150 }, "2024", "2025", "A");
+  assert.equal(baisse.chiffre, "− 25,0 %");
+  assert.match(baisse.phrase, /ont baissé de 25,0 %/);
+  for (const e of [d, dette, baisse]) assert.doesNotMatch(e.phrase, /forte|faible|inqui|bonne|mauvaise|seulement|hélas/i, "aucun jugement");
+});
+test("ecart en mots — les deux bornes qui empechent un pourcentage de mentir", () => {
+  /* base nulle : aucun pourcentage */
+  const zero = ecartEnMots({ libelle: "Ce qu'elle doit", m1: 0, m2: 50000 }, "2024", "2025", "A");
+  assert.equal(zero.chiffre, null);
+  assert.equal(zero.phrase, "La dette de A a augmenté entre 2024 et 2025.");
+  /* a partir de +100 % : un multiplicateur, jamais « +9 900 % » */
+  const fois = ecartEnMots({ libelle: "Ce qu'elle doit", m1: 10000, m2: 1000000 }, "2024", "2025", "A");
+  assert.equal(fois.chiffre, "× 100,0");
+  assert.equal(fois.phrase, "La dette de A a été multipliée par 100,0 entre 2024 et 2025.");
+  const inv = ecartEnMots({ libelle: "Ce qu'elle investit", m1: 100, m2: 250 }, "2024", "2025", "A");
+  assert.equal(inv.phrase, "Les investissements de A ont été multipliés par 2,5 entre 2024 et 2025.");
+  assert.equal(ecartEnMots({ libelle: "Ce qu'elle dépense", m1: 100, m2: 100 }, "2024", "2025", "A").phrase, "Les dépenses de A n'ont pas changé entre 2024 et 2025.");
+  assert.equal(ecartEnMots({ libelle: "Ce qu'elle dépense", m1: null, m2: 100 }, "2024", "2025", "A"), null);
+});

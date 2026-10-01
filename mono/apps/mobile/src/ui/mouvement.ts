@@ -51,20 +51,3 @@ export function useApparition(delai = 0): Animated.Value {
   }, [reduit, delai, v]);
   return v;
 }
-
-/* Un nombre qui se revele (0 -> valeur). Le lecteur d'ecran lit toujours la
-   valeur finale : l'animation n'existe que pour l'oeil. */
-export function useCompteur(cible: number): number {
-  const reduit = useMouvementReduit();
-  const [n, setN] = useState(reduit ? cible : 0);
-  useEffect(() => {
-    if (reduit === null) return;             /* reglage pas encore connu : on attend */
-    if (reduit || !Number.isFinite(cible)) { setN(cible); return; }
-    const v = new Animated.Value(0);
-    const id = v.addListener(({ value }) => setN(Math.round(value)));
-    const a = Animated.timing(v, { toValue: cible, duration: DUREE.apparition, easing: Easing.out(Easing.cubic), useNativeDriver: false });
-    a.start(() => setN(cible));
-    return () => { a.stop(); v.removeListener(id); };
-  }, [cible, reduit]);
-  return n;
-}

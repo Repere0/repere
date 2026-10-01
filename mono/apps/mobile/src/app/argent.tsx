@@ -13,7 +13,7 @@
 import { Text, View } from "react-native";
 import { Stack } from "expo-router";
 import {
-  chiffresComptes, comptesAbsents, comptesIncoherents, comptesInsuffisants, diffEuros, eurosArrondis,
+  chiffresComptes, comptesAbsents, comptesIncoherents, comptesInsuffisants, diffEuros, ecartEnMots, eurosArrondis,
   evolution, exercicesEcartes, financementProjet, INTRO_EVOLUTION, introRapports, montantCourt, noteRattachement,
   NOTE_EVOLUTION, NOTE_FINANCEMENT, nomDispositif, parHabitant, partReperee, perimetreChange, phraseEcartes,
   phraseProjetLocal, rapports, sousTitreRapports, euros, CALCUL_REPERE, sansComparaison, ligneNonComparable,
@@ -26,7 +26,7 @@ import { couleurs, PAS, TYPO } from "../lib/theme";
 import { AvecDonnees, Page, Question } from "../ui/page";
 import { PastilleSource } from "../ui/source";
 import { Resume } from "../ui/resume";
-import { BarrePart, Compteur, DeuxAnnees, Depli, Financement, Mois } from "../ui/visuels";
+import { BarrePart, DeuxAnnees, Depli, Financement, Mois } from "../ui/visuels";
 
 type Rapport = { l: string; v: string; d: string };
 type Projet = { annee: number; dispositif: string; intitule: string; subvention: number; cout?: number; ancien_code?: string };
@@ -127,17 +127,19 @@ export default function Argent() {
                 </Carte>
               ) : null}
 
-              {/* LE JOUR LE JOUR, POUR QUI VEUT LE VOIR COMPTER */}
-              {ch.parJour !== null ? (
-                <Carte echelon="ville" titre="Chaque jour, en moyenne">
-                  <Compteur valeur={ch.parJour} suffixe="€ par jour" />
-                  <PasCeQueCaDit r={rap(/par jour/)} sujet="dépense par jour" />
-                  <PastilleSource source={srcComptes(d)} />
-                </Carte>
-              ) : null}
-
-              {/* NIVEAU 3 : le calcul, pour qui veut aller au bout */}
+              {/* NIVEAU 2 : le calcul, pour qui veut aller au bout.
+                  LA MOYENNE PAR JOUR Y DESCEND (01/10/2026). Elle avait sa carte, avec
+                  un compteur de 44 px : c'etait la troisieme facon de dire le meme total
+                  (121,3 M€, 2 123 € par habitant, 332 254 € par jour), et un grand
+                  chiffre sans question — ce que la mission UX refuse. Elle reste
+                  disponible, avec ce qu'elle ne veut pas dire, pour qui ouvre le detail. */}
               <Depli titre="Détails du calcul">
+                {ch.parJour !== null && rap(/par jour/) ? (
+                  <View style={{ gap: PAS }}>
+                    <Text style={TYPO.corps}>En moyenne sur l'année : {rap(/par jour/)?.v}.</Text>
+                    <Text style={TYPO.note}>{rap(/par jour/)?.d}</Text>
+                  </View>
+                ) : null}
                 <Text style={TYPO.note}>{sousTitreRapports(ex.an, ex.ex)}</Text>
                 <Text style={TYPO.note}>{introRapports({ detailPlusBas: false })}</Text>
                 <Text style={[TYPO.note, { fontWeight: "700" }]}>{CALCUL_REPERE}</Text>
@@ -158,12 +160,13 @@ export default function Argent() {
                 {[1, 0, 2].map(i => evo.lignes[i]).filter(Boolean).map((l: { libelle: string; m1: number | null; m2: number | null; diff: number | null }) => (
                   l.m1 !== null && l.m2 !== null && l.diff !== null ? (
                     <DeuxAnnees key={l.libelle} libelle={l.libelle} an1={evo.an1} an2={evo.an2} m1={l.m1} m2={l.m2}
-                      texte1={eurosArrondis(l.m1)} texte2={eurosArrondis(l.m2)} diffTexte={diffEuros(l.diff)} />
+                      texte1={eurosArrondis(l.m1)} texte2={eurosArrondis(l.m2)} diffTexte={diffEuros(l.diff)}
+                      pourcent={ecartEnMots(l, evo.an1, evo.an2, nom)?.chiffre} phrase={ecartEnMots(l, evo.an1, evo.an2, nom)?.phrase} />
                   ) : (
                     <Text key={l.libelle} style={TYPO.note}>{l.libelle} — {ligneNonComparable(l, evo.an1, evo.an2)}</Text>
                   )
                 ))}
-                <Text style={TYPO.micro}>Chaque paire de barres a sa propre échelle : on compare une ligne à elle-même, jamais deux lignes entre elles.</Text>
+                <Text style={TYPO.micro}>Chaque paire de barres a sa propre échelle, qui part de zéro : on compare une ligne à elle-même, jamais deux lignes entre elles.</Text>
                 <Depli titre="Ce que ça ne veut pas dire (évolution)"><Text style={TYPO.corps}>{NOTE_EVOLUTION}</Text></Depli>
                 <PastilleSource source={srcComptes(d)} />
               </Carte>

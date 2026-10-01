@@ -1,4 +1,12 @@
-/* « QU'A VOTÉ VOTRE DÉPUTÉ ? » — UNE QUESTION, UN ECRAN (refonte du 30/09/2026).
+/* « VOTRE DÉPUTÉ » — (refonte du 30/09/2026, reordonne le 01/10/2026).
+ *
+ * 01/10/2026, mission UX « rendre la democratie lisible » : l'ecran commence par
+ * QUI vous represente (le nom en grand, puis la chaine commune -> circonscription
+ * -> depute), et seulement ensuite ce qu'il a vote. Une commune partagee entre
+ * plusieurs circonscriptions (Paris) garde l'ancienne entree : on ne presente
+ * jamais UN depute comme « le votre » quand il depend de l'adresse.
+ * Phrases neutres : la source ne porte pas la civilite, donc ni « elu » ni
+ * « elue » — « represente cette circonscription ».
  *
  * Niveau 1 : la position, en grand. Niveau 2 : la repartition du scrutin (sur
  * les deputes QUI ONT PRIS PART au vote — c'est ecrit), et pourquoi c'est
@@ -23,7 +31,7 @@ import { useCommuneChoisie } from "../lib/useCommune";
 import { PAS, TYPO } from "../lib/theme";
 import { AvecDonnees, Page, Question } from "../ui/page";
 import { PastilleSource } from "../ui/source";
-import { Frise, Repartition } from "../ui/visuels";
+import { DetailVote, Frise } from "../ui/visuels";
 
 type FaitVote = { cle: string; type: string; sc: { t: string; d: string; n: string; s: string; dec?: Record<string, string> }; position?: string; qui: string; circo: number };
 
@@ -33,7 +41,8 @@ export default function Vote() {
     <AvecDonnees rendu={r => {
       const { d } = r;
       const vote: FaitVote | undefined = d.dernierVote;
-      const entete = <Question etiquette="Votre député" question="Qu'a voté votre député ?" />;
+      const unSeul = d.nbCircos <= 1;
+      const entete = <Question etiquette="Votre député" question={unSeul && vote ? vote.qui : "Qu'a voté votre député ?"} />;
       if (!r.votesLus) return <Page>{entete}<Vide {...VOTES_PAS_ARRIVES} action="Réessayer" onAction={reessayer} /></Page>;
       if (!r.votesFiables) return <Page>{entete}<Vide titre={REFUS_APPARIEMENT.titre} corps={REFUS_APPARIEMENT.corps} /></Page>;
       if (!vote) return <Page>{entete}<Vide {...(d.nbCircos === 0 ? circoInconnue(d.nomCommune) : { ...VOTE_AUCUN, corps: POSITION_NON_PORTEE })} /></Page>;
@@ -47,10 +56,20 @@ export default function Vote() {
         <Page>
           <Stack.Screen options={{ title: "Votre député" }} />
           {entete}
-          <Text style={TYPO.note}>{phraseCirconscription(d, vote.circo)}</Text>
+          {unSeul ? null : <Text style={TYPO.note}>{phraseCirconscription(d, vote.circo)}</Text>}
+          {/* QUI VOUS REPRESENTE : de votre commune a l'Assemblee */}
+          <Carte echelon="france" titre={unSeul ? "Pourquoi c'est votre député" : "Un exemple de circonscription"}>
+            <Frise etiquette="De votre commune à l'Assemblée" jalons={[
+              { cle: "c", titre: d.nomCommune, texte: "Votre commune.", echelon: "ville" },
+              { cle: "ci", titre: `${vote.circo === 1 ? "1re" : vote.circo + "e"} circonscription${depIndex ? " · " + depIndex.nom : ""}`, texte: "Le territoire qui élit un député. Il regroupe plusieurs communes, ou une partie d'une grande ville.", echelon: "france" },
+              { cle: "d", titre: vote.qui, texte: "Représente cette circonscription à l'Assemblée nationale.", echelon: "france", actif: true },
+              { cle: "an", titre: "Assemblée nationale", texte: "577 députés y votent les lois et le budget de l'État.", echelon: "france" },
+            ]} />
+          </Carte>
 
-          {/* NIVEAU 1 : la position */}
-          <Carte echelon="france" titre={`Le ${dateFr(vote.sc.d)}`}>
+          {unSeul ? <Text style={TYPO.note}>{phraseCirconscription(d, vote.circo)}</Text> : null}
+          {/* SON VOTE : la position, en grand */}
+          <Carte echelon="france" titre={`Son vote du ${dateFr(vote.sc.d)}`}>
             <Text style={TYPO.question} maxFontSizeMultiplier={1.4}><Segments s={phrasePosition(vote.position, vote.qui)} /></Text>
             <Text style={[TYPO.reponse, { fontSize: 19, lineHeight: 25 }]}>{titreLisible(vote.sc.t)}</Text>
             <Text style={TYPO.note}>{ligneScrutin(vote.sc)}</Text>
@@ -61,21 +80,26 @@ export default function Vote() {
           {/* NIVEAU 2 : le scrutin, visuellement */}
           {rep ? (
             <Carte echelon="france" titre="Comment l'Assemblée a voté">
-              <Repartition segments={rep.segments} total={rep.total} position={vote.position} qui={vote.qui} />
+              <DetailVote segments={rep.segments} total={rep.total} position={vote.position} qui={vote.qui} />
               <Text style={TYPO.micro}>{phraseDenominateurVote(rep.total)}</Text>
               <PastilleSource source={srcVote(d, vote.sc)} />
             </Carte>
           ) : null}
 
-          {/* POURQUOI C'EST « VOTRE » DEPUTE */}
-          <Carte echelon="france" titre="Pourquoi c'est votre député">
-            <Frise etiquette="De votre commune à l'Assemblée" jalons={[
-              { cle: "c", titre: d.nomCommune, texte: "Votre commune.", echelon: "ville" },
-              { cle: "ci", titre: `${vote.circo === 1 ? "1re" : vote.circo + "e"} circonscription${depIndex ? " · " + depIndex.nom : ""}`, texte: "Le territoire qui élit un député. Il regroupe plusieurs communes, ou une partie d'une grande ville.", echelon: "france" },
-              { cle: "d", titre: vote.qui, texte: "Élu par les électeurs de cette circonscription.", echelon: "france", actif: true },
-              { cle: "an", titre: "Assemblée nationale", texte: "577 députés y votent les lois et le budget de l'État.", echelon: "france" },
-            ]} />
-          </Carte>
+          {/* SES AUTRES VOTES, dans l'ordre du temps */}
+          {autres.length ? (
+            <Carte echelon="france" titre="Ses votes précédents">
+              {autres.map(a => (
+                <View key={a.cle} style={{ gap: 2, paddingBottom: PAS * 2 }}
+                  accessible accessibilityLabel={`${dateFr(a.sc.d)} : ${titreLisible(a.sc.t)}. ${motPosition(a.position) ? "A voté " + motPosition(a.position) : "Aucune position publiée pour ce vote"}.`}>
+                  <Text style={TYPO.micro}>{dateFr(a.sc.d)} · texte {a.sc.s}</Text>
+                  <Text style={TYPO.corps}>{titreLisible(a.sc.t)}</Text>
+                  <Text style={[TYPO.note, { fontWeight: "700" }]}>{motPosition(a.position) ? "A voté " + motPosition(a.position) : "Aucune position publiée pour ce vote"}</Text>
+                </View>
+              ))}
+              <Text style={TYPO.micro}>Scrutins solennels relevés, du plus récent au plus ancien.</Text>
+            </Carte>
+          ) : null}
 
           {/* NIVEAU 3 : ou en est le texte */}
           <Carte echelon="france" titre="Où en est ce texte ?">
@@ -89,21 +113,6 @@ export default function Vote() {
             }))} />
             <PastilleSource source={{ producteur: "Constitution du 4 octobre 1958 (articles 10, 39 et 45)", court: "Constitution, art. 39 et 45", url: CONSTITUTION_45_URL }} />
           </Carte>
-
-          {/* SES AUTRES VOTES, dans l'ordre du temps */}
-          {autres.length ? (
-            <Carte echelon="france" titre="Ses votes précédents">
-              {autres.map(a => (
-                <View key={a.cle} style={{ gap: 2, paddingBottom: PAS * 2 }}
-                  accessible accessibilityLabel={`${dateFr(a.sc.d)} : ${titreLisible(a.sc.t)}. ${motPosition(a.position) ? "A voté " + motPosition(a.position) : "Position non portée par le relevé"}.`}>
-                  <Text style={TYPO.micro}>{dateFr(a.sc.d)} · texte {a.sc.s}</Text>
-                  <Text style={TYPO.corps}>{titreLisible(a.sc.t)}</Text>
-                  <Text style={[TYPO.note, { fontWeight: "700" }]}>{motPosition(a.position) ? "A voté " + motPosition(a.position) : "Position non portée par le relevé"}</Text>
-                </View>
-              ))}
-              <Text style={TYPO.micro}>Scrutins solennels relevés, du plus récent au plus ancien.</Text>
-            </Carte>
-          ) : null}
 
           <PastilleSource source={srcScrutins(d)} />
         </Page>

@@ -167,8 +167,9 @@ for (const largeur of [360, 390, 430]) {
   /* LES QUESTIONS SUIVANTES : trois depuis les reponses, deux depuis « Aller plus loin » */
   for (const [action, question, preuve] of [
     ["Où va cet argent ?", /Où va l'argent de Meaux/, /Sur 100 € dépensés, \d+ € vont aux salaires/],
-    ["Comprendre ce vote", /Qu'a voté votre député/, /Le parcours d'une loi|Où en est ce texte/],
+    ["Comprendre ce vote", /Pourquoi c'est votre député/, /Le parcours d'une loi|Où en est ce texte/],
     ["Qui décide de quoi", /Qui décide pour Meaux/, /Décide : /],
+    ["Ce qui a été décidé", /Qu'est-ce qui a été décidé/, /Ce que ça change/],
     ["Ce qui arrive au Parlement", /Qu'est-ce qui arrive/, /concernent tout le pays/],
     ["D'où viennent ces informations", /Repère a traité ces fichiers/, /Repère a traité ces fichiers le \d.*Données publiées le \d.*Données relevées le \d/s],
   ]) {
@@ -184,6 +185,23 @@ for (const largeur of [360, 390, 430]) {
       await page.getByRole("button", { name: "Détails du calcul" }).first().click();
       await page.getByText(/ce n'est pas un chiffre publié/).first().waitFor({ timeout: 5000 });
       verifier(true, `${largeur}px · ${action} : le détail du calcul s'ouvre`);
+      /* 01/10/2026 : l'ecart d'une annee a l'autre se lit en pourcentage ET en phrase */
+      verifier(/[+−] \d+,\d %/.test(m.texte) && /ont (augmenté|baissé) de \d+,\d % entre \d{4} et \d{4}\./.test(m.brut),
+        `${largeur}px · ${action} : l'évolution est dite en pourcentage et en phrase`);
+      verifier(!/Chaque jour, en moyenne/.test(m.brut), `${largeur}px · ${action} : la dépense par jour n'a plus sa carte (elle est dans le détail du calcul)`);
+    }
+    if (/vote/.test(action)) {
+      /* QUI d'abord, puis ce qu'il a vote ; et aucune phrase genree que la source ne permet pas */
+      const iQui = m.brut.indexOf("Pourquoi c'est votre député"), iVote = m.brut.indexOf("Son vote du");
+      verifier(iQui >= 0 && iVote > iQui, `${largeur}px · ${action} : qui vous représente vient avant ce qu'il a voté`);
+      verifier(!/Élu par|Élue par/.test(m.brut) && /Représente cette circonscription/.test(m.brut),
+        `${largeur}px · ${action} : phrase neutre (la source ne porte pas la civilité)`);
+      verifier(/Position de .+/.test(m.brut) && /\d+ pour/.test(m.brut) && /\d+ contre/.test(m.brut) && /\d+ abstention/.test(m.brut),
+        `${largeur}px · ${action} : trois barres chiffrées, la position du député dite en mots`);
+    }
+    if (/décidé/.test(action)) {
+      verifier(/Qui a décidé : (L'Assemblée nationale|Le Conseil constitutionnel)/i.test(m.brut) && /Toute la France/i.test(m.brut),
+        `${largeur}px · ${action} : chaque fait dit qui a décidé et où`);
     }
     await page.getByRole("button", { name: "Revenir à l'écran Chez vous" }).last().click();
     await page.getByText("Aller plus loin").first().waitFor({ timeout: 5000 });
@@ -226,31 +244,33 @@ async function ouvrirAvecPanne(motif) {
     "panne du département : phrase d'échec et bouton Réessayer");
 }
 
-/* MOUVEMENT REDUIT (refonte du 30/09/2026) : quand le systeme demande moins
-   d'animations, le montant s'affiche d'emblee a sa valeur finale. Mesure a
-   100 ms, bien avant la fin d'une animation (520 ms). Et sans reduction, le
-   compteur part bien de plus bas : preuve que le controle voit la difference. */
-async function montantA100ms(reduit) {
+/* MOUVEMENT REDUIT : quand le systeme demande moins d'animations, une barre
+   est a sa longueur finale d'emblee. Mesure a 100 ms, bien avant la fin du
+   remplissage. Et sans reduction, la barre est encore courte a 100 ms : preuve
+   que le controle voit la difference. (01/10/2026 : mesure sur la barre des
+   salaires ; le compteur anime qu'elle remplace a ete retire.) */
+async function barreA100ms(reduit) {
   const ctx = await navigateur.newContext({ viewport: { width: 390, height: 800 }, isMobile: true, hasTouch: true, reducedMotion: reduit ? "reduce" : "no-preference" });
   const page = await ctx.newPage();
   await page.goto(BASE + "/", { waitUntil: "networkidle" });
   await page.getByLabel(/Où habitez-vous/).fill(COMMUNE.saisie);
   await page.getByRole("button", { name: new RegExp("^" + COMMUNE.nom + ",") }).first().click();
-  /* Depuis le spike du 30/09/2026, le compteur anime vit sur l'ecran « Où va l'argent ». */
   await page.getByRole("button", { name: "Où va cet argent ?" }).first().click();
-  const cible = page.locator('[aria-label$="€ par jour"]').first();
+  const cible = page.locator('[aria-label^="Salaires des agents :"]').first();
   await cible.waitFor({ timeout: 15000 });
   await page.waitForTimeout(100);
-  const r = await cible.evaluate(e => ({ final: e.getAttribute("aria-label"), vu: e.innerText }));
+  const r = await cible.evaluate(e => {
+    const rail = [...e.querySelectorAll("div")].find(d => getComputedStyle(d).overflow === "hidden" && d.children.length > 0);
+    return rail ? rail.children[0].getBoundingClientRect().width / rail.getBoundingClientRect().width : -1;
+  });
   await ctx.close();
-  const chiffres = t => Number(String(t).replace(/[^\d]/g, "").slice(0, 12));
-  return { final: chiffres(r.final), vu: chiffres(r.vu.split("\n")[0]) };
+  return r;
 }
 {
-  const a = await montantA100ms(true);
-  verifier(a.vu === a.final, `mouvement réduit : le montant est final d'emblée (${a.vu} / ${a.final})`);
-  const b = await montantA100ms(false);
-  verifier(b.vu < b.final, `sans réduction, le compteur se révèle (${b.vu} < ${b.final}) : le contrôle ci-dessus mesure bien quelque chose`);
+  const a = await barreA100ms(true);
+  verifier(a > 0.4, `mouvement réduit : la barre est à sa longueur finale d'emblée (${(a * 100).toFixed(0)} % de la piste)`);
+  const b = await barreA100ms(false);
+  verifier(b >= 0 && b < a - 0.1, `sans réduction, la barre se remplit encore à 100 ms (${(b * 100).toFixed(0)} % < ${(a * 100).toFixed(0)} %) : le contrôle ci-dessus mesure bien quelque chose`);
 }
 
 /* SE SOUVENIR DE LA COMMUNE, SEULEMENT SI LE LECTEUR LE DEMANDE — D-M3,

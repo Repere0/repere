@@ -11,22 +11,15 @@
  * Construites avec des View : aucune bibliotheque de graphiques. */
 import { useState, type ReactNode } from "react";
 import { Animated, Pressable, StyleSheet, Text, View } from "react-native";
-import { couleurs, GRIS_VOTE, PAS, RAYON, TEINTES, TYPO, CIBLE, type Echelon } from "../lib/theme";
-import { useApparition, useCompteur } from "./mouvement";
+import { couleurs, PAS, RAYON, TEINTES, TYPO, CIBLE, type Echelon } from "../lib/theme";
+import { useApparition } from "./mouvement";
 
 const largeur = (v: Animated.Value, pct: number) =>
   v.interpolate({ inputRange: [0, 1], outputRange: ["0%", `${Math.max(0, Math.min(100, pct))}%`] });
 
-/* ── Un grand nombre qui se revele (le lecteur d'ecran lit la valeur finale) ── */
-export function Compteur({ valeur, suffixe }: { valeur: number; suffixe: string }) {
-  const n = useCompteur(valeur);
-  return (
-    <View accessible accessibilityLabel={`${valeur.toLocaleString("fr-FR")} ${suffixe}`}>
-      <Text style={TYPO.chiffre} maxFontSizeMultiplier={1.4}>{n.toLocaleString("fr-FR")}<Text style={[TYPO.reponse, { color: couleurs.sourd }]}> €</Text></Text>
-      <Text style={[TYPO.reponse, { color: couleurs.sourd }]}>{suffixe.replace(/^€\s*/, "")}</Text>
-    </View>
-  );
-}
+/* Le compteur anime (un grand montant qui defilait de 0 a sa valeur) est retire
+   le 01/10/2026 avec la carte « Chaque jour, en moyenne » qui etait sa seule
+   utilisation : un chiffre qui bouge attire l'oeil sans rien faire comprendre. */
 
 /* ── Une part de 100 (« sur 100 € dépensés, 47 € de salaires ») ─────────── */
 export function BarrePart({ part, libelle, valeur, echelon = "ville", delai = 0, sansLibelle }: {
@@ -65,33 +58,57 @@ export function Mois({ mois, echelon = "ville" }: { mois: number; echelon?: Eche
   );
 }
 
-/* ── La repartition d'un scrutin ───────────────────────────────────────── */
+/* ── La repartition d'un scrutin, en une barre (reponse de l'accueil) ──────
+ * 01/10/2026 : un seul gris, des separations blanches, dans l'ordre pour /
+ * contre / abstention que la phrase a cote ecrit. Avant, « pour » etait le gris
+ * le plus fonce : la position la plus visible avant d'etre lue. */
 type Segment = { cle: string; libelle: string; nombre: number; part: number };
-export function Repartition({ segments, total, position, qui, compact }: {
+export function Repartition({ segments, total, position, qui }: {
   segments: Segment[]; total: number; position?: string; qui?: string;
-  /* compact : la barre et une ligne de decompte, pour une reponse de l'accueil */
-  compact?: boolean;
 }) {
   const v = useApparition(80);
   const phrase = segments.map(x => `${x.libelle} : ${x.nombre}`).join(", ")
-    + `, sur ${total} députés ayant pris part au vote.` + (qui && position ? ` ${qui} : ${segments.find(x => x.cle === position)?.libelle.toLowerCase() || "position non portée"}.` : "");
+    + `, sur ${total} députés ayant pris part au vote.` + (qui && position ? ` ${qui} : ${segments.find(x => x.cle === position)?.libelle.toLowerCase() || "aucune position publiée"}.` : "");
   return (
     <View accessible accessibilityLabel={phrase} style={{ gap: PAS * 3 }}>
       <View style={s.barreVote}>
-        {segments.map(x => (
-          <Animated.View key={x.cle} style={{ width: largeur(v, x.part * 100), backgroundColor: GRIS_VOTE[x.cle as keyof typeof GRIS_VOTE] }} />
+        {segments.map((x, i) => (
+          <Animated.View key={x.cle} style={{ width: largeur(v, x.part * 100), backgroundColor: couleurs.sourd,
+            borderRightWidth: i < segments.length - 1 ? 2 : 0, borderRightColor: couleurs.carte }} />
         ))}
       </View>
-      {compact ? null : <View style={{ gap: PAS * 2 }}>
-        {segments.map(x => (
-          <View key={x.cle} style={s.legende}>
-            <View style={[s.pastilleCouleur, { backgroundColor: GRIS_VOTE[x.cle as keyof typeof GRIS_VOTE] }]} />
-            <Text style={[TYPO.corps, { flex: 1 }]}>{x.libelle}</Text>
-            {position === x.cle && qui ? <Text style={s.marque} numberOfLines={1}>{qui}</Text> : null}
-            <Text style={[TYPO.corps, { fontWeight: "700", minWidth: 44, textAlign: "right" }]}>{x.nombre}</Text>
+    </View>
+  );
+}
+
+/* ── Le detail d'un vote : trois barres, une par position (01/10/2026) ──────
+ * Pourquoi plus une barre empilee : dans l'ancienne, « pour » etait le gris le
+ * plus fonce — la position la plus visible avant meme d'etre lue — et la
+ * position du depute etait marquee d'une pastille de la couleur de la commune,
+ * alors qu'un depute est de l'echelon national. Ici les trois barres ont LA
+ * MEME teinte, sur une meme echelle (les deputes ayant pris part au vote) : seule
+ * la longueur differe, et c'est l'information. La position du depute est dite en
+ * mots, encadree a l'encre, sur sa ligne. */
+export function DetailVote({ segments, total, position, qui }: {
+  segments: Segment[]; total: number; position?: string; qui?: string;
+}) {
+  const v = useApparition(80);
+  const sienne = segments.find(x => x.cle === position);
+  const phrase = segments.map(x => `${x.libelle} : ${x.nombre}`).join(", ")
+    + `, sur ${total} députés ayant pris part au vote.` + (qui ? ` ${qui} : ${sienne ? sienne.libelle.toLowerCase() : "aucune position publiée"}.` : "");
+  return (
+    <View accessible accessibilityLabel={phrase} style={{ gap: PAS * 4 }}>
+      {segments.map(x => (
+        <View key={x.cle} style={{ gap: 6 }}>
+          <View style={s.ligneH}>
+            <Text style={[TYPO.reponse, { fontVariant: ["tabular-nums"] }]} maxFontSizeMultiplier={1.4}>{x.nombre} <Text style={[TYPO.corps, { fontWeight: "700" }]}>{x.libelle.toLowerCase()}</Text></Text>
+            {position === x.cle && qui ? <Text style={s.marque} numberOfLines={2}>Position de {qui}</Text> : null}
           </View>
-        ))}
-      </View>}
+          <View style={[s.piste, { height: 14 }]}>
+            <Animated.View style={[s.rempli, { width: largeur(v, x.part * 100), backgroundColor: couleurs.sourd }]} />
+          </View>
+        </View>
+      ))}
     </View>
   );
 }
@@ -116,17 +133,23 @@ export function Financement({ subvention, cout, partPct, subventionTexte, resteT
 }
 
 /* ── Deux exercices cote a cote (chaque paire a sa propre echelle) ───────── */
-export function DeuxAnnees({ libelle, an1, an2, m1, m2, texte1, texte2, diffTexte }: {
+/* 01/10/2026 : le pourcentage et la phrase d'abord (ecartEnMots, @repere/core),
+   l'ecart en euros ensuite. Les barres partent de zero : une hausse de 3 % doit
+   PARAITRE petite. Une echelle tronquee la ferait paraitre enorme — c'est le
+   premier procede d'un graphique trompeur, refuse ici. */
+export function DeuxAnnees({ libelle, an1, an2, m1, m2, texte1, texte2, diffTexte, pourcent, phrase }: {
   libelle: string; an1: string; an2: string; m1: number; m2: number; texte1: string; texte2: string; diffTexte: string;
+  pourcent?: string | null; phrase?: string | null;
 }) {
   const max = Math.max(m1, m2) || 1;
   const v = useApparition(60);
   return (
-    <View accessible accessibilityLabel={`${libelle} : ${an1}, ${texte1} ; ${an2}, ${texte2}. ${diffTexte}.`} style={{ gap: 6 }}>
+    <View accessible accessibilityLabel={`${phrase ? phrase + " " : ""}${libelle} : ${an1}, ${texte1} ; ${an2}, ${texte2}. Écart : ${diffTexte}.`} style={{ gap: 6 }}>
       <View style={s.ligneH}>
         <Text style={TYPO.note}>{libelle}</Text>
-        <Text style={[TYPO.corps, { fontWeight: "700" }]}>{diffTexte}</Text>
+        <Text style={[TYPO.reponse, { fontVariant: ["tabular-nums"] }]} maxFontSizeMultiplier={1.4}>{pourcent || diffTexte}</Text>
       </View>
+      {phrase ? <Text style={TYPO.corps}>{phrase}</Text> : null}
       {[[an1, m1, texte1, couleurs.trait], [an2, m2, texte2, couleurs.ville]].map(([an, m, t, c]) => (
         <View key={an as string} style={s.annee}>
           <Text style={[TYPO.micro, { width: 40 }]}>{an as string}</Text>
@@ -136,6 +159,7 @@ export function DeuxAnnees({ libelle, an1, an2, m1, m2, texte1, texte2, diffText
           <Text style={[TYPO.micro, { minWidth: 92, textAlign: "right" }]}>{t as string}</Text>
         </View>
       ))}
+      {pourcent ? <Text style={TYPO.micro}>Écart : {diffTexte}</Text> : null}
     </View>
   );
 }
@@ -226,9 +250,7 @@ const s = StyleSheet.create({
   moisCase: { width: 22, height: 22, borderRadius: 6, backgroundColor: couleurs.voile, overflow: "hidden" },
   moisRempli: { height: "100%" },
   barreVote: { flexDirection: "row", height: 22, borderRadius: 8, overflow: "hidden", backgroundColor: couleurs.voile },
-  legende: { flexDirection: "row", alignItems: "center", gap: PAS * 2 },
-  pastilleCouleur: { width: 14, height: 14, borderRadius: 4, borderWidth: StyleSheet.hairlineWidth, borderColor: couleurs.sourd },
-  marque: { fontSize: 13, fontWeight: "700", color: couleurs.blanc, backgroundColor: couleurs.ville, paddingHorizontal: 8, paddingVertical: 2, borderRadius: RAYON.pastille, overflow: "hidden", maxWidth: 170 },
+  marque: { fontSize: 13, fontWeight: "700", color: couleurs.encre, borderWidth: 1.5, borderColor: couleurs.encre, paddingHorizontal: 8, paddingVertical: 2, borderRadius: RAYON.pastille, overflow: "hidden", maxWidth: 190 },
   annee: { flexDirection: "row", alignItems: "center", gap: PAS * 2 },
   jalon: { flexDirection: "row", gap: PAS * 3 },
   jalonAxe: { width: 18, alignItems: "center" },

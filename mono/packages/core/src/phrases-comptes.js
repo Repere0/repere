@@ -97,3 +97,52 @@ export function sansComparaison(c, nom) {
 export function ligneNonComparable(l, an1, an2) {
   return `Non comparable : le fichier ne porte pas cette ligne pour ${l && l.m1 === null ? an1 : an2}.`;
 }
+
+/* L'ECART EN POURCENTAGE, ET EN PHRASE — mission UX du 01/10/2026.
+ *
+ * DECISION REVUE. Le 16/09, l'ecran d'evolution avait ete concu « la difference
+ * en euros, aucun pourcentage » (recommandation de l'agent, pas un invariant).
+ * Le porteur demande le 01/10 « +4,2 % » et une phrase. On garde la difference
+ * en euros ET on ajoute le pourcentage, avec deux bornes qui empechent un
+ * pourcentage de mentir :
+ *   - base nulle ou negative : aucun pourcentage (division impossible ou
+ *     absurde), la phrase dit seulement le sens ;
+ *   - a partir de +100 % : « multiplie par 2,4 » au lieu de « +140 % », qui se
+ *     lit mal (une dette passee de 10 000 € a 1 M€ ferait « +9 900 % »).
+ * Aucun adjectif (« forte », « inquietante ») : une hausse n'est ni bonne ni
+ * mauvaise (NOTE_EVOLUTION le dit). C'est un calcul de Repere, annonce comme tel
+ * par la source de la carte. */
+const SUJETS_EVOLUTION = {
+  "Ce qu'elle dépense":          { sujet: n => `Les dépenses de ${n}`, pl: true, f: true },
+  "Ce qu'elle encaisse":         { sujet: n => `Les recettes de ${n}`, pl: true, f: true },
+  "Ce qu'elle doit":             { sujet: n => `La dette de ${n}`, pl: false, f: true },
+  "Ce qu'elle investit":         { sujet: n => `Les investissements de ${n}`, pl: true, f: false },
+  "Ce qu'elle paie en salaires": { sujet: n => `Les salaires payés par ${n}`, pl: true, f: false },
+  "Ce qu'elle lève en impôts":   { sujet: n => `Les impôts et taxes levés par ${n}`, pl: true, f: false },
+};
+const virgule = x => x.toLocaleString("fr-FR", { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+export function ecartEnMots(l, an1, an2, nom) {
+  if (!l || typeof l.m1 !== "number" || typeof l.m2 !== "number") return null;
+  const s = SUJETS_EVOLUTION[l.libelle];
+  const sujet = s ? s.sujet(nom || "la commune") : l.libelle;
+  const pl = s ? s.pl : false, f = s ? s.f : false;
+  const accord = (pl ? "ont" : "a") + " ";
+  const part = m => m + (f ? "e" : "") + (pl ? "s" : "");
+  const quand = `entre ${an1} et ${an2}`;
+  if (l.m2 === l.m1) return { chiffre: "=", phrase: `${sujet} n'${pl ? "ont" : "a"} pas changé ${quand}.` };
+  const hausse = l.m2 > l.m1;
+  if (!(l.m1 > 0)) {
+    return { chiffre: null, phrase: `${sujet} ${accord}${hausse ? "augmenté" : "baissé"} ${quand}.` };
+  }
+  const pct = ((l.m2 - l.m1) / l.m1) * 100;
+  if (pct >= 100) {
+    const fois = virgule(l.m2 / l.m1);
+    return { chiffre: `× ${fois}`, phrase: `${sujet} ${pl ? "ont été" : "a été"} ${part("multiplié")} par ${fois} ${quand}.` };
+  }
+  const p = virgule(Math.abs(pct));
+  if (p === "0,0") return { chiffre: "≈ 0 %", phrase: `${sujet} n'${pl ? "ont" : "a"} presque pas changé ${quand} (moins de 0,1 %).` };
+  return {
+    chiffre: `${hausse ? "+" : "−"} ${p} %`,
+    phrase: `${sujet} ${accord}${hausse ? "augmenté" : "baissé"} de ${p} % ${quand}.`,
+  };
+}

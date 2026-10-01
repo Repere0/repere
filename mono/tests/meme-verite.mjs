@@ -23,7 +23,7 @@ import { createRequire } from "node:module";
 import {
   deriverAujourdhui, titreLisible, texteDe, phraseAdjoints, phraseCirconscription, phrasePosition,
   ligneScrutin, lienScrutin, ligneSource, phraseProjetLocal, euros, dateFr, rapports, sousTitreRapports, CALCUL_REPERE,
-  sansComparaison,
+  sansComparaison, evolution, ecartEnMots,
 } from "../packages/core/src/index.js";
 
 const require = createRequire(import.meta.url);
@@ -103,6 +103,16 @@ function attendus({ dep, insee, attendu }) {
   }
   /* D'une annee a l'autre, quand on ne peut pas comparer : la meme phrase sur
      les deux supports, jamais un silence (ecart 1 de #38). */
+  /* 01/10/2026 : l'ecart d'une annee a l'autre dit en pourcentage et en phrase,
+     la meme sur les deux supports (depenses, recettes, dette : les trois lignes
+     que l'application montre). */
+  const evo = evolution(fiche, index.agregats || []);
+  if (evo && !evo.perimetreChange) {
+    for (const i of [1, 0, 2]) {
+      const e = evo.lignes[i] && ecartEnMots(evo.lignes[i], evo.an1, evo.an2, fiche.nom);
+      if (e) f(`évolution (${evo.lignes[i].libelle} : phrase)`, e.phrase);
+    }
+  }
   const sc = sansComparaison(fiche, fiche.nom);
   if (sc) {
     f("comptes (pas de comparaison : titre)", sc.titre);

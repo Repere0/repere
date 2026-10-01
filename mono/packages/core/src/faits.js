@@ -55,6 +55,41 @@ export function noteRattachement(p) {
  * CeQuiADecide.jsx. Ne jamais transformer "a_confirmer" en "verifie", et ne
  * jamais dire "detecte automatiquement" alors que le geste qui a produit
  * cette ligne est un humain qui a ecrit `valide: true` dans un fichier. */
+/* UN FAIT COMME UN OBJET D'INFORMATION — mission UX du 01/10/2026 :
+ * QUOI (le titre), QUAND (la date), OU (la France ou la commune), QUI (qui a
+ * decide), CE QUE CA CHANGE (ecrit par un humain), SOURCE.
+ *
+ * QUI n'est pas un champ du fichier. On le lit sur l'adresse de la source, et
+ * SEULEMENT quand l'institution qui publie est celle qui a decide : le Conseil
+ * constitutionnel publie ses decisions, l'Assemblee et le Senat leurs votes.
+ * Legifrance publie des textes decides par d'autres : aucune attribution. Une
+ * source inconnue ne recoit aucun nom — jamais un « qui » devine. */
+const DECIDEURS = [
+  [/(^|\.)conseil-constitutionnel\.fr$/, "Le Conseil constitutionnel"],
+  [/(^|\.)assemblee-nationale\.fr$/, "L'Assemblée nationale"],
+  [/(^|\.)senat\.fr$/, "Le Sénat"],
+];
+export function quiADecide(e) {
+  if (!e || typeof e.src !== "string") return null;
+  let hote;
+  try { hote = new URL(e.src).hostname; } catch { return null; }
+  const t = DECIDEURS.find(([re]) => re.test(hote));
+  return t ? t[1] : null;
+}
+/* Le corps d'un fait porte deux parties, « ## Le fait » et « ## Ce que ça
+   change » (data/evenements/*.md). On rend l'une ou l'autre, sans retoucher. */
+export function partieDuFait(e, titre) {
+  if (!e || typeof e.txt !== "string") return null;
+  const blocs = e.txt.split(/^##\s+/m);
+  const b = blocs.find(x => x.toLowerCase().startsWith(titre.toLowerCase()));
+  if (!b) return null;
+  const texte = b.slice(titre.length).replace(/\s*\n\s*/g, " ").trim();
+  return texte || null;
+}
+export const faitsDuFil = (evenements, { dep, commune }) =>
+  faitsEditoriaux(evenements, { dep, commune }).map(x => x.e)
+    .sort((a, b) => (a.d < b.d ? 1 : a.d > b.d ? -1 : 0));
+
 function faitsEditoriaux(evenements, { dep, commune }) {
   if (!evenements || !Array.isArray(evenements.r)) return [];
   return evenements.r
