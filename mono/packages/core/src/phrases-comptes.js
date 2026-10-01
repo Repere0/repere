@@ -112,11 +112,24 @@ export function ligneNonComparable(l, an1, an2) {
  * Aucun adjectif (« forte », « inquietante ») : une hausse n'est ni bonne ni
  * mauvaise (NOTE_EVOLUTION le dit). C'est un calcul de Repere, annonce comme tel
  * par la source de la carte. */
+/* « de » devant un nom de commune, avec l'elision et la contraction que le
+   francais impose : d'Aubervilliers, du Havre, des Mureaux, de La Rochelle.
+   Le H est traite comme muet (d'Hendaye, d'Honfleur) : c'est le cas le plus
+   frequent ; les rares communes dont le H interdit la liaison restent
+   lisibles. */
+/** @param {string} nom @returns {string} */
+export function deLieu(nom) {
+  const t = String(nom || "").trim();
+  if (/^Le\s/.test(t)) return "du " + t.slice(3);
+  if (/^Les\s/.test(t)) return "des " + t.slice(4);
+  if (/^[AEIOUYHÀÂÄÉÈÊËÎÏÔÖÙÛÜŸ]/i.test(t)) return "d'" + t;
+  return "de " + t;
+}
 const SUJETS_EVOLUTION = {
-  "Ce qu'elle dépense":          { sujet: n => `Les dépenses de ${n}`, pl: true, f: true },
-  "Ce qu'elle encaisse":         { sujet: n => `Les recettes de ${n}`, pl: true, f: true },
-  "Ce qu'elle doit":             { sujet: n => `La dette de ${n}`, pl: false, f: true },
-  "Ce qu'elle investit":         { sujet: n => `Les investissements de ${n}`, pl: true, f: false },
+  "Ce qu'elle dépense":          { sujet: n => `Les dépenses ${deLieu(n)}`, pl: true, f: true },
+  "Ce qu'elle encaisse":         { sujet: n => `Les recettes ${deLieu(n)}`, pl: true, f: true },
+  "Ce qu'elle doit":             { sujet: n => `La dette ${deLieu(n)}`, pl: false, f: true },
+  "Ce qu'elle investit":         { sujet: n => `Les investissements ${deLieu(n)}`, pl: true, f: false },
   "Ce qu'elle paie en salaires": { sujet: n => `Les salaires payés par ${n}`, pl: true, f: false },
   "Ce qu'elle lève en impôts":   { sujet: n => `Les impôts et taxes levés par ${n}`, pl: true, f: false },
 };

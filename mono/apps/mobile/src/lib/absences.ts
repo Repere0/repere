@@ -2,7 +2,7 @@
  * Deux causes d'absence, deux phrases : « le fichier n'est pas arrive » (panne,
  * on peut reessayer) n'est jamais « la source ne porte rien ». Reprises des
  * cartes de #46 et, pour le calendrier, mot pour mot de Calendrier.jsx. */
-import { DGCL_URL } from "@repere/core";
+import { DGCL_URL, deLieu } from "@repere/core";
 
 export const PROJETS_PAS_ARRIVES = {
   titre: "Les projets financés par l'État ne sont pas arrivés jusqu'ici.",
@@ -18,7 +18,7 @@ export const VOTES_PAS_ARRIVES = {
   corps: "Les fichiers existent, ils n'ont pas pu être chargés. Ce n'est pas une absence de vote.",
 };
 export const circoInconnue = (nom: string) => ({
-  titre: `Repère ne connaît pas la circonscription de ${nom}.`,
+  titre: `Repère ne connaît pas la circonscription ${deLieu(nom)}.`,
   corps: "La commune est absente de la table du ministère de l'Intérieur, souvent parce qu'elle a été créée après son dernier découpage. Repère ne devine pas.",
 });
 export const SCRUTINS_AN = "https://www.assemblee-nationale.fr/dyn/17/scrutins/";

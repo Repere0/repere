@@ -22,7 +22,7 @@ import { Text, View } from "react-native";
 import { Stack } from "expo-router";
 import { dateFr, faitsDuFil, partieDuFait, quiADecide } from "@repere/core";
 import type { Evenements, Fait } from "@repere/core/domaine";
-import { Carte, Vide } from "../lib/composants";
+import { Bouton, Carte, Vide } from "../lib/composants";
 import { chargerEvenements, ETATS } from "../lib/donnees";
 import { useSelection } from "../lib/selection";
 import { couleurs, PAS, TYPO } from "../lib/theme";
@@ -31,6 +31,7 @@ import { PastilleSource } from "../ui/source";
 import { Etiquette } from "../ui/resume";
 import { Depli } from "../ui/visuels";
 
+const VISIBLES = 3;
 const FIL_PAS_ARRIVE = {
   titre: "Les faits relus par Repère ne sont pas arrivés jusqu'à cet appareil.",
   corps: "Ils sont republiés à chaque mise à jour de Repère ; ils n'ont pas pu être chargés cette fois-ci.",
@@ -42,13 +43,16 @@ const FIL_VIDE = {
 
 function ObjetFait({ e, nomCommune }: { e: Fait; nomCommune: string }) {
   const qui = quiADecide(e);
+  /* Le titre dit deja qui (« Le Conseil constitutionnel a declare… ») : on ne
+     le repete pas au-dessus. */
+  const quiDejaDit = !!qui && e.t.toLowerCase().includes(qui.replace(/^(Le |La |L')/, "").toLowerCase());
   const change = (e.axes || "").replace(/\s*\n\s*/g, " ").trim() || partieDuFait(e, "Ce que ça change");
   const detail = partieDuFait(e, "Le fait");
   const ou = e.e === "france" ? "Toute la France" : nomCommune;
   return (
     <Carte echelon={e.e === "france" ? "france" : "ville"} titre={`${dateFr(e.d)} · ${ou}`}>
       <View style={{ gap: PAS * 3 }}>
-        {qui ? <Etiquette texte={`Qui a décidé : ${qui}`} /> : null}
+        {qui && !quiDejaDit ? <Etiquette texte={`Qui a décidé : ${qui}`} /> : null}
         <Text style={TYPO.reponse} accessibilityRole="header">{e.t}</Text>
         {e.conf && e.conf !== "verifie" ? (
           <Text style={[TYPO.note, { fontWeight: "700", color: couleurs.encre }]}>À confirmer : relevé, en attente de confirmation par la rédaction.</Text>
@@ -70,6 +74,9 @@ export default function CeQuiSePasse() {
   const { choix } = useSelection();
   const [etat, setEtat] = useState<{ etat: string; donnees: Evenements | null }>({ etat: ETATS.EN_COURS, donnees: null });
   const [essai, setEssai] = useState(0);
+  /* Les trois plus recents d'abord ; les autres sur demande (divulgation
+     progressive : un fil de huit cartes faisait huit ecrans). */
+  const [tout, setTout] = useState(false);
   useEffect(() => {
     let vivant = true;
     setEtat({ etat: ETATS.EN_COURS, donnees: null });
@@ -93,7 +100,10 @@ export default function CeQuiSePasse() {
             <Vide {...FIL_VIDE} />
           ) : (
             <>
-              {fil.map(e => <ObjetFait key={e.id} e={e} nomCommune={r.d.nomCommune} />)}
+              {(tout ? fil : fil.slice(0, VISIBLES)).map(e => <ObjetFait key={e.id} e={e} nomCommune={r.d.nomCommune} />)}
+              {!tout && fil.length > VISIBLES ? (
+                <Bouton texte={`Voir les ${fil.length - VISIBLES} faits plus anciens`} onPress={() => setTout(true)} discret />
+              ) : null}
               <Text style={TYPO.micro}>Mis à jour par Repère le {dateFr(etat.donnees!.maj)}. Repère ne trie les faits que par leur date.</Text>
             </>
           )}

@@ -189,6 +189,16 @@ for (const largeur of [360, 390, 430]) {
       verifier(/[+−] \d+,\d %/.test(m.texte) && /ont (augmenté|baissé) de \d+,\d % entre \d{4} et \d{4}\./.test(m.brut),
         `${largeur}px · ${action} : l'évolution est dite en pourcentage et en phrase`);
       verifier(!/Chaque jour, en moyenne/.test(m.brut), `${largeur}px · ${action} : la dépense par jour n'a plus sa carte (elle est dans le détail du calcul)`);
+      /* Meaux a 5 projets : deux visibles, les autres sur demande, et ils arrivent bien */
+      const nAvant = (m.brut.match(/\d{4} · aide [A-Z]{2,}/gi) || []).length;
+      const voir = page.getByRole("button", { name: /^Voir les \d+ autres projets$/ });
+      verifier(nAvant === 2 && await voir.count() === 1, `${largeur}px · ${action} : deux projets d'abord, les autres sur demande (${nAvant} visibles)`);
+      if (await voir.count()) {
+        await voir.first().click(); await page.waitForTimeout(400);
+        const apres = await mesurer();
+        const nApres = (apres.brut.match(/\d{4} · aide [A-Z]{2,}/gi) || []).length;
+        verifier(nApres > 2, `${largeur}px · ${action} : « Voir les autres projets » les montre tous (${nApres})`);
+      }
     }
     if (/vote/.test(action)) {
       /* QUI d'abord, puis ce qu'il a vote ; et aucune phrase genree que la source ne permet pas */
@@ -202,6 +212,8 @@ for (const largeur of [360, 390, 430]) {
     if (/décidé/.test(action)) {
       verifier(/Qui a décidé : (L'Assemblée nationale|Le Conseil constitutionnel)/i.test(m.brut) && /Toute la France/i.test(m.brut),
         `${largeur}px · ${action} : chaque fait dit qui a décidé et où`);
+      verifier(/Voir les \d+ faits plus anciens/.test(m.brut) && !/Qui a décidé : le Conseil constitutionnel/i.test(m.brut),
+        `${largeur}px · ${action} : trois faits d'abord ; « qui a décidé » n'est pas répété quand le titre le dit`);
     }
     await page.getByRole("button", { name: "Revenir à l'écran Chez vous" }).last().click();
     await page.getByText("Aller plus loin").first().waitFor({ timeout: 5000 });

@@ -69,12 +69,13 @@ const DECIDEURS = [
   [/(^|\.)assemblee-nationale\.fr$/, "L'Assemblée nationale"],
   [/(^|\.)senat\.fr$/, "Le Sénat"],
 ];
+/** @param {{ src?: string } | null | undefined} e @returns {string | null} */
 export function quiADecide(e) {
   if (!e || typeof e.src !== "string") return null;
   let hote;
   try { hote = new URL(e.src).hostname; } catch { return null; }
-  const t = DECIDEURS.find(([re]) => re.test(hote));
-  return t ? t[1] : null;
+  const t = DECIDEURS.find(([re]) => /** @type {RegExp} */ (re).test(hote));
+  return t ? /** @type {string} */ (t[1]) : null;
 }
 /* Le corps d'un fait porte deux parties, « ## Le fait » et « ## Ce que ça
    change » (data/evenements/*.md). On rend l'une ou l'autre, sans retoucher. */

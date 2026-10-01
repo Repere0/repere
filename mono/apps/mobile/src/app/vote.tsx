@@ -61,9 +61,9 @@ export default function Vote() {
           <Carte echelon="france" titre={unSeul ? "Pourquoi c'est votre député" : "Un exemple de circonscription"}>
             <Frise etiquette="De votre commune à l'Assemblée" jalons={[
               { cle: "c", titre: d.nomCommune, texte: "Votre commune.", echelon: "ville" },
-              { cle: "ci", titre: `${vote.circo === 1 ? "1re" : vote.circo + "e"} circonscription${depIndex ? " · " + depIndex.nom : ""}`, texte: "Le territoire qui élit un député. Il regroupe plusieurs communes, ou une partie d'une grande ville.", echelon: "france" },
-              { cle: "d", titre: vote.qui, texte: "Représente cette circonscription à l'Assemblée nationale.", echelon: "france", actif: true },
-              { cle: "an", titre: "Assemblée nationale", texte: "577 députés y votent les lois et le budget de l'État.", echelon: "france" },
+              { cle: "ci", titre: `${vote.circo === 1 ? "1re" : vote.circo + "e"} circonscription${depIndex ? " · " + depIndex.nom : ""}`, texte: "Le territoire qui élit un député.", echelon: "france" },
+              { cle: "d", titre: vote.qui, texte: "Représente cette circonscription.", echelon: "france", actif: true },
+              { cle: "an", titre: "Assemblée nationale", texte: "577 députés y votent les lois.", echelon: "france" },
             ]} />
           </Carte>
 

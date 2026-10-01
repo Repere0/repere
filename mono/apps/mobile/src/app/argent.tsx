@@ -10,15 +10,16 @@
  * (et non « exercice 2025 »). Les phrases partagees avec le site (rapports,
  * sous-titre, calcul) restent intactes au niveau 3, pour que les deux supports
  * disent la meme chose. */
+import { useState } from "react";
 import { Text, View } from "react-native";
 import { Stack } from "expo-router";
 import {
-  chiffresComptes, comptesAbsents, comptesIncoherents, comptesInsuffisants, diffEuros, ecartEnMots, eurosArrondis,
+  chiffresComptes, comptesAbsents, comptesIncoherents, comptesInsuffisants, deLieu, diffEuros, ecartEnMots, eurosArrondis,
   evolution, exercicesEcartes, financementProjet, INTRO_EVOLUTION, introRapports, montantCourt, noteRattachement,
   NOTE_EVOLUTION, NOTE_FINANCEMENT, nomDispositif, parHabitant, partReperee, perimetreChange, phraseEcartes,
   phraseProjetLocal, rapports, sousTitreRapports, euros, CALCUL_REPERE, sansComparaison, ligneNonComparable,
 } from "@repere/core";
-import { Carte, Vide } from "../lib/composants";
+import { Bouton, Carte, Vide } from "../lib/composants";
 import { PROJETS_PAS_ARRIVES, projetsAucun } from "../lib/absences";
 import { srcComptes, srcComptesPublies, srcProjets } from "../lib/sources";
 import { useCommuneChoisie } from "../lib/useCommune";
@@ -38,8 +39,13 @@ function PasCeQueCaDit({ r, sujet }: { r?: Rapport; sujet: string }) {
   return <Depli titre={`Ce que ça ne veut pas dire (${sujet})`}><Text style={TYPO.corps}>{r.d}</Text></Depli>;
 }
 
+/* Les deux projets les plus recents, puis les autres sur demande (01/10/2026) :
+   cinq cartes de projet faisaient a elles seules deux ecrans et demi. */
+const PROJETS_VISIBLES = 2;
+
 export default function Argent() {
   const { reessayer } = useCommuneChoisie();
+  const [tousProjets, setTousProjets] = useState(false);
   return (
     <AvecDonnees rendu={r => {
       const { d } = r;
@@ -61,7 +67,7 @@ export default function Argent() {
       return (
         <Page>
           <Stack.Screen options={{ title: "Où va l'argent" }} />
-          <Question etiquette="L'argent de la commune" question={`Où va l'argent de ${nom} ?`} />
+          <Question etiquette="L'argent de la commune" question={`Où va l'argent ${deLieu(nom)} ?`} />
 
           {!ex ? (
             <Vide {...(phraseEc ? comptesIncoherents(nom, phraseEc) : comptesAbsents(nom))} />
@@ -182,7 +188,7 @@ export default function Argent() {
               <Vide {...projetsAucun(nom)} />
             ) : (
               <>
-                {listeProjets.map((p, i) => {
+                {(tousProjets ? listeProjets : listeProjets.slice(0, PROJETS_VISIBLES)).map((p, i) => {
                   const f = financementProjet(p);
                   const cout = f && f.cout ? montantCourt(f.cout) : null;
                   return (
@@ -206,6 +212,9 @@ export default function Argent() {
                     </Carte>
                   );
                 })}
+                {!tousProjets && listeProjets.length > PROJETS_VISIBLES ? (
+                  <Bouton discret texte={`Voir les ${listeProjets.length - PROJETS_VISIBLES} autres projets`} onPress={() => setTousProjets(true)} />
+                ) : null}
                 <PastilleSource source={srcProjets(d, true)} />
               </>
             )}

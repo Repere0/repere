@@ -27,7 +27,7 @@
 import { Text, View } from "react-native";
 import { router, Stack } from "expo-router";
 import {
-  dateFr, datePublication, decompte, euros, financementProjet, montantCourt, ordinal, parHabitant, partReperee, phrasePosition,
+  dateFr, datePublication, decompte, deLieu, euros, financementProjet, montantCourt, ordinal, parHabitant, partReperee, phrasePosition,
   repartitionVote, texteDe,
   titreLisible, REFUS_APPARIEMENT,
 } from "@repere/core";
@@ -114,7 +114,7 @@ export default function ChezVous() {
               suite={{ texte: "Où va cet argent ?", onPress: () => router.push("/argent") }} />
           ) : (
             <Reponse echelon="ville"
-              phrase={`Les comptes de ${nom} ne permettent pas de dire combien la commune dépense par habitant.`}
+              phrase={`Les comptes ${deLieu(nom)} ne permettent pas de dire combien la commune dépense par habitant.`}
               suite={{ texte: "Pourquoi ?", onPress: () => router.push("/argent") }} />
           )}
 

@@ -101,7 +101,7 @@ export function DetailVote({ segments, total, position, qui }: {
       {segments.map(x => (
         <View key={x.cle} style={{ gap: 6 }}>
           <View style={s.ligneH}>
-            <Text style={[TYPO.reponse, { fontVariant: ["tabular-nums"] }]} maxFontSizeMultiplier={1.4}>{x.nombre} <Text style={[TYPO.corps, { fontWeight: "700" }]}>{x.libelle.toLowerCase()}</Text></Text>
+            <Text style={[TYPO.reponse, { fontVariant: ["tabular-nums"] }]} maxFontSizeMultiplier={1.4}>{x.nombre} <Text style={[TYPO.corps, { fontWeight: "700" }]}>{x.cle === "a" && x.nombre > 1 ? "abstentions" : x.libelle.toLowerCase()}</Text></Text>
             {position === x.cle && qui ? <Text style={s.marque} numberOfLines={2}>Position de {qui}</Text> : null}
           </View>
           <View style={[s.piste, { height: 14 }]}>
