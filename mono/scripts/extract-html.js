@@ -1135,9 +1135,15 @@ async function extraire() {
     const destDir = path.join(SORTIE, "questions-gouvernement");
     fs.rmSync(destDir, { recursive: true, force: true });
     fs.mkdirSync(destDir, { recursive: true });
-    for (const nom of fs.readdirSync(sourceDir).filter(x => /^\d{4}\.json$/.test(x)).sort()) {
+    const lots = fs.readdirSync(sourceDir).filter(x => /^\d{4}\.json$/.test(x)).sort();
+    const attendus = Math.ceil(Number(questionsGouvernement.total) / Number(questionsGouvernement.taille_lot));
+    if (lots.length !== attendus) {
+      throw new Error("lots QAG incomplets : " + lots.length + "/" + attendus);
+    }
+    for (const nom of lots) {
       ecrire(path.join(destDir, nom), JSON.parse(fs.readFileSync(path.join(sourceDir, nom), "utf8")));
     }
+    console.log("questions-gouvernement : " + lots.length + " lot(s)");
   }
 
   if (scrutinsDetails) {
@@ -1146,7 +1152,11 @@ async function extraire() {
     const destDir = path.join(SORTIE, "scrutins-details");
     fs.rmSync(destDir, { recursive: true, force: true });
     fs.mkdirSync(destDir, { recursive: true });
-    const lots = fs.readdirSync(sourceDir).filter(x => /^\\d{4}\\.json$/.test(x)).sort();
+    const lots = fs.readdirSync(sourceDir).filter(x => /^\d{4}\.json$/.test(x)).sort();
+    const attendus = Math.ceil(Number(scrutinsDetails.scrutins.length) / Number(scrutinsDetails.taille_lot));
+    if (lots.length !== attendus) {
+      throw new Error("lots de scrutins incomplets : " + lots.length + "/" + attendus);
+    }
     let octetsLots = 0;
     for (const nom of lots) {
       const lot = JSON.parse(fs.readFileSync(path.join(sourceDir, nom), "utf8"));
