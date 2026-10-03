@@ -29,17 +29,17 @@ const LOT = 64;
 /* Palette d'identite des groupes : usage descriptif uniquement.
  * Fallback volontairement neutre pour un groupe nouveau/non reconnu. */
 const COULEURS_GROUPES = Object.freeze({
-  "Rassemblement National": "#60758a",
-  "Ensemble pour la République": "#6f7880",
-  "La France insoumise - Nouveau Front Populaire": "#806d73",
-  "Socialistes et apparentés": "#806f76",
-  "Droite Républicaine": "#727b84",
-  "Écologiste et Social": "#6f7e72",
-  "Les Démocrates": "#80786b",
-  "Horizons & Indépendants": "#687b84",
-  "Libertés, Indépendants, Outre-mer et Territoires": "#737a7d",
-  "Gauche Démocrate et Républicaine": "#7b7075",
-  "Union des droites pour la République": "#77727f",
+  "Rassemblement National": "#6f7275",
+  "Ensemble pour la République": "#727476",
+  "La France insoumise - Nouveau Front Populaire": "#757274",
+  "Socialistes et apparentés": "#767275",
+  "Droite Républicaine": "#74777a",
+  "Écologiste et Social": "#737675",
+  "Les Démocrates": "#777675",
+  "Horizons & Indépendants": "#727679",
+  "Libertés, Indépendants, Outre-mer et Territoires": "#747677",
+  "Gauche Démocrate et Républicaine": "#757274",
+  "Union des droites pour la République": "#747377",
   "Députés non inscrits": "#747474",
 });
 const COULEUR_DEFAUT = "#747474";
