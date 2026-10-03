@@ -201,8 +201,8 @@ export default function Scrutins() {
               })}
 
               <PastilleSource court source={{
-                producteur: detail.source?.producteur_affiche || index.source.producteur_affiche,
-                licence: detail.source?.licence || index.source.licence,
+                producteur: index.source.producteur_affiche,
+                licence: index.source.licence,
                 url: detail.url,
                 releve: index.source.releve_le,
                 usage: "Repère reprend les positions individuelles publiées par l'Assemblée nationale pour ce scrutin. Les non-votants et les mises au point ne sont pas republies.",
