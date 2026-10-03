@@ -92,6 +92,13 @@ export default function ChezVous() {
               preuve={f.partPct !== null ? <BarrePart sansLibelle part={f.partPct} libelle="Part de l'État dans le coût annoncé" valeur={`${f.partPct} € sur 100 €`} /> : undefined}
               note={`« ${projet.p.intitule} » : ${euros(f.subvention)} engagés par l'État en ${projet.p.annee}${f.cout ? ` sur ${euros(f.cout)} annoncés` : ""}.`}
               sources={<PastilleSource court source={srcProjets(d, f.partPct !== null)} />}
+              partage={{
+                titre: `Une information sur ${nom}`,
+                texte: f.partPct !== null && cout
+                  ? `À ${nom} : l'État finance ${euros(f.subvention)} d'un projet de ${cout.texte}. Cela représente ${f.partPct} % du coût annoncé.`
+                  : `À ${nom} : l'État apporte ${euros(f.subvention)} à un projet.`,
+                sourceUrl: srcProjets(d, f.partPct !== null)?.url,
+              }}
               suite={{ texte: nbProjets > 1 ? `${nbProjets} projets aidés` : "Le projet", onPress: () => router.push("/argent") }} />
           ) : (
             <Reponse echelon="ville" phrase={projetsAucun(nom).titre} note={projetsAucun(nom).corps}
@@ -137,6 +144,13 @@ export default function ChezVous() {
                 ? `Une circonscription est une partie du territoire dont les électeurs élisent un député. Par exemple, dans la ${ordinal(vote.circo)}, le ${dateFr(vote.sc.d)}, ${texteDe(phrasePosition(vote.position, vote.qui)).replace(/\.$/, "")} (texte ${vote.sc.s}).`
                 : `${titreLisible(vote.sc.t)} : ${vote.sc.s}, ${decompte(vote.sc.dec)}.`}
               sources={<PastilleSource court source={srcVote(d, vote.sc)} />}
+              partage={{
+                titre: `Un vote concernant ${nom}`,
+                texte: d.nbCircos > 1
+                  ? `${nom} est partagée entre ${d.nbCircos} circonscriptions. Votre député dépend de votre adresse. Exemple : dans la ${ordinal(vote.circo)}, le ${dateFr(vote.sc.d)}, ${texteDe(phrasePosition(vote.position, vote.qui)).replace(/\\.$/, "")}.`
+                  : `${nom} est dans la ${ordinal(vote.circo)} circonscription. Le ${dateFr(vote.sc.d)}, ${texteDe(phrasePosition(vote.position, vote.qui))}`,
+                sourceUrl: srcVote(d, vote.sc)?.url,
+              }}
               suite={{ texte: "Comprendre ce vote", onPress: () => router.push("/vote") }} />
           ) : d.nbCircos === 0 ? (
             <Vide {...circoInconnue(nom)} />
