@@ -109,6 +109,11 @@ export default function ChezVous() {
                 <PastilleSource court nom="Comptes" source={srcComptesPublies(d)} />
                 {maire ? <PastilleSource court nom="Élus" source={srcElus(r.srcElus)} /> : null}
               </>}
+              partage={{
+                titre: `Les dépenses de ${nom}`,
+                texte: `À ${nom}, ${d.exercice.an}, la commune a dépensé ${hab.depenses.toLocaleString("fr-FR")} € par habitant. Le maire prépare ce budget ; le conseil municipal le vote.`,
+                sourceUrl: srcComptesPublies(d)?.url,
+              }}
               suite={{ texte: "Où va cet argent ?", onPress: () => router.push("/argent") }} />
           ) : (
             <Reponse echelon="ville"
