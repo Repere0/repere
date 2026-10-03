@@ -189,7 +189,7 @@ export const PHRASES = Object.freeze({
   },
   [ETATS.ECHEC]: {
     titre: "Repère n'a pas réussi à joindre le serveur.",
-    corps: "Les élus de votre département existent, ils ne sont pas arrivés jusqu'ici.",
+    corps: "Pour afficher les données de votre département, vérifiez votre connexion et réessayez.",
     action: "Réessayer",
   },
   [ETATS.HORS_LIGNE]: {
