@@ -44,12 +44,12 @@ export default function Sources({ index, paquet }) {
             vote d'un depute alors que la page qui recense les sources n'en
             nommait pas le producteur. Le controle plus bas echoue desormais si une
             source declaree dans index.json n'apparait pas ici. */}
-        {s.scrutins ? <Source producteur={"Scrutins — " + s.scrutins.producteur}
-          licence={s.scrutins.licence}
-          mention={s.scrutins.legislature
-            ? s.scrutins.legislature + "e législature, relevé le " + dateFr(s.scrutins.releve_le)
+        {s.scrutinsDetails ? <Source producteur={"Scrutins — " + s.scrutinsDetails.producteur}
+          licence={s.scrutinsDetails.licence}
+          mention={s.scrutinsDetails.legislature
+            ? s.scrutinsDetails.legislature + "e législature, relevé le " + dateFr(s.scrutinsDetails.releve_le)
             : undefined}
-          url={s.scrutins.url} /> : null}
+          url={s.scrutinsDetails.url} /> : null}
         {s.questionsGouvernement ? <Source producteur={"Questions au Gouvernement — " + s.questionsGouvernement.producteur}
           licence={s.questionsGouvernement.licence}
           mention={s.questionsGouvernement.legislature
