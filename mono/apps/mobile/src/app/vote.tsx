@@ -10,7 +10,7 @@
  * Neutralite : trois gris, jamais de vert ni de rouge ; aucune position n'est
  * dite bonne ou mauvaise ; « ses autres votes » sont dans l'ordre du temps. */
 import { Text, View } from "react-native";
-import { Stack } from "expo-router";
+import { router, Stack } from "expo-router";
 import {
   CONSTITUTION_45_URL, dateFr, ETAPES_LOI, etapeDuScrutin, ligneScrutin, motPosition,
   phraseCirconscription, phraseDenominateurVote, phrasePosition, POSITION_NON_PORTEE, procedure,
@@ -20,7 +20,7 @@ import { Carte, Segments, Vide } from "../lib/composants";
 import { circoInconnue, VOTE_AUCUN, VOTES_PAS_ARRIVES } from "../lib/absences";
 import { srcScrutins, srcVote } from "../lib/sources";
 import { useCommuneChoisie } from "../lib/useCommune";
-import { PAS, TYPO } from "../lib/theme";
+import { couleurs, PAS, TYPO } from "../lib/theme";
 import { AvecDonnees, Page, Question } from "../ui/page";
 import { PastilleSource } from "../ui/source";
 import { Frise, Repartition } from "../ui/visuels";
@@ -105,6 +105,7 @@ export default function Vote() {
             </Carte>
           ) : null}
 
+          <Text accessibilityRole="link" onPress={() => router.push("/scrutins")} style={{ color: couleurs.lien, fontWeight: "600", marginTop: PAS * 2 }}>Voir les scrutins publics et les votes détaillés ›</Text>
           <PastilleSource source={srcScrutins(d)} />
         </Page>
       );
