@@ -109,6 +109,21 @@ function relevesDeputes() {
  * ne porte pas de position pour ce depute sur ce scrutin », jamais « absent ».
  *
  * Comme pour les deputes : sans producteur, licence, url et date, on n'ecrit rien. */
+function relevesScrutinsDetails() {
+  const f = path.join(ICI, "scrutins-details.json");
+  if (!fs.existsSync(f)) { console.warn("::warning::scrutins-details.json absent : aucun detail individuel ne sera publie"); return null; }
+  let d;
+  try { d = JSON.parse(fs.readFileSync(f, "utf8")); }
+  catch (e) { console.warn("::warning::scrutins-details.json illisible (" + e.message + ")"); return null; }
+  const s = d && d.source;
+  if (!s || !s.producteur_affiche || !s.licence || !s.url || !s.releve_le || !s.legislature
+      || !Array.isArray(d.scrutins) || !d.scrutins.length) {
+    console.warn("::warning::scrutins-details.json incomplet : detail individuel non publie");
+    return null;
+  }
+  return d;
+}
+
 function relevesScrutins() {
   const f = path.join(ICI, "scrutins.json");
   if (!fs.existsSync(f)) { console.warn("scrutins.json absent : aucun vote ne sera publie"); return null; }
@@ -768,6 +783,7 @@ async function extraire() {
   const noms = nomsTerritoires();
   const deputes = relevesDeputes();
   const scrutins = relevesScrutins();
+  const scrutinsDetails = relevesScrutinsDetails();
   const projets = relevesProjets();
   const evenements = relevesEvenements();
   const meta = {
@@ -843,6 +859,14 @@ async function extraire() {
          `mis_a_jour_le`, quand l'Etat a publie, et `releve_le`, quand Repere est
          alle le chercher. L'ecran affiche la premiere — c'est celle qui dit
          l'age du fait — et « Sources » les montre toutes les deux. */
+      scrutinsDetails: (scrutinsDetails && {
+        producteur: scrutinsDetails.source.producteur_affiche,
+        licence: scrutinsDetails.source.licence,
+        url: scrutinsDetails.source.url,
+        legislature: scrutinsDetails.source.legislature,
+        portee: scrutinsDetails.source.portee,
+        releve_le: scrutinsDetails.source.releve_le,
+      }) || null,
       projets: (projets && {
         producteur: projets.source.producteur_affiche,
         producteur_citoyen: projets.source.producteur_citoyen,
@@ -1043,6 +1067,10 @@ async function extraire() {
       source: index.sources.deputes,
       deputes: deputes.deputes,
     });
+  }
+
+  if (scrutinsDetails) {
+    ecrire(path.join(SORTIE, "scrutins-details.json"), scrutinsDetails);
   }
 
   /* LES VOTES, PUBLIES EN DEUX MORCEAUX, ET C'EST LE POINT DE L'AFFAIRE.
