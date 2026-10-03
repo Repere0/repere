@@ -110,20 +110,39 @@ function relevesDeputes() {
  *
  * Comme pour les deputes : sans producteur, licence, url et date, on n'ecrit rien. */
 function relevesScrutinsDetails() {
-  const f = path.join(ICI, "scrutins-details.json");
-  if (!fs.existsSync(f)) { console.warn("::warning::scrutins-details.json absent : aucun detail individuel ne sera publie"); return null; }
+  const f = path.join(ICI, "scrutins-index.json");
+  const dir = path.join(ICI, "scrutins-details");
+  if (!fs.existsSync(f) || !fs.existsSync(dir)) {
+    console.warn("::warning::scrutins-index.json ou scrutins-details absent : aucun detail individuel ne sera publie");
+    return null;
+  }
   let d;
   try { d = JSON.parse(fs.readFileSync(f, "utf8")); }
-  catch (e) { console.warn("::warning::scrutins-details.json illisible (" + e.message + ")"); return null; }
+  catch (e) { console.warn("::warning::scrutins-index.json illisible (" + e.message + ")"); return null; }
   const s = d && d.source;
   if (!s || !s.producteur_affiche || !s.licence || !s.url || !s.releve_le || !s.legislature
-      || !Array.isArray(d.scrutins) || !d.scrutins.length) {
-    console.warn("::warning::scrutins-details.json incomplet : detail individuel non publie");
+      || !Array.isArray(d.scrutins) || !d.scrutins.length || !Number.isInteger(d.taille_lot)) {
+    console.warn("::warning::scrutins-index.json incomplet : detail individuel non publie");
     return null;
+  }
+  const lots = fs.readdirSync(dir).filter(x => /^\\d{4}\\.json$/.test(x)).sort();
+  if (!lots.length) {
+    console.warn("::warning::aucun lot de scrutins-details");
+    return null;
+  }
+  for (const nom of lots) {
+    try {
+      const lot = JSON.parse(fs.readFileSync(path.join(dir, nom), "utf8"));
+      if (!lot || lot.v !== d.v || !Array.isArray(lot.scrutins) || !lot.source || lot.source.releve_le !== s.releve_le) {
+        throw new Error("lot incompatible");
+      }
+    } catch (e) {
+      console.warn("::warning::lot de scrutins-details invalide (" + nom + " : " + e.message + ")");
+      return null;
+    }
   }
   return d;
 }
-
 function relevesScrutins() {
   const f = path.join(ICI, "scrutins.json");
   if (!fs.existsSync(f)) { console.warn("scrutins.json absent : aucun vote ne sera publie"); return null; }
@@ -1070,7 +1089,18 @@ async function extraire() {
   }
 
   if (scrutinsDetails) {
-    ecrire(path.join(SORTIE, "scrutins-details.json"), scrutinsDetails);
+    ecrire(path.join(SORTIE, "scrutins-index.json"), scrutinsDetails);
+    const sourceDir = path.join(ICI, "scrutins-details");
+    const destDir = path.join(SORTIE, "scrutins-details");
+    fs.rmSync(destDir, { recursive: true, force: true });
+    fs.mkdirSync(destDir, { recursive: true });
+    const lots = fs.readdirSync(sourceDir).filter(x => /^\\d{4}\\.json$/.test(x)).sort();
+    let octetsLots = 0;
+    for (const nom of lots) {
+      const lot = JSON.parse(fs.readFileSync(path.join(sourceDir, nom), "utf8"));
+      octetsLots += ecrire(path.join(destDir, nom), lot);
+    }
+    console.log("scrutins-details : " + lots.length + " lot(s), " + octetsLots + " octets");
   }
 
   /* LES VOTES, PUBLIES EN DEUX MORCEAUX, ET C'EST LE POINT DE L'AFFAIRE.
