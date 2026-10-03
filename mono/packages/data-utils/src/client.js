@@ -117,7 +117,12 @@ export function adresseScrutinsSolennels() { return `${BASE_DONNEES}/scrutins-so
    23/09/2026 : 1,3-1,9 Ko contre 29,8 Ko pour le fichier complet — c'est
    cet ecart qui justifie deux fichiers plutot qu'un. */
 export function adresseScrutinsSolennelsRecents() { return `${BASE_DONNEES}/scrutins-solennels-recents.json`; }
-export function adresseScrutinsDetails() { return `${BASE_DONNEES}/scrutins-details.json`; }
+export function adresseScrutinsIndex() { return `${BASE_DONNEES}/scrutins-index.json`; }
+export function adresseScrutinLot(lot) {
+  const n = Number(lot);
+  if (!Number.isInteger(n) || n < 0 || n > 9999) throw new Error("lot de scrutin invalide : " + lot);
+  return `${BASE_DONNEES}/scrutins-details/${String(n).padStart(4, "0")}.json`;
+}
 /* LE FIL EDITORIAL — voir lib/faits.js pour la tracabilite complete (source
    YAML -> geste humain -> outils/evenements.py -> ce fichier). Un seul
    fichier pour la France entiere, jamais un code de commune dans l'adresse :
@@ -460,8 +465,11 @@ export async function chargerScrutinsSolennels({ delaiMs = 8000 } = {}) {
 export async function chargerScrutinsSolennelsRecents({ delaiMs = 8000 } = {}) {
   return chargerSocle("socle:SOR", adresseScrutinsSolennelsRecents(), delaiMs);
 }
-export async function chargerScrutinsDetails({ delaiMs = 8000 } = {}) {
-  return chargerSocle("socle:SOD", adresseScrutinsDetails(), delaiMs);
+export async function chargerScrutinsIndex({ delaiMs = 8000 } = {}) {
+  return chargerSocle("socle:SOI", adresseScrutinsIndex(), delaiMs);
+}
+export async function chargerScrutinLot(lot, { delaiMs = 8000 } = {}) {
+  return chargerSocle("socle:SOLT:" + String(lot), adresseScrutinLot(lot), delaiMs);
 }
 export async function chargerEvenements({ delaiMs = 8000 } = {}) {
   return chargerSocle("socle:EVT", adresseEvenements(), delaiMs);
