@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-/* DETAIL DES SCRUTINS — positions individuelles + groupes, sans classement.
+/* DETAIL DES SCRUTINS — positions individuelles + groupes, sans hiérarchie.
  *
  * La source officielle de l'Assemblée contient, pour chaque scrutin, une
  * ventilation par groupe puis les références d'acteurs dans chaque sens.
