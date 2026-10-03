@@ -143,6 +143,14 @@ python3 outils/circos.py data/circos_ministere.xlsx outils/circos.json "$APP_CIR
 python3 outils/scrutins_an.py data/brut_Scrutins outils/scrutins_an.json 12 \
   || echo "::warning::scrutins_an.py a echoue — les scrutins ne sont pas produits"
 
+# DETAIL DES VOTES — meme archive, meme filtre, mais position + groupe pour
+# l'exploration a la demande. Cette couche est independante du catalogue
+# territorial : elle ne porte aucun code de commune.
+(
+  cd mono
+  node scripts/scrutins-details.mjs ./scripts ../data/brut_Scrutins
+) || echo "::warning::scrutins-details.mjs a echoue — le detail des votes ne sera pas publie"
+
 # ------------- 3 quater bis. LES DEUX RELEVES DU MONOREPO, REFAITS ICI
 # Ils etaient poses a la main, tous les deux dates du 26 aout, pendant que la source
 # publiait chaque jour : l'ecran « Qui decide » servait donc un depute et des votes
