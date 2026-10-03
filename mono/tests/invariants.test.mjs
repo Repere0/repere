@@ -288,7 +288,7 @@ test("invariant 4 — aucune donnée n'est servie sans source déclarée", () =>
      "/projets/${d}.json", "/questions-gouvernement-index.json", "/questions-gouvernement/${lotPadded}.json", "/scrutins-solennels-recents.json", "/scrutins-solennels.json", "/scrutins.json", "/scrutins-details/${lotPadded}.json", "/scrutins-index.json", "/scrutins/${d}.json"],
     "client.js compose une adresse de donnees inattendue : " + composees.join(", "));
   const sources = existe("data/index.json") ? (JSON.parse(lire("data/index.json")).sources || {}) : {};
-  for (const attendue of ["elus", "comptes", "circonscriptions", "deputes", "scrutins", "communes"]) {
+  for (const attendue of ["elus", "comptes", "circonscriptions", "deputes", "scrutins", "questionsGouvernement", "communes"]) {
     assert.ok(sources[attendue] && sources[attendue].producteur,
       `index.json ne declare pas la source « ${attendue} »`);
   }
