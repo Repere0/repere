@@ -87,9 +87,7 @@ export default function ChezVous() {
           ) : projet && f ? (
             <Reponse echelon="ville"
               phrase={f.partPct !== null && cout
-                ? (partReperee(f.partPct)
-                  ? `L'État finance ${euros(f.subvention)} d'un projet de ${cout.texte} à ${nom}. Cela représente ${f.partPct} % du coût annoncé.`
-                  : `L'État finance ${euros(f.subvention)} d'un projet de ${cout.texte} à ${nom}. Cela représente ${f.partPct} % du coût annoncé.`)
+                ? `L'État finance ${euros(f.subvention)} d'un projet de ${cout.texte} à ${nom}. Cela représente ${f.partPct} % du coût annoncé.`
                 : `L'État apporte ${euros(f.subvention)} à un projet à ${nom}.`}
               preuve={f.partPct !== null ? <BarrePart sansLibelle part={f.partPct} libelle="Part de l'État dans le coût annoncé" valeur={`${f.partPct} € sur 100 €`} /> : undefined}
               note={`« ${projet.p.intitule} » : ${euros(f.subvention)} engagés par l'État en ${projet.p.annee}${f.cout ? ` sur ${euros(f.cout)} annoncés` : ""}.`}
