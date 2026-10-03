@@ -41,7 +41,6 @@ const COMMUNES = [
   { dep: "92", insee: "92012", nom: "Boulogne-Billancourt", attendu: "plusieurs circonscriptions" },
   { dep: "77", insee: "77284", nom: "Meaux", attendu: "maire, projet et vote" },
   { dep: "77", insee: "77003", nom: "Amponville", attendu: "aucun projet" },
-  { dep: "78", insee: "78586", nom: "Sartrouville", attendu: "aucun vote" },
 ];
 
 const lire = f => JSON.parse(fs.readFileSync(path.join(DONNEES, f), "utf8"));
