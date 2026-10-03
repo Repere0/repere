@@ -905,14 +905,20 @@ async function extraire() {
          `mis_a_jour_le`, quand l'Etat a publie, et `releve_le`, quand Repere est
          alle le chercher. L'ecran affiche la premiere — c'est celle qui dit
          l'age du fait — et « Sources » les montre toutes les deux. */
-      questionsGouvernement: (questionsGouvernement && {
+      questionsGouvernement: questionsGouvernement ? {
         producteur: questionsGouvernement.source.producteur_affiche,
         licence: questionsGouvernement.source.licence,
         url: questionsGouvernement.source.url,
         legislature: questionsGouvernement.source.legislature,
         portee: questionsGouvernement.source.portee,
         releve_le: questionsGouvernement.source.releve_le,
-      }) || null,
+      } : {
+        producteur: "Assemblée nationale — Questions au Gouvernement",
+        licence: "Licence Ouverte 2.0",
+        url: "https://data.assemblee-nationale.fr/questions/questions-au-gouvernement",
+        legislature: 17,
+        portee: "questions et réponses des séances de Questions au Gouvernement",
+      },
       scrutinsDetails: (scrutinsDetails && {
         producteur: scrutinsDetails.source.producteur_affiche,
         licence: scrutinsDetails.source.licence,
