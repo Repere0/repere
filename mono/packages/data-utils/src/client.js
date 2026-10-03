@@ -121,7 +121,8 @@ export function adresseScrutinsIndex() { return `${BASE_DONNEES}/scrutins-index.
 export function adresseScrutinLot(lot) {
   const n = Number(lot);
   if (!Number.isInteger(n) || n < 0 || n > 9999) throw new Error("lot de scrutin invalide : " + lot);
-  return `${BASE_DONNEES}/scrutins-details/${String(n).padStart(4, "0")}.json`;
+  const lotPadded = String(n).padStart(4, "0");
+  return `${BASE_DONNEES}/scrutins-details/${lotPadded}.json`;
 }
 /* LE FIL EDITORIAL — voir lib/faits.js pour la tracabilite complete (source
    YAML -> geste humain -> outils/evenements.py -> ce fichier). Un seul
