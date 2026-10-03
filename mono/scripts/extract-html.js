@@ -1146,7 +1146,7 @@ async function extraire() {
     const destDir = path.join(SORTIE, "scrutins-details");
     fs.rmSync(destDir, { recursive: true, force: true });
     fs.mkdirSync(destDir, { recursive: true });
-    const lots = fs.readdirSync(sourceDir).filter(x => /^\\d{4}\\.json$/.test(x)).sort();
+    const lots = fs.readdirSync(sourceDir).filter(x => /^\d{4}\.json$/.test(x)).sort();
     let octetsLots = 0;
     for (const nom of lots) {
       const lot = JSON.parse(fs.readFileSync(path.join(sourceDir, nom), "utf8"));
