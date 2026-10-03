@@ -11,8 +11,7 @@
 import { useEffect, useState } from "react";
 import { Pressable, ScrollView, Text, View } from "react-native";
 import { Stack } from "expo-router";
-import { chargerScrutinsDetails } from "../lib/donnees";
-import { ETATS } from "../lib/donnees";
+import { chargerScrutinsDetails, ETATS } from "../lib/donnees";
 import { Page } from "../ui/page";
 import { Vide } from "../lib/composants";
 import { PastilleSource } from "../ui/source";
@@ -47,16 +46,16 @@ export default function Scrutins() {
   return (
     <Page>
       <Stack.Screen options={{ title: "Scrutins publics" }} />
-      <Text style={TYPO.affiche}>Les votes de l’Assemblée</Text>
+      <Text style={TYPO.affiche}>Les votes de l'Assemblée</Text>
       <Text style={TYPO.note}>
         95 scrutins publics solennels et motions de censure de la XVIIe législature,
-        avec les positions individuelles publiées par l’Assemblée.
+        avec les positions individuelles publiées par l'Assemblée.
       </Text>
 
       {!paquet ? (
         <Vide
           titre={etat === ETATS.EN_COURS ? "Chargement des scrutins." : "Les scrutins ne sont pas disponibles."}
-          corps="Repère n’affiche pas une position quand le relevé détaillé n’est pas disponible."
+          corps="Repère n'affiche pas une position quand le relevé détaillé n'est pas disponible."
         />
       ) : (
         <>
@@ -124,7 +123,7 @@ export default function Scrutins() {
                 licence: paquet.source.licence,
                 url: sc.url,
                 releve: paquet.source.releve_le,
-                usage: "Repère reprend les positions individuelles publiées par l’Assemblée nationale pour ce scrutin. Les non-votants et les mises au point ne sont pas republies.",
+                usage: "Repère reprend les positions individuelles publiées par l'Assemblée nationale pour ce scrutin. Les non-votants et les mises au point ne sont pas republies.",
               }} />
             </View>
           ) : null}
