@@ -9,8 +9,21 @@
  * `testID="reponse"` : le parcours mesure que les trois reponses tiennent dans
  * le premier ecran (tests/parcours-web.mjs). */
 import type { ReactNode } from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, Share, StyleSheet, Text, View } from "react-native";
 import { couleurs, CIBLE, OMBRE, PAS, RAYON, TYPO, type Echelon } from "../lib/theme";
+
+function BoutonPartager({ titre, texte, sourceUrl }: { titre: string; texte: string; sourceUrl?: string | null }) {
+  const partager = async () => {
+    const message = sourceUrl ? `${texte}\n\nSource : ${sourceUrl}` : texte;
+    await Share.share({ message, title: titre });
+  };
+  return (
+    <Pressable onPress={partager} accessibilityRole="button" accessibilityLabel={`Partager : ${titre}`}
+      style={({ pressed }) => [s.partage, pressed && { opacity: 0.6 }]}>
+      <Text style={s.suiteTexte}>Partager</Text>
+    </Pressable>
+  );
+}
 
 /* Espace insecable devant « ? ! : ; € » : ni le point d'interrogation ni le
    symbole euro ne tombent seuls a la ligne (vu sur capture : « 332 372 / € »). */
@@ -60,7 +73,7 @@ const s = StyleSheet.create({
   phrase: { ...TYPO.reponse, fontSize: 19, lineHeight: 25 },
   pied: { flexDirection: "row", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", columnGap: PAS * 2 },
   suite: { minHeight: CIBLE, justifyContent: "center", marginLeft: "auto" },
-  suiteTexte: { fontSize: 15, fontWeight: "700", color: couleurs.lien },
+  suiteTexte: { fontSize: 15, fontWeight: "700", color: couleurs.lien },\n  partage: { minHeight: CIBLE, justifyContent: "center" },
   plus: { minHeight: CIBLE + 4, flexDirection: "row", alignItems: "center", paddingHorizontal: PAS * 4, backgroundColor: couleurs.carte,
     borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: couleurs.trait },
   plusPremier: { borderTopLeftRadius: RAYON.bloc, borderTopRightRadius: RAYON.bloc },
