@@ -27,7 +27,7 @@
 import { Text, View } from "react-native";
 import { router, Stack } from "expo-router";
 import {
-  dateFr, datePublication, decompte, euros, financementProjet, montantCourt, ordinal, parHabitant, partReperee, phrasePosition,
+  dateFr, datePublication, decompte, euros, financementProjet, montantCourt, ordinal, parHabitant, phrasePosition,
   repartitionVote, texteDe,
   titreLisible, REFUS_APPARIEMENT,
 } from "@repere/core";
@@ -88,8 +88,8 @@ export default function ChezVous() {
             <Reponse echelon="ville"
               phrase={f.partPct !== null && cout
                 ? (partReperee(f.partPct)
-                  ? `L'État finance ${partReperee(f.partPct)} d'un projet de ${cout.texte} à ${nom}.`
-                  : `Pour 100 € d'un projet de ${cout.texte} à ${nom}, l'État en apporte ${f.partPct}.`)
+                  ? `L'État finance ${euros(f.subvention)} d'un projet de ${cout.texte} à ${nom}. Cela représente ${f.partPct} % du coût annoncé.`
+                  : `L'État finance ${euros(f.subvention)} d'un projet de ${cout.texte} à ${nom}. Cela représente ${f.partPct} % du coût annoncé.`)
                 : `L'État apporte ${euros(f.subvention)} à un projet à ${nom}.`}
               preuve={f.partPct !== null ? <BarrePart sansLibelle part={f.partPct} libelle="Part de l'État dans le coût annoncé" valeur={`${f.partPct} € sur 100 €`} /> : undefined}
               note={`« ${projet.p.intitule} » : ${euros(f.subvention)} engagés par l'État en ${projet.p.annee}${f.cout ? ` sur ${euros(f.cout)} annoncés` : ""}.`}
@@ -127,11 +127,11 @@ export default function ChezVous() {
           ) : vote && rep ? (
             <Reponse echelon="france"
               phrase={d.nbCircos > 1
-                ? `${nom} est partagée entre ${d.nbCircos} circonscriptions : votre député dépend de votre adresse.`
-                : `Le ${dateFr(vote.sc.d)}, ${texteDe(phrasePosition(vote.position, `${vote.qui}, qui représente votre circonscription,`))}`}
+                ? `${nom} est partagée entre ${d.nbCircos} circonscriptions. Votre député dépend de votre adresse.`
+                : `Votre commune est dans la ${ordinal(vote.circo)} circonscription. Le ${dateFr(vote.sc.d)}, ${texteDe(phrasePosition(vote.position, vote.qui))}`}
               preuve={<Repartition compact segments={rep.segments} total={rep.total} position={vote.position} qui={vote.qui} />}
               note={d.nbCircos > 1
-                ? `Par exemple, dans la ${ordinal(vote.circo)}, le ${dateFr(vote.sc.d)}, ${texteDe(phrasePosition(vote.position, vote.qui)).replace(/\.$/, "")} (texte ${vote.sc.s}).`
+                ? `Une circonscription est une partie du territoire dont les électeurs élisent un député. Par exemple, dans la ${ordinal(vote.circo)}, le ${dateFr(vote.sc.d)}, ${texteDe(phrasePosition(vote.position, vote.qui)).replace(/\.$/, "")} (texte ${vote.sc.s}).`
                 : `${titreLisible(vote.sc.t)} : ${vote.sc.s}, ${decompte(vote.sc.dec)}.`}
               sources={<PastilleSource court source={srcVote(d, vote.sc)} />}
               suite={{ texte: "Comprendre ce vote", onPress: () => router.push("/vote") }} />
