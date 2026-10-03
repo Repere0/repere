@@ -21,7 +21,7 @@ import { Carte, Segments, Vide } from "../lib/composants";
 import { circoInconnue, VOTE_AUCUN, VOTES_PAS_ARRIVES } from "../lib/absences";
 import { srcScrutins, srcVote } from "../lib/sources";
 import { useCommuneChoisie } from "../lib/useCommune";
-import { couleurs, PAS, TYPO } from "../lib/theme";
+import { couleurs, PAS, TYPO, CIBLE } from "../lib/theme";
 import { AvecDonnees, Page, Question } from "../ui/page";
 import { PastilleSource } from "../ui/source";
 import { Frise, Repartition } from "../ui/visuels";
