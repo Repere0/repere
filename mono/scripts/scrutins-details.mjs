@@ -114,6 +114,74 @@ function positionsDuBloc(g, noms) {
   return res;
 }
 
+
+function lancerQag() {
+  const entree = process.argv[3] || "../data/brut_Questions_gouvernement";
+  const noms = lireActeurs();
+  const questions = [];
+  function texte(x) {
+    if (typeof x === "string") return x.trim();
+    if (!x || typeof x !== "object") return "";
+    if (typeof x.texte === "string") return x.texte.trim();
+    if (typeof x.texteQuestion === "string") return x.texteQuestion.trim();
+    if (typeof x.texteReponse === "string") return x.texteReponse.trim();
+    if (x.texteQuestion) return texte(x.texteQuestion);
+    if (x.texteReponse) return texte(x.texteReponse);
+    return "";
+  }
+  function dateDe(q) {
+    return String(
+      q.cloture && typeof q.cloture === "object" ? q.cloture.dateCloture ||
+      q.textesReponse?.texteReponse?.infoJO?.dateJO || "" :
+      q.textesReponse?.texteReponse?.infoJO?.dateJO || ""
+    ).slice(0, 10);
+  }
+  for (const f of fichiersJson(entree)) {
+    let d;
+    try { d = JSON.parse(fs.readFileSync(f, "utf8")).question; } catch { continue; }
+    if (!d || !d.uid || !d.identifiant) continue;
+    const auteur = d.auteur || {};
+    const ref = liste(auteur.identite?.acteurRef)[0] || null;
+    const groupe = auteur.groupe?.developpe || auteur.groupe?.abrege || "Non inscrit";
+    const rep = d.textesReponse;
+    questions.push({
+      uid: String(d.uid),
+      n: String(d.identifiant.numero),
+      d: dateDe(d),
+      auteur: { ref, nom: ref ? (noms.get(ref) || null) : null },
+      groupe: { nom: groupe, abrege: auteur.groupe?.abrege || null, couleur: couleurGroupe(groupe) },
+      ministere: d.minInt?.developpe || d.minInt?.abrege || null,
+      question: texte(d.textesQuestion) || null,
+      reponse: texte(rep) || null,
+      reponsePublieeLe: rep && typeof rep === "object" ? (rep.texteReponse?.infoJO?.dateJO || null) : null,
+      url: "https://www.assemblee-nationale.fr/dyn/17/questions/" + String(d.uid),
+    });
+  }
+  questions.sort((a,b) => a.d.localeCompare(b.d) || Number(a.n)-Number(b.n));
+  if (!questions.length) throw new Error("aucune Question au Gouvernement exploitable");
+  const source = {
+    producteur: "Assemblée nationale",
+    producteur_affiche: "Assemblée nationale — Questions au Gouvernement",
+    licence: "Licence Ouverte 2.0",
+    url: "https://data.assemblee-nationale.fr/questions/questions-au-gouvernement",
+    legislature: 17,
+    portee: "questions et réponses des séances de Questions au Gouvernement",
+    releve_le: new Date().toISOString().slice(0,10),
+  };
+  const lot=64, index={v:1,source,total:questions.length,taille_lot:lot,
+    questions:questions.map((q,i)=>({uid:q.uid,n:q.n,d:q.d,auteur:q.auteur,groupe:q.groupe,ministere:q.ministere,url:q.url,lot:Math.floor(i/lot)}))};
+  fs.mkdirSync(SORTIE,{recursive:true});
+  const dir=path.join(SORTIE,"questions-gouvernement");
+  fs.rmSync(dir,{recursive:true,force:true}); fs.mkdirSync(dir,{recursive:true});
+  for(let i=0,l=0;i<questions.length;i+=lot,l++) fs.writeFileSync(path.join(dir,String(l).padStart(4,"0")+".json"),JSON.stringify({v:1,source,lot:l,questions:questions.slice(i,i+lot)}));
+  fs.writeFileSync(path.join(SORTIE,"questions-gouvernement-index.json"),JSON.stringify(index));
+  console.log("QAG : "+questions.length+" question(s), "+Math.ceil(questions.length/lot)+" lot(s)");
+}
+if (process.argv[4] === "qag") {
+  lancerQag();
+  process.exit(0);
+}
+
 const noms = lireActeurs();
 const groupesNoms = lireGroupes();
 const retenus = [];
