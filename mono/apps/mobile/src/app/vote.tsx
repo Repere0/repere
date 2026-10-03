@@ -11,6 +11,7 @@
  * dite bonne ou mauvaise ; « ses autres votes » sont dans l'ordre du temps. */
 import { Text, View } from "react-native";
 import { router, Stack } from "expo-router";
+import { Pressable } from "react-native";
 import {
   CONSTITUTION_45_URL, dateFr, ETAPES_LOI, etapeDuScrutin, ligneScrutin, motPosition,
   phraseCirconscription, phraseDenominateurVote, phrasePosition, POSITION_NON_PORTEE, procedure,
