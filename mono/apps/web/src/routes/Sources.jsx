@@ -50,6 +50,12 @@ export default function Sources({ index, paquet }) {
             ? s.scrutins.legislature + "e législature, relevé le " + dateFr(s.scrutins.releve_le)
             : undefined}
           url={s.scrutins.url} /> : null}
+        {s.scrutinsDetails ? <Source producteur={"Scrutins — " + s.scrutinsDetails.producteur}
+          licence={s.scrutinsDetails.licence}
+          mention={s.scrutinsDetails.legislature
+            ? s.scrutinsDetails.legislature + "e législature, relevé le " + dateFr(s.scrutinsDetails.releve_le)
+            : undefined}
+          url={s.scrutinsDetails.url} /> : null}
         {s.questionsGouvernement ? <Source producteur={"Questions au Gouvernement — " + s.questionsGouvernement.producteur}
           licence={s.questionsGouvernement.licence}
           mention={s.questionsGouvernement.legislature
