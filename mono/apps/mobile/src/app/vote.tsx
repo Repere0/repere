@@ -105,7 +105,7 @@ export default function Vote() {
             </Carte>
           ) : null}
 
-          <Text accessibilityRole="link" onPress={() => router.push("/scrutins")} style={{ color: couleurs.lien, fontWeight: "600", marginTop: PAS * 2 }}>Voir les scrutins publics et les votes détaillés ›</Text>
+          <Pressable accessibilityRole="button" accessibilityLabel="Voir les scrutins publics et les votes détaillés" onPress={() => router.push("/scrutins")} style={{ minHeight: CIBLE, justifyContent: "center", marginTop: PAS * 2 }}><Text style={{ color: couleurs.lien, fontWeight: "600" }}>Voir les scrutins publics et les votes détaillés ›</Text></Pressable>
           <PastilleSource source={srcScrutins(d)} />
         </Page>
       );
