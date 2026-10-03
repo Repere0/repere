@@ -155,6 +155,8 @@ python3 outils/scrutins_an.py data/brut_Scrutins outils/scrutins_an.json 12 \
 (
   cd mono
   node scripts/scrutins-details.mjs ./scripts ../data/brut_Scrutins
+node scripts/scrutins-details.mjs ./scripts ../data/brut_Questions_gouvernement qag \
+  || echo "::warning::Questions au Gouvernement non rafraichies - le reste de l application continue"
 ) || echo "::warning::scrutins-details.mjs a echoue — le detail des votes ne sera pas publie"
 
 # ------------- 3 quater bis. LES DEUX RELEVES DU MONOREPO, REFAITS ICI
