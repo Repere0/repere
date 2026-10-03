@@ -24,6 +24,16 @@ on:
     # sont satures a :00, et les serveurs de l'Assemblee aussi.
     - cron: "47 5 * * *"
   workflow_dispatch:
+  # Rejouer automatiquement la collecte quand la chaine de publication elle-même
+  # change sur main. Cela évite d'attendre le lendemain pour mettre en ligne une
+  # nouvelle source ou une correction de pipeline. Les sorties du bot ne modifient
+  # aucun de ces chemins : pas de boucle.
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/collecte.yml"
+      - "outils/pipeline.sh"
+      - ".gitignore"
 
 permissions:
   contents: write
