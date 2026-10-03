@@ -76,7 +76,7 @@ export default function Scrutins() {
 
           {sc ? (
             <View style={{ gap: PAS * 3 }}>
-              <Text style={TYPO.titre}>{titreLisible(sc.t)}</Text>
+              <Text style={TYPO.question}>{titreLisible(sc.t)}</Text>
               <Text style={TYPO.note}>{sc.s} · {dateFr(sc.d)} · scrutin n° {sc.n}</Text>
               <Text style={TYPO.corps}>{decompte(sc.dec)}</Text>
 
