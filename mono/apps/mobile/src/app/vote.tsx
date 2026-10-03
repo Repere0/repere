@@ -10,7 +10,8 @@
  * Neutralite : trois gris, jamais de vert ni de rouge ; aucune position n'est
  * dite bonne ou mauvaise ; « ses autres votes » sont dans l'ordre du temps. */
 import { Text, View } from "react-native";
-import { Stack } from "expo-router";
+import { router, Stack } from "expo-router";
+import { Pressable } from "react-native";
 import {
   CONSTITUTION_45_URL, dateFr, ETAPES_LOI, etapeDuScrutin, ligneScrutin, motPosition,
   phraseCirconscription, phraseDenominateurVote, phrasePosition, POSITION_NON_PORTEE, procedure,
@@ -20,7 +21,7 @@ import { Carte, Segments, Vide } from "../lib/composants";
 import { circoInconnue, VOTE_AUCUN, VOTES_PAS_ARRIVES } from "../lib/absences";
 import { srcScrutins, srcVote } from "../lib/sources";
 import { useCommuneChoisie } from "../lib/useCommune";
-import { PAS, TYPO } from "../lib/theme";
+import { couleurs, PAS, TYPO, CIBLE } from "../lib/theme";
 import { AvecDonnees, Page, Question } from "../ui/page";
 import { PastilleSource } from "../ui/source";
 import { Frise, Repartition } from "../ui/visuels";
@@ -105,6 +106,7 @@ export default function Vote() {
             </Carte>
           ) : null}
 
+          <Pressable accessibilityRole="button" accessibilityLabel="Voir les scrutins publics et les votes détaillés" onPress={() => router.push("/scrutins")} style={{ minHeight: CIBLE, justifyContent: "center", marginTop: PAS * 2 }}><Text style={{ color: couleurs.lien, fontWeight: "600" }}>Voir les scrutins publics et les votes détaillés ›</Text></Pressable>
           <PastilleSource source={srcScrutins(d)} />
         </Page>
       );

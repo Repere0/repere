@@ -4,8 +4,9 @@
  * reponses de « Chez vous » aurait laisse croire qu'il concerne la commune.
  * Fichiers republies chaque jour par la chaine, jamais embarques : un
  * calendrier absent ne fait jamais dire « aucune seance annoncee ». */
-import { Stack } from "expo-router";
+import { router, Stack } from "expo-router";
 import { heureFr, jourFr } from "@repere/core";
+import { Pressable, Text } from "react-native";
 import { Carte, Vide } from "../lib/composants";
 import { AGENDA_PAS_ARRIVE, AGENDA_VIDE } from "../lib/absences";
 import { srcAgenda } from "../lib/sources";
@@ -26,6 +27,15 @@ export default function AVenir() {
           <Stack.Screen options={{ title: "Au Parlement" }} />
           <Question etiquette="Au Parlement" question="Qu'est-ce qui arrive ?"
             sous="Les séances annoncées à l'Assemblée nationale et au Sénat. Elles concernent tout le pays, pas seulement votre commune." />
+          <Pressable
+            onPress={() => router.push("/scrutins?mode=qag")}
+            accessibilityRole="button"
+            accessibilityLabel="Ouvrir les Questions au Gouvernement"
+            style={{ minHeight: 52, padding: 16, borderRadius: 14, borderWidth: 1, borderColor: "#d1d5db", backgroundColor: "#ffffff" }}
+          >
+            <Text style={{ fontWeight: "700", color: "#1d1d1f" }}>Questions au Gouvernement</Text>
+            <Text style={{ marginTop: 4, color: "#5f6368" }}>Voir les questions posées et les réponses publiées.</Text>
+          </Pressable>
           {!r.agendaLu ? (
             <Vide {...AGENDA_PAS_ARRIVE} action="Réessayer" onAction={reessayer} />
           ) : prochains.length ? (

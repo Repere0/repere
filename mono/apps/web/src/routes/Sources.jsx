@@ -50,6 +50,12 @@ export default function Sources({ index, paquet }) {
             ? s.scrutins.legislature + "e législature, relevé le " + dateFr(s.scrutins.releve_le)
             : undefined}
           url={s.scrutins.url} /> : null}
+        {s.questionsGouvernement ? <Source producteur={"Questions au Gouvernement — " + s.questionsGouvernement.producteur}
+          licence={s.questionsGouvernement.licence}
+          mention={s.questionsGouvernement.legislature
+            ? s.questionsGouvernement.legislature + "e législature, relevé le " + dateFr(s.questionsGouvernement.releve_le)
+            : undefined}
+          url={s.questionsGouvernement.url} /> : null}
         {/* Les projets financés portent DEUX dates, et les confondre ferait passer
             un relevé de la veille pour une publication de la veille : l'État a
             publié le `mis_a_jour_le`, Repère est allé le chercher le `releve_le`.

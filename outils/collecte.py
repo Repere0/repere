@@ -52,6 +52,16 @@ SOURCES = [
                 "s'afficheraient avec un code au lieu d'un nom.",
     },
     {
+        "cle": "questions_gouvernement",
+        "titre": "Assemblée nationale — Questions au Gouvernement",
+        "url": "https://data.assemblee-nationale.fr/static/openData/repository/17/questions/questions_gouvernement/Questions_gouvernement.json.zip",
+        "fichier": "Questions_gouvernement.json.zip",
+        "poids": "à mesurer",
+        "cadence": "quotidienne",
+        "licence": "Licence ouverte",
+        "note": "Source officielle ; le schéma doit être décrit sur l'archive réelle avant publication dans Repère.",
+    },
+    {
         "cle": "scrutins_an",
         "titre": "Assemblee nationale — scrutins publics",
         "url": "https://data.assemblee-nationale.fr/static/openData/repository/17/loi/scrutins/Scrutins.json.zip",

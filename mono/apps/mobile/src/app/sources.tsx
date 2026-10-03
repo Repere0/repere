@@ -23,6 +23,7 @@ export default function Sources() {
         { quoi: "Les comptes de la commune", ...pick(s.comptes), usage: "Ce que la commune dépense, encaisse et doit ; Repère en tire des parts « sur 100 € », annoncées comme des calculs." },
         { quoi: "Les projets aidés par l'État", ...pick(d.srcProjets ? { ...d.srcProjets, maj: d.srcProjets.mis_a_jour_le } : s.projets), usage: "L'aide de l'État et le coût annoncé de chaque projet." },
         { quoi: "Les votes de l'Assemblée", ...pick(d.srcScrutins ? { ...d.srcScrutins, releve: d.srcScrutins.releve_le } : null), usage: "La position de votre député et le décompte de chaque vote, tels que l'Assemblée les publie." },
+        { quoi: "Les Questions au Gouvernement", ...pick(s.questionsGouvernement), usage: "Les questions posées au Gouvernement et les réponses publiées par l'Assemblée nationale." },
         { quoi: "Les circonscriptions", ...pick(s.circonscriptions), usage: "À quelle circonscription appartient la commune (découpage de 2010)." },
       ].filter(l => l.producteur);
       const traite = datePublication(r.index);
