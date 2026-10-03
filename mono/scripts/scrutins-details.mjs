@@ -17,7 +17,7 @@ import path from "node:path";
 
 const SORTIE = process.argv[2] || "./data";
 const ENTREE = process.argv[3] || "../data/brut_Scrutins";
-const AMO = path.resolve(SORTIE, "../data/brut_AMO30/json/acteur");
+const AMO = path.resolve(SORTIE, "../../data/brut_AMO30/json/acteur");
 const TYPES = new Set(["scrutin public solennel", "motion de censure"]);
 const URL_SOURCE = "https://data.assemblee-nationale.fr/travaux-parlementaires/votes";
 const URL_SCRUTIN = "https://www.assemblee-nationale.fr/dyn/17/scrutins/";
@@ -61,7 +61,7 @@ function lireActeurs() {
 
 function lireGroupes() {
   const groupes = new Map();
-  for (const f of fichiersJson(path.resolve(SORTIE, "../data/brut_AMO30/json/organe"))) {
+  for (const f of fichiersJson(path.resolve(SORTIE, "../../data/brut_AMO30/json/organe"))) {
     try {
       const o = JSON.parse(fs.readFileSync(f, "utf8")).organe;
       const ref = o && o.uid;
