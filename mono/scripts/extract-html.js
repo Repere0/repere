@@ -125,7 +125,7 @@ function relevesScrutinsDetails() {
     console.warn("::warning::scrutins-index.json incomplet : detail individuel non publie");
     return null;
   }
-  const lots = fs.readdirSync(dir).filter(x => /^\\d{4}\\.json$/.test(x)).sort();
+  const lots = fs.readdirSync(dir).filter(x => /^\d{4}\.json$/g.test(x)).sort();
   if (!lots.length) {
     console.warn("::warning::aucun lot de scrutins-details");
     return null;
