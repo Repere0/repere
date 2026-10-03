@@ -143,6 +143,32 @@ function relevesScrutinsDetails() {
   }
   return d;
 }
+function relevesQuestionsGouvernement() {
+  const f = path.join(ICI, "questions-gouvernement-index.json");
+  const dir = path.join(ICI, "questions-gouvernement");
+  if (!fs.existsSync(f) || !fs.existsSync(dir)) {
+    console.warn("::warning::questions-gouvernement absent : aucune QAG ne sera publiee");
+    return null;
+  }
+  let d;
+  try { d = JSON.parse(fs.readFileSync(f, "utf8")); }
+  catch (e) { console.warn("::warning::questions-gouvernement-index.json illisible (" + e.message + ")"); return null; }
+  const s = d && d.source;
+  if (!s || !s.producteur_affiche || !s.licence || !s.url || !s.releve_le || !Array.isArray(d.questions) || !d.questions.length) return null;
+  const lots = fs.readdirSync(dir).filter(x => /^\d{4}\.json$/.test(x)).sort();
+  if (!lots.length) return null;
+  for (const nom of lots) {
+    try {
+      const lot = JSON.parse(fs.readFileSync(path.join(dir, nom), "utf8"));
+      if (!lot || lot.v !== d.v || !Array.isArray(lot.questions) || lot.source.releve_le !== s.releve_le) throw new Error("lot incompatible");
+    } catch (e) {
+      console.warn("::warning::lot QAG invalide (" + nom + " : " + e.message + ")");
+      return null;
+    }
+  }
+  return d;
+}
+
 function relevesScrutins() {
   const f = path.join(ICI, "scrutins.json");
   if (!fs.existsSync(f)) { console.warn("scrutins.json absent : aucun vote ne sera publie"); return null; }
@@ -803,6 +829,7 @@ async function extraire() {
   const deputes = relevesDeputes();
   const scrutins = relevesScrutins();
   const scrutinsDetails = relevesScrutinsDetails();
+  const questionsGouvernement = relevesQuestionsGouvernement();
   const projets = relevesProjets();
   const evenements = relevesEvenements();
   const meta = {
@@ -878,6 +905,14 @@ async function extraire() {
          `mis_a_jour_le`, quand l'Etat a publie, et `releve_le`, quand Repere est
          alle le chercher. L'ecran affiche la premiere — c'est celle qui dit
          l'age du fait — et « Sources » les montre toutes les deux. */
+      questionsGouvernement: (questionsGouvernement && {
+        producteur: questionsGouvernement.source.producteur_affiche,
+        licence: questionsGouvernement.source.licence,
+        url: questionsGouvernement.source.url,
+        legislature: questionsGouvernement.source.legislature,
+        portee: questionsGouvernement.source.portee,
+        releve_le: questionsGouvernement.source.releve_le,
+      }) || null,
       scrutinsDetails: (scrutinsDetails && {
         producteur: scrutinsDetails.source.producteur_affiche,
         licence: scrutinsDetails.source.licence,
@@ -1086,6 +1121,17 @@ async function extraire() {
       source: index.sources.deputes,
       deputes: deputes.deputes,
     });
+  }
+
+  if (questionsGouvernement) {
+    ecrire(path.join(SORTIE, "questions-gouvernement-index.json"), questionsGouvernement);
+    const sourceDir = path.join(ICI, "questions-gouvernement");
+    const destDir = path.join(SORTIE, "questions-gouvernement");
+    fs.rmSync(destDir, { recursive: true, force: true });
+    fs.mkdirSync(destDir, { recursive: true });
+    for (const nom of fs.readdirSync(sourceDir).filter(x => /^\d{4}\.json$/.test(x)).sort()) {
+      ecrire(path.join(destDir, nom), JSON.parse(fs.readFileSync(path.join(sourceDir, nom), "utf8")));
+    }
   }
 
   if (scrutinsDetails) {
