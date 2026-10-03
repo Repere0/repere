@@ -285,7 +285,7 @@ test("invariant 4 — aucune donnée n'est servie sans source déclarée", () =>
   assert.deepEqual([...new Set(composees)].sort(),
     ["/agenda-an.json", "/calendrier-senat.json", "/communes-beta.json", "/comptes-regions.json", "/departments/${d}.json",
      "/deputes.json", "/elus-regions/${c}.json", "/evenements.json", "/index.json",
-     "/projets/${d}.json", "/scrutins-solennels-recents.json", "/scrutins-solennels.json", "/scrutins.json", "/scrutins-details/${lotPadded}.json", "/scrutins-index.json", "/scrutins/${d}.json"],
+     "/projets/${d}.json", "/questions-gouvernement-index.json", "/questions-gouvernement/${lotPadded}.json", "/scrutins-solennels-recents.json", "/scrutins-solennels.json", "/scrutins.json", "/scrutins-details/${lotPadded}.json", "/scrutins-index.json", "/scrutins/${d}.json"],
     "client.js compose une adresse de donnees inattendue : " + composees.join(", "));
   const sources = existe("data/index.json") ? (JSON.parse(lire("data/index.json")).sources || {}) : {};
   for (const attendue of ["elus", "comptes", "circonscriptions", "deputes", "scrutins", "communes"]) {
