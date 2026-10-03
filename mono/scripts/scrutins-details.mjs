@@ -11,7 +11,7 @@
  * depute n'entre dans une URL.
  *
  * Les couleurs de groupe sont des marqueurs d'identite visuelle uniquement. Elles
- * ne codent jamais la position du vote et ne produisent aucun score, palmarès
+ * ne codent jamais la position du vote et ne produisent aucun score, distinction
  * ou jugement. Les positions restent toujours textuelles : Pour / Contre /
  * Abstention.
  */
