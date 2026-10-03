@@ -34,6 +34,7 @@ export function Reponse({ phrase, preuve, note, sources, suite }: {
      (cartes blanches en palette B partiel) ; la PR « Chez vous » s'en servira. */
   echelon: Echelon; phrase: string; preuve?: ReactNode; note?: ReactNode;
   sources?: ReactNode; suite?: { texte: string; onPress: () => void };
+  partage?: { titre: string; texte: string; sourceUrl?: string | null };
 }) {
   /* Pas de rubrique au-dessus : la reponse vient d'abord (consigne du
      30/09/2026 : « une réponse », pas « une rubrique puis du texte »). La
@@ -46,6 +47,7 @@ export function Reponse({ phrase, preuve, note, sources, suite }: {
       {note ? (typeof note === "string" ? <Text style={TYPO.note}>{typo(note)}</Text> : note) : null}
       <View style={s.pied}>
         <View style={{ flexDirection: "row", flexWrap: "wrap", flexShrink: 1 }}>{sources}</View>
+        {partage ? <BoutonPartager {...partage} /> : null}
         {suite ? (
           <Pressable onPress={suite.onPress} accessibilityRole="button" accessibilityLabel={suite.texte}
             style={({ pressed }) => [s.suite, pressed && { opacity: 0.6 }]}>
@@ -73,7 +75,8 @@ const s = StyleSheet.create({
   phrase: { ...TYPO.reponse, fontSize: 19, lineHeight: 25 },
   pied: { flexDirection: "row", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", columnGap: PAS * 2 },
   suite: { minHeight: CIBLE, justifyContent: "center", marginLeft: "auto" },
-  suiteTexte: { fontSize: 15, fontWeight: "700", color: couleurs.lien },\n  partage: { minHeight: CIBLE, justifyContent: "center" },
+  suiteTexte: { fontSize: 15, fontWeight: "700", color: couleurs.lien },
+  partage: { minHeight: CIBLE, justifyContent: "center" },
   plus: { minHeight: CIBLE + 4, flexDirection: "row", alignItems: "center", paddingHorizontal: PAS * 4, backgroundColor: couleurs.carte,
     borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: couleurs.trait },
   plusPremier: { borderTopLeftRadius: RAYON.bloc, borderTopRightRadius: RAYON.bloc },
