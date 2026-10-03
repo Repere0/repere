@@ -189,7 +189,7 @@ export const PHRASES = Object.freeze({
   },
   [ETATS.ECHEC]: {
     titre: "Repère n'a pas réussi à joindre le serveur.",
-    corps: "Les élus de votre département existent, ils ne sont pas arrivés jusqu'ici.",
+    corps: "Pour afficher les données de votre département, vérifiez votre connexion et réessayez.",
     action: "Réessayer",
   },
   [ETATS.HORS_LIGNE]: {
@@ -208,14 +208,20 @@ export const PHRASES = Object.freeze({
   },
 });
 
-/* `revalider` : demander au reseau une version a jour, en passant outre les
-   caches HTTP et celui du service worker (voir sw.js, regle « no-cache »). */
-async function auReseau(url, delaiMs, revalider = false) {
+/* TOUJOURS UNE VERSION A JOUR, JAMAIS UNE COPIE PRISE POUR NEUVE (30/09/2026).
+   Chaque demande passe outre les caches HTTP et celui du service worker
+   (`cache: "no-cache"`, que sw.js sert reseau d'abord). Faille trouvee apres
+   #58 : un fichier absent du magasin etait demande sans cette consigne ; le
+   service worker rendait alors sa vieille copie, que ce client notait comme
+   « generation courante » — une donnee ancienne presentee comme actuelle.
+   Quand le reseau echoue, sw.js rend sa copie en la MARQUANT (en-tete
+   x-repere-secours) : ce client la sert, mais comme publication precedente. */
+async function auReseau(url, delaiMs) {
   const ctrl = new AbortController();
   const minuteur = setTimeout(() => ctrl.abort(), delaiMs);
   let rep;
   try {
-    rep = await fetch(url, { credentials: "omit", signal: ctrl.signal, cache: revalider ? "no-cache" : "default" });
+    rep = await fetch(url, { credentials: "omit", signal: ctrl.signal, cache: "no-cache" });
   } catch (e) {
     clearTimeout(minuteur);
     throw e;   /* reseau coupe, delai depasse : ECHEC */
@@ -227,8 +233,10 @@ async function auReseau(url, delaiMs, revalider = false) {
     /* Une page d'erreur renvoyée en 200 par un hébergeur n'est pas un jeu de
        données. Le produit a déjà été cassé une fois par ce cas exact. */
     if (type.indexOf("json") === -1) { const e = new Error("type inattendu : " + type); e.etat = ETATS.INVALIDE; throw e; }
-    try { return await rep.json(); }
+    let donnees;
+    try { donnees = await rep.json(); }
     catch (err) { const e = new Error("JSON illisible : " + err.message); e.etat = ETATS.INVALIDE; throw e; }
+    return { donnees, secours: !!(rep.headers.get("x-repere-secours")) };
   } finally { clearTimeout(minuteur); }
 }
 
@@ -254,6 +262,74 @@ const horsLigne = () => typeof navigator !== "undefined" && navigator.onLine ===
  *
  * HORS LIGNE, rien ne change : l'index garde donne la generation, et tout ce
  * qui a ete recu sous elle est servi depuis l'appareil. */
+/* INVARIANT 9 — FRAICHEUR (decision du porteur, 30/09/2026). Trois etats,
+ * toujours distinguables a l'ecran :
+ *   ACTUELLE    l'index vient du reseau (la publication courante est connue)
+ *               et rien de ce qui est affiche n'est d'une generation anterieure ;
+ *   PRECEDENTE  au moins un fichier affiche date d'une publication precedente
+ *               (le reseau n'a pas permis de le mettre a jour), ou une
+ *               publication plus recente est parue depuis l'ouverture ;
+ *   INCONNUE    l'index n'a pas pu etre verifie aupres du serveur : on ne
+ *               pretend pas que c'est a jour.
+ * EN_COURS tant que l'index n'a pas repondu (rien a dire encore). Le site et
+ * l'application affichent les MEMES phrases (PHRASES_FRAICHEUR). */
+export const FRAICHEUR = Object.freeze({
+  EN_COURS: "en cours", ACTUELLE: "actuelle", PRECEDENTE: "precedente", INCONNUE: "inconnue",
+});
+export const PHRASES_FRAICHEUR = Object.freeze({
+  [FRAICHEUR.PRECEDENTE]: {
+    titre: "Une partie de ce qui s'affiche date d'une publication précédente.",
+    corps: "Le réseau n'a pas permis de tout mettre à jour. Rien n'est inventé : ces données ont été publiées, mais ce ne sont pas les dernières.",
+  },
+  [FRAICHEUR.INCONNUE]: {
+    titre: "Repère n'a pas pu vérifier s'il existe une publication plus récente.",
+    corps: "Sans connexion au serveur, ce qui s'affiche est la dernière publication reçue sur cet appareil.",
+  },
+  nouvelle: {
+    titre: "Une publication plus récente est disponible.",
+    corps: "Ce qui s'affiche date de la publication précédente.",
+    action: "Mettre à jour",
+  },
+});
+let indexVerifie = null;                 /* null : pas encore de reponse */
+let nouvelleParue = false;
+const clesPrecedentes = new Set();
+const abonnes = new Set();
+function annoncer() { const e = etatFraicheur(); abonnes.forEach(f => { try { f(e); } catch { /* un abonne en faute n'en prive pas les autres */ } }); }
+export function etatFraicheur() {
+  if (indexVerifie === null) return { etat: FRAICHEUR.EN_COURS, nouvelle: false, generation: GENERATION };
+  if (nouvelleParue) return { etat: FRAICHEUR.PRECEDENTE, nouvelle: true, generation: GENERATION };
+  if (!indexVerifie) return { etat: FRAICHEUR.INCONNUE, nouvelle: false, generation: GENERATION };
+  return { etat: clesPrecedentes.size ? FRAICHEUR.PRECEDENTE : FRAICHEUR.ACTUELLE, nouvelle: false, generation: GENERATION };
+}
+export function surFraicheur(f) { abonnes.add(f); return () => abonnes.delete(f); }
+function marquer(cle, precedente) {
+  const avant = clesPrecedentes.has(cle);
+  if (precedente) clesPrecedentes.add(cle); else clesPrecedentes.delete(cle);
+  if (avant !== precedente) annoncer();
+}
+
+/* REVERIFIER EN COURS DE ROUTE — un onglet ou une application ouverts
+   plusieurs jours ne redemandaient jamais l'index (faille F-2, 30/09/2026).
+   Appele au retour du lecteur (onglet redevenu visible, application revenue
+   au premier plan). Rend true si une publication plus recente est parue : ce
+   qui est a l'ecran date alors de la precedente, et l'ecran le dit. Jamais de
+   rechargement automatique : le lecteur decide. */
+export async function verifierPublication() {
+  const avant = GENERATION;
+  indexSession = null;
+  const r = await chargerIndex();
+  if (r.depuis === "reseau" && avant && GENERATION && GENERATION !== avant) {
+    nouvelleParue = true; annoncer(); return true;
+  }
+  return false;
+}
+/* Le lecteur a demande la mise a jour : l'ecran va relire sous la nouvelle
+   generation. */
+export function publicationPriseEnCompte() {
+  if (nouvelleParue) { nouvelleParue = false; annoncer(); }
+}
+
 const CLE_GENERATIONS = "socle:GEN";
 let GENERATION = null;
 let indexSession = null;       /* l'index de cette session, une fois etabli */
@@ -298,18 +374,28 @@ export async function chargerIndex({ delaiMs = 8000 } = {}) {
       await magasin.vider().catch(() => {});
       enCache = null;
     }
-    const retenir = (r) => { GENERATION = generationDe(r.donnees); if (r.depuis === "reseau") indexSession = r; return r; };
+    const retenir = (r) => {
+      GENERATION = generationDe(r.donnees);
+      if (r.depuis === "reseau") indexSession = r;
+      indexVerifie = r.depuis === "reseau";
+      annoncer();
+      return r;
+    };
     if (horsLigne()) {
       if (enCache) return retenir({ etat: ETATS.SERVI, donnees: enCache, depuis: "cache" });
+      indexVerifie = false; annoncer();
       return { etat: ETATS.HORS_LIGNE, donnees: null };
     }
     try {
       /* Avec un index garde, on n'attend pas le reseau plus de trois secondes. */
-      const donnees = await auReseau(adresseIndex(), enCache ? Math.min(delaiMs, 3000) : delaiMs, true);
+      const { donnees, secours } = await auReseau(adresseIndex(), enCache ? Math.min(delaiMs, 3000) : delaiMs);
+      /* La copie de secours du service worker n'est pas une verification. */
+      if (secours) return retenir({ etat: ETATS.SERVI, donnees: enCache || donnees, depuis: "cache" });
       await magasin.ecrire(cle, donnees).catch(() => {});
       return retenir({ etat: ETATS.SERVI, donnees, depuis: "reseau" });
     } catch (e) {
       if (enCache) return retenir({ etat: ETATS.SERVI, donnees: enCache, depuis: "cache", raison: e.message });
+      indexVerifie = false; annoncer();
       return { etat: e.etat || ETATS.ECHEC, donnees: null, raison: e.message };
     }
   })();
@@ -384,22 +470,31 @@ async function chargerSocle(cle, url, delaiMs) {
   if (GENERATION === null) await chargerIndex().catch(() => {});
   const enCache = await magasin.lire(cle);
   const aJour = enCache && (GENERATION === null || (await generationsGardees())[cle] === GENERATION);
-  if (aJour) return { etat: ETATS.SERVI, donnees: enCache, depuis: "cache" };
+  if (aJour) { marquer(cle, false); return { etat: ETATS.SERVI, donnees: enCache, depuis: "cache" }; }
   if (enVol.has(cle)) return enVol.get(cle);
+  /* Une copie d'une autre generation, servie faute de mieux : PRECEDENTE si
+     l'on sait qu'une publication plus recente existe (index verifie) ; sinon
+     l'etat INCONNUE de l'index le dit deja. */
+  const faute = (donnees, raison) => {
+    marquer(cle, indexVerifie === true);
+    return { etat: ETATS.SERVI, donnees, depuis: "cache", perime: true, raison };
+  };
   const promesse = (async () => {
     if (horsLigne()) {
-      if (enCache) return { etat: ETATS.SERVI, donnees: enCache, depuis: "cache", perime: true };
+      if (enCache) return faute(enCache);
       return { etat: ETATS.HORS_LIGNE, donnees: null };
     }
     try {
-      const donnees = await auReseau(url, delaiMs, !!enCache);
+      const { donnees, secours } = await auReseau(url, delaiMs);
+      if (secours) return faute(enCache || donnees, "copie de secours du service worker");
       await magasin.ecrire(cle, donnees).catch(() => {});
       await noterGeneration(cle);
+      marquer(cle, false);
       return { etat: ETATS.SERVI, donnees, depuis: "reseau" };
     } catch (e) {
       /* Le reseau a echoue, mais une version precedente est la : on la sert,
          marquee, plutot qu'un ecran vide sur une donnee presente. */
-      if (enCache) return { etat: ETATS.SERVI, donnees: enCache, depuis: "cache", perime: true, raison: e.message };
+      if (enCache) return faute(enCache, e.message);
       return { etat: e.etat || ETATS.ECHEC, donnees: null, raison: e.message };
     } finally { enVol.delete(cle); }
   })();
@@ -412,6 +507,7 @@ async function chargerSocle(cle, url, delaiMs) {
    IndexedDB — n'est pas touche : c'est ce qui survit a une reouverture. */
 export function nouvelleSessionPourTest() {
   GENERATION = null; indexSession = null; indexEnCours = null; enVol.clear();
+  indexVerifie = null; nouvelleParue = false; clesPrecedentes.clear();
   oublierMemoire();
   fileGenerations = Promise.resolve();
 }
