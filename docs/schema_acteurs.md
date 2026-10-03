@@ -6,7 +6,7 @@ par la collecte quotidienne. **Ce document est engendre : ne le modifie pas a la
 - Fichiers dans l'archive : **3121**
 - Fichiers ouverts pour le tirage : **3000** (pas de 1)
 - Fichiers decrits : **3000** — tous ceux qui ont ete ouverts
-- Cles distinctes trouvees : **152**
+- Cles distinctes trouvees : **151**
 - Fichier montre en entier plus bas : `PA793146.json` (le plus riche de l'echantillon)
 
 ## Arborescence des cles
@@ -27,14 +27,14 @@ une seule fois sont reprises a part, plus bas.
 | `acteur.etatCivil.ident.prenom` | texte | 3000 | Marc-Philippe · Yves |
 | `acteur.etatCivil.ident.nom` | texte | 3000 | Daubresse · Dauge |
 | `acteur.etatCivil.ident.alpha` | texte | 3000 | Daubresse · Dauge |
-| `acteur.etatCivil.ident.trigramme.@xmlns:xsi` | texte | 2465 | http://www.w3.org/2001/XMLSchema-instance |
-| `acteur.etatCivil.ident.trigramme.@xsi:nil` | texte | 2465 | true |
+| `acteur.etatCivil.ident.trigramme.@xmlns:xsi` | texte | 2473 | http://www.w3.org/2001/XMLSchema-instance |
+| `acteur.etatCivil.ident.trigramme.@xsi:nil` | texte | 2473 | true |
 | `acteur.etatCivil.infoNaissance.dateNais` | texte | 2983 | 1953-08-01 · 1935-01-26 |
 | `acteur.etatCivil.infoNaissance.villeNais` | texte | 2158 | Lille · Fontevraud-l'Abbaye |
 | `acteur.etatCivil.infoNaissance.depNais` | texte | 2005 | Nord · Maine-et-Loire |
 | `acteur.etatCivil.infoNaissance.paysNais` | texte | 1793 | France · Maroc |
-| `acteur.etatCivil.dateDeces.@xmlns:xsi` | texte | 2735 | http://www.w3.org/2001/XMLSchema-instance |
-| `acteur.etatCivil.dateDeces.@xsi:nil` | texte | 2735 | true |
+| `acteur.etatCivil.dateDeces.@xmlns:xsi` | texte | 2733 | http://www.w3.org/2001/XMLSchema-instance |
+| `acteur.etatCivil.dateDeces.@xsi:nil` | texte | 2733 | true |
 | `acteur.profession.libelleCourant` | texte | 2085 | Ancien directeur d'une société de recrutement · Inspecteur général de l'équipement |
 | `acteur.profession.socProcINSEE.catSocPro` | texte | 2106 | Anciens artisans, commerçants, chefs d'entreprise · Cadres de la fonction publique, professions intellectuelles et  artistiques |
 | `acteur.profession.socProcINSEE.famSocPro` | texte | 2106 | Retraités · Cadres et professions intellectuelles supérieures |
@@ -56,47 +56,47 @@ une seule fois sont reprises a part, plus bas.
 | `acteur.adresses.adresse[].ville` | texte/vide | 2807 | Paris 07 SP · Cenon |
 | `acteur.adresses.adresse[].valElec` | texte/vide | 6199 | 01 40 63 75 53 · 01 40 63 79 37 |
 | `acteur.mandats.mandat[]` | liste | 2995 | de 2 a 814 entrees |
-| `acteur.mandats.mandat[].@xmlns:xsi` | texte | 97352 | http://www.w3.org/2001/XMLSchema-instance |
-| `acteur.mandats.mandat[].@xsi:type` | texte | 97352 | MandatSimple_Type · MandatMission_Type |
-| `acteur.mandats.mandat[].uid` | texte | 97352 | PM391145 · PM778068 |
-| `acteur.mandats.mandat[].acteurRef` | texte | 97352 | PA1001 · PA1002 |
-| `acteur.mandats.mandat[].legislature` | texte/vide | 97352 | 13 · 14 |
-| `acteur.mandats.mandat[].typeOrgane` | texte | 97352 | DELEGBUREAU · DELEGSENAT |
-| `acteur.mandats.mandat[].dateDebut` | texte | 97352 | 2007-06-28 · 2020-10-20 |
-| `acteur.mandats.mandat[].datePublication` | texte/vide | 97352 | 2010-03-23 · 2012-06-27 |
-| `acteur.mandats.mandat[].dateFin` | texte/vide | 97352 | 2008-10-08 · 2010-11-13 |
-| `acteur.mandats.mandat[].preseance` | texte/vide | 97352 | 24 · 4 |
-| `acteur.mandats.mandat[].nominPrincipale` | texte | 97352 | 0 · 1 |
-| `acteur.mandats.mandat[].infosQualite.codeQualite` | texte/vide | 97352 | Membre · membre |
-| `acteur.mandats.mandat[].infosQualite.libQualite` | texte | 97352 | Membre · membre |
-| `acteur.mandats.mandat[].infosQualite.libQualiteSex` | texte/vide | 97352 | Membre · membre |
-| `acteur.mandats.mandat[].organes.organeRef` | texte | 97232 | PO391141 · PO420388 |
-| `acteur.mandats.mandat[].libelle` | texte/vide | 6033 | Mise en place du plan de relance · La pratique d'une activité physique et sportive pour les élèves et les étudiants |
-| `acteur.mandats.mandat[].missionSuivanteRef` | texte/vide | 6033 | PM773756 · PM789978 |
-| `acteur.mandats.mandat[].missionPrecedenteRef` | texte/vide | 6033 | PM769451 · PM786854 |
-| `acteur.mandats.mandat[].suppleants` | vide | 4695 |  |
-| `acteur.mandats.mandat[].chambre` | vide | 3272 |  |
-| `acteur.mandats.mandat[].election.lieu.region` | texte/vide | 3274 | Auvergne-Rhône-Alpes · Hauts-de-France |
-| `acteur.mandats.mandat[].election.lieu.regionType` | texte/vide | 3274 | Métropolitain · Collectivités d'outre-mer et Nouvelle-Calédonie |
-| `acteur.mandats.mandat[].election.lieu.departement` | texte/vide | 3274 | Rhône · Nord |
-| `acteur.mandats.mandat[].election.lieu.numDepartement` | texte/vide | 3274 | 59 · 37 |
-| `acteur.mandats.mandat[].election.lieu.numCirco` | texte/vide | 3274 | 13 · 23 |
-| `acteur.mandats.mandat[].election.causeMandat` | texte/vide | 3274 | élections générales · élection partielle, suite à l'annulation de l'élection d'un député |
-| `acteur.mandats.mandat[].mandature.datePriseFonction` | texte/vide | 3274 | 2002-06-19 · 2002-12-16 |
-| `acteur.mandats.mandat[].mandature.causeFin` | texte/vide | 3274 | Fin de législature · Annulation de l'élection sur décision du Conseil constitutionnel |
-| `acteur.mandats.mandat[].mandature.premiereElection` | texte | 3274 | 0 · 1 |
-| `acteur.mandats.mandat[].mandature.placeHemicycle` | texte/vide | 3274 | 424 · 178 |
-| `acteur.mandats.mandat[].mandature.mandatRemplaceRef` | texte/vide | 3274 | PM267876 · PM386168 |
-| `acteur.mandats.mandat[].collaborateurs` | vide | 3132 |  |
+| `acteur.mandats.mandat[].@xmlns:xsi` | texte | 97391 | http://www.w3.org/2001/XMLSchema-instance |
+| `acteur.mandats.mandat[].@xsi:type` | texte | 97391 | MandatSimple_Type · MandatMission_Type |
+| `acteur.mandats.mandat[].uid` | texte | 97391 | PM391145 · PM778068 |
+| `acteur.mandats.mandat[].acteurRef` | texte | 97391 | PA1001 · PA1002 |
+| `acteur.mandats.mandat[].legislature` | texte/vide | 97391 | 13 · 14 |
+| `acteur.mandats.mandat[].typeOrgane` | texte | 97391 | DELEGBUREAU · DELEGSENAT |
+| `acteur.mandats.mandat[].dateDebut` | texte | 97391 | 2007-06-28 · 2020-10-20 |
+| `acteur.mandats.mandat[].datePublication` | texte/vide | 97391 | 2010-03-23 · 2012-06-27 |
+| `acteur.mandats.mandat[].dateFin` | texte/vide | 97391 | 2008-10-08 · 2010-11-13 |
+| `acteur.mandats.mandat[].preseance` | texte/vide | 97391 | 24 · 4 |
+| `acteur.mandats.mandat[].nominPrincipale` | texte | 97391 | 0 · 1 |
+| `acteur.mandats.mandat[].infosQualite.codeQualite` | texte/vide | 97391 | Membre · membre |
+| `acteur.mandats.mandat[].infosQualite.libQualite` | texte | 97391 | Membre · membre |
+| `acteur.mandats.mandat[].infosQualite.libQualiteSex` | texte/vide | 97391 | Membre · membre |
+| `acteur.mandats.mandat[].organes.organeRef` | texte | 97270 | PO391141 · PO420388 |
+| `acteur.mandats.mandat[].libelle` | texte/vide | 6037 | Mise en place du plan de relance · La pratique d'une activité physique et sportive pour les élèves et les étudiants |
+| `acteur.mandats.mandat[].missionSuivanteRef` | texte/vide | 6037 | PM773756 · PM789978 |
+| `acteur.mandats.mandat[].missionPrecedenteRef` | texte/vide | 6037 | PM769451 · PM786854 |
+| `acteur.mandats.mandat[].suppleants` | vide | 4700 |  |
+| `acteur.mandats.mandat[].chambre` | vide | 3263 |  |
+| `acteur.mandats.mandat[].election.lieu.region` | texte/vide | 3265 | Auvergne-Rhône-Alpes · Hauts-de-France |
+| `acteur.mandats.mandat[].election.lieu.regionType` | texte/vide | 3265 | Métropolitain · Collectivités d'outre-mer et Nouvelle-Calédonie |
+| `acteur.mandats.mandat[].election.lieu.departement` | texte/vide | 3265 | Rhône · Nord |
+| `acteur.mandats.mandat[].election.lieu.numDepartement` | texte/vide | 3265 | 59 · 37 |
+| `acteur.mandats.mandat[].election.lieu.numCirco` | texte/vide | 3265 | 13 · 23 |
+| `acteur.mandats.mandat[].election.causeMandat` | texte/vide | 3265 | élections générales · élection partielle, suite à l'annulation de l'élection d'un député |
+| `acteur.mandats.mandat[].mandature.datePriseFonction` | texte/vide | 3265 | 2002-06-19 · 2002-12-16 |
+| `acteur.mandats.mandat[].mandature.causeFin` | texte/vide | 3265 | Fin de législature · Annulation de l'élection sur décision du Conseil constitutionnel |
+| `acteur.mandats.mandat[].mandature.premiereElection` | texte | 3265 | 0 · 1 |
+| `acteur.mandats.mandat[].mandature.placeHemicycle` | texte/vide | 3265 | 424 · 178 |
+| `acteur.mandats.mandat[].mandature.mandatRemplaceRef` | texte/vide | 3265 | PM267876 · PM386168 |
+| `acteur.mandats.mandat[].collaborateurs` | vide | 3126 |  |
 | `acteur.etatCivil.infoNaissance.paysNais.@xmlns:xsi` | texte | 1207 | http://www.w3.org/2001/XMLSchema-instance |
 | `acteur.etatCivil.infoNaissance.paysNais.@xsi:nil` | texte | 1207 | true |
-| `acteur.etatCivil.ident.trigramme` | texte | 535 | ADA · JGD |
+| `acteur.etatCivil.ident.trigramme` | texte | 527 | ADA · JGD |
 | `acteur.uri_hatvp` | texte | 534 | https://www.hatvp.fr/pages_nominatives/david-alain · https://www.hatvp.fr/pages_nominatives/guedj-jerome |
-| `acteur.etatCivil.dateDeces` | texte | 265 | 2025-02-16 · 2022-01-01 |
-| `acteur.mandats.mandat[].suppleants.suppleant.dateDebut` | texte | 1065 | 2002-06-19 · 2002-12-15 |
-| `acteur.mandats.mandat[].suppleants.suppleant.dateFin` | texte/vide | 1065 | 2007-06-19 · 2012-06-19 |
-| `acteur.mandats.mandat[].suppleants.suppleant.suppleantRef` | texte | 1065 | PA267501 · PA333972 |
-| `acteur.mandats.mandat[].election.refCirconscription` | texte | 1318 | PO230806 · PO230733 |
+| `acteur.etatCivil.dateDeces` | texte | 267 | 2025-02-16 · 2022-01-01 |
+| `acteur.mandats.mandat[].suppleants.suppleant.dateDebut` | texte | 1057 | 2002-06-19 · 2002-12-15 |
+| `acteur.mandats.mandat[].suppleants.suppleant.dateFin` | texte/vide | 1057 | 2007-06-19 · 2012-06-19 |
+| `acteur.mandats.mandat[].suppleants.suppleant.suppleantRef` | texte | 1057 | PA267501 · PA333972 |
+| `acteur.mandats.mandat[].election.refCirconscription` | texte | 1310 | PO230806 · PO230733 |
 | `acteur.etatCivil.infoNaissance.villeNais.@xmlns:xsi` | texte | 842 | http://www.w3.org/2001/XMLSchema-instance |
 | `acteur.etatCivil.infoNaissance.villeNais.@xsi:nil` | texte | 842 | true |
 | `acteur.etatCivil.infoNaissance.depNais.@xmlns:xsi` | texte | 995 | http://www.w3.org/2001/XMLSchema-instance |
@@ -111,7 +111,7 @@ une seule fois sont reprises a part, plus bas.
 | `acteur.adresses.adresse.poids` | texte/vide | 838 | 1 |
 | `acteur.adresses.adresse.adresseDeRattachement` | vide | 838 |  |
 | `acteur.adresses.adresse.valElec` | texte | 807 | https://www.senat.fr/senateur/debre_isabelle04081k.html · https://www.senat.fr/senateur/del_picchia_robert98018t.html |
-| `acteur.mandats.mandat[].organes.organeRef[]` | liste/texte | 406 | de 2 a 7 entrees · PO706466 · PO709261 |
+| `acteur.mandats.mandat[].organes.organeRef[]` | liste/texte | 410 | de 2 a 7 entrees · PO706466 · PO709261 |
 | `acteur.profession.socProcINSEE.catSocPro.@xmlns:xsi` | texte | 894 | http://www.w3.org/2001/XMLSchema-instance |
 | `acteur.profession.socProcINSEE.catSocPro.@xsi:nil` | texte | 894 | true |
 | `acteur.profession.socProcINSEE.famSocPro.@xmlns:xsi` | texte | 894 | http://www.w3.org/2001/XMLSchema-instance |
@@ -122,12 +122,12 @@ une seule fois sont reprises a part, plus bas.
 | `acteur.adresses.adresse.complementAdresse` | texte/vide | 31 | Palais Bourbon, |
 | `acteur.adresses.adresse.codePostal` | texte | 31 | 75355 |
 | `acteur.adresses.adresse.ville` | texte | 31 | Paris 07 SP |
-| `acteur.mandats.mandat[].collaborateurs.collaborateur[]` | liste | 140 | de 2 a 6 entrees |
-| `acteur.mandats.mandat[].collaborateurs.collaborateur[].qualite` | texte | 499 | M. · Mme |
-| `acteur.mandats.mandat[].collaborateurs.collaborateur[].prenom` | texte | 499 | Thomas · Bernard |
-| `acteur.mandats.mandat[].collaborateurs.collaborateur[].nom` | texte | 499 | Jacquelin · Combes |
-| `acteur.mandats.mandat[].collaborateurs.collaborateur[].dateDebut` | vide | 499 |  |
-| `acteur.mandats.mandat[].collaborateurs.collaborateur[].dateFin` | vide | 499 |  |
+| `acteur.mandats.mandat[].collaborateurs.collaborateur[]` | liste | 137 | de 2 a 6 entrees |
+| `acteur.mandats.mandat[].collaborateurs.collaborateur[].qualite` | texte | 488 | M. · Mme |
+| `acteur.mandats.mandat[].collaborateurs.collaborateur[].prenom` | texte | 488 | Thomas · Bernard |
+| `acteur.mandats.mandat[].collaborateurs.collaborateur[].nom` | texte | 488 | Jacquelin · Combes |
+| `acteur.mandats.mandat[].collaborateurs.collaborateur[].dateDebut` | vide | 488 |  |
+| `acteur.mandats.mandat[].collaborateurs.collaborateur[].dateFin` | vide | 488 |  |
 | `acteur.adresses.@xmlns:xsi` | texte | 77 | http://www.w3.org/2001/XMLSchema-instance |
 | `acteur.adresses.@xsi:nil` | texte | 77 | true |
 | `acteur.mandats.mandat.@xmlns:xsi` | texte | 5 | http://www.w3.org/2001/XMLSchema-instance |
@@ -148,7 +148,6 @@ une seule fois sont reprises a part, plus bas.
 | `acteur.mandats.mandat.libelle` | texte | 1 | La préparation du débat national sur les énergies |
 | `acteur.mandats.mandat.missionSuivanteRef` | vide | 1 |  |
 | `acteur.mandats.mandat.missionPrecedenteRef` | vide | 1 |  |
-| `acteur.mandats.mandat[].collaborateurs[]` | liste/vide | 3 | 2 entree(s) |
 | `acteur.mandats.mandat.suppleants` | vide | 4 |  |
 | `acteur.mandats.mandat.chambre` | vide | 4 |  |
 | `acteur.mandats.mandat.election.lieu.region` | texte/vide | 4 | Pays de la Loire · Ile-de-France |
@@ -164,11 +163,11 @@ une seule fois sont reprises a part, plus bas.
 | `acteur.mandats.mandat.mandature.placeHemicycle` | vide | 4 |  |
 | `acteur.mandats.mandat.mandature.mandatRemplaceRef` | vide | 4 |  |
 | `acteur.mandats.mandat.collaborateurs` | vide | 4 |  |
-| `acteur.mandats.mandat[].collaborateurs.collaborateur.qualite` | texte | 1 | M. |
-| `acteur.mandats.mandat[].collaborateurs.collaborateur.prenom` | texte | 1 | Ambroise |
-| `acteur.mandats.mandat[].collaborateurs.collaborateur.nom` | texte | 1 | de Rancourt |
-| `acteur.mandats.mandat[].collaborateurs.collaborateur.dateDebut` | vide | 1 |  |
-| `acteur.mandats.mandat[].collaborateurs.collaborateur.dateFin` | vide | 1 |  |
+| `acteur.mandats.mandat[].collaborateurs.collaborateur.qualite` | texte | 2 | M. |
+| `acteur.mandats.mandat[].collaborateurs.collaborateur.prenom` | texte | 2 | Ambroise · Matteo |
+| `acteur.mandats.mandat[].collaborateurs.collaborateur.nom` | texte | 2 | de Rancourt · Pavone |
+| `acteur.mandats.mandat[].collaborateurs.collaborateur.dateDebut` | vide | 2 |  |
+| `acteur.mandats.mandat[].collaborateurs.collaborateur.dateFin` | vide | 2 |  |
 | `acteur.etatCivil.infoNaissance.dateNais.@xmlns:xsi` | texte | 17 | http://www.w3.org/2001/XMLSchema-instance |
 | `acteur.etatCivil.infoNaissance.dateNais.@xsi:nil` | texte | 17 | true |
 
@@ -182,11 +181,6 @@ comme facultatives.
 - `acteur.mandats.mandat.libelle`
 - `acteur.mandats.mandat.missionSuivanteRef`
 - `acteur.mandats.mandat.missionPrecedenteRef`
-- `acteur.mandats.mandat[].collaborateurs.collaborateur.qualite`
-- `acteur.mandats.mandat[].collaborateurs.collaborateur.prenom`
-- `acteur.mandats.mandat[].collaborateurs.collaborateur.nom`
-- `acteur.mandats.mandat[].collaborateurs.collaborateur.dateDebut`
-- `acteur.mandats.mandat[].collaborateurs.collaborateur.dateFin`
 
 ## Un fichier entier, listes tronquees a trois entrees
 
@@ -336,7 +330,7 @@ comme facultatives.
             "organeRef": "PO761239"
           }
         },
-        "... (45 entrees au total, tronque)"
+        "... (47 entrees au total, tronque)"
       ]
     }
   }
