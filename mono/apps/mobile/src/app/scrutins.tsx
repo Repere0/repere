@@ -9,8 +9,8 @@
  */
 import { useEffect, useMemo, useState } from "react";
 import { Pressable, ScrollView, Text, TextInput, View } from "react-native";
-import { Stack } from "expo-router";
-import { chargerScrutinsIndex, chargerScrutinLot, ETATS } from "../lib/donnees";
+import { Stack, useLocalSearchParams } from "expo-router";
+import { chargerQuestionsGouvernementIndex, chargerQuestionGouvernementLot, chargerScrutinsIndex, chargerScrutinLot, ETATS } from "../lib/donnees";
 import { Page } from "../ui/page";
 import { Vide } from "../lib/composants";
 import { PastilleSource } from "../ui/source";
@@ -34,6 +34,20 @@ type Paquet = {
   source: { producteur_affiche: string; licence: string; url: string; releve_le: string };
   scrutins: Detail[];
 };
+type QagResume = {
+  uid: string; n: string; d: string;
+  auteur: { ref: string | null; nom: string | null };
+  groupe: { nom: string; abrege: string | null; couleur: string };
+  ministere: string | null; url: string; lot: number;
+};
+type Qag = QagResume & { question: string | null; reponse: string | null; reponsePublieeLe: string | null };
+type QagIndex = {
+  v: number; source: { producteur_affiche: string; licence: string; url: string; releve_le: string };
+  total: number; taille_lot: number; questions: QagResume[];
+};
+type QagPaquet = {
+  v: number; source: QagIndex["source"]; lot: number; questions: Qag[];
+};
 type Index = {
   v: number;
   source: { producteur_affiche: string; licence: string; url: string; releve_le: string };
@@ -51,13 +65,20 @@ const resultat = (x: Resume) =>
     .filter(Boolean).join(" · ");
 
 export default function Scrutins() {
+  const params = useLocalSearchParams<{ mode?: string }>();
+  const [mode, setMode] = useState<"votes" | "qag">(params.mode === "qag" ? "qag" : "votes");
   const [etat, setEtat] = useState(ETATS.EN_COURS);
+  const [qagIndex, setQagIndex] = useState<QagIndex | null>(null);
+  const [qagDetail, setQagDetail] = useState<Qag | null>(null);
+  const [qagSelection, setQagSelection] = useState<string | null>(null);
+  const [qagRecherche, setQagRecherche] = useState("");
   const [index, setIndex] = useState<Index | null>(null);
   const [detail, setDetail] = useState<Detail | null>(null);
   const [selection, setSelection] = useState<string | null>(null);
   const [recherche, setRecherche] = useState("");
   const [ouverts, setOuverts] = useState<Set<string>>(new Set());
   const [chargementDetail, setChargementDetail] = useState(false);
+  const [chargementQag, setChargementQag] = useState(false);
 
   useEffect(() => {
     chargerScrutinsIndex().then(r => {
@@ -67,6 +88,29 @@ export default function Scrutins() {
       if (d?.scrutins?.length) setSelection(d.scrutins[d.scrutins.length - 1].n);
     });
   }, []);
+
+  useEffect(() => {
+    chargerQuestionsGouvernementIndex().then(r => {
+      const d = r.donnees as QagIndex | null;
+      setQagIndex(d);
+      if (d?.questions?.length) setQagSelection(d.questions[d.questions.length - 1].uid);
+    });
+  }, []);
+
+  useEffect(() => {
+    if (!qagIndex || !qagSelection) return;
+    const resume = qagIndex.questions.find(x => x.uid === qagSelection);
+    if (!resume) return;
+    let vivant = true;
+    setChargementQag(true);
+    chargerQuestionGouvernementLot(resume.lot).then(r => {
+      if (!vivant) return;
+      const paquet = r.donnees as QagPaquet | null;
+      setQagDetail(paquet?.questions.find(x => x.uid === qagSelection) || null);
+      setChargementQag(false);
+    });
+    return () => { vivant = false; };
+  }, [qagIndex, qagSelection]);
 
   useEffect(() => {
     if (!index || !selection) return;
@@ -97,6 +141,14 @@ export default function Scrutins() {
     setDetail(null);
     setOuverts(new Set());
   };
+  const qagVisibles = useMemo(() => {
+    if (!qagIndex) return [];
+    const q = qagRecherche.trim().toLocaleLowerCase("fr");
+    const source = q
+      ? qagIndex.questions.filter(x => (x.n + " " + (x.auteur.nom || "") + " " + (x.ministere || "")).toLocaleLowerCase("fr").includes(q))
+      : qagIndex.questions.slice(-24);
+    return source.slice().reverse();
+  }, [qagIndex, qagRecherche]);
 
   return (
     <Page>
@@ -107,7 +159,54 @@ export default function Scrutins() {
           : "Les scrutins publics de la XVIIe législature, avec les positions individuelles publiées."}
       </Text>
 
-      {!index ? (
+      <View style={{ flexDirection: "row", gap: PAS * 2 }}>
+        <Pressable onPress={() => setMode("votes")} accessibilityRole="button" style={{ minHeight: CIBLE, flex: 1, padding: PAS * 3, borderRadius: RAYON.bloc, backgroundColor: mode === "votes" ? couleurs.voile : couleurs.carte, borderWidth: 1, borderColor: couleurs.trait }}>
+          <Text style={{ fontWeight: "700", color: couleurs.encre }}>Votes publics</Text>
+        </Pressable>
+        <Pressable onPress={() => setMode("qag")} accessibilityRole="button" style={{ minHeight: CIBLE, flex: 1, padding: PAS * 3, borderRadius: RAYON.bloc, backgroundColor: mode === "qag" ? couleurs.voile : couleurs.carte, borderWidth: 1, borderColor: couleurs.trait }}>
+          <Text style={{ fontWeight: "700", color: couleurs.encre }}>Questions au Gouvernement</Text>
+        </Pressable>
+      </View>
+
+      {mode === "qag" ? (
+        !qagIndex ? (
+          <Vide titre="Chargement des questions au Gouvernement." corps="Repère récupère le relevé officiel des séances de questions." />
+        ) : (
+          <>
+            <Text style={TYPO.note}>{qagIndex.total.toLocaleString("fr-FR")} questions au Gouvernement dans le relevé officiel.</Text>
+            <TextInput
+              value={qagRecherche}
+              onChangeText={setQagRecherche}
+              placeholder="Rechercher un député ou un ministère"
+              placeholderTextColor={couleurs.sourd}
+              accessibilityLabel="Rechercher une question au Gouvernement"
+              style={{ minHeight: CIBLE, borderWidth: 1, borderColor: couleurs.trait, borderRadius: RAYON.bloc, paddingHorizontal: PAS * 3, color: couleurs.encre, backgroundColor: couleurs.carte }}
+            />
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: PAS * 2 }}>
+              {qagVisibles.map(x => (
+                <Pressable key={x.uid} onPress={() => { setQagSelection(x.uid); setQagDetail(null); }} accessibilityRole="button"
+                  style={{ minHeight: CIBLE, minWidth: 150, maxWidth: 210, padding: PAS * 3, borderRadius: RAYON.bloc, backgroundColor: x.uid === qagSelection ? couleurs.voile : couleurs.carte, borderWidth: 1, borderColor: couleurs.trait, borderLeftWidth: 5, borderLeftColor: x.groupe.couleur }}>
+                  <Text style={TYPO.micro}>{x.d ? dateFr(x.d) : "Date non fournie"}</Text>
+                  <Text style={{ fontWeight: "700", color: couleurs.encre }}>Question n° {x.n}</Text>
+                  <Text numberOfLines={2} style={TYPO.note}>{x.auteur.nom || "Auteur non identifié"} · {x.ministere || "Ministère non précisé"}</Text>
+                </Pressable>
+              ))}
+            </ScrollView>
+            {chargementQag ? <Vide titre="Chargement de la question." corps="Repère récupère le contenu publié par l'Assemblée nationale." /> : qagDetail ? (
+              <View style={{ gap: PAS * 3 }}>
+                <Text style={TYPO.question}>Question n° {qagDetail.n}</Text>
+                <Text style={TYPO.note}>{qagDetail.auteur.nom || "Auteur non identifié"} · {qagDetail.groupe.nom}</Text>
+                <Text style={TYPO.note}>Ministère : {qagDetail.ministere || "non précisé"}</Text>
+                {qagDetail.question ? <View style={{ gap: PAS }}><Text style={TYPO.micro}>QUESTION</Text><Text style={TYPO.corps}>{qagDetail.question}</Text></View>
+                  : <Vide titre="Le texte de la question n'est pas fourni dans ce relevé." corps="Repère ne le reconstruit pas à partir d'une autre source." />}
+                {qagDetail.reponse ? <View style={{ gap: PAS }}><Text style={TYPO.micro}>RÉPONSE DU GOUVERNEMENT</Text><Text style={TYPO.corps}>{qagDetail.reponse}</Text></View>
+                  : <Vide titre="Aucune réponse textuelle fournie dans ce relevé." corps="Cela ne signifie pas qu'il n'y a pas eu de réponse : Repère ne l'invente pas." />}
+                <PastilleSource court source={{ producteur: qagIndex.source.producteur_affiche, licence: qagIndex.source.licence, url: qagDetail.url, releve: qagIndex.source.releve_le, usage: "Repère reprend les informations publiées par l'Assemblée nationale pour cette Question au Gouvernement." }} />
+              </View>
+            ) : null}
+          </>
+        )
+      ) : (\n        {!index ? (
         <Vide
           titre={etat === ETATS.EN_COURS ? "Chargement des scrutins." : "Les scrutins ne sont pas disponibles."}
           corps="Repère n'affiche pas une position quand le relevé détaillé n'est pas disponible."
@@ -210,6 +309,7 @@ export default function Scrutins() {
             </View>
           ) : null}
         </>
+      )}
       )}
     </Page>
   );
