@@ -90,6 +90,12 @@ cd ..
 python3 outils/agenda_an.py data/brut_Agenda/json data/brut_AMO30/json outils/agenda_an.json \
   || echo "::warning::agenda de l'Assemblee non renormalise — outils/agenda_an.json garde sa version et sa date precedentes"
 
+# -------------------------- 2 bis. decrire le schema QAG (documentaire)
+# La source est nouvelle dans la chaine : avant toute publication, on veut
+# mesurer le schema REEL de l'archive, pas en deduire les champs de memoire.
+python3 outils/echantillon_scrutins.py data/brut_Questions_gouvernement/json docs/schema_questions_gouvernement.md \
+  || echo "::warning::le schema des Questions au Gouvernement n'a pas pu etre decrit"
+
 # ------------------------------- 3. decrire le schema des scrutins (documentaire)
 # Ne doit jamais faire tomber la chaine : c'est de la documentation.
 python3 outils/echantillon_scrutins.py data/brut_Scrutins docs/schema_scrutins.md \
