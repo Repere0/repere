@@ -56,9 +56,9 @@ export function Plus({ texte, onPress, premier, dernier }: { texte: string; onPr
 }
 
 const s = StyleSheet.create({
-  carte: { borderRadius: RAYON.carte, paddingHorizontal: PAS * 5, paddingTop: PAS * 5, paddingBottom: 0, gap: PAS * 3, borderWidth: 1, borderColor: couleurs.trait, ...OMBRE },
-  phrase: { ...TYPO.reponse, fontSize: 20, lineHeight: 26, letterSpacing: -0.15 },
-  pied: { flexDirection: "row", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", columnGap: PAS * 2, borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: couleurs.trait, marginTop: PAS * 2 },
+  carte: { borderRadius: RAYON.carte, paddingHorizontal: PAS * 4, paddingTop: PAS * 3, paddingBottom: 0, gap: PAS * 2, borderWidth: 1, borderColor: couleurs.trait, ...OMBRE },
+  phrase: { ...TYPO.reponse, fontSize: 19, lineHeight: 25, letterSpacing: -0.15 },
+  pied: { flexDirection: "row", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", columnGap: PAS * 2, borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: couleurs.trait, marginTop: PAS },
   suite: { minHeight: CIBLE, justifyContent: "center", marginLeft: "auto" },
   suiteTexte: { fontSize: 15, fontWeight: "700", color: couleurs.lien },
   plus: { minHeight: CIBLE + 4, flexDirection: "row", alignItems: "center", paddingHorizontal: PAS * 4, backgroundColor: couleurs.carte,
