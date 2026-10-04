@@ -32,12 +32,12 @@ export const TEINTES: Record<Echelon, string> = {
 
 export const couleurs = {
   ...ECHELONS,
-  sol: "#f2efe9",
-  carte: "#ffffff",
-  encre: "#1a1917",
-  sourd: "#6b675f",
-  trait: "#ddd8ce",
-  voile: "#ece8e0",
+  sol: "#F5F2EC",
+  carte: "#FFFFFF",
+  encre: "#171614",
+  sourd: "#706B63",
+  trait: "#DDD8D0",
+  voile: "#ECE8E1",
   blanc: "#ffffff",
   /* le texte d'une action (« Comprendre ce vote › ») : en encre, voir plus haut */
   lien: "#1a1917",
@@ -52,7 +52,7 @@ export const GRIS_VOTE = { p: couleurs.encre, c: couleurs.sourd, a: couleurs.tra
    une fois la marge interne comptee. */
 export const CIBLE = 48;
 export const PAS = 4;
-export const RAYON = { carte: 22, bloc: 14, pastille: 999 } as const;
+export const RAYON = { carte: 18, bloc: 14, pastille: 999 } as const;
 
 export const POLICE = {
   affiche: "BricolageGrotesque_800ExtraBold",
@@ -61,13 +61,13 @@ export const POLICE = {
 
 export const TYPO = {
   /* le nom de la commune, les grands nombres */
-  affiche: { fontFamily: POLICE.affiche, fontSize: 40, lineHeight: 44, color: couleurs.encre, letterSpacing: -0.5 },
-  chiffre: { fontFamily: POLICE.affiche, fontSize: 44, lineHeight: 50, color: couleurs.encre, letterSpacing: -0.5 },
+  affiche: { fontFamily: POLICE.affiche, fontSize: 36, lineHeight: 40, color: couleurs.encre, letterSpacing: -0.5 },
+  chiffre: { fontFamily: POLICE.affiche, fontSize: 38, lineHeight: 44, color: couleurs.encre, letterSpacing: -0.5 },
   /* la question d'un ecran */
-  question: { fontFamily: POLICE.affiche, fontSize: 30, lineHeight: 34, color: couleurs.encre, letterSpacing: -0.3 },
+  question: { fontFamily: POLICE.affiche, fontSize: 28, lineHeight: 33, color: couleurs.encre, letterSpacing: -0.3 },
   /* la reponse d'une carte : lisible en trois secondes */
-  reponse: { fontFamily: POLICE.titre, fontSize: 22, lineHeight: 28, color: couleurs.encre },
-  corps: { fontSize: 17, lineHeight: 24, color: couleurs.encre },
+  reponse: { fontFamily: POLICE.titre, fontSize: 20, lineHeight: 26, color: couleurs.encre },
+  corps: { fontSize: 16, lineHeight: 23, color: couleurs.encre },
   note: { fontSize: 15, lineHeight: 21, color: couleurs.sourd },
   /* l'etiquette au-dessus d'une reponse, en capitales de style */
   etiquette: { fontSize: 13, lineHeight: 18, fontWeight: "700" as const, letterSpacing: 0.8, textTransform: "uppercase" as const, color: couleurs.sourd },
@@ -75,7 +75,7 @@ export const TYPO = {
 } as const;
 
 export const OMBRE = {
-  shadowColor: couleurs.encre, shadowOpacity: 0.07, shadowRadius: 18, shadowOffset: { width: 0, height: 6 }, elevation: 2,
+  shadowColor: couleurs.encre, shadowOpacity: 0.045, shadowRadius: 10, shadowOffset: { width: 0, height: 4 }, elevation: 1,
 } as const;
 
 /* Duree des apparitions : courte, pour ne jamais retarder la lecture. */
