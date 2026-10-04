@@ -29,7 +29,7 @@ export const insecable = (t: string) => t.replace(/ ([?!:;])/g, "\u00a0$1");
 
 export function Question({ etiquette, question, sous, emoji }: { etiquette?: string; question: string; sous?: string; emoji?: string }) {
   return (
-    <View style={{ gap: PAS * 2, marginBottom: PAS * 2 }}>
+    <View style={{ gap: PAS * 2, marginBottom: PAS * 1 }}>
       {etiquette ? <Etiquette emoji={emoji} texte={etiquette} /> : null}
       <Text style={TYPO.question} accessibilityRole="header">{insecable(question)}</Text>
       {sous ? <Text style={TYPO.note}>{sous}</Text> : null}
@@ -62,5 +62,5 @@ export function AvecDonnees({ rendu }: { rendu: (r: Extract<EtatCommune, { pret:
 }
 
 const s = StyleSheet.create({
-  page: { paddingHorizontal: PAS * 5, paddingTop: PAS * 2, gap: PAS * 5, maxWidth: 640, width: "100%", alignSelf: "center" },
+  page: { paddingHorizontal: PAS * 5, paddingTop: PAS * 1, gap: PAS * 3, maxWidth: 640, width: "100%", alignSelf: "center" },
 });

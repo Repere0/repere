@@ -125,7 +125,7 @@ export function Bouton({ texte, onPress, discret }: { texte: string; onPress: ()
 }
 
 const s = StyleSheet.create({
-  carte: { backgroundColor: couleurs.carte, borderRadius: RAYON.carte, padding: PAS * 5, gap: PAS * 3, ...OMBRE },
+  carte: { backgroundColor: couleurs.carte, borderRadius: RAYON.carte, padding: PAS * 5, gap: PAS * 3, borderWidth: 1, borderColor: couleurs.trait, ...OMBRE },
   carteTete: { flexDirection: "row", alignItems: "center", gap: PAS * 2 },
   point: { width: 10, height: 10, borderRadius: 5 },
   carteTitre: { ...TYPO.etiquette, flex: 1 },
@@ -143,7 +143,7 @@ const s = StyleSheet.create({
   /* En encre, souligne : la couleur de ville sur le gris d'une phrase d'absence
      faisait 4,38:1 (mesure du 30/09/2026), sous le seuil AA. */
   lienTexte: { fontSize: 15, color: couleurs.encre, textDecorationLine: "underline" },
-  vide: { gap: PAS * 2, padding: PAS * 4, backgroundColor: couleurs.voile, borderRadius: RAYON.bloc },
+  vide: { gap: PAS * 2, padding: PAS * 4, backgroundColor: couleurs.voile, borderRadius: RAYON.bloc, borderWidth: 1, borderColor: couleurs.trait },
   bouton: {
     minHeight: CIBLE + 4, borderRadius: RAYON.bloc, paddingHorizontal: PAS * 4, alignItems: "center", justifyContent: "center",
     backgroundColor: couleurs.ville,
