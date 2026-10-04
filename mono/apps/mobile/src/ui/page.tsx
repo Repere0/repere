@@ -62,5 +62,5 @@ export function AvecDonnees({ rendu }: { rendu: (r: Extract<EtatCommune, { pret:
 }
 
 const s = StyleSheet.create({
-  page: { paddingHorizontal: PAS * 5, paddingTop: PAS * 1, gap: PAS * 4, maxWidth: 640, width: "100%", alignSelf: "center" },
+  page: { paddingHorizontal: PAS * 5, paddingTop: PAS * 1, gap: PAS * 3, maxWidth: 640, width: "100%", alignSelf: "center" },
 });
