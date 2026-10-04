@@ -35,7 +35,7 @@ export const couleurs = {
   sol: "#F5F2EC",
   carte: "#FFFFFF",
   encre: "#171614",
-  sourd: "#706B63",
+  sourd: "#625E57",
   trait: "#DDD8D0",
   voile: "#ECE8E1",
   blanc: "#ffffff",
