@@ -1654,6 +1654,8 @@ await pageTout.waitForTimeout(300);
 await auditerEcran("recherche");
 await pageTout.getByRole("button", { name: /Bagnolet/ }).click();
 await pageTout.waitForTimeout(1500);
+await pageTout.getByRole("button", { name: "Qui décide" }).click();
+await pageTout.waitForTimeout(800);
 await auditerEcran("qui decide");
 await pageTout.getByRole("button", { name: /Comment .+ a voté/ }).click();
 await pageTout.waitForTimeout(1300);
