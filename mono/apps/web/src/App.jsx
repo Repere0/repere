@@ -437,24 +437,7 @@ export default function App() {
   const vSessionRef = useRef(new Date().toISOString());
   const [paquet, setPaquet] = useState(null);
   const [etat, setEtat] = useState(ETATS.ABSENT);
-  /* « AUJOURD'HUI » EST L'ECRAN OUVERT PAR DEFAUT.
-     L'audit du 29/09 a mesure qu'il repond mieux, au premier écran, à la question
-     « qu'est-ce qui se passe chez moi ? ». Les autres écrans restent des portes
-     d'approfondissement : aucun contenu n'est supprimé. */i : elle ne peut pas s'executer depuis un poste
-     de developpement, et les taches planifiees ne se declenchent que sur la
-     branche par defaut. Faire atterrir chaque visiteur sur un ecran dont la
-     couverture reelle n'a jamais ete mesuree serait un pari ; « Qui decide »,
-     lui, est couvert a 100 % sur les huit departements.
-     LA CONDITION POUR BASCULER EST ECRITE : quand la collecte aura tourne et que
-     la couverture des projets aura ete mesuree sur les 1 262 communes de la beta,
-     cette ligne devient useState("decide"). Voir la decision D-23.
-     LE PROTOTYPE "AUJOURD'HUI" (18/09/2026, voir Aujourdhui.jsx) NE CHANGE PAS
-     CETTE LIGNE : le banc entier suppose que ce reglage decrit ce que voit
-     vraiment un lecteur, et le faire pointer sur un ecran neuf, jamais mesure
-     par le banc, aurait rendu cette hypothese fausse silencieusement. Le
-     prototype est un lien en plus ("Voir aujourd'hui", juste en dessous),
-     jamais un remplacement du reglage par defaut — cette decision reste
-     entiere pour l'arbitrage du porteur du projet. */
+  /* « AUJOURD'HUI » est l'écran ouvert par défaut. Les autres écrans restent disponibles comme approfondissements. */
   const [onglet, setOnglet] = useState("aujourdhui");
   const [commune, setCommune] = useState(null);
   // Dernière commune choisie pendant cette session uniquement. Elle ne quitte jamais cet appareil.
