@@ -1318,8 +1318,8 @@ console.log("\n--- hierarchie mobile : le contenu avant le decor ---------------
   const apres = await p.evaluate(() => ({
     chapeau: !!document.querySelector(".chapeau"),
     h1: document.querySelectorAll("h1").length,
-    entete: Math.round(document.querySelector(".entete").getBoundingClientRect().height),
-    onglets: Math.round(document.querySelector(".onglets").getBoundingClientRect().top),
+    entete: Math.round(document.querySelector(".entete")?.getBoundingClientRect().height || 0),
+    onglets: Math.round(document.querySelector(".onglets")?.getBoundingClientRect().top || 0),
   }));
   verif("hierarchie — commune choisie : l'en-tete se reduit (chapeau retire, un seul titre de niveau 1 conserve)",
     !apres.chapeau && apres.h1 === 1 && apres.entete < 110, JSON.stringify(apres));
