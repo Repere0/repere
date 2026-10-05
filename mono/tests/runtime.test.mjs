@@ -1026,7 +1026,7 @@ await pageAxes.getByLabel(/Votre commune/i).fill("Ustaritz");
 await pageAxes.waitForTimeout(300);
 await pageAxes.getByRole("button", { name: "Ustaritz", exact: true }).click();
 await pageAxes.waitForTimeout(700);
-await pageAxes.getByRole("button", { name: "Ce qui a été décidé" }).click();
+await pageAxes.getByRole("button", { name: "Toutes les décisions", exact: true }).click();
 await pageAxes.waitForTimeout(1200);
 const axes = await pageAxes.evaluate(() => {
   const cartes = [...document.querySelectorAll(".fait")];
