@@ -34,17 +34,16 @@ Aucun blocker technique P0 n'est identifié dans ce dépôt à ce stade.
 
 ### P1 — décisions produit
 
-1. **Écran ouvert après le choix d'une commune**
-   - L'audit du 29/09 mesure « Aujourd'hui » comme plus immédiatement informatif que « Qui décide ».
-   - Le basculement de l'écran par défaut reste volontairement une décision produit.
-   - **Décision attendue :** conserver « Qui décide » ou faire de « Aujourd'hui » l'accueil post-commune.
+**Les deux décisions précédemment bloquantes sont maintenant implémentées dans la PR #79 :**
 
-2. **Retour à l'accueil**
-   - Le parcours testeur mesuré échoue à conserver la commune au retour.
-   - Une correction locale et non-identifiante est souhaitable.
-   - **Principe à préserver :** mémoriser uniquement la commune choisie sur l'appareil, sans compte ni synchronisation.
+1. **Après le choix d'une commune, « Aujourd'hui » est l'écran ouvert par défaut.** Il répond immédiatement à « qu'est-ce qui se passe chez moi ? ».
+2. **Le retour navigateur conserve la commune pendant la session**, sans compte, sans synchronisation et sans code commune dans l'URL.
 
-Ces deux points doivent être testés avec de vrais utilisateurs avant une décision définitive sur la navigation.
+Ces choix restent soumis à validation par les premiers testeurs, mais ils ne constituent plus des blockers techniques.
+
+### Gate manuel restant
+
+Avant les premiers testeurs, il reste à vérifier sur appareils réels : iPhone, Android, VoiceOver/TalkBack, taille de texte agrandie et partage natif.
 
 ## P2 — à traiter après les P1
 
@@ -59,6 +58,8 @@ Ces deux points doivent être testés avec de vrais utilisateurs avant une déci
 Ne pas élargir le périmètre fonctionnel tant que les deux P1 ne sont pas tranchés et que le parcours complet n'est pas reproductible sur une build propre.
 
 La priorité est désormais **fiabilité → compréhension → usage réel → itérations UX**, pas l'ajout de nouvelles sources ou fonctionnalités.
+
+La CI technique doit rester verte sur les PR critiques ; les échecs réseau de collecte sont à distinguer des régressions produit et peuvent nécessiter un rerun.
 
 ## Hors périmètre de cette phase
 
