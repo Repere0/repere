@@ -71,7 +71,7 @@ export function Plus({ texte, onPress, premier, dernier }: { texte: string; onPr
 }
 
 const s = StyleSheet.create({
-  carte: { borderRadius: RAYON.carte, paddingHorizontal: PAS * 4, paddingTop: PAS * 4, paddingBottom: 0, gap: PAS * 2, ...OMBRE },
+  carte: { borderRadius: RAYON.carte, paddingHorizontal: PAS * 4, paddingTop: PAS * 3, paddingBottom: 0, gap: PAS * 2, ...OMBRE },
   phrase: { ...TYPO.reponse, fontSize: 19, lineHeight: 25 },
   pied: { flexDirection: "row", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", columnGap: PAS * 2 },
   suite: { minHeight: CIBLE, justifyContent: "center", marginLeft: "auto" },
