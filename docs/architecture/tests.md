@@ -1,17 +1,19 @@
 # Les contrôles — ce qui est vert, et ce que « vert » veut dire
 
-*29/09/2026. Un banc vert sur une page cassée reste un banc vert : relire les captures.*
+*5/10/2026. Ce document décrit les contrôles réellement exécutés par GitHub, pas seulement ceux qu'un poste local peut lancer.*
 
 | commande (depuis `mono/`) | ce qu'elle mesure | où elle tourne |
 |---|---|---|
 | `node --test tests/core.test.mjs` | `@repere/core` en Node pur, sur données réelles quand `data/` existe | local, CI |
 | `node --test tests/invariants.test.mjs` | les huit invariants dans le code écrit (`.js .jsx .ts .tsx .css .html…`, web ET mobile) | local, CI |
 | `node tests/runtime.test.mjs apps/web/dist` | le site dans un navigateur, serveur éteint compris | local, CI |
-| `cd apps/mobile && npx tsc --noEmit` | types de l'application mobile | local seulement |
-| `cd apps/mobile && npm run exporter` | l'app se construit pour iOS, Android, web | local seulement |
-| `node apps/mobile/tests/parcours-web.mjs URL` | parcours accueil → commune → retour à 360/390/430 px, adresses, cibles, accents | local seulement |
+| `cd apps/mobile && npx tsc --noEmit` | types de l'application mobile | local, CI (`Mobile`) |
+| `node --test tests/core.test.mjs tests/invariants.test.mjs tests/sante.test.mjs tests/donnees.test.mjs` | socle partagé et invariants, dont les contrôles qui relisent le site construit | local, CI (`Mobile`) |
+| `cd apps/mobile && npx expo export --platform ios --platform android --platform web` | construction iOS, Android et web | CI (`Mobile`) |
+| `node apps/mobile/tests/parcours-web.mjs URL` | parcours accueil → commune → retour à 360/390/430 px, pannes, adresses, cibles, accents | local, CI (`Mobile`) |
+| `node tests/meme-verite.mjs SITE MOBILE` | même vérité entre le site et l'application | CI (`Mobile`) |
 
-**Le mobile n'est dans aucune chaîne GitHub aujourd'hui** (phase 1 de la feuille de route).
+**Le mobile est désormais une chaîne GitHub dédiée** (`.github/workflows/mobile.yml`). Elle tourne sur `ubuntu-latest` pour les PR qui touchent le mobile, le socle partagé, les tests concernés, le site/UI ou le script d'extraction. Elle installe l'application avec le verrou exact, extrait les données du dépôt hors réseau, construit le site puis l'application iOS/Android/web, exécute le parcours navigateur et vérifie la « même vérité » entre web et mobile. L'épreuve web (`.github/workflows/epreuve.yml`) reste la chaîne PR de la publication et ignore uniquement les PR qui ne touchent que `apps/mobile`.
 
 Local, `PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers`, jamais `playwright install`.
 
