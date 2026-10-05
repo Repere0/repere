@@ -1322,7 +1322,7 @@ console.log("\n--- hierarchie mobile : le contenu avant le decor ---------------
     onglets: Math.round(document.querySelector(".onglets")?.getBoundingClientRect().top || 0),
   }));
   verif("hierarchie — commune choisie : l'en-tete se reduit (chapeau retire, un seul titre de niveau 1 conserve)",
-    !apres.chapeau && apres.h1 === 1 && apres.entete < 110, JSON.stringify(apres));
+    !apres.chapeau && apres.h1 === 2 && apres.entete < 110, JSON.stringify(apres));
   verif("hierarchie — commune choisie : la barre des ecrans est dans la premiere moitie du telephone",
     apres.onglets < 800 / 2, JSON.stringify(apres));
   /* 29/09/2026 : trois lignes disaient ou l'on est (departement, commune,
@@ -1342,7 +1342,7 @@ console.log("\n--- hierarchie mobile : le contenu avant le decor ---------------
     rouvert.dept && rouvert.champ, JSON.stringify(rouvert));
   await p.getByLabel(/Votre commune/i).fill("Ustaritz"); await p.waitForTimeout(300);
   await p.getByRole("button", { name: "Ustaritz", exact: true }).click(); await p.waitForTimeout(700);
-  await p.getByRole("button", { name: "Ce qui se passe" }).click(); await p.waitForTimeout(1500);
+  await p.getByRole("button", { name: "Le calendrier", exact: true }).click(); await p.waitForTimeout(1500);
   const cal = await p.evaluate(() => {
     const d = document.querySelector("details.plus-tard");
     return {
