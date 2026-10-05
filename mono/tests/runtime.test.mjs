@@ -872,9 +872,13 @@ verif("recherche — le nom exact passe devant les noms qui le contiennent",
 await pageDirect.getByLabel(/Où habitez-vous/).fill("bagnolet");
 await pageDirect.waitForTimeout(300);
 await pageDirect.getByRole("button", { name: /Bagnolet/ }).click();
-await pageDirect.waitForTimeout(1500);
+await pageDirect.waitForTimeout(900);
+/* « Aujourd'hui » est le point d'entrée : les élus restent une exploration
+   explicite, comme dans le parcours de décembre. */
+await pageDirect.getByRole("button", { name: "Qui décide", exact: true }).click();
+await pageDirect.waitForTimeout(900);
 const arrive = await pageDirect.evaluate(() => document.body.innerText);
-verif("parcours — un seul geste ouvre la commune, ses elus et son depute",
+verif("parcours — un geste ouvre la commune, puis « Qui décide » expose ses élus",
   /Bagnolet/.test(arrive) && /Maire/.test(arrive) && /Assemblée nationale/.test(arrive),
   arrive.slice(0, 160).replace(/\n+/g, " / "));
 
@@ -918,9 +922,8 @@ try {
   await pageAuj.waitForTimeout(300);
   await pageAuj.getByRole("button", { name: "Ustaritz", exact: true }).click();
   await pageAuj.waitForTimeout(700);
-  await pageAuj.getByRole("button", { name: /Voir aujourd.hui à Ustaritz/i }).click();
+  /* « Aujourd'hui » est désormais l'écran ouvert après le choix de la commune. */
   await pageAuj.waitForTimeout(900);
-
   const texteAuj = await pageAuj.evaluate(() => document.body.innerText);
   verif("aujourd'hui — le bloc de fraicheur hebdomadaire apparait quand un fait recent existe",
     /Quoi d.autre cette semaine/.test(texteAuj)
