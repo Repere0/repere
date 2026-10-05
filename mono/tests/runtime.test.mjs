@@ -282,6 +282,11 @@ await page.waitForTimeout(400);
 await page.getByRole("button", { name: "Ustaritz", exact: true }).click();
 await page.waitForTimeout(700);
 
+/* « Aujourd'hui » est désormais le premier écran. Les assertions sur les élus
+   ouvrent explicitement « Qui décide » : elles testent le contenu, pas l'ordre
+   des onglets. */
+await page.getByRole("button", { name: "Qui décide", exact: true }).click();
+await page.waitForTimeout(900);
 const qui = await page.evaluate(() => document.body.innerText);
 const quiBrut = await texteSansCapitales(page);
 verif("rendu — le maire de la commune choisie s'affiche",
@@ -471,23 +476,24 @@ await pageFraicheur.context().close();
     precedente.slice(0, 400).replace(/\n+/g, " / "));
 }
 
-/* LE PREMIER ECRAN NE PAIE PAS CE FICHIER. Il ne part QUE depuis « Qui decide » :
-   la mesure porte sur les adresses reellement demandees depuis l'ouverture. */
-verif("architecture — le fichier des deputes n'est demande qu'une fois, et pas au premier ecran",
+/* LE PREMIER ECRAN A BESOIN DU RESUME DU VOTE : « Aujourd'hui » affiche
+   déjà la position du député. En revanche, le fichier des mandats reste différé
+   jusqu'à « Qui décide ». */
+verif("architecture — le fichier des deputes est demande une fois, apres le premier ecran",
   adresses.filter(u => /\/data\/deputes\.json$/.test(u)).length === 1
   && adresses.indexOf(adresses.find(u => /deputes\.json$/.test(u)))
      > adresses.indexOf(adresses.find(u => /index\.json$/.test(u))),
   adresses.join(" ") || "(aucune adresse relevee)");
 
 console.log("\n--- les votes du depute --------------------------------------");
-/* LA CHAINE COMPLETE, MESUREE DANS UN VRAI NAVIGATEUR :
-   commune -> circonscription -> depute -> scrutins -> position -> source.
-   Le banc statique verifie les fichiers ; ici on verifie que le lecteur les
-   atteint, et surtout QUAND ils partent au reseau. */
+/* La chaîne départementale du vote peut être chargée par « Aujourd'hui » :
+   c'est précisément l'information affichée au premier écran. Elle reste
+   strictement départementale, jamais communale. */
 const avantDepliage = adresses.slice();
-verif("architecture — rien de la chaine des votes ne part avant que le lecteur ne demande",
-  !avantDepliage.some(u => /\/data\/scrutins/.test(u)),
-  avantDepliage.filter(u => /scrutins/.test(u)).join(" ") || "(aucune, c'est ce qu'on veut)");
+verif("architecture — les votes restent demandes par departement, jamais par commune",
+  avantDepliage.filter(u => /\/data\/scrutins\//.test(u)).every(u => /\/data\/scrutins\/64\.json$/.test(u))
+  && !avantDepliage.some(u => /\/data\/scrutins-details\//.test(u)),
+  avantDepliage.filter(u => /scrutins/.test(u)).join(" ") || "(aucune adresse de vote)");
 
 const deplie = page.getByRole("button", { name: /Comment .+ a voté à l'Assemblée/ });
 const aUnDepliant = await deplie.count();
