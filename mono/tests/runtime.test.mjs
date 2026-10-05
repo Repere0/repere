@@ -1072,8 +1072,6 @@ async function auj(marqueur) {
   await p.getByLabel(/Votre commune/i).fill("Ustaritz");
   await p.waitForTimeout(300);
   await p.getByRole("button", { name: "Ustaritz", exact: true }).click();
-  await p.waitForTimeout(700);
-  await p.getByRole("button", { name: /Voir aujourd.hui à Ustaritz/i }).click();
   await p.waitForTimeout(1000);
   const t = await p.evaluate(() => document.body.innerText);
   await c.close();
