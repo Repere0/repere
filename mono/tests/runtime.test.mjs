@@ -1286,7 +1286,7 @@ console.log("\n--- projets d'une commune fusionnee : rattaches, et dits comme te
     await p.waitForTimeout(400);
     await p.getByRole("button", { name: cas.nom, exact: true }).first().click();
     await p.waitForTimeout(800);
-    await p.getByRole("button", { name: "Ce qui a été décidé" }).click();
+    await p.getByRole("button", { name: "Toutes les décisions", exact: true }).click();
     await p.waitForTimeout(1600);
     const t = await p.evaluate(() => document.body.innerText);
     await c.close();
