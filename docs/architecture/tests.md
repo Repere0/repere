@@ -11,7 +11,7 @@
 | `cd apps/mobile && npm run exporter` | l'app se construit pour iOS, Android, web | local seulement |
 | `node apps/mobile/tests/parcours-web.mjs URL` | parcours accueil → commune → retour à 360/390/430 px, adresses, cibles, accents | local seulement |
 
-**Le mobile n'est dans aucune chaîne GitHub aujourd'hui** (phase 1 de la feuille de route).
+**Le mobile est désormais vérifié par `.github/workflows/mobile.yml`** : types, extraction hors réseau, socle/invariants, exports iOS/Android/web, parcours navigateur 360/390/430, pannes et comparaison de vérité site/mobile. Cette chaîne est déclenchée sur les PR qui touchent le mobile, le socle partagé, les contrôles ou le site concerné.
 
 Local, `PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers`, jamais `playwright install`.
 
