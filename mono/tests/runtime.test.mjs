@@ -1579,7 +1579,7 @@ verif("accessibilite — mouvement reduit : le reglage systeme est actif",
 verif("accessibilite — mouvement reduit : aucune animation ne se joue",
   calme.animations === 0, JSON.stringify(calme));
 verif("accessibilite — mouvement reduit : le contenu reste visible",
-  /Où habitez-vous/.test(calme.text) && calme.text.trim().length > 100, JSON.stringify(calme).slice(0, 300));
+  /REPÈRE/.test(calme.text) && /Ustaritz/.test(calme.text) && calme.text.trim().length > 100, JSON.stringify(calme).slice(0, 300));
 await ctxCalme.close();
 
 console.log("\n--- zoom texte 200% -------------------------------------------");
