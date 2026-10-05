@@ -1498,6 +1498,8 @@ await pageMot.getByLabel(/Où habitez-vous/).fill("bagnolet");
 await pageMot.waitForTimeout(300);
 await pageMot.getByRole("button", { name: /Bagnolet/ }).click();
 await pageMot.waitForTimeout(1200);
+await pageMot.getByRole("button", { name: "Qui décide", exact: true }).click();
+await pageMot.waitForTimeout(900);
 const motCirco = pageMot.getByRole("button", { name: "circonscription", exact: true });
 verif("langue du citoyen — le mot « circonscription » est bien un declencheur",
   await motCirco.count() > 0, "aucun bouton .mot trouve avec ce texte");
