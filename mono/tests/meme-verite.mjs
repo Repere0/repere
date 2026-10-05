@@ -114,9 +114,14 @@ async function texteSite(nav, { dep, nom }) {
   await p.getByLabel(/Votre commune/i).fill(nom);
   await p.getByRole("button", { name: nom, exact: true }).first().click();
   await p.waitForTimeout(1200);
-  const qui = await p.evaluate(() => document.body.innerText);           /* « Qui décide », ecran par defaut */
-  /* « Où va l'argent » AVANT « Aujourd'hui » : la barre d'onglets est masquee
-     sur l'ecran Aujourd'hui (App.jsx). */
+  /* « Aujourd'hui » est désormais l'écran par défaut. Pour comparer les élus,
+     on ouvre explicitement « Qui décide » : le banc ne doit pas dépendre de
+     l'ordre visuel des onglets. */
+  await p.getByRole("button", { name: "Qui décide", exact: true }).first().click();
+  await p.waitForTimeout(900);
+  const qui = await p.evaluate(() => document.body.innerText);
+  /* « Où va l'argent » puis « Aujourd'hui » : chaque écran est lu explicitement,
+     même quand l'écran par défaut change. */
   await p.getByRole("button", { name: "Où va l'argent", exact: true }).first().click();
   await p.waitForTimeout(1500);
   const argent = await p.evaluate(() => document.body.innerText);
