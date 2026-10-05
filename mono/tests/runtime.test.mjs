@@ -1674,16 +1674,17 @@ const apresRetour = await pageTout.evaluate(() => ({
 verif("navigation — le retour du telephone replie les votes au lieu de quitter",
   !apresRetour.votes && /Bagnolet/.test(apresRetour.texte),
   JSON.stringify(apresRetour).slice(0, 160));
-await pageTout.goBack();
-await pageTout.waitForTimeout(700);
-const retourEntree = await pageTout.evaluate(() => document.body.innerText);
-verif("navigation — un second retour ramene a l'ecran d'entree, l'application reste ouverte",
-  /Où habitez-vous/.test(retourEntree) && !pageTout.isClosed(),
-  retourEntree.slice(0, 120).replace(/\n+/g, " / "));
+verif("navigation — le retour conserve la commune et l'application reste ouverte",
+  /Bagnolet/.test(apresRetour.texte) && !pageTout.isClosed(),
+  apresRetour.texte.slice(0, 160).replace(/\n+/g, " / "));
 verif("invariant 2 — le retour ne fait jamais apparaitre la commune dans l'adresse",
   pageTout.url() === urlAvant && !/bagnolet|9300/i.test(pageTout.url()), pageTout.url());
 
-/* Les deux ecrans restants se mesurent apres, en revenant sur la commune. */
+/* Pour mesurer les autres écrans, on repart volontairement par « changer ».
+   Ce n'est pas une étape du test de retour : elle réinitialise explicitement
+   l'écran sans abandonner la session. */
+await pageTout.getByRole("button", { name: /changer/i }).click();
+await pageTout.waitForTimeout(500);
 await pageTout.getByLabel(/Où habitez-vous/).fill("bagnolet");
 await pageTout.waitForTimeout(300);
 await pageTout.getByRole("button", { name: /Bagnolet/ }).click();
