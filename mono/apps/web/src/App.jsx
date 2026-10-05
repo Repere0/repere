@@ -457,8 +457,10 @@ export default function App() {
      prototype est un lien en plus ("Voir aujourd'hui", juste en dessous),
      jamais un remplacement du reglage par defaut — cette decision reste
      entiere pour l'arbitrage du porteur du projet. */
-  const [onglet, setOnglet] = useState("qui");
+  const [onglet, setOnglet] = useState("aujourdhui");
   const [commune, setCommune] = useState(null);
+  // Dernière commune choisie pendant cette session uniquement. Elle ne quitte jamais cet appareil.
+  const dernierChoixRef = useRef(null);
   /* Le choix de commune est-il ouvert ? Replie des qu'une commune est choisie ;
      rouvert par « changer ». Tant qu'il est ouvert, le choix du departement
      l'est aussi (on change de departement en changeant de commune). */
@@ -496,14 +498,18 @@ export default function App() {
   /* `insee` est FACULTATIF, et il ne sert qu'a selectionner la commune une fois
      le paquet arrive. Il n'entre dans aucune adresse : c'est `dep` seul qui part
      au reseau. */
-  const ouvrir = useCallback(async (dep, insee) => {
+  const ouvrir = useCallback(async (dep, insee, restauration = false) => {
     /* ENTRER DANS UN TERRITOIRE EST UNE ETAPE : le retour du telephone doit
        ramener a l'ecran d'entree, pas fermer l'application. On n'empile qu'a la
        PREMIERE entree — changer de departement ensuite reste au meme niveau,
        sinon dix changements demanderaient dix retours pour ressortir. */
     setDepartement(prec => {
-      if (!prec) {
-        entrer(() => { setDepartement(""); setPaquet(null); setCommune(null); setEtat(ETATS.ABSENT); });
+      if (!prec && !restauration) {
+        entrer(() => {
+          const dernier = dernierChoixRef.current;
+          if (dernier) void ouvrir(dernier.dep, dernier.insee, true);
+          else { setDepartement(""); setPaquet(null); setCommune(null); setEtat(ETATS.ABSENT); }
+        });
       }
       return dep;
     });
@@ -511,6 +517,7 @@ export default function App() {
     setEtat(ETATS.EN_COURS);
     setPaquet(null);
     setCommune(null);
+    if (!insee) dernierChoixRef.current = null;
     setChoixOuvert(true);
     const r = await chargerDepartement(dep);
     setEtat(r.etat);
@@ -518,7 +525,11 @@ export default function App() {
     /* On ne selectionne que si la commune est bien dans le paquet recu : un code
        venu d'un index plus recent que le fichier departemental ne doit pas
        produire un ecran vide. */
-    if (insee && r.donnees && r.donnees.communes && r.donnees.communes[insee]) { setCommune(insee); setChoixOuvert(false); }
+    if (insee && r.donnees && r.donnees.communes && r.donnees.communes[insee]) {
+      setCommune(insee);
+      dernierChoixRef.current = { dep, insee };
+      setChoixOuvert(false);
+    }
   }, []);
 
   /* Un département déjà choisi se recharge tout seul : le lecteur ne redit pas
