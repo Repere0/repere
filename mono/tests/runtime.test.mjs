@@ -1683,7 +1683,7 @@ verif("invariant 2 — le retour ne fait jamais apparaitre la commune dans l'adr
 /* Pour mesurer les autres écrans, on repart volontairement par « changer ».
    Ce n'est pas une étape du test de retour : elle réinitialise explicitement
    l'écran sans abandonner la session. */
-await pageTout.getByRole("button", { name: /changer/i }).click();
+await pageTout.locator("summary").filter({ hasText: "Bagnolet" }).click();
 await pageTout.waitForTimeout(500);
 await pageTout.getByLabel(/Où habitez-vous/).fill("bagnolet");
 await pageTout.waitForTimeout(300);
