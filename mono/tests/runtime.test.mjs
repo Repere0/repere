@@ -1218,8 +1218,6 @@ async function aujCommune(dep, nom) {
   await p.getByLabel(/Votre commune/i).fill(nom);
   await p.waitForTimeout(400);
   await p.getByRole("button", { name: nom, exact: true }).first().click();
-  await p.waitForTimeout(800);
-  await p.getByRole("button", { name: new RegExp("Voir aujourd.hui à " + nom.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")) }).click();
   await p.waitForTimeout(1200);
   const t = await p.evaluate(() => (document.querySelector(".quest") || document.body).innerText);
   await c.close();
