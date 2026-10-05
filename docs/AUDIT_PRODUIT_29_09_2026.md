@@ -31,14 +31,12 @@ node scripts/parcours-decembre.mjs        # le parcours testeur, 9 étapes
 **Premier écran** (390 × 844) : une promesse, un seul champ « Où habitez-vous ? ».
 C'est clair et ça tient en vingt secondes.
 
-**Une fois la commune choisie**, l'écran ouvert par défaut est « Qui décide ».
+**Une fois la commune choisie**, l'écran ouvert par défaut est désormais « Aujourd'hui » (PR #79).
 
 | entrée après le choix de la commune | questions répondues sans défiler (sur 6) |
 |---|---|
-| « Qui décide » (défaut, `main`) | **2,0** — où, qui |
-| « Aujourd'hui » (`main`) | **4,0** — où, chez moi, qui, source |
-| « Qui décide » (avec #41) | 3,0 |
-| « Aujourd'hui » (avec #41) | **4,8** — 6/6 pour les communes sans projet local |
+| « Aujourd'hui » (défaut, PR #79) | **4,8** — 6/6 pour les communes sans projet local |
+| « Qui décide » | approfondissement des élus et du territoire |
 
 Sur 15 communes (dans chaque département de la bêta, une avec projet financé,
 une sans). « Qu'est-ce qui se passe chez moi » : 0/15 par défaut, 15/15 sur
@@ -55,8 +53,8 @@ département est rappelé, et la commune doit être choisie à nouveau.
 | P0 | un échec de la collecte ne se lit que dans le journal complet | #40 |
 | P1 | trois lignes disent où l'on est ; premier contenu à 544 px sur 800 | #41 (428 px) |
 | P1 | « Aujourd'hui » : 3 lignes de source sur 4 sans lien ; « Où va l'argent » : 3 sur 4 | #42 (4/4) |
-| P1 | l'écran par défaut répond à 2 questions sur 6 ; « Aujourd'hui », qui en couvre 4 à 5, n'est qu'un lien | **décision** |
-| P1 | au retour, la commune n'est pas rappelée : la boucle « depuis votre visite » demande de retaper sa commune | **décision** |
+| P1 | l'écran par défaut répondait à 2 questions sur 6 ; « Aujourd'hui » en couvre 4 à 5 | **corrigé par #79** |
+| P1 | au retour, la commune n'était pas rappelée | **corrigé par #79, session locale** |
 | P2 | la barre des 5 écrans prend 3 lignes à 360 et 390 px (≈ 150 px) | non touché : le défilement horizontal a déjà été écarté (on ne voyait pas qu'il y avait une suite) ; seule piste restante, des libellés plus courts, qui sont une décision de formulation |
 | P2 | « Ce qui a été décidé » fait 10 hauteurs d'écran à 360 px ; « Ce qui se passe », 8 | à faire |
 | P2 | « Aujourd'hui », commune avec projet : le « à venir » passe sous la ligne de flottaison | à faire |
@@ -64,9 +62,8 @@ département est rappelé, et la commune doit être choisie à nouveau.
 
 ## 4. « Aujourd'hui » : argumentaire
 
-- **Rôle actuel** : un écran atteint par un lien discret, sous le nom de la
-  commune. Le code le dit « prototype », et la bascule de l'écran par défaut est
-  réservée au porteur (commentaire D-23 dans `App.jsx`).
+- **Rôle actuel** : l'écran ouvert après le choix de la commune. Il répond d'abord à
+  « qu'est-ce qui se passe chez moi ? », puis laisse approfondir vers les autres écrans.
 - **Ce qu'il fait bien, mesuré** : il répond à « qu'est-ce qui se passe chez
   moi » pour 15 communes sur 15 (vote du député de la circonscription, projet
   financé dans la commune), avec une source visible, et à « qu'est-ce qui
@@ -90,7 +87,7 @@ département est rappelé, et la commune doit être choisie à nouveau.
 6. Un vote : résultat, lien vers le scrutin.
 7. Ce qui arrive cette semaine.
 8. La source, cliquable.
-9. Le retour à l'accueil : **aujourd'hui, la commune est à rechoisir.**
+9. Le retour navigateur : **la commune choisie est conservée pendant la session.**
 
 `scripts/parcours-decembre.mjs` joue ces neuf étapes et échoue tant qu'une
 seule ne tient pas.
