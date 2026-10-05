@@ -1,5 +1,7 @@
 # Audit produit — 29 septembre 2026
 
+> Mise à jour de suivi : 5 octobre 2026 — le parcours « Aujourd'hui » et le retour de commune décrits ci-dessous sont désormais implémentés par la PR #79.
+
 Données locales du dépôt, extraites comme sur le runner (seul le calendrier du
 Sénat manque : le conteneur ne joint pas senat.fr). Mesures faites dans un vrai
 navigateur, à 360, 390 et 1280 px. Tout est rejouable :
