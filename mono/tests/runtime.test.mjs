@@ -1680,15 +1680,8 @@ verif("navigation — le retour conserve la commune et l'application reste ouver
 verif("invariant 2 — le retour ne fait jamais apparaitre la commune dans l'adresse",
   pageTout.url() === urlAvant && !/bagnolet|9300/i.test(pageTout.url()), pageTout.url());
 
-/* Pour mesurer les autres écrans, on repart volontairement par « changer ».
-   Ce n'est pas une étape du test de retour : elle réinitialise explicitement
-   l'écran sans abandonner la session. */
-await pageTout.locator("summary").filter({ hasText: "Bagnolet" }).click();
-await pageTout.waitForTimeout(500);
-await pageTout.getByLabel(/Où habitez-vous/).fill("bagnolet");
-await pageTout.waitForTimeout(300);
-await pageTout.getByRole("button", { name: /Bagnolet/ }).click();
-await pageTout.waitForTimeout(1400);
+/* La commune est toujours Bagnolet après le retour : on poursuit directement
+   le banc sur les autres écrans, sans refaire l'onboarding. */
 await pageTout.getByRole("button", { name: "Où va l'argent" }).click();
 await pageTout.waitForTimeout(900);
 await auditerEcran("ou va l'argent");
