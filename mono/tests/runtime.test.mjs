@@ -994,9 +994,8 @@ try {
   await pageRetention.getByLabel(/Votre commune/i).fill("Ustaritz");
   await pageRetention.waitForTimeout(300);
   await pageRetention.getByRole("button", { name: "Ustaritz", exact: true }).click();
-  await pageRetention.waitForTimeout(700);
-  await pageRetention.getByRole("button", { name: /Voir aujourd.hui à Ustaritz/i }).click();
   await pageRetention.waitForTimeout(900);
+  /* « Aujourd'hui » est déjà l'écran ouvert après le choix de la commune. */
 
   const texteRetention = await pageRetention.evaluate(() => document.body.innerText);
   verif("retention — le titre annonce la vraie date de la derniere visite, pas une fenetre fixe",
