@@ -18,11 +18,9 @@ const Sources = lazy(() => import("./routes/Sources.jsx"));
 const Calendrier = lazy(() => import("./routes/Calendrier.jsx"));
 const Aujourdhui = lazy(() => import("./routes/Aujourdhui.jsx"));
 
-/* "AUJOURD'HUI" EST UN PROTOTYPE, POSE LE 18/09/2026 — voir Aujourdhui.jsx.
-   Il ne remplace aucun des cinq ecrans ci-dessous (rien n'est retire), il
-   teste l'hypothese qu'ils devraient etre une profondeur plutot que cinq
-   portes egales. Reversible : retirer cette ligne et la ligne "aujourdhui"
-   plus bas suffit a revenir exactement a l'etat d'avant. */
+/* « AUJOURD'HUI » EST LE PREMIER ÉCRAN : le fil date répond directement à
+   « qu'est-ce qui se passe chez moi ? ». Les autres écrans restent disponibles
+   comme approfondissements. */
 const ONGLETS = [
   { id: "aujourdhui", libelle: "Aujourd'hui", echelon: "ville", charge: () => import("./routes/Aujourdhui.jsx") },
   /* « CE QUI A ETE DECIDE » EST LE DEUXIEME ONGLET, et cet ordre est la decision.
@@ -439,10 +437,10 @@ export default function App() {
   const vSessionRef = useRef(new Date().toISOString());
   const [paquet, setPaquet] = useState(null);
   const [etat, setEtat] = useState(ETATS.ABSENT);
-  /* L'ONGLET OUVERT PAR DEFAUT RESTE « QUI DECIDE », ET CE N'EST PAS UN OUBLI.
-     « Ce qui a ete decide » est le PREMIER onglet — l'ordre dit ce qui compte —
-     mais il n'est pas encore celui qui s'ouvre. La collecte des projets finances
-     n'a jamais tourne pour de vrai : elle ne peut pas s'executer depuis un poste
+  /* « AUJOURD'HUI » EST L'ECRAN OUVERT PAR DEFAUT.
+     L'audit du 29/09 a mesure qu'il repond mieux, au premier écran, à la question
+     « qu'est-ce qui se passe chez moi ? ». Les autres écrans restent des portes
+     d'approfondissement : aucun contenu n'est supprimé. */i : elle ne peut pas s'executer depuis un poste
      de developpement, et les taches planifiees ne se declenchent que sur la
      branche par defaut. Faire atterrir chaque visiteur sur un ecran dont la
      couverture reelle n'a jamais ete mesuree serait un pari ; « Qui decide »,
