@@ -22,6 +22,12 @@ import {
  *
  * LA LICENCE N'EST PAS ACQUISE POUR LE SENAT, ET L'ECRAN LE DIT — invariant
  * 4 tenu par l'honnetete plutot que par un champ rempli au hasard. */
+function licenceSource(s) {
+  if (s?.licence) return s.licence;
+  const producteur = s?.producteur_affiche || s?.producteur || "";
+  return /Sénat/i.test(producteur) ? "non précisée par le Sénat" : undefined;
+}
+
 function heureFr(iso) {
   const m = /T(\d{2}):(\d{2})/.exec(iso || "");
   return m ? `${m[1]}h${m[2]}` : "";
@@ -109,7 +115,7 @@ function ScrutinsRecents() {
           );
         })}
       </div>
-      <Source producteur={s.producteur_affiche || s.producteur} licence={s.licence}
+      <Source producteur={s.producteur_affiche || s.producteur} licence={licenceSource(s)}
         mention={s.releve_le ? "relevé le " + dateFr(s.releve_le) : undefined} url={s.url} />
     </Carte>
   );
