@@ -1,6 +1,6 @@
 # Les contrôles — ce qui est vert, et ce que « vert » veut dire
 
-*5/10/2026. Un banc vert sur une page cassée reste un banc vert : relire les captures.*
+*5/10/2026. Un banc vert sur une page cassée reste un banc vert : relire les captures — CI de référence obligatoire.*
 
 | commande (depuis `mono/`) | ce qu'elle mesure | où elle tourne |
 |---|---|---|
