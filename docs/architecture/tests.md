@@ -30,3 +30,31 @@ TypeScript mobile, le `fetch` interdit dans `apps/mobile/src`, les accents affic
 parcours mobile (qui **ne tirait pas** sur un titre en capitales — corrigé en lisant
 `textContent`). Le contrôle d'accents du site lit `innerText` : même angle mort possible
 sur les titres en capitales (`.eyebrow`, `.tag`, `.tuile-k`, `.quest-lieu`), non corrigé.
+
+
+## Gate bêta technique — 5 octobre 2026
+
+La bêta interne ne doit pas être déclarée prête sur la seule base d'un build.
+
+### Obligatoire avant les premiers testeurs
+- les PR produit critiques passent **Épreuve** et, lorsqu'elles touchent le mobile, **Mobile** ;
+- accueil → commune → « Aujourd'hui » → retour fonctionne ;
+- aucune URL/requête ne contient le code de commune ;
+- la mémoire locale n'existe qu'après demande explicite et peut être oubliée ;
+- une panne partielle est distinguée d'une absence réelle de données ;
+- une donnée conservée hors ligne n'est jamais présentée comme fraîche sans vérification ;
+- sources, dates de publication et dates de traitement restent accessibles ;
+- les parcours 360/390/430 px passent ;
+- un iPhone et un Android réels passent le parcours principal ;
+- VoiceOver/TalkBack et taille de texte agrandie sont vérifiés avant le pilote.
+
+### À vérifier sur données réelles
+- commune avec projet financé ;
+- commune sans projet ;
+- commune au nom long ;
+- données partielles ;
+- circonscription multiple ;
+- partage natif, avec vérification qu'aucune donnée locale ou identifiant technique ne fuit.
+
+### Hors gate technique
+Juridique, politique éditoriale, tracking, monétisation, stores, dépenses et lancement public restent des décisions du porteur.
