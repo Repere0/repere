@@ -1693,7 +1693,7 @@ await auditerEcran("sources");
  * Il est mesure comme les six autres — plancher typographique et zones d'appui —
  * PUIS sur ce qui lui est propre : un fil date ne vaut que si le lecteur sait
  * dans quel ordre il lit, et d'ou vient chaque fait. */
-await pageTout.getByRole("button", { name: "Ce qui a été décidé" }).click();
+await pageTout.getByRole("button", { name: "Toutes les décisions" }).click();
 await pageTout.waitForTimeout(1600);
 await auditerEcran("ce qui a ete decide");
 
