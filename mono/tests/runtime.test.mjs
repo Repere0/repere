@@ -1693,6 +1693,11 @@ await auditerEcran("sources");
  * Il est mesure comme les six autres — plancher typographique et zones d'appui —
  * PUIS sur ce qui lui est propre : un fil date ne vaut que si le lecteur sait
  * dans quel ordre il lit, et d'ou vient chaque fait. */
+/* « Toutes les décisions » est un approfondissement de l'écran Aujourd'hui.
+   Après Sources, on revient explicitement à Aujourd'hui plutôt que de supposer
+   que son bouton existe sur un écran national. */
+await pageTout.getByRole("button", { name: /Voir aujourd.hui à Bagnolet/ }).click();
+await pageTout.waitForTimeout(900);
 await pageTout.getByRole("button", { name: "Toutes les décisions" }).click();
 await pageTout.waitForTimeout(1600);
 await auditerEcran("ce qui a ete decide");
