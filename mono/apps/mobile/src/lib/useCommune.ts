@@ -55,6 +55,9 @@ export type EtatCommune =
       evenements: Ouvert;
       /* le calendrier : arrive pour au moins une institution */
       agendaLu: boolean;
+      /* true tant que calendrier, agenda et faits ne sont pas revenus : rien
+         n'est encore dit de leur absence */
+      agendaEnCours: boolean;
     };
 
 const arrive = (r: { etat: string }) => r.etat === ETATS.SERVI;
@@ -91,10 +94,17 @@ export function useCommune(choix: Choix, essai: number): EtatCommune {
     setEtat({ etat: ETATS.EN_COURS, pret: false });
     const { dep, insee } = choix;
     (async () => {
-      const [ix, pq, pr, de, c, v, ca, an, ev] = await Promise.all([
+      /* CE QUE « CHEZ VOUS » AFFICHE D'ABORD, CE QUI PEUT ARRIVER APRES —
+         06/10/2026. Mesure : un seul fichier secondaire lent (agenda, faits)
+         retardait tout le premier ecran d'autant (6 s de retard -> 6,3 s),
+         pendant que l'ecran annoncait « Chargement des données de votre
+         département ». Tous les fichiers partent ensemble ; l'ecran s'affiche
+         des que les fichiers NECESSAIRES sont la, puis se complete. Pendant
+         ce temps, l'agenda est « en cours » (jamais « pas arrivé »). */
+      const secondaires = Promise.all([chargerCalendrierSenat(), chargerAgendaAN(), chargerEvenements()]);
+      const [ix, pq, pr, de, c, v] = await Promise.all([
         chargerIndex(), chargerDepartement(dep), chargerProjets(dep),
         chargerDeputes(), chargerCatalogueScrutins(), chargerVotes(dep),
-        chargerCalendrierSenat(), chargerAgendaAN(), chargerEvenements(),
       ]);
       if (!vivant) return;
       const paquet: Ouvert = pq.donnees;
@@ -108,6 +118,11 @@ export function useCommune(choix: Choix, essai: number): EtatCommune {
       const reg = depIndex && depIndex.region_code ? await chargerElusRegion(depIndex.region_code) : { etat: ETATS.INTROUVABLE, donnees: null };
       if (!vivant) return;
       const votesLus = arrive(de) && arrive(c) && arrive(v);
+      const EN_ATTENTE = { etat: ETATS.EN_COURS, donnees: null };
+      /* Assemble l'etat de l'ecran ; `sec` = null tant que les fichiers
+         secondaires ne sont pas tous revenus. Une seule regle, appelee deux fois. */
+      const assembler = (sec: { etat: string; donnees: Ouvert }[] | null): EtatCommune => {
+      const [ca, an, ev] = sec || [EN_ATTENTE, EN_ATTENTE, EN_ATTENTE];
       const d = deriverAujourdhui({
         fiche, commune: insee, dep, index,
         projets: arrive(pr) ? pr.donnees : null,
@@ -115,8 +130,8 @@ export function useCommune(choix: Choix, essai: number): EtatCommune {
         cal: arrive(ca) ? ca.donnees : null, agendaAN: arrive(an) ? an.donnees : null,
         evenements: null, maintenant: new Date(),
       });
-      setEtat({
-        etat: ETATS.SERVI, pret: true, d,
+      return {
+        etat: ETATS.SERVI, pret: true, d, agendaEnCours: sec === null,
         srcElus: index.sources ? index.sources.elus : null,
         index, paquet, projets: arrive(pr) ? pr.donnees : null, deputes: arrive(de) ? de.donnees : null,
         elusRegion: arrive(reg) ? reg.donnees : null,
@@ -130,7 +145,12 @@ export function useCommune(choix: Choix, essai: number): EtatCommune {
           pos: arrive(v) ? v.donnees : null, deputes: arrive(de) ? de.donnees : null, evenements: arrive(ev) ? ev.donnees : null }),
         votesFiables: votesLus ? positionsFiables(c.donnees, v.donnees) : true,
         agendaLu: arrive(ca) || arrive(an),
-      });
+      };
+      };
+      setEtat(assembler(null));
+      const sec = await secondaires;
+      if (!vivant) return;
+      setEtat(assembler(sec));
     })().catch(() => {
       if (vivant) setEtat({ etat: ETATS.ECHEC, pret: false });
     });

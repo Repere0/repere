@@ -755,6 +755,43 @@ async function montantA100ms(reduit) {
   await page.close();
 }
 
+/* RESEAU LENT (06/10/2026). Mesure avant : un fichier secondaire lent (agenda,
+   faits) retardait tout le premier ecran d'autant (6 s -> 6,3 s). Le premier
+   ecran n'attend plus que ce qu'il affiche ; ce qui arrive apres dit qu'il
+   arrive, jamais qu'il manque. */
+{
+  const ctx = await navigateur.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, reducedMotion: "reduce" });
+  await ctx.route(/\/data\/(agenda-an|calendrier-senat|evenements)\.json/, async route => { await new Promise(x => setTimeout(x, 6000)); await route.continue().catch(() => {}); });
+  const page = await ctx.newPage();
+  await page.goto(BASE + "/", { waitUntil: "domcontentloaded" });
+  await page.getByLabel(/Où habitez-vous/).fill(COMMUNE.saisie);
+  const t0 = Date.now();
+  await page.getByRole("button", { name: new RegExp("^" + COMMUNE.nom + ",") }).first().click();
+  await page.getByText("Aller plus loin").first().waitFor({ timeout: 15000 });
+  const delai = (Date.now() - t0) / 1000;
+  verifier(delai < 3, `réseau lent : agenda et faits lents, « Chez vous » s'affiche quand même en ${delai.toFixed(1)} s (< 3 s)`);
+  await page.getByRole("button", { name: "Ce qui arrive au Parlement" }).first().click();
+  await page.getByText(/Qu'est-ce qui arrive/).first().waitFor({ timeout: 10000 });
+  const pendant = await page.evaluate(() => document.body.innerText);
+  verifier(/Chargement du calendrier/.test(pendant) && !/n'est arrivé jusqu'à cet appareil/.test(pendant) && !/Aucune séance n'est annoncée/.test(pendant),
+    "réseau lent : le calendrier en route est dit « en chargement », jamais « pas arrivé » ni « aucune séance »");
+  const arrive = await page.getByText(/rendez-vous annoncés? au Parlement|Le prochain rendez-vous annoncé|n'est arrivé jusqu'à cet appareil/).first().waitFor({ timeout: 15000 }).then(() => true, () => false);
+  verifier(arrive && !/Chargement du calendrier/.test(await page.evaluate(() => document.body.innerText)), "réseau lent : une fois arrivé, le calendrier remplace la phrase d'attente");
+  await ctx.close();
+  /* le departement lent : la phrase d'attente dit ce qui se charge vraiment */
+  const ctx2 = await navigateur.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, reducedMotion: "reduce" });
+  await ctx2.route(/\/data\/departments\/77\.json/, async route => { await new Promise(x => setTimeout(x, 3000)); await route.continue().catch(() => {}); });
+  const p2 = await ctx2.newPage();
+  await p2.goto(BASE + "/", { waitUntil: "domcontentloaded" });
+  await p2.getByLabel(/Où habitez-vous/).fill(COMMUNE.saisie);
+  await p2.getByRole("button", { name: new RegExp("^" + COMMUNE.nom + ",") }).first().click();
+  await p2.waitForTimeout(800);
+  const attente = await p2.evaluate(() => document.body.innerText);
+  verifier(/Chargement des données de votre département/.test(attente) && !/Réessayer/.test(attente), "réseau lent : pendant le chargement du département, une phrase d'attente, sans « Réessayer »");
+  await p2.getByText("Aller plus loin").first().waitFor({ timeout: 15000 });
+  await ctx2.close();
+}
+
 /* LES ABSENCES REELLES (06/10/2026) : une commune par cause, choisie dans les
    donnees (releve du jour), et la phrase attendue lue dans @repere/core ou
    dans l'application, jamais recopiee. Mesure avant ce controle : a

@@ -41,7 +41,10 @@ export default function AVenir() {
           {r.agendaLu && releveAncien(d.srcCal && d.srcCal.releve_le, new Date()) ? (
             <Text testID="releve-ancien" style={TYPO.note}>{releveAncien(d.srcCal.releve_le, new Date())}</Text>
           ) : null}
-          {!r.agendaLu ? (
+          {/* en route : ni « pas arrivé », ni « aucune séance » (06/10/2026) */}
+          {r.agendaEnCours ? (
+            <Vide titre="Chargement du calendrier de l'Assemblée nationale et du Sénat." corps="Il est relevé chaque jour par Repère." />
+          ) : !r.agendaLu ? (
             <Vide {...AGENDA_PAS_ARRIVE} action="Réessayer" onAction={reessayer} />
           ) : prochains.length ? (
             <Carte echelon="france" titre={d.prochainsDansLaSemaine ? "Cette semaine" : "Prochainement"}>
