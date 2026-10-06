@@ -214,3 +214,31 @@ test("visuels — grands nombres et parts en mots : jamais plus de 3 points d'ar
   const ph = m.parHabitant([1000, 10, 11, 20, 22, null, null]);
   assert.equal(ph.recettes, 11); assert.equal(ph.dette, null);
 });
+
+/* VALIDE N'EST PAS PUBLIABLE (06/10/2026). Mesure : 7 brouillons de data/auto/
+   portaient `valide: true` avec un « Ce que ça change » vide (8420, 8422,
+   8423, 8424, 8428, 8429, 8432). La porte de publication les aurait refuses ;
+   l'en-tete mentait pourtant sur leur etat. Tout fichier marque valide doit
+   remplir toutes les conditions editoriales : source, date, grands axes. */
+test("statuts — un fait marqué « valide: true » est publiable (source, date, « Ce que ça change »)", () => {
+  const racine = path.join(import.meta.dirname, "../../data");
+  const fautifs = [];
+  for (const dossier of ["auto", "evenements"]) {
+    const d = path.join(racine, dossier);
+    if (!fs.existsSync(d)) continue;
+    for (const nom of fs.readdirSync(d).filter(f => f.endsWith(".md"))) {
+      const t = fs.readFileSync(path.join(d, nom), "utf8").replace(/\r\n/g, "\n");
+      if (!/^valide:\s*true\s*$/m.test(t)) continue;
+      /* meme regle que la porte (outils/evenements.py, m_chg) : « Ce que ça change : texte »
+         ou « ## Ce que ça change » puis le texte ; tout ce qui suit, jusqu'a la fin */
+      const corps = t.replace(/^---\n[\s\S]*?\n---\n/, "");
+      const axes = (corps.match(/#{0,2}\s*Ce que [cç]a change\s*:?\s*\n*([\s\S]*)$/) || [])[1] || "";
+      const manque = [];
+      if (!/^source:\s*https:\/\/\S+/m.test(t)) manque.push("source");
+      if (!/^date:\s*\d{4}-\d{2}-\d{2}\s*$/m.test(t)) manque.push("date");
+      if (!axes.trim()) manque.push("« Ce que ça change » vide");
+      if (manque.length) fautifs.push(`${dossier}/${nom} : ${manque.join(", ")}`);
+    }
+  }
+  assert.deepEqual(fautifs, [], "marques valides mais non publiables :\n" + fautifs.join("\n"));
+});
