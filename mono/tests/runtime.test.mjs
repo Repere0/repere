@@ -1775,10 +1775,16 @@ await pageA.getByLabel(/Où habitez-vous/).fill("aubervilliers");
 await pageA.waitForTimeout(400);
 await pageA.getByRole("button", { name: /Aubervilliers/ }).click();
 await pageA.waitForTimeout(1500);
+/* 06/10/2026 : apres le choix, l'ecran ouvert est « Aujourd'hui » ; « Toutes
+   les decisions » y mene vers « Ce qui a ete decide ». Ne PAS cliquer ensuite
+   « Voir aujourd'hui » : ce lien ramene a Aujourd'hui, et le banc mesurait
+   alors le mauvais ecran (Epreuve #143 : six echecs en cascade). Le controle
+   ci-dessous nomme l'erreur de navigation au lieu de la laisser se propager. */
 await pageA.getByRole("button", { name: "Toutes les décisions" }).click();
-await pageA.waitForTimeout(700);
-await pageA.getByRole("button", { name: /Voir aujourd.hui à Aubervilliers/ }).click();
 await pageA.waitForTimeout(1600);
+const surDecisionsA = await pageA.getByText(/Ce qui a été décidé pour Aubervilliers/).count();
+verif("parcours — « Toutes les décisions » ouvre bien l'écran des décisions",
+  surDecisionsA > 0, "l'ecran ouvert n'est pas « Ce qui a ete decide pour Aubervilliers »");
 await auditerEcran("ce qui a ete decide — avec projets", pageA);
 
 const avecProjets = await pageA.evaluate(() => {
