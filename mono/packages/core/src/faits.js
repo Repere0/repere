@@ -151,6 +151,13 @@ export function sourceOfficielle(url) {
   /* deliberations d'une collectivite, publiees sur son propre site en .fr */
   return h.endsWith(".fr") && /^\/deliberations(\/|$)/.test(u.pathname);
 }
+/* UN VOTE QUI MERITE UN FAIT (06/10/2026) : le vote sur l'ENSEMBLE d'un texte.
+   Un vote de procedure (motion de rejet, prolongation de seance, amendement,
+   article) ne dit pas ce qu'un texte change : il n'est pas candidat
+   (scripts/candidats-fil.mjs). Mesure sur data/auto : 8423 « prolonger la
+   séance au delà de minuit » y etait propose. */
+const PROCEDURE = /motion de rejet|motion de renvoi|prolonger la séance|^l'amendement|^le sous-amendement|^l'article/i;
+export const estVoteDeTexte = t => /^l'ensemble\b/i.test(String(t || "").trim()) && !PROCEDURE.test(String(t || "").trim());
 const numeroScrutin = url => { const m = String(url || "").replace(/\/+$/, "").match(/assemblee-nationale\.fr\/dyn\/\d+\/scrutins\/(\d+)$/); return m ? m[1] : null; };
 export function controlerFaits(evenements, catalogue, maintenant = new Date()) {
   const defauts = [];

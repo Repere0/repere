@@ -366,3 +366,11 @@ test("core — la liste des sources officielles du socle couvre celle de outils/
   const manque = doms.filter(d => !sourceOfficielle("https://" + d + "/x"));
   assert.deepEqual(manque, [], "deux listes qui derivent : " + manque.join(", "));
 });
+import { estVoteDeTexte } from "../packages/core/src/index.js";
+test("core — seul le vote sur l'ensemble d'un texte est candidat au fil", () => {
+  assert.ok(estVoteDeTexte("l'ensemble du projet de loi de finances pour 2027"));
+  assert.ok(estVoteDeTexte("L'ensemble de la proposition de loi relative au droit à l'aide à mourir (lecture définitive)."));
+  for (const t of ["La motion de rejet préalable, déposée par Mme X, du projet de loi …", "La proposition du Gouvernement de prolonger la séance en cours au delà de minuit",
+    "L'amendement n° 7 du Gouvernement au projet de loi …", "Le sous-amendement n° 2 de Mme Y", "l'article 12 de la proposition de loi …", ""])
+    assert.equal(estVoteDeTexte(t), false, t);
+});
