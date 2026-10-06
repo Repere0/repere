@@ -1775,7 +1775,9 @@ await pageA.getByLabel(/Où habitez-vous/).fill("aubervilliers");
 await pageA.waitForTimeout(400);
 await pageA.getByRole("button", { name: /Aubervilliers/ }).click();
 await pageA.waitForTimeout(1500);
-await pageA.getByRole("button", { name: "Ce qui a été décidé" }).click();
+await pageA.getByRole("button", { name: /Voir aujourd.hui à Aubervilliers/ }).click();
+await pageA.waitForTimeout(700);
+await pageA.getByRole("button", { name: "Toutes les décisions" }).click();
 await pageA.waitForTimeout(1600);
 await auditerEcran("ce qui a ete decide — avec projets", pageA);
 
