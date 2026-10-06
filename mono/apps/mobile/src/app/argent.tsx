@@ -187,7 +187,7 @@ export default function Argent() {
                   const f = financementProjet(p);
                   const cout = f && f.cout ? montantCourt(f.cout) : null;
                   return (
-                    <Carte key={i} echelon="ville" titre={`${p.annee} · aide ${p.dispositif}`}>
+                    <Carte key={i} echelon="ville" titre={`${p.annee} · ${nomDispositif(r.projets, p.dispositif)}`}>
                       <Text style={TYPO.reponse}>{p.intitule}</Text>
                       {f && f.partPct !== null && cout ? (
                         <Resume phrase={partReperee(f.partPct)

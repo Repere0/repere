@@ -135,13 +135,13 @@ export default function Vote() {
             <Carte echelon="france" titre="Ses votes précédents">
               {autres.map(a => (
                 <View key={a.cle} style={{ gap: 2, paddingBottom: PAS * 2 }}
-                  accessible accessibilityLabel={`${dateFr(a.sc.d)} : ${titreLisible(a.sc.t)}. ${motPosition(a.position) ? "A voté " + motPosition(a.position) : "Position non portée par le relevé"}.`}>
+                  accessible accessibilityLabel={`${dateFr(a.sc.d)} : ${titreLisible(a.sc.t)}. ${motPosition(a.position) ? "A voté " + motPosition(a.position) : "Position non indiquée par l'Assemblée"}.`}>
                   <Text style={TYPO.micro}>{dateFr(a.sc.d)} · texte {a.sc.s}</Text>
                   <Text style={TYPO.corps}>{titreLisible(a.sc.t)}</Text>
-                  <Text style={[TYPO.note, { fontWeight: "700" }]}>{motPosition(a.position) ? "A voté " + motPosition(a.position) : "Position non portée par le relevé"}</Text>
+                  <Text style={[TYPO.note, { fontWeight: "700" }]}>{motPosition(a.position) ? "A voté " + motPosition(a.position) : "Position non indiquée par l'Assemblée"}</Text>
                 </View>
               ))}
-              <Text style={TYPO.micro}>Scrutins solennels relevés, du plus récent au plus ancien.</Text>
+              <Text style={TYPO.micro}>Ses votes solennels, du plus récent au plus ancien. Un vote solennel est un vote public, annoncé à l'avance, sur l'ensemble d'un texte important.</Text>
             </Carte>
           ) : null}
 

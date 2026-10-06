@@ -132,6 +132,11 @@ for (const largeur of [360, 390, 430]) {
     verifier(m.contrastes.length === 0, `${largeur}px · ${ecran} : tout texte visible atteint le contraste AA ${JSON.stringify(m.contrastes)}`);
     const sansAccents = MOTS_A_ACCENTS.filter(x => new RegExp("(^|[^\\p{L}])" + x + "($|[^\\p{L}])", "u").test(m.brut));
     verifier(sansAccents.length === 0, `${largeur}px · ${ecran} : aucun mot affiché sans ses accents ${JSON.stringify(sansAccents)}`);
+    /* VOCABULAIRE (06/10/2026) : formulations internes relevees a l'audit et
+       retirees ; elles ne doivent pas revenir. Un sigle d'aide peut rester dans
+       une explication, jamais seul dans un titre. */
+    const jargon = (m.brut.match(/non portée par le relevé|scrutins solennels relevés|années relevées|· aide (DPV|DSIL|DETR|DSID|FNADT)\b/gi) || []);
+    verifier(jargon.length === 0, `${largeur}px · ${ecran} : aucune formulation interne ${JSON.stringify(jargon)}`);
   };
 
   /* L'ACCUEIL « CHEZ VOUS » : cinq questions, chacune avec sa source */

@@ -65,6 +65,18 @@ export function financementProjet(p) {
 export const NOTE_FINANCEMENT = "Le reste du coût n'est pas détaillé par la source : elle ne dit pas qui le paie.";
 
 /* Nom complet d'un dispositif (DETR, DSIL, DPV…), tel que la source le publie. */
+/* LE SIGLE D'UNE INTERCOMMUNALITE, EN CLAIR (06/10/2026). Le Repertoire
+   national des elus ecrit « Ca Du Pays De Meaux », « Cc Plaines Et Monts De
+   France » : un lecteur ne sait pas ce que « Ca » ou « Cc » veut dire. Table
+   fixe, mesuree sur les 34 637 communes du jour (Cc/CC 13 139, Ca/CA 5 199,
+   Cu/CU 468) ; « Métropole » se dit deja en clair. Rien n'est devine : sans
+   sigle connu, rien n'est ajoute. */
+const SIGLES_EPCI = { cc: "communauté de communes", ca: "communauté d'agglomération", cu: "communauté urbaine" };
+export function typeIntercommunalite(nom) {
+  const m = String(nom || "").match(/^(\S+)\s/);
+  return m ? SIGLES_EPCI[m[1].toLowerCase()] || null : null;
+}
+
 export const nomDispositif = (projets, code) =>
   (projets && projets.dispositifs && projets.dispositifs[code]) || code || "";
 
@@ -144,7 +156,10 @@ export function chaineDecision({ fiche, paquet, index, deputes, elusRegion, dep 
     { echelon: "ville", niveau: "Commune", institution: "Conseil municipal", lieu: fiche.nom,
       personne: fiche.maire && fiche.maire.nom ? { nom: fiche.maire.nom, role: "Maire" } : null,
       decide: COMPETENCES.ville },
-    { echelon: "agglo", niveau: "Intercommunalité", institution: fiche.agglo && fiche.agglo.nom ? fiche.agglo.nom : "Intercommunalité",
+    /* Le nom reste celui du Repertoire (principe P15 : « Ca Du Pays De Meaux »
+       n'est pas recase) ; le sigle, lui, est dit en clair (06/10/2026). */
+    { echelon: "agglo", niveau: typeIntercommunalite(fiche.agglo && fiche.agglo.nom) ? `Intercommunalité · ${typeIntercommunalite(fiche.agglo.nom)}` : "Intercommunalité",
+      institution: fiche.agglo && fiche.agglo.nom ? fiche.agglo.nom : "Intercommunalité",
       lieu: null,
       personne: null,
       delegues: fiche.agglo && Array.isArray(fiche.agglo.delegues) ? fiche.agglo.delegues.length : 0,
