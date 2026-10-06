@@ -14,13 +14,14 @@
 ```
 cd C:\Users\APina
 git -C repere fetch origin
-git -C repere worktree add C:\Users\APina\repere-mobile origin/feat/mobile-ux-revolution
+git -C repere worktree add C:\Users\APina\repere-mobile origin/main
 ```
 
-(`feat/mobile-ux-revolution` est le haut de la pile : la refonte de l'expérience, avec
-tout ce qui précède. Pour mettre à jour plus tard :
-`git -C C:\Users\APina\repere-mobile checkout --detach origin/feat/mobile-ux-revolution`
-après un `git -C repere fetch origin`.)
+(Pour tester une branche non fusionnée, remplacer `origin/main` par
+`origin/<branche>`. Pour mettre à jour plus tard :
+`git -C C:\Users\APina\repere-mobile checkout --detach origin/main`
+après un `git -C repere fetch origin`. La checklist de 5 minutes est dans
+`docs/mobile/BETA_MOBILE_REVENIR_2026-10.md`.)
 
 ## À chaque test
 
@@ -50,7 +51,7 @@ d'Île-de-France. Les données sont celles du site en production.
 | Réglages > Accessibilité > Mouvement > Réduire les animations | les montants s'affichent d'un coup, les barres pleines d'emblée |
 | VoiceOver | chaque graphique se lit en une phrase (« Pour : 378, contre : 7… ») |
 
-Ce qui est normal aujourd'hui : pas de fonctionnement hors ligne ; la source du maire n'a pas
+Ce qui est normal aujourd'hui : hors ligne, l'app relit les fichiers déjà gardés et dit qu'elle n'a pas pu vérifier s'ils sont à jour ; la source du maire n'a pas
 encore de lien (il arrive avec #42) ; l'app n'existe qu'en mode clair ; Paris et les
 communes à plusieurs circonscriptions ne nomment qu'un député dans « Qui décide ».
 

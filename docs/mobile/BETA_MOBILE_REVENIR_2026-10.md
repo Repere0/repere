@@ -55,7 +55,7 @@ voulu, c'est ce que le lecteur vient chercher.
 
 | famille | date affichée près de la donnée | rythme attendu | si ancienne | si source indisponible | si hors bêta |
 |---|---|---|---|---|---|
-| élus | fiche source (publication RNE) | quelques fois par an | normal : le RNE est trimestriel | « pas arrivés » + Réessayer | publiés (104 départements) |
+| élus | fiche source (publication RNE) | quelques fois par an | normal : le ministère le republie irrégulièrement (dernière publication le 11/08) | « pas arrivés » + Réessayer | publiés (104 départements) |
 | comptes | année dans chaque titre (« · comptes 2025 ») | annuel | normal : dernier exercice publié | « pas arrivés » + Réessayer | publiés |
 | projets | année sur chaque projet | annuel | normal | « pas arrivés » + Réessayer | « pas encore disponibles dans la bêta » |
 | votes | date du vote dans la phrase | par séance | la date suffit (jamais « dernier ») | « pas arrivés » + Réessayer | publiés (104) |
