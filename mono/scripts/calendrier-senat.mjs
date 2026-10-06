@@ -25,7 +25,6 @@
 import fs from "node:fs";
 import path from "node:path";
 
-const SORTIE = process.argv[2] || "./data";
 const URL_ICS = "https://www.senat.fr/aglae/Global/ical.ics";
 
 /* UN PARSEUR MINIMAL, PAS UNE DEPENDANCE DE PLUS. Le projet a deja retire
@@ -80,15 +79,70 @@ function parseIcs(texte) {
   return evenements;
 }
 
-async function principal() {
-  const reponse = await fetch(URL_ICS);
-  if (!reponse.ok) {
-    console.error(`::error::le flux iCal du Senat a repondu ${reponse.status}`);
-    process.exitCode = 1;
-    return;
+/* LE RELEVE RESEAU EST UNE FONCTION, ET ELLE EST TESTEE SANS RESEAU — 07/10/2026.
+ * Constat des epreuves #130 a #145 : le flux du Senat tombe par moments (4 runs
+ * sur 16). Une seule tentative, puis un message « le releve d'hier reste »...
+ * alors que mono/data/ n'est pas versionne et qu'un runner GitHub est neuf a
+ * chaque fois : il n'y avait JAMAIS de releve d'hier. Le message mentait.
+ *
+ * Ce qui change :
+ *   - quelques tentatives espacees pour une panne passagere (reseau, 5xx,
+ *     page HTML a la place du flux) ; aucune pour un 404 : le fichier est
+ *     introuvable, reessayer ne le fera pas apparaitre ;
+ *   - quatre causes nommees, les memes mots que ETATS dans data-utils/client.js :
+ *     « echec » (reseau ou serveur), « introuvable » (404), « invalide » (repond,
+ *     mais pas un flux iCalendar), et « servi » ;
+ *   - en cas d'echec, RIEN n'est ecrit, et le script dit ce qui existe vraiment :
+ *     un releve precedent dans le dossier de sortie (avec sa date), ou aucun.
+ *     Il ne fabrique jamais un agenda, ni vide ni de secours. */
+export const ATTENTES_MS = [0, 15000, 45000];
+
+function precedent(sortie) {
+  const f = path.join(sortie, "calendrier-senat.json");
+  if (!fs.existsSync(f)) return null;
+  try {
+    const j = JSON.parse(fs.readFileSync(f, "utf8"));
+    if (!j || !j.source || !Array.isArray(j.evenements)) return { illisible: true };
+    return { releve_le: j.source.releve_le || null, n: j.evenements.length };
+  } catch { return { illisible: true }; }
+}
+
+export function phrasePrecedent(p) {
+  if (!p) return "aucun releve precedent sur ce runner : le calendrier du Senat sera ABSENT de cette publication (rien n'est fabrique a sa place)";
+  if (p.illisible) return "un fichier precedent existe mais est illisible : il n'est pas reutilise comme s'il etait valide";
+  return `le releve precedent est conserve tel quel, date du ${p.releve_le || "(date inconnue)"} (${p.n} evenement(s)) — il n'est pas presente comme celui du jour`;
+}
+
+async function uneTentative(fetchImpl, url) {
+  let rep;
+  try { rep = await fetchImpl(url); }
+  catch (e) { return { etat: "echec", cause: "reseau : " + (e && e.message ? e.message : String(e)), passagere: true }; }
+  if (rep.status === 404 || rep.status === 410) return { etat: "introuvable", cause: "HTTP " + rep.status, passagere: false };
+  if (!rep.ok) return { etat: "echec", cause: "HTTP " + rep.status, passagere: rep.status >= 500 || rep.status === 429 };
+  const texte = await rep.text();
+  /* UN 200 N'EST PAS UN FLUX. Une page de maintenance en HTML repond 200 ;
+     on exige l'en-tete RFC 5545, pas un type MIME que les serveurs remplissent mal. */
+  if (!/^\uFEFF?BEGIN:VCALENDAR/.test(texte.trimStart()) || !/END:VCALENDAR/.test(texte)) {
+    const debut = texte.trimStart().slice(0, 40).replace(/\s+/g, " ");
+    return { etat: "invalide", cause: "la reponse n'est pas un flux iCalendar (debut : « " + debut + " »)", passagere: true };
   }
-  const texte = await reponse.text();
-  const brut = parseIcs(texte);
+  return { etat: "servi", texte };
+}
+
+export async function releverSenat({ fetchImpl = fetch, sortie = "./data", attentes = ATTENTES_MS,
+  dormir = ms => new Promise(r => setTimeout(r, ms)), aujourdhui = new Date().toISOString().slice(0, 10) } = {}) {
+  const essais = [];
+  let r = null;
+  for (const ms of attentes) {
+    if (ms) await dormir(ms);
+    r = await uneTentative(fetchImpl, URL_ICS);
+    essais.push(r.etat + (r.cause ? " (" + r.cause + ")" : ""));
+    if (r.etat === "servi" || !r.passagere) break;
+  }
+  if (r.etat !== "servi") {
+    return { etat: r.etat, cause: r.cause, essais, precedent: precedent(sortie) };
+  }
+  const brut = parseIcs(r.texte);
 
   /* DOCTRINE DU VIDE APPLIQUEE A LA COLLECTE : un evenement sans titre ou
    * sans date de debut n'est pas devine, il est rejete et compte. */
@@ -116,17 +170,31 @@ async function principal() {
       licence: "non précisée par le Sénat",
       url: "https://www.senat.fr/agenda.html",
       url_flux: URL_ICS,
-      releve_le: new Date().toISOString().slice(0, 10),
+      releve_le: aujourdhui,
     },
     evenements,
   };
-  fs.mkdirSync(SORTIE, { recursive: true });
-  fs.writeFileSync(path.join(SORTIE, "calendrier-senat.json"), JSON.stringify(paquet));
-  console.log(`calendrier-senat.json  : ${evenements.length} evenement(s) retenu(s)`
-    + (rejetes.length ? `, ${rejetes.length} rejete(s) sans titre ou sans date` : ""));
-  if (evenements.length) {
-    console.log(`  du ${evenements[0].debut} au ${evenements[evenements.length - 1].debut}`);
+  fs.mkdirSync(sortie, { recursive: true });
+  fs.writeFileSync(path.join(sortie, "calendrier-senat.json"), JSON.stringify(paquet));
+  return { etat: "servi", essais, evenements, rejetes };
+}
+
+async function principal() {
+  const sortie = process.argv[2] || "./data";
+  const r = await releverSenat({ sortie });
+  if (r.etat !== "servi") {
+    console.error(`::warning::calendrier du Senat non releve — ${r.etat} : ${r.cause} ; tentatives : ${r.essais.join(" | ")}`);
+    console.error(`calendrier du Senat : ${phrasePrecedent(r.precedent)}`);
+    process.exitCode = 1;
+    return;
+  }
+  console.log(`calendrier-senat.json  : ${r.evenements.length} evenement(s) retenu(s)`
+    + (r.rejetes.length ? `, ${r.rejetes.length} rejete(s) sans titre ou sans date` : "")
+    + (r.essais.length > 1 ? ` (apres ${r.essais.length} tentatives : ${r.essais.slice(0, -1).join(" | ")})` : ""));
+  if (r.evenements.length) {
+    console.log(`  du ${r.evenements[0].debut} au ${r.evenements[r.evenements.length - 1].debut}`);
   }
 }
 
-principal();
+/* Lance seulement en ligne de commande : importe par les tests, rien ne part au reseau. */
+if (import.meta.url === `file://${process.argv[1]}`) principal();
