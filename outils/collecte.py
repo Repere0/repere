@@ -154,8 +154,37 @@ def zip_valide(chemin):
         return False
 
 
-def telecharger(src):
+# RELANCES BORNEES — 07/10/2026. Epreuves #144 et #145 : l'archive de l'Assemblee
+# a echoue une fois, puis repondu a la relance manuelle. Une panne passagere
+# (reseau, 5xx, 429, archive tronquee, page d'erreur) est retentee deux fois,
+# espacee ; un 404/403/410 ne l'est pas : reessayer ne fera pas apparaitre le
+# fichier. Le journal garde CHAQUE tentative, et la nature de l'echec :
+#   "echec" (reseau ou serveur), "introuvable" (404/410), "invalide" (repond,
+#   mais pas une archive), "refuse" (autre 4xx). Memes mots que ETATS dans
+#   mono/packages/data-utils/src/client.js.
+ATTENTES_S = [0, 20, 60]
+
+
+def telecharger(src, ouvrir=None, dormir=time.sleep, attentes=None):
+    """Tente le telechargement avec relances bornees ; retourne le journal de la derniere tentative."""
+    essais = []
+    rec = None
+    for s in (ATTENTES_S if attentes is None else attentes):
+        if s:
+            dormir(s)
+        rec = telecharger_une_fois(src, ouvrir)
+        essais.append("%s%s" % ("ok" if rec["ok"] else rec.get("nature", "echec"),
+                                "" if rec["ok"] else " (%s)" % rec.get("erreur", "")))
+        if rec["ok"] or not rec.get("passagere"):
+            break
+    rec.pop("passagere", None)
+    rec["tentatives"] = essais
+    return rec
+
+
+def telecharger_une_fois(src, ouvrir=None):
     """Retourne un enregistrement de journal, que le telechargement reussisse ou non."""
+    ouvrir = ouvrir or urllib.request.urlopen
     debut = time.time()
     dest = os.path.join(DEST, src["fichier"])
     rec = {"cle": src["cle"], "titre": src["titre"], "url": src["url"],
@@ -164,7 +193,7 @@ def telecharger(src):
         req = urllib.request.Request(src["url"], headers={
             "User-Agent": "Repere/1.0 (collecte quotidienne de donnees publiques ; repere0@protonmail.com)"
         })
-        with urllib.request.urlopen(req, timeout=180) as rep, open(dest, "wb") as f:
+        with ouvrir(req, timeout=180) as rep, open(dest, "wb") as f:
             rec["http"] = rep.status
             octets = 0
             while True:
@@ -179,7 +208,7 @@ def telecharger(src):
         # Une reponse de 200 octets n'est pas un jeu de donnees : c'est une page
         # d'erreur deguisee. On refuse de la ranger comme si elle etait valide.
         if octets < 10000:
-            rec["ok"] = False
+            rec.update(ok=False, nature="invalide", passagere=True)
             rec["erreur"] = "reponse anormalement petite (%d octets) : probablement une page d'erreur" % octets
             os.remove(dest)
         # LA TAILLE NE PROUVE PAS QU'UNE ARCHIVE EN EST UNE — 28/09/2026. Deux epreuves
@@ -187,16 +216,21 @@ def telecharger(src):
         # zip. On l'ouvre et on relit chaque membre (CRC) : sinon on le refuse ici, avec
         # un message clair au journal, plutot que de laisser unzip casser la chaine.
         elif dest.endswith(".zip") and not zip_valide(dest):
-            rec["ok"] = False
+            rec.update(ok=False, nature="invalide", passagere=True)
             rec["erreur"] = ("archive zip invalide ou tronquee (%d octets) : probablement une "
                              "page d'erreur ou un telechargement interrompu" % octets)
             os.remove(dest)
         else:
             rec["ok"] = True
     except urllib.error.HTTPError as e:
-        rec.update(ok=False, http=e.code, erreur="HTTP %s" % e.code)
+        nature = "introuvable" if e.code in (404, 410) else ("echec" if e.code >= 500 or e.code == 429 else "refuse")
+        rec.update(ok=False, http=e.code, erreur="HTTP %s" % e.code, nature=nature, passagere=(nature == "echec"))
     except Exception as e:
-        rec.update(ok=False, erreur="%s: %s" % (type(e).__name__, e))
+        rec.update(ok=False, erreur="%s: %s" % (type(e).__name__, e), nature="echec", passagere=True)
+    # Jamais une archive partielle laissee derriere un echec : elle passerait pour
+    # celle du jour a l'etape de depilage.
+    if not rec.get("ok") and os.path.exists(dest):
+        os.remove(dest)
     return rec
 
 

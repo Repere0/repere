@@ -88,7 +88,7 @@ cd ..
 
 # ------------------------------------------------- 2. normaliser l'agenda
 python3 outils/agenda_an.py data/brut_Agenda/json data/brut_AMO30/json outils/agenda_an.json \
-  || echo "::warning::agenda de l'Assemblee non renormalise — outils/agenda_an.json garde sa version et sa date precedentes"
+  || echo "::warning::agenda de l'Assemblee non renormalise — outils/agenda_an.json garde la version versionnee dans le depot, avec sa date (le controle de l'etape 4 refusera de la publier comme celle du jour)"
 
 # -------------------------- 2 bis. decrire le schema QAG (documentaire)
 # La source est nouvelle dans la chaine : avant toute publication, on veut
@@ -239,7 +239,27 @@ assert len(d["r"]) > 5000, "trop peu de reunions : %d" % len(d["r"])
 assert d["org"], "table des instances vide"
 assert all(0 <= e["o"] < len(d["org"]) for e in d["r"]), "index d'instance hors table"
 assert "acteurRef" not in json.dumps(d)[:2000000], "une presence nominative a fuite"
-assert d.get("maj") == today, "date de collecte %r au lieu de %s" % (d.get("maj"), today)
+# PAS DE RELEVE DU JOUR = ARRET NOMME (07/10/2026). Avant, l'arret disait seulement
+# « date de collecte '2026-10-05' au lieu de 2026-10-06 ». On dit maintenant POURQUOI
+# (le journal de collecte), et d'ou vient la version presente : le depot, pas un cache.
+# Le controle reste bloquant : publier l'agenda d'un autre jour comme celui du jour
+# est une decision produit, pas un reglage technique.
+if d.get("maj") != today:
+    cause = "le journal de collecte ne dit rien de l'agenda"
+    try:
+        j = json.load(open("data/journal_collecte.json", encoding="utf-8"))
+        r = next((x for x in j.get("sources", []) if x.get("cle") == "agenda_an"), None)
+        if r is not None:
+            cause = ("telechargement reussi, mais la normalisation a echoue (voir agenda_an.py plus haut)"
+                     if r.get("ok") else "telechargement en echec : %s ; tentatives : %s"
+                     % (r.get("erreur", "?"), " | ".join(r.get("tentatives", []))))
+    except (OSError, ValueError):
+        cause = "aucun journal de collecte lisible"
+    print("::error title=agenda de l'Assemblee::pas de releve du jour (%s). La seule version "
+          "presente est celle versionnee dans le depot, datee du %s. La chaine s'arrete plutot que "
+          "de la publier comme celle du jour. Panne du fournisseur probable si le telechargement a "
+          "echoue ; relancer le run." % (cause, d.get("maj")))
+    sys.exit(1)
 
 # GARDE-FOU CONTRE LE GEL SILENCIEUX : toutes les adresses de collecte.py portent
 # le numero de legislature (/17/). Le jour d'une dissolution, ces fichiers cessent
@@ -299,8 +319,13 @@ rm -rf site_engendre
   cd mono
   corepack enable pnpm 2>/dev/null || true
   node scripts/extract-html.js "../$APP" ./data
+  # SENAT (07/10/2026) : le script relance seul une panne passagere, puis dit
+  # la cause (echec / introuvable / invalide) et ce qui existe VRAIMENT dans
+  # ./data. Sur un runner neuf il n'y a jamais de releve precedent (mono/data
+  # n'est pas versionne) : le Senat est alors absent de la publication, et
+  # l'ecran le dit. L'ancien message « le releve d'hier reste » etait faux ici.
   node scripts/calendrier-senat.mjs ./data \
-    || echo "::warning::calendrier Senat non rafraichi (reseau indisponible ? le releve d'hier reste)"
+    || echo "::warning::calendrier du Senat absent ou non rafraichi - voir la cause et l'etat du releve precedent juste au-dessus"
   # AGENDA ASSEMBLEE NATIONALE (23/09/2026) - pas de reseau ici, contrairement
   # au Senat : lit outils/agenda_an.json, deja produit par l'etape 2 de ce
   # meme script (agenda_an.py). Si ce fichier manque ou est mal forme, le
@@ -352,6 +377,11 @@ echo "site engendre depuis mono/ : $(find site_engendre -type f | wc -l) fichier
 echo "== contexte des agents =="
 node outils/derive_contexte.mjs \
   || echo "::warning::le contexte des agents a derive (voir outils/derive_contexte.mjs ci-dessus)"
+
+# Collecte sans reseau (07/10/2026) : les etats d'un telechargement (panne, 404,
+# 500, page HTML, archive tronquee) sont verifies sur des reponses simulees.
+echo "== banc : la collecte, reseau simule =="
+banc "collecte" python3 outils/test_collecte.py
 
 echo "== banc : le fichier autonome =="
 banc "fichier autonome" node test_repere.mjs "$APP"
