@@ -18,11 +18,9 @@ const Sources = lazy(() => import("./routes/Sources.jsx"));
 const Calendrier = lazy(() => import("./routes/Calendrier.jsx"));
 const Aujourdhui = lazy(() => import("./routes/Aujourdhui.jsx"));
 
-/* "AUJOURD'HUI" EST UN PROTOTYPE, POSE LE 18/09/2026 — voir Aujourdhui.jsx.
-   Il ne remplace aucun des cinq ecrans ci-dessous (rien n'est retire), il
-   teste l'hypothese qu'ils devraient etre une profondeur plutot que cinq
-   portes egales. Reversible : retirer cette ligne et la ligne "aujourdhui"
-   plus bas suffit a revenir exactement a l'etat d'avant. */
+/* « AUJOURD'HUI » EST LE PREMIER ÉCRAN : le fil date répond directement à
+   « qu'est-ce qui se passe chez moi ? ». Les autres écrans restent disponibles
+   comme approfondissements. */
 const ONGLETS = [
   { id: "aujourdhui", libelle: "Aujourd'hui", echelon: "ville", charge: () => import("./routes/Aujourdhui.jsx") },
   /* « CE QUI A ETE DECIDE » EST LE DEUXIEME ONGLET, et cet ordre est la decision.
@@ -439,26 +437,11 @@ export default function App() {
   const vSessionRef = useRef(new Date().toISOString());
   const [paquet, setPaquet] = useState(null);
   const [etat, setEtat] = useState(ETATS.ABSENT);
-  /* L'ONGLET OUVERT PAR DEFAUT RESTE « QUI DECIDE », ET CE N'EST PAS UN OUBLI.
-     « Ce qui a ete decide » est le PREMIER onglet — l'ordre dit ce qui compte —
-     mais il n'est pas encore celui qui s'ouvre. La collecte des projets finances
-     n'a jamais tourne pour de vrai : elle ne peut pas s'executer depuis un poste
-     de developpement, et les taches planifiees ne se declenchent que sur la
-     branche par defaut. Faire atterrir chaque visiteur sur un ecran dont la
-     couverture reelle n'a jamais ete mesuree serait un pari ; « Qui decide »,
-     lui, est couvert a 100 % sur les huit departements.
-     LA CONDITION POUR BASCULER EST ECRITE : quand la collecte aura tourne et que
-     la couverture des projets aura ete mesuree sur les 1 262 communes de la beta,
-     cette ligne devient useState("decide"). Voir la decision D-23.
-     LE PROTOTYPE "AUJOURD'HUI" (18/09/2026, voir Aujourdhui.jsx) NE CHANGE PAS
-     CETTE LIGNE : le banc entier suppose que ce reglage decrit ce que voit
-     vraiment un lecteur, et le faire pointer sur un ecran neuf, jamais mesure
-     par le banc, aurait rendu cette hypothese fausse silencieusement. Le
-     prototype est un lien en plus ("Voir aujourd'hui", juste en dessous),
-     jamais un remplacement du reglage par defaut — cette decision reste
-     entiere pour l'arbitrage du porteur du projet. */
-  const [onglet, setOnglet] = useState("qui");
+  /* « AUJOURD'HUI » est l'écran ouvert par défaut. Les autres écrans restent disponibles comme approfondissements. */
+  const [onglet, setOnglet] = useState("aujourdhui");
   const [commune, setCommune] = useState(null);
+  // Dernière commune choisie pendant cette session uniquement. Elle ne quitte jamais cet appareil.
+  const dernierChoixRef = useRef(null);
   /* Le choix de commune est-il ouvert ? Replie des qu'une commune est choisie ;
      rouvert par « changer ». Tant qu'il est ouvert, le choix du departement
      l'est aussi (on change de departement en changeant de commune). */
@@ -496,14 +479,18 @@ export default function App() {
   /* `insee` est FACULTATIF, et il ne sert qu'a selectionner la commune une fois
      le paquet arrive. Il n'entre dans aucune adresse : c'est `dep` seul qui part
      au reseau. */
-  const ouvrir = useCallback(async (dep, insee) => {
+  const ouvrir = useCallback(async (dep, insee, restauration = false) => {
     /* ENTRER DANS UN TERRITOIRE EST UNE ETAPE : le retour du telephone doit
        ramener a l'ecran d'entree, pas fermer l'application. On n'empile qu'a la
        PREMIERE entree — changer de departement ensuite reste au meme niveau,
        sinon dix changements demanderaient dix retours pour ressortir. */
     setDepartement(prec => {
-      if (!prec) {
-        entrer(() => { setDepartement(""); setPaquet(null); setCommune(null); setEtat(ETATS.ABSENT); });
+      if (!prec && !restauration) {
+        entrer(() => {
+          const dernier = dernierChoixRef.current;
+          if (dernier) void ouvrir(dernier.dep, dernier.insee, true);
+          else { setDepartement(""); setPaquet(null); setCommune(null); setEtat(ETATS.ABSENT); }
+        });
       }
       return dep;
     });
@@ -511,6 +498,7 @@ export default function App() {
     setEtat(ETATS.EN_COURS);
     setPaquet(null);
     setCommune(null);
+    if (!insee) dernierChoixRef.current = null;
     setChoixOuvert(true);
     const r = await chargerDepartement(dep);
     setEtat(r.etat);
@@ -518,7 +506,11 @@ export default function App() {
     /* On ne selectionne que si la commune est bien dans le paquet recu : un code
        venu d'un index plus recent que le fichier departemental ne doit pas
        produire un ecran vide. */
-    if (insee && r.donnees && r.donnees.communes && r.donnees.communes[insee]) { setCommune(insee); setChoixOuvert(false); }
+    if (insee && r.donnees && r.donnees.communes && r.donnees.communes[insee]) {
+      setCommune(insee);
+      dernierChoixRef.current = { dep, insee };
+      setChoixOuvert(false);
+    }
   }, []);
 
   /* Un département déjà choisi se recharge tout seul : le lecteur ne redit pas
@@ -622,19 +614,16 @@ export default function App() {
                 </p>
               ) : null}
 
-              {/* PROTOTYPE DU 18/09/2026, VOIR Aujourdhui.jsx. Deux choses a
-                  savoir sur cette ligne de lien :
+              {/* LIEN DE RETOUR VERS « AUJOURD'HUI » (ecran par defaut depuis
+                  la PR #79). Deux choses a savoir :
                   1. "Aujourd'hui" n'est JAMAIS un bouton de plus dans la barre
                      classique. Le premier essai (sixieme bouton parmi les cinq
-                     autres) a immediatement reproduit la regression mesuree la
-                     veille — six boutons au lieu de cinq, le maire encore plus
-                     enfoui — et prouvait le contraire de l'hypothese testee.
-                  2. Le reglage par defaut plus haut (`useState("qui")`) n'a
-                     PAS bouge : ce lien est une porte D'ENTREE en plus vers le
-                     prototype, jamais un remplacement du parcours que le banc
-                     mesure. Une fois sur "Aujourd'hui", la barre classique
-                     disparait et ce meme lien sert a y revenir — une seule
-                     ligne, deux sens. */}
+                     autres) a immediatement reproduit la regression mesuree le
+                     17/09 — six boutons au lieu de cinq, le maire encore plus
+                     enfoui.
+                  2. Sur "Aujourd'hui", la barre classique disparait et ce lien
+                     aussi : on en sort par ses boutons « Toutes les decisions »,
+                     « Qui decide »... Sur les autres ecrans, ce lien y ramene. */}
               {onglet !== "aujourdhui" && fiche ? (
                 <button type="button" className="auj-retour" onClick={() => irA("aujourdhui")}>
                   Voir aujourd'hui à {fiche.nom} →

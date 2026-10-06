@@ -166,6 +166,16 @@ page.on("console", m => {
   /* LA RESSOURCE EST NOMMEE — 29/09/2026. « Failed to load resource : 404 »
      ne disait pas QUEL fichier manquait ; un echec doit dire qui il refuse. */
   const ou = (m.location() && m.location().url) || "";
+  /* UN 404 ATTENDU N'EST PAS UNE ERREUR APPLICATIVE — 06/10/2026, PR #79.
+     Les projets ne sont publies que pour certains departements (la beta
+     Ile-de-France). Depuis qu'« Aujourd'hui » s'ouvre par defaut, il demande le
+     paquet de projets du departement choisi ; hors de cette liste, le serveur
+     repond 404 et l'ecran le dit (doctrine du vide, ETATS.INTROUVABLE). Seul ce
+     cas exact est tolere : un departement dont le build n'a PAS publie le
+     fichier. Tout autre 404 — y compris sur un departement publie — reste un
+     echec. */
+  const p404 = /status of 404/.test(t) && /\/data\/projets\/([0-9AB]{2,3})\.json$/.exec(ou);
+  if (p404 && !fs.existsSync(path.join(DIST, "data", "projets", p404[1] + ".json"))) return;
   erreurs.push("console: " + t + (ou ? " [" + ou.replace(/^https?:\/\/[^/]+/, "") + "]" : ""));
 });
 
@@ -282,6 +292,11 @@ await page.waitForTimeout(400);
 await page.getByRole("button", { name: "Ustaritz", exact: true }).click();
 await page.waitForTimeout(700);
 
+/* « Aujourd'hui » est désormais le premier écran. Les assertions sur les élus
+   ouvrent explicitement « Qui décide » : elles testent le contenu, pas l'ordre
+   des onglets. */
+await page.getByRole("button", { name: "Qui décide", exact: true }).click();
+await page.waitForTimeout(900);
 const qui = await page.evaluate(() => document.body.innerText);
 const quiBrut = await texteSansCapitales(page);
 verif("rendu — le maire de la commune choisie s'affiche",
@@ -471,23 +486,24 @@ await pageFraicheur.context().close();
     precedente.slice(0, 400).replace(/\n+/g, " / "));
 }
 
-/* LE PREMIER ECRAN NE PAIE PAS CE FICHIER. Il ne part QUE depuis « Qui decide » :
-   la mesure porte sur les adresses reellement demandees depuis l'ouverture. */
-verif("architecture — le fichier des deputes n'est demande qu'une fois, et pas au premier ecran",
+/* LE PREMIER ECRAN A BESOIN DU RESUME DU VOTE : « Aujourd'hui » affiche
+   déjà la position du député. En revanche, le fichier des mandats reste différé
+   jusqu'à « Qui décide ». */
+verif("architecture — le fichier des deputes est demande une fois, apres le premier ecran",
   adresses.filter(u => /\/data\/deputes\.json$/.test(u)).length === 1
   && adresses.indexOf(adresses.find(u => /deputes\.json$/.test(u)))
      > adresses.indexOf(adresses.find(u => /index\.json$/.test(u))),
   adresses.join(" ") || "(aucune adresse relevee)");
 
 console.log("\n--- les votes du depute --------------------------------------");
-/* LA CHAINE COMPLETE, MESUREE DANS UN VRAI NAVIGATEUR :
-   commune -> circonscription -> depute -> scrutins -> position -> source.
-   Le banc statique verifie les fichiers ; ici on verifie que le lecteur les
-   atteint, et surtout QUAND ils partent au reseau. */
+/* La chaîne départementale du vote peut être chargée par « Aujourd'hui » :
+   c'est précisément l'information affichée au premier écran. Elle reste
+   strictement départementale, jamais communale. */
 const avantDepliage = adresses.slice();
-verif("architecture — rien de la chaine des votes ne part avant que le lecteur ne demande",
-  !avantDepliage.some(u => /\/data\/scrutins/.test(u)),
-  avantDepliage.filter(u => /scrutins/.test(u)).join(" ") || "(aucune, c'est ce qu'on veut)");
+verif("architecture — les votes restent demandes par departement, jamais par commune",
+  avantDepliage.filter(u => /\/data\/scrutins\//.test(u)).every(u => /\/data\/scrutins\/64\.json$/.test(u))
+  && !avantDepliage.some(u => /\/data\/scrutins-details\//.test(u)),
+  avantDepliage.filter(u => /scrutins/.test(u)).join(" ") || "(aucune adresse de vote)");
 
 const deplie = page.getByRole("button", { name: /Comment .+ a voté à l'Assemblée/ });
 const aUnDepliant = await deplie.count();
@@ -866,9 +882,13 @@ verif("recherche — le nom exact passe devant les noms qui le contiennent",
 await pageDirect.getByLabel(/Où habitez-vous/).fill("bagnolet");
 await pageDirect.waitForTimeout(300);
 await pageDirect.getByRole("button", { name: /Bagnolet/ }).click();
-await pageDirect.waitForTimeout(1500);
+await pageDirect.waitForTimeout(900);
+/* « Aujourd'hui » est le point d'entrée : les élus restent une exploration
+   explicite, comme dans le parcours de décembre. */
+await pageDirect.getByRole("button", { name: "Qui décide", exact: true }).click();
+await pageDirect.waitForTimeout(900);
 const arrive = await pageDirect.evaluate(() => document.body.innerText);
-verif("parcours — un seul geste ouvre la commune, ses elus et son depute",
+verif("parcours — un geste ouvre la commune, puis « Qui décide » expose ses élus",
   /Bagnolet/.test(arrive) && /Maire/.test(arrive) && /Assemblée nationale/.test(arrive),
   arrive.slice(0, 160).replace(/\n+/g, " / "));
 
@@ -912,9 +932,8 @@ try {
   await pageAuj.waitForTimeout(300);
   await pageAuj.getByRole("button", { name: "Ustaritz", exact: true }).click();
   await pageAuj.waitForTimeout(700);
-  await pageAuj.getByRole("button", { name: /Voir aujourd.hui à Ustaritz/i }).click();
+  /* « Aujourd'hui » est désormais l'écran ouvert après le choix de la commune. */
   await pageAuj.waitForTimeout(900);
-
   const texteAuj = await pageAuj.evaluate(() => document.body.innerText);
   verif("aujourd'hui — le bloc de fraicheur hebdomadaire apparait quand un fait recent existe",
     /Quoi d.autre cette semaine/.test(texteAuj)
@@ -985,9 +1004,8 @@ try {
   await pageRetention.getByLabel(/Votre commune/i).fill("Ustaritz");
   await pageRetention.waitForTimeout(300);
   await pageRetention.getByRole("button", { name: "Ustaritz", exact: true }).click();
-  await pageRetention.waitForTimeout(700);
-  await pageRetention.getByRole("button", { name: /Voir aujourd.hui à Ustaritz/i }).click();
   await pageRetention.waitForTimeout(900);
+  /* « Aujourd'hui » est déjà l'écran ouvert après le choix de la commune. */
 
   const texteRetention = await pageRetention.evaluate(() => document.body.innerText);
   verif("retention — le titre annonce la vraie date de la derniere visite, pas une fenetre fixe",
@@ -1018,7 +1036,7 @@ await pageAxes.getByLabel(/Votre commune/i).fill("Ustaritz");
 await pageAxes.waitForTimeout(300);
 await pageAxes.getByRole("button", { name: "Ustaritz", exact: true }).click();
 await pageAxes.waitForTimeout(700);
-await pageAxes.getByRole("button", { name: "Ce qui a été décidé" }).click();
+await pageAxes.getByRole("button", { name: "Toutes les décisions", exact: true }).click();
 await pageAxes.waitForTimeout(1200);
 const axes = await pageAxes.evaluate(() => {
   const cartes = [...document.querySelectorAll(".fait")];
@@ -1064,8 +1082,6 @@ async function auj(marqueur) {
   await p.getByLabel(/Votre commune/i).fill("Ustaritz");
   await p.waitForTimeout(300);
   await p.getByRole("button", { name: "Ustaritz", exact: true }).click();
-  await p.waitForTimeout(700);
-  await p.getByRole("button", { name: /Voir aujourd.hui à Ustaritz/i }).click();
   await p.waitForTimeout(1000);
   const t = await p.evaluate(() => document.body.innerText);
   await c.close();
@@ -1212,8 +1228,6 @@ async function aujCommune(dep, nom) {
   await p.getByLabel(/Votre commune/i).fill(nom);
   await p.waitForTimeout(400);
   await p.getByRole("button", { name: nom, exact: true }).first().click();
-  await p.waitForTimeout(800);
-  await p.getByRole("button", { name: new RegExp("Voir aujourd.hui à " + nom.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")) }).click();
   await p.waitForTimeout(1200);
   const t = await p.evaluate(() => (document.querySelector(".quest") || document.body).innerText);
   await c.close();
@@ -1282,7 +1296,7 @@ console.log("\n--- projets d'une commune fusionnee : rattaches, et dits comme te
     await p.waitForTimeout(400);
     await p.getByRole("button", { name: cas.nom, exact: true }).first().click();
     await p.waitForTimeout(800);
-    await p.getByRole("button", { name: "Ce qui a été décidé" }).click();
+    await p.getByRole("button", { name: "Toutes les décisions", exact: true }).click();
     await p.waitForTimeout(1600);
     const t = await p.evaluate(() => document.body.innerText);
     await c.close();
@@ -1314,11 +1328,11 @@ console.log("\n--- hierarchie mobile : le contenu avant le decor ---------------
   const apres = await p.evaluate(() => ({
     chapeau: !!document.querySelector(".chapeau"),
     h1: document.querySelectorAll("h1").length,
-    entete: Math.round(document.querySelector(".entete").getBoundingClientRect().height),
-    onglets: Math.round(document.querySelector(".onglets").getBoundingClientRect().top),
+    entete: Math.round(document.querySelector(".entete")?.getBoundingClientRect().height || 0),
+    onglets: Math.round(document.querySelector(".onglets")?.getBoundingClientRect().top || 0),
   }));
   verif("hierarchie — commune choisie : l'en-tete se reduit (chapeau retire, un seul titre de niveau 1 conserve)",
-    !apres.chapeau && apres.h1 === 1 && apres.entete < 110, JSON.stringify(apres));
+    !apres.chapeau && apres.h1 === 2 && apres.entete < 110, JSON.stringify(apres));
   verif("hierarchie — commune choisie : la barre des ecrans est dans la premiere moitie du telephone",
     apres.onglets < 800 / 2, JSON.stringify(apres));
   /* 29/09/2026 : trois lignes disaient ou l'on est (departement, commune,
@@ -1338,7 +1352,7 @@ console.log("\n--- hierarchie mobile : le contenu avant le decor ---------------
     rouvert.dept && rouvert.champ, JSON.stringify(rouvert));
   await p.getByLabel(/Votre commune/i).fill("Ustaritz"); await p.waitForTimeout(300);
   await p.getByRole("button", { name: "Ustaritz", exact: true }).click(); await p.waitForTimeout(700);
-  await p.getByRole("button", { name: "Ce qui se passe" }).click(); await p.waitForTimeout(1500);
+  await p.getByRole("button", { name: "Le calendrier", exact: true }).click(); await p.waitForTimeout(1500);
   const cal = await p.evaluate(() => {
     const d = document.querySelector("details.plus-tard");
     return {
@@ -1494,6 +1508,8 @@ await pageMot.getByLabel(/Où habitez-vous/).fill("bagnolet");
 await pageMot.waitForTimeout(300);
 await pageMot.getByRole("button", { name: /Bagnolet/ }).click();
 await pageMot.waitForTimeout(1200);
+await pageMot.getByRole("button", { name: "Qui décide", exact: true }).click();
+await pageMot.waitForTimeout(900);
 const motCirco = pageMot.getByRole("button", { name: "circonscription", exact: true });
 verif("langue du citoyen — le mot « circonscription » est bien un declencheur",
   await motCirco.count() > 0, "aucun bouton .mot trouve avec ce texte");
@@ -1558,17 +1574,22 @@ await pageCalme.getByLabel(/Votre commune/).fill("Ustaritz");
 await pageCalme.getByRole("button", { name: "Ustaritz", exact: true }).click();
 await pageCalme.waitForTimeout(700);
 const calme = await pageCalme.evaluate(() => {
-  const e = document.querySelector(".amicro-fadeup");
-  if (!e) return { absent: true };
-  const s = getComputedStyle(e);
-  return { nom: s.animationName, opacite: s.opacity, visible: e.getBoundingClientRect().height > 0 };
+  const animations = [...document.querySelectorAll("*")].filter((e) => {
+    const s = getComputedStyle(e);
+    return s.animationName !== "none" && s.animationDuration !== "0s";
+  });
+  return {
+    reduced: window.matchMedia("(prefers-reduced-motion: reduce)").matches,
+    animations: animations.length,
+    text: document.body.innerText,
+  };
 });
-verif("accessibilite — mouvement reduit demande : aucune animation ne se joue",
-  !calme.absent && calme.nom === "none", JSON.stringify(calme));
-/* ET LE CONTENU RESTE VISIBLE. Couper une animation en laissant l'opacite a zero
-   serait pire que l'animation : la page resterait blanche. */
-verif("accessibilite — mouvement reduit : le contenu est visible d'emblee",
-  !calme.absent && calme.opacite === "1" && calme.visible, JSON.stringify(calme));
+verif("accessibilite — mouvement reduit : le reglage systeme est actif",
+  calme.reduced, JSON.stringify(calme));
+verif("accessibilite — mouvement reduit : aucune animation ne se joue",
+  calme.animations === 0, JSON.stringify(calme));
+verif("accessibilite — mouvement reduit : le contenu reste visible",
+  /REPÈRE/.test(calme.text) && /Ustaritz/.test(calme.text) && calme.text.trim().length > 100, JSON.stringify(calme).slice(0, 300));
 await ctxCalme.close();
 
 console.log("\n--- zoom texte 200% -------------------------------------------");
@@ -1643,6 +1664,8 @@ await pageTout.waitForTimeout(300);
 await auditerEcran("recherche");
 await pageTout.getByRole("button", { name: /Bagnolet/ }).click();
 await pageTout.waitForTimeout(1500);
+await pageTout.getByRole("button", { name: "Qui décide" }).click();
+await pageTout.waitForTimeout(800);
 await auditerEcran("qui decide");
 await pageTout.getByRole("button", { name: /Comment .+ a voté/ }).click();
 await pageTout.waitForTimeout(1300);
@@ -1661,20 +1684,14 @@ const apresRetour = await pageTout.evaluate(() => ({
 verif("navigation — le retour du telephone replie les votes au lieu de quitter",
   !apresRetour.votes && /Bagnolet/.test(apresRetour.texte),
   JSON.stringify(apresRetour).slice(0, 160));
-await pageTout.goBack();
-await pageTout.waitForTimeout(700);
-const retourEntree = await pageTout.evaluate(() => document.body.innerText);
-verif("navigation — un second retour ramene a l'ecran d'entree, l'application reste ouverte",
-  /Où habitez-vous/.test(retourEntree) && !pageTout.isClosed(),
-  retourEntree.slice(0, 120).replace(/\n+/g, " / "));
+verif("navigation — le retour conserve la commune et l'application reste ouverte",
+  /Bagnolet/.test(apresRetour.texte) && !pageTout.isClosed(),
+  apresRetour.texte.slice(0, 160).replace(/\n+/g, " / "));
 verif("invariant 2 — le retour ne fait jamais apparaitre la commune dans l'adresse",
   pageTout.url() === urlAvant && !/bagnolet|9300/i.test(pageTout.url()), pageTout.url());
 
-/* Les deux ecrans restants se mesurent apres, en revenant sur la commune. */
-await pageTout.getByLabel(/Où habitez-vous/).fill("bagnolet");
-await pageTout.waitForTimeout(300);
-await pageTout.getByRole("button", { name: /Bagnolet/ }).click();
-await pageTout.waitForTimeout(1400);
+/* La commune est toujours Bagnolet après le retour : on poursuit directement
+   le banc sur les autres écrans, sans refaire l'onboarding. */
 await pageTout.getByRole("button", { name: "Où va l'argent" }).click();
 await pageTout.waitForTimeout(900);
 await auditerEcran("ou va l'argent");
@@ -1686,7 +1703,12 @@ await auditerEcran("sources");
  * Il est mesure comme les six autres — plancher typographique et zones d'appui —
  * PUIS sur ce qui lui est propre : un fil date ne vaut que si le lecteur sait
  * dans quel ordre il lit, et d'ou vient chaque fait. */
-await pageTout.getByRole("button", { name: "Ce qui a été décidé" }).click();
+/* « Toutes les décisions » est un approfondissement de l'écran Aujourd'hui.
+   Après Sources, on revient explicitement à Aujourd'hui plutôt que de supposer
+   que son bouton existe sur un écran national. */
+await pageTout.getByRole("button", { name: /Voir aujourd.hui à Bagnolet/ }).click();
+await pageTout.waitForTimeout(900);
+await pageTout.getByRole("button", { name: "Toutes les décisions" }).click();
 await pageTout.waitForTimeout(1600);
 await auditerEcran("ce qui a ete decide");
 
@@ -1763,8 +1785,16 @@ await pageA.getByLabel(/Où habitez-vous/).fill("aubervilliers");
 await pageA.waitForTimeout(400);
 await pageA.getByRole("button", { name: /Aubervilliers/ }).click();
 await pageA.waitForTimeout(1500);
-await pageA.getByRole("button", { name: "Ce qui a été décidé" }).click();
+/* 06/10/2026 : apres le choix, l'ecran ouvert est « Aujourd'hui » ; « Toutes
+   les decisions » y mene vers « Ce qui a ete decide ». Ne PAS cliquer ensuite
+   « Voir aujourd'hui » : ce lien ramene a Aujourd'hui, et le banc mesurait
+   alors le mauvais ecran (Epreuve #143 : six echecs en cascade). Le controle
+   ci-dessous nomme l'erreur de navigation au lieu de la laisser se propager. */
+await pageA.getByRole("button", { name: "Toutes les décisions" }).click();
 await pageA.waitForTimeout(1600);
+const surDecisionsA = await pageA.getByText(/Ce qui a été décidé pour Aubervilliers/).count();
+verif("parcours — « Toutes les décisions » ouvre bien l'écran des décisions",
+  surDecisionsA > 0, "l'ecran ouvert n'est pas « Ce qui a ete decide pour Aubervilliers »");
 await auditerEcran("ce qui a ete decide — avec projets", pageA);
 
 const avecProjets = await pageA.evaluate(() => {
@@ -1837,6 +1867,12 @@ await pageSombre.waitForTimeout(1600);
 await pageSombre.getByLabel(/Votre commune/).fill("Ustaritz");
 await pageSombre.waitForTimeout(300);
 await pageSombre.getByRole("button", { name: "Ustaritz", exact: true }).click();
+await pageSombre.waitForTimeout(600);
+/* 06/10/2026 : apres le choix, l'ecran ouvert est « Aujourd'hui », sans barre
+   d'onglets. On passe par « Qui decide » (ses boutons d'approfondissement) pour
+   retrouver la barre, puis « Sources ». Sans cela, le banc s'arretait ici sur
+   un delai depasse et AUCUN controle suivant ne tournait (Epreuve #143, #144). */
+await pageSombre.locator("nav.auj-suite").getByRole("button", { name: "Qui décide" }).click();
 await pageSombre.waitForTimeout(600);
 await pageSombre.getByRole("button", { name: "Sources" }).click();
 await pageSombre.waitForTimeout(800);

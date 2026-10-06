@@ -55,6 +55,8 @@ await etape(1, "choisir une commune", async () => {
   return [t.includes(fiche.nom), fiche.nom];
 });
 await etape(2, "comprendre son territoire", async () => {
+  await p.getByRole("button", { name: "Qui décide", exact: true }).click(); gestes++;
+  await p.waitForTimeout(900);
   const t = await texte();
   return [/Maire/.test(t) && t.includes(fiche.maire.nom) && /Ce que décide votre commune/.test(t), fiche.maire.nom];
 });
@@ -90,14 +92,14 @@ await etape(8, "trouver la source", async () => {
   const liens = await p.locator(".source a[href^='http']").count();
   return [sources > 0, `${sources} lignes de source, ${liens} liens vers la source`];
 });
-await etape(9, "revenir sur l'accueil et comprendre ou il est", async () => {
-  await p.goto(base, { waitUntil: "networkidle" }); gestes++;
-  await p.waitForTimeout(1500);
+await etape(9, "revenir en arrière sans perdre la commune", async () => {
+  await p.goBack({ waitUntil: "networkidle" }).catch(() => {});
+  await p.waitForTimeout(900);
   const t = await texte();
   const situe = await p.evaluate(() => (document.querySelector(".situe") || {}).innerText || "");
   const commune = situe.includes(fiche.nom);
-  return [commune, commune ? "la commune est nommee au retour" :
-    "au retour, seule le departement est rappele : la commune doit etre choisie a nouveau (" + (t.match(/Département[^\n]*/) || [""])[0] + ")"];
+  return [commune, commune ? "retour navigateur : la commune reste sélectionnée" :
+    "retour navigateur : la commune sélectionnée a disparu"];
 });
 await nav.close();
 

@@ -78,7 +78,7 @@ export default function ChezVous() {
             {publie ? <Text style={TYPO.micro}>Publication Repère du {dateFr(publie)}</Text> : null}
           </View>
 
-          <View style={{ gap: PAS * 3 }}>
+          <View style={{ gap: PAS * 2 }}>
           {/* 1. CE QUE L'ETAT FINANCE ICI — la part se dit en mots pres d'un repere
              vrai, sinon en euros ; le cout est arrondi dans la phrase et exact
              dans la note. */}
