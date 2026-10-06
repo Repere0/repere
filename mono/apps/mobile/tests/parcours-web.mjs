@@ -792,6 +792,26 @@ async function montantA100ms(reduit) {
   await ctx2.close();
 }
 
+/* EN CLAIR — LE CANTON (06/10/2026) : nomme sans explication dans « Qui décide ».
+   La phrase apparait si et seulement si un canton est nomme (Meaux : oui ;
+   Paris, qui est aussi un departement : non). */
+{
+  const page = await navigateur.newPage({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, reducedMotion: "reduce" });
+  for (const [saisie, nom] of [["meaux", "Meaux"], ["paris", "Paris"]]) {
+    await page.goto(BASE + "/", { waitUntil: "networkidle" });
+    await page.getByLabel(/Où habitez-vous/).fill(saisie);
+    await page.getByRole("button", { name: new RegExp("^" + nom + ",") }).first().click();
+    await page.getByText("Aller plus loin").first().waitFor({ timeout: 15000 });
+    await page.getByRole("button", { name: "Qui décide de quoi" }).first().click();
+    await page.getByText(/Qui décide pour/).first().waitFor({ timeout: 10000 });
+    const t = await page.evaluate(() => document.body.innerText);
+    const canton = /canton de /i.test(t);
+    verifier(/En clair : le canton est le territoire qui élit deux conseillers départementaux/.test(t) === canton,
+      `en clair · ${nom} : le canton est expliqué ${canton ? "quand il est nommé" : "— aucun canton nommé, aucune explication"}`);
+  }
+  await page.close();
+}
+
 /* LES ABSENCES REELLES (06/10/2026) : une commune par cause, choisie dans les
    donnees (releve du jour), et la phrase attendue lue dans @repere/core ou
    dans l'application, jamais recopiee. Mesure avant ce controle : a

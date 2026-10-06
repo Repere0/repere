@@ -40,6 +40,12 @@ export default function QuiDecide() {
         if (n.echelon === "dept" && !n.personne) {
           return { ...n, note: "Le Répertoire national des élus ne porte pas de conseil départemental pour ce territoire." };
         }
+        /* EN CLAIR (06/10/2026) : « canton de … » etait affiche sans explication.
+           Une phrase, la regle electorale en vigueur depuis 2015 (loi du
+           17 mai 2013) ; seulement quand un canton est nomme. */
+        if (n.echelon === "dept" && n.personne && /canton de /.test(n.personne.role || "")) {
+          return { ...n, note: "En clair : le canton est le territoire qui élit deux conseillers départementaux, une femme et un homme." };
+        }
         if (n.echelon === "france") {
           return { ...n, note: n.autresCircos ? `${d.nomCommune} est partagée entre plusieurs circonscriptions : un seul député est nommé ici.` : undefined,
             pied: n.personne && r.votesLus ? (
