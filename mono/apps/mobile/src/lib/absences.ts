@@ -34,3 +34,19 @@ export const AGENDA_VIDE = {
   titre: "Aucune séance n'est annoncée sur la période relevée, ni au Sénat ni à l'Assemblée.",
 };
 export const REGION_PAS_ARRIVEE = "La liste des élus de la région n'est pas arrivée jusqu'ici.";
+/* NON PUBLIE PAR REPERE — 06/10/2026. Le serveur a repondu que le fichier
+   n'existe pas : Repere ne le publie pas pour ce departement (mesure du jour :
+   projets pour les 8 departements d'Ile-de-France, votes pour les 104). Trois
+   phrases a ne pas confondre : « pas arrive » (panne, reessayer), « aucun »
+   (la source ne porte rien), et celle-ci, sans bouton : reessayer ne changerait
+   rien. La liste des departements n'est pas ecrite ici : elle change. */
+export const projetsNonPublies = (nomDep: string) => ({
+  titre: `Repère ne publie pas encore les projets financés par l'État pour ${nomDep}.`,
+  corps: "Ce n'est pas une absence de projet : Repère n'a pas encore traité ce département. La source officielle reste consultable.",
+  lien: { texte: "Projets financés par l'État — données publiques", url: DGCL_URL },
+});
+export const votesNonPublies = (nomDep: string) => ({
+  titre: `Repère ne publie pas encore les votes des députés pour ${nomDep}.`,
+  corps: "Ce n'est pas une absence de vote : les scrutins sont publics sur le site de l'Assemblée nationale.",
+  lien: { texte: "Les scrutins sur le site de l'Assemblée", url: SCRUTINS_AN },
+});

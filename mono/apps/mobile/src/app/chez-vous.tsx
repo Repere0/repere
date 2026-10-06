@@ -36,7 +36,7 @@ import { CarteMemoire } from "../cartes/CarteMemoire";
 import { useSelection } from "../lib/selection";
 import { useCommuneChoisie } from "../lib/useCommune";
 import {
-  PROJETS_PAS_ARRIVES, projetsAucun, VOTES_PAS_ARRIVES, circoInconnue, VOTE_AUCUN,
+  PROJETS_PAS_ARRIVES, projetsAucun, projetsNonPublies, VOTES_PAS_ARRIVES, votesNonPublies, circoInconnue, VOTE_AUCUN,
 } from "../lib/absences";
 import { srcComptesPublies, srcElus, srcProjets, srcVote } from "../lib/sources";
 import { PAS, TYPO } from "../lib/theme";
@@ -82,7 +82,9 @@ export default function ChezVous() {
           {/* 1. CE QUE L'ETAT FINANCE ICI — la part se dit en mots pres d'un repere
              vrai, sinon en euros ; le cout est arrondi dans la phrase et exact
              dans la note. */}
-          {!r.projetsLus ? (
+          {r.projetsNonPublies ? (
+            <Vide {...projetsNonPublies(d.nomDep || "ce département")} />
+          ) : !r.projetsLus ? (
             <Vide {...PROJETS_PAS_ARRIVES} action="Réessayer" onAction={reessayer} />
           ) : projet && f ? (
             <Reponse echelon="ville"
@@ -130,7 +132,9 @@ export default function ChezVous() {
 
           {/* 3. A L'ASSEMBLEE NATIONALE — une position, jamais une presence ; une
              date, jamais « dernier » ; plusieurs circonscriptions, jamais UN depute. */}
-          {!r.votesLus ? (
+          {r.votesNonPublies ? (
+            <Vide {...votesNonPublies(d.nomDep || "ce département")} />
+          ) : !r.votesLus ? (
             <Vide {...VOTES_PAS_ARRIVES} action="Réessayer" onAction={reessayer} />
           ) : !r.votesFiables ? (
             <Vide titre={REFUS_APPARIEMENT.titre} corps={REFUS_APPARIEMENT.corps} />

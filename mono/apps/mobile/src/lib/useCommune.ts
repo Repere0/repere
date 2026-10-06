@@ -41,11 +41,16 @@ export type EtatCommune =
       index: Ouvert; paquet: Ouvert; projets: Ouvert; deputes: Ouvert; elusRegion: Ouvert;
       /* true si le fichier est arrive ; false : il n'est PAS arrive (panne), ce qui n'est pas une absence */
       projetsLus: boolean; votesLus: boolean; votesFiables: boolean; regionLue: boolean;
+      /* true : le serveur a repondu que le fichier n'existe pas (404) — Repere
+         ne le publie pas pour ce departement. Ce n'est ni une panne (on ne
+         propose pas de reessayer) ni une absence de projet ou de vote. */
+      projetsNonPublies: boolean; votesNonPublies: boolean;
       /* le calendrier : arrive pour au moins une institution */
       agendaLu: boolean;
     };
 
 const arrive = (r: { etat: string }) => r.etat === ETATS.SERVI;
+const nonPublie = (r: { etat: string }) => r.etat === ETATS.INTROUVABLE;
 
 export function useCommune(choix: Choix, essai: number): EtatCommune {
   const [etat, setEtat] = useState<EtatCommune>({ etat: ETATS.EN_COURS, pret: false });
@@ -86,6 +91,10 @@ export function useCommune(choix: Choix, essai: number): EtatCommune {
         index, paquet, projets: arrive(pr) ? pr.donnees : null, deputes: arrive(de) ? de.donnees : null,
         elusRegion: arrive(reg) ? reg.donnees : null,
         projetsLus: arrive(pr), votesLus, regionLue: arrive(reg),
+        projetsNonPublies: nonPublie(pr),
+        /* les deputes et le catalogue sont nationaux : seul le fichier des
+           positions est par departement */
+        votesNonPublies: arrive(de) && arrive(c) && nonPublie(v),
         votesFiables: votesLus ? positionsFiables(c.donnees, v.donnees) : true,
         agendaLu: arrive(ca) || arrive(an),
       });

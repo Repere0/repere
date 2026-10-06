@@ -19,7 +19,7 @@ import {
   phraseProjetLocal, rapports, sousTitreRapports, euros, CALCUL_REPERE,
 } from "@repere/core";
 import { Carte, Vide } from "../lib/composants";
-import { PROJETS_PAS_ARRIVES, projetsAucun } from "../lib/absences";
+import { PROJETS_PAS_ARRIVES, projetsAucun, projetsNonPublies } from "../lib/absences";
 import { srcComptes, srcComptesPublies, srcProjets } from "../lib/sources";
 import { useCommuneChoisie } from "../lib/useCommune";
 import { couleurs, PAS, TYPO } from "../lib/theme";
@@ -175,7 +175,9 @@ export default function Argent() {
               <Emoji c="🏗️" taille={24} />
               <Text style={[TYPO.question, { flex: 1 }]} accessibilityRole="header">Les projets aidés par l'État</Text>
             </View>
-            {!r.projetsLus ? (
+            {r.projetsNonPublies ? (
+              <Vide {...projetsNonPublies(d.nomDep || "ce département")} />
+            ) : !r.projetsLus ? (
               <Vide {...PROJETS_PAS_ARRIVES} action="Réessayer" onAction={reessayer} />
             ) : !listeProjets.length ? (
               <Vide {...projetsAucun(nom)} />

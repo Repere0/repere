@@ -11,7 +11,7 @@ import path from "node:path";
 import {
   dateFr, jourFr, euros, titreLisible, procedure, decompte, positionsFiables, positionSur,
   calculerFaits, valeur, rapports, dernierExercice, evolution, deriverAujourdhui, phraseSemaineParlement,
-  mots, motsCible, correspond, trouverCommunes,
+  mots, motsCible, correspond, trouverCommunes, departementDe,
 } from "../packages/core/src/index.js";
 
 const RACINE = path.resolve(import.meta.dirname, "..");
@@ -242,4 +242,27 @@ test("visuels — grands nombres et parts en mots : jamais plus de 3 points d'ar
   }
   const ph = m.parHabitant([1000, 10, 11, 20, 22, null, null]);
   assert.equal(ph.recettes, 11); assert.equal(ph.dette, null);
+});
+
+/* 06/10/2026 : le mobile composait le departement par insee.slice(0, 2), faux
+   outre-mer. La regle du socle doit rester celle du script qui ECRIT les
+   fichiers par departement : on relit la fonction du script, on compare. */
+test("core — departementDe : outre-mer compris, et la meme regle que extract-html.js", () => {
+  const cas = { "77284": "77", "64547": "64", "2A004": "2A", "2B033": "2B", "97101": "971", "97411": "974",
+    "97611": "976", "97502": "975", "98818": "988", "01001": "01", "75056": "75" };
+  for (const [insee, dep] of Object.entries(cas)) assert.equal(departementDe(insee), dep, insee);
+  const src = fs.readFileSync(path.join(import.meta.dirname, "../scripts/extract-html.js"), "utf8");
+  const m = src.match(/export function departementDe\(insee\) \{[\s\S]*?\n\}/);
+  assert.ok(m, "departementDe introuvable dans scripts/extract-html.js");
+  const duScript = new Function("return " + m[0].replace(/^export /, ""))();
+  for (const insee of Object.keys(cas)) assert.equal(departementDe(insee), duScript(insee), "divergence sur " + insee);
+});
+
+test("core — « st » et « ste » trouvent Saint et Sainte, sans perdre Strasbourg", () => {
+  const liste = [["93066", "Saint-Denis", motsCible("Saint-Denis")], ["91549", "Sainte-Geneviève-des-Bois", motsCible("Sainte-Geneviève-des-Bois")],
+    ["67482", "Strasbourg", motsCible("Strasbourg")], ["94068", "Saint-Maur-des-Fossés", motsCible("Saint-Maur-des-Fossés")]];
+  assert.deepEqual(trouverCommunes(liste, mots("st denis")).map(l => l[1]), ["Saint-Denis"]);
+  assert.deepEqual(trouverCommunes(liste, mots("ste genevieve")).map(l => l[1]), ["Sainte-Geneviève-des-Bois"]);
+  assert.ok(trouverCommunes(liste, mots("st")).some(l => l[1] === "Strasbourg"), "« st » ne trouve plus Strasbourg");
+  assert.equal(trouverCommunes(liste, mots("st denis"))[0][1], "Saint-Denis");
 });

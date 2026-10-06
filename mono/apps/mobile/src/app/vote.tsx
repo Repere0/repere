@@ -18,7 +18,7 @@ import {
   repartitionVote, REFUS_APPARIEMENT, titreLisible, MOTS,
 } from "@repere/core";
 import { Carte, Segments, Vide } from "../lib/composants";
-import { circoInconnue, VOTE_AUCUN, VOTES_PAS_ARRIVES } from "../lib/absences";
+import { circoInconnue, VOTE_AUCUN, VOTES_PAS_ARRIVES, votesNonPublies } from "../lib/absences";
 import { srcScrutins, srcVote } from "../lib/sources";
 import { useCommuneChoisie } from "../lib/useCommune";
 import { couleurs, PAS, TYPO, CIBLE } from "../lib/theme";
@@ -35,6 +35,7 @@ export default function Vote() {
       const { d } = r;
       const vote: FaitVote | undefined = d.dernierVote;
       const entete = <Question emoji="🗳️" etiquette="Votre député" question="Qu'a voté votre député ?" />;
+      if (r.votesNonPublies) return <Page>{entete}<Vide {...votesNonPublies(d.nomDep || "ce département")} /></Page>;
       if (!r.votesLus) return <Page>{entete}<Vide {...VOTES_PAS_ARRIVES} action="Réessayer" onAction={reessayer} /></Page>;
       if (!r.votesFiables) return <Page>{entete}<Vide titre={REFUS_APPARIEMENT.titre} corps={REFUS_APPARIEMENT.corps} /></Page>;
       if (!vote) return <Page>{entete}<Vide {...(d.nbCircos === 0 ? circoInconnue(d.nomCommune) : { ...VOTE_AUCUN, corps: POSITION_NON_PORTEE })} /></Page>;

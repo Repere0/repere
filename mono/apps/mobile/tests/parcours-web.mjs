@@ -354,6 +354,80 @@ async function montantA100ms(reduit) {
   await ctx.close();
 }
 
+/* LE RESTE DE LA FRANCE (06/10/2026). Mesure en production avant ce controle :
+   « ustaritz » repondait « Rien ne correspond », alors que son departement est
+   publie (maire, comptes, circonscription, votes). Le controle refait le
+   chemin d'un lecteur du Pays basque et d'un lecteur de Guadeloupe, et verifie
+   les trois phrases qu'il ne faut pas confondre : les projets que Repere ne
+   publie pas pour ce departement ne sont ni « pas arrivés » (panne) ni
+   « aucun » (la source ne porte rien). Les noms attendus sont lus dans les
+   donnees servies, jamais recopies ici. */
+{
+  const lireMaire = async (dep, insee) => {
+    try { const j = await (await fetch(`${BASE}/data/departments/${dep}.json`)).json(); return j.communes[insee].maire.nom; } catch { return null; }
+  };
+  const echapper = t => t.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const ctx = await navigateur.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, reducedMotion: "reduce" });
+  const page = await ctx.newPage();
+  const demandees = [];
+  page.on("request", r => demandees.push(r.url()));
+  await page.goto(BASE + "/", { waitUntil: "networkidle" });
+
+  await page.getByLabel(/Où habitez-vous/).fill("st denis");
+  verifier(await page.getByRole("button", { name: /^Saint-Denis, Seine-Saint-Denis$/ }).count() === 1, "national : « st denis » trouve Saint-Denis");
+
+  await page.getByLabel(/Où habitez-vous/).fill("ustaritz");
+  const texteRien = await page.evaluate(() => document.body.innerText);
+  verifier(/Aucune commune d'Île-de-France ne correspond à « ustaritz »/.test(texteRien) && !/Rien ne correspond/.test(texteRien),
+    "national : hors Île-de-France, la phrase dit où l'on a cherché");
+  await page.getByRole("button", { name: "Choisir mon département" }).click();
+  await page.getByLabel(/Dans quel département/).fill("pyrenees at");
+  await page.getByRole("button", { name: /^Pyrénées-Atlantiques, 64$/ }).click();
+  await page.getByLabel(/Quelle commune, dans Pyrénées-Atlantiques/).fill("ustaritz");
+  await page.getByRole("button", { name: /^Ustaritz, Pyrénées-Atlantiques$/ }).waitFor({ timeout: 10000 });
+  await page.getByRole("button", { name: /^Ustaritz, Pyrénées-Atlantiques$/ }).click();
+  await page.getByText("Aller plus loin").first().waitFor({ timeout: 15000 });
+  await page.waitForTimeout(600);
+  const ustaritz = await page.evaluate(() => document.body.innerText);
+  if (CAPTURES) await page.screenshot({ path: path.join(CAPTURES, "national-ustaritz.png"), fullPage: true });
+  const maireU = await lireMaire("64", "64547");
+  verifier(!!maireU && new RegExp(echapper(maireU)).test(ustaritz), `national : Ustaritz s'ouvre avec son maire (${maireU})`);
+  verifier(/Repère ne publie pas encore les projets financés par l'État pour Pyrénées-Atlantiques/.test(ustaritz),
+    "national : projets non publiés dits comme tels, département nommé");
+  verifier(!/pas arrivés/.test(ustaritz) && !/Réessayer/.test(ustaritz) && !/Aucun projet financé/.test(ustaritz),
+    "national : ni « pas arrivés », ni « Réessayer », ni « aucun projet » pour une donnée non publiée");
+  verifier(/circonscription/.test(ustaritz) && /par habitant/.test(ustaritz), "national : le vote et les comptes s'affichent");
+
+  /* La memoire, hors Ile-de-France : le nom vient du fichier du departement. */
+  await page.getByRole("button", { name: "Retenir Ustaritz sur ce téléphone" }).click();
+  await page.goto(BASE + "/", { waitUntil: "networkidle" });
+  const reprendre = page.getByRole("button", { name: "Voir ce qui se passe à Ustaritz" });
+  await reprendre.waitFor({ timeout: 10000 }).catch(() => {});
+  verifier(await reprendre.count() === 1, "national : Ustaritz retenue est reproposée à la réouverture");
+  await page.getByRole("button", { name: "Oublier Ustaritz" }).click().catch(() => {});
+  verifier(await page.evaluate(() => Object.keys(localStorage).length) === 0, "national : « Oublier » efface Ustaritz");
+
+  /* Outre-mer : le departement a trois chiffres (97120 -> 971, pas 97). */
+  await page.getByLabel(/Où habitez-vous/).fill("pointe a pitre");
+  await page.getByRole("button", { name: "Choisir mon département" }).click();
+  await page.getByLabel(/Dans quel département/).fill("971");
+  await page.getByRole("button", { name: /, 971$/ }).click();
+  await page.getByLabel(/Quelle commune, dans/).fill("pointe a pitre");
+  await page.getByRole("button", { name: /^Pointe-à-Pitre,/ }).click();
+  /* Avec un departement « 97 », le fichier n'existe pas : l'ecran n'arrive
+     jamais. Le controle le nomme au lieu de tomber sur un delai depasse. */
+  const ouverte = await page.getByText("Aller plus loin").first().waitFor({ timeout: 15000 }).then(() => true, () => false);
+  verifier(ouverte, "national : Pointe-à-Pitre (971) ouvre son écran de commune");
+  const pap = await page.evaluate(() => document.body.innerText);
+  const maireP = await lireMaire("971", "97120");
+  verifier(!!maireP && new RegExp(echapper(maireP)).test(pap), `national : Pointe-à-Pitre (971) s'ouvre avec son maire (${maireP})`);
+  verifier(demandees.some(u => /\/departments\/971\.json/.test(u)) && !demandees.some(u => /\/departments\/97\.json/.test(u)),
+    "national : l'outre-mer lit le fichier 971, jamais 97");
+  const fautives = demandees.filter(u => adresseFautive(u) || /64547|97120/.test(u));
+  verifier(fautives.length === 0, `national : aucune requête ne porte le code de la commune ${JSON.stringify(fautives)}`);
+  await ctx.close();
+}
+
 await navigateur.close();
 if (CAPTURES) console.log("captures : " + fs.readdirSync(CAPTURES).filter(f => f.endsWith(".png")).join(", "));
 console.log(echecs ? `${echecs} échec(s)` : "parcours complet, zéro échec");

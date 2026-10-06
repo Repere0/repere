@@ -15,8 +15,14 @@ export function mots(t) {
 export function motsCible(t) {
   return [...new Set([...mots(t), ...mots(String(t || "").replace(/['\u2019]/g, ""))])];
 }
+/* « st denis », « ste genevieve » (06/10/2026) : l'abreviation se tape plus
+   souvent que le mot entier, et aucun nom officiel de commune ne l'emploie.
+   Le mot tape garde AUSSI sa forme courte : « st » doit continuer de trouver
+   Strasbourg pendant qu'on tape. */
+const ABREVIATIONS = { st: "saint", ste: "sainte", sts: "saints", stes: "saintes" };
+const formes = m => (ABREVIATIONS[m] ? [m, ABREVIATIONS[m]] : [m]);
 export function correspond(cherches, cible) {
-  return cherches.every(m => cible.some(w => w.startsWith(m)));
+  return cherches.every(m => formes(m).some(f => cible.some(w => w.startsWith(f))));
 }
 
 /* L'ORDRE DES RESULTATS EST CELUI DE LA RECHERCHE, PAS UN ORDRE DE VALEUR.
@@ -27,8 +33,9 @@ export function correspond(cherches, cible) {
 export function rangRecherche(nom, cherches) {
   const n = mots(nom).join(" ");
   const q = cherches.join(" ");
-  if (n === q) return 0;
-  if (n.startsWith(q)) return 1;
+  const qLong = cherches.map(m => ABREVIATIONS[m] || m).join(" ");
+  if (n === q || n === qLong) return 0;
+  if (n.startsWith(q) || n.startsWith(qLong)) return 1;
   return 2;
 }
 /* `liste` : [[insee, nom, motsCible(nom)], ...]. Rend les 30 premieres
