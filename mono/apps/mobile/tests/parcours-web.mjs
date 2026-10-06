@@ -181,6 +181,12 @@ for (const largeur of [360, 390, 430]) {
     if (!/informations/.test(action)) verifier(/D'où vient cette information/.test(m.etiquettes) || /Le calendrier n'est arrivé/.test(m.texte), `${largeur}px · ${action} : la source est à portée de doigt`);
     if (/argent/.test(action)) {
       verifier(/Calculé par Repère · source/.test(m.texte), `${largeur}px · ${action} : les parts calculées se disent calculées`);
+      /* L'EXERCICE PRES DE CHAQUE CHIFFRE (06/10/2026) : sur telephone, un bloc
+         financier se lit seul, loin du titre de l'ecran. Tout titre de bloc qui
+         parle d'argent porte son annee ; la question de l'ecran (« … ? ») non. */
+      const titres = await page.getByRole("heading").allInnerTexts();
+      const sansAnnee = titres.map(t => t.trim()).filter(t => /dépens|argent|dette|jour|100 €|changé/i.test(t) && !/\?$/.test(t) && !/^l'argent de la commune$/i.test(t) && !/\b20\d\d\b/.test(t));
+      verifier(sansAnnee.length === 0 && titres.some(t => /dette/i.test(t)), `${largeur}px · ${action} : chaque bloc financier porte son exercice ${JSON.stringify(sansAnnee)}`);
       await page.getByRole("button", { name: "Détails du calcul" }).first().click();
       await page.getByText(/ce n'est pas un chiffre publié/).first().waitFor({ timeout: 5000 });
       verifier(true, `${largeur}px · ${action} : le détail du calcul s'ouvre`);

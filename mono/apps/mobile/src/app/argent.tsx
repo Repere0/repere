@@ -58,6 +58,11 @@ export default function Argent() {
         : [];
       const dep = ch && ch.depenses !== null ? montantCourt(ch.depenses) : null;
       const dette = ch && ch.dette !== null ? montantCourt(ch.dette) : null;
+      /* L'EXERCICE PRES DE CHAQUE CHIFFRE — 06/10/2026. Sur telephone, le titre
+         « Ce que … a dépensé en 2025 » sort de l'ecran des le deuxieme bloc : la
+         dette, les parts et la moyenne par jour se lisaient sans annee. Chaque
+         bloc financier porte donc la sienne (tests/parcours-web.mjs le mesure). */
+      const anComptes = ex ? ` · comptes ${ex.an}` : "";
       return (
         <Page>
           <Stack.Screen options={{ title: "Où va l'argent" }} />
@@ -83,7 +88,7 @@ export default function Argent() {
 
               {/* OU VA CHAQUE 100 € */}
               {ch.partSalaires !== null || ch.partInvestissement !== null ? (
-                <Carte echelon="ville" titre="Où va chaque 100 € dépensés">
+                <Carte echelon="ville" titre={`Où va chaque 100 € dépensés${anComptes}`}>
                   <Resume phrase={ch.partSalaires !== null ? `Sur 100 € dépensés, ${ch.partSalaires} € vont aux salaires des agents.` : "Deux postes que la source permet de suivre."}
                     enClair="Le reste des dépenses n'est pas détaillé par la source.">
                     {ch.partSalaires !== null ? <BarrePart part={ch.partSalaires} libelle="Salaires des agents" valeur={rap(/salaires/)?.v || ""} /> : null}
@@ -97,7 +102,7 @@ export default function Argent() {
 
               {/* D'OU VIENT L'ARGENT */}
               {ch.partImpots !== null ? (
-                <Carte echelon="ville" titre="D'où vient l'argent">
+                <Carte echelon="ville" titre={`D'où vient l'argent${anComptes}`}>
                   <Resume phrase={partReperee(ch.partImpots)
                       ? `${String(partReperee(ch.partImpots)).replace(/^./, (c: string) => c.toUpperCase())} de ce que ${nom} encaisse vient des impôts et taxes.`
                       : `Sur 100 € encaissés, ${ch.partImpots} € viennent des impôts et taxes.`}
@@ -111,8 +116,8 @@ export default function Argent() {
 
               {/* LA DETTE */}
               {ch.detteMois !== null && dette ? (
-                <Carte echelon="ville" titre="Sa dette">
-                  <Resume phrase={`${nom} doit encore rembourser ${dette.texte}.`}
+                <Carte echelon="ville" titre={`Sa dette${anComptes}`}>
+                  <Resume phrase={`D'après ses comptes ${ex.an}, ${nom} doit encore rembourser ${dette.texte}.`}
                     /* « 7,6 mois de recettes » en corps d'affiche tenait sur deux lignes :
                        le nombre en grand, l'unite dans la legende, la phrase partagee
                        avec le site reste lisible d'un seul tenant. */
@@ -129,7 +134,7 @@ export default function Argent() {
 
               {/* LE JOUR LE JOUR, POUR QUI VEUT LE VOIR COMPTER */}
               {ch.parJour !== null ? (
-                <Carte echelon="ville" titre="Chaque jour, en moyenne">
+                <Carte echelon="ville" titre={`Chaque jour, en moyenne${anComptes}`}>
                   <Compteur valeur={ch.parJour} suffixe="€ par jour" />
                   <PasCeQueCaDit r={rap(/par jour/)} sujet="dépense par jour" />
                   <PastilleSource source={srcComptes(d)} />
