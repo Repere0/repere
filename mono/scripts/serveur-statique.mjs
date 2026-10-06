@@ -20,6 +20,16 @@ const serveur = http.createServer((req, rep) => {
   const p0 = decodeURIComponent(req.url.split("?")[0]);
   let f = path.join(DIST, p0 === "/" ? "index.html" : p0);
   if (!f.startsWith(DIST)) { rep.writeHead(403); return rep.end(); }
+  /* UN FICHIER DE DONNEES ABSENT EST UN 404, COMME EN PRODUCTION (06/10/2026).
+     Ce serveur renvoyait la page de l'application pour toute adresse inconnue,
+     y compris sous /data/ : un fichier non publie arrivait comme une reponse
+     illisible, donc comme une panne. Netlify, lui, repond 404 (mesure du jour :
+     projets/64.json). Les ecrans qui distinguent « non publié » de « pas
+     arrivé » n'etaient donc pas eprouves contre la production. */
+  if (p0.startsWith("/data/") && (!fs.existsSync(f) || fs.statSync(f).isDirectory())) {
+    rep.writeHead(404, { "content-type": "application/json" });
+    return rep.end('{"erreur":"introuvable"}');
+  }
   if (!fs.existsSync(f) || fs.statSync(f).isDirectory()) f = path.join(DIST, "index.html");
   if (!fs.existsSync(f)) { rep.writeHead(404); return rep.end("introuvable"); }
   const corps = fs.readFileSync(f);
