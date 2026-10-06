@@ -7,6 +7,8 @@
 | `node --test tests/core.test.mjs` | `@repere/core` en Node pur, sur données réelles quand `data/` existe | local, CI |
 | `node --test tests/invariants.test.mjs` | les huit invariants dans le code écrit (`.js .jsx .ts .tsx .css .html…`, web ET mobile) | local, CI |
 | `node tests/runtime.test.mjs apps/web/dist` | le site dans un navigateur, serveur éteint compris | local, CI |
+| `node --test tests/sources-parlementaires.test.mjs` | relevé du Sénat sur réponses simulées : flux valide, panne, 404, 500, HTML en 200, flux tronqué, avec ou sans relevé précédent — sans réseau | local, CI |
+| `python3 outils/test_collecte.py` (depuis la racine) | téléchargements de `collecte.py` (Assemblée, data.gouv) sur réponses simulées : relances bornées, 404 non relancé, archive invalide refusée, aucune archive laissée derrière un échec | local, CI |
 | `cd apps/mobile && npx tsc --noEmit` | types de l'application mobile | local, CI (`Mobile`) |
 | `cd apps/mobile && npx expo export --platform ios --platform android --platform web` | construction iOS, Android et web | CI (`Mobile`) |
 | `node apps/mobile/tests/parcours-web.mjs URL` | parcours accueil → commune → retour à 360/390/430 px, pannes, adresses, cibles, accents | local, CI (`Mobile`) |
@@ -15,6 +17,8 @@
 **Le mobile dispose désormais d'une chaîne GitHub dédiée** (`.github/workflows/mobile.yml`). Elle construit l'application, exécute le parcours navigateur et vérifie la même vérité avec le site. L'épreuve web (`.github/workflows/epreuve.yml`) reste la chaîne de publication.
 
 Local, `PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers`, jamais `playwright install`.
+
+**Sources parlementaires (7/10/2026).** Un runner GitHub est neuf à chaque fois : `mono/data/` n'est pas versionné, il n'y a donc **jamais** de relevé du Sénat de la veille. Si le Sénat tombe, il est absent de la publication et l'écran le dit (« Le calendrier du Sénat n'est pas disponible… ») ; l'Assemblée continue seule, et inversement. L'agenda de l'Assemblée, lui, a une version précédente réelle : `outils/agenda_an.json`, versionné par la collecte. Sans relevé du jour, l'étape 4 de `pipeline.sh` **s'arrête** en nommant la cause (journal de collecte) et la date de cette version — publier l'agenda d'un autre jour comme celui du jour reste une décision du porteur.
 
 Attention : certains contrôles de `runtime.test.mjs` dépendent des données du jour et ne sont donc pas reproductibles avec un extrait `mono/data` incomplet. La CI de référence collecte d'abord les données puis exécute l'épreuve ; un échec CI reste bloquant.
 

@@ -131,6 +131,23 @@ const INSTITUTIONS = [
     urlRepli: "https://www.assemblee-nationale.fr/dyn/17/agenda" },
 ];
 
+/* UNE INSTITUTION ABSENTE EST NOMMEE, JAMAIS OMISE — 07/10/2026. Mesure : sans
+   le fichier du Senat, l'ecran titrait « Seances et travaux du Senat et de
+   l'Assemblee nationale » et ne montrait que l'Assemblee, sans un mot. Deux
+   absences differentes, deux phrases differentes : le calendrier n'est pas
+   arrive (cause de notre cote ou du reseau), ou il est arrive mais l'institution
+   n'y annonce rien a venir (fait de la source, avec sa date de releve). */
+function noteAbsence(inst, r) {
+  const nom = inst.nom === "Sénat" ? "du Sénat" : "de l'Assemblée nationale";
+  if (r.etat === ETATS.SERVI && r.donnees && Array.isArray(r.donnees.evenements)) {
+    const s = r.donnees.source || {};
+    return `Le calendrier ${nom} ne contient aucune séance à venir`
+      + (s.releve_le ? ` au relevé du ${dateFr(s.releve_le)}` : "") + ". Ce n'est pas un retard de Repère.";
+  }
+  if (r.etat === ETATS.HORS_LIGNE) return `Le calendrier ${nom} n'a pas encore été téléchargé sur cet appareil.`;
+  return `Le calendrier ${nom} n'est pas disponible dans Repère en ce moment : il n'est pas affiché, et rien n'est inventé à sa place.`;
+}
+
 export default function Calendrier() {
   const [charges, setCharges] = useState({});
 
@@ -203,6 +220,7 @@ export default function Calendrier() {
 
   /* Une citation de source par institution effectivement affichee - jamais
      une seule citation generique qui melangerait deux producteurs. */
+  const absentes = enAttente.length ? [] : resultats.filter(({ inst }) => !fusion.some(e => e.cle === inst.cle));
   const sourcesAffichees = valides
     .filter(({ inst }) => fusion.some(e => e.cle === inst.cle))
     .map(({ r }) => r.donnees.source || {});
@@ -249,6 +267,12 @@ export default function Calendrier() {
     <div className="pile">
       <Carte echelon="france" titre="Ce qui se passe prochainement"
         sousTitre="Séances et travaux du Sénat et de l'Assemblée nationale, dans l'ordre du calendrier">
+        {absentes.map(({ inst, r }) => (
+          <p className="ligne-note absence-institution" key={"abs-" + inst.cle}>
+            {noteAbsence(inst, r)}{" "}
+            <a href={inst.urlRepli} target="_blank" rel="noopener noreferrer">Agenda officiel {inst.nom === "Sénat" ? "du Sénat" : "de l'Assemblée"} ↗</a>
+          </p>
+        ))}
         {proches.map(ligne)}
         {plusTard.length ? (
           <details className="repli plus-tard">
