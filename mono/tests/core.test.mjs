@@ -304,3 +304,26 @@ test("core — changementsCommune ne dit « nouveau » que ce qui l'est", () => 
   const partiel = appel({ fiche: { ...fiche, maire: { nom: "C D" } }, cat: { scrutins: [{ u: "U9", n: "9", d: "2026-10-14", t: "t", s: "adopté" }] } }, { ...tous, scr: false });
   assert.deepEqual(partiel.changements.map(c => c.type), ["maire"]);
 });
+
+/* 06/10/2026 : le fait valide d'un scrutin, et sa nouveaute. */
+import { faitDuScrutin, premierePhrase, etatDuTexte } from "../packages/core/src/index.js";
+test("core — faits éditoriaux : reliés par la page du scrutin, nouveaux seulement s'ils l'ont été", () => {
+  const ev = { r: [
+    { id: "scrutin-2026-07-21-8430", t: "Protection des enfants", d: "2026-07-21", e: "france", conf: "verifie", src: "https://www.assemblee-nationale.fr/dyn/17/scrutins/8430",
+      axes: "Le texte porte sur la protection de l'enfance. Il encadre la durée des placements (un an pour les moins de 3 ans).",
+      txt: "Résultat du scrutin : adopté, le 2026-07-21. Le texte n'est pas la loi définitive.\n\nPour : 378" },
+    { id: "autre", t: "Protection des enfants (titre proche)", d: "2026-07-21", e: "france", conf: "a_confirmer", src: "https://exemple.fr/84300" },
+  ] };
+  assert.equal(faitDuScrutin(ev, { n: "8430" }).id, "scrutin-2026-07-21-8430");
+  assert.equal(faitDuScrutin(ev, { n: "843" }), null, "un numero proche ne relie pas");
+  assert.equal(faitDuScrutin(null, { n: "8430" }), null);
+  assert.equal(premierePhrase(ev.r[0].axes), "Le texte porte sur la protection de l'enfance.");
+  assert.equal(premierePhrase("Une seule phrase (3,5 %) sans coupure"), "Une seule phrase (3,5 %) sans coupure");
+  assert.equal(etatDuTexte(ev.r[0]), "Résultat du scrutin : adopté, le 21 juillet 2026. Le texte n'est pas la loi définitive.");
+  const base = { fiche: { nom: "X", circo: 1 }, evenements: { r: [ev.r[0]] } };
+  const avecNouveau = { ...base, evenements: { r: [...ev.r, { id: "cc-x", t: "Décision", d: "2026-08-14", e: "france", conf: "verifie", src: "https://cc.fr" }] } };
+  const c = changementsCommune({ commune: "77001", dep: "77", avant: base, apres: avecNouveau, connus: { evt: true } });
+  assert.deepEqual(c.changements.map(x => x.type + ":" + x.e.id), ["editorial:cc-x"], "seul le fait verifie et absent avant est nouveau");
+  const sans = changementsCommune({ commune: "77001", dep: "77", avant: base, apres: avecNouveau, connus: { evt: false } });
+  assert.deepEqual(sans.changements, [], "sans version precedente du fil, rien n'est nouveau");
+});

@@ -601,6 +601,74 @@ async function montantA100ms(reduit) {
   await ctx.close();
 }
 
+/* CE QUE PREVOIT CE TEXTE (06/10/2026). Mesure avant : 8 faits valides par la
+   redaction etaient publies (dont 7 sur les scrutins solennels affiches), mais
+   l'application ne chargeait jamais evenements.json. L'attendu est calcule
+   INDEPENDAMMENT de l'ecran : le vote affiche est recalcule par @repere/core
+   (deriverAujourdhui) sur les fichiers servis, puis son fait valide. */
+{
+  const core = await import("../../../packages/core/src/index.js");
+  const lire = async f => { try { const r = await fetch(BASE + "/data/" + f); return r.ok ? await r.json() : null; } catch { return null; } };
+  const [ev, index, pq, cat, pos, deputes] = await Promise.all(["evenements.json", "index.json", "departments/77.json", "scrutins.json", "scrutins/77.json", "deputes.json"].map(lire));
+  const d = core.deriverAujourdhui({ fiche: pq.communes["77284"], commune: "77284", dep: "77", index, projets: null, cat, pos, deputes,
+    cal: null, agendaAN: null, evenements: null, maintenant: new Date() });
+  const attendu = d.dernierVote ? core.faitDuScrutin(ev, d.dernierVote.sc) : null;
+  const page = await navigateur.newPage({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, reducedMotion: "reduce" });
+  await page.goto(BASE + "/", { waitUntil: "networkidle" });
+  await page.getByLabel(/Où habitez-vous/).fill(COMMUNE.saisie);
+  await page.getByRole("button", { name: new RegExp("^" + COMMUNE.nom + ",") }).first().click();
+  await page.getByText("Aller plus loin").first().waitFor({ timeout: 15000 });
+  await page.waitForTimeout(500);
+  await page.getByRole("button", { name: "Comprendre ce vote" }).first().click();
+  await page.getByText(/Qu'a voté votre député/).first().waitFor({ timeout: 10000 });
+  await page.waitForTimeout(500);
+  const t = (await page.evaluate(() => document.body.innerText)).replace(/[\u00a0\u202f]/g, " ");
+  if (attendu && attendu.axes) {
+    verifier(/Ce que prévoit ce texte/i.test(t) && t.includes(core.premierePhrase(attendu.axes)), `fait éditorial : la carte dit ce que prévoit le texte (${attendu.id})`);
+    verifier(/Relu et validé par la rédaction de Repère/.test(t) === (attendu.conf === "verifie"), "fait éditorial : « relu et validé » seulement pour un fait vérifié");
+    if (core.etatDuTexte(attendu)) verifier(t.includes(core.etatDuTexte(attendu)), "fait éditorial : « Où en est ce texte » dit où il en est réellement");
+  } else {
+    verifier(!/Ce que prévoit ce texte/i.test(t) && !/Relu et validé par la rédaction/.test(t),
+      `fait éditorial : sans explication validée pour ce vote (${ev ? "aucun fait relié" : "fichier absent"}), rien n'est écrit à sa place`);
+  }
+  await page.close();
+}
+
+/* UNE EXPLICATION PUBLIEE DEPUIS LA DERNIERE VISITE (06/10/2026) : un fait
+   verifie nouveau remonte ; un fait « a confirmer » jamais. Fixtures de test,
+   jamais publiees ; sans fil servi, le controle le dit et ne conclut rien. */
+{
+  const fil = await (async () => { try { const r = await fetch(BASE + "/data/evenements.json"); return r.ok; } catch { return false; } })();
+  if (!fil) verifier(true, "fil éditorial : non servi ici, rien à comparer");
+  else {
+    const ctx = await navigateur.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, reducedMotion: "reduce" });
+    const page = await ctx.newPage();
+    const ouvrir = async premier => {
+      await page.goto(BASE + "/", { waitUntil: "networkidle" });
+      if (premier) { await page.getByLabel(/Où habitez-vous/).fill("meaux"); await page.getByRole("button", { name: /^Meaux,/ }).first().click(); }
+      else await page.getByRole("button", { name: "Voir ce qui se passe à Meaux" }).click();
+      await page.getByText("Aller plus loin").first().waitFor({ timeout: 15000 });
+      await page.waitForTimeout(600);
+    };
+    await ouvrir(true);
+    await page.getByRole("button", { name: "Retenir Meaux sur ce téléphone" }).click();
+    await ouvrir(false);
+    await ctx.route(/\/data\/(index|evenements)\.json/, async route => {
+      const rep = await route.fetch(); const j = await rep.json();
+      if (j.build) j.build = { ...j.build, construit_le: "2099-02-01T00:00:00.000Z" };
+      if (Array.isArray(j.r)) j.r = [...j.r,
+        { id: "fixture-verifie", t: "Fixture de test : une décision vérifiée", d: "2026-10-20", e: "france", conf: "verifie", src: "https://www.conseil-constitutionnel.fr/" },
+        { id: "fixture-a-confirmer", t: "Fixture de test : à confirmer", d: "2026-10-21", e: "france", conf: "a_confirmer", src: "https://www.conseil-constitutionnel.fr/" }];
+      return route.fulfill({ response: rep, json: j });
+    });
+    await ouvrir(false);
+    const b = (await page.getByTestId("depuis-visite").first().innerText().catch(() => "")).replace(/[  ]/g, " ");
+    verifier(/^1 chose a changé depuis votre dernière visite/.test(b) && /La rédaction de Repère a publié une explication : « Fixture de test : une décision vérifiée »/.test(b) && !/à confirmer/.test(b),
+      `fil éditorial : la nouvelle explication vérifiée remonte, celle « à confirmer » non ${JSON.stringify(b.slice(0, 80))}`);
+    await ctx.close();
+  }
+}
+
 /* UN CALENDRIER QUI N'EST PLUS RELEVE (06/10/2026) : au-dela de deux jours, la
    date du releve est dite sur l'ecran. Attendu calcule sur la donnee servie
    (sur les donnees figees de la CI, le releve peut vraiment dater), puis force

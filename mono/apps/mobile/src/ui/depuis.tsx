@@ -15,7 +15,7 @@
  * ligne -> rien n'est affiche du tout. */
 import { Text, View } from "react-native";
 import { router } from "expo-router";
-import { dateFr, euros, phrasePosition, texteDe, titreLisible } from "@repere/core";
+import { dateFr, euros, phrasePosition, premierePhrase, texteDe, titreLisible } from "@repere/core";
 import type { ReactNode } from "react";
 import { srcComptesPublies, srcElus, srcProjets, srcScrutins, srcVote } from "../lib/sources";
 import type { Ouvert } from "../lib/useCommune";
@@ -29,7 +29,7 @@ const srcDeputes = (r: Ouvert) => {
   return s ? { producteur: s.producteur, licence: s.licence, url: s.url, releve: s.releve_le } : null;
 };
 
-type Carte = { phrase: string; pourquoi: string; source: ReactNode; suite: { texte: string; onPress: () => void } };
+type Carte = { phrase: string; pourquoi: string; source: ReactNode; suite?: { texte: string; onPress: () => void } };
 
 function carteDe(c: Ouvert, r: Ouvert): Carte | null {
   const { d } = r;
@@ -65,6 +65,16 @@ function carteDe(c: Ouvert, r: Ouvert): Carte | null {
       pourquoi: "Un projet de votre commune financé en partie par l'État.",
       source: <PastilleSource court source={srcProjets(d)} />,
       suite: { texte: "Les projets aidés", onPress: () => router.push("/argent") } };
+    /* un fait relu et valide par la redaction, publie depuis la derniere
+       visite ; un fait de scrutin ouvre le vote, les autres leur source */
+    case "editorial": return {
+      phrase: `La rédaction de Repère a publié une explication : « ${c.e.t} » (${dateFr(c.e.d)}).`,
+      pourquoi: c.e.axes ? premierePhrase(c.e.axes) : "Relu et validé par la rédaction de Repère.",
+      source: <PastilleSource court source={{ producteur: c.e.srcn || "Source officielle", url: c.e.src }} />,
+      /* « Comprendre ce vote » montre le vote le plus recent : le lien n'est
+         propose que si le fait porte sur ce vote-la */
+      suite: d.dernierVote && String(c.e.src || "").replace(/\/+$/, "").endsWith("/scrutins/" + d.dernierVote.sc.n)
+        ? { texte: "Comprendre ce vote", onPress: () => router.push("/vote") } : undefined };
     default: return null;
   }
 }

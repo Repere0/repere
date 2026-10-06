@@ -27,7 +27,7 @@ import { createElement } from "react";
 import { changementsCommune, deriverAujourdhui, positionsFiables } from "@repere/core";
 import {
   chargerIndex, chargerDepartement, chargerProjets, chargerDeputes, chargerCatalogueScrutins,
-  chargerVotes, chargerElusRegion, chargerCalendrierSenat, chargerAgendaAN, ETATS, connaissance, precedentDe,
+  chargerVotes, chargerElusRegion, chargerCalendrierSenat, chargerAgendaAN, chargerEvenements, ETATS, connaissance, precedentDe,
 } from "./donnees";
 import type { Choix } from "./selection";
 
@@ -51,6 +51,8 @@ export type EtatCommune =
          deja la publication du jour ; "inconnue" : premiere visite, cache
          efface ou donnee servie hors ligne — rien n'est affirme. */
       visite: "comparee" | "deja vue" | "inconnue"; changements: Ouvert[];
+      /* les faits valides par la redaction (evenements.json) ; null s'ils ne sont pas arrives */
+      evenements: Ouvert;
       /* le calendrier : arrive pour au moins une institution */
       agendaLu: boolean;
     };
@@ -60,16 +62,16 @@ const arrive = (r: { etat: string }) => r.etat === ETATS.SERVI;
 /* Compare la publication du jour a la version que l'appareil avait gardee
    (@repere/core changementsCommune). Seules les familles dont une version
    precedente existait sont comparees ; les autres ne disent rien. */
-function visiteDe({ dep, insee, fiche, projets, cat, pos, deputes }: { dep: string; insee: string; fiche: Ouvert; projets: Ouvert; cat: Ouvert; pos: Ouvert; deputes: Ouvert }) {
+function visiteDe({ dep, insee, fiche, projets, cat, pos, deputes, evenements }: { dep: string; insee: string; fiche: Ouvert; projets: Ouvert; cat: Ouvert; pos: Ouvert; deputes: Ouvert; evenements: Ouvert }) {
   const D = String(dep).toUpperCase();
-  const cles = { dep: "dep:" + D, proj: "proj:" + D, scr: "socle:SCR", deputes: "socle:DEP" } as const;
+  const cles = { dep: "dep:" + D, proj: "proj:" + D, scr: "socle:SCR", deputes: "socle:DEP", evt: "socle:EVT" } as const;
   const etat = Object.fromEntries(Object.entries(cles).map(([f, c]) => [f, connaissance(c)])) as Record<keyof typeof cles, string | null>;
-  const connus = { dep: etat.dep === "precedente", proj: etat.proj === "precedente", scr: etat.scr === "precedente", deputes: etat.deputes === "precedente" };
+  const connus = { dep: etat.dep === "precedente", proj: etat.proj === "precedente", scr: etat.scr === "precedente", deputes: etat.deputes === "precedente", evt: etat.evt === "precedente" };
   const ancien: Ouvert = precedentDe(cles.dep);
   const r = changementsCommune({
     commune: insee, dep,
-    avant: { fiche: ancien && ancien.communes ? ancien.communes[insee] : null, projets: precedentDe(cles.proj), cat: precedentDe(cles.scr), deputes: precedentDe(cles.deputes) },
-    apres: { fiche, projets, cat, pos, deputes }, connus,
+    avant: { fiche: ancien && ancien.communes ? ancien.communes[insee] : null, projets: precedentDe(cles.proj), cat: precedentDe(cles.scr), deputes: precedentDe(cles.deputes), evenements: precedentDe(cles.evt) },
+    apres: { fiche, projets, cat, pos, deputes, evenements }, connus,
   });
   /* le fichier de la commune decide : sans version precedente de lui, pas de
      « depuis votre derniere visite » */
@@ -89,10 +91,10 @@ export function useCommune(choix: Choix, essai: number): EtatCommune {
     setEtat({ etat: ETATS.EN_COURS, pret: false });
     const { dep, insee } = choix;
     (async () => {
-      const [ix, pq, pr, de, c, v, ca, an] = await Promise.all([
+      const [ix, pq, pr, de, c, v, ca, an, ev] = await Promise.all([
         chargerIndex(), chargerDepartement(dep), chargerProjets(dep),
         chargerDeputes(), chargerCatalogueScrutins(), chargerVotes(dep),
-        chargerCalendrierSenat(), chargerAgendaAN(),
+        chargerCalendrierSenat(), chargerAgendaAN(), chargerEvenements(),
       ]);
       if (!vivant) return;
       const paquet: Ouvert = pq.donnees;
@@ -123,8 +125,9 @@ export function useCommune(choix: Choix, essai: number): EtatCommune {
         /* les deputes et le catalogue sont nationaux : seul le fichier des
            positions est par departement */
         votesNonPublies: arrive(de) && arrive(c) && nonPublie(v),
+        evenements: arrive(ev) ? ev.donnees : null,
         ...visiteDe({ dep, insee, fiche, projets: arrive(pr) ? pr.donnees : null, cat: arrive(c) ? c.donnees : null,
-          pos: arrive(v) ? v.donnees : null, deputes: arrive(de) ? de.donnees : null }),
+          pos: arrive(v) ? v.donnees : null, deputes: arrive(de) ? de.donnees : null, evenements: arrive(ev) ? ev.donnees : null }),
         votesFiables: votesLus ? positionsFiables(c.donnees, v.donnees) : true,
         agendaLu: arrive(ca) || arrive(an),
       });

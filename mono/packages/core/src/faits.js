@@ -1,3 +1,4 @@
+import { dateFr } from "./format.js";
 /* @repere/core — deplace depuis apps/web/src/lib/faits.js le 29/09/2026, sans
  * changement de logique, pour que le web et l'application mobile assemblent
  * exactement les memes faits. */
@@ -99,4 +100,32 @@ export function calculerFaits({ dep, fiche, projets, commune, cat, pos, deputes,
      complete (invariant 3 : ni montant, ni echelon n'entre dans le tri). */
   faits.sort((a, b) => (a.quand < b.quand ? 1 : a.quand > b.quand ? -1 : a.rang - b.rang));
   return faits;
+}
+
+/* LE FAIT EDITORIAL D'UN SCRUTIN (06/10/2026). Les faits valides par la
+ * redaction sur un vote de l'Assemblee portent la page du scrutin comme
+ * source (`src` = …/scrutins/<numero>). C'est par elle, et par rien d'autre,
+ * qu'un fait est relie au vote qu'il explique : jamais par un titre proche.
+ * `conf` est transmis tel quel : l'ecran dit « relu et validé » seulement
+ * pour "verifie". */
+export function faitDuScrutin(evenements, sc) {
+  if (!evenements || !Array.isArray(evenements.r) || !sc || !sc.n) return null;
+  const fin = "/scrutins/" + String(sc.n);
+  return evenements.r.find(e => typeof e.src === "string" && e.src.replace(/\/+$/, "").endsWith(fin)) || null;
+}
+/* La premiere phrase des grands axes : ce que le premier coup d'oeil retient.
+   Le reste se deplie. Coupure sur « . » suivi d'une majuscule, jamais au
+   milieu d'une parenthese ou d'un nombre. */
+export function premierePhrase(t) {
+  const s = String(t || "").replace(/\s+/g, " ").trim();
+  const m = s.match(/^(.+?[.!?])\s+(?=[A-ZÀÂÉÈÊÎÔÛÇ])/);
+  return m ? m[1] : s;
+}
+/* Ou en est le texte, selon le fait valide : le paragraphe « Résultat du
+   scrutin … » quand il dit que le texte n'est pas definitif. */
+export function etatDuTexte(e) {
+  if (!e || !e.txt) return null;
+  const p = String(e.txt).split(/\n\s*\n/).map(x => x.trim()).find(x => /^Résultat du scrutin/.test(x));
+  /* la date ISO du fichier, ecrite comme le reste de l'application */
+  return p ? p.replace(/\b(\d{4}-\d{2}-\d{2})\b/g, x => dateFr(x)) : null;
 }

@@ -69,5 +69,18 @@ export function changementsCommune({ commune, dep, avant, apres, connus }) {
     for (const p of liste(apres.projets).filter(p => !deja.has(cleProjet(p)))) out.push({ type: "projet", p });
   }
 
+  /* 6. LES FAITS VALIDES PAR LA REDACTION : un identifiant que l'ancien
+     fichier ne portait pas. Seulement « verifie », et seulement ce qui concerne
+     la commune : un fait national, ou un fait de sa commune ou de son
+     departement (meme filtre que faitsEditoriaux). */
+  if (connus.evt && avant.evenements && apres.evenements && Array.isArray(apres.evenements.r)) {
+    const deja = new Set((avant.evenements.r || []).map(e => e.id));
+    for (const e of apres.evenements.r) {
+      if (deja.has(e.id) || e.conf !== "verifie") continue;
+      if (!(e.e === "france" || (e.insee && (e.insee === commune || e.insee === dep)))) continue;
+      out.push({ type: "editorial", e, quand: e.d });
+    }
+  }
+
   return { compare: Object.values(connus).some(Boolean), changements: out };
 }

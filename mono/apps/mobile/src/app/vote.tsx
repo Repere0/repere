@@ -16,7 +16,7 @@ import { Pressable } from "react-native";
 import {
   CONSTITUTION_45_URL, dateFr, ordinal, ETAPES_LOI, etapeDuScrutin, ligneScrutin, motPosition,
   phraseCirconscription, phraseDenominateurVote, phrasePosition, POSITION_NON_PORTEE, procedure,
-  repartitionVote, REFUS_APPARIEMENT, titreLisible, MOTS,
+  repartitionVote, REFUS_APPARIEMENT, titreLisible, MOTS, etatDuTexte, faitDuScrutin, premierePhrase,
 } from "@repere/core";
 import { Carte, LienSortant, Segments, Vide } from "../lib/composants";
 import { circoInconnue, VOTE_AUCUN, VOTES_PAS_ARRIVES, votesNonPublies } from "../lib/absences";
@@ -25,7 +25,7 @@ import { useCommuneChoisie } from "../lib/useCommune";
 import { couleurs, PAS, TYPO, CIBLE } from "../lib/theme";
 import { AvecDonnees, Page, Question } from "../ui/page";
 import { PastilleSource } from "../ui/source";
-import { Frise, Repartition } from "../ui/visuels";
+import { Depli, Frise, Repartition } from "../ui/visuels";
 
 type FaitVote = { cle: string; type: string; sc: { t: string; d: string; n: string; s: string; dec?: Record<string, string> }; position?: string; qui: string; circo: number };
 
@@ -55,6 +55,7 @@ export default function Vote() {
       if (!vote) return <Page>{entete}<Vide {...(d.nbCircos === 0 ? circoInconnue(d.nomCommune) : { ...VOTE_AUCUN, corps: POSITION_NON_PORTEE })} /></Page>;
 
       const rep = repartitionVote(vote.sc);
+      const fait = faitDuScrutin(r.evenements, vote.sc);
       const mot = (MOTS as Record<string, string>)[vote.position || ""];
       const etape = etapeDuScrutin(procedure(vote.sc.t));
       const autres = (d.faits as FaitVote[]).filter(x => x.type === "vote" && x.cle !== vote.cle && x.circo === vote.circo).slice(0, 4);
@@ -96,6 +97,23 @@ export default function Vote() {
             <PastilleSource source={srcVote(d, vote.sc)} />
           </Carte>
 
+          {/* CE QUE PREVOIT CE TEXTE — 06/10/2026. Le fait valide par la
+             redaction pour ce scrutin (evenements.json, relie par la page du
+             scrutin et rien d'autre : faitDuScrutin). Une phrase d'abord, le
+             detail se deplie ; la source des grands axes est distincte de
+             celle du vote, et la mention dit qu'un humain a relu. Sans fait
+             valide, rien n'est ecrit a sa place. */}
+          {fait && fait.axes ? (
+            <Carte echelon="france" titre="Ce que prévoit ce texte">
+              <Text style={TYPO.corps}>{premierePhrase(fait.axes)}</Text>
+              {premierePhrase(fait.axes) !== String(fait.axes).replace(/\s+/g, " ").trim() ? (
+                <Depli titre="Tout le détail du texte"><Text style={TYPO.corps}>{fait.axes}</Text></Depli>
+              ) : null}
+              <Text style={TYPO.micro}>{fait.conf === "verifie" ? "Relu et validé par la rédaction de Repère." : "Relevé par Repère, en attente de confirmation."}</Text>
+              {fait.axes_src ? <PastilleSource source={{ producteur: fait.axes_srcn || "Texte de référence", url: fait.axes_src }} /> : null}
+            </Carte>
+          ) : null}
+
           {/* NIVEAU 2 : le scrutin, visuellement */}
           {rep ? (
             <Carte echelon="france" titre="Comment l'Assemblée a voté">
@@ -119,6 +137,8 @@ export default function Vote() {
 
           {/* NIVEAU 3 : ou en est le texte */}
           <Carte echelon="france" titre="Où en est ce texte ?">
+            {/* ou en est REELLEMENT ce texte, selon le fait valide (ex. « transmis au Sénat ») */}
+            {fait && etatDuTexte(fait) ? <Text style={[TYPO.corps, { fontWeight: "600" }]}>{etatDuTexte(fait)}</Text> : null}
             {etape ? (
               <Text style={TYPO.note}>Ce vote porte sur l'étape surlignée ; les autres étapes expliquent le parcours général d'une loi.</Text>
             ) : (
