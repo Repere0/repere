@@ -87,7 +87,7 @@ export function Repartition({ segments, total, position, qui, compact }: {
           <View key={x.cle} style={s.legende}>
             <View style={[s.pastilleCouleur, { backgroundColor: GRIS_VOTE[x.cle as keyof typeof GRIS_VOTE] }]} />
             <Text style={[TYPO.corps, { flex: 1 }]}>{x.libelle}</Text>
-            {position === x.cle && qui ? <Text style={s.marque} numberOfLines={1}>{qui}</Text> : null}
+            {position === x.cle && qui ? <Text style={s.marque} numberOfLines={2}>{qui}</Text> : null}
             <Text style={[TYPO.corps, { fontWeight: "700", minWidth: 44, textAlign: "right" }]}>{x.nombre}</Text>
           </View>
         ))}
@@ -230,6 +230,8 @@ const s = StyleSheet.create({
   barreVote: { flexDirection: "row", height: 22, borderRadius: 8, overflow: "hidden", backgroundColor: couleurs.voile },
   legende: { flexDirection: "row", alignItems: "center", gap: PAS * 2 },
   pastilleCouleur: { width: 14, height: 14, borderRadius: 4, borderWidth: StyleSheet.hairlineWidth, borderColor: couleurs.sourd },
+  /* deux lignes : a 200 % de texte, un nom sur une seule ligne etait coupe
+     (« Sylvain Berrios » : 196 px pour 161, mesure du 06/10/2026) */
   marque: { fontSize: 13, fontWeight: "700", color: couleurs.blanc, backgroundColor: couleurs.ville, paddingHorizontal: 8, paddingVertical: 2, borderRadius: RAYON.pastille, overflow: "hidden", maxWidth: 170 },
   annee: { flexDirection: "row", alignItems: "center", gap: PAS * 2 },
   jalon: { flexDirection: "row", gap: PAS * 3 },

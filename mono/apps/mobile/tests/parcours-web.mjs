@@ -645,6 +645,46 @@ async function montantA100ms(reduit) {
   }
 }
 
+/* TEXTE A 200 % (06/10/2026). Le rendu web ignore l'agrandissement du texte
+   du systeme ; on l'approche en doublant la taille et l'interligne calcules de
+   chaque element, puis on mesure : aucun debordement horizontal, aucun texte
+   coupe par son conteneur (hors troncature voulue et hors zones de
+   defilement, pleine largeur). Ce n'est pas un telephone : la verification
+   sur appareil reste a faire (docs/mobile, checklist). */
+{
+  const page = await navigateur.newPage({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, reducedMotion: "reduce" });
+  const agrandir = () => page.evaluate(() => {
+    const mes = [...document.querySelectorAll("body *")].map(e => { const c = getComputedStyle(e); return [e, parseFloat(c.fontSize), c.lineHeight]; });
+    for (const [e, fs, lh] of mes) { if (!fs) continue; e.style.fontSize = fs * 2 + "px"; if (lh && lh !== "normal") e.style.lineHeight = parseFloat(lh) * 2 + "px"; }
+  });
+  const mesurer = () => page.evaluate(() => {
+    const coupes = [];
+    for (const e of document.querySelectorAll("body *")) {
+      const c = getComputedStyle(e);
+      if (!e.innerText || !e.innerText.trim() || e.clientWidth >= window.innerWidth - 2) continue;
+      if (c.webkitLineClamp && c.webkitLineClamp !== "none") continue;
+      const cache = c.overflow === "hidden" || c.overflowX === "hidden" || c.overflowY === "hidden";
+      if (cache && (e.scrollWidth > e.clientWidth + 2 || e.scrollHeight > e.clientHeight + 2) && !(c.textOverflow === "ellipsis" && e.innerText.trim().length > 60))
+        coupes.push(e.innerText.trim().slice(0, 40));
+    }
+    return { deborde: document.documentElement.scrollWidth > window.innerWidth + 1, coupes: [...new Set(coupes)] };
+  });
+  for (const [saisie, nom] of [["creteil", "Créteil"], ["meaux", "Meaux"]]) {
+    for (const ecran of [null, "Où va cet argent ?", "Comprendre ce vote", "Qui décide de quoi", "Ce qui arrive au Parlement", "D'où viennent ces informations"]) {
+      await page.goto(BASE + "/", { waitUntil: "networkidle" });
+      await page.getByLabel(/Où habitez-vous/).fill(saisie);
+      await page.getByRole("button", { name: new RegExp("^" + nom + ",") }).first().click();
+      await page.getByText("Aller plus loin").first().waitFor({ timeout: 15000 });
+      if (ecran) { await page.getByRole("button", { name: ecran }).first().click(); await page.waitForTimeout(1200); }
+      await page.waitForTimeout(400);
+      await agrandir();
+      const m = await mesurer();
+      verifier(!m.deborde && m.coupes.length === 0, `texte à 200 % · ${nom} · ${ecran || "Chez vous"} : rien ne déborde, rien n'est coupé ${JSON.stringify(m.coupes)}`);
+    }
+  }
+  await page.close();
+}
+
 /* LES ABSENCES REELLES (06/10/2026) : une commune par cause, choisie dans les
    donnees (releve du jour), et la phrase attendue lue dans @repere/core ou
    dans l'application, jamais recopiee. Mesure avant ce controle : a
