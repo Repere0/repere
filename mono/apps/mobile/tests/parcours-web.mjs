@@ -443,7 +443,7 @@ async function montantA100ms(reduit) {
   verifier(/circonscription/.test(ustaritz) && /par habitant/.test(ustaritz), "national : le vote et les comptes s'affichent");
   const ordre = await page.evaluate(() => {
     const reps = [...document.querySelectorAll('[data-testid="reponse"]')].filter(e => e.offsetParent).map(e => e.getBoundingClientRect().top);
-    const vide = [...document.querySelectorAll("div")].find(e => e.children.length === 0 && /^Repère ne publie pas encore les projets/.test(e.textContent || ""));
+    const vide = [...document.querySelectorAll("div")].find(e => e.children.length === 0 && /^Les projets financés par l'État ne sont pas encore disponibles/.test(e.textContent || ""));
     return { reps, vide: vide ? vide.getBoundingClientRect().top : null };
   });
   verifier(ordre.vide !== null && ordre.reps.length >= 2 && ordre.reps.every(t => t < ordre.vide),
