@@ -121,3 +121,29 @@ export function releveAncien(releve, maintenant, seuilJours = 2) {
   if (jours <= seuilJours) return null;
   return `Calendrier relevé le ${dateFr(String(releve).slice(0, 10))} : des séances ont pu être ajoutées, déplacées ou annulées depuis.`;
 }
+
+/* UN RELEVE REPRIS SE DIT TOUJOURS (06/10/2026). Quand une source n'a pas
+ * repondu, la chaine reprend son releve publie precedent et le marque
+ * `reutilise` (scripts/releve-precedent.mjs). Meme recent, il n'est PAS le
+ * releve du jour : la phrase le dit des le premier jour, et nomme
+ * l'institution. Sur TOUTES les sources des rendez-vous montres, pas sur la
+ * premiere seulement (le Senat repris ne doit pas disparaitre derriere une
+ * seance de l'Assemblee). Rend une phrase, ou null si tout est frais. */
+export function fraicheurCalendrier(sources, maintenant, seuilJours = 2) {
+  const DE = { "Sénat": " du Sénat", "Assemblée nationale": " de l'Assemblée nationale" };
+  const vues = new Map();
+  for (const s of sources || []) {
+    if (!s || !s.releve_le) continue;
+    const cle = (s.producteur || "") + "|" + String(s.releve_le).slice(0, 10);
+    const avant = vues.get(cle);
+    vues.set(cle, { ...s, reutilise: !!(s.reutilise || (avant && avant.reutilise)) });
+  }
+  const phrases = [];
+  for (const s of vues.values()) {
+    const jour = String(s.releve_le).slice(0, 10);
+    const qui = DE[s.producteur] || (s.producteur ? " (" + s.producteur + ")" : "");
+    if (s.reutilise) phrases.push(`Calendrier${qui} relevé le ${dateFr(jour)} : la source n'a pas répondu depuis, des séances ont pu être ajoutées, déplacées ou annulées.`);
+    else if (releveAncien(jour, maintenant, seuilJours)) phrases.push(`Calendrier${qui} relevé le ${dateFr(jour)} : des séances ont pu être ajoutées, déplacées ou annulées depuis.`);
+  }
+  return phrases.length ? phrases.join(" ") : null;
+}

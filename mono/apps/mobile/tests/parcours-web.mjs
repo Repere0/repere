@@ -710,8 +710,20 @@ async function montantA100ms(reduit) {
     return route.fulfill({ response: rep, json: { ...j, source: { ...(j.source || {}), releve_le: dix } } });
   });
   const n2 = await age(ctx2); await ctx2.close();
-  verifier(!!n2 && /^Calendrier relevé le .* : des séances ont pu être ajoutées, déplacées ou annulées depuis\.$/.test(n2),
-    `fraîcheur du calendrier : relevé vieux de dix jours -> la date est dite (${n2})`);
+  verifier(!!n2 && /^Calendrier (du Sénat|de l'Assemblée nationale) relevé le .* : des séances ont pu être ajoutées, déplacées ou annulées depuis\./.test(n2),
+    `fraîcheur du calendrier : relevé vieux de dix jours -> la date est dite, institution nommée (${n2})`);
+  /* RELEVE REPRIS (06/10/2026) : la chaine a repris le releve publie du Senat,
+     faute de reponse, et l'a marque `reutilise`. Meme date d'hier, il n'est pas
+     le releve du jour : l'ecran le dit, et nomme le Senat. */
+  const hier = new Date(Date.now() - 864e5).toISOString().slice(0, 10);
+  const ctx3 = await navigateur.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, reducedMotion: "reduce" });
+  await ctx3.route(/\/data\/calendrier-senat\.json/, async route => {
+    const rep = await route.fetch(); const j = await rep.json();
+    return route.fulfill({ response: rep, json: { ...j, source: { ...(j.source || {}), releve_le: hier, reutilise: true, reutilise_le: new Date().toISOString().slice(0, 10) } } });
+  });
+  const n3 = await age(ctx3); await ctx3.close();
+  verifier(!!n3 && /Calendrier du Sénat relevé le .* : la source n'a pas répondu depuis/.test(n3) && !/aujourd'hui/i.test(n3),
+    `fraîcheur du calendrier : relevé du Sénat repris (hier) -> dit comme repris, jamais « du jour » (${n3})`);
   }
 }
 

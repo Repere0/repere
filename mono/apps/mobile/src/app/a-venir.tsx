@@ -5,7 +5,7 @@
  * Fichiers republies chaque jour par la chaine, jamais embarques : un
  * calendrier absent ne fait jamais dire « aucune seance annoncee ». */
 import { router, Stack } from "expo-router";
-import { heureFr, jourFr, phraseSemaineParlement, releveAncien } from "@repere/core";
+import { fraicheurCalendrier, heureFr, jourFr, phraseSemaineParlement } from "@repere/core";
 import { Pressable, Text } from "react-native";
 import { Carte, Vide } from "../lib/composants";
 import { AGENDA_PAS_ARRIVE, AGENDA_VIDE } from "../lib/absences";
@@ -37,9 +37,11 @@ export default function AVenir() {
             <Text style={{ fontWeight: "700", color: "#1d1d1f" }}>Questions au Gouvernement</Text>
             <Text style={{ marginTop: 4, color: "#5f6368" }}>Voir les questions posées et les réponses publiées.</Text>
           </Pressable>
-          {/* Un releve qui date de plus de deux jours le dit (@repere/core releveAncien). */}
-          {r.agendaLu && releveAncien(d.srcCal && d.srcCal.releve_le, new Date()) ? (
-            <Text testID="releve-ancien" style={TYPO.note}>{releveAncien(d.srcCal.releve_le, new Date())}</Text>
+          {/* Un releve de plus de deux jours, ou REPRIS faute de reponse de la
+              source, le dit, institution par institution (@repere/core
+              fraicheurCalendrier), sur toutes les sources montrees. */}
+          {r.agendaLu && fraicheurCalendrier([...prochains.map(e => e.source as { producteur?: string; releve_le?: string; reutilise?: boolean }), d.srcCal], new Date()) ? (
+            <Text testID="releve-ancien" style={TYPO.note}>{fraicheurCalendrier([...prochains.map(e => e.source as { producteur?: string; releve_le?: string; reutilise?: boolean }), d.srcCal], new Date())}</Text>
           ) : null}
           {/* en route : ni « pas arrivé », ni « aucune séance » (06/10/2026) */}
           {r.agendaEnCours ? (

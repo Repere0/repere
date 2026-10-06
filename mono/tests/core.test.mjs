@@ -374,3 +374,13 @@ test("core — seul le vote sur l'ensemble d'un texte est candidat au fil", () =
     "L'amendement n° 7 du Gouvernement au projet de loi …", "Le sous-amendement n° 2 de Mme Y", "l'article 12 de la proposition de loi …", ""])
     assert.equal(estVoteDeTexte(t), false, t);
 });
+import { fraicheurCalendrier } from "../packages/core/src/index.js";
+test("core — fraicheurCalendrier : un relevé repris se dit toujours, un relevé ancien aussi, le frais jamais", () => {
+  const n = new Date("2026-10-06T10:00:00Z");
+  const AN = { producteur: "Assemblée nationale", releve_le: "2026-10-06" }, SEN = { producteur: "Sénat", releve_le: "2026-10-05" };
+  assert.equal(fraicheurCalendrier([AN, SEN], n), null);
+  assert.match(fraicheurCalendrier([AN, { ...SEN, reutilise: true }], n), /^Calendrier du Sénat relevé le 5 octobre 2026 : la source n'a pas répondu depuis/);
+  assert.match(fraicheurCalendrier([{ ...AN, releve_le: "2026-09-26" }, SEN], n), /^Calendrier de l'Assemblée nationale relevé le 26 septembre 2026/);
+  assert.match(fraicheurCalendrier([SEN, { ...SEN, reutilise: true }, SEN], n), /n'a pas répondu/, "une occurrence reutilisee suffit, quel que soit l'ordre");
+  assert.equal(fraicheurCalendrier([null, undefined, {}], n), null);
+});
