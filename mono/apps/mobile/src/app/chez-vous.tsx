@@ -29,7 +29,7 @@ import { router, Stack } from "expo-router";
 import {
   dateFr, datePublication, decompte, euros, financementProjet, montantCourt, ordinal, parHabitant, phrasePosition,
   repartitionVote, texteDe,
-  titreLisible, REFUS_APPARIEMENT,
+  titreLisible, REFUS_APPARIEMENT, comptesAbsents, comptesIncoherents, exercicesEcartes, phraseEcartes,
 } from "@repere/core";
 import { Vide } from "../lib/composants";
 import { CarteMemoire } from "../cartes/CarteMemoire";
@@ -101,8 +101,16 @@ export default function ChezVous() {
               </>}
               suite={{ texte: "Où va cet argent ?", onPress: () => router.push("/argent") }} />
           ) : (
+            /* DEUX CAUSES, DEUX PHRASES (06/10/2026). Mesure a Saint-Pierre (975) :
+               cet ecran disait « ses comptes ne permettent pas de dire… », comme
+               si des comptes incomplets existaient, quand « Où va l'argent » disait,
+               a juste titre, « ses comptes ne figurent pas dans le fichier
+               officiel ». Les deux ecrans disent maintenant la meme cause, avec
+               la phrase du socle. */
             <Reponse echelon="ville"
-              phrase={`Les comptes de ${nom} ne permettent pas de dire combien la commune dépense par habitant.`}
+              phrase={!d.exercice
+                ? (phraseEcartes(exercicesEcartes(d.fiche, null), nom) ? comptesIncoherents(nom, phraseEcartes(exercicesEcartes(d.fiche, null), nom)) : comptesAbsents(nom)).titre
+                : `Les comptes ${d.exercice.an} de ${nom} ne disent pas combien la commune dépense par habitant.`}
               suite={{ texte: "Pourquoi ?", onPress: () => router.push("/argent") }} />
           ));
       /* 3. A L'ASSEMBLEE NATIONALE — une position, jamais une presence ; une

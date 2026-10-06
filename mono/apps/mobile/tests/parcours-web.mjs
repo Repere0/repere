@@ -530,6 +530,65 @@ async function montantA100ms(reduit) {
   await ctx.close();
 }
 
+/* LES ABSENCES REELLES (06/10/2026) : une commune par cause, choisie dans les
+   donnees (releve du jour), et la phrase attendue lue dans @repere/core ou
+   dans l'application, jamais recopiee. Mesure avant ce controle : a
+   Saint-Pierre (975, comptes absents du fichier), « Chez vous » disait « ses
+   comptes ne permettent pas de dire… » et « Où va l'argent » « ses comptes ne
+   figurent pas dans le fichier officiel » — une cause, deux phrases. */
+{
+  const core = await import("../../../packages/core/src/index.js");
+  const page = await navigateur.newPage({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, reducedMotion: "reduce" });
+  /* espaces insecables (typographie des reponses) ramenees a des espaces */
+  const texte = async () => (await page.evaluate(() => document.body.innerText)).replace(/[  ]/g, " ");
+  const parDepartement = async (dep, saisie, nom) => {
+    await page.goto(BASE + "/", { waitUntil: "networkidle" });
+    await page.getByLabel(/Où habitez-vous/).fill(saisie);
+    /* resultats franciliens ou non : le chemin vers le departement est toujours la */
+    await page.getByRole("button", { name: /Choisir (mon|votre) département/ }).first().click();
+    await page.getByLabel(/Dans quel département/).fill(dep);
+    await page.getByRole("button", { name: new RegExp(", " + dep + "$") }).click();
+    await page.getByLabel(/Quelle commune/).fill(saisie);
+    if (!nom) { await page.waitForTimeout(1500); return; }
+    await page.getByRole("button", { name: new RegExp("^" + nom + ",") }).first().click();
+    await page.getByText("Aller plus loin").first().waitFor({ timeout: 15000 });
+    await page.waitForTimeout(500);
+  };
+  /* comptes absents du fichier : la meme phrase sur les deux ecrans */
+  await parDepartement("975", "saint pierre", "Saint-Pierre");
+  const attendu = core.comptesAbsents("Saint-Pierre").titre;
+  const chez = await texte();
+  await page.getByRole("button", { name: "Pourquoi ?" }).first().click();
+  await page.getByText(/Où va l'argent de Saint-Pierre/).first().waitFor({ timeout: 10000 });
+  const argent = await texte();
+  verifier(chez.includes(attendu) && argent.includes(attendu) && !/ne permettent pas de dire/.test(chez),
+    `absences : comptes absents, une seule phrase sur « Chez vous » et « Où va l'argent » (« ${attendu} »)`);
+  verifier(!/\b0 € par habitant/.test(chez + argent), "absences : un montant absent n'est jamais affiché comme zéro");
+  /* commune absente de la table des circonscriptions : Repere ne devine pas */
+  await parDepartement("12", "conques", "Conques-en-Rouergue");
+  const conques = await texte();
+  verifier(/Repère ne connaît pas la circonscription de Conques-en-Rouergue/.test(conques) && !/Votre commune est dans la/.test(conques),
+    "absences : sans circonscription connue, Repère le dit et ne nomme aucun député");
+  /* commune qui existe sans fiche dans le Repertoire */
+  await page.goto(BASE + "/", { waitUntil: "networkidle" });
+  await page.getByLabel(/Où habitez-vous/).fill("ville d'avray");
+  await page.waitForTimeout(500);
+  verifier(/Ville-d'Avray existe bien en Île-de-France : c'est nous qui n'avons pas encore sa fiche/.test(await texte()),
+    "absences : une commune sans fiche existe bien, et l'écran le dit");
+  await parDepartement("01", "arbent", null);
+  verifier(/Arbent existe bien dans ce département : c'est nous qui n'avons pas encore sa fiche/.test(await texte()),
+    "absences : hors Île-de-France aussi, une commune sans fiche n'est pas dite inexistante");
+  /* intercommunalite absente du Repertoire : la source est incomplete, pas la commune */
+  await page.goto(BASE + "/", { waitUntil: "networkidle" });
+  await page.getByLabel(/Où habitez-vous/).fill("amponville");
+  await page.getByRole("button", { name: /^Amponville,/ }).first().click();
+  await page.getByText("Aller plus loin").first().waitFor({ timeout: 15000 });
+  await page.getByRole("button", { name: "Qui décide de quoi" }).first().click();
+  await page.getByText(/Qui décide pour Amponville/).first().waitFor({ timeout: 10000 });
+  verifier(/ne porte pas de délégué pour cette commune/.test(await texte()), "absences : intercommunalité absente du Répertoire, dite comme telle");
+  await page.close();
+}
+
 await navigateur.close();
 if (CAPTURES) console.log("captures : " + fs.readdirSync(CAPTURES).filter(f => f.endsWith(".png")).join(", "));
 console.log(echecs ? `${echecs} échec(s)` : "parcours complet, zéro échec");
