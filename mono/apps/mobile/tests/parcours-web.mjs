@@ -559,6 +559,8 @@ async function montantA100ms(reduit) {
   };
   await ouvrirMeaux(false);
   verifier(await bloc() === null, "depuis la visite : non retenue, première visite -> rien n'est affirmé");
+  /* le lecteur sait a quoi sert de retenir sa commune, avant de toucher */
+  verifier(/vous dira s'il y a du nouveau/.test(await page.evaluate(() => document.body.innerText)), "depuis la visite : la carte dit que retenir sa commune sert à savoir s'il y a du nouveau");
   await page.getByRole("button", { name: "Retenir Meaux sur ce téléphone" }).click();
   await ouvrirMeaux(true);
   verifier(/^Rien de nouveau depuis votre dernière visite\.$/.test(await bloc() || ""), "depuis la visite : même publication -> « Rien de nouveau depuis votre dernière visite »");
