@@ -398,6 +398,50 @@ async function montantA100ms(reduit) {
   await ctx.close();
 }
 
+/* PLUSIEURS CIRCONSCRIPTIONS (06/10/2026). Mesure avant ce controle : a Paris
+   (18 circonscriptions), « Comprendre ce vote » affirmait que le depute de la
+   1re etait « votre député », et « Qui décide » le disait « pour votre
+   circonscription ». Repere ne connait pas l'adresse du lecteur : il doit le
+   dire, et laisser choisir. Les noms attendus sont lus dans les donnees. */
+{
+  const deputes = await (async () => { try { return (await (await fetch(BASE + "/data/deputes.json")).json()).deputes; } catch { return {}; } })();
+  const nomDepute = k => deputes[k] ? [deputes[k].prenom, deputes[k].nom].filter(Boolean).join(" ") : null;
+  const page = await navigateur.newPage({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, reducedMotion: "reduce" });
+  await page.goto(BASE + "/", { waitUntil: "networkidle" });
+  await page.getByLabel(/Où habitez-vous/).fill("paris");
+  await page.getByRole("button", { name: /^Paris, Paris$/ }).click();
+  await page.getByText("Aller plus loin").first().waitFor({ timeout: 15000 });
+  await page.getByRole("button", { name: "Comprendre ce vote" }).first().click();
+  await page.getByText(/Qu'a voté votre député/).first().waitFor({ timeout: 10000 });
+  await page.waitForTimeout(500);
+  let t = await page.evaluate(() => document.body.innerText);
+  verifier(/que Repère ne connaît pas/.test(t) && !/Pourquoi c'est votre député/i.test(t) && /Comment trouver votre député/i.test(t),
+    "plusieurs circonscriptions : l'écran du vote ne prétend pas connaître « votre » député");
+  verifier(!/Élu par les électeurs/.test(t), "plusieurs circonscriptions : aucune formule accordée au masculin par défaut");
+  const cinquieme = nomDepute("75-5");
+  await page.getByRole("button", { name: "5e circonscription", exact: true }).click();
+  await page.waitForTimeout(500);
+  t = await page.evaluate(() => document.body.innerText);
+  verifier(!!cinquieme && new RegExp(cinquieme.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).test(t) && /élu dans la 5e/.test(t),
+    `plusieurs circonscriptions : choisir la 5e montre son député (${cinquieme})`);
+  verifier(await page.getByRole("link", { name: /Trouver sa circonscription/ }).count() === 1, "plusieurs circonscriptions : un lien vers l'outil officiel pour trouver la sienne");
+  await page.getByRole("button", { name: "Revenir à l'écran Chez vous" }).last().click();
+  await page.getByRole("button", { name: "Qui décide de quoi" }).first().click();
+  await page.getByText(/Qui décide pour Paris/).first().waitFor({ timeout: 10000 });
+  t = await page.evaluate(() => document.body.innerText);
+  verifier(/18 circonscriptions/i.test(t) && /circonscription \(exemple\)/.test(t) && !/pour votre circonscription/.test(t),
+    "plusieurs circonscriptions : « Qui décide » dit que le député nommé est un exemple");
+  /* une seule circonscription : la phrase « votre » reste juste */
+  await page.goto(BASE + "/", { waitUntil: "networkidle" });
+  await page.getByLabel(/Où habitez-vous/).fill(COMMUNE.saisie);
+  await page.getByRole("button", { name: new RegExp("^" + COMMUNE.nom + ",") }).first().click();
+  await page.getByText("Aller plus loin").first().waitFor({ timeout: 15000 });
+  await page.getByRole("button", { name: "Comprendre ce vote" }).first().click();
+  await page.getByText(/Pourquoi c'est votre député/i).first().waitFor({ timeout: 10000 });
+  verifier(await page.getByRole("button", { name: /circonscription$/ }).count() === 0, "une seule circonscription : pas de sélecteur, « votre député » est juste");
+  await page.close();
+}
+
 /* LE RESTE DE LA FRANCE (06/10/2026). Mesure en production avant ce controle :
    « ustaritz » repondait « Rien ne correspond », alors que son departement est
    publie (maire, comptes, circonscription, votes). Le controle refait le
@@ -472,6 +516,8 @@ async function montantA100ms(reduit) {
   const pap = await page.evaluate(() => document.body.innerText);
   const maireP = await lireMaire("971", "97120");
   verifier(!!maireP && new RegExp(echapper(maireP)).test(pap), `national : Pointe-à-Pitre (971) s'ouvre avec son maire (${maireP})`);
+  /* outre-mer : departement et region portent souvent le meme nom */
+  verifier(!/Guadeloupe · Guadeloupe/.test(pap), "national : « Guadeloupe » n'est pas écrit deux fois dans l'en-tête");
   verifier(demandees.some(u => /\/departments\/971\.json/.test(u)) && !demandees.some(u => /\/departments\/97\.json/.test(u)),
     "national : l'outre-mer lit le fichier 971, jamais 97");
   const fautives = demandees.filter(u => adresseFautive(u) || /64547|97120/.test(u));

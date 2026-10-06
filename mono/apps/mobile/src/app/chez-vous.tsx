@@ -153,7 +153,7 @@ export default function ChezVous() {
              troisieme reponse de Paris revient dans le premier ecran (mesure). */}
           <View style={{ gap: 2 }}>
             <Text style={TYPO.affiche} accessibilityRole="header">{nom}</Text>
-            <Text style={TYPO.note}>{[depIndex && depIndex.nom, depIndex && depIndex.region].filter(Boolean).join(" · ")}</Text>
+            <Text style={TYPO.note}>{[...new Set([depIndex && depIndex.nom, depIndex && depIndex.region].filter(Boolean))].join(" · ")}</Text>
             {/* « Publication » et non « mis a jour » : la date est celle de la
                publication affichee, vraie dans les trois etats de l'invariant 9
                — y compris hors ligne, ou rien n'est « a jour » (BandeauFraicheur). */}

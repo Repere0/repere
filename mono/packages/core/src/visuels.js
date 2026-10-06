@@ -156,8 +156,13 @@ export function chaineDecision({ fiche, paquet, index, deputes, elusRegion, dep 
       personne: region ? { nom: region.nom, role: region.fonction } : null,
       decide: COMPETENCES.region },
     { echelon: "france", niveau: "Assemblée nationale", institution: "Assemblée nationale",
-      lieu: circos.length ? circos.map(c => `${c === 1 ? "1re" : c + "e"} circonscription`).join(", ") : null,
-      personne: dd.length && dd[0].d ? { nom: [dd[0].d.prenom, dd[0].d.nom].filter(Boolean).join(" "), role: "À l'Assemblée nationale pour votre circonscription" } : null,
+      /* PLUSIEURS CIRCONSCRIPTIONS (06/10/2026). Mesure sur Paris : le lieu
+         enumerait les 18 circonscriptions, et le depute de la 1re etait dit
+         « pour votre circonscription » — faux pour 17 Parisiens sur 18. Repere
+         ne connait pas l'adresse : la 1re est un exemple, et c'est ecrit. */
+      lieu: circos.length > 1 ? `${circos.length} circonscriptions` : circos.length ? `${circos[0] === 1 ? "1re" : circos[0] + "e"} circonscription` : null,
+      personne: dd.length && dd[0].d ? { nom: [dd[0].d.prenom, dd[0].d.nom].filter(Boolean).join(" "),
+        role: dd.length > 1 ? `À l'Assemblée nationale pour la ${dd[0].circo === 1 ? "1re" : dd[0].circo + "e"} circonscription (exemple)` : "À l'Assemblée nationale pour votre circonscription" } : null,
       autresCircos: dd.length > 1 ? dd.length - 1 : 0,
       decide: COMPETENCES.france },
   ];
