@@ -10,7 +10,7 @@ import fs from "node:fs";
 import path from "node:path";
 import {
   dateFr, jourFr, euros, titreLisible, procedure, decompte, positionsFiables, positionSur,
-  calculerFaits, valeur, rapports, dernierExercice, evolution, deriverAujourdhui,
+  calculerFaits, valeur, rapports, dernierExercice, evolution, deriverAujourdhui, phraseSemaineParlement,
   mots, motsCible, correspond, trouverCommunes,
 } from "../packages/core/src/index.js";
 
@@ -88,6 +88,35 @@ test("core — sur les donnees reelles : les faits sont dans l'ordre du temps et
   assert.equal(a.prochains[0].institution, "Assemblée nationale");
   assert.ok(a.dernierExercice === undefined, "deriverAujourdhui n'expose pas de fonction");
   assert.ok(a.exercice && dernierExercice(fiche, index.agregats).an === a.exercice.an);
+});
+
+/* 06/10/2026 : « voici les séances publiques » s'affichait au-dessus de
+   commissions, quand la semaine comptait moins de trois seances. La phrase
+   doit dire ce qui est montre, dans les trois cas. */
+test("core — « Au Parlement » ne nomme séance publique que ce qui l'est", () => {
+  const semaine = (cats) => deriverAujourdhui({
+    fiche: { nom: "Test" }, commune: "93001", dep: "93", index: { departements: [], agregats: [] },
+    projets: null, cat: null, pos: null, deputes: null, evenements: null,
+    agendaAN: null, cal: { evenements: cats.map((c, i) => ({ debut: `2099-01-0${i + 1}T09:00`, titre: "r" + i, categorie: c })) },
+    maintenant: new Date("2098-12-31T12:00:00Z"),
+  });
+  const sansSeance = semaine(["Commission", "Commission", "Commission", "Commission"]);
+  const p0 = phraseSemaineParlement(sansSeance);
+  assert.equal(sansSeance.seancesMontrees, 0);
+  assert.match(p0, /Aucun n'est classé en séance publique/);
+  assert.ok(!/Voici les \d+ premiers que/.test(p0), p0);
+
+  const une = semaine(["Commission", "Séance publique", "Commission", "Commission"]);
+  assert.equal(une.seancesMontrees, 1);
+  assert.match(phraseSemaineParlement(une), /Voici le seul que .* classent en séance publique, puis les 2 premiers autres rendez-vous\./);
+
+  const toutes = semaine(["Séance publique", "Séance publique", "Séance publique", "Séance publique", "Commission"]);
+  assert.equal(toutes.seancesMontrees, 3);
+  assert.match(phraseSemaineParlement(toutes), /^5 rendez-vous annoncés au Parlement cette semaine\. Voici les 3 premiers que l'Assemblée nationale et le Sénat classent en séance publique\.$/);
+  assert.ok(toutes.prochains.every(e => e.categorie === "Séance publique"));
+
+  const peu = semaine(["Commission", "Séance publique"]);
+  assert.equal(phraseSemaineParlement(peu), "2 rendez-vous annoncés au Parlement cette semaine.");
 });
 
 test("core — la recherche ignore accents, traits d'union et apostrophes", () => {

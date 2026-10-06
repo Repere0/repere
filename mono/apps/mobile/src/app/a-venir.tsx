@@ -5,7 +5,7 @@
  * Fichiers republies chaque jour par la chaine, jamais embarques : un
  * calendrier absent ne fait jamais dire « aucune seance annoncee ». */
 import { router, Stack } from "expo-router";
-import { heureFr, jourFr } from "@repere/core";
+import { heureFr, jourFr, phraseSemaineParlement } from "@repere/core";
 import { Pressable, Text } from "react-native";
 import { Carte, Vide } from "../lib/composants";
 import { AGENDA_PAS_ARRIVE, AGENDA_VIDE } from "../lib/absences";
@@ -21,12 +21,12 @@ export default function AVenir() {
   return (
     <AvecDonnees rendu={r => {
       const { d } = r;
-      const prochains = (d.prochains || []) as { titre: string; debut: string; institution: string; source: unknown }[];
+      const prochains = (d.prochains || []) as { titre: string; debut: string; institution: string; categorie?: string; source: unknown }[];
       return (
         <Page>
           <Stack.Screen options={{ title: "Au Parlement" }} />
           <Question etiquette="Au Parlement" question="Qu'est-ce qui arrive ?"
-            sous="Les séances annoncées à l'Assemblée nationale et au Sénat. Elles concernent tout le pays, pas seulement votre commune." />
+            sous="Les rendez-vous annoncés par l'Assemblée nationale et le Sénat. Ils concernent tout le pays, pas seulement votre commune." />
           <Pressable
             onPress={() => router.push("/scrutins?mode=qag")}
             accessibilityRole="button"
@@ -40,12 +40,10 @@ export default function AVenir() {
             <Vide {...AGENDA_PAS_ARRIVE} action="Réessayer" onAction={reessayer} />
           ) : prochains.length ? (
             <Carte echelon="france" titre={d.prochainsDansLaSemaine ? "Cette semaine" : "Prochainement"}>
-              <Resume phrase={d.prochainsDansLaSemaine
-                ? `${d.semaineTotal} rendez-vous au Parlement cette semaine${d.semaineSelectionnee ? " ; voici les séances publiques" : ""}.`
-                : "Le prochain rendez-vous au Parlement :"}>
-                <Frise etiquette="Les prochaines séances" jalons={prochains.map((e, i) => ({
+              <Resume phrase={phraseSemaineParlement(d)}>
+                <Frise etiquette="Les prochains rendez-vous" jalons={prochains.map((e, i) => ({
                   cle: e.debut + i, date: `${jourFr(e.debut)}${heureFr(e.debut) ? " · " + heureFr(e.debut) : ""}`,
-                  titre: e.titre, texte: e.institution, echelon: "france", actif: i === 0,
+                  titre: e.titre, texte: e.categorie ? `${e.institution} · ${e.categorie}` : e.institution, echelon: "france", actif: i === 0,
                 }))} />
               </Resume>
               <PastilleSource source={srcAgenda(prochains[0].source)} />

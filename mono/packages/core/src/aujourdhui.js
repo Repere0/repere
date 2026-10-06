@@ -81,7 +81,27 @@ export function deriverAujourdhui({ fiche, commune, dep, index, projets, cat, po
     dernierVote, dernierFait, exercice, rapportsComptes: rr, rapportDette,
     prochain, prochains, prochainsDansLaSemaine: cetteSemaine.length > 0,
     semaineSelectionnee: semaine.length > cetteSemaine.length, semaineTotal: semaine.length,
+    seancesMontrees: cetteSemaine.filter(estSeance).length,
     srcComptes, srcProjets, srcScrutins, srcCal,
   };
+}
+
+/* CE QUE L'ECRAN « AU PARLEMENT » MONTRE, DIT TEL QUEL — 06/10/2026.
+ * L'application mobile ecrivait « voici les séances publiques » des que la
+ * semaine comptait plus de trois rendez-vous. Or quand la semaine a moins de
+ * trois seances, la selection est completee par des commissions : la phrase
+ * nommait « séances publiques » des reunions qui n'en sont pas. La phrase se
+ * calcule maintenant sur ce qui est reellement montre. « Séance publique » est
+ * la categorie ecrite par l'Assemblee et le Senat dans leurs agendas : la
+ * phrase le leur attribue, Repere ne classe rien lui-meme. */
+export function phraseSemaineParlement(d) {
+  if (!d || !d.prochainsDansLaSemaine) return "Le prochain rendez-vous annoncé au Parlement :";
+  const n = d.prochains.length;
+  const k = d.seancesMontrees || 0;
+  const total = `${d.semaineTotal} rendez-vous annoncé${d.semaineTotal > 1 ? "s" : ""} au Parlement cette semaine`;
+  if (!d.semaineSelectionnee) return `${total}.`;
+  if (k === n) return `${total}. Voici les ${n} premiers que l'Assemblée nationale et le Sénat classent en séance publique.`;
+  if (k === 0) return `${total}. Aucun n'est classé en séance publique par l'Assemblée nationale ou le Sénat ; voici les ${n} premiers.`;
+  return `${total}. Voici ${k === 1 ? "le seul" : `les ${k}`} que l'Assemblée nationale et le Sénat classent en séance publique, puis ${n - k === 1 ? "le premier autre rendez-vous" : `les ${n - k} premiers autres rendez-vous`}.`;
 }
 
