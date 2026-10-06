@@ -72,8 +72,14 @@ function fichiersJson(dir) {
 }
 
 function principal() {
+  /* ABSENT = ECHEC, PAS SUCCES (06/10/2026). Le script rendait 0 quand
+     l'archive manquait : la chaine ne declenchait aucun repli, les fichiers
+     manquaient, et le banc bloquait TOUTE la publication. Il echoue desormais
+     (rien n'est ecrit), et la chaine reprend le releve publie precedent
+     (scripts/releve-precedent.mjs). */
   if (!fs.existsSync(ENTREE)) {
-    console.warn(`::warning::${ENTREE} absent - les scrutins solennels ne seront pas publies`);
+    console.warn(`::warning::${ENTREE} absent - les scrutins solennels ne sont pas rafraichis`);
+    process.exitCode = 1;
     return;
   }
   const fichiers = fichiersJson(ENTREE);
@@ -99,6 +105,13 @@ function principal() {
       abstentions: dec.abstentions != null ? Number(dec.abstentions) : null,
       url: `${URL_SCRUTIN_UN}${d.numero}`,
     });
+  }
+  /* une archive sans aucun scrutin lisible n'est pas un releve : ecrire 0
+     scrutin date du jour serait un faux succes */
+  if (!totalSource) {
+    console.warn(`::warning::${ENTREE} ne contient aucun scrutin lisible - rien n'est ecrit`);
+    process.exitCode = 1;
+    return;
   }
   retenus.sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : (a.numero || "").localeCompare(b.numero || "", "fr", { numeric: true })));
 

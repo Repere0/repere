@@ -306,25 +306,32 @@ rm -rf site_engendre
   # disait « le releve d'hier reste » : faux sur le runner, ou data/ est refait
   # a neuf a chaque fois. Le releve d'hier est desormais celui que Repere a
   # PUBLIE, relu avant usage ; il garde SA date de releve, que l'application
-  # affiche au-dela de deux jours (« Calendrier relevé le … »).
-  if ! node scripts/calendrier-senat.mjs ./data; then
-    PRECEDENT="https://repereapp.netlify.app/data/calendrier-senat.json?verif=$(date +%s)"
-    if curl -sf --max-time 30 "$PRECEDENT" -o ./data/calendrier-senat.json.precedent \
-       && node -e 'const j=JSON.parse(require("fs").readFileSync("./data/calendrier-senat.json.precedent","utf8")); if (!Array.isArray(j.evenements) || !j.source || !/^\d{4}-\d{2}-\d{2}/.test(String(j.source.releve_le || ""))) process.exit(1); console.log(j.source.releve_le)'; then
-      mv ./data/calendrier-senat.json.precedent ./data/calendrier-senat.json
-      echo "::warning::calendrier Senat non rafraichi : le releve publie precedemment est repris, avec sa date de releve"
-    else
-      rm -f ./data/calendrier-senat.json.precedent
-      echo "::warning::calendrier Senat non rafraichi, et aucun releve precedent lisible : le calendrier continue avec l'Assemblee seule"
+  # affiche au-dela de deux jours (« Calendrier relevé le … ») et marque
+  # « reutilise » (scripts/releve-precedent.mjs, teste par tests/collecte.test.mjs).
+  # Sans releve precedent lisible : rien n'est ecrit, le banc le constate et
+  # verifie que l'Assemblee continue seule (runtime.test.mjs).
+  # reprendre <fichier> : le releve publie precedent, marque « reutilise » ; a
+  # defaut, la panne est DECLAREE dans data/indisponibles.json — le banc ne
+  # tolere une absence que si cette liste la nomme (un fichier disparu par
+  # erreur reste un echec). Aucune donnee n'est fabriquee.
+  reprendre() {
+    if ! node scripts/releve-precedent.mjs ./data "$1"; then
+      echo "::warning::$1 : aucun releve precedent lisible — source declaree indisponible, le reste continue"
+      node -e 'const fs=require("fs"),f="./data/indisponibles.json",n=process.argv[1].replace(/\.json$/,"");let j={v:1,sources:[]};try{j=JSON.parse(fs.readFileSync(f,"utf8"))}catch{};if(!j.sources.includes(n))j.sources.push(n);j.le=new Date().toISOString().slice(0,10);fs.writeFileSync(f,JSON.stringify(j))' "$1"
     fi
+  }
+  if ! node scripts/calendrier-senat.mjs ./data; then
+    reprendre calendrier-senat.json
   fi
   # AGENDA ASSEMBLEE NATIONALE (23/09/2026) - pas de reseau ici, contrairement
   # au Senat : lit outils/agenda_an.json, deja produit par l'etape 2 de ce
   # meme script (agenda_an.py). Si ce fichier manque ou est mal forme, le
   # script avertit et rend une main vide - le Senat continue seul, comme le
   # Senat continuerait seul si CE fichier-ci manquait a l'inverse.
-  node scripts/agenda-an.mjs ./data \
-    || echo "::warning::agenda de l'Assemblee non rafraichi - le calendrier continue avec le Senat seul"
+  if ! node scripts/agenda-an.mjs ./data; then
+    echo "::warning::agenda de l'Assemblee non rafraichi"
+    reprendre agenda-an.json
+  fi
   # SCRUTINS SOLENNELS (23/09/2026) - lit directement data/brut_Scrutins
   # (depile a l'etape 1 de ce meme script, encore present a ce stade),
   # jamais outils/scrutins_an.json : la fenetre glissante de 80 scrutins de
@@ -333,8 +340,11 @@ rm -rf site_engendre
   # complete le 23/09/2026 : 95 scrutins sur 8434 (72 solennels + 23
   # motions de censure), 29,8 Ko - pas les ~843 qu'un echantillon de 80
   # scrutins recents avait suggere a tort avant cette mesure.
-  node scripts/scrutins-solennels.mjs ./data \
-    || echo "::warning::scrutins solennels non rafraichis - le reste de l'application continue"
+  if ! node scripts/scrutins-solennels.mjs ./data; then
+    echo "::warning::scrutins solennels non rafraichis - le reste de l'application continue"
+    reprendre scrutins-solennels.json
+    reprendre scrutins-solennels-recents.json
+  fi
   pnpm install --frozen-lockfile
   # RISQUE CONFIRME PAR AUDIT LE 22/09/2026, PAS SUPPOSE : ce bloc n'installait
   # aucun Chromium pour mono/. Le premier essai reel sur le runner GitHub

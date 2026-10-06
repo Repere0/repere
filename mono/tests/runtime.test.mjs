@@ -146,6 +146,11 @@ const nav = await chromium.launch();
 const ctx = await nav.newContext({ viewport: { width: 420, height: 900 } });
 const page = await ctx.newPage();
 const erreurs = [];
+/* LES SOURCES DECLAREES INDISPONIBLES PAR LA CHAINE (06/10/2026) : leur 404 est
+   attendu (le site en fait une phrase), il est compte a part. Un 404 sur tout
+   autre fichier reste une erreur. Voir la section du calendrier. */
+const DECLARES_INDISPONIBLES = (() => { try { return JSON.parse(fs.readFileSync(path.join(DIST, "data", "indisponibles.json"), "utf8")).sources || []; } catch { return []; } })();
+const absencesDeclarees = [];
 page.on("pageerror", e => erreurs.push("pageerror: " + e.message));
 /* Hors ligne, le navigateur JOURNALISE chaque requete refusee. Ce n'est pas un
    defaut de l'application : c'est la mesure elle-meme. On separe donc les deux —
@@ -166,6 +171,8 @@ page.on("console", m => {
   /* LA RESSOURCE EST NOMMEE — 29/09/2026. « Failed to load resource : 404 »
      ne disait pas QUEL fichier manquait ; un echec doit dire qui il refuse. */
   const ou = (m.location() && m.location().url) || "";
+  const fichier = ou.replace(/[?#].*$/, "").split("/").pop().replace(/\.json$/, "");
+  if (/status of 404/.test(t) && DECLARES_INDISPONIBLES.includes(fichier)) { absencesDeclarees.push(fichier); return; }
   erreurs.push("console: " + t + (ou ? " [" + ou.replace(/^https?:\/\/[^/]+/, "") + "]" : ""));
 });
 
@@ -669,6 +676,22 @@ const cal = await page.evaluate(() => document.body.innerText);
 const calBrut = await texteSansCapitales(page);
 verif("calendrier — l'ecran s'ouvre sans commune choisie",
   /Ce qui se passe prochainement/.test(cal), cal.slice(0, 160).replace(/\n+/g, " / "));
+/* LE SENAT EN PANNE, DECLAREE PAR LA CHAINE (06/10/2026). La collecte du
+ * 06/10/2026 s'est arretee ici : le Senat n'avait pas repondu, ces trois
+ * controles exigeaient sa presence, et RIEN n'a ete publie. La chaine reprend
+ * desormais le releve publie precedent (scripts/releve-precedent.mjs) ; si
+ * meme celui-la manque, elle le DECLARE dans data/indisponibles.json. Alors,
+ * et alors seulement, ces controles cedent la place a ceux de l'absence :
+ * l'Assemblee continue, et rien n'est affiche au nom du Senat. Un fichier
+ * disparu sans declaration reste un echec. */
+const SENAT_INDISPONIBLE = DECLARES_INDISPONIBLES.includes("calendrier-senat") && !fs.existsSync(path.join(DIST, "data", "calendrier-senat.json"));
+if (SENAT_INDISPONIBLE) {
+  console.log("  (Senat declare indisponible par la chaine : controles du Senat remplaces par ceux de son absence)");
+  verif("calendrier — Senat indisponible : l'Assemblee nationale continue, avec sa date de releve",
+    /Assemblée nationale/.test(cal) && /relevé le/i.test(cal), cal.slice(-500).replace(/\n+/g, " / "));
+  verif("calendrier — Senat indisponible : aucune seance n'est attribuee au Senat",
+    !/Sénat — agenda public|non précisée par le Sénat/.test(cal), "une mention du releve du Senat est affichee alors qu'il est indisponible");
+} else {
 verif("calendrier — au moins un evenement reel est affiche",
   /Sénat/.test(cal) && /\d{4}/.test(cal), "aucune date ni producteur trouve");
 verif("invariant 4 — le calendrier porte son producteur et sa date de releve",
@@ -679,6 +702,7 @@ verif("invariant 4 — le calendrier porte son producteur et sa date de releve",
  * l'invariant 4 tout autant qu'une licence devinee. */
 verif("invariant 4 — la licence non confirmee est dite, pas devinee ni omise",
   /non précisée/i.test(cal), "la mention de licence non confirmee est absente de l'ecran");
+}
 
 /* LES DEUX INSTITUTIONS, DANS LE MEME ECRAN. Le controle porte sur des
  * proprietes structurelles (l'institution est nommee, la categorie « Séance
@@ -701,6 +725,17 @@ console.log("\n--- scrutins solennels : couche d'exploration -----------------")
  * chiffres pour/contre/abstentions ne sont PAS deja charges (sinon
  * l'architecture hybride mesuree n'est qu'une illusion visuelle). */
 const avantClic = await page.evaluate(() => document.body.innerText);
+/* LES SCRUTINS DECLARES INDISPONIBLES PAR LA CHAINE (06/10/2026) : archive de
+   l'Assemblee absente ET aucun releve precedent lisible. Alors seulement, les
+   controles du teaser cedent la place a celui de l'absence — rien n'est affiche
+   au nom d'une source absente. Un fichier disparu sans declaration reste un echec. */
+const SCRUTINS_INDISPONIBLES = DECLARES_INDISPONIBLES.includes("scrutins-solennels-recents")
+  && !fs.existsSync(path.join(DIST, "data", "scrutins-solennels-recents.json"));
+if (SCRUTINS_INDISPONIBLES) {
+  console.log("  (scrutins solennels declares indisponibles par la chaine : controles du teaser remplaces par ceux de l'absence)");
+  verif("scrutins — indisponibles : aucun decompte n'est affiche au nom d'une source absente",
+    !/Pour : \d+ · Contre/.test(avantClic) && !/Scrutin solennel ·/.test(avantClic), avantClic.slice(-300).replace(/\n+/g, " / "));
+} else {
 verif("scrutins — le teaser des scrutins recents est visible sans action",
   /Les derniers scrutins importants/.test(avantClic) && /Scrutin solennel|Motion de censure/.test(avantClic),
   avantClic.slice(-500).replace(/\n+/g, " / "));
@@ -740,6 +775,7 @@ if (boutonPresent) {
   const focusApres = await page.evaluate(() => document.activeElement.textContent);
   verif("accessibilite — le focus reste sur le bouton apres le chargement du detail",
     /Masquer les détails complets/.test(focusApres || ""), "le focus a quitte le bouton : " + focusApres);
+}
 }
 
 /* La langue : le francais affiche porte ses accents. Faute commise deux fois.
@@ -1106,8 +1142,12 @@ console.log("\n--- aujourd'hui : ce qui arrive, Senat ET Assemblee ------------"
      et le banc s'arretait ici, sans que les controles suivants — comptes,
      projets, hors ligne — ne tournent ni ne soient comptes. */
   const manquants = [fAN, fSen].filter(f => !fs.existsSync(f)).map(f => path.basename(f));
-  verif("a venir — les deux calendriers sont dans le build de mesure", manquants.length === 0,
-    "absent(s) : " + manquants.join(", ") + " — produits par la chaine quotidienne, avec reseau");
+  /* le Senat declare indisponible par la chaine (voir plus haut) n'est pas un
+     manquant : la fixture a deux institutions est alors sautee, et le dit */
+  const nonDeclares = manquants.filter(m => !(m === "calendrier-senat.json" && SENAT_INDISPONIBLE));
+  verif("a venir — les deux calendriers sont dans le build de mesure (ou le Senat declare indisponible)", nonDeclares.length === 0,
+    "absent(s) : " + nonDeclares.join(", ") + " — produits par la chaine quotidienne, avec reseau");
+  if (SENAT_INDISPONIBLE) console.log("  (Senat declare indisponible : la mesure « deux institutions » est sautee)");
   if (!manquants.length) {
   const origAN = fs.readFileSync(fAN, "utf8"), origSen = fs.readFileSync(fSen, "utf8");
   const dans = (j, h) => { const d = new Date(Date.now() + j * 864e5); d.setUTCHours(h, 0, 0, 0); return d.toISOString().slice(0, 16); };

@@ -80,14 +80,35 @@ function parseIcs(texte) {
   return evenements;
 }
 
+/* UNE SOURCE EN PANNE NE DOIT NI BLOQUER NI MENTIR (06/10/2026).
+ * - delai : un serveur qui ne repond jamais bloquait la chaine jusqu'a la
+ *   limite du job (blocage global) ; 30 s, puis echec.
+ * - forme : une reponse 200 qui n'est pas un calendrier (page anti-robot,
+ *   page d'erreur) donnait 0 evenement ECRIT avec la date du jour — un faux
+ *   succes. Sans « BEGIN:VCALENDAR », c'est un echec.
+ * En cas d'echec, RIEN n'est ecrit : la chaine reprend le releve publie
+ * precedent (scripts/releve-precedent.mjs), marque comme tel. */
+const URL_SOURCE = process.env.REPERE_SENAT_ICS || URL_ICS;   /* tests : un serveur local */
+const DELAI_MS = Number(process.env.REPERE_SENAT_DELAI_MS || 30000);
 async function principal() {
-  const reponse = await fetch(URL_ICS);
+  let reponse;
+  try { reponse = await fetch(URL_SOURCE, { signal: AbortSignal.timeout(DELAI_MS) }); }
+  catch (e) {
+    console.error(`::error::le flux iCal du Senat n'a pas repondu (${e.name === "TimeoutError" ? "delai de " + DELAI_MS / 1000 + " s depasse" : e.message})`);
+    process.exitCode = 1;
+    return;
+  }
   if (!reponse.ok) {
     console.error(`::error::le flux iCal du Senat a repondu ${reponse.status}`);
     process.exitCode = 1;
     return;
   }
   const texte = await reponse.text();
+  if (!/BEGIN:VCALENDAR/.test(texte)) {
+    console.error("::error::le Senat a repondu, mais pas par un calendrier iCal : rien n'est ecrit");
+    process.exitCode = 1;
+    return;
+  }
   const brut = parseIcs(texte);
 
   /* DOCTRINE DU VIDE APPLIQUEE A LA COLLECTE : un evenement sans titre ou
