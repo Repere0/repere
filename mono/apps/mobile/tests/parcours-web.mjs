@@ -140,9 +140,17 @@ for (const largeur of [360, 390, 430]) {
   verifier(new RegExp(MAIRE).test(mesure.texte), `${largeur}px : le maire est nommé (${MAIRE})`);
   verifier(/Publication Repère du \d/.test(mesure.texte), `${largeur}px : la date de la publication affichée est dite`);
   verifier((mesure.etiquettes.match(/D'où vient cette information/g) || []).length >= 3, `${largeur}px : chaque réponse de l'accueil porte sa source`);
-  verifier(/a voté (pour|contre|l'abstention)/.test(mesure.texte) && /députés ayant pris part au vote/.test(mesure.etiquettes),
+  /* 06/10/2026 : la barre sans legende a quitte ce premier ecran (elle reste,
+     legendee, dans « Comprendre ce vote ») ; la repartition s'y lit desormais en
+     toutes lettres, pour tous les lecteurs et pas seulement au lecteur d'ecran. */
+  verifier(/a voté (pour|contre|l'abstention)/.test(mesure.texte) && /\d+ pour, \d+ contre, \d+ abstentions?/.test(mesure.texte),
     `${largeur}px : le vote du député s'affiche, et sa répartition se lit aussi en phrase`);
   verifier(/a dépensé [\d\s]+€ par habitant/.test(mesure.texte), `${largeur}px : l'argent de la commune se dit en une phrase`);
+  /* 06/10/2026, vu sur capture a 360 px : « soit 47 » en fin de ligne, « % du
+     coût » au debut de la suivante. Aucune espace secable devant % € ? ! : ; */
+  const coupables = await page.evaluate(() => [...document.querySelectorAll('[data-testid="reponse"] [role="heading"]')]
+    .map(e => e.textContent || "").filter(t => / [%€?!:;]/.test(t)));
+  verifier(coupables.length === 0, `${largeur}px : aucun signe ne tombe seul en début de ligne ${JSON.stringify(coupables)}`);
   /* « Réponses d'abord » (30/09/2026) : une reponse, pas une rubrique ; jamais
      une donnee de presence, jamais « dernier ». */
   verifier(!/a participé|n'a pas participé|dernier vote/i.test(mesure.brut), `${largeur}px : aucune donnée de présence, aucun « dernier vote »`);
@@ -311,22 +319,58 @@ async function montantA100ms(reduit) {
   await ctx.close();
 }
 
-/* RÉPONSES D'ABORD — 30/09/2026. A 390 x 844 (iPhone 12 a 16), les trois
-   reponses de Meaux tiennent entieres dans le premier ecran, sans defiler.
-   Mesure honnete des limites, ecrite dans docs/ux/reponses-dabord-2026.md :
-   a 360 x 740, deux reponses seulement ; un intitule de projet tres long
-   (Boulogne-Billancourt) repousse la troisieme de 36 px. */
+/* RÉPONSES D'ABORD — 30/09/2026, etendu le 06/10/2026. Mesure sur les donnees
+   de production avant cette extension : a 390 x 844, la troisieme reponse de
+   Meaux finissait a 872 px (Creteil : 956) ; a 360 x 800, jusqu'a 1 098. Ce
+   controle ne portait que sur Meaux a 390 px, et la CI le joue sur les donnees
+   figees du depot : il etait vert pendant que la production echouait. Il porte
+   maintenant sur trois ecrans et cinq profils de commune : projet a intitule
+   long (Creteil), plusieurs circonscriptions (Paris), aucun projet
+   (Amponville), maire au nom long, departements differents. */
 {
-  const HAUTEUR = Number(process.env.REPERE_HAUTEUR_PLI || 844);
-  const page = await navigateur.newPage({ viewport: { width: 390, height: HAUTEUR }, deviceScaleFactor: 2, isMobile: true, hasTouch: true, reducedMotion: "reduce" });
+  const ECRANS = [[360, 800], [390, 844], [430, 932]];
+  const PROFILS = [["meaux", "Meaux"], ["creteil", "Créteil"], ["paris", "Paris"], ["amponville", "Amponville"], ["bagnolet", "Bagnolet"]];
+  for (const [largeur, hauteur] of ECRANS) {
+    const page = await navigateur.newPage({ viewport: { width: largeur, height: hauteur }, deviceScaleFactor: 2, isMobile: true, hasTouch: true, reducedMotion: "reduce" });
+    const hors = [];
+    for (const [saisie, nom] of PROFILS) {
+      await page.goto(BASE + "/", { waitUntil: "networkidle" });
+      await page.getByLabel(/Où habitez-vous/).fill(saisie);
+      await page.getByRole("button", { name: new RegExp("^" + nom + ",") }).first().click();
+      await page.getByText("Aller plus loin").first().waitFor({ timeout: 15000 });
+      await page.waitForTimeout(600);
+      const bas = await page.evaluate(() => [...document.querySelectorAll('[data-testid="reponse"]')].filter(e => e.offsetParent).map(e => Math.round(e.getBoundingClientRect().bottom)));
+      if (!(bas.length === 3 && bas.every(b => b <= hauteur))) hors.push(`${nom} ${JSON.stringify(bas)}`);
+    }
+    verifier(hors.length === 0, `${largeur} x ${hauteur} : les trois réponses tiennent dans le premier écran, pour ${PROFILS.length} communes ${JSON.stringify(hors)}`);
+    await page.close();
+  }
+}
+
+/* LE PARTAGE (06/10/2026) : un seul bouton, sous les reponses. Le message
+   reprend les reponses avec leurs liens officiels ; il ne porte ni code de
+   commune, ni identifiant, ni parametre de suivi, ni adresse de Repere. Le
+   partage natif est remplace par un releve du message (navigateur de test). */
+{
+  const ctx = await navigateur.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, reducedMotion: "reduce" });
+  await ctx.addInitScript(() => { navigator.share = async d => { window.__partage = d; }; });
+  const page = await ctx.newPage();
   await page.goto(BASE + "/", { waitUntil: "networkidle" });
   await page.getByLabel(/Où habitez-vous/).fill(COMMUNE.saisie);
   await page.getByRole("button", { name: new RegExp("^" + COMMUNE.nom + ",") }).first().click();
   await page.getByText("Aller plus loin").first().waitFor({ timeout: 15000 });
-  await page.waitForTimeout(600);
-  const bas = await page.evaluate(() => [...document.querySelectorAll('[data-testid="reponse"]')].filter(e => e.offsetParent).map(e => Math.round(e.getBoundingClientRect().bottom)));
-  verifier(bas.length === 3 && bas.every(b => b <= HAUTEUR), `390 x ${HAUTEUR} : les trois réponses tiennent dans le premier écran ${JSON.stringify(bas)}`);
-  await page.close();
+  verifier(await page.getByRole("button", { name: /^Partager/ }).count() === 1, "partage : un seul bouton sur l'écran de la commune");
+  await page.getByRole("button", { name: `Partager ce qui se passe à ${COMMUNE.nom}` }).click();
+  await page.waitForTimeout(300);
+  const d = await page.evaluate(() => window.__partage || null);
+  const texte = d ? [d.title, d.text, d.url].filter(Boolean).join("\n") : "";
+  const liens = texte.match(/https?:\/\/\S+/g) || [];
+  verifier(new RegExp(COMMUNE.nom).test(texte) && liens.length >= 2, `partage : la commune et ${liens.length} sources officielles`);
+  verifier(!/77284|\b(?:\d{5}|2[AB]\d{3})\b/.test(texte.replace(/\d[\d   ]*\d\s?€/g, "")), "partage : aucun code de commune");
+  verifier(!/utm_|[?&](ref|src|id)=|repereapp|netlify/i.test(texte), "partage : ni paramètre de suivi, ni adresse de Repère");
+  verifier(liens.every(u => /^https:\/\/(www\.)?(data\.gouv\.fr|data\.ofgl\.fr|assemblee-nationale\.fr|data\.assemblee-nationale\.fr|www\.assemblee-nationale\.fr)\//.test(u)),
+    `partage : chaque lien est celui d'une source officielle ${JSON.stringify(liens)}`);
+  await ctx.close();
 }
 
 /* INVARIANT 9 — FRAICHEUR (30/09/2026). Serveur injoignable apres une premiere
@@ -397,6 +441,13 @@ async function montantA100ms(reduit) {
   verifier(!/pas arrivés/.test(ustaritz) && !/Réessayer/.test(ustaritz) && !/Aucun projet financé/.test(ustaritz),
     "national : ni « pas arrivés », ni « Réessayer », ni « aucun projet » pour une donnée non publiée");
   verifier(/circonscription/.test(ustaritz) && /par habitant/.test(ustaritz), "national : le vote et les comptes s'affichent");
+  const ordre = await page.evaluate(() => {
+    const reps = [...document.querySelectorAll('[data-testid="reponse"]')].filter(e => e.offsetParent).map(e => e.getBoundingClientRect().top);
+    const vide = [...document.querySelectorAll("div")].find(e => e.children.length === 0 && /^Repère ne publie pas encore les projets/.test(e.textContent || ""));
+    return { reps, vide: vide ? vide.getBoundingClientRect().top : null };
+  });
+  verifier(ordre.vide !== null && ordre.reps.length >= 2 && ordre.reps.every(t => t < ordre.vide),
+    `national : les réponses passent avant « non publié » ${JSON.stringify(ordre)}`);
 
   /* La memoire, hors Ile-de-France : le nom vient du fichier du departement. */
   await page.getByRole("button", { name: "Retenir Ustaritz sur ce téléphone" }).click();

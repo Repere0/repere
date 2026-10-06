@@ -43,8 +43,8 @@ import { PAS, TYPO } from "../lib/theme";
 import { AvecDonnees, Page } from "../ui/page";
 import { PastilleSource } from "../ui/source";
 import { Etiquette } from "../ui/resume";
-import { Plus, Reponse } from "../ui/reponse";
-import { BarrePart, Repartition } from "../ui/visuels";
+import { BoutonPartagerTout, Plus, Reponse } from "../ui/reponse";
+import { BarrePart } from "../ui/visuels";
 
 export default function ChezVous() {
   const { choix } = useSelection();
@@ -63,6 +63,88 @@ export default function ChezVous() {
       const rep = vote ? repartitionVote(vote.sc) : null;
       const hab = d.exercice ? parHabitant(d.exercice.ex) : null;
       const maire = d.fiche && d.fiche.maire && d.fiche.maire.nom ? d.fiche.maire.nom : null;
+      /* 1. CE QUE L'ETAT FINANCE ICI — la part se dit en mots pres d'un repere
+         vrai, sinon en euros ; le cout est arrondi dans la phrase et exact
+         dans la note. */
+      const blocProjet = (r.projetsNonPublies ? (
+            <Vide {...projetsNonPublies(d.nomDep || "ce département")} />
+          ) : !r.projetsLus ? (
+            <Vide {...PROJETS_PAS_ARRIVES} action="Réessayer" onAction={reessayer} />
+          ) : projet && f ? (
+            <Reponse echelon="ville"
+              phrase={f.partPct !== null && cout
+                ? `L'État finance ${euros(f.subvention)} d'un projet de ${cout.texte} à ${nom}, soit ${f.partPct} % du coût annoncé.`
+                : `L'État apporte ${euros(f.subvention)} à un projet à ${nom}.`}
+              preuve={f.partPct !== null ? <BarrePart sansLibelle part={f.partPct} libelle="Part de l'État dans le coût annoncé" valeur={`${f.partPct} € sur 100 €`} /> : undefined}
+              /* Deux lignes au plus : un intitule officiel peut en prendre cinq
+                 (Creteil). La formulation reste celle que tests/meme-verite.mjs
+                 compare au site ; le texte entier est lu par le lecteur d'ecran
+                 et affiche dans « Où va l'argent ». */
+              note={`« ${projet.p.intitule} » : ${euros(f.subvention)} engagés par l'État en ${projet.p.annee}${f.cout ? ` sur ${euros(f.cout)} annoncés` : ""}.`}
+              noteLignes={2}
+              sources={<PastilleSource court source={srcProjets(d, f.partPct !== null)} />}
+              suite={{ texte: nbProjets > 1 ? `${nbProjets} projets aidés` : "Le projet", onPress: () => router.push("/argent") }} />
+          ) : (
+            <Reponse echelon="ville" phrase={projetsAucun(nom).titre} note={projetsAucun(nom).corps}
+              sources={<PastilleSource court source={srcProjets(d)} />} />
+          ));
+      /* 2. QUI DECIDE, ET AVEC QUEL ARGENT — montant par habitant PUBLIE par
+         l'OFGL ; le nom du maire vient du RNE : deux sources, deux pastilles.
+         « prépare / vote » est la regle du code general des collectivites. */
+      const blocDepenses = (d.exercice && hab && hab.depenses !== null ? (
+            <Reponse echelon="ville"
+              phrase={`En ${d.exercice.an}, ${nom} a dépensé ${hab.depenses.toLocaleString("fr-FR")} € par habitant.`}
+              note={maire ? `Le maire, ${maire}, prépare ce budget ; le conseil municipal le vote.` : "Le maire prépare ce budget ; le conseil municipal le vote."}
+              sources={<>
+                <PastilleSource court nom="Comptes" source={srcComptesPublies(d)} />
+                {maire ? <PastilleSource court nom="Élus" source={srcElus(r.srcElus)} /> : null}
+              </>}
+              suite={{ texte: "Où va cet argent ?", onPress: () => router.push("/argent") }} />
+          ) : (
+            <Reponse echelon="ville"
+              phrase={`Les comptes de ${nom} ne permettent pas de dire combien la commune dépense par habitant.`}
+              suite={{ texte: "Pourquoi ?", onPress: () => router.push("/argent") }} />
+          ));
+      /* 3. A L'ASSEMBLEE NATIONALE — une position, jamais une presence ; une
+         date, jamais « dernier » ; plusieurs circonscriptions, jamais UN depute. */
+      const blocVote = (r.votesNonPublies ? (
+            <Vide {...votesNonPublies(d.nomDep || "ce département")} />
+          ) : !r.votesLus ? (
+            <Vide {...VOTES_PAS_ARRIVES} action="Réessayer" onAction={reessayer} />
+          ) : !r.votesFiables ? (
+            <Vide titre={REFUS_APPARIEMENT.titre} corps={REFUS_APPARIEMENT.corps} />
+          ) : vote && rep ? (
+            <Reponse echelon="france"
+              phrase={d.nbCircos > 1
+                ? `${nom} est partagée entre ${d.nbCircos} circonscriptions. Votre député dépend de votre adresse.`
+                : `Votre commune est dans la ${ordinal(vote.circo)} circonscription. Le ${dateFr(vote.sc.d)}, ${texteDe(phrasePosition(vote.position, vote.qui))}`}
+              note={d.nbCircos > 1
+                ? `Chaque circonscription élit un député. Dans la ${ordinal(vote.circo)}, le ${dateFr(vote.sc.d)}, ${texteDe(phrasePosition(vote.position, vote.qui)).replace(/\.$/, "")} (texte ${vote.sc.s}).`
+                : `${titreLisible(vote.sc.t)} : ${vote.sc.s}, ${decompte(vote.sc.dec)}.`}
+              sources={<PastilleSource court source={srcVote(d, vote.sc)} />}
+              suite={{ texte: "Comprendre ce vote", onPress: () => router.push("/vote") }} />
+          ) : d.nbCircos === 0 ? (
+            <Vide {...circoInconnue(nom)} />
+          ) : (
+            <Vide {...VOTE_AUCUN} />
+          ));
+      /* Ce que le bouton de partage reprend : les phrases affichees ci-dessus,
+         avec le lien officiel de leur source. */
+      const partages: { texte: string; url?: string | null }[] = [];
+      if (r.projetsLus && projet && f) partages.push({
+        texte: f.partPct !== null && cout ? `L'État finance ${euros(f.subvention)} d'un projet de ${cout.texte}, soit ${f.partPct} % du coût annoncé (${projet.p.annee}).` : `L'État apporte ${euros(f.subvention)} à un projet (${projet.p.annee}).`,
+        url: srcProjets(d, f.partPct !== null)?.url,
+      });
+      if (d.exercice && hab && hab.depenses !== null) partages.push({
+        texte: `En ${d.exercice.an}, la commune a dépensé ${hab.depenses.toLocaleString("fr-FR")} € par habitant.`,
+        url: srcComptesPublies(d)?.url,
+      });
+      if (r.votesLus && r.votesFiables && vote && rep) partages.push({
+        texte: d.nbCircos > 1
+          ? `La commune est partagée entre ${d.nbCircos} circonscriptions : le député dépend de l'adresse.`
+          : `Le ${dateFr(vote.sc.d)}, ${texteDe(phrasePosition(vote.position, vote.qui))}`,
+        url: srcVote(d, vote.sc)?.url,
+      });
       return (
         <Page>
           <Stack.Screen options={{ title: nom }} />
@@ -78,90 +160,18 @@ export default function ChezVous() {
             {publie ? <Text style={TYPO.micro}>Publication Repère du {dateFr(publie)}</Text> : null}
           </View>
 
-          <View style={{ gap: PAS * 3 }}>
-          {/* 1. CE QUE L'ETAT FINANCE ICI — la part se dit en mots pres d'un repere
-             vrai, sinon en euros ; le cout est arrondi dans la phrase et exact
-             dans la note. */}
-          {r.projetsNonPublies ? (
-            <Vide {...projetsNonPublies(d.nomDep || "ce département")} />
-          ) : !r.projetsLus ? (
-            <Vide {...PROJETS_PAS_ARRIVES} action="Réessayer" onAction={reessayer} />
-          ) : projet && f ? (
-            <Reponse echelon="ville"
-              phrase={f.partPct !== null && cout
-                ? `L'État finance ${euros(f.subvention)} d'un projet de ${cout.texte} à ${nom}. Cela représente ${f.partPct} % du coût annoncé.`
-                : `L'État apporte ${euros(f.subvention)} à un projet à ${nom}.`}
-              preuve={f.partPct !== null ? <BarrePart sansLibelle part={f.partPct} libelle="Part de l'État dans le coût annoncé" valeur={`${f.partPct} € sur 100 €`} /> : undefined}
-              note={`« ${projet.p.intitule} » : ${euros(f.subvention)} engagés par l'État en ${projet.p.annee}${f.cout ? ` sur ${euros(f.cout)} annoncés` : ""}.`}
-              sources={<PastilleSource court source={srcProjets(d, f.partPct !== null)} />}
-              partage={{
-                titre: `Une information sur ${nom}`,
-                texte: f.partPct !== null && cout
-                  ? `À ${nom} : l'État finance ${euros(f.subvention)} d'un projet de ${cout.texte}. Cela représente ${f.partPct} % du coût annoncé.`
-                  : `À ${nom} : l'État apporte ${euros(f.subvention)} à un projet.`,
-                sourceUrl: srcProjets(d, f.partPct !== null)?.url,
-              }}
-              suite={{ texte: nbProjets > 1 ? `${nbProjets} projets aidés` : "Le projet", onPress: () => router.push("/argent") }} />
-          ) : (
-            <Reponse echelon="ville" phrase={projetsAucun(nom).titre} note={projetsAucun(nom).corps}
-              sources={<PastilleSource court source={srcProjets(d)} />} />
-          )}
-
-          {/* 2. QUI DECIDE, ET AVEC QUEL ARGENT — montant par habitant PUBLIE par
-             l'OFGL ; le nom du maire vient du RNE : deux sources, deux pastilles.
-             « prépare / vote » est la regle du code general des collectivites. */}
-          {d.exercice && hab && hab.depenses !== null ? (
-            <Reponse echelon="ville"
-              phrase={`En ${d.exercice.an}, ${nom} a dépensé ${hab.depenses.toLocaleString("fr-FR")} € par habitant.`}
-              note={maire ? `Le maire, ${maire}, prépare ce budget ; le conseil municipal le vote.` : "Le maire prépare ce budget ; le conseil municipal le vote."}
-              sources={<>
-                <PastilleSource court nom="Comptes" source={srcComptesPublies(d)} />
-                {maire ? <PastilleSource court nom="Élus" source={srcElus(r.srcElus)} /> : null}
-              </>}
-              partage={{
-                titre: `Les dépenses de ${nom}`,
-                texte: `À ${nom}, ${d.exercice.an}, la commune a dépensé ${hab.depenses.toLocaleString("fr-FR")} € par habitant. Le maire prépare ce budget ; le conseil municipal le vote.`,
-                sourceUrl: srcComptesPublies(d)?.url,
-              }}
-              suite={{ texte: "Où va cet argent ?", onPress: () => router.push("/argent") }} />
-          ) : (
-            <Reponse echelon="ville"
-              phrase={`Les comptes de ${nom} ne permettent pas de dire combien la commune dépense par habitant.`}
-              suite={{ texte: "Pourquoi ?", onPress: () => router.push("/argent") }} />
-          )}
-
-          {/* 3. A L'ASSEMBLEE NATIONALE — une position, jamais une presence ; une
-             date, jamais « dernier » ; plusieurs circonscriptions, jamais UN depute. */}
-          {r.votesNonPublies ? (
-            <Vide {...votesNonPublies(d.nomDep || "ce département")} />
-          ) : !r.votesLus ? (
-            <Vide {...VOTES_PAS_ARRIVES} action="Réessayer" onAction={reessayer} />
-          ) : !r.votesFiables ? (
-            <Vide titre={REFUS_APPARIEMENT.titre} corps={REFUS_APPARIEMENT.corps} />
-          ) : vote && rep ? (
-            <Reponse echelon="france"
-              phrase={d.nbCircos > 1
-                ? `${nom} est partagée entre ${d.nbCircos} circonscriptions. Votre député dépend de votre adresse.`
-                : `Votre commune est dans la ${ordinal(vote.circo)} circonscription. Le ${dateFr(vote.sc.d)}, ${texteDe(phrasePosition(vote.position, vote.qui))}`}
-              preuve={<Repartition compact segments={rep.segments} total={rep.total} position={vote.position} qui={vote.qui} />}
-              note={d.nbCircos > 1
-                ? `Une circonscription est une partie du territoire dont les électeurs élisent un député. Par exemple, dans la ${ordinal(vote.circo)}, le ${dateFr(vote.sc.d)}, ${texteDe(phrasePosition(vote.position, vote.qui)).replace(/\.$/, "")} (texte ${vote.sc.s}).`
-                : `${titreLisible(vote.sc.t)} : ${vote.sc.s}, ${decompte(vote.sc.dec)}.`}
-              sources={<PastilleSource court source={srcVote(d, vote.sc)} />}
-              partage={{
-                titre: `Un vote concernant ${nom}`,
-                texte: d.nbCircos > 1
-                  ? `${nom} est partagée entre ${d.nbCircos} circonscriptions. Votre député dépend de votre adresse. Exemple : dans la ${ordinal(vote.circo)}, le ${dateFr(vote.sc.d)}, ${texteDe(phrasePosition(vote.position, vote.qui)).replace(/\.$/, "")}.`
-                  : `${nom} est dans la ${ordinal(vote.circo)} circonscription. Le ${dateFr(vote.sc.d)}, ${texteDe(phrasePosition(vote.position, vote.qui))}`,
-                sourceUrl: srcVote(d, vote.sc)?.url,
-              }}
-              suite={{ texte: "Comprendre ce vote", onPress: () => router.push("/vote") }} />
-          ) : d.nbCircos === 0 ? (
-            <Vide {...circoInconnue(nom)} />
-          ) : (
-            <Vide {...VOTE_AUCUN} />
-          )}
+          <View style={{ gap: PAS * 2 }}>
+            {/* Projets non publies pour ce departement : la phrase vient APRES les
+               reponses. Mesure du 06/10/2026 : a Ustaritz, la premiere chose lue
+               etait « Repère ne publie pas encore… », avant tout ce que Repere sait. */}
+            {r.projetsNonPublies ? <>{blocDepenses}{blocVote}{blocProjet}</> : <>{blocProjet}{blocDepenses}{blocVote}</>}
           </View>
+          {/* UN SEUL PARTAGE, APRES LES REPONSES (06/10/2026). Trois boutons
+             « Partager » sur le premier ecran faisaient passer chaque pied de carte
+             sur deux lignes : la troisieme reponse sortait de l'ecran. Le message
+             reprend les reponses affichees, chacune avec son lien officiel ; ni
+             code de commune, ni identifiant, ni parametre de suivi. */}
+          {partages.length ? <BoutonPartagerTout nom={nom} lignes={partages} /> : null}
 
           {/* ALLER PLUS LOIN */}
           <View style={{ gap: PAS * 2 }}>

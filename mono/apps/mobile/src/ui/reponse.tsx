@@ -26,13 +26,38 @@ function BoutonPartager({ titre, texte, sourceUrl }: { titre: string; texte: str
 }
 
 /* Espace insecable devant « ? ! : ; € » : ni le point d'interrogation ni le
-   symbole euro ne tombent seuls a la ligne (vu sur capture : « 332 372 / € »). */
-const typo = (t: string) => t.replace(/ ([?!:;€»])/g, "\u00a0$1").replace(/« /g, "«\u00a0");
+   symbole euro ne tombent seuls a la ligne (vu sur capture : « 332 372 / € »),
+   ni le signe pour cent (« soit 47 / % », capture du 06/10/2026). */
+const typo = (t: string) => t.replace(/ ([?!:;€»%])/g, "\u00a0$1").replace(/« /g, "«\u00a0");
 
-export function Reponse({ phrase, preuve, note, sources, suite, partage }: {
+/* LE PARTAGE DE L'ECRAN « CHEZ VOUS » — un seul bouton, sous les reponses
+   (06/10/2026). Le message reprend les reponses affichees, chacune avec le lien
+   officiel de sa source. Rien d'autre : ni code de commune, ni identifiant, ni
+   parametre de suivi, ni adresse de Repere (la diffusion publique de la beta
+   est une decision du porteur du projet, pas de ce bouton). */
+export function messagePartage(nom: string, lignes: { texte: string; url?: string | null }[]): string {
+  return [`Ce qui se passe à ${nom}, d'après les sources officielles :`,
+    ...lignes.map(l => (l.url ? `• ${l.texte}\n  Source : ${l.url}` : `• ${l.texte}`))].join("\n\n");
+}
+export function BoutonPartagerTout({ nom, lignes }: { nom: string; lignes: { texte: string; url?: string | null }[] }) {
+  const partager = async () => {
+    try { await Share.share({ message: messagePartage(nom, lignes), title: `Ce qui se passe à ${nom}` }); } catch { /* partage annule ou indisponible */ }
+  };
+  return (
+    <Pressable onPress={partager} accessibilityRole="button" accessibilityLabel={`Partager ce qui se passe à ${nom}`}
+      style={({ pressed }) => [s.partageTout, pressed && { opacity: 0.6 }]}>
+      <Text style={s.suiteTexte}>Partager ce qui se passe à {nom}</Text>
+    </Pressable>
+  );
+}
+
+export function Reponse({ phrase, preuve, note, noteLignes, sources, suite, partage }: {
   /* l'echelon qui decide : porte par la donnee, pas encore par le rendu
      (cartes blanches en palette B partiel) ; la PR « Chez vous » s'en servira. */
   echelon: Echelon; phrase: string; preuve?: ReactNode; note?: ReactNode;
+  /* coupe une note longue (intitule officiel d'un projet) ; le lecteur d'ecran
+     lit le texte entier, et l'ecran de detail l'affiche en entier */
+  noteLignes?: number;
   sources?: ReactNode; suite?: { texte: string; onPress: () => void };
   partage?: { titre: string; texte: string; sourceUrl?: string | null };
 }) {
@@ -44,7 +69,7 @@ export function Reponse({ phrase, preuve, note, sources, suite, partage }: {
     <View testID="reponse" style={[s.carte, { backgroundColor: couleurs.carte }]}>
       <Text style={s.phrase} accessibilityRole="header">{typo(phrase)}</Text>
       {preuve}
-      {note ? (typeof note === "string" ? <Text style={TYPO.note}>{typo(note)}</Text> : note) : null}
+      {note ? (typeof note === "string" ? <Text style={TYPO.note} numberOfLines={noteLignes} accessibilityLabel={noteLignes ? note : undefined}>{typo(note)}</Text> : note) : null}
       <View style={s.pied}>
         <View style={{ flexDirection: "row", flexWrap: "wrap", flexShrink: 1 }}>{sources}</View>
         {partage ? <BoutonPartager {...partage} /> : null}
@@ -71,12 +96,17 @@ export function Plus({ texte, onPress, premier, dernier }: { texte: string; onPr
 }
 
 const s = StyleSheet.create({
-  carte: { borderRadius: RAYON.carte, paddingHorizontal: PAS * 4, paddingTop: PAS * 4, paddingBottom: 0, gap: PAS * 2, ...OMBRE },
-  phrase: { ...TYPO.reponse, fontSize: 19, lineHeight: 25 },
+  /* 06/10/2026 : 14 px en haut et 6 px entre les lignes (au lieu de 16 et 8), corps
+     18/24 (au lieu de 19/25) : mesures a 360 x 800, ce sont les pixels qui
+     manquaient pour que la troisieme reponse tienne dans le premier ecran. */
+  carte: { borderRadius: RAYON.carte, paddingHorizontal: PAS * 4, paddingTop: 14, paddingBottom: 0, gap: 6, ...OMBRE },
+  phrase: { ...TYPO.reponse, fontSize: 18, lineHeight: 24 },
   pied: { flexDirection: "row", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", columnGap: PAS * 2 },
   suite: { minHeight: CIBLE, justifyContent: "center", marginLeft: "auto" },
   suiteTexte: { fontSize: 15, fontWeight: "700", color: couleurs.lien },
   partage: { minHeight: CIBLE, justifyContent: "center" },
+  partageTout: { minHeight: CIBLE + 4, justifyContent: "center", alignItems: "center", borderRadius: RAYON.bloc,
+    borderWidth: 1, borderColor: couleurs.trait, backgroundColor: couleurs.carte, paddingHorizontal: PAS * 4 },
   plus: { minHeight: CIBLE + 4, flexDirection: "row", alignItems: "center", paddingHorizontal: PAS * 4, backgroundColor: couleurs.carte,
     borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: couleurs.trait },
   plusPremier: { borderTopLeftRadius: RAYON.bloc, borderTopRightRadius: RAYON.bloc },
