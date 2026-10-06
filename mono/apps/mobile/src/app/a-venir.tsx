@@ -5,11 +5,12 @@
  * Fichiers republies chaque jour par la chaine, jamais embarques : un
  * calendrier absent ne fait jamais dire « aucune seance annoncee ». */
 import { router, Stack } from "expo-router";
-import { heureFr, jourFr, phraseSemaineParlement } from "@repere/core";
+import { heureFr, jourFr, phraseSemaineParlement, releveAncien } from "@repere/core";
 import { Pressable, Text } from "react-native";
 import { Carte, Vide } from "../lib/composants";
 import { AGENDA_PAS_ARRIVE, AGENDA_VIDE } from "../lib/absences";
 import { srcAgenda } from "../lib/sources";
+import { TYPO } from "../lib/theme";
 import { useCommuneChoisie } from "../lib/useCommune";
 import { AvecDonnees, Page, Question } from "../ui/page";
 import { PastilleSource } from "../ui/source";
@@ -36,6 +37,10 @@ export default function AVenir() {
             <Text style={{ fontWeight: "700", color: "#1d1d1f" }}>Questions au Gouvernement</Text>
             <Text style={{ marginTop: 4, color: "#5f6368" }}>Voir les questions posées et les réponses publiées.</Text>
           </Pressable>
+          {/* Un releve qui date de plus de deux jours le dit (@repere/core releveAncien). */}
+          {r.agendaLu && releveAncien(d.srcCal && d.srcCal.releve_le, new Date()) ? (
+            <Text testID="releve-ancien" style={TYPO.note}>{releveAncien(d.srcCal.releve_le, new Date())}</Text>
+          ) : null}
           {!r.agendaLu ? (
             <Vide {...AGENDA_PAS_ARRIVE} action="Réessayer" onAction={reessayer} />
           ) : prochains.length ? (

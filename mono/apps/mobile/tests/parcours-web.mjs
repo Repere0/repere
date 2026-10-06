@@ -601,6 +601,50 @@ async function montantA100ms(reduit) {
   await ctx.close();
 }
 
+/* UN CALENDRIER QUI N'EST PLUS RELEVE (06/10/2026) : au-dela de deux jours, la
+   date du releve est dite sur l'ecran. Attendu calcule sur la donnee servie
+   (sur les donnees figees de la CI, le releve peut vraiment dater), puis force
+   a dix jours. */
+{
+  const age = async ctx => {
+    const p = await ctx.newPage();
+    await p.goto(BASE + "/", { waitUntil: "networkidle" });
+    await p.getByLabel(/Où habitez-vous/).fill(COMMUNE.saisie);
+    await p.getByRole("button", { name: new RegExp("^" + COMMUNE.nom + ",") }).first().click();
+    await p.getByText("Aller plus loin").first().waitFor({ timeout: 15000 });
+    await p.getByRole("button", { name: "Ce qui arrive au Parlement" }).first().click();
+    await p.getByText(/Qu'est-ce qui arrive/).first().waitFor({ timeout: 10000 });
+    await p.waitForTimeout(600);
+    const note = await p.getByTestId("releve-ancien").count() ? await p.getByTestId("releve-ancien").innerText() : null;
+    await p.close();
+    return note;
+  };
+  const releves = [];
+  for (const f of ["agenda-an.json", "calendrier-senat.json"]) {
+    try { const j = await (await fetch(BASE + "/data/" + f)).json(); if (j.source && j.source.releve_le) releves.push(j.source.releve_le.slice(0, 10)); } catch { /* absent */ }
+  }
+  const vieux = releves.length > 0 && releves.every(r => (Date.now() - Date.parse(r + "T00:00:00Z")) / 864e5 > 3);
+  const frais = releves.some(r => (Date.now() - Date.parse(r + "T00:00:00Z")) / 864e5 < 2);
+  const ctx1 = await navigateur.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, reducedMotion: "reduce" });
+  const n1 = await age(ctx1); await ctx1.close();
+  if (frais) verifier(n1 === null, `fraîcheur du calendrier : relevé récent (${releves.join(", ")}) -> aucune mise en garde`);
+  else if (vieux) verifier(n1 !== null, `fraîcheur du calendrier : relevé ancien (${releves.join(", ")}) -> la date est dite`);
+  /* Sans aucun calendrier servi (donnees figees de la CI : l'extraction ne les
+     produit pas), il n'y a pas de releve a dater : l'ecran dit l'absence. */
+  if (!releves.length) verifier(n1 === null, "fraîcheur du calendrier : aucun calendrier servi -> aucune date inventée");
+  else {
+  const ctx2 = await navigateur.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, reducedMotion: "reduce" });
+  const dix = new Date(Date.now() - 10 * 864e5).toISOString().slice(0, 10);
+  await ctx2.route(/\/data\/(agenda-an|calendrier-senat)\.json/, async route => {
+    const rep = await route.fetch(); const j = await rep.json();
+    return route.fulfill({ response: rep, json: { ...j, source: { ...(j.source || {}), releve_le: dix } } });
+  });
+  const n2 = await age(ctx2); await ctx2.close();
+  verifier(!!n2 && /^Calendrier relevé le .* : des séances ont pu être ajoutées, déplacées ou annulées depuis\.$/.test(n2),
+    `fraîcheur du calendrier : relevé vieux de dix jours -> la date est dite (${n2})`);
+  }
+}
+
 /* LES ABSENCES REELLES (06/10/2026) : une commune par cause, choisie dans les
    donnees (releve du jour), et la phrase attendue lue dans @repere/core ou
    dans l'application, jamais recopiee. Mesure avant ce controle : a

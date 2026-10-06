@@ -11,6 +11,7 @@
  * remplace par sa version habillee. */
 import { calculerFaits } from "./faits.js";
 import { rapports, dernierExercice } from "./comptes.js";
+import { dateFr } from "./format.js";
 
 export function deriverAujourdhui({ fiche, commune, dep, index, projets, cat, pos, deputes, cal, agendaAN, evenements, maintenant: instant }) {
   const now = instant instanceof Date ? instant : new Date();
@@ -105,3 +106,18 @@ export function phraseSemaineParlement(d) {
   return `${total}. Voici ${k === 1 ? "le seul" : `les ${k}`} que l'Assemblée nationale et le Sénat classent en séance publique, puis ${n - k === 1 ? "le premier autre rendez-vous" : `les ${n - k} premiers autres rendez-vous`}.`;
 }
 
+
+/* UN CALENDRIER QUI N'EST PLUS RELEVE (06/10/2026). L'agenda de l'Assemblee
+ * et celui du Senat sont releves chaque jour par la chaine. Si la collecte
+ * s'arrete, l'ecran continuerait de compter « cette semaine » sur un releve
+ * perime, sans le dire (la date n'etait que dans la feuille de source). Au-dela
+ * de `seuilJours`, la phrase le dit, avec la date ; sans date, rien n'est
+ * affirme ici (la feuille de source le dit deja). */
+export function releveAncien(releve, maintenant, seuilJours = 2) {
+  if (!releve) return null;
+  const t = Date.parse(String(releve).slice(0, 10) + "T00:00:00Z");
+  if (Number.isNaN(t)) return null;
+  const jours = Math.floor((maintenant.getTime() - t) / 864e5);
+  if (jours <= seuilJours) return null;
+  return `Calendrier relevé le ${dateFr(String(releve).slice(0, 10))} : des séances ont pu être ajoutées, déplacées ou annulées depuis.`;
+}
