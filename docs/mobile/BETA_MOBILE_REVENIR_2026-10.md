@@ -14,7 +14,7 @@ web de l'application mobile. Ce qui n'a pas été mesuré est écrit comme tel.*
 | nouvel exercice de comptes | `departments/<dép>.json` (OFGL) | 29/07, exercices 2021, 2024, 2025 | **annuel** (été) | oui : année absente de l'ancienne version | oui (OFGL) |
 | nouveau projet aidé par l'État | `projets/<dép>.json` (DGCL) | 24/07, exercices 2024–2025 | **annuel** | oui : projet absent de l'ancienne version | oui (DGCL) |
 | agenda AN / Sénat | `agenda-an.json`, `calendrier-senat.json` | relevés chaque jour | **quotidien** | oui, mais **national** | oui — mais ce n'est pas une nouveauté « chez vous » |
-| faits éditoriaux validés | `evenements.json` | **0 fait publié** | — | — | — |
+| faits éditoriaux validés | `evenements.json` (clé `r`) | **8 faits publiés** (7 scrutins solennels + 1 décision du Conseil constitutionnel) — *corrigé le 06/10 : une première lecture de ce fichier cherchait une autre clé et avait conclu à tort « 0 fait »* | à chaque validation du porteur | oui : identifiant absent de l'ancien fichier (lot 11) | oui (source du scrutin + source des grands axes) |
 | délibérations municipales, marchés, budgets primitifs | aucune source branchée | — | — | **non** | **non** |
 
 **Conséquence honnête.** Pour une commune de la bêta, la plupart des jours,
@@ -95,6 +95,11 @@ feuille de partage native. Le rendu web n'est pas un téléphone.
 5. Taper « paris », **« Comprendre ce vote »**, toucher « 5e ». *Attendu : le
    député de la 5e ; jamais « votre député » affirmé sans adresse.*
 
+6. Sur « Meaux », **« Comprendre ce vote »**. *Attendu : une carte « Ce que
+   prévoit ce texte », une phrase, « Tout le détail du texte » qui se déplie,
+   « Relu et validé par la rédaction de Repère », et une source.* Avec VoiceOver :
+   le détail déplié est lu en entier.
+
 Noter pour chaque point : OK / pas OK + capture.
 
 ## 5. Partage
@@ -145,8 +150,10 @@ question par écran, la réponse d'abord).
 
 Ce qui marche aujourd'hui, sans compte ni notification : comparer deux
 publications. Ce qui le rendra utile plus souvent :
-1. **La couche éditoriale** (faits validés, `data/evenements/`) : 0 fait
-   publié. C'est le levier le plus fort et il ne dépend que du porteur.
+1. **La couche éditoriale** (faits validés, `data/evenements/`) : 8 faits
+   publiés, tous de juillet–août. Depuis le lot 11, le mobile les affiche
+   (« Ce que prévoit ce texte ») et signale ceux publiés depuis la dernière
+   visite. C'est le levier le plus fort ; son rythme ne dépend que du porteur.
 2. **Les votes de la session budgétaire** (octobre–décembre) : ils
    apparaîtront seuls dans « depuis votre dernière visite ».
 3. **Une source de décisions locales** (délibérations, budgets primitifs) :
@@ -154,3 +161,46 @@ publications. Ce qui le rendra utile plus souvent :
 
 Écarté volontairement : notifications, compte, historique de lecture,
 « revenez demain ».
+
+## 8. Éditorial — état réel au 6 octobre 2026
+
+- **Publiés en production** (`evenements.json`, clé `r`, mise à jour du 05/10) :
+  8 faits `valide: true`, `confiance: verifie` — scrutins 8418, 8419, 8421, 8430,
+  8431, 8433, 8434 (source : page du scrutin ; grands axes : texte adopté ou
+  transmis, source distincte), et la décision n° 2026-910 DC du Conseil
+  constitutionnel.
+- **8430** : validé par le porteur le 29/09 (commit `08cfc30`). Ses axes sont
+  sourcés au texte transmis au Sénat (n° 911, 2025-2026 ; la page répond). La
+  branche `data/8430-axes-sources` (`valide: false`) est dépassée.
+- **Pourquoi rien n'apparaissait sur le mobile** : la publication avait abouti,
+  mais l'application ne chargeait jamais ce fichier (`evenements: null`).
+  Corrigé par le lot 11.
+- **Ce qui manque** : tous les faits datent de juillet–août. Le fil ne donnera
+  une raison de revenir que si de nouveaux faits sont validés pendant la session
+  budgétaire (octobre–décembre). La validation reste au porteur.
+
+## 9. Petites fonctionnalités — évaluation (06/10/2026)
+
+| idée | valeur | coût | décision | pourquoi |
+|---|---|---|---|---|
+| « Ce que prévoit ce texte » (faits validés sur le vote) | très haute : un vote devient compréhensible | faible | **fait (lot 11)** | la donnée existait, validée et sourcée |
+| Retenir sa commune dit « s'il y a du nouveau » | haute : rend visible la raison de revenir | très faible | **fait (lot 12)** | promesse alignée sur ce que fait le code |
+| En clair (un « ? » sur un terme) | moyenne | moyen | **BACKLOG (UX 2.0)** | les écrans de détail expliquent déjà circonscription, intercommunalité et vote solennel ; sur le premier écran, un contrôle de plus fait déborder la 3e réponse à 360 px (782/800) |
+| Pourquoi ça compte (impact factuel) | moyenne | — | **non pour l'instant** | la dette l'a déjà ; donner du sens au « par habitant » exigerait une comparaison, interdite |
+| Contexte Avant → Maintenant | haute | — | **fait** | « Où en est ce texte » (lot 11), « Ce qui a changé entre 2024 et 2025 » |
+| Retenir une information | faible | moyen | **non** | aucun usage réel trouvé qui ne devienne pas un système de favoris |
+
+Sources des définitions « En clair » : les pages de vie-publique.fr sont derrière
+un mur anti-robot (un code 200 ne prouve pas que la page existe) ; seule la page
+« Les intercommunalités » de collectivites-locales.gouv.fr a été vérifiée. À
+revoir avant de citer une définition.
+
+## 10. Regard citoyen (Meaux, Paris, Ustaritz — app réelle)
+
+**Forces.** Je comprends en une phrase ce que l'État finance chez moi et ce que
+ma commune dépense, avec l'année. Je vois ce qu'a voté mon député et, désormais,
+ce que prévoit le texte. Chaque chiffre a sa source à un geste.
+
+**Faiblesses.** Le premier écran parle d'un vote de juillet : vrai, daté, mais
+rarement « ce qui se passe » aujourd'hui. La question « qui décide chez moi »
+arrive en note, pas en réponse. Hors Île-de-France, deux étapes de plus.
