@@ -299,8 +299,25 @@ rm -rf site_engendre
   cd mono
   corepack enable pnpm 2>/dev/null || true
   node scripts/extract-html.js "../$APP" ./data
-  node scripts/calendrier-senat.mjs ./data \
-    || echo "::warning::calendrier Senat non rafraichi (reseau indisponible ? le releve d'hier reste)"
+  # LE RELEVE D'HIER, POUR DE VRAI (06/10/2026). Mesure : la collecte du 06/10
+  # (run 37461827718) s'est arretee au banc — « calendrier-senat.json absent »,
+  # puis « la licence non confirmee est dite » — et RIEN n'a ete publie (elus,
+  # comptes, votes), parce que le Senat n'avait pas repondu. L'avertissement
+  # disait « le releve d'hier reste » : faux sur le runner, ou data/ est refait
+  # a neuf a chaque fois. Le releve d'hier est desormais celui que Repere a
+  # PUBLIE, relu avant usage ; il garde SA date de releve, que l'application
+  # affiche au-dela de deux jours (« Calendrier relevé le … »).
+  if ! node scripts/calendrier-senat.mjs ./data; then
+    PRECEDENT="https://repereapp.netlify.app/data/calendrier-senat.json?verif=$(date +%s)"
+    if curl -sf --max-time 30 "$PRECEDENT" -o ./data/calendrier-senat.json.precedent \
+       && node -e 'const j=JSON.parse(require("fs").readFileSync("./data/calendrier-senat.json.precedent","utf8")); if (!Array.isArray(j.evenements) || !j.source || !/^\d{4}-\d{2}-\d{2}/.test(String(j.source.releve_le || ""))) process.exit(1); console.log(j.source.releve_le)'; then
+      mv ./data/calendrier-senat.json.precedent ./data/calendrier-senat.json
+      echo "::warning::calendrier Senat non rafraichi : le releve publie precedemment est repris, avec sa date de releve"
+    else
+      rm -f ./data/calendrier-senat.json.precedent
+      echo "::warning::calendrier Senat non rafraichi, et aucun releve precedent lisible : le calendrier continue avec l'Assemblee seule"
+    fi
+  fi
   # AGENDA ASSEMBLEE NATIONALE (23/09/2026) - pas de reseau ici, contrairement
   # au Senat : lit outils/agenda_an.json, deja produit par l'etape 2 de ce
   # meme script (agenda_an.py). Si ce fichier manque ou est mal forme, le
