@@ -11,7 +11,7 @@ import path from "node:path";
 import {
   dateFr, jourFr, euros, titreLisible, procedure, decompte, positionsFiables, positionSur,
   calculerFaits, valeur, rapports, dernierExercice, evolution, deriverAujourdhui, phraseSemaineParlement,
-  mots, motsCible, correspond, trouverCommunes, departementDe,
+  mots, motsCible, correspond, trouverCommunes,
 } from "../packages/core/src/index.js";
 
 const RACINE = path.resolve(import.meta.dirname, "..");
@@ -243,6 +243,10 @@ test("visuels — grands nombres et parts en mots : jamais plus de 3 points d'ar
   const ph = m.parHabitant([1000, 10, 11, 20, 22, null, null]);
   assert.equal(ph.recettes, 11); assert.equal(ph.dette, null);
 });
+
+/* Import a part (et non dans la liste du haut) : la PR « Au Parlement » modifie
+   la liste du haut ; deux PR qui touchent la meme ligne ne se fusionnent pas. */
+import { departementDe } from "../packages/core/src/index.js";
 
 /* 06/10/2026 : le mobile composait le departement par insee.slice(0, 2), faux
    outre-mer. La regle du socle doit rester celle du script qui ECRIT les
