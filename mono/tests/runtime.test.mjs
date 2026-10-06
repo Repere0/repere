@@ -166,6 +166,16 @@ page.on("console", m => {
   /* LA RESSOURCE EST NOMMEE — 29/09/2026. « Failed to load resource : 404 »
      ne disait pas QUEL fichier manquait ; un echec doit dire qui il refuse. */
   const ou = (m.location() && m.location().url) || "";
+  /* UN 404 ATTENDU N'EST PAS UNE ERREUR APPLICATIVE — 06/10/2026, PR #79.
+     Les projets ne sont publies que pour certains departements (la beta
+     Ile-de-France). Depuis qu'« Aujourd'hui » s'ouvre par defaut, il demande le
+     paquet de projets du departement choisi ; hors de cette liste, le serveur
+     repond 404 et l'ecran le dit (doctrine du vide, ETATS.INTROUVABLE). Seul ce
+     cas exact est tolere : un departement dont le build n'a PAS publie le
+     fichier. Tout autre 404 — y compris sur un departement publie — reste un
+     echec. */
+  const p404 = /status of 404/.test(t) && /\/data\/projets\/([0-9AB]{2,3})\.json$/.exec(ou);
+  if (p404 && !fs.existsSync(path.join(DIST, "data", "projets", p404[1] + ".json"))) return;
   erreurs.push("console: " + t + (ou ? " [" + ou.replace(/^https?:\/\/[^/]+/, "") + "]" : ""));
 });
 
@@ -1857,6 +1867,12 @@ await pageSombre.waitForTimeout(1600);
 await pageSombre.getByLabel(/Votre commune/).fill("Ustaritz");
 await pageSombre.waitForTimeout(300);
 await pageSombre.getByRole("button", { name: "Ustaritz", exact: true }).click();
+await pageSombre.waitForTimeout(600);
+/* 06/10/2026 : apres le choix, l'ecran ouvert est « Aujourd'hui », sans barre
+   d'onglets. On passe par « Qui decide » (ses boutons d'approfondissement) pour
+   retrouver la barre, puis « Sources ». Sans cela, le banc s'arretait ici sur
+   un delai depasse et AUCUN controle suivant ne tournait (Epreuve #143, #144). */
+await pageSombre.locator("nav.auj-suite").getByRole("button", { name: "Qui décide" }).click();
 await pageSombre.waitForTimeout(600);
 await pageSombre.getByRole("button", { name: "Sources" }).click();
 await pageSombre.waitForTimeout(800);
