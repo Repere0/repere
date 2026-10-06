@@ -129,3 +129,54 @@ export function etatDuTexte(e) {
   /* la date ISO du fichier, ecrite comme le reste de l'application */
   return p ? p.replace(/\b(\d{4}-\d{2}-\d{2})\b/g, x => dateFr(x)) : null;
 }
+
+/* LE FIL EDITORIAL, CONTROLE DE BOUT EN BOUT (06/10/2026).
+ * Relu sur le fichier PUBLIE (evenements.json, cle `r`), sans reutiliser une
+ * ligne du script qui l'a ecrit (outils/evenements.py). Rend la liste des
+ * defauts, chacun nomme ; vide = le fil est sain.
+ *
+ * Pourquoi par NOM D'HOTE et non par sous-chaine : la porte Python acceptait
+ * toute adresse contenant « assemblee-nationale.fr » quelque part
+ * (« https://exemple.com/?assemblee-nationale.fr » passait) — le piege du
+ * « garde-fou qui filtre sur une sous-chaine » (CONTEXTE § 9).
+ * La liste est celle de outils/evenements.py ; l'elargir est une decision. */
+const HOTES_OFFICIELS = ["legifrance.gouv.fr", "assemblee-nationale.fr", "senat.fr", "conseil-constitutionnel.fr",
+  "vie-publique.fr", "data.gouv.fr", "journal-officiel.gouv.fr", "hatvp.fr", "ccomptes.fr", "insee.fr", "gouvernement.fr"];
+export function sourceOfficielle(url) {
+  let u; try { u = new URL(String(url)); } catch { return false; }
+  if (u.protocol !== "https:") return false;
+  const h = u.hostname.toLowerCase();
+  if (h.endsWith(".gouv.fr") || h === "gouv.fr") return true;
+  if (HOTES_OFFICIELS.some(d => h === d || h.endsWith("." + d))) return true;
+  /* deliberations d'une collectivite, publiees sur son propre site en .fr */
+  return h.endsWith(".fr") && /^\/deliberations(\/|$)/.test(u.pathname);
+}
+const numeroScrutin = url => { const m = String(url || "").replace(/\/+$/, "").match(/assemblee-nationale\.fr\/dyn\/\d+\/scrutins\/(\d+)$/); return m ? m[1] : null; };
+export function controlerFaits(evenements, catalogue, maintenant = new Date()) {
+  const defauts = [];
+  if (!evenements || !Array.isArray(evenements.r)) return ["fichier sans liste « r » : aucun fait ne serait lu"];
+  const dates = new Map(((catalogue && catalogue.scrutins) || []).map(s => [String(s.n), s.d]));
+  const ids = new Set(), parScrutin = new Map();
+  for (const e of evenements.r) {
+    const id = e && e.id ? e.id : "(sans id)";
+    if (ids.has(id)) defauts.push(`${id} : identifiant en double`);
+    ids.add(id);
+    if (!e.t || !String(e.t).trim()) defauts.push(`${id} : titre absent`);
+    if (!e.axes || !String(e.axes).trim()) defauts.push(`${id} : grands axes absents`);
+    if (!["verifie", "a_confirmer"].includes(e.conf)) defauts.push(`${id} : confiance inconnue (${e.conf})`);
+    if (!["ville", "agglo", "departement", "region", "france"].includes(e.e)) defauts.push(`${id} : échelon inconnu (${e.e})`);
+    if (e.e !== "france" && !e.insee) defauts.push(`${id} : fait local sans territoire`);
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(String(e.d)) || Number.isNaN(Date.parse(e.d + "T00:00:00Z"))) defauts.push(`${id} : date illisible (${e.d})`);
+    else if (Date.parse(e.d + "T00:00:00Z") > maintenant.getTime()) defauts.push(`${id} : date dans le futur (${e.d})`);
+    if (!sourceOfficielle(e.src)) defauts.push(`${id} : source absente ou non officielle (${e.src})`);
+    if (e.axes_src && !sourceOfficielle(e.axes_src)) defauts.push(`${id} : source des axes non officielle (${e.axes_src})`);
+    const n = numeroScrutin(e.src);
+    if (n) {
+      if (parScrutin.has(n)) defauts.push(`${id} : deuxième fait pour le scrutin ${n} (déjà ${parScrutin.get(n)})`);
+      parScrutin.set(n, id);
+      if (/^scrutin-/.test(id) && !id.endsWith("-" + n)) defauts.push(`${id} : l'identifiant ne porte pas le numéro de sa source (${n})`);
+      if (dates.has(n) && dates.get(n) !== e.d) defauts.push(`${id} : date ${e.d} différente de celle du scrutin ${n} (${dates.get(n)})`);
+    }
+  }
+  return defauts;
+}

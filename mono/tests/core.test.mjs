@@ -327,3 +327,42 @@ test("core — faits éditoriaux : reliés par la page du scrutin, nouveaux seul
   const sans = changementsCommune({ commune: "77001", dep: "77", avant: base, apres: avecNouveau, connus: { evt: false } });
   assert.deepEqual(sans.changements, [], "sans version precedente du fil, rien n'est nouveau");
 });
+
+/* 06/10/2026 : le fil editorial controle de bout en bout. Chaque defaut est
+   fabrique et doit etre nomme ; puis le fil reellement extrait doit etre sain. */
+import { controlerFaits, sourceOfficielle } from "../packages/core/src/index.js";
+test("core — controlerFaits nomme chaque défaut du fil éditorial", () => {
+  const bon = { id: "scrutin-2026-07-21-8430", t: "T", d: "2026-07-21", e: "france", conf: "verifie", axes: "A.", src: "https://www.assemblee-nationale.fr/dyn/17/scrutins/8430" };
+  const cat = { scrutins: [{ n: "8430", d: "2026-07-21" }] };
+  const quand = new Date("2026-10-06T00:00:00Z");
+  assert.deepEqual(controlerFaits({ r: [bon] }, cat, quand), []);
+  const un = (modif) => controlerFaits({ r: [{ ...bon, ...modif }] }, cat, quand);
+  assert.match(un({ src: "https://exemple.com/?assemblee-nationale.fr" })[0], /non officielle/, "une sous-chaine ne suffit plus");
+  assert.match(un({ src: "http://www.assemblee-nationale.fr/dyn/17/scrutins/8430" })[0], /non officielle/, "http refuse");
+  assert.match(un({ conf: "auto" })[0], /confiance inconnue/);
+  assert.match(un({ axes: " " })[0], /grands axes absents/);
+  assert.match(un({ d: "2026-07-20" })[0], /différente de celle du scrutin/);
+  assert.match(un({ d: "2027-01-01" })[0], /futur/);
+  assert.match(un({ id: "scrutin-2026-07-21-8431" })[0], /ne porte pas le numéro/);
+  assert.match(un({ e: "ville" })[0], /sans territoire/);
+  assert.match(un({ axes_src: "https://journal.example/axes" })[0], /axes non officielle/);
+  assert.ok(controlerFaits({ r: [bon, { ...bon }] }, cat, quand).some(x => /en double/.test(x)));
+  assert.ok(controlerFaits({ r: [bon, { ...bon, id: "autre" }] }, cat, quand).some(x => /deuxième fait pour le scrutin 8430/.test(x)));
+  assert.match(controlerFaits({ evenements: [bon] }, cat, quand)[0], /sans liste « r »/, "la mauvaise cle est un defaut, pas un fil vide");
+  assert.ok(sourceOfficielle("https://www.prefectures-regions.gouv.fr/x") && sourceOfficielle("https://www.senat.fr/leg/pjl25-911.html"));
+  assert.ok(sourceOfficielle("https://www.ville-meaux.fr/deliberations/2026") && !sourceOfficielle("https://www.ville-meaux.fr/actualites"));
+});
+test("données — le fil éditorial extrait est sain (aucun fait sans source ni validation)", (t) => {
+  const ev = data("evenements.json"), cat = data("scrutins.json");
+  if (!ev) return t.skip("evenements.json absent des donnees extraites");
+  const defauts = controlerFaits(ev, cat);
+  assert.deepEqual(defauts, [], defauts.join("\n"));
+});
+test("core — la liste des sources officielles du socle couvre celle de outils/evenements.py", () => {
+  const py = fs.readFileSync(path.join(import.meta.dirname, "../../outils/evenements.py"), "utf8");
+  const m = py.match(/DOMAINES = \(([\s\S]*?)\n\)/);
+  assert.ok(m, "DOMAINES introuvable dans outils/evenements.py");
+  const doms = [...m[1].matchAll(/"([^"]+)"/g)].map(x => x[1]).filter(d => !d.startsWith("."));
+  const manque = doms.filter(d => !sourceOfficielle("https://" + d + "/x"));
+  assert.deepEqual(manque, [], "deux listes qui derivent : " + manque.join(", "));
+});

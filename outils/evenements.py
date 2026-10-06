@@ -47,6 +47,29 @@ DOMAINES = (
 ECHELONS = ("ville", "agglo", "departement", "region", "france")
 CONFIANCE = ("verifie", "a_confirmer")
 
+# PAR NOM D'HOTE, PAS PAR SOUS-CHAINE (06/10/2026). `any(d in src for d in DOMAINES)`
+# acceptait « https://exemple.com/?assemblee-nationale.fr » : le piege du garde-fou qui
+# filtre sur une sous-chaine (CONTEXTE § 9). Meme regle que @repere/core
+# (sourceOfficielle), qui la rejoue sur le fichier publie (tests/core.test.mjs).
+from urllib.parse import urlparse
+def source_officielle(url):
+    try:
+        u = urlparse(str(url))
+    except ValueError:
+        return False
+    if u.scheme != "https" or not u.hostname:
+        return False
+    h = u.hostname.lower()
+    if h == "gouv.fr" or h.endswith(".gouv.fr"):
+        return True
+    for d in DOMAINES:
+        if d.startswith("."):
+            continue                                   # suffixes larges, traites a part
+        if h == d or h.endswith("." + d):
+            return True
+    # deliberations d'une collectivite, publiees sur son propre site en .fr
+    return h.endswith(".fr") and (u.path == "/deliberations" or u.path.startswith("/deliberations/"))
+
 def entete(txt):
     """Entete YAML minimal : cle: valeur, une par ligne. Pas de dependance externe."""
     m = re.match(r"^---\s*\n(.*?)\n---\s*\n?(.*)$", txt, re.S)
@@ -81,7 +104,7 @@ for f in fichiers:
     if manque:
         refus["champ manquant"] += 1; detail.append((nom, "manque " + ", ".join(manque))); continue
     src = str(meta["source"])
-    if not any(d in src for d in DOMAINES):
+    if not source_officielle(src):
         refus["source non officielle"] += 1
         detail.append((nom, "source hors liste : " + src[:70])); continue
     if meta["echelon"] not in ECHELONS:
@@ -133,7 +156,7 @@ for f in fichiers:
     # nulle part cote client avant ce chantier.
     if meta.get("axes_source"):
         axes_src = str(meta["axes_source"])
-        if not any(d in axes_src for d in DOMAINES):
+        if not source_officielle(axes_src):
             refus["source des axes non officielle"] += 1
             detail.append((nom, "axes_source hors liste : " + axes_src[:70])); continue
         entree["axes_src"] = axes_src
