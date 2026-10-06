@@ -36,6 +36,9 @@ catch (e) {
 }
 
 const DIST = path.resolve(process.argv[2] || "apps/web/dist");
+/* Remet un fichier du build dans son etat d'avant une mesure : son contenu, ou
+   son ABSENCE. Une fixture ne doit jamais survivre dans le site construit. */
+const restaurer = (f, orig) => { if (orig === null) fs.rmSync(f, { force: true }); else fs.writeFileSync(f, orig); };
 if (!fs.existsSync(path.join(DIST, "index.html"))) {
   console.error("build absent : " + DIST + " — lance `pnpm build` puis copie data/ dedans");
   process.exit(2);
@@ -174,8 +177,11 @@ page.on("console", m => {
      cas exact est tolere : un departement dont le build n'a PAS publie le
      fichier. Tout autre 404 — y compris sur un departement publie — reste un
      echec. */
-  const p404 = /status of 404/.test(t) && /\/data\/projets\/([0-9AB]{2,3})\.json$/.exec(ou);
-  if (p404 && !fs.existsSync(path.join(DIST, "data", "projets", p404[1] + ".json"))) return;
+  /* 07/10/2026 : meme regle pour les deux calendriers, publies seulement si leur
+     releve du jour a reussi ; l'ecran dit alors l'absence (controle « independance »). */
+  const p404 = /status of 404/.test(t)
+    && /\/data\/(projets\/[0-9AB]{2,3}|calendrier-senat|agenda-an)\.json$/.exec(ou);
+  if (p404 && !fs.existsSync(path.join(DIST, "data", p404[1] + ".json"))) return;
   erreurs.push("console: " + t + (ou ? " [" + ou.replace(/^https?:\/\/[^/]+/, "") + "]" : ""));
 });
 
@@ -693,8 +699,27 @@ verif("invariant 4 — le calendrier porte son producteur et sa date de releve",
  * OU L'INVENTER — voir le commentaire de calendrier-senat.mjs. Un ecran qui
  * n'afficherait aucune mention de licence serait un manquement a
  * l'invariant 4 tout autant qu'une licence devinee. */
-verif("invariant 4 — la licence non confirmee est dite, pas devinee ni omise",
-  /non précisée/i.test(cal), "la mention de licence non confirmee est absente de l'ecran");
+/* 07/10/2026 : CE CONTROLE DEPEND DE CE QUE LE BUILD CONTIENT, ET IL LE DIT.
+   Si le releve du Senat manque (panne du site le jour de la collecte) ou ne porte
+   aucune seance a venir, l'ecran ne cite pas sa licence — il doit alors DIRE
+   l'absence. Le controle verifie le comportement attendu dans chaque cas au lieu
+   d'echouer sur un etat du fournisseur ; l'etat est annonce dans le journal. */
+const fSenReel = path.join(DIST, "data", "calendrier-senat.json");
+const senatAVenir = (() => {
+  if (!fs.existsSync(fSenReel)) return null;
+  const j = JSON.parse(fs.readFileSync(fSenReel, "utf8"));
+  const m = new Date().toISOString().slice(0, 16);
+  return (j.evenements || []).filter(e => e.debut >= m).length;
+})();
+if (senatAVenir === null) console.log("::warning::calendrier du Senat absent du build : l'ecran doit dire son absence (controle ci-dessous)");
+if (senatAVenir) {
+  verif("invariant 4 — la licence non confirmee est dite, pas devinee ni omise",
+    /non précisée/i.test(cal), "la mention de licence non confirmee est absente de l'ecran");
+} else {
+  verif("calendrier — sans seance du Senat a afficher, l'ecran le dit au lieu de l'omettre",
+    senatAVenir === null ? /calendrier du Sénat n'est pas disponible/.test(cal) : /calendrier du Sénat ne contient aucune séance à venir/.test(cal),
+    cal.slice(-500).replace(/\n+/g, " / "));
+}
 
 /* LES DEUX INSTITUTIONS, DANS LE MEME ECRAN. Le controle porte sur des
  * proprietes structurelles (l'institution est nommee, la categorie « Séance
@@ -1121,13 +1146,19 @@ console.log("\n--- aujourd'hui : ce qui arrive, Senat ET Assemblee ------------"
      n'existe pas (la chaine le produit en ligne), readFileSync levait ENOENT
      et le banc s'arretait ici, sans que les controles suivants — comptes,
      projets, hors ligne — ne tournent ni ne soient comptes. */
+  /* 07/10/2026 : UN RELEVE ABSENT N'ARRETE PLUS CETTE MESURE. Elle porte sur la
+     fusion des deux agendas a l'ecran, avec des evenements de banc ; elle n'a
+     pas besoin du vrai Senat. Un fichier absent est cree pour la duree de la
+     mesure, puis SUPPRIME dans le finally : jamais un agenda de banc laisse
+     dans le site construit. L'absence reelle est annoncee, pas tue. */
   const manquants = [fAN, fSen].filter(f => !fs.existsSync(f)).map(f => path.basename(f));
-  verif("a venir — les deux calendriers sont dans le build de mesure", manquants.length === 0,
-    "absent(s) : " + manquants.join(", ") + " — produits par la chaine quotidienne, avec reseau");
-  if (!manquants.length) {
-  const origAN = fs.readFileSync(fAN, "utf8"), origSen = fs.readFileSync(fSen, "utf8");
+  if (manquants.length) console.log("::warning::absent(s) du build : " + manquants.join(", ") + " — la mesure ci-dessous utilise un squelette temporaire, supprime ensuite");
+  const squelette = (producteur) => JSON.stringify({ v: 1, source: { producteur, producteur_affiche: producteur + " — agenda", licence: "fixture de banc", url: "https://example.invalid/", releve_le: "2000-01-01" }, evenements: [] });
+  {
+  const origAN = fs.existsSync(fAN) ? fs.readFileSync(fAN, "utf8") : null;
+  const origSen = fs.existsSync(fSen) ? fs.readFileSync(fSen, "utf8") : null;
   const dans = (j, h) => { const d = new Date(Date.now() + j * 864e5); d.setUTCHours(h, 0, 0, 0); return d.toISOString().slice(0, 16); };
-  const avec = (orig, evs) => { const j = JSON.parse(orig); j.evenements = evs; return JSON.stringify(j); };
+  const avec = (orig, evs) => { const j = JSON.parse(orig || squelette(orig === origAN ? "Assemblée nationale" : "Sénat")); j.evenements = evs; return JSON.stringify(j); };
   const ev = (titre, debut) => ({ titre, debut, fin: null, categorie: "Séance publique", lieu: null, description: null });
   try {
     fs.writeFileSync(fAN, avec(origAN, [ev("Séance de banc AN demain", dans(1, 13))]));
@@ -1169,7 +1200,62 @@ console.log("\n--- aujourd'hui : ce qui arrive, Senat ET Assemblee ------------"
     verif("a venir — les trois retenus restent dans l'ordre du calendrier",
       bloc3.indexOf("Audition de banc un") < bloc3.indexOf("Seance publique de banc vendredi"), "");
   } finally {
-    fs.writeFileSync(fAN, origAN); fs.writeFileSync(fSen, origSen);
+    restaurer(fAN, origAN); restaurer(fSen, origSen);
+  }
+}
+
+console.log("\n--- calendrier : chaque institution independante ------------");
+/* 07/10/2026 : Senat sans Assemblee, Assemblee sans Senat, aucun des deux, et
+   un releve recu mais sans seance a venir. Chaque cas dans un contexte neuf
+   (magasin IndexedDB vide), fichiers poses puis restaures quoi qu'il arrive. */
+{
+  const avant = { an: fs.existsSync(fAN) ? fs.readFileSync(fAN, "utf8") : null, sen: fs.existsSync(fSen) ? fs.readFileSync(fSen, "utf8") : null };
+  const dans = j => { const d = new Date(Date.now() + j * 864e5); d.setUTCHours(13, 0, 0, 0); return d.toISOString().slice(0, 16); };
+  const paquet = (producteur, licence, titres, jours = 2) => JSON.stringify({ v: 1, source: { producteur, producteur_affiche: producteur + " — agenda de banc", licence, url: "https://example.invalid/", releve_le: "2026-10-07" },
+    evenements: titres.map(t => ({ titre: t, debut: dans(jours), fin: null, categorie: "Séance publique", lieu: null, description: null })) });
+  const ecran = async () => {
+    const ctx = await nav.newContext({ viewport: { width: 390, height: 844 } });
+    const p = await ctx.newPage();
+    await p.addInitScript(([k, v]) => localStorage.setItem(k, v), ["repere.departement", JSON.stringify({ d: "93", v: null })]);
+    await p.goto(base, { waitUntil: "networkidle" });
+    await p.waitForTimeout(500);
+    await p.getByLabel(/Votre commune/i).fill("Bagnolet");
+    await p.waitForTimeout(300);
+    await p.getByRole("button", { name: "Bagnolet", exact: true }).first().click();
+    await p.waitForTimeout(900);
+    await p.locator("nav.auj-suite").getByRole("button", { name: "Le calendrier" }).click();
+    await p.waitForTimeout(1500);
+    const t = await p.evaluate(() => (document.querySelector("main") || document.body).innerText);
+    await ctx.close();
+    return t;
+  };
+  try {
+    fs.writeFileSync(fAN, paquet("Assemblée nationale", "Licence ouverte", ["Séance de banc AN seule"]));
+    fs.rmSync(fSen, { force: true });
+    const t1 = await ecran();
+    verif("independance — Senat absent : l'Assemblee s'affiche, et l'absence du Senat est dite",
+      /Séance de banc AN seule/.test(t1) && /calendrier du Sénat n'est pas disponible/.test(t1) && !/non précisée/.test(t1),
+      t1.slice(0, 400).replace(/\n+/g, " / "));
+    fs.writeFileSync(fSen, paquet("Sénat", "non précisée par le Sénat", ["Séance de banc Sénat seul"]));
+    fs.rmSync(fAN, { force: true });
+    const t2 = await ecran();
+    verif("independance — Assemblee absente : le Senat s'affiche, et l'absence de l'Assemblee est dite",
+      /Séance de banc Sénat seul/.test(t2) && /calendrier de l'Assemblée nationale n'est pas disponible/.test(t2) && !/Licence ouverte/.test(t2),
+      t2.slice(0, 400).replace(/\n+/g, " / "));
+    fs.rmSync(fSen, { force: true });
+    const t3 = await ecran();
+    verif("independance — aucun des deux : un etat explicite, aucun faux calendrier",
+      /n'est arrivé jusqu'à cet appareil pour aucune institution/.test(t3) && !/Séance de banc/.test(t3),
+      t3.slice(0, 300).replace(/\n+/g, " / "));
+    fs.writeFileSync(fAN, paquet("Assemblée nationale", "Licence ouverte", ["Séance de banc AN avec Sénat vide"]));
+    fs.writeFileSync(fSen, paquet("Sénat", "non précisée par le Sénat", ["Séance de banc Sénat passée"], -3));
+    const t4 = await ecran();
+    verif("independance — Senat recu sans seance a venir : dit comme un fait de la source, date, pas comme une panne",
+      /calendrier du Sénat ne contient aucune séance à venir au relevé du/.test(t4) && !/Séance de banc Sénat passée/.test(t4)
+      && !/calendrier du Sénat n'est pas disponible/.test(t4),
+      t4.slice(0, 400).replace(/\n+/g, " / "));
+  } finally {
+    restaurer(fAN, avant.an); restaurer(fSen, avant.sen);
   }
 }
 }
