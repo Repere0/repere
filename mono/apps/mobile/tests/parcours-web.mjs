@@ -530,6 +530,77 @@ async function montantA100ms(reduit) {
   await ctx.close();
 }
 
+/* DEPUIS VOTRE DERNIERE VISITE (06/10/2026). « Nouveau » = absent de la version
+   que le telephone avait gardee. Le controle publie une « nouvelle generation »
+   en reecrivant a la volee les fichiers servis (un vote solennel, les comptes
+   2026, un projet) et verifie : premiere visite -> rien d'affirme ; meme
+   publication -> « rien de nouveau » ; nouvelle publication -> exactement ces
+   trois changements ; ensuite -> « rien de nouveau » ; donnees locales
+   effacees -> rien d'affirme ; commune non retenue -> rien. Les fixtures sont
+   des donnees de test, jamais publiees. */
+{
+  const brut = async f => (await fetch(BASE + "/data/" + f)).json();
+  const pq77 = await brut("departments/77.json"), dep = await brut("deputes.json"), cat0 = await brut("scrutins.json");
+  const circo = pq77.communes["77284"].circo;
+  const ref = dep.deputes["77-" + circo].acteurRef;
+  const nomDep = [dep.deputes["77-" + circo].prenom, dep.deputes["77-" + circo].nom].join(" ");
+  const ctx = await navigateur.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, reducedMotion: "reduce" });
+  const page = await ctx.newPage();
+  const bloc = async () => {
+    const n = await page.getByTestId("depuis-visite").count();
+    return n ? (await page.getByTestId("depuis-visite").first().innerText()).replace(/[  ]/g, " ") : null;
+  };
+  const ouvrirMeaux = async (retenue) => {
+    await page.goto(BASE + "/", { waitUntil: "networkidle" });
+    if (retenue) await page.getByRole("button", { name: "Voir ce qui se passe à Meaux" }).click();
+    else { await page.getByLabel(/Où habitez-vous/).fill("meaux"); await page.getByRole("button", { name: /^Meaux,/ }).first().click(); }
+    await page.getByText("Aller plus loin").first().waitFor({ timeout: 15000 });
+    await page.waitForTimeout(600);
+  };
+  await ouvrirMeaux(false);
+  verifier(await bloc() === null, "depuis la visite : non retenue, première visite -> rien n'est affirmé");
+  await page.getByRole("button", { name: "Retenir Meaux sur ce téléphone" }).click();
+  await ouvrirMeaux(true);
+  verifier(/^Rien de nouveau depuis votre dernière visite\.$/.test(await bloc() || ""), "depuis la visite : même publication -> « Rien de nouveau depuis votre dernière visite »");
+
+  /* NOUVELLE PUBLICATION */
+  const scrutinNeuf = { ...cat0.scrutins[cat0.scrutins.length - 1], u: "VTANR5L17V99001", n: "99001", d: "2026-10-14", t: "l'ensemble du projet de loi de finances pour 2027 (première lecture)." };
+  const projetNeuf = { annee: 2026, dispositif: "DSIL", intitule: "Fixture de test : rénovation d'une école", subvention: 123456, cout: 246912 };
+  await ctx.route("**/data/**", async route => {
+    const url = route.request().url();
+    const rep = await route.fetch();
+    let j; try { j = await rep.json(); } catch { return route.fulfill({ response: rep }); }
+    if (/\/index\.json/.test(url) && j.build) j.build = { ...j.build, construit_le: "2099-01-01T00:00:00.000Z" };
+    if (/\/scrutins\.json/.test(url)) j.scrutins = [...j.scrutins, scrutinNeuf];
+    if (/\/scrutins\/77\.json/.test(url)) j.positions = { ...j.positions, 99001: { [ref]: "p" } };
+    if (/\/departments\/77\.json/.test(url)) { const m = j.communes["77284"]; j.communes["77284"] = { ...m, comptes: { ...m.comptes, 2026: m.comptes[Object.keys(m.comptes).sort().pop()] } }; }
+    if (/\/projets\/77\.json/.test(url)) j.communes = { ...j.communes, "77284": [...(j.communes["77284"] || []), projetNeuf] };
+    return route.fulfill({ response: rep, json: j });
+  });
+  await ouvrirMeaux(true);
+  const apres = await bloc() || "";
+  if (CAPTURES) await page.screenshot({ path: path.join(CAPTURES, "depuis-visite-390.png"), fullPage: true });
+  verifier(/^3 choses ont changé depuis votre dernière visite/.test(apres), `depuis la visite : nouvelle publication -> exactement 3 changements ${JSON.stringify(apres.slice(0, 60))}`);
+  verifier(apres.includes("Le 14 octobre 2026, " + nomDep + " a voté pour") && /projet de loi de finances pour 2027/i.test(apres), `depuis la visite : le nouveau vote, daté, avec le député (${nomDep})`);
+  verifier(/Les comptes 2026 de Meaux sont publiés/.test(apres) && /123 456 € pour « Fixture de test/.test(apres), "depuis la visite : les comptes 2026 et le nouveau projet");
+  verifier(await page.getByTestId("depuis-visite").getByRole("button", { name: /D'où vient cette information/ }).count() >= 3,
+    "depuis la visite : chaque changement porte sa source");
+  await ouvrirMeaux(true);
+  verifier(/^Rien de nouveau depuis votre dernière visite\.$/.test(await bloc() || ""), "depuis la visite : rouverte ensuite -> plus rien de « nouveau »");
+  /* donnees locales effacees (le systeme a vide le cache) : la commune reste retenue, rien n'est affirme */
+  await page.evaluate(() => new Promise(r => { const q = indexedDB.deleteDatabase("repere-donnees"); q.onsuccess = q.onerror = q.onblocked = () => r(); }));
+  await ouvrirMeaux(true);
+  verifier(await bloc() === null, "depuis la visite : données locales effacées -> ni « nouveau » ni « rien de nouveau »");
+  /* une autre commune du meme departement, non retenue : rien */
+  await page.goto(BASE + "/", { waitUntil: "networkidle" });
+  /* une commune est retenue : la question affichee (et son libelle) devient « Une autre commune ? » */
+  await page.getByLabel(/Une autre commune/).fill("chelles");
+  await page.getByRole("button", { name: /^Chelles,/ }).first().click();
+  await page.getByText("Aller plus loin").first().waitFor({ timeout: 15000 });
+  verifier(await bloc() === null, "depuis la visite : commune non retenue -> jamais « depuis votre dernière visite »");
+  await ctx.close();
+}
+
 /* LES ABSENCES REELLES (06/10/2026) : une commune par cause, choisie dans les
    donnees (releve du jour), et la phrase attendue lue dans @repere/core ou
    dans l'application, jamais recopiee. Mesure avant ce controle : a

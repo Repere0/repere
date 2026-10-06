@@ -44,10 +44,11 @@ import { AvecDonnees, Page } from "../ui/page";
 import { PastilleSource } from "../ui/source";
 import { Etiquette } from "../ui/resume";
 import { BoutonPartagerTout, Plus, Reponse } from "../ui/reponse";
+import { DepuisVotreVisite } from "../ui/depuis";
 import { BarrePart } from "../ui/visuels";
 
 export default function ChezVous() {
-  const { choix } = useSelection();
+  const { choix, retenue } = useSelection();
   const { reessayer } = useCommuneChoisie();
   return (
     <AvecDonnees rendu={r => {
@@ -172,6 +173,8 @@ export default function ChezVous() {
             {/* Projets non publies pour ce departement : la phrase vient APRES les
                reponses. Mesure du 06/10/2026 : a Ustaritz, la premiere chose lue
                etait « Repère ne publie pas encore… », avant tout ce que Repere sait. */}
+            {/* DEPUIS VOTRE DERNIERE VISITE : la commune retenue seulement (ui/depuis.tsx) */}
+            {retenue && choix && retenue.c === choix.insee ? <DepuisVotreVisite r={r} /> : null}
             {r.projetsNonPublies ? <>{blocDepenses}{blocVote}{blocProjet}</> : <>{blocProjet}{blocDepenses}{blocVote}</>}
           </View>
           {/* UN SEUL PARTAGE, APRES LES REPONSES (06/10/2026). Trois boutons

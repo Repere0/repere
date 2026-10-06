@@ -489,6 +489,20 @@ export async function chargerEvenements({ delaiMs = 8000 } = {}) {
   return chargerSocle("socle:EVT", adresseEvenements(), delaiMs);
 }
 
+/* LES VERSIONS PRECEDENTES, POUR LA SESSION SEULEMENT (06/10/2026).
+ * cle -> la copie que l'appareil avait avant que la publication du jour ne la
+ * remplace. `connaissance(cle)` dit ce que l'appareil savait AVANT cette
+ * session :
+ *   "precedente" : une version anterieure existait, elle est comparable ;
+ *   "a jour"     : l'appareil avait deja la publication du jour (deja vue) ;
+ *   "aucune"     : rien n'etait garde (premiere visite, cache efface) ;
+ *   null         : le fichier n'a pas ete charge, ou pas depuis le reseau.
+ * Rien de cela n'est ecrit : c'est la memoire d'une application ouverte. */
+const precedents = new Map();
+const connaissances = new Map();
+export const precedentDe = cle => precedents.get(cle) || null;
+export const connaissance = cle => connaissances.get(cle) || null;
+
 /* Le trajet commun des trois etages, ecrit UNE fois : memoire, magasin, reseau,
    avec la regle de generation ci-dessus. */
 async function chargerSocle(cle, url, delaiMs) {
@@ -496,7 +510,13 @@ async function chargerSocle(cle, url, delaiMs) {
   if (GENERATION === null) await chargerIndex().catch(() => {});
   const enCache = await magasin.lire(cle);
   const aJour = enCache && (GENERATION === null || (await generationsGardees())[cle] === GENERATION);
-  if (aJour) { marquer(cle, false); return { etat: ETATS.SERVI, donnees: enCache, depuis: "cache" }; }
+  if (aJour) {
+    /* « a jour » seulement si c'est le premier regard de la session : apres un
+       telechargement, la copie du jour est en cache et ne dit plus rien de ce
+       que l'appareil savait avant. */
+    if (!connaissances.has(cle)) connaissances.set(cle, "a jour");
+    marquer(cle, false); return { etat: ETATS.SERVI, donnees: enCache, depuis: "cache" };
+  }
   if (enVol.has(cle)) return enVol.get(cle);
   /* Une copie d'une autre generation, servie faute de mieux : PRECEDENTE si
      l'on sait qu'une publication plus recente existe (index verifie) ; sinon
@@ -513,10 +533,18 @@ async function chargerSocle(cle, url, delaiMs) {
     try {
       const { donnees, secours } = await auReseau(url, delaiMs);
       if (secours) return faute(enCache || donnees, "copie de secours du service worker");
+      /* La copie que l'appareil avait, d'une generation anterieure, est gardee
+         EN MEMOIRE pour la session : c'est la « version precedente connue »
+         que @repere/core compare a celle-ci (changementsCommune). Jamais
+         ecrite : a la fermeture, il ne reste que le fichier du jour. */
+      if (!connaissances.has(cle)) {
+        connaissances.set(cle, enCache ? "precedente" : "aucune");
+        if (enCache) precedents.set(cle, enCache);
+      }
       await magasin.ecrire(cle, donnees).catch(() => {});
       await noterGeneration(cle);
       marquer(cle, false);
-      return { etat: ETATS.SERVI, donnees, depuis: "reseau" };
+      return { etat: ETATS.SERVI, donnees, depuis: "reseau", precedent: enCache || null };
     } catch (e) {
       /* Le reseau a echoue, mais une version precedente est la : on la sert,
          marquee, plutot qu'un ecran vide sur une donnee presente. */
@@ -533,7 +561,7 @@ async function chargerSocle(cle, url, delaiMs) {
    IndexedDB — n'est pas touche : c'est ce qui survit a une reouverture. */
 export function nouvelleSessionPourTest() {
   GENERATION = null; indexSession = null; indexEnCours = null; enVol.clear();
-  indexVerifie = null; nouvelleParue = false; clesPrecedentes.clear();
+  indexVerifie = null; nouvelleParue = false; clesPrecedentes.clear(); precedents.clear(); connaissances.clear();
   oublierMemoire();
   fileGenerations = Promise.resolve();
 }

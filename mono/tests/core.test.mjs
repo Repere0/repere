@@ -270,3 +270,37 @@ test("core — « st » et « ste » trouvent Saint et Sainte, sans perdre Stras
   assert.ok(trouverCommunes(liste, mots("st")).some(l => l[1] === "Strasbourg"), "« st » ne trouve plus Strasbourg");
   assert.equal(trouverCommunes(liste, mots("st denis"))[0][1], "Saint-Denis");
 });
+
+/* 06/10/2026 : « nouveau » = absent de la version que l'appareil connaissait.
+   Sans version precedente, rien n'est dit ; deux versions identiques : rien. */
+import { changementsCommune } from "../packages/core/src/index.js";
+test("core — changementsCommune ne dit « nouveau » que ce qui l'est", () => {
+  const fiche = { nom: "X", maire: { nom: "A B" }, circo: 3, comptes: { 2024: [1], 2025: [1] } };
+  const cat = { scrutins: [{ u: "U1", n: "1", d: "2026-07-01", t: "t", s: "adopté" }] };
+  const deputes = { deputes: { "77-3": { prenom: "Jeanne", nom: "D", acteurRef: "PA1" } } };
+  const pos = { positions: { 1: { PA1: "p" }, 2: { PA1: "c" } } };
+  const projets = { communes: { "77001": [{ annee: 2025, dispositif: "DETR", intitule: "École", subvention: 10 }] } };
+  const base = { fiche, cat, pos, deputes, projets };
+  const tous = { dep: true, proj: true, scr: true, deputes: true };
+  const appel = (apres, connus = tous, avant = base) => changementsCommune({ commune: "77001", dep: "77", avant, apres: { ...base, ...apres }, connus });
+
+  assert.deepEqual(appel({}).changements, [], "deux versions identiques : rien de nouveau");
+  assert.equal(appel({}).compare, true);
+  const sansRien = appel({ fiche: { ...fiche, maire: { nom: "C D" } } }, { dep: false, proj: false, scr: false, deputes: false });
+  assert.equal(sansRien.compare, false); assert.deepEqual(sansRien.changements, [], "sans version precedente, rien n'est affirme");
+
+  const vote = appel({ cat: { scrutins: [...cat.scrutins, { u: "U2", n: "2", d: "2026-10-14", t: "t2", s: "adopté" }] } });
+  assert.deepEqual(vote.changements.map(c => c.type + ":" + (c.fait && c.fait.sc.n)), ["vote:2"]);
+  assert.equal(appel({ fiche: { ...fiche, maire: { nom: "C D" } } }).changements[0].type, "maire");
+  assert.deepEqual(appel({ fiche: { ...fiche, maire: null } }).changements, [], "un nom absent n'est pas un changement de maire");
+  assert.equal(appel({ deputes: { deputes: { "77-3": { prenom: "Paul", nom: "E", acteurRef: "PA1" } } } }).changements[0].type, "depute");
+  assert.deepEqual(appel({ fiche: { ...fiche, comptes: { ...fiche.comptes, 2026: [1] } } }).changements, [{ type: "comptes", an: "2026" }]);
+  const pj = appel({ projets: { communes: { "77001": [...projets.communes["77001"], { annee: 2026, dispositif: "DSIL", intitule: "Gymnase", subvention: 5 }] } } });
+  assert.deepEqual(pj.changements.map(c => c.type + ":" + c.p.intitule), ["projet:Gymnase"]);
+  /* plusieurs circonscriptions : un decompte, jamais un depute nomme */
+  const multi = appel({ fiche: { ...fiche, circo: [1, 3] }, cat: { scrutins: [...cat.scrutins, { u: "U2", n: "2", d: "2026-10-14", t: "t2", s: "adopté" }] } }, tous, { ...base, fiche: { ...fiche, circo: [1, 3] } });
+  assert.deepEqual(multi.changements.map(c => c.type), ["votes"]);
+  /* une famille non comparee ne parle pas, les autres si */
+  const partiel = appel({ fiche: { ...fiche, maire: { nom: "C D" } }, cat: { scrutins: [{ u: "U9", n: "9", d: "2026-10-14", t: "t", s: "adopté" }] } }, { ...tous, scr: false });
+  assert.deepEqual(partiel.changements.map(c => c.type), ["maire"]);
+});
