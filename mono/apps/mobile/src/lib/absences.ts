@@ -41,12 +41,12 @@ export const REGION_PAS_ARRIVEE = "La liste des élus de la région n'est pas ar
    (la source ne porte rien), et celle-ci, sans bouton : reessayer ne changerait
    rien. La liste des departements n'est pas ecrite ici : elle change. */
 export const projetsNonPublies = (nomDep: string) => ({
-  titre: `Repère ne publie pas encore les projets financés par l'État pour ${nomDep}.`,
-  corps: "Ce n'est pas une absence de projet : Repère n'a pas encore traité ce département. La source officielle reste consultable.",
+  titre: `Les projets financés par l'État ne sont pas encore disponibles dans la bêta pour ${nomDep}.`,
+  corps: "Ce n'est pas une absence de projet : la bêta de Repère ne couvre pas encore ce département. La source officielle reste consultable.",
   lien: { texte: "Projets financés par l'État — données publiques", url: DGCL_URL },
 });
 export const votesNonPublies = (nomDep: string) => ({
-  titre: `Repère ne publie pas encore les votes des députés pour ${nomDep}.`,
-  corps: "Ce n'est pas une absence de vote : les scrutins sont publics sur le site de l'Assemblée nationale.",
+  titre: `Les votes des députés ne sont pas encore disponibles dans la bêta pour ${nomDep}.`,
+  corps: "Ce n'est pas une absence de vote : la bêta de Repère ne couvre pas encore ce département. Les scrutins sont publics sur le site de l'Assemblée nationale.",
   lien: { texte: "Les scrutins sur le site de l'Assemblée", url: SCRUTINS_AN },
 });

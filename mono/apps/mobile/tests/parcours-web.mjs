@@ -392,7 +392,7 @@ async function montantA100ms(reduit) {
   if (CAPTURES) await page.screenshot({ path: path.join(CAPTURES, "national-ustaritz.png"), fullPage: true });
   const maireU = await lireMaire("64", "64547");
   verifier(!!maireU && new RegExp(echapper(maireU)).test(ustaritz), `national : Ustaritz s'ouvre avec son maire (${maireU})`);
-  verifier(/Repère ne publie pas encore les projets financés par l'État pour Pyrénées-Atlantiques/.test(ustaritz),
+  verifier(/Les projets financés par l'État ne sont pas encore disponibles dans la bêta pour Pyrénées-Atlantiques/.test(ustaritz),
     "national : projets non publiés dits comme tels, département nommé");
   verifier(!/pas arrivés/.test(ustaritz) && !/Réessayer/.test(ustaritz) && !/Aucun projet financé/.test(ustaritz),
     "national : ni « pas arrivés », ni « Réessayer », ni « aucun projet » pour une donnée non publiée");
