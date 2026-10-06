@@ -614,19 +614,16 @@ export default function App() {
                 </p>
               ) : null}
 
-              {/* PROTOTYPE DU 18/09/2026, VOIR Aujourdhui.jsx. Deux choses a
-                  savoir sur cette ligne de lien :
+              {/* LIEN DE RETOUR VERS « AUJOURD'HUI » (ecran par defaut depuis
+                  la PR #79). Deux choses a savoir :
                   1. "Aujourd'hui" n'est JAMAIS un bouton de plus dans la barre
                      classique. Le premier essai (sixieme bouton parmi les cinq
-                     autres) a immediatement reproduit la regression mesuree la
-                     veille — six boutons au lieu de cinq, le maire encore plus
-                     enfoui — et prouvait le contraire de l'hypothese testee.
-                  2. Le reglage par defaut plus haut (`useState("qui")`) n'a
-                     PAS bouge : ce lien est une porte D'ENTREE en plus vers le
-                     prototype, jamais un remplacement du parcours que le banc
-                     mesure. Une fois sur "Aujourd'hui", la barre classique
-                     disparait et ce meme lien sert a y revenir — une seule
-                     ligne, deux sens. */}
+                     autres) a immediatement reproduit la regression mesuree le
+                     17/09 — six boutons au lieu de cinq, le maire encore plus
+                     enfoui.
+                  2. Sur "Aujourd'hui", la barre classique disparait et ce lien
+                     aussi : on en sort par ses boutons « Toutes les decisions »,
+                     « Qui decide »... Sur les autres ecrans, ce lien y ramene. */}
               {onglet !== "aujourdhui" && fiche ? (
                 <button type="button" className="auj-retour" onClick={() => irA("aujourdhui")}>
                   Voir aujourd'hui à {fiche.nom} →
