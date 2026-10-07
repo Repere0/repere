@@ -1,0 +1,11 @@
+/* La semaine au Parlement (07/10/2026). Charge AVEC l'ecran Aujourd'hui, jamais
+   au premier ecran : le plafond de 120 Ko du premier ecran est presque atteint
+   en CI (mesure du 07/10/2026). */
+.auj-semaine { list-style: none; margin: .6rem 0 .4rem; padding: 0; display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: .3rem; }
+.auj-jour { display: flex; flex-direction: column; align-items: center; gap: .15rem; padding: .45rem 0; border: 1px solid var(--trait); border-radius: var(--r); background: var(--carte); min-height: 44px; }
+.auj-jour-aujourdhui { background: var(--e-france); color: var(--carte); border-color: var(--e-france); }
+.auj-jour-nom { font-family: var(--t-titre); font-size: .8125rem; font-weight: 700; text-transform: uppercase; }
+.auj-jour-num { font-family: var(--t-titre); font-size: 1.05rem; font-weight: 800; }
+.auj-jour-points { display: flex; gap: 2px; min-height: 6px; font-size: .8125rem; line-height: 6px; }
+.auj-jour-points i { width: 5px; height: 5px; border-radius: 9px; background: currentColor; display: block; }
+.auj-solennels { margin: .5rem 0; }

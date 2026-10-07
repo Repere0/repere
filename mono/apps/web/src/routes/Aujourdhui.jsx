@@ -1,4 +1,5 @@
 import React from "react";
+import "./aujourdhui-semaine.css";
 import { Vide, Source, Chargement, dateFr, jourFr } from "@repere/ui";
 import { useAujourdhui } from "../lib/useAujourdhui.js";
 import { LigneVote } from "../lib/votes.jsx";
