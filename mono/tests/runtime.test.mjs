@@ -1319,7 +1319,7 @@ console.log("\n--- calendrier : chaque institution independante ------------");
       fs.rmSync(fSen, { force: true });
       const t0 = await ecran();
       verif("calendrier — trois séances du même texte le même jour : une seule ligne, ses trois heures",
-        (t0.match(/proposition de loi de banc X/g) || []).length === 1 && /9 h, 15 h, 21 h 30/.test(t0) && /3 séances ce jour-là/.test(t0),
+        (t0.match(/proposition de loi de banc X/g) || []).length === 1 && /9\sh, 15\sh, 21\sh\s30/.test(t0) && /3 séances ce jour-là/.test(t0),
         t0.slice(0, 500).replace(/\n+/g, " / "));
       verif("calendrier — les autres points de l'ordre du jour sont comptés (sans le texte de la ligne, sans doublon)",
         /\+ 2 autres points à l'ordre du jour/.test(t0), t0.slice(0, 500).replace(/\n+/g, " / "));
