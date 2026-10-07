@@ -50,6 +50,20 @@ let echecs = 0;
 const verifier = (ok, texte) => { console.log((ok ? "ok   " : "ECHEC") + " " + texte); if (!ok) echecs++; };
 
 const navigateur = await chromium.launch();
+/* GARDE-TEMPS — 08/10/2026. Le 07/10, la CI mobile de #94 a tourne 24 minutes
+   sans un seul echec, puis a ete coupee par la limite du travail (25 min) : rien
+   ne disait ou elle s'etait arretee. Un parcours normal dure 3 a 5 minutes. Passe
+   ce delai, le parcours s'arrete de lui-meme et NOMME le dernier controle passe,
+   en annotation lisible sans les journaux. */
+const LIMITE_MS = Number(process.env.REPERE_PARCOURS_LIMITE_MS || 12 * 60e3);
+let dernierControle = "(aucun controle encore)";
+const ecrire = console.log;
+console.log = (...a) => { dernierControle = a.join(" ").slice(0, 200); ecrire(...a); };
+setTimeout(() => {
+  const msg = `parcours bloque depuis ${Math.round(LIMITE_MS / 1000)} s ; dernier controle passe : ${dernierControle}`;
+  ecrire(process.env.GITHUB_ACTIONS ? `::error title=parcours mobile::${msg}` : "ECHEC " + msg);
+  process.exit(3);
+}, LIMITE_MS).unref();
 for (const largeur of [360, 390, 430]) {
   const page = await navigateur.newPage({ viewport: { width: largeur, height: 800 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true });
   const demandees = [];
