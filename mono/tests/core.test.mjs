@@ -169,6 +169,24 @@ test("core — sur les donnees reelles : aucune commune d'Ile-de-France ne lit q
   assert.ok(vus > 1200, "trop peu de communes mesurees : " + vus);
 });
 
+test("core — « a venir » se juge a l'heure de Paris, comme les agendas, pas a l'heure UTC", async () => {
+  /* 07/10/2026 : `toISOString()` (UTC) etait compare a des seances publiees a
+     l'heure de Paris. A 15 h 30 a Paris, la seance de 14 h restait « a venir ». */
+  const { minuteParis } = await import("../packages/core/src/aujourdhui.js");
+  assert.equal(minuteParis(new Date("2026-10-07T13:30:00Z")), "2026-10-07T15:30", "heure d'ete : UTC+2");
+  assert.equal(minuteParis(new Date("2026-12-01T13:30:00Z")), "2026-12-01T14:30", "heure d'hiver : UTC+1");
+  assert.equal(minuteParis(new Date("2026-10-06T22:30:00Z")), "2026-10-07T00:30", "minuit passe a Paris : deja le lendemain");
+  const fiche = { nom: "Témoin", circo: null };
+  const agendaAN = { source: { producteur: "Assemblée nationale" }, evenements: [
+    { debut: "2026-10-07T14:00", titre: "Séance de 14 h, déjà passée à 15 h 30", categorie: "Séance publique" },
+    { debut: "2026-10-07T16:00", titre: "Séance de 16 h, à venir", categorie: "Séance publique" },
+  ] };
+  const a = deriverAujourdhui({ fiche, commune: "00000", dep: "93", index: { agregats: [], sources: {} },
+    projets: null, cat: null, pos: null, deputes: null, cal: null, agendaAN, evenements: null,
+    maintenant: new Date("2026-10-07T13:30:00Z") });
+  assert.deepEqual(a.prochains.map(e => e.titre), ["Séance de 16 h, à venir"], "la seance de 14 h n'est plus annoncee a 15 h 30");
+});
+
 test("core — la recherche ignore accents, traits d'union et apostrophes", () => {
   assert.ok(correspond(mots("evry"), motsCible("Évry-Courcouronnes")));
   assert.ok(correspond(mots("val doise"), motsCible("Val-d'Oise")));

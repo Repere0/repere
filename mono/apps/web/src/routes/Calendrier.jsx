@@ -4,6 +4,7 @@ import {
   chargerCalendrierSenat, chargerAgendaAN,
   chargerScrutinsSolennelsRecents, chargerScrutinsSolennels, ETATS,
 } from "@repere/data-utils";
+import { minuteParis } from "@repere/core";
 
 /* CALENDRIER CITOYEN — SENAT (17/09/2026) PUIS ASSEMBLEE NATIONALE
  * (23/09/2026), MEME MODELE D'EVENEMENT POUR LES DEUX.
@@ -198,7 +199,8 @@ export default function Calendrier() {
     );
   }
 
-  const maintenant = new Date().toISOString().slice(0, 16);
+  /* heure de Paris, comme l'agenda publie : `toISOString()` est l'heure UTC (07/10/2026) */
+  const maintenant = minuteParis(new Date());
   const fusion = [];
   for (const { inst, r } of valides) {
     const s = r.donnees.source || {};
@@ -233,7 +235,7 @@ export default function Calendrier() {
      contient et pour quelle institution, pour qu'aucune ne disparaisse de
      l'ecran. Si les deux semaines sont vides, on deplie les premiers suivants
      plutot que d'afficher un ecran vide au-dessus d'un repli. */
-  const limite = new Date(Date.now() + 14 * 864e5).toISOString().slice(0, 16);
+  const limite = minuteParis(new Date(Date.now() + 14 * 864e5));
   let proches = fusion.filter(e => e.debut < limite);
   let plusTard = fusion.filter(e => e.debut >= limite);
   if (!proches.length) { proches = plusTard.slice(0, 5); plusTard = plusTard.slice(5); }
