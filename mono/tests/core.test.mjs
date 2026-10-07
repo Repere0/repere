@@ -11,7 +11,7 @@ import path from "node:path";
 import {
   dateFr, jourFr, euros, titreLisible, procedure, decompte, positionsFiables, positionSur,
   calculerFaits, valeur, rapports, dernierExercice, evolution, deriverAujourdhui,
-  mots, motsCible, correspond, trouverCommunes,
+  mots, motsCible, correspond, trouverCommunes, elusDepartement, chaineDecision, listeFr,
 } from "../packages/core/src/index.js";
 
 const RACINE = path.resolve(import.meta.dirname, "..");
@@ -114,6 +114,59 @@ test("core — le rapport d'Aujourd'hui porte l'exercice de ses comptes, jamais 
   assert.equal(deriver({ ...base, comptes: { 2024: ex, 2025: ex } }).rapportDette.an, "2025");
   // le dernier exercice vide ne prete pas son annee au precedent
   assert.equal(deriver({ ...base, comptes: { 2024: ex, 2025: [1000, null, null, null, null, null, null] } }).rapportDette.an, "2024");
+});
+
+/* L'INTERCOMMUNALITE EN ILE-DE-FRANCE — 07/10/2026. La phrase nationale disait
+   que l'intercommunalite decide des transports : faux en Ile-de-France (IDFM), et
+   dans la Metropole du Grand Paris les dechets et l'eau relevent de l'EPT. */
+test("core — ce que decide l'intercommunalite depend du territoire, lu dans la donnee", async () => {
+  const { competencesIntercommunalite, chaineDecision, COMPETENCES } = await import("../packages/core/src/index.js");
+  const mgp = { nom: "Metropole Du Grand Paris", delegues: [{ nom: "X" }] };
+  // Metropole du Grand Paris, hors Paris : ni transports ni dechets attribues a la Metropole, l'EPT est nomme comme existant
+  const a = competencesIntercommunalite({ agglo: mgp, regionCode: "11", dep: "93" });
+  assert.doesNotMatch(a.decide, /transports|déchets|eau/);
+  assert.ok(a.precisions.some(t => /établissement public territorial/.test(t) && /déchets ménagers, l'eau et l'assainissement/.test(t)));
+  assert.ok(a.precisions.some(t => /Île-de-France Mobilités/.test(t)));
+  assert.ok(a.precisions.every(t => !/Est Ensemble|Plaine Commune/.test(t)), "aucun nom d'EPT invente");
+  assert.equal(a.sources.length, 2);
+  // Paris : membre de la Metropole, d'aucun EPT
+  const p = competencesIntercommunalite({ agglo: mgp, regionCode: "11", dep: "75" });
+  assert.ok(p.precisions.every(t => !/territorial/.test(t)));
+  // autre intercommunalite d'Ile-de-France : pas de transports
+  const idf = competencesIntercommunalite({ agglo: { nom: "Ca Pays De Meaux" }, regionCode: "11", dep: "77" });
+  assert.doesNotMatch(idf.decide, /transports/);
+  assert.ok(idf.precisions.some(t => /Île-de-France Mobilités/.test(t)));
+  // commune d'Ile-de-France sans intercommunalite publiee : meme regle, rien d'invente
+  assert.doesNotMatch(competencesIntercommunalite({ agglo: null, regionCode: "11", dep: "77" }).decide, /transports/);
+  // hors Ile-de-France : la phrase nationale, inchangee
+  const ail = competencesIntercommunalite({ agglo: { nom: "Ca Du Pays Basque" }, regionCode: "75", dep: "64" });
+  assert.equal(ail.decide, COMPETENCES.agglo);
+  assert.deepEqual(ail.precisions, []);
+  // region inconnue (index absent) : rien de specifique n'est affirme
+  assert.equal(competencesIntercommunalite({ agglo: mgp, regionCode: undefined, dep: "93" }).precisions.length, 2, "la Metropole se reconnait a son nom, meme sans index");
+  // la chaine, lue par le mobile, porte la meme regle
+  const index = { departements: [{ code: "93", nom: "Seine-Saint-Denis", region_code: "11" }] };
+  const n = chaineDecision({ fiche: { nom: "X", agglo: mgp }, paquet: {}, index, deputes: null, elusRegion: null, dep: "93" }).find(x => x.echelon === "agglo");
+  assert.doesNotMatch(n.decide, /transports/);
+  assert.equal(n.precisions.length, 2);
+});
+
+test("core — sur les donnees reelles : aucune commune d'Ile-de-France ne lit que son intercommunalite decide des transports", async (t) => {
+  const { chaineDecision } = await import("../packages/core/src/index.js");
+  const index = data("index.json");
+  if (!index) return t.skip("donnees extraites absentes (lancer extract-html.js)");
+  let vus = 0;
+  for (const d of ["75", "77", "78", "91", "92", "93", "94", "95"]) {
+    const pq = data(`departments/${d}.json`);
+    if (!pq) continue;
+    for (const fiche of Object.values(pq.communes)) {
+      const n = chaineDecision({ fiche, paquet: pq, index, deputes: null, elusRegion: null, dep: d }).find(x => x.echelon === "agglo");
+      assert.doesNotMatch(n.decide, /transports/, fiche.nom);
+      assert.ok(n.precisions.some(x => /Île-de-France Mobilités/.test(x)), fiche.nom);
+      vus++;
+    }
+  }
+  assert.ok(vus > 1200, "trop peu de communes mesurees : " + vus);
 });
 
 test("core — la recherche ignore accents, traits d'union et apostrophes", () => {
@@ -239,4 +292,66 @@ test("visuels — grands nombres et parts en mots : jamais plus de 3 points d'ar
   }
   const ph = m.parHabitant([1000, 10, 11, 20, 22, null, null]);
   assert.equal(ph.recettes, 11); assert.equal(ph.dette, null);
+});
+
+/* LES ELUS DU CANTON — 07/10/2026. Chaque canton elit un binome ; la chaine n'en
+   nommait qu'un. Cas fabriques, puis les vraies donnees des huit departements. */
+test("core — tous les elus du canton sont nommes, au meme rang", () => {
+  const conseil = [
+    { nom: "Présidente P", fonction: "Président du conseil départemental", canton: 9 },
+    { nom: "Alain A", fonction: "1er Vice-président du conseil départemental", canton: 1 },
+    { nom: "Béatrice B", fonction: "Conseiller départemental", canton: 1 },
+    { nom: "Claire C", fonction: "Conseiller départemental", canton: 2 },
+    { nom: "Denis D", fonction: "Conseiller départemental", canton: 2 },
+  ];
+  const paquet = { conseil_departemental: conseil, cantons: { 1: "Est", 2: "Ouest" } };
+  // nominal : un canton, deux elus, aucun mis devant l'autre
+  const bin = elusDepartement(paquet, { canton: [1] });
+  assert.deepEqual(bin.elus.map(e => e.nom), ["Alain A", "Béatrice B"]);
+  assert.equal(bin.nom, "Alain A et Béatrice B");
+  assert.equal(bin.role, "Vos 2 conseillers départementaux · canton de Est");
+  // la chaine que lit l'application mobile porte les deux
+  const ch = chaineDecision({ fiche: { nom: "X", canton: [1] }, paquet, index: null, deputes: null, elusRegion: null, dep: "00" });
+  const dept = ch.find(n => n.echelon === "dept");
+  assert.equal(dept.personne.nom, "Alain A et Béatrice B");
+  assert.deepEqual(dept.personnes.map(e => e.nom), ["Alain A", "Béatrice B"]);
+  // plusieurs cantons : le nombre, les noms restent disponibles
+  const multi = elusDepartement(paquet, { canton: [1, 2] });
+  assert.equal(multi.nom, "4 conseillers départementaux");
+  assert.equal(multi.role, "Élus sur les 2 cantons de la commune");
+  assert.equal(multi.elus.length, 4);
+  // source incomplete : un seul elu publie pour le canton, aucun second invente
+  const seul = elusDepartement({ ...paquet, conseil_departemental: conseil.filter(e => e.nom !== "Béatrice B") }, { canton: [1] });
+  assert.equal(seul.elus.length, 1);
+  assert.equal(seul.nom, "Alain A");
+  assert.match(seul.role, /canton de Est/);
+  // pas de lien de canton : le premier du conseil, avec sa fonction
+  const sans = elusDepartement(paquet, { canton: [] });
+  assert.equal(sans.nom, "Présidente P");
+  assert.equal(sans.parCanton, false);
+  // canton inconnu du conseil : on ne pretend pas qu'il a des elus
+  assert.equal(elusDepartement(paquet, { canton: [42] }).parCanton, false);
+  // aucun conseil publie : rien, pas un nom
+  assert.equal(elusDepartement({ conseil_departemental: [] }, { canton: [1] }), null);
+  assert.equal(chaineDecision({ fiche: { nom: "X" }, paquet: {}, index: null, deputes: null, elusRegion: null, dep: "00" }).find(n => n.echelon === "dept").personne, null);
+  assert.equal(listeFr(["A"]), "A");
+  assert.equal(listeFr(["A", "B", "C"]), "A, B et C");
+});
+
+test("core — sur les donnees reelles : la chaine nomme chaque elu du canton de chaque commune", (t) => {
+  let vus = 0;
+  for (const d of ["77", "78", "91", "92", "93", "94", "95"]) {
+    const pq = data(`departments/${d}.json`);
+    if (!pq) return t.skip("donnees extraites absentes (lancer extract-html.js)");
+    const conseil = pq.conseil_departemental || [];
+    for (const fiche of Object.values(pq.communes)) {
+      const attendus = conseil.filter(e => (fiche.canton || []).includes(e.canton)).map(e => e.nom);
+      if (!attendus.length) continue;
+      const dept = chaineDecision({ fiche, paquet: pq, index: null, deputes: null, elusRegion: null, dep: d }).find(n => n.echelon === "dept");
+      assert.deepEqual(dept.personnes.map(e => e.nom), attendus, `${fiche.nom} (${d})`);
+      if (attendus.length === 2) assert.equal(dept.personne.nom, attendus.join(" et "), fiche.nom);
+      vus++;
+    }
+  }
+  assert.ok(vus > 1000, "trop peu de communes mesurees : " + vus);
 });

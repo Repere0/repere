@@ -30,9 +30,12 @@ export default function QuiDecide() {
             : <Text style={TYPO.note}>{MAIRE_ABSENT.titre} {MAIRE_ABSENT.corps}</Text> };
         }
         if (n.echelon === "agglo") {
-          return { ...n, note: n.delegues
+          /* 07/10/2026 : les precisions propres au territoire (Ile-de-France,
+             Metropole du Grand Paris) viennent de @repere/core, comme sur le site. */
+          const precisions = (n as { precisions?: string[] }).precisions || [];
+          return { ...n, note: [n.delegues
             ? `${d.nomCommune} y envoie ${n.delegues} élu${n.delegues > 1 ? "s" : ""}. Vous ne l'élisez pas directement : ce sont des conseillers municipaux qui y siègent.`
-            : "Le Répertoire national des élus ne porte pas de délégué pour cette commune à son intercommunalité." };
+            : "Le Répertoire national des élus ne porte pas de délégué pour cette commune à son intercommunalité.", ...precisions].join(" ") };
         }
         if (n.echelon === "region" && !n.personne) {
           return { ...n, note: r.regionLue ? "Le Répertoire national des élus ne porte pas de président pour cette région." : REGION_PAS_ARRIVEE };

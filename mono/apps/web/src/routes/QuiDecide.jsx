@@ -1,13 +1,14 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Carte, Vide, Source, Chargement, dateFr, Mot } from "@repere/ui";
 import { Pile } from "@repere/ui/amicro";
+import { competencesIntercommunalite } from "@repere/core";
 import { LigneVote, positionSur, positionsFiables, REFUS_APPARIEMENT, ordinal } from "../lib/votes.jsx";
 import {
   chargerDeputes, chargerCatalogueScrutins, chargerVotes, chargerElusRegion,
   entrer, revenir, ETATS,
 } from "@repere/data-utils";
 import { COMPETENCES } from "../lib/competences.js";
-import { phraseAdjoints, MAIRE_ABSENT, RNE_URL, teteDepartement } from "@repere/core";
+import { phraseAdjoints, MAIRE_ABSENT, RNE_URL, teteDepartement, elusDepartement } from "@repere/core";
 import { Segments } from "../lib/segments.jsx";
 
 /* RNE_URL vient de @repere/core (phrases.js) depuis le 29/09/2026. */
@@ -412,11 +413,12 @@ function ConseilDepartemental({ paquet, c, src }) {
         lien={{ texte: "Répertoire national des élus", url: RNE_URL }} />
     );
   }
-  /* La regle « mon canton d'abord » vit dans @repere/core (teteDepartement)
-     depuis le 30/09/2026 : l'application mobile nomme le meme elu. */
-  const { tete, duCanton, cantonNom } = teteDepartement(paquet, c);
-  const propreCanton = duCanton.slice(1); // les autres elus DU MEME canton, jamais caches derriere "les autres du departement"
-  const resteDept = conseil.filter(e => e !== tete && propreCanton.indexOf(e) === -1);
+  /* La regle vit dans @repere/core (elusDepartement) : l'application mobile
+     nomme les memes elus. 07/10/2026 : TOUS les elus du canton au meme rang -
+     le binome n'est plus « un elu, plus un autre replie ». */
+  const { duCanton, cantonNom } = teteDepartement(paquet, c);
+  const { elus } = elusDepartement(paquet, c);
+  const resteDept = conseil.filter(e => elus.indexOf(e) === -1);
   return (
     <>
       {duCanton.length ? (
@@ -425,13 +427,7 @@ function ConseilDepartemental({ paquet, c, src }) {
           sur le canton{cantonNom ? " de " + cantonNom : ""}, avec vos voisins.
         </p>
       ) : null}
-      <LigneElu e={tete} />
-      {propreCanton.length ? (
-        <details className="repli">
-          <summary><span>{propreCanton.length} autre{propreCanton.length > 1 ? "s" : ""} conseiller{propreCanton.length > 1 ? "s" : ""} du même canton</span></summary>
-          <div className="repli-in">{propreCanton.map((e, i) => <LigneElu key={i} e={e} />)}</div>
-        </details>
-      ) : null}
+      {elus.map((e, i) => <LigneElu key={i} e={e} />)}
       {resteDept.length ? (
         <details className="repli">
           <summary><span>{resteDept.length} autre{resteDept.length > 1 ? "s" : ""} du conseil départemental</span></summary>
@@ -497,6 +493,8 @@ export default function QuiDecide({ paquet, index, commune }) {
   if (!c) return null;
 
   const src = index && index.sources ? index.sources.elus : null;
+  const depAgglo = index && Array.isArray(index.departements) && paquet ? index.departements.find(x => x.code === paquet.d) : null;
+  const ciAgglo = competencesIntercommunalite({ agglo: c.agglo, regionCode: depAgglo && depAgglo.region_code, dep: paquet.d });
   const srcCirco = index && index.sources ? index.sources.circonscriptions : null;
   const p = phraseCirco(c.nom, c.circo);
 
@@ -584,10 +582,19 @@ export default function QuiDecide({ paquet, index, commune }) {
           pour une commune sur trois de la beta). */}
       <p className="tx-note tx-intro">{ORDRE_DISTANCE}</p>
 
+      {/* 07/10/2026 : ce que decide l'intercommunalite depend du territoire
+          (Ile-de-France, Metropole du Grand Paris) - competencesIntercommunalite,
+          @repere/core, la meme regle que le mobile. */}
       <Carte echelon="agglo" titre={<>Votre <Mot cle="intercommunalité">intercommunalité</Mot></>}
-        sousTitre={COMPETENCES.agglo.charAt(0).toUpperCase() + COMPETENCES.agglo.slice(1) + ". Vous ne l'élisez pas directement : ce sont les conseillers municipaux qui y siègent."}
+        sousTitre={ciAgglo.decide.charAt(0).toUpperCase() + ciAgglo.decide.slice(1) + ". Vous ne l'élisez pas directement : ce sont les conseillers municipaux qui y siègent."}
         tag={c.agglo ? "Donnée officielle" : undefined}>
         <Agglo c={c} src={src} />
+        {ciAgglo.precisions.length ? (
+          <div className="precisions-agglo">
+            {ciAgglo.precisions.map((t, i) => <p className="tx-note" key={i}>{t}</p>)}
+            {ciAgglo.sources.map((sx, i) => <Source key={i} producteur={sx.producteur} url={sx.url} />)}
+          </div>
+        ) : null}
       </Carte>
 
       <Carte echelon="dept" titre={<>Votre <Mot cle="conseil départemental">département</Mot></>}

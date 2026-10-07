@@ -209,6 +209,27 @@ page.off("response", compteur);
 verif("poids — le premier ecran reste sous 120 Ko", poids <= 120 * 1024,
   Math.round(poids / 1024) + " Ko transferes avant le choix d'un departement");
 console.log("        (mesure : " + Math.round(poids / 1024) + " Ko)");
+/* LA LISTE DES COMMUNES N'EST PAS DU PREMIER ECRAN — 07/10/2026. Elle part au
+   premier contact avec le champ, une seule fois, et la recherche directe marche
+   des qu'elle est arrivee. Contexte neuf : rien en cache. */
+{
+  const ctxL = await nav.newContext({ viewport: { width: 390, height: 844 } });
+  const pL = await ctxL.newPage();
+  const vues = [];
+  pL.on("request", r => { if (/\/data\/communes-beta\.json/.test(r.url())) vues.push(r.url()); });
+  await pL.goto(base, { waitUntil: "networkidle" });
+  await pL.waitForTimeout(1200);
+  verif("poids — la liste des communes ne part pas tant que le champ n'est pas touche", vues.length === 0, vues.length + " demande(s) avant tout contact");
+  await pL.getByLabel(/Où habitez-vous/).focus();
+  await pL.getByLabel(/Où habitez-vous/).fill("Bagno");
+  await pL.waitForTimeout(400);
+  await pL.getByLabel(/Où habitez-vous/).fill("Bagnolet");
+  await pL.waitForTimeout(800);
+  const proposee = await pL.getByRole("button", { name: /^Bagnolet\b/ }).count();
+  verif("poids — au premier contact, une seule demande, et la recherche directe repond", vues.length === 1 && proposee > 0,
+    vues.length + " demande(s), " + proposee + " proposition(s)");
+  await ctxL.close();
+}
 
 /* INVARIANT 2 : aucune adresse ne porte un code de commune. Mesure sur ce qui a
    REELLEMENT ete demande, pas sur ce que le code compose. */
@@ -372,6 +393,28 @@ verif("invariant 5 — l'absence de delegue d'agglo est dite, pas juste omise",
   /ne porte pas de délégué pour cette commune/i.test(texteAmillis),
   texteAmillis.slice(texteAmillis.indexOf("intercommunalité"), texteAmillis.indexOf("intercommunalité") + 300).replace(/\n+/g, " / "));
 await pageAgglo.context().close();
+
+/* LE BINOME DU CANTON, VISIBLE — 07/10/2026. Les noms attendus sont lus dans le
+   paquet publie (jamais recopies) : tous les elus du canton de Bagnolet doivent
+   etre LISIBLES sans rien deplier (innerText ignore un <details> ferme). */
+{
+  const p93 = JSON.parse(fs.readFileSync(path.join(DIST, "data", "departments", "93.json"), "utf8"));
+  const [codeB, ficheB] = Object.entries(p93.communes).find(([, f]) => f.nom === "Bagnolet");
+  const attendus = (p93.conseil_departemental || []).filter(e => (ficheB.canton || []).includes(e.canton)).map(e => e.nom);
+  const pageCanton = await (await nav.newContext()).newPage();
+  await pageCanton.goto(base, { waitUntil: "networkidle" });
+  await pageCanton.getByLabel(/Où habitez-vous/).fill("Bagnolet");
+  await pageCanton.waitForTimeout(300);
+  await pageCanton.getByRole("button", { name: /^Bagnolet\b/ }).click();
+  await pageCanton.waitForTimeout(1200);
+  await pageCanton.getByRole("button", { name: "Qui décide", exact: true }).click();
+  await pageCanton.waitForTimeout(900);
+  const visible = await pageCanton.evaluate(() => document.body.innerText);
+  verif("qui decide — tous les elus du canton sont visibles sans rien deplier (" + codeB + ")",
+    attendus.length >= 2 && attendus.every(n => visible.includes(n)),
+    "attendus " + JSON.stringify(attendus) + " ; manquants " + JSON.stringify(attendus.filter(n => !visible.includes(n))));
+  await pageCanton.context().close();
+}
 
 /* DETTE DE FRAICHEUR FERMEE — PREUVE PAR CASSURE DU GARDE-FOU, mission
  * phase 3.2 §7. Le defaut REEL trouve en testant le portage des elus le
@@ -1202,6 +1245,38 @@ console.log("\n--- aujourd'hui : ce qui arrive, Senat ET Assemblee ------------"
       bloc3.indexOf("Audition de banc un") < bloc3.indexOf("Seance publique de banc vendredi"), "");
   } finally {
     restaurer(fAN, origAN); restaurer(fSen, origSen);
+  }
+}
+
+/* LA SEMAINE AU PARLEMENT SUR AUJOURD'HUI — 07/10/2026. L'attendu est calcule
+   par @repere/core sur les fichiers du build (jamais ecrit ici) : sept jours, le
+   nombre de seances de chacun dit au lecteur d'ecran, et chaque vote solennel
+   annonce affiche mot pour mot. Mesure a 360, 390 et 430 px. */
+{
+  const { semaineParlement } = await import("../packages/core/src/aujourdhui.js");
+  const lire = f => fs.existsSync(path.join(DIST, "data", f)) ? JSON.parse(fs.readFileSync(path.join(DIST, "data", f), "utf8")) : null;
+  const attendu = semaineParlement({ agendaAN: lire("agenda-an.json"), cal: lire("calendrier-senat.json"), maintenant: new Date() });
+  for (const largeur of [360, 390, 430]) {
+    const ctx = await nav.newContext({ viewport: { width: largeur, height: 844 } });
+    const p = await ctx.newPage();
+    await p.goto(base, { waitUntil: "networkidle" });
+    await p.getByLabel(/Où habitez-vous/).fill("Bagnolet");
+    await p.waitForTimeout(300);
+    await p.getByRole("button", { name: /^Bagnolet\b/ }).click();
+    await p.waitForTimeout(1500);
+    const m = await p.evaluate(() => ({
+      labels: [...document.querySelectorAll(".auj-semaine .auj-jour")].map(e => e.getAttribute("aria-label")),
+      texte: (document.querySelector(".auj-a-venir") || document.body).innerText,
+      deborde: document.documentElement.scrollWidth > window.innerWidth,
+    }));
+    const nb = l => { const x = /: (\d+) séance/.exec(l || ""); return x ? Number(x[1]) : 0; };
+    verif(`semaine (${largeur} px) — sept jours, chacun avec son nombre de seances publiques dit au lecteur d'ecran`,
+      attendu.institutions.length === 0 ? m.labels.length === 0 : (m.labels.length === 7 && m.labels.every((l, i) => nb(l) === attendu.jours[i].seances)),
+      JSON.stringify({ attendu: attendu.jours.map(j => j.seances), lu: m.labels.map(nb) }));
+    verif(`semaine (${largeur} px) — chaque vote solennel annonce est affiche mot pour mot`,
+      attendu.votesSolennels.every(v => m.texte.includes(v.texte)), attendu.votesSolennels.map(v => v.texte).join(" | ").slice(0, 200));
+    verif(`semaine (${largeur} px) — aucun debordement horizontal`, !m.deborde, "");
+    await ctx.close();
   }
 }
 
@@ -2038,6 +2113,23 @@ verif("accessibilite — sur les sept ecrans, toute cible tactile mesure au moin
 verif("lisibilite — sur les sept ecrans, aucun texte porteur de sens sous 13 px",
   fautesTexte.length === 0, fautesTexte.slice(0, 4).join(" | "));
 await ctxTout.close();
+
+/* L'INTERCOMMUNALITE EN ILE-DE-FRANCE, A L'ECRAN — 07/10/2026. */
+{
+  const pageEpt = await (await nav.newContext()).newPage();
+  await pageEpt.goto(base, { waitUntil: "networkidle" });
+  await pageEpt.getByLabel(/Où habitez-vous/).fill("Bagnolet");
+  await pageEpt.waitForTimeout(300);
+  await pageEpt.getByRole("button", { name: /^Bagnolet\b/ }).click();
+  await pageEpt.waitForTimeout(1200);
+  await pageEpt.getByRole("button", { name: "Qui décide", exact: true }).click();
+  await pageEpt.waitForTimeout(900);
+  const tEpt = await pageEpt.evaluate(() => document.body.innerText);
+  verif("intercommunalite IDF — la Metropole ne « decide » ni des transports ni des dechets",
+    !/Les transports, les déchets/.test(tEpt) && /Île-de-France Mobilités/.test(tEpt) && /établissement public territorial/.test(tEpt),
+    tEpt.slice(tEpt.indexOf("intercommunalité"), tEpt.indexOf("intercommunalité") + 400).replace(/\n+/g, " / "));
+  await pageEpt.context().close();
+}
 
 console.log("\n--- theme sombre ---------------------------------------------");
 /* LE THEME SOMBRE EST UN VRAI RENDU, PAS UNE VARIANTE. Mesure : le titre « A
