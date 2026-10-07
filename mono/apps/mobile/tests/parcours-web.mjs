@@ -134,9 +134,9 @@ for (const largeur of [360, 390, 430]) {
     verifier(sansAccents.length === 0, `${largeur}px · ${ecran} : aucun mot affiché sans ses accents ${JSON.stringify(sansAccents)}`);
   };
 
-  /* L'ACCUEIL « CHEZ VOUS » : cinq questions, chacune avec sa source */
+  /* L'ACCUEIL « AUJOURD'HUI » (« Chez vous » avant le 07/10/2026) : cinq questions, chacune avec sa source */
   const mesure = await mesurer();
-  communs(mesure, "Chez vous");
+  communs(mesure, "Aujourd'hui");
   verifier(new RegExp(MAIRE).test(mesure.texte), `${largeur}px : le maire est nommé (${MAIRE})`);
   verifier(/Publication Repère du \d/.test(mesure.texte), `${largeur}px : la date de la publication affichée est dite`);
   verifier((mesure.etiquettes.match(/D'où vient cette information/g) || []).length >= 3, `${largeur}px : chaque réponse de l'accueil porte sa source`);
@@ -168,24 +168,24 @@ for (const largeur of [360, 390, 430]) {
   for (const [action, question, preuve] of [
     ["Où va cet argent ?", /Où va l'argent de Meaux/, /Sur 100 € dépensés, \d+ € vont aux salaires/],
     ["Comprendre ce vote", /Qu'a voté votre député/, /Le parcours d'une loi|Où en est ce texte/],
-    ["Qui décide de quoi", /Qui décide pour Meaux/, /Décide : /],
+    ["Qui décide", /Qui décide pour Meaux/, /Décide : /],
     ["Ce qui arrive au Parlement", /Qu'est-ce qui arrive/, /concernent tout le pays/],
-    ["D'où viennent ces informations", /Repère a traité ces fichiers/, /Repère a traité ces fichiers le \d.*Données publiées le \d.*Données relevées le \d/s],
+    ["Sources", /Repère a traité ces fichiers/, /Repère a traité ces fichiers le \d.*Données publiées le \d.*Données relevées le \d/s],
   ]) {
-    await page.getByRole("button", { name: action }).first().click();
+    await page.getByRole("button", { name: action, exact: true }).first().click();
     await page.getByText(question).first().waitFor({ timeout: 10000 });
     await page.waitForTimeout(800);
     const m = await mesurer();
     communs(m, action);
     verifier(preuve.test(m.brut), `${largeur}px · ${action} : l'écran répond à sa question`);
-    if (!/informations/.test(action)) verifier(/D'où vient cette information/.test(m.etiquettes) || /Le calendrier n'est arrivé/.test(m.texte), `${largeur}px · ${action} : la source est à portée de doigt`);
+    if (action !== "Sources") verifier(/D'où vient cette information/.test(m.etiquettes) || /Le calendrier n'est arrivé/.test(m.texte), `${largeur}px · ${action} : la source est à portée de doigt`);
     if (/argent/.test(action)) {
       verifier(/Calculé par Repère · source/.test(m.texte), `${largeur}px · ${action} : les parts calculées se disent calculées`);
       await page.getByRole("button", { name: "Détails du calcul" }).first().click();
       await page.getByText(/ce n'est pas un chiffre publié/).first().waitFor({ timeout: 5000 });
       verifier(true, `${largeur}px · ${action} : le détail du calcul s'ouvre`);
     }
-    await page.getByRole("button", { name: "Revenir à l'écran Chez vous" }).last().click();
+    await page.getByRole("button", { name: "Revenir à l'écran Aujourd'hui" }).last().click();
     await page.getByText("Aller plus loin").first().waitFor({ timeout: 5000 });
   }
 

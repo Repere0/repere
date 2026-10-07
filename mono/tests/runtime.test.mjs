@@ -1061,7 +1061,7 @@ await pageAxes.getByLabel(/Votre commune/i).fill("Ustaritz");
 await pageAxes.waitForTimeout(300);
 await pageAxes.getByRole("button", { name: "Ustaritz", exact: true }).click();
 await pageAxes.waitForTimeout(700);
-await pageAxes.getByRole("button", { name: "Toutes les décisions", exact: true }).click();
+await pageAxes.getByRole("button", { name: "Ce qui a été décidé", exact: true }).click();
 await pageAxes.waitForTimeout(1200);
 const axes = await pageAxes.evaluate(() => {
   const cartes = [...document.querySelectorAll(".fait")];
@@ -1382,7 +1382,7 @@ console.log("\n--- projets d'une commune fusionnee : rattaches, et dits comme te
     await p.waitForTimeout(400);
     await p.getByRole("button", { name: cas.nom, exact: true }).first().click();
     await p.waitForTimeout(800);
-    await p.getByRole("button", { name: "Toutes les décisions", exact: true }).click();
+    await p.getByRole("button", { name: "Ce qui a été décidé", exact: true }).click();
     await p.waitForTimeout(1600);
     const t = await p.evaluate(() => document.body.innerText);
     await c.close();
@@ -1789,12 +1789,33 @@ await auditerEcran("sources");
  * Il est mesure comme les six autres — plancher typographique et zones d'appui —
  * PUIS sur ce qui lui est propre : un fil date ne vaut que si le lecteur sait
  * dans quel ordre il lit, et d'ou vient chaque fait. */
-/* « Toutes les décisions » est un approfondissement de l'écran Aujourd'hui.
+/* « Ce qui a été décidé » est un approfondissement de l'écran Aujourd'hui.
    Après Sources, on revient explicitement à Aujourd'hui plutôt que de supposer
    que son bouton existe sur un écran national. */
 await pageTout.getByRole("button", { name: /Voir aujourd.hui à Bagnolet/ }).click();
 await pageTout.waitForTimeout(900);
-await pageTout.getByRole("button", { name: "Toutes les décisions" }).click();
+/* UN ECRAN, UN NOM — 07/10/2026. Les boutons d'« Aujourd'hui » portaient d'autres
+   noms que les onglets qu'ils ouvrent (« Toutes les décisions » -> « Ce qui a été
+   décidé »). Chaque bouton doit porter le nom exact de l'onglet ouvert. Seule
+   exception, DITE : le calendrier, dont le nom attend la decision du porteur. */
+{
+  const boutons = await pageTout.locator("nav.auj-suite button").allInnerTexts();
+  const ouvert = [];
+  for (const nom of boutons) {
+    await pageTout.locator("nav.auj-suite").getByRole("button", { name: nom, exact: true }).click();
+    await pageTout.waitForTimeout(700);
+    const actif = await pageTout.locator("nav.onglets [aria-current=page]").innerText().catch(() => "(aucun onglet actif)");
+    ouvert.push([nom.trim(), actif.trim()]);
+    await pageTout.getByRole("button", { name: /Voir aujourd.hui à Bagnolet/ }).click();
+    await pageTout.waitForTimeout(700);
+  }
+  const ecarts = ouvert.filter(([b, o]) => b !== o && !(b === "Le calendrier" && o === "Ce qui se passe"));
+  verif("libelles — chaque bouton d'Aujourd'hui porte le nom exact de l'onglet qu'il ouvre",
+    ouvert.length >= 4 && ecarts.length === 0, JSON.stringify(ecarts.length ? ecarts : ouvert));
+  if (ouvert.some(([b, o]) => b === "Le calendrier" && o === "Ce qui se passe"))
+    console.log("  note | libelles — calendrier : « Le calendrier » ouvre « Ce qui se passe » (nom en attente de decision)");
+}
+await pageTout.getByRole("button", { name: "Ce qui a été décidé" }).click();
 await pageTout.waitForTimeout(1600);
 await auditerEcran("ce qui a ete decide");
 
@@ -1876,10 +1897,10 @@ await pageA.waitForTimeout(1500);
    « Voir aujourd'hui » : ce lien ramene a Aujourd'hui, et le banc mesurait
    alors le mauvais ecran (Epreuve #143 : six echecs en cascade). Le controle
    ci-dessous nomme l'erreur de navigation au lieu de la laisser se propager. */
-await pageA.getByRole("button", { name: "Toutes les décisions" }).click();
+await pageA.getByRole("button", { name: "Ce qui a été décidé" }).click();
 await pageA.waitForTimeout(1600);
 const surDecisionsA = await pageA.getByText(/Ce qui a été décidé pour Aubervilliers/).count();
-verif("parcours — « Toutes les décisions » ouvre bien l'écran des décisions",
+verif("parcours — « Ce qui a été décidé » ouvre bien l'écran des décisions",
   surDecisionsA > 0, "l'ecran ouvert n'est pas « Ce qui a ete decide pour Aubervilliers »");
 await auditerEcran("ce qui a ete decide — avec projets", pageA);
 

@@ -164,15 +164,15 @@ async function texteApp(nav, { nom }) {
   await p.getByText("Aller plus loin").first().waitFor({ timeout: 15000 });
   await p.waitForLoadState("networkidle");
   let { t, n: feuilles } = await toutLire(p);
-  for (const action of ["Où va cet argent ?", "Comprendre ce vote", "Qui décide de quoi", "Ce qui arrive au Parlement", "D'où viennent ces informations"]) {
-    const b = p.getByRole("button", { name: action });
+  for (const action of ["Où va cet argent ?", "Comprendre ce vote", "Qui décide", "Ce qui arrive au Parlement", "Sources"]) {
+    const b = p.getByRole("button", { name: action, exact: true });
     if (!(await b.count())) continue;              /* absence dite par une phrase sur l'accueil */
     await b.first().click();
     await p.waitForTimeout(900);
     const lu = await toutLire(p);
     t += "\n" + lu.t;
     feuilles += lu.n;
-    await p.getByRole("button", { name: "Revenir à l'écran Chez vous" }).last().click();
+    await p.getByRole("button", { name: "Revenir à l'écran Aujourd'hui" }).last().click();
     await p.waitForTimeout(500);
   }
   await c.close();
