@@ -373,6 +373,28 @@ verif("invariant 5 — l'absence de delegue d'agglo est dite, pas juste omise",
   texteAmillis.slice(texteAmillis.indexOf("intercommunalité"), texteAmillis.indexOf("intercommunalité") + 300).replace(/\n+/g, " / "));
 await pageAgglo.context().close();
 
+/* LE BINOME DU CANTON, VISIBLE — 07/10/2026. Les noms attendus sont lus dans le
+   paquet publie (jamais recopies) : tous les elus du canton de Bagnolet doivent
+   etre LISIBLES sans rien deplier (innerText ignore un <details> ferme). */
+{
+  const p93 = JSON.parse(fs.readFileSync(path.join(DIST, "data", "departments", "93.json"), "utf8"));
+  const [codeB, ficheB] = Object.entries(p93.communes).find(([, f]) => f.nom === "Bagnolet");
+  const attendus = (p93.conseil_departemental || []).filter(e => (ficheB.canton || []).includes(e.canton)).map(e => e.nom);
+  const pageCanton = await (await nav.newContext()).newPage();
+  await pageCanton.goto(base, { waitUntil: "networkidle" });
+  await pageCanton.getByLabel(/Où habitez-vous/).fill("Bagnolet");
+  await pageCanton.waitForTimeout(300);
+  await pageCanton.getByRole("button", { name: /^Bagnolet\b/ }).click();
+  await pageCanton.waitForTimeout(1200);
+  await pageCanton.getByRole("button", { name: "Qui décide", exact: true }).click();
+  await pageCanton.waitForTimeout(900);
+  const visible = await pageCanton.evaluate(() => document.body.innerText);
+  verif("qui decide — tous les elus du canton sont visibles sans rien deplier (" + codeB + ")",
+    attendus.length >= 2 && attendus.every(n => visible.includes(n)),
+    "attendus " + JSON.stringify(attendus) + " ; manquants " + JSON.stringify(attendus.filter(n => !visible.includes(n))));
+  await pageCanton.context().close();
+}
+
 /* DETTE DE FRAICHEUR FERMEE — PREUVE PAR CASSURE DU GARDE-FOU, mission
  * phase 3.2 §7. Le defaut REEL trouve en testant le portage des elus le
  * 22/09/2026 : un onglet avec un `index.json` deja en cache, mis en cache

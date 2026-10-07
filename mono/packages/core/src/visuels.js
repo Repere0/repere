@@ -131,6 +131,47 @@ export function teteDepartement(paquet, fiche) {
   return { tete: duCanton.length ? duCanton[0] : conseil[0], duCanton, cantonNom, taille: conseil.length };
 }
 
+/* LES ELUS DU CANTON, TOUS — 07/10/2026. Mesure : chaque canton elit un BINOME
+   (loi du 17 mai 2013), et sur 1 262 communes de la beta, plus de 1 200 ont deux
+   conseillers departementaux. La chaine n'en nommait qu'un (`tete`), le premier
+   dans l'ordre de la source : choisir un elu sur deux, sans le dire, n'est pas
+   neutre. Desormais :
+     - commune reliee a un canton : TOUS les elus de ses cantons, dans l'ordre
+       de la source, au meme rang ;
+     - plusieurs cantons (grandes communes) : leur nombre et celui des cantons,
+       les noms restant dans `personnes` ;
+     - pas de lien de canton : le premier du conseil, comme avant (en pratique
+       le president), avec sa fonction.
+   La source ne porte qu'un elu pour un canton ? On nomme celui-la, sans en
+   inventer un second. */
+export function elusDepartement(paquet, fiche) {
+  const td = teteDepartement(paquet, fiche);
+  if (!td) return null;
+  if (!td.duCanton.length) {
+    return { elus: [td.tete], parCanton: false, nbCantons: 0, cantonNom: null,
+      nom: td.tete.nom, role: td.tete.fonction || "Conseil départemental" };
+  }
+  const elus = td.duCanton;
+  const nbCantons = new Set(elus.map(e => e.canton)).size;
+  if (elus.length === 1) {
+    return { elus, parCanton: true, nbCantons, cantonNom: td.cantonNom, nom: elus[0].nom,
+      role: `${elus[0].fonction || "Conseil départemental"}${td.cantonNom ? " · canton de " + td.cantonNom : ""}` };
+  }
+  if (nbCantons === 1) {
+    return { elus, parCanton: true, nbCantons, cantonNom: td.cantonNom, nom: listeFr(elus.map(e => e.nom)),
+      role: `Vos ${elus.length} conseillers départementaux${td.cantonNom ? " · canton de " + td.cantonNom : ""}` };
+  }
+  return { elus, parCanton: true, nbCantons, cantonNom: null, nom: `${elus.length} conseillers départementaux`,
+    role: `Élus sur les ${nbCantons} cantons de la commune` };
+}
+
+/* « A », « A et B », « A, B et C ». */
+export function listeFr(noms) {
+  const l = (noms || []).filter(Boolean);
+  if (l.length <= 1) return l[0] || "";
+  return l.slice(0, -1).join(", ") + " et " + l[l.length - 1];
+}
+
 /* La chaine des echelons, de la commune a l'Assemblee. Un niveau sans
    personne nommee par la source garde sa place et le dit (invariant 5). */
 export function chaineDecision({ fiche, paquet, index, deputes, elusRegion, dep }) {
@@ -138,7 +179,7 @@ export function chaineDecision({ fiche, paquet, index, deputes, elusRegion, dep 
   const depIndex = index && Array.isArray(index.departements) ? index.departements.find(x => x.code === dep) : null;
   const circos = Array.isArray(fiche.circo) ? fiche.circo : (fiche.circo == null ? [] : [fiche.circo]);
   const dd = deputes && deputes.deputes ? circos.map(c => ({ circo: c, d: deputes.deputes[dep + "-" + c] })) : [];
-  const td = teteDepartement(paquet, fiche);
+  const ed = elusDepartement(paquet, fiche);
   const region = elusRegion && Array.isArray(elusRegion.elus) && elusRegion.elus.length ? elusRegion.elus[0] : null;
   return [
     { echelon: "ville", niveau: "Commune", institution: "Conseil municipal", lieu: fiche.nom,
@@ -150,7 +191,8 @@ export function chaineDecision({ fiche, paquet, index, deputes, elusRegion, dep 
       delegues: fiche.agglo && Array.isArray(fiche.agglo.delegues) ? fiche.agglo.delegues.length : 0,
       decide: COMPETENCES.agglo },
     { echelon: "dept", niveau: "Département", institution: "Conseil départemental", lieu: depIndex ? depIndex.nom : null,
-      personne: td ? { nom: td.tete.nom, role: `${td.tete.fonction || "Conseil départemental"}${td.duCanton.length && td.cantonNom ? " · canton de " + td.cantonNom : ""}` } : null,
+      personne: ed ? { nom: ed.nom, role: ed.role } : null,
+      personnes: ed ? ed.elus.map(e => ({ nom: e.nom, role: e.fonction || "Conseil départemental" })) : [],
       decide: COMPETENCES.dept },
     { echelon: "region", niveau: "Région", institution: "Conseil régional", lieu: depIndex ? depIndex.region : null,
       personne: region ? { nom: region.nom, role: region.fonction } : null,

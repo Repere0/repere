@@ -7,7 +7,7 @@ import {
   entrer, revenir, ETATS,
 } from "@repere/data-utils";
 import { COMPETENCES } from "../lib/competences.js";
-import { phraseAdjoints, MAIRE_ABSENT, RNE_URL, teteDepartement } from "@repere/core";
+import { phraseAdjoints, MAIRE_ABSENT, RNE_URL, teteDepartement, elusDepartement } from "@repere/core";
 import { Segments } from "../lib/segments.jsx";
 
 /* RNE_URL vient de @repere/core (phrases.js) depuis le 29/09/2026. */
@@ -412,11 +412,12 @@ function ConseilDepartemental({ paquet, c, src }) {
         lien={{ texte: "Répertoire national des élus", url: RNE_URL }} />
     );
   }
-  /* La regle « mon canton d'abord » vit dans @repere/core (teteDepartement)
-     depuis le 30/09/2026 : l'application mobile nomme le meme elu. */
-  const { tete, duCanton, cantonNom } = teteDepartement(paquet, c);
-  const propreCanton = duCanton.slice(1); // les autres elus DU MEME canton, jamais caches derriere "les autres du departement"
-  const resteDept = conseil.filter(e => e !== tete && propreCanton.indexOf(e) === -1);
+  /* La regle vit dans @repere/core (elusDepartement) : l'application mobile
+     nomme les memes elus. 07/10/2026 : TOUS les elus du canton au meme rang -
+     le binome n'est plus « un elu, plus un autre replie ». */
+  const { duCanton, cantonNom } = teteDepartement(paquet, c);
+  const { elus } = elusDepartement(paquet, c);
+  const resteDept = conseil.filter(e => elus.indexOf(e) === -1);
   return (
     <>
       {duCanton.length ? (
@@ -425,13 +426,7 @@ function ConseilDepartemental({ paquet, c, src }) {
           sur le canton{cantonNom ? " de " + cantonNom : ""}, avec vos voisins.
         </p>
       ) : null}
-      <LigneElu e={tete} />
-      {propreCanton.length ? (
-        <details className="repli">
-          <summary><span>{propreCanton.length} autre{propreCanton.length > 1 ? "s" : ""} conseiller{propreCanton.length > 1 ? "s" : ""} du même canton</span></summary>
-          <div className="repli-in">{propreCanton.map((e, i) => <LigneElu key={i} e={e} />)}</div>
-        </details>
-      ) : null}
+      {elus.map((e, i) => <LigneElu key={i} e={e} />)}
       {resteDept.length ? (
         <details className="repli">
           <summary><span>{resteDept.length} autre{resteDept.length > 1 ? "s" : ""} du conseil départemental</span></summary>
