@@ -45,8 +45,8 @@ import { AvecDonnees, Page } from "../ui/page";
 import { PastilleSource } from "../ui/source";
 import { Etiquette } from "../ui/resume";
 import { Plus, Reponse } from "../ui/reponse";
-import { SemaineParlement } from "../ui/semaine";
 import { BarrePart, Repartition } from "../ui/visuels";
+import { SemaineParlement } from "../ui/semaine";
 
 export default function ChezVous() {
   const { choix } = useSelection();
