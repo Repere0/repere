@@ -11,6 +11,7 @@ import fs from "node:fs";
 import path from "node:path";
 import http from "node:http";
 import { adresseFautive, MOTS_A_ACCENTS } from "../packages/data-utils/src/invariants.js";
+import { dernierExercice } from "../packages/core/src/comptes.js";
 
 /* COPIE VOLONTAIRE DE dateFr (packages/ui/src/composants.jsx) — ce fichier de
    controle tourne en Node pur, sans transformation JSX, et composants.jsx en
@@ -1258,6 +1259,64 @@ console.log("\n--- calendrier : chaque institution independante ------------");
     restaurer(fAN, avant.an); restaurer(fSen, avant.sen);
   }
 }
+}
+
+console.log("\n--- aujourd'hui : un chiffre des comptes dit son exercice -------");
+/* 07/10/2026 : « Son encours de dette : 16,0 mois de recettes » s'affichait sans
+   l'annee. L'annee ATTENDUE est calculee par @repere/core sur la donnee publiee,
+   pas ecrite dans le test : si la publication passe a un nouvel exercice, le
+   controle suit. On lit le bloc par sa structure (data-exercice), pas par sa
+   phrase exacte, puis on exige que l'annee soit LISIBLE dans ce bloc. */
+{
+  const idx = JSON.parse(fs.readFileSync(path.join(DIST, "data", "index.json"), "utf8"));
+  const ouvrir = async (largeur, dep, nom) => {
+    const ctx = await nav.newContext({ viewport: { width: largeur, height: 844 } });
+    const p = await ctx.newPage();
+    await p.addInitScript(([k, v]) => localStorage.setItem(k, v), ["repere.departement", JSON.stringify({ d: dep, v: null })]);
+    await p.goto(base, { waitUntil: "networkidle" });
+    await p.waitForTimeout(500);
+    await p.getByLabel(/Votre commune/i).fill(nom);
+    await p.waitForTimeout(300);
+    await p.getByRole("button", { name: nom, exact: true }).first().click();
+    await p.waitForTimeout(1500);
+    return { ctx, p };
+  };
+  const p93 = JSON.parse(fs.readFileSync(path.join(DIST, "data", "departments", "93.json"), "utf8"));
+  const bagnolet = Object.values(p93.communes).find(c => c.nom === "Bagnolet");
+  const attendu = dernierExercice(bagnolet, idx.agregats || []);
+  for (const largeur of [360, 390, 430]) {
+    const { ctx, p } = await ouvrir(largeur, "93", "Bagnolet");
+    const m = await p.evaluate(() => {
+      const b = document.querySelector("[data-exercice]");
+      const blocs = [...document.querySelectorAll(".quest-suivante")];
+      const chiffresComptes = blocs.filter(x => /mois de recettes|€ de salaires|€ pour investir|€ d'impôts|€ par jour/.test(x.innerText));
+      return {
+        bloc: b ? b.innerText : null, attr: b ? b.getAttribute("data-exercice") : null,
+        sansAnnee: chiffresComptes.filter(x => !/comptes \d{4}/.test(x.innerText)).length,
+        deborde: document.documentElement.scrollWidth > window.innerWidth,
+      };
+    });
+    verif(`exercice (${largeur} px) — le chiffre des comptes d'Aujourd'hui dit son exercice, dans le meme bloc`,
+      !!attendu && m.attr === attendu.an && new RegExp("comptes " + attendu.an).test(m.bloc || "") && m.sansAnnee === 0,
+      JSON.stringify({ attendu: attendu && attendu.an, attr: m.attr, sansAnnee: m.sansAnnee, bloc: (m.bloc || "").slice(0, 120) }));
+    verif(`exercice (${largeur} px) — aucun debordement horizontal`, !m.deborde, "la page deborde de l'ecran");
+    await ctx.close();
+  }
+  /* Exercice absent : Saint-Pierre (975) n'a aucun compte publie. Aucun bloc, et
+     surtout aucune annee de comptes inventee ailleurs sur l'ecran. */
+  {
+    const p975 = JSON.parse(fs.readFileSync(path.join(DIST, "data", "departments", "975.json"), "utf8"));
+    const sp = Object.values(p975.communes).find(c => c.nom === "Saint-Pierre");
+    if (!sp || dernierExercice(sp, idx.agregats || [])) {
+      verif("exercice absent — une commune sans comptes publies existe pour la mesure", false, "Saint-Pierre a des comptes : choisir une autre commune");
+    } else {
+      const { ctx, p } = await ouvrir(390, "975", "Saint-Pierre");
+      const t = await p.evaluate(() => ({ bloc: !!document.querySelector("[data-exercice]"), texte: (document.querySelector("main") || document.body).innerText }));
+      verif("exercice absent — aucun chiffre des comptes, et aucune annee de comptes inventee",
+        !t.bloc && !/comptes \d{4}/.test(t.texte) && !/mois de recettes/.test(t.texte), t.texte.slice(0, 300).replace(/\n+/g, " / "));
+      await ctx.close();
+    }
+  }
 }
 
 console.log("\n--- comptes : d'un exercice a l'autre -------------------------");
