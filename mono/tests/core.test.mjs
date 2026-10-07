@@ -90,6 +90,32 @@ test("core — sur les donnees reelles : les faits sont dans l'ordre du temps et
   assert.ok(a.exercice && dernierExercice(fiche, index.agregats).an === a.exercice.an);
 });
 
+/* EXERCICE DU RATIO D'« AUJOURD'HUI » — 07/10/2026. Le chiffre et son annee sortent
+   du meme exercice, dans @repere/core ; les quatre cas que l'ecran doit tenir. */
+test("core — le rapport d'Aujourd'hui porte l'exercice de ses comptes, jamais une annee inventee", () => {
+  const agregats = [["Recettes"], ["Depenses"], ["Dette"]];
+  const base = { nom: "Essai", circo: 1 };
+  // [population, recettes m, h, depenses m, h, dette m, h]
+  const ex = [1000, 1200, 1200, 1100, 1100, 1600, 1600];
+  const deriver = fiche => deriverAujourdhui({ fiche, commune: "00000", dep: "93", index: { agregats, sources: {} },
+    projets: null, cat: null, pos: null, deputes: null, cal: null, agendaAN: null, evenements: null });
+  // 1. exercice present : l'annee est celle des comptes
+  const a = deriver({ ...base, comptes: { 2025: ex } });
+  assert.equal(a.rapportDette.an, "2025");
+  assert.equal(a.rapportDette.l, "Son encours de dette");
+  assert.equal(a.rapportDette.v, "16,0 mois de recettes");
+  // 2. aucun exercice publie : aucun rapport, donc aucune annee a afficher
+  assert.equal(deriver({ ...base }).rapportDette, undefined);
+  assert.equal(deriver({ ...base, comptes: { inconnu: ex } }).rapportDette, undefined, "une cle qui n'est pas une annee n'en devient pas une");
+  // 3. exercice present mais sans donnee financiere utilisable : rien
+  assert.equal(deriver({ ...base, comptes: { 2025: [1000, null, null, null, null, null, null] } }).rapportDette, undefined);
+  // 4. deux publications differentes : l'ecran suit l'exercice reellement fourni
+  assert.equal(deriver({ ...base, comptes: { 2024: ex } }).rapportDette.an, "2024");
+  assert.equal(deriver({ ...base, comptes: { 2024: ex, 2025: ex } }).rapportDette.an, "2025");
+  // le dernier exercice vide ne prete pas son annee au precedent
+  assert.equal(deriver({ ...base, comptes: { 2024: ex, 2025: [1000, null, null, null, null, null, null] } }).rapportDette.an, "2024");
+});
+
 test("core — la recherche ignore accents, traits d'union et apostrophes", () => {
   assert.ok(correspond(mots("evry"), motsCible("Évry-Courcouronnes")));
   assert.ok(correspond(mots("val doise"), motsCible("Val-d'Oise")));

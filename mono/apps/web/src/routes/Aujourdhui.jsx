@@ -155,10 +155,14 @@ export default function Aujourdhui({ paquet, index, commune, aller, derniereVisi
         </div>
       ) : null}
 
-      {rapportDette ? (
-        <div className="quest-suivante">
+      {/* UNE DONNEE, SON UNITE, SA PERIODE, SA SOURCE — 07/10/2026. L'exercice
+          vient de @repere/core (rapportDette.an), attache au chiffre qu'il date.
+          Sans exercice connu, le bloc ne s'affiche pas : un ratio de comptes sans
+          son annee laisserait le lecteur la deviner. data-exercice sert au banc. */}
+      {rapportDette && rapportDette.an ? (
+        <div className="quest-suivante" data-exercice={rapportDette.an}>
           <p className="quest-q2">Combien ça représente ?</p>
-          <p className="ligne-note">{rapportDette.l} : <b>{rapportDette.v}</b>. {rapportDette.d}</p>
+          <p className="ligne-note">{rapportDette.l}, comptes {rapportDette.an} : <b>{rapportDette.v}</b>. {rapportDette.d}</p>
           <Source calcul url={srcComptes ? srcComptes.url : undefined} producteur={srcComptes ? srcComptes.producteur : ""} licence={srcComptes ? srcComptes.licence : ""} maj={srcComptes ? srcComptes.maj : ""} />
         </div>
       ) : null}
