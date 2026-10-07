@@ -50,3 +50,17 @@ test("core — sur les donnees reelles : le vote mis en avant est le dernier num
   }
   assert.ok(vus > 10, "trop peu de communes mesurees : " + vus);
 });
+
+test("core — ordre : l'heure departage seulement quand les deux faits en ont une", () => {
+  const v = (quand, n) => ({ quand, rang: 1, type: "vote", sc: { n: String(n) } });
+  // heure disponible des deux cotes : l'heure decide, meme contre le numero
+  assert.ok(ordreDesFaits(v("2026-07-21T21:30", 1), v("2026-07-21T15:00", 9)) < 0);
+  // heure absente d'un cote : on ne suppose pas minuit, le numero decide
+  assert.ok(ordreDesFaits(v("2026-07-21", 8434), v("2026-07-21T15:00", 8430)) < 0);
+  assert.ok(ordreDesFaits(v("2026-07-21T15:00", 8430), v("2026-07-21", 8434)) > 0);
+  // dates differentes : la date decide, avec ou sans heure
+  assert.ok(ordreDesFaits(v("2026-07-21", 1), v("2026-07-20T23:59", 9999)) < 0);
+  // tri complet d'un melange
+  const l = [v("2026-07-20", 8427), v("2026-07-21", 8430), v("2026-07-21", 8434), v("2026-07-21", 8431)].sort(ordreDesFaits);
+  assert.deepEqual(l.map(x => x.sc.n), ["8434", "8431", "8430", "8427"]);
+});

@@ -112,7 +112,13 @@ export function calculerFaits({ dep, fiche, projets, commune, cat, pos, deputes,
    l'ordre ou ils ont lieu, c'est la seule donnee qui demontre l'ordre dans la
    journee. Numero illisible : l'ordre de la source est garde, rien n'est devine. */
 export function ordreDesFaits(a, b) {
-  if (a.quand !== b.quand) return a.quand < b.quand ? 1 : -1;
+  /* Le JOUR d'abord ; l'heure seulement si les deux faits en portent une
+     (« 2026-07-21T15:00 » contre « 2026-07-21 » : une heure absente n'est pas
+     « minuit », on ne la compare pas). 07/10/2026. */
+  const ja = String(a.quand || "").slice(0, 10), jb = String(b.quand || "").slice(0, 10);
+  if (ja !== jb) return ja < jb ? 1 : -1;
+  const ha = String(a.quand || "").slice(11), hb = String(b.quand || "").slice(11);
+  if (ha && hb && ha !== hb) return ha < hb ? 1 : -1;
   if (a.rang !== b.rang) return a.rang - b.rang;
   if (a.type === "vote" && b.type === "vote") {
     const na = Number(a.sc && a.sc.n), nb = Number(b.sc && b.sc.n);
