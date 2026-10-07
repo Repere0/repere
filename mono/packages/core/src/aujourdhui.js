@@ -12,6 +12,48 @@
 import { calculerFaits } from "./faits.js";
 import { rapports, dernierExercice } from "./comptes.js";
 
+/* LA SEMAINE AU PARLEMENT, JOUR PAR JOUR — 07/10/2026 (refonte « Aujourd'hui »).
+   Sept jours a partir d'aujourd'hui (heure de Paris, comme l'agenda), et pour
+   chacun le nombre de seances publiques annoncees, par institution. Rien n'est
+   interprete : la categorie « Seance publique » vient des fichiers sources.
+   LES VOTES SOLENNELS ANNONCES viennent de l'ordre du jour publie (le titre de la
+   seance, ou les points de « Egalement a l'ordre du jour »), mot pour mot : un
+   point qui commence par « Vote solennel » est retenu, rien d'autre. Ils passent
+   en premier sur l'ecran, et la regle y est ecrite (principe P4).
+   Une institution absente (fichier non arrive) n'est comptee nulle part : c'est
+   `institutions` qui dit lesquelles ont ete lues. */
+export function jourParis(d) {
+  return new Intl.DateTimeFormat("fr-CA", { timeZone: "Europe/Paris", year: "numeric", month: "2-digit", day: "2-digit" }).format(d);
+}
+export function semaineParlement({ cal, agendaAN, maintenant }) {
+  const now = maintenant instanceof Date ? maintenant : new Date();
+  const jours = [];
+  for (let i = 0; i < 7; i++) jours.push({ date: jourParis(new Date(now.getTime() + i * 864e5)), seances: 0, parInstitution: {} });
+  const premier = jours[0].date, dernier = jours[6].date;
+  const institutions = [];
+  const votesSolennels = [];
+  for (const [inst, donnees] of [["Assemblée nationale", agendaAN], ["Sénat", cal]]) {
+    if (!donnees || !Array.isArray(donnees.evenements)) continue;
+    institutions.push({ institution: inst, source: donnees.source || {} });
+    for (const e of donnees.evenements) {
+      const jour = String(e.debut || "").slice(0, 10);
+      if (jour < premier || jour > dernier) continue;
+      const j = jours.find(x => x.date === jour);
+      if (/^Séance publique$/.test(e.categorie || "")) {
+        j.seances++;
+        j.parInstitution[inst] = (j.parInstitution[inst] || 0) + 1;
+      }
+      const points = [e.titre, ...String(e.description || "").replace(/^Également à l'ordre du jour\s*:\s*/, "").split(" ; ")]
+        .map(t => String(t || "").trim()).filter(Boolean);
+      for (const t of points) {
+        if (/^Vote solennel\b/.test(t)) votesSolennels.push({ debut: e.debut, institution: inst, texte: t, source: donnees.source || {} });
+      }
+    }
+  }
+  votesSolennels.sort((a, b) => (a.debut < b.debut ? -1 : a.debut > b.debut ? 1 : 0));
+  return { jours, institutions, votesSolennels, total: jours.reduce((n, j) => n + j.seances, 0) };
+}
+
 export function deriverAujourdhui({ fiche, commune, dep, index, projets, cat, pos, deputes, cal, agendaAN, evenements, maintenant: instant }) {
   const now = instant instanceof Date ? instant : new Date();
   const nomCommune = fiche.nom || "";
@@ -87,6 +129,7 @@ export function deriverAujourdhui({ fiche, commune, dep, index, projets, cat, po
   return {
     pret: true, fiche, nomCommune, dep, base, faits, nbCircos, nomDep, dernierProjet,
     dernierVote, dernierFait, exercice, rapportsComptes: rr, rapportDette,
+    semaineParlement: semaineParlement({ cal, agendaAN, maintenant: now }),
     prochain, prochains, prochainsDansLaSemaine: cetteSemaine.length > 0,
     semaineSelectionnee: semaine.length > cetteSemaine.length, semaineTotal: semaine.length,
     srcComptes, srcProjets, srcScrutins, srcCal,

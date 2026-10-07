@@ -1,4 +1,5 @@
 import React from "react";
+import "./aujourdhui-semaine.css";
 import { Vide, Source, Chargement, dateFr, jourFr } from "@repere/ui";
 import { useAujourdhui } from "../lib/useAujourdhui.js";
 import { LigneVote } from "../lib/votes.jsx";
@@ -40,7 +41,7 @@ export default function Aujourdhui({ paquet, index, commune, aller, derniereVisi
   }
   const { nomCommune, dernierVote, dernierFait, faits, rapportDette, srcComptes,
           srcProjets, srcScrutins, prochains, prochainsDansLaSemaine, semaineSelectionnee, semaineTotal, base,
-          nbCircos, nomDep, dernierProjet } = a;
+          nbCircos, nomDep, dernierProjet, semaineParlement: sp } = a;
 
   /* "DEPUIS VOTRE DERNIERE VISITE", SINON "CETTE SEMAINE" — decision produit,
    * 23/09/2026. `derniereVisite` vient d'App.jsx : un instant de visite, gele
@@ -192,6 +193,29 @@ export default function Aujourdhui({ paquet, index, commune, aller, derniereVisi
       {prochains && prochains.length ? (
         <div className="quest-suivante auj-a-venir">
           <p className="quest-q2">{prochainsDansLaSemaine ? "Qu'est-ce qui arrive cette semaine ?" : "Qu'est-ce qui arrive ?"}</p>
+          {/* LA SEMAINE D'UN COUP D'OEIL — 07/10/2026 (@repere/core, semaineParlement).
+              Un point par seance publique annoncee ; le nombre est ecrit pour le
+              lecteur d'ecran. Un jour sans seance le dit, il n'est pas vide. */}
+          {sp && sp.institutions.length ? (
+            <ol className="auj-semaine" aria-label={"Séances publiques des sept prochains jours, " + sp.institutions.map(x => x.institution).join(" et ")}>
+              {sp.jours.map((j, i) => (
+                <li key={j.date} className={i === 0 ? "auj-jour auj-jour-aujourdhui" : "auj-jour"}
+                  aria-label={jourFr(j.date) + " : " + (j.seances ? j.seances + " séance" + (j.seances > 1 ? "s" : "") + " publique" + (j.seances > 1 ? "s" : "") : "aucune séance publique")}>
+                  <span className="auj-jour-nom" aria-hidden="true">{i === 0 ? "Auj." : new Date(j.date + "T12:00:00").toLocaleDateString("fr-FR", { weekday: "short" }).replace(".", "")}</span>
+                  <span className="auj-jour-num" aria-hidden="true">{Number(j.date.slice(8, 10))}</span>
+                  <span className="auj-jour-points" aria-hidden="true">{j.seances ? Array.from({ length: Math.min(j.seances, 4) }, (_, k) => <i key={k} />) : "–"}</span>
+                </li>
+              ))}
+            </ol>
+          ) : null}
+          {sp && sp.votesSolennels.length ? (
+            <div className="auj-solennels">
+              <p className="ligne-note"><b>Votes solennels annoncés</b> — chaque député votera à son nom. Règle d'affichage : ils passent en premier, quel que soit le texte.</p>
+              {sp.votesSolennels.map((v, i) => (
+                <p className="ligne-note" key={i}>{jourFr(v.debut)}{v.debut.length > 10 ? ", " + v.debut.slice(11, 13).replace(/^0/, "") + " h" + (v.debut.slice(14, 16) !== "00" ? " " + v.debut.slice(14, 16) : "") : ""} — {v.institution} : <b>{v.texte}</b></p>
+              ))}
+            </div>
+          ) : null}
           {prochainsDansLaSemaine && semaineSelectionnee ? (
             <p className="ligne-note auj-regle">
               3 rendez-vous sur {semaineTotal} cette semaine. Les séances publiques passent en premier : c'est là que
