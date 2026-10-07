@@ -3,7 +3,7 @@ import { Vide, Source, Chargement, dateFr, jourFr } from "@repere/ui";
 import { useAujourdhui } from "../lib/useAujourdhui.js";
 import { LigneVote } from "../lib/votes.jsx";
 import { noteRattachement } from "../lib/faits.js";
-import { phraseCirconscription, phraseProjet, phraseProjetLocal, DGCL_URL } from "@repere/core";
+import { phraseCirconscription, phraseProjet, phraseProjetLocal, DGCL_URL, LIBELLES } from "@repere/core";
 
 /* « AUJOURD'HUI », DIRECTION RETENUE LE 19/09/2026 — « LA QUESTION ».
  *
@@ -208,9 +208,9 @@ export default function Aujourdhui({ paquet, index, commune, aller, derniereVisi
       ) : null}
 
       <nav className="auj-suite" aria-label="Approfondir">
-        <button type="button" onClick={() => aller("decide")}>Toutes les décisions</button>
-        <button type="button" onClick={() => aller("qui")}>Qui décide</button>
-        <button type="button" onClick={() => aller("argent")}>Où va l'argent</button>
+        <button type="button" onClick={() => aller("decide")}>{LIBELLES.decide}</button>
+        <button type="button" onClick={() => aller("qui")}>{LIBELLES.qui}</button>
+        <button type="button" onClick={() => aller("argent")}>{LIBELLES.argent}</button>
         <button type="button" onClick={() => aller("calendrier")}>Le calendrier</button>
       </nav>
     </div>

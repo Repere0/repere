@@ -16,7 +16,7 @@ import {
   chiffresComptes, comptesAbsents, comptesIncoherents, comptesInsuffisants, diffEuros, eurosArrondis,
   evolution, exercicesEcartes, financementProjet, INTRO_EVOLUTION, introRapports, montantCourt, noteRattachement,
   NOTE_EVOLUTION, NOTE_FINANCEMENT, nomDispositif, parHabitant, partReperee, perimetreChange, phraseEcartes,
-  phraseProjetLocal, rapports, sousTitreRapports, euros, CALCUL_REPERE,
+  phraseProjetLocal, rapports, sousTitreRapports, euros, CALCUL_REPERE, LIBELLES,
 } from "@repere/core";
 import { Carte, Vide } from "../lib/composants";
 import { PROJETS_PAS_ARRIVES, projetsAucun } from "../lib/absences";
@@ -60,7 +60,7 @@ export default function Argent() {
       const dette = ch && ch.dette !== null ? montantCourt(ch.dette) : null;
       return (
         <Page>
-          <Stack.Screen options={{ title: "Où va l'argent" }} />
+          <Stack.Screen options={{ title: LIBELLES.argent }} />
           <Question emoji="💶" etiquette="L'argent de la commune" question={`Où va l'argent de ${nom} ?`} />
 
           {!ex ? (

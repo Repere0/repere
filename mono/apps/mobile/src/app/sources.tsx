@@ -6,7 +6,7 @@
  * les fichiers. Ne jamais les confondre. */
 import { Text, View } from "react-native";
 import { Stack } from "expo-router";
-import { dateFr, datePublication } from "@repere/core";
+import { dateFr, datePublication, LIBELLES } from "@repere/core";
 import { Carte, LienSortant } from "../lib/composants";
 import { PAS, TYPO } from "../lib/theme";
 import { AvecDonnees, Page, Question } from "../ui/page";
@@ -29,7 +29,7 @@ export default function Sources() {
       const traite = datePublication(r.index);
       return (
         <Page>
-          <Stack.Screen options={{ title: "Sources" }} />
+          <Stack.Screen options={{ title: LIBELLES.sources }} />
           <Question etiquette="Sources" question="D'où viennent ces informations ?"
             sous={traite ? `Repère a traité ces fichiers le ${dateFr(traite)}. Chaque source a sa propre date, écrite ci-dessous : c'est celle de la donnée.` : undefined} />
           {lignes.map(l => (

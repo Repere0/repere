@@ -29,7 +29,7 @@ import { router, Stack } from "expo-router";
 import {
   dateFr, datePublication, decompte, euros, financementProjet, montantCourt, ordinal, parHabitant, phrasePosition,
   repartitionVote, texteDe,
-  titreLisible, REFUS_APPARIEMENT,
+  titreLisible, REFUS_APPARIEMENT, LIBELLES,
 } from "@repere/core";
 import { Vide } from "../lib/composants";
 import { CarteMemoire } from "../cartes/CarteMemoire";
@@ -163,9 +163,9 @@ export default function ChezVous() {
           <View style={{ gap: PAS * 2 }}>
             <Etiquette texte="Aller plus loin" />
             <View>
-              <Plus premier texte="Qui décide de quoi" onPress={() => router.push("/qui-decide")} />
+              <Plus premier texte={LIBELLES.qui} onPress={() => router.push("/qui-decide")} />
               <Plus texte="Ce qui arrive au Parlement" onPress={() => router.push("/a-venir")} />
-              <Plus dernier texte="D'où viennent ces informations" onPress={() => router.push("/sources")} />
+              <Plus dernier texte={LIBELLES.sources} onPress={() => router.push("/sources")} />
             </View>
           </View>
 
