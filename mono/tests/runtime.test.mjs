@@ -1306,6 +1306,26 @@ console.log("\n--- calendrier : chaque institution independante ------------");
     return t;
   };
   try {
+    /* PAR JOURNEE (PR D, 07/10/2026) : trois seances du meme texte le meme jour =
+       une ligne, ses trois heures, ses autres points comptes et listes mot pour mot ;
+       un releve de cinq jours le dit, avec sa date. */
+    {
+      const { jourParis } = await import("../packages/core/src/aujourdhui.js");
+      const jour = dans(2).slice(0, 10);
+      const odj = "Également à l'ordre du jour : Discussion de la proposition de loi de banc Y ; Suite de la discussion de la proposition de loi de banc X ; Débat de banc Z";
+      fs.writeFileSync(fAN, JSON.stringify({ v: 1, source: { producteur: "Assemblée nationale", licence: "Licence ouverte", url: "https://example.invalid/", releve_le: jourParis(new Date(Date.now() - 5 * 864e5)) },
+        evenements: ["09:00", "15:00", "21:30"].map((h, i) => ({ titre: (i ? "Suite de la discussion" : "Discussion") + " de la proposition de loi de banc X",
+          debut: jour + "T" + h, fin: null, categorie: "Séance publique", lieu: null, description: odj })) }));
+      fs.rmSync(fSen, { force: true });
+      const t0 = await ecran();
+      verif("calendrier — trois séances du même texte le même jour : une seule ligne, ses trois heures",
+        (t0.match(/proposition de loi de banc X/g) || []).length === 1 && /9 h, 15 h, 21 h 30/.test(t0) && /3 séances ce jour-là/.test(t0),
+        t0.slice(0, 500).replace(/\n+/g, " / "));
+      verif("calendrier — les autres points de l'ordre du jour sont comptés (sans le texte de la ligne, sans doublon)",
+        /\+ 2 autres points à l'ordre du jour/.test(t0), t0.slice(0, 500).replace(/\n+/g, " / "));
+      verif("calendrier — un relevé de cinq jours le dit, avec sa date, et renvoie au site officiel",
+        /Agenda de l'Assemblée nationale relevé le .+, il y a 5 jours\s*:\s*il a pu changer depuis/.test(t0), t0.slice(0, 500).replace(/\n+/g, " / "));
+    }
     fs.writeFileSync(fAN, paquet("Assemblée nationale", "Licence ouverte", ["Séance de banc AN seule"]));
     fs.rmSync(fSen, { force: true });
     const t1 = await ecran();
