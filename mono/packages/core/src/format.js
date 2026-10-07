@@ -34,3 +34,12 @@ export function heureFr(iso) {
   if (!m) return "";
   return Number(m[1]) + " h" + (m[2] === "00" ? "" : " " + m[2]);
 }
+
+/* « jeu. », « ven. » : le nom court d'un jour, lu sur la date ecrite (jamais sur
+   l'horloge de l'appareil, voir jourFr) et sans dependre d'Intl, inegal selon
+   les moteurs JavaScript des telephones. 07/10/2026. */
+export function jourCourt(iso) {
+  const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(iso || "");
+  if (!m) return "";
+  return ["dim.", "lun.", "mar.", "mer.", "jeu.", "ven.", "sam."][new Date(Date.UTC(Number(m[1]), Number(m[2]) - 1, Number(m[3]))).getUTCDay()];
+}

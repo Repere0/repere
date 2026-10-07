@@ -171,4 +171,11 @@ test("semaine — sept jours, seances publiques comptees, votes solennels lus mo
   const r3 = semaineParlement({ agendaAN, cal, maintenant: m });
   assert.equal(r3.jours[0].seances, 2);
   assert.deepEqual(r3.jours[0].parInstitution, { "Assemblée nationale": 1, "Sénat": 1 });
+  // le dernier evenement publie borne ce qui est « annonce » : au-dela, on ne sait pas
+  assert.deepEqual(r.jours.map(j => j.annonce), [true, true, true, true, true, true, true], "l'agenda va jusqu'au 14");
+  const court = semaineParlement({ agendaAN: { evenements: [ev("2026-10-09T15:00", "QAG")] }, cal: null, maintenant: m });
+  assert.deepEqual(court.jours.map(j => j.annonce), [true, true, true, false, false, false, false],
+    "apres le dernier jour publie, un jour n'est pas « sans seance »");
+  assert.equal(court.institutions[0].jusquau, "2026-10-09");
+  assert.equal(vide.jours.every(j => j.annonce === false), true, "rien lu : rien d'annonce");
 });
