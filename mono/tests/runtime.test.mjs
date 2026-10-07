@@ -2014,6 +2014,23 @@ verif("lisibilite — sur les sept ecrans, aucun texte porteur de sens sous 13 p
   fautesTexte.length === 0, fautesTexte.slice(0, 4).join(" | "));
 await ctxTout.close();
 
+/* L'INTERCOMMUNALITE EN ILE-DE-FRANCE, A L'ECRAN — 07/10/2026. */
+{
+  const pageEpt = await (await nav.newContext()).newPage();
+  await pageEpt.goto(base, { waitUntil: "networkidle" });
+  await pageEpt.getByLabel(/Où habitez-vous/).fill("Bagnolet");
+  await pageEpt.waitForTimeout(300);
+  await pageEpt.getByRole("button", { name: /^Bagnolet\b/ }).click();
+  await pageEpt.waitForTimeout(1200);
+  await pageEpt.getByRole("button", { name: "Qui décide", exact: true }).click();
+  await pageEpt.waitForTimeout(900);
+  const tEpt = await pageEpt.evaluate(() => document.body.innerText);
+  verif("intercommunalite IDF — la Metropole ne « decide » ni des transports ni des dechets",
+    !/Les transports, les déchets/.test(tEpt) && /Île-de-France Mobilités/.test(tEpt) && /établissement public territorial/.test(tEpt),
+    tEpt.slice(tEpt.indexOf("intercommunalité"), tEpt.indexOf("intercommunalité") + 400).replace(/\n+/g, " / "));
+  await pageEpt.context().close();
+}
+
 console.log("\n--- theme sombre ---------------------------------------------");
 /* LE THEME SOMBRE EST UN VRAI RENDU, PAS UNE VARIANTE. Mesure : le titre « A
    l'Assemblee nationale » y avait un rapport de contraste de 1,02 sur le fond de
