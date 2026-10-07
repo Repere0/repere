@@ -137,3 +137,38 @@ test("le releve ne compose aucune adresse a partir d'un code de commune", () => 
   assert.ok(adresses.every(u => /senat\.fr/.test(u)), adresses.join(" "));
   assert.ok(!/insee|commune/i.test(adresses.join(" ")));
 });
+
+/* LA SEMAINE AU PARLEMENT — 07/10/2026 (@repere/core, semaineParlement). */
+test("semaine — sept jours, seances publiques comptees, votes solennels lus mot pour mot", async () => {
+  const { semaineParlement } = await import("../packages/core/src/index.js");
+  const ev = (debut, titre, description = null, categorie = "Séance publique") => ({ debut, titre, description, categorie });
+  const agendaAN = { source: { producteur: "Assemblée nationale" }, evenements: [
+    ev("2026-10-06T15:00", "Hier, hors fenêtre"),
+    ev("2026-10-07T14:00", "Questions au Gouvernement"),
+    ev("2026-10-07T10:00", "Audition", null, "Commission des lois"),
+    ev("2026-10-13T15:00", "Questions au Gouvernement", "Également à l'ordre du jour : Vote solennel sur la proposition de loi X ; Débat sur la dette"),
+    ev("2026-10-14T15:00", "Vote solennel sur le projet de loi Y, hors fenêtre"),
+  ] };
+  const m = new Date("2026-10-07T06:00:00Z");
+  const r = semaineParlement({ agendaAN, cal: null, maintenant: m });
+  assert.equal(r.jours.length, 7);
+  assert.deepEqual(r.jours.map(j => j.date), ["2026-10-07", "2026-10-08", "2026-10-09", "2026-10-10", "2026-10-11", "2026-10-12", "2026-10-13"]);
+  assert.equal(r.jours[0].seances, 1, "une audition de commission n'est pas une seance publique");
+  assert.equal(r.total, 2);
+  assert.deepEqual(r.votesSolennels.map(v => v.texte), ["Vote solennel sur la proposition de loi X"], "mot pour mot, et seulement dans la fenetre");
+  assert.deepEqual(r.institutions.map(x => x.institution), ["Assemblée nationale"], "le Senat absent n'est pas compte comme lu");
+  // un vote solennel en titre de seance est retenu aussi
+  const r2 = semaineParlement({ agendaAN: { evenements: [ev("2026-10-08T15:00", "Vote solennel sur la proposition de loi Z")] }, cal: null, maintenant: m });
+  assert.equal(r2.votesSolennels.length, 1);
+  // aucune institution lue : aucune semaine pretendue
+  const vide = semaineParlement({ agendaAN: null, cal: null, maintenant: m });
+  assert.equal(vide.institutions.length, 0);
+  assert.equal(vide.total, 0);
+  // le jour suit l'heure de Paris : 23 h 30 UTC le 6 = deja le 7 a Paris
+  assert.equal(semaineParlement({ agendaAN, cal: null, maintenant: new Date("2026-10-06T23:30:00Z") }).jours[0].date, "2026-10-07");
+  // les deux institutions se cumulent par jour, chacune comptee a part
+  const cal = { evenements: [ev("2026-10-07T16:30", "Séance du Sénat")] };
+  const r3 = semaineParlement({ agendaAN, cal, maintenant: m });
+  assert.equal(r3.jours[0].seances, 2);
+  assert.deepEqual(r3.jours[0].parInstitution, { "Assemblée nationale": 1, "Sénat": 1 });
+});

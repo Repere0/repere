@@ -1205,6 +1205,38 @@ console.log("\n--- aujourd'hui : ce qui arrive, Senat ET Assemblee ------------"
   }
 }
 
+/* LA SEMAINE AU PARLEMENT SUR AUJOURD'HUI — 07/10/2026. L'attendu est calcule
+   par @repere/core sur les fichiers du build (jamais ecrit ici) : sept jours, le
+   nombre de seances de chacun dit au lecteur d'ecran, et chaque vote solennel
+   annonce affiche mot pour mot. Mesure a 360, 390 et 430 px. */
+{
+  const { semaineParlement } = await import("../packages/core/src/aujourdhui.js");
+  const lire = f => fs.existsSync(path.join(DIST, "data", f)) ? JSON.parse(fs.readFileSync(path.join(DIST, "data", f), "utf8")) : null;
+  const attendu = semaineParlement({ agendaAN: lire("agenda-an.json"), cal: lire("calendrier-senat.json"), maintenant: new Date() });
+  for (const largeur of [360, 390, 430]) {
+    const ctx = await nav.newContext({ viewport: { width: largeur, height: 844 } });
+    const p = await ctx.newPage();
+    await p.goto(base, { waitUntil: "networkidle" });
+    await p.getByLabel(/Où habitez-vous/).fill("Bagnolet");
+    await p.waitForTimeout(300);
+    await p.getByRole("button", { name: /^Bagnolet\b/ }).click();
+    await p.waitForTimeout(1500);
+    const m = await p.evaluate(() => ({
+      labels: [...document.querySelectorAll(".auj-semaine .auj-jour")].map(e => e.getAttribute("aria-label")),
+      texte: (document.querySelector(".auj-a-venir") || document.body).innerText,
+      deborde: document.documentElement.scrollWidth > window.innerWidth,
+    }));
+    const nb = l => { const x = /: (\d+) séance/.exec(l || ""); return x ? Number(x[1]) : 0; };
+    verif(`semaine (${largeur} px) — sept jours, chacun avec son nombre de seances publiques dit au lecteur d'ecran`,
+      attendu.institutions.length === 0 ? m.labels.length === 0 : (m.labels.length === 7 && m.labels.every((l, i) => nb(l) === attendu.jours[i].seances)),
+      JSON.stringify({ attendu: attendu.jours.map(j => j.seances), lu: m.labels.map(nb) }));
+    verif(`semaine (${largeur} px) — chaque vote solennel annonce est affiche mot pour mot`,
+      attendu.votesSolennels.every(v => m.texte.includes(v.texte)), attendu.votesSolennels.map(v => v.texte).join(" | ").slice(0, 200));
+    verif(`semaine (${largeur} px) — aucun debordement horizontal`, !m.deborde, "");
+    await ctx.close();
+  }
+}
+
 console.log("\n--- calendrier : chaque institution independante ------------");
 /* 07/10/2026 : Senat sans Assemblee, Assemblee sans Senat, aucun des deux, et
    un releve recu mais sans seance a venir. Chaque cas dans un contexte neuf
