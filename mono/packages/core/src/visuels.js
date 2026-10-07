@@ -26,6 +26,48 @@ export const COMPETENCES = {
   france: "les lois qui s'appliquent partout, et le budget de l'État",
 };
 
+/* L'INTERCOMMUNALITE N'EST PAS LA MEME PARTOUT — 07/10/2026.
+   Mesure : la phrase nationale (« les transports, les dechets, l'eau... ») etait
+   affichee pour toute intercommunalite. Elle est fausse en Ile-de-France :
+     - les transports y sont organises par Ile-de-France Mobilites (code des
+       transports, art. L1241-1), pas par l'intercommunalite ;
+     - dans la Metropole du Grand Paris, les dechets menagers, l'eau et
+       l'assainissement relevent de l'etablissement public territorial (EPT),
+       pas de la Metropole (CGCT, art. L5219-5).
+   Le modele est lu dans la DONNEE (code de region de l'index, nom de
+   l'intercommunalite publie par le Repertoire national des elus), jamais une
+   liste de communes ecrite ici. L'EPT de chaque commune n'est PAS dans les
+   donnees de Repere : on dit qu'il existe et ce qu'il gere, sans inventer son
+   nom. Paris n'appartient a aucun EPT : la phrase ne s'y affiche pas. */
+export const SOURCE_TRANSPORTS_IDF = { producteur: "Code des transports, article L1241-1", url: "https://www.legifrance.gouv.fr/codes/texte_lc/LEGITEXT000023086525" };
+export const SOURCE_EPT = { producteur: "Code général des collectivités territoriales, article L5219-5", url: "https://www.legifrance.gouv.fr/codes/texte_lc/LEGITEXT000006070633" };
+const norme = t => String(t || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+export function estMetropoleGrandParis(agglo) {
+  return /metropole du grand paris/.test(norme(agglo && agglo.nom));
+}
+export function competencesIntercommunalite({ agglo, regionCode, dep }) {
+  const idf = String(regionCode || "") === "11";
+  const mgp = estMetropoleGrandParis(agglo);
+  if (mgp) {
+    return {
+      decide: "des politiques menées à l'échelle de toute la métropole",
+      precisions: [
+        ...(String(dep) !== "75" ? ["Votre commune fait aussi partie d'un établissement public territorial, qui gère notamment les déchets ménagers, l'eau et l'assainissement. Repère n'a pas encore son nom."] : []),
+        "En Île-de-France, les transports en commun sont organisés par Île-de-France Mobilités.",
+      ],
+      sources: [...(String(dep) !== "75" ? [SOURCE_EPT] : []), SOURCE_TRANSPORTS_IDF],
+    };
+  }
+  if (idf) {
+    return {
+      decide: "les déchets, l'eau, et souvent les piscines et les médiathèques",
+      precisions: ["En Île-de-France, les transports en commun sont organisés par Île-de-France Mobilités."],
+      sources: [SOURCE_TRANSPORTS_IDF],
+    };
+  }
+  return { decide: COMPETENCES.agglo, precisions: [], sources: [] };
+}
+
 /* --- l'argent -------------------------------------------------------------- */
 
 /* Les nombres des rapports de comptes.js (rapports() les ecrit en phrases avec
@@ -189,7 +231,8 @@ export function chaineDecision({ fiche, paquet, index, deputes, elusRegion, dep 
       lieu: null,
       personne: null,
       delegues: fiche.agglo && Array.isArray(fiche.agglo.delegues) ? fiche.agglo.delegues.length : 0,
-      decide: COMPETENCES.agglo },
+      ...(() => { const ci = competencesIntercommunalite({ agglo: fiche.agglo, regionCode: depIndex && depIndex.region_code, dep });
+        return { decide: ci.decide, precisions: ci.precisions, sources: ci.sources }; })() },
     { echelon: "dept", niveau: "Département", institution: "Conseil départemental", lieu: depIndex ? depIndex.nom : null,
       personne: ed ? { nom: ed.nom, role: ed.role } : null,
       personnes: ed ? ed.elus.map(e => ({ nom: e.nom, role: e.fonction || "Conseil départemental" })) : [],

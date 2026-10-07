@@ -116,6 +116,59 @@ test("core — le rapport d'Aujourd'hui porte l'exercice de ses comptes, jamais 
   assert.equal(deriver({ ...base, comptes: { 2024: ex, 2025: [1000, null, null, null, null, null, null] } }).rapportDette.an, "2024");
 });
 
+/* L'INTERCOMMUNALITE EN ILE-DE-FRANCE — 07/10/2026. La phrase nationale disait
+   que l'intercommunalite decide des transports : faux en Ile-de-France (IDFM), et
+   dans la Metropole du Grand Paris les dechets et l'eau relevent de l'EPT. */
+test("core — ce que decide l'intercommunalite depend du territoire, lu dans la donnee", async () => {
+  const { competencesIntercommunalite, chaineDecision, COMPETENCES } = await import("../packages/core/src/index.js");
+  const mgp = { nom: "Metropole Du Grand Paris", delegues: [{ nom: "X" }] };
+  // Metropole du Grand Paris, hors Paris : ni transports ni dechets attribues a la Metropole, l'EPT est nomme comme existant
+  const a = competencesIntercommunalite({ agglo: mgp, regionCode: "11", dep: "93" });
+  assert.doesNotMatch(a.decide, /transports|déchets|eau/);
+  assert.ok(a.precisions.some(t => /établissement public territorial/.test(t) && /déchets ménagers, l'eau et l'assainissement/.test(t)));
+  assert.ok(a.precisions.some(t => /Île-de-France Mobilités/.test(t)));
+  assert.ok(a.precisions.every(t => !/Est Ensemble|Plaine Commune/.test(t)), "aucun nom d'EPT invente");
+  assert.equal(a.sources.length, 2);
+  // Paris : membre de la Metropole, d'aucun EPT
+  const p = competencesIntercommunalite({ agglo: mgp, regionCode: "11", dep: "75" });
+  assert.ok(p.precisions.every(t => !/territorial/.test(t)));
+  // autre intercommunalite d'Ile-de-France : pas de transports
+  const idf = competencesIntercommunalite({ agglo: { nom: "Ca Pays De Meaux" }, regionCode: "11", dep: "77" });
+  assert.doesNotMatch(idf.decide, /transports/);
+  assert.ok(idf.precisions.some(t => /Île-de-France Mobilités/.test(t)));
+  // commune d'Ile-de-France sans intercommunalite publiee : meme regle, rien d'invente
+  assert.doesNotMatch(competencesIntercommunalite({ agglo: null, regionCode: "11", dep: "77" }).decide, /transports/);
+  // hors Ile-de-France : la phrase nationale, inchangee
+  const ail = competencesIntercommunalite({ agglo: { nom: "Ca Du Pays Basque" }, regionCode: "75", dep: "64" });
+  assert.equal(ail.decide, COMPETENCES.agglo);
+  assert.deepEqual(ail.precisions, []);
+  // region inconnue (index absent) : rien de specifique n'est affirme
+  assert.equal(competencesIntercommunalite({ agglo: mgp, regionCode: undefined, dep: "93" }).precisions.length, 2, "la Metropole se reconnait a son nom, meme sans index");
+  // la chaine, lue par le mobile, porte la meme regle
+  const index = { departements: [{ code: "93", nom: "Seine-Saint-Denis", region_code: "11" }] };
+  const n = chaineDecision({ fiche: { nom: "X", agglo: mgp }, paquet: {}, index, deputes: null, elusRegion: null, dep: "93" }).find(x => x.echelon === "agglo");
+  assert.doesNotMatch(n.decide, /transports/);
+  assert.equal(n.precisions.length, 2);
+});
+
+test("core — sur les donnees reelles : aucune commune d'Ile-de-France ne lit que son intercommunalite decide des transports", async (t) => {
+  const { chaineDecision } = await import("../packages/core/src/index.js");
+  const index = data("index.json");
+  if (!index) return t.skip("donnees extraites absentes (lancer extract-html.js)");
+  let vus = 0;
+  for (const d of ["75", "77", "78", "91", "92", "93", "94", "95"]) {
+    const pq = data(`departments/${d}.json`);
+    if (!pq) continue;
+    for (const fiche of Object.values(pq.communes)) {
+      const n = chaineDecision({ fiche, paquet: pq, index, deputes: null, elusRegion: null, dep: d }).find(x => x.echelon === "agglo");
+      assert.doesNotMatch(n.decide, /transports/, fiche.nom);
+      assert.ok(n.precisions.some(x => /Île-de-France Mobilités/.test(x)), fiche.nom);
+      vus++;
+    }
+  }
+  assert.ok(vus > 1200, "trop peu de communes mesurees : " + vus);
+});
+
 test("core — la recherche ignore accents, traits d'union et apostrophes", () => {
   assert.ok(correspond(mots("evry"), motsCible("Évry-Courcouronnes")));
   assert.ok(correspond(mots("val doise"), motsCible("Val-d'Oise")));

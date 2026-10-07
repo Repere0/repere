@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Carte, Vide, Source, Chargement, dateFr, Mot } from "@repere/ui";
 import { Pile } from "@repere/ui/amicro";
+import { competencesIntercommunalite } from "@repere/core";
 import { LigneVote, positionSur, positionsFiables, REFUS_APPARIEMENT, ordinal } from "../lib/votes.jsx";
 import {
   chargerDeputes, chargerCatalogueScrutins, chargerVotes, chargerElusRegion,
@@ -492,6 +493,8 @@ export default function QuiDecide({ paquet, index, commune }) {
   if (!c) return null;
 
   const src = index && index.sources ? index.sources.elus : null;
+  const depAgglo = index && Array.isArray(index.departements) && paquet ? index.departements.find(x => x.code === paquet.d) : null;
+  const ciAgglo = competencesIntercommunalite({ agglo: c.agglo, regionCode: depAgglo && depAgglo.region_code, dep: paquet.d });
   const srcCirco = index && index.sources ? index.sources.circonscriptions : null;
   const p = phraseCirco(c.nom, c.circo);
 
@@ -579,10 +582,19 @@ export default function QuiDecide({ paquet, index, commune }) {
           pour une commune sur trois de la beta). */}
       <p className="tx-note tx-intro">{ORDRE_DISTANCE}</p>
 
+      {/* 07/10/2026 : ce que decide l'intercommunalite depend du territoire
+          (Ile-de-France, Metropole du Grand Paris) - competencesIntercommunalite,
+          @repere/core, la meme regle que le mobile. */}
       <Carte echelon="agglo" titre={<>Votre <Mot cle="intercommunalité">intercommunalité</Mot></>}
-        sousTitre={COMPETENCES.agglo.charAt(0).toUpperCase() + COMPETENCES.agglo.slice(1) + ". Vous ne l'élisez pas directement : ce sont les conseillers municipaux qui y siègent."}
+        sousTitre={ciAgglo.decide.charAt(0).toUpperCase() + ciAgglo.decide.slice(1) + ". Vous ne l'élisez pas directement : ce sont les conseillers municipaux qui y siègent."}
         tag={c.agglo ? "Donnée officielle" : undefined}>
         <Agglo c={c} src={src} />
+        {ciAgglo.precisions.length ? (
+          <div className="precisions-agglo">
+            {ciAgglo.precisions.map((t, i) => <p className="tx-note" key={i}>{t}</p>)}
+            {ciAgglo.sources.map((sx, i) => <Source key={i} producteur={sx.producteur} url={sx.url} />)}
+          </div>
+        ) : null}
       </Carte>
 
       <Carte echelon="dept" titre={<>Votre <Mot cle="conseil départemental">département</Mot></>}
