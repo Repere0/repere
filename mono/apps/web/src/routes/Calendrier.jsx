@@ -250,7 +250,7 @@ export default function Calendrier() {
     <div className="ligne fait" key={i} data-debut={g.debut} data-seances={g.seances}>
       <div className="ligne-h">
         <span>{jourFr(g.debut)}</span>
-        <b>{g.debuts.map(heureFr).filter(Boolean).join(", ")}</b>
+        <b>{g.debuts.map(x => heureFr(x).replace(/ /g, "\u00a0")).filter(Boolean).join(", ")}</b>
       </div>
       <div className="tag">{g.institution}</div>
       <b className="fait-titre">{g.titre}</b>
