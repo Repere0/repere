@@ -1,10 +1,10 @@
 import React, { useEffect, useState, useId } from "react";
+import { regrouperParJour, ageReleve, AGE_RELEVE_NORMAL, heureFr } from "@repere/core";
 import { Carte, Vide, Source, Chargement, dateFr, jourFr } from "@repere/ui";
 import {
   chargerCalendrierSenat, chargerAgendaAN,
   chargerScrutinsSolennelsRecents, chargerScrutinsSolennels, ETATS,
 } from "@repere/data-utils";
-import { regrouperParJour, ageReleve, AGE_RELEVE_NORMAL, heureFr } from "@repere/core";
 
 /* CALENDRIER CITOYEN — SENAT (17/09/2026) PUIS ASSEMBLEE NATIONALE
  * (23/09/2026), MEME MODELE D'EVENEMENT POUR LES DEUX.
