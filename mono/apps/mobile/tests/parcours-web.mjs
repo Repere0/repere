@@ -42,7 +42,13 @@ const MAIRE = await (async () => {
   catch { return "Maire introuvable dans les données servies"; }
 })();
 let echecs = 0;
-const verifier = (ok, texte) => { console.log((ok ? "ok   " : "ECHEC") + " " + texte); if (!ok) echecs++; };
+/* 07/10/2026 : sur GitHub, chaque echec devient une annotation du run - le
+   journal complet n'est lisible ni depuis le conteneur de travail ni depuis un
+   telephone (meme principe que banc() dans outils/pipeline.sh). */
+const verifier = (ok, texte) => {
+  console.log((ok ? "ok   " : "ECHEC") + " " + texte);
+  if (!ok) { echecs++; if (process.env.GITHUB_ACTIONS) console.log("::error title=parcours mobile::" + String(texte).replace(/\r?\n/g, " ").slice(0, 900)); }
+};
 
 const navigateur = await chromium.launch();
 for (const largeur of [360, 390, 430]) {
