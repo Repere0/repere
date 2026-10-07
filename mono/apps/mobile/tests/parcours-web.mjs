@@ -149,7 +149,7 @@ for (const largeur of [360, 390, 430]) {
   /* Spike du 30/09/2026 : la source devient discrete, mais un calcul se dit
      calcul A L'OEIL (invariant 4), pas seulement dans la feuille. */
   verifier(/Calcul Repère/.test(mesure.texte), `${largeur}px : un chiffre calculé se dit calculé sans ouvrir la feuille`);
-  verifier(/Ce qui arrive au Parlement/i.test(mesure.brut), `${largeur}px : la carte « ce qui arrive » est présente (ou sa phrase d'absence)`);
+  verifier(/Le calendrier/.test(mesure.brut), `${largeur}px : la carte « ce qui arrive » est présente (ou sa phrase d'absence)`);
   const fautives = demandees.filter(u => adresseFautive(u));
   verifier(fautives.length === 0, `${largeur}px : aucune adresse ne porte un code de commune ${JSON.stringify(fautives)}`);
   verifier(!/77284/.test(page.url()), `${largeur}px : l'adresse de la page ne porte pas le code de la commune`);
@@ -169,7 +169,7 @@ for (const largeur of [360, 390, 430]) {
     ["Où va cet argent ?", /Où va l'argent de Meaux/, /Sur 100 € dépensés, \d+ € vont aux salaires/],
     ["Comprendre ce vote", /Qu'a voté votre député/, /Le parcours d'une loi|Où en est ce texte/],
     ["Qui décide", /Qui décide pour Meaux/, /Décide : /],
-    ["Ce qui arrive au Parlement", /Qu'est-ce qui arrive/, /concernent tout le pays/],
+    ["Le calendrier", /Qu'est-ce qui arrive/, /concernent tout le pays/],
     ["Sources", /Repère a traité ces fichiers/, /Repère a traité ces fichiers le \d.*Données publiées le \d.*Données relevées le \d/s],
   ]) {
     await page.getByRole("button", { name: action, exact: true }).first().click();

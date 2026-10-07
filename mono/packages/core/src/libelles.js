@@ -13,13 +13,15 @@
  * informations ? ») restent des phrases-reponses propres a chaque ecran.
  *
  * Decision du porteur (07/10/2026) : l'accueil s'appelle « Aujourd'hui » sur le
- * site ET sur le telephone. Le nom du calendrier n'est PAS encore tranche : ses
- * libelles restent ceux d'avant ce fichier, ecrits dans chaque ecran, jusqu'a
- * sa decision. */
+ * site ET sur le telephone, et le calendrier « Le calendrier » partout. L'en-tete
+ * de contenu mobile « Au Parlement » (au-dessus de « Qu'est-ce qui arrive ? »)
+ * reste : c'est une etiquette de contenu, comme « Ce qui se passe prochainement »
+ * sur le site, pas le nom de l'ecran. */
 export const LIBELLES = Object.freeze({
   aujourdhui: "Aujourd'hui",
   decide: "Ce qui a été décidé",
   qui: "Qui décide",
   argent: "Où va l'argent",
+  calendrier: "Le calendrier",
   sources: "Sources",
 });

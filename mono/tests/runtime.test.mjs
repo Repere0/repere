@@ -685,7 +685,7 @@ console.log("\n--- calendrier citoyen (Senat + Assemblee nationale) ----------")
  * mono/data/ au moment de l'extraction (calendrier-senat.mjs,
  * agenda-an.mjs) : ce controle ne touche jamais le reseau des vraies
  * institutions, il lit ce que le build a deja capture. */
-await page.getByRole("button", { name: "Ce qui se passe" }).click();
+await page.getByRole("button", { name: "Le calendrier", exact: true }).click();
 await page.waitForTimeout(900);
 const cal = await page.evaluate(() => document.body.innerText);
 const calBrut = await texteSansCapitales(page);
@@ -1796,8 +1796,8 @@ await pageTout.getByRole("button", { name: /Voir aujourd.hui à Bagnolet/ }).cli
 await pageTout.waitForTimeout(900);
 /* UN ECRAN, UN NOM — 07/10/2026. Les boutons d'« Aujourd'hui » portaient d'autres
    noms que les onglets qu'ils ouvrent (« Toutes les décisions » -> « Ce qui a été
-   décidé »). Chaque bouton doit porter le nom exact de l'onglet ouvert. Seule
-   exception, DITE : le calendrier, dont le nom attend la decision du porteur. */
+   décidé »). Chaque bouton doit porter le nom exact de l'onglet ouvert, sans
+   exception : le calendrier s'appelle « Le calendrier » (porteur, 07/10/2026). */
 {
   const boutons = await pageTout.locator("nav.auj-suite button").allInnerTexts();
   const ouvert = [];
@@ -1809,11 +1809,9 @@ await pageTout.waitForTimeout(900);
     await pageTout.getByRole("button", { name: /Voir aujourd.hui à Bagnolet/ }).click();
     await pageTout.waitForTimeout(700);
   }
-  const ecarts = ouvert.filter(([b, o]) => b !== o && !(b === "Le calendrier" && o === "Ce qui se passe"));
+  const ecarts = ouvert.filter(([b, o]) => b !== o);
   verif("libelles — chaque bouton d'Aujourd'hui porte le nom exact de l'onglet qu'il ouvre",
     ouvert.length >= 4 && ecarts.length === 0, JSON.stringify(ecarts.length ? ecarts : ouvert));
-  if (ouvert.some(([b, o]) => b === "Le calendrier" && o === "Ce qui se passe"))
-    console.log("  note | libelles — calendrier : « Le calendrier » ouvre « Ce qui se passe » (nom en attente de decision)");
 }
 await pageTout.getByRole("button", { name: "Ce qui a été décidé" }).click();
 await pageTout.waitForTimeout(1600);

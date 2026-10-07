@@ -211,7 +211,7 @@ export default function Aujourdhui({ paquet, index, commune, aller, derniereVisi
         <button type="button" onClick={() => aller("decide")}>{LIBELLES.decide}</button>
         <button type="button" onClick={() => aller("qui")}>{LIBELLES.qui}</button>
         <button type="button" onClick={() => aller("argent")}>{LIBELLES.argent}</button>
-        <button type="button" onClick={() => aller("calendrier")}>Le calendrier</button>
+        <button type="button" onClick={() => aller("calendrier")}>{LIBELLES.calendrier}</button>
       </nav>
     </div>
   );

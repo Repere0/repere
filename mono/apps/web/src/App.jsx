@@ -35,7 +35,7 @@ const ONGLETS = [
   /* CALENDRIER, COMME SOURCES : PAS PROPRE A UNE COMMUNE. Le pilote du
      17/09/2026 ne publie que le Sénat — un echelon national, aucune raison
      d'attendre le choix d'une commune pour l'ouvrir. */
-  { id: "calendrier", libelle: "Ce qui se passe", echelon: "france", charge: () => import("./routes/Calendrier.jsx") },
+  { id: "calendrier", libelle: LIBELLES.calendrier, echelon: "france", charge: () => import("./routes/Calendrier.jsx") },
   { id: "sources", libelle: LIBELLES.sources, echelon: "france", charge: () => import("./routes/Sources.jsx") },
 ];
 const ONGLETS_SANS_COMMUNE = new Set(["sources", "calendrier"]);

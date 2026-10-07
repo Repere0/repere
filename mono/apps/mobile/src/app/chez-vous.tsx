@@ -164,7 +164,7 @@ export default function ChezVous() {
             <Etiquette texte="Aller plus loin" />
             <View>
               <Plus premier texte={LIBELLES.qui} onPress={() => router.push("/qui-decide")} />
-              <Plus texte="Ce qui arrive au Parlement" onPress={() => router.push("/a-venir")} />
+              <Plus texte={LIBELLES.calendrier} onPress={() => router.push("/a-venir")} />
               <Plus dernier texte={LIBELLES.sources} onPress={() => router.push("/sources")} />
             </View>
           </View>

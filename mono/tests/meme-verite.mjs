@@ -164,7 +164,7 @@ async function texteApp(nav, { nom }) {
   await p.getByText("Aller plus loin").first().waitFor({ timeout: 15000 });
   await p.waitForLoadState("networkidle");
   let { t, n: feuilles } = await toutLire(p);
-  for (const action of ["Où va cet argent ?", "Comprendre ce vote", "Qui décide", "Ce qui arrive au Parlement", "Sources"]) {
+  for (const action of ["Où va cet argent ?", "Comprendre ce vote", "Qui décide", "Le calendrier", "Sources"]) {
     const b = p.getByRole("button", { name: action, exact: true });
     if (!(await b.count())) continue;              /* absence dite par une phrase sur l'accueil */
     await b.first().click();
