@@ -41,11 +41,6 @@ const MAIRE = await (async () => {
   try { const r = await fetch(BASE + "/data/departments/77.json"); const j = await r.json(); return j.communes["77284"].maire.nom.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"); }
   catch { return "Maire introuvable dans les données servies"; }
 })();
-/* Les elus du canton de Meaux, lus dans les donnees servies (07/10/2026). */
-const ELUS_CANTON = await (async () => {
-  try { const r = await fetch(BASE + "/data/departments/77.json"); const j = await r.json(); const f = j.communes["77284"]; return (j.conseil_departemental || []).filter(e => (f.canton || []).includes(e.canton)).map(e => e.nom); }
-  catch { return []; }
-})();
 /* Le calendrier attendu, recalcule par le socle sur les fichiers servis (07/10/2026) :
    « a venir » vient de deriverAujourdhui lui-meme, jamais d'une regle recopiee ici. */
 const CAL = await (async () => {
@@ -64,6 +59,11 @@ const CAL = await (async () => {
   let proches = aVenir.filter(e => e.debut.slice(0, 10) < limite);
   if (!proches.length) proches = aVenir.slice(0, 5);
   return { lignes: regrouperParJour(proches).length, vieux };
+})();
+/* Les elus du canton de Meaux, lus dans les donnees servies (07/10/2026). */
+const ELUS_CANTON = await (async () => {
+  try { const r = await fetch(BASE + "/data/departments/77.json"); const j = await r.json(); const f = j.communes["77284"]; return (j.conseil_departemental || []).filter(e => (f.canton || []).includes(e.canton)).map(e => e.nom); }
+  catch { return []; }
 })();
 let echecs = 0;
 const verifier = (ok, texte) => { console.log((ok ? "ok   " : "ECHEC") + " " + texte); if (!ok) echecs++; };
