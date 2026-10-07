@@ -33,31 +33,6 @@ test("core — les dates s'ecrivent comme on les dit", () => {
   assert.equal(euros(533466).replace(/\s/g, " "), "533 466 €");
 });
 
-test("core — le departement se lit sur le code INSEE, outre-mer et Corse compris", () => {
-  assert.equal(departementDe("77284"), "77");
-  assert.equal(departementDe("2A004"), "2A");
-  assert.equal(departementDe("2b033"), "2B");
-  assert.equal(departementDe("97101"), "971", "outre-mer : trois chiffres, pas « 97 »");
-  assert.equal(departementDe("97502"), "975");
-  assert.equal(departementDe("98735"), "987");
-  for (const faux of ["", "7728", "772840", "../77", null, "2C004"]) assert.equal(departementDe(faux), null, String(faux));
-  /* Sur les donnees publiees : chaque commune de chaque paquet retombe sur son
-     paquet. Sans donnees extraites, le controle le dit au lieu de passer en silence. */
-  const dossier = path.join(RACINE, "data", "departments");
-  if (!fs.existsSync(dossier)) { console.log("# departementDe : donnees non extraites, controle sur cas construits seulement"); return; }
-  let n = 0;
-  const faux = [];
-  for (const f of fs.readdirSync(dossier).filter(x => /^[0-9AB]{2,3}\.json$/.test(x))) {
-    const dep = f.replace(".json", "");
-    for (const insee of Object.keys(JSON.parse(fs.readFileSync(path.join(dossier, f), "utf8")).communes || {})) {
-      n++;
-      if (departementDe(insee) !== dep) faux.push(insee + " -> " + departementDe(insee) + " (paquet " + dep + ")");
-    }
-  }
-  assert.ok(n > 30000, "toutes les communes publiees sont lues (" + n + ")");
-  assert.deepEqual(faux.slice(0, 10), [], faux.length + " commune(s) hors de leur paquet");
-});
-
 test("core — un scrutin se lit sans rien reformuler", () => {
   const t = "l'ensemble du projet de loi relatif à la protection des enfants (première lecture)";
   assert.equal(titreLisible(t), "Projet de loi relatif à la protection des enfants");
@@ -379,4 +354,29 @@ test("core — sur les donnees reelles : la chaine nomme chaque elu du canton de
     }
   }
   assert.ok(vus > 1000, "trop peu de communes mesurees : " + vus);
+});
+
+test("core — le departement se lit sur le code INSEE, outre-mer et Corse compris", () => {
+  assert.equal(departementDe("77284"), "77");
+  assert.equal(departementDe("2A004"), "2A");
+  assert.equal(departementDe("2b033"), "2B");
+  assert.equal(departementDe("97101"), "971", "outre-mer : trois chiffres, pas « 97 »");
+  assert.equal(departementDe("97502"), "975");
+  assert.equal(departementDe("98735"), "987");
+  for (const faux of ["", "7728", "772840", "../77", null, "2C004"]) assert.equal(departementDe(faux), null, String(faux));
+  /* Sur les donnees publiees : chaque commune de chaque paquet retombe sur son
+     paquet. Sans donnees extraites, le controle le dit au lieu de passer en silence. */
+  const dossier = path.join(RACINE, "data", "departments");
+  if (!fs.existsSync(dossier)) { console.log("# departementDe : donnees non extraites, controle sur cas construits seulement"); return; }
+  let n = 0;
+  const faux = [];
+  for (const f of fs.readdirSync(dossier).filter(x => /^[0-9AB]{2,3}\.json$/.test(x))) {
+    const dep = f.replace(".json", "");
+    for (const insee of Object.keys(JSON.parse(fs.readFileSync(path.join(dossier, f), "utf8")).communes || {})) {
+      n++;
+      if (departementDe(insee) !== dep) faux.push(insee + " -> " + departementDe(insee) + " (paquet " + dep + ")");
+    }
+  }
+  assert.ok(n > 30000, "toutes les communes publiees sont lues (" + n + ")");
+  assert.deepEqual(faux.slice(0, 10), [], faux.length + " commune(s) hors de leur paquet");
 });
