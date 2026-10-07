@@ -5,7 +5,7 @@
  * Fichiers republies chaque jour par la chaine, jamais embarques : un
  * calendrier absent ne fait jamais dire « aucune seance annoncee ». */
 import { router, Stack } from "expo-router";
-import { heureFr, jourFr } from "@repere/core";
+import { heureFr, jourFr, LIBELLES } from "@repere/core";
 import { Pressable, Text } from "react-native";
 import { Carte, Vide } from "../lib/composants";
 import { AGENDA_PAS_ARRIVE, AGENDA_VIDE } from "../lib/absences";
@@ -24,7 +24,7 @@ export default function AVenir() {
       const prochains = (d.prochains || []) as { titre: string; debut: string; institution: string; source: unknown }[];
       return (
         <Page>
-          <Stack.Screen options={{ title: "Au Parlement" }} />
+          <Stack.Screen options={{ title: LIBELLES.calendrier }} />
           <Question etiquette="Au Parlement" question="Qu'est-ce qui arrive ?"
             sous="Les séances annoncées à l'Assemblée nationale et au Sénat. Elles concernent tout le pays, pas seulement votre commune." />
           <Pressable

@@ -21,6 +21,7 @@ import type { ReactNode } from "react";
 import { FournisseurSelection, useSelection } from "../lib/selection";
 import { FournisseurCommune } from "../lib/useCommune";
 import { couleurs, CIBLE } from "../lib/theme";
+import { LIBELLES } from "@repere/core";
 
 /* LE BOUTON RETOUR, A 48 PX — la fleche native de la barre mesurait 30 px sur
    l'export web (tests/parcours-web.mjs). Le geste natif reste actif. */
@@ -64,13 +65,13 @@ export default function Coquille() {
             }}
           >
             <Stack.Screen name="index" options={{ headerShown: false, title: "Repère" }} />
-            <Stack.Screen name="chez-vous" options={{ title: "Chez vous", headerLeft: () => <Retour texte="Communes" etiquette="Revenir à l'accueil pour changer de commune" /> }} />
-            <Stack.Screen name="argent" options={{ title: "Où va l'argent", headerLeft: () => <Retour texte="Chez vous" etiquette="Revenir à l'écran Chez vous" /> }} />
-            <Stack.Screen name="vote" options={{ title: "Votre député", headerLeft: () => <Retour texte="Chez vous" etiquette="Revenir à l'écran Chez vous" /> }} />
+            <Stack.Screen name="chez-vous" options={{ title: LIBELLES.aujourdhui, headerLeft: () => <Retour texte="Communes" etiquette="Revenir à l'accueil pour changer de commune" /> }} />
+            <Stack.Screen name="argent" options={{ title: LIBELLES.argent, headerLeft: () => <Retour texte={LIBELLES.aujourdhui} etiquette={`Revenir à l'écran ${LIBELLES.aujourdhui}`} /> }} />
+            <Stack.Screen name="vote" options={{ title: "Votre député", headerLeft: () => <Retour texte={LIBELLES.aujourdhui} etiquette={`Revenir à l'écran ${LIBELLES.aujourdhui}`} /> }} />
             <Stack.Screen name="scrutins" options={{ title: "Scrutins publics", headerLeft: () => <Retour texte="Votre député" etiquette="Revenir à l'écran du député" /> }} />
-            <Stack.Screen name="qui-decide" options={{ title: "Qui décide", headerLeft: () => <Retour texte="Chez vous" etiquette="Revenir à l'écran Chez vous" /> }} />
-            <Stack.Screen name="a-venir" options={{ title: "Au Parlement", headerLeft: () => <Retour texte="Chez vous" etiquette="Revenir à l'écran Chez vous" /> }} />
-            <Stack.Screen name="sources" options={{ title: "Sources", headerLeft: () => <Retour texte="Chez vous" etiquette="Revenir à l'écran Chez vous" /> }} />
+            <Stack.Screen name="qui-decide" options={{ title: LIBELLES.qui, headerLeft: () => <Retour texte={LIBELLES.aujourdhui} etiquette={`Revenir à l'écran ${LIBELLES.aujourdhui}`} /> }} />
+            <Stack.Screen name="a-venir" options={{ title: LIBELLES.calendrier, headerLeft: () => <Retour texte={LIBELLES.aujourdhui} etiquette={`Revenir à l'écran ${LIBELLES.aujourdhui}`} /> }} />
+            <Stack.Screen name="sources" options={{ title: LIBELLES.sources, headerLeft: () => <Retour texte={LIBELLES.aujourdhui} etiquette={`Revenir à l'écran ${LIBELLES.aujourdhui}`} /> }} />
           </Stack>
         </AvecCommune>
       </FournisseurSelection>

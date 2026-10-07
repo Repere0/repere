@@ -8,7 +8,7 @@
  * L'ordre est un ordre de distance, pas d'importance : c'est ecrit. */
 import { Pressable, Text } from "react-native";
 import { router, Stack } from "expo-router";
-import { chaineDecision, dateFr, MAIRE_ABSENT, phraseAdjoints, RNE_URL } from "@repere/core";
+import { chaineDecision, dateFr, MAIRE_ABSENT, phraseAdjoints, RNE_URL, LIBELLES } from "@repere/core";
 import { Segments } from "../lib/composants";
 import { REGION_PAS_ARRIVEE } from "../lib/absences";
 import { srcElus } from "../lib/sources";
@@ -57,7 +57,7 @@ export default function QuiDecide() {
       });
       return (
         <Page>
-          <Stack.Screen options={{ title: "Qui décide" }} />
+          <Stack.Screen options={{ title: LIBELLES.qui }} />
           <Question emoji="🏛️" etiquette="Qui décide" question={`Qui décide pour ${d.nomCommune} ?`}
             sous="Du plus proche de chez vous au plus lointain. Ce n'est pas un ordre d'importance : c'est un ordre de distance." />
           <Chaine niveaux={niveaux} />

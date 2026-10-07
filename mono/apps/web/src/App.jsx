@@ -1,6 +1,6 @@
 import React, { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Chargement, Vide, Puce, DefinitionProvider } from "@repere/ui";
-import { mots, motsCible, correspond, trouverCommunes } from "@repere/core";
+import { mots, motsCible, correspond, trouverCommunes, LIBELLES } from "@repere/core";
 import {
   chargerIndex, chargerDepartement, chargerCommunesBeta, prechargerDepartement,
   annulerPrechargement, entrer, ETATS, PHRASES,
@@ -22,21 +22,21 @@ const Aujourdhui = lazy(() => import("./routes/Aujourdhui.jsx"));
    « qu'est-ce qui se passe chez moi ? ». Les autres écrans restent disponibles
    comme approfondissements. */
 const ONGLETS = [
-  { id: "aujourdhui", libelle: "Aujourd'hui", echelon: "ville", charge: () => import("./routes/Aujourdhui.jsx") },
+  { id: "aujourdhui", libelle: LIBELLES.aujourdhui, echelon: "ville", charge: () => import("./routes/Aujourdhui.jsx") },
   /* « CE QUI A ETE DECIDE » EST LE DEUXIEME ONGLET, et cet ordre est la decision.
      Les trois ecrans d'avant repondaient a des questions d'etat — qui, combien,
      d'ou — toutes vraies le mois suivant. Le fil date est le seul qui change, et
      c'est celui qui doit s'ouvrir. Le libelle est celui arrete en D-03 : le passe
      compose promet du verifiable, la ou « L'actualite » promettrait une fraicheur
      que la donnee publique ne tient pas. */
-  { id: "decide", libelle: "Ce qui a été décidé", echelon: "ville", charge: () => import("./routes/CeQuiADecide.jsx") },
-  { id: "qui", libelle: "Qui décide", echelon: "ville", charge: () => import("./routes/QuiDecide.jsx") },
-  { id: "argent", libelle: "Où va l'argent", echelon: "dept", charge: () => import("./routes/OuVaArgent.jsx") },
+  { id: "decide", libelle: LIBELLES.decide, echelon: "ville", charge: () => import("./routes/CeQuiADecide.jsx") },
+  { id: "qui", libelle: LIBELLES.qui, echelon: "ville", charge: () => import("./routes/QuiDecide.jsx") },
+  { id: "argent", libelle: LIBELLES.argent, echelon: "dept", charge: () => import("./routes/OuVaArgent.jsx") },
   /* CALENDRIER, COMME SOURCES : PAS PROPRE A UNE COMMUNE. Le pilote du
      17/09/2026 ne publie que le Sénat — un echelon national, aucune raison
      d'attendre le choix d'une commune pour l'ouvrir. */
-  { id: "calendrier", libelle: "Ce qui se passe", echelon: "france", charge: () => import("./routes/Calendrier.jsx") },
-  { id: "sources", libelle: "Sources", echelon: "france", charge: () => import("./routes/Sources.jsx") },
+  { id: "calendrier", libelle: LIBELLES.calendrier, echelon: "france", charge: () => import("./routes/Calendrier.jsx") },
+  { id: "sources", libelle: LIBELLES.sources, echelon: "france", charge: () => import("./routes/Sources.jsx") },
 ];
 const ONGLETS_SANS_COMMUNE = new Set(["sources", "calendrier"]);
 
