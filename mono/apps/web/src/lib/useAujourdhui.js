@@ -51,5 +51,8 @@ export function useAujourdhui(paquet, index, commune) {
      remplaces par leur version web (un mot du dictionnaire y devient un bouton). */
   const d = deriverAujourdhui({ fiche, commune, dep, index, projets, cat, pos, deputes, cal, agendaAN, evenements });
   const rr = d.exercice ? rapports(d.exercice.ex) : [];
-  return { ...d, etat, rapportsComptes: rr, rapportDette: rr[0] };
+  /* La version web du rapport (mot du dictionnaire en bouton) garde l'exercice
+     attache par @repere/core : l'annee n'est jamais recalculee ici. */
+  const rapportDette = d.rapportDette && rr[0] ? { ...rr[0], an: d.rapportDette.an } : undefined;
+  return { ...d, etat, rapportsComptes: rr, rapportDette };
 }

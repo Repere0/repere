@@ -26,7 +26,15 @@ export function deriverAujourdhui({ fiche, commune, dep, index, projets, cat, po
   const srcScrutins = (cat && cat.source) || null;
   const exercice = dernierExercice(fiche, agregats);
   const rr = exercice ? rapports(exercice.ex) : [];
-  const rapportDette = rr[0];
+  /* LE RAPPORT PORTE SON EXERCICE — 07/10/2026. « Son encours de dette : 16,0 mois
+     de recettes » s'affichait sur Aujourd'hui sans l'annee des comptes, alors que
+     « Ou va l'argent » dit « comptes 2025 ». L'annee est attachee ICI, a partir du
+     meme exercice que le chiffre : un ecran ne peut pas la recalculer, ni l'apparier
+     au chiffre d'un autre exercice. Pas d'exercice, pas de rapport.
+     NB : malgre son nom, c'est le PREMIER rapport disponible — la dette quand dette
+     et recettes existent, sinon le suivant (salaires...). Comportement inchange ;
+     l'annee vaut pour lui quel qu'il soit. */
+  const rapportDette = rr[0] ? { ...rr[0], an: exercice.an } : undefined;
 
   /* CE QUI ARRIVE : SENAT ET ASSEMBLEE, PAS LE SENAT SEUL — 28/09/2026.
    * Mesure en production ce jour-la : « Qu'est-ce qui arrive ? » n'affichait
