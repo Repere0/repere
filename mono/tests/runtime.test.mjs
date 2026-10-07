@@ -209,6 +209,27 @@ page.off("response", compteur);
 verif("poids — le premier ecran reste sous 120 Ko", poids <= 120 * 1024,
   Math.round(poids / 1024) + " Ko transferes avant le choix d'un departement");
 console.log("        (mesure : " + Math.round(poids / 1024) + " Ko)");
+/* LA LISTE DES COMMUNES N'EST PAS DU PREMIER ECRAN — 07/10/2026. Elle part au
+   premier contact avec le champ, une seule fois, et la recherche directe marche
+   des qu'elle est arrivee. Contexte neuf : rien en cache. */
+{
+  const ctxL = await nav.newContext({ viewport: { width: 390, height: 844 } });
+  const pL = await ctxL.newPage();
+  const vues = [];
+  pL.on("request", r => { if (/\/data\/communes-beta\.json/.test(r.url())) vues.push(r.url()); });
+  await pL.goto(base, { waitUntil: "networkidle" });
+  await pL.waitForTimeout(1200);
+  verif("poids — la liste des communes ne part pas tant que le champ n'est pas touche", vues.length === 0, vues.length + " demande(s) avant tout contact");
+  await pL.getByLabel(/Où habitez-vous/).focus();
+  await pL.getByLabel(/Où habitez-vous/).fill("Bagno");
+  await pL.waitForTimeout(400);
+  await pL.getByLabel(/Où habitez-vous/).fill("Bagnolet");
+  await pL.waitForTimeout(800);
+  const proposee = await pL.getByRole("button", { name: /^Bagnolet\b/ }).count();
+  verif("poids — au premier contact, une seule demande, et la recherche directe repond", vues.length === 1 && proposee > 0,
+    vues.length + " demande(s), " + proposee + " proposition(s)");
+  await ctxL.close();
+}
 
 /* INVARIANT 2 : aucune adresse ne porte un code de commune. Mesure sur ce qui a
    REELLEMENT ete demande, pas sur ce que le code compose. */
