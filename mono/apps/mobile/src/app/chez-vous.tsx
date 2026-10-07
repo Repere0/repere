@@ -145,12 +145,10 @@ export default function ChezVous() {
                 /* DEUX LIGNES AU PLUS SUR L'ACCUEIL — 07/10/2026. Le vote affiche est
                    desormais le plus recent ; pour Meaux, son intitule officiel est plus
                    long et repoussait la troisieme reponse sous le pli (mesure CI : 861 px
-                   pour 844). L'intitule n'est pas reecrit : il est coupe, et le texte
-                   entier est sur « Comprendre ce vote », a un geste. */
-                : <View>
-                    <Text style={TYPO.note} numberOfLines={2}>{typo(titreLisible(vote.sc.t))}</Text>
-                    <Text style={TYPO.note}>{typo(`${vote.sc.s.charAt(0).toUpperCase()}${vote.sc.s.slice(1)}, ${decompte(vote.sc.dec)}.`)}</Text>
-                  </View>}
+                   pour 844). Le resultat et le decompte viennent EN TETE, jamais coupes ;
+                   l'intitule suit, non reecrit, et peut etre coupe : le texte entier est
+                   sur « Comprendre ce vote », a un geste. */
+                : <Text style={TYPO.note} numberOfLines={2}>{typo(`${vote.sc.s.charAt(0).toUpperCase()}${vote.sc.s.slice(1)}, ${decompte(vote.sc.dec)} : ${titreLisible(vote.sc.t)}`)}</Text>}
               sources={<PastilleSource court source={srcVote(d, vote.sc)} />}
               partage={{
                 titre: `Un vote concernant ${nom}`,
