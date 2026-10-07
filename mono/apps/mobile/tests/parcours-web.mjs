@@ -41,6 +41,11 @@ const MAIRE = await (async () => {
   try { const r = await fetch(BASE + "/data/departments/77.json"); const j = await r.json(); return j.communes["77284"].maire.nom.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"); }
   catch { return "Maire introuvable dans les données servies"; }
 })();
+/* Les elus du canton de Meaux, lus dans les donnees servies (07/10/2026). */
+const ELUS_CANTON = await (async () => {
+  try { const r = await fetch(BASE + "/data/departments/77.json"); const j = await r.json(); const f = j.communes["77284"]; return (j.conseil_departemental || []).filter(e => (f.canton || []).includes(e.canton)).map(e => e.nom); }
+  catch { return []; }
+})();
 let echecs = 0;
 const verifier = (ok, texte) => { console.log((ok ? "ok   " : "ECHEC") + " " + texte); if (!ok) echecs++; };
 
@@ -178,6 +183,7 @@ for (const largeur of [360, 390, 430]) {
     const m = await mesurer();
     communs(m, action);
     verifier(preuve.test(m.brut), `${largeur}px · ${action} : l'écran répond à sa question`);
+    if (action === "Qui décide") verifier(ELUS_CANTON.length >= 2 && ELUS_CANTON.every(n => m.brut.includes(n)), `${largeur}px · Qui décide : tous les élus du canton sont nommés ${JSON.stringify(ELUS_CANTON)}`);
     if (action !== "Sources") verifier(/D'où vient cette information/.test(m.etiquettes) || /Le calendrier n'est arrivé/.test(m.texte), `${largeur}px · ${action} : la source est à portée de doigt`);
     if (/argent/.test(action)) {
       verifier(/Calculé par Repère · source/.test(m.texte), `${largeur}px · ${action} : les parts calculées se disent calculées`);
