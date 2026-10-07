@@ -307,6 +307,14 @@ async function montantA100ms(reduit) {
   st = await stockage();
   verifier(Object.keys(st.ls).length === 0 && await page.getByText("Votre commune, sur ce téléphone").count() === 0,
     "mémoire : une valeur mal formée est effacée, jamais affichée");
+  /* Un departement qui n'est pas celui de la commune (07/10/2026) : « 97 » pour
+     97101 passait, parce que seuls les deux premiers chiffres etaient compares. */
+  await page.evaluate(() => localStorage.setItem("repere.departement", '{"d":"97","c":"97101"}'));
+  await page.goto(BASE + "/", { waitUntil: "networkidle" });
+  await page.getByText("Où habitez-vous ?").waitFor({ timeout: 10000 });
+  st = await stockage();
+  verifier(Object.keys(st.ls).length === 0 && await page.getByText("Votre commune, sur ce téléphone").count() === 0,
+    "mémoire : un département qui n'est pas celui de la commune (97 pour 97101) est effacé");
   const fautives = demandees.filter(u => adresseFautive(u) || /77284/.test(u));
   verifier(fautives.length === 0, "mémoire : aucune requête ne porte le code de la commune " + JSON.stringify(fautives));
   await ctx.close();

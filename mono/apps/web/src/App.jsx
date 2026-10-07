@@ -1,6 +1,6 @@
 import React, { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Chargement, Vide, Puce, DefinitionProvider } from "@repere/ui";
-import { mots, motsCible, correspond, trouverCommunes, LIBELLES } from "@repere/core";
+import { mots, motsCible, correspond, trouverCommunes, departementDe, LIBELLES } from "@repere/core";
 import {
   chargerIndex, chargerDepartement, chargerCommunesBeta, prechargerDepartement,
   annulerPrechargement, entrer, ETATS, PHRASES,
@@ -182,10 +182,10 @@ function Entree({ index, communesBeta, onBesoinCommunes, departement, onOuvrir, 
           <div className="rangee liste" role="group" aria-label="Communes trouvées">
             {trouveesC.map(([insee, nom]) => (
               <button key={insee} type="button" className="puce"
-                onClick={() => onCommuneDirecte(insee.slice(0, 2), insee)}>
+                onClick={() => onCommuneDirecte(departementDe(insee), insee)}>
                 <span className="pastille" style={{ background: "var(--e-ville)" }} aria-hidden="true" />
                 <span className="puce-nom">{nom}</span>
-                <span className="puce-code">{nomDep(insee.slice(0, 2))}</span>
+                <span className="puce-code">{nomDep(departementDe(insee))}</span>
               </button>
             ))}
           </div>

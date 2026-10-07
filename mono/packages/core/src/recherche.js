@@ -39,3 +39,17 @@ export function trouverCommunes(liste, cherches, max = 30) {
     .sort((a, b) => rangRecherche(a[1], cherches) - rangRecherche(b[1], cherches) || a[1].localeCompare(b[1], "fr"))
     .slice(0, max);
 }
+
+/* LE DEPARTEMENT D'UNE COMMUNE, LU SUR SON CODE INSEE — 07/10/2026.
+ * `insee.slice(0, 2)` etait ecrit trois fois (site, application, memoire) : juste
+ * en metropole et en Corse (2A, 2B), faux outre-mer, ou le departement tient en
+ * trois chiffres (971 a 976, 987, 988 : « 97101 » -> 971, pas 97). Sans effet
+ * visible tant que la recherche directe ne lit que l'Ile-de-France ; bloquant
+ * des qu'elle couvrira la France entiere. Verifie sur toutes les communes
+ * publiees (tests/core.test.mjs). Renvoie null pour un code mal forme : aucune
+ * adresse n'est alors composee. */
+export function departementDe(insee) {
+  const c = String(insee || "").toUpperCase();
+  if (!/^(\d{5}|2[AB]\d{3})$/.test(c)) return null;
+  return /^9[78]/.test(c) ? c.slice(0, 3) : c.slice(0, 2);
+}
