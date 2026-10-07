@@ -27,7 +27,7 @@ function BoutonPartager({ titre, texte, sourceUrl }: { titre: string; texte: str
 
 /* Espace insecable devant « ? ! : ; € » : ni le point d'interrogation ni le
    symbole euro ne tombent seuls a la ligne (vu sur capture : « 332 372 / € »). */
-const typo = (t: string) => t.replace(/ ([?!:;€»])/g, "\u00a0$1").replace(/« /g, "«\u00a0");
+export const typo = (t: string) => t.replace(/ ([?!:;€»])/g, "\u00a0$1").replace(/« /g, "«\u00a0");
 
 export function Reponse({ phrase, preuve, note, sources, suite, partage }: {
   /* l'echelon qui decide : porte par la donnee, pas encore par le rendu
