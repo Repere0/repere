@@ -43,9 +43,9 @@ export default function QuiDecide() {
         if (n.echelon === "france") {
           return { ...n, note: n.autresCircos ? `${d.nomCommune} est partagée entre plusieurs circonscriptions : un seul député est nommé ici.` : undefined,
             pied: n.personne && r.votesLus ? (
-              /* Jamais « dernier » : le vote affiche n'est pas forcement le plus
-                 recent (8430 affiche, 8433 et 8434 le meme jour — mesure du
-                 30/09/2026). On dit sa date. */
+              /* Le vote affiche est le plus recent depuis le 07/10/2026 (ordreDesFaits,
+                 @repere/core : date, puis numero de scrutin). On dit quand meme sa
+                 date : « dernier » ne dirait pas de quand il date. */
               <Pressable onPress={() => router.push("/vote")} accessibilityRole="button"
                 accessibilityLabel={d.dernierVote ? `Voir son vote du ${dateFr(d.dernierVote.sc.d)}` : "Voir ses votes"}
                 style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", opacity: pressed ? 0.6 : 1 })}>
