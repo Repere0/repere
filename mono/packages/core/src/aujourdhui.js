@@ -130,6 +130,9 @@ export function deriverAujourdhui({ fiche, commune, dep, index, projets, cat, po
     pret: true, fiche, nomCommune, dep, base, faits, nbCircos, nomDep, dernierProjet,
     dernierVote, dernierFait, exercice, rapportsComptes: rr, rapportDette,
     semaineParlement: semaineParlement({ cal, agendaAN, maintenant: now }),
+    /* tous les rendez-vous a venir, fusionnes et tries : le calendrier mobile les
+       regroupe par journee (regrouperParJour), comme celui du site. 07/10/2026. */
+    aVenir,
     prochain, prochains, prochainsDansLaSemaine: cetteSemaine.length > 0,
     semaineSelectionnee: semaine.length > cetteSemaine.length, semaineTotal: semaine.length,
     srcComptes, srcProjets, srcScrutins, srcCal,
