@@ -101,7 +101,7 @@ function ecrireDepartement(d, v) {
  * « 93 » doit voir que Repere lui propose UN DEPARTEMENT, pas une commune dont
  * le nom contiendrait 93. Les deux groupes sont tries alphabetiquement, sans
  * aucun ordre de valeur — l'invariant 3 interdit de classer des territoires. */
-function Entree({ index, communesBeta, departement, onOuvrir, onCommuneDirecte, onSurvol }) {
+function Entree({ index, communesBeta, onBesoinCommunes, departement, onOuvrir, onCommuneDirecte, onSurvol }) {
   const [filtre, setFiltre] = useState("");
   const cherches = mots(filtre);
 
@@ -162,7 +162,8 @@ function Entree({ index, communesBeta, departement, onOuvrir, onCommuneDirecte, 
         <span>Où habitez-vous ?</span>
         <input type="search" value={filtre} autoComplete="off"
           placeholder="Bagnolet, Créteil, Meaux…"
-          onChange={e => setFiltre(e.target.value)} />
+          onFocus={onBesoinCommunes} onPointerDown={onBesoinCommunes}
+          onChange={e => { if (onBesoinCommunes) onBesoinCommunes(); setFiltre(e.target.value); }} />
       </label>
 
       {manquanteTrouvee ? (
@@ -455,11 +456,22 @@ export default function App() {
       setEtatIndex(r.etat);
       if (r.donnees) setIndex(r.donnees);
     });
-    /* 11 Ko, en meme temps que l'index : sans lui, le premier ecran ne sait
-       chercher que des departements. Son absence n'est pas bloquante — la
-       recherche par departement continue de fonctionner. */
-    chargerCommunesBeta().then(r => { if (vivant && r.donnees) setCommunesBeta(r.donnees); });
     return () => { vivant = false; };
+  }, []);
+
+  /* LA LISTE DES COMMUNES ARRIVE AU PREMIER CONTACT AVEC LE CHAMP — 07/10/2026.
+     Mesure : le premier ecran pesait 119 Ko pour un plafond de 120 (57 Ko le
+     23/09), dont 30 Ko de cette liste (et non plus 11) qui ne sert qu'a la
+     recherche directe. Elle n'est pas necessaire pour AFFICHER l'ecran : elle
+     part quand le lecteur touche ou remplit le champ « Ou habitez-vous ? ».
+     Meme fichier pour tout le monde : le serveur n'apprend rien du lecteur.
+     Une seule demande, quoi qu'il arrive ; son absence n'est pas bloquante —
+     la recherche par departement continue de fonctionner. */
+  const communesDemandees = useRef(false);
+  const demanderCommunes = useCallback(() => {
+    if (communesDemandees.current) return;
+    communesDemandees.current = true;
+    chargerCommunesBeta().then(r => { if (r.donnees) setCommunesBeta(r.donnees); });
   }, []);
 
   /* CHANGER D'ONGLET EST AUSSI UNE ETAPE, DEPUIS LE 18/09/2026. Mesure en
@@ -572,7 +584,7 @@ export default function App() {
         {/* AVANT UN CHOIX : un seul champ, qui accepte une commune ou un
             departement. APRES : la ligne repliee habituelle, pour changer. */}
         {index && !departement ? (
-          <Entree index={index} communesBeta={communesBeta} departement={departement}
+          <Entree index={index} communesBeta={communesBeta} onBesoinCommunes={demanderCommunes} departement={departement}
             onOuvrir={ouvrir} onCommuneDirecte={ouvrir} onSurvol={prechargerDepartement} />
         ) : null}
         {/* OU SUIS-JE, EN UNE LIGNE (29/09/2026). Mesure a 360 et 390 px, commune
