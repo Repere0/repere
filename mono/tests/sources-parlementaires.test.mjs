@@ -221,3 +221,14 @@ test("semaine — sept jours, seances publiques comptees, votes solennels lus mo
   assert.equal(court.institutions[0].jusquau, "2026-10-09");
   assert.equal(vide.jours.every(j => j.annonce === false), true, "rien lu : rien d'annonce");
 });
+
+/* 08/10/2026 : « fetch failed » seul ne dit rien ; la cause d'undici est nommee. */
+test("panne reseau : la cause sous-jacente (e.cause) est ecrite, pas seulement « fetch failed »", async () => {
+  const { causeReseau } = await import("../scripts/calendrier-senat.mjs");
+  const e = new TypeError("fetch failed", { cause: Object.assign(new Error("getaddrinfo ENOTFOUND www.senat.fr"), { code: "ENOTFOUND" }) });
+  assert.equal(causeReseau(e), "fetch failed — ENOTFOUND : getaddrinfo ENOTFOUND www.senat.fr");
+  const d = dossierNeuf();
+  const r = await releverSenat({ fetchImpl: reseau(e, e, e), sortie: d, ...sansAttente });
+  assert.match(r.cause, /ENOTFOUND/);
+  assert.equal(causeReseau(Object.assign(new Error("x"), { name: "TimeoutError" })), "delai depasse (30 s)");
+});
