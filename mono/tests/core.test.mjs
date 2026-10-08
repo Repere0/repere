@@ -192,6 +192,38 @@ test("core — la phrase de refus d'appariement porte ses accents (texte affich�
   assert.deepEqual(fautes, []);
 });
 
+test("core — aucun delegue d'intercommunalite n'est mis en avant par le seul ordre du fichier", async (t) => {
+  const { delegationIntercommunalite, REPLI_DELEGUES } = await import("../packages/core/src/visuels.js");
+  const cons = n => ({ nom: "C" + n, fonction: "Conseiller communautaire" });
+  const trois = delegationIntercommunalite([cons(1), cons(2), cons(3)]);
+  assert.equal(trois.visibles.length, 3, "trois conseillers : tous visibles");
+  const gros = [{ nom: "P", fonction: "Président du conseil communautaire" }, { nom: "V", fonction: "1er Vice-président du conseil communautaire" },
+    ...Array.from({ length: 20 }, (_, i) => cons(i))];
+  const g = delegationIntercommunalite(gros);
+  assert.deepEqual(g.visibles.map(e => e.nom), ["P", "V"], "au-dela du seuil : seules les fonctions ecrites restent visibles");
+  assert.equal(g.replies.length, 20);
+  const sansFonction = delegationIntercommunalite(Array.from({ length: 12 }, (_, i) => cons(i)));
+  assert.equal(sansFonction.visibles.length, 0, "douze conseillers : aucun n'est choisi pour etre montre");
+  assert.equal(delegationIntercommunalite(undefined).total, 0);
+  /* sur toutes les communes publiees : rien ne se perd, et aucun conseiller n'est
+     montre seul quand les autres sont replies */
+  const dossier = path.join(RACINE, "data", "departments");
+  if (!fs.existsSync(dossier)) { t.skip("donnees non extraites"); return; }
+  let n = 0;
+  for (const f of fs.readdirSync(dossier).filter(x => x.endsWith(".json"))) {
+    for (const c of Object.values(JSON.parse(fs.readFileSync(path.join(dossier, f), "utf8")).communes || {})) {
+      const d = (c.agglo && c.agglo.delegues) || [];
+      if (!d.length) continue;
+      n++;
+      const r = delegationIntercommunalite(d);
+      assert.equal(r.visibles.length + r.replies.length, d.length, c.nom);
+      if (d.length <= REPLI_DELEGUES) assert.equal(r.replies.length, 0, c.nom);
+      else assert.ok(r.visibles.every(e => !/^conseill[eè]re? communautaire$/i.test(e.fonction)), c.nom);
+    }
+  }
+  assert.ok(n > 10000, n + " communes avec delegues");
+});
+
 test("phrases — les adjoints ne votent pas seuls le budget (CGCT L2312-1)", async () => {
   const { phraseAdjoints, texteDe } = await import("../packages/core/src/index.js");
   const t = texteDe(phraseAdjoints(3, "Jeanne DUPONT"));
