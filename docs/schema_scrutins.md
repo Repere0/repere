@@ -3,7 +3,7 @@
 Produit par `outils/echantillon_scrutins.py` a partir du fichier telecharge
 par la collecte quotidienne. **Ce document est engendre : ne le modifie pas a la main.**
 
-- Fichiers dans l'archive : **8509**
+- Fichiers dans l'archive : **8611**
 - Fichiers ouverts pour le tirage : **3000** (pas de 2)
 - Fichiers decrits : **3000** — tous ceux qui ont ete ouverts
 - Cles distinctes trouvees : **157**
