@@ -1638,6 +1638,32 @@ console.log("\n--- chaque source mene a la source ---------------------------");
   }
 }
 
+console.log("\n--- sources : les neuf regles, et chaque date ---------------------");
+/* 08/10/2026 (audit) : la page disait « Huit règles » et omettait l'invariant 9
+   (fraicheur) ; les noms des territoires s'affichaient sans leur date de releve. */
+{
+  const { INVARIANTS } = await import("../packages/data-utils/src/invariants.js");
+  const ctx = await nav.newContext({ viewport: { width: 390, height: 844 } });
+  const p = await ctx.newPage();
+  await p.goto(base, { waitUntil: "networkidle" });
+  await p.getByLabel(/Où habitez-vous/).fill("Bagnolet");
+  await p.waitForTimeout(300);
+  await p.getByRole("button", { name: /^Bagnolet\b/ }).first().click();
+  await p.waitForTimeout(1200);
+  await p.getByRole("button", { name: "Où va l'argent" }).first().click();
+  await p.waitForTimeout(900);
+  await p.getByRole("button", { name: "Sources" }).first().click();
+  await p.waitForTimeout(1200);
+  const t = await p.evaluate(() => (document.querySelector("main") || document.body).innerText);
+  await ctx.close();
+  verif("sources — la page annonce autant de regles qu'elle en liste, fraicheur comprise",
+    INVARIANTS.length === 9 && /Neuf règles/.test(t) && INVARIANTS.every(i => t.includes(i.regle.slice(0, 40))), t.slice(t.indexOf("règles") - 40, t.indexOf("règles") + 80).replace(/\n+/g, " / "));
+  const idx = JSON.parse(fs.readFileSync(path.join(DIST, "data/index.json"), "utf8"));
+  const terr = (idx.sources && idx.sources.territoires) || [];
+  verif("sources — les noms des territoires disent leur date de releve",
+    terr.length > 0 && terr.filter(x => x.releve_le).every(() => /Noms des territoires[^\n]*relevé le \d/.test(t)), "");
+}
+
 console.log("\n--- recherche et accents -------------------------------------");
 /* LA RECHERCHE NE DOIT PAS DEPENDRE DES ACCENTS, DANS LES DEUX SENS. Depuis que
    les libelles portent leur orthographe officielle, une comparaison brute

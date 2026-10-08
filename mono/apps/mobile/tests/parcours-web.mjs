@@ -182,6 +182,7 @@ for (const largeur of [360, 390, 430]) {
     await page.waitForTimeout(800);
     const m = await mesurer();
     communs(m, action);
+    if (action === "Sources") verifier(/Licence : /.test(m.brut) && /Les noms des députés/.test(m.brut), `${largeur}px · Sources : chaque source dit sa licence, et la source des noms des députés est citée`);
     if (action === "Qui décide") verifier(/Île-de-France Mobilités/.test(m.brut) && !/Décide : les transports/.test(m.brut), `${largeur}px · Qui décide : en Île-de-France, l'intercommunalité ne « décide » pas des transports`);
     verifier(preuve.test(m.brut), `${largeur}px · ${action} : l'écran répond à sa question`);
     if (action === "Qui décide") verifier(ELUS_CANTON.length >= 2 && ELUS_CANTON.every(n => m.brut.includes(n)), `${largeur}px · Qui décide : tous les élus du canton sont nommés ${JSON.stringify(ELUS_CANTON)}`);

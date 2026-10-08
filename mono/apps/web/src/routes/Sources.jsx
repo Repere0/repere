@@ -1,6 +1,8 @@
 import React from "react";
 import { Carte, Source, Tuile, dateFr } from "@repere/ui";
 import { INVARIANTS, PROMESSES } from "@repere/data-utils/invariants";
+/* le nombre de regles s'ecrit en lettres, et suit la liste (08/10/2026 : « Huit » restait ecrit en dur) */
+const NOMBRES = ["", "Une", "Deux", "Trois", "Quatre", "Cinq", "Six", "Sept", "Huit", "Neuf", "Dix", "Onze", "Douze"];
 
 /* Cet écran n'est pas décoratif : il rend le produit vérifiable par son lecteur.
    Il dit d'où vient chaque chiffre, sous quelle licence, et ce que Repère
@@ -30,7 +32,7 @@ export default function Sources({ index, paquet }) {
             ils ont leurs propres producteurs, et ils le disent. */}
         {Array.isArray(s.territoires) ? s.territoires.map((t, i) => (
           <Source key={i} producteur={"Noms des territoires — " + t.producteur}
-            licence={t.licence} mention={t.portee} url={t.url} />
+            licence={t.licence} mention={[t.portee, t.releve_le ? "relevé le " + dateFr(t.releve_le) : null].filter(Boolean).join(", ")} url={t.url} />
         )) : null}
         {/* Le nom d'une commune est une donnee comme une autre, avec son propre
             producteur : il vient du Code officiel geographique, pas du Repertoire
@@ -96,7 +98,7 @@ export default function Sources({ index, paquet }) {
         ) : null}
       </Carte>
 
-      <Carte echelon="region" titre="Ce que Repère s'interdit" sousTitre="Huit règles, et le contrôle qui garde chacune">
+      <Carte echelon="region" titre="Ce que Repère s'interdit" sousTitre={`${NOMBRES[INVARIANTS.length] || INVARIANTS.length} règles, et le contrôle qui garde chacune`}>
         <ol className="invariants">
           {INVARIANTS.map(i => (
             <li key={i.n}>
