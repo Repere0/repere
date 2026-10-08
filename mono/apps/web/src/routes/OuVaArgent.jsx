@@ -58,9 +58,11 @@ function Evolution({ e, nom, src }) {
   );
 }
 
-function CompteTerritoire({ titre, echelon, exerciceAn, ex, agregats, src, notesVisibles = true }) {
+function CompteTerritoire({ titre, echelon, exerciceAn, ex, agregats, src }) {
   const rr = rapports(ex);
   const maxAgregat = Math.max(...agregats.map((_, i) => (valeur(ex, i) || {}).m || 0));
+  /* `notesVisibles` (08/10/2026) : faux quand une carte plus haut a deja ecrit les notes. */
+  const notesVisibles = arguments[0].notesVisibles !== false;
   return (
     <Carte echelon={echelon} titre={titre}
       sousTitre={<>Ce que ça représente · comptes {exerciceAn}{population(ex) ? ` · ${population(ex).toLocaleString("fr-FR")} habitants` : ""}</>}
