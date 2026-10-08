@@ -1531,41 +1531,6 @@ console.log("\n--- aujourd'hui : un chiffre des comptes dit son exercice -------
   }
 }
 
-console.log("\n--- aujourd'hui : fidele, sans doublon ni silence -------------------");
-/* 08/10/2026 (audit beta). Amponville sans projet : le bloc local disparaissait
-   sans un mot. Bagnolet : « Combien ça représente ? » sous le projet parlait de la
-   dette ; deux lignes d'agenda identiques ; un releve de plusieurs jours non dit. */
-{
-  const auj = async nom => {
-    const ctx = await nav.newContext({ viewport: { width: 390, height: 844 } });
-    const p = await ctx.newPage();
-    await p.goto(base, { waitUntil: "networkidle" });
-    await p.getByLabel(/Où habitez-vous/).fill(nom);
-    await p.waitForTimeout(300);
-    await p.getByRole("button", { name: new RegExp("^" + nom + "\\b") }).first().click();
-    await p.waitForTimeout(1800);
-    const r = await p.evaluate(() => ({
-      t: (document.querySelector("main") || document.body).innerText,
-      agenda: [...document.querySelectorAll(".auj-a-venir > p.ligne-note")].map(x => x.innerText.trim()),
-    }));
-    await ctx.close();
-    return r;
-  };
-  const amp = await auj("Amponville");
-  verif("aujourd'hui — sans projet publie, la commune le lit (jamais un bloc qui disparait sans un mot)",
-    /Aucun projet aidé par l'État n'est publié pour Amponville/.test(amp.t), "");
-  const bag = await auj("Bagnolet");
-  verif("aujourd'hui — le bloc des comptes dit de quoi il parle (« La dette de Bagnolet »), plus « Combien ça représente ? »",
-    /La dette de Bagnolet|Les comptes de Bagnolet/.test(bag.t) && !/Combien ça représente/.test(bag.t), "");
-  const doublons = bag.agenda.filter((l, i) => bag.agenda.indexOf(l) !== i);
-  verif("aujourd'hui — l'agenda n'affiche jamais deux fois la meme ligne", doublons.length === 0, JSON.stringify(doublons).slice(0, 200));
-  const { ageReleve, AGE_RELEVE_NORMAL } = await import("../packages/core/src/calendrier.js");
-  const an = JSON.parse(fs.readFileSync(path.join(DIST, "data/agenda-an.json"), "utf8"));
-  const age = ageReleve(an.source && an.source.releve_le);
-  verif("aujourd'hui — un agenda releve il y a plus d'un jour le dit, comme le calendrier",
-    age === null || age <= AGE_RELEVE_NORMAL || new RegExp("relevé le .+, il y a " + age + " jours").test(bag.t), "age " + age);
-}
-
 console.log("\n--- comptes : d'un exercice a l'autre -------------------------");
 /* 29/09/2026 : deux montants dates, la difference en euros, aucun pourcentage.
    La commune est cherchee dans la donnee publiee (deux exercices consecutifs,
@@ -1688,6 +1653,41 @@ async function aujCommune(dep, nom) {
   } else {
     verif("local — donnees de projets 93 presentes pour eprouver le bloc", false, "aucune commune du 93 avec projet");
   }
+}
+
+console.log("\n--- aujourd'hui : fidele, sans doublon ni silence -------------------");
+/* 08/10/2026 (audit beta). Amponville sans projet : le bloc local disparaissait
+   sans un mot. Bagnolet : « Combien ça représente ? » sous le projet parlait de la
+   dette ; deux lignes d'agenda identiques ; un releve de plusieurs jours non dit. */
+{
+  const auj = async nom => {
+    const ctx = await nav.newContext({ viewport: { width: 390, height: 844 } });
+    const p = await ctx.newPage();
+    await p.goto(base, { waitUntil: "networkidle" });
+    await p.getByLabel(/Où habitez-vous/).fill(nom);
+    await p.waitForTimeout(300);
+    await p.getByRole("button", { name: new RegExp("^" + nom + "\\b") }).first().click();
+    await p.waitForTimeout(1800);
+    const r = await p.evaluate(() => ({
+      t: (document.querySelector("main") || document.body).innerText,
+      agenda: [...document.querySelectorAll(".auj-a-venir > p.ligne-note")].map(x => x.innerText.trim()),
+    }));
+    await ctx.close();
+    return r;
+  };
+  const amp = await auj("Amponville");
+  verif("aujourd'hui — sans projet publie, la commune le lit (jamais un bloc qui disparait sans un mot)",
+    /Aucun projet aidé par l'État n'est publié pour Amponville/.test(amp.t), "");
+  const bag = await auj("Bagnolet");
+  verif("aujourd'hui — le bloc des comptes dit de quoi il parle (« La dette de Bagnolet »), plus « Combien ça représente ? »",
+    /La dette de Bagnolet|Les comptes de Bagnolet/.test(bag.t) && !/Combien ça représente/.test(bag.t), "");
+  const doublons = bag.agenda.filter((l, i) => bag.agenda.indexOf(l) !== i);
+  verif("aujourd'hui — l'agenda n'affiche jamais deux fois la meme ligne", doublons.length === 0, JSON.stringify(doublons).slice(0, 200));
+  const { ageReleve, AGE_RELEVE_NORMAL } = await import("../packages/core/src/calendrier.js");
+  const an = JSON.parse(fs.readFileSync(path.join(DIST, "data/agenda-an.json"), "utf8"));
+  const age = ageReleve(an.source && an.source.releve_le);
+  verif("aujourd'hui — un agenda releve il y a plus d'un jour le dit, comme le calendrier",
+    age === null || age <= AGE_RELEVE_NORMAL || new RegExp("relevé le .+, il y a " + age + " jours").test(bag.t), "age " + age);
 }
 
 console.log("\n--- projets d'une commune fusionnee : rattaches, et dits comme tels ---");
