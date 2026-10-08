@@ -359,10 +359,23 @@ function LigneElu({ e }) {
     <div className="ligne">
       <div className="ligne-h"><span>{e.fonction || "Fonction non précisée"}</span><b>{e.nom}</b></div>
       <div className="ligne-note">
-        Mandat ouvert{e.debut ? " depuis le " + dateFr(e.debut) : ""}. Ni étiquette politique,
-        ni parcours : le Répertoire national des élus n'en porte pas.
+        Mandat ouvert{e.debut ? " depuis le " + dateFr(e.debut) : ""}.
       </div>
     </div>
+  );
+}
+
+/* UNE FOIS PAR CARTE, PAS SOUS CHAQUE ELU — 08/10/2026. La phrase etait dans
+   LigneElu : repetee sous chacun des 205 elus du conseil regional d Ile-de-France (mesure dans
+   data/elus-regions/11.json), et
+   sous chaque membre d'un binome de canton, elle noyait les noms. Elle dit la
+   meme chose pour tous les elus de la carte (la source n'a pas de champ
+   politique) : elle est dite une fois, pres de la source qu'elle decrit. */
+function SansEtiquette() {
+  return (
+    <p className="tx-note">
+      Ni étiquette politique, ni parcours : le Répertoire national des élus n'en porte pas, et Repère n'en invente pas.
+    </p>
   );
 }
 
@@ -398,6 +411,7 @@ function Agglo({ c, src }) {
           <div className="repli-in">{replies.map((e, i) => <LigneElu key={i} e={e} />)}</div>
         </details>
       ) : null}
+      <SansEtiquette />
       {src ? <Source producteur={src.producteur} licence={src.licence} maj={src.maj} url={RNE_URL} /> : null}
     </>
   );
@@ -438,6 +452,7 @@ function ConseilDepartemental({ paquet, c, src }) {
           <div className="repli-in">{resteDept.map((e, i) => <LigneElu key={i} e={e} />)}</div>
         </details>
       ) : null}
+      <SansEtiquette />
       {src ? <Source producteur={src.producteur} licence={src.licence} maj={src.maj} url={RNE_URL} /> : null}
     </>
   );
@@ -487,6 +502,7 @@ function ConseilRegional({ index, paquet, src }) {
           <div className="repli-in">{reste.map((e, i) => <LigneElu key={i} e={e} />)}</div>
         </details>
       ) : null}
+      <SansEtiquette />
       {src ? <Source producteur={src.producteur} licence={src.licence} maj={src.maj} url={RNE_URL} /> : null}
     </>
   );

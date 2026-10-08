@@ -385,6 +385,13 @@ verif("elus locaux — le conseil regional est nomme (Alain Rousset, president, 
 verif("invariant 3 — les elus locaux sont nommes sans etiquette ni comparaison",
   !/groupe politique|majorité|opposition|classement|mieux que/i.test(avecElus.slice(avecElus.indexOf("intercommunalité"))),
   "");
+/* 08/10/2026 : « Ni etiquette politique » une fois par carte, pas sous chaque elu
+   (textContent compte aussi les replis fermes : 200 elus regionaux et plus). */
+{
+  const n = await page.evaluate(() => (document.body.textContent.match(/Ni étiquette politique/g) || []).length);
+  verif("qui decide — la mention « Ni étiquette politique » est dite une fois par carte, pas sous chaque élu",
+    n >= 1 && n <= 5, n + " occurrence(s)");
+}
 
 /* DOCTRINE DU VIDE — L'INTERCOMMUNALITE MANQUE POUR ENVIRON UN TIERS DES
  * COMMUNES DE LA BETA (mesure le 22/09/2026, extract-html.js). Amillis
