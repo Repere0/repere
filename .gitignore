@@ -45,3 +45,10 @@ mono/scripts/scrutins-index.json
 mono/scripts/scrutins-details/
 mono/scripts/questions-gouvernement-index.json
 mono/scripts/questions-gouvernement/
+
+# Python compile : cree par outils/test_collecte.py (banc de la chaine, #81),
+# il faisait refuser chaque enregistrement quotidien par la liste blanche du
+# bot de collecte (« chemins qui ne sont pas des sorties de la chaine »),
+# du 06/10 au 08/10/2026. Jamais une sortie : jamais suivi.
+__pycache__/
+*.pyc
