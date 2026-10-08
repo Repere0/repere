@@ -55,7 +55,7 @@ function sourcesEcrites() {
 }
 
 test("invariant 0 — chaque invariant déclare le contrôle qui le garde", () => {
-  assert.equal(INVARIANTS.length, 8);
+  assert.equal(INVARIANTS.length, 9, "les neuf invariants de CLAUDE.md, ni plus ni moins");
   for (const i of INVARIANTS) {
     assert.ok(i.garde && i.garde.length > 10,
       `l'invariant ${i.n} n'a pas de garde declaree : c'est une intention, pas une regle`);
