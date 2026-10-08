@@ -41,6 +41,25 @@ const MAIRE = await (async () => {
   try { const r = await fetch(BASE + "/data/departments/77.json"); const j = await r.json(); return j.communes["77284"].maire.nom.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"); }
   catch { return "Maire introuvable dans les données servies"; }
 })();
+/* Le calendrier attendu, recalcule par le socle sur les fichiers servis (07/10/2026) :
+   « a venir » vient de deriverAujourdhui lui-meme, jamais d'une regle recopiee ici. */
+const CAL = await (async () => {
+  const { regrouperParJour, ageReleve, AGE_RELEVE_NORMAL } = await import("../../../packages/core/src/calendrier.js");
+  const { jourParis, deriverAujourdhui } = await import("../../../packages/core/src/aujourdhui.js");
+  const lire = async f => { try { const r = await fetch(BASE + "/data/" + f); return r.ok ? await r.json() : null; } catch { return null; } };
+  const cal = await lire("calendrier-senat.json"), agendaAN = await lire("agenda-an.json");
+  const vieux = [];
+  for (const [de, j] of [["du Sénat", cal], ["de l'Assemblée nationale", agendaAN]]) {
+    const age = j && j.source ? ageReleve(j.source.releve_le) : null;
+    if (age !== null && age > AGE_RELEVE_NORMAL) vieux.push({ de, age });
+  }
+  const { aVenir } = deriverAujourdhui({ fiche: { nom: "x", circo: null }, commune: "00000", dep: "77", index: { agregats: [], sources: {} },
+    projets: null, cat: null, pos: null, deputes: null, cal, agendaAN, evenements: null, maintenant: new Date() });
+  const limite = jourParis(new Date(Date.now() + 14 * 864e5));
+  let proches = aVenir.filter(e => e.debut.slice(0, 10) < limite);
+  if (!proches.length) proches = aVenir.slice(0, 5);
+  return { lignes: regrouperParJour(proches).length, vieux };
+})();
 /* Les elus du canton de Meaux, lus dans les donnees servies (07/10/2026). */
 const ELUS_CANTON = await (async () => {
   try { const r = await fetch(BASE + "/data/departments/77.json"); const j = await r.json(); const f = j.communes["77284"]; return (j.conseil_departemental || []).filter(e => (f.canton || []).includes(e.canton)).map(e => e.nom); }
@@ -230,6 +249,14 @@ for (const largeur of [360, 390, 430]) {
     await page.waitForTimeout(800);
     const m = await mesurer();
     communs(m, action);
+    if (action === "Le calendrier") {
+      /* PAR JOURNEE (07/10/2026) : autant de lignes que de groupes calcules par le
+         socle sur les fichiers servis, pour les deux prochaines semaines. */
+      const lignes = await page.evaluate(() => document.querySelectorAll('[data-testid="cal-ligne"]').length);
+      verifier(lignes === CAL.lignes, `${largeur}px · Le calendrier : une ligne par texte et par jour (${lignes} affichées, ${CAL.lignes} attendues)`);
+      verifier(CAL.vieux.every(x => new RegExp("Agenda " + x.de + " relevé le .+, il y a " + x.age + " jours").test(m.brut)),
+        `${largeur}px · Le calendrier : un relevé ancien le dit, avec sa date ${JSON.stringify(CAL.vieux)}`);
+    }
     if (action === "Qui décide") verifier(/Île-de-France Mobilités/.test(m.brut) && !/Décide : les transports/.test(m.brut), `${largeur}px · Qui décide : en Île-de-France, l'intercommunalité ne « décide » pas des transports`);
     verifier(preuve.test(m.brut), `${largeur}px · ${action} : l'écran répond à sa question`);
     if (action === "Sources") verifier(/Licence : /.test(m.brut) && /Les noms des députés/.test(m.brut), `${largeur}px · Sources : chaque source dit sa licence, et la source des noms des députés est citée`);
