@@ -9,6 +9,7 @@
 import { Pressable, Text } from "react-native";
 import { router, Stack } from "expo-router";
 import { chaineDecision, dateFr, MAIRE_ABSENT, phraseAdjoints, RNE_URL, LIBELLES } from "@repere/core";
+import { sansConseilDepartemental } from "@repere/core";
 import { Segments } from "../lib/composants";
 import { REGION_PAS_ARRIVEE } from "../lib/absences";
 import { srcElus } from "../lib/sources";
@@ -41,7 +42,9 @@ export default function QuiDecide() {
           return { ...n, note: r.regionLue ? "Le Répertoire national des élus ne porte pas de président pour cette région." : REGION_PAS_ARRIVEE };
         }
         if (n.echelon === "dept" && !n.personne) {
-          return { ...n, note: "Le Répertoire national des élus ne porte pas de conseil départemental pour ce territoire." };
+          /* 08/10/2026 : certains territoires n'ont REELLEMENT pas de conseil departemental */
+          const sans = sansConseilDepartemental(d.dep);
+          return { ...n, note: sans ? `${sans.titre} ${sans.corps}` : "Le Répertoire national des élus ne porte pas de conseil départemental pour ce territoire." };
         }
         if (n.echelon === "france") {
           return { ...n, note: n.autresCircos ? `${d.nomCommune} est partagée entre plusieurs circonscriptions : un seul député est nommé ici.` : undefined,

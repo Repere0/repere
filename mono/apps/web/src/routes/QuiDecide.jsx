@@ -3,6 +3,7 @@ import { Carte, Vide, Source, Chargement, dateFr, Mot } from "@repere/ui";
 import { Pile } from "@repere/ui/amicro";
 import { competencesIntercommunalite } from "@repere/core";
 import { delegationIntercommunalite } from "@repere/core";
+import { sansConseilDepartemental, listeFr } from "@repere/core";
 import { LigneVote, positionSur, positionsFiables, REFUS_APPARIEMENT, ordinal } from "../lib/votes.jsx";
 import {
   chargerDeputes, chargerCatalogueScrutins, chargerVotes, chargerElusRegion,
@@ -411,6 +412,11 @@ function Agglo({ c, src }) {
 function ConseilDepartemental({ paquet, c, src }) {
   const conseil = paquet.conseil_departemental;
   if (!conseil || !conseil.length) {
+    /* 08/10/2026 : Paris, la Corse, la Martinique, la Guyane et trois territoires
+       d'outre-mer n'ont REELLEMENT pas de conseil departemental ; « la source est
+       incomplete » etait faux pour eux (@repere/core, sansConseilDepartemental). */
+    const sans = sansConseilDepartemental(paquet.d);
+    if (sans) return <Vide titre={sans.titre} corps={sans.corps} lien={{ texte: sans.source.producteur, url: sans.source.url }} />;
     return (
       <Vide titre="Le Répertoire national des élus ne porte pas de conseil départemental pour ce territoire."
         corps="C'est la source qui est incomplète, pas le département qui n'en a pas."
@@ -421,8 +427,35 @@ function ConseilDepartemental({ paquet, c, src }) {
      nomme les memes elus. 07/10/2026 : TOUS les elus du canton au meme rang -
      le binome n'est plus « un elu, plus un autre replie ». */
   const { duCanton, cantonNom } = teteDepartement(paquet, c);
-  const { elus } = elusDepartement(paquet, c);
+  const { elus, nbCantons } = elusDepartement(paquet, c);
   const resteDept = conseil.filter(e => elus.indexOf(e) === -1);
+  /* 08/10/2026 (audit) : a Montreuil, partagee entre 2 cantons, l'ecran ne nommait
+     que le canton du premier elu (« le canton de Montreuil-2 ») pour 4 elus de deux
+     cantons. Plusieurs cantons : on le dit, et chaque elu est range sous le sien. */
+  const nomsCantons = [...new Set(elus.map(e => e.canton))].map(k => (paquet.cantons || {})[k] || null);
+  if (nbCantons > 1) {
+    return (
+      <>
+        <p className="tx-note tx-intro">
+          {c.nom} est partagée entre {nbCantons} cantons{nomsCantons.every(Boolean) ? ` (${listeFr(nomsCantons)})` : ""}. Chaque canton élit ses
+          conseillers départementaux ; les vôtres dépendent de votre adresse, que Repère ne demande pas.
+        </p>
+        {[...new Set(elus.map(e => e.canton))].map(k => (
+          <div key={k} className="bloc-canton">
+            <p className="groupe">Canton {(paquet.cantons || {})[k] ? "de " + paquet.cantons[k] : "n° " + k}</p>
+            {elus.filter(e => e.canton === k).map((e, i) => <LigneElu key={i} e={e} />)}
+          </div>
+        ))}
+        {resteDept.length ? (
+          <details className="repli">
+            <summary><span>{resteDept.length} autre{resteDept.length > 1 ? "s" : ""} du conseil départemental</span></summary>
+            <div className="repli-in">{resteDept.map((e, i) => <LigneElu key={i} e={e} />)}</div>
+          </details>
+        ) : null}
+        {src ? <Source producteur={src.producteur} licence={src.licence} maj={src.maj} url={RNE_URL} /> : null}
+      </>
+    );
+  }
   return (
     <>
       {duCanton.length ? (

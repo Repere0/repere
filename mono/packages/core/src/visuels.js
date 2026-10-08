@@ -326,3 +326,38 @@ export function delegationIntercommunalite(delegues) {
   const replies = tous.filter(e => !visibles.includes(e));
   return { visibles, replies, total: tous.length };
 }
+
+/* SANS CONSEIL DEPARTEMENTAL, ET POURQUOI — 08/10/2026 (audit beta). Huit
+ * territoires n'ont aucun conseil departemental dans les donnees publiees : 75,
+ * 2A, 2B, 972, 973, 975, 987, 988. L'ecran disait « C'est la source qui est
+ * incomplete, pas le departement qui n'en a pas » : FAUX pour eux, qui n'ont
+ * reellement pas de conseil departemental. Source : Insee, « Collectivites
+ * territoriales a statut particulier » (lue le 08/10/2026), et la codification
+ * des collectivites d'outre-mer deja citee par l'index. Les phrases ne disent
+ * que ce que ces pages disent. Pour tout autre departement sans conseil, la
+ * phrase d'origine (source incomplete) reste. */
+const INSEE_STATUT = { producteur: "Insee — Collectivités territoriales à statut particulier", url: "https://www.insee.fr/fr/information/7929497" };
+const INSEE_OUTRE_MER = { producteur: "Insee — Codification des collectivités et territoires français d'outre-mer", url: "https://www.insee.fr/fr/information/7929495" };
+const CORSE = {
+  titre: "La Corse n'a plus de conseils départementaux.",
+  corps: "Depuis le 1er janvier 2018, la Collectivité de Corse remplace les conseils départementaux de Corse-du-Sud et de Haute-Corse.",
+  source: INSEE_STATUT,
+};
+const COLLECTIVITES_SANS_DEPARTEMENT = {
+  "75": { titre: "Paris n'a pas de conseil départemental.",
+    corps: "Depuis le 1er janvier 2019, la Ville de Paris se substitue à la commune de Paris et au département de Paris : une seule collectivité exerce les deux rôles. Ses élus sont ceux présentés plus haut, au niveau de la commune.",
+    source: INSEE_STATUT },
+  "2A": CORSE, "2B": CORSE,
+  "972": { titre: "La Martinique n'a plus de conseil départemental.",
+    corps: "Depuis le 1er janvier 2016, la collectivité territoriale unique de Martinique exerce les compétences du département et de la région, en lieu et place de leurs anciens conseils.",
+    source: INSEE_STATUT },
+  "973": { titre: "La Guyane n'a plus de conseil départemental.",
+    corps: "Depuis le 1er janvier 2016, la collectivité territoriale unique de Guyane exerce les compétences du département et de la région, en lieu et place de leurs anciens conseils.",
+    source: INSEE_STATUT },
+  "975": { titre: "Saint-Pierre-et-Miquelon n'a pas de conseil départemental.", corps: "C'est une collectivité d'outre-mer, dotée de ses propres institutions.", source: INSEE_OUTRE_MER },
+  "987": { titre: "La Polynésie française n'a pas de conseil départemental.", corps: "Ce territoire dispose de ses propres institutions.", source: INSEE_OUTRE_MER },
+  "988": { titre: "La Nouvelle-Calédonie n'a pas de conseil départemental.", corps: "Ce territoire dispose de ses propres institutions.", source: INSEE_OUTRE_MER },
+};
+export function sansConseilDepartemental(dep) {
+  return COLLECTIVITES_SANS_DEPARTEMENT[String(dep || "").toUpperCase()] || null;
+}

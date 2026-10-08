@@ -443,3 +443,26 @@ test("core — le departement se lit sur le code INSEE, outre-mer et Corse compr
   assert.ok(n > 30000, "toutes les communes publiees sont lues (" + n + ")");
   assert.deepEqual(faux.slice(0, 10), [], faux.length + " commune(s) hors de leur paquet");
 });
+
+test("core — un territoire sans conseil departemental dit pourquoi, et seulement s'il n'en a vraiment pas", async (t) => {
+  /* 08/10/2026 : « C'est la source qui est incomplete » s'affichait pour Paris,
+     la Corse, la Martinique, la Guyane... qui n'ont reellement pas de conseil. */
+  const { sansConseilDepartemental } = await import("../packages/core/src/visuels.js");
+  const dossier = path.join(RACINE, "data", "departments");
+  if (!fs.existsSync(dossier)) { t.skip("donnees non extraites"); return; }
+  const sans = [], avecExplicationAbusive = [];
+  for (const f of fs.readdirSync(dossier).filter(x => x.endsWith(".json"))) {
+    const dep = f.replace(".json", "");
+    const p = JSON.parse(fs.readFileSync(path.join(dossier, f), "utf8"));
+    const aUnConseil = Array.isArray(p.conseil_departemental) && p.conseil_departemental.length > 0;
+    if (!aUnConseil) sans.push(dep);
+    if (aUnConseil && sansConseilDepartemental(dep)) avecExplicationAbusive.push(dep);
+  }
+  assert.deepEqual(sans.filter(d => !sansConseilDepartemental(d)), [], "un territoire sans conseil n'a pas d'explication");
+  assert.deepEqual(avecExplicationAbusive, [], "un territoire qui A un conseil recoit l'explication « pas de conseil »");
+  for (const d of sans) {
+    const s = sansConseilDepartemental(d);
+    assert.ok(s.source && /^https:\/\/www\.insee\.fr\//.test(s.source.url), d + " : la phrase porte sa source");
+    assert.ok(!/source qui est incomplète/.test(s.titre + s.corps), d);
+  }
+});
