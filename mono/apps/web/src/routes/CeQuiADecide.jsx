@@ -45,6 +45,8 @@ const AN_VOTES_URL = "https://data.assemblee-nationale.fr/travaux-parlementaires
  * reecrire un intitule officiel, et personne ne sait si « Realisation » en
  * portait un ou deux. Le lien donne le texte publie (principe P15). */
 
+/* le niveau d'un fait de la redaction, tel qu'il le porte (champ « e ») */
+const NIVEAU_FAIT = { france: "France entière", region: "Région", dept: "Département", agglo: "Intercommunalité", ville: "Votre commune" };
 const ORDRE = "Du plus récent au plus ancien. Ce n'est pas un ordre d'importance : "
   + "c'est un ordre de date.";
 
@@ -364,7 +366,15 @@ export default function CeQuiADecide({ paquet, index, commune }) {
                    ce fil avec une detection automatique — voir lib/faits.js. */
                 <>
                   {/* 08/10/2026 : un fait date se lit avec sa date (elle etait absente) */}
-                  {f.e.d ? <div className="ligne-h"><span>{dateFr(String(f.e.d).slice(0, 10))}</span></div> : null}
+                  {/* 08/10/2026 (audit) : les faits de la redaction sont, a ce jour, tous
+                      nationaux (« e »: "france") ; affiches sous « Ce qui a été décidé pour
+                      Montreuil », rien ne le disait. Le niveau est lu dans le fait. */}
+                  {f.e.d || NIVEAU_FAIT[f.e.e] ? (
+                    <div className="ligne-h">
+                      <span>{f.e.d ? dateFr(String(f.e.d).slice(0, 10)) : ""}</span>
+                      {NIVEAU_FAIT[f.e.e] ? <span className="tag niveau-fait">{NIVEAU_FAIT[f.e.e]}</span> : null}
+                    </div>
+                  ) : null}
                   <b className="fait-titre">{f.e.t}</b>
                   <Source producteur={f.e.srcn || "voir la source"} url={f.e.src}
                     mention={f.e.conf === "verifie" ? "relu et validé par la rédaction" : "relevé, en attente de confirmation par la rédaction"} />
