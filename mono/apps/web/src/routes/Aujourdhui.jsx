@@ -1,4 +1,5 @@
 import React from "react";
+import { horsParis, PHRASE_HEURE_PARIS } from "../lib/fuseau.js";
 import "./aujourdhui-semaine.css";
 import { Vide, Source, Chargement, dateFr, jourFr } from "@repere/ui";
 import { useAujourdhui } from "../lib/useAujourdhui.js";
@@ -232,6 +233,9 @@ export default function Aujourdhui({ paquet, index, commune, aller, derniereVisi
             <Source key={institution} producteur={s.producteur_affiche || s.producteur || institution} licence={s.licence}
               mention={s.releve_le ? "relevé le " + dateFr(s.releve_le) : undefined} url={s.url} />
           ))}
+          {/* HEURE DE PARIS — 08/10/2026. L'agenda est publie a l'heure de Paris ; sur un
+              appareil regle ailleurs (outre-mer), on le dit, comme l'application. */}
+          {horsParis() ? <p className="ligne-note heure-paris">{PHRASE_HEURE_PARIS}</p> : null}
         </div>
       ) : null}
 
