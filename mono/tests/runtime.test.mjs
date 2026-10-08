@@ -1330,6 +1330,21 @@ console.log("\n--- calendrier : chaque institution independante ------------");
       /calendrier du Sénat ne contient aucune séance à venir au relevé du/.test(t4) && !/Séance de banc Sénat passée/.test(t4)
       && !/calendrier du Sénat n'est pas disponible/.test(t4),
       t4.slice(0, 400).replace(/\n+/g, " / "));
+    /* L'HEURE DE PARIS (07/10/2026) : l'agenda est publie a l'heure de Paris, et
+       « a venir » se jugeait a l'heure UTC. Une seance commencee il y a une heure
+       restait annoncee (une a deux heures de retard selon la saison). */
+    const { minuteParis } = await import("../packages/core/src/aujourdhui.js");
+    const aParis = h => minuteParis(new Date(Date.now() + h * 36e5));
+    fs.writeFileSync(fAN, JSON.stringify({ v: 1, source: { producteur: "Assemblée nationale", licence: "Licence ouverte", url: "https://example.invalid/", releve_le: "2026-10-07" },
+      evenements: [
+        { titre: "Séance de banc commencée il y a une heure", debut: aParis(-1), fin: null, categorie: "Séance publique", lieu: null, description: null },
+        { titre: "Séance de banc dans trois heures", debut: aParis(3), fin: null, categorie: "Séance publique", lieu: null, description: null },
+      ] }));
+    fs.rmSync(fSen, { force: true });
+    const t5 = await ecran();
+    verif("calendrier — « à venir » se juge à l'heure de Paris : la séance commencée il y a une heure n'est plus annoncée",
+      /Séance de banc dans trois heures/.test(t5) && !/Séance de banc commencée il y a une heure/.test(t5),
+      t5.slice(0, 400).replace(/\n+/g, " / "));
   } finally {
     restaurer(fAN, avant.an); restaurer(fSen, avant.sen);
   }
@@ -1584,7 +1599,6 @@ console.log("\n--- hierarchie mobile : le contenu avant le decor ---------------
       /* dates des rendez-vous du calendrier reellement visibles (data-debut),
          hors teaser des scrutins qui partage la meme classe */
       debutsVisibles: [...document.querySelectorAll(".ligne.fait[data-debut]")].filter(e => e.checkVisibility()).map(e => e.dataset.debut),
-      limite: new Date(Date.now() + 14 * 864e5).toISOString().slice(0, 16),
     };
   });
   verif("ce qui se passe — au-dela de deux semaines, les rendez-vous sont replies, pas retires",
@@ -1600,6 +1614,8 @@ console.log("\n--- hierarchie mobile : le contenu avant le decor ---------------
      garantie reelle, independante du volume : rien au-dela de deux semaines
      n'est deplie — sauf le repli de secours (au plus 5) quand les deux semaines
      sont vides. Cassee pour de vrai : sans le repli, elle tombe. */
+  /* la limite a l'heure de Paris, comme l'ecran et l'agenda (minuteParis, 07/10/2026) */
+  cal.limite = (await import("../packages/core/src/aujourdhui.js")).minuteParis(new Date(Date.now() + 14 * 864e5));
   const auDela = cal.debutsVisibles.filter(x => x >= cal.limite);
   const secours = !cal.debutsVisibles.some(x => x < cal.limite);
   verif("ce qui se passe — aucun rendez-vous au-dela de deux semaines n'est deplie (sauf 5 au plus quand les deux semaines sont vides)",

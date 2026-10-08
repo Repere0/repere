@@ -25,6 +25,19 @@ import { rapports, dernierExercice } from "./comptes.js";
 export function jourParis(d) {
   return new Intl.DateTimeFormat("fr-CA", { timeZone: "Europe/Paris", year: "numeric", month: "2-digit", day: "2-digit" }).format(d);
 }
+/* L'INSTANT PRESENT A L'HEURE DE PARIS, AU FORMAT DES AGENDAS — 07/10/2026.
+   Les seances sont publiees a l'heure de Paris (« 2026-10-07T14:00 ») ; elles
+   etaient comparees a `toISOString()`, qui est l'heure UTC. A 15 h 30 a Paris
+   (13 h 30 UTC), une seance de 14 h passait encore pour « a venir » : deux
+   heures de retard l'ete, une l'hiver, sur Aujourd'hui et dans le calendrier.
+   Ici, l'heure de Paris, changement d'heure compris, sans dependre du fuseau
+   de l'appareil. */
+export function minuteParis(d) {
+  const p = {};
+  for (const x of new Intl.DateTimeFormat("fr-FR", { timeZone: "Europe/Paris", year: "numeric", month: "2-digit", day: "2-digit",
+    hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).formatToParts(d)) p[x.type] = x.value;
+  return `${p.year}-${p.month}-${p.day}T${p.hour}:${p.minute}`;
+}
 export function semaineParlement({ cal, agendaAN, maintenant }) {
   const now = maintenant instanceof Date ? maintenant : new Date();
   const jours = [];
@@ -103,8 +116,9 @@ export function deriverAujourdhui({ fiche, commune, dep, index, projets, cat, po
    * posees ici, jamais dans le fichier de l'autre institution.
    * `prochain` et `srcCal` restent exposes pour les deux prototypes
    * (AujourdhuiJournal, AujourdhuiTerritoire), qui n'en lisent qu'un. */
-  const maintenant = now.toISOString().slice(0, 16);
-  const dansSeptJours = new Date(now.getTime() + 7 * 864e5).toISOString().slice(0, 16);
+  /* heure de Paris, comme les agendas (minuteParis, 07/10/2026) */
+  const maintenant = minuteParis(now);
+  const dansSeptJours = minuteParis(new Date(now.getTime() + 7 * 864e5));
   const aVenir = [];
   for (const [inst, donnees] of [["Sénat", cal], ["Assemblée nationale", agendaAN]]) {
     if (!donnees || !Array.isArray(donnees.evenements)) continue;
