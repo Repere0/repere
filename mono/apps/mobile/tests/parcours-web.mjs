@@ -236,6 +236,9 @@ for (const largeur of [360, 390, 430]) {
     if (action !== "Sources") verifier(/D'où vient cette information/.test(m.etiquettes) || /Le calendrier n'est arrivé/.test(m.texte), `${largeur}px · ${action} : la source est à portée de doigt`);
     if (/argent/.test(action)) {
       verifier(/Calculé par Repère · source/.test(m.texte), `${largeur}px · ${action} : les parts calculées se disent calculées`);
+      /* 08/10/2026 (audit) : chaque carte de chiffres dit l'annee de ses comptes */
+      const titres = (m.brut.match(/(Où vont 100 € dépensés|D'où vient l'argent|Sa dette|Chaque jour, en moyenne)[^\n]*/g) || []);
+      verifier(titres.length > 0 && titres.every(t => /\d{4}/.test(t)), `${largeur}px · ${action} : chaque carte de chiffres porte l'année de ses comptes ${JSON.stringify(titres)}`);
       await page.getByRole("button", { name: "Détails du calcul" }).first().click();
       await page.getByText(/ce n'est pas un chiffre publié/).first().waitFor({ timeout: 5000 });
       verifier(true, `${largeur}px · ${action} : le détail du calcul s'ouvre`);
@@ -247,6 +250,21 @@ for (const largeur of [360, 390, 430]) {
   await page.getByRole("button", { name: "Revenir à l'accueil" }).last().click();
   await page.getByText("Où habitez-vous ?").waitFor({ timeout: 5000 });
   verifier(true, `${largeur}px : retour à l'accueil`);
+  await page.close();
+}
+/* UNE DETTE NULLE PUBLIEE SE DIT — 08/10/2026 (audit). Bassevelle (77024) publie
+   un encours de dette nul : la carte disparaissait sans un mot. */
+{
+  const page = await navigateur.newPage({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, reducedMotion: "reduce" });
+  await page.goto(BASE + "/", { waitUntil: "networkidle" });
+  await page.getByLabel(/Où habitez-vous/).fill("bassevelle");
+  await page.getByRole("button", { name: /^Bassevelle,/ }).first().click();
+  await page.getByText("Aller plus loin").first().waitFor({ timeout: 15000 });
+  await page.getByRole("button", { name: "Où va cet argent ?", exact: true }).first().click();
+  await page.getByText(/Où va l'argent de Bassevelle/).first().waitFor({ timeout: 10000 });
+  await page.waitForTimeout(800);
+  const t = await page.evaluate(() => document.body.innerText);
+  verifier(/publie un encours de dette nul pour Bassevelle en \d{4} : la commune ne doit rien/.test(t), "argent : une dette nulle publiée se dit, la carte ne disparaît pas");
   await page.close();
 }
 /* LES PANNES PARTIELLES DISENT « PAS ARRIVE », JAMAIS « ABSENT » — audit de
