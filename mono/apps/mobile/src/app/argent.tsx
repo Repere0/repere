@@ -83,8 +83,10 @@ export default function Argent() {
 
               {/* OU VA CHAQUE 100 € */}
               {ch.partSalaires !== null || ch.partInvestissement !== null ? (
-                <Carte echelon="ville" titre="Où va chaque 100 € dépensés">
-                  <Resume phrase={ch.partSalaires !== null ? `Sur 100 € dépensés, ${ch.partSalaires} € vont aux salaires des agents.` : "Deux postes que la source permet de suivre."}
+                <Carte echelon="ville" titre={`Où vont 100 € dépensés, comptes ${ex.an}`}>
+                  {/* 08/10/2026 (audit) : « Deux postes… » s'affichait avec une seule barre
+                     (part des salaires absente) ; l'annee des comptes manquait au titre. */}
+                  <Resume phrase={ch.partSalaires !== null ? `Sur 100 € dépensés, ${ch.partSalaires} € vont aux salaires des agents.` : `Sur 100 € dépensés, ${ch.partInvestissement} € vont aux investissements.`}
                     enClair="Le reste des dépenses n'est pas détaillé par la source.">
                     {ch.partSalaires !== null ? <BarrePart part={ch.partSalaires} libelle="Salaires des agents" valeur={rap(/salaires/)?.v || ""} /> : null}
                     {ch.partInvestissement !== null ? <BarrePart part={ch.partInvestissement} libelle="Investissements : travaux, équipements…" valeur={rap(/investir/)?.v || ""} delai={120} /> : null}
@@ -97,7 +99,7 @@ export default function Argent() {
 
               {/* D'OU VIENT L'ARGENT */}
               {ch.partImpots !== null ? (
-                <Carte echelon="ville" titre="D'où vient l'argent">
+                <Carte echelon="ville" titre={`D'où vient l'argent, comptes ${ex.an}`}>
                   <Resume phrase={partReperee(ch.partImpots)
                       ? `${String(partReperee(ch.partImpots)).replace(/^./, (c: string) => c.toUpperCase())} de ce que ${nom} encaisse vient des impôts et taxes.`
                       : `Sur 100 € encaissés, ${ch.partImpots} € viennent des impôts et taxes.`}
@@ -111,7 +113,7 @@ export default function Argent() {
 
               {/* LA DETTE */}
               {ch.detteMois !== null && dette ? (
-                <Carte echelon="ville" titre="Sa dette">
+                <Carte echelon="ville" titre={`Sa dette, fin ${ex.an}`}>
                   <Resume phrase={`${nom} doit encore rembourser ${dette.texte}.`}
                     /* « 7,6 mois de recettes » en corps d'affiche tenait sur deux lignes :
                        le nombre en grand, l'unite dans la legende, la phrase partagee
@@ -125,11 +127,18 @@ export default function Argent() {
                   <PasCeQueCaDit r={rap(/mois de recettes/)} sujet="dette" />
                   <PastilleSource source={srcComptes(d)} />
                 </Carte>
+              ) : ch.dette === 0 ? (
+                /* 08/10/2026 (audit) : une dette nulle PUBLIEE faisait disparaitre la
+                   carte sans un mot (71 communes) ; le site, lui, le dit. */
+                <Carte echelon="ville" titre={`Sa dette, fin ${ex.an}`}>
+                  <Resume phrase={`L'Observatoire publie un encours de dette nul pour ${nom} en ${ex.an} : la commune ne doit rien.`} />
+                  <PastilleSource source={srcComptesPublies(d)} />
+                </Carte>
               ) : null}
 
               {/* LE JOUR LE JOUR, POUR QUI VEUT LE VOIR COMPTER */}
               {ch.parJour !== null ? (
-                <Carte echelon="ville" titre="Chaque jour, en moyenne">
+                <Carte echelon="ville" titre={`Chaque jour, en moyenne, en ${ex.an}`}>
                   <Compteur valeur={ch.parJour} suffixe="€ par jour" />
                   <PasCeQueCaDit r={rap(/par jour/)} sujet="dépense par jour" />
                   <PastilleSource source={srcComptes(d)} />
