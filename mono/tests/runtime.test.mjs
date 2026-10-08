@@ -1434,6 +1434,43 @@ console.log("\n--- comptes : d'un exercice a l'autre -------------------------")
   }
 }
 
+console.log("\n--- heure de Paris : dite hors de Paris, jamais a Paris ---------");
+/* 08/10/2026. L'agenda est publie a l'heure de Paris. Un navigateur regle en
+   Guadeloupe doit lire que jours et heures sont ceux de Paris, sur Aujourd'hui et
+   dans le calendrier ; a Paris, la precision n'encombre pas l'ecran. */
+{
+  const lire = async fuseau => {
+    const ctx = await nav.newContext({ viewport: { width: 390, height: 844 }, timezoneId: fuseau });
+    const p = await ctx.newPage();
+    await p.addInitScript(([k, v]) => localStorage.setItem(k, v), ["repere.departement", JSON.stringify({ d: "93", v: null })]);
+    await p.goto(base, { waitUntil: "networkidle" });
+    await p.waitForTimeout(500);
+    await p.getByLabel(/Votre commune/i).fill("Bagnolet");
+    await p.waitForTimeout(300);
+    await p.getByRole("button", { name: "Bagnolet", exact: true }).first().click();
+    await p.waitForTimeout(1200);
+    const auj = await p.evaluate(() => document.body.innerText);
+    const aVenir = await p.locator(".auj-a-venir").count();
+    await p.locator("nav.auj-suite").getByRole("button", { name: "Le calendrier" }).click();
+    await p.waitForTimeout(1500);
+    const cal = await p.evaluate(() => document.body.innerText);
+    const calendrier = await p.locator(".ligne.fait[data-debut]").count();
+    await ctx.close();
+    return { auj, cal, aVenir, calendrier };
+  };
+  const phrase = /Jours et heures à l'heure de Paris, comme l'agenda publié/;
+  const ailleurs = await lire("America/Guadeloupe");
+  const paris = await lire("Europe/Paris");
+  verif("heure de Paris — en Guadeloupe, Aujourd'hui dit que l'agenda est a l'heure de Paris",
+    ailleurs.aVenir === 0 || phrase.test(ailleurs.auj), "bloc a venir : " + ailleurs.aVenir);
+  verif("heure de Paris — en Guadeloupe, le calendrier le dit aussi",
+    ailleurs.calendrier === 0 || phrase.test(ailleurs.cal), "lignes : " + ailleurs.calendrier);
+  verif("heure de Paris — au moins un des deux ecrans avait un agenda a montrer (sinon ce controle ne prouve rien)",
+    ailleurs.aVenir > 0 || ailleurs.calendrier > 0, JSON.stringify({ aVenir: ailleurs.aVenir, calendrier: ailleurs.calendrier }));
+  verif("heure de Paris — a Paris, la precision n'apparait pas",
+    !phrase.test(paris.auj) && !phrase.test(paris.cal), "");
+}
+
 console.log("\n--- aujourd'hui : qui, et ce qui est vraiment local -----------");
 /* 28/09/2026 : pour 1 257 communes sur 1 262, la reponse a « Que s'est-il decide
    pres de chez vous ? » est un vote national du depute, sans que l'ecran dise

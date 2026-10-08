@@ -22,6 +22,8 @@ import {
  *
  * LA LICENCE N'EST PAS ACQUISE POUR LE SENAT, ET L'ECRAN LE DIT — invariant
  * 4 tenu par l'honnetete plutot que par un champ rempli au hasard. */
+import { horsParis, PHRASE_HEURE_PARIS } from "../lib/fuseau.js";
+
 function licenceSource(s) {
   if (s?.licence) return s.licence;
   const producteur = s?.producteur_affiche || s?.producteur || "";
@@ -290,6 +292,9 @@ export default function Calendrier() {
             mention={s.releve_le ? "relevé le " + dateFr(s.releve_le) : undefined}
             url={s.url} />
         ))}
+        {/* HEURE DE PARIS — 08/10/2026. L'agenda est publie a l'heure de Paris ; sur un
+            appareil regle ailleurs (outre-mer), on le dit, comme l'application. */}
+        {horsParis() ? <p className="ligne-note heure-paris">{PHRASE_HEURE_PARIS}</p> : null}
       </Carte>
       <ScrutinsRecents />
     </div>
