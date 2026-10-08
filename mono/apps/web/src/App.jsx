@@ -172,8 +172,11 @@ function Entree({ index, communesBeta, onBesoinCommunes, departement, onOuvrir, 
       ) : null}
 
       {rien ? (
-        <Vide titre={`Rien ne correspond à « ${filtre.trim()} ».`}
-          corps="Tapez le début du nom de votre commune. Hors d'Île-de-France, cherchez d'abord votre département — son nom ou son numéro." />
+        /* 08/10/2026 : « Rien ne correspond à « Lyon » » etait faux — Lyon existe, et le
+           site la couvre par son departement. La recherche directe ne lit que les
+           communes d'Ile-de-France : la phrase dit exactement cela. */
+        <Vide titre={`Aucune commune d'Île-de-France ne correspond à « ${filtre.trim()} ».`}
+          corps="Si votre commune est ailleurs en France, cherchez d'abord son département, par son nom ou son numéro : Repère publie les données de tous les départements. Sinon, vérifiez l'orthographe du début du nom." />
       ) : null}
 
       {trouveesC.length ? (

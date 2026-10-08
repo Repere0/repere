@@ -268,6 +268,18 @@ for (const largeur of [360, 390, 430]) {
   verifier(/publie un encours de dette nul pour Bassevelle en \d{4} : la commune ne doit rien/.test(t), "argent : une dette nulle publiée se dit, la carte ne disparaît pas");
   await page.close();
 }
+/* HORS D'ILE-DE-FRANCE — 08/10/2026 : une commune d'ailleurs n'est jamais dite
+   introuvable ; la phrase dit que la beta ne la couvre pas encore. */
+{
+  const page = await navigateur.newPage({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
+  await page.goto(BASE + "/", { waitUntil: "networkidle" });
+  await page.getByLabel(/Où habitez-vous/).fill("Lyon");
+  await page.waitForTimeout(800);
+  const t = await page.evaluate(() => document.body.innerText);
+  verifier(/Aucune commune d'Île-de-France ne correspond à «\s?Lyon\s?»/.test(t) && /pas encore disponibles ici/.test(t) && !/Rien ne correspond/.test(t),
+    "recherche : hors d'Île-de-France, la couverture de la bêta est dite, jamais une absence");
+  await page.close();
+}
 /* LES PANNES PARTIELLES DISENT « PAS ARRIVE », JAMAIS « ABSENT » — audit de
    #45, 29/09/2026. Avant correction, un fichier de projets ou de votes coupe
    faisait afficher « Aucun projet ... n'est publie » : une phrase fausse. */
