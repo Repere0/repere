@@ -113,10 +113,27 @@ export function phrasePrecedent(p) {
   return `le releve precedent est conserve tel quel, date du ${p.releve_le || "(date inconnue)"} (${p.n} evenement(s)) — il n'est pas presente comme celui du jour`;
 }
 
+/* LA VRAIE CAUSE D'UN « fetch failed » — 08/10/2026. Du 06 au 08/10/2026, les
+   collectes ont toutes ecrit « reseau : fetch failed » trois fois : c'est le
+   message generique de fetch (undici), la cause (DNS, connexion refusee, delai,
+   certificat) est dans `e.cause`, et elle n'etait jamais lue. Sans elle, le
+   calendrier du Senat est absent de la production sans qu'on sache pourquoi.
+   On nomme aussi Repere aupres du serveur (User-Agent) et on borne l'attente. */
+export function causeReseau(e) {
+  if (!e) return "inconnue";
+  const base = e.name === "TimeoutError" ? "delai depasse (" + DELAI_MS / 1000 + " s)" : (e.message || String(e));
+  const c = e.cause;
+  if (!c) return base;
+  const detail = [c.code, c.message].filter(Boolean).filter((x, i, t) => t.indexOf(x) === i).join(" : ");
+  return detail ? base + " — " + detail : base;
+}
+const UA = "Repere/1.0 (collecte quotidienne de l'agenda public)";
+const DELAI_MS = 30000;
+
 async function uneTentative(fetchImpl, url) {
   let rep;
-  try { rep = await fetchImpl(url); }
-  catch (e) { return { etat: "echec", cause: "reseau : " + (e && e.message ? e.message : String(e)), passagere: true }; }
+  try { rep = await fetchImpl(url, { headers: { "User-Agent": UA }, signal: AbortSignal.timeout(DELAI_MS) }); }
+  catch (e) { return { etat: "echec", cause: "reseau : " + causeReseau(e), passagere: true }; }
   if (rep.status === 404 || rep.status === 410) return { etat: "introuvable", cause: "HTTP " + rep.status, passagere: false };
   if (!rep.ok) return { etat: "echec", cause: "HTTP " + rep.status, passagere: rep.status >= 500 || rep.status === 429 };
   const texte = await rep.text();
