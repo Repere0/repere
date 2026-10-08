@@ -22,6 +22,7 @@
  * comme absente, jamais affichee. */
 import { Platform } from "react-native";
 import { File, Paths } from "expo-file-system";
+import { departementDe } from "@repere/core";
 
 export const CLE = "repere.departement";
 export type Retenue = { d: string; c: string };
@@ -32,7 +33,8 @@ export function valide(v: unknown): Retenue | null {
   if (!v || typeof v !== "object") return null;
   const { d, c } = v as { d?: unknown; c?: unknown };
   if (typeof d !== "string" || typeof c !== "string" || !DEP.test(d) || !COMMUNE.test(c)) return null;
-  if (!c.startsWith(d.slice(0, 2))) return null;
+  /* la commune doit appartenir au departement retenu : « 97101 » va avec 971, pas 97 */
+  if (departementDe(c) !== d) return null;
   return { d, c };
 }
 
