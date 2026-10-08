@@ -23,7 +23,10 @@ export const COMPETENCES = {
   agglo: "les transports, les déchets, l'eau, et souvent les piscines et les médiathèques",
   dept: "les collèges, les routes départementales, les aides sociales et la protection de l'enfance",
   region: "les lycées, les trains du quotidien, la formation professionnelle et le développement économique",
-  france: "les lois qui s'appliquent partout, et le budget de l'État",
+  /* 08/10/2026 (audit) : « Ce que décide votre député : les lois… » presentait une
+     personne comme celle qui decide. Les lois et le budget sont votes par le
+     Parlement : l'Assemblee nationale, avec le Senat. */
+  france: "les lois, votées avec le Sénat, et le budget de l'État",
 };
 
 /* L'INTERCOMMUNALITE N'EST PAS LA MEME PARTOUT — 07/10/2026.
