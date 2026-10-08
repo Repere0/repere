@@ -90,7 +90,7 @@ mesure le cache et pas le déploiement. Cette erreur a déjà été commise deux
 
 ---
 
-## 3. Les huit invariants
+## 3. Les neuf invariants
 
 Ils ne se négocient pas. Le banc en garde la plupart.
 
@@ -118,6 +118,10 @@ Ils ne se négocient pas. Le banc en garde la plupart.
 7. **Cinq couleurs d'échelon gelées.** Aucune autre couleur ne dépasse une amplitude
    de 24 sur les canaux RGB.
 8. **Jamais le patrimoine d'un élu, jamais de donnée de présence ou d'absence.**
+9. **Fraîcheur** (décision du porteur, 30/09/2026). Une donnée gardée sur l'appareil
+   peut être affichée hors ligne, mais jamais présentée comme actuelle si elle ne l'est
+   pas : actuelle, publication précédente, impossible à vérifier. *(Ajouté ici le
+   08/10/2026 : la section n'en comptait que huit ; `CLAUDE.md` fait foi.)*
 
 **Conséquence architecturale majeure de l'invariant 2 :** un contrôle du banc
 interdit qu'une adresse réseau demandée par l'application porte un code de commune —
