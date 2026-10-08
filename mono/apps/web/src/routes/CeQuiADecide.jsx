@@ -5,7 +5,7 @@ import {
 } from "@repere/data-utils";
 import { LigneVote } from "../lib/votes.jsx";
 import { calculerFaits, noteRattachement } from "../lib/faits.js";
-import { montantEngage } from "@repere/core";
+import { montantEngage, de } from "@repere/core";
 
 const DGCL_URL = "https://www.data.gouv.fr/datasets/projets-finances-par-les-dotations-"
   + "de-soutien-a-linvestissement-des-collectivites-territoriales";
@@ -339,7 +339,7 @@ export default function CeQuiADecide({ paquet, index, commune }) {
               {nouvelle && f.type !== "editorial" ? (
                 <p className="groupe">
                   {f.type === "vote"
-                    ? `À l'Assemblée nationale, les scrutins solennels et la position de ${f.qui}`
+                    ? `À l'Assemblée nationale, les scrutins solennels et la position ${de(f.qui)}`
                     : `Dans votre commune, l'État a financé`}
                 </p>
               ) : null}

@@ -255,10 +255,24 @@ test("core — aucun delegue d'intercommunalite n'est mis en avant par le seul o
   assert.ok(n > 10000, n + " communes avec delegues");
 });
 
+test("phrases — accords et elision (audit du 08/10/2026)", async () => {
+  const { phraseAdjoints, de, phraseCirconscription } = await import("../packages/core/src/phrases.js");
+  const txt = segs => segs.map(x => x.t).join("");
+  assert.match(txt(phraseAdjoints(1, "A. B")), /^1 adjoint siège avec A\. B/, "un adjoint siege, au singulier");
+  assert.match(txt(phraseAdjoints(3, "A. B")), /^3 adjoints siègent avec A\. B/);
+  assert.match(txt(phraseAdjoints(3, "A. B")), /aux côtés des autres conseillers municipaux/, "le conseil ne se reduit pas au maire et aux adjoints");
+  assert.equal(de("Alexis Corbière"), "d'Alexis Corbière");
+  assert.equal(de("Élodie X"), "d'Élodie X");
+  assert.equal(de("Sylvain Maillard"), "de Sylvain Maillard");
+  assert.equal(de("Hugo"), "de Hugo", "le h n'est pas elide");
+  assert.match(phraseCirconscription({ nbCircos: 18, nomCommune: "Paris" }, 1), /dépend de votre adresse.*Par exemple, vote du député élu dans la 1re/,
+    "plusieurs circonscriptions : le vote montre est un exemple, et il est dit comme tel");
+});
+
 test("phrases — les adjoints ne votent pas seuls le budget (CGCT L2312-1)", async () => {
   const { phraseAdjoints, texteDe } = await import("../packages/core/src/index.js");
   const t = texteDe(phraseAdjoints(3, "Jeanne DUPONT"));
-  assert.match(t, /conseil municipal, qui vote le budget/);
+  assert.match(t, /c'est ce conseil qui vote le budget/);
   assert.doesNotMatch(t, /Ce sont eux qui votent le budget/);
 });
 
