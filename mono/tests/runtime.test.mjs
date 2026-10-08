@@ -968,6 +968,50 @@ verif("invariant 2 — l'entree par commune ne fait fuiter aucun code de commune
   vues.join(" "));
 await ctxDirect.close();
 
+console.log("\n--- ce qui a ete decide : ce que la source couvre, sans plus ------");
+/* 08/10/2026 (audit de verite). Trois phrases affirmaient plus que la donnee :
+   « l'Etat n'a finance aucun projet » (la source ne couvre que quelques dotations,
+   quelques annees), « N textes votes par votre depute » (le releve ne porte pas
+   toujours de position), et un fait de la redaction s'affichait sans sa date. */
+{
+  const ouvrir = async nom => {
+    const ctx = await nav.newContext({ viewport: { width: 390, height: 844 } });
+    const p = await ctx.newPage();
+    await p.goto(base, { waitUntil: "networkidle" });
+    await p.getByLabel(/Où habitez-vous/).fill(nom);
+    await p.waitForTimeout(300);
+    await p.getByRole("button", { name: new RegExp("^" + nom + "\\b") }).first().click();
+    await p.waitForTimeout(1200);
+    await p.getByRole("button", { name: "Ce qui a été décidé" }).first().click();
+    await p.waitForTimeout(1500);
+    const t = await p.evaluate(() => (document.querySelector("main") || document.body).innerText);
+    await ctx.close();
+    return t;
+  };
+  const projets77 = JSON.parse(fs.readFileSync(path.join(DIST, "data/projets/77.json"), "utf8"));
+  const annees = (projets77.exercices || []).map(String).sort();
+  const amp = await ouvrir("Amponville");
+  verif("decide — sans projet publie, l'ecran dit les annees et les dotations couvertes, jamais « l'Etat n'a finance aucun projet »",
+    /Aucun projet aidé par l'État n'est publié pour Amponville/.test(amp) && annees.every(a => amp.includes(a))
+      && /ce n'est donc pas la preuve/.test(amp) && !/n'a financé aucun projet/.test(amp),
+    amp.slice(0, 600).replace(/\n+/g, " / "));
+  const bondy = await ouvrir("Bondy");
+  verif("decide — les scrutins se comptent comme scrutins releves, jamais comme « textes votes par votre depute »",
+    /scrutins? solennels? de l'Assemblée relevés? pour (votre député|vos \d+ députés)/.test(bondy) && !/votés? à l'Assemblée par votre député/.test(bondy)
+      && !/À l'Assemblée nationale, [^\n]+ a voté\n/.test(bondy),
+    bondy.slice(0, 400).replace(/\n+/g, " / "));
+  const evts = JSON.parse(fs.readFileSync(path.join(DIST, "data/evenements.json"), "utf8"));
+  const unFait = (evts.r || evts).find(e => e.d && e.t);
+  if (unFait && bondy.includes(unFait.t.slice(0, 40))) {
+    const { dateFr } = await import("../packages/core/src/format.js");
+    const i = bondy.indexOf(unFait.t.slice(0, 40));
+    verif("decide — un fait de la redaction se lit avec sa date",
+      bondy.slice(Math.max(0, i - 80), i).includes(dateFr(String(unFait.d).slice(0, 10))), bondy.slice(Math.max(0, i - 80), i + 60).replace(/\n+/g, " / "));
+  } else {
+    verif("decide — un fait de la redaction se lit avec sa date (fait introuvable a Bondy : controle non applicable)", true, "");
+  }
+}
+
 console.log("\n--- aujourd'hui : fraicheur de la semaine ----------------------");
 /* PROUVE LE BLOC "Quoi d'autre cette semaine ?" (Aujourdhui.jsx) EN LE
    FORCANT A APPARAITRE. Avec les donnees reelles/fixtures d'aujourd'hui,
