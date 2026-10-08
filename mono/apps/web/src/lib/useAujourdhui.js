@@ -54,5 +54,7 @@ export function useAujourdhui(paquet, index, commune) {
   /* La version web du rapport (mot du dictionnaire en bouton) garde l'exercice
      attache par @repere/core : l'annee n'est jamais recalculee ici. */
   const rapportDette = d.rapportDette && rr[0] ? { ...rr[0], an: d.rapportDette.an } : undefined;
-  return { ...d, etat, rapportsComptes: rr, rapportDette };
+  /* projetsLus : le fichier des projets est-il arrive ? Sans lui, une absence de
+     projet ne peut pas etre affirmee (08/10/2026). */
+  return { ...d, etat, rapportsComptes: rr, rapportDette, projetsLus: !!projets };
 }
