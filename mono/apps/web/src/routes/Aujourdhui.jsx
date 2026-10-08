@@ -200,10 +200,10 @@ export default function Aujourdhui({ paquet, index, commune, aller, derniereVisi
             <ol className="auj-semaine" aria-label={"Séances publiques des sept prochains jours, " + sp.institutions.map(x => x.institution).join(" et ")}>
               {sp.jours.map((j, i) => (
                 <li key={j.date} className={i === 0 ? "auj-jour auj-jour-aujourdhui" : "auj-jour"}
-                  aria-label={jourFr(j.date) + " : " + (j.seances ? j.seances + " séance" + (j.seances > 1 ? "s" : "") + " publique" + (j.seances > 1 ? "s" : "") : "aucune séance publique")}>
+                  aria-label={jourFr(j.date) + " : " + (j.seances ? j.seances + " séance" + (j.seances > 1 ? "s" : "") + " publique" + (j.seances > 1 ? "s" : "") : j.annonce ? "aucune séance publique annoncée" : "agenda pas encore publié")}>
                   <span className="auj-jour-nom" aria-hidden="true">{i === 0 ? "Auj." : new Date(j.date + "T12:00:00").toLocaleDateString("fr-FR", { weekday: "short" }).replace(".", "")}</span>
                   <span className="auj-jour-num" aria-hidden="true">{Number(j.date.slice(8, 10))}</span>
-                  <span className="auj-jour-points" aria-hidden="true">{j.seances ? Array.from({ length: Math.min(j.seances, 4) }, (_, k) => <i key={k} />) : "–"}</span>
+                  <span className="auj-jour-points" aria-hidden="true">{j.seances ? Array.from({ length: Math.min(j.seances, 4) }, (_, k) => <i key={k} />) : j.annonce ? "–" : "?"}</span>
                 </li>
               ))}
             </ol>

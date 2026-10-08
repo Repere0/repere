@@ -46,6 +46,23 @@ const ELUS_CANTON = await (async () => {
   try { const r = await fetch(BASE + "/data/departments/77.json"); const j = await r.json(); const f = j.communes["77284"]; return (j.conseil_departemental || []).filter(e => (f.canton || []).includes(e.canton)).map(e => e.nom); }
   catch { return []; }
 })();
+/* La semaine au Parlement attendue, calculee par le socle sur les fichiers servis
+   (07/10/2026). Un fichier absent n'est pas compte, comme dans l'application. */
+const { semaineParlement, jourParis } = await import("../../../packages/core/src/aujourdhui.js");
+const servi = async f => { try { const r = await fetch(BASE + "/data/" + f); return r.ok ? await r.json() : null; } catch { return null; } };
+const SEMAINE = semaineParlement({ agendaAN: await servi("agenda-an.json"), cal: await servi("calendrier-senat.json"), maintenant: new Date() });
+const lireSemaine = page => page.evaluate(() => {
+  const c = document.querySelector('[data-testid="semaine-parlement"]');
+  if (!c || !c.offsetParent) return null;
+  const reps = [...document.querySelectorAll('[data-testid="reponse"]')].filter(e => e.offsetParent);
+  const ordre = { haut: Math.round(c.getBoundingClientRect().top), basReponses: reps.map(e => Math.round(e.getBoundingClientRect().bottom)) };
+  return {
+    sous: reps.length > 0 && ordre.basReponses.every(b => b <= ordre.haut), ordre,
+    jours: [...c.querySelectorAll('[data-testid="semaine-jour"]')].map(e => e.getAttribute("aria-label")),
+    votes: c.querySelectorAll('[data-testid="semaine-vote"]').length,
+    texte: c.innerText,
+  };
+});
 let echecs = 0;
 const verifier = (ok, texte) => { console.log((ok ? "ok   " : "ECHEC") + " " + texte); if (!ok) echecs++; };
 
@@ -155,6 +172,23 @@ for (const largeur of [360, 390, 430]) {
      calcul A L'OEIL (invariant 4), pas seulement dans la feuille. */
   verifier(/Calcul Repère/.test(mesure.texte), `${largeur}px : un chiffre calculé se dit calculé sans ouvrir la feuille`);
   verifier(/Le calendrier/.test(mesure.brut), `${largeur}px : la carte « ce qui arrive » est présente (ou sa phrase d'absence)`);
+  /* LA SEMAINE AU PARLEMENT (PR B, 07/10/2026) : sous les trois reponses, jamais
+     parmi elles ; nationale, dite comme telle ; ce qu'elle compte est recalcule
+     ici depuis les fichiers SERVIS, par la meme fonction du socle. */
+  {
+    const vu = await lireSemaine(page);
+    verifier(vu && vu.sous, `${largeur}px · semaine : la carte est sous les trois réponses ${JSON.stringify(vu && vu.ordre)}`);
+    if (SEMAINE.institutions.length) {
+      const total = vu.jours.reduce((n, l) => n + (Number((/: (\d+) séance/.exec(l) || [])[1]) || 0), 0);
+      verifier(vu.jours.length === 7 && total === SEMAINE.total,
+        `${largeur}px · semaine : sept jours, ${SEMAINE.total} séance(s) publique(s), comme le socle (${total} lues)`);
+      verifier(vu.votes === Math.min(2, SEMAINE.votesSolennels.length), `${largeur}px · semaine : les votes solennels annoncés sont montrés (${vu.votes})`);
+      verifier(/tout le pays, pas seulement Meaux/.test(vu.texte), `${largeur}px · semaine : la carte dit qu'elle est nationale`);
+    } else {
+      verifier(/n'est arrivé jusqu'à cet appareil pour aucune institution/.test(vu.texte),
+        `${largeur}px · semaine : sans calendrier servi, la phrase d'absence (jamais une semaine vide)`);
+    }
+  }
   const fautives = demandees.filter(u => adresseFautive(u));
   verifier(fautives.length === 0, `${largeur}px : aucune adresse ne porte un code de commune ${JSON.stringify(fautives)}`);
   verifier(!/77284/.test(page.url()), `${largeur}px : l'adresse de la page ne porte pas le code de la commune`);
@@ -310,6 +344,54 @@ async function montantA100ms(reduit) {
   const fautives = demandees.filter(u => adresseFautive(u) || /77284/.test(u));
   verifier(fautives.length === 0, "mémoire : aucune requête ne porte le code de la commune " + JSON.stringify(fautives));
   await ctx.close();
+}
+
+/* LA SEMAINE, CAS FABRIQUES — 07/10/2026. Un agenda de l'Assemblee construit a
+   partir d'aujourd'hui (heure de Paris), le Senat coupe, un telephone regle en
+   Guadeloupe. Ce que la carte doit dire : le texte du vote mot pour mot, le
+   Senat manquant nomme, « agenda pas encore publié » au-dela du dernier jour
+   publie (jamais « aucune séance »), l'heure de Paris dite. Puis les deux
+   institutions coupees : la phrase d'absence. */
+async function ouvrirSemaine({ agenda, senatCoupe, fuseau }) {
+  const ctx = await navigateur.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, reducedMotion: "reduce", ...(fuseau ? { timezoneId: fuseau } : {}) });
+  await ctx.route("**/data/agenda-an.json", r => agenda ? r.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(agenda) }) : r.abort());
+  if (senatCoupe) await ctx.route("**/data/calendrier-senat.json", r => r.abort());
+  const page = await ctx.newPage();
+  await page.goto(BASE + "/", { waitUntil: "networkidle" });
+  await page.getByLabel(/Où habitez-vous/).fill(COMMUNE.saisie);
+  await page.getByRole("button", { name: new RegExp("^" + COMMUNE.nom + ",") }).first().click();
+  await page.getByText("Aller plus loin").first().waitFor({ timeout: 15000 });
+  await page.waitForTimeout(600);
+  const vu = await lireSemaine(page);
+  const m = await page.evaluate(() => ({ deborde: document.documentElement.scrollWidth > document.documentElement.clientWidth + 1 }));
+  await ctx.close();
+  return { ...vu, ...m };
+}
+{
+  const J = k => jourParis(new Date(Date.now() + k * 864e5));
+  const seance = (jour, heure, titre, description = null) => ({ debut: `${jour}T${heure}`, titre, description, categorie: "Séance publique" });
+  const agenda = {
+    source: { producteur: "Assemblée nationale", licence: "Licence ouverte", url: "https://www.assemblee-nationale.fr/dyn/agenda", releve_le: J(0) },
+    evenements: [
+      seance(J(1), "15:00", "Questions au Gouvernement", "Également à l'ordre du jour : Vote solennel sur le projet de loi témoin relatif aux essais ; Débat d'orientation"),
+      seance(J(1), "17:00", "Vote solennel sur la proposition de loi A"),
+      seance(J(2), "09:30", "Vote solennel sur la proposition de loi B"),
+    ],
+  };
+  const vu = await ouvrirSemaine({ agenda, senatCoupe: true, fuseau: "America/Guadeloupe" });
+  verifier(vu && /Vote solennel sur le projet de loi témoin relatif aux essais/.test(vu.texte), "semaine (cas fabriqué) : le vote solennel est cité mot pour mot");
+  verifier(vu && vu.votes === 2 && /Et 1 autre vote solennel dans le calendrier/.test(vu.texte), "semaine (cas fabriqué) : deux votes montrés, le troisième compté, pas tu");
+  verifier(vu && /Le calendrier du Sénat n'est pas arrivé\s: seules les séances de l'Assemblée nationale sont comptées/.test(vu.texte), "semaine (cas fabriqué) : le Sénat manquant est nommé");
+  verifier(vu && vu.jours.length === 7 && vu.jours.slice(3).every(l => /agenda pas encore publié/.test(l)) && /aucune séance publique annoncée/.test(vu.jours[0]),
+    "semaine (cas fabriqué) : au-delà du dernier jour publié, « agenda pas encore publié », jamais « aucune séance » " + JSON.stringify(vu && vu.jours));
+  verifier(vu && /: 2 séances publiques/.test(vu.jours[1]) && /: 1 séance publique/.test(vu.jours[2]), "semaine (cas fabriqué) : les séances sont comptées par jour");
+  verifier(vu && /à l'heure de Paris/.test(vu.texte), "semaine (cas fabriqué) : réglé hors de Paris, le téléphone dit que les heures sont celles de Paris");
+  verifier(vu && !vu.deborde, "semaine (cas fabriqué) : aucun débordement horizontal");
+  const coupe = await ouvrirSemaine({ agenda: null, senatCoupe: true });
+  verifier(coupe && /Le calendrier n'est arrivé jusqu'à cet appareil pour aucune institution/.test(coupe.texte) && coupe.jours.length === 0,
+    "semaine (cas fabriqué) : les deux calendriers coupés, une phrase vraie, aucune semaine prétendue");
+  const paris = await ouvrirSemaine({ agenda, senatCoupe: true, fuseau: "Europe/Paris" });
+  verifier(paris && !/à l'heure de Paris/.test(paris.texte), "semaine (cas fabriqué) : à Paris, la précision d'heure n'encombre pas la carte");
 }
 
 /* RÉPONSES D'ABORD — 30/09/2026. A 390 x 844 (iPhone 12 a 16), les trois

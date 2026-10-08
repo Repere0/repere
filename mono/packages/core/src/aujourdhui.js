@@ -51,6 +51,21 @@ export function semaineParlement({ cal, agendaAN, maintenant }) {
     }
   }
   votesSolennels.sort((a, b) => (a.debut < b.debut ? -1 : a.debut > b.debut ? 1 : 0));
+  /* UN JOUR AU-DELA DE L'AGENDA PUBLIE N'EST PAS UN JOUR SANS SEANCE — 07/10/2026
+     (doctrine du vide). Si le dernier evenement releve tombe avant la fin de la
+     semaine (releve ancien, institution qui publie a courte vue), les jours
+     suivants ne sont pas « sans seance » : on ne sait pas. `annonce` vaut true
+     tant qu'au moins une institution lue a publie quelque chose a cette date ou
+     plus tard ; l'ecran dit l'autre cas autrement. */
+  for (const inst of institutions) {
+    const donnees = inst.institution === "Sénat" ? cal : agendaAN;
+    inst.jusquau = donnees.evenements.reduce((max, e) => {
+      const j = String(e.debut || "").slice(0, 10);
+      return j > max ? j : max;
+    }, "");
+  }
+  const horizon = institutions.reduce((max, x) => (x.jusquau > max ? x.jusquau : max), "");
+  for (const j of jours) j.annonce = j.date <= horizon;
   return { jours, institutions, votesSolennels, total: jours.reduce((n, j) => n + j.seances, 0) };
 }
 
