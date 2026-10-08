@@ -10,8 +10,8 @@ import { rapports as rapportsTexte } from "@repere/core";
  * Le rendu est identique a celui d'avant le deplacement. */
 export { valeur, population, pourCent, dernierExercice, SEUIL_PERIMETRE, evolution } from "@repere/core";
 
-export function rapports(ex) {
-  return rapportsTexte(ex).map(o => {
+export function rapports(ex, niveau) {
+  return rapportsTexte(ex, niveau).map(o => {
     if (!o.mot || !o.l.includes(o.mot)) return o;
     const [avant, apres] = o.l.split(o.mot);
     return { ...o, l: <>{avant}<Mot cle={o.mot}>{o.mot}</Mot>{apres}</> };

@@ -443,3 +443,16 @@ test("core — le departement se lit sur le code INSEE, outre-mer et Corse compr
   assert.ok(n > 30000, "toutes les communes publiees sont lues (" + n + ")");
   assert.deepEqual(faux.slice(0, 10), [], faux.length + " commune(s) hors de leur paquet");
 });
+
+test("core — l'explication des salaires ne prete pas au departement ni a la region les services d'une commune", async () => {
+  const { rapports } = await import("../packages/core/src/comptes.js");
+  /* exercice fabrique : recettes, depenses, dette, investissement, salaires, impots */
+  const ex = [1000, 1000000, 1000, 900000, 900, 100000, 100, 200000, 200, 300000, 300, 400000, 400];
+  const sal = n => (rapports(ex, n).find(o => /salaires/.test(o.v)) || {}).d || "";
+  assert.match(sal("commune"), /l'école, la cantine/);
+  for (const n of ["departement", "region"]) {
+    assert.ok(sal(n), n + " : la part des salaires existe");
+    assert.doesNotMatch(sal(n), /école|cantine|état civil/, n);
+  }
+  assert.match(sal(undefined), /l'école, la cantine/, "par defaut, la commune");
+});

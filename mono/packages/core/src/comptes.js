@@ -18,7 +18,11 @@ export const pourCent = (a, b) => Math.round((a / b) * 100);
    Aucun de ces rapports ne sort du territoire affiche — invariant 3.
    `mot` : le terme du dictionnaire contenu dans `l`, que chaque interface
    habille a sa maniere (bouton de definition sur le web). */
-export function rapports(ex) {
+/* `niveau` (08/10/2026, audit) : « Ce sont les agents qui tiennent l'école, la
+   cantine, l'état civil » etait repete sous les salaires du DEPARTEMENT et de la
+   REGION, qui ne tiennent ni l'ecole primaire, ni la cantine, ni l'etat civil.
+   Hors commune, l'explication ne nomme plus de services. */
+export function rapports(ex, niveau = "commune") {
   const v = i => valeur(ex, i);
   const [rec, dep, det, inv, sal, imp] = [0, 1, 2, 3, 4, 5].map(v);
   const nn = x => x && typeof x.m === "number" && x.m > 0;
@@ -30,7 +34,8 @@ export function rapports(ex) {
   });
   if (nn(sal) && nn(dep)) out.push({
     l: "Sur 100 € dépensés", v: pourCent(sal.m, dep.m) + " € de salaires",
-    d: "Ce sont les agents qui tiennent l'école, la cantine, l'état civil, les espaces verts. Une part élevée n'est pas un gaspillage : c'est souvent le signe d'une collectivité qui rend ses services elle-même plutôt que de les acheter à l'extérieur.",
+    d: (niveau === "commune" ? "Ce sont les agents qui tiennent l'école, la cantine, l'état civil, les espaces verts." : "Ce sont les agents de la collectivité.")
+      + " Une part élevée n'est pas un gaspillage : c'est souvent le signe d'une collectivité qui rend ses services elle-même plutôt que de les acheter à l'extérieur.",
   });
   if (nn(inv) && nn(dep)) out.push({
     l: "Sur 100 € dépensés", v: pourCent(inv.m, dep.m) + " € pour investir",
