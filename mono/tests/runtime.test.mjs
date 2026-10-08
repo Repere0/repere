@@ -371,6 +371,17 @@ verif("elus locaux — le conseiller departemental DU CANTON d'Ustaritz est nomm
 verif("elus locaux — le conseil regional est nomme (Alain Rousset, president, en tete par son rang)",
   /Alain ROUSSET/.test(avecElus) && /Président du conseil régional/i.test(avecElus),
   avecElus.slice(avecElus.indexOf("région"), avecElus.indexOf("région") + 300).replace(/\n+/g, " / "));
+/* 08/10/2026 : aucun delegue n'est mis en avant par le seul ordre du fichier.
+   Ustaritz en envoie trois, tous conseillers : les trois sont VISIBLES, au meme
+   rang (noms lus dans les donnees servies, jamais recopies ici). */
+{
+  const ust = JSON.parse(fs.readFileSync(path.join(DIST, "data/departments/64.json"), "utf8")).communes["64547"];
+  const noms = ((ust.agglo || {}).delegues || []).map(e => e.nom);
+  const visibles = await page.evaluate(ns => ns.filter(n => [...document.querySelectorAll(".ligne")]
+    .some(l => l.checkVisibility() && l.innerText.includes(n))), noms);
+  verif("elus locaux — tous les delegues d'Ustaritz a l'intercommunalite sont visibles, au meme rang",
+    noms.length >= 2 && visibles.length === noms.length, JSON.stringify({ noms, visibles }));
+}
 verif("invariant 3 — les elus locaux sont nommes sans etiquette ni comparaison",
   !/groupe politique|majorité|opposition|classement|mieux que/i.test(avecElus.slice(avecElus.indexOf("intercommunalité"))),
   "");

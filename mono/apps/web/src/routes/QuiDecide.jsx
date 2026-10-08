@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { Carte, Vide, Source, Chargement, dateFr, Mot } from "@repere/ui";
 import { Pile } from "@repere/ui/amicro";
 import { competencesIntercommunalite } from "@repere/core";
+import { delegationIntercommunalite } from "@repere/core";
 import { LigneVote, positionSur, positionsFiables, REFUS_APPARIEMENT, ordinal } from "../lib/votes.jsx";
 import {
   chargerDeputes, chargerCatalogueScrutins, chargerVotes, chargerElusRegion,
@@ -377,7 +378,9 @@ function Agglo({ c, src }) {
         lien={{ texte: "Répertoire national des élus", url: RNE_URL }} />
     );
   }
-  const [tete, ...reste] = c.agglo.delegues;
+  /* 08/10/2026 : aucun delegue n'est mis en avant par le seul ordre du fichier
+     (@repere/core, delegationIntercommunalite). */
+  const { visibles, replies, total } = delegationIntercommunalite(c.agglo.delegues);
   return (
     <>
       {/* LE NOM DE L'EPCI, RECOPIE TEL QUE LA SOURCE L'ECRIT — principe P15,
@@ -387,11 +390,12 @@ function Agglo({ c, src }) {
           un nom que la source n'a pas publie ainsi. Trouve en testant : ce
           nom manquait purement et simplement avant ce correctif. */}
       {c.agglo.nom ? <p className="tx-note tx-intro">{c.nom} envoie {c.agglo.delegues.length} élu{c.agglo.delegues.length > 1 ? "s" : ""} au conseil de {c.agglo.nom}.</p> : null}
-      <LigneElu e={tete} />
-      {reste.length ? (
-        <details className="repli">
-          <summary><span>{reste.length} autre{reste.length > 1 ? "s" : ""} délégué{reste.length > 1 ? "s" : ""} de {c.nom}</span></summary>
-          <div className="repli-in">{reste.map((e, i) => <LigneElu key={i} e={e} />)}</div>
+      {total > 1 ? <p className="ligne-note">Rangés par fonction au conseil (présidence, vice-présidences, puis conseillers), et sinon dans l'ordre du Répertoire national des élus.</p> : null}
+      {visibles.map((e, i) => <LigneElu key={i} e={e} />)}
+      {replies.length ? (
+        <details className="repli delegues-replies">
+          <summary><span>{visibles.length ? "Et " : ""}{replies.length} conseiller{replies.length > 1 ? "s" : ""} communautaire{replies.length > 1 ? "s" : ""} de {c.nom}</span></summary>
+          <div className="repli-in">{replies.map((e, i) => <LigneElu key={i} e={e} />)}</div>
         </details>
       ) : null}
       {src ? <Source producteur={src.producteur} licence={src.licence} maj={src.maj} url={RNE_URL} /> : null}
