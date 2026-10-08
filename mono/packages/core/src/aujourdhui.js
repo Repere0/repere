@@ -165,3 +165,32 @@ export function deriverAujourdhui({ fiche, commune, dep, index, projets, cat, po
   };
 }
 
+
+/* LES NOUVEAUTES DEPUIS LA DERNIERE VISITE — 08/10/2026 (proposition, mobile).
+ * Meme regle que le site (Aujourdhui.jsx, decision produit du 23/09/2026) :
+ *   - une visite precedente connue -> les faits dates APRES elle ;
+ *   - aucune -> les sept derniers jours, sans pretendre connaitre une visite ;
+ *   - le fait deja montre en reponse principale n'est pas recompte ;
+ *   - rien de nouveau depuis la visite -> le dire (doctrine du vide).
+ * `derniereVisite` : "AAAA-MM-JJ" ou un instant ISO ; seul le jour compte.
+ * Aucune donnee n'est lue ni ecrite ici : c'est l'ecran qui fournit la date. */
+export function nouveautesDepuis({ faits, derniereVisite, faitPrincipalCle, maintenant, max = 4 }) {
+  const now = maintenant instanceof Date ? maintenant : new Date();
+  const depuisVisite = /^\d{4}-\d{2}-\d{2}/.test(String(derniereVisite || ""));
+  const seuil = depuisVisite ? String(derniereVisite).slice(0, 10) : jourParis(new Date(now.getTime() - 7 * 864e5));
+  /* Un fait date APRES aujourd'hui (un projet est place au 31 decembre de son
+     annee, la source ne publiant que l'annee) serait « nouveau » a chaque visite
+     jusqu'a cette date : faux sentiment de nouveaute. Il n'est pas compte. */
+  const auj = jourParis(now);
+  const liste = (faits || []).filter(f => f.quand && String(f.quand).slice(0, 10) <= auj
+    && (depuisVisite ? f.quand > seuil : f.quand >= seuil));
+  /* une ou plusieurs reponses deja montrees (l'application en affiche deux) */
+  const exclus = [].concat(faitPrincipalCle || []);
+  const nouveaux = liste.filter(f => !exclus.includes(f.cle));
+  return {
+    depuisVisite, seuil,
+    nouveautes: nouveaux.slice(0, max),
+    total: nouveaux.length,
+    rienDepuisVisite: depuisVisite && liste.length === 0,
+  };
+}

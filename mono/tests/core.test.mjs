@@ -132,6 +132,26 @@ test("core — le rapport d'Aujourd'hui porte l'exercice de ses comptes, jamais 
 /* L'INTERCOMMUNALITE EN ILE-DE-FRANCE — 07/10/2026. La phrase nationale disait
    que l'intercommunalite decide des transports : faux en Ile-de-France (IDFM), et
    dans la Metropole du Grand Paris les dechets et l'eau relevent de l'EPT. */
+test("core — les nouveautes depuis la visite : honnetes, jamais dans le futur", async () => {
+  const { nouveautesDepuis } = await import("../packages/core/src/aujourdhui.js");
+  const m = new Date("2026-10-08T10:00:00Z");
+  const faits = [
+    { cle: "v1", quand: "2026-10-01" }, { cle: "v2", quand: "2026-09-20" },
+    { cle: "p26", quand: "2026-12-31" }, /* projet 2026 : place au 31/12, pas encore « nouveau » */
+    { cle: "v0", quand: "2026-07-21" },
+  ];
+  const r = nouveautesDepuis({ faits, derniereVisite: "2026-09-15", faitPrincipalCle: ["v1"], maintenant: m });
+  assert.deepEqual(r.nouveautes.map(f => f.cle), ["v2"], "apres la visite, sans la reponse deja montree, sans fait futur");
+  assert.equal(r.total, 1);
+  assert.equal(r.seuil, "2026-09-15");
+  const rien = nouveautesDepuis({ faits, derniereVisite: "2026-10-05", maintenant: m });
+  assert.equal(rien.rienDepuisVisite, true, "rien de publie depuis la visite : dit");
+  const sans = nouveautesDepuis({ faits, derniereVisite: null, maintenant: m });
+  assert.equal(sans.depuisVisite, false);
+  assert.equal(sans.seuil, "2026-10-01", "sans visite connue : sept jours, sans pretendre connaitre une visite");
+  assert.deepEqual(sans.nouveautes.map(f => f.cle), ["v1"]);
+});
+
 test("core — ce que decide l'intercommunalite depend du territoire, lu dans la donnee", async () => {
   const { competencesIntercommunalite, chaineDecision, COMPETENCES } = await import("../packages/core/src/index.js");
   const mgp = { nom: "Metropole Du Grand Paris", delegues: [{ nom: "X" }] };
