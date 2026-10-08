@@ -211,6 +211,10 @@ export default function CeQuiADecide({ paquet, index, commune }) {
   const nbVotes = new Set(faits.filter(f => f.type === "vote").map(f => f.sc.u)).size;
   const nbDeputes = new Set(faits.filter(f => f.type === "vote").map(f => f.ref)).size;
   const nbEditoriaux = faits.filter(f => f.type === "editorial").length;
+  /* annees et dotations couvertes par la source des projets, lues dans le fichier */
+  const listeEt = l => l.length > 1 ? l.slice(0, -1).join(", ") + " et " + l[l.length - 1] : (l[0] || "");
+  const anneesProjets = listeEt(((projets && projets.exercices) || []).map(String).sort());
+  const nomsDispositifs = listeEt(Object.values((projets && projets.dispositifs) || {}).map(n => n.charAt(0).toLowerCase() + n.slice(1)));
 
   return (
     <div className="pile">
@@ -225,8 +229,12 @@ export default function CeQuiADecide({ paquet, index, commune }) {
         <p className="tx-note">
           {[
             nbProjets ? `${nbProjets} projet${nbProjets > 1 ? "s" : ""} financé${nbProjets > 1 ? "s" : ""} par l'État` : "",
-            nbVotes ? `${nbVotes} texte${nbVotes > 1 ? "s" : ""} voté${nbVotes > 1 ? "s" : ""} à l'Assemblée`
-              + (nbDeputes > 1 ? ` par vos ${nbDeputes} députés` : " par votre député") : "",
+            /* 08/10/2026 : « N textes votés par votre député » comptait aussi les
+               scrutins ou le releve ne porte AUCUNE position (1 058 communes sur
+               1 262). On compte les scrutins releves, et on ne compte jamais ceux
+               sans position : ce serait une donnee d'absence (invariant 8). */
+            nbVotes ? `${nbVotes} scrutin${nbVotes > 1 ? "s" : ""} solennel${nbVotes > 1 ? "s" : ""} de l'Assemblée`
+              + (nbDeputes > 1 ? ` relevés pour vos ${nbDeputes} députés` : " relevés pour votre député") : "",
             nbEditoriaux ? `${nbEditoriaux} fait${nbEditoriaux > 1 ? "s" : ""} relu${nbEditoriaux > 1 ? "s" : ""} et validé${nbEditoriaux > 1 ? "s" : ""} par la rédaction` : "",
           ].filter(Boolean).join(", ").replace(/,([^,]*)$/, " et$1")}
           {". "}
@@ -248,8 +256,11 @@ export default function CeQuiADecide({ paquet, index, commune }) {
             reellement SERVI. Sinon, l'absence est chez nous, et le titre le dit. */}
         {!nbProjets ? (
           etatProjets === ETATS.SERVI ? (
-            <Vide titre={`Sur les années publiées, l'État n'a financé aucun projet à ${nomCommune}.`}
-              corps="Ce n'est pas un manque de Repère : le fichier de la Direction générale des collectivités locales ne porte aucune ligne pour cette commune sur ces années. Il en portera peut-être pour la suivante."
+            /* 08/10/2026 : « l'Etat n'a finance aucun projet » affirmait plus que la
+               source : elle ne couvre que quelques dotations d'investissement, sur
+               quelques annees. La phrase nomme les deux, lus dans le fichier. */
+            <Vide titre={`Aucun projet aidé par l'État n'est publié pour ${nomCommune}${anneesProjets ? " en " + anneesProjets : " sur les années relevées"}.`}
+              corps={`La source ne couvre que ${nomsDispositifs ? "ces dotations d'investissement de l'État : " + nomsDispositifs : "certaines dotations d'investissement de l'État"}. Les autres aides de l'État n'y figurent pas : ce n'est donc pas la preuve que l'État n'a rien financé ici.`}
               lien={{ texte: "Projets financés par l'État — données publiques", url: DGCL_URL }} />
           ) : (
             <Vide titre="Repère n'a pas réussi à obtenir les projets financés par l'État pour ce département."
@@ -328,7 +339,7 @@ export default function CeQuiADecide({ paquet, index, commune }) {
               {nouvelle && f.type !== "editorial" ? (
                 <p className="groupe">
                   {f.type === "vote"
-                    ? `À l'Assemblée nationale, ${f.qui} a voté`
+                    ? `À l'Assemblée nationale, les scrutins solennels et la position de ${f.qui}`
                     : `Dans votre commune, l'État a financé`}
                 </p>
               ) : null}
@@ -352,6 +363,8 @@ export default function CeQuiADecide({ paquet, index, commune }) {
                    La mention "relu et valide" est ce qui empeche de confondre
                    ce fil avec une detection automatique — voir lib/faits.js. */
                 <>
+                  {/* 08/10/2026 : un fait date se lit avec sa date (elle etait absente) */}
+                  {f.e.d ? <div className="ligne-h"><span>{dateFr(String(f.e.d).slice(0, 10))}</span></div> : null}
                   <b className="fait-titre">{f.e.t}</b>
                   <Source producteur={f.e.srcn || "voir la source"} url={f.e.src}
                     mention={f.e.conf === "verifie" ? "relu et validé par la rédaction" : "relevé, en attente de confirmation par la rédaction"} />
