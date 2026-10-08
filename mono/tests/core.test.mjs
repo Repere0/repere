@@ -33,6 +33,19 @@ test("core — les dates s'ecrivent comme on les dit", () => {
   assert.equal(euros(533466).replace(/\s/g, " "), "533 466 €");
 });
 
+test("core — le jour de la semaine ne depend pas du fuseau de l'appareil (outre-mer)", async () => {
+  /* Le site couvre l'outre-mer : un lecteur en Guadeloupe lisait « mercredi
+     8 octobre » pour un jeudi. On rejoue jourFr dans quatre fuseaux. */
+  const { execFileSync } = await import("node:child_process");
+  const mod = path.join(RACINE, "packages/core/src/format.js");
+  const script = `import(${JSON.stringify("file://" + mod)}).then(m => console.log(JSON.stringify(["2026-10-08", "2026-10-08T09:00:00", "2026-11-01", "2027-04-10"].map(m.jourFr))))`;
+  const attendu = ["jeudi 8 octobre 2026", "jeudi 8 octobre 2026", "dimanche 1er novembre 2026", "samedi 10 avril 2027"];
+  for (const tz of ["Europe/Paris", "America/Guadeloupe", "Pacific/Tahiti", "Pacific/Noumea"]) {
+    const sortie = execFileSync(process.execPath, ["--input-type=module", "-e", script], { env: { ...process.env, TZ: tz } }).toString();
+    assert.deepEqual(JSON.parse(sortie), attendu, tz);
+  }
+});
+
 test("core — un scrutin se lit sans rien reformuler", () => {
   const t = "l'ensemble du projet de loi relatif à la protection des enfants (première lecture)";
   assert.equal(titreLisible(t), "Projet de loi relatif à la protection des enfants");
