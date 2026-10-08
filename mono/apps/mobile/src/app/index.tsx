@@ -9,7 +9,7 @@ import { useEffect, useMemo, useState } from "react";
 import { FlatList, KeyboardAvoidingView, Platform, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { router } from "expo-router";
-import { mots, motsCible, correspond, trouverCommunes } from "@repere/core";
+import { mots, motsCible, correspond, trouverCommunes, departementDe } from "@repere/core";
 import { chargerCommunesBeta, chargerIndex, ETATS, PHRASES } from "../lib/donnees";
 import { Bouton, Carte, Texte, Vide } from "../lib/composants";
 import { useSelection } from "../lib/selection";
@@ -52,15 +52,17 @@ export default function Accueil() {
   const trouvees = trouverCommunes(communes, cherches) as Ligne[];
   const manquante = cherches.length ? manquantes.find(([, , c]) => correspond(cherches, c)) : undefined;
   const rien = cherches.length > 0 && trouvees.length === 0 && !manquante;
-  /* Meme expression que le site (App.jsx) : la beta ne couvre que des
-     departements a deux chiffres d'Ile-de-France. */
+  /* Le departement se lit par @repere/core (departementDe), comme sur le site :
+     trois chiffres outre-mer (971...), deux ailleurs, 2A/2B en Corse. */
   const nomDep = (code: string) => {
     const d = index && index.departements.find(x => x.code === code);
     return d && d.nom ? d.nom : "département " + code;
   };
 
   const ouvrir = (insee: string, nom: string) => {
-    choisir({ dep: insee.slice(0, 2), insee, nom });
+    const dep = departementDe(insee);
+    if (!dep) return;
+    choisir({ dep, insee, nom });
     router.push("/chez-vous");
   };
 
@@ -134,13 +136,13 @@ export default function Accueil() {
           <Pressable
             onPress={() => ouvrir(insee, nom)}
             accessibilityRole="button"
-            accessibilityLabel={`${nom}, ${nomDep(insee.slice(0, 2))}`}
+            accessibilityLabel={`${nom}, ${nomDep(departementDe(insee) || "")}`}
             accessibilityHint="Ouvre ce qui se passe dans cette commune"
             style={({ pressed }) => [s.resultat, pressed && { backgroundColor: couleurs.voile }]}
           >
             <View style={s.pastille} />
             <Text style={s.resultatNom}>{nom}</Text>
-            <Text style={s.resultatDep}>{nomDep(insee.slice(0, 2))}</Text>
+            <Text style={s.resultatDep}>{nomDep(departementDe(insee) || "")}</Text>
           </Pressable>
         )}
       />

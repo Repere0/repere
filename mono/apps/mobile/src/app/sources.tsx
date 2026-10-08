@@ -11,7 +11,7 @@ import { Carte, LienSortant } from "../lib/composants";
 import { PAS, TYPO } from "../lib/theme";
 import { AvecDonnees, Page, Question } from "../ui/page";
 
-type Ligne = { quoi: string; producteur?: string; maj?: string; releve?: string; url?: string; usage: string };
+type Ligne = { quoi: string; producteur?: string; licence?: string; maj?: string; releve?: string; url?: string; usage: string };
 
 export default function Sources() {
   return (
@@ -25,6 +25,8 @@ export default function Sources() {
         { quoi: "Les votes de l'Assemblée", ...pick(d.srcScrutins ? { ...d.srcScrutins, releve: d.srcScrutins.releve_le } : null), usage: "La position de votre député et le décompte de chaque vote, tels que l'Assemblée les publie." },
         { quoi: "Les Questions au Gouvernement", ...pick(s.questionsGouvernement), usage: "Les questions posées au Gouvernement et les réponses publiées par l'Assemblée nationale." },
         { quoi: "Les circonscriptions", ...pick(s.circonscriptions), usage: "À quelle circonscription appartient la commune (découpage de 2010)." },
+        /* 08/10/2026 (audit) : le nom du depute vient d'un autre fichier que ses votes ; il manquait ici */
+        { quoi: "Les noms des députés", ...pick(s.deputes), usage: "Le nom de votre député et sa circonscription, tels que l'Assemblée les publie." },
       ].filter(l => l.producteur);
       const traite = datePublication(r.index);
       return (
@@ -36,7 +38,9 @@ export default function Sources() {
             <Carte key={l.quoi} titre={l.quoi}>
               <Text style={[TYPO.corps, { fontWeight: "700" }]}>{l.producteur}</Text>
               {l.maj ? <Text style={TYPO.note}>Données publiées le {dateFr(l.maj)}</Text>
-                : l.releve ? <Text style={TYPO.note}>Données relevées le {dateFr(l.releve)}</Text> : null}
+                : l.releve ? <Text style={TYPO.note}>Données relevées le {dateFr(l.releve)}</Text>
+                : <Text style={TYPO.note}>Ce fichier ne porte pas de date de publication que Repère puisse afficher.</Text>}
+              {l.licence ? <Text style={TYPO.note}>Licence : {l.licence}</Text> : null}
               <Text style={TYPO.corps}>{l.usage}</Text>
               {l.url ? <View style={{ marginTop: PAS }}><LienSortant url={l.url} texte="Voir la donnée originale" etiquette={`Voir la donnée originale : ${l.quoi}`} /></View> : null}
             </Carte>
@@ -49,7 +53,8 @@ export default function Sources() {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function pick(x: any): { producteur?: string; maj?: string; releve?: string; url?: string } {
+function pick(x: any): { producteur?: string; licence?: string; maj?: string; releve?: string; url?: string } {
   if (!x) return {};
-  return { producteur: x.producteur, maj: x.maj, releve: x.releve || x.releve_le, url: x.url };
+  /* la licence n'etait pas reprise (08/10/2026, audit) : invariant 4 */
+  return { producteur: x.producteur, licence: x.licence, maj: x.maj, releve: x.releve || x.releve_le, url: x.url };
 }

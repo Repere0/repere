@@ -18,8 +18,13 @@ export function jourFr(iso) {
   const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(iso || "");
   if (!m) return "";
   const jours = ["dimanche", "lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi"];
-  const d = new Date(iso);
-  return jours[d.getDay()] + " " + dateFr(`${m[1]}-${m[2]}-${m[3]}`);
+  /* LE JOUR DE LA SEMAINE SE LIT SUR LA DATE ECRITE, PAS SUR L'HORLOGE DE L'APPAREIL
+     — 07/10/2026. `new Date("2026-10-08").getDay()` lit minuit UTC puis le convertit
+     a l'heure locale : en Guadeloupe (UTC-4) ou a Tahiti (UTC-10), on affichait
+     « mercredi 8 octobre 2026 » pour un jeudi. Le nom du jour suit desormais
+     l'annee, le mois et le jour de la chaine, comme le reste de la phrase. */
+  const j = new Date(Date.UTC(Number(m[1]), Number(m[2]) - 1, Number(m[3]))).getUTCDay();
+  return jours[j] + " " + dateFr(`${m[1]}-${m[2]}-${m[3]}`);
 }
 
 
@@ -33,4 +38,13 @@ export function heureFr(iso) {
   const m = /T(\d{2}):(\d{2})/.exec(iso || "");
   if (!m) return "";
   return Number(m[1]) + " h" + (m[2] === "00" ? "" : " " + m[2]);
+}
+
+/* « jeu. », « ven. » : le nom court d'un jour, lu sur la date ecrite (jamais sur
+   l'horloge de l'appareil, voir jourFr) et sans dependre d'Intl, inegal selon
+   les moteurs JavaScript des telephones. 07/10/2026. */
+export function jourCourt(iso) {
+  const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(iso || "");
+  if (!m) return "";
+  return ["dim.", "lun.", "mar.", "mer.", "jeu.", "ven.", "sam."][new Date(Date.UTC(Number(m[1]), Number(m[2]) - 1, Number(m[3]))).getUTCDay()];
 }

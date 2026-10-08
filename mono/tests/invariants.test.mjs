@@ -55,7 +55,7 @@ function sourcesEcrites() {
 }
 
 test("invariant 0 — chaque invariant déclare le contrôle qui le garde", () => {
-  assert.equal(INVARIANTS.length, 8);
+  assert.equal(INVARIANTS.length, 9, "les neuf invariants de CLAUDE.md, ni plus ni moins");
   for (const i of INVARIANTS) {
     assert.ok(i.garde && i.garde.length > 10,
       `l'invariant ${i.n} n'a pas de garde declaree : c'est une intention, pas une regle`);
@@ -1461,8 +1461,12 @@ test("produit — une absence partielle produit une phrase, comme une absence to
   const ecran = lire("apps/web/src/routes/CeQuiADecide.jsx");
   assert.ok(/\{!nbProjets \?/.test(ecran),
     "l'absence de projets ne produit aucune phrase quand les votes sont là");
-  assert.ok(/n'a financé aucun projet/.test(ecran),
-    "la phrase de l'absence partielle ne dit pas ce qu'elle constate");
+  /* 08/10/2026 : la phrase constatee est « aucun projet aide par l'Etat n'est
+     publie », et non plus « l'Etat n'a finance aucun projet », qui affirmait plus
+     que la source (quelques dotations, quelques annees). */
+  assert.ok(/Aucun projet aidé par l'État n'est publié/.test(ecran) && /ce n'est donc pas la preuve/.test(ecran),
+    "la phrase de l'absence partielle ne dit pas ce qu'elle constate, ni ce que la source ne couvre pas");
+  assert.ok(!/n'a financé aucun projet/.test(ecran), "l'ecran affirme de nouveau que l'Etat n'a rien finance");
 });
 
 test("argent — un zéro publié n'est jamais présenté comme une absence", () => {

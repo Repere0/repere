@@ -6,8 +6,9 @@
  *   1. ce que l'Etat finance ici        (-> pourquoi, combien : « Où va l'argent »)
  *   2. qui decide, et avec quel argent  (-> « Où va cet argent ? »)
  *   3. ce qu'a vote le depute           (-> « Comprendre ce vote »)
- * puis « Aller plus loin » : qui decide de quoi, ce qui arrive au Parlement
- * (national, dit comme tel), d'ou viennent ces informations.
+ * puis, SOUS les trois reponses, la semaine au Parlement (nationale, dite comme
+ * telle — ui/semaine.tsx, 07/10/2026), puis « Aller plus loin » : qui decide de
+ * quoi, le calendrier, d'ou viennent ces informations.
  *
  * Chaque phrase a ete verifiee contre les donnees (spike du 30/09/2026) :
  * - « a engage » et non « un projet de 726 800 € » : 726 800 € est l'aide,
@@ -45,6 +46,7 @@ import { PastilleSource } from "../ui/source";
 import { Etiquette } from "../ui/resume";
 import { Plus, Reponse, typo } from "../ui/reponse";
 import { BarrePart, Repartition } from "../ui/visuels";
+import { SemaineParlement } from "../ui/semaine";
 
 export default function ChezVous() {
   const { choix } = useSelection();
@@ -164,6 +166,10 @@ export default function ChezVous() {
             <Vide {...VOTE_AUCUN} />
           )}
           </View>
+
+          {/* AU PARLEMENT CETTE SEMAINE — sous les trois reponses, jamais parmi
+             elles : c'est national, et la carte le dit (ui/semaine.tsx). */}
+          <SemaineParlement sp={d.semaineParlement} lu={r.agendaLu} nom={nom} />
 
           {/* ALLER PLUS LOIN */}
           <View style={{ gap: PAS * 2 }}>

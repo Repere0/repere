@@ -11,7 +11,7 @@ import path from "node:path";
 import {
   dateFr, jourFr, euros, titreLisible, procedure, decompte, positionsFiables, positionSur,
   calculerFaits, valeur, rapports, dernierExercice, evolution, deriverAujourdhui,
-  mots, motsCible, correspond, trouverCommunes, elusDepartement, chaineDecision, listeFr,
+  mots, motsCible, correspond, trouverCommunes, elusDepartement, chaineDecision, listeFr, departementDe,
 } from "../packages/core/src/index.js";
 
 const RACINE = path.resolve(import.meta.dirname, "..");
@@ -31,6 +31,19 @@ test("core — les dates s'ecrivent comme on les dit", () => {
   assert.equal(dateFr("2026-07-21"), "21 juillet 2026");
   assert.equal(jourFr("2026-10-01T09:00"), "jeudi 1er octobre 2026");
   assert.equal(euros(533466).replace(/\s/g, " "), "533 466 €");
+});
+
+test("core — le jour de la semaine ne depend pas du fuseau de l'appareil (outre-mer)", async () => {
+  /* Le site couvre l'outre-mer : un lecteur en Guadeloupe lisait « mercredi
+     8 octobre » pour un jeudi. On rejoue jourFr dans quatre fuseaux. */
+  const { execFileSync } = await import("node:child_process");
+  const mod = path.join(RACINE, "packages/core/src/format.js");
+  const script = `import(${JSON.stringify("file://" + mod)}).then(m => console.log(JSON.stringify(["2026-10-08", "2026-10-08T09:00:00", "2026-11-01", "2027-04-10"].map(m.jourFr))))`;
+  const attendu = ["jeudi 8 octobre 2026", "jeudi 8 octobre 2026", "dimanche 1er novembre 2026", "samedi 10 avril 2027"];
+  for (const tz of ["Europe/Paris", "America/Guadeloupe", "Pacific/Tahiti", "Pacific/Noumea"]) {
+    const sortie = execFileSync(process.execPath, ["--input-type=module", "-e", script], { env: { ...process.env, TZ: tz } }).toString();
+    assert.deepEqual(JSON.parse(sortie), attendu, tz);
+  }
 });
 
 test("core — un scrutin se lit sans rien reformuler", () => {
@@ -169,6 +182,24 @@ test("core — sur les donnees reelles : aucune commune d'Ile-de-France ne lit q
   assert.ok(vus > 1200, "trop peu de communes mesurees : " + vus);
 });
 
+test("core — « a venir » se juge a l'heure de Paris, comme les agendas, pas a l'heure UTC", async () => {
+  /* 07/10/2026 : `toISOString()` (UTC) etait compare a des seances publiees a
+     l'heure de Paris. A 15 h 30 a Paris, la seance de 14 h restait « a venir ». */
+  const { minuteParis } = await import("../packages/core/src/aujourdhui.js");
+  assert.equal(minuteParis(new Date("2026-10-07T13:30:00Z")), "2026-10-07T15:30", "heure d'ete : UTC+2");
+  assert.equal(minuteParis(new Date("2026-12-01T13:30:00Z")), "2026-12-01T14:30", "heure d'hiver : UTC+1");
+  assert.equal(minuteParis(new Date("2026-10-06T22:30:00Z")), "2026-10-07T00:30", "minuit passe a Paris : deja le lendemain");
+  const fiche = { nom: "Témoin", circo: null };
+  const agendaAN = { source: { producteur: "Assemblée nationale" }, evenements: [
+    { debut: "2026-10-07T14:00", titre: "Séance de 14 h, déjà passée à 15 h 30", categorie: "Séance publique" },
+    { debut: "2026-10-07T16:00", titre: "Séance de 16 h, à venir", categorie: "Séance publique" },
+  ] };
+  const a = deriverAujourdhui({ fiche, commune: "00000", dep: "93", index: { agregats: [], sources: {} },
+    projets: null, cat: null, pos: null, deputes: null, cal: null, agendaAN, evenements: null,
+    maintenant: new Date("2026-10-07T13:30:00Z") });
+  assert.deepEqual(a.prochains.map(e => e.titre), ["Séance de 16 h, à venir"], "la seance de 14 h n'est plus annoncee a 15 h 30");
+});
+
 test("core — la recherche ignore accents, traits d'union et apostrophes", () => {
   assert.ok(correspond(mots("evry"), motsCible("Évry-Courcouronnes")));
   assert.ok(correspond(mots("val doise"), motsCible("Val-d'Oise")));
@@ -190,6 +221,38 @@ test("core — la phrase de refus d'appariement porte ses accents (texte affich�
   const texte = REFUS_APPARIEMENT.titre + " " + REFUS_APPARIEMENT.corps;
   const fautes = MOTS_A_ACCENTS.filter(m => new RegExp("\\b" + m + "\\b").test(texte));
   assert.deepEqual(fautes, []);
+});
+
+test("core — aucun delegue d'intercommunalite n'est mis en avant par le seul ordre du fichier", async (t) => {
+  const { delegationIntercommunalite, REPLI_DELEGUES } = await import("../packages/core/src/visuels.js");
+  const cons = n => ({ nom: "C" + n, fonction: "Conseiller communautaire" });
+  const trois = delegationIntercommunalite([cons(1), cons(2), cons(3)]);
+  assert.equal(trois.visibles.length, 3, "trois conseillers : tous visibles");
+  const gros = [{ nom: "P", fonction: "Président du conseil communautaire" }, { nom: "V", fonction: "1er Vice-président du conseil communautaire" },
+    ...Array.from({ length: 20 }, (_, i) => cons(i))];
+  const g = delegationIntercommunalite(gros);
+  assert.deepEqual(g.visibles.map(e => e.nom), ["P", "V"], "au-dela du seuil : seules les fonctions ecrites restent visibles");
+  assert.equal(g.replies.length, 20);
+  const sansFonction = delegationIntercommunalite(Array.from({ length: 12 }, (_, i) => cons(i)));
+  assert.equal(sansFonction.visibles.length, 0, "douze conseillers : aucun n'est choisi pour etre montre");
+  assert.equal(delegationIntercommunalite(undefined).total, 0);
+  /* sur toutes les communes publiees : rien ne se perd, et aucun conseiller n'est
+     montre seul quand les autres sont replies */
+  const dossier = path.join(RACINE, "data", "departments");
+  if (!fs.existsSync(dossier)) { t.skip("donnees non extraites"); return; }
+  let n = 0;
+  for (const f of fs.readdirSync(dossier).filter(x => x.endsWith(".json"))) {
+    for (const c of Object.values(JSON.parse(fs.readFileSync(path.join(dossier, f), "utf8")).communes || {})) {
+      const d = (c.agglo && c.agglo.delegues) || [];
+      if (!d.length) continue;
+      n++;
+      const r = delegationIntercommunalite(d);
+      assert.equal(r.visibles.length + r.replies.length, d.length, c.nom);
+      if (d.length <= REPLI_DELEGUES) assert.equal(r.replies.length, 0, c.nom);
+      else assert.ok(r.visibles.every(e => !/^conseill[eè]re? communautaire$/i.test(e.fonction)), c.nom);
+    }
+  }
+  assert.ok(n > 10000, n + " communes avec delegues");
 });
 
 test("phrases — les adjoints ne votent pas seuls le budget (CGCT L2312-1)", async () => {
@@ -354,4 +417,29 @@ test("core — sur les donnees reelles : la chaine nomme chaque elu du canton de
     }
   }
   assert.ok(vus > 1000, "trop peu de communes mesurees : " + vus);
+});
+
+test("core — le departement se lit sur le code INSEE, outre-mer et Corse compris", () => {
+  assert.equal(departementDe("77284"), "77");
+  assert.equal(departementDe("2A004"), "2A");
+  assert.equal(departementDe("2b033"), "2B");
+  assert.equal(departementDe("97101"), "971", "outre-mer : trois chiffres, pas « 97 »");
+  assert.equal(departementDe("97502"), "975");
+  assert.equal(departementDe("98735"), "987");
+  for (const faux of ["", "7728", "772840", "../77", null, "2C004"]) assert.equal(departementDe(faux), null, String(faux));
+  /* Sur les donnees publiees : chaque commune de chaque paquet retombe sur son
+     paquet. Sans donnees extraites, le controle le dit au lieu de passer en silence. */
+  const dossier = path.join(RACINE, "data", "departments");
+  if (!fs.existsSync(dossier)) { console.log("# departementDe : donnees non extraites, controle sur cas construits seulement"); return; }
+  let n = 0;
+  const faux = [];
+  for (const f of fs.readdirSync(dossier).filter(x => /^[0-9AB]{2,3}\.json$/.test(x))) {
+    const dep = f.replace(".json", "");
+    for (const insee of Object.keys(JSON.parse(fs.readFileSync(path.join(dossier, f), "utf8")).communes || {})) {
+      n++;
+      if (departementDe(insee) !== dep) faux.push(insee + " -> " + departementDe(insee) + " (paquet " + dep + ")");
+    }
+  }
+  assert.ok(n > 30000, "toutes les communes publiees sont lues (" + n + ")");
+  assert.deepEqual(faux.slice(0, 10), [], faux.length + " commune(s) hors de leur paquet");
 });

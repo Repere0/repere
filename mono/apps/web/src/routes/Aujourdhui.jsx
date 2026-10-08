@@ -1,4 +1,5 @@
 import React from "react";
+import { horsParis, PHRASE_HEURE_PARIS } from "../lib/fuseau.js";
 import "./aujourdhui-semaine.css";
 import { Vide, Source, Chargement, dateFr, jourFr } from "@repere/ui";
 import { useAujourdhui } from "../lib/useAujourdhui.js";
@@ -200,10 +201,10 @@ export default function Aujourdhui({ paquet, index, commune, aller, derniereVisi
             <ol className="auj-semaine" aria-label={"Séances publiques des sept prochains jours, " + sp.institutions.map(x => x.institution).join(" et ")}>
               {sp.jours.map((j, i) => (
                 <li key={j.date} className={i === 0 ? "auj-jour auj-jour-aujourdhui" : "auj-jour"}
-                  aria-label={jourFr(j.date) + " : " + (j.seances ? j.seances + " séance" + (j.seances > 1 ? "s" : "") + " publique" + (j.seances > 1 ? "s" : "") : "aucune séance publique")}>
+                  aria-label={jourFr(j.date) + " : " + (j.seances ? j.seances + " séance" + (j.seances > 1 ? "s" : "") + " publique" + (j.seances > 1 ? "s" : "") : j.annonce ? "aucune séance publique annoncée" : "agenda pas encore publié")}>
                   <span className="auj-jour-nom" aria-hidden="true">{i === 0 ? "Auj." : new Date(j.date + "T12:00:00").toLocaleDateString("fr-FR", { weekday: "short" }).replace(".", "")}</span>
                   <span className="auj-jour-num" aria-hidden="true">{Number(j.date.slice(8, 10))}</span>
-                  <span className="auj-jour-points" aria-hidden="true">{j.seances ? Array.from({ length: Math.min(j.seances, 4) }, (_, k) => <i key={k} />) : "–"}</span>
+                  <span className="auj-jour-points" aria-hidden="true">{j.seances ? Array.from({ length: Math.min(j.seances, 4) }, (_, k) => <i key={k} />) : j.annonce ? "–" : "?"}</span>
                 </li>
               ))}
             </ol>
@@ -232,6 +233,9 @@ export default function Aujourdhui({ paquet, index, commune, aller, derniereVisi
             <Source key={institution} producteur={s.producteur_affiche || s.producteur || institution} licence={s.licence}
               mention={s.releve_le ? "relevé le " + dateFr(s.releve_le) : undefined} url={s.url} />
           ))}
+          {/* HEURE DE PARIS — 08/10/2026. L'agenda est publie a l'heure de Paris ; sur un
+              appareil regle ailleurs (outre-mer), on le dit, comme l'application. */}
+          {horsParis() ? <p className="ligne-note heure-paris">{PHRASE_HEURE_PARIS}</p> : null}
         </div>
       ) : null}
 

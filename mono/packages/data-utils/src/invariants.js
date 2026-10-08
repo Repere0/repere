@@ -29,6 +29,12 @@ export const INVARIANTS = [
   { n: 8, nom: "ni patrimoine ni présence",
     regle: "Jamais le patrimoine d'un élu, jamais de donnée de présence ou d'absence.",
     garde: "statique: champs interdits dans les données produites" },
+  /* Ajoute le 08/10/2026 : decide par le porteur le 30/09/2026 et ecrit dans
+     CLAUDE.md, l'invariant 9 manquait a cette liste, donc a la page Sources
+     (« Huit règles »). Le texte est celui de CLAUDE.md. */
+  { n: 9, nom: "fraîcheur",
+    regle: "Une donnée gardée sur l'appareil peut être affichée pour préserver l'accès hors ligne, mais jamais présentée comme actuelle si elle ne l'est pas : actuelle, publication précédente ou impossible à vérifier, toujours distinguables à l'écran.",
+    garde: "runtime + parcours mobile: serveur injoignable, l'écran dit que la publication n'a pas pu être vérifiée" },
 ];
 
 /* Les cinq couleurs d'échelon, gelées. Toute autre couleur du produit doit avoir

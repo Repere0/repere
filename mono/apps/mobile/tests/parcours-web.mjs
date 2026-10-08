@@ -46,6 +46,23 @@ const ELUS_CANTON = await (async () => {
   try { const r = await fetch(BASE + "/data/departments/77.json"); const j = await r.json(); const f = j.communes["77284"]; return (j.conseil_departemental || []).filter(e => (f.canton || []).includes(e.canton)).map(e => e.nom); }
   catch { return []; }
 })();
+/* La semaine au Parlement attendue, calculee par le socle sur les fichiers servis
+   (07/10/2026). Un fichier absent n'est pas compte, comme dans l'application. */
+const { semaineParlement, jourParis } = await import("../../../packages/core/src/aujourdhui.js");
+const servi = async f => { try { const r = await fetch(BASE + "/data/" + f); return r.ok ? await r.json() : null; } catch { return null; } };
+const SEMAINE = semaineParlement({ agendaAN: await servi("agenda-an.json"), cal: await servi("calendrier-senat.json"), maintenant: new Date() });
+const lireSemaine = page => page.evaluate(() => {
+  const c = document.querySelector('[data-testid="semaine-parlement"]');
+  if (!c || !c.offsetParent) return null;
+  const reps = [...document.querySelectorAll('[data-testid="reponse"]')].filter(e => e.offsetParent);
+  const ordre = { haut: Math.round(c.getBoundingClientRect().top), basReponses: reps.map(e => Math.round(e.getBoundingClientRect().bottom)) };
+  return {
+    sous: reps.length > 0 && ordre.basReponses.every(b => b <= ordre.haut), ordre,
+    jours: [...c.querySelectorAll('[data-testid="semaine-jour"]')].map(e => e.getAttribute("aria-label")),
+    votes: c.querySelectorAll('[data-testid="semaine-vote"]').length,
+    texte: c.innerText,
+  };
+});
 let echecs = 0;
 /* 07/10/2026 : sur GitHub, chaque echec devient une annotation du run - le
    journal complet n'est lisible ni depuis le conteneur de travail ni depuis un
@@ -56,6 +73,20 @@ const verifier = (ok, texte) => {
 };
 
 const navigateur = await chromium.launch();
+/* GARDE-TEMPS — 08/10/2026. Le 07/10, la CI mobile de #94 a tourne 24 minutes
+   sans un seul echec, puis a ete coupee par la limite du travail (25 min) : rien
+   ne disait ou elle s'etait arretee. Un parcours normal dure 3 a 5 minutes. Passe
+   ce delai, le parcours s'arrete de lui-meme et NOMME le dernier controle passe,
+   en annotation lisible sans les journaux. */
+const LIMITE_MS = Number(process.env.REPERE_PARCOURS_LIMITE_MS || 12 * 60e3);
+let dernierControle = "(aucun controle encore)";
+const ecrire = console.log;
+console.log = (...a) => { dernierControle = a.join(" ").slice(0, 200); ecrire(...a); };
+setTimeout(() => {
+  const msg = `parcours bloque depuis ${Math.round(LIMITE_MS / 1000)} s ; dernier controle passe : ${dernierControle}`;
+  ecrire(process.env.GITHUB_ACTIONS ? `::error title=parcours mobile::${msg}` : "ECHEC " + msg);
+  process.exit(3);
+}, LIMITE_MS).unref();
 for (const largeur of [360, 390, 430]) {
   const page = await navigateur.newPage({ viewport: { width: largeur, height: 800 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true });
   const demandees = [];
@@ -161,6 +192,23 @@ for (const largeur of [360, 390, 430]) {
      calcul A L'OEIL (invariant 4), pas seulement dans la feuille. */
   verifier(/Calcul Repère/.test(mesure.texte), `${largeur}px : un chiffre calculé se dit calculé sans ouvrir la feuille`);
   verifier(/Le calendrier/.test(mesure.brut), `${largeur}px : la carte « ce qui arrive » est présente (ou sa phrase d'absence)`);
+  /* LA SEMAINE AU PARLEMENT (PR B, 07/10/2026) : sous les trois reponses, jamais
+     parmi elles ; nationale, dite comme telle ; ce qu'elle compte est recalcule
+     ici depuis les fichiers SERVIS, par la meme fonction du socle. */
+  {
+    const vu = await lireSemaine(page);
+    verifier(vu && vu.sous, `${largeur}px · semaine : la carte est sous les trois réponses ${JSON.stringify(vu && vu.ordre)}`);
+    if (SEMAINE.institutions.length) {
+      const total = vu.jours.reduce((n, l) => n + (Number((/: (\d+) séance/.exec(l) || [])[1]) || 0), 0);
+      verifier(vu.jours.length === 7 && total === SEMAINE.total,
+        `${largeur}px · semaine : sept jours, ${SEMAINE.total} séance(s) publique(s), comme le socle (${total} lues)`);
+      verifier(vu.votes === Math.min(2, SEMAINE.votesSolennels.length), `${largeur}px · semaine : les votes solennels annoncés sont montrés (${vu.votes})`);
+      verifier(/tout le pays, pas seulement Meaux/.test(vu.texte), `${largeur}px · semaine : la carte dit qu'elle est nationale`);
+    } else {
+      verifier(/n'est arrivé jusqu'à cet appareil pour aucune institution/.test(vu.texte),
+        `${largeur}px · semaine : sans calendrier servi, la phrase d'absence (jamais une semaine vide)`);
+    }
+  }
   const fautives = demandees.filter(u => adresseFautive(u));
   verifier(fautives.length === 0, `${largeur}px : aucune adresse ne porte un code de commune ${JSON.stringify(fautives)}`);
   verifier(!/77284/.test(page.url()), `${largeur}px : l'adresse de la page ne porte pas le code de la commune`);
@@ -190,10 +238,14 @@ for (const largeur of [360, 390, 430]) {
     communs(m, action);
     if (action === "Qui décide") verifier(/Île-de-France Mobilités/.test(m.brut) && !/Décide : les transports/.test(m.brut), `${largeur}px · Qui décide : en Île-de-France, l'intercommunalité ne « décide » pas des transports`);
     verifier(preuve.test(m.brut), `${largeur}px · ${action} : l'écran répond à sa question`);
+    if (action === "Sources") verifier(/Licence : /.test(m.brut) && /Les noms des députés/.test(m.brut), `${largeur}px · Sources : chaque source dit sa licence, et la source des noms des députés est citée`);
     if (action === "Qui décide") verifier(ELUS_CANTON.length >= 2 && ELUS_CANTON.every(n => m.brut.includes(n)), `${largeur}px · Qui décide : tous les élus du canton sont nommés ${JSON.stringify(ELUS_CANTON)}`);
     if (action !== "Sources") verifier(/D'où vient cette information/.test(m.etiquettes) || /Le calendrier n'est arrivé/.test(m.texte), `${largeur}px · ${action} : la source est à portée de doigt`);
     if (/argent/.test(action)) {
       verifier(/Calculé par Repère · source/.test(m.texte), `${largeur}px · ${action} : les parts calculées se disent calculées`);
+      /* 08/10/2026 (audit) : chaque carte de chiffres dit l'annee de ses comptes */
+      const titres = (m.brut.match(/(Où vont 100 € dépensés|D'où vient l'argent|Sa dette|Chaque jour, en moyenne)[^\n]*/g) || []);
+      verifier(titres.length > 0 && titres.every(t => /\d{4}/.test(t)), `${largeur}px · ${action} : chaque carte de chiffres porte l'année de ses comptes ${JSON.stringify(titres)}`);
       await page.getByRole("button", { name: "Détails du calcul" }).first().click();
       await page.getByText(/ce n'est pas un chiffre publié/).first().waitFor({ timeout: 5000 });
       verifier(true, `${largeur}px · ${action} : le détail du calcul s'ouvre`);
@@ -205,6 +257,21 @@ for (const largeur of [360, 390, 430]) {
   await page.getByRole("button", { name: "Revenir à l'accueil" }).last().click();
   await page.getByText("Où habitez-vous ?").waitFor({ timeout: 5000 });
   verifier(true, `${largeur}px : retour à l'accueil`);
+  await page.close();
+}
+/* UNE DETTE NULLE PUBLIEE SE DIT — 08/10/2026 (audit). Bassevelle (77024) publie
+   un encours de dette nul : la carte disparaissait sans un mot. */
+{
+  const page = await navigateur.newPage({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, reducedMotion: "reduce" });
+  await page.goto(BASE + "/", { waitUntil: "networkidle" });
+  await page.getByLabel(/Où habitez-vous/).fill("bassevelle");
+  await page.getByRole("button", { name: /^Bassevelle,/ }).first().click();
+  await page.getByText("Aller plus loin").first().waitFor({ timeout: 15000 });
+  await page.getByRole("button", { name: "Où va cet argent ?", exact: true }).first().click();
+  await page.getByText(/Où va l'argent de Bassevelle/).first().waitFor({ timeout: 10000 });
+  await page.waitForTimeout(800);
+  const t = await page.evaluate(() => document.body.innerText);
+  verifier(/publie un encours de dette nul pour Bassevelle en \d{4} : la commune ne doit rien/.test(t), "argent : une dette nulle publiée se dit, la carte ne disparaît pas");
   await page.close();
 }
 /* LES PANNES PARTIELLES DISENT « PAS ARRIVE », JAMAIS « ABSENT » — audit de
@@ -313,9 +380,65 @@ async function montantA100ms(reduit) {
   st = await stockage();
   verifier(Object.keys(st.ls).length === 0 && await page.getByText("Votre commune, sur ce téléphone").count() === 0,
     "mémoire : une valeur mal formée est effacée, jamais affichée");
+  /* Un departement qui n'est pas celui de la commune (07/10/2026) : « 97 » pour
+     97101 passait, parce que seuls les deux premiers chiffres etaient compares. */
+  await page.evaluate(() => localStorage.setItem("repere.departement", '{"d":"97","c":"97101"}'));
+  await page.goto(BASE + "/", { waitUntil: "networkidle" });
+  await page.getByText("Où habitez-vous ?").waitFor({ timeout: 10000 });
+  st = await stockage();
+  verifier(Object.keys(st.ls).length === 0 && await page.getByText("Votre commune, sur ce téléphone").count() === 0,
+    "mémoire : un département qui n'est pas celui de la commune (97 pour 97101) est effacé");
   const fautives = demandees.filter(u => adresseFautive(u) || /77284/.test(u));
   verifier(fautives.length === 0, "mémoire : aucune requête ne porte le code de la commune " + JSON.stringify(fautives));
   await ctx.close();
+}
+
+/* LA SEMAINE, CAS FABRIQUES — 07/10/2026. Un agenda de l'Assemblee construit a
+   partir d'aujourd'hui (heure de Paris), le Senat coupe, un telephone regle en
+   Guadeloupe. Ce que la carte doit dire : le texte du vote mot pour mot, le
+   Senat manquant nomme, « agenda pas encore publié » au-dela du dernier jour
+   publie (jamais « aucune séance »), l'heure de Paris dite. Puis les deux
+   institutions coupees : la phrase d'absence. */
+async function ouvrirSemaine({ agenda, senatCoupe, fuseau }) {
+  const ctx = await navigateur.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, reducedMotion: "reduce", ...(fuseau ? { timezoneId: fuseau } : {}) });
+  await ctx.route("**/data/agenda-an.json", r => agenda ? r.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(agenda) }) : r.abort());
+  if (senatCoupe) await ctx.route("**/data/calendrier-senat.json", r => r.abort());
+  const page = await ctx.newPage();
+  await page.goto(BASE + "/", { waitUntil: "networkidle" });
+  await page.getByLabel(/Où habitez-vous/).fill(COMMUNE.saisie);
+  await page.getByRole("button", { name: new RegExp("^" + COMMUNE.nom + ",") }).first().click();
+  await page.getByText("Aller plus loin").first().waitFor({ timeout: 15000 });
+  await page.waitForTimeout(600);
+  const vu = await lireSemaine(page);
+  const m = await page.evaluate(() => ({ deborde: document.documentElement.scrollWidth > document.documentElement.clientWidth + 1 }));
+  await ctx.close();
+  return { ...vu, ...m };
+}
+{
+  const J = k => jourParis(new Date(Date.now() + k * 864e5));
+  const seance = (jour, heure, titre, description = null) => ({ debut: `${jour}T${heure}`, titre, description, categorie: "Séance publique" });
+  const agenda = {
+    source: { producteur: "Assemblée nationale", licence: "Licence ouverte", url: "https://www.assemblee-nationale.fr/dyn/agenda", releve_le: J(0) },
+    evenements: [
+      seance(J(1), "15:00", "Questions au Gouvernement", "Également à l'ordre du jour : Vote solennel sur le projet de loi témoin relatif aux essais ; Débat d'orientation"),
+      seance(J(1), "17:00", "Vote solennel sur la proposition de loi A"),
+      seance(J(2), "09:30", "Vote solennel sur la proposition de loi B"),
+    ],
+  };
+  const vu = await ouvrirSemaine({ agenda, senatCoupe: true, fuseau: "America/Guadeloupe" });
+  verifier(vu && /Vote solennel sur le projet de loi témoin relatif aux essais/.test(vu.texte), "semaine (cas fabriqué) : le vote solennel est cité mot pour mot");
+  verifier(vu && vu.votes === 2 && /Et 1 autre vote solennel dans le calendrier/.test(vu.texte), "semaine (cas fabriqué) : deux votes montrés, le troisième compté, pas tu");
+  verifier(vu && /Le calendrier du Sénat n'est pas arrivé\s: seules les séances de l'Assemblée nationale sont comptées/.test(vu.texte), "semaine (cas fabriqué) : le Sénat manquant est nommé");
+  verifier(vu && vu.jours.length === 7 && vu.jours.slice(3).every(l => /agenda pas encore publié/.test(l)) && /aucune séance publique annoncée/.test(vu.jours[0]),
+    "semaine (cas fabriqué) : au-delà du dernier jour publié, « agenda pas encore publié », jamais « aucune séance » " + JSON.stringify(vu && vu.jours));
+  verifier(vu && /: 2 séances publiques/.test(vu.jours[1]) && /: 1 séance publique/.test(vu.jours[2]), "semaine (cas fabriqué) : les séances sont comptées par jour");
+  verifier(vu && /à l'heure de Paris/.test(vu.texte), "semaine (cas fabriqué) : réglé hors de Paris, le téléphone dit que les heures sont celles de Paris");
+  verifier(vu && !vu.deborde, "semaine (cas fabriqué) : aucun débordement horizontal");
+  const coupe = await ouvrirSemaine({ agenda: null, senatCoupe: true });
+  verifier(coupe && /Le calendrier n'est arrivé jusqu'à cet appareil pour aucune institution/.test(coupe.texte) && coupe.jours.length === 0,
+    "semaine (cas fabriqué) : les deux calendriers coupés, une phrase vraie, aucune semaine prétendue");
+  const paris = await ouvrirSemaine({ agenda, senatCoupe: true, fuseau: "Europe/Paris" });
+  verifier(paris && !/à l'heure de Paris/.test(paris.texte), "semaine (cas fabriqué) : à Paris, la précision d'heure n'encombre pas la carte");
 }
 
 /* RÉPONSES D'ABORD — 30/09/2026. A 390 x 844 (iPhone 12 a 16), les trois

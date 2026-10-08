@@ -371,6 +371,17 @@ verif("elus locaux — le conseiller departemental DU CANTON d'Ustaritz est nomm
 verif("elus locaux — le conseil regional est nomme (Alain Rousset, president, en tete par son rang)",
   /Alain ROUSSET/.test(avecElus) && /Président du conseil régional/i.test(avecElus),
   avecElus.slice(avecElus.indexOf("région"), avecElus.indexOf("région") + 300).replace(/\n+/g, " / "));
+/* 08/10/2026 : aucun delegue n'est mis en avant par le seul ordre du fichier.
+   Ustaritz en envoie trois, tous conseillers : les trois sont VISIBLES, au meme
+   rang (noms lus dans les donnees servies, jamais recopies ici). */
+{
+  const ust = JSON.parse(fs.readFileSync(path.join(DIST, "data/departments/64.json"), "utf8")).communes["64547"];
+  const noms = ((ust.agglo || {}).delegues || []).map(e => e.nom);
+  const visibles = await page.evaluate(ns => ns.filter(n => [...document.querySelectorAll(".ligne")]
+    .some(l => l.checkVisibility() && l.innerText.includes(n))), noms);
+  verif("elus locaux — tous les delegues d'Ustaritz a l'intercommunalite sont visibles, au meme rang",
+    noms.length >= 2 && visibles.length === noms.length, JSON.stringify({ noms, visibles }));
+}
 verif("invariant 3 — les elus locaux sont nommes sans etiquette ni comparaison",
   !/groupe politique|majorité|opposition|classement|mieux que/i.test(avecElus.slice(avecElus.indexOf("intercommunalité"))),
   "");
@@ -968,6 +979,50 @@ verif("invariant 2 — l'entree par commune ne fait fuiter aucun code de commune
   vues.join(" "));
 await ctxDirect.close();
 
+console.log("\n--- ce qui a ete decide : ce que la source couvre, sans plus ------");
+/* 08/10/2026 (audit de verite). Trois phrases affirmaient plus que la donnee :
+   « l'Etat n'a finance aucun projet » (la source ne couvre que quelques dotations,
+   quelques annees), « N textes votes par votre depute » (le releve ne porte pas
+   toujours de position), et un fait de la redaction s'affichait sans sa date. */
+{
+  const ouvrir = async nom => {
+    const ctx = await nav.newContext({ viewport: { width: 390, height: 844 } });
+    const p = await ctx.newPage();
+    await p.goto(base, { waitUntil: "networkidle" });
+    await p.getByLabel(/Où habitez-vous/).fill(nom);
+    await p.waitForTimeout(300);
+    await p.getByRole("button", { name: new RegExp("^" + nom + "\\b") }).first().click();
+    await p.waitForTimeout(1200);
+    await p.getByRole("button", { name: "Ce qui a été décidé" }).first().click();
+    await p.waitForTimeout(1500);
+    const t = await p.evaluate(() => (document.querySelector("main") || document.body).innerText);
+    await ctx.close();
+    return t;
+  };
+  const projets77 = JSON.parse(fs.readFileSync(path.join(DIST, "data/projets/77.json"), "utf8"));
+  const annees = (projets77.exercices || []).map(String).sort();
+  const amp = await ouvrir("Amponville");
+  verif("decide — sans projet publie, l'ecran dit les annees et les dotations couvertes, jamais « l'Etat n'a finance aucun projet »",
+    /Aucun projet aidé par l'État n'est publié pour Amponville/.test(amp) && annees.every(a => amp.includes(a))
+      && /ce n'est donc pas la preuve/.test(amp) && !/n'a financé aucun projet/.test(amp),
+    amp.slice(0, 600).replace(/\n+/g, " / "));
+  const bondy = await ouvrir("Bondy");
+  verif("decide — les scrutins se comptent comme scrutins releves, jamais comme « textes votes par votre depute »",
+    /scrutins? solennels? de l'Assemblée relevés? pour (votre député|vos \d+ députés)/.test(bondy) && !/votés? à l'Assemblée par votre député/.test(bondy)
+      && !/À l'Assemblée nationale, [^\n]+ a voté\n/.test(bondy),
+    bondy.slice(0, 400).replace(/\n+/g, " / "));
+  const evts = JSON.parse(fs.readFileSync(path.join(DIST, "data/evenements.json"), "utf8"));
+  const unFait = (evts.r || evts).find(e => e.d && e.t);
+  if (unFait && bondy.includes(unFait.t.slice(0, 40))) {
+    const { dateFr } = await import("../packages/core/src/format.js");
+    const i = bondy.indexOf(unFait.t.slice(0, 40));
+    verif("decide — un fait de la redaction se lit avec sa date",
+      bondy.slice(Math.max(0, i - 80), i).includes(dateFr(String(unFait.d).slice(0, 10))), bondy.slice(Math.max(0, i - 80), i + 60).replace(/\n+/g, " / "));
+  } else {
+    verif("decide — un fait de la redaction se lit avec sa date (fait introuvable a Bondy : controle non applicable)", true, "");
+  }
+}
+
 console.log("\n--- aujourd'hui : fraicheur de la semaine ----------------------");
 /* PROUVE LE BLOC "Quoi d'autre cette semaine ?" (Aujourdhui.jsx) EN LE
    FORCANT A APPARAITRE. Avec les donnees reelles/fixtures d'aujourd'hui,
@@ -1179,6 +1234,53 @@ verif("retention (plusieurs) — le bloc reste borne (au plus 4 lignes), calme, 
 verif("retention — « rien de nouveau » n'apparait JAMAIS quand il y a du nouveau",
   !/Rien de nouveau/.test(quelques) && !/Rien de nouveau/.test(plusieurs), "");
 
+console.log("\n--- argent : un montant negatif ou nul n'est pas « trop faible » ---");
+/* 08/10/2026 (audit de verite). Le Mesnil-Amelot (77291) publie pour 2025 des
+   impots et taxes NEGATIFS ; l'ecran ecrivait « Montant trop faible pour etre
+   trace ». Le montant est lu dans les donnees servies, jamais recopie ici. */
+{
+  const c = JSON.parse(fs.readFileSync(path.join(DIST, "data/departments/77.json"), "utf8")).communes["77291"];
+  const ans = Object.keys(c.comptes || {}).filter(x => /^\d{4}$/.test(x)).sort();
+  const negatif = ans.length && (c.comptes[ans[ans.length - 1]] || []).some(x => typeof x === "number" && x < 0);
+  const ctx = await nav.newContext({ viewport: { width: 390, height: 844 } });
+  const p = await ctx.newPage();
+  await p.goto(base, { waitUntil: "networkidle" });
+  await p.getByLabel(/Où habitez-vous/).fill("Le Mesnil-Amelot");
+  await p.waitForTimeout(300);
+  await p.getByRole("button", { name: /^Le Mesnil-Amelot\b/ }).first().click();
+  await p.waitForTimeout(1200);
+  await p.getByRole("button", { name: "Où va l'argent" }).first().click();
+  await p.waitForTimeout(1500);
+  const lignes = await p.evaluate(() => [...document.querySelectorAll(".ligne:not(.evolution)")].map(l => l.innerText));
+  const evolutions = await p.evaluate(() => [...document.querySelectorAll(".ligne.evolution")].map(l => l.innerText));
+  await ctx.close();
+  const ligneNeg = lignes.find(l => /-\s?[\d\s\u202f]+ €/.test(l));
+  verif("argent — un montant negatif publie se dit negatif, jamais « trop faible pour etre trace »",
+    !negatif || (ligneNeg && /Montant négatif, tel que la source le publie/.test(ligneNeg) && !/trop faible/.test(ligneNeg)),
+    JSON.stringify({ negatif, ligneNeg }));
+  const evoNeg = evolutions.find(l => /-[\d\s\u202f]+ €/.test(l));
+  verif("argent — une evolution entre montants negatifs dit que la source publie un negatif",
+    !evoNeg || /la source publie un montant négatif pour cette ligne/.test(evoNeg), String(evoNeg));
+  verif("argent — le controle du montant negatif a bien un cas a mesurer", !!negatif, "le dernier exercice de 77291 ne porte plus de montant negatif");
+  /* Paris : memes comptes publies pour la commune et pour le departement. Une
+     seule carte de chiffres, et une phrase qui dit qu'ils ne s'additionnent pas. */
+  {
+    const ctx2 = await nav.newContext({ viewport: { width: 390, height: 844 } });
+    const q = await ctx2.newPage();
+    await q.goto(base, { waitUntil: "networkidle" });
+    await q.getByLabel(/Où habitez-vous/).fill("Paris");
+    await q.waitForTimeout(300);
+    await q.getByRole("button", { name: /^Paris\b/ }).first().click();
+    await q.waitForTimeout(1200);
+    await q.getByRole("button", { name: "Où va l'argent" }).first().click();
+    await q.waitForTimeout(1500);
+    const tp = await q.evaluate(() => (document.querySelector("main") || document.body).innerText);
+    await ctx2.close();
+    verif("argent — a Paris, les memes comptes ne s'affichent pas deux fois, et l'ecran dit qu'ils ne s'additionnent pas",
+      /les mêmes comptes que ceux de Paris/.test(tp) && /Ils ne s'additionnent pas/.test(tp), tp.slice(0, 300).replace(/\n+/g, " / "));
+  }
+}
+
 console.log("\n--- aujourd'hui : ce qui arrive, Senat ET Assemblee ------------");
 /* 28/09/2026 : « Qu'est-ce qui arrive ? » ne lisait que le Senat. Fixture posee
    dans le build de mesure, puis restauree quoi qu'il arrive. */
@@ -1306,6 +1408,26 @@ console.log("\n--- calendrier : chaque institution independante ------------");
     return t;
   };
   try {
+    /* PAR JOURNEE (PR D, 07/10/2026) : trois seances du meme texte le meme jour =
+       une ligne, ses trois heures, ses autres points comptes et listes mot pour mot ;
+       un releve de cinq jours le dit, avec sa date. */
+    {
+      const { jourParis } = await import("../packages/core/src/aujourdhui.js");
+      const jour = dans(2).slice(0, 10);
+      const odj = "Également à l'ordre du jour : Discussion de la proposition de loi de banc Y ; Suite de la discussion de la proposition de loi de banc X ; Débat de banc Z";
+      fs.writeFileSync(fAN, JSON.stringify({ v: 1, source: { producteur: "Assemblée nationale", licence: "Licence ouverte", url: "https://example.invalid/", releve_le: jourParis(new Date(Date.now() - 5 * 864e5)) },
+        evenements: ["09:00", "15:00", "21:30"].map((h, i) => ({ titre: (i ? "Suite de la discussion" : "Discussion") + " de la proposition de loi de banc X",
+          debut: jour + "T" + h, fin: null, categorie: "Séance publique", lieu: null, description: odj })) }));
+      fs.rmSync(fSen, { force: true });
+      const t0 = await ecran();
+      verif("calendrier — trois séances du même texte le même jour : une seule ligne, ses trois heures",
+        (t0.match(/proposition de loi de banc X/g) || []).length === 1 && /9\sh, 15\sh, 21\sh\s30/.test(t0) && /3 séances ce jour-là/.test(t0),
+        t0.slice(0, 500).replace(/\n+/g, " / "));
+      verif("calendrier — les autres points de l'ordre du jour sont comptés (sans le texte de la ligne, sans doublon)",
+        /\+ 2 autres points à l'ordre du jour/.test(t0), t0.slice(0, 500).replace(/\n+/g, " / "));
+      verif("calendrier — un relevé de cinq jours le dit, avec sa date, et renvoie au site officiel",
+        /Agenda de l'Assemblée nationale relevé le .+, il y a 5 jours\s*:\s*il a pu changer depuis/.test(t0), t0.slice(0, 500).replace(/\n+/g, " / "));
+    }
     fs.writeFileSync(fAN, paquet("Assemblée nationale", "Licence ouverte", ["Séance de banc AN seule"]));
     fs.rmSync(fSen, { force: true });
     const t1 = await ecran();
@@ -1330,6 +1452,21 @@ console.log("\n--- calendrier : chaque institution independante ------------");
       /calendrier du Sénat ne contient aucune séance à venir au relevé du/.test(t4) && !/Séance de banc Sénat passée/.test(t4)
       && !/calendrier du Sénat n'est pas disponible/.test(t4),
       t4.slice(0, 400).replace(/\n+/g, " / "));
+    /* L'HEURE DE PARIS (07/10/2026) : l'agenda est publie a l'heure de Paris, et
+       « a venir » se jugeait a l'heure UTC. Une seance commencee il y a une heure
+       restait annoncee (une a deux heures de retard selon la saison). */
+    const { minuteParis } = await import("../packages/core/src/aujourdhui.js");
+    const aParis = h => minuteParis(new Date(Date.now() + h * 36e5));
+    fs.writeFileSync(fAN, JSON.stringify({ v: 1, source: { producteur: "Assemblée nationale", licence: "Licence ouverte", url: "https://example.invalid/", releve_le: "2026-10-07" },
+      evenements: [
+        { titre: "Séance de banc commencée il y a une heure", debut: aParis(-1), fin: null, categorie: "Séance publique", lieu: null, description: null },
+        { titre: "Séance de banc dans trois heures", debut: aParis(3), fin: null, categorie: "Séance publique", lieu: null, description: null },
+      ] }));
+    fs.rmSync(fSen, { force: true });
+    const t5 = await ecran();
+    verif("calendrier — « à venir » se juge à l'heure de Paris : la séance commencée il y a une heure n'est plus annoncée",
+      /Séance de banc dans trois heures/.test(t5) && !/Séance de banc commencée il y a une heure/.test(t5),
+      t5.slice(0, 400).replace(/\n+/g, " / "));
   } finally {
     restaurer(fAN, avant.an); restaurer(fSen, avant.sen);
   }
@@ -1457,6 +1594,43 @@ console.log("\n--- comptes : d'un exercice a l'autre -------------------------")
     verif("evolution — aucun pourcentage dans la carte", carte.length > 0 && !/%/.test(carte), carte.slice(0, 200));
     verif("invariant 4 — la difference est annoncee comme un calcul", /Calcul Repère/i.test(carte) && /soustraction/.test(carte), "");
   }
+}
+
+console.log("\n--- heure de Paris : dite hors de Paris, jamais a Paris ---------");
+/* 08/10/2026. L'agenda est publie a l'heure de Paris. Un navigateur regle en
+   Guadeloupe doit lire que jours et heures sont ceux de Paris, sur Aujourd'hui et
+   dans le calendrier ; a Paris, la precision n'encombre pas l'ecran. */
+{
+  const lire = async fuseau => {
+    const ctx = await nav.newContext({ viewport: { width: 390, height: 844 }, timezoneId: fuseau });
+    const p = await ctx.newPage();
+    await p.addInitScript(([k, v]) => localStorage.setItem(k, v), ["repere.departement", JSON.stringify({ d: "93", v: null })]);
+    await p.goto(base, { waitUntil: "networkidle" });
+    await p.waitForTimeout(500);
+    await p.getByLabel(/Votre commune/i).fill("Bagnolet");
+    await p.waitForTimeout(300);
+    await p.getByRole("button", { name: "Bagnolet", exact: true }).first().click();
+    await p.waitForTimeout(1200);
+    const auj = await p.evaluate(() => document.body.innerText);
+    const aVenir = await p.locator(".auj-a-venir").count();
+    await p.locator("nav.auj-suite").getByRole("button", { name: "Le calendrier" }).click();
+    await p.waitForTimeout(1500);
+    const cal = await p.evaluate(() => document.body.innerText);
+    const calendrier = await p.locator(".ligne.fait[data-debut]").count();
+    await ctx.close();
+    return { auj, cal, aVenir, calendrier };
+  };
+  const phrase = /Jours et heures à l'heure de Paris, comme l'agenda publié/;
+  const ailleurs = await lire("America/Guadeloupe");
+  const paris = await lire("Europe/Paris");
+  verif("heure de Paris — en Guadeloupe, Aujourd'hui dit que l'agenda est a l'heure de Paris",
+    ailleurs.aVenir === 0 || phrase.test(ailleurs.auj), "bloc a venir : " + ailleurs.aVenir);
+  verif("heure de Paris — en Guadeloupe, le calendrier le dit aussi",
+    ailleurs.calendrier === 0 || phrase.test(ailleurs.cal), "lignes : " + ailleurs.calendrier);
+  verif("heure de Paris — au moins un des deux ecrans avait un agenda a montrer (sinon ce controle ne prouve rien)",
+    ailleurs.aVenir > 0 || ailleurs.calendrier > 0, JSON.stringify({ aVenir: ailleurs.aVenir, calendrier: ailleurs.calendrier }));
+  verif("heure de Paris — a Paris, la precision n'apparait pas",
+    !phrase.test(paris.auj) && !phrase.test(paris.cal), "");
 }
 
 console.log("\n--- aujourd'hui : qui, et ce qui est vraiment local -----------");
@@ -1609,7 +1783,6 @@ console.log("\n--- hierarchie mobile : le contenu avant le decor ---------------
       /* dates des rendez-vous du calendrier reellement visibles (data-debut),
          hors teaser des scrutins qui partage la meme classe */
       debutsVisibles: [...document.querySelectorAll(".ligne.fait[data-debut]")].filter(e => e.checkVisibility()).map(e => e.dataset.debut),
-      limite: new Date(Date.now() + 14 * 864e5).toISOString().slice(0, 16),
     };
   });
   verif("ce qui se passe — au-dela de deux semaines, les rendez-vous sont replies, pas retires",
@@ -1625,6 +1798,8 @@ console.log("\n--- hierarchie mobile : le contenu avant le decor ---------------
      garantie reelle, independante du volume : rien au-dela de deux semaines
      n'est deplie — sauf le repli de secours (au plus 5) quand les deux semaines
      sont vides. Cassee pour de vrai : sans le repli, elle tombe. */
+  /* la limite a l'heure de Paris, comme l'ecran et l'agenda (minuteParis, 07/10/2026) */
+  cal.limite = (await import("../packages/core/src/aujourdhui.js")).minuteParis(new Date(Date.now() + 14 * 864e5));
   const auDela = cal.debutsVisibles.filter(x => x >= cal.limite);
   const secours = !cal.debutsVisibles.some(x => x < cal.limite);
   verif("ce qui se passe — aucun rendez-vous au-dela de deux semaines n'est deplie (sauf 5 au plus quand les deux semaines sont vides)",
@@ -1661,6 +1836,32 @@ console.log("\n--- chaque source mene a la source ---------------------------");
     verif(`invariant 4 — Aujourd'hui (${f.nom}) : chaque ligne de source mene a la source`, auj.length === 0, auj.join(" | "));
     verif(`invariant 4 — Ou va l'argent (${f.nom}) : chaque ligne de source mene a la source`, argent.length === 0, argent.join(" | "));
   }
+}
+
+console.log("\n--- sources : les neuf regles, et chaque date ---------------------");
+/* 08/10/2026 (audit) : la page disait « Huit règles » et omettait l'invariant 9
+   (fraicheur) ; les noms des territoires s'affichaient sans leur date de releve. */
+{
+  const { INVARIANTS } = await import("../packages/data-utils/src/invariants.js");
+  const ctx = await nav.newContext({ viewport: { width: 390, height: 844 } });
+  const p = await ctx.newPage();
+  await p.goto(base, { waitUntil: "networkidle" });
+  await p.getByLabel(/Où habitez-vous/).fill("Bagnolet");
+  await p.waitForTimeout(300);
+  await p.getByRole("button", { name: /^Bagnolet\b/ }).first().click();
+  await p.waitForTimeout(1200);
+  await p.getByRole("button", { name: "Où va l'argent" }).first().click();
+  await p.waitForTimeout(900);
+  await p.getByRole("button", { name: "Sources" }).first().click();
+  await p.waitForTimeout(1200);
+  const t = await p.evaluate(() => (document.querySelector("main") || document.body).innerText);
+  await ctx.close();
+  verif("sources — la page annonce autant de regles qu'elle en liste, fraicheur comprise",
+    INVARIANTS.length === 9 && /Neuf règles/.test(t) && INVARIANTS.every(i => t.includes(i.regle.slice(0, 40))), t.slice(t.indexOf("règles") - 40, t.indexOf("règles") + 80).replace(/\n+/g, " / "));
+  const idx = JSON.parse(fs.readFileSync(path.join(DIST, "data/index.json"), "utf8"));
+  const terr = (idx.sources && idx.sources.territoires) || [];
+  verif("sources — les noms des territoires disent leur date de releve",
+    terr.length > 0 && terr.filter(x => x.releve_le).every(() => /Noms des territoires[^\n]*relevé le \d/.test(t)), "");
 }
 
 console.log("\n--- recherche et accents -------------------------------------");

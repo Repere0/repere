@@ -303,3 +303,26 @@ export function parHabitant(ex) {
   const h = i => { const x = valeur(ex, i); return x && typeof x.hab === "number" ? x.hab : null; };
   return { recettes: h(0), depenses: h(1), dette: h(2), investissement: h(3), salaires: h(4), impots: h(5) };
 }
+
+/* LES DELEGUES D'UNE COMMUNE A SON INTERCOMMUNALITE, SANS EN DISTINGUER UN AU
+ * HASARD — 08/10/2026. Le site affichait le PREMIER delegue en grand et repliait
+ * les autres. La source les range par fonction (presidence, vice-presidences,
+ * puis conseillers : extract-html.js, rangFonction) ; mais dans 4 656 communes le
+ * premier n'est qu'un conseiller communautaire parmi d'autres, distingue par
+ * l'ordre du fichier. Meme defaut que le binome du canton (#84).
+ * Regle :
+ *   - jusqu'a REPLI_DELEGUES delegues : tous visibles, au meme rang ;
+ *   - au-dela (Marseille en envoie 100) : restent visibles ceux qui ont une
+ *     FONCTION ecrite par la source (president, vice-president...) ; TOUS les
+ *     conseillers sont dans un repli qui dit leur nombre. Aucun n'est choisi.
+ * L'ordre est celui de l'extraction (par fonction, puis celui du RNE), et l'ecran
+ * le dit : c'est Repere qui range par fonction, pas la source. */
+export const REPLI_DELEGUES = 8;
+const CONSEILLER = /^conseill[eè]re? communautaire$/i;
+export function delegationIntercommunalite(delegues) {
+  const tous = Array.isArray(delegues) ? delegues : [];
+  if (tous.length <= REPLI_DELEGUES) return { visibles: tous, replies: [], total: tous.length };
+  const visibles = tous.filter(e => e.fonction && !CONSEILLER.test(e.fonction.trim()));
+  const replies = tous.filter(e => !visibles.includes(e));
+  return { visibles, replies, total: tous.length };
+}
