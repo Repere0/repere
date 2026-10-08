@@ -138,6 +138,48 @@ test("le releve ne compose aucune adresse a partir d'un code de commune", () => 
   assert.ok(!/insee|commune/i.test(adresses.join(" ")));
 });
 
+/* LE CALENDRIER PAR JOURNEE — 07/10/2026 (@repere/core, regrouperParJour, PR D). */
+test("calendrier — un texte, un jour, une ligne : intitule de la premiere seance, points mot pour mot, sans doublon", async () => {
+  const { regrouperParJour, pointsOrdreDuJour, cleTexte, ageReleve } = await import("../packages/core/src/index.js");
+  const ev = (debut, titre, description = null, institution = "Assemblée nationale") => ({ debut, titre, description, institution, categorie: "Séance publique" });
+  const g = regrouperParJour([
+    ev("2026-10-08T09:00", "Discussion de la proposition de loi X", "Également à l'ordre du jour : Discussion de la proposition de loi Y ; Suite de la discussion de la proposition de loi X"),
+    ev("2026-10-08T15:00", "Questions au Gouvernement"),
+    ev("2026-10-08T16:30", "Suite de la discussion de la proposition de loi X", "Également à l'ordre du jour : Suite de la discussion de la proposition de loi Y ; Débat Z"),
+    ev("2026-10-08T21:30", "Suite de la discussion de la proposition de loi X", null, "Sénat"),
+    ev("2026-10-09T09:00", "Suite de la discussion de la proposition de loi X"),
+  ]);
+  assert.deepEqual(g.map(x => [x.jour, x.institution, x.seances]), [
+    ["2026-10-08", "Assemblée nationale", 2], ["2026-10-08", "Assemblée nationale", 1],
+    ["2026-10-08", "Sénat", 1], ["2026-10-09", "Assemblée nationale", 1],
+  ], "meme texte + meme jour + meme institution : une ligne ; un autre jour ou une autre institution : une autre");
+  assert.equal(g[0].titre, "Discussion de la proposition de loi X", "l'intitule affiche est celui de la premiere seance, mot pour mot");
+  assert.deepEqual(g[0].debuts, ["2026-10-08T09:00", "2026-10-08T16:30"]);
+  assert.deepEqual(g[0].points, ["Discussion de la proposition de loi Y", "Débat Z"],
+    "points mot pour mot, sans le texte du groupe, « Suite de la discussion de Y » compte pour Y");
+  assert.equal(g[1].points, null, "sans description, aucun point pretendu");
+  assert.equal(pointsOrdreDuJour("Texte libre du Sénat"), null, "une description d'une autre forme n'est pas decoupee");
+  assert.equal(cleTexte("Suite de la discussion du projet de loi de finances"), cleTexte("Discussion du projet de loi de finances"));
+  const lib = regrouperParJour([{ debut: "2026-10-08T10:00", titre: "Audition", description: "Commission des lois", institution: "Sénat", categorie: "Commission" }]);
+  assert.deepEqual(lib[0].textesLibres, ["Commission des lois"]);
+  // l'age d'un releve, a l'heure de Paris
+  assert.equal(ageReleve("2026-10-07", new Date("2026-10-07T20:00:00Z")), 0);
+  assert.equal(ageReleve("2026-10-07", new Date("2026-10-07T22:30:00Z")), 1, "minuit passe a Paris");
+  assert.equal(ageReleve("2026-10-05", new Date("2026-10-07T10:00:00Z")), 2);
+  assert.equal(ageReleve(undefined), null);
+});
+
+test("calendrier — sur l'agenda reel : moins de lignes que de seances, et aucune seance perdue", async (t) => {
+  const { regrouperParJour } = await import("../packages/core/src/index.js");
+  const f = new URL("../data/agenda-an.json", import.meta.url);
+  if (!fs.existsSync(f)) { t.skip("agenda de l'Assemblee absent de data/ (non extrait ici)"); return; }
+  const ev = JSON.parse(fs.readFileSync(f, "utf8")).evenements.map(e => ({ ...e, institution: "Assemblée nationale" }));
+  const g = regrouperParJour(ev);
+  assert.equal(g.reduce((n, x) => n + x.seances, 0), ev.length, "chaque seance est dans une ligne, et une seule");
+  assert.ok(g.length <= ev.length);
+  for (const x of g) assert.ok(x.debuts.every(d => d.slice(0, 10) === x.jour), "une ligne ne melange jamais deux jours");
+});
+
 /* LA SEMAINE AU PARLEMENT — 07/10/2026 (@repere/core, semaineParlement). */
 test("semaine — sept jours, seances publiques comptees, votes solennels lus mot pour mot", async () => {
   const { semaineParlement } = await import("../packages/core/src/index.js");

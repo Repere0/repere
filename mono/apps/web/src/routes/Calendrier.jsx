@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useId } from "react";
+import { regrouperParJour, ageReleve, AGE_RELEVE_NORMAL, heureFr } from "@repere/core";
 import { Carte, Vide, Source, Chargement, dateFr, jourFr } from "@repere/ui";
 import {
   chargerCalendrierSenat, chargerAgendaAN,
@@ -29,10 +30,8 @@ function licenceSource(s) {
   return /Sénat/i.test(producteur) ? "non précisée par le Sénat" : undefined;
 }
 
-function heureFr(iso) {
-  const m = /T(\d{2}):(\d{2})/.exec(iso || "");
-  return m ? `${m[1]}h${m[2]}` : "";
-}
+/* « 9 h », « 15 h 30 » : la meme ecriture qu'Aujourd'hui (@repere/core), et non
+   plus « 09h00 » (07/10/2026). */
 
 /* COUCHE D'EXPLORATION, PAS UN ECRAN A PART (decision produit, 23/09/2026).
  * Le teaser (8 plus recents, ~1,3 Ko) charge en meme temps que le Senat et
@@ -245,25 +244,43 @@ export default function Calendrier() {
     .filter(([, n]) => n > 0)
     .map(([nom, n]) => `${n} ${nom === "Sénat" ? "au Sénat" : "à l'Assemblée nationale"}`)
     .join(", ");
-  const ligne = (e, i) => (
-    <div className="ligne fait" key={i} data-debut={e.debut}>
+  /* UNE LIGNE PAR TEXTE ET PAR JOUR — 07/10/2026 (@repere/core, regrouperParJour).
+     Trois seances du meme texte le meme jour : une ligne, trois heures. L'intitule
+     est celui de la premiere seance, mot pour mot ; les autres points de l'ordre
+     du jour sont comptes dans le repli, et listes mot pour mot dedans. */
+  const ligne = (g, i) => (
+    <div className="ligne fait" key={i} data-debut={g.debut} data-seances={g.seances}>
       <div className="ligne-h">
-        <span>{jourFr(e.debut)}</span>
-        <b>{heureFr(e.debut)}</b>
+        <span>{jourFr(g.debut)}</span>
+        <b>{g.debuts.map(x => heureFr(x).replace(/ /g, "\u00a0")).filter(Boolean).join(", ")}</b>
       </div>
-      <div className="tag">{e.institution}</div>
-      <b className="fait-titre">{e.titre}</b>
+      <div className="tag">{g.institution}</div>
+      <b className="fait-titre">{g.titre}</b>
       <div className="ligne-note">
-        {e.categorie ? e.categorie + (e.lieu ? " · " + e.lieu : "") : e.lieu}
+        {[g.categorie, g.lieu].filter(Boolean).join(" · ")}
+        {g.seances > 1 ? (g.categorie || g.lieu ? " · " : "") + g.seances + " séances ce jour-là" : ""}
       </div>
-      {e.description ? (
+      {g.points && g.points.length ? (
+        <details className="repli">
+          <summary><span>+ {g.points.length} {g.points.length > 1 ? "autres points" : "autre point"} à l'ordre du jour</span></summary>
+          <div className="repli-in"><ul className="points-odj">{g.points.map((p, k) => <li key={k} className="tx-note">{p}</li>)}</ul></div>
+        </details>
+      ) : null}
+      {g.textesLibres.length ? (
         <details className="repli">
           <summary><span>En savoir plus</span></summary>
-          <div className="repli-in"><p className="tx-note">{e.description}</p></div>
+          <div className="repli-in">{g.textesLibres.map((t, k) => <p key={k} className="tx-note">{t}</p>)}</div>
         </details>
       ) : null}
     </div>
   );
+  /* L'AGE DU RELEVE, PAR INSTITUTION (invariant 9) : releve chaque matin, un
+     agenda de plus d'un jour signifie qu'une collecte a manque. On le dit, avec
+     la date ; on ne le presente pas comme celui du jour. */
+  const vieillis = valides.map(({ inst, r }) => ({ inst, age: ageReleve((r.donnees.source || {}).releve_le), releve: (r.donnees.source || {}).releve_le }))
+    .filter(x => x.age !== null && x.age > AGE_RELEVE_NORMAL);
+  const gProches = regrouperParJour(proches);
+  const gTard = regrouperParJour(plusTard);
 
   return (
     <div className="pile">
@@ -275,7 +292,14 @@ export default function Calendrier() {
             <a href={inst.urlRepli} target="_blank" rel="noopener noreferrer">Agenda officiel {inst.nom === "Sénat" ? "du Sénat" : "de l'Assemblée"} ↗</a>
           </p>
         ))}
-        {proches.map(ligne)}
+        {vieillis.map(({ inst, age, releve }) => (
+          <p className="ligne-note releve-ancien" key={"age-" + inst.cle} data-institution={inst.cle}>
+            Agenda {inst.nom === "Sénat" ? "du Sénat" : "de l'Assemblée nationale"} relevé le {dateFr(releve)}, il y a {age} jours :
+            il a pu changer depuis. Le site officiel fait foi.{" "}
+            <a href={inst.urlRepli} target="_blank" rel="noopener noreferrer">Agenda officiel ↗</a>
+          </p>
+        ))}
+        {gProches.map(ligne)}
         {plusTard.length ? (
           <details className="repli plus-tard">
             <summary>
@@ -284,7 +308,7 @@ export default function Calendrier() {
                 {resumeTard ? " (" + resumeTard + ")" : ""}
               </span>
             </summary>
-            <div className="repli-in">{plusTard.map((e, i) => ligne(e, "t" + i))}</div>
+            <div className="repli-in">{gTard.map((g, i) => ligne(g, "t" + i))}</div>
           </details>
         ) : null}
         {sourcesAffichees.map((s, i) => (
