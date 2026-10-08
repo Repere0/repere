@@ -44,7 +44,11 @@ function Evolution({ e, nom, src }) {
           <div className="ligne-note">
             {l.diff === null
               ? `Non comparable : le fichier ne porte pas cette ligne pour ${l.m1 === null ? e.an1 : e.an2}.`
-              : `${e.an1} : ${euros(l.m1)} · ${e.an2} : ${euros(l.m2)}`}
+              : `${e.an1} : ${euros(l.m1)} · ${e.an2} : ${euros(l.m2)}`
+                /* 08/10/2026 : deux montants negatifs se soustraient, mais « ce qu'elle
+                   leve : - 700 215 € » se lirait comme une baisse d'impots ; on dit que
+                   la source publie un negatif, sans en inventer la raison. */
+                + (l.diff !== null && (l.m1 < 0 || l.m2 < 0) ? " · la source publie un montant négatif pour cette ligne" : "")}
           </div>
         </div>
       ))}
@@ -99,6 +103,8 @@ export default function OuVaArgent({ paquet, index, commune }) {
     if (!paquet || !paquet.comptes_departement) return null;
     return dernierExercice({ comptes: paquet.comptes_departement }, agregats);
   }, [paquet, agregats]);
+  const memesComptes = !!(exercice && exerciceDept && exercice.an === exerciceDept.an
+    && JSON.stringify(exercice.ex) === JSON.stringify(exerciceDept.ex));
   const exerciceRegion = useMemo(() => {
     if (!regions || !regions.regions || !territoireDept || !territoireDept.region_code) return null;
     const ex = regions.regions[territoireDept.region_code];
@@ -206,7 +212,15 @@ export default function OuVaArgent({ paquet, index, commune }) {
        * ne le pouvait pas avant l'extraction. Aucun etat de chargement ici :
        * `paquet.comptes_departement` est deja arrive avec le reste du
        * departement, avant meme l'ouverture de cet ecran. */}
-      {territoireDept ? (
+      {/* MEMES COMPTES A DEUX NIVEAUX — 08/10/2026 (audit de verite). A Paris, la
+          source publie exactement les memes comptes pour la commune et pour le
+          departement : une seconde carte aux chiffres identiques invitait a les
+          additionner (2 x 9,6 Md€). La regle est lue dans la donnee (memes
+          montants, meme exercice), sans liste de territoires ecrite ici. */}
+      {territoireDept && memesComptes ? (
+        <Vide titre={`${territoireDept.nom || "Ce département"} : les mêmes comptes que ceux de ${c.nom}, comptes ${exerciceDept.an}.`}
+          corps={`La source publie exactement les mêmes montants pour la commune et pour le département : ce sont les comptes d'une seule collectivité, qui est à la fois commune et département. Ils ne s'additionnent pas.`} />
+      ) : territoireDept ? (
         exerciceDept ? (
           <CompteTerritoire titre={territoireDept.nom || `Département ${territoireDept.code}`}
             echelon="dept" exerciceAn={exerciceDept.an} ex={exerciceDept.ex} agregats={agregats} src={src} />

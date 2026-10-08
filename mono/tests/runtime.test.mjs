@@ -1179,6 +1179,53 @@ verif("retention (plusieurs) — le bloc reste borne (au plus 4 lignes), calme, 
 verif("retention — « rien de nouveau » n'apparait JAMAIS quand il y a du nouveau",
   !/Rien de nouveau/.test(quelques) && !/Rien de nouveau/.test(plusieurs), "");
 
+console.log("\n--- argent : un montant negatif ou nul n'est pas « trop faible » ---");
+/* 08/10/2026 (audit de verite). Le Mesnil-Amelot (77291) publie pour 2025 des
+   impots et taxes NEGATIFS ; l'ecran ecrivait « Montant trop faible pour etre
+   trace ». Le montant est lu dans les donnees servies, jamais recopie ici. */
+{
+  const c = JSON.parse(fs.readFileSync(path.join(DIST, "data/departments/77.json"), "utf8")).communes["77291"];
+  const ans = Object.keys(c.comptes || {}).filter(x => /^\d{4}$/.test(x)).sort();
+  const negatif = ans.length && (c.comptes[ans[ans.length - 1]] || []).some(x => typeof x === "number" && x < 0);
+  const ctx = await nav.newContext({ viewport: { width: 390, height: 844 } });
+  const p = await ctx.newPage();
+  await p.goto(base, { waitUntil: "networkidle" });
+  await p.getByLabel(/Où habitez-vous/).fill("Le Mesnil-Amelot");
+  await p.waitForTimeout(300);
+  await p.getByRole("button", { name: /^Le Mesnil-Amelot\b/ }).first().click();
+  await p.waitForTimeout(1200);
+  await p.getByRole("button", { name: "Où va l'argent" }).first().click();
+  await p.waitForTimeout(1500);
+  const lignes = await p.evaluate(() => [...document.querySelectorAll(".ligne:not(.evolution)")].map(l => l.innerText));
+  const evolutions = await p.evaluate(() => [...document.querySelectorAll(".ligne.evolution")].map(l => l.innerText));
+  await ctx.close();
+  const ligneNeg = lignes.find(l => /-\s?[\d\s\u202f]+ €/.test(l));
+  verif("argent — un montant negatif publie se dit negatif, jamais « trop faible pour etre trace »",
+    !negatif || (ligneNeg && /Montant négatif, tel que la source le publie/.test(ligneNeg) && !/trop faible/.test(ligneNeg)),
+    JSON.stringify({ negatif, ligneNeg }));
+  const evoNeg = evolutions.find(l => /-[\d\s\u202f]+ €/.test(l));
+  verif("argent — une evolution entre montants negatifs dit que la source publie un negatif",
+    !evoNeg || /la source publie un montant négatif pour cette ligne/.test(evoNeg), String(evoNeg));
+  verif("argent — le controle du montant negatif a bien un cas a mesurer", !!negatif, "le dernier exercice de 77291 ne porte plus de montant negatif");
+  /* Paris : memes comptes publies pour la commune et pour le departement. Une
+     seule carte de chiffres, et une phrase qui dit qu'ils ne s'additionnent pas. */
+  {
+    const ctx2 = await nav.newContext({ viewport: { width: 390, height: 844 } });
+    const q = await ctx2.newPage();
+    await q.goto(base, { waitUntil: "networkidle" });
+    await q.getByLabel(/Où habitez-vous/).fill("Paris");
+    await q.waitForTimeout(300);
+    await q.getByRole("button", { name: /^Paris\b/ }).first().click();
+    await q.waitForTimeout(1200);
+    await q.getByRole("button", { name: "Où va l'argent" }).first().click();
+    await q.waitForTimeout(1500);
+    const tp = await q.evaluate(() => (document.querySelector("main") || document.body).innerText);
+    await ctx2.close();
+    verif("argent — a Paris, les memes comptes ne s'affichent pas deux fois, et l'ecran dit qu'ils ne s'additionnent pas",
+      /les mêmes comptes que ceux de Paris/.test(tp) && /Ils ne s'additionnent pas/.test(tp), tp.slice(0, 300).replace(/\n+/g, " / "));
+  }
+}
+
 console.log("\n--- aujourd'hui : ce qui arrive, Senat ET Assemblee ------------");
 /* 28/09/2026 : « Qu'est-ce qui arrive ? » ne lisait que le Senat. Fixture posee
    dans le build de mesure, puis restauree quoi qu'il arrive. */

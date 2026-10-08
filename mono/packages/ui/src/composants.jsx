@@ -81,6 +81,13 @@ export function BarreEchelon({ libelle, valeur, maximum, unite = "€", echelon 
   /* Doctrine du vide : une barre de largeur nulle ferait passer une valeur pour
      une absence. En dessous d'un pour cent, on écrit le chiffre sans barre. */
   const tracable = pc >= 1;
+  /* 08/10/2026 (audit de verite) : un montant NEGATIF publie (Le Mesnil-Amelot,
+     impots et taxes 2025 : -1 199 568 €) et un ZERO publie recevaient la meme
+     note « trop faible pour etre trace » : fausse dans les deux cas. Chacun a
+     sa phrase ; Repere n'invente pas la raison d'un montant negatif. */
+  const note = valeur < 0 ? "Montant négatif, tel que la source le publie : il ne se trace pas sur une barre."
+    : valeur === 0 ? "Montant nul, tel que la source le publie."
+    : "Montant trop faible pour être tracé à cette échelle.";
   return (
     <div className="ligne">
       <div className="ligne-h">
@@ -90,7 +97,7 @@ export function BarreEchelon({ libelle, valeur, maximum, unite = "€", echelon 
       {tracable ? (
         <div className="barre"><i style={{ width: pc + "%", background: `var(--e-${echelon})` }} /></div>
       ) : (
-        <div className="ligne-note">Montant trop faible pour être tracé à cette échelle.</div>
+        <div className="ligne-note">{note}</div>
       )}
     </div>
   );
