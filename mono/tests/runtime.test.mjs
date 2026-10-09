@@ -2045,6 +2045,28 @@ verif("accessibilite — Tab ne fait pas sortir du dialogue de vocabulaire (pieg
 await pageMot.keyboard.press("Escape");
 await ctxMot.close();
 
+console.log("\n--- qui decide : des institutions, et des effectifs tels que listes ---");
+/* 08/10/2026 (audit beta) : « Ce que décide votre député » presentait une personne
+   comme celle qui decide ; « Bagnolet envoie 1 élu » et « 204 autres du conseil
+   régional » presentaient un releve comme un total. */
+{
+  const ctx = await nav.newContext({ viewport: { width: 390, height: 844 } });
+  const p = await ctx.newPage();
+  await p.goto(base, { waitUntil: "networkidle" });
+  await p.getByLabel(/Où habitez-vous/).fill("Bagnolet");
+  await p.waitForTimeout(300);
+  await p.getByRole("button", { name: /^Bagnolet\b/ }).first().click();
+  await p.waitForTimeout(1200);
+  await p.getByRole("button", { name: "Qui décide", exact: true }).first().click();
+  await p.waitForTimeout(2000);
+  const t = await p.evaluate(() => (document.querySelector("main") || document.body).innerText);
+  await ctx.close();
+  verif("qui decide — jamais « ce que décide votre député » : c'est l'Assemblee qui vote, avec le Senat",
+    !/décide votre député/i.test(t) && /Ce que vote l'Assemblée nationale, où siège votre député/.test(t) && /votées avec le Sénat/.test(t), "");
+  verif("qui decide — les effectifs se disent comme ce que liste le Repertoire, jamais comme un total",
+    /Le Répertoire national des élus liste \d+ élus? de Bagnolet/.test(t) && !/Bagnolet envoie \d/.test(t) && !/\d+ autres du conseil régional/.test(t), "");
+}
+
 console.log("\n--- mouvement reduit -----------------------------------------");
 /* LA COUPURE DU MOUVEMENT, MESUREE ET PAS DEDUITE. Le controle statique lit le
    CSS ; celui-ci ouvre une page en declarant le reglage systeme « moins

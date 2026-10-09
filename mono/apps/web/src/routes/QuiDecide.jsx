@@ -390,7 +390,9 @@ function Agglo({ c, src }) {
           (« Ca Du Pays Basque »), et deviner la bonne casse serait ecrire
           un nom que la source n'a pas publie ainsi. Trouve en testant : ce
           nom manquait purement et simplement avant ce correctif. */}
-      {c.agglo.nom ? <p className="tx-note tx-intro">{c.nom} envoie {c.agglo.delegues.length} élu{c.agglo.delegues.length > 1 ? "s" : ""} au conseil de {c.agglo.nom}.</p> : null}
+      {/* 08/10/2026 (audit) : « Montreuil envoie 3 élus » presentait le releve comme
+          un total ; le Repertoire peut en lister moins que le conseil n'en compte. */}
+      {c.agglo.nom ? <p className="tx-note tx-intro">Le Répertoire national des élus liste {c.agglo.delegues.length} élu{c.agglo.delegues.length > 1 ? "s" : ""} de {c.nom} au conseil de {c.agglo.nom}.</p> : null}
       {total > 1 ? <p className="ligne-note">Rangés par fonction au conseil (présidence, vice-présidences, puis conseillers), et sinon dans l'ordre du Répertoire national des élus.</p> : null}
       {visibles.map((e, i) => <LigneElu key={i} e={e} />)}
       {replies.length ? (
@@ -516,7 +518,7 @@ function ConseilRegional({ index, paquet, src }) {
       <LigneElu e={tete} />
       {reste.length ? (
         <details className="repli">
-          <summary><span>{reste.length} autres du conseil régional</span></summary>
+          <summary><span>{reste.length} autre{reste.length > 1 ? "s" : ""} élu{reste.length > 1 ? "s" : ""} du conseil régional listé{reste.length > 1 ? "s" : ""} par le Répertoire</span></summary>
           <div className="repli-in">{reste.map((e, i) => <LigneElu key={i} e={e} />)}</div>
         </details>
       ) : null}
@@ -579,7 +581,7 @@ export default function QuiDecide({ paquet, index, commune }) {
         sousTitre={<>Le député est élu par <Mot cle="circonscription">circonscription</Mot>, pas par commune</>}
         tag={p.absence ? undefined : "Donnée officielle"}>
         <div className="ligne">
-          <div className="ligne-h"><span>Ce que décide votre député</span></div>
+          <div className="ligne-h"><span>Ce que vote l'Assemblée nationale, où siège votre député</span></div>
           <div className="ligne-note">{COMPETENCES.france.charAt(0).toUpperCase() + COMPETENCES.france.slice(1)}.</div>
         </div>
         {p.absence ? (

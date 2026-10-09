@@ -35,7 +35,7 @@ export default function QuiDecide() {
              Metropole du Grand Paris) viennent de @repere/core, comme sur le site. */
           const precisions = (n as { precisions?: string[] }).precisions || [];
           return { ...n, note: [n.delegues
-            ? `${d.nomCommune} y envoie ${n.delegues} élu${n.delegues > 1 ? "s" : ""}. Vous ne l'élisez pas directement : ce sont des conseillers municipaux qui y siègent.`
+            ? `Le Répertoire national des élus y liste ${n.delegues} élu${n.delegues > 1 ? "s" : ""} de ${d.nomCommune}. Vous ne l'élisez pas directement : ce sont des conseillers municipaux qui y siègent.`
             : "Le Répertoire national des élus ne porte pas de délégué pour cette commune à son intercommunalité.", ...precisions].join(" ") };
         }
         if (n.echelon === "region" && !n.personne) {
