@@ -40,7 +40,9 @@ export function phraseAdjoints(adjoints, nomMaire) {
          le budget de la commune ». C'est faux : le budget est propose par le
          maire et vote par le conseil municipal tout entier (code general des
          collectivites territoriales, art. L2312-1), adjoints compris. */
-      { t: ` siègent avec ${nomMaire} au conseil municipal, qui vote le budget de la commune.` },
+      /* 08/10/2026 (audit) : « 1 adjoint siègent » (accord), et « 20 adjoints siègent
+         avec X au conseil municipal » laissait croire a un conseil de 21 membres. */
+      { t: ` ${adjoints > 1 ? "siègent avec" : "siège avec"} ${nomMaire} au conseil municipal, aux côtés des autres conseillers municipaux : c'est ce conseil qui vote le budget de la commune.` },
     ];
   }
   if (adjoints === null) {
@@ -57,7 +59,9 @@ const RESULTAT = s => (s === "adopté" ? "adopté" : s === "rejeté" ? "rejeté"
    Une commune partagee ne permet pas de dire laquelle est la sienne : on le dit. */
 export function phraseCirconscription({ nbCircos, nomCommune, nomDep }, circo) {
   return nbCircos > 1
-    ? `${nomCommune} est partagée entre ${nbCircos} circonscriptions. Vote du député élu dans la ${ordinal(circo)} :`
+    /* 08/10/2026 (audit) : le vote d'UN depute sur 18 etait montre a tout Paris sans
+       dire que c'etait un exemple ; l'application, elle, disait « Par exemple ». */
+    ? `${nomCommune} est partagée entre ${nbCircos} circonscriptions : votre député dépend de votre adresse, que Repère ne demande pas. Par exemple, vote du député élu dans la ${ordinal(circo)} :`
     : `Vote du député élu dans votre circonscription (${ordinal(circo)} circonscription${nomDep ? " — " + nomDep : ""}), à l'Assemblée nationale :`;
 }
 
@@ -93,4 +97,11 @@ export const phraseProjet = p => `${montantEngage(p)} en ${p.annee}.`;
 export function phraseProjetLocal(p, nomCommune) {
   const ancienne = ancienneCommune(p);
   return `${montantEngage(p)} à ${ancienne ? `${ancienne} (aujourd'hui rattachée à ${nomCommune})` : nomCommune} en ${p.annee}.`;
+}
+
+/* « de Paris », « d'Alexis » : l'elision devant une voyelle (08/10/2026, audit :
+   « la position de Alexis Corbière »). Le h n'est jamais elide : on ne devine pas
+   sa prononciation. */
+export function de(nom) {
+  return /^[aeiouyàâäéèêëîïôöûüAEIOUYÀÂÄÉÈÊËÎÏÔÖÛÜ]/.test(String(nom || "")) ? "d'" + nom : "de " + nom;
 }

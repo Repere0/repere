@@ -1661,7 +1661,7 @@ async function aujCommune(dep, nom) {
     !/Et dans votre commune/.test(u), "");
   const paris = await aujCommune("75", "Paris");
   verif("qui — commune partagee (Paris, 18 circonscriptions) : jamais « votre circonscription » au hasard",
-    /Paris est partagée entre 18 circonscriptions\. Vote du député élu dans la \d+(re|e) :/.test(paris) && !/votre circonscription/.test(paris),
+    /Paris est partagée entre 18 circonscriptions : votre député dépend de votre adresse, que Repère ne demande pas\. Par exemple, vote du député élu dans la \d+(re|e) :/.test(paris) && !/votre circonscription/.test(paris),
     paris.slice(0, 300).replace(/\n+/g, " / "));
   const pr93 = JSON.parse(fs.readFileSync(path.join(DIST, "data", "projets", "93.json"), "utf8"));
   const p93 = JSON.parse(fs.readFileSync(path.join(DIST, "data", "departments", "93.json"), "utf8"));
