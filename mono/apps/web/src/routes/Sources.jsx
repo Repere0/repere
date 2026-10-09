@@ -2,6 +2,12 @@ import React from "react";
 import { Carte, Source, Tuile, dateFr } from "@repere/ui";
 import { INVARIANTS, PROMESSES } from "@repere/data-utils/invariants";
 /* le nombre de regles s'ecrit en lettres, et suit la liste (08/10/2026 : « Huit » restait ecrit en dur) */
+/* « 17e législature, relevé le 5 octobre 2026 » — et jamais « relevé le undefined »
+   (08/10/2026, audit : le releve des Questions au Gouvernement ne porte pas de date). */
+function mentionLegislature(x) {
+  const morceaux = [x.legislature ? x.legislature + "e législature" : null, x.releve_le ? "relevé le " + dateFr(x.releve_le) : "pas de relevé dans cette publication"];
+  return morceaux.filter(Boolean).join(", ");
+}
 const NOMBRES = ["", "Une", "Deux", "Trois", "Quatre", "Cinq", "Six", "Sept", "Huit", "Neuf", "Dix", "Onze", "Douze"];
 
 /* Cet écran n'est pas décoratif : il rend le produit vérifiable par son lecteur.
@@ -24,9 +30,7 @@ export default function Sources({ index, paquet }) {
             deputes, ce qu'il ne fait pas. */}
         {s.deputes ? <Source producteur={"Députés — " + s.deputes.producteur}
           licence={s.deputes.licence}
-          mention={s.deputes.legislature
-            ? s.deputes.legislature + "e législature, relevé le " + dateFr(s.deputes.releve_le)
-            : undefined}
+          mention={mentionLegislature(s.deputes)}
           url={s.deputes.url} /> : null}
         {/* Les noms des territoires ne viennent pas du meme fichier que le reste :
             ils ont leurs propres producteurs, et ils le disent. */}
@@ -48,21 +52,15 @@ export default function Sources({ index, paquet }) {
             source declaree dans index.json n'apparait pas ici. */}
         {s.scrutins ? <Source producteur={"Scrutins — " + s.scrutins.producteur}
           licence={s.scrutins.licence}
-          mention={s.scrutins.legislature
-            ? s.scrutins.legislature + "e législature, relevé le " + dateFr(s.scrutins.releve_le)
-            : undefined}
+          mention={mentionLegislature(s.scrutins)}
           url={s.scrutins.url} /> : null}
         {s.scrutinsDetails ? <Source producteur={"Scrutins — " + s.scrutinsDetails.producteur}
           licence={s.scrutinsDetails.licence}
-          mention={s.scrutinsDetails.legislature
-            ? s.scrutinsDetails.legislature + "e législature, relevé le " + dateFr(s.scrutinsDetails.releve_le)
-            : undefined}
+          mention={mentionLegislature(s.scrutinsDetails)}
           url={s.scrutinsDetails.url} /> : null}
         {s.questionsGouvernement ? <Source producteur={"Questions au Gouvernement — " + s.questionsGouvernement.producteur}
           licence={s.questionsGouvernement.licence}
-          mention={s.questionsGouvernement.legislature
-            ? s.questionsGouvernement.legislature + "e législature, relevé le " + dateFr(s.questionsGouvernement.releve_le)
-            : undefined}
+          mention={mentionLegislature(s.questionsGouvernement)}
           url={s.questionsGouvernement.url} /> : null}
         {/* Les projets financés portent DEUX dates, et les confondre ferait passer
             un relevé de la veille pour une publication de la veille : l'État a

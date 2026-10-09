@@ -1808,6 +1808,28 @@ console.log("\n--- hierarchie mobile : le contenu avant le decor ---------------
   await c.close();
 }
 
+console.log("\n--- sources : jamais « undefined », jamais de jargon -----------------");
+/* 08/10/2026 (audit beta) : « relevé le undefined » et une ligne de developpeur
+   (« app_repere_v18_20.html, const DEPTS… window.REPERE_OFGL ») sur la page Sources. */
+{
+  const ctx = await nav.newContext({ viewport: { width: 390, height: 844 } });
+  const p = await ctx.newPage();
+  await p.goto(base, { waitUntil: "networkidle" });
+  await p.getByLabel(/Où habitez-vous/).fill("Bagnolet");
+  await p.waitForTimeout(300);
+  await p.getByRole("button", { name: /^Bagnolet\b/ }).first().click();
+  await p.waitForTimeout(1200);
+  await p.getByRole("button", { name: "Où va l'argent" }).first().click();
+  await p.waitForTimeout(900);
+  await p.getByRole("button", { name: "Sources" }).first().click();
+  await p.waitForTimeout(1200);
+  const t = await p.evaluate(() => (document.querySelector("main") || document.body).innerText);
+  await ctx.close();
+  verif("sources — aucune date « undefined » ni « null » n'est affichee", !/\b(undefined|null|NaN)\b/.test(t), (t.match(/.{40}\b(undefined|null|NaN)\b.{20}/) || [""])[0]);
+  verif("sources — aucun nom de fichier ni de variable de code n'est affiche au lecteur",
+    !/app_repere|window\.|const [A-Z]|\.html\b|REPERE_/.test(t), (t.match(/.{30}(app_repere|window\.|REPERE_).{30}/) || [""])[0]);
+}
+
 console.log("\n--- chaque source mene a la source ---------------------------");
 /* 29/09/2026 : sur « Aujourd'hui », ecran d'entree de la demonstration, 1 ligne
    de source sur 4 permettait d'aller verifier ; sur « Ou va l'argent », 1 sur 4.
