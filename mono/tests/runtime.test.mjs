@@ -736,6 +736,16 @@ verif("comptes — la region de ce departement est nomee et traduite",
 const nbCalculRepere = (argentTerritoires.match(/CALCUL REPÈRE/gi) || []).length;
 verif("comptes — trois echelons calcules (commune, departement, region), pas un seul",
   nbCalculRepere >= 3, "seulement " + nbCalculRepere + " etiquette(s) « Calcul Repere » trouvee(s)");
+/* 08/10/2026 : une note de rapport est LUE une fois (premiere carte), puis
+   repliee sur les suivantes — jamais retiree (textContent compte les replis). */
+{
+  const notes = await page.evaluate(() => {
+    const re = /allait au remboursement/g;
+    return { vues: (document.body.innerText.match(re) || []).length, toutes: (document.body.textContent.match(re) || []).length };
+  });
+  verif("comptes — chaque explication de rapport est écrite une fois, puis repliée sur les autres échelons",
+    notes.vues === 1 && notes.toutes >= 3, JSON.stringify(notes));
+}
 verif("invariant 3 — les comptes du departement et de la region ne comparent aucun territoire entre eux",
   !/classement|palmar|moyenne nationale|mieux que|top \d/i.test(argentTerritoires),
   "un mot de comparaison est apparu avec les nouveaux echelons");

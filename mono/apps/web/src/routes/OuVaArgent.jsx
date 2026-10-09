@@ -61,13 +61,33 @@ function Evolution({ e, nom, src }) {
 function CompteTerritoire({ titre, echelon, exerciceAn, ex, agregats, src }) {
   const rr = rapports(ex, echelon === "dept" ? "departement" : echelon === "region" ? "region" : "commune");
   const maxAgregat = Math.max(...agregats.map((_, i) => (valeur(ex, i) || {}).m || 0));
+  /* `notesVisibles` (08/10/2026) : faux quand une carte plus haut a deja ecrit les notes. */
+  const notesVisibles = arguments[0].notesVisibles !== false;
   return (
     <Carte echelon={echelon} titre={titre}
       sousTitre={<>Ce que ça représente · comptes {exerciceAn}{population(ex) ? ` · ${population(ex).toLocaleString("fr-FR")} habitants` : ""}</>}
       tag={rr.length ? "Calcul Repère" : undefined}>
       {rr.length >= 2 ? (
         <>
-          <div className="tuiles">{rr.map((o, i) => <Tuile key={i} k={o.l} v={o.v} n={o.d} />)}</div>
+          {/* LES EXPLICATIONS UNE FOIS LUES, PUIS REPLIEES — 08/10/2026. Mesure a
+              390 px sur Bagnolet : les cinq notes etaient ecrites mot pour mot
+              sous la commune, le departement et la region (page de 5 619 px).
+              Ici, les chiffres restent visibles ; les notes sont repliees, jamais
+              retirees, et suivent le niveau de ce territoire (rapports). */}
+          <div className="tuiles">{rr.map((o, i) => <Tuile key={i} k={o.l} v={o.v} n={notesVisibles ? o.d : undefined} />)}</div>
+          {!notesVisibles ? (
+            <details className="repli notes-rapports">
+              <summary><span>Ce que veulent dire ces {rr.length} chiffres</span></summary>
+              <div className="repli-in">
+                {rr.map((o, i) => (
+                  <div className="ligne" key={i}>
+                    <div className="ligne-h"><span>{o.l}</span><b>{o.v}</b></div>
+                    <div className="ligne-note">{o.d}</div>
+                  </div>
+                ))}
+              </div>
+            </details>
+          ) : null}
           <Source calcul producteur={src ? src.producteur : ""} licence={src ? src.licence : ""} maj={src ? src.maj : ""} url={src ? src.url : undefined} />
         </>
       ) : (
@@ -105,6 +125,9 @@ export default function OuVaArgent({ paquet, index, commune }) {
   }, [paquet, agregats]);
   const memesComptes = !!(exercice && exerciceDept && exercice.an === exerciceDept.an
     && JSON.stringify(exercice.ex) === JSON.stringify(exerciceDept.ex));
+  /* Les notes des rapports sont ecrites en entier sur la PREMIERE carte qui en
+     montre (08/10/2026) ; les suivantes les replient. */
+  const notesDeptLues = !!(territoireDept && exerciceDept && !memesComptes && rapports(exerciceDept.ex).length >= 2);
   const exerciceRegion = useMemo(() => {
     if (!regions || !regions.regions || !territoireDept || !territoireDept.region_code) return null;
     const ex = regions.regions[territoireDept.region_code];
@@ -223,7 +246,8 @@ export default function OuVaArgent({ paquet, index, commune }) {
       ) : territoireDept ? (
         exerciceDept ? (
           <CompteTerritoire titre={territoireDept.nom || `Département ${territoireDept.code}`}
-            echelon="dept" exerciceAn={exerciceDept.an} ex={exerciceDept.ex} agregats={agregats} src={src} />
+            echelon="dept" exerciceAn={exerciceDept.an} ex={exerciceDept.ex} agregats={agregats} src={src}
+            notesVisibles={rr.length < 2} />
         ) : (
           <Vide titre={`${territoireDept.nom || "Ce département"} : ses comptes ne figurent pas dans le fichier officiel.`}
             corps="Un montant absent n'est pas un montant nul : Repère n'affiche rien plutôt qu'un zéro qui pourrait être faux." />
@@ -244,7 +268,8 @@ export default function OuVaArgent({ paquet, index, commune }) {
       {etatTerr === ETATS.SERVI && territoireDept && territoireDept.region_code ? (
         exerciceRegion ? (
           <CompteTerritoire titre={territoireDept.region || `Région ${territoireDept.region_code}`}
-            echelon="region" exerciceAn={exerciceRegion.an} ex={exerciceRegion.ex} agregats={agregats} src={src} />
+            echelon="region" exerciceAn={exerciceRegion.an} ex={exerciceRegion.ex} agregats={agregats} src={src}
+            notesVisibles={rr.length < 2 && !notesDeptLues} />
         ) : (
           <Vide titre={`${territoireDept.region || "Cette région"} : ses comptes ne figurent pas dans le fichier officiel.`}
             corps="Un montant absent n'est pas un montant nul : Repère n'affiche rien plutôt qu'un zéro qui pourrait être faux." />
