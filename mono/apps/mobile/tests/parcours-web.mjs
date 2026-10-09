@@ -223,6 +223,14 @@ for (const largeur of [360, 390, 430]) {
         `${largeur}px · semaine : sept jours, ${SEMAINE.total} séance(s) publique(s), comme le socle (${total} lues)`);
       verifier(vu.votes === Math.min(2, SEMAINE.votesSolennels.length), `${largeur}px · semaine : les votes solennels annoncés sont montrés (${vu.votes})`);
       verifier(/tout le pays, pas seulement Meaux/.test(vu.texte), `${largeur}px · semaine : la carte dit qu'elle est nationale`);
+      /* 08/10/2026 : un releve de plus d'un jour le dit, sur l'accueil aussi */
+      {
+        const { ageReleve, AGE_RELEVE_NORMAL } = await import("../../../packages/core/src/calendrier.js");
+        const vieux = SEMAINE.institutions.map(x => ({ de: x.institution === "Sénat" ? "du Sénat" : "de l'Assemblée nationale", age: ageReleve(x.source && x.source.releve_le) }))
+          .filter(x => x.age !== null && x.age > AGE_RELEVE_NORMAL);
+        verifier(vieux.every(x => new RegExp("Agenda " + x.de + " relevé le .+, il y a " + x.age + " jours").test(vu.texte)),
+          `${largeur}px · semaine : un relevé ancien le dit ${JSON.stringify(vieux)}`);
+      }
     } else {
       verifier(/n'est arrivé jusqu'à cet appareil pour aucune institution/.test(vu.texte),
         `${largeur}px · semaine : sans calendrier servi, la phrase d'absence (jamais une semaine vide)`);

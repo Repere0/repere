@@ -18,7 +18,7 @@
  *
  * `testID="semaine-parlement"` : tests/parcours-web.mjs la mesure. */
 import { router } from "expo-router";
-import { heureFr, jourCourt, jourFr, LIBELLES } from "@repere/core";
+import { AGE_RELEVE_NORMAL, ageReleve, dateFr, heureFr, jourCourt, jourFr, LIBELLES } from "@repere/core";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { AGENDA_PAS_ARRIVE } from "../lib/absences";
 import { srcAgenda } from "../lib/sources";
@@ -92,6 +92,10 @@ export function SemaineParlement({ sp, lu, nom }: { sp: Semaine | null | undefin
     votes.length ? "Lors d'un vote solennel, chaque député vote à son nom." : null,
     manquantes.length ? `Le calendrier ${manquantes[0] === "Sénat" ? "du Sénat" : "de l'Assemblée nationale"} n'est pas arrivé : seules les séances ${lues[0] === "Sénat" ? "du Sénat" : "de l'Assemblée nationale"} sont comptées.` : null,
     horsParis() ? "Jours et heures à l'heure de Paris, comme l'agenda publié." : null,
+    /* 08/10/2026 : l'age du releve, comme le site et le calendrier (invariant 9) */
+    ...sp.institutions.map(x => ({ x, age: ageReleve(x.source && x.source.releve_le) }))
+      .filter(({ age }) => age !== null && age > AGE_RELEVE_NORMAL)
+      .map(({ x, age }) => `Agenda ${x.institution === "Sénat" ? "du Sénat" : "de l'Assemblée nationale"} relevé le ${dateFr(x.source.releve_le)}, il y a ${age} jours : il a pu changer depuis.`),
   ].filter(Boolean) as string[];
 
   return (
