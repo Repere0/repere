@@ -219,12 +219,27 @@ jobs:
           # Les valeurs restent masquees par GitHub dans les journaux : elles viennent des
           # secrets, et le masquage se fait sur la valeur, pas sur la facon de la passer.
           set +e
+          # LA RAISON DE NETLIFY, EN ANNOTATION — 08/10/2026. Le 07/10, la publication a
+          # echoue avec une sonde a 200 ; la cause (« Account credit usage exceeded -
+          # new deploys are blocked until credits are added ») n'etait QUE dans le
+          # journal, illisible depuis un telephone et depuis l'environnement de l'agent.
+          # La sortie est recopiee, et le message d'erreur JSON de Netlify remonte en
+          # ::error::. Aucun secret n'y figure : la CLI ne les imprime pas, et GitHub
+          # masque de toute facon leurs valeurs.
           timeout 300 npx --yes netlify-cli deploy \
             --dir=site_engendre --prod --no-build \
             --auth "$NETLIFY_AUTH_TOKEN" --site "$NETLIFY_SITE_ID" \
-            --message "Collecte du $(date -u +%d/%m/%Y)"
-          CODE_DEPLOI=$?
+            --message "Collecte du $(date -u +%d/%m/%Y)" 2>&1 | tee "$RUNNER_TEMP/deploiement-netlify.txt"
+          CODE_DEPLOI=${PIPESTATUS[0]}
           set -e
+          if [ "$CODE_DEPLOI" != "0" ]; then
+            RAISON=$(grep -oE '"(error|message)"[[:space:]]*:[[:space:]]*"[^"]{1,300}"' "$RUNNER_TEMP/deploiement-netlify.txt" | head -1)
+            HTTP=$(grep -oE 'JSONHTTPError: [0-9]{3}' "$RUNNER_TEMP/deploiement-netlify.txt" | head -1)
+            echo "::error title=Netlify refuse la publication::${HTTP:-code $CODE_DEPLOI} ${RAISON:-(aucun message d'erreur lisible dans la sortie de netlify-cli)}"
+            if grep -q "credit usage exceeded" "$RUNNER_TEMP/deploiement-netlify.txt"; then
+              echo "::error title=Netlify::Le compte Netlify n'a plus de credits : aucune publication ne passera avant l'ajout de credits ou un changement d'hebergeur. Decision du porteur (depense)."
+            fi
+          fi
           if [ "$CODE_DEPLOI" = "124" ]; then
             echo "::error::La publication est restee BLOQUEE et a ete interrompue au bout de 5 minutes. netlify-cli attendait probablement une reponse a une question posee dans le vide."
           fi
