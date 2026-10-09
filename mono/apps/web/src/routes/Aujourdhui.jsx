@@ -6,6 +6,7 @@ import { useAujourdhui } from "../lib/useAujourdhui.js";
 import { LigneVote } from "../lib/votes.jsx";
 import { noteRattachement } from "../lib/faits.js";
 import { phraseCirconscription, phraseProjet, phraseProjetLocal, DGCL_URL, LIBELLES } from "@repere/core";
+import { regrouperParJour, ageReleve, AGE_RELEVE_NORMAL, heureFr } from "@repere/core";
 
 /* « AUJOURD'HUI », DIRECTION RETENUE LE 19/09/2026 — « LA QUESTION ».
  *
@@ -42,7 +43,13 @@ export default function Aujourdhui({ paquet, index, commune, aller, derniereVisi
   }
   const { nomCommune, dernierVote, dernierFait, faits, rapportDette, srcComptes,
           srcProjets, srcScrutins, prochains, prochainsDansLaSemaine, semaineSelectionnee, semaineTotal, base,
-          nbCircos, nomDep, dernierProjet, semaineParlement: sp } = a;
+          nbCircos, nomDep, dernierProjet, semaineParlement: sp, projetsLus } = a;
+  /* 08/10/2026 (audit beta) : deux seances du meme texte le meme jour s'affichaient
+     sur deux lignes identiques ; meme regle que le calendrier (regrouperParJour). */
+  const prochainsGroupes = regrouperParJour(prochains || []);
+  /* l'age du releve, par institution, comme dans le calendrier (invariant 9) */
+  const relevesAnciens = ((sp && sp.institutions) || []).map(x => ({ ...x, age: ageReleve(x.source && x.source.releve_le) }))
+    .filter(x => x.age !== null && x.age > AGE_RELEVE_NORMAL);
 
   /* "DEPUIS VOTRE DERNIERE VISITE", SINON "CETTE SEMAINE" — decision produit,
    * 23/09/2026. `derniereVisite` vient d'App.jsx : un instant de visite, gele
@@ -155,6 +162,15 @@ export default function Aujourdhui({ paquet, index, commune, aller, derniereVisi
           <p className="ligne-note">{phraseProjetLocal(dernierProjet.p, nomCommune)}</p>
           {srcProjets ? <Source producteur={srcProjets.producteur} licence={srcProjets.licence} maj={srcProjets.mis_a_jour_le} url={srcProjets.url} /> : null}
         </div>
+      ) : !dernierProjet && projetsLus && !(dernierFait && dernierFait.type === "projet") ? (
+        /* 08/10/2026 (audit) : sans projet publie, le bloc disparaissait sans un mot.
+           La phrase est celle de « Ce qui a été décidé » (#98) : la source ne couvre
+           que quelques dotations. */
+        <div className="quest-suivante auj-local">
+          <p className="quest-q2">Et dans votre commune ?</p>
+          <p className="ligne-note">Aucun projet aidé par l'État n'est publié pour {nomCommune} sur les années relevées. La source ne couvre que certaines dotations d'investissement : ce n'est pas la preuve que l'État n'a rien financé ici.</p>
+          {srcProjets ? <Source producteur={srcProjets.producteur} licence={srcProjets.licence} maj={srcProjets.mis_a_jour_le} url={srcProjets.url} /> : null}
+        </div>
       ) : null}
 
       {/* UNE DONNEE, SON UNITE, SA PERIODE, SA SOURCE — 07/10/2026. L'exercice
@@ -163,7 +179,9 @@ export default function Aujourdhui({ paquet, index, commune, aller, derniereVisi
           son annee laisserait le lecteur la deviner. data-exercice sert au banc. */}
       {rapportDette && rapportDette.an ? (
         <div className="quest-suivante" data-exercice={rapportDette.an}>
-          <p className="quest-q2">Combien ça représente ?</p>
+          {/* 08/10/2026 (audit) : « Combien ça représente ? », place sous le projet,
+              laissait croire a un rapport sur la subvention ; il s'agit des comptes. */}
+          <p className="quest-q2">{rapportDette.mot === "encours de dette" ? `La dette de ${nomCommune}` : `Les comptes de ${nomCommune}`}</p>
           <p className="ligne-note">{rapportDette.l}, comptes {rapportDette.an} : <b>{rapportDette.v}</b>. {rapportDette.d}</p>
           <Source calcul url={srcComptes ? srcComptes.url : undefined} producteur={srcComptes ? srcComptes.producteur : ""} licence={srcComptes ? srcComptes.licence : ""} maj={srcComptes ? srcComptes.maj : ""} />
         </div>
@@ -211,7 +229,7 @@ export default function Aujourdhui({ paquet, index, commune, aller, derniereVisi
           ) : null}
           {sp && sp.votesSolennels.length ? (
             <div className="auj-solennels">
-              <p className="ligne-note"><b>Votes solennels annoncés</b> — chaque député votera à son nom. Règle d'affichage : ils passent en premier, quel que soit le texte.</p>
+              <p className="ligne-note"><b>Votes solennels annoncés</b> — chaque député votera à son nom. Ils sont affichés en premier, quel que soit le texte.</p>
               {sp.votesSolennels.map((v, i) => (
                 <p className="ligne-note" key={i}>{jourFr(v.debut)}{v.debut.length > 10 ? ", " + v.debut.slice(11, 13).replace(/^0/, "") + " h" + (v.debut.slice(14, 16) !== "00" ? " " + v.debut.slice(14, 16) : "") : ""} — {v.institution} : <b>{v.texte}</b></p>
               ))}
@@ -223,10 +241,10 @@ export default function Aujourdhui({ paquet, index, commune, aller, derniereVisi
               chaque assemblée débat et vote les textes. Tout le reste est dans le calendrier.
             </p>
           ) : null}
-          {prochains.map((e, i) => (
+          {prochainsGroupes.map((g, i) => (
             <p className="ligne-note" key={i}>
-              {jourFr(e.debut)}
-              {" — "}{e.institution} : <b>{e.titre}</b>
+              {jourFr(g.debut)}{g.debuts.some(heureFr) ? ", " + g.debuts.map(x => heureFr(x).replace(/ /g, "\u00a0")).filter(Boolean).join(" et ") : ""}
+              {" — "}{g.institution} : <b>{g.titre}</b>
             </p>
           ))}
           {sourcesAVenir.map(({ institution, s }) => (
@@ -236,6 +254,11 @@ export default function Aujourdhui({ paquet, index, commune, aller, derniereVisi
           {/* HEURE DE PARIS — 08/10/2026. L'agenda est publie a l'heure de Paris ; sur un
               appareil regle ailleurs (outre-mer), on le dit, comme l'application. */}
           {horsParis() ? <p className="ligne-note heure-paris">{PHRASE_HEURE_PARIS}</p> : null}
+          {relevesAnciens.map(x => (
+            <p className="ligne-note releve-ancien" key={x.institution}>
+              Agenda {x.institution === "Sénat" ? "du Sénat" : "de l'Assemblée nationale"} relevé le {dateFr(x.source.releve_le)}, il y a {x.age} jours : il a pu changer depuis. Le calendrier officiel fait foi.
+            </p>
+          ))}
         </div>
       ) : null}
 
