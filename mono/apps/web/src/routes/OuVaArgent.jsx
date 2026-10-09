@@ -59,7 +59,7 @@ function Evolution({ e, nom, src }) {
 }
 
 function CompteTerritoire({ titre, echelon, exerciceAn, ex, agregats, src }) {
-  const rr = rapports(ex);
+  const rr = rapports(ex, echelon === "dept" ? "departement" : echelon === "region" ? "region" : "commune");
   const maxAgregat = Math.max(...agregats.map((_, i) => (valeur(ex, i) || {}).m || 0));
   return (
     <Carte echelon={echelon} titre={titre}
@@ -193,7 +193,7 @@ export default function OuVaArgent({ paquet, index, commune }) {
               <div className="ligne-h"><span>{a[1]}</span><b>0 €</b></div>
               <div className="ligne-note">
                 {i === 2
-                  ? `L'Observatoire publie un encours de dette nul pour l'exercice ${exercice.an} : cette commune ne doit rien.`
+                  ? `L'Observatoire publie un encours de dette nul pour l'exercice ${exercice.an}, sur le budget principal : aucun emprunt n'y reste à rembourser.`
                   : `L'Observatoire publie un montant nul pour l'exercice ${exercice.an}. Ce n'est pas une donnée manquante : la source écrit zéro.`}
               </div>
             </div>

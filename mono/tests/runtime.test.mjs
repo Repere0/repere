@@ -2099,6 +2099,32 @@ verif("accessibilite — mouvement reduit : le contenu reste visible",
   /REPÈRE/.test(calme.text) && /Ustaritz/.test(calme.text) && calme.text.trim().length > 100, JSON.stringify(calme).slice(0, 300));
 await ctxCalme.close();
 
+console.log("\n--- argent : ce que la source couvre, sans plus ----------------------");
+/* 08/10/2026 (audit beta) : l'ecole et la cantine pretees au departement et a la
+   region ; une fusion de communes suggeree pour 6 habitants d'ecart (Montenils). */
+{
+  const argent = async nom => {
+    const ctx = await nav.newContext({ viewport: { width: 390, height: 844 } });
+    const p = await ctx.newPage();
+    await p.goto(base, { waitUntil: "networkidle" });
+    await p.getByLabel(/Où habitez-vous/).fill(nom);
+    await p.waitForTimeout(300);
+    await p.getByRole("button", { name: new RegExp("^" + nom + "\\b") }).first().click();
+    await p.waitForTimeout(1200);
+    await p.getByRole("button", { name: "Où va l'argent", exact: true }).first().click();
+    await p.waitForTimeout(1800);
+    const t = await p.evaluate(() => (document.querySelector("main") || document.body).textContent);
+    await ctx.close();
+    return t;
+  };
+  const bag = await argent("Bagnolet");
+  verif("argent — « l'école, la cantine » n'explique les salaires que de la commune, jamais du departement ni de la region",
+    (bag.match(/qui tiennent l'école, la cantine/g) || []).length === 1 && /Ce sont les agents de la collectivité/.test(bag), "");
+  const mont = await argent("Montenils");
+  verif("argent — un ecart de population n'est jamais presente comme une fusion de communes",
+    !/fusion de communes/.test(mont), "");
+}
+
 console.log("\n--- zoom texte 200% -------------------------------------------");
 /* TROUVE PAR L'AUDIT WCAG DU 16/09/2026 (1.4.4/1.4.10) : a 200% de zoom
  * texte, l'ecran "Qui decide" defilait horizontalement (726 px de contenu

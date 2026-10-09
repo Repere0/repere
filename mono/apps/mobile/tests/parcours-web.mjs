@@ -298,7 +298,7 @@ for (const largeur of [360, 390, 430]) {
   await page.getByText(/Où va l'argent de Bassevelle/).first().waitFor({ timeout: 10000 });
   await page.waitForTimeout(800);
   const t = await page.evaluate(() => document.body.innerText);
-  verifier(/publie un encours de dette nul pour Bassevelle en \d{4} : la commune ne doit rien/.test(t), "argent : une dette nulle publiée se dit, la carte ne disparaît pas");
+  verifier(/publie un encours de dette nul pour Bassevelle en \d{4}, sur le budget principal : aucun emprunt n'y reste à rembourser/.test(t), "argent : une dette nulle publiée se dit, la carte ne disparaît pas");
   await page.close();
 }
 /* HORS D'ILE-DE-FRANCE — 08/10/2026 : une commune d'ailleurs n'est jamais dite

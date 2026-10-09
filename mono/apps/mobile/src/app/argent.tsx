@@ -131,7 +131,7 @@ export default function Argent() {
                 /* 08/10/2026 (audit) : une dette nulle PUBLIEE faisait disparaitre la
                    carte sans un mot (71 communes) ; le site, lui, le dit. */
                 <Carte echelon="ville" titre={`Sa dette, fin ${ex.an}`}>
-                  <Resume phrase={`L'Observatoire publie un encours de dette nul pour ${nom} en ${ex.an} : la commune ne doit rien.`} />
+                  <Resume phrase={`L'Observatoire publie un encours de dette nul pour ${nom} en ${ex.an}, sur le budget principal : aucun emprunt n'y reste à rembourser.`} />
                   <PastilleSource source={srcComptesPublies(d)} />
                 </Carte>
               ) : null}

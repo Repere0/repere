@@ -1,6 +1,7 @@
 /* @repere/core — LES PHRASES DES COMPTES (30/09/2026, lot M1).
  * Fichier a part pour ne charger ces phrases qu'avec les ecrans qui en ont
  * besoin (voir source.js). */
+import { SEUIL_PERIMETRE } from "./comptes.js";
 import { population } from "./comptes.js";
 
 /*
@@ -63,5 +64,5 @@ export function diffEuros(diff) {
 }
 export const perimetreChange = (e, nom) => ({
   titre: `D'une année à l'autre : ${nom} n'est pas comparable à elle-même.`,
-  corps: `La population publiée passe de ${e.p1.toLocaleString("fr-FR")} habitants (exercice ${e.an1}) à ${e.p2.toLocaleString("fr-FR")} (exercice ${e.an2}). Un écart de cette taille signale un changement de territoire, par exemple une fusion de communes : comparer les deux années mesurerait ce changement, pas l'évolution des comptes. Repère ne fait donc pas la différence.`,
+  corps: `La population publiée passe de ${e.p1.toLocaleString("fr-FR")} habitants (exercice ${e.an1}) à ${e.p2.toLocaleString("fr-FR")} (exercice ${e.an2}). Repère ne compare pas deux exercices dont la population publiée diffère de plus de ${Math.round(SEUIL_PERIMETRE * 100)} % : la différence pourrait refléter un changement de territoire ou de recensement plutôt que l'évolution des comptes. Il ne fait donc pas la soustraction.`,
 });

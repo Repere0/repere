@@ -1487,7 +1487,7 @@ test("argent — un zéro publié n'est jamais présenté comme une absence", ()
   assert.ok(/zero: *mm === 0/.test(lecture),
     "valeur() ne distingue pas un zéro publié d'une absence");
   const ecran = sansCommentaires("apps/web/src/routes/OuVaArgent.jsx");
-  assert.ok(/v\.zero/.test(ecran) && /ne doit rien/.test(ecran),
+  assert.ok(/v\.zero/.test(ecran) && /encours de dette nul/.test(ecran),
     "l'écran n'a pas de phrase distincte pour un montant nul publié");
 
   /* Et la donnée existe vraiment : si elle disparaissait des fichiers, ce contrôle
