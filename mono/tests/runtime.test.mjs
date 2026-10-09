@@ -1531,6 +1531,31 @@ console.log("\n--- aujourd'hui : un chiffre des comptes dit son exercice -------
   }
 }
 
+/* LE VOTE MIS EN AVANT EST LE PLUS RECENT — 07/10/2026. Attendu calcule sur le
+   paquet publie : dernier jour, puis plus grand numero de scrutin ce jour-la. */
+{
+  const p93 = JSON.parse(fs.readFileSync(path.join(DIST, "data", "departments", "93.json"), "utf8"));
+  const catV = JSON.parse(fs.readFileSync(path.join(DIST, "data", "scrutins.json"), "utf8"));
+  const posV = JSON.parse(fs.readFileSync(path.join(DIST, "data", "scrutins", "93.json"), "utf8"));
+  const depV = JSON.parse(fs.readFileSync(path.join(DIST, "data", "deputes.json"), "utf8"));
+  const ficheV = Object.values(p93.communes).find(f => f.nom === "Bagnolet");
+  const refV = depV.deputes["93-" + ficheV.circo].acteurRef;
+  const avecV = catV.scrutins.filter(x => posV.positions[x.n] && posV.positions[x.n][refV]);
+  const jourV = avecV.map(x => x.d).sort().pop();
+  const attenduV = String(Math.max(...avecV.filter(x => x.d === jourV).map(x => Number(x.n))));
+  const pageVote = await (await nav.newContext()).newPage();
+  await pageVote.goto(base, { waitUntil: "networkidle" });
+  await pageVote.getByLabel(/Où habitez-vous/).fill("Bagnolet");
+  await pageVote.waitForTimeout(300);
+  await pageVote.getByRole("button", { name: /^Bagnolet\b/ }).click();
+  await pageVote.waitForTimeout(1500);
+  const texteVote = await pageVote.evaluate(() => (document.querySelector("main") || document.body).innerText);
+  const vu = (texteVote.match(/Scrutin n° (\d+)/) || [])[1];
+  verif("aujourd'hui — le vote mis en avant est le plus recent (dernier jour, dernier numero)",
+    vu === attenduV, "affiche " + vu + ", attendu " + attenduV + " (" + jourV + ")");
+  await pageVote.context().close();
+}
+
 console.log("\n--- comptes : d'un exercice a l'autre -------------------------");
 /* 29/09/2026 : deux montants dates, la difference en euros, aucun pourcentage.
    La commune est cherchee dans la donnee publiee (deux exercices consecutifs,

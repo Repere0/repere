@@ -44,7 +44,7 @@ import { PAS, TYPO } from "../lib/theme";
 import { AvecDonnees, Page } from "../ui/page";
 import { PastilleSource } from "../ui/source";
 import { Etiquette } from "../ui/resume";
-import { Plus, Reponse } from "../ui/reponse";
+import { Plus, Reponse, typo } from "../ui/reponse";
 import { BarrePart, Repartition } from "../ui/visuels";
 import { SemaineParlement } from "../ui/semaine";
 
@@ -144,7 +144,13 @@ export default function ChezVous() {
               preuve={<Repartition compact segments={rep.segments} total={rep.total} position={vote.position} qui={vote.qui} />}
               note={d.nbCircos > 1
                 ? `Une circonscription est une partie du territoire dont les électeurs élisent un député. Par exemple, dans la ${ordinal(vote.circo)}, le ${dateFr(vote.sc.d)}, ${texteDe(phrasePosition(vote.position, vote.qui)).replace(/\.$/, "")} (texte ${vote.sc.s}).`
-                : `${titreLisible(vote.sc.t)} : ${vote.sc.s}, ${decompte(vote.sc.dec)}.`}
+                /* DEUX LIGNES AU PLUS SUR L'ACCUEIL — 07/10/2026. Le vote affiche est
+                   desormais le plus recent ; pour Meaux, son intitule officiel est plus
+                   long et repoussait la troisieme reponse sous le pli (mesure CI : 861 px
+                   pour 844). Le resultat et le decompte viennent EN TETE, jamais coupes ;
+                   l'intitule suit, non reecrit, et peut etre coupe : le texte entier est
+                   sur « Comprendre ce vote », a un geste. */
+                : <Text style={TYPO.note} numberOfLines={2}>{typo(`${vote.sc.s.charAt(0).toUpperCase()}${vote.sc.s.slice(1)}, ${decompte(vote.sc.dec)} : ${titreLisible(vote.sc.t)}`)}</Text>}
               sources={<PastilleSource court source={srcVote(d, vote.sc)} />}
               partage={{
                 titre: `Un vote concernant ${nom}`,

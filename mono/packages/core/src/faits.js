@@ -97,6 +97,32 @@ export function calculerFaits({ dep, fiche, projets, commune, cat, pos, deputes,
 
   /* L'ORDRE, ET RIEN QUE LUI — voir CeQuiADecide.jsx pour la justification
      complete (invariant 3 : ni montant, ni echelon n'entre dans le tri). */
-  faits.sort((a, b) => (a.quand < b.quand ? 1 : a.quand > b.quand ? -1 : a.rang - b.rang));
+  faits.sort(ordreDesFaits);
   return faits;
+}
+
+/* LE PLUS RECENT D'ABORD, ET UNE REGLE POUR LE MEME JOUR — 07/10/2026.
+   Mesure : le 21/07/2026, quatre votes solennels le meme jour ; le catalogue ne
+   porte que la date, pas l'heure. Le tri gardait alors l'ordre du fichier, et
+   « Aujourd'hui » mettait en avant le premier vote de la journee (8430) au lieu
+   du dernier (8434) : un artefact de tri qui ressemblait a un choix editorial.
+   Regle explicite : date decroissante, puis, entre deux faits du meme jour, le
+   rang (projet, vote, fait relu), puis, entre deux votes du meme jour, le NUMERO
+   de scrutin decroissant - l'Assemblee nationale numerote ses scrutins dans
+   l'ordre ou ils ont lieu, c'est la seule donnee qui demontre l'ordre dans la
+   journee. Numero illisible : l'ordre de la source est garde, rien n'est devine. */
+export function ordreDesFaits(a, b) {
+  /* Le JOUR d'abord ; l'heure seulement si les deux faits en portent une
+     (« 2026-07-21T15:00 » contre « 2026-07-21 » : une heure absente n'est pas
+     « minuit », on ne la compare pas). 07/10/2026. */
+  const ja = String(a.quand || "").slice(0, 10), jb = String(b.quand || "").slice(0, 10);
+  if (ja !== jb) return ja < jb ? 1 : -1;
+  const ha = String(a.quand || "").slice(11), hb = String(b.quand || "").slice(11);
+  if (ha && hb && ha !== hb) return ha < hb ? 1 : -1;
+  if (a.rang !== b.rang) return a.rang - b.rang;
+  if (a.type === "vote" && b.type === "vote") {
+    const na = Number(a.sc && a.sc.n), nb = Number(b.sc && b.sc.n);
+    if (Number.isFinite(na) && Number.isFinite(nb) && na !== nb) return nb - na;
+  }
+  return 0;
 }
