@@ -1864,6 +1864,37 @@ console.log("\n--- sources : les neuf regles, et chaque date -------------------
     terr.length > 0 && terr.filter(x => x.releve_le).every(() => /Noms des territoires[^\n]*relevé le \d/.test(t)), "");
 }
 
+console.log("\n--- qui decide : le departement, tel qu'il existe -----------------");
+/* 08/10/2026 (audit beta). Paris n'a pas de conseil departemental : l'ecran ne
+   doit plus dire « la source est incomplete ». Montreuil est partagee entre deux
+   cantons : l'ecran ne doit plus nommer un seul canton pour les elus des deux. */
+{
+  const qui = async nom => {
+    const ctx = await nav.newContext({ viewport: { width: 390, height: 844 } });
+    const p = await ctx.newPage();
+    await p.goto(base, { waitUntil: "networkidle" });
+    await p.getByLabel(/Où habitez-vous/).fill(nom);
+    await p.waitForTimeout(300);
+    await p.getByRole("button", { name: new RegExp("^" + nom + "\\b") }).first().click();
+    await p.waitForTimeout(1200);
+    await p.getByRole("button", { name: "Qui décide", exact: true }).first().click();
+    await p.waitForTimeout(1500);
+    const t = await p.evaluate(() => (document.querySelector("main") || document.body).innerText);
+    await ctx.close();
+    return t;
+  };
+  const paris = await qui("Paris");
+  verif("qui decide — Paris : pas de conseil departemental, dit comme un fait, jamais comme une source incomplete",
+    /Paris n'a pas de conseil départemental/.test(paris) && !/pas le département qui n'en a pas/.test(paris), "");
+  const m93 = JSON.parse(fs.readFileSync(path.join(DIST, "data/departments/93.json"), "utf8"));
+  const cantons = (m93.communes["93048"].canton || []).map(k => m93.cantons[k]);
+  const montreuil = await qui("Montreuil");
+  verif("qui decide — Montreuil : partagee entre ses cantons, chaque canton nomme, jamais un seul pour tous",
+    cantons.length > 1 && new RegExp("partagée entre " + cantons.length + " cantons").test(montreuil)
+      && cantons.every(n => montreuil.includes("Canton de " + n)) && !/ils le sont sur le canton de/.test(montreuil),
+    JSON.stringify(cantons));
+}
+
 console.log("\n--- recherche et accents -------------------------------------");
 /* LA RECHERCHE NE DOIT PAS DEPENDRE DES ACCENTS, DANS LES DEUX SENS. Depuis que
    les libelles portent leur orthographe officielle, une comparaison brute
