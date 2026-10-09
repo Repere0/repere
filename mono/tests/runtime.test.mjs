@@ -1930,15 +1930,23 @@ await pageAbs1.getByLabel(/Où habitez-vous/).fill("Ville-d'Avray");
 await pageAbs1.waitForTimeout(300);
 const texteEntree = await pageAbs1.evaluate(() => document.querySelector(".entree")?.innerText || "");
 verif("invariant 5 — le premier ecran distingue aussi une absence chez nous d'une commune inexistante",
-  /existe bien en Île-de-France/.test(texteEntree) && !/Rien ne correspond/.test(texteEntree),
+  /existe bien en Île-de-France/.test(texteEntree) && !/ne correspond à/.test(texteEntree),
   texteEntree.slice(0, 200).replace(/\n+/g, " / "));
 
 await pageAbs1.getByLabel(/Où habitez-vous/).fill("Zzznexistepas");
 await pageAbs1.waitForTimeout(300);
 const texteEntreeFaux = await pageAbs1.evaluate(() => document.querySelector(".entree")?.innerText || "");
 verif("invariant 5 — et garde la vraie phrase d'absence pour une vraie faute de frappe",
-  /Rien ne correspond/.test(texteEntreeFaux) && !/existe bien en Île-de-France/.test(texteEntreeFaux),
+  /Aucune commune d'Île-de-France ne correspond/.test(texteEntreeFaux) && !/existe bien en Île-de-France/.test(texteEntreeFaux),
   texteEntreeFaux.slice(0, 200).replace(/\n+/g, " / "));
+/* 08/10/2026 : une vraie commune hors d'Ile-de-France n'est jamais dite introuvable :
+   la phrase borne la recherche a l'Ile-de-France et renvoie vers le departement. */
+await pageAbs1.getByLabel(/Où habitez-vous/).fill("Lyon");
+await pageAbs1.waitForTimeout(300);
+const texteLyon = await pageAbs1.evaluate(() => document.querySelector(".entree")?.innerText || "");
+verif("recherche — une commune hors d'Ile-de-France n'est jamais dite introuvable : la phrase dit la couverture et renvoie au departement",
+  /Aucune commune d'Île-de-France ne correspond à « Lyon »/.test(texteLyon) && /cherchez d'abord son département/.test(texteLyon) && !/Rien ne correspond/.test(texteLyon),
+  texteLyon.slice(0, 240).replace(/\n+/g, " / "));
 await pageAbs1.context().close();
 
 console.log("\n--- la langue du citoyen ---------------------------------------");

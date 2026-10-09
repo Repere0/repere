@@ -127,8 +127,11 @@ export default function Accueil() {
                 corps="Le Répertoire national des élus ne porte aucune ligne pour cette commune. Ce n'est pas une erreur de votre part, et ce n'est pas la preuve que la commune n'existe pas." />
             ) : null}
             {rien ? (
-              <Vide titre={`Rien ne correspond à « ${filtre.trim()} ».`}
-                corps="Tapez le début du nom de votre commune. La bêta couvre pour l'instant l'Île-de-France." />
+              /* 08/10/2026 : « Rien ne correspond » laissait croire que la commune
+                 n'existe pas. L'application ne couvre que l'Ile-de-France pendant la
+                 beta : c'est une limite de couverture, pas une absence de donnees. */
+              <Vide titre={`Aucune commune d'Île-de-France ne correspond à « ${filtre.trim()} ».`}
+                corps="Pendant la bêta, l'application ne couvre que l'Île-de-France : pour une commune d'ailleurs, les données ne sont pas encore disponibles ici. Sinon, vérifiez l'orthographe du début du nom." />
             ) : null}
           </View>
         }
