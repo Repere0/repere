@@ -902,8 +902,20 @@ verif("mentions legales — le contact correspond a celui affiche ailleurs sur S
    mono/ n'est deploye nulle part publiquement et ne tient pas de journal des
    corrections aujourd'hui — nommer un hebergeur reel ou promettre ce journal
    serait une fausse declaration, pas une erreur mineure. */
-verif("mentions legales — aucun hebergeur non deploye n'est affirme comme reel",
-  !/Netlify/i.test(texteLegal), "mono ne doit pas nommer un hebergeur qu'il n'utilise pas encore");
+/* 08/10/2026 (proposition, a valider par le porteur) : mono/ est publie chaque
+   matin sur Netlify depuis la bascule du 23/09. La garde garde maintenant
+   l'inverse : l'hebergeur nomme est CELUI vers lequel la chaine publie, lu dans
+   le flux de publication, et aucune phrase ne pretend que le site n'est pas en ligne. */
+{
+  const flux = fs.readFileSync(path.resolve(import.meta.dirname, "../../.github/workflows/collecte.yml"), "utf8");
+  const publieSurNetlify = /name: Publier sur Netlify/.test(flux);
+  verif("mentions legales — l'hebergeur nomme est celui vers lequel la chaine publie reellement",
+    publieSurNetlify === /Netlify, Inc\./.test(texteLegal), "collecte.yml publie sur Netlify : " + publieSurNetlify);
+  verif("mentions legales — aucune phrase ne pretend que le site n'est deploye nulle part",
+    !/n'est déployée sur aucune adresse publique/.test(texteLegal), "");
+  verif("mentions legales — la cle locale est decrite avec tout ce qu'elle contient (departement et date de derniere visite)",
+    /repere\.departement/.test(texteLegal) && /date de votre dernière visite/.test(texteLegal), "");
+}
 
 /* LE TEXTE EST AUSSI LU SANS LES CAPITALES DE STYLE — 29/09/2026 : sous
    `text-transform: uppercase`, « DEPUTE » echappait a la recherche de
