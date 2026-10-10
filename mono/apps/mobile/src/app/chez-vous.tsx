@@ -47,9 +47,10 @@ import { Etiquette } from "../ui/resume";
 import { Plus, Reponse, typo } from "../ui/reponse";
 import { BarrePart, Repartition } from "../ui/visuels";
 import { SemaineParlement } from "../ui/semaine";
+import { Nouveautes } from "../ui/nouveautes";
 
 export default function ChezVous() {
-  const { choix } = useSelection();
+  const { choix, retenue, derniereVisite } = useSelection();
   const { reessayer } = useCommuneChoisie();
   return (
     <AvecDonnees rendu={r => {
@@ -166,6 +167,12 @@ export default function ChezVous() {
             <Vide {...VOTE_AUCUN} />
           )}
           </View>
+
+          {/* DEPUIS VOTRE VISITE — proposition du 08/10/2026 (ui/nouveautes.tsx) :
+              seulement pour la commune retenue, seulement si une visite est connue. */}
+          {retenue && choix && retenue.c === choix.insee ? (
+            <Nouveautes faits={d.faits || []} derniereVisite={derniereVisite} exclus={[projet && projet.cle, vote && vote.cle]} nom={nom} />
+          ) : null}
 
           {/* AU PARLEMENT CETTE SEMAINE — sous les trois reponses, jamais parmi
              elles : c'est national, et la carte le dit (ui/semaine.tsx). */}

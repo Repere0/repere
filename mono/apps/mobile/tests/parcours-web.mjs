@@ -435,6 +435,37 @@ async function montantA100ms(reduit) {
   st = await stockage();
   verifier(Object.keys(st.ls).length === 0 && await page.getByText("Votre commune, sur ce téléphone").count() === 0,
     "mémoire : un département qui n'est pas celui de la commune (97 pour 97101) est effacé");
+  /* LA VISITE (proposition du 08/10/2026) : le JOUR de la derniere ouverture, garde
+     seulement avec la commune retenue, sert a « Depuis votre visite du … ». */
+  {
+    const { jourParis } = await import("../../../packages/core/src/aujourdhui.js");
+    const auj = jourParis(new Date());
+    await page.evaluate(() => localStorage.setItem("repere.departement", '{"d":"77","c":"77284","v":"2026-07-01"}'));
+    await page.goto(BASE + "/", { waitUntil: "networkidle" });
+    await page.getByRole("button", { name: "Voir ce qui se passe à Meaux" }).click();
+    await page.getByText("Aller plus loin").first().waitFor({ timeout: 15000 });
+    const carte = await page.evaluate(() => { const c = document.querySelector('[data-testid="nouveautes"]'); return c ? c.innerText : null; });
+    verifier(!!carte && /Depuis votre visite du 1er juillet 2026/i.test(carte) && /(nouveautés? publiées? pour Meaux|Rien de nouveau)/.test(carte),
+      "visite : la commune retenue dit ce qui a été publié depuis la visite précédente " + JSON.stringify(carte && carte.slice(0, 120)));
+    st = await stockage();
+    verifier(JSON.stringify(st.ls) === JSON.stringify({ "repere.departement": JSON.stringify({ d: "77", c: "77284", v: auj }) }),
+      "visite : seul le jour d'aujourd'hui remplace le précédent, rien d'autre n'est gardé " + JSON.stringify(st.ls));
+    await page.evaluate(() => localStorage.setItem("repere.departement", '{"d":"77","c":"77284","v":"2026-7-1"}'));
+    await page.goto(BASE + "/", { waitUntil: "networkidle" });
+    await page.getByText("Où habitez-vous ?").waitFor({ timeout: 10000 });
+    st = await stockage();
+    verifier(Object.keys(st.ls).length === 0, "visite : une date mal formée efface toute la mémoire, jamais affichée");
+    await page.evaluate(() => localStorage.setItem("repere.departement", '{"d":"77","c":"77284","v":"2026-07-01","x":"1"}'));
+    await page.goto(BASE + "/", { waitUntil: "networkidle" });
+    await page.getByText("Où habitez-vous ?").waitFor({ timeout: 10000 });
+    st = await stockage();
+    verifier(Object.keys(st.ls).length === 0, "visite : un champ en trop efface toute la mémoire (rien d'autre ne peut s'y glisser)");
+    await page.getByLabel(/Où habitez-vous/).fill(COMMUNE.saisie);
+    await page.getByRole("button", { name: new RegExp("^" + COMMUNE.nom + ",") }).first().click();
+    await page.getByText("Aller plus loin").first().waitFor({ timeout: 15000 });
+    verifier(await page.getByTestId("nouveautes").count() === 0 && Object.keys((await stockage()).ls).length === 0,
+      "visite : une commune non retenue n'a ni carte « depuis votre visite », ni date gardée");
+  }
   const fautives = demandees.filter(u => adresseFautive(u) || /77284/.test(u));
   verifier(fautives.length === 0, "mémoire : aucune requête ne porte le code de la commune " + JSON.stringify(fautives));
   await ctx.close();
