@@ -1992,6 +1992,28 @@ verif("langue — le nom affiche porte son orthographe officielle",
   graphies["evry"] === "Évry-Courcouronnes", JSON.stringify(graphies));
 await pageAcc.context().close();
 
+console.log("\n--- decide : le niveau de chaque fait de la redaction ---------------");
+/* 08/10/2026 (audit beta) : des faits nationaux sous « Ce qui a été décidé pour
+   Montreuil », sans que rien ne le dise. Le niveau est lu dans evenements.json. */
+{
+  const evts = JSON.parse(fs.readFileSync(path.join(DIST, "data/evenements.json"), "utf8"));
+  const nationaux = (evts.r || evts).filter(e => e.e === "france").length;
+  const ctx = await nav.newContext({ viewport: { width: 390, height: 844 } });
+  const p = await ctx.newPage();
+  await p.goto(base, { waitUntil: "networkidle" });
+  await p.getByLabel(/Où habitez-vous/).fill("Montreuil");
+  await p.waitForTimeout(300);
+  await p.getByRole("button", { name: /^Montreuil\b/ }).first().click();
+  await p.waitForTimeout(1200);
+  await p.getByRole("button", { name: "Ce qui a été décidé" }).first().click();
+  await p.waitForTimeout(1500);
+  const n = await p.evaluate(() => document.querySelectorAll(".niveau-fait").length);
+  const t = await p.evaluate(() => [...document.querySelectorAll(".niveau-fait")].map(x => x.innerText).join("|"));
+  await ctx.close();
+  verif("decide — chaque fait national de la redaction le dit (« France entière »)",
+    nationaux === 0 || (n === nationaux && /FRANCE ENTIÈRE|France entière/i.test(t)), n + " étiquettes pour " + nationaux + " faits nationaux");
+}
+
 console.log("\n--- absence chez nous vs absence dans le monde ----------------");
 /* DOCTRINE DU 16/09/2026, PROUVEE ICI. Avant le correctif, chercher une commune
  * qui existe reellement mais qui manque a nos donnees (Ville-d'Avray, 92077,
