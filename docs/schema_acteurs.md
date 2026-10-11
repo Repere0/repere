@@ -55,48 +55,48 @@ une seule fois sont reprises a part, plus bas.
 | `acteur.adresses.adresse[].codePostal` | texte/vide | 2803 | 75355 · 33150 |
 | `acteur.adresses.adresse[].ville` | texte/vide | 2803 | Paris 07 SP · Cenon |
 | `acteur.adresses.adresse[].valElec` | texte/vide | 6203 | 01 40 63 75 53 · 01 40 63 79 37 |
-| `acteur.mandats.mandat[]` | liste | 2992 | de 2 a 814 entrees |
-| `acteur.mandats.mandat[].@xmlns:xsi` | texte | 97282 | http://www.w3.org/2001/XMLSchema-instance |
-| `acteur.mandats.mandat[].@xsi:type` | texte | 97282 | MandatSimple_Type · MandatMission_Type |
-| `acteur.mandats.mandat[].uid` | texte | 97282 | PM391145 · PM778068 |
-| `acteur.mandats.mandat[].acteurRef` | texte | 97282 | PA1001 · PA1002 |
-| `acteur.mandats.mandat[].legislature` | texte/vide | 97282 | 13 · 14 |
-| `acteur.mandats.mandat[].typeOrgane` | texte | 97282 | DELEGBUREAU · DELEGSENAT |
-| `acteur.mandats.mandat[].dateDebut` | texte | 97282 | 2007-06-28 · 2020-10-20 |
-| `acteur.mandats.mandat[].datePublication` | texte/vide | 97282 | 2010-03-23 · 2012-06-27 |
-| `acteur.mandats.mandat[].dateFin` | texte/vide | 97282 | 2008-10-08 · 2010-11-13 |
-| `acteur.mandats.mandat[].preseance` | texte/vide | 97282 | 24 · 4 |
-| `acteur.mandats.mandat[].nominPrincipale` | texte | 97282 | 0 · 1 |
-| `acteur.mandats.mandat[].infosQualite.codeQualite` | texte/vide | 97282 | Membre · membre |
-| `acteur.mandats.mandat[].infosQualite.libQualite` | texte | 97282 | Membre · membre |
-| `acteur.mandats.mandat[].infosQualite.libQualiteSex` | texte/vide | 97282 | Membre · membre |
-| `acteur.mandats.mandat[].organes.organeRef` | texte | 97161 | PO391141 · PO420388 |
+| `acteur.mandats.mandat[]` | liste | 2995 | de 2 a 814 entrees |
+| `acteur.mandats.mandat[].@xmlns:xsi` | texte | 97755 | http://www.w3.org/2001/XMLSchema-instance |
+| `acteur.mandats.mandat[].@xsi:type` | texte | 97755 | MandatSimple_Type · MandatMission_Type |
+| `acteur.mandats.mandat[].uid` | texte | 97755 | PM391145 · PM778068 |
+| `acteur.mandats.mandat[].acteurRef` | texte | 97755 | PA1001 · PA1002 |
+| `acteur.mandats.mandat[].legislature` | texte/vide | 97755 | 13 · 14 |
+| `acteur.mandats.mandat[].typeOrgane` | texte | 97755 | DELEGBUREAU · DELEGSENAT |
+| `acteur.mandats.mandat[].dateDebut` | texte | 97755 | 2007-06-28 · 2020-10-20 |
+| `acteur.mandats.mandat[].datePublication` | texte/vide | 97755 | 2010-03-23 · 2012-06-27 |
+| `acteur.mandats.mandat[].dateFin` | texte/vide | 97755 | 2008-10-08 · 2010-11-13 |
+| `acteur.mandats.mandat[].preseance` | texte/vide | 97755 | 24 · 4 |
+| `acteur.mandats.mandat[].nominPrincipale` | texte | 97755 | 0 · 1 |
+| `acteur.mandats.mandat[].infosQualite.codeQualite` | texte/vide | 97755 | Membre · membre |
+| `acteur.mandats.mandat[].infosQualite.libQualite` | texte | 97755 | Membre · membre |
+| `acteur.mandats.mandat[].infosQualite.libQualiteSex` | texte/vide | 97755 | Membre · membre |
+| `acteur.mandats.mandat[].organes.organeRef` | texte | 97634 | PO391141 · PO420388 |
 | `acteur.mandats.mandat[].libelle` | texte/vide | 6034 | Mise en place du plan de relance · La pratique d'une activité physique et sportive pour les élèves et les étudiants |
 | `acteur.mandats.mandat[].missionSuivanteRef` | texte/vide | 6034 | PM773756 · PM789978 |
 | `acteur.mandats.mandat[].missionPrecedenteRef` | texte/vide | 6034 | PM769451 · PM786854 |
-| `acteur.mandats.mandat[].suppleants` | vide | 4835 |  |
-| `acteur.mandats.mandat[].chambre` | vide | 3196 |  |
-| `acteur.mandats.mandat[].election.lieu.region` | texte/vide | 3368 | Auvergne-Rhône-Alpes · Hauts-de-France |
-| `acteur.mandats.mandat[].election.lieu.regionType` | texte/vide | 3368 | Métropolitain · Collectivités d'outre-mer et Nouvelle-Calédonie |
-| `acteur.mandats.mandat[].election.lieu.departement` | texte/vide | 3368 | Rhône · Nord |
-| `acteur.mandats.mandat[].election.lieu.numDepartement` | texte/vide | 3368 | 59 · 37 |
-| `acteur.mandats.mandat[].election.lieu.numCirco` | texte/vide | 3368 | 13 · 23 |
-| `acteur.mandats.mandat[].election.causeMandat` | texte/vide | 3368 | élections générales · élection partielle, suite à l'annulation de l'élection d'un député |
-| `acteur.mandats.mandat[].mandature.datePriseFonction` | texte/vide | 3368 | 2002-06-19 · 2002-12-16 |
-| `acteur.mandats.mandat[].mandature.causeFin` | texte/vide | 3368 | Fin de législature · Annulation de l'élection sur décision du Conseil constitutionnel |
-| `acteur.mandats.mandat[].mandature.premiereElection` | texte | 3368 | 0 · 1 |
-| `acteur.mandats.mandat[].mandature.placeHemicycle` | texte/vide | 3368 | 424 · 178 |
-| `acteur.mandats.mandat[].mandature.mandatRemplaceRef` | texte/vide | 3368 | PM267876 · PM386168 |
-| `acteur.mandats.mandat[].collaborateurs` | vide | 3229 |  |
+| `acteur.mandats.mandat[].suppleants` | vide | 4868 |  |
+| `acteur.mandats.mandat[].chambre` | vide | 3225 |  |
+| `acteur.mandats.mandat[].election.lieu.region` | texte/vide | 3396 | Auvergne-Rhône-Alpes · Hauts-de-France |
+| `acteur.mandats.mandat[].election.lieu.regionType` | texte/vide | 3396 | Métropolitain · Collectivités d'outre-mer et Nouvelle-Calédonie |
+| `acteur.mandats.mandat[].election.lieu.departement` | texte/vide | 3396 | Rhône · Nord |
+| `acteur.mandats.mandat[].election.lieu.numDepartement` | texte/vide | 3396 | 59 · 37 |
+| `acteur.mandats.mandat[].election.lieu.numCirco` | texte/vide | 3396 | 13 · 23 |
+| `acteur.mandats.mandat[].election.causeMandat` | texte/vide | 3396 | élections générales · élection partielle, suite à l'annulation de l'élection d'un député |
+| `acteur.mandats.mandat[].mandature.datePriseFonction` | texte/vide | 3396 | 2002-06-19 · 2002-12-16 |
+| `acteur.mandats.mandat[].mandature.causeFin` | texte/vide | 3396 | Fin de législature · Annulation de l'élection sur décision du Conseil constitutionnel |
+| `acteur.mandats.mandat[].mandature.premiereElection` | texte | 3396 | 0 · 1 |
+| `acteur.mandats.mandat[].mandature.placeHemicycle` | texte/vide | 3396 | 424 · 178 |
+| `acteur.mandats.mandat[].mandature.mandatRemplaceRef` | texte/vide | 3396 | PM267876 · PM386168 |
+| `acteur.mandats.mandat[].collaborateurs` | vide | 3257 |  |
 | `acteur.etatCivil.infoNaissance.paysNais.@xmlns:xsi` | texte | 1211 | http://www.w3.org/2001/XMLSchema-instance |
 | `acteur.etatCivil.infoNaissance.paysNais.@xsi:nil` | texte | 1211 | true |
 | `acteur.etatCivil.ident.trigramme` | texte | 526 | ADA · JGD |
 | `acteur.uri_hatvp` | texte | 520 | https://www.hatvp.fr/pages_nominatives/david-alain · https://www.hatvp.fr/pages_nominatives/guedj-jerome |
 | `acteur.etatCivil.dateDeces` | texte | 267 | 2025-02-16 · 2022-01-01 |
-| `acteur.mandats.mandat[].suppleants.suppleant.dateDebut` | texte | 1050 | 2002-06-19 · 2002-12-15 |
-| `acteur.mandats.mandat[].suppleants.suppleant.dateFin` | texte/vide | 1050 | 2007-06-19 · 2012-06-19 |
-| `acteur.mandats.mandat[].suppleants.suppleant.suppleantRef` | texte | 1050 | PA267501 · PA333972 |
-| `acteur.mandats.mandat[].election.refCirconscription` | texte | 1305 | PO230806 · PO230733 |
+| `acteur.mandats.mandat[].suppleants.suppleant.dateDebut` | texte | 1049 | 2002-06-19 · 2002-12-15 |
+| `acteur.mandats.mandat[].suppleants.suppleant.dateFin` | texte/vide | 1049 | 2007-06-19 · 2012-06-19 |
+| `acteur.mandats.mandat[].suppleants.suppleant.suppleantRef` | texte | 1049 | PA267501 · PA333972 |
+| `acteur.mandats.mandat[].election.refCirconscription` | texte | 1304 | PO230806 · PO230733 |
 | `acteur.etatCivil.infoNaissance.villeNais.@xmlns:xsi` | texte | 846 | http://www.w3.org/2001/XMLSchema-instance |
 | `acteur.etatCivil.infoNaissance.villeNais.@xsi:nil` | texte | 846 | true |
 | `acteur.etatCivil.infoNaissance.depNais.@xmlns:xsi` | texte | 999 | http://www.w3.org/2001/XMLSchema-instance |
@@ -130,39 +130,39 @@ une seule fois sont reprises a part, plus bas.
 | `acteur.mandats.mandat[].collaborateurs.collaborateur[].dateFin` | vide | 473 |  |
 | `acteur.adresses.@xmlns:xsi` | texte | 77 | http://www.w3.org/2001/XMLSchema-instance |
 | `acteur.adresses.@xsi:nil` | texte | 77 | true |
-| `acteur.mandats.mandat.@xmlns:xsi` | texte | 8 | http://www.w3.org/2001/XMLSchema-instance |
-| `acteur.mandats.mandat.@xsi:type` | texte | 8 | MandatMission_Type · MandatParlementaire_type |
-| `acteur.mandats.mandat.uid` | texte | 8 | PM287498 · PM885958 |
-| `acteur.mandats.mandat.acteurRef` | texte | 8 | PA497 · PA643110 |
-| `acteur.mandats.mandat.legislature` | texte/vide | 8 | 12 · 15 |
-| `acteur.mandats.mandat.typeOrgane` | texte | 8 | MINISTERE · SENAT |
-| `acteur.mandats.mandat.dateDebut` | texte | 8 | 2002-12-24 · 2026-10-01 |
-| `acteur.mandats.mandat.datePublication` | texte/vide | 8 | 2002-12-26 |
-| `acteur.mandats.mandat.dateFin` | texte/vide | 8 | 2020-08-01 · 2020-06-24 |
-| `acteur.mandats.mandat.preseance` | texte | 8 | 1 · 20 |
-| `acteur.mandats.mandat.nominPrincipale` | texte | 8 | 1 |
-| `acteur.mandats.mandat.infosQualite.codeQualite` | texte | 8 | en mission · Sénateur |
-| `acteur.mandats.mandat.infosQualite.libQualite` | texte | 8 | en mission · SENATEUR |
-| `acteur.mandats.mandat.infosQualite.libQualiteSex` | texte | 8 | en mission · Sénateur 5ème République |
-| `acteur.mandats.mandat.organes.organeRef` | texte | 8 | PO268781 · PO78718 |
+| `acteur.mandats.mandat.@xmlns:xsi` | texte | 5 | http://www.w3.org/2001/XMLSchema-instance |
+| `acteur.mandats.mandat.@xsi:type` | texte | 5 | MandatMission_Type · MandatParlementaire_type |
+| `acteur.mandats.mandat.uid` | texte | 5 | PM287498 · PM774376 |
+| `acteur.mandats.mandat.acteurRef` | texte | 5 | PA497 · PA720134 |
+| `acteur.mandats.mandat.legislature` | texte/vide | 5 | 12 · 15 |
+| `acteur.mandats.mandat.typeOrgane` | texte | 5 | MINISTERE · ASSEMBLEE |
+| `acteur.mandats.mandat.dateDebut` | texte | 5 | 2002-12-24 · 2017-06-18 |
+| `acteur.mandats.mandat.datePublication` | texte/vide | 5 | 2002-12-26 |
+| `acteur.mandats.mandat.dateFin` | texte/vide | 5 | 2020-08-01 · 2020-06-24 |
+| `acteur.mandats.mandat.preseance` | texte | 5 | 1 · 50 |
+| `acteur.mandats.mandat.nominPrincipale` | texte | 5 | 1 |
+| `acteur.mandats.mandat.infosQualite.codeQualite` | texte | 5 | en mission · membre |
+| `acteur.mandats.mandat.infosQualite.libQualite` | texte | 5 | en mission · membre |
+| `acteur.mandats.mandat.infosQualite.libQualiteSex` | texte | 5 | en mission · membre |
+| `acteur.mandats.mandat.organes.organeRef` | texte | 5 | PO268781 · PO717460 |
 | `acteur.mandats.mandat.libelle` | texte | 1 | La préparation du débat national sur les énergies |
 | `acteur.mandats.mandat.missionSuivanteRef` | vide | 1 |  |
 | `acteur.mandats.mandat.missionPrecedenteRef` | vide | 1 |  |
-| `acteur.mandats.mandat.suppleants` | vide | 7 |  |
-| `acteur.mandats.mandat.chambre` | vide | 7 |  |
-| `acteur.mandats.mandat.election.lieu.region` | texte/vide | 7 | Pays de la Loire · Ile-de-France |
-| `acteur.mandats.mandat.election.lieu.regionType` | texte/vide | 7 | Métropolitain · Dom |
-| `acteur.mandats.mandat.election.lieu.departement` | texte/vide | 7 | Maine-et-Loire · Val-de-Marne |
-| `acteur.mandats.mandat.election.lieu.numDepartement` | texte | 7 | 84 · 49 |
-| `acteur.mandats.mandat.election.lieu.numCirco` | texte/vide | 7 | 3 · 9 |
-| `acteur.mandats.mandat.election.causeMandat` | texte/vide | 7 | remplacement d'un député ayant démissionné pour cause d’incompatibilité prévue aux arti... |
-| `acteur.mandats.mandat.mandature.datePriseFonction` | texte/vide | 7 | 2020-08-01 · 2020-06-24 |
-| `acteur.mandats.mandat.mandature.causeFin` | texte/vide | 7 | Démission · Démission avant entrée en fonction |
-| `acteur.mandats.mandat.mandature.premiereElection` | texte | 7 | 0 |
-| `acteur.mandats.mandat.mandature.placeHemicycle` | vide | 7 |  |
-| `acteur.mandats.mandat.mandature.mandatRemplaceRef` | vide | 7 |  |
-| `acteur.mandats.mandat.collaborateurs` | vide | 7 |  |
+| `acteur.mandats.mandat.suppleants` | vide | 4 |  |
+| `acteur.mandats.mandat.chambre` | vide | 4 |  |
+| `acteur.mandats.mandat.election.lieu.region` | texte/vide | 4 | Pays de la Loire · Ile-de-France |
+| `acteur.mandats.mandat.election.lieu.regionType` | texte/vide | 4 | Métropolitain · Dom |
+| `acteur.mandats.mandat.election.lieu.departement` | texte/vide | 4 | Maine-et-Loire · Val-de-Marne |
+| `acteur.mandats.mandat.election.lieu.numDepartement` | texte | 4 | 49 · 94 |
+| `acteur.mandats.mandat.election.lieu.numCirco` | texte/vide | 4 | 3 · 9 |
+| `acteur.mandats.mandat.election.causeMandat` | texte/vide | 4 | remplacement d'un député ayant démissionné pour cause d’incompatibilité prévue aux arti... |
 | `acteur.mandats.mandat.election.refCirconscription` | texte | 3 | PO717890 · PO718496 |
+| `acteur.mandats.mandat.mandature.datePriseFonction` | texte/vide | 4 | 2020-08-01 · 2020-06-24 |
+| `acteur.mandats.mandat.mandature.causeFin` | texte/vide | 4 | Démission · Démission avant entrée en fonction |
+| `acteur.mandats.mandat.mandature.premiereElection` | texte | 4 | 0 |
+| `acteur.mandats.mandat.mandature.placeHemicycle` | vide | 4 |  |
+| `acteur.mandats.mandat.mandature.mandatRemplaceRef` | vide | 4 |  |
+| `acteur.mandats.mandat.collaborateurs` | vide | 4 |  |
 | `acteur.mandats.mandat[].collaborateurs[]` | liste/vide | 18 | 2 entree(s) |
 | `acteur.etatCivil.infoNaissance.dateNais.@xmlns:xsi` | texte | 17 | http://www.w3.org/2001/XMLSchema-instance |
 | `acteur.etatCivil.infoNaissance.dateNais.@xsi:nil` | texte | 17 | true |
