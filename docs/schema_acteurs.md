@@ -74,20 +74,20 @@ une seule fois sont reprises a part, plus bas.
 | `acteur.mandats.mandat[].libelle` | texte/vide | 6034 | Mise en place du plan de relance · La pratique d'une activité physique et sportive pour les élèves et les étudiants |
 | `acteur.mandats.mandat[].missionSuivanteRef` | texte/vide | 6034 | PM773756 · PM789978 |
 | `acteur.mandats.mandat[].missionPrecedenteRef` | texte/vide | 6034 | PM769451 · PM786854 |
-| `acteur.mandats.mandat[].suppleants` | vide | 4868 |  |
-| `acteur.mandats.mandat[].chambre` | vide | 3225 |  |
-| `acteur.mandats.mandat[].election.lieu.region` | texte/vide | 3396 | Auvergne-Rhône-Alpes · Hauts-de-France |
-| `acteur.mandats.mandat[].election.lieu.regionType` | texte/vide | 3396 | Métropolitain · Collectivités d'outre-mer et Nouvelle-Calédonie |
-| `acteur.mandats.mandat[].election.lieu.departement` | texte/vide | 3396 | Rhône · Nord |
-| `acteur.mandats.mandat[].election.lieu.numDepartement` | texte/vide | 3396 | 59 · 37 |
-| `acteur.mandats.mandat[].election.lieu.numCirco` | texte/vide | 3396 | 13 · 23 |
-| `acteur.mandats.mandat[].election.causeMandat` | texte/vide | 3396 | élections générales · élection partielle, suite à l'annulation de l'élection d'un député |
-| `acteur.mandats.mandat[].mandature.datePriseFonction` | texte/vide | 3396 | 2002-06-19 · 2002-12-16 |
-| `acteur.mandats.mandat[].mandature.causeFin` | texte/vide | 3396 | Fin de législature · Annulation de l'élection sur décision du Conseil constitutionnel |
-| `acteur.mandats.mandat[].mandature.premiereElection` | texte | 3396 | 0 · 1 |
-| `acteur.mandats.mandat[].mandature.placeHemicycle` | texte/vide | 3396 | 424 · 178 |
-| `acteur.mandats.mandat[].mandature.mandatRemplaceRef` | texte/vide | 3396 | PM267876 · PM386168 |
-| `acteur.mandats.mandat[].collaborateurs` | vide | 3257 |  |
+| `acteur.mandats.mandat[].suppleants` | vide | 4867 |  |
+| `acteur.mandats.mandat[].chambre` | vide | 3224 |  |
+| `acteur.mandats.mandat[].election.lieu.region` | texte/vide | 3395 | Auvergne-Rhône-Alpes · Hauts-de-France |
+| `acteur.mandats.mandat[].election.lieu.regionType` | texte/vide | 3395 | Métropolitain · Collectivités d'outre-mer et Nouvelle-Calédonie |
+| `acteur.mandats.mandat[].election.lieu.departement` | texte/vide | 3395 | Rhône · Nord |
+| `acteur.mandats.mandat[].election.lieu.numDepartement` | texte/vide | 3395 | 59 · 37 |
+| `acteur.mandats.mandat[].election.lieu.numCirco` | texte/vide | 3395 | 13 · 23 |
+| `acteur.mandats.mandat[].election.causeMandat` | texte/vide | 3395 | élections générales · élection partielle, suite à l'annulation de l'élection d'un député |
+| `acteur.mandats.mandat[].mandature.datePriseFonction` | texte/vide | 3395 | 2002-06-19 · 2002-12-16 |
+| `acteur.mandats.mandat[].mandature.causeFin` | texte/vide | 3395 | Fin de législature · Annulation de l'élection sur décision du Conseil constitutionnel |
+| `acteur.mandats.mandat[].mandature.premiereElection` | texte | 3395 | 0 · 1 |
+| `acteur.mandats.mandat[].mandature.placeHemicycle` | texte/vide | 3395 | 424 · 178 |
+| `acteur.mandats.mandat[].mandature.mandatRemplaceRef` | texte/vide | 3395 | PM267876 · PM386168 |
+| `acteur.mandats.mandat[].collaborateurs` | vide | 3256 |  |
 | `acteur.etatCivil.infoNaissance.paysNais.@xmlns:xsi` | texte | 1211 | http://www.w3.org/2001/XMLSchema-instance |
 | `acteur.etatCivil.infoNaissance.paysNais.@xsi:nil` | texte | 1211 | true |
 | `acteur.etatCivil.ident.trigramme` | texte | 526 | ADA · JGD |
