@@ -50,6 +50,13 @@ function rangLundi(iso: string): number {
   const [y, m, d] = iso.split("-").map(Number);
   return (new Date(Date.UTC(y, m - 1, d)).getUTCDay() + 6) % 7;
 }
+/* Date courte pour la colonne de la frise : « mar. 13 oct. » (13/10/2026). */
+const JOURS_COURTS = ["dim.", "lun.", "mar.", "mer.", "jeu.", "ven.", "sam."];
+const MOIS_COURTS = ["janv.", "févr.", "mars", "avr.", "mai", "juin", "juil.", "août", "sept.", "oct.", "nov.", "déc."];
+function courtJour(iso: string): { nom: string; num: number; mois: string } {
+  const [y, m, d] = iso.split("-").map(Number);
+  return { nom: JOURS_COURTS[new Date(Date.UTC(y, m - 1, d)).getUTCDay()], num: d, mois: MOIS_COURTS[m - 1] };
+}
 
 function Ligne({ g }: { g: Groupe }) {
   /* espaces insecables dans chaque heure : « 21 h 30 » ne se coupe jamais (vu sur capture) */
@@ -146,6 +153,21 @@ export default function AVenir() {
       const manquantes = lues.length ? INSTITUTIONS.filter(i => !lues.some(x => x.institution === i)) : [];
       const vieillis = lues.map(x => ({ ...x, age: ageReleve(x.source && x.source.releve_le) }))
         .filter(x => x.age !== null && x.age > AGE_RELEVE_NORMAL);
+      /* La frise : un jour par colonne de date, dans l'ordre (les jours sans séance n'ont pas de ligne). */
+      const jours = [...new Set(affiches.map(g => g.jour))];
+      /* « Comment une loi devient loi » : en haut de l'écran, là où le lecteur la cherche
+         quand il ne comprend pas une séance. Elle renvoie à la procédure, sourcée. */
+      const carteLoi = (
+        <Pressable
+          onPress={() => router.push("/procedure")}
+          accessibilityRole="button"
+          accessibilityLabel="Ouvrir : comment une loi devient loi"
+          style={({ pressed }) => ({ minHeight: 52, padding: 16, borderRadius: 14, borderWidth: 1, borderColor: couleurs.trait, backgroundColor: couleurs.carte, opacity: pressed ? 0.6 : 1 })}
+        >
+          <Text style={{ fontWeight: "700", color: couleurs.encre }}>Comment une loi devient loi</Text>
+          <Text style={{ marginTop: 4, color: couleurs.sourd }}>{ETAPES_LOI.length} étapes, du dépôt à la publication, avec la navette.</Text>
+        </Pressable>
+      );
       return (
         <Page>
           <Stack.Screen options={{ title: LIBELLES.calendrier }} />
@@ -217,9 +239,26 @@ export default function AVenir() {
               ) : null}
               <Text style={TYPO.note}>Les alertes « me prévenir une heure avant » ne sont pas encore disponibles dans l'application.</Text>
 
+              {carteLoi}
+
               {affiches.length ? (
                 <Carte echelon="france">
-                  {affiches.map((g, i) => <Ligne key={g.debut + i} g={g} />)}
+                  {jours.map((j, k) => {
+                    const c = courtJour(j);
+                    return (
+                      <View key={j} testID="cal-jour" style={{ flexDirection: "row", gap: PAS * 3 }}>
+                        <View style={{ width: 52, alignItems: "center" }}>
+                          <Text style={{ fontSize: 13, color: couleurs.sourd, fontWeight: "600" }}>{c.nom}</Text>
+                          <Text style={{ fontSize: 22, color: couleurs.encre, fontWeight: "800" }}>{c.num}</Text>
+                          <Text style={{ fontSize: 13, color: couleurs.sourd }}>{c.mois}</Text>
+                          {k < jours.length - 1 ? <View style={{ flex: 1, width: 2, minHeight: 16, marginTop: PAS, backgroundColor: couleurs.trait }} /> : null}
+                        </View>
+                        <View style={{ flex: 1 }}>
+                          {affiches.filter(g => g.jour === j).map((g, i) => <Ligne key={g.debut + i} g={g} />)}
+                        </View>
+                      </View>
+                    );
+                  })}
                   <View style={{ flexDirection: "row", flexWrap: "wrap" }}>
                     {lues.map(x => <PastilleSource key={x.institution} nom={x.institution === "Sénat" ? "Sénat" : "Assemblée"} source={srcAgenda(x.source)} />)}
                   </View>
@@ -233,15 +272,6 @@ export default function AVenir() {
             </>
           )}
 
-          <Pressable
-            onPress={() => router.push("/procedure")}
-            accessibilityRole="button"
-            accessibilityLabel="Ouvrir : comment une loi devient loi"
-            style={({ pressed }) => ({ minHeight: 52, padding: 16, borderRadius: 14, borderWidth: 1, borderColor: couleurs.trait, backgroundColor: couleurs.carte, opacity: pressed ? 0.6 : 1 })}
-          >
-            <Text style={{ fontWeight: "700", color: couleurs.encre }}>Comment une loi devient loi</Text>
-            <Text style={{ marginTop: 4, color: couleurs.sourd }}>{ETAPES_LOI.length} étapes, du dépôt à la publication, avec la navette.</Text>
-          </Pressable>
           <Pressable
             onPress={() => router.push("/scrutins?mode=qag")}
             accessibilityRole="button"
