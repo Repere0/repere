@@ -169,6 +169,19 @@ test("calendrier — un texte, un jour, une ligne : intitule de la premiere sean
   assert.equal(ageReleve(undefined), null);
 });
 
+test("calendrier — fin de seance : alignee sur chaque debut, absente reste absente, jamais inventee", async () => {
+  const { regrouperParJour } = await import("../packages/core/src/index.js");
+  const g = regrouperParJour([
+    { debut: "2026-10-14T09:00", fin: "2026-10-14T12:30", titre: "Projet de loi X", institution: "Assemblée nationale", categorie: "Séance publique" },
+    { debut: "2026-10-14T15:00", fin: null, titre: "Projet de loi X", institution: "Assemblée nationale", categorie: "Séance publique" },
+    { debut: "2026-10-14T21:30", fin: "2026-10-14T20:00", titre: "Projet de loi X", institution: "Assemblée nationale", categorie: "Séance publique" },
+  ]);
+  assert.equal(g.length, 1, "trois seances du meme texte le meme jour : une ligne");
+  assert.deepEqual(g[0].debuts, ["2026-10-14T09:00", "2026-10-14T15:00", "2026-10-14T21:30"]);
+  assert.deepEqual(g[0].fins, ["2026-10-14T12:30", null, null],
+    "fin copiee au meme rang que son debut ; absente = null ; fin avant le debut = ecartee");
+});
+
 test("calendrier — sur l'agenda reel : moins de lignes que de seances, et aucune seance perdue", async (t) => {
   const { regrouperParJour } = await import("../packages/core/src/index.js");
   const f = new URL("../data/agenda-an.json", import.meta.url);

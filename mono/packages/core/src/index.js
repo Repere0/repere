@@ -26,3 +26,4 @@ export * from "./source.js";
 export * from "./visuels.js";
 export * from "./libelles.js";
 export * from "./calendrier.js";
+export * from "./mots.js";

@@ -26,7 +26,7 @@ import { PastilleSource } from "../ui/source";
 import { Depli } from "../ui/visuels";
 
 type Ev = { titre: string; debut: string; institution: string; categorie?: string; lieu?: string; description?: string; source: Record<string, string> };
-type Groupe = { jour: string; institution: string; titre: string; debut: string; debuts: string[]; seances: number;
+type Groupe = { jour: string; institution: string; titre: string; debut: string; debuts: string[]; fins?: (string | null)[]; seances: number;
   categorie: string | null; lieu: string | null; points: string[] | null; textesLibres: string[] };
 
 const INSTITUTIONS = ["Assemblée nationale", "Sénat"];
@@ -35,7 +35,14 @@ const nbsp = (t: string) => t.replace(/ ([?!:;])/g, " $1");
 
 function Ligne({ g }: { g: Groupe }) {
   /* espaces insecables dans chaque heure : « 21 h 30 » ne se coupe jamais (vu sur capture) */
-  const heures = g.debuts.map(x => heureFr(x).replace(/ /g, "\u00a0")).filter(Boolean).join(", ");
+  /* debut et fin de chaque seance, au meme rang. Fin absente : on l'ecrit, on ne la
+     devine pas (doctrine du vide, invariant 5). */
+  const heures = g.debuts.map((x, i) => {
+    const debut = heureFr(x);
+    if (!debut) return "";
+    const fin = g.fins && g.fins[i] ? heureFr(g.fins[i]) : "";
+    return (fin ? `${debut} \u00e0 ${fin}` : `${debut} (fin non publi\u00e9e)`).replace(/ /g, "\u00a0");
+  }).filter(Boolean).join(", ");
   return (
     <View testID="cal-ligne" style={{ gap: PAS, paddingTop: PAS * 3, borderTopWidth: 1, borderTopColor: couleurs.trait }}>
       <Text style={[TYPO.corps, { fontWeight: "700" }]}>{jourFr(g.debut)}{heures ? ` · ${heures}` : ""}</Text>
@@ -88,6 +95,15 @@ export default function AVenir() {
           >
             <Text style={{ fontWeight: "700", color: couleurs.encre }}>Questions au Gouvernement</Text>
             <Text style={{ marginTop: 4, color: couleurs.sourd }}>Voir les questions posées et les réponses publiées.</Text>
+          </Pressable>
+          <Pressable
+            onPress={() => router.push("/dictionnaire")}
+            accessibilityRole="button"
+            accessibilityLabel="Ouvrir le dictionnaire citoyen"
+            style={{ minHeight: 52, padding: 16, borderRadius: 14, borderWidth: 1, borderColor: couleurs.trait, backgroundColor: couleurs.carte }}
+          >
+            <Text style={{ fontWeight: "700", color: couleurs.encre }}>Dictionnaire citoyen</Text>
+            <Text style={{ marginTop: 4, color: couleurs.sourd }}>Ce que veulent dire les mots du Parlement et des collectivités.</Text>
           </Pressable>
           {!r.agendaLu ? (
             <Vide {...AGENDA_PAS_ARRIVE} action="Réessayer" onAction={reessayer} />
