@@ -659,6 +659,11 @@ export default function App() {
               ) : null}
 
               <main>
+                {/* Un fondu bref quand on change d'écran. La clé est l'onglet : changer
+                    d'onglet remonte ce bloc, donc rejoue le fondu. Le mouvement ne porte
+                    aucune information ; il montre seulement que l'écran a changé.
+                    Coupé par le réglage « moins d'animations » (voir tokens.css). */}
+                <div key={onglet} className="amicro-ecran">
                 <Suspense fallback={<Chargement titre="Ouverture de l'écran."
                   corps="Le code de cet écran est téléchargé à la demande, une seule fois." />}>
                   {onglet === "sources" ? <Sources index={index} paquet={paquet} /> : null}
@@ -677,6 +682,7 @@ export default function App() {
                   {onglet === "qui" && fiche ? <QuiDecide paquet={paquet} index={index} commune={commune} /> : null}
                   {onglet === "argent" && fiche ? <OuVaArgent paquet={paquet} index={index} commune={commune} /> : null}
                 </Suspense>
+                </div>
               </main>
             </>
           ) : null}

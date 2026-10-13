@@ -103,3 +103,16 @@ code, .mono { font-family: var(--t-mono); font-size: .86em; font-variant-numeric
 @media (prefers-reduced-motion: reduce) {
   .amicro-fadeup { animation: none; }
 }
+
+/* UN ECRAN QUI CHANGE : fondu de 0,32 s et glissement de 8 px. Il ne fait que
+   signaler le changement ; le contenu est deja en place a la fin du fondu. */
+.amicro-ecran {
+  animation: amicro-ecran .32s cubic-bezier(.16, 1, .3, 1) both;
+}
+@keyframes amicro-ecran {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .amicro-ecran { animation: none; }
+}

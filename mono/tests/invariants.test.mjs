@@ -395,6 +395,25 @@ test("amicro — le mouvement ne part pas au premier écran", () => {
   }
 });
 
+/* Le contenu de chaque bloc @media (prefers-reduced-motion: reduce), accolades comptees. */
+function blocsReduitsMouvement(css) {
+  const blocs = [];
+  const entete = /@media\s*\(prefers-reduced-motion:\s*reduce\)\s*\{/g;
+  let m;
+  while ((m = entete.exec(css))) {
+    let i = entete.lastIndex;
+    const debut = i;
+    let niveau = 1;
+    while (i < css.length && niveau > 0) {
+      if (css[i] === "{") niveau++;
+      else if (css[i] === "}") niveau--;
+      i++;
+    }
+    blocs.push(css.slice(debut, i - 1));
+  }
+  return blocs;
+}
+
 test("amicro — toute animation se coupe si le lecteur l'a demandé", () => {
   /* Un reglage systeme « moins d'animations » n'est pas une preference de gout :
      vertiges, migraines, troubles vestibulaires. Un composant anime qui ne lit
@@ -417,10 +436,15 @@ test("amicro — toute animation se coupe si le lecteur l'a demandé", () => {
     const animes = [...css.matchAll(/(^|\n)\s*(\.[A-Za-z0-9_-]+)[^{}]*\{[^}]*\banimation\s*:/g)]
       .map(m => m[2]);
     if (!animes.length) continue;
-    const reduit = css.match(/@media \(prefers-reduced-motion: reduce\)[\s\S]*$/);
-    assert.ok(reduit, `${f} anime ${animes.join(", ")} sans jamais couper le mouvement`);
+    /* Le contenu des SEULS blocs @media (prefers-reduced-motion: reduce), accolades
+       comptees. Une version precedente cherchait le selecteur dans tout ce qui suit le
+       premier @media : la declaration elle-meme s'y trouvait, et la garde passait meme
+       sans aucune coupure (prouve le 13/10/2026 en retirant une regle). */
+    const reduit = blocsReduitsMouvement(css);
+    assert.ok(reduit.length, `${f} anime ${animes.join(", ")} sans jamais couper le mouvement`);
     for (const sel of new Set(animes)) {
-      assert.ok(reduit[0].includes(sel),
+      const motif = new RegExp(sel.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "(?![A-Za-z0-9_-])");
+      assert.ok(reduit.some(b => motif.test(b)),
         `${f} anime ${sel} mais ne le neutralise pas quand le lecteur demande moins d'animations`);
     }
   }
