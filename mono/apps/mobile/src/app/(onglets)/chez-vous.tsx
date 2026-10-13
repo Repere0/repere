@@ -18,10 +18,10 @@
  *
  * RIEN N'EST CALCULÉ ICI : @repere/core derive, ui/semaine.tsx compte la semaine. */
 import { useState, type ReactNode } from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Animated, Pressable, StyleSheet, Text, View } from "react-native";
 import { router, Stack } from "expo-router";
 import {
-  dateFr, datePublication, decompte, ordinal, parHabitant, phrasePosition,
+  dateFr, datePublication, decompte, fraicheurPublication, jourParis, ordinal, parHabitant, phrasePosition,
   texteDe, titreLisible, REFUS_APPARIEMENT,
 } from "@repere/core";
 import { Vide } from "../../lib/composants";
@@ -35,6 +35,7 @@ import { AvecDonnees, Page } from "../../ui/page";
 import { PastilleSource } from "../../ui/source";
 import { SemaineParlement } from "../../ui/semaine";
 import { typo } from "../../ui/reponse";
+import { useApparition } from "../../ui/mouvement";
 
 export default function ChezVous() {
   const { choix } = useSelection();
@@ -44,6 +45,9 @@ export default function ChezVous() {
       const { d } = r;
       const nom = d.nomCommune;
       const publie = datePublication(r.index);
+      /* Invariant 9 : la fraicheur se dit en phrase, a cote de la date. Sans date lisible,
+         la phrase dit qu'on ne peut pas le dire : on ne pretend jamais que c'est a jour. */
+      const fraicheur = fraicheurPublication(publie, jourParis(new Date()));
       const depIndex = r.index.departements.find((x: { code: string }) => x.code === d.dep);
       const vote = d.dernierVote;
       const hab = d.exercice ? parHabitant(d.exercice.ex) : null;
@@ -57,6 +61,10 @@ export default function ChezVous() {
             <Text style={TYPO.affiche} accessibilityRole="header">{nom}</Text>
             <Text style={TYPO.note}>{[depIndex && depIndex.nom, depIndex && depIndex.region].filter(Boolean).join(" · ")}</Text>
             {publie ? <Text style={TYPO.micro}>Publication Repère du {dateFr(publie)}</Text> : null}
+            <Text testID="fraicheur-phrase" data-etat={fraicheur.etat}
+              style={fraicheur.etat === "precedente" || fraicheur.etat === "inconnue" ? [TYPO.note, { fontWeight: "700" }] : TYPO.note}>
+              {fraicheur.phrase}
+            </Text>
           </View>
 
           <View style={{ gap: PAS * 3 }}>
@@ -86,7 +94,7 @@ export default function ChezVous() {
 
             {/* 2. VOTRE COMMUNE */}
             {d.exercice && hab && hab.depenses !== null ? (
-              <Bloc testID="reponse" etiquette="Votre commune"
+              <Bloc testID="reponse" etiquette="Votre commune" delai={120}
                 phrase={`En ${d.exercice.an}, ${nom} a dépensé ${hab.depenses.toLocaleString("fr-FR")} € par habitant.`}
                 explication={<Text style={TYPO.note}>{maire
                   ? `Le maire, ${maire}, prépare ce budget ; le conseil municipal le vote.`
@@ -97,7 +105,7 @@ export default function ChezVous() {
                 </>}
                 actions={[{ texte: "Où va cet argent ?", onPress: () => router.push("/argent") }]} />
             ) : (
-              <Bloc testID="reponse" etiquette="Votre commune"
+              <Bloc testID="reponse" etiquette="Votre commune" delai={120}
                 phrase={`Les comptes de ${nom} ne permettent pas de dire combien la commune dépense par habitant.`}
                 actions={[{ texte: "Pourquoi ?", onPress: () => router.push("/argent") }]} />
             )}
@@ -124,16 +132,21 @@ export default function ChezVous() {
 }
 
 /* UN BLOC DU CANEVAS : étiquette, phrase, explication, source qui se déplie, des liens. */
-function Bloc({ testID, etiquette, phrase, explication, source, actions }: {
+function Bloc({ testID, etiquette, phrase, explication, source, actions, delai = 0 }: {
   testID?: string;
   etiquette: string;
   phrase: string;
   explication?: ReactNode;
   source?: ReactNode;
   actions?: { texte: string; onPress: () => void }[];
+  delai?: number;
 }) {
   const [ouvert, setOuvert] = useState(false);
+  /* Une montee de 8 px et un fondu, une fois : la reponse arrive, elle ne danse pas.
+     Reduire les animations du telephone : l'etat final, tout de suite (ui/mouvement.ts). */
+  const apparition = useApparition(delai);
   return (
+    <Animated.View style={{ opacity: apparition, transform: [{ translateY: apparition.interpolate({ inputRange: [0, 1], outputRange: [8, 0] }) }] }}>
     <View testID={testID} style={s.bloc}>
       <Text style={TYPO.etiquette}>{etiquette}</Text>
       <Text style={s.phrase} accessibilityRole="header">{typo(phrase)}</Text>
@@ -155,6 +168,7 @@ function Bloc({ testID, etiquette, phrase, explication, source, actions }: {
         </Pressable>
       ))}
     </View>
+    </Animated.View>
   );
 }
 

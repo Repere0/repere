@@ -51,6 +51,7 @@ export function seancesAgenda(g) {
     ].filter(Boolean).join(". ");
     seances.push({
       titre: g.titre,
+      producteur: src.producteur || null,
       debut: new Date(instantParis(debut)),
       fin: finPubliee ? new Date(instantParis(finBrute)) : null,
       finPubliee,

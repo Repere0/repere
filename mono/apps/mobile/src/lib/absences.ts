@@ -41,5 +41,4 @@ export const MANQUE_ENCORE = [
   { titre: "L'agenda du Sénat", raison: "Le Sénat publie son agenda par un flux dont la licence n'est pas précisée. Repère ne l'affiche pas tant que cette licence n'est pas confirmée." },
   { titre: "Le filtre « Commune » du calendrier", raison: "Aucune source publique n'a encore été identifiée pour les séances des conseils municipaux." },
   { titre: "Le filtre « Décisions » du calendrier", raison: "Aucune décision n'est encore reliée à ce calendrier : le filtre n'est pas branché." },
-  { titre: "Les alertes avant une séance", raison: "Repère ne prévient pas encore avant une séance : l'application le dit, au lieu de promettre un rappel qui ne vient pas." },
 ];
