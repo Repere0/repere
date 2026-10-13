@@ -255,7 +255,9 @@ for (const largeur of [360, 390, 430]) {
     ["Où va cet argent ?", /Où va l'argent de Meaux/, /Sur 100 € dépensés, \d+ € vont aux salaires/],
     ["Comprendre ce vote", /Qu'a voté votre député/, /Le parcours d'une loi|Où en est ce texte/],
     ["Qui décide", /Qui décide pour Meaux/, /Décide : /],
-    ["Le calendrier", /Qu'est-ce qui arrive/, /concernent tout le pays/],
+    /* L'écran du calendrier porte, depuis le canevas du 13/10/2026, le titre « Calendrier »
+       et la phrase « Les séances annoncées… » : c'est elle qui répond à la question. */
+    ["Le calendrier", /Les séances annoncées à l'Assemblée nationale/, /concernent tout le pays/],
     ["Sources", /Repère a traité ces fichiers/, /Repère a traité ces fichiers le \d.*Données publiées le \d.*Données relevées le \d/s],
   ]) {
     await page.getByRole("button", { name: action, exact: true }).first().click();
@@ -285,7 +287,13 @@ for (const largeur of [360, 390, 430]) {
       await page.getByText(/ce n'est pas un chiffre publié/).first().waitFor({ timeout: 5000 });
       verifier(true, `${largeur}px · ${action} : le détail du calcul s'ouvre`);
     }
-    await page.getByRole("button", { name: "Revenir à l'écran Aujourd'hui" }).last().click();
+    /* Qui décide et Le calendrier sont des onglets (13/10/2026) : on y revient par la
+       barre basse, pas par un bouton « Revenir ». Les autres écrans gardent le bouton. */
+    if (action === "Qui décide" || action === "Le calendrier") {
+      await page.getByText("Aujourd'hui", { exact: true }).last().click();
+    } else {
+      await page.getByRole("button", { name: "Revenir à l'écran Aujourd'hui" }).last().click();
+    }
     await page.getByText("Aller plus loin").first().waitFor({ timeout: 5000 });
   }
 

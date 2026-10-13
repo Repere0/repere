@@ -107,6 +107,10 @@ export default function AVenir() {
   /* Filtre par institution : null = les deux. */
   const [institution, setInstitution] = useState<string | null>(null);
   const [jour, setJour] = useState<string>(() => jourParis(new Date()));
+  /* Par defaut la liste montre les deux prochaines semaines (une ligne par texte et par
+     jour) ; un jour touche la restreint a ce jour, « Deux semaines » revient en arriere. */
+  const [choisi, setChoisi] = useState(false);
+  const choisirJour = (c: string) => { setJour(c); setChoisi(true); };
   const [mois, setMois] = useState(false);
   return (
     <AvecDonnees rendu={r => {
@@ -118,6 +122,10 @@ export default function AVenir() {
       const compte: Record<string, number> = {};
       for (const g of groupes) compte[g.jour] = (compte[g.jour] || 0) + 1;
       const duJour = groupes.filter(g => g.jour === jour);
+      /* Deux semaines a partir d'aujourd'hui, comme le socle les compte (calendrier.js). */
+      const limite = jourParis(new Date(Date.now() + 14 * 864e5));
+      const deuxSemaines = groupes.filter(g => g.jour < limite);
+      const affiches = choisi ? duJour : deuxSemaines;
       const debutSemaine = decaler(jour, -rangLundi(jour));
       const semaine = Array.from({ length: 7 }, (_, i) => decaler(debutSemaine, i));
       /* Le mois : des cases vides avant le 1er (semaine commencant le lundi). */
@@ -128,9 +136,13 @@ export default function AVenir() {
       for (let i = 0; i < nbJours; i++) cases.push(decaler(premier, i));
       while (cases.length % 7) cases.push(null);
       const etiquetteJour = jourFr(jour);
-      const phrase = duJour.length
-        ? `${duJour.length} rendez-vous ${duJour.length > 1 ? "publiés" : "publié"} ce jour-là.`
-        : "Rien de publié pour ce jour et ce filtre. Repère n'affiche que ce qui est annoncé ou publié.";
+      const phrase = choisi
+        ? (duJour.length
+          ? `${duJour.length} rendez-vous ${duJour.length > 1 ? "publiés" : "publié"} ce jour-là.`
+          : "Rien de publié pour ce jour et ce filtre. Repère n'affiche que ce qui est annoncé ou publié.")
+        : (deuxSemaines.length
+          ? `${deuxSemaines.length} rendez-vous publiés dans les deux prochaines semaines.`
+          : "Rien de publié dans les deux prochaines semaines pour ce filtre. Repère n'affiche que ce qui est annoncé ou publié.");
       const manquantes = lues.length ? INSTITUTIONS.filter(i => !lues.some(x => x.institution === i)) : [];
       const vieillis = lues.map(x => ({ ...x, age: ageReleve(x.source && x.source.releve_le) }))
         .filter(x => x.age !== null && x.age > AGE_RELEVE_NORMAL);
@@ -171,14 +183,14 @@ export default function AVenir() {
                   {Array.from({ length: cases.length / 7 }, (_, ligne) => (
                     <View key={ligne} style={{ flexDirection: "row" }}>
                       {cases.slice(ligne * 7, ligne * 7 + 7).map((c, k) => c ? (
-                        <Case key={c} iso={c} jour={jour} nb={compte[c] || 0} taille="mois" onPress={() => setJour(c)} />
+                        <Case key={c} iso={c} jour={jour} nb={compte[c] || 0} taille="mois" onPress={() => choisirJour(c)} />
                       ) : <View key={"v" + k} style={{ flex: 1, minHeight: 42 }} />)}
                     </View>
                   ))}
                 </View>
               ) : (
                 <View style={{ flexDirection: "row", alignItems: "flex-end" }}>
-                  {semaine.map(c => <Case key={c} iso={c} jour={jour} nb={compte[c] || 0} taille="semaine" onPress={() => setJour(c)} />)}
+                  {semaine.map(c => <Case key={c} iso={c} jour={jour} nb={compte[c] || 0} taille="semaine" onPress={() => choisirJour(c)} />)}
                 </View>
               )}
 
@@ -196,12 +208,18 @@ export default function AVenir() {
                 })}
               </View>
 
-              <Text style={[TYPO.corps, { fontWeight: "700" }]}>{etiquetteJour ? `${etiquetteJour}. ` : ""}{phrase}</Text>
+              <Text style={[TYPO.corps, { fontWeight: "700" }]}>{choisi && etiquetteJour ? `${etiquetteJour}. ` : ""}{phrase}</Text>
+              {choisi ? (
+                <Pressable onPress={() => setChoisi(false)} accessibilityRole="button" accessibilityLabel="Revenir à la liste des deux prochaines semaines"
+                  style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", opacity: pressed ? 0.6 : 1 })}>
+                  <Text style={{ color: couleurs.lien, fontWeight: "700", textDecorationLine: "underline" }}>Voir les deux prochaines semaines</Text>
+                </Pressable>
+              ) : null}
               <Text style={TYPO.note}>Les alertes « me prévenir une heure avant » ne sont pas encore disponibles dans l'application.</Text>
 
-              {duJour.length ? (
+              {affiches.length ? (
                 <Carte echelon="france">
-                  {duJour.map((g, i) => <Ligne key={g.debut + i} g={g} />)}
+                  {affiches.map((g, i) => <Ligne key={g.debut + i} g={g} />)}
                   <View style={{ flexDirection: "row", flexWrap: "wrap" }}>
                     {lues.map(x => <PastilleSource key={x.institution} nom={x.institution === "Sénat" ? "Sénat" : "Assemblée"} source={srcAgenda(x.source)} />)}
                   </View>
