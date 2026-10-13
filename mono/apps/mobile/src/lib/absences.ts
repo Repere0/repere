@@ -34,3 +34,12 @@ export const AGENDA_VIDE = {
   titre: "Aucune séance n'est annoncée sur la période relevée, ni au Sénat ni à l'Assemblée.",
 };
 export const REGION_PAS_ARRIVEE = "La liste des élus de la région n'est pas arrivée jusqu'ici.";
+
+/* CE QUE REPÈRE NE MONTRE PAS ENCORE (beta, 13/10/2026). Chaque ligne dit la raison,
+   jamais une supposition. Liste écrite à la main : elle est datée sur son écran. */
+export const MANQUE_ENCORE = [
+  { titre: "L'agenda du Sénat", raison: "Le Sénat publie son agenda par un flux dont la licence n'est pas précisée. Repère ne l'affiche pas tant que cette licence n'est pas confirmée." },
+  { titre: "Le filtre « Commune » du calendrier", raison: "Aucune source publique n'a encore été identifiée pour les séances des conseils municipaux." },
+  { titre: "Le filtre « Décisions » du calendrier", raison: "Aucune décision n'est encore reliée à ce calendrier : le filtre n'est pas branché." },
+  { titre: "Les alertes avant une séance", raison: "Repère ne prévient pas encore avant une séance : l'application le dit, au lieu de promettre un rappel qui ne vient pas." },
+];

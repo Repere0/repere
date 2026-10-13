@@ -59,6 +59,7 @@ export default function Coquille() {
             <Stack.Screen name="procedure" options={{ title: "La procédure", headerLeft: () => <Retour texte={LIBELLES.calendrier} etiquette={`Revenir à l'écran ${LIBELLES.calendrier}`} /> }} />
             <Stack.Screen name="elu" options={{ title: "Fiche", headerLeft: () => <Retour texte={LIBELLES.qui} etiquette={`Revenir à l'écran ${LIBELLES.qui}`} /> }} />
             <Stack.Screen name="partager" options={{ title: "Partager", headerLeft: () => <Retour texte="Votre député" etiquette="Revenir à l'écran du député" /> }} />
+            <Stack.Screen name="ce-qui-manque" options={{ title: "Ce qui manque", headerLeft: () => <Retour texte={LIBELLES.aujourdhui} etiquette={`Revenir à l'écran ${LIBELLES.aujourdhui}`} /> }} />
           </Stack>
         </AvecCommune>
       </FournisseurSelection>

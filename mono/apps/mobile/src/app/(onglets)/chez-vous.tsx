@@ -110,6 +110,10 @@ export default function ChezVous() {
             style={({ pressed }) => [s.ligne, pressed && { opacity: 0.6 }]}>
             <Text style={s.lien}>Sources et mises à jour</Text>
           </Pressable>
+          <Pressable onPress={() => router.push("/ce-qui-manque")} accessibilityRole="link" accessibilityLabel="Ce que Repère ne montre pas encore"
+            style={({ pressed }) => [s.ligne, pressed && { opacity: 0.6 }]}>
+            <Text style={s.lien}>Ce que Repère ne montre pas encore</Text>
+          </Pressable>
 
           {choix ? <CarteMemoire choix={choix} /> : null}
           <Text style={TYPO.note}>Repère ne classe ni ne note personne, et ne compare jamais deux communes.</Text>
