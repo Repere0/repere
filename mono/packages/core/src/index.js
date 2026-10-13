@@ -29,3 +29,5 @@ export * from "./calendrier.js";
 export * from "./mots.js";
 export * from "./signalement.js";
 export * from "./agenda.js";
+export * from "./fraicheur.js";
+export * from "./rappel.js";

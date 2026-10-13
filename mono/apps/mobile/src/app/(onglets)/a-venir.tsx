@@ -11,8 +11,8 @@
  *     « Commune » du canevas ne sont pas branches : aucune donnee publiee.
  *   - Une ligne par texte et par jour, avec l'heure de debut et la fin quand la
  *     source la donne (« fin non publiée » sinon). Le detail se deplie.
- *   - L'alerte « me prévenir une heure avant » du canevas n'est pas branchee :
- *     l'application le dit, au lieu de promettre un rappel qui ne vient pas.
+ *   - L'alerte « me prévenir une heure avant » du canevas est branchee, par
+ *     seance, apres autorisation (PrevenirAvant) : le telephone garde le rappel.
  *   - La procedure : une entree vers son ecran, comme avant.
  *
  * Par journee, @repere/core (regrouperParJour) : meme regle que le site. */
@@ -22,8 +22,11 @@ import { router, Stack } from "expo-router";
 /* L'API « legacy » : c'est la seule qui marche dans Expo Go aujourd'hui (la nouvelle
    API lève une erreur dans Expo Go). À migrer quand Repère passera à un build de développement. */
 import * as Calendrier from "expo-calendar/legacy";
+/* Rappels locaux (beta, 13/10/2026) : l'API est celle de expo-notifications 57
+   (scheduleNotificationAsync, declencheur de type DATE) ; verifiee dans node_modules. */
+import * as Notifications from "expo-notifications";
 import {
-  AGE_RELEVE_NORMAL, ageReleve, dateFr, ETAPES_LOI, heureFr, jourFr, jourParis, LIBELLES, regrouperParJour, seancesAgenda,
+  AGE_RELEVE_NORMAL, ageReleve, dateFr, ETAPES_LOI, heureFr, jourFr, jourParis, LIBELLES, rappelSeance, regrouperParJour, seancesAgenda,
 } from "@repere/core";
 import { Carte, Vide } from "../../lib/composants";
 import { AGENDA_PAS_ARRIVE, AGENDA_VIDE } from "../../lib/absences";
@@ -91,6 +94,7 @@ function Ligne({ g }: { g: Groupe }) {
         </Depli>
       ) : null}
       {Platform.OS !== "web" && seancesAgenda(g).length ? <AjouterCalendrier g={g} /> : null}
+      {Platform.OS !== "web" && seancesAgenda(g).some(s => rappelSeance(s, new Date())) ? <PrevenirAvant g={g} /> : null}
     </View>
   );
 }
@@ -130,6 +134,52 @@ function AjouterCalendrier({ g }: { g: Groupe }) {
       {etat === "fait" ? <Text style={TYPO.note}>{nombre > 1 ? `${nombre} séances ajoutées à votre calendrier.` : "La séance est ajoutée à votre calendrier."}</Text> : null}
       {etat === "refuse" ? <Text style={TYPO.note}>Repère n'a pas l'autorisation d'écrire dans votre calendrier. Vous pouvez l'accorder dans les réglages du téléphone, puis réessayer.</Text> : null}
       {etat === "echec" ? <Text style={TYPO.note}>La séance n'a pas pu être ajoutée. Réessayez.</Text> : null}
+    </View>
+  );
+}
+
+/* ME PREVENIR UNE HEURE AVANT (beta, 13/10/2026). Un geste par seance encore a venir :
+   le telephone demande l'autorisation d'envoyer des notifications, puis programme un
+   rappel a une heure du debut. Aucun serveur, aucun compte : le telephone garde le
+   rappel ; Repere ne garde ni la liste ni les identifiants.
+   Limite dite au lecteur : le rappel part si le telephone est allume a l'heure dite. */
+function PrevenirAvant({ g }: { g: Groupe }) {
+  const [etat, setEtat] = useState<"repos" | "programme" | "refuse" | "echec">("repos");
+  const [nombre, setNombre] = useState(0);
+  const prevenir = async () => {
+    try {
+      const maintenant = new Date();
+      const rappels = seancesAgenda(g)
+        .map(s => rappelSeance(s, maintenant))
+        .filter((r): r is NonNullable<typeof r> => r !== null);
+      if (!rappels.length) { setEtat("echec"); return; }
+      const autorisation = await Notifications.requestPermissionsAsync();
+      if (autorisation.status !== "granted") { setEtat("refuse"); return; }
+      for (const r of rappels) {
+        await Notifications.scheduleNotificationAsync({
+          content: { title: r.titre, body: r.corps },
+          trigger: { type: Notifications.SchedulableTriggerInputTypes.DATE, date: r.date },
+        });
+      }
+      setNombre(rappels.length);
+      setEtat("programme");
+    } catch {
+      setEtat("echec");
+    }
+  };
+  return (
+    <View style={{ gap: PAS }}>
+      <Pressable onPress={prevenir} accessibilityRole="button" accessibilityLabel="Me prévenir une heure avant cette séance"
+        style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", alignSelf: "flex-start", opacity: pressed ? 0.6 : 1 })}>
+        <Text style={{ color: couleurs.lien, fontWeight: "700" }}>Me prévenir une heure avant ›</Text>
+      </Pressable>
+      {etat === "programme" ? (
+        <Text style={TYPO.note}>
+          {nombre > 1 ? `${nombre} rappels programmés.` : "Le rappel est programmé."} Le téléphone vous préviendra une heure avant ; il doit être allumé à l'heure dite.
+        </Text>
+      ) : null}
+      {etat === "refuse" ? <Text style={TYPO.note}>Repère n'a pas l'autorisation de vous envoyer une notification. Vous pouvez l'accorder dans les réglages du téléphone, puis réessayer.</Text> : null}
+      {etat === "echec" ? <Text style={TYPO.note}>Le rappel n'a pas pu être programmé. Réessayez.</Text> : null}
     </View>
   );
 }
@@ -281,7 +331,6 @@ export default function AVenir() {
                   <Text style={{ color: couleurs.lien, fontWeight: "700", textDecorationLine: "underline" }}>Voir les deux prochaines semaines</Text>
                 </Pressable>
               ) : null}
-              <Text style={TYPO.note}>Les alertes « me prévenir une heure avant » ne sont pas encore disponibles dans l'application.</Text>
 
               {carteLoi}
 

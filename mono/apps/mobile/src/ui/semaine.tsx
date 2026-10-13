@@ -39,6 +39,18 @@ const INSTITUTIONS = ["Assemblée nationale", "Sénat"];
 
 const pluriel = (n: number, un: string, plusieurs: string) => `${n} ${n > 1 ? plusieurs : un}`;
 
+/* « du 13 au 19 octobre 2026 » : la semaine datee sur la carte (13/10/2026). Les dates
+   viennent de sp.jours, le premier et le dernier jour, ecrits par dateFr. */
+function plageSemaine(jours: Jour[]): string | null {
+  if (!jours.length) return null;
+  const a = jours[0].date;
+  const b = jours[jours.length - 1].date;
+  const [ya, ma, da] = a.split("-").map(Number);
+  const [yb, mb] = b.split("-").map(Number);
+  const debut = ma === mb && ya === yb ? String(da) : dateFr(a);
+  return `du ${debut} au ${dateFr(b)}`;
+}
+
 function libelleJour(j: Jour) {
   if (j.seances) return `${jourFr(j.date)} : ${pluriel(j.seances, "séance publique", "séances publiques")}`;
   return `${jourFr(j.date)} : ${j.annonce ? "aucune séance publique annoncée" : "agenda pas encore publié"}`;
@@ -100,7 +112,7 @@ export function SemaineParlement({ sp, lu, nom }: { sp: Semaine | null | undefin
 
   return (
     <View testID="semaine-parlement" style={s.carte}>
-      <Text style={TYPO.etiquette} accessibilityRole="header">Au Parlement cette semaine</Text>
+      <Text style={TYPO.etiquette} accessibilityRole="header">{plageSemaine(sp.jours) ? `Au Parlement · semaine ${plageSemaine(sp.jours)}` : "Au Parlement cette semaine"}</Text>
       <Text style={s.phrase}>{typo(phrase)}</Text>
 
       {/* Sept colonnes egales : a 360 px, 44 px chacune. Le nombre est ecrit pour

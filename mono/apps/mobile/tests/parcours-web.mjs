@@ -201,6 +201,9 @@ for (const largeur of [360, 390, 430]) {
   communs(mesure, "Aujourd'hui");
   verifier(new RegExp(MAIRE).test(mesure.texte), `${largeur}px : le maire est nommé (${MAIRE})`);
   verifier(/Publication Repère du \d/.test(mesure.texte), `${largeur}px : la date de la publication affichée est dite`);
+  /* INVARIANT 9 (13/10/2026) : la fraicheur se dit en phrase, l'un des trois etats, jamais « a jour » sans preuve. */
+  verifier(/Publication du jour\.|Publication d'hier\.|Publication précédente, il y a \d+ jours\.|ne peut pas dire quand ces fichiers ont été publiés/.test(mesure.texte),
+    `${largeur}px : la fraîcheur de la publication est dite en phrase`);
   verifier((mesure.etiquettes.match(/D'où vient cette info/g) || []).length >= 3, `${largeur}px : chaque réponse de l'accueil porte sa source`);
   /* 13/10/2026 : la répartition se lit dans la phrase d'explication (« 276 pour, 86 contre… »),
      plus dans une barre : le canevas « Main » n'en porte pas. */
@@ -264,7 +267,7 @@ for (const largeur of [360, 390, 430]) {
   await page.getByText("L'agenda du Sénat").first().waitFor({ timeout: 10000 });
   const manque = await mesurer();
   communs(manque, "Ce qui manque");
-  verifier(/Le Sénat publie son agenda par un flux dont la licence/.test(manque.brut) && /Les alertes avant une séance/.test(manque.brut),
+  verifier(/Le Sénat publie son agenda par un flux dont la licence/.test(manque.brut) && /Le filtre « Décisions »/.test(manque.brut),
     `${largeur}px · Ce qui manque : chaque absence est dite avec sa raison`);
   await page.goBack();
   await page.getByText("Sources et mises à jour").first().waitFor({ timeout: 10000 });
@@ -302,6 +305,10 @@ for (const largeur of [360, 390, 430]) {
       verifier(colonnes === CAL.jours, `${largeur}px · Le calendrier : une colonne de frise par jour avec séance (${colonnes} affichées, ${CAL.jours} attendues)`);
       verifier(CAL.vieux.every(x => new RegExp("Agenda " + x.de + " relevé le .+, il y a " + x.age + " jours").test(m.brut)),
         `${largeur}px · Le calendrier : un relevé ancien le dit, avec sa date ${JSON.stringify(CAL.vieux)}`);
+      /* RAPPELS ET AJOUT AU CALENDRIER (13/10/2026) : sur le web, ni bouton ni promesse ;
+         la note « pas encore disponibles » a disparu depuis que les rappels existent sur le telephone. */
+      verifier(!/ne sont pas encore disponibles/.test(m.brut), `${largeur}px · Le calendrier : aucune alerte annoncée comme indisponible`);
+      verifier(!/Me prévenir une heure avant|Ajouter à mon calendrier/.test(m.brut), `${largeur}px · Le calendrier : sur le web, aucun bouton de rappel ni d'ajout (ils sont sur le téléphone)`);
     }
     if (action === "Qui décide") verifier(/Île-de-France Mobilités/.test(m.brut) && !/Décide : les transports/.test(m.brut), `${largeur}px · Qui décide : en Île-de-France, l'intercommunalité ne « décide » pas des transports`);
     verifier(preuve.test(m.brut), `${largeur}px · ${action} : l'écran répond à sa question`);
