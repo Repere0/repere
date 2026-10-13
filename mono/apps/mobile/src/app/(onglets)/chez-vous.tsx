@@ -32,21 +32,21 @@ import {
   repartitionVote, texteDe,
   titreLisible, REFUS_APPARIEMENT, LIBELLES,
 } from "@repere/core";
-import { Vide } from "../lib/composants";
-import { CarteMemoire } from "../cartes/CarteMemoire";
-import { useSelection } from "../lib/selection";
-import { useCommuneChoisie } from "../lib/useCommune";
+import { Vide } from "../../lib/composants";
+import { CarteMemoire } from "../../cartes/CarteMemoire";
+import { useSelection } from "../../lib/selection";
+import { useCommuneChoisie } from "../../lib/useCommune";
 import {
   PROJETS_PAS_ARRIVES, projetsAucun, VOTES_PAS_ARRIVES, circoInconnue, VOTE_AUCUN,
-} from "../lib/absences";
-import { srcComptesPublies, srcElus, srcProjets, srcVote } from "../lib/sources";
-import { PAS, TYPO } from "../lib/theme";
-import { AvecDonnees, Page } from "../ui/page";
-import { PastilleSource } from "../ui/source";
-import { Etiquette } from "../ui/resume";
-import { Plus, Reponse, typo } from "../ui/reponse";
-import { BarrePart, Repartition } from "../ui/visuels";
-import { SemaineParlement } from "../ui/semaine";
+} from "../../lib/absences";
+import { srcComptesPublies, srcElus, srcProjets, srcVote } from "../../lib/sources";
+import { PAS, TYPO } from "../../lib/theme";
+import { AvecDonnees, Page } from "../../ui/page";
+import { PastilleSource } from "../../ui/source";
+import { Etiquette } from "../../ui/resume";
+import { Plus, Reponse, typo } from "../../ui/reponse";
+import { BarrePart, Repartition } from "../../ui/visuels";
+import { SemaineParlement } from "../../ui/semaine";
 
 export default function ChezVous() {
   const { choix } = useSelection();
@@ -70,9 +70,10 @@ export default function ChezVous() {
           <Stack.Screen options={{ title: nom }} />
           {/* OU JE SUIS, ET DE QUAND DATE CE QUE JE LIS */}
           {/* Pas d'etiquette « Chez vous » au-dessus du nom : 20 px gagnes, et la
-             troisieme reponse de Paris revient dans le premier ecran (mesure). */}
+             troisieme reponse de Paris revient dans le premier ecran (mesure).
+             Le grand nom de commune n'est plus repete ici (13/10/2026) : la barre
+             haute le porte deja, et la 3e reponse doit tenir au-dessus de la barre basse. */}
           <View style={{ gap: 2 }}>
-            <Text style={TYPO.affiche} accessibilityRole="header">{nom}</Text>
             <Text style={TYPO.note}>{[depIndex && depIndex.nom, depIndex && depIndex.region].filter(Boolean).join(" · ")}</Text>
             {/* « Publication » et non « mis a jour » : la date est celle de la
                publication affichee, vraie dans les trois etats de l'invariant 9
