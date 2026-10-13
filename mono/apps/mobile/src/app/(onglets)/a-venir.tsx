@@ -17,10 +17,13 @@
  *
  * Par journee, @repere/core (regrouperParJour) : meme regle que le site. */
 import { useState } from "react";
-import { Pressable, Text, View } from "react-native";
+import { Platform, Pressable, Text, View } from "react-native";
 import { router, Stack } from "expo-router";
+/* L'API « legacy » : c'est la seule qui marche dans Expo Go aujourd'hui (la nouvelle
+   API lève une erreur dans Expo Go). À migrer quand Repère passera à un build de développement. */
+import * as Calendrier from "expo-calendar/legacy";
 import {
-  AGE_RELEVE_NORMAL, ageReleve, dateFr, ETAPES_LOI, heureFr, jourFr, jourParis, LIBELLES, regrouperParJour,
+  AGE_RELEVE_NORMAL, ageReleve, dateFr, ETAPES_LOI, heureFr, jourFr, jourParis, LIBELLES, regrouperParJour, seancesAgenda,
 } from "@repere/core";
 import { Carte, Vide } from "../../lib/composants";
 import { AGENDA_PAS_ARRIVE, AGENDA_VIDE } from "../../lib/absences";
@@ -33,7 +36,8 @@ import { Depli } from "../../ui/visuels";
 
 type Ev = { titre: string; debut: string; institution: string; categorie?: string; lieu?: string; description?: string; source: Record<string, string> };
 type Groupe = { jour: string; institution: string; titre: string; debut: string; debuts: string[]; fins?: (string | null)[]; seances: number;
-  categorie: string | null; lieu: string | null; points: string[] | null; textesLibres: string[] };
+  categorie: string | null; lieu: string | null; points: string[] | null; textesLibres: string[];
+  source?: { producteur?: string; url?: string; releve_le?: string } };
 
 const INSTITUTIONS = ["Assemblée nationale", "Sénat"];
 const de = (i: string) => (i === "Sénat" ? "du Sénat" : "de l'Assemblée nationale");
@@ -86,6 +90,46 @@ function Ligne({ g }: { g: Groupe }) {
           {g.textesLibres.map((t, k) => <Text key={k} style={TYPO.note}>{t}</Text>)}
         </Depli>
       ) : null}
+      {Platform.OS !== "web" && seancesAgenda(g).length ? <AjouterCalendrier g={g} /> : null}
+    </View>
+  );
+}
+
+/* AJOUTER A MON CALENDRIER (beta, 13/10/2026). Un geste du lecteur ; le telephone
+   demande son autorisation ; la seance est ecrite dans son calendrier par defaut.
+   Repere ne garde rien, ne lit aucun autre evenement. Sans autorisation, rien n'est
+   ecrit, et l'ecran le dit. Sur le web, le bouton n'existe pas. */
+function AjouterCalendrier({ g }: { g: Groupe }) {
+  const [etat, setEtat] = useState<"repos" | "fait" | "refuse" | "echec">("repos");
+  const [nombre, setNombre] = useState(0);
+  const ajouter = async () => {
+    try {
+      const autorisation = await Calendrier.requestCalendarPermissionsAsync();
+      if (autorisation.status !== "granted") { setEtat("refuse"); return; }
+      const agenda = await Calendrier.getDefaultCalendarAsync();
+      const seances = seancesAgenda(g);
+      for (const s of seances) {
+        /* Fin non publiee : la seance dure zero minute, et les notes le disent. */
+        await Calendrier.createEventAsync(agenda.id, {
+          title: s.titre, startDate: s.debut, endDate: s.fin ?? s.debut, timeZone: "Europe/Paris",
+          location: s.lieu ?? undefined, notes: s.notes, url: s.url ?? undefined,
+        });
+      }
+      setNombre(seances.length);
+      setEtat("fait");
+    } catch {
+      setEtat("echec");
+    }
+  };
+  return (
+    <View style={{ gap: PAS }}>
+      <Pressable onPress={ajouter} accessibilityRole="button" accessibilityLabel="Ajouter cette séance à mon calendrier"
+        style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", alignSelf: "flex-start", opacity: pressed ? 0.6 : 1 })}>
+        <Text style={{ color: couleurs.lien, fontWeight: "700" }}>Ajouter à mon calendrier ›</Text>
+      </Pressable>
+      {etat === "fait" ? <Text style={TYPO.note}>{nombre > 1 ? `${nombre} séances ajoutées à votre calendrier.` : "La séance est ajoutée à votre calendrier."}</Text> : null}
+      {etat === "refuse" ? <Text style={TYPO.note}>Repère n'a pas l'autorisation d'écrire dans votre calendrier. Vous pouvez l'accorder dans les réglages du téléphone, puis réessayer.</Text> : null}
+      {etat === "echec" ? <Text style={TYPO.note}>La séance n'a pas pu être ajoutée. Réessayez.</Text> : null}
     </View>
   );
 }

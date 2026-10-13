@@ -28,4 +28,4 @@ export * from "./libelles.js";
 export * from "./calendrier.js";
 export * from "./mots.js";
 export * from "./signalement.js";
-export * from "./agenda-ics.js";
+export * from "./agenda.js";

@@ -31,7 +31,10 @@
     "plugins": [
       "expo-router",
       "expo-status-bar",
-      "expo-font"
+      "expo-font",
+      ["expo-calendar", {
+        "calendarPermission": "Repère écrit la séance que vous choisissez dans votre calendrier. Repère ne lit pas vos autres événements et ne garde rien."
+      }]
     ],
     "experiments": {
       "typedRoutes": true
