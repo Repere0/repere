@@ -41,7 +41,7 @@ export default function Onglets() {
           headerLeft: () => <Retour texte="Communes" etiquette="Revenir à l'accueil pour changer de commune" />,
         }}
       />
-      <Tabs.Screen name="qui-decide" options={{ title: LIBELLES.qui, tabBarLabel: "Chez vous", tabBarIcon: icone("⌂") }} />
+      <Tabs.Screen name="qui-decide" options={{ title: LIBELLES.qui, tabBarLabel: "Qui décide", tabBarIcon: icone("⌂") }} />
       <Tabs.Screen name="a-venir" options={{ title: LIBELLES.calendrier, tabBarLabel: "Calendrier", tabBarIcon: icone("▦") }} />
     </Tabs>
   );

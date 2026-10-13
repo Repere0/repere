@@ -185,18 +185,25 @@ export default function Partager() {
             </View>
 
             <View style={{ gap: PAS * 2 }}>
+              {/* Deux cartes, deux choix : chacune se partage en image. La feuille du
+                  telephone ne propose que les applications installees qui acceptent
+                  une image ; Instagram n'apparait que si elle est installee et l'accepte. */}
+              <Text style={{ color: couleurs.encre, fontWeight: "700", fontSize: 16 }}>Choisissez la carte à partager</Text>
               <Pressable onPress={() => partagerImage(carte1, "Carte 1 : l'annonce", message)} accessibilityRole="button"
-                accessibilityLabel="Partager la carte 1 en image"
+                accessibilityLabel="Partager la carte 1 : l'annonce, en image"
                 style={({ pressed }) => ({ minHeight: CIBLE, borderRadius: 14, backgroundColor: couleurs.encre,
                   alignItems: "center", justifyContent: "center", padding: 14, opacity: pressed ? 0.7 : 1 })}>
-                <Text style={{ color: couleurs.sol, fontWeight: "700" }}>Partager la carte 1 (image)</Text>
+                <Text style={{ color: couleurs.sol, fontWeight: "700" }}>Carte 1 : l'annonce (image)</Text>
               </Pressable>
               <Pressable onPress={() => partagerImage(carte2, "Carte 2 : pour comprendre", message)} accessibilityRole="button"
-                accessibilityLabel="Partager la carte 2 en image"
+                accessibilityLabel="Partager la carte 2 : pour comprendre, en image"
                 style={({ pressed }) => ({ minHeight: CIBLE, borderRadius: 14, backgroundColor: couleurs.encre,
                   alignItems: "center", justifyContent: "center", padding: 14, opacity: pressed ? 0.7 : 1 })}>
-                <Text style={{ color: couleurs.sol, fontWeight: "700" }}>Partager la carte 2 (image)</Text>
+                <Text style={{ color: couleurs.sol, fontWeight: "700" }}>Carte 2 : pour comprendre (image)</Text>
               </Pressable>
+              <Text style={{ color: couleurs.sourd, fontSize: 14, lineHeight: 20 }}>
+                Si Instagram n'apparaît pas dans la feuille, choisissez « Enregistrer l'image » dans la feuille, puis publiez-la depuis Instagram.
+              </Text>
               <Pressable onPress={() => Share.share({ message })} accessibilityRole="button"
                 accessibilityLabel="Partager le texte et le lien par la feuille de partage du téléphone"
                 style={({ pressed }) => ({ minHeight: CIBLE, borderRadius: 14, borderWidth: 1, borderColor: couleurs.trait,
