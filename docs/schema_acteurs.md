@@ -56,25 +56,25 @@ une seule fois sont reprises a part, plus bas.
 | `acteur.adresses.adresse[].ville` | texte/vide | 2803 | Paris 07 SP · Cenon |
 | `acteur.adresses.adresse[].valElec` | texte/vide | 6203 | 01 40 63 75 53 · 01 40 63 79 37 |
 | `acteur.mandats.mandat[]` | liste | 2995 | de 2 a 814 entrees |
-| `acteur.mandats.mandat[].@xmlns:xsi` | texte | 97755 | http://www.w3.org/2001/XMLSchema-instance |
-| `acteur.mandats.mandat[].@xsi:type` | texte | 97755 | MandatSimple_Type · MandatMission_Type |
-| `acteur.mandats.mandat[].uid` | texte | 97755 | PM391145 · PM778068 |
-| `acteur.mandats.mandat[].acteurRef` | texte | 97755 | PA1001 · PA1002 |
-| `acteur.mandats.mandat[].legislature` | texte/vide | 97755 | 13 · 14 |
-| `acteur.mandats.mandat[].typeOrgane` | texte | 97755 | DELEGBUREAU · DELEGSENAT |
-| `acteur.mandats.mandat[].dateDebut` | texte | 97755 | 2007-06-28 · 2020-10-20 |
-| `acteur.mandats.mandat[].datePublication` | texte/vide | 97755 | 2010-03-23 · 2012-06-27 |
-| `acteur.mandats.mandat[].dateFin` | texte/vide | 97755 | 2008-10-08 · 2010-11-13 |
-| `acteur.mandats.mandat[].preseance` | texte/vide | 97755 | 24 · 4 |
-| `acteur.mandats.mandat[].nominPrincipale` | texte | 97755 | 0 · 1 |
-| `acteur.mandats.mandat[].infosQualite.codeQualite` | texte/vide | 97755 | Membre · membre |
-| `acteur.mandats.mandat[].infosQualite.libQualite` | texte | 97755 | Membre · membre |
-| `acteur.mandats.mandat[].infosQualite.libQualiteSex` | texte/vide | 97755 | Membre · membre |
-| `acteur.mandats.mandat[].organes.organeRef` | texte | 97634 | PO391141 · PO420388 |
+| `acteur.mandats.mandat[].@xmlns:xsi` | texte | 97760 | http://www.w3.org/2001/XMLSchema-instance |
+| `acteur.mandats.mandat[].@xsi:type` | texte | 97760 | MandatSimple_Type · MandatMission_Type |
+| `acteur.mandats.mandat[].uid` | texte | 97760 | PM391145 · PM778068 |
+| `acteur.mandats.mandat[].acteurRef` | texte | 97760 | PA1001 · PA1002 |
+| `acteur.mandats.mandat[].legislature` | texte/vide | 97760 | 13 · 14 |
+| `acteur.mandats.mandat[].typeOrgane` | texte | 97760 | DELEGBUREAU · DELEGSENAT |
+| `acteur.mandats.mandat[].dateDebut` | texte | 97760 | 2007-06-28 · 2020-10-20 |
+| `acteur.mandats.mandat[].datePublication` | texte/vide | 97760 | 2010-03-23 · 2012-06-27 |
+| `acteur.mandats.mandat[].dateFin` | texte/vide | 97760 | 2008-10-08 · 2010-11-13 |
+| `acteur.mandats.mandat[].preseance` | texte/vide | 97760 | 24 · 4 |
+| `acteur.mandats.mandat[].nominPrincipale` | texte | 97760 | 0 · 1 |
+| `acteur.mandats.mandat[].infosQualite.codeQualite` | texte/vide | 97760 | Membre · membre |
+| `acteur.mandats.mandat[].infosQualite.libQualite` | texte | 97760 | Membre · membre |
+| `acteur.mandats.mandat[].infosQualite.libQualiteSex` | texte/vide | 97760 | Membre · membre |
+| `acteur.mandats.mandat[].organes.organeRef` | texte | 97639 | PO391141 · PO420388 |
 | `acteur.mandats.mandat[].libelle` | texte/vide | 6034 | Mise en place du plan de relance · La pratique d'une activité physique et sportive pour les élèves et les étudiants |
 | `acteur.mandats.mandat[].missionSuivanteRef` | texte/vide | 6034 | PM773756 · PM789978 |
 | `acteur.mandats.mandat[].missionPrecedenteRef` | texte/vide | 6034 | PM769451 · PM786854 |
-| `acteur.mandats.mandat[].suppleants` | vide | 4867 |  |
+| `acteur.mandats.mandat[].suppleants` | vide | 4869 |  |
 | `acteur.mandats.mandat[].chambre` | vide | 3224 |  |
 | `acteur.mandats.mandat[].election.lieu.region` | texte/vide | 3395 | Auvergne-Rhône-Alpes · Hauts-de-France |
 | `acteur.mandats.mandat[].election.lieu.regionType` | texte/vide | 3395 | Métropolitain · Collectivités d'outre-mer et Nouvelle-Calédonie |
