@@ -70,9 +70,10 @@ export default function ChezVous() {
           <Stack.Screen options={{ title: nom }} />
           {/* OU JE SUIS, ET DE QUAND DATE CE QUE JE LIS */}
           {/* Pas d'etiquette « Chez vous » au-dessus du nom : 20 px gagnes, et la
-             troisieme reponse de Paris revient dans le premier ecran (mesure). */}
+             troisieme reponse de Paris revient dans le premier ecran (mesure).
+             Le grand nom de commune n'est plus repete ici (13/10/2026) : la barre
+             haute le porte deja, et la 3e reponse doit tenir au-dessus de la barre basse. */}
           <View style={{ gap: 2 }}>
-            <Text style={TYPO.affiche} accessibilityRole="header">{nom}</Text>
             <Text style={TYPO.note}>{[depIndex && depIndex.nom, depIndex && depIndex.region].filter(Boolean).join(" · ")}</Text>
             {/* « Publication » et non « mis a jour » : la date est celle de la
                publication affichee, vraie dans les trois etats de l'invariant 9
