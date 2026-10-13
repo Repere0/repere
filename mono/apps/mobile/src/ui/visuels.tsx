@@ -169,7 +169,9 @@ export type Niveau = {
   echelon: Echelon; niveau: string; institution: string; lieu?: string | null;
   personne?: { nom: string; role: string } | null; decide?: string; note?: string; pied?: ReactNode;
 };
-export function Chaine({ niveaux, compact }: { niveaux: Niveau[]; compact?: boolean }) {
+/* `surNom` : quand il est donne, le nom de chaque personne ouvre sa fiche. Le nom
+   est alors une cible de 48 px, lue comme un lien. */
+export function Chaine({ niveaux, compact, surNom }: { niveaux: Niveau[]; compact?: boolean; surNom?: (n: Niveau) => void }) {
   return (
     <View>
       {niveaux.map((n, i) => (
@@ -189,7 +191,13 @@ export function Chaine({ niveaux, compact }: { niveaux: Niveau[]; compact?: bool
                 et le departement 4,38:1 — sous le seuil AA de 4,5:1 (mesure du
                 30/09/2026, controle « contraste AA » du parcours). */}
             <Text style={TYPO.etiquette}>{n.niveau}{n.lieu && !compact ? " · " + n.lieu : ""}</Text>
-            {n.personne ? (
+            {n.personne && surNom && !compact ? (
+              <Pressable onPress={() => surNom(n)} accessibilityRole="link"
+                accessibilityLabel={`Voir la fiche de ${n.personne.nom}, ${n.personne.role}`}
+                style={({ pressed }) => ({ minHeight: 48, justifyContent: "center", opacity: pressed ? 0.6 : 1 })}>
+                <Text style={[TYPO.reponse, { color: couleurs.lien, textDecorationLine: "underline" }]}>{n.personne.nom}</Text>
+              </Pressable>
+            ) : n.personne ? (
               <Text style={compact ? [TYPO.corps, { fontWeight: "700" }] : TYPO.reponse}>{n.personne.nom}</Text>
             ) : (
               <Text style={compact ? TYPO.corps : TYPO.reponse}>{n.institution}</Text>

@@ -11,6 +11,7 @@
  * du jour comptes puis listes mot pour mot ; le reste est replie, et le repli
  * dit combien il contient. Une institution absente est nommee ; un releve de
  * plus d'un jour le dit, avec sa date (invariant 9). */
+import { useState } from "react";
 import { router, Stack } from "expo-router";
 import {
   AGE_RELEVE_NORMAL, ageReleve, dateFr, heureFr, jourFr, jourParis, LIBELLES, regrouperParJour,
@@ -67,10 +68,14 @@ function Ligne({ g }: { g: Groupe }) {
 
 export default function AVenir() {
   const { reessayer } = useCommuneChoisie();
+  /* Filtre par institution : null = les deux. Les maquettes du 13/10 en prevoyaient
+     trois (Parlement, Décisions, Commune) ; les deux autres n'ont pas de donnee a venir. */
+  const [institution, setInstitution] = useState<string | null>(null);
   return (
     <AvecDonnees rendu={r => {
       const { d } = r;
-      const aVenir = (d.aVenir || []) as Ev[];
+      const toutes = (d.aVenir || []) as Ev[];
+      const aVenir = institution ? toutes.filter(e => e.institution === institution) : toutes;
       const lues = ((d.semaineParlement && d.semaineParlement.institutions) || []) as { institution: string; source: Record<string, string> }[];
       /* deux semaines depliees, le reste replie ; deux semaines vides : les 5 suivants */
       const limite = jourParis(new Date(Date.now() + 14 * 864e5));
@@ -105,6 +110,29 @@ export default function AVenir() {
             <Text style={{ fontWeight: "700", color: couleurs.encre }}>Dictionnaire citoyen</Text>
             <Text style={{ marginTop: 4, color: couleurs.sourd }}>Ce que veulent dire les mots du Parlement et des collectivités.</Text>
           </Pressable>
+          <View accessibilityRole="tablist" style={{ flexDirection: "row", gap: PAS * 2 }}>
+            {[{ c: null, t: "Tout" }, { c: "Assemblée nationale", t: "Assemblée" }, { c: "Sénat", t: "Sénat" }].map(o => {
+              const actif = institution === o.c;
+              return (
+                <Pressable key={o.t} onPress={() => setInstitution(o.c)} accessibilityRole="tab"
+                  accessibilityState={{ selected: actif }} accessibilityLabel={`Afficher : ${o.c ? o.c : "toutes les institutions"}`}
+                  style={{ minHeight: 44, paddingHorizontal: 16, borderRadius: 999, borderWidth: 1,
+                    borderColor: actif ? couleurs.encre : couleurs.trait, backgroundColor: actif ? couleurs.encre : couleurs.carte,
+                    justifyContent: "center" }}>
+                  <Text style={{ fontWeight: "700", color: actif ? couleurs.sol : couleurs.encre }}>{o.t}</Text>
+                </Pressable>
+              );
+            })}
+          </View>
+          <Pressable
+            onPress={() => router.push("/procedure")}
+            accessibilityRole="button"
+            accessibilityLabel="Ouvrir : comment une loi devient loi"
+            style={{ minHeight: 52, padding: 16, borderRadius: 14, borderWidth: 1, borderColor: couleurs.trait, backgroundColor: couleurs.carte }}
+          >
+            <Text style={{ fontWeight: "700", color: couleurs.encre }}>Comment une loi devient loi</Text>
+            <Text style={{ marginTop: 4, color: couleurs.sourd }}>Les étapes du dépôt à la publication, avec la navette.</Text>
+          </Pressable>
           {!r.agendaLu ? (
             <Vide {...AGENDA_PAS_ARRIVE} action="Réessayer" onAction={reessayer} />
           ) : aVenir.length ? (
@@ -127,6 +155,8 @@ export default function AVenir() {
                 {lues.map(x => <PastilleSource key={x.institution} nom={x.institution === "Sénat" ? "Sénat" : "Assemblée"} source={srcAgenda(x.source)} />)}
               </View>
             </Carte>
+          ) : toutes.length ? (
+            <Text style={TYPO.note}>Rien de publié pour ce filtre dans les deux prochaines semaines. Le filtre « Tout » montre le reste.</Text>
           ) : (
             <Vide {...AGENDA_VIDE} />
           )}

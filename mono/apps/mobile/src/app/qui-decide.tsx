@@ -13,10 +13,11 @@ import { sansConseilDepartemental } from "@repere/core";
 import { Segments } from "../lib/composants";
 import { REGION_PAS_ARRIVEE } from "../lib/absences";
 import { srcElus } from "../lib/sources";
-import { CIBLE, couleurs, TYPO } from "../lib/theme";
+import { CIBLE, couleurs, PAS, TYPO } from "../lib/theme";
 import { AvecDonnees, Page, Question } from "../ui/page";
 import { PastilleSource } from "../ui/source";
 import { Chaine, type Niveau } from "../ui/visuels";
+import { prefetDeRegion } from "../lib/prefet";
 
 export default function QuiDecide() {
   return (
@@ -61,13 +62,25 @@ export default function QuiDecide() {
         }
         return n;
       });
+      const prefet = prefetDeRegion(d.dep);
       return (
         <Page>
           <Stack.Screen options={{ title: LIBELLES.qui }} />
           <Question emoji="🏛️" etiquette="Qui décide" question={`Qui décide pour ${d.nomCommune} ?`}
             sous="Du plus proche de chez vous au plus lointain. Ce n'est pas un ordre d'importance : c'est un ordre de distance." />
-          <Chaine niveaux={niveaux} />
+          <Chaine niveaux={niveaux} surNom={n => router.push({ pathname: "/elu", params: {
+            nom: n.personne ? n.personne.nom : "", role: n.personne ? n.personne.role : "", echelon: n.echelon,
+            niveau: n.niveau, institution: n.institution, lieu: n.lieu || "" } })} />
           <PastilleSource source={srcElus(r.srcElus ? { ...r.srcElus, url: r.srcElus.url || RNE_URL } : null)} />
+          {prefet ? (
+            <Pressable onPress={() => router.push({ pathname: "/elu", params: { nom: prefet.nom, role: prefet.titre, echelon: "", niveau: "L'État", institution: "Préfecture de région", lieu: "Île-de-France" } })}
+              accessibilityRole="link" accessibilityLabel={`Voir la fiche de ${prefet.nom}, préfet de la région`}
+              style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", opacity: pressed ? 0.6 : 1, gap: PAS })}>
+              <Text style={TYPO.etiquette}>L'État · préfet de la région</Text>
+              <Text style={[TYPO.reponse, { color: couleurs.lien, textDecorationLine: "underline" }]}>{prefet.nom}</Text>
+              <Text style={TYPO.note}>{prefet.titre}, {prefet.decret}. Ce n'est pas le préfet de votre département : leur liste n'est pas encore publiée ici.</Text>
+            </Pressable>
+          ) : null}
         </Page>
       );
     }} />
