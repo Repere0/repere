@@ -8,10 +8,13 @@
  * et de @repere/core. Rien n'est écrit à la main. Si le vote n'est pas publié, la
  * carte n'existe pas : on ne partage pas une absence.
  *
- * Le partage passe par la feuille de partage du téléphone, en texte et lien. L'image
- * exportée viendra quand la bibliothèque de capture sera choisie (cadrage du 13/10). */
+ * Chaque carte se partage en image (PNG, react-native-view-shot, cadrage du 13/10) par la
+ * feuille de partage du téléphone ; le texte et le lien restent disponibles en repli. */
+import { useRef, type RefObject } from "react";
 import { Animated, Pressable, Share, Text, View } from "react-native";
 import { Stack } from "expo-router";
+import * as Sharing from "expo-sharing";
+import { captureRef } from "react-native-view-shot";
 import { chaineDecision, dateFr, etapeDuScrutin, ETAPES_LOI, procedure, titreLisible } from "@repere/core";
 import { couleurs, CIBLE, PAS, TYPO } from "../lib/theme";
 import { srcVote } from "../lib/sources";
@@ -26,8 +29,25 @@ const VERBE: Record<string, string> = {
 
 type Vote = { sc: { t: string; d: string; n: string }; position?: string; qui?: string };
 
+/* Une carte devient une image PNG, puis la feuille de partage du telephone la
+   transmet. Si la capture echoue, on partage le texte : le lecteur ne perd rien. */
+async function partagerImage(carte: RefObject<View | null>, titre: string, repli: string) {
+  try {
+    const uri = await captureRef(carte, { format: "png", quality: 1, result: "tmpfile" });
+    if (!(await Sharing.isAvailableAsync())) {
+      await Share.share({ message: repli });
+      return;
+    }
+    await Sharing.shareAsync(uri, { mimeType: "image/png", UTI: "public.png", dialogTitle: titre });
+  } catch {
+    await Share.share({ message: repli });
+  }
+}
+
 export default function Partager() {
   const apparition = useApparition(0);
+  const carte1 = useRef<View>(null);
+  const carte2 = useRef<View>(null);
   return (
     <AvecDonnees rendu={r => {
       const { d } = r;
@@ -72,7 +92,7 @@ export default function Partager() {
             <Question etiquette="Partager ce vote" question="Deux cartes, à lire dans l'ordre" />
 
             {/* CARTE 1 — L'ANNONCE */}
-            <View accessible accessibilityLabel={`${nom} ${verbe} ${sujet}. Vote à l'Assemblée nationale, ${date}.`}
+            <View ref={carte1} collapsable={false} accessible accessibilityLabel={`${nom} ${verbe} ${sujet}. Vote à l'Assemblée nationale, ${date}.`}
               style={{ backgroundColor: couleurs.encre, borderRadius: 24, padding: PAS * 6, gap: PAS * 3, minHeight: 320, justifyContent: "space-between" }}>
               <Text style={{ color: couleurs.sol, fontWeight: "800", fontSize: 14, letterSpacing: 1 }}>REPÈRE · L'ANNONCE</Text>
               <View style={{ gap: PAS * 2 }}>
@@ -86,7 +106,7 @@ export default function Partager() {
             </View>
 
             {/* CARTE 2 — L'EXPLICATION */}
-            <View accessible accessibilityLabel={`Comment ce texte avance. ${ou}`}
+            <View ref={carte2} collapsable={false} accessible accessibilityLabel={`Comment ce texte avance. ${ou}`}
               style={{ backgroundColor: couleurs.carte, borderRadius: 24, borderWidth: 1, borderColor: couleurs.trait, padding: PAS * 6, gap: PAS * 3 }}>
               <Text style={{ color: couleurs.sourd, fontWeight: "800", fontSize: 14, letterSpacing: 1 }}>REPÈRE · POUR COMPRENDRE</Text>
               <Text style={{ color: couleurs.encre, fontWeight: "800", fontSize: 24, lineHeight: 28 }}>Comment ce texte avance</Text>
@@ -94,12 +114,26 @@ export default function Partager() {
               <Text style={[TYPO.note, { marginTop: PAS * 2 }]}>Source : Assemblée nationale, scrutin n° {vote.sc.n}, {date}.</Text>
             </View>
 
-            <Pressable onPress={() => Share.share({ message })} accessibilityRole="button"
-              accessibilityLabel="Partager ces deux cartes par la feuille de partage du téléphone"
-              style={({ pressed }) => ({ minHeight: CIBLE, borderRadius: 14, backgroundColor: couleurs.encre,
-                alignItems: "center", justifyContent: "center", padding: 14, opacity: pressed ? 0.7 : 1 })}>
-              <Text style={{ color: couleurs.sol, fontWeight: "700" }}>Partager</Text>
-            </Pressable>
+            <View style={{ gap: PAS * 2 }}>
+              <Pressable onPress={() => partagerImage(carte1, "Carte 1 : l'annonce", message)} accessibilityRole="button"
+                accessibilityLabel="Partager la carte 1 en image"
+                style={({ pressed }) => ({ minHeight: CIBLE, borderRadius: 14, backgroundColor: couleurs.encre,
+                  alignItems: "center", justifyContent: "center", padding: 14, opacity: pressed ? 0.7 : 1 })}>
+                <Text style={{ color: couleurs.sol, fontWeight: "700" }}>Partager la carte 1 (image)</Text>
+              </Pressable>
+              <Pressable onPress={() => partagerImage(carte2, "Carte 2 : pour comprendre", message)} accessibilityRole="button"
+                accessibilityLabel="Partager la carte 2 en image"
+                style={({ pressed }) => ({ minHeight: CIBLE, borderRadius: 14, backgroundColor: couleurs.encre,
+                  alignItems: "center", justifyContent: "center", padding: 14, opacity: pressed ? 0.7 : 1 })}>
+                <Text style={{ color: couleurs.sol, fontWeight: "700" }}>Partager la carte 2 (image)</Text>
+              </Pressable>
+              <Pressable onPress={() => Share.share({ message })} accessibilityRole="button"
+                accessibilityLabel="Partager le texte et le lien par la feuille de partage du téléphone"
+                style={({ pressed }) => ({ minHeight: CIBLE, borderRadius: 14, borderWidth: 1, borderColor: couleurs.trait,
+                  backgroundColor: couleurs.carte, alignItems: "center", justifyContent: "center", padding: 14, opacity: pressed ? 0.6 : 1 })}>
+                <Text style={{ color: couleurs.encre, fontWeight: "700" }}>Partager le texte et le lien</Text>
+              </Pressable>
+            </View>
           </Animated.View>
         </Page>
       );

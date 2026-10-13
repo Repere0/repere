@@ -78,7 +78,7 @@ export default function QuiDecide() {
               style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", opacity: pressed ? 0.6 : 1, gap: PAS })}>
               <Text style={TYPO.etiquette}>L'État · préfet de la région</Text>
               <Text style={[TYPO.reponse, { color: couleurs.lien, textDecorationLine: "underline" }]}>{prefet.nom}</Text>
-              <Text style={TYPO.note}>{prefet.titre}, {prefet.decret}. Ce n'est pas le préfet de votre département : leur liste n'est pas encore publiée ici.</Text>
+              <Text style={TYPO.note}>{prefet.titre}, selon la page de la préfecture. Ce n'est pas le préfet de votre département : leur liste n'est pas encore publiée ici.</Text>
             </Pressable>
           ) : null}
         </Page>
