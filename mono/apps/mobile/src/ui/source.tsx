@@ -16,7 +16,7 @@
 import { useState } from "react";
 import { Linking, Modal, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { CALCUL_REPERE, dateFr, datePublication, ligneSource } from "@repere/core";
+import { CALCUL_REPERE, courrielSignalement, dateFr, datePublication, ligneSource } from "@repere/core";
 import { useCommuneChoisie } from "../lib/useCommune";
 import { couleurs, CIBLE, PAS, RAYON, TYPO } from "../lib/theme";
 import { Etiquette } from "./resume";
@@ -112,6 +112,14 @@ export function FeuilleSource({ source, visible, onFermer }: { source: InfoSourc
           <Text style={TYPO.etiquette}>Détails</Text>
           <Text style={TYPO.micro}>{detail}</Text>
         </View>
+
+        {/* Signaler une erreur (beta, 13/10/2026) : un courriel prérempli dans la messagerie
+            du lecteur. Repère ne reçoit rien ; le courriel ne contient aucune commune. */}
+        <Pressable onPress={() => { Linking.openURL(courrielSignalement(source)).catch(() => undefined); }}
+          accessibilityRole="link" accessibilityLabel="Signaler une erreur sur cette information, ouvre votre messagerie"
+          style={({ pressed }) => [s.fermer, pressed && { opacity: 0.6 }]}>
+          <Text style={[TYPO.corps, { color: couleurs.lien, fontWeight: "600" }]}>Signaler une erreur sur cette information ›</Text>
+        </Pressable>
 
         <Pressable onPress={onFermer} accessibilityRole="button" style={({ pressed }) => [s.fermer, pressed && { opacity: 0.6 }]}>
           <Text style={[TYPO.corps, { fontWeight: "600" }]}>Fermer</Text>

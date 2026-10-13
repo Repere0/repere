@@ -254,8 +254,21 @@ for (const largeur of [360, 390, 430]) {
   verifier(/(Données publiées|Données relevées|relevé) le \d/.test(feuille) && /↗/.test(feuille),
     `${largeur}px : une pastille ouvre la feuille de source : producteur, date, usage et lien vers la donnée originale`);
   verifier(/Traitées par Repère le \d/.test(feuille), `${largeur}px : la feuille distingue la date de la source de celle du traitement par Repère`);
+  /* SIGNALER UNE ERREUR (beta, 13/10/2026) : le geste est dans la feuille, et ouvre la messagerie. */
+  verifier(/Signaler une erreur sur cette information/.test(feuille), `${largeur}px : la feuille propose de signaler une erreur`);
   await page.getByRole("button", { name: "Fermer" }).first().click();
   await page.waitForTimeout(400);
+
+  /* CE QUE REPÈRE NE MONTRE PAS ENCORE (beta, 13/10/2026) : le lien est sur l'accueil ; chaque absence dit sa raison. */
+  await page.getByRole("link", { name: "Ce que Repère ne montre pas encore" }).first().click();
+  await page.getByText("L'agenda du Sénat").first().waitFor({ timeout: 10000 });
+  const manque = await mesurer();
+  communs(manque, "Ce qui manque");
+  verifier(/Le Sénat publie son agenda par un flux dont la licence/.test(manque.brut) && /Les alertes avant une séance/.test(manque.brut),
+    `${largeur}px · Ce qui manque : chaque absence est dite avec sa raison`);
+  await page.goBack();
+  await page.getByText("Sources et mises à jour").first().waitFor({ timeout: 10000 });
+  await page.waitForTimeout(500);
 
   /* LES QUESTIONS SUIVANTES. 13/10/2026 : « Qui décide » est un onglet de la barre basse,
      « Le calendrier » s'ouvre par l'onglet « Calendrier », « Sources » par un lien. */
