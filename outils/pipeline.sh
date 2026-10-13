@@ -273,6 +273,12 @@ assert ecart > -21, ("la reunion la plus tardive remonte a %d jours : la source 
                      "probablement gelee (changement de legislature ?)" % -ecart)
 PY
 
+# SENATEURS D'ILE-DE-FRANCE (13/10/2026) - lit le CSV telecharge par collecte.py
+# (cle « senateurs »). Non bloquant : si les colonnes ne sont pas celles attendues,
+# le script dit lesquelles manquent et n'ecrit rien ; l'ancien fichier reste en place.
+python3 outils/senateurs_idf.py data/ODSEN_GENERAL.csv outils/senateurs_idf.json \
+  || echo "::warning::senateurs d'Ile-de-France non rafraichis - voir la cause juste au-dessus (colonnes du CSV du Senat ?)"
+
 # --------------------------------------------------- 5. reconstruire le site
 # BASCULE PREPAREE LE 19/09/2026, PAS ENCORE PUBLIEE — voir le dry-run de cette
 # date pour les preuves chiffrees.
