@@ -113,14 +113,19 @@ function StatutVote({ detail }: { detail: Detail }) {
 }
 
 function GroupeRow({ groupe, ouvert, onPress }: { groupe: Groupe; ouvert: boolean; onPress: () => void }) {
-  const total = (groupe.pour || 0) + (groupe.contre || 0) + (groupe.abstentions || 0);
+  /* Doctrine du vide : un total n'est annonce que si les trois decomptes sont
+     publies. Une absence n'est jamais comptee comme un zero. */
+  const comptes = [groupe.pour, groupe.contre, groupe.abstentions];
+  const libelleTotal = comptes.every((n) => n != null)
+    ? `, ${comptes.reduce((a, n) => a + Number(n), 0)} positions publiées`
+    : "";
   return (
     <View style={s.groupe}>
       <Pressable
         onPress={onPress}
         accessibilityRole="button"
         accessibilityState={{ expanded: ouvert }}
-        accessibilityLabel={`${groupe.nom}, ${total} positions publiées`}
+        accessibilityLabel={`${groupe.nom}${libelleTotal}`}
         style={({ pressed }) => [s.groupeTete, pressed && { opacity: 0.65 }]}
       >
         <View style={[s.groupePoint, { backgroundColor: groupe.couleur }]} />
