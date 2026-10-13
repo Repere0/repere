@@ -41,6 +41,19 @@ SOURCES = [
         "licence": "Licence ouverte",
     },
     {
+        # SENAT (13/10/2026) : base « Senateurs ». Fichier CSV, pas une archive zip :
+        # telecharger_une_fois verifie la taille, pas le format ; un CSV de plus de
+        # 10 Ko passe. Licence : lien vers la licence ouverte, version a confirmer.
+        "cle": "senateurs",
+        "titre": "Senat — base Senateurs (dernier etat connu, ODSEN_GENERAL)",
+        "url": "https://data.senat.fr/data/senateurs/ODSEN_GENERAL.csv",
+        "fichier": "ODSEN_GENERAL.csv",
+        "poids": "à mesurer",
+        "cadence": "quotidienne",
+        "licence": "Licence ouverte (Etalab), version à confirmer",
+        "note": "Lu par outils/senateurs_idf.py : colonnes verifiees sur l'en-tete au runner.",
+    },
+    {
         "cle": "organes_an",
         "titre": "Assemblee nationale — acteurs, mandats et organes (historique)",
         "url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip",

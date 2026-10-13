@@ -86,6 +86,19 @@ for p in glob.glob(AGENDA + "/reunion/*.json"):
         stats["avec ordre du jour"] += 1
     if r.get("compteRenduRef"):
         e["c"] = r["compteRenduRef"]
+    # HEURE DE FIN (13/10/2026) : la source la porte-t-elle ? On la recopie si elle est
+    # present et coherente avec le debut, sinon on ne devine rien. Le champ exact n'a pas
+    # ete verifie depuis ce conteneur (domaine source bloque) : le nombre de reunions
+    # avec et sans heure de fin est donc ecrit dans le journal de la collecte, pour
+    # que le runner dise lui-meme ce qu'il a trouve.
+    fin = (r.get("timeStampFin") or "")[:16]
+    if not fin:
+        stats["sans heure de fin dans la source"] += 1
+    elif fin < e["d"]:
+        stats["heure de fin anterieure au debut, ecartee"] += 1
+    else:
+        e["f"] = fin
+        stats["avec heure de fin"] += 1
     lignes.append(e)
     stats["retenue"] += 1
 

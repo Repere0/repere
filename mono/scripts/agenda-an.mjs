@@ -84,7 +84,8 @@ function principal() {
     return {
       titre,
       debut: s.d,
-      fin: null,
+      /* Fin publiee par la source seulement, recopiee telle quelle ; sinon null, jamais devinee. */
+      fin: typeof s.f === "string" && s.f >= s.d ? s.f : null,
       categorie: "Séance publique",
       lieu: null,
       description,

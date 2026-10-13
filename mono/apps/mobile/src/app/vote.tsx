@@ -58,6 +58,11 @@ export default function Vote() {
             {!mot ? <Text style={TYPO.note}>{POSITION_NON_PORTEE}</Text> : null}
             <PastilleSource source={srcVote(d, vote.sc)} />
           </Carte>
+          <Pressable onPress={() => router.push("/partager")} accessibilityRole="button"
+            accessibilityLabel="Partager ce vote en deux cartes"
+            style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", opacity: pressed ? 0.6 : 1 })}>
+            <Text style={[TYPO.corps, { color: couleurs.lien, fontWeight: "600" }]}>Partager ce vote ›</Text>
+          </Pressable>
 
           {/* NIVEAU 2 : le scrutin, visuellement */}
           {rep ? (

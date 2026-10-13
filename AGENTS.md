@@ -46,7 +46,7 @@ explicite du porteur les change ; la PR qui l'applique met alors à jour
    mise à jour, URL). Un calcul dérivé s'annonce comme un calcul.
 5. **Doctrine du vide.** Une absence de donnée produit une phrase vraie et un lien,
    jamais une forme vide, un zéro ou une barre minuscule.
-6. **Rien qui gamifie le vote ou l'opinion.**
+6. **Rien qui gamifie le vote ou l'opinion** : aucun score, aucune récompense, aucune série, aucun gain ni son de réussite lié à un vote, une position ou un partage. Les effets de mouvement sont permis pour lire, naviguer et suivre une heure ou une durée (assouplie par décision du porteur, 13/10/2026).
 7. **Cinq couleurs d'échelon gelées** ; aucune autre couleur ne dépasse une
    amplitude de 24 sur les canaux RGB.
 8. **Jamais le patrimoine d'un élu, jamais de donnée de présence ou d'absence.**
