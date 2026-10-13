@@ -156,7 +156,8 @@ function Bloc({ testID, etiquette, phrase, explication, source, actions, delai =
           <Pressable onPress={() => setOuvert(o => !o)} accessibilityRole="button"
             accessibilityLabel={ouvert ? "Masquer la source" : "D'où vient cette info ?"} accessibilityState={{ expanded: ouvert }}
             style={({ pressed }) => [s.ligne, pressed && { opacity: 0.6 }]}>
-            <Text style={s.lien}>{ouvert ? "Masquer la source" : "D'où vient cette info ?"}</Text>
+            {/* Secondaire : la source se lit, sans rivaliser avec les actions du bloc. */}
+            <Text style={s.source}>{ouvert ? "Masquer la source" : "D'où vient cette info ?"}</Text>
           </Pressable>
           {ouvert ? <View style={{ flexDirection: "row", flexWrap: "wrap", gap: PAS }}>{source}</View> : null}
         </>
@@ -177,4 +178,5 @@ const s = StyleSheet.create({
   phrase: { ...TYPO.reponse, fontSize: 22, lineHeight: 28 },
   ligne: { minHeight: CIBLE, justifyContent: "center" },
   lien: { color: couleurs.lien, fontWeight: "700", fontSize: 15 },
+  source: { color: couleurs.sourd, fontWeight: "600", fontSize: 15, textDecorationLine: "underline" },
 });
