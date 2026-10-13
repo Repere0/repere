@@ -1,22 +1,25 @@
-/* « PARTAGER UN VOTE » — deux cartes, comme sur la maquette du 13/10/2026.
+/* « PARTAGER UN VOTE » — les deux cartes du canevas (13/10/2026).
  *
- * Carte 1, l'annonce : qui, la position, le sujet, la date. Elle donne envie de lire.
- * Carte 2, l'explication : où en est le texte, selon l'étape de la procédure, avec
- * sa source. Elle renvoie vers le détail, sans prendre position.
+ * Carte 1 (canevas « Partage ») : l'annonce. Le nom, « a voté pour. » en grand,
+ * le sujet, la date du scrutin, la commune. Elle donne envie de lire.
+ * Carte 2 (canevas « Partage 2 ») : l'explication. Le texte, l'etape de la
+ * procedure ou il se trouve, l'etape suivante, la source. Elle renvoie vers le
+ * detail, sans prendre position.
  *
- * Tout vient des données de la commune (le vote du député, la chaîne « Qui décide »)
- * et de @repere/core. Rien n'est écrit à la main. Si le vote n'est pas publié, la
- * carte n'existe pas : on ne partage pas une absence.
+ * Les cartes ont les proportions du canevas (4 sur 5, comme 1080 sur 1350).
+ * Chaque carte se partage en image PNG (react-native-view-shot), par la feuille
+ * de partage du telephone ; le texte et le lien restent en repli.
  *
- * Chaque carte se partage en image (PNG, react-native-view-shot, cadrage du 13/10) par la
- * feuille de partage du téléphone ; le texte et le lien restent disponibles en repli. */
+ * Tout vient des donnees de la commune et de @repere/core. Rien n'est ecrit a la
+ * main : les exemples du canevas (nom, parti, loi, dates de promulgation) ne
+ * figurent pas ici. Si le vote n'est pas publie, la carte n'existe pas. */
 import { useRef, type RefObject } from "react";
-import { Animated, Pressable, Share, Text, View } from "react-native";
+import { Animated, Pressable, Share, Text, View, useWindowDimensions } from "react-native";
 import { Stack } from "expo-router";
 import * as Sharing from "expo-sharing";
 import { captureRef } from "react-native-view-shot";
-import { chaineDecision, dateFr, etapeDuScrutin, ETAPES_LOI, procedure, titreLisible } from "@repere/core";
-import { couleurs, CIBLE, PAS, TYPO } from "../lib/theme";
+import { chaineDecision, dateFr, etapeDuScrutin, ETAPES_LOI, jourParis, procedure, titreLisible } from "@repere/core";
+import { couleurs, CIBLE, PAS } from "../lib/theme";
 import { srcVote } from "../lib/sources";
 import { AvecDonnees, Page, Question } from "../ui/page";
 import { useApparition } from "../ui/mouvement";
@@ -44,10 +47,26 @@ async function partagerImage(carte: RefObject<View | null>, titre: string, repli
   }
 }
 
+/* Le logo du canevas : un carre encre, une lettre, le nom. */
+function Logo() {
+  return (
+    <View style={{ flexDirection: "row", alignItems: "center", gap: PAS * 2 }}>
+      <View style={{ width: 34, height: 34, borderRadius: 10, backgroundColor: couleurs.encre, alignItems: "center", justifyContent: "center" }}>
+        <Text style={{ color: couleurs.sol, fontWeight: "800", fontSize: 20 }}>R</Text>
+      </View>
+      <Text style={{ color: couleurs.encre, fontWeight: "800", fontSize: 20, letterSpacing: -0.4 }}>Repère</Text>
+    </View>
+  );
+}
+
 export default function Partager() {
   const apparition = useApparition(0);
   const carte1 = useRef<View>(null);
   const carte2 = useRef<View>(null);
+  const { width } = useWindowDimensions();
+  /* Une carte occupe la largeur de l'ecran, moins les marges ; jamais plus de 420 px. */
+  const largeur = Math.min(width - PAS * 10, 420);
+  const echelle = largeur / 380;
   return (
     <AvecDonnees rendu={r => {
       const { d } = r;
@@ -66,8 +85,11 @@ export default function Partager() {
       const verbe = VERBE[vote.position];
       const sujet = titreLisible(vote.sc.t);
       const date = dateFr(vote.sc.d);
+      const aujourdhui = dateFr(jourParis(new Date()));
       const etape = etapeDuScrutin(procedure(vote.sc.t));
-      const jalon = ETAPES_LOI.find(e => e.cle === etape);
+      const idx = ETAPES_LOI.findIndex(e => e.cle === etape);
+      const jalon = idx >= 0 ? ETAPES_LOI[idx] : undefined;
+      const suite = idx >= 0 && idx < ETAPES_LOI.length - 1 ? ETAPES_LOI[idx + 1] : undefined;
       const lienScrutin = srcVote(d, vote.sc)?.url || null;
       const ou = jalon
         ? `Où en est le texte : ${jalon.titre.toLowerCase()}. ${jalon.texte}`
@@ -91,27 +113,75 @@ export default function Partager() {
           <Animated.View style={{ opacity: apparition, gap: PAS * 4 }}>
             <Question etiquette="Partager ce vote" question="Deux cartes, à lire dans l'ordre" />
 
-            {/* CARTE 1 — L'ANNONCE */}
-            <View ref={carte1} collapsable={false} accessible accessibilityLabel={`${nom} ${verbe} ${sujet}. Vote à l'Assemblée nationale, ${date}.`}
-              style={{ backgroundColor: couleurs.encre, borderRadius: 24, padding: PAS * 6, gap: PAS * 3, minHeight: 320, justifyContent: "space-between" }}>
-              <Text style={{ color: couleurs.sol, fontWeight: "800", fontSize: 14, letterSpacing: 1 }}>REPÈRE · L'ANNONCE</Text>
-              <View style={{ gap: PAS * 2 }}>
-                <Text style={{ color: couleurs.sol, fontWeight: "800", fontSize: 26, lineHeight: 30 }}>{nom}</Text>
-                <Text style={{ color: couleurs.sol, fontWeight: "800", fontSize: 52, lineHeight: 52, letterSpacing: -1.5 }}>{verbe}</Text>
+            {/* CARTE 1 — L'ANNONCE (canevas « Partage ») */}
+            <View ref={carte1} collapsable={false} accessible
+              accessibilityLabel={`${nom} ${verbe} ${sujet}. Vote à l'Assemblée nationale, ${date}.`}
+              style={{ width: largeur, aspectRatio: 0.8, alignSelf: "center", backgroundColor: couleurs.sol,
+                borderRadius: 18 * echelle, padding: 28 * echelle, justifyContent: "space-between" }}>
+              <Logo />
+              <View style={{ gap: 10 * echelle }}>
+                <Text style={{ color: couleurs.encre, fontWeight: "800", fontSize: 26 * echelle, lineHeight: 30 * echelle, letterSpacing: -0.5 }}>{nom}</Text>
+                <Text style={{ color: couleurs.encre, fontWeight: "800", fontSize: 50 * echelle, lineHeight: 52 * echelle, letterSpacing: -2 * echelle }}>{verbe}</Text>
               </View>
-              <View style={{ gap: PAS * 2 }}>
-                <Text style={{ color: couleurs.sol, fontWeight: "700", fontSize: 18, lineHeight: 24 }}>{sujet}</Text>
-                <Text style={{ color: couleurs.trait, fontSize: 14, lineHeight: 20 }}>Vote à l'Assemblée nationale, {date}.</Text>
+              <View style={{ gap: 12 * echelle }}>
+                <Text style={{ color: couleurs.encre, fontWeight: "800", fontSize: 22 * echelle, lineHeight: 27 * echelle, letterSpacing: -0.3 }}>{sujet}</Text>
+                <Text style={{ color: couleurs.sourd, fontSize: 14 * echelle, lineHeight: 19 * echelle }}>Vote à l'Assemblée nationale, {date}.</Text>
+              </View>
+              <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-end", gap: PAS * 2 }}>
+                <Text style={{ color: couleurs.sourd, fontSize: 12 * echelle, lineHeight: 16 * echelle, flex: 1 }}>Résumé Repère, à partir du scrutin publié. Le détail est dans l'application.</Text>
+                <Text style={{ color: couleurs.encre, fontWeight: "800", fontSize: 18 * echelle }}>{d.nomCommune}</Text>
               </View>
             </View>
 
-            {/* CARTE 2 — L'EXPLICATION */}
-            <View ref={carte2} collapsable={false} accessible accessibilityLabel={`Comment ce texte avance. ${ou}`}
-              style={{ backgroundColor: couleurs.carte, borderRadius: 24, borderWidth: 1, borderColor: couleurs.trait, padding: PAS * 6, gap: PAS * 3 }}>
-              <Text style={{ color: couleurs.sourd, fontWeight: "800", fontSize: 14, letterSpacing: 1 }}>REPÈRE · POUR COMPRENDRE</Text>
-              <Text style={{ color: couleurs.encre, fontWeight: "800", fontSize: 24, lineHeight: 28 }}>Comment ce texte avance</Text>
-              <Text style={{ color: couleurs.encre, fontSize: 16, lineHeight: 23 }}>{ou}</Text>
-              <Text style={[TYPO.note, { marginTop: PAS * 2 }]}>Source : Assemblée nationale, scrutin n° {vote.sc.n}, {date}.</Text>
+            {/* CARTE 2 — L'EXPLICATION (canevas « Partage 2 ») */}
+            <View ref={carte2} collapsable={false} accessible
+              accessibilityLabel={`Comment ce texte avance. ${ou}`}
+              style={{ width: largeur, aspectRatio: 0.8, alignSelf: "center", backgroundColor: couleurs.sol,
+                borderRadius: 18 * echelle, padding: 28 * echelle, justifyContent: "space-between" }}>
+              <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
+                <Logo />
+                <Text style={{ fontWeight: "700", fontSize: 12 * echelle, borderWidth: 2, borderColor: couleurs.encre, borderRadius: 999, paddingHorizontal: 10 * echelle, paddingVertical: 4 * echelle, color: couleurs.encre }}>Explication</Text>
+              </View>
+
+              <View style={{ gap: 8 * echelle }}>
+                <Text style={{ color: couleurs.encre, fontWeight: "800", fontSize: 26 * echelle, lineHeight: 29 * echelle, letterSpacing: -0.7 }}>{sujet}</Text>
+                <Text style={{ color: couleurs.sourd, fontSize: 13 * echelle, lineHeight: 18 * echelle }}>Où en est le texte, selon la procédure</Text>
+              </View>
+
+              {/* Le schema : le vote, la place du texte, la suite. Les liaisons sont des traits, comme sur le canevas. */}
+              <View style={{ gap: 0 }}>
+                <View style={{ minHeight: 44 * echelle, borderWidth: 2, borderColor: couleurs.encre, borderRadius: 14 * echelle,
+                  paddingHorizontal: 14 * echelle, justifyContent: "center" }}>
+                  <Text style={{ fontWeight: "800", fontSize: 14 * echelle, color: couleurs.encre }}>Vote à l'Assemblée nationale, {date}</Text>
+                </View>
+                <View style={{ height: 22 * echelle, width: 2, backgroundColor: couleurs.encre, marginLeft: 22 * echelle }} />
+                <View style={{ borderRadius: 14 * echelle, backgroundColor: couleurs.encre, padding: 14 * echelle, gap: 6 * echelle }}>
+                  <Text style={{ fontWeight: "800", fontSize: 17 * echelle, lineHeight: 21 * echelle, color: couleurs.sol }}>
+                    {jalon ? jalon.titre : "Étape non précisée"}
+                  </Text>
+                  <Text style={{ fontSize: 12 * echelle, lineHeight: 16 * echelle, color: couleurs.trait }}>
+                    {jalon ? jalon.texte : "Le scrutin ne précise pas l'étape du texte : Repère ne la devine pas."}
+                  </Text>
+                </View>
+                {suite ? (
+                  <>
+                    <View style={{ height: 22 * echelle, width: 2, backgroundColor: couleurs.encre, marginLeft: 22 * echelle }} />
+                    <View style={{ minHeight: 44 * echelle, borderWidth: 2, borderColor: couleurs.encre, borderRadius: 14 * echelle,
+                      paddingHorizontal: 14 * echelle, justifyContent: "center" }}>
+                      <Text style={{ fontWeight: "800", fontSize: 14 * echelle, color: couleurs.encre }}>Suite : {suite.titre}</Text>
+                    </View>
+                  </>
+                ) : null}
+              </View>
+
+              <View style={{ gap: 6 * echelle }}>
+                <Text style={{ color: couleurs.sourd, fontSize: 12 * echelle, lineHeight: 16 * echelle }}>
+                  Source : Assemblée nationale, scrutin n° {vote.sc.n}, {date}.
+                </Text>
+                <Text style={{ color: couleurs.sourd, fontSize: 12 * echelle, lineHeight: 16 * echelle }}>
+                  Résumé Repère du {aujourdhui}. Le texte officiel fait foi.
+                </Text>
+              </View>
             </View>
 
             <View style={{ gap: PAS * 2 }}>

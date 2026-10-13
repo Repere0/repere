@@ -32,21 +32,21 @@ import {
   repartitionVote, texteDe,
   titreLisible, REFUS_APPARIEMENT, LIBELLES,
 } from "@repere/core";
-import { Vide } from "../lib/composants";
-import { CarteMemoire } from "../cartes/CarteMemoire";
-import { useSelection } from "../lib/selection";
-import { useCommuneChoisie } from "../lib/useCommune";
+import { Vide } from "../../lib/composants";
+import { CarteMemoire } from "../../cartes/CarteMemoire";
+import { useSelection } from "../../lib/selection";
+import { useCommuneChoisie } from "../../lib/useCommune";
 import {
   PROJETS_PAS_ARRIVES, projetsAucun, VOTES_PAS_ARRIVES, circoInconnue, VOTE_AUCUN,
-} from "../lib/absences";
-import { srcComptesPublies, srcElus, srcProjets, srcVote } from "../lib/sources";
-import { PAS, TYPO } from "../lib/theme";
-import { AvecDonnees, Page } from "../ui/page";
-import { PastilleSource } from "../ui/source";
-import { Etiquette } from "../ui/resume";
-import { Plus, Reponse, typo } from "../ui/reponse";
-import { BarrePart, Repartition } from "../ui/visuels";
-import { SemaineParlement } from "../ui/semaine";
+} from "../../lib/absences";
+import { srcComptesPublies, srcElus, srcProjets, srcVote } from "../../lib/sources";
+import { PAS, TYPO } from "../../lib/theme";
+import { AvecDonnees, Page } from "../../ui/page";
+import { PastilleSource } from "../../ui/source";
+import { Etiquette } from "../../ui/resume";
+import { Plus, Reponse, typo } from "../../ui/reponse";
+import { BarrePart, Repartition } from "../../ui/visuels";
+import { SemaineParlement } from "../../ui/semaine";
 
 export default function ChezVous() {
   const { choix } = useSelection();

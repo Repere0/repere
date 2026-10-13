@@ -10,14 +10,14 @@ import { Pressable, Text } from "react-native";
 import { router, Stack } from "expo-router";
 import { chaineDecision, dateFr, MAIRE_ABSENT, phraseAdjoints, RNE_URL, LIBELLES } from "@repere/core";
 import { sansConseilDepartemental } from "@repere/core";
-import { Segments } from "../lib/composants";
-import { REGION_PAS_ARRIVEE } from "../lib/absences";
-import { srcElus } from "../lib/sources";
-import { CIBLE, couleurs, PAS, TYPO } from "../lib/theme";
-import { AvecDonnees, Page, Question } from "../ui/page";
-import { PastilleSource } from "../ui/source";
-import { Chaine, type Niveau } from "../ui/visuels";
-import { prefetDeRegion } from "../lib/prefet";
+import { Segments } from "../../lib/composants";
+import { REGION_PAS_ARRIVEE } from "../../lib/absences";
+import { srcElus } from "../../lib/sources";
+import { CIBLE, couleurs, PAS, TYPO } from "../../lib/theme";
+import { AvecDonnees, Page, Question } from "../../ui/page";
+import { PastilleSource } from "../../ui/source";
+import { Chaine, type Niveau } from "../../ui/visuels";
+import { prefetDeRegion } from "../../lib/prefet";
 
 export default function QuiDecide() {
   return (
