@@ -21,7 +21,7 @@ export const INVARIANTS = [
     regle: "Une absence produit une phrase et un lien, jamais une forme vide, jamais un zéro.",
     garde: "runtime: aucun squelette persistant, aucune barre de largeur nulle" },
   { n: 6, nom: "aucune gamification du vote",
-    regle: "Rien qui gamifie le vote ou l'opinion.",
+    regle: "Rien qui gamifie le vote ou l'opinion : aucun score, aucune récompense, aucune série, aucun gain ni son de réussite lié à un vote, une position ou un partage. Les effets de mouvement sont permis pour lire, naviguer et suivre une heure ou une durée (assouplie par décision du porteur, 13/10/2026).",
     garde: "statique: vocabulaire de bonne/mauvaise réponse interdit" },
   { n: 7, nom: "palette gelée",
     regle: "Cinq couleurs d'échelon gelées ; aucune autre couleur ne dépasse une amplitude de 24 sur les canaux RGB.",
