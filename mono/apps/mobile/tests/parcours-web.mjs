@@ -201,7 +201,16 @@ for (const largeur of [360, 390, 430]) {
   communs(mesure, "Aujourd'hui");
   verifier(new RegExp(MAIRE).test(mesure.texte), `${largeur}px : le maire est nommé (${MAIRE})`);
   verifier(/Publication Repère du \d/.test(mesure.texte), `${largeur}px : la date de la publication affichée est dite`);
-  verifier((mesure.etiquettes.match(/D'où vient cette info/g) || []).length >= 3, `${largeur}px : chaque réponse de l'accueil porte sa source`);
+  /* CHAQUE RÉPONSE PORTE SA SOURCE, BLOC PAR BLOC (corrigé le 14/10/2026). L'ancien compte global
+     comptait aussi les pastilles de la semaine au Parlement, qui n'existent que si l'agenda est
+     arrivé ; la CI, qui ne télécharge pas l'agenda, passait donc à 2 et échouait sur trois largeurs.
+     Le bouton porte le libellé « D'où vient cette info ? », ou « Masquer la source » quand il est ouvert
+     (React Native Web n'émet pas aria-expanded ici : mesuré sur le DOM rendu). */
+  const sourcesParBloc = await page.evaluate(() => [...document.querySelectorAll('[data-testid="reponse"]')]
+    .map(b => [...b.querySelectorAll('[role="button"]')]
+      .some(x => /^(D'où vient cette info|Masquer la source)/.test(x.getAttribute("aria-label") || ""))));
+  verifier(sourcesParBloc.length === 2 && sourcesParBloc.every(Boolean),
+    `${largeur}px : chaque réponse de l'accueil porte sa source (${JSON.stringify(sourcesParBloc)})`);
   /* 13/10/2026 : la répartition se lit dans la phrase d'explication (« 276 pour, 86 contre… »),
      plus dans une barre : le canevas « Main » n'en porte pas. */
   verifier(/a voté (pour|contre|l'abstention)/.test(mesure.texte) && /\d+ pour, \d+ contre, \d+ abstention/.test(mesure.texte),
