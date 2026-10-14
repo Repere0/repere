@@ -78,11 +78,13 @@ jobs:
         uses: anthropics/claude-code-action@6c690188da61cf16ee7debb28383ba67f02abb4c
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
           prompt: ${{ steps.plan.outputs.claude_prompt }}
           base_branch: main
           branch_prefix: "repere-agent/"
           branch_name_template: "{{prefix}}{{timestamp}}"
           claude_args: |
+            --model sonnet
             --max-turns 3
             --allowedTools "Read,Edit,Write,Bash(npm ci),Bash(npm run verifier),Bash(pnpm test),Bash(npx tsc --noEmit)"
             --append-system-prompt "Repère : ne modifie que mono/apps/mobile/. Ne touche jamais aux workflows, aux données, aux invariants, aux dépendances ou à la production. Ne fusionne ni ne déploie. Si la tâche dépasse ce périmètre, arrête-toi et explique pourquoi."
@@ -103,7 +105,7 @@ jobs:
           AGENT_BRANCH: ${{ steps.claude.outputs.branch_name }}
         run: |
           URL=$(gh pr list --repo "$GITHUB_REPOSITORY" --state open --head "$AGENT_BRANCH" --json url --jq '.[0].url')
-          if [ -n "$URL" ] && [ "$URL" != "null" ]; then
+          if [ -n "$AGENT_BRANCH" ] && [ -n "$URL" ] && [ "$URL" != "null" ]; then
             gh pr comment "$URL" --body "⛔ **Garde Repère : périmètre non conforme.** Cette PR modifie un chemin interdit ou supprime un fichier. Ne pas fusionner ; le cycle est arrêté pour revue humaine."
           fi
 
