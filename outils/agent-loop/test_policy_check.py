@@ -47,6 +47,10 @@ class PolicyCheckTests(unittest.TestCase):
         self.assertTrue(validate_paths(["mono/apps/mobile/src/app/index.tsx"], ["mono/apps/mobile/src/app/old.tsx"]))
         self.assertTrue(validate_paths(["CLAUDE.md"]))
         self.assertTrue(validate_paths(["mono/apps/mobile/package.json"]))
+        self.assertTrue(validate_paths(
+            ["mono/apps/mobile/src/app/new-screen.tsx"],
+            added=["mono/apps/mobile/src/app/new-screen.tsx"],
+        ))
         self.assertTrue(validate_paths(["mono/apps/mobile/src/app/../../../../.github/workflows/x.yml"]))
         self.assertTrue(validate_paths(["mono/apps/mobile/src/app\\\\..\\\\..\\\\secret.env"]))
 
