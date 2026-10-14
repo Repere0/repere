@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 import subprocess
 import sys
 from pathlib import PurePosixPath
@@ -62,7 +63,13 @@ def validate_plan(plan: Any) -> list[str]:
     if not isinstance(criteria, list) or not criteria or any(not isinstance(c, str) or len(c.strip()) < 5 for c in criteria):
         errors.append("Critères d'acceptation absents ou invalides.")
     cost = plan.get("estimated_cost_usd")
-    if isinstance(cost, bool) or not isinstance(cost, (int, float)) or cost < 0 or cost > MAX_ESTIMATED_COST_USD:
+    if (
+        isinstance(cost, bool)
+        or not isinstance(cost, (int, float))
+        or not math.isfinite(cost)
+        or cost < 0
+        or cost > MAX_ESTIMATED_COST_USD
+    ):
         errors.append(f"Estimation déclarée invalide ou supérieure au seuil de {MAX_ESTIMATED_COST_USD:.2f} USD ; ce seuil ne plafonne pas la facture réelle.")
     turns = plan.get("max_turns")
     if isinstance(turns, bool) or not isinstance(turns, int) or not 1 <= turns <= MAX_TURNS:
