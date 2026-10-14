@@ -1,0 +1,87 @@
+# Modèle à relire avant installation manuelle dans .github/workflows/.
+# Ne pas activer avant d'avoir ajouté OPENAI_API_KEY, ANTHROPIC_API_KEY et OPENAI_MODEL.
+name: Repère — boucle supervisée OpenAI + Claude
+
+on:
+  workflow_dispatch:
+    inputs:
+      task:
+        description: "Une seule tâche précise. Aucun merge, déploiement ou changement de politique."
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: repere-agent-loop
+  cancel-in-progress: false
+
+jobs:
+  loop:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+      actions: read
+    steps:
+      - name: Récupérer le dépôt
+        uses: actions/checkout@v5
+
+      - name: Installer Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Planifier avec OpenAI
+        id: plan
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          OPENAI_MODEL: ${{ vars.OPENAI_MODEL }}
+          REPERE_TASK: ${{ inputs.task }}
+        run: |
+          python outils/agent-loop/plan_task.py \
+            --output "$RUNNER_TEMP/repere-plan.json" \
+            --decision-output "$RUNNER_TEMP/repere-decision.md" \
+            --prompt-output "$RUNNER_TEMP/repere-claude-prompt.txt"
+
+      - name: Valider le plan green
+        id: guard
+        if: steps.plan.outputs.risk == 'green'
+        run: python outils/agent-loop/policy_check.py plan "$RUNNER_TEMP/repere-plan.json"
+
+      - name: Demander une décision humaine
+        if: ${{ always() && steps.plan.outcome == 'success' && (steps.plan.outputs.risk != 'green' || steps.guard.outcome != 'success') }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DECISION_FILE: ${{ runner.temp }}/repere-decision.md
+          PLAN_TITLE: ${{ steps.plan.outputs.title }}
+          ACTOR: ${{ github.actor }}
+        run: |
+          {
+            printf 'Bonjour @%s,\n\n' "$ACTOR"
+            cat "$DECISION_FILE"
+          } > "$RUNNER_TEMP/decision-notification.md"
+          gh issue create \
+            --repo "$GITHUB_REPOSITORY" \
+            --title "Décision requise — ${PLAN_TITLE}" \
+            --body-file "$RUNNER_TEMP/decision-notification.md" \
+            --assignee "$ACTOR"
+
+      - name: Exécuter avec Claude Code
+        if: steps.plan.outputs.risk == 'green' && steps.guard.outcome == 'success'
+        uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          prompt: ${{ steps.plan.outputs.claude_prompt }}
+          base_branch: main
+          branch_name_template: "repere-agent/${{ github.run_id }}"
+          claude_args: |
+            --max-turns 3
+            --allowedTools "Read,Edit,Write,Bash(npm ci),Bash(npm run verifier),Bash(pnpm test),Bash(npx tsc --noEmit)"
+            --append-system-prompt "Repère : ne modifie que mono/apps/mobile/. Ne touche jamais aux workflows, aux données, aux invariants, aux dépendances ou à la production. Ne fusionne ni ne déploie. Si la tâche dépasse ce périmètre, arrête-toi et explique pourquoi."
+
+      # La PR reste soumise à revue humaine et aux workflows CI déjà présents.
+      # Ce prototype n'a aucun droit de fusion ou de déploiement.
