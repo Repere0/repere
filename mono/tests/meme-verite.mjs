@@ -161,11 +161,19 @@ async function texteApp(nav, { nom }) {
   await p.goto(APP, { waitUntil: "networkidle" });
   await p.getByLabel(/Où habitez-vous/).fill(nom);
   await p.getByRole("button", { name: new RegExp("^" + nom.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + ",") }).first().click();
-  await p.getByText("Aller plus loin").first().waitFor({ timeout: 15000 });
+  /* Ancre de chargement : « Aller plus loin » n'existe plus depuis la refonte canevas de
+     l'accueil (14/10/2026). Le lien « Sources et mises à jour » termine l'accueil ; la
+     comparaison elle-même n'est pas touchée. */
+  await p.getByText("Sources et mises à jour").first().waitFor({ timeout: 15000 });
   await p.waitForLoadState("networkidle");
   let { t, n: feuilles } = await toutLire(p);
+  /* « Qui décide » et « Calendrier » sont des onglets de la barre basse (13/10/2026), pas
+     des boutons : on les touche par leur texte, comme le parcours navigateur. */
+  const ONGLETS = { "Qui décide": "Qui décide", "Le calendrier": "Calendrier" };
   for (const action of ["Où va cet argent ?", "Comprendre ce vote", "Qui décide", "Le calendrier", "Sources"]) {
-    const b = p.getByRole("button", { name: action, exact: true });
+    const b = ONGLETS[action]
+      ? p.getByText(ONGLETS[action], { exact: true }).last()
+      : p.getByRole("button", { name: action, exact: true });
     if (!(await b.count())) continue;              /* absence dite par une phrase sur l'accueil */
     await b.first().click();
     await p.waitForTimeout(900);
@@ -173,7 +181,7 @@ async function texteApp(nav, { nom }) {
     t += "\n" + lu.t;
     feuilles += lu.n;
     /* Qui décide et Le calendrier sont des onglets (13/10/2026) : retour par la barre basse. */
-    if (action === "Qui décide" || action === "Le calendrier") await p.getByText("Aujourd'hui", { exact: true }).last().click();
+    if (ONGLETS[action]) await p.getByText("Aujourd'hui", { exact: true }).last().click();
     else await p.getByRole("button", { name: "Revenir à l'écran Aujourd'hui" }).last().click();
     await p.waitForTimeout(500);
   }
