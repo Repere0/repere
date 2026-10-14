@@ -91,7 +91,7 @@ jobs:
           AGENT_BRANCH: repere-agent/${{ github.run_id }}
         run: |
           git fetch origin "$AGENT_BRANCH"
-          python outils/agent-loop/policy_check.py diff --base main --head FETCH_HEAD
+          python outils/agent-loop/policy_check.py diff --base main --head FETCH_HEAD --plan "$RUNNER_TEMP/repere-plan.json"
 
       - name: Signaler une PR hors périmètre
         if: failure() && steps.claude.outcome == 'success' && steps.diff_guard.outcome == 'failure'
