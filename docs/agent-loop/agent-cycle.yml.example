@@ -109,8 +109,12 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           AGENT_BRANCH: ${{ steps.claude.outputs.branch_name }}
         run: |
+          if [ -z "$AGENT_BRANCH" ]; then
+            echo "::warning::Aucune branche de sortie fournie par l'action Claude."
+            exit 0
+          fi
           URL=$(gh pr list --repo "$GITHUB_REPOSITORY" --state open --head "$AGENT_BRANCH" --json url --jq '.[0].url')
-          if [ -n "$AGENT_BRANCH" ] && [ -n "$URL" ] && [ "$URL" != "null" ]; then
+          if [ -n "$URL" ] && [ "$URL" != "null" ]; then
             gh pr comment "$URL" --body "⛔ **Garde Repère : périmètre non conforme.** Cette PR modifie un chemin interdit ou supprime un fichier. Ne pas fusionner ; le cycle est arrêté pour revue humaine."
           fi
 
