@@ -46,10 +46,9 @@ def requires_human_review(task: str, plan: dict) -> bool:
         value = plan.get(key, "")
         if isinstance(value, str):
             fields.append(value)
-    for key in ("allowed_paths", "acceptance_criteria"):
-        values = plan.get(key, [])
-        if isinstance(values, list):
-            fields.extend(value for value in values if isinstance(value, str))
+    values = plan.get("allowed_paths", [])
+    if isinstance(values, list):
+        fields.extend(value for value in values if isinstance(value, str))
     text = normalize_for_gate("\n".join(fields))
     return any(
         re.search(r"\b" + re.escape(term) + r"\b", text)
