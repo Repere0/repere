@@ -55,7 +55,7 @@ def validate_plan(plan: Any) -> list[str]:
                 "\\" in path
                 or ".." in PurePosixPath(path).parts
                 or not path.endswith("/")
-                or len(PurePosixPath(path.rstrip("/")).parts) < 4
+                or len(PurePosixPath(path.rstrip("/")).parts) < 5
                 or not path.startswith(ALLOWED_PREFIXES)
             ):
                 errors.append(f"Chemin planifié trop large ou hors périmètre : {path!r}")
@@ -66,9 +66,9 @@ def validate_plan(plan: Any) -> list[str]:
     if (
         isinstance(cost, bool)
         or not isinstance(cost, (int, float))
-        or not math.isfinite(cost)
         or cost < 0
         or cost > MAX_ESTIMATED_COST_USD
+        or not math.isfinite(cost)
     ):
         errors.append(f"Estimation déclarée invalide ou supérieure au seuil de {MAX_ESTIMATED_COST_USD:.2f} USD ; ce seuil ne plafonne pas la facture réelle.")
     turns = plan.get("max_turns")
