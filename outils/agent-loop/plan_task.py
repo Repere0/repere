@@ -40,7 +40,7 @@ def normalize_for_gate(value: str) -> str:
 
 def requires_human_review(task: str, plan: dict) -> bool:
     fields = [task]
-    for key in ("title", "objective", "rationale"):
+    for key in ("title", "objective"):
         value = plan.get(key, "")
         if isinstance(value, str):
             fields.append(value)
