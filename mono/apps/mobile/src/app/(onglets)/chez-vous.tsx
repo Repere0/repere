@@ -84,7 +84,7 @@ export default function ChezVous() {
                 source={<PastilleSource court source={srcVote(d, vote.sc)} />}
                 actions={[
                   { texte: "Comprendre ce vote", onPress: () => router.push("/vote") },
-                  { texte: "Partager ce vote en image", onPress: () => router.push("/partager") },
+                  { texte: "Partager en image", onPress: () => router.push("/partager") },
                 ]} />
             ) : d.nbCircos === 0 ? (
               <Vide {...circoInconnue(nom)} />
@@ -145,29 +145,42 @@ function Bloc({ testID, etiquette, phrase, explication, source, actions, delai =
   /* Une montee de 8 px et un fondu, une fois : la reponse arrive, elle ne danse pas.
      Reduire les animations du telephone : l'etat final, tout de suite (ui/mouvement.ts). */
   const apparition = useApparition(delai);
+  /* Hierarchie des gestes (14/10/2026) : la PREMIERE action du bloc est le geste
+     suivant, en pleine ligne, separee par un filet ; la source et les autres actions
+     vont dans un pied discret. Avant, trois lignes de meme poids se disputaient
+     l'attention. Mesure a 390 px : le pied tient sur UNE ligne si ses libelles sont
+     courts (« Partager en image ») ; sinon il passe sur deux, sans rien masquer. */
+  const [principale, ...secondaires] = actions ?? [];
   return (
     <Animated.View style={{ opacity: apparition, transform: [{ translateY: apparition.interpolate({ inputRange: [0, 1], outputRange: [8, 0] }) }] }}>
     <View testID={testID} style={s.bloc}>
       <Text style={TYPO.etiquette}>{etiquette}</Text>
       <Text style={s.phrase} accessibilityRole="header">{typo(phrase)}</Text>
       {explication ? <View style={{ gap: PAS }}>{typeof explication === "string" ? <Text style={TYPO.note}>{explication}</Text> : explication}</View> : null}
-      {source ? (
-        <>
-          <Pressable onPress={() => setOuvert(o => !o)} accessibilityRole="button"
-            accessibilityLabel={ouvert ? "Masquer la source" : "D'où vient cette info ?"} accessibilityState={{ expanded: ouvert }}
-            style={({ pressed }) => [s.ligne, pressed && { opacity: 0.6 }]}>
-            {/* Secondaire : la source se lit, sans rivaliser avec les actions du bloc. */}
-            <Text style={s.source}>{ouvert ? "Masquer la source" : "D'où vient cette info ?"}</Text>
-          </Pressable>
-          {ouvert ? <View style={{ flexDirection: "row", flexWrap: "wrap", gap: PAS }}>{source}</View> : null}
-        </>
-      ) : null}
-      {actions?.map(a => (
-        <Pressable key={a.texte} onPress={a.onPress} accessibilityRole="button" accessibilityLabel={a.texte}
-          style={({ pressed }) => [s.ligne, pressed && { opacity: 0.6 }]}>
-          <Text style={s.lien}>{a.texte} ›</Text>
+      {principale ? (
+        <Pressable onPress={principale.onPress} accessibilityRole="button" accessibilityLabel={principale.texte}
+          style={({ pressed }) => [s.principale, pressed && { opacity: 0.6 }]}>
+          <Text style={s.principaleTexte}>{principale.texte} ›</Text>
         </Pressable>
-      ))}
+      ) : null}
+      {source || secondaires.length ? (
+        <View style={s.pied}>
+          {source ? (
+            <Pressable onPress={() => setOuvert(o => !o)} accessibilityRole="button"
+              accessibilityLabel={ouvert ? "Masquer la source" : "D'où vient cette info ?"} accessibilityState={{ expanded: ouvert }}
+              style={({ pressed }) => [s.ligne, pressed && { opacity: 0.6 }]}>
+              <Text style={s.source}>{ouvert ? "Masquer la source" : "D'où vient cette info ?"}</Text>
+            </Pressable>
+          ) : null}
+          {secondaires.map(a => (
+            <Pressable key={a.texte} onPress={a.onPress} accessibilityRole="button" accessibilityLabel={a.texte}
+              style={({ pressed }) => [s.ligne, pressed && { opacity: 0.6 }]}>
+              <Text style={s.source}>{a.texte}</Text>
+            </Pressable>
+          ))}
+        </View>
+      ) : null}
+      {source && ouvert ? <View style={{ flexDirection: "row", flexWrap: "wrap", gap: PAS }}>{source}</View> : null}
     </View>
     </Animated.View>
   );
@@ -177,6 +190,15 @@ const s = StyleSheet.create({
   bloc: { backgroundColor: couleurs.carte, borderRadius: RAYON.carte, padding: PAS * 4, gap: PAS * 2, ...OMBRE },
   phrase: { ...TYPO.reponse, fontSize: 22, lineHeight: 28 },
   ligne: { minHeight: CIBLE, justifyContent: "center" },
+  /* les liens de pied d'ecran (« Sources et mises à jour ») : inchanges */
   lien: { color: couleurs.lien, fontWeight: "700", fontSize: 15 },
+  /* le geste suivant : pleine ligne, separee par un filet comme les actions des cartes « Question » */
+  principale: {
+    minHeight: CIBLE, flexDirection: "row", alignItems: "center", justifyContent: "space-between",
+    borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: couleurs.trait, marginTop: PAS,
+  },
+  principaleTexte: { color: couleurs.encre, fontWeight: "700", fontSize: 17 },
+  /* le pied : la source et les gestes secondaires, sur une ou deux lignes, sans rivaliser */
+  pied: { flexDirection: "row", flexWrap: "wrap", alignItems: "center", columnGap: PAS * 3 },
   source: { color: couleurs.sourd, fontWeight: "600", fontSize: 15, textDecorationLine: "underline" },
 });
