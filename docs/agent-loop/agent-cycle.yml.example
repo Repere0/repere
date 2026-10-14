@@ -25,7 +25,7 @@ jobs:
       contents: write
       pull-requests: write
       issues: write
-      actions: read
+      id-token: write
     steps:
       - name: Récupérer le dépôt
         uses: actions/checkout@v5
@@ -53,6 +53,20 @@ jobs:
             --output "$RUNNER_TEMP/repere-plan.json" \
             --decision-output "$RUNNER_TEMP/repere-decision.md" \
             --prompt-output "$RUNNER_TEMP/repere-claude-prompt.txt"
+
+      - name: Notifier un échec de planification
+        if: ${{ failure() && steps.plan.outcome == 'failure' }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ACTOR: ${{ github.actor }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          {
+            printf 'La planification OpenAI a échoué. Claude n’a pas été lancé.\\n\\n'
+            printf 'Exécution : %s\\n' "$RUN_URL"
+            printf 'Relance : vérifier les secrets et la variable OPENAI_MODEL, puis relancer manuellement.\\n'
+          } > "$RUNNER_TEMP/agent-failure.md"
+          gh issue create --repo "$GITHUB_REPOSITORY" --title "Boucle Repère arrêtée — planification OpenAI" --body-file "$RUNNER_TEMP/agent-failure.md" --assignee "$ACTOR"
 
       - name: Valider le plan green
         id: guard
@@ -83,7 +97,6 @@ jobs:
         uses: anthropics/claude-code-action@6c690188da61cf16ee7debb28383ba67f02abb4c
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
-          github_token: ${{ secrets.GITHUB_TOKEN }}
           prompt: ${{ steps.plan.outputs.claude_prompt }}
           base_branch: main
           branch_prefix: "repere-agent/"
@@ -121,6 +134,20 @@ jobs:
           if [ -n "$URL" ] && [ "$URL" != "null" ]; then
             gh pr comment "$URL" --body "⛔ **Garde Repère : périmètre non conforme.** Cette PR modifie un chemin interdit ou supprime un fichier. Ne pas fusionner ; le cycle est arrêté pour revue humaine."
           fi
+
+      - name: Notifier un échec Claude ou du contrôle de périmètre
+        if: ${{ always() && (steps.claude.outcome == 'failure' || steps.diff_guard.outcome == 'failure') }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ACTOR: ${{ github.actor }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          {
+            printf 'La boucle s’est arrêtée pendant l’exécution Claude ou le contrôle du diff.\\n\\n'
+            printf 'Aucune fusion ni publication n’a été effectuée.\\n'
+            printf 'Exécution : %s\\n' "$RUN_URL"
+          } > "$RUNNER_TEMP/agent-failure.md"
+          gh issue create --repo "$GITHUB_REPOSITORY" --title "Boucle Repère arrêtée — contrôle requis" --body-file "$RUNNER_TEMP/agent-failure.md" --assignee "$ACTOR"
 
       # Le budget Claude est borné par le CLI ; le budget OpenAI reste limité par
       # le petit plan de sortie et doit être surveillé côté fournisseur.
