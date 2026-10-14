@@ -27,6 +27,7 @@ class PolicyCheckTests(unittest.TestCase):
         self.assertTrue(validate_plan(plan(risk="red")))
 
     def test_blocks_paths_outside_mobile_or_outside_exact_plan(self):
+        self.assertTrue(validate_plan(plan(allowed_paths=["mono/apps/mobile/src/"])))
         self.assertTrue(validate_plan(plan(allowed_paths=["outils/pipeline.sh"])))
         self.assertTrue(validate_paths(["outils/pipeline.sh"]))
         self.assertTrue(validate_paths([".github/workflows/agent.yml"]))
