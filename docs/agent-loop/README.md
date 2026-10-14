@@ -47,7 +47,7 @@ python outils/agent-loop/policy_check.py plan /chemin/vers/un-plan.json
 Le contrôle du diff nécessite une branche avec `origin/main` récupérée :
 
 ```bash
-python outils/agent-loop/policy_check.py diff --base main
+python outils/agent-loop/policy_check.py diff --base main --head HEAD --plan /chemin/vers/un-plan-green.json
 ```
 
 ## Garde-fous non négociables
