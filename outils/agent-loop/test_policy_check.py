@@ -26,10 +26,14 @@ class PolicyCheckTests(unittest.TestCase):
         self.assertTrue(validate_plan(plan(risk="orange")))
         self.assertTrue(validate_plan(plan(risk="red")))
 
-    def test_blocks_paths_outside_mobile(self):
+    def test_blocks_paths_outside_mobile_or_outside_exact_plan(self):
         self.assertTrue(validate_plan(plan(allowed_paths=["outils/pipeline.sh"])))
         self.assertTrue(validate_paths(["outils/pipeline.sh"]))
         self.assertTrue(validate_paths([".github/workflows/agent.yml"]))
+        self.assertTrue(validate_paths(
+            ["mono/apps/mobile/src/other-screen/index.tsx"],
+            allowed_prefixes=("mono/apps/mobile/src/app/",),
+        ))
 
     def test_blocks_cost_over_limit_and_excess_turns(self):
         self.assertTrue(validate_plan(plan(estimated_cost_usd=0.76)))
