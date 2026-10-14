@@ -77,11 +77,34 @@ jobs:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
           prompt: ${{ steps.plan.outputs.claude_prompt }}
           base_branch: main
-          branch_name_template: "repere-agent/${{ github.run_id }}"
+          branch_prefix: "repere-agent/"
+          branch_name_template: "{{prefix}}${{ github.run_id }}"
           claude_args: |
             --max-turns 3
             --allowedTools "Read,Edit,Write,Bash(npm ci),Bash(npm run verifier),Bash(pnpm test),Bash(npx tsc --noEmit)"
             --append-system-prompt "Repère : ne modifie que mono/apps/mobile/. Ne touche jamais aux workflows, aux données, aux invariants, aux dépendances ou à la production. Ne fusionne ni ne déploie. Si la tâche dépasse ce périmètre, arrête-toi et explique pourquoi."
 
+      - name: Vérifier le diff réel de la branche Claude
+        id: diff_guard
+        if: steps.claude.outcome == 'success'
+        env:
+          AGENT_BRANCH: repere-agent/${{ github.run_id }}
+        run: |
+          git fetch origin "$AGENT_BRANCH"
+          python outils/agent-loop/policy_check.py diff --base main --head FETCH_HEAD
+
+      - name: Signaler une PR hors périmètre
+        if: failure() && steps.claude.outcome == 'success' && steps.diff_guard.outcome == 'failure'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          AGENT_BRANCH: repere-agent/${{ github.run_id }}
+        run: |
+          URL=$(gh pr list --repo "$GITHUB_REPOSITORY" --state open --head "$AGENT_BRANCH" --json url --jq '.[0].url')
+          if [ -n "$URL" ] && [ "$URL" != "null" ]; then
+            gh pr comment "$URL" --body "⛔ **Garde Repère : périmètre non conforme.** Cette PR modifie un chemin interdit ou supprime un fichier. Ne pas fusionner ; le cycle est arrêté pour revue humaine."
+          fi
+
       # La PR reste soumise à revue humaine et aux workflows CI déjà présents.
-      # Ce prototype n'a aucun droit de fusion ou de déploiement.
+      # Ce prototype n'a aucun droit de fusion ou de déploiement. Le contrôle du diff
+      # a lieu après la création de la branche/PR : en cas de violation, le workflow
+      # échoue et commente la PR ; aucune fusion n'est possible depuis cet agent.
