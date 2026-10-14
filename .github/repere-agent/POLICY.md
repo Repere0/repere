@@ -6,7 +6,7 @@ Cette politique est une barrière de sécurité, pas une simple consigne destin�
 
 - Déclenchement manuel uniquement.
 - Une seule tâche par exécution ; aucune boucle infinie ni relance automatique.
-- Seules les tâches classées `green` peuvent être exécutées.
+- Seules les tâches classées `green` peuvent être exécutées. Un verrou déterministe dans `plan_task.py` force `orange` si la demande ou le plan touche un sujet sensible (neutralité, vote, source, calcul, données, compte, secret, confidentialité, collecte, dépendances, déploiement, etc.), même si OpenAI propose `green`.
 - Zone de modification autorisée : des préfixes de répertoires étroits sous `mono/apps/mobile/` (jamais la racine seule), déclarés dans le plan puis vérifiés contre le diff réel.
 - Le résultat reste une branche et une pull request ; aucune fusion automatique.
 - Maximum de 3 tours côté Claude et durée totale du workflow de 25 minutes.
