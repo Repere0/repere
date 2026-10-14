@@ -50,8 +50,14 @@ def validate_plan(plan: Any) -> list[str]:
         for path in paths:
             if not isinstance(path, str):
                 errors.append(f"Chemin planifié invalide : {path!r}")
-            elif "\\" in path or ".." in PurePosixPath(path).parts or not path.startswith(ALLOWED_PREFIXES):
-                errors.append(f"Chemin planifié hors périmètre : {path!r}")
+            elif (
+                "\\" in path
+                or ".." in PurePosixPath(path).parts
+                or not path.endswith("/")
+                or len(PurePosixPath(path.rstrip("/")).parts) < 4
+                or not path.startswith(ALLOWED_PREFIXES)
+            ):
+                errors.append(f"Chemin planifié trop large ou hors périmètre : {path!r}")
     criteria = plan.get("acceptance_criteria")
     if not isinstance(criteria, list) or not criteria or any(not isinstance(c, str) or len(c.strip()) < 5 for c in criteria):
         errors.append("Critères d'acceptation absents ou invalides.")
@@ -66,7 +72,11 @@ def validate_plan(plan: Any) -> list[str]:
     return errors
 
 
-def validate_paths(paths: list[str], deleted: list[str] | None = None) -> list[str]:
+def validate_paths(
+    paths: list[str],
+    deleted: list[str] | None = None,
+    allowed_prefixes: tuple[str, ...] = ALLOWED_PREFIXES,
+) -> list[str]:
     errors: list[str] = []
     for raw in paths:
         path = str(PurePosixPath(raw))
@@ -76,8 +86,8 @@ def validate_paths(paths: list[str], deleted: list[str] | None = None) -> list[s
             errors.append(f"Zone protégée : {path}")
         elif path.endswith(FORBIDDEN_SUFFIXES) or "/.env" in path:
             errors.append(f"Fichier potentiellement secret : {path}")
-        elif "\\" in raw or ".." in PurePosixPath(raw).parts or not path.startswith(ALLOWED_PREFIXES):
-            errors.append(f"Chemin hors liste blanche : {path}")
+        elif "\\" in raw or ".." in PurePosixPath(raw).parts or not path.startswith(allowed_prefixes):
+            errors.append(f"Chemin hors liste blanche ou hors plan : {path}")
     for path in deleted or []:
         errors.append(f"La suppression de fichier est interdite en v1 : {path}")
     return errors
@@ -104,6 +114,7 @@ def main() -> int:
     paths_parser = sub.add_parser("diff", help="valider les chemins modifiés par rapport à origin/main")
     paths_parser.add_argument("--base", default="main")
     paths_parser.add_argument("--head", default="HEAD")
+    paths_parser.add_argument("--plan", required=True, help="Plan JSON green validé avant exécution")
     args = parser.parse_args()
 
     if args.command == "plan":
@@ -116,11 +127,22 @@ def main() -> int:
         errors = validate_plan(plan)
     else:
         try:
+            with open(args.plan, encoding="utf-8") as handle:
+                plan = json.load(handle)
+            plan_errors = validate_plan(plan)
+            if plan_errors:
+                print("Le plan fourni au contrôle du diff n'est pas autorisé :", file=sys.stderr)
+                for error in plan_errors:
+                    print(f"- {error}", file=sys.stderr)
+                return 2
             paths, deleted = changed_paths(args.base, args.head)
+        except (OSError, json.JSONDecodeError) as exc:
+            print(f"Plan illisible : {exc}", file=sys.stderr)
+            return 2
         except subprocess.CalledProcessError as exc:
             print(f"Impossible de lire le diff Git : {exc.stderr}", file=sys.stderr)
             return 2
-        errors = validate_paths(paths, deleted)
+        errors = validate_paths(paths, deleted, tuple(plan["allowed_paths"]))
         if not paths and not deleted:
             errors.append("Aucun changement Git détecté : impossible de prouver le périmètre.")
 
