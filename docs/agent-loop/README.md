@@ -8,7 +8,7 @@ Cette PR prépare la v1 ; elle **n'active pas** encore de workflow. Le dépôt p
 
 1. Lancement manuel dans GitHub Actions, depuis un téléphone ou un navigateur.
 2. OpenAI transforme la demande en plan JSON structuré.
-3. Le validateur local n'accepte que le niveau `green`, un coût estimé inférieur ou égal à 0,75 USD et au plus 3 tours.
+3. Le validateur n'accepte que le niveau `green`, un coût estimé inférieur ou égal à 0,75 USD et au plus 3 tours. Le coût est une estimation fournie par le modèle, **pas une limite de facturation réelle**.
 4. Claude Code reçoit une tâche limitée à `mono/apps/mobile/`, travaille dans une branche dédiée et propose une PR.
 5. Si le plan n'est pas green ou échoue aux contrôles, le workflow ouvre une issue de décision et n'exécute pas Claude.
 6. Aucune fusion, publication, modification de la collecte ou de la configuration de sécurité n'est autorisée.
@@ -30,7 +30,7 @@ Ne pas réutiliser `NETLIFY_AUTH_TOKEN`, `NETLIFY_SITE_ID`, `COLLECTE_APP_KEY` n
 
 ## Coût et limites
 
-Le plafond de 0,75 USD dans le validateur est une limite de tâche déclarative : ce n'est pas un contrôle de facturation fournisseur et ne garantit pas que la facture reste sous ce montant. Les plafonds du fournisseur, s'ils sont disponibles, doivent également être configurés. Les appels OpenAI et Anthropic sont facturés séparément des abonnements ChatGPT et Claude.
+Le validateur limite le nombre de tours et le temps d'exécution, mais il ne peut pas garantir une facture maximale. Le coût estimé par le modèle est informatif ; les plafonds et alertes du fournisseur doivent être configurés séparément. Les appels OpenAI et Anthropic sont facturés séparément des abonnements ChatGPT et Claude.
 
 ## Commandes de test
 
