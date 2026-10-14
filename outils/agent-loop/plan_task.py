@@ -82,8 +82,8 @@ Règles impératives :
             response = json.loads(result.read().decode("utf-8"))
     except urllib.error.HTTPError as exc:
         # Ne jamais imprimer les en-têtes ou la clé API.
-        detail = exc.read(1200).decode("utf-8", errors="replace")
-        raise RuntimeError(f"Échec API OpenAI HTTP {exc.code}: {detail}") from None
+        # Le corps d’erreur n’est pas recopié : les journaux peuvent être publics.
+        raise RuntimeError(f"Échec API OpenAI HTTP {exc.code}. Vérifiez la configuration sans afficher la clé.") from None
     except (urllib.error.URLError, TimeoutError) as exc:
         raise RuntimeError(f"API OpenAI indisponible ou délai dépassé : {exc}") from None
     return json.loads(extract_output_text(response))
@@ -123,7 +123,6 @@ def main() -> int:
         criteria = plan.get("acceptance_criteria", [])
         decision = (
             f"## Décision humaine requise — boucle Repère\n\n"
-            f"**Demande initiale :**\n\n{task}\n\n"
             f"**Niveau proposé par OpenAI :** `{risk}`\n\n"
             f"**Plan :** {plan.get('objective', 'Non fourni')}\n\n"
             f"**Justification :** {rationale}\n\n"
