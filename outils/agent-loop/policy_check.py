@@ -83,6 +83,7 @@ def validate_paths(
     paths: list[str],
     deleted: list[str] | None = None,
     allowed_prefixes: tuple[str, ...] = ALLOWED_PREFIXES,
+    added: list[str] | None = None,
 ) -> list[str]:
     errors: list[str] = []
     for raw in paths:
@@ -97,10 +98,12 @@ def validate_paths(
             errors.append(f"Chemin hors liste blanche ou hors plan : {path}")
     for path in deleted or []:
         errors.append(f"La suppression de fichier est interdite en v1 : {path}")
+    for path in added or []:
+        errors.append(f"L'ajout de fichier est interdit en v1 : {path}")
     return errors
 
 
-def changed_paths(base: str, head: str) -> tuple[list[str], list[str]]:
+def changed_paths(base: str, head: str) -> tuple[list[str], list[str], list[str]]:
     # On utilise uniquement des références git fixes ; aucun argument de shell.
     diff = subprocess.run(
         ["git", "diff", "--no-renames", "--name-only", "--diff-filter=ACMRT", f"origin/{base}...{head}"],
@@ -110,7 +113,15 @@ def changed_paths(base: str, head: str) -> tuple[list[str], list[str]]:
         ["git", "diff", "--no-renames", "--name-only", "--diff-filter=D", f"origin/{base}...{head}"],
         check=True, capture_output=True, text=True,
     )
-    return [p for p in diff.stdout.splitlines() if p], [p for p in deleted.stdout.splitlines() if p]
+    added = subprocess.run(
+        ["git", "diff", "--no-renames", "--name-only", "--diff-filter=A", f"origin/{base}...{head}"],
+        check=True, capture_output=True, text=True,
+    )
+    return (
+        [p for p in diff.stdout.splitlines() if p],
+        [p for p in deleted.stdout.splitlines() if p],
+        [p for p in added.stdout.splitlines() if p],
+    )
 
 
 def main() -> int:
@@ -142,14 +153,14 @@ def main() -> int:
                 for error in plan_errors:
                     print(f"- {error}", file=sys.stderr)
                 return 2
-            paths, deleted = changed_paths(args.base, args.head)
+            paths, deleted, added = changed_paths(args.base, args.head)
         except (OSError, json.JSONDecodeError) as exc:
             print(f"Plan illisible : {exc}", file=sys.stderr)
             return 2
         except subprocess.CalledProcessError as exc:
             print(f"Impossible de lire le diff Git : {exc.stderr}", file=sys.stderr)
             return 2
-        errors = validate_paths(paths, deleted, tuple(plan["allowed_paths"]))
+        errors = validate_paths(paths, deleted, tuple(plan["allowed_paths"]), added)
         if not paths and not deleted:
             errors.append("Aucun changement Git détecté : impossible de prouver le périmètre.")
 
