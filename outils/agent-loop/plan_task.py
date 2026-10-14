@@ -5,7 +5,9 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import re
 import sys
+import unicodedata
 import urllib.error
 import urllib.request
 import uuid
@@ -15,6 +17,41 @@ ROOT = Path(__file__).resolve().parents[2]
 POLICY_PATH = ROOT / ".github" / "repere-agent" / "POLICY.md"
 SCHEMA_PATH = ROOT / ".github" / "repere-agent" / "task-schema.json"
 MAX_TASK_CHARS = 4000
+
+# Verrou conservateur indépendant de la classification du modèle.
+HUMAN_REVIEW_TERMS = (
+    "merge", "merger", "fusion", "fusionner", "deploiement", "deployer",
+    "publication", "publier", "production", "secret", "cle api", "api key",
+    "compte", "email", "traceur", "tracking", "donnee personnelle",
+    "neutralite", "monetisation", "abonnement", "licence", "source",
+    "calcul", "collecte", "pipeline", "workflow", "dependance", "package",
+    "suppression", "supprimer", "effacer", "confidentialite", "invariant",
+    "gouvernance", "authentification", "permission", "acces", "paiement",
+    "facturation", "prix", "vote", "scrutin", "parti", "elu", "opinion",
+    "biais", "donnee",
+)
+
+
+def normalize_for_gate(value: str) -> str:
+    decomposed = unicodedata.normalize("NFKD", value)
+    return "".join(ch for ch in decomposed if not unicodedata.combining(ch)).lower()
+
+
+def requires_human_review(task: str, plan: dict) -> bool:
+    fields = [task]
+    for key in ("title", "objective", "rationale"):
+        value = plan.get(key, "")
+        if isinstance(value, str):
+            fields.append(value)
+    for key in ("allowed_paths", "acceptance_criteria"):
+        values = plan.get(key, [])
+        if isinstance(values, list):
+            fields.extend(value for value in values if isinstance(value, str))
+    text = normalize_for_gate("\n".join(fields))
+    return any(
+        re.search(r"\b" + re.escape(term) + r"\b", text)
+        for term in HUMAN_REVIEW_TERMS
+    )
 
 
 def extract_output_text(response: dict) -> str:
@@ -114,6 +151,13 @@ def main() -> int:
         plan = call_openai(task, model, api_key, policy, schema)
         if not isinstance(plan, dict):
             raise ValueError("Le plan retourné n'est pas un objet JSON.")
+        if requires_human_review(task, plan):
+            plan["risk"] = "orange"
+            plan["rationale"] = (
+                "Blocage déterministe : la demande ou le plan touche un sujet sensible ; "
+                "validation humaine obligatoire avant exécution. "
+                + str(plan.get("rationale", ""))
+            )
         Path(args.output).write_text(json.dumps(plan, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
         risk = plan.get("risk", "orange")
