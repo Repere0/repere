@@ -35,14 +35,19 @@ class PolicyCheckTests(unittest.TestCase):
             allowed_prefixes=("mono/apps/mobile/src/app/",),
         ))
 
-    def test_blocks_cost_over_limit_and_excess_turns(self):
+    def test_blocks_cost_over_limit_non_finite_and_excess_turns(self):
         self.assertTrue(validate_plan(plan(estimated_cost_usd=0.76)))
+        self.assertTrue(validate_plan(plan(estimated_cost_usd=float("nan"))))
+        self.assertTrue(validate_plan(plan(estimated_cost_usd=float("inf"))))
+        self.assertTrue(validate_plan(plan(estimated_cost_usd=True)))
         self.assertTrue(validate_plan(plan(max_turns=4)))
 
     def test_blocks_deletions_and_protected_config(self):
         self.assertTrue(validate_paths(["mono/apps/mobile/src/app/index.tsx"], ["mono/apps/mobile/src/app/old.tsx"]))
         self.assertTrue(validate_paths(["CLAUDE.md"]))
         self.assertTrue(validate_paths(["mono/apps/mobile/package.json"]))
+        self.assertTrue(validate_paths(["mono/apps/mobile/src/app/../../../../.github/workflows/x.yml"]))
+        self.assertTrue(validate_paths(["mono/apps/mobile/src/app\\\\..\\\\..\\\\secret.env"]))
 
     def test_rejects_extra_fields(self):
         self.assertTrue(validate_plan(plan(unreviewed_action=True)))
