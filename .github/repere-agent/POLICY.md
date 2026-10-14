@@ -9,7 +9,8 @@ Cette politique est une barrière de sécurité, pas une simple consigne destin�
 - Seules les tâches classées `green` peuvent être exécutées.
 - Zone de modification autorisée : `mono/apps/mobile/`.
 - Le résultat reste une branche et une pull request ; aucune fusion automatique.
-- Plafond local : 0,75 USD estimé par tâche, 3 tours maximum côté Claude.
+- Maximum de 3 tours côté Claude et durée totale du workflow de 25 minutes.
+- Le coût déclaré par le modèle est une estimation non fiable, pas un plafond de facturation. Toute limite financière doit être configurée chez le fournisseur si disponible, et les coûts réels doivent être suivis.
 - Toute erreur, sortie invalide, dépassement de limite ou doute arrête le cycle.
 
 ## Blocages absolus
