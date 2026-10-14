@@ -13,7 +13,7 @@ Cette PR prépare la v1 ; elle **n'active pas** encore de workflow. Le dépôt p
 5. Si le plan n'est pas green ou échoue aux contrôles, le workflow ouvre une issue de décision et n'exécute pas Claude.
 6. Aucune fusion, publication, modification de la collecte ou de la configuration de sécurité n'est autorisée.
 
-La v1 ne reprend pas automatiquement après un commentaire d'approbation. Le porteur examine la demande sur téléphone, puis relance manuellement un nouveau cycle avec une tâche explicitement limitée. La reprise automatique ne sera ajoutée qu'après avoir testé l'identité de l'approbateur, l'expiration et l'usage unique d'une décision.
+La v1 ne reprend pas automatiquement après un commentaire d'approbation. Le porteur examine la demande sur téléphone, puis relance manuellement un nouveau cycle avec une tâche explicitement limitée. Les choix affichés dans l'issue sont des instructions, pas des boutons cliquables ; l'issue n'autorise jamais à elle seule l'exécution. La reprise automatique ne sera ajoutée qu'après avoir testé l'identité de l'approbateur, l'expiration et l'usage unique d'une décision.
 
 ## Installation après revue de cette PR
 
