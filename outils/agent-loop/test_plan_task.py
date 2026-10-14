@@ -19,8 +19,8 @@ class HumanReviewGateTests(unittest.TestCase):
         task = "Améliorer la présentation d'un écran"
         plan = {
             "title": "Amélioration",
-            "objective": "Modifier le rendu",
-            "rationale": "Le calcul des données doit rester exact",
+            "objective": "Vérifier le calcul des données affichées",
+            "rationale": "Changement local",
             "allowed_paths": ["mono/apps/mobile/src/app/"],
             "acceptance_criteria": ["Le rendu est corrigé"],
         }
