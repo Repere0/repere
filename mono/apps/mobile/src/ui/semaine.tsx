@@ -131,6 +131,11 @@ export function SemaineParlement({ sp, lu, nom }: { sp: Semaine | null | undefin
           </View>
         ))}
       </View>
+      {/* La legende de la frise (14/10/2026) : les marques « – » et « ? » n'etaient
+          expliquees qu'au lecteur d'ecran. Memes mots que libelleJour. */}
+      <Text testID="semaine-legende" style={TYPO.micro}>
+        {"● séance publique · – aucune séance annoncée · ? agenda pas encore publié"}
+      </Text>
 
       {/* Deux votes a la meme seance : la date et l'institution une seule fois
           (vu sur capture : « mardi 13 octobre 2026, 15 h » ecrit deux fois). */}
