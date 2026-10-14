@@ -18,15 +18,16 @@ La v1 ne reprend pas automatiquement après un commentaire d'approbation. Le por
 ## Installation après revue de cette PR
 
 1. Vérifier que le dépôt est toujours public ou privé comme prévu et que GitHub Actions est autorisé.
-2. Ajouter le secret de dépôt `OPENAI_API_KEY`.
-3. Ajouter le secret de dépôt `ANTHROPIC_API_KEY`.
-4. Ajouter la variable de dépôt `OPENAI_MODEL` avec un identifiant de modèle disponible sur le compte API. Le modèle n'est pas codé en dur.
-5. Vérifier que le dépôt autorise GitHub Actions et que les permissions de jeton décrites dans le workflow sont disponibles.
-6. Depuis GitHub sur ordinateur, copier `docs/agent-loop/agent-cycle.yml.example` vers `.github/workflows/agent-cycle.yml`. Cette étape est volontairement manuelle pour respecter la règle du dépôt.
-7. Vérifier que le workflow ne reçoit que les permissions déclarées dans le modèle et qu'aucun secret de production n'est ajouté.
-8. Lancer d'abord une demande de lecture/analyse ou une petite correction mobile réversible.
-9. Activer les notifications push GitHub Mobile pour les mentions et les issues assignées (leur affichage dépend des réglages du téléphone).
-10. Vérifier la PR, les contrôles mobiles et les coûts réels avant de relancer.
+2. Installer l'application GitHub officielle Claude sur le dépôt : https://github.com/apps/claude. Le workflow utilise son jeton de courte durée pour créer la branche/PR et permettre aux contrôles PR de se déclencher.
+3. Ajouter le secret de dépôt `OPENAI_API_KEY`.
+4. Ajouter le secret de dépôt `ANTHROPIC_API_KEY`.
+5. Ajouter la variable de dépôt `OPENAI_MODEL` avec un identifiant de modèle disponible sur le compte API. Le modèle n'est pas codé en dur.
+6. Vérifier que le dépôt autorise GitHub Actions et les permissions minimales déclarées dans le workflow.
+7. Depuis GitHub sur ordinateur, copier `docs/agent-loop/agent-cycle.yml.example` vers `.github/workflows/agent-cycle.yml`. Cette étape est volontairement manuelle pour respecter la règle du dépôt.
+8. Vérifier que le workflow ne reçoit que les permissions déclarées dans le modèle et qu'aucun secret de production n'est ajouté.
+9. Lancer d'abord une demande de lecture/analyse ou une petite correction mobile réversible.
+10. Activer les notifications push GitHub Mobile pour les mentions et les issues assignées (leur affichage dépend des réglages du téléphone).
+11. Vérifier la PR, les contrôles mobiles et les coûts réels avant de relancer.
 
 **Confidentialité :** les issues et PR d'un dépôt public sont publiques. Ne jamais saisir de secret, de donnée personnelle ni de contenu confidentiel dans la tâche. L'issue de décision ne reproduit pas le texte initial, mais le titre et le résumé du plan peuvent révéler une partie de la demande.
 
@@ -34,7 +35,7 @@ Ne pas réutiliser `NETLIFY_AUTH_TOKEN`, `NETLIFY_SITE_ID`, `COLLECTE_APP_KEY` n
 
 ## Coût et limites
 
-Le validateur limite le nombre de tours et le temps d'exécution, mais il ne peut pas garantir une facture maximale. Le coût estimé par le modèle est informatif ; les plafonds et alertes du fournisseur doivent être configurés séparément. Les appels OpenAI et Anthropic sont facturés séparément des abonnements ChatGPT et Claude.
+Claude Code est lancé avec un plafond CLI de 0,75 USD par cycle et au plus 3 tours ; cette protection doit être vérifiée sur la première exécution. Le planificateur OpenAI utilise une réponse plafonnée à 1 600 jetons de sortie, mais cela ne constitue pas un plafond monétaire strict. Le coût estimé par le modèle est informatif ; les plafonds et alertes du fournisseur doivent être configurés séparément. Les appels OpenAI et Anthropic sont facturés séparément des abonnements ChatGPT et Claude.
 
 ## Commandes de test
 
