@@ -51,7 +51,7 @@ Règles impératives :
 - Classifie rouge toute fusion, publication, dépense, suppression, modification de secrets ou changement d'invariant.
 - Pour être green, le périmètre doit rester dans mono/apps/mobile/ et la tâche doit être petite, réversible et testable.
 - Ne transforme pas une demande orange/rouge en green pour contourner la politique.
-- Indique les chemins précis, les critères d'acceptation, une estimation de coût prudente et au plus 3 tours Claude.
+- Indique des préfixes de répertoires précis terminés par /, jamais la racine mono/apps/mobile/ ; ajoute les critères d’acceptation, une estimation de coût prudente et au plus 3 tours Claude.
 - Si la demande est vague ou si tu ne peux pas prouver qu'elle est green, classe-la orange.
 - Les champs et types doivent correspondre exactement au schéma fourni.
 """
