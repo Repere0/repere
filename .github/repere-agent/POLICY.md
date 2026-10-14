@@ -7,7 +7,7 @@ Cette politique est une barrière de sécurité, pas une simple consigne destin�
 - Déclenchement manuel uniquement.
 - Une seule tâche par exécution ; aucune boucle infinie ni relance automatique.
 - Seules les tâches classées `green` peuvent être exécutées.
-- Zone de modification autorisée : `mono/apps/mobile/`.
+- Zone de modification autorisée : des préfixes de répertoires étroits sous `mono/apps/mobile/` (jamais la racine seule), déclarés dans le plan puis vérifiés contre le diff réel.
 - Le résultat reste une branche et une pull request ; aucune fusion automatique.
 - Maximum de 3 tours côté Claude et durée totale du workflow de 25 minutes.
 - Le coût déclaré par le modèle est une estimation non fiable, pas un plafond de facturation. Toute limite financière doit être configurée chez le fournisseur si disponible, et les coûts réels doivent être suivis.
