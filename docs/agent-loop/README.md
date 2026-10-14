@@ -8,7 +8,7 @@ Cette PR prépare la v1 ; elle **n'active pas** encore de workflow. Le dépôt p
 
 1. Lancement manuel dans GitHub Actions, depuis un téléphone ou un navigateur.
 2. OpenAI transforme la demande en plan JSON structuré.
-3. Le validateur n'accepte que le niveau `green`, un coût estimé inférieur ou égal à 0,75 USD et au plus 3 tours. Le coût est une estimation fournie par le modèle, **pas une limite de facturation réelle**.
+3. Un verrou déterministe force la revue humaine pour les demandes/plans mentionnant les sujets sensibles (neutralité, vote, sources, calculs, données, confidentialité, collecte, dépendances, déploiement, etc.), indépendamment du classement OpenAI. Le validateur n'accepte ensuite que le niveau `green`, un coût estimé inférieur ou égal à 0,75 USD et au plus 3 tours. Le coût estimé par OpenAI n'est pas un plafond de facture.
 4. Claude Code reçoit une tâche limitée à `mono/apps/mobile/`, travaille dans une branche dédiée et propose une PR.
 5. Si le plan n'est pas green ou échoue aux contrôles, le workflow ouvre une issue de décision et n'exécute pas Claude.
 6. Aucune fusion, publication, modification de la collecte ou de la configuration de sécurité n'est autorisée.
