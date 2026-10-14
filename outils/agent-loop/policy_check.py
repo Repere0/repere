@@ -48,7 +48,9 @@ def validate_plan(plan: Any) -> list[str]:
         errors.append("Le plan doit nommer au moins un chemin autorisé.")
     else:
         for path in paths:
-            if not isinstance(path, str) or not path.startswith(ALLOWED_PREFIXES):
+            if not isinstance(path, str):
+                errors.append(f"Chemin planifié invalide : {path!r}")
+            elif "\\" in path or ".." in PurePosixPath(path).parts or not path.startswith(ALLOWED_PREFIXES):
                 errors.append(f"Chemin planifié hors périmètre : {path!r}")
     criteria = plan.get("acceptance_criteria")
     if not isinstance(criteria, list) or not criteria or any(not isinstance(c, str) or len(c.strip()) < 5 for c in criteria):
@@ -74,21 +76,21 @@ def validate_paths(paths: list[str], deleted: list[str] | None = None) -> list[s
             errors.append(f"Zone protégée : {path}")
         elif path.endswith(FORBIDDEN_SUFFIXES) or "/.env" in path:
             errors.append(f"Fichier potentiellement secret : {path}")
-        elif not path.startswith(ALLOWED_PREFIXES):
+        elif "\\" in raw or ".." in PurePosixPath(raw).parts or not path.startswith(ALLOWED_PREFIXES):
             errors.append(f"Chemin hors liste blanche : {path}")
     for path in deleted or []:
         errors.append(f"La suppression de fichier est interdite en v1 : {path}")
     return errors
 
 
-def changed_paths(base: str) -> tuple[list[str], list[str]]:
+def changed_paths(base: str, head: str) -> tuple[list[str], list[str]]:
     # On utilise uniquement des références git fixes ; aucun argument de shell.
     diff = subprocess.run(
-        ["git", "diff", "--name-only", "--diff-filter=ACMRT", f"origin/{base}...HEAD"],
+        ["git", "diff", "--no-renames", "--name-only", "--diff-filter=ACMRT", f"origin/{base}...{head}"],
         check=True, capture_output=True, text=True,
     )
     deleted = subprocess.run(
-        ["git", "diff", "--name-only", "--diff-filter=D", f"origin/{base}...HEAD"],
+        ["git", "diff", "--no-renames", "--name-only", "--diff-filter=D", f"origin/{base}...{head}"],
         check=True, capture_output=True, text=True,
     )
     return [p for p in diff.stdout.splitlines() if p], [p for p in deleted.stdout.splitlines() if p]
@@ -101,6 +103,7 @@ def main() -> int:
     plan_parser.add_argument("file")
     paths_parser = sub.add_parser("diff", help="valider les chemins modifiés par rapport à origin/main")
     paths_parser.add_argument("--base", default="main")
+    paths_parser.add_argument("--head", default="HEAD")
     args = parser.parse_args()
 
     if args.command == "plan":
@@ -113,7 +116,7 @@ def main() -> int:
         errors = validate_plan(plan)
     else:
         try:
-            paths, deleted = changed_paths(args.base)
+            paths, deleted = changed_paths(args.base, args.head)
         except subprocess.CalledProcessError as exc:
             print(f"Impossible de lire le diff Git : {exc.stderr}", file=sys.stderr)
             return 2
