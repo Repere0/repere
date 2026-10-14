@@ -63,7 +63,7 @@ def validate_plan(plan: Any) -> list[str]:
         errors.append("Critères d'acceptation absents ou invalides.")
     cost = plan.get("estimated_cost_usd")
     if isinstance(cost, bool) or not isinstance(cost, (int, float)) or cost < 0 or cost > MAX_ESTIMATED_COST_USD:
-        errors.append(f"Coût estimé invalide ou supérieur au plafond de {MAX_ESTIMATED_COST_USD:.2f} USD.")
+        errors.append(f"Estimation déclarée invalide ou supérieure au seuil de {MAX_ESTIMATED_COST_USD:.2f} USD ; ce seuil ne plafonne pas la facture réelle.")
     turns = plan.get("max_turns")
     if isinstance(turns, bool) or not isinstance(turns, int) or not 1 <= turns <= MAX_TURNS:
         errors.append(f"max_turns doit être compris entre 1 et {MAX_TURNS}.")
