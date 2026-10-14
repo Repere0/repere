@@ -25,7 +25,8 @@ La v1 ne reprend pas automatiquement après un commentaire d'approbation. Le por
 6. Depuis GitHub sur ordinateur, copier `docs/agent-loop/agent-cycle.yml.example` vers `.github/workflows/agent-cycle.yml`. Cette étape est volontairement manuelle pour respecter la règle du dépôt.
 7. Vérifier que le workflow ne reçoit que les permissions déclarées dans le modèle et qu'aucun secret de production n'est ajouté.
 8. Lancer d'abord une demande de lecture/analyse ou une petite correction mobile réversible.
-9. Vérifier la PR, les contrôles mobiles et les coûts réels avant de relancer.
+9. Activer les notifications push GitHub Mobile pour les mentions et les issues assignées (leur affichage dépend des réglages du téléphone).
+10. Vérifier la PR, les contrôles mobiles et les coûts réels avant de relancer.
 
 **Confidentialité :** les issues et PR d'un dépôt public sont publiques. Ne jamais saisir de secret, de donnée personnelle ni de contenu confidentiel dans la tâche. L'issue de décision ne reproduit pas le texte initial, mais le titre et le résumé du plan peuvent révéler une partie de la demande.
 
