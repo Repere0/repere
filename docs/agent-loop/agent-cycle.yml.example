@@ -29,6 +29,8 @@ jobs:
     steps:
       - name: Récupérer le dépôt
         uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
 
       - name: Installer Python
         uses: actions/setup-python@v6
@@ -72,13 +74,14 @@ jobs:
 
       - name: Exécuter avec Claude Code
         if: steps.plan.outputs.risk == 'green' && steps.guard.outcome == 'success'
-        uses: anthropics/claude-code-action@v1
+        id: claude
+        uses: anthropics/claude-code-action@6c690188da61cf16ee7debb28383ba67f02abb4c
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
           prompt: ${{ steps.plan.outputs.claude_prompt }}
           base_branch: main
           branch_prefix: "repere-agent/"
-          branch_name_template: "{{prefix}}${{ github.run_id }}"
+          branch_name_template: "{{prefix}}{{timestamp}}"
           claude_args: |
             --max-turns 3
             --allowedTools "Read,Edit,Write,Bash(npm ci),Bash(npm run verifier),Bash(pnpm test),Bash(npx tsc --noEmit)"
@@ -88,7 +91,7 @@ jobs:
         id: diff_guard
         if: steps.claude.outcome == 'success'
         env:
-          AGENT_BRANCH: repere-agent/${{ github.run_id }}
+          AGENT_BRANCH: ${{ steps.claude.outputs.branch_name }}
         run: |
           git fetch origin "$AGENT_BRANCH"
           python outils/agent-loop/policy_check.py diff --base main --head FETCH_HEAD --plan "$RUNNER_TEMP/repere-plan.json"
@@ -97,7 +100,7 @@ jobs:
         if: failure() && steps.claude.outcome == 'success' && steps.diff_guard.outcome == 'failure'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          AGENT_BRANCH: repere-agent/${{ github.run_id }}
+          AGENT_BRANCH: ${{ steps.claude.outputs.branch_name }}
         run: |
           URL=$(gh pr list --repo "$GITHUB_REPOSITORY" --state open --head "$AGENT_BRANCH" --json url --jq '.[0].url')
           if [ -n "$URL" ] && [ "$URL" != "null" ]; then
