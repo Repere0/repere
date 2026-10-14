@@ -22,7 +22,7 @@ La boucle ne doit jamais modifier ou exécuter une action qui :
 - modifie les invariants, `CLAUDE.md`, `AGENTS.md`, les skills, les règles de l'orchestrateur ou un workflow GitHub ;
 - modifie les données éditoriales validées, les sources, les licences ou la méthode de calcul ;
 - change la neutralité, les règles de gouvernance, le modèle de monétisation ou les engagements de confidentialité ;
-- supprime un fichier ou ajoute une dépendance.
+- supprime ou ajoute un fichier, ou ajoute une dépendance.
 
 Ces actions exigent une décision explicite du porteur et une PR séparée. La v1 ne possède volontairement aucun outil capable de les exécuter.
 
