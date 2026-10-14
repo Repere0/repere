@@ -10,7 +10,7 @@ Cette politique est une barrière de sécurité, pas une simple consigne destin�
 - Zone de modification autorisée : des préfixes de répertoires étroits sous `mono/apps/mobile/` (jamais la racine seule), déclarés dans le plan puis vérifiés contre le diff réel.
 - Le résultat reste une branche et une pull request ; aucune fusion automatique.
 - Maximum de 3 tours côté Claude et durée totale du workflow de 25 minutes.
-- Le coût déclaré par le modèle est une estimation non fiable, pas un plafond de facturation. Toute limite financière doit être configurée chez le fournisseur si disponible, et les coûts réels doivent être suivis.
+- Claude est lancé avec `--max-budget-usd 0.75` par cycle et au plus 3 tours. Le coût déclaré par le modèle reste une estimation non fiable ; le plafond CLI doit être vérifié lors du premier essai. Le planificateur OpenAI est limité à 1 600 jetons de sortie, sans plafond monétaire strict. Suivre les coûts réels et configurer les alertes fournisseur.
 - Toute erreur, sortie invalide, dépassement de limite ou doute arrête le cycle.
 
 ## Blocages absolus
