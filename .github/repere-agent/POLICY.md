@@ -24,7 +24,7 @@ La boucle ne doit jamais modifier ou exécuter une action qui :
 - change la neutralité, les règles de gouvernance, le modèle de monétisation ou les engagements de confidentialité ;
 - supprime ou ajoute un fichier, ou ajoute une dépendance.
 
-Ces actions exigent une décision explicite du porteur et une PR séparée. La v1 ne possède volontairement aucun outil capable de les exécuter.
+Ces actions exigent une décision explicite du porteur et une PR séparée. La v1 ne contient aucune étape de fusion ou de déploiement ; le contrôle du diff rejette les modifications hors périmètre avant de considérer le cycle comme valide. Il s'agit d'un garde-fou après exécution, pas d'une sandbox parfaite : toute PR reste à relire.
 
 ## Invariants Repère
 
