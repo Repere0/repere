@@ -25,6 +25,8 @@ HUMAN_REVIEW_TERMS = (
     "compte", "email", "traceur", "tracking", "donnee personnelle",
     "neutralite", "monetisation", "modele economique", "financement", "sponsor",
     "publicite", "abonnement", "licence", "source", "calcul", "architecture",
+    "refonte", "nouvelle fonctionnalite", "strategie", "decision produit", "ux globale",
+    "juridique", "contrat", "conditions",
     "collecte", "pipeline", "workflow", "dependance", "package", "api", "rgpd",
     "suppression", "supprimer", "effacer", "confidentialite", "invariant",
     "gouvernance", "authentification", "permission", "acces", "paiement",
