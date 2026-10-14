@@ -37,6 +37,11 @@ jobs:
         with:
           python-version: "3.12"
 
+      - name: Tester les garde-fous avant tout appel payant
+        run: |
+          python -m py_compile outils/agent-loop/plan_task.py outils/agent-loop/policy_check.py
+          python -m unittest discover -s outils/agent-loop -v
+
       - name: Planifier avec OpenAI
         id: plan
         env:
