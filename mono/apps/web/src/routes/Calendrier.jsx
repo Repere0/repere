@@ -192,7 +192,7 @@ export default function Calendrier() {
   if (enAttente.length === 0 && valides.length === 0) {
     return (
       <div className="pile">
-        <Vide titre="Le calendrier n'est arrivé jusqu'à cet appareil pour aucune institution."
+        <Vide titre="Le calendrier n'a pas pu être chargé."
           corps="Les autres écrans, eux, sont complets."
           lien={{ texte: "Agenda du Sénat", url: INSTITUTIONS[0].urlRepli }} />
         <ScrutinsRecents />

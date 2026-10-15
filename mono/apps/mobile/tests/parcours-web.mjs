@@ -232,7 +232,7 @@ for (const largeur of [360, 390, 430]) {
           `${largeur}px · semaine : un relevé ancien le dit ${JSON.stringify(vieux)}`);
       }
     } else {
-      verifier(/n'est arrivé jusqu'à cet appareil pour aucune institution/.test(vu.texte),
+      verifier(/n'a pas pu être chargé/.test(vu.texte),
         `${largeur}px · semaine : sans calendrier servi, la phrase d'absence (jamais une semaine vide)`);
     }
   }
@@ -490,7 +490,7 @@ async function ouvrirSemaine({ agenda, senatCoupe, fuseau }) {
   verifier(vu && /à l'heure de Paris/.test(vu.texte), "semaine (cas fabriqué) : réglé hors de Paris, le téléphone dit que les heures sont celles de Paris");
   verifier(vu && !vu.deborde, "semaine (cas fabriqué) : aucun débordement horizontal");
   const coupe = await ouvrirSemaine({ agenda: null, senatCoupe: true });
-  verifier(coupe && /Le calendrier n'est arrivé jusqu'à cet appareil pour aucune institution/.test(coupe.texte) && coupe.jours.length === 0,
+  verifier(coupe && /Le calendrier n'a pas pu être chargé/.test(coupe.texte) && coupe.jours.length === 0,
     "semaine (cas fabriqué) : les deux calendriers coupés, une phrase vraie, aucune semaine prétendue");
   const paris = await ouvrirSemaine({ agenda, senatCoupe: true, fuseau: "Europe/Paris" });
   verifier(paris && !/à l'heure de Paris/.test(paris.texte), "semaine (cas fabriqué) : à Paris, la précision d'heure n'encombre pas la carte");
