@@ -327,7 +327,9 @@ export default function Scrutins() {
                   usage: "Repère reprend les informations publiées par l'Assemblée nationale pour cette Question au Gouvernement.",
                 }} />
               </View>
-            ) : null}
+            ) : (
+              <Vide titre="Le contenu de cette question n'est pas disponible." corps="Repère n'affiche pas une question quand le relevé détaillé n'est pas disponible." />
+            )}
           </>
         )
       ) : (
@@ -402,7 +404,9 @@ export default function Scrutins() {
                   usage: "Repère reprend les positions individuelles publiées par l'Assemblée nationale pour ce scrutin. Les non-votants et les mises au point ne sont pas republies.",
                 }} />
               </View>
-            ) : null}
+            ) : (
+              <Vide titre="Le détail de ce scrutin n'est pas disponible." corps="Repère n'affiche pas une position quand le relevé détaillé n'est pas disponible." />
+            )}
           </>
         )
       )}

@@ -31,3 +31,9 @@ test("sans donnee hors chargement : une phrase vraie, pas un chargement", () => 
   assert.match(s, /Les questions au Gouvernement ne sont pas disponibles\./,
     "phrase d'absence introuvable");
 });
+
+test("question et scrutin : detail absent = une phrase, jamais une zone vide", () => {
+  assert.match(s, /Le contenu de cette question n'est pas disponible\./, "phrase du detail de question absente");
+  assert.match(s, /Le détail de ce scrutin n'est pas disponible\./, "phrase du detail de scrutin absente");
+  assert.doesNotMatch(s, /\) : null\}\s*\n\s*<\/>/, "une branche de detail se termine encore par « : null »");
+});
