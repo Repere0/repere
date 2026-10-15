@@ -263,7 +263,10 @@ export function chaineDecision({ fiche, paquet, index, deputes, elusRegion, dep 
       decide: COMPETENCES.region },
     { echelon: "france", niveau: "Assemblée nationale", institution: "Assemblée nationale",
       lieu: circos.length ? circos.map(c => `${c === 1 ? "1re" : c + "e"} circonscription`).join(", ") : null,
-      personne: dd.length && dd[0].d ? { nom: [dd[0].d.prenom, dd[0].d.nom].filter(Boolean).join(" "), role: "À l'Assemblée nationale pour votre circonscription" } : null,
+      /* 15/10/2026 : UN depute seulement. Une commune partagee entre plusieurs
+         circonscriptions n'en a pas un : le premier de la liste serait un choix
+         arbitraire. Le depute depend de l'adresse, que Repere ne demande pas. */
+      personne: dd.length === 1 && dd[0].d ? { nom: [dd[0].d.prenom, dd[0].d.nom].filter(Boolean).join(" "), role: "À l'Assemblée nationale pour votre circonscription" } : null,
       autresCircos: dd.length > 1 ? dd.length - 1 : 0,
       decide: COMPETENCES.france },
   ];

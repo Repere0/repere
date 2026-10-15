@@ -48,6 +48,13 @@ export default function QuiDecide() {
           const sans = sansConseilDepartemental(d.dep);
           return { ...n, note: sans ? `${sans.titre} ${sans.corps}` : "Le Répertoire national des élus ne porte pas de conseil départemental pour ce territoire." };
         }
+        if (n.echelon === "france" && d.nbCircos > 1) {
+          /* 15/10/2026 : une commune partagee entre plusieurs circonscriptions n'a pas UN
+             depute. La chaine ne nomme personne (le premier de la liste serait un choix
+             arbitraire) : le depute depend de l'adresse, et Repere ne la demande pas. */
+          return { ...n, personne: null, lieu: `${d.nbCircos} circonscriptions`, pied: undefined,
+            note: `${d.nomCommune} est partagée entre ${d.nbCircos} circonscriptions. Votre député dépend de votre adresse précise, que Repère ne demande pas : aucun député n'est nommé ici.` };
+        }
         if (n.echelon === "france") {
           return { ...n, note: n.autresCircos ? `${d.nomCommune} est partagée entre plusieurs circonscriptions : un seul député est nommé ici.` : undefined,
             pied: n.personne && r.votesLus ? (
