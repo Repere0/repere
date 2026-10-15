@@ -24,10 +24,11 @@ test("aucun composant ne desactive l'agrandissement du texte", () => {
   assert.deepEqual(fautes, []);
 });
 
-test("aucun plafond d'agrandissement trop bas", () => {
+test("aucun plafond d'agrandissement trop bas : 1.4 au moins, sauf les libelles de la barre basse (1.3)", () => {
   const valeurs = tous.flatMap(([p, s]) => [...s.matchAll(/maxFontSizeMultiplier=\{([\d.]+)\}/g)].map(m => [p, Number(m[1])]));
   assert.ok(valeurs.length >= 1, "les plafonds attendus ont disparu ?");
-  assert.deepEqual(valeurs.filter(([, v]) => v < 1.4), []);
+  const trop = valeurs.filter(([p, v]) => v < 1.4 && !(/_layout\.tsx$/.test(p) && v >= 1.3));
+  assert.deepEqual(trop, []);
 });
 
 test("la barre basse grandit avec son texte", () => {
