@@ -151,7 +151,7 @@ export default function ChezVous() {
                    pour 844). Le resultat et le decompte viennent EN TETE, jamais coupes ;
                    l'intitule suit, non reecrit, et peut etre coupe : le texte entier est
                    sur « Comprendre ce vote », a un geste. */
-                : <Text style={TYPO.note} numberOfLines={2}>{typo(`${vote.sc.s.charAt(0).toUpperCase()}${vote.sc.s.slice(1)}, ${decompte(vote.sc.dec)} : ${titreLisible(vote.sc.t)}`)}</Text>}
+                : <Text style={TYPO.note}>{typo(`${vote.sc.s.charAt(0).toUpperCase()}${vote.sc.s.slice(1)}, ${decompte(vote.sc.dec)} : ${titreLisible(vote.sc.t)}`)}</Text>}
               sources={<PastilleSource court source={srcVote(d, vote.sc)} />}
               partage={{
                 titre: `Un vote concernant ${nom}`,
