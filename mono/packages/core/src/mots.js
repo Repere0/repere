@@ -57,3 +57,41 @@ export const GLOSSAIRE = {
 export function definition(cle) {
   return GLOSSAIRE[cle] || null;
 }
+
+/* LES MOTS D'UN TEXTE QUI ONT UNE DEFINITION (15/10/2026). Renvoie le texte coupe en
+ * morceaux : { t } pour du texte, { t, cle } pour le premier emploi d'un mot du
+ * glossaire. Un seul lien par mot et par texte (sinon le texte est souligne partout) ;
+ * mot entier seulement (« circonscriptionnelle » ne compte pas), casse, accents et
+ * pluriel en « s » ignores. Un mot absent du glossaire n'a jamais de lien. */
+const sansAccent = c => c.normalize("NFD").replace(/\p{M}/gu, "").toLowerCase();
+export function termesDuTexte(texte) {
+  const src = String(texte || "");
+  if (!src) return [];
+  /* Forme normalisee caractere par caractere, avec la position d'origine de chacun :
+     la casse et les accents changent la longueur, pas le rang. */
+  const norm = []; const pos = [];
+  let i = 0;
+  for (const c of src) { const n = sansAccent(c); for (const k of n) { norm.push(k); pos.push(i); } i += c.length; }
+  const forme = norm.join("");
+  const trouves = [];
+  for (const cle of Object.keys(GLOSSAIRE)) {
+    /* chaque mot peut prendre un « s » : « adjoints au maires » et « scrutins solennels » */
+    const motif = sansAccent(cle).split(" ").map(w => w.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "s?").join(" ");
+    const re = new RegExp(`(^|[^a-z0-9])(${motif})(?=$|[^a-z0-9])`);
+    const m = re.exec(forme);
+    if (!m) continue;
+    trouves.push({ debut: m.index + m[1].length, fin: m.index + m[0].length, cle });
+  }
+  trouves.sort((a, b) => a.debut - b.debut);
+  const segments = []; let curseur = 0;
+  for (const x of trouves) {
+    if (x.debut < curseur) continue;
+    const debutOrig = pos[x.debut];
+    const finOrig = pos[x.fin - 1] + 1;
+    if (debutOrig > curseur) segments.push({ t: src.slice(curseur, debutOrig) });
+    segments.push({ t: src.slice(debutOrig, finOrig), cle: x.cle });
+    curseur = finOrig;
+  }
+  if (curseur < src.length) segments.push({ t: src.slice(curseur) });
+  return segments;
+}

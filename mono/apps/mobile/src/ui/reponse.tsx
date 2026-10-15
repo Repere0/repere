@@ -32,7 +32,7 @@ export const typo = (t: string) => t.replace(/ ([?!:;€»])/g, "\u00a0$1").repl
 export function Reponse({ phrase, preuve, note, sources, suite, partage }: {
   /* l'echelon qui decide : porte par la donnee, pas encore par le rendu
      (cartes blanches en palette B partiel) ; la PR « Chez vous » s'en servira. */
-  echelon: Echelon; phrase: string; preuve?: ReactNode; note?: ReactNode;
+  echelon: Echelon; phrase: string | ReactNode; preuve?: ReactNode; note?: ReactNode;
   sources?: ReactNode; suite?: { texte: string; onPress: () => void };
   partage?: { titre: string; texte: string; sourceUrl?: string | null };
 }) {
@@ -42,7 +42,7 @@ export function Reponse({ phrase, preuve, note, sources, suite, partage }: {
      sauter d'une reponse a l'autre. */
   return (
     <View testID="reponse" style={[s.carte, { backgroundColor: couleurs.carte }]}>
-      <Text style={s.phrase} accessibilityRole="header">{typo(phrase)}</Text>
+      <Text style={s.phrase} accessibilityRole="header">{typeof phrase === "string" ? typo(phrase) : phrase}</Text>
       {preuve}
       {note ? (typeof note === "string" ? <Text style={TYPO.note}>{typo(note)}</Text> : note) : null}
       <View style={s.pied}>

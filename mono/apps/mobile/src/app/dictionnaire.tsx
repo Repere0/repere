@@ -11,9 +11,9 @@
  * ETAT ACTUEL : la table ne compte que trois mots. Les vingt autres du canevas ne
  * sont pas publies : leurs definitions n'ont pas de source verifiee (cadrage du
  * 13/10). Ajouter un mot = ajouter une entree dans mots.js, rien d'autre a faire ici. */
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Pressable, Text, TextInput, View } from "react-native";
-import { Stack } from "expo-router";
+import { Stack, useLocalSearchParams } from "expo-router";
 import { GLOSSAIRE } from "@repere/core";
 import { couleurs, PAS, TYPO } from "../lib/theme";
 import { Page, Question } from "../ui/page";
@@ -25,6 +25,12 @@ type Entree = { cle: string; titre: string; corps: string; lettre: string };
 export default function Dictionnaire() {
   const [recherche, setRecherche] = useState("");
   const [lettre, setLettre] = useState<string | null>(null);
+  /* Un lien depuis un texte (« circonscription ») ouvre le dictionnaire sur ce mot. */
+  const { mot } = useLocalSearchParams<{ mot?: string }>();
+  useEffect(() => {
+    const entree = typeof mot === "string" ? (GLOSSAIRE as Record<string, { titre: string }>)[mot] : undefined;
+    if (entree) { setRecherche(entree.titre); setLettre(null); }
+  }, [mot]);
   const toutes = useMemo<Entree[]>(
     () => Object.entries(GLOSSAIRE as Record<string, { titre: string; corps: string }>)
       .map(([cle, m]) => ({ cle, titre: m.titre, corps: m.corps, lettre: normaliser(m.titre).charAt(0).toUpperCase() }))
