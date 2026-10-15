@@ -87,7 +87,8 @@ export function Repartition({ segments, total, position, qui, compact }: {
           <View key={x.cle} style={s.legende}>
             <View style={[s.pastilleCouleur, { backgroundColor: GRIS_VOTE[x.cle as keyof typeof GRIS_VOTE] }]} />
             <Text style={[TYPO.corps, { flex: 1 }]}>{x.libelle}</Text>
-            {position === x.cle && qui ? <Text style={s.marque} numberOfLines={1}>{qui}</Text> : null}
+            {/* 15/10/2026 : le nom du depute n'est plus tronque a 200 % : il passe a la ligne. */}
+            {position === x.cle && qui ? <Text style={s.marque}>{qui}</Text> : null}
             <Text style={[TYPO.corps, { fontWeight: "700", minWidth: 44, textAlign: "right" }]}>{x.nombre}</Text>
           </View>
         ))}
