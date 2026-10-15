@@ -24,11 +24,14 @@ test("aucun composant ne desactive l'agrandissement du texte", () => {
   assert.deepEqual(fautes, []);
 });
 
-test("aucun plafond d'agrandissement trop bas : 1.4 au moins, sauf les libelles de la barre basse (1.3)", () => {
-  const valeurs = tous.flatMap(([p, s]) => [...s.matchAll(/maxFontSizeMultiplier=\{([\d.]+)\}/g)].map(m => [p, Number(m[1])]));
-  assert.ok(valeurs.length >= 1, "les plafonds attendus ont disparu ?");
-  const trop = valeurs.filter(([p, v]) => v < 1.4 && !(/_layout\.tsx$/.test(p) && v >= 1.3));
-  assert.deepEqual(trop, []);
+test("aucun plafond d'agrandissement : le texte suit le reglage du telephone (consigne du 15/10/2026)", () => {
+  const plafonds = tous.filter(([, s]) => /maxFontSizeMultiplier/.test(s)).map(([p]) => p);
+  assert.deepEqual(plafonds, [], "un composant plafonne le texte agrandi");
+});
+
+test("l'intitule d'un scrutin n'est pas tronque a deux lignes : le texte entier reste lisible a 200 %", () => {
+  const chez = tous.find(([p]) => /\(onglets\)\/chez-vous\.tsx$/.test(p))[1];
+  assert.doesNotMatch(chez, /numberOfLines=\{\d+\}>\{typo\(`\$\{vote\.sc\.s/, "l'intitule de scrutin est tronque");
 });
 
 test("la barre basse grandit avec son texte", () => {

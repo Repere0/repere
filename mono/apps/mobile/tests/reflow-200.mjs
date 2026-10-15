@@ -5,8 +5,8 @@
  *   facteur : multiplie la taille de chaque texte (2 = « 200 % »)
  * Mesure : debordement horizontal, textes coupes (overflow cache ou numberOfLines).
  * Ne mesure PAS : l agrandissement natif iOS/Android (Dynamic Type, police systeme).
- * Le plafond maxFontSizeMultiplier n est pas applique sur le web : le script le
- * simule pour les libelles de la barre basse (1,3). Ecrit en Playwright (Chromium). */
+ * Aucun plafond : chaque texte, libelles de la barre basse compris, est multiplie par
+ * le facteur (consigne du 15/10/2026 : pas de plafond artificiel). Ecrit en Playwright (Chromium). */
 const require = createRequire(import.meta.url);
 const { chromium } = require("playwright");
 const [base, largeur = "320", facteur = "2"] = process.argv.slice(2);
@@ -18,7 +18,7 @@ const agrandir = () => p.evaluate(F => {
   const ONGLETS = ["Aujourd'hui","Chez vous","Calendrier"];
   const els = [...document.querySelectorAll("body *")].filter(e => [...e.childNodes].some(n => n.nodeType === 3 && n.textContent.trim()));
   const tailles = els.map(e => { const cs = getComputedStyle(e); return [e, parseFloat(cs.fontSize), parseFloat(cs.lineHeight)]; });
-  for (const [e, f, lh] of tailles) { const k = ONGLETS.includes(e.textContent.trim()) && f === 13 ? Math.min(F, 1.3) : F; e.style.setProperty("font-size", (f * k) + "px", "important"); if (lh > 0) e.style.setProperty("line-height", (lh * F) + "px", "important"); }
+  for (const [e, f, lh] of tailles) { e.style.setProperty("font-size", (f * F) + "px", "important"); if (lh > 0) e.style.setProperty("line-height", (lh * F) + "px", "important"); }
   return els.length;
 }, F);
 const mesurer = async nom => {

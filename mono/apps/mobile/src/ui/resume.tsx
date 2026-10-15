@@ -40,7 +40,7 @@ export function Resume({ phrase, chiffre, legende, enClair, children }: {
       <Text style={TYPO.reponse}>{phrase}</Text>
       {chiffre ? (
         <View accessible accessibilityLabel={`${chiffre}${legende ? ", " + legende : ""}`}>
-          <Text style={TYPO.chiffre} maxFontSizeMultiplier={1.4}>{chiffre}</Text>
+          <Text style={TYPO.chiffre}>{chiffre}</Text>
           {legende ? <Text style={TYPO.note}>{legende}</Text> : null}
         </View>
       ) : null}
