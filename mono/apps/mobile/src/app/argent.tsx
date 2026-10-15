@@ -25,6 +25,7 @@ import { useCommuneChoisie } from "../lib/useCommune";
 import { couleurs, PAS, TYPO } from "../lib/theme";
 import { AvecDonnees, Page, Question } from "../ui/page";
 import { PastilleSource } from "../ui/source";
+import { LienDefinition } from "../lib/termes";
 import { Emoji, Resume } from "../ui/resume";
 import { BarrePart, Compteur, DeuxAnnees, Depli, Financement, Mois } from "../ui/visuels";
 
@@ -123,6 +124,7 @@ export default function Argent() {
                     enClair={hab && hab.dette !== null ? `Soit ${hab.dette.toLocaleString("fr-FR")} € par habitant.` : null}>
                     <Mois mois={ch.detteMois} />
                     <Text style={TYPO.micro}>Une case = un mois de recettes de la commune.</Text>
+                    <LienDefinition cle="encours de dette" />
                   </Resume>
                   <PasCeQueCaDit r={rap(/mois de recettes/)} sujet="dette" />
                   <PastilleSource source={srcComptes(d)} />

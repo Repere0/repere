@@ -37,6 +37,21 @@ export function Termes({ texte, style = TYPO.note }: { texte: string; style?: St
   );
 }
 
+/* Un lien vers la definition d'un mot, sans reprendre la phrase : pour un libelle ou une
+   note ou le mot a sa place mais ne figure pas dans un texte a decouper. Meme ligne
+   tactile que Termes (CIBLE de haut). Un mot sans definition ne donne rien. */
+export function LienDefinition({ cle }: { cle: string }) {
+  const titre = (GLOSSAIRE as Record<string, { titre: string } | undefined>)[cle]?.titre;
+  if (!titre) return null;
+  return (
+    <Pressable accessibilityRole="link" accessibilityLabel={`Ce que veut dire ${titre}`}
+      onPress={() => router.push({ pathname: "/dictionnaire", params: { mot: cle } })}
+      style={({ pressed }) => [s.lien, pressed && { opacity: 0.6 }]}>
+      <Text style={s.lienTexte}>{`Ce que veut dire « ${titre} » ›`}</Text>
+    </Pressable>
+  );
+}
+
 const s = StyleSheet.create({
   lien: { minHeight: CIBLE, justifyContent: "center" },
   lienTexte: { fontSize: 15, fontWeight: "700", color: couleurs.lien },

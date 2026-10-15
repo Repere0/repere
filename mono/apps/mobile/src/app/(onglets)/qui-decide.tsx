@@ -6,11 +6,12 @@
  * du lecteur (COMPETENCES, @repere/core — les memes phrases que le site).
  * Un niveau sans personne nommee par la source garde sa place et le dit.
  * L'ordre est un ordre de distance, pas d'importance : c'est ecrit. */
-import { Pressable, Text } from "react-native";
+import { Pressable, Text, View } from "react-native";
 import { router, Stack } from "expo-router";
 import { chaineDecision, dateFr, MAIRE_ABSENT, nomIntercommunalite, phraseAdjoints, RNE_URL, LIBELLES } from "@repere/core";
 import { sansConseilDepartemental } from "@repere/core";
 import { Segments } from "../../lib/composants";
+import { LienDefinition } from "../../lib/termes";
 import { REGION_PAS_ARRIVEE } from "../../lib/absences";
 import { srcElus } from "../../lib/sources";
 import { CIBLE, couleurs, PAS, TYPO } from "../../lib/theme";
@@ -28,7 +29,7 @@ export default function QuiDecide() {
       const niveaux: Niveau[] = brut.map(n => {
         if (n.echelon === "ville") {
           return { ...n, pied: n.personne
-            ? <Text style={TYPO.note}><Segments s={phraseAdjoints(f.adjoints, f.maire.nom)} /></Text>
+            ? <View style={{ gap: PAS }}><Text style={TYPO.note}><Segments s={phraseAdjoints(f.adjoints, f.maire.nom)} /></Text><LienDefinition cle="adjoint au maire" /></View>
             : <Text style={TYPO.note}>{MAIRE_ABSENT.titre} {MAIRE_ABSENT.corps}</Text> };
         }
         if (n.echelon === "agglo") {
@@ -46,7 +47,7 @@ export default function QuiDecide() {
         if (n.echelon === "dept" && !n.personne) {
           /* 08/10/2026 : certains territoires n'ont REELLEMENT pas de conseil departemental */
           const sans = sansConseilDepartemental(d.dep);
-          return { ...n, note: sans ? `${sans.titre} ${sans.corps}` : "Le Répertoire national des élus ne porte pas de conseil départemental pour ce territoire." };
+          return { ...n, note: sans ? `${sans.titre} ${sans.corps}` : "Le Répertoire national des élus ne porte pas de conseil départemental pour ce territoire.", pied: <LienDefinition cle="conseil départemental" /> };
         }
         if (n.echelon === "france" && d.nbCircos > 1) {
           /* 15/10/2026 : une commune partagee entre plusieurs circonscriptions n'a pas UN
