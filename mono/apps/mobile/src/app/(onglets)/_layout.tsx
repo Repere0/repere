@@ -14,13 +14,12 @@ import { LIBELLES } from "@repere/core";
 import { couleurs } from "../../lib/theme";
 import { Retour } from "../../ui/retour";
 
-/* Le libelle d'onglet : il doit tenir dans sa case. A 200 % de texte, « Aujourd'hui »
-   etait tronque en « Aujo... » (mesure du 15/10/2026). Le libelle est plafonne a 130 %
-   (au-dela, « Aujourd'hui » ne tient plus dans sa case sur un ecran de 320 px)
-   et ne passe jamais sur deux lignes : c'est le seul plafond de l'application, et il
-   ne touche qu'aux trois noms de la barre basse (decision a confirmer par le porteur). */
+/* Le libelle d'onglet suit l'agrandissement natif du telephone, sans plafond et sans
+   troncature : a 200 %, un nom peut passer sur deux lignes et la barre grandit (minHeight).
+   Un mot unique plus large que sa case (« Aujourd'hui » a 200 %) ne se coupe pas : il
+   deborde de sa case. Limite constatee, a traiter par la mise en page, pas par un plafond. */
 const libelle = (texte: string) => ({ color }: { color: ColorValue }) => (
-  <Text numberOfLines={1} maxFontSizeMultiplier={1.3} style={{ color, fontSize: 13, fontWeight: "700" }}>{texte}</Text>
+  <Text style={{ color, fontSize: 13, fontWeight: "700", textAlign: "center" }}>{texte}</Text>
 );
 
 /* Une icone sobre par onglet : un caractere, sans bibliotheque d'icones de plus. */
