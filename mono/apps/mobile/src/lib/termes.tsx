@@ -1,23 +1,39 @@
-/* LES MOTS QUI ONT UNE DEFINITION, DANS UN TEXTE (15/10/2026).
+/* LES MOTS QUI ONT UNE DEFINITION, DANS UNE PHRASE (15/10/2026).
  *
- * Le premier emploi d'un mot du glossaire (@repere/core, mots.js) devient un lien
- * vers le dictionnaire, qui s'ouvre sur ce mot. Un seul lien par mot et par texte :
- * le reste du texte ne souligne rien. Le lien est un Text imbrique, donc il garde
- * la taille et le retour a la ligne du texte qui le contient. */
-import { Text } from "react-native";
+ * Le premier emploi d'un mot du glossaire (@repere/core, mots.js) ouvre sa
+ * definition dans le dictionnaire. Le lien n'est PAS souligne dans la phrase :
+ * il est une ligne tactile sous la phrase, « Ce que veut dire « … » › », d'au
+ * moins CIBLE (48) de haut. Un lien souligne de quelques lettres (23 px) ne tient
+ * pas le seuil de 44 px du parcours, et il est trop petit pour le doigt.
+ * La phrase reste un titre (header) pour le lecteur d'ecran. */
+import { Pressable, StyleSheet, Text, View } from "react-native";
 import { router } from "expo-router";
-import { termesDuTexte } from "@repere/core";
-import { couleurs } from "./theme";
-import { typo } from "../ui/reponse";
+import { GLOSSAIRE, termesDuTexte } from "@repere/core";
+import { couleurs, CIBLE, PAS } from "./theme";
+import { FRASE, typo } from "../ui/reponse";
 
 export function Termes({ texte }: { texte: string }) {
+  const morceaux = termesDuTexte(typo(texte));
+  /* Un seul lien par mot et par texte, dans l'ordre de la phrase. */
+  const cles = [...new Set(morceaux.flatMap(x => (x.cle ? [x.cle] : [])))];
   return (
-    <Text>
-      {termesDuTexte(typo(texte)).map((x, i) => x.cle ? (
-        <Text key={i} accessibilityRole="link"
-          onPress={() => router.push({ pathname: "/dictionnaire", params: { mot: x.cle } })}
-          style={{ color: couleurs.lien, textDecorationLine: "underline" }}>{x.t}</Text>
-      ) : <Text key={i}>{x.t}</Text>)}
-    </Text>
+    <View style={{ gap: PAS }}>
+      <Text style={FRASE} accessibilityRole="header">{morceaux.map(x => x.t).join("")}</Text>
+      {cles.map(cle => {
+        const titre = (GLOSSAIRE as Record<string, { titre: string }>)[cle].titre;
+        return (
+          <Pressable key={cle} accessibilityRole="link" accessibilityLabel={`Ce que veut dire ${titre}`}
+            onPress={() => router.push({ pathname: "/dictionnaire", params: { mot: cle } })}
+            style={({ pressed }) => [s.lien, pressed && { opacity: 0.6 }]}>
+            <Text style={s.lienTexte}>{`Ce que veut dire « ${titre} » ›`}</Text>
+          </Pressable>
+        );
+      })}
+    </View>
   );
 }
+
+const s = StyleSheet.create({
+  lien: { minHeight: CIBLE, justifyContent: "center" },
+  lienTexte: { fontSize: 15, fontWeight: "700", color: couleurs.lien },
+});
