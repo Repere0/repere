@@ -30,7 +30,7 @@ test("la barre basse a un onglet « Chez vous » qui ouvre l'ecran territoire", 
   const layout = lire("_layout.tsx");
   const onglet = bloc(layout, "territoire");
   assert.ok(onglet, "pas d'onglet territoire dans _layout.tsx");
-  assert.match(onglet, /tabBarLabel:\s*"Chez vous"/);
+  assert.match(onglet, /tabBarLabel:\s*(?:libelle\()?"Chez vous"/);
   assert.doesNotMatch(onglet, /href:\s*null/, "l'onglet Chez vous ne doit pas etre masque");
   assert.ok(lire("territoire.tsx").length > 0, "app/(onglets)/territoire.tsx absent");
 });
