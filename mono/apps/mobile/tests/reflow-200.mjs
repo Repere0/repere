@@ -7,6 +7,7 @@
  * Ne mesure PAS : l agrandissement natif iOS/Android (Dynamic Type, police systeme).
  * Aucun plafond : chaque texte, libelles de la barre basse compris, est multiplie par
  * le facteur (consigne du 15/10/2026 : pas de plafond artificiel). Ecrit en Playwright (Chromium). */
+import { createRequire } from "node:module";
 const require = createRequire(import.meta.url);
 const { chromium } = require("playwright");
 const [base, largeur = "320", facteur = "2"] = process.argv.slice(2);
