@@ -201,7 +201,7 @@ export default function AVenir() {
                   return (
                     <Pressable key={o.t} onPress={() => setInstitution(o.c)} accessibilityRole="tab"
                       accessibilityState={{ selected: actif }} accessibilityLabel={`Afficher : ${o.c ? o.c : "toutes les institutions"}`}
-                      style={{ flex: 1, minHeight: 40, borderRadius: 999, backgroundColor: actif ? couleurs.carte : "transparent", alignItems: "center", justifyContent: "center" }}>
+                      style={{ flex: 1, minHeight: CIBLE, borderRadius: 999, backgroundColor: actif ? couleurs.carte : "transparent", alignItems: "center", justifyContent: "center" }}>
                       <Text style={{ fontWeight: actif ? "800" : "600", color: couleurs.encre }}>{o.t}</Text>
                     </Pressable>
                   );
