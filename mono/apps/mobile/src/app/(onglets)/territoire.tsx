@@ -11,7 +11,7 @@
 import type { ReactNode } from "react";
 import { Text, View } from "react-native";
 import { Stack, router } from "expo-router";
-import { datePublication, dateFr, LIBELLES, ordinal } from "@repere/core";
+import { datePublication, dateFr, LIBELLES, nomIntercommunalite, ordinal } from "@repere/core";
 import { Vide } from "../../lib/composants";
 import { circoInconnue } from "../../lib/absences";
 import { srcElus } from "../../lib/sources";
@@ -39,7 +39,7 @@ export default function ChezVousTerritoire() {
       const fiche = d.fiche || {};
       const depIndex = r.index.departements.find((x: { code: string }) => x.code === d.dep);
       const publie = datePublication(r.index);
-      const agglo = fiche.agglo && fiche.agglo.nom ? fiche.agglo.nom : null;
+      const agglo = nomIntercommunalite(fiche.agglo && fiche.agglo.nom);
       const circos: number[] = Array.isArray(fiche.circo) ? fiche.circo : (fiche.circo == null ? [] : [fiche.circo]);
       const territoire = depIndex ? [depIndex.nom, depIndex.region].filter(Boolean).join(" · ") : null;
       return (

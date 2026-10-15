@@ -48,6 +48,24 @@ const norme = t => String(t || "").normalize("NFD").replace(/[\u0300-\u036f]/g, 
 export function estMetropoleGrandParis(agglo) {
   return /metropole du grand paris/.test(norme(agglo && agglo.nom));
 }
+/* LE NOM D'UNE INTERCOMMUNALITE, ECRIT COMME ON L'ECRIT (16/10/2026).
+   Le Repertoire national des elus publie des noms en majuscules ou remis en
+   casse sans soin : « Ca Du Pays De Meaux » (le sigle CA devient « Ca »). On
+   rend les sigles (CA, CC, CU, EPT), les petits mots (du, de, des, et…) en
+   minuscules hors du premier mot, et « Metropole » avec son accent. Rien
+   d'autre : un nom deja juste sort tel quel. */
+const SIGLES_INTERCO = { Ca: "CA", Cc: "CC", Cu: "CU", Ept: "EPT" };
+const PETITS_MOTS = new Set(["De", "Du", "Des", "Et", "En", "La", "Le", "Les", "Sur", "Au", "Aux"]);
+export function nomIntercommunalite(nom) {
+  if (typeof nom !== "string" || !nom.trim()) return null;
+  return nom.trim().split(/\s+/).map((m, i) => {
+    const cle = m.charAt(0).toUpperCase() + m.slice(1).toLowerCase();
+    if (i === 0 && SIGLES_INTERCO[cle]) return SIGLES_INTERCO[cle];
+    if (i > 0 && PETITS_MOTS.has(m)) return m.toLowerCase();
+    if (/^metropole$/i.test(m)) return "Métropole";
+    return m;
+  }).join(" ");
+}
 export function competencesIntercommunalite({ agglo, regionCode, dep }) {
   const idf = String(regionCode || "") === "11";
   const mgp = estMetropoleGrandParis(agglo);
