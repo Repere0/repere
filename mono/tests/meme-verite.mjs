@@ -62,7 +62,9 @@ function attendus({ dep, insee, attendu }) {
      courant (spike du 30/09/2026 : « exercice 2024 » -> « 2024 »), le FAIT
      compare reste le meme, sa forme ecrite differe. On le dit ici, fait par
      fait, au lieu d'assouplir la comparaison pour tous. */
-  const f = (nom, texte, texteApp) => faits.push({ nom, texte: net(texte), texteApp: texteApp ? net(texteApp) : null });
+  /* ecran : quand un fait n'est affiche que sur un ecran de l'application (« argent »),
+     on le cherche sur cet ecran seul, pas dans la somme des ecrans lus. */
+  const f = (nom, texte, texteApp, ecran) => faits.push({ nom, texte: net(texte), texteApp: texteApp ? net(texteApp) : null, ecran: ecran || null });
   f("maire", fiche.maire.nom);
   f("adjoints", texteDe(phraseAdjoints(fiche.adjoints, fiche.maire.nom)));
   f("source des élus (producteur, licence, date)", ligneSource(index.sources.elus));
@@ -80,7 +82,12 @@ function attendus({ dep, insee, attendu }) {
     const p = d.dernierProjet.p;
     f("projet (intitulé)", p.intitule);
     f("projet (montant)", euros(p.subvention));
-    f("projet (année dite « en », avec son intitulé)", phraseProjetLocal(p, d.nomCommune), "« " + p.intitule + " » : " + euros(p.subvention) + " engagés par l'État en " + p.annee);
+    /* 16/10/2026 : la phrase « L'État a engagé … à <commune> en <année> » est affichée sur
+       l'écran « Où va cet argent ? » (argent.tsx), plus sur l'accueil. Le test la cherche donc
+       sur cet écran, à la forme que le produit affiche. L'ancienne forme « « intitulé » : … »
+       (accueil de main) n'est plus affichée ici ; le retour de cette note sur l'accueil
+       relève d'une décision de produit, pas d'un réglage du test. */
+    f("projet (phrase « L'État a engagé … en année », écran Où va cet argent ?)", phraseProjetLocal(p, d.nomCommune), null, "argent");
     f("source des projets (date)", ligneSource({ producteur: d.srcProjets.producteur, licence: d.srcProjets.licence, maj: d.srcProjets.mis_a_jour_le }));
     if (d.dernierVote) f("projet (phrase)", phraseProjetLocal(p, d.nomCommune));
   }
@@ -170,6 +177,7 @@ async function texteApp(nav, { nom }) {
   /* « Qui décide » et « Calendrier » sont des onglets de la barre basse (13/10/2026), pas
      des boutons : on les touche par leur texte, comme le parcours navigateur. */
   const ONGLETS = { "Qui décide": "Qui décide", "Le calendrier": "Calendrier" };
+  let ecranArgent = "";
   for (const action of ["Où va cet argent ?", "Comprendre ce vote", "Qui décide", "Le calendrier", "Sources"]) {
     const b = ONGLETS[action]
       ? p.getByText(ONGLETS[action], { exact: true }).last()
@@ -178,6 +186,7 @@ async function texteApp(nav, { nom }) {
     await b.first().click();
     await p.waitForTimeout(900);
     const lu = await toutLire(p);
+    if (action === "Où va cet argent ?") ecranArgent = lu.t;
     t += "\n" + lu.t;
     feuilles += lu.n;
     /* Qui décide et Le calendrier sont des onglets (13/10/2026) : retour par la barre basse. */
@@ -187,7 +196,7 @@ async function texteApp(nav, { nom }) {
   }
   await c.close();
   verifier(feuilles >= 3, `${nom} : ${feuilles} feuilles de source ouvertes et lues dans l'application`);
-  return net(t);
+  return { tout: net(t), argent: net(ecranArgent) };
 }
 
 const nav = await chromium.launch();
@@ -195,9 +204,10 @@ let compares = 0;
 for (const commune of COMMUNES) {
   const { faits, garde } = attendus(commune);
   verifier(garde, `${commune.nom} : a toujours la particularité « ${commune.attendu} »`);
-  const [site, app] = await Promise.all([texteSite(nav, commune), texteApp(nav, commune)]);
-  for (const { nom, texte, texteApp } of faits) {
-    const s = site.includes(texte), a = app.includes(texteApp || texte);
+  const [site, rendu] = await Promise.all([texteSite(nav, commune), texteApp(nav, commune)]);
+  for (const { nom, texte, texteApp, ecran } of faits) {
+    const s = site.includes(texte);
+    const a = (ecran === "argent" ? rendu.argent : rendu.tout).includes(texteApp || texte);
     compares++;
     verifier(s && a, `${commune.nom} · ${nom} : ${s ? "site ✓" : "site ✗"} ${a ? "app ✓" : "app ✗"}${s && a ? "" : " — attendu « " + texte + " »" + (texteApp ? " / « " + texteApp + " »" : "")}`);
   }
