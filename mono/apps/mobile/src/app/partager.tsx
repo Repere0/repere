@@ -119,7 +119,7 @@ export default function Partager() {
             {/* CARTE 1 — L'ANNONCE (canevas « Partage ») */}
             <View ref={carte1} collapsable={false} accessible
               accessibilityLabel={`${nom} ${verbe} ${sujet}. Vote à l'Assemblée nationale, ${date}.`}
-              style={{ width: largeur, aspectRatio: 0.8, alignSelf: "center", backgroundColor: couleurs.sol,
+              style={{ width: largeur, minHeight: largeur * 1.25, alignSelf: "center", backgroundColor: couleurs.sol,
                 borderRadius: 18 * echelle, padding: 28 * echelle, justifyContent: "space-between" }}>
               <Logo />
               <View style={{ gap: 10 * echelle }}>
@@ -139,7 +139,7 @@ export default function Partager() {
             {/* CARTE 2 — L'EXPLICATION (canevas « Partage 2 ») */}
             <View ref={carte2} collapsable={false} accessible
               accessibilityLabel={`Comment ce texte avance. ${ou}`}
-              style={{ width: largeur, aspectRatio: 0.8, alignSelf: "center", backgroundColor: couleurs.sol,
+              style={{ width: largeur, minHeight: largeur * 1.25, alignSelf: "center", backgroundColor: couleurs.sol,
                 borderRadius: 18 * echelle, padding: 28 * echelle, justifyContent: "space-between" }}>
               <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
                 <Logo />
