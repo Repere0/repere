@@ -152,7 +152,7 @@ export default function AVenir() {
           <View style={{ flexDirection: "row", alignItems: "flex-end", justifyContent: "space-between", gap: PAS * 2 }}>
             <View style={{ flex: 1 }}>
               <Question etiquette="Au Parlement" question="Calendrier"
-                sous="Les séances annoncées à l'Assemblée nationale et au Sénat. Elles concernent tout le pays, pas seulement votre commune." />
+                sous="Les séances annoncées à l'Assemblée nationale et au Sénat. Elles concernent tout le pays, pas seulement votre commune. Les heures sont celles de Paris." />
             </View>
           </View>
           <Pressable onPress={() => setMois(m => !m)} accessibilityRole="button"
