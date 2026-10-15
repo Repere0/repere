@@ -20,6 +20,7 @@ import { AvecDonnees, Page, Question } from "../../ui/page";
 import { PastilleSource } from "../../ui/source";
 import { Etiquette } from "../../ui/resume";
 import { Plus } from "../../ui/reponse";
+import { Termes } from "../../lib/termes";
 
 /* Une rubrique : un titre court, puis la phrase, puis une note si besoin. */
 function Ligne({ titre, children }: { titre: string; children: ReactNode }) {
@@ -64,14 +65,14 @@ export default function ChezVousTerritoire() {
 
             {d.nbCircos > 1 ? (
               <Ligne titre="Circonscription législative">
-                <Text style={TYPO.reponse}>{`${nom} est partagée entre ${d.nbCircos} circonscriptions.`}</Text>
+                <Termes texte={`${nom} est partagée entre ${d.nbCircos} circonscriptions.`} style={TYPO.reponse} />
                 <Text style={TYPO.note}>
                   Votre député dépend de votre adresse précise, que Repère ne demande pas. Le vote affiché dans « {LIBELLES.aujourdhui} » n'est qu'un exemple.
                 </Text>
               </Ligne>
             ) : d.nbCircos === 1 && circos.length === 1 ? (
               <Ligne titre="Circonscription législative">
-                <Text style={TYPO.reponse}>{`${nom} est dans la ${ordinal(circos[0])} circonscription.`}</Text>
+                <Termes texte={`${nom} est dans la ${ordinal(circos[0])} circonscription.`} style={TYPO.reponse} />
                 <Text style={TYPO.note}>Une circonscription est une partie du territoire dont les électeurs élisent un député.</Text>
               </Ligne>
             ) : (
