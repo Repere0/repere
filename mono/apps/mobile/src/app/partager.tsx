@@ -81,7 +81,10 @@ export default function Partager() {
         );
       }
       const niveaux = chaineDecision({ fiche: d.fiche, paquet: r.paquet, index: r.index, deputes: r.deputes, elusRegion: r.elusRegion, dep: d.dep }) as { echelon: string; personne?: { nom: string } | null }[];
-      const nom = niveaux.find(n => n.echelon === "france")?.personne?.nom || "Votre député";
+      /* 15/10/2026 : le nom est celui de l'auteur du vote (vote.qui, lu dans le scrutin),
+         jamais « le premier depute de la liste » : une commune partagee entre plusieurs
+         circonscriptions n'a pas un depute, et la carte dit « Un depute de ... ». */
+      const nom = vote.qui || (d.nbCircos > 1 ? `Un député de ${d.nomCommune}` : niveaux.find(n => n.echelon === "france")?.personne?.nom || "Votre député");
       const verbe = VERBE[vote.position];
       const sujet = titreLisible(vote.sc.t);
       const date = dateFr(vote.sc.d);
@@ -125,10 +128,10 @@ export default function Partager() {
               </View>
               <View style={{ gap: 12 * echelle }}>
                 <Text style={{ color: couleurs.encre, fontWeight: "800", fontSize: 22 * echelle, lineHeight: 27 * echelle, letterSpacing: -0.3 }}>{sujet}</Text>
-                <Text style={{ color: couleurs.sourd, fontSize: 14 * echelle, lineHeight: 19 * echelle }}>Vote à l'Assemblée nationale, {date}.</Text>
+                <Text style={{ color: couleurs.sourd, fontSize: 16 * echelle, lineHeight: 21 * echelle }}>Vote à l'Assemblée nationale, {date}.</Text>
               </View>
               <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-end", gap: PAS * 2 }}>
-                <Text style={{ color: couleurs.sourd, fontSize: 12 * echelle, lineHeight: 16 * echelle, flex: 1 }}>Résumé Repère, à partir du scrutin publié. Le détail est dans l'application.</Text>
+                <Text style={{ color: couleurs.sourd, fontSize: 15 * echelle, lineHeight: 20 * echelle, flex: 1 }}>Résumé Repère, à partir du scrutin publié. Le détail est dans l'application.</Text>
                 <Text style={{ color: couleurs.encre, fontWeight: "800", fontSize: 18 * echelle }}>{d.nomCommune}</Text>
               </View>
             </View>
@@ -140,26 +143,26 @@ export default function Partager() {
                 borderRadius: 18 * echelle, padding: 28 * echelle, justifyContent: "space-between" }}>
               <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
                 <Logo />
-                <Text style={{ fontWeight: "700", fontSize: 12 * echelle, borderWidth: 2, borderColor: couleurs.encre, borderRadius: 999, paddingHorizontal: 10 * echelle, paddingVertical: 4 * echelle, color: couleurs.encre }}>Explication</Text>
+                <Text style={{ fontWeight: "700", fontSize: 15 * echelle, borderWidth: 2, borderColor: couleurs.encre, borderRadius: 999, paddingHorizontal: 10 * echelle, paddingVertical: 4 * echelle, color: couleurs.encre }}>Explication</Text>
               </View>
 
               <View style={{ gap: 8 * echelle }}>
                 <Text style={{ color: couleurs.encre, fontWeight: "800", fontSize: 26 * echelle, lineHeight: 29 * echelle, letterSpacing: -0.7 }}>{sujet}</Text>
-                <Text style={{ color: couleurs.sourd, fontSize: 13 * echelle, lineHeight: 18 * echelle }}>Où en est le texte, selon la procédure</Text>
+                <Text style={{ color: couleurs.sourd, fontSize: 15 * echelle, lineHeight: 20 * echelle }}>Où en est le texte, selon la procédure</Text>
               </View>
 
               {/* Le schema : le vote, la place du texte, la suite. Les liaisons sont des traits, comme sur le canevas. */}
               <View style={{ gap: 0 }}>
                 <View style={{ minHeight: 44 * echelle, borderWidth: 2, borderColor: couleurs.encre, borderRadius: 14 * echelle,
                   paddingHorizontal: 14 * echelle, justifyContent: "center" }}>
-                  <Text style={{ fontWeight: "800", fontSize: 14 * echelle, color: couleurs.encre }}>Vote à l'Assemblée nationale, {date}</Text>
+                  <Text style={{ fontWeight: "800", fontSize: 16 * echelle, color: couleurs.encre }}>Vote à l'Assemblée nationale, {date}</Text>
                 </View>
                 <View style={{ height: 22 * echelle, width: 2, backgroundColor: couleurs.encre, marginLeft: 22 * echelle }} />
                 <View style={{ borderRadius: 14 * echelle, backgroundColor: couleurs.encre, padding: 14 * echelle, gap: 6 * echelle }}>
-                  <Text style={{ fontWeight: "800", fontSize: 17 * echelle, lineHeight: 21 * echelle, color: couleurs.sol }}>
+                  <Text style={{ fontWeight: "800", fontSize: 19 * echelle, lineHeight: 23 * echelle, color: couleurs.sol }}>
                     {jalon ? jalon.titre : "Étape non précisée"}
                   </Text>
-                  <Text style={{ fontSize: 12 * echelle, lineHeight: 16 * echelle, color: couleurs.trait }}>
+                  <Text style={{ fontSize: 15 * echelle, lineHeight: 20 * echelle, color: couleurs.trait }}>
                     {jalon ? jalon.texte : "Le scrutin ne précise pas l'étape du texte : Repère ne la devine pas."}
                   </Text>
                 </View>
@@ -168,17 +171,17 @@ export default function Partager() {
                     <View style={{ height: 22 * echelle, width: 2, backgroundColor: couleurs.encre, marginLeft: 22 * echelle }} />
                     <View style={{ minHeight: 44 * echelle, borderWidth: 2, borderColor: couleurs.encre, borderRadius: 14 * echelle,
                       paddingHorizontal: 14 * echelle, justifyContent: "center" }}>
-                      <Text style={{ fontWeight: "800", fontSize: 14 * echelle, color: couleurs.encre }}>Suite : {suite.titre}</Text>
+                      <Text style={{ fontWeight: "800", fontSize: 16 * echelle, color: couleurs.encre }}>Suite : {suite.titre}</Text>
                     </View>
                   </>
                 ) : null}
               </View>
 
               <View style={{ gap: 6 * echelle }}>
-                <Text style={{ color: couleurs.sourd, fontSize: 12 * echelle, lineHeight: 16 * echelle }}>
+                <Text style={{ color: couleurs.sourd, fontSize: 15 * echelle, lineHeight: 20 * echelle }}>
                   Source : Assemblée nationale, scrutin n° {vote.sc.n}, {date}.
                 </Text>
-                <Text style={{ color: couleurs.sourd, fontSize: 12 * echelle, lineHeight: 16 * echelle }}>
+                <Text style={{ color: couleurs.sourd, fontSize: 15 * echelle, lineHeight: 20 * echelle }}>
                   Résumé Repère du {aujourdhui}. Le texte officiel fait foi.
                 </Text>
               </View>
