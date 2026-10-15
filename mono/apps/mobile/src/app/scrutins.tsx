@@ -165,6 +165,7 @@ export default function Scrutins() {
   const [mode, setMode] = useState<"votes" | "qag">(params.mode === "qag" ? "qag" : "votes");
   const [etat, setEtat] = useState(ETATS.EN_COURS);
   const [qagIndex, setQagIndex] = useState<QagIndex | null>(null);
+  const [qagEtat, setQagEtat] = useState(ETATS.EN_COURS);
   const [qagDetail, setQagDetail] = useState<Qag | null>(null);
   const [qagSelection, setQagSelection] = useState<string | null>(null);
   const [qagRecherche, setQagRecherche] = useState("");
@@ -188,6 +189,7 @@ export default function Scrutins() {
   useEffect(() => {
     chargerQuestionsGouvernementIndex().then(r => {
       const d = r.donnees as QagIndex | null;
+      setQagEtat(r.etat);
       setQagIndex(d);
       if (d?.questions?.length) setQagSelection(d.questions[d.questions.length - 1].uid);
     });
@@ -260,7 +262,10 @@ export default function Scrutins() {
 
       {mode === "qag" ? (
         !qagIndex ? (
-          <Vide titre="Chargement des questions au Gouvernement." corps="Repère récupère le relevé officiel des séances de questions." />
+          <Vide
+            titre={qagEtat === ETATS.EN_COURS ? "Chargement des questions au Gouvernement." : "Les questions au Gouvernement ne sont pas disponibles."}
+            corps="Repère n'affiche pas une question quand le relevé détaillé n'est pas disponible."
+          />
         ) : (
           <>
             <View style={s.resumeEntete}>
