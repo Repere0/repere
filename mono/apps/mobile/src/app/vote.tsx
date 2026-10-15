@@ -24,6 +24,7 @@ import { useCommuneChoisie } from "../lib/useCommune";
 import { couleurs, PAS, TYPO, CIBLE } from "../lib/theme";
 import { AvecDonnees, Page, Question } from "../ui/page";
 import { PastilleSource } from "../ui/source";
+import { Termes } from "../lib/termes";
 import { Frise, Repartition } from "../ui/visuels";
 
 type FaitVote = { cle: string; type: string; sc: { t: string; d: string; n: string; s: string; dec?: Record<string, string> }; position?: string; qui: string; circo: number };
@@ -50,7 +51,7 @@ export default function Vote() {
         <Page>
           <Stack.Screen options={{ title: "Votre député" }} />
           {entete}
-          <Text style={TYPO.note}>{phraseCirconscription(d, vote.circo)}</Text>
+          <Termes texte={phraseCirconscription(d, vote.circo)} />
 
           {/* NIVEAU 1 : la position */}
           <Carte echelon="france" titre={`Le ${dateFr(vote.sc.d)}`}>
@@ -109,7 +110,7 @@ export default function Vote() {
                   <Text style={[TYPO.note, { fontWeight: "700" }]}>{motPosition(a.position) ? "A voté " + motPosition(a.position) : "Position non portée par le relevé"}</Text>
                 </View>
               ))}
-              <Text style={TYPO.micro}>Scrutins solennels relevés, du plus récent au plus ancien.</Text>
+              <Termes style={TYPO.micro} texte="Scrutins solennels relevés, du plus récent au plus ancien." />
             </Carte>
           ) : null}
 

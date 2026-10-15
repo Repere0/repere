@@ -32,7 +32,7 @@ export const typo = (t: string) => t.replace(/ ([?!:;€»])/g, "\u00a0$1").repl
 export function Reponse({ phrase, preuve, note, sources, suite, partage }: {
   /* l'echelon qui decide : porte par la donnee, pas encore par le rendu
      (cartes blanches en palette B partiel) ; la PR « Chez vous » s'en servira. */
-  echelon: Echelon; phrase: string | ReactNode; preuve?: ReactNode; note?: ReactNode;
+  echelon: Echelon; phrase: string; preuve?: ReactNode; note?: ReactNode;
   sources?: ReactNode; suite?: { texte: string; onPress: () => void };
   partage?: { titre: string; texte: string; sourceUrl?: string | null };
 }) {
@@ -42,10 +42,7 @@ export function Reponse({ phrase, preuve, note, sources, suite, partage }: {
      sauter d'une reponse a l'autre. */
   return (
     <View testID="reponse" style={[s.carte, { backgroundColor: couleurs.carte }]}>
-      {typeof phrase === "string"
-        ? <Text style={FRASE} accessibilityRole="header">{typo(phrase)}</Text>
-        /* Une phrase en noeud (ex. Termes) porte son propre titre : pas de double Text. */
-        : phrase}
+      <Text style={s.phrase} accessibilityRole="header">{typo(phrase)}</Text>
       {preuve}
       {note ? (typeof note === "string" ? <Text style={TYPO.note}>{typo(note)}</Text> : note) : null}
       <View style={s.pied}>
@@ -73,11 +70,9 @@ export function Plus({ texte, onPress, premier, dernier }: { texte: string; onPr
   );
 }
 
-/* Le style de la phrase d'une reponse, partage avec lib/termes.tsx. */
-export const FRASE = { ...TYPO.reponse, fontSize: 19, lineHeight: 25 };
-
 const s = StyleSheet.create({
   carte: { borderRadius: RAYON.carte, paddingHorizontal: PAS * 4, paddingTop: PAS, paddingBottom: 0, gap: PAS, ...OMBRE },
+  phrase: { ...TYPO.reponse, fontSize: 19, lineHeight: 25 },
   pied: { flexDirection: "row", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", columnGap: PAS * 2 },
   suite: { minHeight: CIBLE, justifyContent: "center", marginLeft: "auto" },
   suiteTexte: { fontSize: 15, fontWeight: "700", color: couleurs.lien },
