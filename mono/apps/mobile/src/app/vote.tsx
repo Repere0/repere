@@ -34,7 +34,9 @@ export default function Vote() {
     <AvecDonnees rendu={r => {
       const { d } = r;
       const vote: FaitVote | undefined = d.dernierVote;
-      const entete = <Question emoji="🗳️" etiquette="Votre député" question="Qu'a voté votre député ?" />;
+      /* 15/10/2026 : partagee entre plusieurs circonscriptions, la page montre le vote d'UN
+         depute, en exemple : la question le dit. */
+      const entete = <Question emoji="🗳️" etiquette="Votre député" question={d.nbCircos > 1 ? `Qu'a voté un député de ${d.nomCommune} ?` : "Qu'a voté votre député ?"} />;
       if (!r.votesLus) return <Page>{entete}<Vide {...VOTES_PAS_ARRIVES} action="Réessayer" onAction={reessayer} /></Page>;
       if (!r.votesFiables) return <Page>{entete}<Vide titre={REFUS_APPARIEMENT.titre} corps={REFUS_APPARIEMENT.corps} /></Page>;
       if (!vote) return <Page>{entete}<Vide {...(d.nbCircos === 0 ? circoInconnue(d.nomCommune) : { ...VOTE_AUCUN, corps: POSITION_NON_PORTEE })} /></Page>;
