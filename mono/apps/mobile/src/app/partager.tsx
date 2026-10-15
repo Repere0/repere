@@ -120,7 +120,7 @@ export default function Partager() {
             <View ref={carte1} collapsable={false} accessible
               accessibilityLabel={`${nom} ${verbe} ${sujet}. Vote à l'Assemblée nationale, ${date}.`}
               style={{ width: largeur, minHeight: largeur * 1.25, alignSelf: "center", backgroundColor: couleurs.sol,
-                borderRadius: 18 * echelle, padding: 28 * echelle, justifyContent: "space-between" }}>
+                borderRadius: 18 * echelle, padding: 28 * echelle, justifyContent: "space-between", gap: 16 * echelle }}>
               <Logo />
               <View style={{ gap: 10 * echelle }}>
                 <Text style={{ color: couleurs.encre, fontWeight: "800", fontSize: 26 * echelle, lineHeight: 30 * echelle, letterSpacing: -0.5 }}>{nom}</Text>
@@ -140,7 +140,7 @@ export default function Partager() {
             <View ref={carte2} collapsable={false} accessible
               accessibilityLabel={`Comment ce texte avance. ${ou}`}
               style={{ width: largeur, minHeight: largeur * 1.25, alignSelf: "center", backgroundColor: couleurs.sol,
-                borderRadius: 18 * echelle, padding: 28 * echelle, justifyContent: "space-between" }}>
+                borderRadius: 18 * echelle, padding: 28 * echelle, justifyContent: "space-between", gap: 16 * echelle }}>
               <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
                 <Logo />
                 <Text style={{ fontWeight: "700", fontSize: 15 * echelle, borderWidth: 2, borderColor: couleurs.encre, borderRadius: 999, paddingHorizontal: 10 * echelle, paddingVertical: 4 * echelle, color: couleurs.encre }}>Explication</Text>
