@@ -12,7 +12,8 @@
     "verifier": "tsc --noEmit",
     "exporter": "expo export --platform android --platform ios --platform web --output-dir dist",
     "parcours": "node tests/parcours-web.mjs",
-    "telephone:wifi": "expo start"
+    "telephone:wifi": "expo start",
+    "contrastes": "node --test tests/contrastes.test.mjs"
   },
   "dependencies": {
     "@expo-google-fonts/bricolage-grotesque": "^0.4.1",
