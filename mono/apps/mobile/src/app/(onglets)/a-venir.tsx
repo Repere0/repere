@@ -91,7 +91,7 @@ function Case({ iso, jour, nb, onPress, taille }: { iso: string; jour: string; n
   return (
     <Pressable onPress={onPress} accessibilityRole="button" accessibilityState={{ selected: choisi }}
       accessibilityLabel={`${numero} octobre, ${nb} élément${nb > 1 ? "s" : ""}`}
-      style={({ pressed }) => ({ flex: 1, minHeight: grand ? 58 : 42, alignItems: "center", justifyContent: "center", gap: 4, opacity: pressed ? 0.6 : 1 })}>
+      style={({ pressed }) => ({ flex: 1, minHeight: grand ? 58 : CIBLE, alignItems: "center", justifyContent: "center", gap: 4, opacity: pressed ? 0.6 : 1 })}>
       {grand ? <Text style={{ fontSize: 13, color: couleurs.sourd, fontWeight: "600" }}>{LETTRES[rangLundi(iso)]}</Text> : null}
       <View style={{ width: grand ? 40 : 34, height: grand ? 40 : 34, borderRadius: 999, alignItems: "center", justifyContent: "center",
         backgroundColor: choisi ? couleurs.encre : "transparent" }}>
