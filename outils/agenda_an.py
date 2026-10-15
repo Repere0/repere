@@ -28,10 +28,10 @@ import sys, io, json, glob, collections
 import datetime
 from zoneinfo import ZoneInfo
 
-# HEURE DE PARIS (15/10/2026). La source écrit les horaires avec leur décalage (ou sans) ;
-# l'ancienne lecture gardait les seize premiers caractères et jetait le décalage sans rien
-# dire. Un horaire avec décalage est converti à l'heure de Paris ; un horaire sans décalage
-# est déjà à l'heure de Paris (c'est ainsi qu'il est publié) et n'est pas touché.
+# HEURE DE PARIS (15/10/2026). L'ancienne lecture gardait les seize premiers caractères de
+# l'horaire et jetait son décalage sans rien dire. Si la source écrit un décalage (point non
+# vérifié depuis ce conteneur : le domaine est bloqué), l'horaire est converti à l'heure de
+# Paris. Sans décalage, il est déjà à l'heure de Paris et n'est pas touché.
 PARIS = ZoneInfo("Europe/Paris")
 
 
