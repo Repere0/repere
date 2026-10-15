@@ -26,6 +26,26 @@ Usage : python3 outils/agenda_an.py <dossier_agenda> <dossier_amo30> <sortie.jso
 """
 import sys, io, json, glob, collections
 import datetime
+from zoneinfo import ZoneInfo
+
+# HEURE DE PARIS (15/10/2026). La source écrit les horaires avec leur décalage (ou sans) ;
+# l'ancienne lecture gardait les seize premiers caractères et jetait le décalage sans rien
+# dire. Un horaire avec décalage est converti à l'heure de Paris ; un horaire sans décalage
+# est déjà à l'heure de Paris (c'est ainsi qu'il est publié) et n'est pas touché.
+PARIS = ZoneInfo("Europe/Paris")
+
+
+def heure_de_paris(ts):
+    """« AAAA-MM-JJTHH:MM » à l'heure de Paris, ou « » si la source ne donne rien."""
+    if not ts:
+        return ""
+    try:
+        d = datetime.datetime.fromisoformat(ts.replace("Z", "+00:00"))
+    except ValueError:
+        return ts[:16]
+    if d.tzinfo is None:
+        return d.strftime("%Y-%m-%dT%H:%M")
+    return d.astimezone(PARIS).strftime("%Y-%m-%dT%H:%M")
 
 if len(sys.argv) != 4:
     sys.exit(__doc__)
@@ -76,7 +96,7 @@ for p in glob.glob(AGENDA + "/reunion/*.json"):
     if not ts:
         stats["ecartee : sans date"] += 1
         continue
-    e = {"d": ts[:16], "t": TYPE.get(r.get("@xsi:type"), "?"), "o": org}
+    e = {"d": heure_de_paris(ts), "t": TYPE.get(r.get("@xsi:type"), "?"), "o": org}
     if etat == "Annulé":
         e["x"] = 1
         stats["annulee"] += 1
@@ -91,7 +111,7 @@ for p in glob.glob(AGENDA + "/reunion/*.json"):
     # ete verifie depuis ce conteneur (domaine source bloque) : le nombre de reunions
     # avec et sans heure de fin est donc ecrit dans le journal de la collecte, pour
     # que le runner dise lui-meme ce qu'il a trouve.
-    fin = (r.get("timeStampFin") or "")[:16]
+    fin = heure_de_paris(r.get("timeStampFin") or "")
     if not fin:
         stats["sans heure de fin dans la source"] += 1
     elif fin < e["d"]:
