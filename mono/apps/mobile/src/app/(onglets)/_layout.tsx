@@ -16,6 +16,15 @@ import { LIBELLES } from "@repere/core";
 import { couleurs } from "../../lib/theme";
 import { Retour } from "../../ui/retour";
 
+/* Le libelle d'onglet : il doit tenir dans sa case. A 200 % de texte, « Aujourd'hui »
+   etait tronque en « Aujo... » (mesure du 15/10/2026). Le libelle est plafonne a 130 %
+   (au-dela, « Aujourd'hui » ne tient plus dans sa case sur un ecran de 320 px)
+   et ne passe jamais sur deux lignes : c'est le seul plafond de l'application, et il
+   ne touche qu'aux trois noms de la barre basse (decision a confirmer par le porteur). */
+const libelle = (texte: string) => ({ color }: { color: ColorValue }) => (
+  <Text numberOfLines={1} maxFontSizeMultiplier={1.3} style={{ color, fontSize: 13, fontWeight: "700" }}>{texte}</Text>
+);
+
 /* Une icone sobre par onglet : un caractere, sans bibliotheque d'icones de plus. */
 const icone = (glyphe: string) => ({ color }: { color: ColorValue }) => (
   <Text accessibilityElementsHidden importantForAccessibility="no" style={{ color, fontSize: 20, lineHeight: 24 }}>{glyphe}</Text>
@@ -30,15 +39,15 @@ export default function Onglets() {
         headerShadowVisible: false,
         tabBarActiveTintColor: couleurs.encre,
         tabBarInactiveTintColor: couleurs.sourd,
-        tabBarStyle: { backgroundColor: couleurs.carte, borderTopColor: couleurs.trait, height: 72, paddingTop: 6 },
-        tabBarLabelStyle: { fontSize: 13, fontWeight: "700" },
+        /* minHeight et non height : la barre grandit avec le texte (15/10/2026). */
+        tabBarStyle: { backgroundColor: couleurs.carte, borderTopColor: couleurs.trait, minHeight: 72, paddingTop: 6 },
       }}
     >
       <Tabs.Screen
         name="chez-vous"
         options={{
           title: LIBELLES.aujourdhui,
-          tabBarLabel: LIBELLES.aujourdhui,
+          tabBarLabel: libelle(LIBELLES.aujourdhui),
           tabBarIcon: icone("◷"),
           headerLeft: () => <Retour texte="Communes" etiquette="Revenir à l'accueil pour changer de commune" />,
         }}
@@ -47,13 +56,13 @@ export default function Onglets() {
         name="territoire"
         options={{
           title: "Chez vous",
-          tabBarLabel: "Chez vous",
+          tabBarLabel: libelle("Chez vous"),
           tabBarIcon: icone("⌂"),
           headerLeft: () => <Retour texte="Communes" etiquette="Revenir à l'accueil pour changer de commune" />,
         }}
       />
       <Tabs.Screen name="qui-decide" options={{ title: LIBELLES.qui, href: null }} />
-      <Tabs.Screen name="a-venir" options={{ title: LIBELLES.calendrier, tabBarLabel: "Calendrier", tabBarIcon: icone("▦") }} />
+      <Tabs.Screen name="a-venir" options={{ title: LIBELLES.calendrier, tabBarLabel: libelle("Calendrier"), tabBarIcon: icone("▦") }} />
     </Tabs>
   );
 }
