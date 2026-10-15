@@ -47,3 +47,11 @@ test("le nom du depute et les titres de scrutins ne sont pas tronques a une lign
   const scrutins = tous.find(([p]) => /app\/scrutins\.tsx$/.test(p))[1];
   assert.doesNotMatch(scrutins, /numberOfLines=\{\d\} style=\{s\.selectionTitre\}/, "titre de scrutin tronque");
 });
+
+test("a grand agrandissement, l'onglet masque son libelle mais garde son nom accessible (15/10/2026)", () => {
+  const layout = tous.find(([p]) => /_layout\.tsx$/.test(p) && /\(onglets\)/.test(p));
+  assert.ok(layout, "_layout des onglets introuvable");
+  assert.match(layout[1], /PixelRatio\.getFontScale\(\)/, "le seuil d'agrandissement n'est pas lu");
+  assert.match(layout[1], /tabBarLabel:\s*\(\)\s*=>\s*null/, "le libelle n'est pas masque au-dela du seuil");
+  assert.match(layout[1], /tabBarAccessibilityLabel:\s*texte/, "le nom accessible de l'onglet est perdu");
+});
