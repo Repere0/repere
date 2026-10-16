@@ -181,3 +181,19 @@ test("carte de partage 1 : la source et le numero du scrutin, comme la carte 2 (
   const carte1 = p.slice(p.indexOf("CARTE 1"), p.indexOf("CARTE 2"));
   assert.match(carte1, /Source : Assemblée nationale, scrutin n° \{vote\.sc\.n\}/, "la carte 1, partagee seule, ne dit plus sa source");
 });
+
+test("invariant 6 : le retour haptique ne touche ni un vote ni un partage (16/10/2026)", async () => {
+  const { readdirSync, statSync } = await import("node:fs");
+  const fichiers = [];
+  const parcourir = d => { for (const n of readdirSync(d)) { const p = join(d, n); statSync(p).isDirectory() ? parcourir(p) : /\.tsx?$/.test(n) && fichiers.push(p); } };
+  parcourir(SRC);
+  const AUTORISES = ["ui/toucher.ts", "ui/visuels.tsx", "app/(onglets)/_layout.tsx"];
+  const fautifs = [];
+  for (const f of fichiers) {
+    const rel = f.slice(SRC.length + 1).replace(/\\/g, "/");
+    const s = readFileSync(f, "utf8");
+    if (/expo-haptics|\/toucher["']/.test(s) && !AUTORISES.includes(rel)) fautifs.push(rel);
+    assert.doesNotMatch(s, /notificationAsync|NotificationFeedbackType|impactAsync/, `${rel} : un retour haptique autre que le leger « selection »`);
+  }
+  assert.deepEqual(fautifs, [], "retour haptique hors des replis et des onglets : " + fautifs.join(", "));
+});

@@ -10,9 +10,10 @@
  *   - les nombres viennent de @repere/core (visuels.js), jamais d'ici.
  * Construites avec des View : aucune bibliotheque de graphiques. */
 import { useState, type ReactNode } from "react";
-import { Animated, Pressable, StyleSheet, Text, View } from "react-native";
+import { Animated, LayoutAnimation, Pressable, StyleSheet, Text, View } from "react-native";
 import { couleurs, GRIS_VOTE, PAS, RAYON, TEINTES, TYPO, CIBLE, type Echelon } from "../lib/theme";
-import { useApparition, useCompteur } from "./mouvement";
+import { useApparition, useCompteur, useMouvementReduit } from "./mouvement";
+import { toucherLeger } from "./toucher";
 
 const largeur = (v: Animated.Value, pct: number) =>
   v.interpolate({ inputRange: [0, 1], outputRange: ["0%", `${Math.max(0, Math.min(100, pct))}%`] });
@@ -222,16 +223,29 @@ export function Chaine({ niveaux, compact, surNom }: { niveaux: Niveau[]; compac
 }
 
 /* ── Approfondir : une explication qu'on ouvre ─────────────────────────── */
+const DUREE_REPLI = 220;   /* ms : assez pour suivre, trop court pour attendre */
+
 /* `etiquette` : le nom lu par un lecteur d'ecran quand plusieurs replis portent le meme
    titre visible (16/10/2026, page Sources). */
 export function Depli({ titre, children, etiquette }: { titre: string; children: ReactNode; etiquette?: string }) {
   const [ouvert, setOuvert] = useState(false);
+  const reduit = useMouvementReduit();
+  /* S'OUVRIR EN DOUCEUR (16/10/2026) : sur telephone, l'explication glisse en place au
+     lieu d'apparaitre d'un coup, et un leger retour haptique confirme le geste. Coupe
+     si le telephone demande de reduire les animations ; sans effet sur le web. */
+  const basculer = () => {
+    if (!reduit && process.env.EXPO_OS !== "web") {
+      LayoutAnimation.configureNext(LayoutAnimation.create(DUREE_REPLI, LayoutAnimation.Types.easeInEaseOut, LayoutAnimation.Properties.opacity));
+    }
+    toucherLeger();
+    setOuvert(o => !o);
+  };
   return (
     <View>
       {/* aria-expanded en plus d'accessibilityState (16/10/2026) : mesure sur la version
           web, l'etat du repli n'etait pas expose (aria-expanded absent) ; un lecteur
           d'ecran ne savait pas si l'explication etait ouverte. */}
-      <Pressable onPress={() => setOuvert(o => !o)} accessibilityRole="button" accessibilityLabel={etiquette}
+      <Pressable onPress={basculer} accessibilityRole="button" accessibilityLabel={etiquette}
         accessibilityState={{ expanded: ouvert }} aria-expanded={ouvert} style={({ pressed }) => [s.depli, pressed && { opacity: 0.6 }]}>
         <Text style={[TYPO.note, { color: couleurs.lien, fontWeight: "600", flex: 1 }]}>{titre.replace(/ ([?!:;])/g, "\u00a0$1")}</Text>
         <Text style={[TYPO.note, { color: couleurs.lien }]} accessibilityElementsHidden importantForAccessibility="no">{ouvert ? "−" : "+"}</Text>

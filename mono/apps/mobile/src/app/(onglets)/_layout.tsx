@@ -12,6 +12,7 @@
  * dans la pile, au-dessus de la barre. */
 import { PixelRatio, Text, type ColorValue } from "react-native";
 import { Tabs } from "expo-router";
+import { toucherLeger } from "../../ui/toucher";
 import { LIBELLES } from "@repere/core";
 import { couleurs } from "../../lib/theme";
 import { Retour } from "../../ui/retour";
@@ -44,6 +45,8 @@ const icone = (Icone: (p: { couleur: string }) => React.JSX.Element) => ({ color
 export default function Onglets() {
   return (
     <Tabs
+      /* Un leger retour haptique au changement d'onglet (16/10/2026, ui/toucher.ts). */
+      screenListeners={{ tabPress: () => toucherLeger() }}
       screenOptions={{
         headerStyle: { backgroundColor: couleurs.sol },
         headerTintColor: couleurs.encre,
