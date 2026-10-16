@@ -105,7 +105,8 @@ export default function ChezVousTerritoire() {
             <View>
               <Plus premier texte={`${LIBELLES.qui} pour ${nom}`} onPress={() => router.push("/qui-decide")} />
               <Plus texte={LIBELLES.argent} onPress={() => router.push("/argent")} />
-              <Plus texte={LIBELLES.calendrier} onPress={() => router.push("/a-venir")} />
+              {/* « Le calendrier » retire d'ici (16/10/2026, audit Lovable) : c'est un onglet de
+                  la barre basse, toujours visible ; deux chemins pour le meme ecran. */}
               <Plus dernier texte={LIBELLES.sources} onPress={() => router.push("/sources")} />
             </View>
           </View>

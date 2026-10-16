@@ -43,16 +43,19 @@ function Initiales({ nom }: { nom: string }) {
   );
 }
 
-/* Trois onglets, en une seule pastille, comme sur le canevas. */
+/* Les onglets, en une seule pastille, comme sur le canevas. « Votes » seulement pour
+   un depute (16/10/2026, audit Lovable) : pour un maire ou un conseiller, un onglet
+   « Votes » laissait croire a des scrutins nominatifs publies, puis disait qu'il n'y
+   en a pas. L'absence se dit dans l'Apercu, en une phrase. */
 function Onglets({ actif, choisir, votes }: { actif: Onglet; choisir: (o: Onglet) => void; votes: boolean }) {
-  const liste: { cle: Onglet; t: string }[] = [{ cle: "apercu", t: "Aperçu" }, { cle: "votes", t: "Votes" }, { cle: "parcours", t: "Parcours" }];
+  const liste: { cle: Onglet; t: string }[] = [{ cle: "apercu", t: "Aperçu" }, ...(votes ? [{ cle: "votes" as Onglet, t: "Votes" }] : []), { cle: "parcours", t: "Parcours" }];
   return (
     <View accessibilityRole="tablist" style={{ flexDirection: "row", gap: 4, padding: 4, borderRadius: 999, backgroundColor: couleurs.trait }}>
       {liste.map(o => {
         const on = actif === o.cle;
         return (
           <Pressable key={o.cle} onPress={() => choisir(o.cle)} accessibilityRole="tab" accessibilityState={{ selected: on }}
-            accessibilityLabel={`${o.t}${o.cle === "votes" && !votes ? " (cette fonction ne vote pas)" : ""}`}
+            accessibilityLabel={o.t}
             style={{ flex: 1, minHeight: 40, borderRadius: 999, backgroundColor: on ? couleurs.carte : "transparent", alignItems: "center", justifyContent: "center" }}>
             <Text style={{ fontWeight: on ? "800" : "600", color: couleurs.encre }}>{o.t}</Text>
           </Pressable>
@@ -118,9 +121,13 @@ export default function Elu() {
                 ) : null}
                 {decide ? (
                   <Carte titre="Ce que ce niveau décide">
+                    {/* « Les mêmes phrases que sur Qui décide » retire (16/10/2026) : une note
+                        de coherence pour l'equipe, pas une information pour le lecteur. */}
                     <Text style={TYPO.corps}>{decide}.</Text>
-                    <Text style={TYPO.note}>Les mêmes phrases que sur « Qui décide ».</Text>
                   </Carte>
+                ) : null}
+                {!depute ? (
+                  <Text style={TYPO.note}>Repère n'affiche pas de vote pour cette fonction : les votes des conseils locaux ne figurent dans aucune source que Repère lit.</Text>
                 ) : null}
                 {vote && vote.position && POSITION[vote.position] ? (
                   <Carte titre="Dernier fait publié">
@@ -132,8 +139,8 @@ export default function Elu() {
               </View>
             ) : null}
 
-            {onglet === "votes" ? (
-              depute ? (
+            {onglet === "votes" && depute ? (
+              (
                 <View style={{ gap: PAS * 3 }}>
                   {vote && vote.position && POSITION[vote.position] ? (
                     <View style={{ gap: 4, paddingVertical: PAS * 2, borderBottomWidth: 1, borderBottomColor: couleurs.trait }}>
@@ -150,8 +157,6 @@ export default function Elu() {
                     <Text style={{ color: couleurs.lien, fontWeight: "700", textDecorationLine: "underline" }}>Voir tous ses votes ›</Text>
                   </Pressable>
                 </View>
-              ) : (
-                <Text style={TYPO.note}>Cette fonction ne vote pas au Parlement. Repère n'affiche donc aucun vote pour elle.</Text>
               )
             ) : null}
 
