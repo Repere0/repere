@@ -26,6 +26,16 @@ export function heuresDuGroupe(g: Groupe): string {
   }).filter(Boolean).join(" · ");
 }
 
+/* Un horaire par seance, lisible seul : « 9 h à 10 h » ou « 9 h, heure de fin non précisée ». */
+export function horairesDuGroupe(g: Groupe): string[] {
+  return g.debuts.map((x, i) => {
+    const debut = heureFr(x);
+    if (!debut) return "";
+    const fin = g.fins && g.fins[i] ? heureFr(g.fins[i] as string) : "";
+    return fin ? `${debut} à ${fin}` : `${debut}, heure de fin non précisée`;
+  }).filter(Boolean);
+}
+
 /* Les parametres qui designent un rendez-vous dans l'ecran de detail. */
 export function parametresRendezVous(g: Groupe) {
   return { jour: g.jour, institution: g.institution, categorie: g.categorie || "", titre: g.titre };

@@ -12,7 +12,7 @@ import { Text, View } from "react-native";
 import { Stack, useLocalSearchParams } from "expo-router";
 import { jourFr, regrouperParJour } from "@repere/core";
 import { Vide } from "../lib/composants";
-import { heuresDuGroupe, type Ev, type Groupe } from "../lib/calendrier";
+import { horairesDuGroupe, type Ev, type Groupe } from "../lib/calendrier";
 import { srcAgenda } from "../lib/sources";
 import { PAS, TYPO } from "../lib/theme";
 import { AvecDonnees, Page, Question } from "../ui/page";
@@ -35,21 +35,26 @@ export default function Evenement() {
           </Page>
         );
       }
-      const heures = heuresDuGroupe(g);
+      const horaires = horairesDuGroupe(g);
       const sansFin = (g.fins || []).some(f => !f);
       const points = g.points || [];
       return (
         <Page>
           <Stack.Screen options={{ title: "Rendez-vous" }} />
           {/* La question d'abord : le sujet, puis quand, puis qui. */}
-          <Question etiquette={g.institution} question={g.titre}
-            sous={[jourFr(g.jour), heures || "Heure non publiée"].join(" · ")} />
+          <Question etiquette={g.institution} question={g.titre} sous={jourFr(g.jour)} />
+
+          <View style={{ gap: PAS }}>
+            <Etiquette texte="Horaires publiés" />
+            {horaires.length ? horaires.map((h, k) => <Text key={k} style={TYPO.corps}>{h}</Text>)
+              : <Text style={TYPO.note}>Heure non publiée.</Text>}
+          </View>
 
           <View style={{ gap: PAS * 2 }}>
             {g.categorie ? <Text style={TYPO.corps}>{g.categorie}</Text> : null}
             {g.lieu ? <Text style={TYPO.corps}>Lieu : {g.lieu}</Text> : null}
-            {sansFin ? <Text style={TYPO.note}>La source ne publie pas l'heure de fin de ce rendez-vous : Repère ne la devine pas.</Text> : null}
-            {g.seances > 1 ? <Text style={TYPO.note}>{g.seances} séances ce jour-là, aux heures indiquées ci-dessus.</Text> : null}
+            {sansFin ? <Text style={TYPO.note}>La source ne publie pas toutes les heures de fin : Repère ne les devine pas.</Text> : null}
+            {g.seances > 1 ? <Text style={TYPO.note}>{g.seances} séances ce jour-là, aux horaires ci-dessus.</Text> : null}
           </View>
 
           {points.length ? (
