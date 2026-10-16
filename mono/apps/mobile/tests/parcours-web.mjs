@@ -318,7 +318,7 @@ for (const largeur of [360, 390, 430]) {
     if (action === QUI || action === "Le calendrier") {
       await page.getByText("Aujourd'hui", { exact: true }).last().click();
     } else {
-      await page.getByRole("button", { name: "Revenir à l'écran Aujourd'hui" }).last().click();
+      await page.getByRole("button", { name: "Revenir à l'écran précédent" }).last().click();
     }
     await page.getByText("Aller plus loin").first().waitFor({ timeout: 5000 });
   }

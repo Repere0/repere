@@ -51,10 +51,13 @@ export default function Coquille() {
           >
             <Stack.Screen name="index" options={{ headerShown: false, title: "Repère" }} />
             <Stack.Screen name="(onglets)" options={{ headerShown: false }} />
-            <Stack.Screen name="argent" options={{ title: LIBELLES.argent, headerLeft: () => <Retour texte={LIBELLES.aujourdhui} etiquette={`Revenir à l'écran ${LIBELLES.aujourdhui}`} /> }} />
-            <Stack.Screen name="vote" options={{ title: "Votre député", headerLeft: () => <Retour texte={LIBELLES.aujourdhui} etiquette={`Revenir à l'écran ${LIBELLES.aujourdhui}`} /> }} />
-            <Stack.Screen name="scrutins" options={{ title: "Scrutins publics", headerLeft: () => <Retour texte="Votre député" etiquette="Revenir à l'écran du député" /> }} />
-            <Stack.Screen name="sources" options={{ title: LIBELLES.sources, headerLeft: () => <Retour texte={LIBELLES.aujourdhui} etiquette={`Revenir à l'écran ${LIBELLES.aujourdhui}`} /> }} />
+            {/* ARGENT, VOTE, SOURCES, SCRUTINS s'ouvrent depuis plusieurs ecrans (16/10/2026) :
+                leur retour dit « Retour », jamais le nom d'un ecran qu'il ne visera peut-etre pas
+                (« Aujourd'hui » en venant de « Chez vous » ou de « Qui décide »). */}
+            <Stack.Screen name="argent" options={{ title: LIBELLES.argent, headerLeft: () => <Retour texte="Retour" etiquette="Revenir à l'écran précédent" /> }} />
+            <Stack.Screen name="vote" options={{ title: "Votre député", headerLeft: () => <Retour texte="Retour" etiquette="Revenir à l'écran précédent" /> }} />
+            <Stack.Screen name="scrutins" options={{ title: "Scrutins publics", headerLeft: () => <Retour texte="Retour" etiquette="Revenir à l'écran précédent" /> }} />
+            <Stack.Screen name="sources" options={{ title: LIBELLES.sources, headerLeft: () => <Retour texte="Retour" etiquette="Revenir à l'écran précédent" /> }} />
             {/* Le dictionnaire s'ouvre depuis cinq ecrans (liens « Ce que veut dire ») : le retour
                 ne nomme pas un ecran qu'il ne visera pas (16/10/2026 : il disait « Le calendrier »
                 en revenant au vote). */}
