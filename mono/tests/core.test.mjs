@@ -493,3 +493,23 @@ test("core — un territoire sans conseil departemental dit pourquoi, et seuleme
     assert.ok(!/source qui est incomplète/.test(s.titre + s.corps), d);
   }
 });
+
+test("core — une seance commencee aujourd'hui reste visible, sans se dire en cours ni fermer « a venir »", async () => {
+  /* 16/10/2026 : a 15 h 04, la seance de 15 h avait disparu du calendrier (« a venir »
+     exclut ce qui a commence) alors que l'Assemblee ne publie aucune heure de fin. */
+  const fiche = { nom: "Témoin", circo: null };
+  const agendaAN = { source: { producteur: "Assemblée nationale" }, evenements: [
+    { debut: "2026-10-15T15:00", fin: null, titre: "Hier", categorie: "Séance publique" },
+    { debut: "2026-10-16T09:00", fin: null, titre: "Ce matin, fin non publiée", categorie: "Séance publique" },
+    { debut: "2026-10-16T11:00", fin: "2026-10-16T12:00", titre: "Finie à midi", categorie: "Séance publique" },
+    { debut: "2026-10-16T13:00", fin: "2026-10-16T18:00", titre: "Jusqu'à 18 h", categorie: "Séance publique" },
+    { debut: "2026-10-16T15:00", fin: null, titre: "Cet après-midi", categorie: "Séance publique" },
+  ] };
+  const a = deriverAujourdhui({ fiche, commune: "00000", dep: "93", index: { agregats: [], sources: {} },
+    projets: null, cat: null, pos: null, deputes: null, cal: null, agendaAN, evenements: null,
+    maintenant: new Date("2026-10-16T12:30:00Z") });   /* 14 h 30 a Paris */
+  assert.deepEqual(a.commenceesAujourdhui.map(e => e.titre), ["Ce matin, fin non publiée", "Jusqu'à 18 h"],
+    "commencees aujourd'hui : ni hier, ni ce qui a une fin publiee et passee");
+  assert.ok(a.commenceesAujourdhui.every(e => e.institution === "Assemblée nationale" && e.source), "institution et source portees");
+  assert.deepEqual(a.aVenir.map(e => e.titre), ["Cet après-midi"], "« a venir » ne change pas");
+});

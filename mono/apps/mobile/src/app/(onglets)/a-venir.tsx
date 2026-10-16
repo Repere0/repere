@@ -20,9 +20,9 @@ import { useState } from "react";
 import { Pressable, Text, View } from "react-native";
 import { router, Stack } from "expo-router";
 import {
-  AGE_RELEVE_NORMAL, ageReleve, dateFr, ETAPES_LOI, jourFr, jourParis, LIBELLES, regrouperParJour,
+  AGE_RELEVE_NORMAL, ageReleve, dateFr, ETAPES_LOI, jourFr, jourParis, LIBELLES, minuteParis, regrouperParJour,
 } from "@repere/core";
-import { type Ev, type Groupe, horairesDuGroupe, INSTITUTIONS, parametresRendezVous } from "../../lib/calendrier";
+import { type Ev, type Groupe, etatCommence, horairesDuGroupe, INSTITUTIONS, parametresRendezVous, rendezVousAffiches } from "../../lib/calendrier";
 import { Carte, Vide } from "../../lib/composants";
 import { AGENDA_PAS_ARRIVE, AGENDA_VIDE } from "../../lib/absences";
 import { srcAgenda } from "../../lib/sources";
@@ -61,6 +61,7 @@ function Ligne({ g }: { g: Groupe }) {
   const nbPoints = (g.points || []).length;
   const contexte = [
     g.institution === "Assemblée nationale" ? "Assemblée" : g.institution,
+    etatCommence(g, minuteParis(new Date())),
     g.categorie && g.categorie !== "Séance publique" ? g.categorie : null,
     heure ? null : "heure non publiée",
     g.seances > 1 ? `${g.seances} séances : ${debuts.join(", ")}` : null,
@@ -129,7 +130,8 @@ export default function AVenir() {
   return (
     <AvecDonnees rendu={r => {
       const { d } = r;
-      const toutes = (d.aVenir || []) as Ev[];
+      /* ce qui a commence aujourd'hui, puis ce qui est a venir (16/10/2026) */
+      const toutes = rendezVousAffiches(d as { aVenir?: Ev[]; commenceesAujourdhui?: Ev[] });
       const aVenir = institution ? toutes.filter(e => e.institution === institution) : toutes;
       const lues = ((d.semaineParlement && d.semaineParlement.institutions) || []) as { institution: string; source: Record<string, string> }[];
       const groupes = regrouperParJour(aVenir) as Groupe[];

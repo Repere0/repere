@@ -12,7 +12,7 @@ import { Text, View } from "react-native";
 import { Stack, useLocalSearchParams } from "expo-router";
 import { jourFr, regrouperParJour } from "@repere/core";
 import { Vide } from "../lib/composants";
-import { horairesDuGroupe, type Ev, type Groupe } from "../lib/calendrier";
+import { horairesDuGroupe, rendezVousAffiches, type Ev, type Groupe } from "../lib/calendrier";
 import { srcAgenda } from "../lib/sources";
 import { PAS, TYPO } from "../lib/theme";
 import { AvecDonnees, Page, Question } from "../ui/page";
@@ -23,7 +23,7 @@ export default function Evenement() {
   const p = useLocalSearchParams<{ jour?: string; institution?: string; categorie?: string; titre?: string }>();
   return (
     <AvecDonnees rendu={r => {
-      const toutes = (r.d.aVenir || []) as Ev[];
+      const toutes = rendezVousAffiches(r.d as { aVenir?: Ev[]; commenceesAujourdhui?: Ev[] });
       const g = (regrouperParJour(toutes) as Groupe[]).find(x =>
         x.jour === p.jour && x.institution === p.institution && (x.categorie || "") === (p.categorie || "") && x.titre === p.titre);
       if (!g) {

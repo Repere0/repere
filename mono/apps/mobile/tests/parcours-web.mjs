@@ -53,8 +53,10 @@ const CAL = await (async () => {
     const age = j && j.source ? ageReleve(j.source.releve_le) : null;
     if (age !== null && age > AGE_RELEVE_NORMAL) vieux.push({ de, age });
   }
-  const { aVenir } = deriverAujourdhui({ fiche: { nom: "x", circo: null }, commune: "00000", dep: "77", index: { agregats: [], sources: {} },
+  /* ce qui a commence aujourd'hui compte aussi (16/10/2026 : lib/calendrier rendezVousAffiches) */
+  const { aVenir: aVenirSeul, commenceesAujourdhui } = deriverAujourdhui({ fiche: { nom: "x", circo: null }, commune: "00000", dep: "77", index: { agregats: [], sources: {} },
     projets: null, cat: null, pos: null, deputes: null, cal, agendaAN, evenements: null, maintenant: new Date() });
+  const aVenir = [...(commenceesAujourdhui || []), ...aVenirSeul];
   const limite = jourParis(new Date(Date.now() + 14 * 864e5));
   let proches = aVenir.filter(e => e.debut.slice(0, 10) < limite);
   if (!proches.length) proches = aVenir.slice(0, 5);
