@@ -18,6 +18,7 @@ import {
   evolution, exercicesEcartes, financementProjet, INTRO_EVOLUTION, introRapports, montantCourt, noteRattachement,
   NOTE_EVOLUTION, NOTE_FINANCEMENT, nomDispositif, parHabitant, partReperee, perimetreChange, phraseEcartes,
   phraseProjetLocal, rapports, sousTitreRapports, euros, CALCUL_REPERE, LIBELLES,
+  OFGL_URL,
 } from "@repere/core";
 import { Carte, Vide } from "../lib/composants";
 import { PROJETS_PAS_ARRIVES, projetsAucun } from "../lib/absences";
@@ -35,6 +36,10 @@ import { BarrePart, Compteur, DeuxAnnees, Depli, Financement, Mois } from "../ui
    source. Desormais chaque carte montre : son titre date, sa phrase-reponse, UN
    visuel, sa source ; le reste est sous « Le détail (…) », un geste plus loin, sans
    rien retirer. */
+/* Doctrine du vide (16/10/2026) : deux phrases des comptes n'avaient pas de lien ; le
+   socle ne le porte pas pour elles (le site les montre ailleurs), l'ecran l'ajoute. */
+const VERIFIER_COMPTES = { texte: "Vérifier dans les comptes publics", url: OFGL_URL };
+
 function Detail({ sujet, children }: { sujet: string; children: ReactNode }) {
   return <Depli titre={sujet.startsWith("par jour") ? `Le détail : ${sujet}` : `Le détail (${sujet})`}>{children}</Depli>;
 }
@@ -106,7 +111,7 @@ export default function Argent() {
           {!ex ? (
             <Vide {...(phraseEc ? comptesIncoherents(nom, phraseEc) : comptesAbsents(nom))} />
           ) : rr.length < 2 || !ch ? (
-            <Vide {...comptesInsuffisants(ex.an)} />
+            <Vide {...comptesInsuffisants(ex.an)} lien={VERIFIER_COMPTES} />
           ) : (
             <>
               {/* COMBIEN */}
@@ -211,7 +216,7 @@ export default function Argent() {
           {/* CE QUI A CHANGE EN UN AN : jamais deux territoires, jamais un jugement */}
               {evo ? (
                 evo.perimetreChange ? (
-                  <Vide {...perimetreChange(evo, nom)} />
+                  <Vide {...perimetreChange(evo, nom)} lien={VERIFIER_COMPTES} />
                 ) : (
                   <Carte echelon="ville" titre={`Ce qui a changé entre ${evo.an1} et ${evo.an2}`}>
                     {/* La premiere ligne visible ; les autres, l'intro et la note dans le detail. */}

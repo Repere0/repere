@@ -103,3 +103,32 @@ test("le detail d'un rendez-vous ecrit la date du releve, et dit une seule fois 
   assert.match(ev, /relevé le \$\{dateFr\(releve\)\}/, "le detail ne dit plus la date du releve");
   assert.doesNotMatch(ev, /aux horaires ci-dessus/, "la phrase redondante sur le nombre de seances est revenue");
 });
+
+test("doctrine du vide : chaque absence donne une phrase ET un lien ou une action (16/10/2026)", async () => {
+  const { readdirSync, statSync } = await import("node:fs");
+  const fichiers = [];
+  const parcourir = d => { for (const n of readdirSync(d)) { const p = join(d, n); statSync(p).isDirectory() ? parcourir(p) : /\.tsx$/.test(n) && fichiers.push(p); } };
+  parcourir(SRC);
+  /* Les phrases qui portent deja leur lien (verifie ci-dessous ou dans le socle). */
+  const PORTENT_UN_LIEN = /\.\.\.(VOTE_AUCUN|projetsAucun|comptesAbsents|comptesIncoherents|circoInconnue|agendaVide|refusAppariement|\(phraseEc \? comptesIncoherents)/;
+  /* Exceptions, chacune avec sa raison. */
+  const EXCEPTIONS = [
+    /Aucune commune n'est choisie/,                  /* le bouton « Revenir à l'accueil » suit, hors du composant */
+    /c'est nous qui n'avons pas encore sa fiche/,     /* recherche : la liste des communes reste a l'ecran */
+    /Aucune commune d'Île-de-France ne correspond/,   /* recherche : une faute de frappe, pas une donnee absente */
+  ];
+  const fautifs = [];
+  for (const f of fichiers) {
+    for (const m of readFileSync(f, "utf8").matchAll(/<Vide\b([\s\S]*?)\/>/g)) {
+      const t = m[1];
+      if (/\blien=|\baction=|Chargement/.test(t) || PORTENT_UN_LIEN.test(t) || EXCEPTIONS.some(e => e.test(t))) continue;
+      fautifs.push(f.slice(SRC.length + 1) + " : " + t.replace(/\s+/g, " ").slice(0, 90));
+    }
+  }
+  assert.deepEqual(fautifs, [], "absence sans lien ni action :\n" + fautifs.join("\n"));
+  const abs = lire("lib/absences.ts");
+  for (const nom of ["circoInconnue", "agendaVide", "refusAppariement"]) {
+    const corps = abs.slice(abs.indexOf(`export const ${nom}`), abs.indexOf(`export const ${nom}`) + 600);
+    assert.match(corps.split(/\nexport /)[0], /lien/, nom + " ne porte plus de lien");
+  }
+});

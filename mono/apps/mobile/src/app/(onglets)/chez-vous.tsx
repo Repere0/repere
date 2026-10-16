@@ -37,7 +37,7 @@ import { CarteMemoire } from "../../cartes/CarteMemoire";
 import { useSelection } from "../../lib/selection";
 import { useCommuneChoisie } from "../../lib/useCommune";
 import {
-  PROJETS_PAS_ARRIVES, projetsAucun, VOTES_PAS_ARRIVES, circoInconnue, VOTE_AUCUN,
+  PROJETS_PAS_ARRIVES, projetsAucun, VOTES_PAS_ARRIVES, circoInconnue, refusAppariement, VOTE_AUCUN,
 } from "../../lib/absences";
 import { srcComptesPublies, srcElus, srcProjets, srcVote } from "../../lib/sources";
 import { couleurs, PAS, POLICE, RAYON, TYPO } from "../../lib/theme";
@@ -148,7 +148,7 @@ export default function ChezVous() {
           {!r.votesLus ? (
             <Vide {...VOTES_PAS_ARRIVES} action="Réessayer" onAction={reessayer} />
           ) : !r.votesFiables ? (
-            <Vide titre={REFUS_APPARIEMENT.titre} corps={REFUS_APPARIEMENT.corps} />
+            <Vide {...refusAppariement(REFUS_APPARIEMENT)} />
           ) : vote && rep ? (
             <Reponse echelon="france"
               phrase={d.nbCircos > 1
@@ -174,7 +174,7 @@ export default function ChezVous() {
               }}
               suite={{ texte: "Comprendre ce vote", onPress: () => router.push("/vote") }} />
           ) : d.nbCircos === 0 ? (
-            <Vide {...circoInconnue(nom)} />
+            <Vide {...circoInconnue(nom, r.index?.sources?.circonscriptions?.url)} />
           ) : (
             <Vide {...VOTE_AUCUN} />
           )}

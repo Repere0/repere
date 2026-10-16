@@ -24,7 +24,7 @@ import {
 } from "@repere/core";
 import { type Ev, type Groupe, deInstitution, etatCommence, horairesDuGroupe, INSTITUTIONS, parametresRendezVous, rendezVousAffiches } from "../../lib/calendrier";
 import { Carte, Vide } from "../../lib/composants";
-import { AGENDA_PAS_ARRIVE, AGENDA_VIDE } from "../../lib/absences";
+import { AGENDA_PAS_ARRIVE, agendaVide } from "../../lib/absences";
 import { srcAgenda } from "../../lib/sources";
 import { useCommuneChoisie } from "../../lib/useCommune";
 import { couleurs, CIBLE, PAS, POLICE, TYPO } from "../../lib/theme";
@@ -271,7 +271,7 @@ export default function AVenir() {
               {!aVenir.length && toutes.length ? (
                 <Text style={TYPO.note}>Rien de publié pour ce filtre. Le filtre « Tout » montre le reste.</Text>
               ) : null}
-              {!toutes.length ? <Vide {...AGENDA_VIDE} /> : null}
+              {!toutes.length ? <Vide {...agendaVide(lues.find(x => x.institution === "Assemblée nationale")?.source?.url)} /> : null}
             </>
           )}
 

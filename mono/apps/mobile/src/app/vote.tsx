@@ -18,7 +18,7 @@ import {
   repartitionVote, REFUS_APPARIEMENT, titreLisible, MOTS,
 } from "@repere/core";
 import { Carte, Segments, Vide } from "../lib/composants";
-import { circoInconnue, VOTE_AUCUN, VOTES_PAS_ARRIVES } from "../lib/absences";
+import { circoInconnue, refusAppariement, VOTE_AUCUN, VOTES_PAS_ARRIVES } from "../lib/absences";
 import { srcScrutins, srcVote } from "../lib/sources";
 import { useCommuneChoisie } from "../lib/useCommune";
 import { couleurs, PAS, TYPO, CIBLE } from "../lib/theme";
@@ -69,8 +69,8 @@ export default function Vote() {
       /* Sans etiquette ni emoji (16/10/2026) : la barre haute dit deja « Votre député ». */
       const entete = <Question question={d.nbCircos > 1 ? `Qu'a voté un député de ${d.nomCommune} ?` : "Qu'a voté votre député ?"} />;
       if (!r.votesLus) return <Page>{entete}<Vide {...VOTES_PAS_ARRIVES} action="Réessayer" onAction={reessayer} /></Page>;
-      if (!r.votesFiables) return <Page>{entete}<Vide titre={REFUS_APPARIEMENT.titre} corps={REFUS_APPARIEMENT.corps} /></Page>;
-      if (!vote) return <Page>{entete}<Vide {...(d.nbCircos === 0 ? circoInconnue(d.nomCommune) : { ...VOTE_AUCUN, corps: POSITION_NON_PORTEE })} /></Page>;
+      if (!r.votesFiables) return <Page>{entete}<Vide {...refusAppariement(REFUS_APPARIEMENT)} /></Page>;
+      if (!vote) return <Page>{entete}<Vide {...(d.nbCircos === 0 ? circoInconnue(d.nomCommune, r.index?.sources?.circonscriptions?.url) : { ...VOTE_AUCUN, corps: POSITION_NON_PORTEE })} /></Page>;
 
       const rep = repartitionVote(vote.sc);
       const mot = (MOTS as Record<string, string>)[vote.position || ""];

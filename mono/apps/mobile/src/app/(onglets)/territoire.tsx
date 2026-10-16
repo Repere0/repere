@@ -94,7 +94,7 @@ export default function ChezVousTerritoire() {
                 <Termes texte={`${nom} est dans la ${ordinal(circos[0])} circonscription.`} style={TYPO.reponse} />
               </Rubrique>
             ) : (
-              <Vide {...circoInconnue(nom)} />
+              <Vide {...circoInconnue(nom, r.index?.sources?.circonscriptions?.url)} />
             )}
           </Carte>
 

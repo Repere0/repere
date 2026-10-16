@@ -26,12 +26,17 @@ export default function Evenement() {
       const toutes = rendezVousAffiches(r.d as { aVenir?: Ev[]; commenceesAujourdhui?: Ev[] });
       const g = (regrouperParJour(toutes) as Groupe[]).find(x =>
         x.jour === p.jour && x.institution === p.institution && (x.categorie || "") === (p.categorie || "") && x.titre === p.titre);
+      const lues = ((r.d.semaineParlement && r.d.semaineParlement.institutions) || []) as { institution: string; source?: { url?: string } }[];
+      const urlAgenda = lues.find(x => x.institution === p.institution)?.source?.url;
       if (!g) {
         return (
           <Page>
             <Stack.Screen options={{ title: "Rendez-vous" }} />
+            {/* Doctrine du vide (16/10/2026) : le lien vers l'agenda officiel de l'institution,
+                tel que la donnee le publie ; sans adresse connue, pas de lien. */}
             <Vide titre="Ce rendez-vous n'est plus dans le calendrier publié."
-              corps="Il a pu être déplacé ou retiré depuis le dernier relevé. Repère n'affiche que ce qui est annoncé ou publié." />
+              corps="Il a pu être déplacé ou retiré depuis le dernier relevé. Repère n'affiche que ce qui est annoncé ou publié."
+              lien={urlAgenda ? { texte: `L'agenda officiel ${deInstitution(p.institution || "")}`, url: urlAgenda } : undefined} />
           </Page>
         );
       }
