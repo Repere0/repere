@@ -146,8 +146,22 @@ volontairement : ce sont des protections juridiques et de confiance.
 | Où va l'argent | 4,1 | **2,5** |
 | Comprendre ce vote | 3,8 | **2,4** |
 | Sources | 2,7 | **2,1** |
-| Aujourd'hui | 2,4 | 2,3 ; **3 cartes entières au premier écran** |
+| Dictionnaire | 2,2 | **1,1** |
+| Aujourd'hui | 2,4 | 2,2 ; **3 cartes entières au premier écran** |
 | Qui décide | 2,1 | 1,9 |
+| **Total des 8 écrans** | **24,3** | **15,5** |
+
+Mesure : `scratchpad/caps1610/longueurs.mjs` (hauteur du conteneur défilant ÷ 844),
+export web local, Meaux, 0 erreur console. Chez vous 1,1 ; fiche d'un élu 0,9 ;
+partage 1,6 ; procédure 1,0 ; QAG 1,0.
+
+Commits de fin d'après-midi (#149, CI `mobile` verte sur `4144dbd`) :
+- `eb6b36a` : texte agrandi à 200 % : plus aucun titre tronqué ; la sonde reflow sautait
+  Qui décide et Calendrier sans le dire, elle les visite maintenant.
+- `a4fc7c0` : dictionnaire : les mots d'abord, la définition au toucher (`aria-expanded`).
+- `b97a7cf` : le bouton de retour dit « Retour » au lieu de nommer un écran qu'il ne vise pas.
+- `5dda226` : fiche d'un élu : un seul retour (le lien doublon est retiré), partage par icône.
+- `4144dbd` : Calendrier à 375 × 667 : la première séance est visible au premier écran.
 
 - Calendrier : un en-tête par jour (il n'y en avait aucun), une ligne compacte, six
   rendez-vous puis « Voir les N autres ».
@@ -164,6 +178,21 @@ volontairement : ce sont des protections juridiques et de confiance.
 - **Séance en cours** : elle disparaît du calendrier dès son heure de début (« à
   venir » exclut ce qui a commencé ; vu à 15 h 04). Fin rarement publiée : que montrer ?
 - **Cartes de partage** : ancienne marque « R » (choix laissé, risque 6ter).
-- **Fiche d'un élu** : un lien « Retour » double le retour de la barre haute.
 - **375 × 667** : la 3e réponse d'Aujourd'hui commence au premier écran (578 px) mais
-  reste coupée.
+  reste coupée. (Calendrier : réglé par `4144dbd`.)
+
+## Banc final (16/10, fin d'après-midi, `4144dbd`)
+
+| contrôle | résultat |
+|---|---|
+| `pnpm build` + `pnpm test` | 162/163 ; seul échec : `runtime.test.mjs` scrutins (404 `scrutins-solennels-recents.json`, produit seulement sur le runner — identique au matin) |
+| CI GitHub | #147 `epreuve` + `mobile` verts ; #148 `mobile` vert ; #149 `mobile` vert |
+| `parcours-web.mjs`, `meme-verite.mjs` | zéro échec |
+| `tsc`, `refonte-ux` | 0 erreur ; 12/12 |
+| `reflow-200.mjs` | 0 débordement, 0 texte coupé |
+
+Planches (conteneur de la session, non versionnées, envoyées au porteur) :
+`densite-avant-apres.png`, `premiers-ecrans-matin-soir.png`, `accueil-avant-apres.png`.
+
+**Non vérifié** : rendu natif iOS / Android, VoiceOver / TalkBack, texte système agrandi
+sur appareil. Tout ce qui précède est mesuré sur l'export web.
