@@ -60,6 +60,14 @@ export default function Sources() {
             ))}
           </Carte>
           <Text style={TYPO.note}>Aucune donnée n'est modifiée. Quand Repère calcule, il le dit, à côté du chiffre.</Text>
+          {/* Deplace de l'accueil (16/10/2026) : l'accueil dit l'essentiel en une ligne,
+              le detail technique reste vrai et trouvable ici. Phrase vraie a la lettre :
+              les adresses se composent par departement (client.js), et la commune n'est
+              gardee que sur demande (lib/memoire.ts). */}
+          <View style={{ gap: PAS }}>
+            <Text style={[TYPO.corps, { fontWeight: "800" }]} accessibilityRole="header">Ce que Repère sait de vous</Text>
+            <Text style={TYPO.note}>Rien : pas de compte, pas d'e-mail. Pour afficher votre commune, l'application télécharge le fichier public de tout votre département, jamais celui de votre seule commune. Elle ne garde votre commune sur ce téléphone que si vous le lui demandez.</Text>
+          </View>
         </Page>
       );
     }} />

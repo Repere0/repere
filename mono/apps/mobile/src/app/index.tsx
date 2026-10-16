@@ -127,13 +127,12 @@ export default function Accueil() {
             {etat === ETATS.SERVI && !cherches.length ? (
               <>
                 <Text style={s.note}>{`La bêta couvre les ${communes.length.toLocaleString("fr-FR")} communes d'Île\u2011de\u2011France qui ont une fiche.`}</Text>
-                {/* CE QUE REPERE SAIT DE VOUS : rien. Phrase vraie a la lettre :
-                    les adresses se composent par departement (client.js), et la
-                    commune n'est gardee que sur demande (lib/memoire.ts). */}
-                <View style={s.confiance}>
-                  <Text style={[s.note, { color: couleurs.encre, fontWeight: "600" }]}>Pas de compte, pas d'e-mail.</Text>
-                  <Text style={s.note}>Repère ne sait pas qui vous êtes. Pour afficher votre commune, il télécharge le fichier public de tout votre département, et ne garde votre commune sur ce téléphone que si vous le lui demandez.</Text>
-                </View>
+                {/* CE QUE REPERE SAIT DE VOUS : rien, en une ligne (16/10/2026, audit
+                    Lovable). L'explication technique (fichier public de tout le
+                    departement, commune gardee seulement sur demande) passe dans
+                    « Sources », section « Ce que Repère sait de vous » : elle reste vraie
+                    et trouvable, sans peser sur le premier ecran. */}
+                <Text style={[s.note, { color: couleurs.encre }]}>Pas de compte, pas d'e-mail : Repère ne sait pas qui vous êtes.</Text>
               </>
             ) : null}
             {manquante ? (
@@ -158,8 +157,12 @@ export default function Accueil() {
             style={({ pressed }) => [s.resultat, pressed && { backgroundColor: couleurs.voile }]}
           >
             <View style={s.pastille} />
-            <Text style={s.resultatNom}>{nom}</Text>
-            <Text style={s.resultatDep}>{nomDep(departementDe(insee) || "")}</Text>
+            {/* Le nom d'abord, le departement dessous (16/10/2026) : a droite, il
+                coupait les noms longs (« Montceaux-lès- / Meaux », capture 375 px). */}
+            <View style={{ flex: 1, gap: 2 }}>
+              <Text style={s.resultatNom}>{nom}</Text>
+              <Text style={s.resultatDep}>{nomDep(departementDe(insee) || "")}</Text>
+            </View>
           </Pressable>
         )}
       />
@@ -170,7 +173,6 @@ export default function Accueil() {
 const s = StyleSheet.create({
   page: { paddingHorizontal: PAS * 4, gap: PAS * 2, maxWidth: 640, width: "100%", alignSelf: "center" },
   tete: { gap: PAS * 3, marginBottom: PAS * 2 },
-  confiance: { gap: PAS, padding: PAS * 4, borderRadius: RAYON.bloc, backgroundColor: couleurs.voile, marginTop: PAS * 2 },
   promesse: { fontSize: 17, lineHeight: 24, color: couleurs.encre },
   question: { fontFamily: POLICE.titre, fontSize: 24, lineHeight: 30, color: couleurs.encre, marginTop: PAS * 6 },
   champ: {
@@ -184,9 +186,9 @@ const s = StyleSheet.create({
   note: { fontSize: 15, color: couleurs.sourd },
   resultat: {
     minHeight: CIBLE + 8, flexDirection: "row", alignItems: "center", gap: PAS * 3,
-    paddingHorizontal: PAS * 4, borderRadius: RAYON.bloc, backgroundColor: couleurs.carte,
+    paddingHorizontal: PAS * 4, paddingVertical: PAS * 2, borderRadius: RAYON.bloc, backgroundColor: couleurs.carte,
   },
   pastille: { width: 10, height: 10, borderRadius: 5, backgroundColor: couleurs.ville },
-  resultatNom: { flex: 1, fontSize: 17, color: couleurs.encre, fontWeight: "600" },
-  resultatDep: { fontSize: 14, color: couleurs.sourd, flexShrink: 1, textAlign: "right" },
+  resultatNom: { fontSize: 17, lineHeight: 22, color: couleurs.encre, fontWeight: "600" },
+  resultatDep: { fontSize: 14, lineHeight: 19, color: couleurs.sourd },
 });
