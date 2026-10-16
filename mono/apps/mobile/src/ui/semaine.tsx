@@ -137,7 +137,10 @@ export function SemaineParlement({ sp, lu, nom }: { sp: Semaine | null | undefin
         <Text style={TYPO.note}>{typo(`Et ${pluriel(votes.length - VOTES_MAX, "autre vote solennel", "autres votes solennels")} dans le calendrier.`)}</Text>
       ) : null}
 
-      {notes.map(n => <Text key={n} style={TYPO.note}>{typo(n)}</Text>)}
+      {/* Portee nationale et age du releve en UN paragraphe discret (16/10/2026, audit
+          Lovable : « reduire le poids des mentions de fraicheur ») ; rien n'est retire,
+          les phrases sont les memes, mot pour mot (invariant 9). */}
+      <Text style={TYPO.micro}>{typo(notes.join(" "))}</Text>
       {explications.length ? (
         <Depli titre="Le détail (semaine)">
           {explications.map(n => <Text key={n} style={TYPO.note}>{typo(n)}</Text>)}
