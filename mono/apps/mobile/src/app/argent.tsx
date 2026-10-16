@@ -39,6 +39,34 @@ function PasCeQueCaDit({ r, sujet }: { r?: Rapport; sujet: string }) {
   return <Depli titre={`Ce que ça ne veut pas dire (${sujet})`}><Text style={TYPO.corps}>{r.d}</Text></Depli>;
 }
 
+/* Un projet aidé par l'État : son année, sa part de financement, sa phrase
+   locale et l'explication du dispositif, pliée. Un seul composant pour le
+   premier projet et pour les suivants (16/10/2026). */
+function CarteProjet({ p, nom, projets }: { p: Projet; nom: string; projets: Parameters<typeof nomDispositif>[0] }) {
+  const f = financementProjet(p);
+  const cout = f && f.cout ? montantCourt(f.cout) : null;
+  return (
+    <Carte echelon="ville" titre={`${p.annee} · aide ${p.dispositif}`}>
+      <Text style={TYPO.reponse}>{p.intitule}</Text>
+      {f && f.partPct !== null && cout ? (
+        <Resume phrase={partReperee(f.partPct)
+          ? `L'État finance ${partReperee(f.partPct)} de ce projet de ${cout.texte}.`
+          : `Pour 100 € de ce projet de ${cout.texte}, ${f.partPct} € viennent de l'État.`}>
+          <Financement subvention={f.subvention} cout={f.cout as number} partPct={f.partPct}
+            subventionTexte={`${euros(f.subvention)} sur ${euros(f.cout as number)}`}
+            resteTexte={`${euros(f.reste as number)}, financement non détaillé par la source`} />
+        </Resume>
+      ) : null}
+      <Text style={TYPO.note}>{phraseProjetLocal(p, nom)}</Text>
+      {noteRattachement(p) ? <Text style={TYPO.note}>{noteRattachement(p)}</Text> : null}
+      <Depli titre={`Qu'est-ce que l'aide ${p.dispositif} ?`}>
+        <Text style={TYPO.corps}>{nomDispositif(projets, p.dispositif)} : l'une des aides de l'État à l'investissement des collectivités recensées par la Direction générale des collectivités locales.</Text>
+        <Text style={TYPO.note}>{NOTE_FINANCEMENT}</Text>
+      </Depli>
+    </Carte>
+  );
+}
+
 export default function Argent() {
   const { reessayer } = useCommuneChoisie();
   return (
@@ -187,30 +215,18 @@ export default function Argent() {
               <Vide {...projetsAucun(nom)} />
             ) : (
               <>
-                {listeProjets.map((p, i) => {
-                  const f = financementProjet(p);
-                  const cout = f && f.cout ? montantCourt(f.cout) : null;
-                  return (
-                    <Carte key={i} echelon="ville" titre={`${p.annee} · aide ${p.dispositif}`}>
-                      <Text style={TYPO.reponse}>{p.intitule}</Text>
-                      {f && f.partPct !== null && cout ? (
-                        <Resume phrase={partReperee(f.partPct)
-                          ? `L'État finance ${partReperee(f.partPct)} de ce projet de ${cout.texte}.`
-                          : `Pour 100 € de ce projet de ${cout.texte}, ${f.partPct} € viennent de l'État.`}>
-                          <Financement subvention={f.subvention} cout={f.cout as number} partPct={f.partPct}
-                            subventionTexte={`${euros(f.subvention)} sur ${euros(f.cout as number)}`}
-                            resteTexte={`${euros(f.reste as number)}, financement non détaillé par la source`} />
-                        </Resume>
-                      ) : null}
-                      <Text style={TYPO.note}>{phraseProjetLocal(p, nom)}</Text>
-                      {noteRattachement(p) ? <Text style={TYPO.note}>{noteRattachement(p)}</Text> : null}
-                      <Depli titre={`Qu'est-ce que l'aide ${p.dispositif} ?`}>
-                        <Text style={TYPO.corps}>{nomDispositif(r.projets, p.dispositif)} : l'une des aides de l'État à l'investissement des collectivités recensées par la Direction générale des collectivités locales.</Text>
-                        <Text style={TYPO.note}>{NOTE_FINANCEMENT}</Text>
-                      </Depli>
-                    </Carte>
-                  );
-                })}
+                {/* 16/10/2026 : le premier projet reste lisible ; les suivants se
+                   dépilent, avec le nombre annoncé dans le libellé du repli. */}
+                <CarteProjet p={listeProjets[0]} nom={nom} projets={r.projets} />
+                {listeProjets.length > 1 ? (
+                  <Depli titre={`Voir les ${listeProjets.length - 1} autres projets aidés`}>
+                    <View style={{ gap: PAS * 3 }}>
+                      {listeProjets.slice(1).map((p, i) => (
+                        <CarteProjet key={i} p={p} nom={nom} projets={r.projets} />
+                      ))}
+                    </View>
+                  </Depli>
+                ) : null}
                 <PastilleSource source={srcProjets(d, true)} />
               </>
             )}

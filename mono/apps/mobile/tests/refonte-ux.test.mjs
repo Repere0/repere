@@ -23,6 +23,20 @@ test("les etiquettes ne sont plus en capitales de style", () => {
   assert.doesNotMatch(lire("lib/theme.ts"), /textTransform/, "les etiquettes repassent en capitales de style");
 });
 
+test("votes : l'etiquette ne dit pas « Dernier scrutin » au-dessus du total de l'archive", () => {
+  const v = lire("app/scrutins.tsx");
+  assert.doesNotMatch(v, />\s*Dernier scrutin\s*</, "l'etiquette « Dernier scrutin » est revenue au-dessus du total");
+  assert.match(v, /Dans l'archive/);
+});
+
+test("« Où va l'argent » : un seul projet aidé ouvert, les autres sous un repli annoncé", () => {
+  const a = lire("app/argent.tsx");
+  assert.match(a, /Voir les \$\{listeProjets\.length - 1\} autres projets aidés/, "les projets suivants ne sont plus sous un repli annonce");
+  assert.match(a, /<CarteProjet p=\{listeProjets\[0\]\}/, "le premier projet n'est plus rendu seul");
+  assert.match(a, /listeProjets\.length > 1 \? \(/, "le repli n'est plus conditionne a la presence d'autres projets");
+  assert.doesNotMatch(a, /listeProjets\.map\(/, "tous les projets sont a nouveau affiches d'un coup");
+});
+
 test("« Chez vous » : circonscription pliable, et pas de chaine des elus", () => {
   const t = lire("app/(onglets)/territoire.tsx");
   assert.match(t, /<Depli titre="(Pourquoi|C'est quoi)/, "la circonscription n'a plus son explication pliable");

@@ -334,9 +334,11 @@ export default function Scrutins() {
         ) : (
           <>
             <View style={s.resumeEntete}>
-              <Text style={TYPO.etiquette}>Dernier scrutin</Text>
+              {/* 16/10/2026 : l'etiquette affichee au-dessus du TOTAL des scrutins
+                 ne parle plus de « dernier » : elle dit ce que le chiffre compte. */}
+              <Text style={TYPO.etiquette}>Dans l'archive</Text>
               <Text style={s.resumeNombre}>{index.total_publics.toLocaleString("fr-FR")}</Text>
-              <Text style={s.resumePhrase}>scrutins publics accessibles dans l'archive</Text>
+              <Text style={s.resumePhrase}>scrutins publics depuis le début de la législature</Text>
             </View>
 
             <TextInput
