@@ -51,7 +51,13 @@ banc() {
   if [ "$rc" -ne 0 ]; then
     local extrait
     extrait=$(mktemp)
-    grep -E 'ECHEC|^not ok|AssertionError|Error:|✗|FAIL' "$journal" | head -30 > "$extrait" || true
+    # Le MESSAGE de l'assertion (ligne « error: » du rapport TAP, ou la ligne qui
+    # suit « error: |- » quand il est long) est ce qui dit QUOI a casse : le
+    # 14/10/2026, l'annotation disait « not ok 92 » et « AssertionError », mais pas
+    # le numero du scrutin que le message contenait. Rien n'est rendu permissif.
+    awk '/^ +error: [|>]-?$/ { if ((getline suite) > 0) print "  error: " suite; next }
+         /ECHEC|^not ok|^ +(error|actual):|AssertionError|Error:|✗|FAIL/ { print }' \
+      "$journal" | head -30 > "$extrait" || true
     [ -s "$extrait" ] || tail -25 "$journal" > "$extrait"
     annoter "banc $etiquette" "$extrait"
   fi
