@@ -1,7 +1,7 @@
 /* Le cadre commun des ecrans : defilement, marges sures, largeur de lecture,
  * et l'etat d'une commune qui n'est pas prete (chargement, panne, absence).
  * Chaque ecran de detail commence par UNE question, en grand. */
-import type { ReactNode } from "react";
+import type { ReactNode, Ref } from "react";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { router } from "expo-router";
@@ -13,10 +13,14 @@ import { PAS, TYPO } from "../lib/theme";
 import { Etiquette } from "./resume";
 import { BandeauFraicheur } from "./fraicheur";
 
-export function Page({ children }: { children: ReactNode }) {
+/* `defilement` : pour un ecran qui doit amener le lecteur a une section (Qui decide,
+   16/10/2026). Facultatif ; les autres ecrans ne le passent pas. */
+export function Page({ children, defilement, surDefilement }: { children: ReactNode; defilement?: Ref<ScrollView>; surDefilement?: (y: number) => void }) {
   const marges = useSafeAreaInsets();
   return (
-    <ScrollView contentContainerStyle={[s.page, { paddingBottom: marges.bottom + PAS * 10 }]}>
+    <ScrollView ref={defilement} scrollEventThrottle={32}
+      onScroll={surDefilement ? e => surDefilement(e.nativeEvent.contentOffset.y) : undefined}
+      contentContainerStyle={[s.page, { paddingBottom: marges.bottom + PAS * 10 }]}>
       <BandeauFraicheur />
       {children}
     </ScrollView>

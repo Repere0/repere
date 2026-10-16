@@ -173,11 +173,15 @@ export type Niveau = {
 };
 /* `surNom` : quand il est donne, le nom de chaque personne ouvre sa fiche. Le nom
    est alors une cible de 48 px, lue comme un lien. */
-export function Chaine({ niveaux, compact, surNom }: { niveaux: Niveau[]; compact?: boolean; surNom?: (n: Niveau) => void }) {
+/* `refNiveau` : la vue de chaque niveau, mesuree au moment ou un raccourci y amene le
+   lecteur (Qui decide, 16/10/2026). Une position memorisee a l'affichage devenait fausse
+   des qu'un repli s'ouvrait au-dessus (mesure sur l'export web). */
+export function Chaine({ niveaux, compact, surNom, refNiveau }: { niveaux: Niveau[]; compact?: boolean; surNom?: (n: Niveau) => void; refNiveau?: (echelon: string, vue: View | null) => void }) {
   return (
     <View>
       {niveaux.map((n, i) => (
         <View key={n.echelon} style={s.jalon}
+          ref={refNiveau ? v => refNiveau(n.echelon, v) : undefined}
           accessible={compact}
           accessibilityLabel={compact ? `${n.niveau} : ${n.personne ? n.personne.nom + ", " + n.personne.role : n.institution}` : undefined}>
           <View style={s.jalonAxe}>

@@ -305,6 +305,19 @@ for (const largeur of [360, 390, 430]) {
       verifier(/Licence : /.test(brut) && /Les noms des députés/.test(brut), `${largeur}px · Sources : chaque source dit sa licence, et la source des noms des députés est citée`);
     }
     if (action === QUI) verifier(ELUS_CANTON.length >= 2 && ELUS_CANTON.every(n => m.brut.includes(n)), `${largeur}px · Qui décide : tous les élus du canton sont nommés ${JSON.stringify(ELUS_CANTON)}`);
+    /* 16/10/2026 : toucher le point « Région » amene la carte Région en haut de l'ecran. */
+    if (action === QUI) {
+      const point = page.getByRole("button", { name: /^Région :.*Aller à ce niveau$/ }).first();
+      /* Point de depart connu : le haut de l'ecran, la ou sont les points. Le parcours a
+         deja fait defiler la page plus haut ; sans ce retour, la carte pouvait etre deja
+         en vue et le controle ne prouvait rien. */
+      await page.evaluate(() => { for (const d of document.querySelectorAll("div")) if (d.scrollHeight > d.clientHeight + 4 && /(auto|scroll)/.test(getComputedStyle(d).overflowY)) d.scrollTop = 0; });
+      await page.waitForTimeout(300);
+      const avant = await page.evaluate(() => { const e = [...document.querySelectorAll("div")].filter(d => d.checkVisibility() && d.children.length === 0).find(d => (d.innerText || "").startsWith("Région ·")); return e ? Math.round(e.getBoundingClientRect().top) : null; });
+      if (await point.count()) { await point.click(); await page.waitForTimeout(900); }
+      const apres = await page.evaluate(() => { const e = [...document.querySelectorAll("div")].filter(d => d.checkVisibility() && d.children.length === 0).find(d => (d.innerText || "").startsWith("Région ·")); return e ? Math.round(e.getBoundingClientRect().top) : null; });
+      verifier(apres !== null && apres >= 0 && apres < 260 && avant !== null && avant > 260 && apres < avant, `${largeur}px · Qui décide : le point « Région » amène à sa carte (${avant} px -> ${apres} px)`);
+    }
     if (action !== "Sources") verifier(/D'où vient cette information/.test(m.etiquettes) || /Le calendrier n'est arrivé/.test(m.texte), `${largeur}px · ${action} : la source est à portée de doigt`);
     if (/argent/.test(action)) {
       verifier(/Calculé par Repère · source/.test(m.texte), `${largeur}px · ${action} : les parts calculées se disent calculées`);
