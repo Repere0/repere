@@ -27,6 +27,10 @@ export default function Accueil() {
   const [beta, setBeta] = useState<Beta | null>(null);
   const [index, setIndex] = useState<Index | null>(null);
   const [filtre, setFiltre] = useState("");
+  /* Champ actif : la recherche passe en haut (16/10/2026). Mesure a 375 x 667 : le
+     slogan et la promesse restaient au-dessus du champ ; avec le clavier ouvert
+     (~260 pt), les resultats tombaient dessous. */
+  const [actif, setActif] = useState(false);
   const [essai, setEssai] = useState(0);
 
   useEffect(() => {
@@ -53,6 +57,7 @@ export default function Accueil() {
   const trouvees = trouverCommunes(communes, cherches) as Ligne[];
   const manquante = cherches.length ? manquantes.find(([, , c]) => correspond(cherches, c)) : undefined;
   const rien = cherches.length > 0 && trouvees.length === 0 && !manquante;
+  const enRecherche = actif || cherches.length > 0;
   /* Le departement se lit par @repere/core (departementDe), comme sur le site :
      trois chiffres outre-mer (971...), deux ailleurs, 2A/2B en Corse. */
   const nomDep = (code: string) => {
@@ -84,11 +89,16 @@ export default function Accueil() {
         ListHeaderComponent={
           <View style={s.tete}>
             {/* Le logo en grand sur l'ecran d'accueil (16/10/2026) : etait le mot seul, en petit. */}
-            <View style={{ marginBottom: PAS * 3 }}><Marque grande /></View>
-            {/* CE QU'EST REPERE, EN UNE PHRASE ; POURQUOI C'EST UTILE, EN UNE LIGNE */}
-            <Text style={TYPO.affiche} accessibilityRole="header">Ce qui se passe chez vous, expliqué simplement.</Text>
-            <Text style={s.promesse}>Qui décide, où va l'argent, ce qu'a voté votre député, ce qui arrive. Chaque chiffre avec sa source officielle.</Text>
-            {retenue && nomRetenue ? (
+            <View style={{ marginBottom: enRecherche ? 0 : PAS * 3 }}>{enRecherche ? <Marque /> : <Marque grande />}</View>
+            {/* CE QU'EST REPERE, EN UNE PHRASE ; POURQUOI C'EST UTILE, EN UNE LIGNE. Replie
+                pendant la recherche : le lecteur l'a deja lu, il cherche sa commune. */}
+            {enRecherche ? null : (
+              <>
+                <Text style={TYPO.affiche} accessibilityRole="header">Ce qui se passe chez vous, expliqué simplement.</Text>
+                <Text style={s.promesse}>Qui décide, où va l'argent, ce qu'a voté votre député, ce qui arrive. Chaque chiffre avec sa source officielle.</Text>
+              </>
+            )}
+            {retenue && nomRetenue && !enRecherche ? (
               <Carte echelon="ville" titre="Votre commune, sur ce téléphone">
                 <Texte fort>{nomRetenue}</Texte>
                 <Bouton texte={`Voir ce qui se passe à ${nomRetenue}`} onPress={() => ouvrir(retenue.c, nomRetenue)} />
@@ -99,6 +109,8 @@ export default function Accueil() {
             <TextInput
               value={filtre}
               onChangeText={setFiltre}
+              onFocus={() => setActif(true)}
+              onBlur={() => setActif(false)}
               placeholder="Bagnolet, Créteil, Meaux…"
               placeholderTextColor={couleurs.sourd}
               autoCorrect={false}
@@ -114,7 +126,7 @@ export default function Accueil() {
             ) : null}
             {etat === ETATS.SERVI && !cherches.length ? (
               <>
-                <Text style={s.note}>La bêta couvre les {communes.length} communes d'Île-de-France qui ont une fiche.</Text>
+                <Text style={s.note}>{`La bêta couvre les ${communes.length.toLocaleString("fr-FR")} communes d'Île\u2011de\u2011France qui ont une fiche.`}</Text>
                 {/* CE QUE REPERE SAIT DE VOUS : rien. Phrase vraie a la lettre :
                     les adresses se composent par departement (client.js), et la
                     commune n'est gardee que sur demande (lib/memoire.ts). */}
