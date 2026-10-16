@@ -205,8 +205,15 @@ export function Chaine({ niveaux, compact, surNom }: { niveaux: Niveau[]; compac
             )}
             {!compact && n.personne ? <Text style={TYPO.note}>{n.personne.role}</Text> : null}
             {!compact && n.decide ? <Text style={TYPO.corps}>Décide : {n.decide}.</Text> : null}
-            {!compact && n.note ? <Text style={TYPO.note}>{n.note}</Text> : null}
-            {!compact && n.pied ? n.pied : null}
+            {/* DENSITE (16/10/2026) : le nom, le role et ce que le niveau decide restent
+                visibles ; les precisions (composition, nuances d'Ile-de-France, liens de
+                definition) se deplient. */}
+            {!compact && (n.note || n.pied) ? (
+              <Depli titre={`En savoir plus (${n.niveau})`}>
+                {n.note ? <Text style={TYPO.note}>{n.note}</Text> : null}
+                {n.pied ? n.pied : null}
+              </Depli>
+            ) : null}
           </View>
         </View>
       ))}
@@ -219,8 +226,11 @@ export function Depli({ titre, children }: { titre: string; children: ReactNode 
   const [ouvert, setOuvert] = useState(false);
   return (
     <View>
+      {/* aria-expanded en plus d'accessibilityState (16/10/2026) : mesure sur la version
+          web, l'etat du repli n'etait pas expose (aria-expanded absent) ; un lecteur
+          d'ecran ne savait pas si l'explication etait ouverte. */}
       <Pressable onPress={() => setOuvert(o => !o)} accessibilityRole="button"
-        accessibilityState={{ expanded: ouvert }} style={({ pressed }) => [s.depli, pressed && { opacity: 0.6 }]}>
+        accessibilityState={{ expanded: ouvert }} aria-expanded={ouvert} style={({ pressed }) => [s.depli, pressed && { opacity: 0.6 }]}>
         <Text style={[TYPO.note, { color: couleurs.lien, fontWeight: "600", flex: 1 }]}>{titre.replace(/ ([?!:;])/g, "\u00a0$1")}</Text>
         <Text style={[TYPO.note, { color: couleurs.lien }]} accessibilityElementsHidden importantForAccessibility="no">{ouvert ? "−" : "+"}</Text>
       </Pressable>

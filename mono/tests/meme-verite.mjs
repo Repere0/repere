@@ -136,8 +136,15 @@ async function texteSite(nav, { dep, nom }) {
    source ouvertes une a une (spike du 30/09/2026 : la ligne de source complete
    et le calcul vivent desormais dans la feuille « D'où vient cette
    information ? » et dans « Détails du calcul »). */
+/* Les replis a ouvrir pour tout lire : l'application montre la reponse et replie
+   l'explication (refonte de densite du 16/10/2026). */
+const REPLIS = /Ce que ça ne veut pas dire|Détails du calcul|^Le détail|^En savoir plus|Ce que veut dire chaque étape|^Le parcours d'une loi|^Voir ses \d+ autres votes|^Voir son autre vote/;
+
 async function toutLire(p) {
-  for (const depli of await p.getByRole("button", { name: /Ce que ça ne veut pas dire|Détails du calcul/ }).filter({ visible: true }).all()) await depli.click();
+  /* Deux passes : un repli « Le détail (…) » peut en contenir d'autres (16/10/2026). */
+  /* Le premier repli ferme, jusqu'a ce qu'il n'en reste aucun (replis imbriques). */
+  const fermes = p.getByRole("button", { name: REPLIS, expanded: false }).filter({ visible: true });
+  for (let k = 0; k < 60 && await fermes.count(); k++) await fermes.first().click();
   let t = await p.evaluate(() => document.body.innerText);
   const pastilles = p.getByRole("button", { name: /D'où vient cette information/ }).filter({ visible: true });
   const n = await pastilles.count();

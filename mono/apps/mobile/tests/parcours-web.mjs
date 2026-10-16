@@ -70,7 +70,13 @@ const ELUS_CANTON = await (async () => {
 const { semaineParlement, jourParis } = await import("../../../packages/core/src/aujourdhui.js");
 const servi = async f => { try { const r = await fetch(BASE + "/data/" + f); return r.ok ? await r.json() : null; } catch { return null; } };
 const SEMAINE = semaineParlement({ agendaAN: await servi("agenda-an.json"), cal: await servi("calendrier-senat.json"), maintenant: new Date() });
-const lireSemaine = page => page.evaluate(() => {
+/* Les explications de la carte sont repliees (16/10/2026) : on les ouvre avant de lire. */
+const lireSemaine = async page => {
+  const r = page.getByTestId("semaine-parlement").getByRole("button", { name: "Le détail (semaine)", expanded: false });
+  if (await r.count()) { await r.first().click(); await page.waitForTimeout(200); }
+  return lireSemaineDom(page);
+};
+const lireSemaineDom = page => page.evaluate(() => {
   const c = document.querySelector('[data-testid="semaine-parlement"]');
   if (!c || !c.offsetParent) return null;
   const reps = [...document.querySelectorAll('[data-testid="reponse"]')].filter(e => e.offsetParent);
@@ -266,6 +272,14 @@ for (const largeur of [360, 390, 430]) {
     await page.getByRole("button", { name: action, exact: true }).first().click();
     await page.getByText(question).first().waitFor({ timeout: 10000 });
     await page.waitForTimeout(800);
+    /* Les explications sont repliees (16/10/2026) : on les ouvre toutes, en deux
+       passes, avant de mesurer — le contraste, les cibles et le texte se verifient
+       aussi dans les replis. */
+    /* Le premier repli ferme, jusqu'a ce qu'il n'en reste aucun : la liste se
+       recalcule apres chaque ouverture (replis imbriques). Plafond : 40. */
+    const fermes = page.getByRole("button", { name: /^Le détail|^En savoir plus|Ce que veut dire chaque étape|^Le parcours d'une loi|^Voir ses \d+ autres votes/, expanded: false }).filter({ visible: true });
+    for (let k = 0; k < 40 && await fermes.count(); k++) await fermes.first().click();
+    await page.waitForTimeout(300);
     const m = await mesurer();
     communs(m, action);
     if (action === "Le calendrier") {
@@ -385,6 +399,8 @@ async function montantA100ms(reduit) {
   await page.getByRole("button", { name: new RegExp("^" + COMMUNE.nom + ",") }).first().click();
   /* Depuis le spike du 30/09/2026, le compteur anime vit sur l'ecran « Où va l'argent ». */
   await page.getByRole("button", { name: "Où va cet argent ?" }).first().click();
+  /* La moyenne par jour est repliee depuis le 16/10/2026 : on ouvre son repli. */
+  await page.getByRole("button", { name: /^Le détail : par jour/ }).first().click();
   const cible = page.locator('[aria-label$="€ par jour"]').first();
   await cible.waitFor({ timeout: 15000 });
   await page.waitForTimeout(100);
