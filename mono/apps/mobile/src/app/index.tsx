@@ -58,6 +58,8 @@ export default function Accueil() {
   const manquante = cherches.length ? manquantes.find(([, , c]) => correspond(cherches, c)) : undefined;
   const rien = cherches.length > 0 && trouvees.length === 0 && !manquante;
   const enRecherche = actif || cherches.length > 0;
+  /* Une commune francilienne reellement publiee, pour voir l'application hors couverture. */
+  const exemple = communes.find(([insee]) => insee === "77284");
   /* Le departement se lit par @repere/core (departementDe), comme sur le site :
      trois chiffres outre-mer (971...), deux ailleurs, 2A/2B en Corse. */
   const nomDep = (code: string) => {
@@ -143,8 +145,13 @@ export default function Accueil() {
               /* 08/10/2026 : « Rien ne correspond » laissait croire que la commune
                  n'existe pas. L'application ne couvre que l'Ile-de-France pendant la
                  beta : c'est une limite de couverture, pas une absence de donnees. */
+              /* 16/10/2026 (audit Lovable) : un exemple, seulement si Meaux est dans la liste
+                 publiee, et dit comme tel ; le choix n'est fait que si le lecteur touche le
+                 bouton, et rien ne laisse croire que sa commune est couverte. */
               <Vide titre={`Aucune commune d'Île-de-France ne correspond à « ${filtre.trim()} ».`}
-                corps="Pendant la bêta, l'application ne couvre que l'Île-de-France : pour une commune d'ailleurs, les données ne sont pas encore disponibles ici. Sinon, vérifiez l'orthographe du début du nom." />
+                corps="Pendant la bêta, l'application ne couvre que l'Île-de-France : pour une commune d'ailleurs, les données ne sont pas encore disponibles ici. Sinon, vérifiez l'orthographe du début du nom."
+                action={exemple ? `Voir un exemple\u00a0: ${exemple[1]}` : undefined}
+                onAction={exemple ? () => ouvrir(exemple[0], exemple[1]) : undefined} />
             ) : null}
           </View>
         }

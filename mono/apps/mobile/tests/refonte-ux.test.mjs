@@ -169,3 +169,9 @@ test("Qui decide : un territoire sans conseil departemental ne l'affiche pas en 
   assert.match(q, /if \(sans\) return \{ \.\.\.n, institution: sans\.titre, decide: undefined/,
     "Paris, la Corse ou la Martinique affichent de nouveau « Conseil departemental » en titre");
 });
+
+test("accueil hors Ile-de-France : un exemple seulement s'il est publie, et dit comme tel (16/10/2026)", () => {
+  const a = lire("app/index.tsx");
+  assert.match(a, /const exemple = communes\.find\(/, "l'exemple n'est plus pris dans la liste publiee");
+  assert.match(a, /action=\{exemple \? `Voir un exemple/, "le bouton ne dit plus qu'il s'agit d'un exemple");
+});
