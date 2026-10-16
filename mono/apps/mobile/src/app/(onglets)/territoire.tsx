@@ -46,16 +46,24 @@ export default function ChezVousTerritoire() {
       const publie = datePublication(r.index);
       const agglo = nomIntercommunalite(fiche.agglo && fiche.agglo.nom);
       const circos: number[] = Array.isArray(fiche.circo) ? fiche.circo : (fiche.circo == null ? [] : [fiche.circo]);
-      const territoire = depIndex ? [depIndex.nom, depIndex.region].filter(Boolean).join(" · ") : null;
       return (
         <Page>
           <Stack.Screen options={{ title: "Chez vous" }} />
-          <Question etiquette="Chez vous" question={nom} sous="Votre commune, dans son territoire." />
+          {/* Sans etiquette « Chez vous » (16/10/2026) : la barre haute et l'onglet le
+             disent deja ; le nom de la commune est la reponse. */}
+          <Question question={nom} sous="Votre commune, dans son territoire." />
           {publie ? <Text style={TYPO.micro}>Publication Repère du {dateFr(publie)}</Text> : null}
 
           <Carte>
             <Rubrique titre="Département et région">
-              <Text style={TYPO.reponse}>{territoire || "Le département de cette commune n'est pas arrivé jusqu'ici."}</Text>
+              {/* Le departement, puis la region sur sa ligne (16/10/2026) : sur une seule
+                 ligne, « Île-de-France » se coupait au trait d'union (capture 390 px). */}
+              {depIndex ? (
+                <View>
+                  <Text style={TYPO.reponse}>{depIndex.nom}</Text>
+                  {depIndex.region ? <Text style={TYPO.note}>{`Région ${depIndex.region}`}</Text> : null}
+                </View>
+              ) : <Text style={TYPO.reponse}>Le département de cette commune n'est pas arrivé jusqu'ici.</Text>}
             </Rubrique>
 
             <Rubrique titre="Intercommunalité">
