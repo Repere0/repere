@@ -41,6 +41,13 @@ function Parcours({ niveaux }: { niveaux: Niveau[] }) {
   );
 }
 
+/* Ce que dit un point vide, seulement s'il y en a un (16/10/2026) : la forme seule ne
+   s'explique pas. Le lecteur d'ecran l'entend deja dans le resume du parcours. */
+function LegendeParcours({ niveaux }: { niveaux: Niveau[] }) {
+  if (niveaux.every(n => n.personne)) return null;
+  return <Text style={[TYPO.micro, { textAlign: "center" }]} importantForAccessibility="no" accessibilityElementsHidden>Point vide : aucune personne nommée à ce niveau.</Text>;
+}
+
 export default function QuiDecide() {
   return (
     <AvecDonnees rendu={r => {
@@ -94,9 +101,13 @@ export default function QuiDecide() {
       return (
         <Page>
           <Stack.Screen options={{ title: LIBELLES.qui }} />
-          <Question emoji="🏛️" etiquette="Qui décide" question={`Qui décide pour ${d.nomCommune} ?`}
-            sous="Du plus proche de chez vous au plus lointain. Ce n'est pas un ordre d'importance : c'est un ordre de distance." />
+          {/* Sans etiquette ni emoji (16/10/2026) : « Qui décide » etait ecrit trois fois
+             (barre haute, etiquette, question). L'introduction tient en une phrase et garde
+             ce qu'elle protege : un ordre de distance, pas d'importance (invariant 3). */}
+          <Question question={`Qui décide pour ${d.nomCommune} ?`}
+            sous="Du plus proche de chez vous au plus lointain : un ordre de distance, pas d'importance." />
           <Parcours niveaux={niveaux} />
+          <LegendeParcours niveaux={niveaux} />
           <Chaine niveaux={niveaux} surNom={n => router.push({ pathname: "/elu", params: {
             nom: n.personne ? n.personne.nom : "", role: n.personne ? n.personne.role : "", echelon: n.echelon,
             niveau: n.niveau, institution: n.institution, lieu: n.lieu || "" } })} />
