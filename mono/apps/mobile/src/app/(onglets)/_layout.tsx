@@ -15,6 +15,7 @@ import { Tabs } from "expo-router";
 import { LIBELLES } from "@repere/core";
 import { couleurs } from "../../lib/theme";
 import { Retour } from "../../ui/retour";
+import { IconeCalendrier, IconeHorloge, IconeMaison } from "../../ui/icones";
 
 /* Au-dela de ce facteur d'agrandissement du texte du telephone, le libelle d'onglet
    est masque : l'onglet ne montre que son icone. Le nom reste lu par les lecteurs
@@ -23,8 +24,9 @@ import { Retour } from "../../ui/retour";
    sur appareil (non verifie sur navigateur : PixelRatio y vaut 1). */
 const SEUIL_LIBELLE_MASQUE = 1.5;
 
-const libelle = (texte: string) => ({ color }: { color: ColorValue }) => (
-  <Text style={{ color, fontSize: 13, fontWeight: "700", textAlign: "center" }}>{texte}</Text>
+/* L'onglet actif se distingue aussi par la graisse, pas par la seule couleur (16/10/2026). */
+const libelle = (texte: string) => ({ color, focused }: { color: ColorValue; focused: boolean }) => (
+  <Text style={{ color, fontSize: 13, fontWeight: focused ? "800" : "600", textAlign: "center" }}>{texte}</Text>
 );
 
 /* Nom d'onglet : libelle visible, ou masque a grande taille. Le nom accessible est toujours fixe. */
@@ -33,9 +35,10 @@ const nomOnglet = (texte: string) =>
     ? { tabBarLabel: () => null, tabBarAccessibilityLabel: texte }
     : { tabBarLabel: libelle(texte), tabBarAccessibilityLabel: texte };
 
-/* Une icone sobre par onglet : un caractere, sans bibliotheque d'icones de plus. */
-const icone = (glyphe: string) => ({ color }: { color: ColorValue }) => (
-  <Text accessibilityElementsHidden importantForAccessibility="no" style={{ color, fontSize: 20, lineHeight: 24 }}>{glyphe}</Text>
+/* Une icone dessinee par onglet (ui/icones.tsx, 16/10/2026) : les caracteres
+   « ◷ ⌂ ▦ » dependaient de la police du telephone. Sans bibliotheque de plus. */
+const icone = (Icone: (p: { couleur: string }) => React.JSX.Element) => ({ color }: { color: ColorValue }) => (
+  <Icone couleur={String(color)} />
 );
 
 export default function Onglets() {
@@ -56,7 +59,7 @@ export default function Onglets() {
         options={{
           title: LIBELLES.aujourdhui,
           ...nomOnglet(LIBELLES.aujourdhui),
-          tabBarIcon: icone("◷"),
+          tabBarIcon: icone(IconeHorloge),
           headerLeft: () => <Retour texte="Communes" etiquette="Revenir à l'accueil pour changer de commune" />,
         }}
       />
@@ -65,12 +68,12 @@ export default function Onglets() {
         options={{
           title: "Chez vous",
           ...nomOnglet("Chez vous"),
-          tabBarIcon: icone("⌂"),
+          tabBarIcon: icone(IconeMaison),
           headerLeft: () => <Retour texte="Communes" etiquette="Revenir à l'accueil pour changer de commune" />,
         }}
       />
       <Tabs.Screen name="qui-decide" options={{ title: LIBELLES.qui, href: null }} />
-      <Tabs.Screen name="a-venir" options={{ title: LIBELLES.calendrier, ...nomOnglet("Calendrier"), tabBarIcon: icone("▦") }} />
+      <Tabs.Screen name="a-venir" options={{ title: LIBELLES.calendrier, ...nomOnglet("Calendrier"), tabBarIcon: icone(IconeCalendrier) }} />
     </Tabs>
   );
 }
