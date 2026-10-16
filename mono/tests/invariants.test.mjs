@@ -64,6 +64,20 @@ test("invariant 0 — chaque invariant déclare le contrôle qui le garde", () =
   }
 });
 
+/* LA REGLE ECRITE ET LA REGLE CODEE NE DIVERGENT PAS — 16/10/2026. L'amendement de
+   l'invariant 7 (tricolore du logo) avait ete ecrit dans invariants.js et sa garde le
+   matin, mais pas dans CLAUDE.md / AGENTS.md (le contexte que lisent les agents) :
+   deux textes pour une meme regle. Ce controle compare le texte de l'invariant 7 de
+   CLAUDE.md (gras et retours a la ligne retires) a la regle de invariants.js. */
+test("invariant 7 — CLAUDE.md et invariants.js disent la meme regle", () => {
+  const claude = fs.readFileSync(path.join(RACINE, "..", "CLAUDE.md"), "utf8");
+  const m = /\n7\. ([\s\S]*?)\n8\. /.exec(claude);
+  assert.ok(m, "l'invariant 7 est introuvable dans CLAUDE.md");
+  const ecrite = m[1].replace(/\*\*/g, "").replace(/\s+/g, " ").trim();
+  const codee = INVARIANTS.find(i => i.n === 7).regle.replace(/\s+/g, " ").trim();
+  assert.equal(ecrite, codee, "la regle 7 de CLAUDE.md et celle de invariants.js divergent");
+});
+
 test("invariant 2 — une seule clé de stockage, nommée, et rien d'autre", () => {
   const cles = new Set();
   for (const f of sourcesEcrites()) {
