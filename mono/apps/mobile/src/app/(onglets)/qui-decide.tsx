@@ -20,6 +20,27 @@ import { PastilleSource } from "../../ui/source";
 import { Chaine, type Niveau } from "../../ui/visuels";
 import { prefetDeRegion } from "../../lib/prefet";
 
+/* Ou se situe l'elu : une rangee de cinq points, un par niveau. Point plein : la source
+   nomme une personne a ce niveau ; point vide : aucune personne nommee, et le dit. Les
+   couleurs sont les cinq couleurs d'echelon (invariant 7), seul endroit ou elles coexistent. */
+const LIBELLE_ECHELON: Record<string, string> = { ville: "Ville", agglo: "Agglo", dept: "Dépt", region: "Région", france: "France" };
+function Parcours({ niveaux }: { niveaux: Niveau[] }) {
+  return (
+    <View accessible accessibilityRole="summary"
+      accessibilityLabel={niveaux.map(n => `${LIBELLE_ECHELON[n.echelon] || n.echelon} : ${n.personne ? n.personne.nom : "aucune personne nommée"}`).join(". ")}
+      style={{ flexDirection: "row", justifyContent: "space-between", paddingHorizontal: PAS }}>
+      {niveaux.map((n, i) => (
+        <View key={i} importantForAccessibility="no" style={{ flex: 1, alignItems: "center", gap: 6 }}>
+          <View style={{ width: 14, height: 14, borderRadius: 7, borderWidth: 2,
+            borderColor: (couleurs as Record<string, string>)[n.echelon],
+            backgroundColor: n.personne ? (couleurs as Record<string, string>)[n.echelon] : "transparent" }} />
+          <Text style={TYPO.micro}>{LIBELLE_ECHELON[n.echelon] || n.echelon}</Text>
+        </View>
+      ))}
+    </View>
+  );
+}
+
 export default function QuiDecide() {
   return (
     <AvecDonnees rendu={r => {
@@ -75,6 +96,7 @@ export default function QuiDecide() {
           <Stack.Screen options={{ title: LIBELLES.qui }} />
           <Question emoji="🏛️" etiquette="Qui décide" question={`Qui décide pour ${d.nomCommune} ?`}
             sous="Du plus proche de chez vous au plus lointain. Ce n'est pas un ordre d'importance : c'est un ordre de distance." />
+          <Parcours niveaux={niveaux} />
           <Chaine niveaux={niveaux} surNom={n => router.push({ pathname: "/elu", params: {
             nom: n.personne ? n.personne.nom : "", role: n.personne ? n.personne.role : "", echelon: n.echelon,
             niveau: n.niveau, institution: n.institution, lieu: n.lieu || "" } })} />

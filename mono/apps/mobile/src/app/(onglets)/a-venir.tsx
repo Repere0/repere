@@ -22,12 +22,12 @@ import { router, Stack } from "expo-router";
 import {
   AGE_RELEVE_NORMAL, ageReleve, dateFr, ETAPES_LOI, jourFr, jourParis, LIBELLES, regrouperParJour,
 } from "@repere/core";
-import { type Ev, type Groupe, heuresDuGroupe, INSTITUTIONS, parametresRendezVous } from "../../lib/calendrier";
+import { type Ev, type Groupe, heuresDuGroupe, horairesDuGroupe, INSTITUTIONS, parametresRendezVous } from "../../lib/calendrier";
 import { Carte, LienAction, Vide } from "../../lib/composants";
 import { AGENDA_PAS_ARRIVE, AGENDA_VIDE } from "../../lib/absences";
 import { srcAgenda } from "../../lib/sources";
 import { useCommuneChoisie } from "../../lib/useCommune";
-import { couleurs, CIBLE, PAS, TYPO } from "../../lib/theme";
+import { couleurs, CIBLE, PAS, POLICE, TYPO } from "../../lib/theme";
 import { AvecDonnees, Page, Question } from "../../ui/page";
 import { PastilleSource } from "../../ui/source";
 import { Depli } from "../../ui/visuels";
@@ -49,9 +49,17 @@ function rangLundi(iso: string): number {
 
 function Ligne({ g }: { g: Groupe }) {
   const heures = heuresDuGroupe(g);
+  /* L'heure de debut, seule, en colonne : « 9 h » de « 9 h, heure de fin non précisée ». */
+  const heure = (horairesDuGroupe(g)[0] || "").split(/,| à /)[0].trim();
   const points = g.points || [];
   return (
-    <View testID="cal-ligne" style={{ gap: PAS, paddingTop: PAS * 3, borderTopWidth: 1, borderTopColor: couleurs.trait }}>
+    <View testID="cal-ligne" style={{ flexDirection: "row", gap: PAS * 3, paddingTop: PAS * 3, borderTopWidth: 1, borderTopColor: couleurs.trait }}>
+      {heure ? (
+        <View style={{ width: 64 }}>
+          <Text style={{ fontFamily: POLICE.affiche, fontSize: 22, lineHeight: 26, color: couleurs.encre }}>{heure}</Text>
+        </View>
+      ) : null}
+      <View style={{ flex: 1, gap: PAS }}>
       {/* le sujet d'abord : c'est ce qui interesse le lecteur, l'horaire vient ensuite */}
       <Text style={[TYPO.reponse, { fontSize: 17, lineHeight: 23 }]}>{g.titre}</Text>
       <Text style={TYPO.note}>{[g.institution, g.categorie].filter(Boolean).join(" · ")}</Text>
@@ -70,6 +78,7 @@ function Ligne({ g }: { g: Groupe }) {
       {/* Le detail complet : source, date du releve, institution, points publies. */}
       <LienAction texte="Voir le détail et la source" etiquette={`Détail du rendez-vous : ${g.titre}`}
         onPress={() => router.push({ pathname: "/evenement", params: parametresRendezVous(g) })} />
+      </View>
     </View>
   );
 }
