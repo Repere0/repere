@@ -152,28 +152,25 @@ export default function AVenir() {
           <View style={{ flexDirection: "row", alignItems: "flex-end", justifyContent: "space-between", gap: PAS * 2 }}>
             <View style={{ flex: 1 }}>
               <Question etiquette="Au Parlement" question="Calendrier"
-                sous="Les séances annoncées à l'Assemblée nationale et au Sénat. Elles concernent tout le pays, pas seulement votre commune. Les heures sont celles de Paris." />
+                sous="Les séances annoncées à l'Assemblée nationale et au Sénat. Elles concernent tout le pays. Heures de Paris." />
             </View>
           </View>
-          <Pressable onPress={() => setMois(m => !m)} accessibilityRole="button"
-            accessibilityLabel={mois ? "Voir la semaine" : "Voir le mois"}
-            style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", alignSelf: "flex-start", opacity: pressed ? 0.6 : 1 })}>
-            <Text style={{ color: couleurs.encre, fontWeight: "700", textDecorationLine: "underline" }}>{mois ? "Voir la semaine" : "Voir le mois"}</Text>
-          </Pressable>
 
           {!r.agendaLu ? (
             <Vide {...AGENDA_PAS_ARRIVE} action="Réessayer" onAction={reessayer} />
           ) : (
             <>
-              {manquantes.map(i => (
-                <Text key={i} style={TYPO.note}>{nbsp(`Le calendrier ${de(i)} n'est pas arrivé jusqu'ici : il n'est pas affiché, et rien n'est inventé à sa place.`)}</Text>
-              ))}
-              {vieillis.map(x => (
-                <Text key={"age-" + x.institution} testID="releve-ancien" style={TYPO.note}>
-                  {nbsp(`Agenda ${de(x.institution)} relevé le ${dateFr(x.source.releve_le)}, il y a ${x.age} jours : il a pu changer depuis. Le site officiel fait foi.`)}
-                </Text>
-              ))}
-
+              {/* LES SEANCES D'ABORD (16/10/2026). Mesure : la premiere seance arrivait a
+                 740 px a 390 x 844, sous quatre paragraphes ; a 375 x 667, aucune seance au
+                 premier ecran. Rien n'est retire : la bascule semaine / mois rejoint la
+                 frise, l'age du releve reste AVANT la liste (invariant 9 : le lecteur sait
+                 tout de suite que l'agenda a pu changer), l'absence du Senat suit le compte
+                 qu'elle explique, et la note sur les rappels passe sous la liste. */}
+              <Pressable onPress={() => setMois(m => !m)} accessibilityRole="button"
+                accessibilityLabel={mois ? "Voir la semaine" : "Voir le mois"}
+                style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", alignSelf: "flex-end", opacity: pressed ? 0.6 : 1, marginBottom: -PAS * 2 })}>
+                <Text style={{ color: couleurs.encre, fontWeight: "700", textDecorationLine: "underline" }}>{mois ? "Voir la semaine" : "Voir le mois"}</Text>
+              </Pressable>
               {/* Semaine ou mois : un seul choix de jour, en haut de l'ecran. */}
               {mois ? (
                 <View accessibilityRole="none" accessibilityLabel="Calendrier du mois" style={{ gap: 2 }}>
@@ -208,15 +205,21 @@ export default function AVenir() {
                 })}
               </View>
 
+              {vieillis.map(x => (
+                <Text key={"age-" + x.institution} testID="releve-ancien" style={TYPO.note}>
+                  {nbsp(`Agenda ${de(x.institution)} relevé le ${dateFr(x.source.releve_le)}, il y a ${x.age} jours : il a pu changer depuis. Le site officiel fait foi.`)}
+                </Text>
+              ))}
               <Text style={[TYPO.corps, { fontWeight: "700" }]}>{choisi && etiquetteJour ? `${etiquetteJour}. ` : ""}{phrase}</Text>
+              {manquantes.map(i => (
+                <Text key={i} style={TYPO.note}>{nbsp(`Le calendrier ${de(i)} n'est pas arrivé jusqu'ici : il n'est pas affiché, et rien n'est inventé à sa place.`)}</Text>
+              ))}
               {choisi ? (
                 <Pressable onPress={() => setChoisi(false)} accessibilityRole="button" accessibilityLabel="Revenir à la liste des deux prochaines semaines"
                   style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", opacity: pressed ? 0.6 : 1 })}>
                   <Text style={{ color: couleurs.lien, fontWeight: "700", textDecorationLine: "underline" }}>Voir les deux prochaines semaines</Text>
                 </Pressable>
               ) : null}
-              <Text style={TYPO.note}>Les rappels ne sont pas encore disponibles dans l'application.</Text>
-
               {affiches.length ? (
                 <Carte echelon="france">
                   {affiches.map((g, i) => <Ligne key={g.debut + i} g={g} />)}
@@ -225,6 +228,7 @@ export default function AVenir() {
                   </View>
                 </Carte>
               ) : null}
+              <Text style={TYPO.note}>Les rappels ne sont pas encore disponibles dans l'application.</Text>
 
               {!aVenir.length && toutes.length ? (
                 <Text style={TYPO.note}>Rien de publié pour ce filtre. Le filtre « Tout » montre le reste.</Text>
