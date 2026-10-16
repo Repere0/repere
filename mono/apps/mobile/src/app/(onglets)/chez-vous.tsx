@@ -199,8 +199,9 @@ export default function ChezVous() {
           <View style={{ gap: PAS * 2 }}>
             <Etiquette texte="Aller plus loin" />
             <View>
-              <Plus premier texte={LIBELLES.calendrier} onPress={() => router.push("/a-venir")} />
-              <Plus dernier texte={LIBELLES.sources} onPress={() => router.push("/sources")} />
+              {/* « Le calendrier » n'est plus ici (16/10/2026) : la carte de la semaine
+                 et l'onglet y menent deja. */}
+              <Plus premier dernier texte={LIBELLES.sources} onPress={() => router.push("/sources")} />
             </View>
           </View>
 

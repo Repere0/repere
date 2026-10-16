@@ -24,6 +24,7 @@ import { AGENDA_PAS_ARRIVE } from "../lib/absences";
 import { srcAgenda } from "../lib/sources";
 import { couleurs, CIBLE, OMBRE, PAS, RAYON, TYPO } from "../lib/theme";
 import { typo } from "./reponse";
+import { Depli } from "./visuels";
 import { PastilleSource } from "./source";
 
 type Jour = { date: string; seances: number; annonce: boolean };
@@ -87,11 +88,15 @@ export function SemaineParlement({ sp, lu, nom }: { sp: Semaine | null | undefin
       : sp.jours.some(j => j.annonce)
         ? "Aucune séance publique n'est annoncée cette semaine."
         : "L'agenda de cette semaine n'est pas encore publié.";
-  const notes = [
-    `Cela concerne tout le pays, pas seulement ${nom}.`,
+  /* DENSITE (16/10/2026) : visibles, la portee nationale et l'age du releve
+     (invariant 9) ; repliees sous « Le détail (semaine) », les explications. */
+  const explications = [
     votes.length ? "Lors d'un vote solennel, chaque député vote à son nom." : null,
     manquantes.length ? `Le calendrier ${manquantes[0] === "Sénat" ? "du Sénat" : "de l'Assemblée nationale"} n'est pas arrivé : seules les séances ${lues[0] === "Sénat" ? "du Sénat" : "de l'Assemblée nationale"} sont comptées.` : null,
     horsParis() ? "Jours et heures à l'heure de Paris, comme l'agenda publié." : null,
+  ].filter(Boolean) as string[];
+  const notes = [
+    `Cela concerne tout le pays, pas seulement ${nom}.`,
     /* 08/10/2026 : l'age du releve, comme le site et le calendrier (invariant 9) */
     ...sp.institutions.map(x => ({ x, age: ageReleve(x.source && x.source.releve_le) }))
       .filter(({ age }) => age !== null && age > AGE_RELEVE_NORMAL)
@@ -133,6 +138,11 @@ export function SemaineParlement({ sp, lu, nom }: { sp: Semaine | null | undefin
       ) : null}
 
       {notes.map(n => <Text key={n} style={TYPO.note}>{typo(n)}</Text>)}
+      {explications.length ? (
+        <Depli titre="Le détail (semaine)">
+          {explications.map(n => <Text key={n} style={TYPO.note}>{typo(n)}</Text>)}
+        </Depli>
+      ) : null}
 
       <View style={s.pied}>
         <View style={{ flexDirection: "row", flexWrap: "wrap", flexShrink: 1 }}>
