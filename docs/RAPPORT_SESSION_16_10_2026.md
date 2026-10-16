@@ -236,3 +236,101 @@ sur appareil. Tout ce qui précède est mesuré sur l'export web.
 **Non vérifié** : iPhone, Android, VoiceOver, TalkBack ; clavier réel sur l'accueil ;
 glyphe du trait d'union insécable (U+2011) dans les polices natives ; écrans des
 scrutins avec données.
+
+---
+
+# Soirée du 16/10/2026 — mission « recommandations Lovable »
+
+Le rapport Lovable lui-même n'a pas été transmis : seule la mission du porteur, qui en
+reprend les recommandations (P1 à P7), a servi de référence.
+
+## A. État des PR
+
+| PR | départ (20 h 20) | fin de soirée |
+|---|---|---|
+| #147 `fix/collecte-banc-lisible` → `main` | `fd64196`, `epreuve` + `mobile` verts | inchangée |
+| #148 `feat/beta-mobile-16-10` → `feat/refonte-chez-vous-calendrier` | `1b1bd70`, `mobile` vert | inchangée |
+| #149 `feat/ux-densite-16-10` → #148 | `978f548` (2 commits de 18 h 19 + **5 fichiers modifiés non commités** trouvés dans l'espace de travail) | `3dbc334`, `mobile` **vert**, fusionnable sans conflit |
+
+Les commits de 18 h 19 et les fichiers non commités viennent d'un premier passage de cette
+même session, interrompu. Rien n'a été écrasé : les fichiers ont été vérifiés puis commités.
+Aucune fusion, aucun push sur `main`, aucune PR fermée.
+
+## B. Commits de la soirée (tous sur #149)
+
+`f71304f` accueil · `c4ce01f` élu local / Chez vous · `73d2647` feuille source ·
+`5037e7f` vote · `36a281d` Qui décide (intercommunalité) · `d5f745c` Qui décide (Paris) ·
+`c748e88` accueil hors IDF · `bd77b1b` partage · `86d8051` semaine · `4796b7f` procédure ·
+`3dbc334` vote (trait d'union). Plus, de 18 h 19 : `0e873e2` (calcul des parts), `978f548` (HT).
+
+## C. Changements écran par écran
+
+- **Accueil** : vie privée en une ligne ; détail technique déplacé dans Sources ; résultats
+  nom puis département ; hors Île-de-France, « Voir un exemple : Meaux » (seulement si publiée).
+- **Aujourd'hui** : « 1,5 M€ hors taxes » (donnée vérifiée : 726 800 € / 1 533 500 € HT =
+  47,4 %, DGCL, colonne `cout_ht`) ; semaine : portée nationale et âge du relevé en un paragraphe.
+- **Chez vous** : plus de lien « Le calendrier » (onglet toujours visible).
+- **Qui décide** : président de l'intercommunalité quand le Répertoire le désigne parmi les élus
+  de la commune (Meaux : J.-F. COPE ; 17 EPCI de Seine-et-Marne) ; point vide = « pas de nom
+  affiché », la carte dit pourquoi ; Paris : « Paris n'a pas de conseil départemental. » en titre.
+- **Fiche d'un élu** : plus d'onglet « Votes » pour un élu local ; note interne retirée.
+- **Où va l'argent** : le calcul de chaque part avec les deux montants publiés (dans les replis).
+- **Vote** : pourquoi ce député, sous le titre ; exemple dit en haut pour une commune partagée
+  (régression de l'agent à 15 h 55, corrigée) ; numéro du scrutin.
+- **Partager** : ce que fait chaque bouton ; source et scrutin sur la carte 1.
+- **Procédure** : six étapes lisibles d'un coup d'œil ; note exacte sur les articles 10, 39, 45, 61.
+- **Feuille « D'où vient cette information ? »** : « Fermer » aussi en haut.
+
+## D. Tests (après `3dbc334`)
+
+| commande | résultat |
+|---|---|
+| `npx tsc --noEmit` (mobile) | 0 erreur |
+| `node --test tests/refonte-ux.test.mjs` | 21/21 (8 gardes ajoutées ce soir, chacune vue rouge sur l'ancien fichier) |
+| territoire, liens-definitions, partager-lisible, texte-agrandi | 3/3, 6/6, 2/2, 6/6 |
+| `node --test tests/core.test.mjs` | 30/30 (président d'EPCI, vu rouge) |
+| `node --test tests/invariants.test.mjs` | 63/63 |
+| `pnpm build` + `pnpm test` | 162/166 : 3 échecs causés par une copie `apps/web/dist.bak` faite par l'agent (supprimée, invariants relancés : 63/63) ; 1 échec d'environnement (`runtime.test.mjs`, scrutins absents du conteneur, comme le matin) |
+| `parcours-web.mjs`, `meme-verite.mjs` | zéro échec (107 faits comparés) |
+| `reflow-200.mjs` | 8 écrans, 0 débordement, 0 texte coupé |
+| CI GitHub `mobile` | verte sur `3dbc334` (et 73d2647, d5f745c, 86d8051, 4796b7f) ; `36a281d`, `c748e88`, `bd77b1b` **annulées** par le push suivant, non comptées comme vertes |
+
+Longueurs (390 × 844, Meaux) : Aujourd'hui 2,1 · Chez vous 1,0 · Qui décide 1,9 ·
+Calendrier 2,3 · Argent 2,5 · Vote 2,3 · Sources 2,3 · Dictionnaire 1,1 (total 15,5 ; 15,3 à
+17 h). Hausses voulues : pourquoi ce député, section vie privée, titres des étapes.
+
+## E. Captures
+
+Page « Repère avant / après du 16 octobre » (artefact privé, claude.ai), 19 écrans × 4 vues
+(avant `341cbe5` / après `3dbc334`, 390 × 844 et 375 × 667), export web Chromium, Meaux.
+
+## F. Recommandations Lovable
+
+- **Appliquées** : P1 (vie privée, hiérarchie des résultats, hors IDF honnête + exemple),
+  P2 (chiffres du projet vérifiés, HT), P3 (doublon, niveaux sans nom, président d'EPCI, Paris),
+  P5 (onglet Votes, note interne, pourquoi ce député, n° de scrutin, partage), P6 (fraîcheur
+  allégée sans rien retirer), P7 (procédure, fermeture en haut, emoji décoratif).
+- **Adaptées** : « répartition fictive sur 100 € » : les parts sont exactes (montants OFGL
+  vérifiés), le calcul est désormais montré ; Aujourd'hui : les trois réponses et la carte de la
+  semaine sont gardées, la dépense par habitant n'est pas retirée (pas de restructuration forcée).
+- **Reportées** : raccourcis touchables vers chaque niveau de Qui décide (le focus du lecteur
+  d'écran ne peut pas être vérifié ici) ; troisième réponse à 375 × 667.
+- **Rejetées** : aucune. « 15 M€ » n'existe dans aucune donnée : rien à corriger.
+- **Déjà présent** : recherche dans le dictionnaire.
+
+## G. À vérifier sur iPhone / Android
+
+Partage d'image (expo-sharing) ; clavier ouvert sur l'accueil ; « Fermer » en haut de la
+feuille (pageSheet iOS) ; VoiceOver / TalkBack (onglets de la fiche d'élu, légende, procédure) ;
+trait d'union insécable (U+2011) dans les polices natives.
+
+## H. Trois priorités pour décembre
+
+1. Revoir et fusionner la pile #147 → #148 → #149 (#147 avant le vote du 20/10).
+2. Un passage sur un vrai téléphone (Expo Go) avec la liste G, puis le banc de 10 testeurs.
+3. Rétablir la publication Netlify (figée depuis le 09/10) pour que le site suive.
+
+## I. Décisions requises
+
+- Règle « première / seconde partie du projet de loi de finances » (#147) **avant le 20/10**.
+- Texte de l'invariant 7 dans CLAUDE.md / AGENTS.md et scellement (refusés à l'agent).
