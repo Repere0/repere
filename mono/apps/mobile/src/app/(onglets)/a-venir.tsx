@@ -20,9 +20,10 @@ import { useState } from "react";
 import { Pressable, Text, View } from "react-native";
 import { router, Stack } from "expo-router";
 import {
-  AGE_RELEVE_NORMAL, ageReleve, dateFr, ETAPES_LOI, heureFr, jourFr, jourParis, LIBELLES, regrouperParJour,
+  AGE_RELEVE_NORMAL, ageReleve, dateFr, ETAPES_LOI, jourFr, jourParis, LIBELLES, regrouperParJour,
 } from "@repere/core";
-import { Carte, Vide } from "../../lib/composants";
+import { type Ev, type Groupe, heuresDuGroupe, INSTITUTIONS, parametresRendezVous } from "../../lib/calendrier";
+import { Carte, LienAction, Vide } from "../../lib/composants";
 import { AGENDA_PAS_ARRIVE, AGENDA_VIDE } from "../../lib/absences";
 import { srcAgenda } from "../../lib/sources";
 import { useCommuneChoisie } from "../../lib/useCommune";
@@ -31,12 +32,7 @@ import { AvecDonnees, Page, Question } from "../../ui/page";
 import { PastilleSource } from "../../ui/source";
 import { Depli } from "../../ui/visuels";
 
-type Ev = { titre: string; debut: string; institution: string; categorie?: string; lieu?: string; description?: string; source: Record<string, string> };
-type Groupe = { jour: string; institution: string; titre: string; debut: string; debuts: string[]; fins?: (string | null)[]; seances: number;
-  categorie: string | null; lieu: string | null; points: string[] | null; textesLibres: string[] };
-
-const INSTITUTIONS = ["Assemblée nationale", "Sénat"];
-const de = (i: string) => (i === "Sénat" ? "du Sénat" : "de l'Assemblée nationale");
+const de =(i: string) => (i === "Sénat" ? "du Sénat" : "de l'Assemblée nationale");
 const nbsp = (t: string) => t.replace(/ ([?!:;])/g, " $1");
 const LETTRES = ["L", "M", "M", "J", "V", "S", "D"];
 
@@ -52,14 +48,7 @@ function rangLundi(iso: string): number {
 }
 
 function Ligne({ g }: { g: Groupe }) {
-  /* Heure de debut et de fin de chaque seance, au meme rang. Fin absente : on l'ecrit
-     comme une absence (doctrine du vide, invariant 5), on ne la devine jamais. */
-  const heures = g.debuts.map((x, i) => {
-    const debut = heureFr(x);
-    if (!debut) return "";
-    const fin = g.fins && g.fins[i] ? heureFr(g.fins[i]) : "";
-    return fin ? `${debut} à ${fin}` : `${debut}, heure de fin non précisée`;
-  }).filter(Boolean).join(" · ");
+  const heures = heuresDuGroupe(g);
   const points = g.points || [];
   return (
     <View testID="cal-ligne" style={{ gap: PAS, paddingTop: PAS * 3, borderTopWidth: 1, borderTopColor: couleurs.trait }}>
@@ -78,6 +67,9 @@ function Ligne({ g }: { g: Groupe }) {
           {g.textesLibres.map((t, k) => <Text key={k} style={TYPO.note}>{t}</Text>)}
         </Depli>
       ) : null}
+      {/* Le detail complet : source, date du releve, institution, points publies. */}
+      <LienAction texte="Voir le détail et la source" etiquette={`Détail du rendez-vous : ${g.titre}`}
+        onPress={() => router.push({ pathname: "/evenement", params: parametresRendezVous(g) })} />
     </View>
   );
 }

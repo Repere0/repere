@@ -42,3 +42,31 @@ test("« Chez vous » : circonscription pliable, et pas de chaine des elus", () 
   assert.match(t, /<Depli titre="(Pourquoi|C'est quoi)/, "la circonscription n'a plus son explication pliable");
   assert.doesNotMatch(t, /\bChaine\b|chaineDecision/, "« Chez vous » reprend la chaine des elus");
 });
+
+test("détail d'un rendez-vous : une route, reliée au calendrier, sans heure devinée", () => {
+  const ev = lire("app/evenement.tsx");
+  assert.match(lire("app/_layout.tsx"), /name="evenement"/, "le détail du rendez-vous n'est pas déclaré dans la pile");
+  assert.match(lire("app/(onglets)/a-venir.tsx"), /pathname: "\/evenement"/, "le calendrier ne mène plus au détail");
+  assert.match(ev, /regrouperParJour/, "le détail ne relit pas le même regroupement que la liste");
+  assert.doesNotMatch(ev, /fin non publiée/, "le détail affiche « fin non publiée »");
+});
+
+test("sources : la donnée d'origine reste au premier niveau, la licence se déplie", () => {
+  const src = lire("app/sources.tsx");
+  assert.match(src, /<Depli/, "les sources n'ont plus de repli pour la licence et l'usage");
+  const lien = src.indexOf('texte="Voir la donnée originale"');
+  const repli = src.indexOf("<Depli");
+  assert.ok(lien > 0 && repli > lien, "le lien vers la donnée originale est passé dans le repli");
+});
+
+test("dictionnaire : cibles tactiles à 48 pt, pas à 40", () => {
+  const dico = lire("app/dictionnaire.tsx");
+  assert.doesNotMatch(dico, /minHeight: 40\b/, "une commande du dictionnaire est revenue à 40 pt");
+  assert.doesNotMatch(dico, /width: 40\b/, "une lettre du dictionnaire est revenue à 40 pt");
+});
+
+test("un seul lien d'action : LienAction, à 48 pt", () => {
+  assert.match(lire("lib/composants.tsx"), /export function LienAction\s*\(/, "le lien d'action n'est plus factorisé");
+  assert.match(lire("app/(onglets)/qui-decide.tsx"), /<LienAction\b/, "Qui décide n'utilise plus le lien d'action partagé");
+  assert.match(lire("app/(onglets)/a-venir.tsx"), /<LienAction\b/, "le calendrier n'utilise plus le lien d'action partagé");
+});

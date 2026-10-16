@@ -112,6 +112,18 @@ export function Vide({ titre, corps, lien, action, onAction }: {
   );
 }
 
+/* UN LIEN D'ACTION — le geste « voir plus » d'un écran : une cible de 48 pt, le
+   texte en encre (invariant : une couleur d'échelon ne porte jamais une action,
+   theme.ts), un chevron. Un seul composant pour les écrans (16/10/2026). */
+export function LienAction({ texte, onPress, etiquette }: { texte: string; onPress: () => void; etiquette?: string }) {
+  return (
+    <Pressable onPress={onPress} accessibilityRole="button" accessibilityLabel={etiquette || texte}
+      style={({ pressed }) => [s.lienAction, pressed && { opacity: 0.6 }]}>
+      <Text style={s.lienActionTexte}>{texte} ›</Text>
+    </Pressable>
+  );
+}
+
 export function Bouton({ texte, onPress, discret }: { texte: string; onPress: () => void; discret?: boolean }) {
   return (
     <Pressable
@@ -140,6 +152,8 @@ const s = StyleSheet.create({
   source: { gap: PAS, paddingTop: PAS * 2, borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: couleurs.trait },
   sourceTexte: { fontSize: 13, lineHeight: 18, color: couleurs.sourd },
   lien: { minHeight: CIBLE, justifyContent: "center" },
+  lienAction: { minHeight: CIBLE, justifyContent: "center" },
+  lienActionTexte: { fontSize: 15, fontWeight: "700", color: couleurs.lien },
   /* En encre, souligne : la couleur de ville sur le gris d'une phrase d'absence
      faisait 4,38:1 (mesure du 30/09/2026), sous le seuil AA. */
   lienTexte: { fontSize: 15, color: couleurs.encre, textDecorationLine: "underline" },

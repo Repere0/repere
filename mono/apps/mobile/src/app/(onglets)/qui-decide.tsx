@@ -10,7 +10,7 @@ import { Pressable, Text, View } from "react-native";
 import { router, Stack } from "expo-router";
 import { chaineDecision, dateFr, MAIRE_ABSENT, nomIntercommunalite, phraseAdjoints, RNE_URL, LIBELLES } from "@repere/core";
 import { sansConseilDepartemental } from "@repere/core";
-import { Segments } from "../../lib/composants";
+import { LienAction, Segments } from "../../lib/composants";
 import { LienDefinition } from "../../lib/termes";
 import { REGION_PAS_ARRIVEE } from "../../lib/absences";
 import { srcElus } from "../../lib/sources";
@@ -62,11 +62,9 @@ export default function QuiDecide() {
               /* Le vote affiche est le plus recent depuis le 07/10/2026 (ordreDesFaits,
                  @repere/core : date, puis numero de scrutin). On dit quand meme sa
                  date : « dernier » ne dirait pas de quand il date. */
-              <Pressable onPress={() => router.push("/vote")} accessibilityRole="button"
-                accessibilityLabel={d.dernierVote ? `Voir son vote du ${dateFr(d.dernierVote.sc.d)}` : "Voir ses votes"}
-                style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", opacity: pressed ? 0.6 : 1 })}>
-                <Text style={[TYPO.corps, { color: couleurs.lien, fontWeight: "600" }]}>{d.dernierVote ? `Voir son vote du ${dateFr(d.dernierVote.sc.d)}` : "Voir ses votes"} ›</Text>
-              </Pressable>
+              <LienAction texte={d.dernierVote ? `Voir son vote du ${dateFr(d.dernierVote.sc.d)}` : "Voir ses votes"}
+                etiquette={d.dernierVote ? `Voir son vote du ${dateFr(d.dernierVote.sc.d)}` : "Voir ses votes"}
+                onPress={() => router.push("/vote")} />
             ) : undefined };
         }
         return n;
