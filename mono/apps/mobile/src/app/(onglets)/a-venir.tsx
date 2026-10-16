@@ -165,10 +165,17 @@ export default function AVenir() {
           <Stack.Screen options={{ title: LIBELLES.calendrier }} />
           <View style={{ flexDirection: "row", alignItems: "flex-end", justifyContent: "space-between", gap: PAS * 2 }}>
             <View style={{ flex: 1 }}>
-              <Question etiquette="Au Parlement" question="Calendrier"
-                sous="Les séances annoncées à l'Assemblée nationale et au Sénat. Elles concernent tout le pays. Heures de Paris." />
+              <Question etiquette="Au Parlement" question="Calendrier" />
             </View>
+            {/* La bascule semaine / mois sur la ligne du titre (16/10/2026) : a 375 x 667,
+               l'en-tete occupait tout le premier ecran. */}
+            <Pressable onPress={() => setMois(m => !m)} accessibilityRole="button"
+              accessibilityLabel={mois ? "Voir la semaine" : "Voir le mois"}
+              style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", opacity: pressed ? 0.6 : 1 })}>
+              <Text style={{ color: couleurs.encre, fontWeight: "700", textDecorationLine: "underline" }}>{mois ? "Voir la semaine" : "Voir le mois"}</Text>
+            </Pressable>
           </View>
+          <Text style={TYPO.note}>Les séances annoncées à l'Assemblée nationale et au Sénat. Elles concernent tout le pays.</Text>
 
           {!r.agendaLu ? (
             <Vide {...AGENDA_PAS_ARRIVE} action="Réessayer" onAction={reessayer} />
@@ -180,11 +187,6 @@ export default function AVenir() {
                  frise, l'age du releve reste AVANT la liste (invariant 9 : le lecteur sait
                  tout de suite que l'agenda a pu changer), l'absence du Senat suit le compte
                  qu'elle explique, et la note sur les rappels passe sous la liste. */}
-              <Pressable onPress={() => setMois(m => !m)} accessibilityRole="button"
-                accessibilityLabel={mois ? "Voir la semaine" : "Voir le mois"}
-                style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", alignSelf: "flex-end", opacity: pressed ? 0.6 : 1 })}>
-                <Text style={{ color: couleurs.encre, fontWeight: "700", textDecorationLine: "underline" }}>{mois ? "Voir la semaine" : "Voir le mois"}</Text>
-              </Pressable>
               {/* Semaine ou mois : un seul choix de jour, en haut de l'ecran. */}
               {mois ? (
                 <View accessibilityRole="none" accessibilityLabel="Calendrier du mois" style={{ gap: 2 }}>
@@ -224,10 +226,10 @@ export default function AVenir() {
                   {nbsp(`Agenda ${de(x.institution)} relevé le ${dateFr(x.source.releve_le)}, il y a ${x.age} jours : il a pu changer depuis.`)}
                 </Text>
               ))}
-              <Text style={[TYPO.corps, { fontWeight: "700" }]}>{choisi && etiquetteJour ? `${etiquetteJour}. ` : ""}{phrase}</Text>
-              {manquantes.map(i => (
-                <Text key={i} style={TYPO.note}>{nbsp(`Le calendrier ${de(i)} n'est pas arrivé jusqu'ici : rien n'est inventé à sa place.`)}</Text>
-              ))}
+              {/* Quand une assemblee manque, le compte le dit tout de suite ; la phrase
+                 complete suit la liste (16/10/2026 : a 375 x 667, aucune seance n'entrait
+                 dans le premier ecran). */}
+              <Text style={[TYPO.corps, { fontWeight: "700" }]}>{choisi && etiquetteJour ? `${etiquetteJour}. ` : ""}{manquantes.length === 1 && lues.length ? phrase.replace(/\.$/, `, ${lues[0].institution === "Sénat" ? "au Sénat" : "à l'Assemblée nationale"} seulement.`) : phrase}</Text>
               {choisi ? (
                 <Pressable onPress={() => setChoisi(false)} accessibilityRole="button" accessibilityLabel="Revenir à la liste des deux prochaines semaines"
                   style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", opacity: pressed ? 0.6 : 1 })}>
@@ -259,7 +261,10 @@ export default function AVenir() {
                   </View>
                 </Carte>
               ) : null}
-              <Text style={TYPO.note}>{"Chaque ligne donne l'heure de début. Le détail dit l'heure de fin, ou « heure de fin non précisée » quand la source ne la publie pas. Le site officiel de chaque assemblée fait foi. Les rappels ne sont pas encore disponibles dans l'application."}</Text>
+              {manquantes.map(i => (
+                <Text key={i} style={TYPO.note}>{nbsp(`Le calendrier ${de(i)} n'est pas arrivé jusqu'ici : rien n'est inventé à sa place.`)}</Text>
+              ))}
+              <Text style={TYPO.note}>{"Chaque ligne donne l'heure de début, à l'heure de Paris. Le détail dit l'heure de fin, ou « heure de fin non précisée » quand la source ne la publie pas. Le site officiel de chaque assemblée fait foi. Les rappels ne sont pas encore disponibles dans l'application."}</Text>
 
               {!aVenir.length && toutes.length ? (
                 <Text style={TYPO.note}>Rien de publié pour ce filtre. Le filtre « Tout » montre le reste.</Text>
