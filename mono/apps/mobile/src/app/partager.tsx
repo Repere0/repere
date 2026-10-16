@@ -92,7 +92,12 @@ export default function Partager() {
       const etape = etapeDuScrutin(procedure(vote.sc.t));
       const idx = ETAPES_LOI.findIndex(e => e.cle === etape);
       const jalon = idx >= 0 ? ETAPES_LOI[idx] : undefined;
-      const suite = idx >= 0 && idx < ETAPES_LOI.length - 1 ? ETAPES_LOI[idx + 1] : undefined;
+      /* PAS DE « SUITE » (16/10/2026). La carte annoncait « Suite : Lecture definitive »
+         pour un texte ADOPTE dans la version de la commission mixte paritaire : l'etape
+         « suivante » etait lue dans l'ordre pedagogique lineaire d'ETAPES_LOI, alors que
+         la procedure bifurque (texte adopte -> promulgation ; desaccord -> lecture
+         definitive). Une carte faite pour circuler n'annonce pas ce que la source ne dit
+         pas. Le parcours complet reste sur l'ecran du vote, presente comme general. */
       const lienScrutin = srcVote(d, vote.sc)?.url || null;
       const ou = jalon
         ? `Où en est le texte : ${jalon.titre.toLowerCase()}. ${jalon.texte}`
@@ -151,11 +156,11 @@ export default function Partager() {
                 <Text style={{ color: couleurs.sourd, fontSize: 15 * echelle, lineHeight: 20 * echelle }}>Où en est le texte, selon la procédure</Text>
               </View>
 
-              {/* Le schema : le vote, la place du texte, la suite. Les liaisons sont des traits, comme sur le canevas. */}
+              {/* Le schema : le vote, puis la place du texte. Les liaisons sont des traits, comme sur le canevas. */}
               <View style={{ gap: 0 }}>
                 <View style={{ minHeight: 44 * echelle, borderWidth: 2, borderColor: couleurs.encre, borderRadius: 14 * echelle,
-                  paddingHorizontal: 14 * echelle, justifyContent: "center" }}>
-                  <Text style={{ fontWeight: "800", fontSize: 16 * echelle, color: couleurs.encre }}>Vote à l'Assemblée nationale, {date}</Text>
+                  paddingHorizontal: 14 * echelle, paddingVertical: 8 * echelle, justifyContent: "center" }}>
+                  <Text style={{ fontWeight: "800", fontSize: 16 * echelle, color: couleurs.encre }}>Vote à l'Assemblée nationale, {date.replace(/ /g, "\u00a0")}</Text>
                 </View>
                 <View style={{ height: 22 * echelle, width: 2, backgroundColor: couleurs.encre, marginLeft: 22 * echelle }} />
                 <View style={{ borderRadius: 14 * echelle, backgroundColor: couleurs.encre, padding: 14 * echelle, gap: 6 * echelle }}>
@@ -166,15 +171,6 @@ export default function Partager() {
                     {jalon ? jalon.texte : "Le scrutin ne précise pas l'étape du texte : Repère ne la devine pas."}
                   </Text>
                 </View>
-                {suite ? (
-                  <>
-                    <View style={{ height: 22 * echelle, width: 2, backgroundColor: couleurs.encre, marginLeft: 22 * echelle }} />
-                    <View style={{ minHeight: 44 * echelle, borderWidth: 2, borderColor: couleurs.encre, borderRadius: 14 * echelle,
-                      paddingHorizontal: 14 * echelle, justifyContent: "center" }}>
-                      <Text style={{ fontWeight: "800", fontSize: 16 * echelle, color: couleurs.encre }}>Suite : {suite.titre}</Text>
-                    </View>
-                  </>
-                ) : null}
               </View>
 
               <View style={{ gap: 6 * echelle }}>

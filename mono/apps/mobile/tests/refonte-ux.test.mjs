@@ -132,3 +132,11 @@ test("doctrine du vide : chaque absence donne une phrase ET un lien ou une actio
     assert.match(corps.split(/\nexport /)[0], /lien/, nom + " ne porte plus de lien");
   }
 });
+
+test("carte de partage : aucune etape « suivante » deduite de l'ordre pedagogique (16/10/2026)", () => {
+  /* « Suite : Lecture definitive » etait annonce pour un texte adopte en commission mixte
+     paritaire. La procedure bifurque : la source ne dit pas l'etape suivante. */
+  const p = lire("app/partager.tsx");
+  assert.doesNotMatch(p, /ETAPES_LOI\[\s*idx\s*\+\s*1\s*\]/, "la carte relit l'etape suivante dans l'ordre lineaire");
+  assert.doesNotMatch(p, />\s*Suite\s*:/, "la carte annonce de nouveau une « Suite »");
+});
