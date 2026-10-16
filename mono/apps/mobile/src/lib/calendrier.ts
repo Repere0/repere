@@ -14,6 +14,8 @@ export type Groupe = {
 };
 
 export const INSTITUTIONS = ["Assemblée nationale", "Sénat"];
+/* « du Sénat », « de l'Assemblée nationale » : une seule ecriture, liste et detail. */
+export const deInstitution = (i: string) => (i === "Sénat" ? "du Sénat" : "de l'Assemblée nationale");
 
 /* CE QUE LE CALENDRIER MONTRE (16/10/2026) : ce qui a commence aujourd'hui, puis ce
    qui est a venir. Mesure : a 15 h 04, la seance de 15 h avait disparu, alors que la

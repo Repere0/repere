@@ -2,7 +2,7 @@
  *
  * Ce qui est répondu d'abord : le sujet, l'institution, le jour et l'horaire.
  * Ensuite, sur le même écran et sans repli : le lieu, l'ordre du jour publié,
- * la description publiée, puis la source avec la date de son relevé.
+ * la description publiée, puis la date du relevé, écrite, et la source.
  *
  * Le rendez-vous se retrouve par (jour, institution, catégorie, titre) dans les
  * données de la commune, relues par le MÊME regroupement que la liste : donc
@@ -10,11 +10,11 @@
  * retirée depuis le dernier relevé), on le dit, sans rien inventer. */
 import { Text, View } from "react-native";
 import { Stack, useLocalSearchParams } from "expo-router";
-import { jourFr, regrouperParJour } from "@repere/core";
+import { ageReleve, dateFr, heureFr, jourFr, minuteParis, regrouperParJour } from "@repere/core";
 import { Vide } from "../lib/composants";
-import { horairesDuGroupe, rendezVousAffiches, type Ev, type Groupe } from "../lib/calendrier";
+import { deInstitution, horairesDuGroupe, rendezVousAffiches, type Ev, type Groupe } from "../lib/calendrier";
 import { srcAgenda } from "../lib/sources";
-import { PAS, TYPO } from "../lib/theme";
+import { couleurs, PAS, POLICE, TYPO } from "../lib/theme";
 import { AvecDonnees, Page, Question } from "../ui/page";
 import { PastilleSource } from "../ui/source";
 import { Etiquette } from "../ui/resume";
@@ -36,25 +36,45 @@ export default function Evenement() {
         );
       }
       const horaires = horairesDuGroupe(g);
-      const sansFin = (g.fins || []).some(f => !f);
+      const sansAucuneFin = !(g.fins || []).some(f => f);
       const points = g.points || [];
+      /* DENSITE ET FRAICHEUR (16/10/2026). Mesure : « heure de fin non precisee » ecrit
+         trois fois, redit en phrase, puis « 3 seances ce jour-la, aux horaires
+         ci-dessus » ; et « l'agenda peut changer apres son releve » SANS la date du
+         releve (invariant 9 : le lecteur doit voir tout de suite de quand date ce qu'il
+         lit). Desormais : les heures sur une ligne quand aucune fin n'est publiee,
+         l'absence dite une fois, ce qui a deja commence, et la date du releve. */
+      const maintenant = minuteParis(new Date());
+      const commencees = g.debuts.filter(x => x < maintenant).map(heureFr).filter(Boolean);
+      const releve = g.source && g.source.releve_le;
+      const age = ageReleve(releve);
       return (
         <Page>
           <Stack.Screen options={{ title: "Rendez-vous" }} />
           {/* La question d'abord : le sujet, puis quand, puis qui. */}
-          <Question etiquette={g.institution} question={g.titre} sous={jourFr(g.jour)} />
+          <Question etiquette={g.institution} question={g.titre}
+            sous={[jourFr(g.jour), g.categorie].filter(Boolean).join(" · ")} />
 
           <View style={{ gap: PAS }}>
-            <Etiquette texte="Horaires publiés" />
-            {horaires.length ? horaires.map((h, k) => <Text key={k} style={TYPO.corps}>{h}</Text>)
-              : <Text style={TYPO.note}>Heure non publiée.</Text>}
-          </View>
-
-          <View style={{ gap: PAS * 2 }}>
-            {g.categorie ? <Text style={TYPO.corps}>{g.categorie}</Text> : null}
+            <Etiquette texte={g.seances > 1 ? `Horaires publiés · ${g.seances} séances` : "Horaire publié"} />
+            {!horaires.length ? <Text style={TYPO.note}>Heure non publiée.</Text>
+              : sansAucuneFin ? (
+                <>
+                  <Text style={{ fontFamily: POLICE.affiche, fontSize: 22, lineHeight: 28, color: couleurs.encre, fontVariant: ["tabular-nums"] }}>
+                    {g.debuts.map(heureFr).filter(Boolean).join(" · ")}
+                  </Text>
+                  <Text style={TYPO.note}>{"Heure de fin non précisée par la source\u00a0: Repère ne la devine pas."}</Text>
+                </>
+              ) : horaires.map((h, k) => <Text key={k} style={TYPO.corps}>{h}</Text>)}
+            {commencees.length ? (
+              <Text style={[TYPO.corps, { fontWeight: "700" }]}>
+                {/* « seance » pour une seance publique ; sinon « rendez-vous » (commission, audition) */}
+                {g.categorie === "Séance publique"
+                  ? (commencees.length > 1 ? `Les séances de ${commencees.join(" et ")} ont déjà commencé.` : `La séance de ${commencees[0]} a déjà commencé.`)
+                  : (commencees.length > 1 ? `Les rendez-vous de ${commencees.join(" et ")} ont déjà commencé.` : `Le rendez-vous de ${commencees[0]} a déjà commencé.`)}
+              </Text>
+            ) : null}
             {g.lieu ? <Text style={TYPO.corps}>Lieu : {g.lieu}</Text> : null}
-            {sansFin ? <Text style={TYPO.note}>La source ne publie pas toutes les heures de fin : Repère ne les devine pas.</Text> : null}
-            {g.seances > 1 ? <Text style={TYPO.note}>{g.seances} séances ce jour-là, aux horaires ci-dessus.</Text> : null}
           </View>
 
           {points.length ? (
@@ -71,10 +91,13 @@ export default function Evenement() {
             </View>
           ) : null}
 
-          <View style={{ gap: PAS * 2 }}>
-            <Etiquette texte="D'où vient cette information" />
+          <View style={{ gap: PAS }}>
+            <Text style={TYPO.note}>
+              {releve
+                ? `Agenda ${deInstitution(g.institution)} relevé le ${dateFr(releve)}${age !== null && age > 0 ? `, il y a ${age} jour${age > 1 ? "s" : ""}` : ""}. Il a pu changer depuis\u00a0: le site officiel fait foi.`
+                : "Date du relevé inconnue\u00a0: cet agenda a pu changer. Le site officiel fait foi."}
+            </Text>
             <PastilleSource source={srcAgenda(g.source)} />
-            <Text style={TYPO.note}>L'agenda peut changer après son relevé. Le site officiel de l'institution fait foi.</Text>
           </View>
         </Page>
       );

@@ -96,3 +96,10 @@ test("votes : les groupes se reconnaissent à leur sigle, pas à une couleur neu
   const entrees = table.match(/^\s*"[^"]+": "[^"]+",?$/gm) || [];
   assert.ok(entrees.length >= 12, `la table des sigles compte ${entrees.length} entrées, 12 groupes sont publiés`);
 });
+
+test("le detail d'un rendez-vous ecrit la date du releve, et dit une seule fois que la fin manque (16/10/2026)", () => {
+  const ev = lire("app/evenement.tsx");
+  /* invariant 9 : « l'agenda peut changer » ne suffit pas, le lecteur doit voir de quand il date */
+  assert.match(ev, /relevé le \$\{dateFr\(releve\)\}/, "le detail ne dit plus la date du releve");
+  assert.doesNotMatch(ev, /aux horaires ci-dessus/, "la phrase redondante sur le nombre de seances est revenue");
+});

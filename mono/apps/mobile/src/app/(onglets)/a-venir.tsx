@@ -22,7 +22,7 @@ import { router, Stack } from "expo-router";
 import {
   AGE_RELEVE_NORMAL, ageReleve, dateFr, ETAPES_LOI, jourFr, jourParis, LIBELLES, minuteParis, regrouperParJour,
 } from "@repere/core";
-import { type Ev, type Groupe, etatCommence, horairesDuGroupe, INSTITUTIONS, parametresRendezVous, rendezVousAffiches } from "../../lib/calendrier";
+import { type Ev, type Groupe, deInstitution, etatCommence, horairesDuGroupe, INSTITUTIONS, parametresRendezVous, rendezVousAffiches } from "../../lib/calendrier";
 import { Carte, Vide } from "../../lib/composants";
 import { AGENDA_PAS_ARRIVE, AGENDA_VIDE } from "../../lib/absences";
 import { srcAgenda } from "../../lib/sources";
@@ -33,7 +33,7 @@ import { PastilleSource } from "../../ui/source";
 import { Depli } from "../../ui/visuels";
 import { Plus } from "../../ui/reponse";
 
-const de =(i: string) => (i === "Sénat" ? "du Sénat" : "de l'Assemblée nationale");
+const de = deInstitution;
 const nbsp = (t: string) => t.replace(/ ([?!:;])/g, " $1");
 const LETTRES = ["L", "M", "M", "J", "V", "S", "D"];
 const PREMIERS = 6;   /* rendez-vous montres d'emblee dans la liste de deux semaines */
