@@ -221,3 +221,18 @@ Planches (conteneur de la session, non versionnées, envoyées au porteur) :
 
 **Non vérifié** : rendu natif iOS / Android, VoiceOver / TalkBack, texte système agrandi
 sur appareil. Tout ce qui précède est mesuré sur l'export web.
+
+## Banc de clôture (16/10, 17 h, `341cbe5`)
+
+| contrôle | résultat |
+|---|---|
+| `pnpm build` + `pnpm test` | 163/164 ; seul échec : `runtime.test.mjs` scrutins (fichier produit seulement sur le runner) |
+| `parcours-web.mjs`, `meme-verite.mjs` | zéro échec |
+| `refonte-ux` | 16/16 (4 gardes ajoutées l'après-midi, chacune vue rouge) |
+| `core.test.mjs` | 28/28 (séance commencée, vue rouge) |
+| `reflow-200.mjs` | 8 écrans, 0 débordement, 0 texte coupé |
+| longueurs (390 × 844, 8 écrans) | **24,3 → 15,3** hauteurs d'écran (Calendrier 2,3 : la séance commencée réapparaît) |
+
+**Non vérifié** : iPhone, Android, VoiceOver, TalkBack ; clavier réel sur l'accueil ;
+glyphe du trait d'union insécable (U+2011) dans les polices natives ; écrans des
+scrutins avec données.
