@@ -344,8 +344,8 @@ trait d'union insécable (U+2011) dans les polices natives.
 Tête `47da1ff` avant la reprise : sans conflit avec sa base (#148 contenue), fusionnable « clean »,
 43 commits, 33 fichiers. Un seul contrôle se déclenche sur cette branche, « Mobile » (tsc, gardes
 mobiles, tests du socle, invariants, santé, données) : **vert** sur `47da1ff`. Sur la journée,
-11 runs « Mobile » de la branche ont été **annulés** par le push suivant (dont `bd77b1b`,
-`c748e88`, `36a281d`) : pas des échecs, pas des succès. Le contrôle « Épreuve » (chaîne complète,
+35 runs « Mobile » sur la branche : 24 succès, 9 **annulés** par le push suivant (dont `bd77b1b`,
+`c748e88`, `36a281d`) — ni échecs ni succès —, et les 2 derniers en cours au moment de l'écrire. Le contrôle « Épreuve » (chaîne complète,
 tests du site) ne se déclenche que sur une PR vers `main` : **il n'a jamais tourné sur #148 ni
 #149**, alors que #149 modifie `mono/packages/core` (partagé avec le site). Seul `pnpm test` local
 le couvre (voir plus haut).
