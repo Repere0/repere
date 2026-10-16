@@ -513,3 +513,15 @@ test("core — une seance commencee aujourd'hui reste visible, sans se dire en c
   assert.ok(a.commenceesAujourdhui.every(e => e.institution === "Assemblée nationale" && e.source), "institution et source portees");
   assert.deepEqual(a.aVenir.map(e => e.titre), ["Cet après-midi"], "« a venir » ne change pas");
 });
+
+test("core — une part « sur 100 € » montre son calcul avec les deux montants publies (16/10/2026)", async () => {
+  const { phraseCalculPart } = await import("../packages/core/src/comptes.js");
+  /* Meaux, comptes 2025 publies par l'OFGL : frais de personnel / depenses totales */
+  const p = phraseCalculPart(57586945, 121272659, "frais de personnel", "dépenses totales");
+  const sansEspaces = p.replace(/[   ]/g, "");
+  assert.match(sansEspaces, /57586945€defraisdepersonnel÷121272659€dedépensestotales=47,5%/, p);
+  assert.match(p, /arrondi à 47\s€/, p);
+  assert.match(p, /^Calcul de Repère/, "le calcul se dit calcul (invariant 4)");
+  assert.equal(phraseCalculPart(0, 10, "a", "b"), null, "montant nul : pas de calcul affiche");
+  assert.equal(phraseCalculPart(5, null, "a", "b"), null, "denominateur absent : pas de calcul affiche");
+});

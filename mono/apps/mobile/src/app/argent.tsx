@@ -18,7 +18,7 @@ import {
   evolution, exercicesEcartes, financementProjet, INTRO_EVOLUTION, introRapports, montantCourt, noteRattachement,
   NOTE_EVOLUTION, NOTE_FINANCEMENT, nomDispositif, parHabitant, partReperee, perimetreChange, phraseEcartes,
   phraseProjetLocal, rapports, sousTitreRapports, euros, CALCUL_REPERE, LIBELLES,
-  OFGL_URL,
+  OFGL_URL, phraseCalculPart, valeur,
 } from "@repere/core";
 import { Carte, Vide } from "../lib/composants";
 import { PROJETS_PAS_ARRIVES, projetsAucun } from "../lib/absences";
@@ -65,10 +65,10 @@ function CarteProjet({ p, nom, projets }: { p: Projet; nom: string; projets: Par
       <Text style={TYPO.reponse}>{p.intitule}</Text>
       {f && f.partPct !== null && cout ? (
         <Resume phrase={partReperee(f.partPct)
-          ? `L'État finance ${partReperee(f.partPct)} de ce projet de ${cout.texte}.`
-          : `Pour 100 € de ce projet de ${cout.texte}, ${f.partPct} € viennent de l'État.`}>
+          ? `L'État finance ${partReperee(f.partPct)} de ce projet de ${cout.texte} hors taxes.`
+          : `Pour 100 € de ce projet de ${cout.texte} hors taxes, ${f.partPct} € viennent de l'État.`}>
           <Financement subvention={f.subvention} cout={f.cout as number} partPct={f.partPct}
-            subventionTexte={`${euros(f.subvention)} sur ${euros(f.cout as number)}`}
+            subventionTexte={`${euros(f.subvention)} sur ${euros(f.cout as number)} hors taxes`}
             resteTexte={`${euros(f.reste as number)}, financement non détaillé par la source`} />
         </Resume>
       ) : null}
@@ -101,6 +101,8 @@ export default function Argent() {
         ? ((d.faits || []).filter((x: { type: string }) => x.type === "projet").map((x: { p: Projet }) => x.p) as Projet[])
         : [];
       const dep = ch && ch.depenses !== null ? montantCourt(ch.depenses) : null;
+      /* montants publies de l'exercice affiche : 0 recettes, 1 depenses, 3 investissement, 4 personnel, 5 impots */
+      const calcul = (i: number, j: number, a: string, b: string) => (ex ? phraseCalculPart(valeur(ex.ex, i)?.m, valeur(ex.ex, j)?.m, a, b) : null);
       const dette = ch && ch.dette !== null ? montantCourt(ch.dette) : null;
       return (
         <Page>
@@ -137,6 +139,9 @@ export default function Argent() {
                   </Resume>
                   <PastilleSource source={srcComptes(d)} />
                   <Detail sujet="dépenses">
+                    {/* Le calcul, avec les deux montants publies (16/10/2026) : la part se verifie. */}
+                    {[calcul(4, 1, "frais de personnel", "dépenses totales"), calcul(3, 1, "dépenses d'investissement", "dépenses totales")]
+                      .filter(Boolean).map(t => <Text key={t as string} style={TYPO.note}>{t}</Text>)}
                     {ch.partSalaires !== null && ch.partInvestissement !== null ? <BarrePart part={ch.partInvestissement} libelle="Investissements : travaux, équipements…" valeur={rap(/investir/)?.v || ""} delai={120} /> : null}
                     <Text style={TYPO.corps}>En clair : le reste des dépenses n'est pas détaillé par la source.</Text>
                     <PasCeQueCaDit r={rap(/salaires/)} sujet="salaires" />
@@ -156,6 +161,7 @@ export default function Argent() {
                   </Resume>
                   <PastilleSource source={srcComptes(d)} />
                   <Detail sujet="recettes">
+                    {calcul(5, 0, "impôts et taxes", "recettes totales") ? <Text style={TYPO.note}>{calcul(5, 0, "impôts et taxes", "recettes totales")}</Text> : null}
                     <PasCeQueCaDit r={rap(/impôts/)} sujet="impôts" />
                   </Detail>
                 </Carte>

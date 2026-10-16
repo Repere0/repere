@@ -13,6 +13,16 @@ export function valeur(ex, i) {
 }
 export const population = ex => (Array.isArray(ex) && ex[0] > 0 ? ex[0] : null);
 export const pourCent = (a, b) => Math.round((a / b) * 100);
+/* LE CALCUL MONTRE — 16/10/2026. « Sur 100 € dépensés, 47 € vont aux salaires » est
+   juste (frais de personnel / dépenses totales, OFGL) mais ne se verifiait pas : les
+   deux montants publies n'etaient ecrits nulle part. Cette phrase les donne, avec le
+   pourcentage a une decimale et l'arrondi affiche. null si un montant manque. */
+export function phraseCalculPart(num, den, libNum, libDen) {
+  if (!(typeof num === "number" && num > 0) || !(typeof den === "number" && den > 0)) return null;
+  const pct = (num / den) * 100;
+  const e = n => Math.round(n).toLocaleString("fr-FR") + "\u00a0€";
+  return `Calcul de Repère : ${e(num)} de ${libNum} ÷ ${e(den)} de ${libDen} = ${pct.toLocaleString("fr-FR", { minimumFractionDigits: 1, maximumFractionDigits: 1 })}\u00a0%, arrondi à ${Math.round(pct)}\u00a0€ sur 100\u00a0€.`;
+}
 
 /* TRADUIRE, pas afficher. Chaque phrase porte ce qu'elle NE veut PAS dire.
    Aucun de ces rapports ne sort du territoire affiche — invariant 3.
