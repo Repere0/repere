@@ -250,11 +250,14 @@ for (const largeur of [360, 390, 430]) {
   await page.getByRole("button", { name: "Fermer" }).first().click();
   await page.waitForTimeout(400);
 
-  /* LES QUESTIONS SUIVANTES : trois depuis les reponses, deux depuis « Aller plus loin » */
+  /* LES QUESTIONS SUIVANTES : deux depuis les reponses, une depuis le bloc sombre
+     « Qui décide chez vous ? » (16/10/2026 : il remplace l'entree « Qui décide » de
+     « Aller plus loin »), deux depuis « Aller plus loin ». */
+  const QUI = "Voir la chaîne complète : qui décide pour Meaux";
   for (const [action, question, preuve] of [
     ["Où va cet argent ?", /Où va l'argent de Meaux/, /Sur 100 € dépensés, \d+ € vont aux salaires/],
     ["Comprendre ce vote", /Qu'a voté votre député/, /Le parcours d'une loi|Où en est ce texte/],
-    ["Qui décide", /Qui décide pour Meaux/, /Décide : /],
+    [QUI, /Qui décide pour Meaux/, /Décide : /],
     /* L'écran du calendrier porte, depuis le canevas du 13/10/2026, le titre « Calendrier »
        et la phrase « Les séances annoncées… » : c'est elle qui répond à la question. */
     ["Le calendrier", /Les séances annoncées à l'Assemblée nationale/, /concernent tout le pays/],
@@ -273,10 +276,10 @@ for (const largeur of [360, 390, 430]) {
       verifier(CAL.vieux.every(x => new RegExp("Agenda " + x.de + " relevé le .+, il y a " + x.age + " jours").test(m.brut)),
         `${largeur}px · Le calendrier : un relevé ancien le dit, avec sa date ${JSON.stringify(CAL.vieux)}`);
     }
-    if (action === "Qui décide") verifier(/Île-de-France Mobilités/.test(m.brut) && !/Décide : les transports/.test(m.brut), `${largeur}px · Qui décide : en Île-de-France, l'intercommunalité ne « décide » pas des transports`);
+    if (action === QUI) verifier(/Île-de-France Mobilités/.test(m.brut) && !/Décide : les transports/.test(m.brut), `${largeur}px · Qui décide : en Île-de-France, l'intercommunalité ne « décide » pas des transports`);
     verifier(preuve.test(m.brut), `${largeur}px · ${action} : l'écran répond à sa question`);
     if (action === "Sources") verifier(/Licence : /.test(m.brut) && /Les noms des députés/.test(m.brut), `${largeur}px · Sources : chaque source dit sa licence, et la source des noms des députés est citée`);
-    if (action === "Qui décide") verifier(ELUS_CANTON.length >= 2 && ELUS_CANTON.every(n => m.brut.includes(n)), `${largeur}px · Qui décide : tous les élus du canton sont nommés ${JSON.stringify(ELUS_CANTON)}`);
+    if (action === QUI) verifier(ELUS_CANTON.length >= 2 && ELUS_CANTON.every(n => m.brut.includes(n)), `${largeur}px · Qui décide : tous les élus du canton sont nommés ${JSON.stringify(ELUS_CANTON)}`);
     if (action !== "Sources") verifier(/D'où vient cette information/.test(m.etiquettes) || /Le calendrier n'est arrivé/.test(m.texte), `${largeur}px · ${action} : la source est à portée de doigt`);
     if (/argent/.test(action)) {
       verifier(/Calculé par Repère · source/.test(m.texte), `${largeur}px · ${action} : les parts calculées se disent calculées`);
@@ -289,7 +292,7 @@ for (const largeur of [360, 390, 430]) {
     }
     /* Qui décide et Le calendrier sont des onglets (13/10/2026) : on y revient par la
        barre basse, pas par un bouton « Revenir ». Les autres écrans gardent le bouton. */
-    if (action === "Qui décide" || action === "Le calendrier") {
+    if (action === QUI || action === "Le calendrier") {
       await page.getByText("Aujourd'hui", { exact: true }).last().click();
     } else {
       await page.getByRole("button", { name: "Revenir à l'écran Aujourd'hui" }).last().click();

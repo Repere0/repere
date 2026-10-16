@@ -69,18 +69,11 @@ export default function ChezVous() {
       return (
         <Page>
           <Stack.Screen options={{ title: nom }} />
-          {/* LA MARQUE, D'ABORD : le nom de l'application et son icone, sur l'ecran d'ouverture (16/10/2026). */}
+          {/* LA MARQUE, D'ABORD : le nom de l'application et son icone, sur l'ecran
+             d'ouverture (16/10/2026). Une ligne compacte : les reponses viennent juste
+             apres (mesure du 16/10 : le bloc sombre place ici repoussait la troisieme
+             reponse sous la barre basse, 782 px pour 779 a 390 x 844). */}
           <Marque />
-
-          {/* QUI DECIDE CHEZ VOUS — un bloc sombre, la question en tete, un seul geste. */}
-          <View style={{ backgroundColor: couleurs.encre, borderRadius: RAYON.carte, padding: PAS * 4, gap: PAS * 2 }}>
-            <Text style={{ fontFamily: POLICE.affiche, fontSize: 26, lineHeight: 30, color: couleurs.sol, letterSpacing: -0.4 }} accessibilityRole="header">Qui décide chez vous ?</Text>
-            <Pressable onPress={() => router.push("/qui-decide")} accessibilityRole="button" accessibilityLabel={`Voir la chaîne complète : qui décide pour ${nom}`}
-              style={({ pressed }) => ({ minHeight: 48, borderRadius: RAYON.bloc, backgroundColor: couleurs.sol, paddingHorizontal: PAS * 4, flexDirection: "row", alignItems: "center", justifyContent: "space-between", opacity: pressed ? 0.7 : 1 })}>
-              <Text style={{ fontSize: 16, fontWeight: "700", color: couleurs.encre }}>Voir la chaîne complète</Text>
-              <Text accessibilityElementsHidden importantForAccessibility="no" style={{ fontSize: 16, fontWeight: "700", color: couleurs.encre }}>→</Text>
-            </Pressable>
-          </View>
 
           {/* OU JE SUIS, ET DE QUAND DATE CE QUE JE LIS */}
           {/* Pas d'etiquette « Chez vous » au-dessus du nom : 20 px gagnes, et la
@@ -182,6 +175,22 @@ export default function ChezVous() {
           )}
           </View>
 
+          {/* QUI DECIDE CHEZ VOUS — un bloc sombre, la question en tete, un seul geste.
+             APRES les trois reponses (16/10/2026) : la reponse d'abord, la chaine
+             ensuite. Il remplace l'entree « Qui décide » de « Aller plus loin » : deux
+             chemins vers le meme ecran se faisaient concurrence. */}
+          <View style={{ backgroundColor: couleurs.encre, borderRadius: RAYON.carte, padding: PAS * 4, gap: PAS * 3 }}>
+            <View style={{ gap: PAS }}>
+              <Text style={{ fontFamily: POLICE.affiche, fontSize: 26, lineHeight: 30, color: couleurs.sol, letterSpacing: -0.4 }} accessibilityRole="header">Qui décide chez vous ?</Text>
+              <Text style={{ fontSize: 16, lineHeight: 22, color: couleurs.voile }}>{typo(`De la mairie à l'Assemblée nationale : qui décide de quoi pour ${nom}.`)}</Text>
+            </View>
+            <Pressable onPress={() => router.push("/qui-decide")} accessibilityRole="button" accessibilityLabel={`Voir la chaîne complète : qui décide pour ${nom}`}
+              style={({ pressed }) => ({ minHeight: 48, borderRadius: RAYON.bloc, backgroundColor: couleurs.sol, paddingHorizontal: PAS * 4, flexDirection: "row", alignItems: "center", justifyContent: "space-between", opacity: pressed ? 0.7 : 1 })}>
+              <Text style={{ fontSize: 16, fontWeight: "700", color: couleurs.encre }}>Voir la chaîne complète</Text>
+              <Text accessibilityElementsHidden importantForAccessibility="no" style={{ fontSize: 16, fontWeight: "700", color: couleurs.encre }}>→</Text>
+            </Pressable>
+          </View>
+
           {/* AU PARLEMENT CETTE SEMAINE — sous les trois reponses, jamais parmi
              elles : c'est national, et la carte le dit (ui/semaine.tsx). */}
           <SemaineParlement sp={d.semaineParlement} lu={r.agendaLu} nom={nom} />
@@ -190,8 +199,7 @@ export default function ChezVous() {
           <View style={{ gap: PAS * 2 }}>
             <Etiquette texte="Aller plus loin" />
             <View>
-              <Plus premier texte={LIBELLES.qui} onPress={() => router.push("/qui-decide")} />
-              <Plus texte={LIBELLES.calendrier} onPress={() => router.push("/a-venir")} />
+              <Plus premier texte={LIBELLES.calendrier} onPress={() => router.push("/a-venir")} />
               <Plus dernier texte={LIBELLES.sources} onPress={() => router.push("/sources")} />
             </View>
           </View>

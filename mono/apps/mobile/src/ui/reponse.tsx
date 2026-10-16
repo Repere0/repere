@@ -11,6 +11,7 @@
 import type { ReactNode } from "react";
 import { Pressable, Share, StyleSheet, Text, View } from "react-native";
 import { couleurs, CIBLE, OMBRE, PAS, RAYON, TYPO, type Echelon } from "../lib/theme";
+import { IconePartage } from "./icones";
 
 function BoutonPartager({ titre, texte, sourceUrl }: { titre: string; texte: string; sourceUrl?: string | null }) {
   const partager = async () => {
@@ -20,7 +21,7 @@ function BoutonPartager({ titre, texte, sourceUrl }: { titre: string; texte: str
   return (
     <Pressable onPress={partager} accessibilityRole="button" accessibilityLabel={`Partager : ${titre}`}
       style={({ pressed }) => [s.partage, pressed && { opacity: 0.6 }]}>
-      <Text style={s.suiteTexte}>Partager</Text>
+      <IconePartage couleur={couleurs.lien} />
     </Pressable>
   );
 }
@@ -76,7 +77,10 @@ const s = StyleSheet.create({
   pied: { flexDirection: "row", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", columnGap: PAS * 2 },
   suite: { minHeight: CIBLE, justifyContent: "center", marginLeft: "auto" },
   suiteTexte: { fontSize: 15, fontWeight: "700", color: couleurs.lien },
-  partage: { minHeight: CIBLE, justifyContent: "center" },
+  /* Une icone de 24 pt dans une cible de 48 x 48 (16/10/2026) : le mot « Partager »
+     faisait passer le pied de la carte sur deux lignes, et la troisieme reponse
+     sous le pli (mesure : 865 px pour 844). Le nom reste lu : « Partager : … ». */
+  partage: { minHeight: CIBLE, minWidth: CIBLE, alignItems: "center", justifyContent: "center" },
   plus: { minHeight: CIBLE + 4, flexDirection: "row", alignItems: "center", paddingHorizontal: PAS * 4, backgroundColor: couleurs.carte,
     borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: couleurs.trait },
   plusPremier: { borderTopLeftRadius: RAYON.bloc, borderTopRightRadius: RAYON.bloc },
