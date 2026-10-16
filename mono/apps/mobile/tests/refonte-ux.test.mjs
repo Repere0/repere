@@ -175,3 +175,9 @@ test("accueil hors Ile-de-France : un exemple seulement s'il est publie, et dit 
   assert.match(a, /const exemple = communes\.find\(/, "l'exemple n'est plus pris dans la liste publiee");
   assert.match(a, /action=\{exemple \? `Voir un exemple/, "le bouton ne dit plus qu'il s'agit d'un exemple");
 });
+
+test("carte de partage 1 : la source et le numero du scrutin, comme la carte 2 (16/10/2026)", () => {
+  const p = lire("app/partager.tsx");
+  const carte1 = p.slice(p.indexOf("CARTE 1"), p.indexOf("CARTE 2"));
+  assert.match(carte1, /Source : Assemblée nationale, scrutin n° \{vote\.sc\.n\}/, "la carte 1, partagee seule, ne dit plus sa source");
+});
