@@ -1251,8 +1251,26 @@ test("votes — les lois sont distinguées des votes de détail", () => {
   const solennels = cat.scrutins.filter(s => /solennel/i.test(s.tv || ""));
   assert.ok(solennels.length > 0,
     "aucun scrutin solennel dans le catalogue : l'ecran n'aurait aucune loi a montrer");
+  /* UN TEXTE ENTIER, AVEC OU SANS L'AMORCE « L'ENSEMBLE » (16/10/2026). Jusqu'au
+     21/07/2026, l'Assemblee intitulait tous ses votes solennels « l'ensemble de la /
+     du … ». Le 13/10/2026, le scrutin solennel 8705 s'intitule « la proposition de loi
+     apportant une réponse intégrale au phénomène des violences sexuelles et sexistes
+     contre les femmes et les enfants (première lecture). » : c'est bien le vote sur le
+     texte entier (vote solennel inscrit par la Conference des presidents du 22/09/2026),
+     sans l'amorce. La collecte etait rouge depuis le 14/10 pour cette seule raison.
+     La regle garde ce qu'elle protege : un vote solennel porte sur un TEXTE, jamais sur
+     un article (« l'article premier de … », scrutin 8669), un amendement ou une motion.
+     Prouve : ces trois formes font echouer ce controle (rapport de PR).
+     LA PREMIERE OU LA SECONDE PARTIE DU BUDGET (16/10/2026, a valider par le porteur).
+     Le vote sur une partie entiere du projet de loi de finances s'intitule « la
+     première partie du projet de loi de finances pour 2026 (première lecture). »
+     (scrutin 4241, 21/11/2025). Celui de 2027 est inscrit en vote solennel le
+     20/10/2026 : sans cette forme, la collecte retomberait le 21. Ce n'est pas un
+     vote de detail ; un article du budget (« l'article liminaire du projet de loi de
+     finances… », scrutin 4240) reste refuse. */
+  const TEXTE_ENTIER = /^(?:l'ensemble (?:de la|du|des|de l')|la proposition de (?:loi|résolution)\b|le projet de loi\b|la (?:première|seconde) partie du projet de loi de finances\b)/i;
   for (const s of solennels) {
-    assert.match(s.t, /^l'ensemble/i,
+    assert.match(s.t, TEXTE_ENTIER,
       `le scrutin solennel ${s.n} ne porte pas sur l'ensemble d'un texte : la regle de tri ne tient plus`);
   }
   assert.match(lire("apps/web/src/routes/QuiDecide.jsx"), /solennel/i,
