@@ -23,6 +23,7 @@ import {
 import { Page } from "../ui/page";
 import { Depli } from "../ui/visuels";
 import { Vide } from "../lib/composants";
+import { SCRUTINS_AN } from "../lib/absences";
 import { PastilleSource } from "../ui/source";
 import { PAS, TYPO, couleurs, CIBLE, RAYON, OMBRE } from "../lib/theme";
 import { SIGLES_GROUPES } from "../lib/groupes";
@@ -35,7 +36,7 @@ type Resume = {
 };
 type Position = { a: string; n: string | null; p: "p" | "c" | "a" };
 type Groupe = {
-  ref: string; nom: string; couleur: string; abrege?: string | null;
+  ref: string; nom: string; couleur: string | null; abrege?: string | null;
   pour: number | null; contre: number | null; abstentions: number | null;
   positions: Position[];
 };
@@ -48,7 +49,9 @@ type Paquet = {
 type QagResume = {
   uid: string; n: string; d: string;
   auteur: { ref: string | null; nom: string | null };
-  groupe: { nom: string; abrege: string | null; couleur: string };
+  /* couleur : la couleur officielle du groupe, seulement si elle reste neutre
+     (scripts/scrutins-details.mjs) ; null sinon. */
+  groupe: { nom: string; abrege: string | null; couleur: string | null };
   ministere: string | null; url: string; lot: number;
 };
 type Qag = QagResume & { question: string | null; reponse: string | null; reponsePublieeLe: string | null };
@@ -154,7 +157,7 @@ function GroupeRow({ groupe, ouvert, onPress }: { groupe: Groupe; ouvert: boolea
           <View style={s.groupeBadge} importantForAccessibility="no-hide-descendants" accessibilityElementsHidden>
             <Text style={s.groupeBadgeTexte}>{sigle}</Text>
           </View>
-        ) : <View style={[s.groupePoint, { backgroundColor: groupe.couleur }]} />}
+        ) : <View style={[s.groupePoint, { backgroundColor: groupe.couleur || couleurs.trait }]} />}
         <View style={s.groupeTexte}>
           <Text style={s.groupeNom}>{groupe.nom}</Text>
           <Text style={s.groupeStats}>
@@ -361,6 +364,9 @@ export default function Scrutins() {
           <Vide
             titre={etat === ETATS.EN_COURS ? "Chargement des scrutins." : "Les scrutins ne sont pas disponibles."}
             corps="Repère n'affiche pas une position quand le relevé détaillé n'est pas disponible."
+            /* Doctrine du vide (invariant 5) : une phrase vraie ET un lien (16/10/2026 : la
+               phrase etait seule). Pendant le chargement, pas de lien sortant. */
+            lien={etat === ETATS.EN_COURS ? undefined : { texte: "Voir les scrutins sur le site de l'Assemblée nationale", url: SCRUTINS_AN }}
           />
         ) : (
           <>

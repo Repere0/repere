@@ -51,17 +51,27 @@ export default function Procedure() {
     <Page>
       <Stack.Screen options={{ title: "La procédure" }} />
       <Question etiquette="Au Parlement" question="Comment une loi devient loi"
-        sous={`${ETAPES_LOI.length} étapes, du dépôt à la publication. Touchez une étape, ou suivez-les dans l'ordre.`} />
+        sous={`${ETAPES_LOI.length} étapes, du dépôt à la publication. Touchez une étape pour la lire.`} />
 
-      <View accessibilityRole="tablist" style={{ flexDirection: "row", gap: 4 }}>
-        {ETAPES_LOI.map((e, i) => (
-          <Pressable key={e.cle} onPress={() => aller(i)} accessibilityRole="tab"
-            accessibilityState={{ selected: i === etape }} accessibilityLabel={`Étape ${i + 1} : ${e.titre}`}
-            style={{ flex: 1, minHeight: CIBLE, justifyContent: "center" }}>
-            <View style={{ height: 6, borderRadius: 3, backgroundColor: i <= etape ? couleurs.encre : couleurs.trait }} />
-            <Text style={[TYPO.note, { marginTop: 4, textAlign: "center", fontWeight: i === etape ? "700" : "400" }]}>{i + 1}</Text>
-          </Pressable>
-        ))}
+      {/* LES SIX ETAPES D'UN COUP D'OEIL (16/10/2026, audit Lovable). Avant : une barre de
+          six segments numerotes 1 a 6 ; seul le titre de l'etape ouverte se lisait. Une
+          ligne par etape, son numero et son titre ; toucher une ligne ouvre son detail. */}
+      <View accessibilityRole="tablist" style={{ gap: 2 }}>
+        {ETAPES_LOI.map((e, i) => {
+          const choisie = i === etape;
+          return (
+            <Pressable key={e.cle} onPress={() => aller(i)} accessibilityRole="tab"
+              accessibilityState={{ selected: choisie }} accessibilityLabel={`Étape ${i + 1} : ${e.titre}`}
+              style={({ pressed }) => ({ minHeight: CIBLE, flexDirection: "row", alignItems: "center", gap: PAS * 3,
+                paddingHorizontal: PAS * 3, borderRadius: 12, backgroundColor: choisie ? couleurs.carte : "transparent", opacity: pressed ? 0.6 : 1 })}>
+              <View style={{ width: 28, height: 28, borderRadius: 14, alignItems: "center", justifyContent: "center",
+                backgroundColor: choisie ? couleurs.encre : "transparent", borderWidth: 1.5, borderColor: i <= etape ? couleurs.encre : couleurs.trait }}>
+                <Text style={{ fontWeight: "700", fontSize: 14, color: choisie ? couleurs.sol : couleurs.encre, fontVariant: ["tabular-nums"] }}>{i + 1}</Text>
+              </View>
+              <Text style={[TYPO.corps, { flex: 1, fontWeight: choisie ? "800" : "500" }]}>{e.titre}</Text>
+            </Pressable>
+          );
+        })}
       </View>
 
       <Etape key={etape} indice={etape} />
@@ -82,7 +92,10 @@ export default function Procedure() {
       </View>
 
       <Text style={TYPO.note}>
-        Ce qui est écrit ici est le résumé de Repère. Le texte de la Constitution (articles 45 et 61) fait foi.
+        {/* 16/10/2026 : « articles 45 et 61 » ne correspondait a aucune etape affichee (61 =
+            Conseil constitutionnel) ; l'ecran du vote cite 10, 39 et 45. Le parcours est
+            general et simplifie : on le dit, et l'article 61 est nomme pour ce qu'il est. */}
+        {"Ce qui est écrit ici est le résumé de Repère, simplifié\u00a0: un texte ne passe pas toujours par toutes ces étapes, et avant la promulgation, le Conseil constitutionnel peut être saisi (article 61). La Constitution (articles 10, 39, 45 et 61) fait foi."}
       </Text>
       <LienSortant url={CONSTITUTION_45_URL} texte="La Constitution, texte intégral" etiquette="Ouvrir le texte de la Constitution" />
     </Page>

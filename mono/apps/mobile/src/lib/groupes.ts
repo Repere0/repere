@@ -1,8 +1,9 @@
 /* SIGLES DES GROUPES PARLEMENTAIRES (16/10/2026).
  *
- * Les couleurs publiées pour les groupes sont volontairement presque grises
- * (invariant 7 : aucune couleur politique) : elles ne permettent donc pas de
- * reconnaître un groupe. Le sigle, lui, le fait. Clés : les noms exacts publiés
+ * Un groupe se reconnait a son SIGLE et a son nom. Sa couleur n'est publiee par
+ * Repere que si c'est la couleur officielle de l'Assemblee ET qu'elle reste un
+ * neutre (invariant 7, scripts/scrutins-details.mjs) : les couleurs officielles
+ * des groupes, saturees, sont donc refusees, et rien ne les remplace. Clés : les noms exacts publiés
  * par l'Assemblée (scripts/scrutins-details.mjs). Un nom absent de cette table
  * garde un point neutre, jamais un sigle inventé. */
 export const SIGLES_GROUPES: Readonly<Record<string, string>> = Object.freeze({

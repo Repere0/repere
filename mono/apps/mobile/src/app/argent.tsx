@@ -10,6 +10,7 @@
  * (et non « exercice 2025 »). Les phrases partagees avec le site (rapports,
  * sous-titre, calcul) restent intactes au niveau 3, pour que les deux supports
  * disent la meme chose. */
+import type { ReactNode } from "react";
 import { Text, View } from "react-native";
 import { Stack } from "expo-router";
 import {
@@ -17,6 +18,7 @@ import {
   evolution, exercicesEcartes, financementProjet, INTRO_EVOLUTION, introRapports, montantCourt, noteRattachement,
   NOTE_EVOLUTION, NOTE_FINANCEMENT, nomDispositif, parHabitant, partReperee, perimetreChange, phraseEcartes,
   phraseProjetLocal, rapports, sousTitreRapports, euros, CALCUL_REPERE, LIBELLES,
+  OFGL_URL, phraseCalculPart, valeur,
 } from "@repere/core";
 import { Carte, Vide } from "../lib/composants";
 import { PROJETS_PAS_ARRIVES, projetsAucun } from "../lib/absences";
@@ -28,6 +30,19 @@ import { PastilleSource } from "../ui/source";
 import { LienDefinition } from "../lib/termes";
 import { Emoji, Resume } from "../ui/resume";
 import { BarrePart, Compteur, DeuxAnnees, Depli, Financement, Mois } from "../ui/visuels";
+
+/* DENSITE (16/10/2026). Mesure : l'ecran faisait 4,1 hauteurs d'ecran (3 469 px a
+   390 x 844), chaque carte empilant phrase, visuels, « En clair », deux replis et la
+   source. Desormais chaque carte montre : son titre date, sa phrase-reponse, UN
+   visuel, sa source ; le reste est sous « Le détail (…) », un geste plus loin, sans
+   rien retirer. */
+/* Doctrine du vide (16/10/2026) : deux phrases des comptes n'avaient pas de lien ; le
+   socle ne le porte pas pour elles (le site les montre ailleurs), l'ecran l'ajoute. */
+const VERIFIER_COMPTES = { texte: "Vérifier dans les comptes publics", url: OFGL_URL };
+
+function Detail({ sujet, children }: { sujet: string; children: ReactNode }) {
+  return <Depli titre={sujet.startsWith("par jour") ? `Le détail : ${sujet}` : `Le détail (${sujet})`}>{children}</Depli>;
+}
 
 type Rapport = { l: string; v: string; d: string };
 type Projet = { annee: number; dispositif: string; intitule: string; subvention: number; cout?: number; ancien_code?: string };
@@ -50,16 +65,16 @@ function CarteProjet({ p, nom, projets }: { p: Projet; nom: string; projets: Par
       <Text style={TYPO.reponse}>{p.intitule}</Text>
       {f && f.partPct !== null && cout ? (
         <Resume phrase={partReperee(f.partPct)
-          ? `L'État finance ${partReperee(f.partPct)} de ce projet de ${cout.texte}.`
-          : `Pour 100 € de ce projet de ${cout.texte}, ${f.partPct} € viennent de l'État.`}>
+          ? `L'État finance ${partReperee(f.partPct)} de ce projet de ${cout.texte} hors taxes.`
+          : `Pour 100 € de ce projet de ${cout.texte} hors taxes, ${f.partPct} € viennent de l'État.`}>
           <Financement subvention={f.subvention} cout={f.cout as number} partPct={f.partPct}
-            subventionTexte={`${euros(f.subvention)} sur ${euros(f.cout as number)}`}
+            subventionTexte={`${euros(f.subvention)} sur ${euros(f.cout as number)} hors taxes`}
             resteTexte={`${euros(f.reste as number)}, financement non détaillé par la source`} />
         </Resume>
       ) : null}
-      <Text style={TYPO.note}>{phraseProjetLocal(p, nom)}</Text>
-      {noteRattachement(p) ? <Text style={TYPO.note}>{noteRattachement(p)}</Text> : null}
-      <Depli titre={`Qu'est-ce que l'aide ${p.dispositif} ?`}>
+      <Depli titre={`Le détail du projet et de l'aide ${p.dispositif}`}>
+        <Text style={TYPO.note}>{phraseProjetLocal(p, nom)}</Text>
+        {noteRattachement(p) ? <Text style={TYPO.note}>{noteRattachement(p)}</Text> : null}
         <Text style={TYPO.corps}>{nomDispositif(projets, p.dispositif)} : l'une des aides de l'État à l'investissement des collectivités recensées par la Direction générale des collectivités locales.</Text>
         <Text style={TYPO.note}>{NOTE_FINANCEMENT}</Text>
       </Depli>
@@ -86,16 +101,19 @@ export default function Argent() {
         ? ((d.faits || []).filter((x: { type: string }) => x.type === "projet").map((x: { p: Projet }) => x.p) as Projet[])
         : [];
       const dep = ch && ch.depenses !== null ? montantCourt(ch.depenses) : null;
+      /* montants publies de l'exercice affiche : 0 recettes, 1 depenses, 3 investissement, 4 personnel, 5 impots */
+      const calcul = (i: number, j: number, a: string, b: string) => (ex ? phraseCalculPart(valeur(ex.ex, i)?.m, valeur(ex.ex, j)?.m, a, b) : null);
       const dette = ch && ch.dette !== null ? montantCourt(ch.dette) : null;
       return (
         <Page>
           <Stack.Screen options={{ title: LIBELLES.argent }} />
-          <Question emoji="💶" etiquette="L'argent de la commune" question={`Où va l'argent de ${nom} ?`} />
+          {/* Sans etiquette ni emoji (16/10/2026) : la barre haute dit deja « Où va l'argent ». */}
+          <Question question={`Où va l'argent de ${nom} ?`} />
 
           {!ex ? (
             <Vide {...(phraseEc ? comptesIncoherents(nom, phraseEc) : comptesAbsents(nom))} />
           ) : rr.length < 2 || !ch ? (
-            <Vide {...comptesInsuffisants(ex.an)} />
+            <Vide {...comptesInsuffisants(ex.an)} lien={VERIFIER_COMPTES} />
           ) : (
             <>
               {/* COMBIEN */}
@@ -115,14 +133,20 @@ export default function Argent() {
                 <Carte echelon="ville" titre={`Où vont 100 € dépensés, comptes ${ex.an}`}>
                   {/* 08/10/2026 (audit) : « Deux postes… » s'affichait avec une seule barre
                      (part des salaires absente) ; l'annee des comptes manquait au titre. */}
-                  <Resume phrase={ch.partSalaires !== null ? `Sur 100 € dépensés, ${ch.partSalaires} € vont aux salaires des agents.` : `Sur 100 € dépensés, ${ch.partInvestissement} € vont aux investissements.`}
-                    enClair="Le reste des dépenses n'est pas détaillé par la source.">
-                    {ch.partSalaires !== null ? <BarrePart part={ch.partSalaires} libelle="Salaires des agents" valeur={rap(/salaires/)?.v || ""} /> : null}
-                    {ch.partInvestissement !== null ? <BarrePart part={ch.partInvestissement} libelle="Investissements : travaux, équipements…" valeur={rap(/investir/)?.v || ""} delai={120} /> : null}
+                  <Resume phrase={ch.partSalaires !== null ? `Sur 100 € dépensés, ${ch.partSalaires} € vont aux salaires des agents.` : `Sur 100 € dépensés, ${ch.partInvestissement} € vont aux investissements.`}>
+                    {ch.partSalaires !== null ? <BarrePart part={ch.partSalaires} libelle="Salaires des agents" valeur={rap(/salaires/)?.v || ""} />
+                      : <BarrePart part={ch.partInvestissement as number} libelle="Investissements : travaux, équipements…" valeur={rap(/investir/)?.v || ""} />}
                   </Resume>
-                  <PasCeQueCaDit r={rap(/salaires/)} sujet="salaires" />
-                  <PasCeQueCaDit r={rap(/investir/)} sujet="investissements" />
                   <PastilleSource source={srcComptes(d)} />
+                  <Detail sujet="dépenses">
+                    {/* Le calcul, avec les deux montants publies (16/10/2026) : la part se verifie. */}
+                    {[calcul(4, 1, "frais de personnel", "dépenses totales"), calcul(3, 1, "dépenses d'investissement", "dépenses totales")]
+                      .filter(Boolean).map(t => <Text key={t as string} style={TYPO.note}>{t}</Text>)}
+                    {ch.partSalaires !== null && ch.partInvestissement !== null ? <BarrePart part={ch.partInvestissement} libelle="Investissements : travaux, équipements…" valeur={rap(/investir/)?.v || ""} delai={120} /> : null}
+                    <Text style={TYPO.corps}>En clair : le reste des dépenses n'est pas détaillé par la source.</Text>
+                    <PasCeQueCaDit r={rap(/salaires/)} sujet="salaires" />
+                    <PasCeQueCaDit r={rap(/investir/)} sujet="investissements" />
+                  </Detail>
                 </Carte>
               ) : null}
 
@@ -135,8 +159,11 @@ export default function Argent() {
                     enClair={partReperee(ch.partImpots) && rap(/impôts/)?.v ? `Sur 100 € encaissés, ${rap(/impôts/)?.v}.` : null}>
                     <BarrePart part={ch.partImpots} libelle="Impôts et taxes" valeur={rap(/impôts/)?.v || ""} />
                   </Resume>
-                  <PasCeQueCaDit r={rap(/impôts/)} sujet="impôts" />
                   <PastilleSource source={srcComptes(d)} />
+                  <Detail sujet="recettes">
+                    {calcul(5, 0, "impôts et taxes", "recettes totales") ? <Text style={TYPO.note}>{calcul(5, 0, "impôts et taxes", "recettes totales")}</Text> : null}
+                    <PasCeQueCaDit r={rap(/impôts/)} sujet="impôts" />
+                  </Detail>
                 </Carte>
               ) : null}
 
@@ -149,13 +176,14 @@ export default function Argent() {
                        avec le site reste lisible d'un seul tenant. */
                     chiffre={(rap(/mois de recettes/)?.v || "").replace(/ de recettes$/, "") || null}
                     legende="de recettes : le temps qu'il faudrait pour rembourser si toutes ses recettes y passaient"
-                    enClair={hab && hab.dette !== null ? `Soit ${hab.dette.toLocaleString("fr-FR")} € par habitant.` : null}>
+                    enClair={hab && hab.dette !== null ? `Soit ${hab.dette.toLocaleString("fr-FR")} € par habitant.` : null} />
+                  <PastilleSource source={srcComptes(d)} />
+                  <Detail sujet="dette">
                     <Mois mois={ch.detteMois} />
                     <Text style={TYPO.micro}>Une case = un mois de recettes de la commune.</Text>
                     <LienDefinition cle="encours de dette" />
-                  </Resume>
-                  <PasCeQueCaDit r={rap(/mois de recettes/)} sujet="dette" />
-                  <PastilleSource source={srcComptes(d)} />
+                    <PasCeQueCaDit r={rap(/mois de recettes/)} sujet="dette" />
+                  </Detail>
                 </Carte>
               ) : ch.dette === 0 ? (
                 /* 08/10/2026 (audit) : une dette nulle PUBLIEE faisait disparaitre la
@@ -163,15 +191,6 @@ export default function Argent() {
                 <Carte echelon="ville" titre={`Sa dette, fin ${ex.an}`}>
                   <Resume phrase={`L'Observatoire publie un encours de dette nul pour ${nom} en ${ex.an}, sur le budget principal : aucun emprunt n'y reste à rembourser.`} />
                   <PastilleSource source={srcComptesPublies(d)} />
-                </Carte>
-              ) : null}
-
-              {/* LE JOUR LE JOUR, POUR QUI VEUT LE VOIR COMPTER */}
-              {ch.parJour !== null ? (
-                <Carte echelon="ville" titre={`Chaque jour, en moyenne, en ${ex.an}`}>
-                  <Compteur valeur={ch.parJour} suffixe="€ par jour" />
-                  <PasCeQueCaDit r={rap(/par jour/)} sujet="dépense par jour" />
-                  <PastilleSource source={srcComptes(d)} />
                 </Carte>
               ) : null}
 
@@ -185,29 +204,54 @@ export default function Argent() {
             </>
           )}
 
+          {/* DENSITE (16/10/2026) : la moyenne par jour (un calcul) et l'evolution sur un
+             an, chacune dans sa carte et avec sa source, sous un meme repli. */}
+          {ex && ch && (ch.parJour !== null || evo) ? (
+            <Detail sujet="par jour et sur un an">
+              {/* LE JOUR LE JOUR, POUR QUI VEUT LE VOIR COMPTER */}
+                {ch.parJour !== null ? (
+                  <Carte echelon="ville" titre={`Chaque jour, en moyenne, en ${ex.an}`}>
+                    <Compteur valeur={ch.parJour} suffixe="€ par jour" />
+                    <PastilleSource source={srcComptes(d)} />
+                    <Detail sujet="dépense par jour">
+                      <PasCeQueCaDit r={rap(/par jour/)} sujet="dépense par jour" />
+                    </Detail>
+                  </Carte>
+                ) : null}
+
           {/* CE QUI A CHANGE EN UN AN : jamais deux territoires, jamais un jugement */}
-          {evo ? (
-            evo.perimetreChange ? (
-              <Vide {...perimetreChange(evo, nom)} />
-            ) : (
-              <Carte echelon="ville" titre={`Ce qui a changé entre ${evo.an1} et ${evo.an2}`}>
-                <Text style={TYPO.note}>{INTRO_EVOLUTION}</Text>
-                {[1, 0, 2].map(i => evo.lignes[i]).filter(l => l && l.m1 !== null && l.m2 !== null).map((l: { libelle: string; m1: number; m2: number; diff: number }) => (
-                  <DeuxAnnees key={l.libelle} libelle={l.libelle} an1={evo.an1} an2={evo.an2} m1={l.m1} m2={l.m2}
-                    texte1={eurosArrondis(l.m1)} texte2={eurosArrondis(l.m2)} diffTexte={diffEuros(l.diff)} />
-                ))}
-                <Text style={TYPO.micro}>Chaque paire de barres a sa propre échelle : on compare une ligne à elle-même, jamais deux lignes entre elles.</Text>
-                <Depli titre="Ce que ça ne veut pas dire (évolution)"><Text style={TYPO.corps}>{NOTE_EVOLUTION}</Text></Depli>
-                <PastilleSource source={srcComptes(d)} />
-              </Carte>
-            )
+              {evo ? (
+                evo.perimetreChange ? (
+                  <Vide {...perimetreChange(evo, nom)} lien={VERIFIER_COMPTES} />
+                ) : (
+                  <Carte echelon="ville" titre={`Ce qui a changé entre ${evo.an1} et ${evo.an2}`}>
+                    {/* La premiere ligne visible ; les autres, l'intro et la note dans le detail. */}
+                    {[1, 0, 2].map(i => evo.lignes[i]).filter(l => l && l.m1 !== null && l.m2 !== null).slice(0, 1).map((l: { libelle: string; m1: number; m2: number; diff: number }) => (
+                      <DeuxAnnees key={l.libelle} libelle={l.libelle} an1={evo.an1} an2={evo.an2} m1={l.m1} m2={l.m2}
+                        texte1={eurosArrondis(l.m1)} texte2={eurosArrondis(l.m2)} diffTexte={diffEuros(l.diff)} />
+                    ))}
+                    <PastilleSource source={srcComptes(d)} />
+                    <Detail sujet="évolution">
+                      <Text style={TYPO.note}>{INTRO_EVOLUTION}</Text>
+                      {[1, 0, 2].map(i => evo.lignes[i]).filter(l => l && l.m1 !== null && l.m2 !== null).slice(1).map((l: { libelle: string; m1: number; m2: number; diff: number }) => (
+                        <DeuxAnnees key={l.libelle} libelle={l.libelle} an1={evo.an1} an2={evo.an2} m1={l.m1} m2={l.m2}
+                          texte1={eurosArrondis(l.m1)} texte2={eurosArrondis(l.m2)} diffTexte={diffEuros(l.diff)} />
+                      ))}
+                      <Text style={TYPO.micro}>Chaque paire de barres a sa propre échelle : on compare une ligne à elle-même, jamais deux lignes entre elles.</Text>
+                      <Depli titre="Ce que ça ne veut pas dire (évolution)"><Text style={TYPO.corps}>{NOTE_EVOLUTION}</Text></Depli>
+                    </Detail>
+                  </Carte>
+                )
+              ) : null}
+
+            </Detail>
           ) : null}
 
           {/* LES PROJETS AIDES PAR L'ETAT */}
           <View style={{ gap: PAS * 3 }}>
             <View style={{ flexDirection: "row", gap: PAS * 2, alignItems: "center" }}>
               <Emoji c="🏗️" taille={24} />
-              <Text style={[TYPO.question, { flex: 1 }]} accessibilityRole="header">Les projets aidés par l'État</Text>
+              <Text style={[TYPO.question, { flex: 1, fontSize: 24, lineHeight: 28 }]} accessibilityRole="header">Les projets aidés par l'État</Text>
             </View>
             {!r.projetsLus ? (
               <Vide {...PROJETS_PAS_ARRIVES} action="Réessayer" onAction={reessayer} />

@@ -91,15 +91,29 @@ export default function Dictionnaire() {
         ))}
       </View>
 
+      {/* DENSITE (16/10/2026) : la liste complete montre les mots ; la definition se
+          deplie au toucher. Trois resultats ou moins (une recherche, un lien « Ce que
+          veut dire ») : les definitions sont ouvertes d'emblee. */}
       {liste.length ? liste.map(e => (
-        <View key={e.cle} testID="dico-entree"
-          style={{ gap: PAS, paddingTop: PAS * 3, borderTopWidth: 1, borderTopColor: couleurs.trait }}>
-          <Text style={[TYPO.corps, { fontWeight: "700" }]}>{e.titre}</Text>
-          <Text style={TYPO.corps}>{e.corps}</Text>
-        </View>
+        <Mot key={`${e.cle}-${liste.length <= 3}`} e={e} ouvertDEmblee={liste.length <= 3} />
       )) : (
         <Text style={TYPO.note}>{`Aucun mot ne correspond à « ${recherche.trim()} ». Essayez une partie du mot, ou parcourez les lettres.`}</Text>
       )}
     </Page>
+  );
+}
+
+function Mot({ e, ouvertDEmblee }: { e: Entree; ouvertDEmblee: boolean }) {
+  const [ouvert, setOuvert] = useState(ouvertDEmblee);
+  return (
+    <View testID="dico-entree" style={{ borderTopWidth: 1, borderTopColor: couleurs.trait }}>
+      <Pressable onPress={() => setOuvert(o => !o)} accessibilityRole="button" accessibilityState={{ expanded: ouvert }} aria-expanded={ouvert}
+        accessibilityLabel={e.titre}
+        style={({ pressed }) => ({ minHeight: CIBLE, flexDirection: "row", alignItems: "center", gap: PAS * 2, opacity: pressed ? 0.6 : 1 })}>
+        <Text style={[TYPO.corps, { fontWeight: "700", flex: 1 }]}>{e.titre}</Text>
+        <Text accessibilityElementsHidden importantForAccessibility="no" style={[TYPO.corps, { color: couleurs.sourd }]}>{ouvert ? "−" : "+"}</Text>
+      </Pressable>
+      {ouvert ? <Text style={[TYPO.corps, { paddingBottom: PAS * 3 }]}>{e.corps}</Text> : null}
+    </View>
   );
 }

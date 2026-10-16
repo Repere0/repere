@@ -10,9 +10,10 @@
  *   - les nombres viennent de @repere/core (visuels.js), jamais d'ici.
  * Construites avec des View : aucune bibliotheque de graphiques. */
 import { useState, type ReactNode } from "react";
-import { Animated, Pressable, StyleSheet, Text, View } from "react-native";
+import { Animated, LayoutAnimation, Pressable, StyleSheet, Text, View } from "react-native";
 import { couleurs, GRIS_VOTE, PAS, RAYON, TEINTES, TYPO, CIBLE, type Echelon } from "../lib/theme";
-import { useApparition, useCompteur } from "./mouvement";
+import { useApparition, useCompteur, useMouvementReduit } from "./mouvement";
+import { toucherLeger } from "./toucher";
 
 const largeur = (v: Animated.Value, pct: number) =>
   v.interpolate({ inputRange: [0, 1], outputRange: ["0%", `${Math.max(0, Math.min(100, pct))}%`] });
@@ -172,11 +173,15 @@ export type Niveau = {
 };
 /* `surNom` : quand il est donne, le nom de chaque personne ouvre sa fiche. Le nom
    est alors une cible de 48 px, lue comme un lien. */
-export function Chaine({ niveaux, compact, surNom }: { niveaux: Niveau[]; compact?: boolean; surNom?: (n: Niveau) => void }) {
+/* `refNiveau` : la vue de chaque niveau, mesuree au moment ou un raccourci y amene le
+   lecteur (Qui decide, 16/10/2026). Une position memorisee a l'affichage devenait fausse
+   des qu'un repli s'ouvrait au-dessus (mesure sur l'export web). */
+export function Chaine({ niveaux, compact, surNom, refNiveau }: { niveaux: Niveau[]; compact?: boolean; surNom?: (n: Niveau) => void; refNiveau?: (echelon: string, vue: View | null) => void }) {
   return (
     <View>
       {niveaux.map((n, i) => (
         <View key={n.echelon} style={s.jalon}
+          ref={refNiveau ? v => refNiveau(n.echelon, v) : undefined}
           accessible={compact}
           accessibilityLabel={compact ? `${n.niveau} : ${n.personne ? n.personne.nom + ", " + n.personne.role : n.institution}` : undefined}>
           <View style={s.jalonAxe}>
@@ -205,8 +210,15 @@ export function Chaine({ niveaux, compact, surNom }: { niveaux: Niveau[]; compac
             )}
             {!compact && n.personne ? <Text style={TYPO.note}>{n.personne.role}</Text> : null}
             {!compact && n.decide ? <Text style={TYPO.corps}>Décide : {n.decide}.</Text> : null}
-            {!compact && n.note ? <Text style={TYPO.note}>{n.note}</Text> : null}
-            {!compact && n.pied ? n.pied : null}
+            {/* DENSITE (16/10/2026) : le nom, le role et ce que le niveau decide restent
+                visibles ; les precisions (composition, nuances d'Ile-de-France, liens de
+                definition) se deplient. */}
+            {!compact && (n.note || n.pied) ? (
+              <Depli titre={`En savoir plus (${n.niveau})`}>
+                {n.note ? <Text style={TYPO.note}>{n.note}</Text> : null}
+                {n.pied ? n.pied : null}
+              </Depli>
+            ) : null}
           </View>
         </View>
       ))}
@@ -215,12 +227,30 @@ export function Chaine({ niveaux, compact, surNom }: { niveaux: Niveau[]; compac
 }
 
 /* ── Approfondir : une explication qu'on ouvre ─────────────────────────── */
-export function Depli({ titre, children }: { titre: string; children: ReactNode }) {
+const DUREE_REPLI = 220;   /* ms : assez pour suivre, trop court pour attendre */
+
+/* `etiquette` : le nom lu par un lecteur d'ecran quand plusieurs replis portent le meme
+   titre visible (16/10/2026, page Sources). */
+export function Depli({ titre, children, etiquette }: { titre: string; children: ReactNode; etiquette?: string }) {
   const [ouvert, setOuvert] = useState(false);
+  const reduit = useMouvementReduit();
+  /* S'OUVRIR EN DOUCEUR (16/10/2026) : sur telephone, l'explication glisse en place au
+     lieu d'apparaitre d'un coup, et un leger retour haptique confirme le geste. Coupe
+     si le telephone demande de reduire les animations ; sans effet sur le web. */
+  const basculer = () => {
+    if (!reduit && process.env.EXPO_OS !== "web") {
+      LayoutAnimation.configureNext(LayoutAnimation.create(DUREE_REPLI, LayoutAnimation.Types.easeInEaseOut, LayoutAnimation.Properties.opacity));
+    }
+    toucherLeger();
+    setOuvert(o => !o);
+  };
   return (
     <View>
-      <Pressable onPress={() => setOuvert(o => !o)} accessibilityRole="button"
-        accessibilityState={{ expanded: ouvert }} style={({ pressed }) => [s.depli, pressed && { opacity: 0.6 }]}>
+      {/* aria-expanded en plus d'accessibilityState (16/10/2026) : mesure sur la version
+          web, l'etat du repli n'etait pas expose (aria-expanded absent) ; un lecteur
+          d'ecran ne savait pas si l'explication etait ouverte. */}
+      <Pressable onPress={basculer} accessibilityRole="button" accessibilityLabel={etiquette}
+        accessibilityState={{ expanded: ouvert }} aria-expanded={ouvert} style={({ pressed }) => [s.depli, pressed && { opacity: 0.6 }]}>
         <Text style={[TYPO.note, { color: couleurs.lien, fontWeight: "600", flex: 1 }]}>{titre.replace(/ ([?!:;])/g, "\u00a0$1")}</Text>
         <Text style={[TYPO.note, { color: couleurs.lien }]} accessibilityElementsHidden importantForAccessibility="no">{ouvert ? "−" : "+"}</Text>
       </Pressable>

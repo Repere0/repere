@@ -13,9 +13,11 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
 import {
-  INVARIANTS, ECHELONS, AMPLITUDE_MAX, amplitude, adresseFautive,
+  INVARIANTS, ECHELONS, AMPLITUDE_MAX, amplitude, adresseFautive, TRICOLORE_MARQUE, FICHIERS_MARQUE, couleurDeGroupeAdmise,
   CHAMPS_INTERDITS, MOTS_CLASSEMENT, MOTS_GAMIFICATION, MOTS_A_ACCENTS,
 } from "../packages/data-utils/src/invariants.js";
+import { execFileSync } from "node:child_process";
+import os from "node:os";
 import { estDonneePublique, MAGASIN } from "../packages/data-utils/src/store.js";
 import { adresseDepartement, PHRASES, ETATS } from "../packages/data-utils/src/client.js";
 
@@ -60,6 +62,20 @@ test("invariant 0 — chaque invariant déclare le contrôle qui le garde", () =
     assert.ok(i.garde && i.garde.length > 10,
       `l'invariant ${i.n} n'a pas de garde declaree : c'est une intention, pas une regle`);
   }
+});
+
+/* LA REGLE ECRITE ET LA REGLE CODEE NE DIVERGENT PAS — 16/10/2026. L'amendement de
+   l'invariant 7 (tricolore du logo) avait ete ecrit dans invariants.js et sa garde le
+   matin, mais pas dans CLAUDE.md / AGENTS.md (le contexte que lisent les agents) :
+   deux textes pour une meme regle. Ce controle compare le texte de l'invariant 7 de
+   CLAUDE.md (gras et retours a la ligne retires) a la regle de invariants.js. */
+test("invariant 7 — CLAUDE.md et invariants.js disent la meme regle", () => {
+  const claude = fs.readFileSync(path.join(RACINE, "..", "CLAUDE.md"), "utf8");
+  const m = /\n7\. ([\s\S]*?)\n8\. /.exec(claude);
+  assert.ok(m, "l'invariant 7 est introuvable dans CLAUDE.md");
+  const ecrite = m[1].replace(/\*\*/g, "").replace(/\s+/g, " ").trim();
+  const codee = INVARIANTS.find(i => i.n === 7).regle.replace(/\s+/g, " ").trim();
+  assert.equal(ecrite, codee, "la regle 7 de CLAUDE.md et celle de invariants.js divergent");
 });
 
 test("invariant 2 — une seule clé de stockage, nommée, et rien d'autre", () => {
@@ -136,10 +152,16 @@ test("invariant 7 — palette gelée, et aucune couleur hors palette", () => {
     assert.ok(css.includes(hex), `la couleur d'echelon ${nom} (${hex}) a disparu des jetons`);
   }
   let controlees = 0;
+  /* Seule exception (decision du porteur, 16/10/2026) : le tricolore du logo, et
+     SEULEMENT dans le fichier qui le declare. Partout ailleurs il reste refuse ici,
+     et le controle suivant dit pourquoi. */
+  const declaration = "packages/data-utils/src/invariants.js";
+  const tricolore = Object.values(TRICOLORE_MARQUE);
   for (const f of sourcesEcrites()) {
     for (const m of lire(f).matchAll(/#[0-9a-fA-F]{6}\b/g)) {
       const hex = m[0].toLowerCase();
       if (gelees.includes(hex)) continue;
+      if (f === declaration && tricolore.includes(hex)) continue;
       controlees++;
       assert.ok(amplitude(hex) <= AMPLITUDE_MAX,
         `${f} : ${hex} a une amplitude de ${amplitude(hex)} (plafond ${AMPLITUDE_MAX}) — c'est une couleur, pas un neutre`);
@@ -152,6 +174,107 @@ test("invariant 7 — palette gelée, et aucune couleur hors palette", () => {
   for (const f of ["apps/web/index.html", "apps/web/public/manifest.webmanifest"]) {
     assert.ok(balayes.includes(f), `${f} n'est pas relu par le controle de la palette`);
   }
+});
+
+/* LE TRICOLORE DU LOGO RESTE DANS LA MARQUE — 16/10/2026.
+   Decision du porteur : un tapis bleu-blanc-rouge dans le logo, seule exception a
+   l'invariant 7, « reservee au logo et a ses declinaisons de marque, jamais a
+   l'interface ni a une information ». Quatre choses sont verifiees : ces couleurs
+   seraient refusees sans l'exception (sinon la garde ne garde rien) ; aucun code
+   d'interface ne les porte ; le dessin du logo les recopie exactement ; seul le
+   composant de marque affiche les images de marque. */
+test("invariant 7 — le tricolore du logo reste dans la marque", () => {
+  const { bleu, blanc, rouge } = TRICOLORE_MARQUE;
+  assert.ok(amplitude(bleu) > AMPLITUDE_MAX && amplitude(rouge) > AMPLITUDE_MAX,
+    "le bleu et le rouge du logo ne depassent plus le plafond : l'exception ne protege plus rien");
+  assert.equal(amplitude(blanc), 0, "le blanc du tapis doit rester un blanc");
+
+  for (const f of sourcesEcrites()) {
+    if (f === "packages/data-utils/src/invariants.js") continue;   /* la declaration */
+    const texte = lire(f).toLowerCase();
+    for (const h of [bleu, rouge]) {
+      assert.ok(!texte.includes(h), `${f} porte ${h}, couleur du tapis du logo : elle est reservee a la marque (invariant 7), jamais a l'interface`);
+    }
+  }
+  /* app.json n'est pas balaye par sourcesEcrites (JSON) : ses couleurs (ecran de
+     lancement, icone adaptative) restent des neutres. */
+  for (const m of lire("apps/mobile/app.json").matchAll(/#[0-9a-fA-F]{6}\b/g)) {
+    const hex = m[0].toLowerCase();
+    assert.ok(Object.values(ECHELONS).includes(hex) || amplitude(hex) <= AMPLITUDE_MAX,
+      `apps/mobile/app.json : ${hex} a une amplitude de ${amplitude(hex)} — le fond de l'icone et de l'ecran de lancement restent neutres`);
+  }
+
+  const dessin = lire(FICHIERS_MARQUE.generateur);
+  for (const [nom, h] of [["BLEU", bleu], ["BLANC", blanc], ["ROUGE", rouge]]) {
+    assert.match(dessin, new RegExp(`^${nom} = "${h}"$`, "mi"),
+      `${FICHIERS_MARQUE.generateur} ne recopie pas ${nom} = "${h}" : le logo et la regle divergent`);
+  }
+
+  const images = new RegExp(`assets/(?:${FICHIERS_MARQUE.images.map(i => i.replace(/[.-]/g, "\\$&")).join("|")})`);
+  let balayes = 0;
+  for (const f of sourcesEcrites()) {
+    if (!f.startsWith("apps/mobile/src/")) continue;
+    balayes++;
+    if (f === FICHIERS_MARQUE.composant) continue;
+    assert.doesNotMatch(lire(f), images, `${f} affiche une image de marque : seul ${FICHIERS_MARQUE.composant} peut afficher le logo`);
+  }
+  assert.ok(balayes > 20, "trop peu de fichiers de l'application lus : la garde ne mesure rien");
+  assert.match(lire(FICHIERS_MARQUE.composant), images, "le composant de marque n'affiche plus le logo");
+  for (const i of FICHIERS_MARQUE.images) assert.ok(existe(`apps/mobile/assets/${i}`), `image de marque absente : ${i}`);
+});
+
+/* LA COULEUR D'UN GROUPE : OFFICIELLE ET NEUTRE, SINON AUCUNE — 16/10/2026.
+   Decision du porteur : seulement les couleurs officielles verifiables, sans
+   modifier l'invariant 7 pour elles. Le vrai script de collecte tourne sur des
+   organes fabriques (une couleur saturee, une neutre, une absente, une couleur
+   d'echelon) : seule la neutre est publiee, la provenance est ecrite, et la palette
+   de gris inventee qui remplacait la source a disparu. */
+test("invariant 7 — une couleur de groupe n'est publiée que si elle est officielle et neutre", () => {
+  /* La couleur saturee de l'essai est une couleur deja declaree (le rouge du logo) :
+     aucune couleur hors palette n'est ecrite en clair dans ce fichier. */
+  const SATUREE = TRICOLORE_MARQUE.rouge;
+  assert.equal(couleurDeGroupeAdmise(SATUREE), null, "une couleur saturee ne doit pas passer");
+  assert.equal(couleurDeGroupeAdmise("#747474"), "#747474");
+  assert.equal(couleurDeGroupeAdmise(ECHELONS.ville), null, "une couleur d'echelon ne doit pas devenir celle d'un groupe");
+  assert.equal(couleurDeGroupeAdmise(""), null);
+
+  const t = fs.mkdtempSync(path.join(os.tmpdir(), "repere-groupes-"));
+  try {
+    const org = path.join(t, "data", "brut_AMO30", "json", "organe");
+    fs.mkdirSync(org, { recursive: true });
+    fs.mkdirSync(path.join(t, "data", "brut_AMO30", "json", "acteur"), { recursive: true });
+    const organe = (uid, libelle, couleurAssociee) => fs.writeFileSync(path.join(org, uid + ".json"),
+      JSON.stringify({ organe: { uid, codeType: "GP", libelle, ...(couleurAssociee ? { couleurAssociee } : {}) } }));
+    organe("PO1", "Groupe sature", SATUREE.toUpperCase());
+    organe("PO2", "Groupe neutre", "#747474");
+    organe("PO3", "Groupe sans couleur", null);
+    organe("PO4", "Groupe couleur d'echelon", ECHELONS.region);
+    const scr = path.join(t, "scr");
+    fs.mkdirSync(scr);
+    const groupe = organeRef => ({ organeRef, vote: { decompteVoix: { pour: "1", contre: "0", abstentions: "0" } } });
+    fs.writeFileSync(path.join(scr, "S1.json"), JSON.stringify({ scrutin: {
+      uid: "VTANR5L17V1", numero: "1", dateScrutin: "2026-10-13", titre: "l'ensemble de la proposition de loi de banc",
+      typeVote: { libelleTypeVote: "scrutin public solennel" }, sort: { libelle: "adopté" },
+      syntheseVote: { nombreVotants: "4", decompte: { pour: "4", contre: "0", abstentions: "0" } },
+      ventilationVotes: { organe: { groupes: { groupe: ["PO1", "PO2", "PO3", "PO4"].map(groupe) } } },
+    } }));
+    const sortie = path.join(t, "a", "b");
+    execFileSync(process.execPath, [path.join(RACINE, "scripts", "scrutins-details.mjs"), sortie, scr], { stdio: "pipe" });
+    const index = JSON.parse(fs.readFileSync(path.join(sortie, "scrutins-index.json"), "utf8"));
+    const lots = fs.readdirSync(path.join(sortie, "scrutins-details"));
+    const detail = JSON.parse(fs.readFileSync(path.join(sortie, "scrutins-details", lots[0]), "utf8"));
+    const couleurs = Object.fromEntries(detail.scrutins[0].groupes.map(g => [g.nom, g.couleur]));
+    assert.deepEqual(couleurs, {
+      "Groupe sature": null, "Groupe neutre": "#747474", "Groupe sans couleur": null, "Groupe couleur d'echelon": null,
+    }, "seule la couleur officielle neutre est publiee " + JSON.stringify(couleurs));
+    assert.deepEqual({ lues: index.source.couleurs_groupes.lues, retenues: index.source.couleurs_groupes.retenues, refusees: index.source.couleurs_groupes.refusees },
+      { lues: 3, retenues: 1, refusees: 2 }, "la provenance des couleurs dit ce qui a ete lu, retenu et refuse");
+    assert.match(index.source.couleurs_groupes.origine, /couleurAssociee/);
+  } finally {
+    fs.rmSync(t, { recursive: true, force: true });
+  }
+  assert.doesNotMatch(lire("scripts/scrutins-details.mjs"), /#6f7275|#727476|COULEURS_GROUPES\s*=/,
+    "la palette de gris inventee est revenue a la place de la source");
 });
 
 test("PWA — le manifeste declare des icones, et elles existent", () => {

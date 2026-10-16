@@ -83,7 +83,16 @@ export function FeuilleSource({ source, visible, onFermer }: { source: InfoSourc
   return (
     <Modal visible={visible} animationType="slide" presentationStyle="pageSheet" onRequestClose={onFermer}>
       <ScrollView style={{ backgroundColor: couleurs.sol }} contentContainerStyle={[s.feuille, { paddingBottom: marges.bottom + PAS * 8 }]}>
-        <Etiquette emoji="🔎" texte="D'où vient cette information ?" />
+        {/* Fermer EN HAUT aussi (16/10/2026, audit Lovable) : la feuille ne se fermait
+            qu'en bas, apres defilement ; en haut a droite, comme une feuille iOS. Le
+            bouton du bas reste, pour qui a lu jusqu'au bout. Plus d'emoji decoratif. */}
+        <View style={{ flexDirection: "row", alignItems: "center", gap: PAS * 2 }}>
+          <View style={{ flex: 1 }}><Etiquette texte="D'où vient cette information ?" /></View>
+          <Pressable onPress={onFermer} accessibilityRole="button" accessibilityLabel="Fermer"
+            style={({ pressed }) => [s.fermerHaut, pressed && { opacity: 0.6 }]}>
+            <Text style={[TYPO.corps, { fontWeight: "700", color: couleurs.lien }]}>Fermer</Text>
+          </Pressable>
+        </View>
         <Text style={TYPO.question} accessibilityRole="header">{source.producteur}</Text>
         {date ? <Text style={[TYPO.corps, { fontWeight: "600" }]}>{date}</Text> : null}
         {traite ? <Text style={TYPO.note}>Traitées par Repère le {dateFr(traite)}</Text> : null}
@@ -129,4 +138,5 @@ const s = StyleSheet.create({
   bouton: { minHeight: CIBLE + 4, borderRadius: RAYON.bloc, backgroundColor: couleurs.ville, alignItems: "center", justifyContent: "center", paddingHorizontal: PAS * 4 },
   boutonTexte: { color: couleurs.blanc, fontSize: 17, fontWeight: "700", textAlign: "center" },
   fermer: { minHeight: CIBLE, alignItems: "center", justifyContent: "center" },
+  fermerHaut: { minHeight: CIBLE, minWidth: CIBLE, alignItems: "flex-end", justifyContent: "center", paddingLeft: PAS * 2 },
 });

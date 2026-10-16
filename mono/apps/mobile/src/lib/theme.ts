@@ -52,7 +52,7 @@ export const GRIS_VOTE = { p: couleurs.encre, c: couleurs.sourd, a: couleurs.tra
    une fois la marge interne comptee. */
 export const CIBLE = 48;
 export const PAS = 4;
-export const RAYON = { carte: 18, bloc: 14, pastille: 999 } as const;
+export const RAYON = { carte: 22, bloc: 16, pastille: 999 } as const;
 
 export const POLICE = {
   affiche: "BricolageGrotesque_800ExtraBold",
@@ -64,9 +64,9 @@ export const TYPO = {
   affiche: { fontFamily: POLICE.affiche, fontSize: 36, lineHeight: 40, color: couleurs.encre, letterSpacing: -0.5 },
   chiffre: { fontFamily: POLICE.affiche, fontSize: 38, lineHeight: 44, color: couleurs.encre, letterSpacing: -0.5 },
   /* la question d'un ecran */
-  question: { fontFamily: POLICE.affiche, fontSize: 28, lineHeight: 33, color: couleurs.encre, letterSpacing: -0.3 },
+  question: { fontFamily: POLICE.affiche, fontSize: 34, lineHeight: 38, color: couleurs.encre, letterSpacing: -0.6 },
   /* la reponse d'une carte : lisible en trois secondes */
-  reponse: { fontFamily: POLICE.titre, fontSize: 20, lineHeight: 26, color: couleurs.encre },
+  reponse: { fontFamily: POLICE.titre, fontSize: 22, lineHeight: 28, color: couleurs.encre },
   corps: { fontSize: 16, lineHeight: 23, color: couleurs.encre },
   note: { fontSize: 15, lineHeight: 21, color: couleurs.sourd },
   /* l'etiquette au-dessus d'une reponse, en capitales de style */

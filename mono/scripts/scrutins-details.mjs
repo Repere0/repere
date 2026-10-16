@@ -17,6 +17,7 @@
  */
 import fs from "node:fs";
 import path from "node:path";
+import { couleurDeGroupeAdmise } from "../packages/data-utils/src/invariants.js";
 
 const SORTIE = process.argv[2] || "./data";
 const ENTREE = process.argv[3] || "../data/brut_Scrutins";
@@ -26,23 +27,16 @@ const URL_SOURCE = "https://data.assemblee-nationale.fr/travaux-parlementaires/v
 const URL_SCRUTIN = "https://www.assemblee-nationale.fr/dyn/17/scrutins/";
 const LOT = 64;
 
-/* Palette d'identite des groupes : usage descriptif uniquement.
- * Fallback volontairement neutre pour un groupe nouveau/non reconnu. */
-const COULEURS_GROUPES = Object.freeze({
-  "Rassemblement National": "#6f7275",
-  "Ensemble pour la République": "#727476",
-  "La France insoumise - Nouveau Front Populaire": "#757274",
-  "Socialistes et apparentés": "#767275",
-  "Droite Républicaine": "#74777a",
-  "Écologiste et Social": "#737675",
-  "Les Démocrates": "#777675",
-  "Horizons & Indépendants": "#727679",
-  "Libertés, Indépendants, Outre-mer et Territoires": "#747677",
-  "Gauche Démocrate et Républicaine": "#757274",
-  "Union des droites pour la République": "#747377",
-  "Députés non inscrits": "#747474",
-});
-const COULEUR_DEFAUT = "#747474";
+/* COULEURS DES GROUPES : SEULEMENT CELLES QUE L'ASSEMBLEE PUBLIE, ET SEULEMENT SI
+ * ELLES RESTENT NEUTRES (16/10/2026). Avant, ce fichier portait une palette de gris
+ * inventee ici, un gris par groupe a quelques unites d'ecart : elle n'etait pas
+ * la couleur officielle, et de tels gris ne distinguent rien. Desormais : organe.couleurAssociee (open data de l'Assemblee,
+ * « couleur sur le site de l'Assemblée nationale »), filtree par
+ * couleurDeGroupeAdmise (invariant 7, amplitude <= 24). Une couleur refusee ou
+ * absente donne null : l'application montre alors le sigle et le nom du groupe,
+ * presentation neutre. Rien n'est invente pour la remplacer. */
+const COULEURS_PAR_NOM = new Map();
+const COULEURS_MESURE = { lues: 0, retenues: 0, refusees: 0 };
 
 function liste(x) {
   if (x == null || x === "") return [];
@@ -66,7 +60,7 @@ function fichiersJson(dir) {
   return out;
 }
 function couleurGroupe(nom) {
-  return COULEURS_GROUPES[nom] || COULEUR_DEFAUT;
+  return COULEURS_PAR_NOM.has(nom) ? COULEURS_PAR_NOM.get(nom) : null;
 }
 
 function lireActeurs() {
@@ -95,6 +89,12 @@ function lireGroupes() {
       if (!/^GP$/i.test(code) && !/groupe/i.test(String(o.libelle || ""))) continue;
       const nom = String(o.libelle || o.libelleAbrege || "").trim();
       if (nom) groupes.set(ref, nom);
+      if (nom && o.couleurAssociee) {
+        COULEURS_MESURE.lues++;
+        const admise = couleurDeGroupeAdmise(o.couleurAssociee);
+        if (admise) COULEURS_MESURE.retenues++; else COULEURS_MESURE.refusees++;
+        COULEURS_PAR_NOM.set(nom, admise);
+      }
     } catch {}
   }
   return groupes;
@@ -115,9 +115,19 @@ function positionsDuBloc(g, noms) {
 }
 
 
+/* La provenance des couleurs de groupe, publiee avec chaque source. */
+function provenanceCouleurs() {
+  return {
+    origine: "Assemblée nationale — organes (couleurAssociee), données ouvertes",
+    regle: "retenue seulement si l'amplitude RGB reste inférieure ou égale à 24 (invariant 7) ; sinon aucune couleur, le sigle et le nom suffisent",
+    ...COULEURS_MESURE,
+  };
+}
+
 function lancerQag() {
   const entree = process.argv[3] || "../data/brut_Questions_gouvernement";
   const noms = lireActeurs();
+  lireGroupes();   /* les couleurs officielles admises, comme pour les scrutins */
   const questions = [];
   function texte(x) {
     if (typeof x === "string") return x.trim();
@@ -167,6 +177,7 @@ function lancerQag() {
     legislature: 17,
     portee: "questions et réponses des séances de Questions au Gouvernement",
     releve_le: new Date().toISOString().slice(0,10),
+    couleurs_groupes: provenanceCouleurs(),
   };
   const lot=64, index={v:1,source,total:questions.length,taille_lot:lot,
     questions:questions.map((q,i)=>({uid:q.uid,n:q.n,d:q.d,auteur:q.auteur,groupe:q.groupe,ministere:q.ministere,url:q.url,lot:Math.floor(i/lot)}))};
@@ -258,7 +269,9 @@ const source = {
   legislature: 17,
   portee: "positions individuelles des scrutins publics de la XVIIe législature ; non-votants et mises au point non republies",
   releve_le: new Date().toISOString().slice(0, 10),
+  couleurs_groupes: provenanceCouleurs(),
 };
+console.log(`couleurs de groupe : ${COULEURS_MESURE.lues} publiées par l'Assemblée, ${COULEURS_MESURE.retenues} retenues, ${COULEURS_MESURE.refusees} refusées (amplitude > 24)`);
 
 fs.mkdirSync(SORTIE, { recursive: true });
 const index = {

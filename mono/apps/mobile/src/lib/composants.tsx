@@ -137,7 +137,9 @@ export function Bouton({ texte, onPress, discret }: { texte: string; onPress: ()
 }
 
 const s = StyleSheet.create({
-  carte: { backgroundColor: couleurs.carte, borderRadius: RAYON.carte, padding: PAS * 5, gap: PAS * 3, borderWidth: 1, borderColor: couleurs.trait, ...OMBRE },
+  /* DENSITE (16/10/2026) : marge interne 16 pt (etait 20) — plus de place pour le texte,
+     moins de retours a la ligne sur toute l'application ; coins continus. */
+  carte: { backgroundColor: couleurs.carte, borderRadius: RAYON.carte, borderCurve: "continuous", padding: PAS * 4, gap: PAS * 3, borderWidth: 1, borderColor: couleurs.trait, ...OMBRE },
   carteTete: { flexDirection: "row", alignItems: "center", gap: PAS * 2 },
   point: { width: 10, height: 10, borderRadius: 5 },
   carteTitre: { ...TYPO.etiquette, flex: 1 },

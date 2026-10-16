@@ -136,8 +136,15 @@ async function texteSite(nav, { dep, nom }) {
    source ouvertes une a une (spike du 30/09/2026 : la ligne de source complete
    et le calcul vivent desormais dans la feuille « D'où vient cette
    information ? » et dans « Détails du calcul »). */
+/* Les replis a ouvrir pour tout lire : l'application montre la reponse et replie
+   l'explication (refonte de densite du 16/10/2026). */
+const REPLIS = /Ce que ça ne veut pas dire|Détails du calcul|^Le détail|^En savoir plus|Ce que veut dire chaque étape|^Le parcours d'une loi|^Voir ses \d+ autres votes|^Voir son autre vote/;
+
 async function toutLire(p) {
-  for (const depli of await p.getByRole("button", { name: /Ce que ça ne veut pas dire|Détails du calcul/ }).filter({ visible: true }).all()) await depli.click();
+  /* Deux passes : un repli « Le détail (…) » peut en contenir d'autres (16/10/2026). */
+  /* Le premier repli ferme, jusqu'a ce qu'il n'en reste aucun (replis imbriques). */
+  const fermes = p.getByRole("button", { name: REPLIS, expanded: false }).filter({ visible: true });
+  for (let k = 0; k < 60 && await fermes.count(); k++) await fermes.first().click();
   let t = await p.evaluate(() => document.body.innerText);
   const pastilles = p.getByRole("button", { name: /D'où vient cette information/ }).filter({ visible: true });
   const n = await pastilles.count();
@@ -164,8 +171,11 @@ async function texteApp(nav, { nom }) {
   await p.getByText("Aller plus loin").first().waitFor({ timeout: 15000 });
   await p.waitForLoadState("networkidle");
   let { t, n: feuilles } = await toutLire(p);
-  for (const action of ["Où va cet argent ?", "Comprendre ce vote", "Qui décide", "Le calendrier", "Sources"]) {
-    const b = p.getByRole("button", { name: action, exact: true });
+  /* « Qui décide » s'ouvre depuis le bloc sombre « Qui décide chez vous ? » (16/10/2026) :
+     l'entree du meme nom a quitte « Aller plus loin ». Le nom du bouton porte la commune. */
+  const QUI = /^Voir la chaîne complète : qui décide pour /;
+  for (const action of ["Où va cet argent ?", "Comprendre ce vote", QUI, "Le calendrier", "Sources"]) {
+    const b = action === QUI ? p.getByRole("button", { name: QUI }) : p.getByRole("button", { name: action, exact: true });
     if (!(await b.count())) continue;              /* absence dite par une phrase sur l'accueil */
     await b.first().click();
     await p.waitForTimeout(900);
@@ -173,8 +183,8 @@ async function texteApp(nav, { nom }) {
     t += "\n" + lu.t;
     feuilles += lu.n;
     /* Qui décide et Le calendrier sont des onglets (13/10/2026) : retour par la barre basse. */
-    if (action === "Qui décide" || action === "Le calendrier") await p.getByText("Aujourd'hui", { exact: true }).last().click();
-    else await p.getByRole("button", { name: "Revenir à l'écran Aujourd'hui" }).last().click();
+    if (action === QUI || action === "Le calendrier") await p.getByText("Aujourd'hui", { exact: true }).last().click();
+    else await p.getByRole("button", { name: "Revenir à l'écran précédent" }).last().click();
     await p.waitForTimeout(500);
   }
   await c.close();
