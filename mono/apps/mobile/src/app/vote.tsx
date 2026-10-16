@@ -15,7 +15,7 @@ import { Pressable } from "react-native";
 import {
   CONSTITUTION_45_URL, dateFr, ETAPES_LOI, etapeDuScrutin, ligneScrutin, motPosition,
   phraseCirconscription, phraseDenominateurVote, phrasePosition, POSITION_NON_PORTEE, procedure,
-  repartitionVote, REFUS_APPARIEMENT, titreLisible, MOTS,
+  repartitionVote, REFUS_APPARIEMENT, titreLisible, MOTS, ordinal,
 } from "@repere/core";
 import { Carte, Segments, Vide } from "../lib/composants";
 import { circoInconnue, refusAppariement, VOTE_AUCUN, VOTES_PAS_ARRIVES } from "../lib/absences";
@@ -78,16 +78,24 @@ export default function Vote() {
       const etapeCourante = ETAPES_LOI.find(e => e.cle === etape) || null;
       const autres = (d.faits as FaitVote[]).filter(x => x.type === "vote" && x.cle !== vote.cle && x.circo === vote.circo).slice(0, 4);
       const depIndex = r.index.departements.find((x: { code: string }) => x.code === d.dep);
+      /* POURQUOI CE DEPUTE, DES LE HAUT (16/10/2026, audit Lovable). Le lien commune ->
+         circonscription etait dans la deuxieme carte, puis replie ; pour une commune
+         partagee (Paris : 18 circonscriptions), le fait que ce vote n'est qu'UN exemple
+         n'etait plus lisible qu'au titre. Une phrase sous le titre, dans les deux cas. */
+      const pourquoi = d.nbCircos > 1
+        ? `${d.nomCommune} est partagée entre ${d.nbCircos} circonscriptions\u00a0: votre député dépend de votre adresse, que Repère ne demande pas. Voici, en exemple, le vote du député de la ${ordinal(vote.circo)}.`
+        : `${d.nomCommune} est dans la ${ordinal(vote.circo)} circonscription${depIndex ? ` de ${depIndex.nom}` : ""}\u00a0: voici le vote de son député.`;
       return (
         <Page>
           <Stack.Screen options={{ title: "Votre député" }} />
-          {entete}
+          <Question question={d.nbCircos > 1 ? `Qu'a voté un député de ${d.nomCommune} ?` : "Qu'a voté votre député ?"} sous={pourquoi} />
 
           {/* NIVEAU 1 : la position */}
           <Carte echelon="france" titre={`Le ${dateFr(vote.sc.d)}`}>
             <Text style={TYPO.question}><Segments s={phrasePosition(vote.position, vote.qui)} /></Text>
             <Text style={[TYPO.reponse, { fontSize: 19, lineHeight: 25 }]}>{titreLisible(vote.sc.t)}</Text>
-            <Text style={TYPO.note}>{ligneScrutin(vote.sc)}</Text>
+            {/* le numero du scrutin, pour le retrouver sur le site de l'Assemblee (audit Lovable) */}
+            <Text style={TYPO.note}>{`${ligneScrutin(vote.sc)} Scrutin n°\u00a0${vote.sc.n}.`}</Text>
             {!mot ? <Text style={TYPO.note}>{POSITION_NON_PORTEE}</Text> : null}
             {/* Comment l'Assemblee a vote : dans la meme carte que la position. */}
             {rep ? (

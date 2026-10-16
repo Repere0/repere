@@ -156,3 +156,10 @@ test("le cout d'un projet aide se dit hors taxes, comme la source le publie (16/
     assert.equal(sans.length, 0, `${f} : un cout de projet sans « hors taxes »`);
   }
 });
+
+test("vote : pourquoi ce depute se dit sous le titre, et l'exemple d'une commune partagee aussi (16/10/2026)", () => {
+  const v = lire("app/vote.tsx");
+  assert.match(v, /sous=\{pourquoi\}/, "l'ecran du vote ne dit plus, sous le titre, pourquoi ce depute");
+  assert.match(v, /dépend de votre adresse[^`]*en exemple/, "pour une commune partagee, l'exemple n'est plus dit en haut");
+  assert.match(v, /Scrutin n°\\u00a0\$\{vote\.sc\.n\}/, "le numero du scrutin n'est plus affiche");
+});
