@@ -26,6 +26,7 @@ import { AvecDonnees, Page, Question } from "../ui/page";
 import { PastilleSource } from "../ui/source";
 import { Termes } from "../lib/termes";
 import { Depli, Frise, Repartition } from "../ui/visuels";
+import { IconePartage } from "../ui/icones";
 
 /* DENSITE (16/10/2026). Mesure : 3,8 hauteurs d'ecran (3 188 px a 390 x 844). La
    repartition rejoint la carte du vote ; « pourquoi c'est votre depute » tient en une
@@ -96,21 +97,25 @@ export default function Vote() {
                 <Text style={TYPO.micro}>{phraseDenominateurVote(rep.total)}</Text>
               </View>
             ) : null}
-            <PastilleSource source={srcVote(d, vote.sc)} />
+            {/* La source et le partage sur une ligne, au pied de la carte (16/10/2026) : avant,
+               « Partager ce vote › » flottait seul entre deux cartes. */}
+            <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: PAS * 2 }}>
+              <PastilleSource source={srcVote(d, vote.sc)} />
+              <Pressable onPress={() => router.push("/partager")} accessibilityRole="button"
+                accessibilityLabel="Partager ce vote en deux cartes"
+                style={({ pressed }) => ({ minHeight: CIBLE, flexDirection: "row", alignItems: "center", gap: PAS * 2, opacity: pressed ? 0.6 : 1 })}>
+                <IconePartage couleur={couleurs.lien} />
+                <Text style={{ color: couleurs.lien, fontWeight: "700", fontSize: 15 }}>Partager</Text>
+              </Pressable>
+            </View>
           </Carte>
-          <Pressable onPress={() => router.push("/partager")} accessibilityRole="button"
-            accessibilityLabel="Partager ce vote en deux cartes"
-            style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", opacity: pressed ? 0.6 : 1 })}>
-            <Text style={[TYPO.corps, { color: couleurs.lien, fontWeight: "600" }]}>Partager ce vote ›</Text>
-          </Pressable>
 
-          {/* POURQUOI C'EST « VOTRE » DEPUTE */}
+          {/* POURQUOI C'EST « VOTRE » DEPUTE : le chemin suffit a repondre ; la phrase de la
+             circonscription et le sens de chaque etape se deplient (16/10/2026). */}
           <Carte echelon="france" titre="Pourquoi c'est votre député">
-            {/* La phrase de la circonscription vient ici (16/10/2026) : avant, quatre lignes
-               la placaient AVANT la reponse. */}
-            <Termes texte={phraseCirconscription(d, vote.circo)} />
             <Chemin etapes={[d.nomCommune, `${vote.circo === 1 ? "1re" : vote.circo + "e"} circonscription`, vote.qui, "Assemblée nationale"]} />
             <Depli titre="Ce que veut dire chaque étape">
+            <Termes texte={phraseCirconscription(d, vote.circo)} />
             <Frise etiquette="De votre commune à l'Assemblée" jalons={[
               { cle: "c", titre: d.nomCommune, texte: "Votre commune.", echelon: "ville" },
               { cle: "ci", titre: `${vote.circo === 1 ? "1re" : vote.circo + "e"} circonscription${depIndex ? " · " + depIndex.nom : ""}`, texte: "Le territoire qui élit un député. Il regroupe plusieurs communes, ou une partie d'une grande ville.", echelon: "france" },
