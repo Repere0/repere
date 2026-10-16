@@ -13,6 +13,7 @@ import { mots, motsCible, correspond, trouverCommunes, departementDe } from "@re
 import { chargerCommunesBeta, chargerIndex, ETATS, PHRASES } from "../lib/donnees";
 import { Bouton, Carte, Texte, Vide } from "../lib/composants";
 import { useSelection } from "../lib/selection";
+import { Marque } from "../ui/marque";
 import { couleurs, CIBLE, PAS, POLICE, RAYON, TYPO } from "../lib/theme";
 
 type Ligne = [string, string, string[]];
@@ -26,6 +27,10 @@ export default function Accueil() {
   const [beta, setBeta] = useState<Beta | null>(null);
   const [index, setIndex] = useState<Index | null>(null);
   const [filtre, setFiltre] = useState("");
+  /* Champ actif : la recherche passe en haut (16/10/2026). Mesure a 375 x 667 : le
+     slogan et la promesse restaient au-dessus du champ ; avec le clavier ouvert
+     (~260 pt), les resultats tombaient dessous. */
+  const [actif, setActif] = useState(false);
   const [essai, setEssai] = useState(0);
 
   useEffect(() => {
@@ -52,6 +57,9 @@ export default function Accueil() {
   const trouvees = trouverCommunes(communes, cherches) as Ligne[];
   const manquante = cherches.length ? manquantes.find(([, , c]) => correspond(cherches, c)) : undefined;
   const rien = cherches.length > 0 && trouvees.length === 0 && !manquante;
+  const enRecherche = actif || cherches.length > 0;
+  /* Une commune francilienne reellement publiee, pour voir l'application hors couverture. */
+  const exemple = communes.find(([insee]) => insee === "77284");
   /* Le departement se lit par @repere/core (departementDe), comme sur le site :
      trois chiffres outre-mer (971...), deux ailleurs, 2A/2B en Corse. */
   const nomDep = (code: string) => {
@@ -82,11 +90,17 @@ export default function Accueil() {
         contentContainerStyle={[s.page, { paddingTop: marges.top + PAS * 6, paddingBottom: marges.bottom + PAS * 6 }]}
         ListHeaderComponent={
           <View style={s.tete}>
-            <Text style={s.marque}>Repère</Text>
-            {/* CE QU'EST REPERE, EN UNE PHRASE ; POURQUOI C'EST UTILE, EN UNE LIGNE */}
-            <Text style={TYPO.affiche} accessibilityRole="header">Ce qui se passe chez vous, expliqué simplement.</Text>
-            <Text style={s.promesse}>Qui décide, où va l'argent, ce qu'a voté votre député, ce qui arrive. Chaque chiffre avec sa source officielle.</Text>
-            {retenue && nomRetenue ? (
+            {/* Le logo en grand sur l'ecran d'accueil (16/10/2026) : etait le mot seul, en petit. */}
+            <View style={{ marginBottom: enRecherche ? 0 : PAS * 3 }}>{enRecherche ? <Marque /> : <Marque grande />}</View>
+            {/* CE QU'EST REPERE, EN UNE PHRASE ; POURQUOI C'EST UTILE, EN UNE LIGNE. Replie
+                pendant la recherche : le lecteur l'a deja lu, il cherche sa commune. */}
+            {enRecherche ? null : (
+              <>
+                <Text style={TYPO.affiche} accessibilityRole="header">Ce qui se passe chez vous, expliqué simplement.</Text>
+                <Text style={s.promesse}>Qui décide, où va l'argent, ce qu'a voté votre député, ce qui arrive. Chaque chiffre avec sa source officielle.</Text>
+              </>
+            )}
+            {retenue && nomRetenue && !enRecherche ? (
               <Carte echelon="ville" titre="Votre commune, sur ce téléphone">
                 <Texte fort>{nomRetenue}</Texte>
                 <Bouton texte={`Voir ce qui se passe à ${nomRetenue}`} onPress={() => ouvrir(retenue.c, nomRetenue)} />
@@ -97,6 +111,8 @@ export default function Accueil() {
             <TextInput
               value={filtre}
               onChangeText={setFiltre}
+              onFocus={() => setActif(true)}
+              onBlur={() => setActif(false)}
               placeholder="Bagnolet, Créteil, Meaux…"
               placeholderTextColor={couleurs.sourd}
               autoCorrect={false}
@@ -112,14 +128,13 @@ export default function Accueil() {
             ) : null}
             {etat === ETATS.SERVI && !cherches.length ? (
               <>
-                <Text style={s.note}>La bêta couvre les {communes.length} communes d'Île-de-France qui ont une fiche.</Text>
-                {/* CE QUE REPERE SAIT DE VOUS : rien. Phrase vraie a la lettre :
-                    les adresses se composent par departement (client.js), et la
-                    commune n'est gardee que sur demande (lib/memoire.ts). */}
-                <View style={s.confiance}>
-                  <Text style={[s.note, { color: couleurs.encre, fontWeight: "600" }]}>Pas de compte, pas d'e-mail.</Text>
-                  <Text style={s.note}>Repère ne sait pas qui vous êtes. Pour afficher votre commune, il télécharge le fichier public de tout votre département, et ne garde votre commune sur ce téléphone que si vous le lui demandez.</Text>
-                </View>
+                <Text style={s.note}>{`La bêta couvre les ${communes.length.toLocaleString("fr-FR")} communes d'Île\u2011de\u2011France qui ont une fiche.`}</Text>
+                {/* CE QUE REPERE SAIT DE VOUS : rien, en une ligne (16/10/2026, audit
+                    Lovable). L'explication technique (fichier public de tout le
+                    departement, commune gardee seulement sur demande) passe dans
+                    « Sources », section « Ce que Repère sait de vous » : elle reste vraie
+                    et trouvable, sans peser sur le premier ecran. */}
+                <Text style={[s.note, { color: couleurs.encre }]}>Pas de compte, pas d'e-mail : Repère ne sait pas qui vous êtes.</Text>
               </>
             ) : null}
             {manquante ? (
@@ -130,8 +145,13 @@ export default function Accueil() {
               /* 08/10/2026 : « Rien ne correspond » laissait croire que la commune
                  n'existe pas. L'application ne couvre que l'Ile-de-France pendant la
                  beta : c'est une limite de couverture, pas une absence de donnees. */
+              /* 16/10/2026 (audit Lovable) : un exemple, seulement si Meaux est dans la liste
+                 publiee, et dit comme tel ; le choix n'est fait que si le lecteur touche le
+                 bouton, et rien ne laisse croire que sa commune est couverte. */
               <Vide titre={`Aucune commune d'Île-de-France ne correspond à « ${filtre.trim()} ».`}
-                corps="Pendant la bêta, l'application ne couvre que l'Île-de-France : pour une commune d'ailleurs, les données ne sont pas encore disponibles ici. Sinon, vérifiez l'orthographe du début du nom." />
+                corps="Pendant la bêta, l'application ne couvre que l'Île-de-France : pour une commune d'ailleurs, les données ne sont pas encore disponibles ici. Sinon, vérifiez l'orthographe du début du nom."
+                action={exemple ? `Voir un exemple\u00a0: ${exemple[1]}` : undefined}
+                onAction={exemple ? () => ouvrir(exemple[0], exemple[1]) : undefined} />
             ) : null}
           </View>
         }
@@ -144,8 +164,12 @@ export default function Accueil() {
             style={({ pressed }) => [s.resultat, pressed && { backgroundColor: couleurs.voile }]}
           >
             <View style={s.pastille} />
-            <Text style={s.resultatNom}>{nom}</Text>
-            <Text style={s.resultatDep}>{nomDep(departementDe(insee) || "")}</Text>
+            {/* Le nom d'abord, le departement dessous (16/10/2026) : a droite, il
+                coupait les noms longs (« Montceaux-lès- / Meaux », capture 375 px). */}
+            <View style={{ flex: 1, gap: 2 }}>
+              <Text style={s.resultatNom}>{nom}</Text>
+              <Text style={s.resultatDep}>{nomDep(departementDe(insee) || "")}</Text>
+            </View>
           </Pressable>
         )}
       />
@@ -156,8 +180,6 @@ export default function Accueil() {
 const s = StyleSheet.create({
   page: { paddingHorizontal: PAS * 4, gap: PAS * 2, maxWidth: 640, width: "100%", alignSelf: "center" },
   tete: { gap: PAS * 3, marginBottom: PAS * 2 },
-  marque: { fontFamily: POLICE.affiche, fontSize: 22, color: couleurs.ville, marginBottom: PAS * 4 },
-  confiance: { gap: PAS, padding: PAS * 4, borderRadius: RAYON.bloc, backgroundColor: couleurs.voile, marginTop: PAS * 2 },
   promesse: { fontSize: 17, lineHeight: 24, color: couleurs.encre },
   question: { fontFamily: POLICE.titre, fontSize: 24, lineHeight: 30, color: couleurs.encre, marginTop: PAS * 6 },
   champ: {
@@ -171,9 +193,9 @@ const s = StyleSheet.create({
   note: { fontSize: 15, color: couleurs.sourd },
   resultat: {
     minHeight: CIBLE + 8, flexDirection: "row", alignItems: "center", gap: PAS * 3,
-    paddingHorizontal: PAS * 4, borderRadius: RAYON.bloc, backgroundColor: couleurs.carte,
+    paddingHorizontal: PAS * 4, paddingVertical: PAS * 2, borderRadius: RAYON.bloc, backgroundColor: couleurs.carte,
   },
   pastille: { width: 10, height: 10, borderRadius: 5, backgroundColor: couleurs.ville },
-  resultatNom: { flex: 1, fontSize: 17, color: couleurs.encre, fontWeight: "600" },
-  resultatDep: { fontSize: 14, color: couleurs.sourd, flexShrink: 1, textAlign: "right" },
+  resultatNom: { fontSize: 17, lineHeight: 22, color: couleurs.encre, fontWeight: "600" },
+  resultatDep: { fontSize: 14, lineHeight: 19, color: couleurs.sourd },
 });

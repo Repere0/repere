@@ -89,13 +89,12 @@ export default function ChezVousTerritoire() {
               </Rubrique>
             ) : d.nbCircos === 1 && circos.length === 1 ? (
               <Rubrique titre="Circonscription législative">
+                {/* Le lien « Ce que veut dire « Circonscription » » suffit (16/10/2026) : un repli
+                    « C'est quoi ? » redisait la meme definition juste en dessous. */}
                 <Termes texte={`${nom} est dans la ${ordinal(circos[0])} circonscription.`} style={TYPO.reponse} />
-                <Depli titre="C'est quoi ?">
-                  <Text style={TYPO.note}>Une circonscription est une partie du territoire dont les électeurs élisent un député.</Text>
-                </Depli>
               </Rubrique>
             ) : (
-              <Vide {...circoInconnue(nom)} />
+              <Vide {...circoInconnue(nom, r.index?.sources?.circonscriptions?.url)} />
             )}
           </Carte>
 
@@ -106,7 +105,8 @@ export default function ChezVousTerritoire() {
             <View>
               <Plus premier texte={`${LIBELLES.qui} pour ${nom}`} onPress={() => router.push("/qui-decide")} />
               <Plus texte={LIBELLES.argent} onPress={() => router.push("/argent")} />
-              <Plus texte={LIBELLES.calendrier} onPress={() => router.push("/a-venir")} />
+              {/* « Le calendrier » retire d'ici (16/10/2026, audit Lovable) : c'est un onglet de
+                  la barre basse, toujours visible ; deux chemins pour le meme ecran. */}
               <Plus dernier texte={LIBELLES.sources} onPress={() => router.push("/sources")} />
             </View>
           </View>

@@ -25,6 +25,7 @@ import { couleurs, CIBLE, PAS, TYPO, type Echelon } from "../lib/theme";
 import { AvecDonnees, Page, Question } from "../ui/page";
 import { PastilleSource } from "../ui/source";
 import { useApparition } from "../ui/mouvement";
+import { IconePartage } from "../ui/icones";
 
 type Params = { nom?: string; role?: string; echelon?: string; niveau?: string; institution?: string; lieu?: string };
 type Onglet = "apercu" | "votes" | "parcours";
@@ -42,16 +43,19 @@ function Initiales({ nom }: { nom: string }) {
   );
 }
 
-/* Trois onglets, en une seule pastille, comme sur le canevas. */
+/* Les onglets, en une seule pastille, comme sur le canevas. « Votes » seulement pour
+   un depute (16/10/2026, audit Lovable) : pour un maire ou un conseiller, un onglet
+   « Votes » laissait croire a des scrutins nominatifs publies, puis disait qu'il n'y
+   en a pas. L'absence se dit dans l'Apercu, en une phrase. */
 function Onglets({ actif, choisir, votes }: { actif: Onglet; choisir: (o: Onglet) => void; votes: boolean }) {
-  const liste: { cle: Onglet; t: string }[] = [{ cle: "apercu", t: "Aperçu" }, { cle: "votes", t: "Votes" }, { cle: "parcours", t: "Parcours" }];
+  const liste: { cle: Onglet; t: string }[] = [{ cle: "apercu", t: "Aperçu" }, ...(votes ? [{ cle: "votes" as Onglet, t: "Votes" }] : []), { cle: "parcours", t: "Parcours" }];
   return (
     <View accessibilityRole="tablist" style={{ flexDirection: "row", gap: 4, padding: 4, borderRadius: 999, backgroundColor: couleurs.trait }}>
       {liste.map(o => {
         const on = actif === o.cle;
         return (
           <Pressable key={o.cle} onPress={() => choisir(o.cle)} accessibilityRole="tab" accessibilityState={{ selected: on }}
-            accessibilityLabel={`${o.t}${o.cle === "votes" && !votes ? " (cette fonction ne vote pas)" : ""}`}
+            accessibilityLabel={o.t}
             style={{ flex: 1, minHeight: 40, borderRadius: 999, backgroundColor: on ? couleurs.carte : "transparent", alignItems: "center", justifyContent: "center" }}>
             <Text style={{ fontWeight: on ? "800" : "600", color: couleurs.encre }}>{o.t}</Text>
           </Pressable>
@@ -82,15 +86,13 @@ export default function Elu() {
         <Page>
           <Stack.Screen options={{ title: "Fiche" }} />
           <Animated.View style={{ opacity: apparition, gap: PAS * 4 }}>
-            {/* Barre haute : retour et partage, comme sur le canevas. */}
-            <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
-              <Pressable onPress={() => (router.canGoBack() ? router.back() : router.replace("/"))} accessibilityRole="button"
-                accessibilityLabel="Retour" style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", opacity: pressed ? 0.6 : 1 })}>
-                <Text style={{ color: couleurs.encre, fontWeight: "700", textDecorationLine: "underline", fontSize: 15 }}>Retour</Text>
-              </Pressable>
+            {/* Le partage seul (16/10/2026) : le lien « Retour » doublait le retour de la
+                barre haute, qui ramene deja a « Qui décide ». */}
+            <View style={{ flexDirection: "row", justifyContent: "flex-end", alignItems: "center" }}>
               <Pressable onPress={partager} accessibilityRole="button" accessibilityLabel="Partager la fiche"
-                style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", opacity: pressed ? 0.6 : 1 })}>
-                <Text style={{ color: couleurs.encre, fontWeight: "700", textDecorationLine: "underline", fontSize: 15 }}>Partager</Text>
+                style={({ pressed }) => ({ minHeight: CIBLE, flexDirection: "row", alignItems: "center", gap: PAS * 2, opacity: pressed ? 0.6 : 1 })}>
+                <IconePartage couleur={couleurs.encre} />
+                <Text style={{ color: couleurs.encre, fontWeight: "700", fontSize: 15 }}>Partager</Text>
               </Pressable>
             </View>
 
@@ -109,15 +111,23 @@ export default function Elu() {
 
             {onglet === "apercu" ? (
               <View style={{ gap: PAS * 3 }}>
-                <Carte echelon={echelon as Echelon} titre="Fonction">
-                  {p.institution ? <Text style={TYPO.corps}>{p.institution}</Text> : null}
-                  {p.lieu ? <Text style={TYPO.note}>{p.lieu}</Text> : null}
-                </Carte>
+                {/* « Institution », pas « Fonction » (16/10/2026) : la carte disait « Fonction :
+                    Conseil municipal » sous « Maire · Meaux ». La fonction est dans l'en-tete ;
+                    la carte dit ou elle s'exerce, sur une ligne. */}
+                {p.institution || p.lieu ? (
+                  <Carte echelon={echelon as Echelon} titre="Institution">
+                    <Text style={TYPO.corps}>{[p.institution, p.lieu].filter(Boolean).join(" · ")}</Text>
+                  </Carte>
+                ) : null}
                 {decide ? (
                   <Carte titre="Ce que ce niveau décide">
+                    {/* « Les mêmes phrases que sur Qui décide » retire (16/10/2026) : une note
+                        de coherence pour l'equipe, pas une information pour le lecteur. */}
                     <Text style={TYPO.corps}>{decide}.</Text>
-                    <Text style={TYPO.note}>Les mêmes phrases que sur « Qui décide ».</Text>
                   </Carte>
+                ) : null}
+                {!depute ? (
+                  <Text style={TYPO.note}>Repère n'affiche pas de vote pour cette fonction : les votes des conseils locaux ne figurent dans aucune source que Repère lit.</Text>
                 ) : null}
                 {vote && vote.position && POSITION[vote.position] ? (
                   <Carte titre="Dernier fait publié">
@@ -129,8 +139,8 @@ export default function Elu() {
               </View>
             ) : null}
 
-            {onglet === "votes" ? (
-              depute ? (
+            {onglet === "votes" && depute ? (
+              (
                 <View style={{ gap: PAS * 3 }}>
                   {vote && vote.position && POSITION[vote.position] ? (
                     <View style={{ gap: 4, paddingVertical: PAS * 2, borderBottomWidth: 1, borderBottomColor: couleurs.trait }}>
@@ -147,8 +157,6 @@ export default function Elu() {
                     <Text style={{ color: couleurs.lien, fontWeight: "700", textDecorationLine: "underline" }}>Voir tous ses votes ›</Text>
                   </Pressable>
                 </View>
-              ) : (
-                <Text style={TYPO.note}>Cette fonction ne vote pas au Parlement. Repère n'affiche donc aucun vote pour elle.</Text>
               )
             ) : null}
 

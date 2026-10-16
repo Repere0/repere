@@ -49,9 +49,10 @@ await mesurer(`accueil-liste(${F}x,${n0} textes)`);
 await p.screenshot({ path: `${process.env.S_OUT}/aujourdhui-${largeur}-${F}x.png`, fullPage: true });
 await mesurer("Aujourd'hui");
 const etapes = [
-  ["Qui décide", () => p.getByRole("button", { name: "Qui décide", exact: true }).first().click()],
+  /* 16/10/2026 : « Qui décide » s'ouvre par le bloc sombre, « Le calendrier » par la carte de la semaine. */
+  ["Qui décide", () => p.getByRole("button", { name: /^Voir la chaîne complète/ }).first().click()],
   ["Où va cet argent", () => p.getByRole("button", { name: /Où va cet argent/ }).first().click()],
-  ["Calendrier", () => p.getByText("Le calendrier", { exact: true }).first().click()],
+  ["Calendrier", () => p.getByRole("button", { name: "Le calendrier", exact: true }).first().click()],
   ["Sources", () => p.getByRole("button", { name: "Sources", exact: true }).first().click()], ["Comprendre ce vote", () => p.getByRole("button", { name: /Comprendre ce vote/ }).first().click()],
 ];
 for (const [nom, clic] of etapes) {

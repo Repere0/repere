@@ -23,6 +23,7 @@ import {
 import { Page } from "../ui/page";
 import { Depli } from "../ui/visuels";
 import { Vide } from "../lib/composants";
+import { SCRUTINS_AN } from "../lib/absences";
 import { PastilleSource } from "../ui/source";
 import { PAS, TYPO, couleurs, CIBLE, RAYON, OMBRE } from "../lib/theme";
 import { SIGLES_GROUPES } from "../lib/groupes";
@@ -363,6 +364,9 @@ export default function Scrutins() {
           <Vide
             titre={etat === ETATS.EN_COURS ? "Chargement des scrutins." : "Les scrutins ne sont pas disponibles."}
             corps="Repère n'affiche pas une position quand le relevé détaillé n'est pas disponible."
+            /* Doctrine du vide (invariant 5) : une phrase vraie ET un lien (16/10/2026 : la
+               phrase etait seule). Pendant le chargement, pas de lien sortant. */
+            lien={etat === ETATS.EN_COURS ? undefined : { texte: "Voir les scrutins sur le site de l'Assemblée nationale", url: SCRUTINS_AN }}
           />
         ) : (
           <>

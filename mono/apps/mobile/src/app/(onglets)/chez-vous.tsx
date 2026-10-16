@@ -28,7 +28,7 @@
 import { Pressable, Text, View } from "react-native";
 import { router, Stack } from "expo-router";
 import {
-  dateFr, datePublication, decompte, euros, financementProjet, montantCourt, ordinal, parHabitant, phrasePosition,
+  dateFr, datePublication, decompte, euros, financementProjet, montantCourt, ordinal, parHabitant, partEnMots, phrasePosition,
   repartitionVote, texteDe,
   titreLisible, REFUS_APPARIEMENT, LIBELLES,
 } from "@repere/core";
@@ -37,7 +37,7 @@ import { CarteMemoire } from "../../cartes/CarteMemoire";
 import { useSelection } from "../../lib/selection";
 import { useCommuneChoisie } from "../../lib/useCommune";
 import {
-  PROJETS_PAS_ARRIVES, projetsAucun, VOTES_PAS_ARRIVES, circoInconnue, VOTE_AUCUN,
+  PROJETS_PAS_ARRIVES, projetsAucun, VOTES_PAS_ARRIVES, circoInconnue, refusAppariement, VOTE_AUCUN,
 } from "../../lib/absences";
 import { srcComptesPublies, srcElus, srcProjets, srcVote } from "../../lib/sources";
 import { couleurs, PAS, POLICE, RAYON, TYPO } from "../../lib/theme";
@@ -81,11 +81,12 @@ export default function ChezVous() {
              Le grand nom de commune n'est plus repete ici (13/10/2026) : la barre
              haute le porte deja, et la 3e reponse doit tenir au-dessus de la barre basse. */}
           <View style={{ gap: 2 }}>
-            <Text style={TYPO.note}>{[depIndex && depIndex.nom, depIndex && depIndex.region].filter(Boolean).join(" · ")}</Text>
             {/* « Publication » et non « mis a jour » : la date est celle de la
                publication affichee, vraie dans les trois etats de l'invariant 9
-               — y compris hors ligne, ou rien n'est « a jour » (BandeauFraicheur). */}
-            {publie ? <Text style={TYPO.micro}>Publication Repère du {dateFr(publie)}</Text> : null}
+               — y compris hors ligne, ou rien n'est « a jour » (BandeauFraicheur).
+               Une seule ligne avec le departement (16/10/2026) : la region est sur
+               « Chez vous ». */}
+            <Text style={TYPO.micro}>{[depIndex && depIndex.nom, publie ? `Publication Repère du ${dateFr(publie)}` : null].filter(Boolean).join(" · ")}</Text>
           </View>
 
           <View style={{ gap: PAS * 2 }}>
@@ -96,16 +97,20 @@ export default function ChezVous() {
             <Vide {...PROJETS_PAS_ARRIVES} action="Réessayer" onAction={reessayer} />
           ) : projet && f ? (
             <Reponse echelon="ville"
+              /* EN MOTS D'ABORD (16/10/2026) : « près de la moitié » se lit d'un coup, comme
+                 sur « Où va l'argent » ; le pourcentage exact reste dans la barre et sa
+                 source (« Calcul Repère »). Sans repere proche : le pourcentage. */
               phrase={f.partPct !== null && cout
-                ? `L'État finance ${euros(f.subvention)} d'un projet de ${cout.texte} à ${nom}. Cela représente ${f.partPct} % du coût annoncé.`
+                ? `L'État finance ${partEnMots(f.partPct)} d'un projet de ${cout.texte} hors taxes à ${nom} : ${euros(f.subvention)}.`
                 : `L'État apporte ${euros(f.subvention)} à un projet à ${nom}.`}
               preuve={f.partPct !== null ? <BarrePart sansLibelle part={f.partPct} libelle="Part de l'État dans le coût annoncé" valeur={`${f.partPct} € sur 100 €`} /> : undefined}
-              note={`« ${projet.p.intitule} » : ${euros(f.subvention)} engagés par l'État en ${projet.p.annee}${f.cout ? ` sur ${euros(f.cout)} annoncés` : ""}.`}
+              note={`« ${projet.p.intitule} » : ${euros(f.subvention)} engagés par l'État en ${projet.p.annee}${f.cout ? ` sur un coût annoncé de ${euros(f.cout)} hors taxes` : ""}.`}
+              noteRepliee="Le détail (projet)"
               sources={<PastilleSource court source={srcProjets(d, f.partPct !== null)} />}
               partage={{
                 titre: `Une information sur ${nom}`,
                 texte: f.partPct !== null && cout
-                  ? `À ${nom} : l'État finance ${euros(f.subvention)} d'un projet de ${cout.texte}. Cela représente ${f.partPct} % du coût annoncé.`
+                  ? `À ${nom} : l'État finance ${partEnMots(f.partPct)} d'un projet de ${cout.texte} hors taxes, soit ${euros(f.subvention)} (${f.partPct} % du coût annoncé).`
                   : `À ${nom} : l'État apporte ${euros(f.subvention)} à un projet.`,
                 sourceUrl: srcProjets(d, f.partPct !== null)?.url,
               }}
@@ -143,7 +148,7 @@ export default function ChezVous() {
           {!r.votesLus ? (
             <Vide {...VOTES_PAS_ARRIVES} action="Réessayer" onAction={reessayer} />
           ) : !r.votesFiables ? (
-            <Vide titre={REFUS_APPARIEMENT.titre} corps={REFUS_APPARIEMENT.corps} />
+            <Vide {...refusAppariement(REFUS_APPARIEMENT)} />
           ) : vote && rep ? (
             <Reponse echelon="france"
               phrase={d.nbCircos > 1
@@ -169,7 +174,7 @@ export default function ChezVous() {
               }}
               suite={{ texte: "Comprendre ce vote", onPress: () => router.push("/vote") }} />
           ) : d.nbCircos === 0 ? (
-            <Vide {...circoInconnue(nom)} />
+            <Vide {...circoInconnue(nom, r.index?.sources?.circonscriptions?.url)} />
           ) : (
             <Vide {...VOTE_AUCUN} />
           )}
@@ -199,8 +204,9 @@ export default function ChezVous() {
           <View style={{ gap: PAS * 2 }}>
             <Etiquette texte="Aller plus loin" />
             <View>
-              <Plus premier texte={LIBELLES.calendrier} onPress={() => router.push("/a-venir")} />
-              <Plus dernier texte={LIBELLES.sources} onPress={() => router.push("/sources")} />
+              {/* « Le calendrier » n'est plus ici (16/10/2026) : la carte de la semaine
+                 et l'onglet y menent deja. */}
+              <Plus premier dernier texte={LIBELLES.sources} onPress={() => router.push("/sources")} />
             </View>
           </View>
 

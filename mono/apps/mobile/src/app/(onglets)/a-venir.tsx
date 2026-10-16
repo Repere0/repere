@@ -20,21 +20,23 @@ import { useState } from "react";
 import { Pressable, Text, View } from "react-native";
 import { router, Stack } from "expo-router";
 import {
-  AGE_RELEVE_NORMAL, ageReleve, dateFr, ETAPES_LOI, jourFr, jourParis, LIBELLES, regrouperParJour,
+  AGE_RELEVE_NORMAL, ageReleve, dateFr, ETAPES_LOI, jourFr, jourParis, LIBELLES, minuteParis, regrouperParJour,
 } from "@repere/core";
-import { type Ev, type Groupe, heuresDuGroupe, horairesDuGroupe, INSTITUTIONS, parametresRendezVous } from "../../lib/calendrier";
-import { Carte, LienAction, Vide } from "../../lib/composants";
-import { AGENDA_PAS_ARRIVE, AGENDA_VIDE } from "../../lib/absences";
+import { type Ev, type Groupe, deInstitution, etatCommence, horairesDuGroupe, INSTITUTIONS, parametresRendezVous, rendezVousAffiches } from "../../lib/calendrier";
+import { Carte, Vide } from "../../lib/composants";
+import { AGENDA_PAS_ARRIVE, agendaVide } from "../../lib/absences";
 import { srcAgenda } from "../../lib/sources";
 import { useCommuneChoisie } from "../../lib/useCommune";
 import { couleurs, CIBLE, PAS, POLICE, TYPO } from "../../lib/theme";
 import { AvecDonnees, Page, Question } from "../../ui/page";
 import { PastilleSource } from "../../ui/source";
 import { Depli } from "../../ui/visuels";
+import { Plus } from "../../ui/reponse";
 
-const de =(i: string) => (i === "Sénat" ? "du Sénat" : "de l'Assemblée nationale");
+const de = deInstitution;
 const nbsp = (t: string) => t.replace(/ ([?!:;])/g, " $1");
 const LETTRES = ["L", "M", "M", "J", "V", "S", "D"];
+const PREMIERS = 6;   /* rendez-vous montres d'emblee dans la liste de deux semaines */
 
 /* Dates en texte « AAAA-MM-JJ », calculees en UTC : aucun decalage de fuseau. */
 function decaler(iso: string, n: number): string {
@@ -47,39 +49,52 @@ function rangLundi(iso: string): number {
   return (new Date(Date.UTC(y, m - 1, d)).getUTCDay() + 6) % 7;
 }
 
+/* UNE LIGNE PAR RENDEZ-VOUS, COMPACTE (16/10/2026). Mesure : chaque ligne prenait
+   ~220 px (institution, « Séance publique », horaires avec « heure de fin non
+   précisée », nombre de séances, repli de l'ordre du jour, lien « Voir le détail ») ;
+   l'ecran faisait 5,9 hauteurs d'ecran. Desormais : l'heure, le sujet (trois lignes
+   au plus), UNE ligne de contexte, et toute la ligne mene au detail, qui garde tout
+   (lieu, horaires et fins, ordre du jour, description, source). */
 function Ligne({ g }: { g: Groupe }) {
-  const heures = heuresDuGroupe(g);
-  /* L'heure de debut, seule, en colonne : « 9 h » de « 9 h, heure de fin non précisée ». */
-  const heure = (horairesDuGroupe(g)[0] || "").split(/,| à /)[0].trim();
-  const points = g.points || [];
+  const debuts = horairesDuGroupe(g).map(h => h.split(/,| à /)[0].trim()).filter(Boolean);
+  const heure = debuts[0] || "";
+  const nbPoints = (g.points || []).length;
+  const contexte = [
+    g.institution === "Assemblée nationale" ? "Assemblée" : g.institution,
+    etatCommence(g, minuteParis(new Date())),
+    g.categorie && g.categorie !== "Séance publique" ? g.categorie : null,
+    heure ? null : "heure non publiée",
+    g.seances > 1 ? `${g.seances} séances : ${debuts.join(", ")}` : null,
+    nbPoints ? `+ ${nbPoints} point${nbPoints > 1 ? "s" : ""} à l'ordre du jour` : null,
+  ].filter(Boolean).join(" · ");
   return (
-    <View testID="cal-ligne" style={{ flexDirection: "row", gap: PAS * 3, paddingTop: PAS * 3, borderTopWidth: 1, borderTopColor: couleurs.trait }}>
-      {heure ? (
-        <View style={{ width: 64 }}>
-          <Text style={{ fontFamily: POLICE.affiche, fontSize: 22, lineHeight: 26, color: couleurs.encre, fontVariant: ["tabular-nums"] }}>{heure}</Text>
-        </View>
-      ) : null}
-      <View style={{ flex: 1, gap: PAS }}>
-      {/* le sujet d'abord : c'est ce qui interesse le lecteur, l'horaire vient ensuite */}
-      <Text style={[TYPO.reponse, { fontSize: 17, lineHeight: 23 }]}>{g.titre}</Text>
-      <Text style={TYPO.note}>{[g.institution, g.categorie].filter(Boolean).join(" · ")}</Text>
-      <Text style={TYPO.micro}>{[heures || "Heure non publiée", g.lieu].filter(Boolean).join(" · ")}</Text>
-      {g.seances > 1 ? <Text style={TYPO.micro}>{g.seances} séances ce jour-là</Text> : null}
-      {points.length ? (
-        <Depli titre={points.length > 1 ? `Voir les ${points.length} autres points de l'ordre du jour` : "Voir l'autre point de l'ordre du jour"}>
-          {points.map((p, k) => <Text key={k} style={TYPO.note}>• {p}</Text>)}
-        </Depli>
-      ) : null}
-      {g.textesLibres.length ? (
-        <Depli titre="Lire la description publiée">
-          {g.textesLibres.map((t, k) => <Text key={k} style={TYPO.note}>{t}</Text>)}
-        </Depli>
-      ) : null}
-      {/* Le detail complet : source, date du releve, institution, points publies. */}
-      <LienAction texte="Voir le détail et la source" etiquette={`Détail du rendez-vous : ${g.titre}`}
-        onPress={() => router.push({ pathname: "/evenement", params: parametresRendezVous(g) })} />
+    <Pressable testID="cal-ligne" accessibilityRole="button"
+      accessibilityLabel={`${heure ? heure + ", " : ""}${g.titre}. ${contexte}. Voir le détail et la source`}
+      onPress={() => router.push({ pathname: "/evenement", params: parametresRendezVous(g) })}
+      style={({ pressed }) => ({ flexDirection: "row", alignItems: "center", gap: PAS * 3, minHeight: CIBLE, paddingVertical: PAS * 3,
+        borderTopWidth: 1, borderTopColor: couleurs.trait, opacity: pressed ? 0.6 : 1 })}>
+      <View style={{ width: 66, alignSelf: "flex-start" }}>
+        <Text style={{ fontFamily: POLICE.affiche, fontSize: 18, lineHeight: 22, color: couleurs.encre, fontVariant: ["tabular-nums"] }}>{heure}</Text>
       </View>
-    </View>
+      <View style={{ flex: 1, gap: 2 }}>
+        {/* Titre entier (16/10/2026) : tronque, il perdait son contenu en texte agrandi
+            (sonde reflow 200 %). */}
+        <Text style={[TYPO.reponse, { fontSize: 17, lineHeight: 22 }]}>{g.titre}</Text>
+        <Text style={TYPO.micro}>{contexte}</Text>
+      </View>
+      <Text accessibilityElementsHidden importantForAccessibility="no" style={{ fontSize: 20, color: couleurs.sourd }}>›</Text>
+    </Pressable>
+  );
+}
+
+/* Le jour, au-dessus de ses rendez-vous : sans lui, « 15 h Questions au
+   Gouvernement » ne disait pas quel jour (liste de deux semaines). */
+function EnteteJour({ iso, aujourdhui }: { iso: string; aujourdhui: string }) {
+  const j = jourFr(iso).replace(/ \d{4}$/, "");   /* l'annee en cours n'apprend rien ici */
+  return (
+    <Text accessibilityRole="header" style={{ fontSize: 15, lineHeight: 20, fontWeight: "800", color: couleurs.encre, paddingTop: PAS * 4, paddingBottom: PAS }}>
+      {j.charAt(0).toUpperCase() + j.slice(1)}{iso === aujourdhui ? " · aujourd'hui" : ""}
+    </Text>
   );
 }
 
@@ -115,7 +130,8 @@ export default function AVenir() {
   return (
     <AvecDonnees rendu={r => {
       const { d } = r;
-      const toutes = (d.aVenir || []) as Ev[];
+      /* ce qui a commence aujourd'hui, puis ce qui est a venir (16/10/2026) */
+      const toutes = rendezVousAffiches(d as { aVenir?: Ev[]; commenceesAujourdhui?: Ev[] });
       const aVenir = institution ? toutes.filter(e => e.institution === institution) : toutes;
       const lues = ((d.semaineParlement && d.semaineParlement.institutions) || []) as { institution: string; source: Record<string, string> }[];
       const groupes = regrouperParJour(aVenir) as Groupe[];
@@ -151,10 +167,17 @@ export default function AVenir() {
           <Stack.Screen options={{ title: LIBELLES.calendrier }} />
           <View style={{ flexDirection: "row", alignItems: "flex-end", justifyContent: "space-between", gap: PAS * 2 }}>
             <View style={{ flex: 1 }}>
-              <Question etiquette="Au Parlement" question="Calendrier"
-                sous="Les séances annoncées à l'Assemblée nationale et au Sénat. Elles concernent tout le pays. Heures de Paris." />
+              <Question etiquette="Au Parlement" question="Calendrier" />
             </View>
+            {/* La bascule semaine / mois sur la ligne du titre (16/10/2026) : a 375 x 667,
+               l'en-tete occupait tout le premier ecran. */}
+            <Pressable onPress={() => setMois(m => !m)} accessibilityRole="button"
+              accessibilityLabel={mois ? "Voir la semaine" : "Voir le mois"}
+              style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", opacity: pressed ? 0.6 : 1 })}>
+              <Text style={{ color: couleurs.encre, fontWeight: "700", textDecorationLine: "underline" }}>{mois ? "Voir la semaine" : "Voir le mois"}</Text>
+            </Pressable>
           </View>
+          <Text style={TYPO.note}>Les séances annoncées à l'Assemblée nationale et au Sénat. Elles concernent tout le pays.</Text>
 
           {!r.agendaLu ? (
             <Vide {...AGENDA_PAS_ARRIVE} action="Réessayer" onAction={reessayer} />
@@ -166,11 +189,6 @@ export default function AVenir() {
                  frise, l'age du releve reste AVANT la liste (invariant 9 : le lecteur sait
                  tout de suite que l'agenda a pu changer), l'absence du Senat suit le compte
                  qu'elle explique, et la note sur les rappels passe sous la liste. */}
-              <Pressable onPress={() => setMois(m => !m)} accessibilityRole="button"
-                accessibilityLabel={mois ? "Voir la semaine" : "Voir le mois"}
-                style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", alignSelf: "flex-end", opacity: pressed ? 0.6 : 1 })}>
-                <Text style={{ color: couleurs.encre, fontWeight: "700", textDecorationLine: "underline" }}>{mois ? "Voir la semaine" : "Voir le mois"}</Text>
-              </Pressable>
               {/* Semaine ou mois : un seul choix de jour, en haut de l'ecran. */}
               {mois ? (
                 <View accessibilityRole="none" accessibilityLabel="Calendrier du mois" style={{ gap: 2 }}>
@@ -207,13 +225,13 @@ export default function AVenir() {
 
               {vieillis.map(x => (
                 <Text key={"age-" + x.institution} testID="releve-ancien" style={TYPO.note}>
-                  {nbsp(`Agenda ${de(x.institution)} relevé le ${dateFr(x.source.releve_le)}, il y a ${x.age} jours : il a pu changer depuis. Le site officiel fait foi.`)}
+                  {nbsp(`Agenda ${de(x.institution)} relevé le ${dateFr(x.source.releve_le)}, il y a ${x.age} jours : il a pu changer depuis.`)}
                 </Text>
               ))}
-              <Text style={[TYPO.corps, { fontWeight: "700" }]}>{choisi && etiquetteJour ? `${etiquetteJour}. ` : ""}{phrase}</Text>
-              {manquantes.map(i => (
-                <Text key={i} style={TYPO.note}>{nbsp(`Le calendrier ${de(i)} n'est pas arrivé jusqu'ici : il n'est pas affiché, et rien n'est inventé à sa place.`)}</Text>
-              ))}
+              {/* Quand une assemblee manque, le compte le dit tout de suite ; la phrase
+                 complete suit la liste (16/10/2026 : a 375 x 667, aucune seance n'entrait
+                 dans le premier ecran). */}
+              <Text style={[TYPO.corps, { fontWeight: "700" }]}>{choisi && etiquetteJour ? `${etiquetteJour}. ` : ""}{manquantes.length === 1 && lues.length ? phrase.replace(/\.$/, `, ${lues[0].institution === "Sénat" ? "au Sénat" : "à l'Assemblée nationale"} seulement.`) : phrase}</Text>
               {choisi ? (
                 <Pressable onPress={() => setChoisi(false)} accessibilityRole="button" accessibilityLabel="Revenir à la liste des deux prochaines semaines"
                   style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", opacity: pressed ? 0.6 : 1 })}>
@@ -222,48 +240,47 @@ export default function AVenir() {
               ) : null}
               {affiches.length ? (
                 <Carte echelon="france">
-                  {affiches.map((g, i) => <Ligne key={g.debut + i} g={g} />)}
+                  {/* Les six prochains d'abord (16/10/2026) ; les autres se deplient, avec
+                     leur nombre annonce. Un jour choisi dans la frise montre tout ce jour. */}
+                  {(choisi ? affiches : affiches.slice(0, PREMIERS)).map((g, i, liste) => (
+                    <View key={g.debut + i}>
+                      {i === 0 || liste[i - 1].jour !== g.jour ? <EnteteJour iso={g.jour} aujourdhui={jourParis(new Date())} /> : null}
+                      <Ligne g={g} />
+                    </View>
+                  ))}
+                  {!choisi && affiches.length > PREMIERS ? (
+                    <Depli titre={`Voir les ${affiches.length - PREMIERS} autres rendez-vous`}>
+                      {affiches.slice(PREMIERS).map((g, i, liste) => (
+                        <View key={g.debut + i}>
+                          {(i === 0 ? affiches[PREMIERS - 1].jour !== g.jour : liste[i - 1].jour !== g.jour) ? <EnteteJour iso={g.jour} aujourdhui={jourParis(new Date())} /> : null}
+                          <Ligne g={g} />
+                        </View>
+                      ))}
+                    </Depli>
+                  ) : null}
                   <View style={{ flexDirection: "row", flexWrap: "wrap" }}>
                     {lues.map(x => <PastilleSource key={x.institution} nom={x.institution === "Sénat" ? "Sénat" : "Assemblée"} source={srcAgenda(x.source)} />)}
                   </View>
                 </Carte>
               ) : null}
-              <Text style={TYPO.note}>Les rappels ne sont pas encore disponibles dans l'application.</Text>
+              {manquantes.map(i => (
+                <Text key={i} style={TYPO.note}>{nbsp(`Le calendrier ${de(i)} n'est pas arrivé jusqu'ici : rien n'est inventé à sa place.`)}</Text>
+              ))}
+              <Text style={TYPO.note}>{"Chaque ligne donne l'heure de début, à l'heure de Paris. Le détail dit l'heure de fin, ou « heure de fin non précisée » quand la source ne la publie pas. Le site officiel de chaque assemblée fait foi. Les rappels ne sont pas encore disponibles dans l'application."}</Text>
 
               {!aVenir.length && toutes.length ? (
                 <Text style={TYPO.note}>Rien de publié pour ce filtre. Le filtre « Tout » montre le reste.</Text>
               ) : null}
-              {!toutes.length ? <Vide {...AGENDA_VIDE} /> : null}
+              {!toutes.length ? <Vide {...agendaVide(lues.find(x => x.institution === "Assemblée nationale")?.source?.url)} /> : null}
             </>
           )}
 
-          <Pressable
-            onPress={() => router.push("/procedure")}
-            accessibilityRole="button"
-            accessibilityLabel="Ouvrir : comment une loi devient loi"
-            style={({ pressed }) => ({ minHeight: 52, padding: 16, borderRadius: 14, borderWidth: 1, borderColor: couleurs.trait, backgroundColor: couleurs.carte, opacity: pressed ? 0.6 : 1 })}
-          >
-            <Text style={{ fontWeight: "700", color: couleurs.encre }}>Comment une loi devient loi</Text>
-            <Text style={{ marginTop: 4, color: couleurs.sourd }}>{ETAPES_LOI.length} étapes, du dépôt à la publication, avec la navette.</Text>
-          </Pressable>
-          <Pressable
-            onPress={() => router.push("/scrutins?mode=qag")}
-            accessibilityRole="button"
-            accessibilityLabel="Ouvrir les Questions au Gouvernement"
-            style={({ pressed }) => ({ minHeight: 52, padding: 16, borderRadius: 14, borderWidth: 1, borderColor: couleurs.trait, backgroundColor: couleurs.carte, opacity: pressed ? 0.6 : 1 })}
-          >
-            <Text style={{ fontWeight: "700", color: couleurs.encre }}>Questions au Gouvernement</Text>
-            <Text style={{ marginTop: 4, color: couleurs.sourd }}>Voir les questions posées et les réponses publiées.</Text>
-          </Pressable>
-          <Pressable
-            onPress={() => router.push("/dictionnaire")}
-            accessibilityRole="button"
-            accessibilityLabel="Ouvrir le dictionnaire citoyen"
-            style={({ pressed }) => ({ minHeight: 52, padding: 16, borderRadius: 14, borderWidth: 1, borderColor: couleurs.trait, backgroundColor: couleurs.carte, opacity: pressed ? 0.6 : 1 })}
-          >
-            <Text style={{ fontWeight: "700", color: couleurs.encre }}>Dictionnaire citoyen</Text>
-            <Text style={{ marginTop: 4, color: couleurs.sourd }}>Ce que veulent dire les mots du Parlement et des collectivités.</Text>
-          </Pressable>
+          {/* Trois entrees en une liste compacte (16/10/2026 ; etaient trois cartes). */}
+          <View>
+            <Plus premier texte={`Comment une loi devient loi · ${ETAPES_LOI.length} étapes`} etiquette="Ouvrir : comment une loi devient loi" onPress={() => router.push("/procedure")} />
+            <Plus texte="Questions au Gouvernement" etiquette="Ouvrir les Questions au Gouvernement" onPress={() => router.push("/scrutins?mode=qag")} />
+            <Plus dernier texte="Dictionnaire citoyen" etiquette="Ouvrir le dictionnaire citoyen" onPress={() => router.push("/dictionnaire")} />
+          </View>
         </Page>
       );
     }} />

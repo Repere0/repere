@@ -120,13 +120,23 @@ export function deriverAujourdhui({ fiche, commune, dep, index, projets, cat, po
   const maintenant = minuteParis(now);
   const dansSeptJours = minuteParis(new Date(now.getTime() + 7 * 864e5));
   const aVenir = [];
+  const commenceesAujourdhui = [];
   for (const [inst, donnees] of [["Sénat", cal], ["Assemblée nationale", agendaAN]]) {
     if (!donnees || !Array.isArray(donnees.evenements)) continue;
     for (const e of donnees.evenements) {
       if (e.debut + ":00" >= maintenant + ":00") aVenir.push({ ...e, institution: inst, source: donnees.source || {} });
+      /* COMMENCE AUJOURD'HUI — 16/10/2026. Mesure : a 15 h 04, la seance de 15 h avait
+         disparu du calendrier, alors que l'Assemblee ne publie aucune heure de fin (65
+         seances sur 65 sans fin au releve du 13/10). Une liste a part, pour que « a venir »
+         ne change pas (site, Aujourd'hui, meme verite) : le rendez-vous a commence ce
+         jour, et sa fin publiee, s'il y en a une, n'est pas passee. L'ecran ne dit pas
+         « en cours » : il ne le sait pas. */
+      else if (String(e.debut).slice(0, 10) === maintenant.slice(0, 10) && !(e.fin && String(e.fin) <= maintenant))
+        commenceesAujourdhui.push({ ...e, institution: inst, source: donnees.source || {} });
     }
   }
   aVenir.sort((a, b) => (a.debut < b.debut ? -1 : a.debut > b.debut ? 1 : 0));
+  commenceesAujourdhui.sort((a, b) => (a.debut < b.debut ? -1 : a.debut > b.debut ? 1 : 0));
   /* LES SEANCES PUBLIQUES D'ABORD — 28/09/2026. Mesure : la semaine du 28/09
      affichait trois auditions de commission du Senat, et l'ouverture de la
      session de l'Assemblee (jeudi) etait coupee par la limite de trois. La
@@ -161,7 +171,7 @@ export function deriverAujourdhui({ fiche, commune, dep, index, projets, cat, po
     semaineParlement: semaineParlement({ cal, agendaAN, maintenant: now }),
     /* tous les rendez-vous a venir, fusionnes et tries : le calendrier mobile les
        regroupe par journee (regrouperParJour), comme celui du site. 07/10/2026. */
-    aVenir,
+    aVenir, commenceesAujourdhui,
     prochain, prochains, prochainsDansLaSemaine: cetteSemaine.length > 0,
     semaineSelectionnee: semaine.length > cetteSemaine.length, semaineTotal: semaine.length,
     srcComptes, srcProjets, srcScrutins, srcCal,

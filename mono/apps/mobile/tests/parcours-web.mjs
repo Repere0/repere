@@ -53,8 +53,10 @@ const CAL = await (async () => {
     const age = j && j.source ? ageReleve(j.source.releve_le) : null;
     if (age !== null && age > AGE_RELEVE_NORMAL) vieux.push({ de, age });
   }
-  const { aVenir } = deriverAujourdhui({ fiche: { nom: "x", circo: null }, commune: "00000", dep: "77", index: { agregats: [], sources: {} },
+  /* ce qui a commence aujourd'hui compte aussi (16/10/2026 : lib/calendrier rendezVousAffiches) */
+  const { aVenir: aVenirSeul, commenceesAujourdhui } = deriverAujourdhui({ fiche: { nom: "x", circo: null }, commune: "00000", dep: "77", index: { agregats: [], sources: {} },
     projets: null, cat: null, pos: null, deputes: null, cal, agendaAN, evenements: null, maintenant: new Date() });
+  const aVenir = [...(commenceesAujourdhui || []), ...aVenirSeul];
   const limite = jourParis(new Date(Date.now() + 14 * 864e5));
   let proches = aVenir.filter(e => e.debut.slice(0, 10) < limite);
   if (!proches.length) proches = aVenir.slice(0, 5);
@@ -70,7 +72,13 @@ const ELUS_CANTON = await (async () => {
 const { semaineParlement, jourParis } = await import("../../../packages/core/src/aujourdhui.js");
 const servi = async f => { try { const r = await fetch(BASE + "/data/" + f); return r.ok ? await r.json() : null; } catch { return null; } };
 const SEMAINE = semaineParlement({ agendaAN: await servi("agenda-an.json"), cal: await servi("calendrier-senat.json"), maintenant: new Date() });
-const lireSemaine = page => page.evaluate(() => {
+/* Les explications de la carte sont repliees (16/10/2026) : on les ouvre avant de lire. */
+const lireSemaine = async page => {
+  const r = page.getByTestId("semaine-parlement").getByRole("button", { name: "Le détail (semaine)", expanded: false });
+  if (await r.count()) { await r.first().click(); await page.waitForTimeout(200); }
+  return lireSemaineDom(page);
+};
+const lireSemaineDom = page => page.evaluate(() => {
   const c = document.querySelector('[data-testid="semaine-parlement"]');
   if (!c || !c.offsetParent) return null;
   const reps = [...document.querySelectorAll('[data-testid="reponse"]')].filter(e => e.offsetParent);
@@ -266,6 +274,14 @@ for (const largeur of [360, 390, 430]) {
     await page.getByRole("button", { name: action, exact: true }).first().click();
     await page.getByText(question).first().waitFor({ timeout: 10000 });
     await page.waitForTimeout(800);
+    /* Les explications sont repliees (16/10/2026) : on les ouvre toutes, en deux
+       passes, avant de mesurer — le contraste, les cibles et le texte se verifient
+       aussi dans les replis. */
+    /* Le premier repli ferme, jusqu'a ce qu'il n'en reste aucun : la liste se
+       recalcule apres chaque ouverture (replis imbriques). Plafond : 40. */
+    const fermes = page.getByRole("button", { name: /^Le détail|^En savoir plus|Ce que veut dire chaque étape|^Le parcours d'une loi|^Voir ses \d+ autres votes|^Voir les \d+ autres rendez-vous/, expanded: false }).filter({ visible: true });
+    for (let k = 0; k < 40 && await fermes.count(); k++) await fermes.first().click();
+    await page.waitForTimeout(300);
     const m = await mesurer();
     communs(m, action);
     if (action === "Le calendrier") {
@@ -289,6 +305,19 @@ for (const largeur of [360, 390, 430]) {
       verifier(/Licence : /.test(brut) && /Les noms des députés/.test(brut), `${largeur}px · Sources : chaque source dit sa licence, et la source des noms des députés est citée`);
     }
     if (action === QUI) verifier(ELUS_CANTON.length >= 2 && ELUS_CANTON.every(n => m.brut.includes(n)), `${largeur}px · Qui décide : tous les élus du canton sont nommés ${JSON.stringify(ELUS_CANTON)}`);
+    /* 16/10/2026 : toucher le point « Région » amene la carte Région en haut de l'ecran. */
+    if (action === QUI) {
+      const point = page.getByRole("button", { name: /^Région :.*Aller à ce niveau$/ }).first();
+      /* Point de depart connu : le haut de l'ecran, la ou sont les points. Le parcours a
+         deja fait defiler la page plus haut ; sans ce retour, la carte pouvait etre deja
+         en vue et le controle ne prouvait rien. */
+      await page.evaluate(() => { for (const d of document.querySelectorAll("div")) if (d.scrollHeight > d.clientHeight + 4 && /(auto|scroll)/.test(getComputedStyle(d).overflowY)) d.scrollTop = 0; });
+      await page.waitForTimeout(300);
+      const avant = await page.evaluate(() => { const e = [...document.querySelectorAll("div")].filter(d => d.checkVisibility() && d.children.length === 0).find(d => (d.innerText || "").startsWith("Région ·")); return e ? Math.round(e.getBoundingClientRect().top) : null; });
+      if (await point.count()) { await point.click(); await page.waitForTimeout(900); }
+      const apres = await page.evaluate(() => { const e = [...document.querySelectorAll("div")].filter(d => d.checkVisibility() && d.children.length === 0).find(d => (d.innerText || "").startsWith("Région ·")); return e ? Math.round(e.getBoundingClientRect().top) : null; });
+      verifier(apres !== null && apres >= 0 && apres < 260 && avant !== null && avant > 260 && apres < avant, `${largeur}px · Qui décide : le point « Région » amène à sa carte (${avant} px -> ${apres} px)`);
+    }
     if (action !== "Sources") verifier(/D'où vient cette information/.test(m.etiquettes) || /Le calendrier n'est arrivé/.test(m.texte), `${largeur}px · ${action} : la source est à portée de doigt`);
     if (/argent/.test(action)) {
       verifier(/Calculé par Repère · source/.test(m.texte), `${largeur}px · ${action} : les parts calculées se disent calculées`);
@@ -304,7 +333,7 @@ for (const largeur of [360, 390, 430]) {
     if (action === QUI || action === "Le calendrier") {
       await page.getByText("Aujourd'hui", { exact: true }).last().click();
     } else {
-      await page.getByRole("button", { name: "Revenir à l'écran Aujourd'hui" }).last().click();
+      await page.getByRole("button", { name: "Revenir à l'écran précédent" }).last().click();
     }
     await page.getByText("Aller plus loin").first().waitFor({ timeout: 5000 });
   }
@@ -385,6 +414,8 @@ async function montantA100ms(reduit) {
   await page.getByRole("button", { name: new RegExp("^" + COMMUNE.nom + ",") }).first().click();
   /* Depuis le spike du 30/09/2026, le compteur anime vit sur l'ecran « Où va l'argent ». */
   await page.getByRole("button", { name: "Où va cet argent ?" }).first().click();
+  /* La moyenne par jour est repliee depuis le 16/10/2026 : on ouvre son repli. */
+  await page.getByRole("button", { name: /^Le détail : par jour/ }).first().click();
   const cible = page.locator('[aria-label$="€ par jour"]').first();
   await cible.waitFor({ timeout: 15000 });
   await page.waitForTimeout(100);

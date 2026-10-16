@@ -14,6 +14,24 @@ export type Groupe = {
 };
 
 export const INSTITUTIONS = ["Assemblée nationale", "Sénat"];
+/* « du Sénat », « de l'Assemblée nationale » : une seule ecriture, liste et detail. */
+export const deInstitution = (i: string) => (i === "Sénat" ? "du Sénat" : "de l'Assemblée nationale");
+
+/* CE QUE LE CALENDRIER MONTRE (16/10/2026) : ce qui a commence aujourd'hui, puis ce
+   qui est a venir. Mesure : a 15 h 04, la seance de 15 h avait disparu, alors que la
+   source ne publie pas son heure de fin. La liste ET le detail lisent cette fonction :
+   un rendez-vous commence s'ouvre encore. */
+export function rendezVousAffiches(d: { aVenir?: Ev[]; commenceesAujourdhui?: Ev[] }): Ev[] {
+  return [...(d.commenceesAujourdhui || []), ...(d.aVenir || [])];
+}
+
+/* Ce que la ligne dit d'un rendez-vous dont la premiere seance a commence : le fait, et
+   la fin si la source la publie. Jamais « en cours » : Repere ne le sait pas. */
+export function etatCommence(g: Groupe, maintenant: string): string | null {
+  if (!(g.debut < maintenant)) return null;
+  const fin = g.fins && g.fins[0] ? heureFr(g.fins[0] as string) : "";
+  return fin ? `a déjà commencé, fin annoncée à ${fin}` : "a déjà commencé, heure de fin non précisée";
+}
 
 /* Heure de debut et de fin de chaque seance, au meme rang. Fin absente : on l'ecrit
    comme une absence (doctrine du vide, invariant 5), on ne la devine jamais. */

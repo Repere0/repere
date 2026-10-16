@@ -493,3 +493,45 @@ test("core — un territoire sans conseil departemental dit pourquoi, et seuleme
     assert.ok(!/source qui est incomplète/.test(s.titre + s.corps), d);
   }
 });
+
+test("core — une seance commencee aujourd'hui reste visible, sans se dire en cours ni fermer « a venir »", async () => {
+  /* 16/10/2026 : a 15 h 04, la seance de 15 h avait disparu du calendrier (« a venir »
+     exclut ce qui a commence) alors que l'Assemblee ne publie aucune heure de fin. */
+  const fiche = { nom: "Témoin", circo: null };
+  const agendaAN = { source: { producteur: "Assemblée nationale" }, evenements: [
+    { debut: "2026-10-15T15:00", fin: null, titre: "Hier", categorie: "Séance publique" },
+    { debut: "2026-10-16T09:00", fin: null, titre: "Ce matin, fin non publiée", categorie: "Séance publique" },
+    { debut: "2026-10-16T11:00", fin: "2026-10-16T12:00", titre: "Finie à midi", categorie: "Séance publique" },
+    { debut: "2026-10-16T13:00", fin: "2026-10-16T18:00", titre: "Jusqu'à 18 h", categorie: "Séance publique" },
+    { debut: "2026-10-16T15:00", fin: null, titre: "Cet après-midi", categorie: "Séance publique" },
+  ] };
+  const a = deriverAujourdhui({ fiche, commune: "00000", dep: "93", index: { agregats: [], sources: {} },
+    projets: null, cat: null, pos: null, deputes: null, cal: null, agendaAN, evenements: null,
+    maintenant: new Date("2026-10-16T12:30:00Z") });   /* 14 h 30 a Paris */
+  assert.deepEqual(a.commenceesAujourdhui.map(e => e.titre), ["Ce matin, fin non publiée", "Jusqu'à 18 h"],
+    "commencees aujourd'hui : ni hier, ni ce qui a une fin publiee et passee");
+  assert.ok(a.commenceesAujourdhui.every(e => e.institution === "Assemblée nationale" && e.source), "institution et source portees");
+  assert.deepEqual(a.aVenir.map(e => e.titre), ["Cet après-midi"], "« a venir » ne change pas");
+});
+
+test("core — une part « sur 100 € » montre son calcul avec les deux montants publies (16/10/2026)", async () => {
+  const { phraseCalculPart } = await import("../packages/core/src/comptes.js");
+  /* Meaux, comptes 2025 publies par l'OFGL : frais de personnel / depenses totales */
+  const p = phraseCalculPart(57586945, 121272659, "frais de personnel", "dépenses totales");
+  const sansEspaces = p.replace(/[   ]/g, "");
+  assert.match(sansEspaces, /57586945€defraisdepersonnel÷121272659€dedépensestotales=47,5%/, p);
+  assert.match(p, /arrondi à 47\s€/, p);
+  assert.match(p, /^Calcul de Repère/, "le calcul se dit calcul (invariant 4)");
+  assert.equal(phraseCalculPart(0, 10, "a", "b"), null, "montant nul : pas de calcul affiche");
+  assert.equal(phraseCalculPart(5, null, "a", "b"), null, "denominateur absent : pas de calcul affiche");
+});
+
+test("core — le president de l'intercommunalite n'est nomme que si le Repertoire le designe parmi les delegues", async () => {
+  const { presidentIntercommunalite } = await import("../packages/core/src/visuels.js");
+  const P = "Président du conseil communautaire";
+  assert.deepEqual(presidentIntercommunalite([{ nom: "A", fonction: "Conseiller communautaire" }, { nom: "B", fonction: P }]), { nom: "B", role: P });
+  assert.equal(presidentIntercommunalite([{ nom: "A", fonction: "1er Vice-président du conseil communautaire" }]), null, "un vice-president n'est pas le president");
+  assert.equal(presidentIntercommunalite([{ nom: "A", fonction: P }, { nom: "B", fonction: P }]), null, "deux presidents : la source est ambigue, Repere ne choisit pas");
+  assert.equal(presidentIntercommunalite(undefined), null);
+  assert.equal(presidentIntercommunalite([{ nom: "", fonction: P }]), null, "sans nom, pas de personne");
+});
