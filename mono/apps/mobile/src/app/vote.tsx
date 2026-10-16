@@ -84,7 +84,7 @@ export default function Vote() {
          n'etait plus lisible qu'au titre. Une phrase sous le titre, dans les deux cas. */
       const pourquoi = d.nbCircos > 1
         ? `${d.nomCommune} est partagée entre ${d.nbCircos} circonscriptions\u00a0: votre député dépend de votre adresse, que Repère ne demande pas. Voici, en exemple, le vote du député de la ${ordinal(vote.circo)}.`
-        : `${d.nomCommune} est dans la ${ordinal(vote.circo)} circonscription${depIndex ? ` de ${depIndex.nom}` : ""}\u00a0: voici le vote de son député.`;
+        : `${d.nomCommune} est dans la ${ordinal(vote.circo)} circonscription${depIndex ? ` de ${depIndex.nom.replace(/-/g, "\u2011")}` : ""}\u00a0: voici le vote de son député.`;
       return (
         <Page>
           <Stack.Screen options={{ title: "Votre député" }} />
