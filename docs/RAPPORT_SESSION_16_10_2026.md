@@ -106,3 +106,64 @@ Mesures clés : Aujourd'hui 390 × 844, bas des cartes 377 / 585 / 817 (base 383
 - Marque des cartes de partage : garder « R » ou passer au logo tricolore.
 - Ordre de fusion : #147 vers `main` ; #148 dépend de `feat/refonte-chez-vous-calendrier`,
   qui n'a pas de PR.
+
+---
+
+# Après-midi du 16/10/2026 — relecture, puis refonte de densité
+
+Demande du porteur (14 h 17) : avancer au maximum ; « la donnée est recrachée trop
+brutalement, indigeste… il va devoir scroller énormément » ; autorisation de dépasser
+les invariants. **Aucun invariant n'a eu besoin d'être dépassé** : tout s'est fait en
+repliant l'explication, sans retirer ni inventer. Les invariants 2, 3, 4, 8 et 9
+(vie privée, neutralité, sources, patrimoine et présence, fraîcheur) ont été gardés
+volontairement : ce sont des protections juridiques et de confiance.
+
+## À brancher ce soir, dans cet ordre
+
+1. **#147** → `main` (collecte rouge depuis le 14/10). Épreuve verte. Valider la règle
+   « partie du budget » (vote solennel du **20/10**).
+2. **#148** → base `feat/refonte-chez-vous-calendrier` (qui n'a pas de PR : la viser vers
+   `main` ou fusionner la pile d'abord). CI `mobile` verte.
+3. **#149** → base `feat/beta-mobile-16-10` (#148). CI `mobile` verte.
+4. À la main : texte de l'invariant 7 dans `CLAUDE.md` / `AGENTS.md` + `node
+   outils/derive_contexte.mjs --sceller` (refusés à l'agent) ; avis juridique sur le
+   tapis tricolore avant tout magasin.
+
+## #148, compléments
+
+- `61f0065` : « même vérité » ouvrait « Qui décide » par un bouton retiré → 4 échecs ;
+  corrigé (régression de l'agent : ce contrôle n'avait pas été lancé avant poussée).
+- `1b1bd70` : relecture (compétences make-interfaces-feel-better, expo-native-ui,
+  app-icon) : chevauchement de cibles « Voir le mois », coins concentriques, contour du
+  logo, chiffres à chasse fixe, icône Android à 289 px de rayon (zone sûre 313), favicon
+  192 px.
+
+## #149 — densité (https://github.com/Repere0/repere/pull/149)
+
+| Écran (Meaux, 390 × 844) | avant | après |
+|---|---|---|
+| Calendrier | 5,9 écrans | **2,2** |
+| Où va l'argent | 4,1 | **2,5** |
+| Comprendre ce vote | 3,8 | **2,4** |
+| Sources | 2,7 | **2,1** |
+| Aujourd'hui | 2,4 | 2,3 ; **3 cartes entières au premier écran** |
+| Qui décide | 2,1 | 1,9 |
+
+- Calendrier : un en-tête par jour (il n'y en avait aucun), une ligne compacte, six
+  rendez-vous puis « Voir les N autres ».
+- Argent, vote, sources, semaine : la réponse + un visuel + la source ; le reste sous
+  « Le détail (…) » ou « En savoir plus (…) ».
+- Accueil : le logo en grand. Aujourd'hui : « L'État finance près de la moitié… ».
+- Socle : marges 16 pt ; **les replis exposent `aria-expanded`** (absent sur le web).
+- Contrôles : parcours web et « même vérité » ouvrent tous les replis avant de lire
+  (contraste AA et cibles vérifiés aussi dedans) : zéro échec. tsc 0, gardes mobiles
+  vertes, invariants 63/63.
+
+## Constats à trancher (rien modifié)
+
+- **Séance en cours** : elle disparaît du calendrier dès son heure de début (« à
+  venir » exclut ce qui a commencé ; vu à 15 h 04). Fin rarement publiée : que montrer ?
+- **Cartes de partage** : ancienne marque « R » (choix laissé, risque 6ter).
+- **Fiche d'un élu** : un lien « Retour » double le retour de la barre haute.
+- **375 × 667** : la 3e réponse d'Aujourd'hui commence au premier écran (578 px) mais
+  reste coupée.
