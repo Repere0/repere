@@ -13,7 +13,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
 import {
-  INVARIANTS, ECHELONS, AMPLITUDE_MAX, amplitude, adresseFautive,
+  INVARIANTS, ECHELONS, AMPLITUDE_MAX, amplitude, adresseFautive, TRICOLORE_MARQUE, FICHIERS_MARQUE,
   CHAMPS_INTERDITS, MOTS_CLASSEMENT, MOTS_GAMIFICATION, MOTS_A_ACCENTS,
 } from "../packages/data-utils/src/invariants.js";
 import { estDonneePublique, MAGASIN } from "../packages/data-utils/src/store.js";
@@ -136,10 +136,16 @@ test("invariant 7 — palette gelée, et aucune couleur hors palette", () => {
     assert.ok(css.includes(hex), `la couleur d'echelon ${nom} (${hex}) a disparu des jetons`);
   }
   let controlees = 0;
+  /* Seule exception (decision du porteur, 16/10/2026) : le tricolore du logo, et
+     SEULEMENT dans le fichier qui le declare. Partout ailleurs il reste refuse ici,
+     et le controle suivant dit pourquoi. */
+  const declaration = "packages/data-utils/src/invariants.js";
+  const tricolore = Object.values(TRICOLORE_MARQUE);
   for (const f of sourcesEcrites()) {
     for (const m of lire(f).matchAll(/#[0-9a-fA-F]{6}\b/g)) {
       const hex = m[0].toLowerCase();
       if (gelees.includes(hex)) continue;
+      if (f === declaration && tricolore.includes(hex)) continue;
       controlees++;
       assert.ok(amplitude(hex) <= AMPLITUDE_MAX,
         `${f} : ${hex} a une amplitude de ${amplitude(hex)} (plafond ${AMPLITUDE_MAX}) — c'est une couleur, pas un neutre`);
@@ -152,6 +158,53 @@ test("invariant 7 — palette gelée, et aucune couleur hors palette", () => {
   for (const f of ["apps/web/index.html", "apps/web/public/manifest.webmanifest"]) {
     assert.ok(balayes.includes(f), `${f} n'est pas relu par le controle de la palette`);
   }
+});
+
+/* LE TRICOLORE DU LOGO RESTE DANS LA MARQUE — 16/10/2026.
+   Decision du porteur : un tapis bleu-blanc-rouge dans le logo, seule exception a
+   l'invariant 7, « reservee au logo et a ses declinaisons de marque, jamais a
+   l'interface ni a une information ». Quatre choses sont verifiees : ces couleurs
+   seraient refusees sans l'exception (sinon la garde ne garde rien) ; aucun code
+   d'interface ne les porte ; le dessin du logo les recopie exactement ; seul le
+   composant de marque affiche les images de marque. */
+test("invariant 7 — le tricolore du logo reste dans la marque", () => {
+  const { bleu, blanc, rouge } = TRICOLORE_MARQUE;
+  assert.ok(amplitude(bleu) > AMPLITUDE_MAX && amplitude(rouge) > AMPLITUDE_MAX,
+    "le bleu et le rouge du logo ne depassent plus le plafond : l'exception ne protege plus rien");
+  assert.equal(amplitude(blanc), 0, "le blanc du tapis doit rester un blanc");
+
+  for (const f of sourcesEcrites()) {
+    if (f === "packages/data-utils/src/invariants.js") continue;   /* la declaration */
+    const texte = lire(f).toLowerCase();
+    for (const h of [bleu, rouge]) {
+      assert.ok(!texte.includes(h), `${f} porte ${h}, couleur du tapis du logo : elle est reservee a la marque (invariant 7), jamais a l'interface`);
+    }
+  }
+  /* app.json n'est pas balaye par sourcesEcrites (JSON) : ses couleurs (ecran de
+     lancement, icone adaptative) restent des neutres. */
+  for (const m of lire("apps/mobile/app.json").matchAll(/#[0-9a-fA-F]{6}\b/g)) {
+    const hex = m[0].toLowerCase();
+    assert.ok(Object.values(ECHELONS).includes(hex) || amplitude(hex) <= AMPLITUDE_MAX,
+      `apps/mobile/app.json : ${hex} a une amplitude de ${amplitude(hex)} — le fond de l'icone et de l'ecran de lancement restent neutres`);
+  }
+
+  const dessin = lire(FICHIERS_MARQUE.generateur);
+  for (const [nom, h] of [["BLEU", bleu], ["BLANC", blanc], ["ROUGE", rouge]]) {
+    assert.match(dessin, new RegExp(`^${nom} = "${h}"$`, "mi"),
+      `${FICHIERS_MARQUE.generateur} ne recopie pas ${nom} = "${h}" : le logo et la regle divergent`);
+  }
+
+  const images = new RegExp(`assets/(?:${FICHIERS_MARQUE.images.map(i => i.replace(/[.-]/g, "\\$&")).join("|")})`);
+  let balayes = 0;
+  for (const f of sourcesEcrites()) {
+    if (!f.startsWith("apps/mobile/src/")) continue;
+    balayes++;
+    if (f === FICHIERS_MARQUE.composant) continue;
+    assert.doesNotMatch(lire(f), images, `${f} affiche une image de marque : seul ${FICHIERS_MARQUE.composant} peut afficher le logo`);
+  }
+  assert.ok(balayes > 20, "trop peu de fichiers de l'application lus : la garde ne mesure rien");
+  assert.match(lire(FICHIERS_MARQUE.composant), images, "le composant de marque n'affiche plus le logo");
+  for (const i of FICHIERS_MARQUE.images) assert.ok(existe(`apps/mobile/assets/${i}`), `image de marque absente : ${i}`);
 });
 
 test("PWA — le manifeste declare des icones, et elles existent", () => {

@@ -24,8 +24,8 @@ export const INVARIANTS = [
     regle: "Rien qui gamifie le vote ou l'opinion : aucun score, aucune récompense, aucune série, aucun gain ni son de réussite lié à un vote, une position ou un partage. Les effets de mouvement sont permis pour lire, naviguer et suivre une heure ou une durée (assouplie par décision du porteur, 13/10/2026).",
     garde: "statique: vocabulaire de bonne/mauvaise réponse interdit" },
   { n: 7, nom: "palette gelée",
-    regle: "Cinq couleurs d'échelon gelées ; aucune autre couleur ne dépasse une amplitude de 24 sur les canaux RGB.",
-    garde: "statique: lecture des jetons CSS" },
+    regle: "Cinq couleurs d'échelon gelées ; aucune autre couleur ne dépasse une amplitude de 24 sur les canaux RGB. Seule exception (décision du porteur, 16/10/2026) : le bleu, le blanc et le rouge du logo, réservés au logo et à ses déclinaisons de marque, jamais à l'interface ni à une information.",
+    garde: "statique: lecture des jetons CSS, et le tricolore confiné à la marque (outils/marque_repere.py, ui/marque.tsx)" },
   { n: 8, nom: "ni patrimoine ni présence",
     regle: "Jamais le patrimoine d'un élu, jamais de donnée de présence ou d'absence.",
     garde: "statique: champs interdits dans les données produites" },
@@ -48,6 +48,24 @@ export const ECHELONS = Object.freeze({
   france: "#1d1d1f",
 });
 export const AMPLITUDE_MAX = 24;
+
+/* LE TRICOLORE DU LOGO — seule exception a l'invariant 7 (decision du porteur,
+   16/10/2026). Declare ICI, une seule fois : outils/marque_repere.py le recopie pour
+   dessiner l'icone, et mono/tests/invariants.test.mjs verifie que la recopie est
+   exacte, qu'aucun code d'interface ne porte ces couleurs, et que seules les
+   declinaisons de marque affichent le logo. Ce ne sont pas les couleurs de la charte
+   de l'Etat (DSFR) : Repere n'est pas un service de l'Etat. */
+export const TRICOLORE_MARQUE = Object.freeze({
+  bleu:  "#002395",
+  blanc: "#ffffff",
+  rouge: "#ed2939",
+});
+/* Les seuls fichiers qui peuvent porter le tricolore ou afficher les images de marque. */
+export const FICHIERS_MARQUE = Object.freeze({
+  generateur: "../outils/marque_repere.py",
+  composant: "apps/mobile/src/ui/marque.tsx",
+  images: ["icon.png", "android-icon-foreground.png", "android-icon-background.png", "android-icon-monochrome.png", "splash-icon.png", "favicon.png"],
+});
 
 export function amplitude(hex) {
   const m = /^#?([0-9a-f]{6})$/i.exec(String(hex).trim());

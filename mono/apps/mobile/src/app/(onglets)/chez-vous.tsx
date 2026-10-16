@@ -25,7 +25,7 @@
  * cette information ? » ; celle du traitement par Repere en en-tete.
  *
  * RIEN N'EST CALCULE ICI : @repere/core derive, lib/absences.ts dit les absences. */
-import { Image, Pressable, Text, View } from "react-native";
+import { Pressable, Text, View } from "react-native";
 import { router, Stack } from "expo-router";
 import {
   dateFr, datePublication, decompte, euros, financementProjet, montantCourt, ordinal, parHabitant, phrasePosition,
@@ -47,6 +47,7 @@ import { Etiquette } from "../../ui/resume";
 import { Plus, Reponse, typo } from "../../ui/reponse";
 import { BarrePart, Repartition } from "../../ui/visuels";
 import { SemaineParlement } from "../../ui/semaine";
+import { Marque } from "../../ui/marque";
 
 export default function ChezVous() {
   const { choix } = useSelection();
@@ -69,11 +70,7 @@ export default function ChezVous() {
         <Page>
           <Stack.Screen options={{ title: nom }} />
           {/* LA MARQUE, D'ABORD : le nom de l'application et son icone, sur l'ecran d'ouverture (16/10/2026). */}
-          <View accessible accessibilityRole="header" accessibilityLabel="Repère" style={{ flexDirection: "row", alignItems: "center", gap: PAS * 2 }}>
-            <Image source={require("../../../assets/icon.png")} accessibilityElementsHidden importantForAccessibility="no"
-              style={{ width: 36, height: 36, borderRadius: 9 }} />
-            <Text style={{ fontFamily: POLICE.affiche, fontSize: 28, lineHeight: 32, color: couleurs.encre, letterSpacing: -0.5 }}>Repère</Text>
-          </View>
+          <Marque />
 
           {/* QUI DECIDE CHEZ VOUS — un bloc sombre, la question en tete, un seul geste. */}
           <View style={{ backgroundColor: couleurs.encre, borderRadius: RAYON.carte, padding: PAS * 4, gap: PAS * 2 }}>
