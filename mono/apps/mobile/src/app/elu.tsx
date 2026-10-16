@@ -108,10 +108,14 @@ export default function Elu() {
 
             {onglet === "apercu" ? (
               <View style={{ gap: PAS * 3 }}>
-                <Carte echelon={echelon as Echelon} titre="Fonction">
-                  {p.institution ? <Text style={TYPO.corps}>{p.institution}</Text> : null}
-                  {p.lieu ? <Text style={TYPO.note}>{p.lieu}</Text> : null}
-                </Carte>
+                {/* « Institution », pas « Fonction » (16/10/2026) : la carte disait « Fonction :
+                    Conseil municipal » sous « Maire · Meaux ». La fonction est dans l'en-tete ;
+                    la carte dit ou elle s'exerce, sur une ligne. */}
+                {p.institution || p.lieu ? (
+                  <Carte echelon={echelon as Echelon} titre="Institution">
+                    <Text style={TYPO.corps}>{[p.institution, p.lieu].filter(Boolean).join(" · ")}</Text>
+                  </Carte>
+                ) : null}
                 {decide ? (
                   <Carte titre="Ce que ce niveau décide">
                     <Text style={TYPO.corps}>{decide}.</Text>
