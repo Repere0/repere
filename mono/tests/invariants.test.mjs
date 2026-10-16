@@ -1260,8 +1260,15 @@ test("votes — les lois sont distinguées des votes de détail", () => {
      sans l'amorce. La collecte etait rouge depuis le 14/10 pour cette seule raison.
      La regle garde ce qu'elle protege : un vote solennel porte sur un TEXTE, jamais sur
      un article (« l'article premier de … », scrutin 8669), un amendement ou une motion.
-     Prouve : ces trois formes font echouer ce controle (rapport de PR). */
-  const TEXTE_ENTIER = /^(?:l'ensemble (?:de la|du|des|de l')|la proposition de (?:loi|résolution)\b|le projet de loi\b)/i;
+     Prouve : ces trois formes font echouer ce controle (rapport de PR).
+     LA PREMIERE OU LA SECONDE PARTIE DU BUDGET (16/10/2026, a valider par le porteur).
+     Le vote sur une partie entiere du projet de loi de finances s'intitule « la
+     première partie du projet de loi de finances pour 2026 (première lecture). »
+     (scrutin 4241, 21/11/2025). Celui de 2027 est inscrit en vote solennel le
+     20/10/2026 : sans cette forme, la collecte retomberait le 21. Ce n'est pas un
+     vote de detail ; un article du budget (« l'article liminaire du projet de loi de
+     finances… », scrutin 4240) reste refuse. */
+  const TEXTE_ENTIER = /^(?:l'ensemble (?:de la|du|des|de l')|la proposition de (?:loi|résolution)\b|le projet de loi\b|la (?:première|seconde) partie du projet de loi de finances\b)/i;
   for (const s of solennels) {
     assert.match(s.t, TEXTE_ENTIER,
       `le scrutin solennel ${s.n} ne porte pas sur l'ensemble d'un texte : la regle de tri ne tient plus`);
