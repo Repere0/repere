@@ -101,16 +101,16 @@ export default function ChezVous() {
                  sur « Où va l'argent » ; le pourcentage exact reste dans la barre et sa
                  source (« Calcul Repère »). Sans repere proche : le pourcentage. */
               phrase={f.partPct !== null && cout
-                ? `L'État finance ${partEnMots(f.partPct)} d'un projet de ${cout.texte} à ${nom} : ${euros(f.subvention)}.`
+                ? `L'État finance ${partEnMots(f.partPct)} d'un projet de ${cout.texte} hors taxes à ${nom} : ${euros(f.subvention)}.`
                 : `L'État apporte ${euros(f.subvention)} à un projet à ${nom}.`}
               preuve={f.partPct !== null ? <BarrePart sansLibelle part={f.partPct} libelle="Part de l'État dans le coût annoncé" valeur={`${f.partPct} € sur 100 €`} /> : undefined}
-              note={`« ${projet.p.intitule} » : ${euros(f.subvention)} engagés par l'État en ${projet.p.annee}${f.cout ? ` sur ${euros(f.cout)} annoncés` : ""}.`}
+              note={`« ${projet.p.intitule} » : ${euros(f.subvention)} engagés par l'État en ${projet.p.annee}${f.cout ? ` sur un coût annoncé de ${euros(f.cout)} hors taxes` : ""}.`}
               noteRepliee="Le détail (projet)"
               sources={<PastilleSource court source={srcProjets(d, f.partPct !== null)} />}
               partage={{
                 titre: `Une information sur ${nom}`,
                 texte: f.partPct !== null && cout
-                  ? `À ${nom} : l'État finance ${partEnMots(f.partPct)} d'un projet de ${cout.texte}, soit ${euros(f.subvention)} (${f.partPct} % du coût annoncé).`
+                  ? `À ${nom} : l'État finance ${partEnMots(f.partPct)} d'un projet de ${cout.texte} hors taxes, soit ${euros(f.subvention)} (${f.partPct} % du coût annoncé).`
                   : `À ${nom} : l'État apporte ${euros(f.subvention)} à un projet.`,
                 sourceUrl: srcProjets(d, f.partPct !== null)?.url,
               }}

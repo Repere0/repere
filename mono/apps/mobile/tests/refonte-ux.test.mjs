@@ -146,3 +146,13 @@ test("ecran du vote : l'etape du vote sans rang « N sur 6 » (16/10/2026)", () 
   assert.doesNotMatch(v, /sur \$\{ETAPES_LOI\.length\}/, "le rang « N sur 6 » est revenu : il suggere des etapes restantes");
   assert.match(v, /Étape de ce vote : \$\{etapeCourante\.titre\}/);
 });
+
+test("le cout d'un projet aide se dit hors taxes, comme la source le publie (16/10/2026)", () => {
+  /* La DGCL publie cout_ht : « un projet de 1,5 M€ » sans « hors taxes » laissait lire un
+     cout toutes taxes, et la part de l'Etat calculee sur le HT paraissait plus forte. */
+  for (const f of ["app/(onglets)/chez-vous.tsx", "app/argent.tsx"]) {
+    const t = lire(f);
+    const sans = [...t.matchAll(/projet de \$\{cout\.texte\}(?! hors taxes)/g)];
+    assert.equal(sans.length, 0, `${f} : un cout de projet sans « hors taxes »`);
+  }
+});
