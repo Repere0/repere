@@ -85,7 +85,12 @@ export default function QuiDecide() {
         if (n.echelon === "dept" && !n.personne) {
           /* 08/10/2026 : certains territoires n'ont REELLEMENT pas de conseil departemental */
           const sans = sansConseilDepartemental(d.dep);
-          return { ...n, note: sans ? `${sans.titre} ${sans.corps}` : "Le Répertoire national des élus ne porte pas de conseil départemental pour ce territoire.", pied: <LienDefinition cle="conseil départemental" /> };
+          /* 16/10/2026 : pour ces territoires, la carte affichait en grand « Conseil
+             departemental » et « Decide : les colleges… », l'explication n'etant que dans
+             le repli. La phrase vraie devient le titre ; « Decide » est retire (il
+             contredisait la phrase) ; l'explication et sa source restent a un geste. */
+          if (sans) return { ...n, institution: sans.titre, decide: undefined, note: sans.corps, pied: <LienDefinition cle="conseil départemental" /> };
+          return { ...n, note: "Le Répertoire national des élus ne porte pas de conseil départemental pour ce territoire.", pied: <LienDefinition cle="conseil départemental" /> };
         }
         if (n.echelon === "france" && d.nbCircos > 1) {
           /* 15/10/2026 : une commune partagee entre plusieurs circonscriptions n'a pas UN

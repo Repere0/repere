@@ -163,3 +163,9 @@ test("vote : pourquoi ce depute se dit sous le titre, et l'exemple d'une commune
   assert.match(v, /dépend de votre adresse[^`]*en exemple/, "pour une commune partagee, l'exemple n'est plus dit en haut");
   assert.match(v, /Scrutin n°\\u00a0\$\{vote\.sc\.n\}/, "le numero du scrutin n'est plus affiche");
 });
+
+test("Qui decide : un territoire sans conseil departemental ne l'affiche pas en titre (16/10/2026)", () => {
+  const q = lire("app/(onglets)/qui-decide.tsx");
+  assert.match(q, /if \(sans\) return \{ \.\.\.n, institution: sans\.titre, decide: undefined/,
+    "Paris, la Corse ou la Martinique affichent de nouveau « Conseil departemental » en titre");
+});
