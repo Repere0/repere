@@ -81,11 +81,12 @@ export default function ChezVous() {
              Le grand nom de commune n'est plus repete ici (13/10/2026) : la barre
              haute le porte deja, et la 3e reponse doit tenir au-dessus de la barre basse. */}
           <View style={{ gap: 2 }}>
-            <Text style={TYPO.note}>{[depIndex && depIndex.nom, depIndex && depIndex.region].filter(Boolean).join(" · ")}</Text>
             {/* « Publication » et non « mis a jour » : la date est celle de la
                publication affichee, vraie dans les trois etats de l'invariant 9
-               — y compris hors ligne, ou rien n'est « a jour » (BandeauFraicheur). */}
-            {publie ? <Text style={TYPO.micro}>Publication Repère du {dateFr(publie)}</Text> : null}
+               — y compris hors ligne, ou rien n'est « a jour » (BandeauFraicheur).
+               Une seule ligne avec le departement (16/10/2026) : la region est sur
+               « Chez vous ». */}
+            <Text style={TYPO.micro}>{[depIndex && depIndex.nom, publie ? `Publication Repère du ${dateFr(publie)}` : null].filter(Boolean).join(" · ")}</Text>
           </View>
 
           <View style={{ gap: PAS * 2 }}>
@@ -101,6 +102,7 @@ export default function ChezVous() {
                 : `L'État apporte ${euros(f.subvention)} à un projet à ${nom}.`}
               preuve={f.partPct !== null ? <BarrePart sansLibelle part={f.partPct} libelle="Part de l'État dans le coût annoncé" valeur={`${f.partPct} € sur 100 €`} /> : undefined}
               note={`« ${projet.p.intitule} » : ${euros(f.subvention)} engagés par l'État en ${projet.p.annee}${f.cout ? ` sur ${euros(f.cout)} annoncés` : ""}.`}
+              noteRepliee="Le détail (projet)"
               sources={<PastilleSource court source={srcProjets(d, f.partPct !== null)} />}
               partage={{
                 titre: `Une information sur ${nom}`,

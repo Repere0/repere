@@ -12,6 +12,7 @@ import type { ReactNode } from "react";
 import { Pressable, Share, StyleSheet, Text, View } from "react-native";
 import { couleurs, CIBLE, OMBRE, PAS, RAYON, TYPO, type Echelon } from "../lib/theme";
 import { IconePartage } from "./icones";
+import { Depli } from "./visuels";
 
 function BoutonPartager({ titre, texte, sourceUrl }: { titre: string; texte: string; sourceUrl?: string | null }) {
   const partager = async () => {
@@ -30,12 +31,14 @@ function BoutonPartager({ titre, texte, sourceUrl }: { titre: string; texte: str
    symbole euro ne tombent seuls a la ligne (vu sur capture : « 332 372 / € »). */
 export const typo = (t: string) => t.replace(/ ([?!:;€»])/g, "\u00a0$1").replace(/« /g, "«\u00a0");
 
-export function Reponse({ phrase, preuve, note, sources, suite, partage }: {
+export function Reponse({ phrase, preuve, note, sources, suite, partage, noteRepliee }: {
   /* l'echelon qui decide : porte par la donnee, pas encore par le rendu
      (cartes blanches en palette B partiel) ; la PR « Chez vous » s'en servira. */
   echelon: Echelon; phrase: string; preuve?: ReactNode; note?: ReactNode;
   sources?: ReactNode; suite?: { texte: string; onPress: () => void };
   partage?: { titre: string; texte: string; sourceUrl?: string | null };
+  /* le titre du repli quand la note n'est qu'un detail de la phrase (16/10/2026) */
+  noteRepliee?: string;
 }) {
   /* Pas de rubrique au-dessus : la reponse vient d'abord (consigne du
      30/09/2026 : « une réponse », pas « une rubrique puis du texte »). La
@@ -45,7 +48,9 @@ export function Reponse({ phrase, preuve, note, sources, suite, partage }: {
     <View testID="reponse" style={[s.carte, { backgroundColor: couleurs.carte }]}>
       <Text style={s.phrase} accessibilityRole="header">{typo(phrase)}</Text>
       {preuve}
-      {note ? (typeof note === "string" ? <Text style={TYPO.note}>{typo(note)}</Text> : note) : null}
+      {note && noteRepliee ? (
+        <Depli titre={noteRepliee}>{typeof note === "string" ? <Text style={TYPO.note}>{typo(note)}</Text> : note}</Depli>
+      ) : note ? (typeof note === "string" ? <Text style={TYPO.note}>{typo(note)}</Text> : note) : null}
       <View style={s.pied}>
         <View style={{ flexDirection: "row", flexWrap: "wrap", flexShrink: 1 }}>{sources}</View>
         {partage ? <BoutonPartager {...partage} /> : null}
