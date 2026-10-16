@@ -34,7 +34,7 @@ export default function Sources() {
         <Page>
           <Stack.Screen options={{ title: LIBELLES.sources }} />
           <Question question="D'où viennent ces informations ?"
-            sous={traite ? `Repère a traité ces fichiers le ${dateFr(traite)}. Chaque source a sa propre date, écrite ci-dessous : c'est celle de la donnée.` : undefined} />
+            sous={traite ? `Repère a traité ces fichiers le ${dateFr(traite)}. Chaque source a sa propre date, écrite ci\u2011dessous\u00a0: c'est celle de la donnée.` : undefined} />
           {/* Au premier niveau : qui publie, quand, et le lien vers la donnée.
              La licence et l'usage que Repère en fait se déplient (16/10/2026). */}
           {/* DENSITE (16/10/2026) : une seule carte, une ligne par source (etait une
@@ -48,7 +48,11 @@ export default function Sources() {
                   : l.releve ? <Text style={TYPO.note}>Données relevées le {dateFr(l.releve)}</Text>
                   : <Text style={TYPO.note}>Ce fichier ne porte pas de date de publication que Repère puisse afficher.</Text>}
                 {l.url ? <LienSortant url={l.url} texte="Voir la donnée originale" etiquette={`Voir la donnée originale : ${l.quoi}`} /> : null}
-                <Depli titre={`Ce que Repère en tire${l.licence ? " et sa licence" : ""} (${l.quoi.replace(/^Les? /, "").toLowerCase()})`}>
+                {/* Titre visible court, sur une ligne ; le nom de la source, avec ses majuscules
+                    (« l'État », « l'Assemblée »), est dans le nom lu (16/10/2026 : toLowerCase
+                    ecrivait « projets aidés par l'état »). */}
+                <Depli titre={`Ce que Repère en tire${l.licence ? " et sa licence" : ""}`}
+                  etiquette={`Ce que Repère en tire${l.licence ? " et sa licence" : ""} : ${l.quoi}`}>
                   <Text style={TYPO.corps}>{l.usage}</Text>
                   {l.licence ? <Text style={TYPO.note}>Licence : {l.licence}</Text> : null}
                 </Depli>

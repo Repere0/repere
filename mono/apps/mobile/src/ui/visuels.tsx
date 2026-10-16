@@ -222,14 +222,16 @@ export function Chaine({ niveaux, compact, surNom }: { niveaux: Niveau[]; compac
 }
 
 /* ── Approfondir : une explication qu'on ouvre ─────────────────────────── */
-export function Depli({ titre, children }: { titre: string; children: ReactNode }) {
+/* `etiquette` : le nom lu par un lecteur d'ecran quand plusieurs replis portent le meme
+   titre visible (16/10/2026, page Sources). */
+export function Depli({ titre, children, etiquette }: { titre: string; children: ReactNode; etiquette?: string }) {
   const [ouvert, setOuvert] = useState(false);
   return (
     <View>
       {/* aria-expanded en plus d'accessibilityState (16/10/2026) : mesure sur la version
           web, l'etat du repli n'etait pas expose (aria-expanded absent) ; un lecteur
           d'ecran ne savait pas si l'explication etait ouverte. */}
-      <Pressable onPress={() => setOuvert(o => !o)} accessibilityRole="button"
+      <Pressable onPress={() => setOuvert(o => !o)} accessibilityRole="button" accessibilityLabel={etiquette}
         accessibilityState={{ expanded: ouvert }} aria-expanded={ouvert} style={({ pressed }) => [s.depli, pressed && { opacity: 0.6 }]}>
         <Text style={[TYPO.note, { color: couleurs.lien, fontWeight: "600", flex: 1 }]}>{titre.replace(/ ([?!:;])/g, "\u00a0$1")}</Text>
         <Text style={[TYPO.note, { color: couleurs.lien }]} accessibilityElementsHidden importantForAccessibility="no">{ouvert ? "−" : "+"}</Text>
