@@ -61,9 +61,9 @@ export function Reponse({ phrase, preuve, note, sources, suite, partage }: {
 }
 
 /* Un lien de la liste « Aller plus loin ». */
-export function Plus({ texte, onPress, premier, dernier }: { texte: string; onPress: () => void; premier?: boolean; dernier?: boolean }) {
+export function Plus({ texte, onPress, premier, dernier, etiquette }: { texte: string; onPress: () => void; premier?: boolean; dernier?: boolean; etiquette?: string }) {
   return (
-    <Pressable onPress={onPress} accessibilityRole="button" accessibilityLabel={texte}
+    <Pressable onPress={onPress} accessibilityRole="button" accessibilityLabel={etiquette || texte}
       style={({ pressed }) => [s.plus, premier && s.plusPremier, dernier && s.plusDernier, pressed && { opacity: 0.6 }]}>
       <Text style={[s.suiteTexte, { flex: 1 }]}>{texte}</Text>
       <Text style={s.suiteTexte} accessibilityElementsHidden importantForAccessibility="no">›</Text>

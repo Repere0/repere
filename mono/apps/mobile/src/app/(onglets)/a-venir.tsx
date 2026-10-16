@@ -22,15 +22,15 @@ import { router, Stack } from "expo-router";
 import {
   AGE_RELEVE_NORMAL, ageReleve, dateFr, ETAPES_LOI, jourFr, jourParis, LIBELLES, regrouperParJour,
 } from "@repere/core";
-import { type Ev, type Groupe, heuresDuGroupe, horairesDuGroupe, INSTITUTIONS, parametresRendezVous } from "../../lib/calendrier";
-import { Carte, LienAction, Vide } from "../../lib/composants";
+import { type Ev, type Groupe, horairesDuGroupe, INSTITUTIONS, parametresRendezVous } from "../../lib/calendrier";
+import { Carte, Vide } from "../../lib/composants";
 import { AGENDA_PAS_ARRIVE, AGENDA_VIDE } from "../../lib/absences";
 import { srcAgenda } from "../../lib/sources";
 import { useCommuneChoisie } from "../../lib/useCommune";
 import { couleurs, CIBLE, PAS, POLICE, TYPO } from "../../lib/theme";
 import { AvecDonnees, Page, Question } from "../../ui/page";
 import { PastilleSource } from "../../ui/source";
-import { Depli } from "../../ui/visuels";
+import { Plus } from "../../ui/reponse";
 
 const de =(i: string) => (i === "Sénat" ? "du Sénat" : "de l'Assemblée nationale");
 const nbsp = (t: string) => t.replace(/ ([?!:;])/g, " $1");
@@ -47,39 +47,49 @@ function rangLundi(iso: string): number {
   return (new Date(Date.UTC(y, m - 1, d)).getUTCDay() + 6) % 7;
 }
 
+/* UNE LIGNE PAR RENDEZ-VOUS, COMPACTE (16/10/2026). Mesure : chaque ligne prenait
+   ~220 px (institution, « Séance publique », horaires avec « heure de fin non
+   précisée », nombre de séances, repli de l'ordre du jour, lien « Voir le détail ») ;
+   l'ecran faisait 5,9 hauteurs d'ecran. Desormais : l'heure, le sujet (trois lignes
+   au plus), UNE ligne de contexte, et toute la ligne mene au detail, qui garde tout
+   (lieu, horaires et fins, ordre du jour, description, source). */
 function Ligne({ g }: { g: Groupe }) {
-  const heures = heuresDuGroupe(g);
-  /* L'heure de debut, seule, en colonne : « 9 h » de « 9 h, heure de fin non précisée ». */
-  const heure = (horairesDuGroupe(g)[0] || "").split(/,| à /)[0].trim();
-  const points = g.points || [];
+  const debuts = horairesDuGroupe(g).map(h => h.split(/,| à /)[0].trim()).filter(Boolean);
+  const heure = debuts[0] || "";
+  const nbPoints = (g.points || []).length;
+  const contexte = [
+    g.institution === "Assemblée nationale" ? "Assemblée" : g.institution,
+    g.categorie && g.categorie !== "Séance publique" ? g.categorie : null,
+    heure ? null : "heure non publiée",
+    g.seances > 1 ? `${g.seances} séances : ${debuts.join(", ")}` : null,
+    nbPoints ? `+ ${nbPoints} point${nbPoints > 1 ? "s" : ""} à l'ordre du jour` : null,
+  ].filter(Boolean).join(" · ");
   return (
-    <View testID="cal-ligne" style={{ flexDirection: "row", gap: PAS * 3, paddingTop: PAS * 3, borderTopWidth: 1, borderTopColor: couleurs.trait }}>
-      {heure ? (
-        <View style={{ width: 64 }}>
-          <Text style={{ fontFamily: POLICE.affiche, fontSize: 22, lineHeight: 26, color: couleurs.encre, fontVariant: ["tabular-nums"] }}>{heure}</Text>
-        </View>
-      ) : null}
-      <View style={{ flex: 1, gap: PAS }}>
-      {/* le sujet d'abord : c'est ce qui interesse le lecteur, l'horaire vient ensuite */}
-      <Text style={[TYPO.reponse, { fontSize: 17, lineHeight: 23 }]}>{g.titre}</Text>
-      <Text style={TYPO.note}>{[g.institution, g.categorie].filter(Boolean).join(" · ")}</Text>
-      <Text style={TYPO.micro}>{[heures || "Heure non publiée", g.lieu].filter(Boolean).join(" · ")}</Text>
-      {g.seances > 1 ? <Text style={TYPO.micro}>{g.seances} séances ce jour-là</Text> : null}
-      {points.length ? (
-        <Depli titre={points.length > 1 ? `Voir les ${points.length} autres points de l'ordre du jour` : "Voir l'autre point de l'ordre du jour"}>
-          {points.map((p, k) => <Text key={k} style={TYPO.note}>• {p}</Text>)}
-        </Depli>
-      ) : null}
-      {g.textesLibres.length ? (
-        <Depli titre="Lire la description publiée">
-          {g.textesLibres.map((t, k) => <Text key={k} style={TYPO.note}>{t}</Text>)}
-        </Depli>
-      ) : null}
-      {/* Le detail complet : source, date du releve, institution, points publies. */}
-      <LienAction texte="Voir le détail et la source" etiquette={`Détail du rendez-vous : ${g.titre}`}
-        onPress={() => router.push({ pathname: "/evenement", params: parametresRendezVous(g) })} />
+    <Pressable testID="cal-ligne" accessibilityRole="button"
+      accessibilityLabel={`${heure ? heure + ", " : ""}${g.titre}. ${contexte}. Voir le détail et la source`}
+      onPress={() => router.push({ pathname: "/evenement", params: parametresRendezVous(g) })}
+      style={({ pressed }) => ({ flexDirection: "row", alignItems: "center", gap: PAS * 3, minHeight: CIBLE, paddingVertical: PAS * 3,
+        borderTopWidth: 1, borderTopColor: couleurs.trait, opacity: pressed ? 0.6 : 1 })}>
+      <View style={{ width: 66, alignSelf: "flex-start" }}>
+        <Text numberOfLines={1} style={{ fontFamily: POLICE.affiche, fontSize: 18, lineHeight: 22, color: couleurs.encre, fontVariant: ["tabular-nums"] }}>{heure.replace(/ /g, "\u00a0")}</Text>
       </View>
-    </View>
+      <View style={{ flex: 1, gap: 2 }}>
+        <Text style={[TYPO.reponse, { fontSize: 17, lineHeight: 22 }]} numberOfLines={2}>{g.titre}</Text>
+        <Text style={TYPO.micro} numberOfLines={2}>{contexte}</Text>
+      </View>
+      <Text accessibilityElementsHidden importantForAccessibility="no" style={{ fontSize: 20, color: couleurs.sourd }}>›</Text>
+    </Pressable>
+  );
+}
+
+/* Le jour, au-dessus de ses rendez-vous : sans lui, « 15 h Questions au
+   Gouvernement » ne disait pas quel jour (liste de deux semaines). */
+function EnteteJour({ iso, aujourdhui }: { iso: string; aujourdhui: string }) {
+  const j = jourFr(iso).replace(/ \d{4}$/, "");   /* l'annee en cours n'apprend rien ici */
+  return (
+    <Text accessibilityRole="header" style={{ fontSize: 15, lineHeight: 20, fontWeight: "800", color: couleurs.encre, paddingTop: PAS * 4, paddingBottom: PAS }}>
+      {j.charAt(0).toUpperCase() + j.slice(1)}{iso === aujourdhui ? " · aujourd'hui" : ""}
+    </Text>
   );
 }
 
@@ -212,7 +222,7 @@ export default function AVenir() {
               ))}
               <Text style={[TYPO.corps, { fontWeight: "700" }]}>{choisi && etiquetteJour ? `${etiquetteJour}. ` : ""}{phrase}</Text>
               {manquantes.map(i => (
-                <Text key={i} style={TYPO.note}>{nbsp(`Le calendrier ${de(i)} n'est pas arrivé jusqu'ici : il n'est pas affiché, et rien n'est inventé à sa place.`)}</Text>
+                <Text key={i} style={TYPO.note}>{nbsp(`Le calendrier ${de(i)} n'est pas arrivé jusqu'ici : rien n'est inventé à sa place.`)}</Text>
               ))}
               {choisi ? (
                 <Pressable onPress={() => setChoisi(false)} accessibilityRole="button" accessibilityLabel="Revenir à la liste des deux prochaines semaines"
@@ -222,13 +232,18 @@ export default function AVenir() {
               ) : null}
               {affiches.length ? (
                 <Carte echelon="france">
-                  {affiches.map((g, i) => <Ligne key={g.debut + i} g={g} />)}
+                  {affiches.map((g, i) => (
+                    <View key={g.debut + i}>
+                      {i === 0 || affiches[i - 1].jour !== g.jour ? <EnteteJour iso={g.jour} aujourdhui={jourParis(new Date())} /> : null}
+                      <Ligne g={g} />
+                    </View>
+                  ))}
                   <View style={{ flexDirection: "row", flexWrap: "wrap" }}>
                     {lues.map(x => <PastilleSource key={x.institution} nom={x.institution === "Sénat" ? "Sénat" : "Assemblée"} source={srcAgenda(x.source)} />)}
                   </View>
                 </Carte>
               ) : null}
-              <Text style={TYPO.note}>Les rappels ne sont pas encore disponibles dans l'application.</Text>
+              <Text style={TYPO.note}>{"Chaque ligne donne l'heure de début. Le détail dit l'heure de fin, ou « heure de fin non précisée » quand la source ne la publie pas. Les rappels ne sont pas encore disponibles dans l'application."}</Text>
 
               {!aVenir.length && toutes.length ? (
                 <Text style={TYPO.note}>Rien de publié pour ce filtre. Le filtre « Tout » montre le reste.</Text>
@@ -237,33 +252,12 @@ export default function AVenir() {
             </>
           )}
 
-          <Pressable
-            onPress={() => router.push("/procedure")}
-            accessibilityRole="button"
-            accessibilityLabel="Ouvrir : comment une loi devient loi"
-            style={({ pressed }) => ({ minHeight: 52, padding: 16, borderRadius: 14, borderWidth: 1, borderColor: couleurs.trait, backgroundColor: couleurs.carte, opacity: pressed ? 0.6 : 1 })}
-          >
-            <Text style={{ fontWeight: "700", color: couleurs.encre }}>Comment une loi devient loi</Text>
-            <Text style={{ marginTop: 4, color: couleurs.sourd }}>{ETAPES_LOI.length} étapes, du dépôt à la publication, avec la navette.</Text>
-          </Pressable>
-          <Pressable
-            onPress={() => router.push("/scrutins?mode=qag")}
-            accessibilityRole="button"
-            accessibilityLabel="Ouvrir les Questions au Gouvernement"
-            style={({ pressed }) => ({ minHeight: 52, padding: 16, borderRadius: 14, borderWidth: 1, borderColor: couleurs.trait, backgroundColor: couleurs.carte, opacity: pressed ? 0.6 : 1 })}
-          >
-            <Text style={{ fontWeight: "700", color: couleurs.encre }}>Questions au Gouvernement</Text>
-            <Text style={{ marginTop: 4, color: couleurs.sourd }}>Voir les questions posées et les réponses publiées.</Text>
-          </Pressable>
-          <Pressable
-            onPress={() => router.push("/dictionnaire")}
-            accessibilityRole="button"
-            accessibilityLabel="Ouvrir le dictionnaire citoyen"
-            style={({ pressed }) => ({ minHeight: 52, padding: 16, borderRadius: 14, borderWidth: 1, borderColor: couleurs.trait, backgroundColor: couleurs.carte, opacity: pressed ? 0.6 : 1 })}
-          >
-            <Text style={{ fontWeight: "700", color: couleurs.encre }}>Dictionnaire citoyen</Text>
-            <Text style={{ marginTop: 4, color: couleurs.sourd }}>Ce que veulent dire les mots du Parlement et des collectivités.</Text>
-          </Pressable>
+          {/* Trois entrees en une liste compacte (16/10/2026 ; etaient trois cartes). */}
+          <View>
+            <Plus premier texte={`Comment une loi devient loi · ${ETAPES_LOI.length} étapes`} etiquette="Ouvrir : comment une loi devient loi" onPress={() => router.push("/procedure")} />
+            <Plus texte="Questions au Gouvernement" etiquette="Ouvrir les Questions au Gouvernement" onPress={() => router.push("/scrutins?mode=qag")} />
+            <Plus dernier texte="Dictionnaire citoyen" etiquette="Ouvrir le dictionnaire citoyen" onPress={() => router.push("/dictionnaire")} />
+          </View>
         </Page>
       );
     }} />

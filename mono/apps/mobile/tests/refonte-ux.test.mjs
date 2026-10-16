@@ -68,7 +68,12 @@ test("dictionnaire : cibles tactiles à 48 pt, pas à 40", () => {
 test("un seul lien d'action : LienAction, à 48 pt", () => {
   assert.match(lire("lib/composants.tsx"), /export function LienAction\s*\(/, "le lien d'action n'est plus factorisé");
   assert.match(lire("app/(onglets)/qui-decide.tsx"), /<LienAction\b/, "Qui décide n'utilise plus le lien d'action partagé");
-  assert.match(lire("app/(onglets)/a-venir.tsx"), /<LienAction\b/, "le calendrier n'utilise plus le lien d'action partagé");
+  /* 16/10/2026 : dans le calendrier, la LIGNE ENTIERE est le lien vers le detail
+     (une cible pleine largeur, au moins 48 pt), au lieu d'un lien sous chaque ligne. */
+  const cal = lire("app/(onglets)/a-venir.tsx");
+  assert.match(cal, /testID="cal-ligne" accessibilityRole="button"/, "la ligne du calendrier n'est plus un bouton");
+  assert.match(cal, /testID="cal-ligne"[\s\S]{0,600}?minHeight: CIBLE/, "la ligne du calendrier n'a plus sa cible de 48 pt");
+  assert.match(cal, /Voir le détail et la source/, "la ligne ne dit plus qu'elle mène au détail et à la source");
 });
 
 test("votes : un intitulé long se lit en taille de lecture, pas en affiche", () => {
