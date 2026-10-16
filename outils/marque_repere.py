@@ -107,12 +107,14 @@ def principal():
     blanc = rgb(FOND) + (255,)
     transparent = (0, 0, 0, 0)
     ecrire("icon.png", image(1024, blanc), "RGB")
-    # Android adaptatif : le dessin tient dans la zone sure (66 % du cote).
-    ecrire("android-icon-foreground.png", image(1024, transparent, echelle=0.62), "RGBA")
+    # Android adaptatif : le dessin tient dans la zone sure (cercle de 66/108 du cote),
+    # avec une marge (mesure du 16/10 : 310 px de rayon pour 313 a l'echelle 0,62).
+    ecrire("android-icon-foreground.png", image(1024, transparent, echelle=0.58), "RGBA")
     ecrire("android-icon-background.png", Image.new("RGB", (1024, 1024), rgb(FOND)), "RGB")
-    ecrire("android-icon-monochrome.png", image(1024, transparent, echelle=0.62, mono=True), "RGBA")
+    ecrire("android-icon-monochrome.png", image(1024, transparent, echelle=0.58, mono=True), "RGBA")
     ecrire("splash-icon.png", image(1024, transparent, echelle=0.9), "RGBA")
-    ecrire("favicon.png", image(48, blanc), "RGB")
+    # 192 x 192 : la taille attendue pour le web (favicon et ecran d'accueil).
+    ecrire("favicon.png", image(192, blanc), "RGB")
 
 
 if __name__ == "__main__":

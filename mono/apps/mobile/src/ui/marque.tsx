@@ -13,7 +13,7 @@ export function Marque() {
   return (
     <View accessible accessibilityRole="header" accessibilityLabel="Repère" style={{ flexDirection: "row", alignItems: "center", gap: PAS * 2 }}>
       <Image source={require("../../assets/icon.png")} accessibilityElementsHidden importantForAccessibility="no"
-        style={{ width: 30, height: 30, borderRadius: 7, borderWidth: StyleSheet.hairlineWidth, borderColor: couleurs.trait }} />
+        style={{ width: 30, height: 30, borderRadius: 7, borderWidth: StyleSheet.hairlineWidth, borderColor: "rgba(0,0,0,0.1)" }} />
       <Text style={{ fontFamily: POLICE.affiche, fontSize: 24, lineHeight: 28, color: couleurs.encre, letterSpacing: -0.4 }}>Repère</Text>
     </View>
   );

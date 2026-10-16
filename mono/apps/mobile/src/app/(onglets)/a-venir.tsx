@@ -56,7 +56,7 @@ function Ligne({ g }: { g: Groupe }) {
     <View testID="cal-ligne" style={{ flexDirection: "row", gap: PAS * 3, paddingTop: PAS * 3, borderTopWidth: 1, borderTopColor: couleurs.trait }}>
       {heure ? (
         <View style={{ width: 64 }}>
-          <Text style={{ fontFamily: POLICE.affiche, fontSize: 22, lineHeight: 26, color: couleurs.encre }}>{heure}</Text>
+          <Text style={{ fontFamily: POLICE.affiche, fontSize: 22, lineHeight: 26, color: couleurs.encre, fontVariant: ["tabular-nums"] }}>{heure}</Text>
         </View>
       ) : null}
       <View style={{ flex: 1, gap: PAS }}>
@@ -168,7 +168,7 @@ export default function AVenir() {
                  qu'elle explique, et la note sur les rappels passe sous la liste. */}
               <Pressable onPress={() => setMois(m => !m)} accessibilityRole="button"
                 accessibilityLabel={mois ? "Voir la semaine" : "Voir le mois"}
-                style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", alignSelf: "flex-end", opacity: pressed ? 0.6 : 1, marginBottom: -PAS * 2 })}>
+                style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", alignSelf: "flex-end", opacity: pressed ? 0.6 : 1 })}>
                 <Text style={{ color: couleurs.encre, fontWeight: "700", textDecorationLine: "underline" }}>{mois ? "Voir la semaine" : "Voir le mois"}</Text>
               </Pressable>
               {/* Semaine ou mois : un seul choix de jour, en haut de l'ecran. */}
