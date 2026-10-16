@@ -140,3 +140,9 @@ test("carte de partage : aucune etape « suivante » deduite de l'ordre pedagogi
   assert.doesNotMatch(p, /ETAPES_LOI\[\s*idx\s*\+\s*1\s*\]/, "la carte relit l'etape suivante dans l'ordre lineaire");
   assert.doesNotMatch(p, />\s*Suite\s*:/, "la carte annonce de nouveau une « Suite »");
 });
+
+test("ecran du vote : l'etape du vote sans rang « N sur 6 » (16/10/2026)", () => {
+  const v = lire("app/vote.tsx");
+  assert.doesNotMatch(v, /sur \$\{ETAPES_LOI\.length\}/, "le rang « N sur 6 » est revenu : il suggere des etapes restantes");
+  assert.match(v, /Étape de ce vote : \$\{etapeCourante\.titre\}/);
+});

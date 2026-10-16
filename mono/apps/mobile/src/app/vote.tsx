@@ -129,7 +129,10 @@ export default function Vote() {
           <Carte echelon="france" titre="Où en est ce texte ?">
             {etapeCourante ? (
               <View style={{ gap: PAS }}>
-                <Text style={TYPO.reponse}>{`Étape ${ETAPES_LOI.indexOf(etapeCourante) + 1} sur ${ETAPES_LOI.length} : ${etapeCourante.titre}`}</Text>
+                {/* « Etape de ce vote », pas « Etape 4 sur 6 » (16/10/2026) : le rang venait de
+                    l'ordre pedagogique lineaire et laissait croire qu'il restait deux etapes a
+                    un texte deja adopte. L'etape vient de l'intitule officiel du scrutin. */}
+                <Text style={TYPO.reponse}>{`Étape de ce vote : ${etapeCourante.titre}`}</Text>
                 <Text style={TYPO.note}>{etapeCourante.texte}</Text>
               </View>
             ) : (

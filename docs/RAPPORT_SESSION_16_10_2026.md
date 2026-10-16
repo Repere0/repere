@@ -175,11 +175,36 @@ Commits de fin d'après-midi (#149, CI `mobile` verte sur `4144dbd`) :
 
 ## Constats à trancher (rien modifié)
 
-- **Séance en cours** : elle disparaît du calendrier dès son heure de début (« à
-  venir » exclut ce qui a commencé ; vu à 15 h 04). Fin rarement publiée : que montrer ?
+- **Séance commencée** (`20d2fc1`, choix pris par l'agent, réversible) : elle
+  disparaissait dès son heure de début. Elle reste sous « aujourd'hui » avec « a déjà
+  commencé, heure de fin non précisée » ; le site garde l'ancienne règle. À valider.
+- **Libellés du Répertoire national des élus** au masculin générique (« Président du
+  conseil régional » pour Valérie Pécresse), affichés mot pour mot : garder la lettre
+  de la source, ou une forme épicène ? Le sexe n'est pas dans le fichier : rien à deviner.
+- **« Étape 4 sur 6 »** (écran du vote, formule introduite par l'agent le matin même)
+  reposait sur le même ordre linéaire que la « Suite » : remplacé par « Étape de ce
+  vote : Commission mixte paritaire », garde vue rouge.
+- Écrans des scrutins avec données : non revus (relevé produit seulement sur le runner).
 - **Cartes de partage** : ancienne marque « R » (choix laissé, risque 6ter).
 - **375 × 667** : la 3e réponse d'Aujourd'hui commence au premier écran (578 px) mais
   reste coupée. (Calendrier : réglé par `4144dbd`.)
+
+## Fin d'après-midi (15 h 45 – 17 h), toujours dans #149
+
+| commit | ce qui était faux, mesuré | correctif |
+|---|---|---|
+| `c4a9591` | Vote : « Partager ce vote › » flottait entre deux cartes ; la phrase de circonscription doublait le chemin | partage au pied de la carte ; phrase dans le repli. 2,4 → 2,2 écrans |
+| `20d2fc1` | Calendrier : une séance commencée disparaissait (aucune fin publiée) | reste sous « aujourd'hui », « a déjà commencé, heure de fin non précisée » ; socle : `commenceesAujourdhui`, `aVenir` inchangé |
+| `e314bbc` | Détail d'un rendez-vous : « heure de fin non précisée » ×3 + redites ; **date du relevé absente** (invariant 9) | heures sur une ligne, absence dite une fois, « relevé le 13 octobre 2026, il y a 3 jours » |
+| `d40732a` | Sources : « projets aidés par l'**é**tat », « l'**a**ssemblée » (toLowerCase) | titre court ; nom de la source dans le nom lu |
+| `0282726` | Fiche d'un maire : « Fonction : Conseil municipal » ; Chez vous : deux définitions de « circonscription » | « Institution » ; un seul lien |
+| `4b36ef6`, `678e3ba` | **Doctrine du vide** : 7 absences sans lien (agenda vide, refus d'appariement ×2, comptes insuffisants, périmètre, rendez-vous disparu, scrutins indisponibles) | liens pris dans la donnée (index.json, agendas) ou constantes existantes ; **garde** sur tous les `<Vide>`, vue rouge |
+| `775b2f0` | Accueil à 375 × 667 : clavier ouvert, résultats sous le clavier ; « 1262 » | le champ monte pendant la recherche (5 résultats visibles) ; « 1 262 » |
+| `1b88ffb` + suivant | **Carte de partage : « Suite : Lecture définitive » pour un texte adopté en CMP** — étape devinée sur une carte faite pour circuler | case retirée ; garde vue rouge |
+
+Vérifié (sonde web) : le point vide de « Qui décide » est lu « Agglo : aucune personne nommée ».
+Écarté : micro-texte 13 pt → 15 (audit) : 13 pt est la taille « footnote » d'iOS, et
+monter allongerait tous les écrans.
 
 ## Banc final (16/10, fin d'après-midi, `4144dbd`)
 
