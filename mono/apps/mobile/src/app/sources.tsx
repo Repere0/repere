@@ -8,7 +8,7 @@ import { Text, View } from "react-native";
 import { Stack } from "expo-router";
 import { dateFr, datePublication, LIBELLES } from "@repere/core";
 import { Carte, LienSortant } from "../lib/composants";
-import { PAS, TYPO } from "../lib/theme";
+import { couleurs, PAS, TYPO } from "../lib/theme";
 import { AvecDonnees, Page, Question } from "../ui/page";
 import { Depli } from "../ui/visuels";
 
@@ -37,19 +37,24 @@ export default function Sources() {
             sous={traite ? `Repère a traité ces fichiers le ${dateFr(traite)}. Chaque source a sa propre date, écrite ci-dessous : c'est celle de la donnée.` : undefined} />
           {/* Au premier niveau : qui publie, quand, et le lien vers la donnée.
              La licence et l'usage que Repère en fait se déplient (16/10/2026). */}
-          {lignes.map(l => (
-            <Carte key={l.quoi} titre={l.quoi}>
-              <Text style={[TYPO.corps, { fontWeight: "700" }]}>{l.producteur}</Text>
-              {l.maj ? <Text style={TYPO.note}>Données publiées le {dateFr(l.maj)}</Text>
-                : l.releve ? <Text style={TYPO.note}>Données relevées le {dateFr(l.releve)}</Text>
-                : <Text style={TYPO.note}>Ce fichier ne porte pas de date de publication que Repère puisse afficher.</Text>}
-              {l.url ? <View style={{ marginTop: PAS }}><LienSortant url={l.url} texte="Voir la donnée originale" etiquette={`Voir la donnée originale : ${l.quoi}`} /></View> : null}
-              <Depli titre={`Ce que Repère en tire${l.licence ? " et sa licence" : ""}`}>
-                <Text style={TYPO.corps}>{l.usage}</Text>
-                {l.licence ? <Text style={TYPO.note}>Licence : {l.licence}</Text> : null}
-              </Depli>
-            </Carte>
-          ))}
+          {/* DENSITE (16/10/2026) : une seule carte, une ligne par source (etait une
+             carte par source : 2,7 hauteurs d'ecran). Memes phrases, memes dates. */}
+          <Carte>
+            {lignes.map((l, i) => (
+              <View key={l.quoi} style={{ gap: 2, paddingTop: i ? PAS * 3 : 0, borderTopWidth: i ? 1 : 0, borderTopColor: couleurs.trait }}>
+                <Text style={[TYPO.corps, { fontWeight: "800" }]} accessibilityRole="header">{l.quoi}</Text>
+                <Text style={TYPO.note}>{l.producteur}</Text>
+                {l.maj ? <Text style={TYPO.note}>Données publiées le {dateFr(l.maj)}</Text>
+                  : l.releve ? <Text style={TYPO.note}>Données relevées le {dateFr(l.releve)}</Text>
+                  : <Text style={TYPO.note}>Ce fichier ne porte pas de date de publication que Repère puisse afficher.</Text>}
+                {l.url ? <LienSortant url={l.url} texte="Voir la donnée originale" etiquette={`Voir la donnée originale : ${l.quoi}`} /> : null}
+                <Depli titre={`Ce que Repère en tire${l.licence ? " et sa licence" : ""} (${l.quoi.replace(/^Les? /, "").toLowerCase()})`}>
+                  <Text style={TYPO.corps}>{l.usage}</Text>
+                  {l.licence ? <Text style={TYPO.note}>Licence : {l.licence}</Text> : null}
+                </Depli>
+              </View>
+            ))}
+          </Carte>
           <Text style={TYPO.note}>Aucune donnée n'est modifiée. Quand Repère calcule, il le dit, à côté du chiffre.</Text>
         </Page>
       );
