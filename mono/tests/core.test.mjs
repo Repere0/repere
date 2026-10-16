@@ -525,3 +525,13 @@ test("core — une part « sur 100 € » montre son calcul avec les deux montan
   assert.equal(phraseCalculPart(0, 10, "a", "b"), null, "montant nul : pas de calcul affiche");
   assert.equal(phraseCalculPart(5, null, "a", "b"), null, "denominateur absent : pas de calcul affiche");
 });
+
+test("core — le president de l'intercommunalite n'est nomme que si le Repertoire le designe parmi les delegues", async () => {
+  const { presidentIntercommunalite } = await import("../packages/core/src/visuels.js");
+  const P = "Président du conseil communautaire";
+  assert.deepEqual(presidentIntercommunalite([{ nom: "A", fonction: "Conseiller communautaire" }, { nom: "B", fonction: P }]), { nom: "B", role: P });
+  assert.equal(presidentIntercommunalite([{ nom: "A", fonction: "1er Vice-président du conseil communautaire" }]), null, "un vice-president n'est pas le president");
+  assert.equal(presidentIntercommunalite([{ nom: "A", fonction: P }, { nom: "B", fonction: P }]), null, "deux presidents : la source est ambigue, Repere ne choisit pas");
+  assert.equal(presidentIntercommunalite(undefined), null);
+  assert.equal(presidentIntercommunalite([{ nom: "", fonction: P }]), null, "sans nom, pas de personne");
+});

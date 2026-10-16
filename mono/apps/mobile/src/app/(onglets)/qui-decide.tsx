@@ -8,7 +8,7 @@
  * L'ordre est un ordre de distance, pas d'importance : c'est ecrit. */
 import { Pressable, Text, View } from "react-native";
 import { router, Stack } from "expo-router";
-import { chaineDecision, dateFr, MAIRE_ABSENT, nomIntercommunalite, phraseAdjoints, RNE_URL, LIBELLES } from "@repere/core";
+import { chaineDecision, dateFr, MAIRE_ABSENT, nomIntercommunalite, phraseAdjoints, presidentIntercommunalite, RNE_URL, LIBELLES } from "@repere/core";
 import { sansConseilDepartemental } from "@repere/core";
 import { LienAction, Segments } from "../../lib/composants";
 import { LienDefinition } from "../../lib/termes";
@@ -27,7 +27,7 @@ const LIBELLE_ECHELON: Record<string, string> = { ville: "Ville", agglo: "Agglo"
 function Parcours({ niveaux }: { niveaux: Niveau[] }) {
   return (
     <View accessible accessibilityRole="summary"
-      accessibilityLabel={niveaux.map(n => `${LIBELLE_ECHELON[n.echelon] || n.echelon} : ${n.personne ? n.personne.nom : "aucune personne nommée"}`).join(". ")}
+      accessibilityLabel={niveaux.map(n => `${LIBELLE_ECHELON[n.echelon] || n.echelon} : ${n.personne ? n.personne.nom : "pas de nom affiché"}`).join(". ")}
       style={{ flexDirection: "row", justifyContent: "space-between", paddingHorizontal: PAS }}>
       {niveaux.map((n, i) => (
         <View key={i} importantForAccessibility="no" style={{ flex: 1, alignItems: "center", gap: 6 }}>
@@ -41,11 +41,15 @@ function Parcours({ niveaux }: { niveaux: Niveau[] }) {
   );
 }
 
-/* Ce que dit un point vide, seulement s'il y en a un (16/10/2026) : la forme seule ne
+/* 16/10/2026 (audit Lovable) : « aucune personne nommee » pouvait se lire « personne n'est
+   elu ». La raison varie (intercommunalite dont le president vient d'une autre commune ;
+   Paris, qui n'a reellement pas de conseil departemental) : la legende renvoie a la note
+   du niveau, qui dit la bonne.
+   Ce que dit un point vide, seulement s'il y en a un (16/10/2026) : la forme seule ne
    s'explique pas. Le lecteur d'ecran l'entend deja dans le resume du parcours. */
 function LegendeParcours({ niveaux }: { niveaux: Niveau[] }) {
   if (niveaux.every(n => n.personne)) return null;
-  return <Text style={[TYPO.micro, { textAlign: "center" }]} importantForAccessibility="no" accessibilityElementsHidden>Point vide : aucune personne nommée à ce niveau.</Text>;
+  return <Text style={[TYPO.micro, { textAlign: "center" }]} importantForAccessibility="no" accessibilityElementsHidden>{"Point vide\u00a0: pas de nom affiché à ce niveau. « En savoir plus » dit pourquoi."}</Text>;
 }
 
 export default function QuiDecide() {
@@ -65,9 +69,15 @@ export default function QuiDecide() {
              Metropole du Grand Paris) viennent de @repere/core, comme sur le site.
              16/10/2026 : le nom publie (« Ca Du Pays De Meaux ») s'ecrit « CA du Pays de Meaux ». */
           const precisions = (n as { precisions?: string[] }).precisions || [];
-          return { ...n, institution: nomIntercommunalite(n.institution) || n.institution, note: [n.delegues
+          /* 16/10/2026 : le president, quand le Repertoire le designe parmi les delegues de
+             la commune (@repere/core presidentIntercommunalite) ; sinon on dit pourquoi
+             aucun nom n'est affiche, sans laisser croire qu'il n'y a pas d'elu. */
+          const president = presidentIntercommunalite(f.agglo && f.agglo.delegues);
+          return { ...n, personne: president, institution: nomIntercommunalite(n.institution) || n.institution, note: [n.delegues
             ? `Le Répertoire national des élus y liste ${n.delegues} élu${n.delegues > 1 ? "s" : ""} de ${d.nomCommune}. Vous ne l'élisez pas directement : ce sont des conseillers municipaux qui y siègent.`
-            : "Le Répertoire national des élus ne porte pas de délégué pour cette commune à son intercommunalité.", ...precisions].join(" ") };
+            : "Le Répertoire national des élus ne porte pas de délégué pour cette commune à son intercommunalité.",
+            president ? null : "L'intercommunalité a un président ; Repère n'affiche pas son nom, car il ne figure pas parmi les élus de cette commune que liste le Répertoire.",
+            ...precisions].filter(Boolean).join(" ") };
         }
         if (n.echelon === "region" && !n.personne) {
           return { ...n, note: r.regionLue ? "Le Répertoire national des élus ne porte pas de président pour cette région." : REGION_PAS_ARRIVEE };

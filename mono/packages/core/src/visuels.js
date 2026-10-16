@@ -342,6 +342,17 @@ export function parHabitant(ex) {
  * L'ordre est celui de l'extraction (par fonction, puis celui du RNE), et l'ecran
  * le dit : c'est Repere qui range par fonction, pas la source. */
 export const REPLI_DELEGUES = 8;
+/* LE PRESIDENT DE L'INTERCOMMUNALITE — 16/10/2026 (audit Lovable : un point vide a ce
+   niveau se lisait « aucun elu »). Le Repertoire national des elus liste les delegues
+   de la commune avec leur FONCTION ; quand l'un d'eux est « Président du conseil
+   communautaire », Repere le nomme, avec la fonction telle que la source l'ecrit.
+   Sinon (le president vient d'une autre commune), personne n'est nomme. Deux
+   presidents dans la liste : la source est ambigue, Repere ne choisit pas. */
+const PRESIDENT_EPCI = /^président du conseil communautaire$/i;
+export function presidentIntercommunalite(delegues) {
+  const p = (Array.isArray(delegues) ? delegues : []).filter(e => e && e.nom && e.fonction && PRESIDENT_EPCI.test(e.fonction.trim()));
+  return p.length === 1 ? { nom: p[0].nom, role: p[0].fonction.trim() } : null;
+}
 const CONSEILLER = /^conseill[eè]re? communautaire$/i;
 export function delegationIntercommunalite(delegues) {
   const tous = Array.isArray(delegues) ? delegues : [];
