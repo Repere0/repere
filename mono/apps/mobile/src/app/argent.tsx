@@ -100,7 +100,8 @@ export default function Argent() {
       return (
         <Page>
           <Stack.Screen options={{ title: LIBELLES.argent }} />
-          <Question emoji="💶" etiquette="L'argent de la commune" question={`Où va l'argent de ${nom} ?`} />
+          {/* Sans etiquette ni emoji (16/10/2026) : la barre haute dit deja « Où va l'argent ». */}
+          <Question question={`Où va l'argent de ${nom} ?`} />
 
           {!ex ? (
             <Vide {...(phraseEc ? comptesIncoherents(nom, phraseEc) : comptesAbsents(nom))} />

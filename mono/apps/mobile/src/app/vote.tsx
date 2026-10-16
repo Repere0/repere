@@ -65,7 +65,8 @@ export default function Vote() {
       const vote: FaitVote | undefined = d.dernierVote;
       /* 15/10/2026 : partagee entre plusieurs circonscriptions, la page montre le vote d'UN
          depute, en exemple : la question le dit. */
-      const entete = <Question emoji="🗳️" etiquette="Votre député" question={d.nbCircos > 1 ? `Qu'a voté un député de ${d.nomCommune} ?` : "Qu'a voté votre député ?"} />;
+      /* Sans etiquette ni emoji (16/10/2026) : la barre haute dit deja « Votre député ». */
+      const entete = <Question question={d.nbCircos > 1 ? `Qu'a voté un député de ${d.nomCommune} ?` : "Qu'a voté votre député ?"} />;
       if (!r.votesLus) return <Page>{entete}<Vide {...VOTES_PAS_ARRIVES} action="Réessayer" onAction={reessayer} /></Page>;
       if (!r.votesFiables) return <Page>{entete}<Vide titre={REFUS_APPARIEMENT.titre} corps={REFUS_APPARIEMENT.corps} /></Page>;
       if (!vote) return <Page>{entete}<Vide {...(d.nbCircos === 0 ? circoInconnue(d.nomCommune) : { ...VOTE_AUCUN, corps: POSITION_NON_PORTEE })} /></Page>;
@@ -80,7 +81,6 @@ export default function Vote() {
         <Page>
           <Stack.Screen options={{ title: "Votre député" }} />
           {entete}
-          <Termes texte={phraseCirconscription(d, vote.circo)} />
 
           {/* NIVEAU 1 : la position */}
           <Carte echelon="france" titre={`Le ${dateFr(vote.sc.d)}`}>
@@ -106,6 +106,9 @@ export default function Vote() {
 
           {/* POURQUOI C'EST « VOTRE » DEPUTE */}
           <Carte echelon="france" titre="Pourquoi c'est votre député">
+            {/* La phrase de la circonscription vient ici (16/10/2026) : avant, quatre lignes
+               la placaient AVANT la reponse. */}
+            <Termes texte={phraseCirconscription(d, vote.circo)} />
             <Chemin etapes={[d.nomCommune, `${vote.circo === 1 ? "1re" : vote.circo + "e"} circonscription`, vote.qui, "Assemblée nationale"]} />
             <Depli titre="Ce que veut dire chaque étape">
             <Frise etiquette="De votre commune à l'Assemblée" jalons={[

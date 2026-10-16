@@ -219,7 +219,7 @@ export default function AVenir() {
 
               {vieillis.map(x => (
                 <Text key={"age-" + x.institution} testID="releve-ancien" style={TYPO.note}>
-                  {nbsp(`Agenda ${de(x.institution)} relevé le ${dateFr(x.source.releve_le)}, il y a ${x.age} jours : il a pu changer depuis. Le site officiel fait foi.`)}
+                  {nbsp(`Agenda ${de(x.institution)} relevé le ${dateFr(x.source.releve_le)}, il y a ${x.age} jours : il a pu changer depuis.`)}
                 </Text>
               ))}
               <Text style={[TYPO.corps, { fontWeight: "700" }]}>{choisi && etiquetteJour ? `${etiquetteJour}. ` : ""}{phrase}</Text>
@@ -257,7 +257,7 @@ export default function AVenir() {
                   </View>
                 </Carte>
               ) : null}
-              <Text style={TYPO.note}>{"Chaque ligne donne l'heure de début. Le détail dit l'heure de fin, ou « heure de fin non précisée » quand la source ne la publie pas. Les rappels ne sont pas encore disponibles dans l'application."}</Text>
+              <Text style={TYPO.note}>{"Chaque ligne donne l'heure de début. Le détail dit l'heure de fin, ou « heure de fin non précisée » quand la source ne la publie pas. Le site officiel de chaque assemblée fait foi. Les rappels ne sont pas encore disponibles dans l'application."}</Text>
 
               {!aVenir.length && toutes.length ? (
                 <Text style={TYPO.note}>Rien de publié pour ce filtre. Le filtre « Tout » montre le reste.</Text>

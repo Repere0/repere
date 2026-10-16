@@ -33,7 +33,7 @@ export default function Sources() {
       return (
         <Page>
           <Stack.Screen options={{ title: LIBELLES.sources }} />
-          <Question etiquette="Sources" question="D'où viennent ces informations ?"
+          <Question question="D'où viennent ces informations ?"
             sous={traite ? `Repère a traité ces fichiers le ${dateFr(traite)}. Chaque source a sa propre date, écrite ci-dessous : c'est celle de la donnée.` : undefined} />
           {/* Au premier niveau : qui publie, quand, et le lien vers la donnée.
              La licence et l'usage que Repère en fait se déplient (16/10/2026). */}
