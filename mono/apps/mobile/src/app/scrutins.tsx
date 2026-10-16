@@ -6,7 +6,8 @@
  * 3. la position des groupes ;
  * 4. puis seulement les positions individuelles et la source.
  *
- * Les couleurs de groupes servent uniquement à reconnaître les groupes.
+ * Les groupes se reconnaissent à leur sigle (lib/groupes.ts) : leurs couleurs,
+ * neutres par règle, ne servent pas à les distinguer.
  * Elles ne codent jamais Pour / Contre / Abstention.
  */
 import { useEffect, useMemo, useState } from "react";
@@ -20,9 +21,11 @@ import {
   ETATS,
 } from "../lib/donnees";
 import { Page } from "../ui/page";
+import { Depli } from "../ui/visuels";
 import { Vide } from "../lib/composants";
 import { PastilleSource } from "../ui/source";
 import { PAS, TYPO, couleurs, CIBLE, RAYON, OMBRE } from "../lib/theme";
+import { SIGLES_GROUPES } from "../lib/groupes";
 import { dateFr, titreLisible } from "@repere/core";
 
 type Resume = {
@@ -32,7 +35,7 @@ type Resume = {
 };
 type Position = { a: string; n: string | null; p: "p" | "c" | "a" };
 type Groupe = {
-  ref: string; nom: string; couleur: string;
+  ref: string; nom: string; couleur: string; abrege?: string | null;
   pour: number | null; contre: number | null; abstentions: number | null;
   positions: Position[];
 };
@@ -100,6 +103,26 @@ function textePropre(value: string | null | undefined) {
     .trim();
 }
 
+/* 16/10/2026 : un texte officiel long (question ou réponse du Gouvernement) ne
+   s'affiche pas en mur. Les premiers blocs restent visibles ; le reste se déplie
+   sous un libellé qui dit ce qu'il contient. Le texte n'est jamais réécrit. */
+const LIMITE_EXTRAIT = 600;
+function Extrait({ texte }: { texte: string }) {
+  const blocs = texte.split(/\n\s*\n/).map(b => b.trim()).filter(Boolean);
+  let cumul = 0;
+  let k = 0;
+  while (k < blocs.length && cumul < LIMITE_EXTRAIT) { cumul += blocs[k].length; k++; }
+  if (k >= blocs.length) return <>{blocs.map((b, i) => <Text key={i} style={TYPO.corps}>{b}</Text>)}</>;
+  return (
+    <>
+      {blocs.slice(0, k).map((b, i) => <Text key={i} style={TYPO.corps}>{b}</Text>)}
+      <Depli titre="Lire le texte en entier">
+        {blocs.slice(k).map((b, i) => <Text key={i} style={TYPO.corps}>{b}</Text>)}
+      </Depli>
+    </>
+  );
+}
+
 function StatutVote({ detail }: { detail: Detail }) {
   return (
     <View style={s.resultat} accessible accessibilityLabel={resultatCourt(detail)}>
@@ -114,6 +137,7 @@ function StatutVote({ detail }: { detail: Detail }) {
 
 function GroupeRow({ groupe, ouvert, onPress }: { groupe: Groupe; ouvert: boolean; onPress: () => void }) {
   const total = (groupe.pour || 0) + (groupe.contre || 0) + (groupe.abstentions || 0);
+  const sigle = groupe.abrege || SIGLES_GROUPES[groupe.nom] || null;
   return (
     <View style={s.groupe}>
       <Pressable
@@ -123,7 +147,14 @@ function GroupeRow({ groupe, ouvert, onPress }: { groupe: Groupe; ouvert: boolea
         accessibilityLabel={`${groupe.nom}, ${total} positions publiées`}
         style={({ pressed }) => [s.groupeTete, pressed && { opacity: 0.65 }]}
       >
-        <View style={[s.groupePoint, { backgroundColor: groupe.couleur }]} />
+        {/* 16/10/2026 : la couleur d'un groupe est neutre (invariant 7), donc un point
+           gris ne dit rien. Le sigle sert d'étiquette ; le point reste seulement pour
+           un groupe absent de la table (lib/groupes.ts). */}
+        {sigle ? (
+          <View style={s.groupeBadge} importantForAccessibility="no-hide-descendants" accessibilityElementsHidden>
+            <Text style={s.groupeBadgeTexte}>{sigle}</Text>
+          </View>
+        ) : <View style={[s.groupePoint, { backgroundColor: groupe.couleur }]} />}
         <View style={s.groupeTexte}>
           <Text style={s.groupeNom}>{groupe.nom}</Text>
           <Text style={s.groupeStats}>
@@ -299,7 +330,7 @@ export default function Scrutins() {
                 {qagDetail.question ? (
                   <View style={s.blocLecture}>
                     <Text style={TYPO.etiquette}>La question</Text>
-                    <Text style={TYPO.corps}>{textePropre(qagDetail.question)}</Text>
+                    <Extrait texte={textePropre(qagDetail.question) || ""} />
                   </View>
                 ) : (
                   <View style={s.absence}>
@@ -310,7 +341,7 @@ export default function Scrutins() {
 
                 <View style={s.reponseBloc}>
                   <Text style={TYPO.etiquette}>Réponse du Gouvernement</Text>
-                  {qagDetail.reponse ? <Text style={TYPO.corps}>{textePropre(qagDetail.reponse)}</Text>
+                  {qagDetail.reponse ? <Extrait texte={textePropre(qagDetail.reponse) || ""} />
                     : <Text style={TYPO.note}>Aucune réponse textuelle n'est fournie dans ce relevé.</Text>}
                 </View>
 
@@ -371,7 +402,7 @@ export default function Scrutins() {
             ) : detail ? (
               <View style={s.detail}>
                 <Text style={TYPO.etiquette}>{detail.ty} · {dateFr(detail.d)} · scrutin n° {detail.n}</Text>
-                <Text style={s.detailTitre}>{titreLisible(detail.t)}</Text>
+                <Text style={[s.detailTitre, titreLisible(detail.t).length > 90 && s.detailTitreLongue]}>{titreLisible(detail.t)}</Text>
 
                 <View style={s.blocLecture}>
                   <Text style={TYPO.etiquette}>En bref</Text>
@@ -437,6 +468,8 @@ const s = StyleSheet.create({
   selectionTitre: { fontFamily: "BricolageGrotesque_600SemiBold", fontSize: 17, lineHeight: 21, color: couleurs.encre, marginTop: PAS * 2 },
   detail: { gap: PAS * 4 },
   detailTitre: { fontFamily: "BricolageGrotesque_800ExtraBold", fontSize: 28, lineHeight: 32, color: couleurs.encre, letterSpacing: -0.4 },
+  /* un intitulé long (souvent 150 caractères) : taille de lecture, pas d'affiche */
+  detailTitreLongue: { fontSize: 22, lineHeight: 28, letterSpacing: -0.2 },
   blocLecture: {
     backgroundColor: couleurs.carte, borderRadius: RAYON.carte, padding: PAS * 5, gap: PAS * 3, ...OMBRE,
   },
@@ -456,6 +489,9 @@ const s = StyleSheet.create({
   groupe: { borderBottomWidth: 1, borderBottomColor: couleurs.trait },
   groupeTete: { minHeight: 68, flexDirection: "row", alignItems: "center", paddingHorizontal: PAS * 4, paddingVertical: PAS * 3, gap: PAS * 3 },
   groupePoint: { width: 12, height: 12, borderRadius: 6 },
+  groupeBadge: { minWidth: 48, height: 28, paddingHorizontal: PAS * 2, borderRadius: 999, borderWidth: 1, borderColor: couleurs.trait,
+    backgroundColor: couleurs.voile, alignItems: "center", justifyContent: "center" },
+  groupeBadgeTexte: { fontSize: 13, fontWeight: "700", color: couleurs.encre },
   groupeTexte: { flex: 1, gap: 2 },
   groupeNom: { fontSize: 16, lineHeight: 21, fontWeight: "700", color: couleurs.encre },
   groupeStats: { fontSize: 14, lineHeight: 19, color: couleurs.sourd },

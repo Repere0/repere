@@ -70,3 +70,24 @@ test("un seul lien d'action : LienAction, à 48 pt", () => {
   assert.match(lire("app/(onglets)/qui-decide.tsx"), /<LienAction\b/, "Qui décide n'utilise plus le lien d'action partagé");
   assert.match(lire("app/(onglets)/a-venir.tsx"), /<LienAction\b/, "le calendrier n'utilise plus le lien d'action partagé");
 });
+
+test("votes : un intitulé long se lit en taille de lecture, pas en affiche", () => {
+  const v = lire("app/scrutins.tsx");
+  assert.match(v, /titreLisible\(detail\.t\)\.length > 90 && s\.detailTitreLongue/, "un long intitulé de scrutin repasse en affiche");
+  assert.match(lire("app/scrutins.tsx"), /detailTitreLongue:/, "le style de lecture du titre long a disparu");
+});
+
+test("votes : une question ou une réponse du Gouvernement longue se replie, sans être réécrite", () => {
+  const v = lire("app/scrutins.tsx");
+  assert.match(v, /<Extrait texte=\{textePropre\(qagDetail\.question\) \|\| ""\} \/>/, "la question n'est plus pliée");
+  assert.match(v, /<Extrait texte=\{textePropre\(qagDetail\.reponse\) \|\| ""\} \/>/, "la réponse n'est plus pliée");
+  assert.match(v, /Depli titre="Lire le texte en entier"/, "le repli n'annonce pas ce qu'il contient");
+});
+
+test("votes : les groupes se reconnaissent à leur sigle, pas à une couleur neutre", () => {
+  const v = lire("app/scrutins.tsx");
+  assert.match(v, /SIGLES_GROUPES\[groupe\.nom\]/, "le sigle du groupe n'est plus utilisé");
+  const table = lire("lib/groupes.ts");
+  const entrees = table.match(/^\s*"[^"]+": "[^"]+",?$/gm) || [];
+  assert.ok(entrees.length >= 12, `la table des sigles compte ${entrees.length} entrées, 12 groupes sont publiés`);
+});
