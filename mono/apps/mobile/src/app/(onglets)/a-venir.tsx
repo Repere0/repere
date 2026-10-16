@@ -10,7 +10,7 @@
  *   - Filtre segmente : Tout, Assemblée, Sénat. Les filtres « Décisions » et
  *     « Commune » du canevas ne sont pas branches : aucune donnee publiee.
  *   - Une ligne par texte et par jour, avec l'heure de debut et la fin quand la
- *     source la donne (« fin non publiée » sinon). Le detail se deplie.
+ *     source la donne ; sinon « heure de fin non précisée ». Le detail se deplie.
  *   - L'alerte « me prévenir une heure avant » du canevas n'est pas branchee :
  *     l'application le dit, au lieu de promettre un rappel qui ne vient pas.
  *   - La procedure : une entree vers son ecran, comme avant.
@@ -52,30 +52,29 @@ function rangLundi(iso: string): number {
 }
 
 function Ligne({ g }: { g: Groupe }) {
-  /* espaces insecables dans chaque heure : « 21 h 30 » ne se coupe jamais (vu sur capture) */
-  /* debut et fin de chaque seance, au meme rang. Fin absente : on l'ecrit, on ne la
-     devine pas (doctrine du vide, invariant 5). */
+  /* Heure de debut et de fin de chaque seance, au meme rang. Fin absente : on l'ecrit
+     comme une absence (doctrine du vide, invariant 5), on ne la devine jamais. */
   const heures = g.debuts.map((x, i) => {
     const debut = heureFr(x);
     if (!debut) return "";
     const fin = g.fins && g.fins[i] ? heureFr(g.fins[i]) : "";
-    return (fin ? `${debut} à ${fin}` : `${debut} (fin non publiée)`).replace(/ /g, " ");
-  }).filter(Boolean).join(", ");
+    return fin ? `${debut} à ${fin}` : `${debut}, heure de fin non précisée`;
+  }).filter(Boolean).join(" · ");
+  const points = g.points || [];
   return (
     <View testID="cal-ligne" style={{ gap: PAS, paddingTop: PAS * 3, borderTopWidth: 1, borderTopColor: couleurs.trait }}>
-      <Text style={[TYPO.corps, { fontWeight: "700" }]}>{heures || "Heure non publiée"}</Text>
-      <Text style={TYPO.etiquette}>{g.institution}</Text>
-      <Text style={[TYPO.corps, { fontWeight: "600" }]}>{g.titre}</Text>
-      <Text style={TYPO.note}>
-        {[g.categorie, g.lieu, g.seances > 1 ? `${g.seances} séances ce jour-là` : null].filter(Boolean).join(" · ")}
-      </Text>
-      {g.points && g.points.length ? (
-        <Depli titre={`+ ${g.points.length} ${g.points.length > 1 ? "autres points" : "autre point"} à l'ordre du jour`}>
-          {g.points.map((p, k) => <Text key={k} style={TYPO.note}>• {p}</Text>)}
+      {/* le sujet d'abord : c'est ce qui interesse le lecteur, l'horaire vient ensuite */}
+      <Text style={[TYPO.reponse, { fontSize: 17, lineHeight: 23 }]}>{g.titre}</Text>
+      <Text style={TYPO.note}>{[g.institution, g.categorie].filter(Boolean).join(" · ")}</Text>
+      <Text style={TYPO.micro}>{[heures || "Heure non publiée", g.lieu].filter(Boolean).join(" · ")}</Text>
+      {g.seances > 1 ? <Text style={TYPO.micro}>{g.seances} séances ce jour-là</Text> : null}
+      {points.length ? (
+        <Depli titre={points.length > 1 ? `Voir les ${points.length} autres points de l'ordre du jour` : "Voir l'autre point de l'ordre du jour"}>
+          {points.map((p, k) => <Text key={k} style={TYPO.note}>• {p}</Text>)}
         </Depli>
       ) : null}
       {g.textesLibres.length ? (
-        <Depli titre="En savoir plus">
+        <Depli titre="Lire la description publiée">
           {g.textesLibres.map((t, k) => <Text key={k} style={TYPO.note}>{t}</Text>)}
         </Depli>
       ) : null}
@@ -215,7 +214,7 @@ export default function AVenir() {
                   <Text style={{ color: couleurs.lien, fontWeight: "700", textDecorationLine: "underline" }}>Voir les deux prochaines semaines</Text>
                 </Pressable>
               ) : null}
-              <Text style={TYPO.note}>Les alertes « me prévenir une heure avant » ne sont pas encore disponibles dans l'application.</Text>
+              <Text style={TYPO.note}>Les rappels ne sont pas encore disponibles dans l'application.</Text>
 
               {affiches.length ? (
                 <Carte echelon="france">

@@ -70,7 +70,8 @@ export const TYPO = {
   corps: { fontSize: 16, lineHeight: 23, color: couleurs.encre },
   note: { fontSize: 15, lineHeight: 21, color: couleurs.sourd },
   /* l'etiquette au-dessus d'une reponse, en capitales de style */
-  etiquette: { fontSize: 13, lineHeight: 18, fontWeight: "700" as const, letterSpacing: 0.8, textTransform: "uppercase" as const, color: couleurs.sourd },
+  /* etiquette : phrase normale, en gras, sans capitales de style (refonte du 16/10/2026) */
+  etiquette: { fontSize: 14, lineHeight: 20, fontWeight: "700" as const, color: couleurs.sourd },
   micro: { fontSize: 13, lineHeight: 18, color: couleurs.sourd },
 } as const;
 
