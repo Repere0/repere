@@ -278,7 +278,16 @@ for (const largeur of [360, 390, 430]) {
     }
     if (action === QUI) verifier(/Île-de-France Mobilités/.test(m.brut) && !/Décide : les transports/.test(m.brut), `${largeur}px · Qui décide : en Île-de-France, l'intercommunalité ne « décide » pas des transports`);
     verifier(preuve.test(m.brut), `${largeur}px · ${action} : l'écran répond à sa question`);
-    if (action === "Sources") verifier(/Licence : /.test(m.brut) && /Les noms des députés/.test(m.brut), `${largeur}px · Sources : chaque source dit sa licence, et la source des noms des députés est citée`);
+    if (action === "Sources") {
+      /* Depuis le 15/10/2026 (360b264, « sources repliées »), la licence est sous
+         « Ce que Repère en tire et sa licence » : un geste l'ouvre. On l'ouvre, puis on
+         lit. Le controle reste le meme : la licence est dite, et la source des noms des
+         deputes est citee. */
+      const repli = page.getByRole("button", { name: /Ce que Repère en tire et sa licence/ }).first();
+      if (await repli.count()) { await repli.click(); await page.waitForTimeout(400); }
+      const brut = await page.evaluate(() => document.body.innerText);
+      verifier(/Licence : /.test(brut) && /Les noms des députés/.test(brut), `${largeur}px · Sources : chaque source dit sa licence, et la source des noms des députés est citée`);
+    }
     if (action === QUI) verifier(ELUS_CANTON.length >= 2 && ELUS_CANTON.every(n => m.brut.includes(n)), `${largeur}px · Qui décide : tous les élus du canton sont nommés ${JSON.stringify(ELUS_CANTON)}`);
     if (action !== "Sources") verifier(/D'où vient cette information/.test(m.etiquettes) || /Le calendrier n'est arrivé/.test(m.texte), `${largeur}px · ${action} : la source est à portée de doigt`);
     if (/argent/.test(action)) {
