@@ -30,11 +30,13 @@ import { useCommuneChoisie } from "../../lib/useCommune";
 import { couleurs, CIBLE, PAS, POLICE, TYPO } from "../../lib/theme";
 import { AvecDonnees, Page, Question } from "../../ui/page";
 import { PastilleSource } from "../../ui/source";
+import { Depli } from "../../ui/visuels";
 import { Plus } from "../../ui/reponse";
 
 const de =(i: string) => (i === "Sénat" ? "du Sénat" : "de l'Assemblée nationale");
 const nbsp = (t: string) => t.replace(/ ([?!:;])/g, " $1");
 const LETTRES = ["L", "M", "M", "J", "V", "S", "D"];
+const PREMIERS = 6;   /* rendez-vous montres d'emblee dans la liste de deux semaines */
 
 /* Dates en texte « AAAA-MM-JJ », calculees en UTC : aucun decalage de fuseau. */
 function decaler(iso: string, n: number): string {
@@ -232,12 +234,24 @@ export default function AVenir() {
               ) : null}
               {affiches.length ? (
                 <Carte echelon="france">
-                  {affiches.map((g, i) => (
+                  {/* Les six prochains d'abord (16/10/2026) ; les autres se deplient, avec
+                     leur nombre annonce. Un jour choisi dans la frise montre tout ce jour. */}
+                  {(choisi ? affiches : affiches.slice(0, PREMIERS)).map((g, i, liste) => (
                     <View key={g.debut + i}>
-                      {i === 0 || affiches[i - 1].jour !== g.jour ? <EnteteJour iso={g.jour} aujourdhui={jourParis(new Date())} /> : null}
+                      {i === 0 || liste[i - 1].jour !== g.jour ? <EnteteJour iso={g.jour} aujourdhui={jourParis(new Date())} /> : null}
                       <Ligne g={g} />
                     </View>
                   ))}
+                  {!choisi && affiches.length > PREMIERS ? (
+                    <Depli titre={`Voir les ${affiches.length - PREMIERS} autres rendez-vous`}>
+                      {affiches.slice(PREMIERS).map((g, i, liste) => (
+                        <View key={g.debut + i}>
+                          {(i === 0 ? affiches[PREMIERS - 1].jour !== g.jour : liste[i - 1].jour !== g.jour) ? <EnteteJour iso={g.jour} aujourdhui={jourParis(new Date())} /> : null}
+                          <Ligne g={g} />
+                        </View>
+                      ))}
+                    </Depli>
+                  ) : null}
                   <View style={{ flexDirection: "row", flexWrap: "wrap" }}>
                     {lues.map(x => <PastilleSource key={x.institution} nom={x.institution === "Sénat" ? "Sénat" : "Assemblée"} source={srcAgenda(x.source)} />)}
                   </View>

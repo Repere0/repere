@@ -277,7 +277,7 @@ for (const largeur of [360, 390, 430]) {
        aussi dans les replis. */
     /* Le premier repli ferme, jusqu'a ce qu'il n'en reste aucun : la liste se
        recalcule apres chaque ouverture (replis imbriques). Plafond : 40. */
-    const fermes = page.getByRole("button", { name: /^Le détail|^En savoir plus|Ce que veut dire chaque étape|^Le parcours d'une loi|^Voir ses \d+ autres votes/, expanded: false }).filter({ visible: true });
+    const fermes = page.getByRole("button", { name: /^Le détail|^En savoir plus|Ce que veut dire chaque étape|^Le parcours d'une loi|^Voir ses \d+ autres votes|^Voir les \d+ autres rendez-vous/, expanded: false }).filter({ visible: true });
     for (let k = 0; k < 40 && await fermes.count(); k++) await fermes.first().click();
     await page.waitForTimeout(300);
     const m = await mesurer();
