@@ -334,3 +334,82 @@ trait d'union insécable (U+2011) dans les polices natives.
 
 - Règle « première / seconde partie du projet de loi de finances » (#147) **avant le 20/10**.
 - Texte de l'invariant 7 dans CLAUDE.md / AGENTS.md et scellement (refusés à l'agent).
+
+---
+
+# Reprise du 16/10/2026, 21 h 50 — points ouverts
+
+## 1. PR #149 (état à 22 h)
+
+Tête `47da1ff` avant la reprise : sans conflit avec sa base (#148 contenue), fusionnable « clean »,
+43 commits, 33 fichiers. Un seul contrôle se déclenche sur cette branche, « Mobile » (tsc, gardes
+mobiles, tests du socle, invariants, santé, données) : **vert** sur `47da1ff`. Sur la journée,
+11 runs « Mobile » de la branche ont été **annulés** par le push suivant (dont `bd77b1b`,
+`c748e88`, `36a281d`) : pas des échecs, pas des succès. Le contrôle « Épreuve » (chaîne complète,
+tests du site) ne se déclenche que sur une PR vers `main` : **il n'a jamais tourné sur #148 ni
+#149**, alors que #149 modifie `mono/packages/core` (partagé avec le site). Seul `pnpm test` local
+le couvre (voir plus haut).
+
+## 2. Aujourd'hui à 375 × 667 : documenté, non modifié
+
+Mesure (export web, Meaux) : 3e carte de 573 à 818 px, barre d'onglets à 602 px ; sa phrase
+finit à 652 px. Il manque 216 px pour la carte entière, 50 px pour sa phrase. Simulations :
+
+| option | bas de la phrase 3 | coût |
+|---|---|---|
+| actuel | 652 | — |
+| B : marque dans la barre haute | 610 | revient sur la place de la marque (décision du porteur) |
+| C : retirer « Le détail (projet) » | 600 (visible) | retire le nom du projet et l'année de l'aide de l'écran |
+| B + C | 558 | les deux |
+
+Le pied de la carte 2 (sources Comptes + Élus, partage, « Où va cet argent ? ») mesure 338 px pour
+311 disponibles : il ne tient sur une ligne qu'en réduisant des cibles sous 48 pt. Aucune option
+sans perte : décision produit. À 390 × 844, les trois cartes sont entières.
+
+## 3. Invariant 7 : amendement formel scellé
+
+`bcc11ef` (#148), puis fusion `080cf12` dans #149. Procédure de `outils/derive_contexte.mjs`
+suivie pas à pas, refus E3 constaté avant scellement, empreinte
+`1e6d34ce8512a365253898719c3ac53df5a0842c33d6cc398f4788e2955b2f28`, contrôle 0 erreur.
+Nouveau test « CLAUDE.md et invariants.js disent la même règle » (rouge sur l'ancien texte).
+Invariants 64/64. Le refus du matin venait du contrôle de sécurité de l'environnement de
+l'agent, pas du dépôt ; la même modification a été acceptée ce soir.
+
+## 4. Test de scrutins
+
+`mono/tests/runtime.test.mjs`, 4 contrôles (« le teaser des scrutins récents est visible sans
+action », « chaque ligne du teaser porte déjà un lien source direct », « le bouton de détails
+existe », « aucune erreur JavaScript applicative », 404 sur `/data/scrutins-solennels-recents.json`).
+Le fichier est produit par `node scripts/scrutins-solennels.mjs ./data ../data/brut_Scrutins`
+(étape « scrutins solennels » de `outils/pipeline.sh`), à partir de l'archive de l'Assemblée
+téléchargée à l'étape 1. Ici : « ../data/brut_Scrutins absent - les scrutins solennels ne seront
+pas publiés » ; `data.assemblee-nationale.fr` injoignable (HTTP 000). Aucune fixture légitime pour
+ce contrôle (la seule fixture de scrutins, dans `invariants.test.mjs`, éprouve
+`scrutins-details.mjs`). Rien de fabriqué, rien de neutralisé. **Preuve en CI** : « Épreuve » de
+#147 sur `fd64196`, run 38897439559, **succès** (aucun avertissement « scrutins solennels non
+rafraîchis » dans ses annotations). À rejouer : « Épreuve » quand #148/#149 viseront `main`.
+
+## 5. PR #147
+
+Note séparée : `Repere_Note_PR147_Parties_Budget_16_10_2026.md` (projet). Aucun chiffre affiché
+ne change ; recommandation technique A ; décision de sens au porteur avant le 20/10, 15 h.
+
+## 6. Chiffres de Meaux : deux niveaux de vérification
+
+| chiffre | vérifié dans les données de Repère | vérifié dans la source officielle |
+|---|---|---|
+| projet DPV 2025 : 1 533 500 € HT, aide 726 800 €, 47,4 % | oui (`data/projets/77.json`, colonne `cout_ht`, DGCL, mise à jour 24/07/2026, relevé 13/10/2026) | **non** |
+| comptes 2025 : 121 272 659 € de dépenses, 2 123 €/hab., personnel 47,5 %, impôts 44,7 %, dette 7,6 mois | oui (`data/departments/77.json`, OFGL, 29/07/2026) | **non** |
+
+Limite non résolue : la page data.gouv.fr du jeu DGCL est lisible (8 fichiers, le plus récent
+daté du 24/07/2026, comme la donnée de Repère), mais le téléchargement du fichier est refusé à
+l'outil web de l'agent (robots.txt) et le shell n'atteint pas data.gouv.fr. Vérification
+officielle à faire depuis un poste connecté.
+
+## 7. Liens
+
+PR : https://github.com/Repere0/repere/pull/147 · https://github.com/Repere0/repere/pull/148 ·
+https://github.com/Repere0/repere/pull/149. Comparatifs avant/après (artefact privé du porteur) :
+https://claude.ai/artifact/Gbfb6h1uTw2CZvtq67idMe (captures de 21 h, avant la reprise ; rien
+d'affiché n'a changé depuis). Les 47 empreintes de commits citées dans ce rapport ont été
+vérifiées présentes sur GitHub.
