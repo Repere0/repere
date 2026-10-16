@@ -49,7 +49,7 @@ function AutreVote({ a }: { a: FaitVote }) {
     <View style={{ gap: 2, paddingBottom: PAS * 2 }}
       accessible accessibilityLabel={`${dateFr(a.sc.d)} : ${titreLisible(a.sc.t)}. ${motPosition(a.position) ? "A voté " + motPosition(a.position) : "Position non portée par le relevé"}.`}>
       <Text style={TYPO.micro}>{dateFr(a.sc.d)} · texte {a.sc.s}</Text>
-      <Text style={TYPO.corps} numberOfLines={3}>{titreLisible(a.sc.t)}</Text>
+      <Text style={TYPO.corps}>{titreLisible(a.sc.t)}</Text>
       <Text style={[TYPO.note, { fontWeight: "700" }]}>{motPosition(a.position) ? "A voté " + motPosition(a.position) : "Position non portée par le relevé"}</Text>
     </View>
   );

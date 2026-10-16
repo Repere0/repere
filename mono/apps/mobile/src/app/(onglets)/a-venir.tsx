@@ -73,11 +73,13 @@ function Ligne({ g }: { g: Groupe }) {
       style={({ pressed }) => ({ flexDirection: "row", alignItems: "center", gap: PAS * 3, minHeight: CIBLE, paddingVertical: PAS * 3,
         borderTopWidth: 1, borderTopColor: couleurs.trait, opacity: pressed ? 0.6 : 1 })}>
       <View style={{ width: 66, alignSelf: "flex-start" }}>
-        <Text numberOfLines={1} style={{ fontFamily: POLICE.affiche, fontSize: 18, lineHeight: 22, color: couleurs.encre, fontVariant: ["tabular-nums"] }}>{heure.replace(/ /g, "\u00a0")}</Text>
+        <Text style={{ fontFamily: POLICE.affiche, fontSize: 18, lineHeight: 22, color: couleurs.encre, fontVariant: ["tabular-nums"] }}>{heure}</Text>
       </View>
       <View style={{ flex: 1, gap: 2 }}>
-        <Text style={[TYPO.reponse, { fontSize: 17, lineHeight: 22 }]} numberOfLines={2}>{g.titre}</Text>
-        <Text style={TYPO.micro} numberOfLines={2}>{contexte}</Text>
+        {/* Titre entier (16/10/2026) : tronque, il perdait son contenu en texte agrandi
+            (sonde reflow 200 %). */}
+        <Text style={[TYPO.reponse, { fontSize: 17, lineHeight: 22 }]}>{g.titre}</Text>
+        <Text style={TYPO.micro}>{contexte}</Text>
       </View>
       <Text accessibilityElementsHidden importantForAccessibility="no" style={{ fontSize: 20, color: couleurs.sourd }}>›</Text>
     </Pressable>
