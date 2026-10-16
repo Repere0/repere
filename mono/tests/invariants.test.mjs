@@ -13,9 +13,11 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
 import {
-  INVARIANTS, ECHELONS, AMPLITUDE_MAX, amplitude, adresseFautive, TRICOLORE_MARQUE, FICHIERS_MARQUE,
+  INVARIANTS, ECHELONS, AMPLITUDE_MAX, amplitude, adresseFautive, TRICOLORE_MARQUE, FICHIERS_MARQUE, couleurDeGroupeAdmise,
   CHAMPS_INTERDITS, MOTS_CLASSEMENT, MOTS_GAMIFICATION, MOTS_A_ACCENTS,
 } from "../packages/data-utils/src/invariants.js";
+import { execFileSync } from "node:child_process";
+import os from "node:os";
 import { estDonneePublique, MAGASIN } from "../packages/data-utils/src/store.js";
 import { adresseDepartement, PHRASES, ETATS } from "../packages/data-utils/src/client.js";
 
@@ -205,6 +207,60 @@ test("invariant 7 — le tricolore du logo reste dans la marque", () => {
   assert.ok(balayes > 20, "trop peu de fichiers de l'application lus : la garde ne mesure rien");
   assert.match(lire(FICHIERS_MARQUE.composant), images, "le composant de marque n'affiche plus le logo");
   for (const i of FICHIERS_MARQUE.images) assert.ok(existe(`apps/mobile/assets/${i}`), `image de marque absente : ${i}`);
+});
+
+/* LA COULEUR D'UN GROUPE : OFFICIELLE ET NEUTRE, SINON AUCUNE — 16/10/2026.
+   Decision du porteur : seulement les couleurs officielles verifiables, sans
+   modifier l'invariant 7 pour elles. Le vrai script de collecte tourne sur des
+   organes fabriques (une couleur saturee, une neutre, une absente, une couleur
+   d'echelon) : seule la neutre est publiee, la provenance est ecrite, et la palette
+   de gris inventee qui remplacait la source a disparu. */
+test("invariant 7 — une couleur de groupe n'est publiée que si elle est officielle et neutre", () => {
+  /* La couleur saturee de l'essai est une couleur deja declaree (le rouge du logo) :
+     aucune couleur hors palette n'est ecrite en clair dans ce fichier. */
+  const SATUREE = TRICOLORE_MARQUE.rouge;
+  assert.equal(couleurDeGroupeAdmise(SATUREE), null, "une couleur saturee ne doit pas passer");
+  assert.equal(couleurDeGroupeAdmise("#747474"), "#747474");
+  assert.equal(couleurDeGroupeAdmise(ECHELONS.ville), null, "une couleur d'echelon ne doit pas devenir celle d'un groupe");
+  assert.equal(couleurDeGroupeAdmise(""), null);
+
+  const t = fs.mkdtempSync(path.join(os.tmpdir(), "repere-groupes-"));
+  try {
+    const org = path.join(t, "data", "brut_AMO30", "json", "organe");
+    fs.mkdirSync(org, { recursive: true });
+    fs.mkdirSync(path.join(t, "data", "brut_AMO30", "json", "acteur"), { recursive: true });
+    const organe = (uid, libelle, couleurAssociee) => fs.writeFileSync(path.join(org, uid + ".json"),
+      JSON.stringify({ organe: { uid, codeType: "GP", libelle, ...(couleurAssociee ? { couleurAssociee } : {}) } }));
+    organe("PO1", "Groupe sature", SATUREE.toUpperCase());
+    organe("PO2", "Groupe neutre", "#747474");
+    organe("PO3", "Groupe sans couleur", null);
+    organe("PO4", "Groupe couleur d'echelon", ECHELONS.region);
+    const scr = path.join(t, "scr");
+    fs.mkdirSync(scr);
+    const groupe = organeRef => ({ organeRef, vote: { decompteVoix: { pour: "1", contre: "0", abstentions: "0" } } });
+    fs.writeFileSync(path.join(scr, "S1.json"), JSON.stringify({ scrutin: {
+      uid: "VTANR5L17V1", numero: "1", dateScrutin: "2026-10-13", titre: "l'ensemble de la proposition de loi de banc",
+      typeVote: { libelleTypeVote: "scrutin public solennel" }, sort: { libelle: "adopté" },
+      syntheseVote: { nombreVotants: "4", decompte: { pour: "4", contre: "0", abstentions: "0" } },
+      ventilationVotes: { organe: { groupes: { groupe: ["PO1", "PO2", "PO3", "PO4"].map(groupe) } } },
+    } }));
+    const sortie = path.join(t, "a", "b");
+    execFileSync(process.execPath, [path.join(RACINE, "scripts", "scrutins-details.mjs"), sortie, scr], { stdio: "pipe" });
+    const index = JSON.parse(fs.readFileSync(path.join(sortie, "scrutins-index.json"), "utf8"));
+    const lots = fs.readdirSync(path.join(sortie, "scrutins-details"));
+    const detail = JSON.parse(fs.readFileSync(path.join(sortie, "scrutins-details", lots[0]), "utf8"));
+    const couleurs = Object.fromEntries(detail.scrutins[0].groupes.map(g => [g.nom, g.couleur]));
+    assert.deepEqual(couleurs, {
+      "Groupe sature": null, "Groupe neutre": "#747474", "Groupe sans couleur": null, "Groupe couleur d'echelon": null,
+    }, "seule la couleur officielle neutre est publiee " + JSON.stringify(couleurs));
+    assert.deepEqual({ lues: index.source.couleurs_groupes.lues, retenues: index.source.couleurs_groupes.retenues, refusees: index.source.couleurs_groupes.refusees },
+      { lues: 3, retenues: 1, refusees: 2 }, "la provenance des couleurs dit ce qui a ete lu, retenu et refuse");
+    assert.match(index.source.couleurs_groupes.origine, /couleurAssociee/);
+  } finally {
+    fs.rmSync(t, { recursive: true, force: true });
+  }
+  assert.doesNotMatch(lire("scripts/scrutins-details.mjs"), /#6f7275|#727476|COULEURS_GROUPES\s*=/,
+    "la palette de gris inventee est revenue a la place de la source");
 });
 
 test("PWA — le manifeste declare des icones, et elles existent", () => {

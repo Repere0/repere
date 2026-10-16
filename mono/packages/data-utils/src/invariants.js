@@ -60,6 +60,20 @@ export const TRICOLORE_MARQUE = Object.freeze({
   blanc: "#ffffff",
   rouge: "#ed2939",
 });
+/* LA COULEUR D'UN GROUPE PARLEMENTAIRE — 16/10/2026 (decision du porteur : « utiliser
+   uniquement les couleurs officielles réellement disponibles et vérifiables, sans
+   modifier l'invariant 7 pour elles »). Une couleur publiee par l'Assemblee
+   (organe.couleurAssociee) n'est retenue que si elle reste un neutre (amplitude <=
+   AMPLITUDE_MAX) et n'imite pas une couleur d'echelon. Sinon : null, et l'ecran
+   montre le sigle et le nom du groupe, sans couleur. */
+export function couleurDeGroupeAdmise(hex) {
+  const m = /^#?([0-9a-f]{6})$/i.exec(String(hex || "").trim());
+  if (!m) return null;
+  const h = "#" + m[1].toLowerCase();
+  if (Object.values(ECHELONS).includes(h)) return null;
+  return amplitude(h) <= AMPLITUDE_MAX ? h : null;
+}
+
 /* Les seuls fichiers qui peuvent porter le tricolore ou afficher les images de marque. */
 export const FICHIERS_MARQUE = Object.freeze({
   generateur: "../outils/marque_repere.py",
