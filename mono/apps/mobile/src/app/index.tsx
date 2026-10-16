@@ -13,6 +13,7 @@ import { mots, motsCible, correspond, trouverCommunes, departementDe } from "@re
 import { chargerCommunesBeta, chargerIndex, ETATS, PHRASES } from "../lib/donnees";
 import { Bouton, Carte, Texte, Vide } from "../lib/composants";
 import { useSelection } from "../lib/selection";
+import { Marque } from "../ui/marque";
 import { couleurs, CIBLE, PAS, POLICE, RAYON, TYPO } from "../lib/theme";
 
 type Ligne = [string, string, string[]];
@@ -82,7 +83,8 @@ export default function Accueil() {
         contentContainerStyle={[s.page, { paddingTop: marges.top + PAS * 6, paddingBottom: marges.bottom + PAS * 6 }]}
         ListHeaderComponent={
           <View style={s.tete}>
-            <Text style={s.marque}>Repère</Text>
+            {/* Le logo en grand sur l'ecran d'accueil (16/10/2026) : etait le mot seul, en petit. */}
+            <View style={{ marginBottom: PAS * 3 }}><Marque grande /></View>
             {/* CE QU'EST REPERE, EN UNE PHRASE ; POURQUOI C'EST UTILE, EN UNE LIGNE */}
             <Text style={TYPO.affiche} accessibilityRole="header">Ce qui se passe chez vous, expliqué simplement.</Text>
             <Text style={s.promesse}>Qui décide, où va l'argent, ce qu'a voté votre député, ce qui arrive. Chaque chiffre avec sa source officielle.</Text>
@@ -156,7 +158,6 @@ export default function Accueil() {
 const s = StyleSheet.create({
   page: { paddingHorizontal: PAS * 4, gap: PAS * 2, maxWidth: 640, width: "100%", alignSelf: "center" },
   tete: { gap: PAS * 3, marginBottom: PAS * 2 },
-  marque: { fontFamily: POLICE.affiche, fontSize: 22, color: couleurs.ville, marginBottom: PAS * 4 },
   confiance: { gap: PAS, padding: PAS * 4, borderRadius: RAYON.bloc, backgroundColor: couleurs.voile, marginTop: PAS * 2 },
   promesse: { fontSize: 17, lineHeight: 24, color: couleurs.encre },
   question: { fontFamily: POLICE.titre, fontSize: 24, lineHeight: 30, color: couleurs.encre, marginTop: PAS * 6 },

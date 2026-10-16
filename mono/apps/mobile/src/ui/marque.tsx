@@ -9,12 +9,14 @@
 import { Image, StyleSheet, Text, View } from "react-native";
 import { couleurs, PAS, POLICE } from "../lib/theme";
 
-export function Marque() {
+/* grande : l'ecran d'accueil (premiere impression) ; sinon la ligne compacte des ecrans. */
+export function Marque({ grande }: { grande?: boolean }) {
+  const cote = grande ? 56 : 30;
   return (
-    <View accessible accessibilityRole="header" accessibilityLabel="Repère" style={{ flexDirection: "row", alignItems: "center", gap: PAS * 2 }}>
+    <View accessible accessibilityRole="header" accessibilityLabel="Repère" style={{ flexDirection: "row", alignItems: "center", gap: grande ? PAS * 3 : PAS * 2 }}>
       <Image source={require("../../assets/icon.png")} accessibilityElementsHidden importantForAccessibility="no"
-        style={{ width: 30, height: 30, borderRadius: 7, borderWidth: StyleSheet.hairlineWidth, borderColor: "rgba(0,0,0,0.1)" }} />
-      <Text style={{ fontFamily: POLICE.affiche, fontSize: 24, lineHeight: 28, color: couleurs.encre, letterSpacing: -0.4 }}>Repère</Text>
+        style={{ width: cote, height: cote, borderRadius: Math.round(cote * 0.23), borderWidth: StyleSheet.hairlineWidth, borderColor: "rgba(0,0,0,0.1)" }} />
+      <Text style={{ fontFamily: POLICE.affiche, fontSize: grande ? 34 : 24, lineHeight: grande ? 38 : 28, color: couleurs.encre, letterSpacing: grande ? -0.8 : -0.4 }}>Repère</Text>
     </View>
   );
 }
