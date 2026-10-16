@@ -25,7 +25,7 @@
  * cette information ? » ; celle du traitement par Repere en en-tete.
  *
  * RIEN N'EST CALCULE ICI : @repere/core derive, lib/absences.ts dit les absences. */
-import { Text, View } from "react-native";
+import { Image, Pressable, Text, View } from "react-native";
 import { router, Stack } from "expo-router";
 import {
   dateFr, datePublication, decompte, euros, financementProjet, montantCourt, ordinal, parHabitant, phrasePosition,
@@ -40,7 +40,7 @@ import {
   PROJETS_PAS_ARRIVES, projetsAucun, VOTES_PAS_ARRIVES, circoInconnue, VOTE_AUCUN,
 } from "../../lib/absences";
 import { srcComptesPublies, srcElus, srcProjets, srcVote } from "../../lib/sources";
-import { PAS, TYPO } from "../../lib/theme";
+import { couleurs, PAS, POLICE, RAYON, TYPO } from "../../lib/theme";
 import { AvecDonnees, Page } from "../../ui/page";
 import { PastilleSource } from "../../ui/source";
 import { Etiquette } from "../../ui/resume";
@@ -68,6 +68,23 @@ export default function ChezVous() {
       return (
         <Page>
           <Stack.Screen options={{ title: nom }} />
+          {/* LA MARQUE, D'ABORD : le nom de l'application et son icone, sur l'ecran d'ouverture (16/10/2026). */}
+          <View accessible accessibilityRole="header" accessibilityLabel="Repère" style={{ flexDirection: "row", alignItems: "center", gap: PAS * 2 }}>
+            <Image source={require("../../../assets/icon.png")} accessibilityElementsHidden importantForAccessibility="no"
+              style={{ width: 36, height: 36, borderRadius: 9 }} />
+            <Text style={{ fontFamily: POLICE.affiche, fontSize: 28, lineHeight: 32, color: couleurs.encre, letterSpacing: -0.5 }}>Repère</Text>
+          </View>
+
+          {/* QUI DECIDE CHEZ VOUS — un bloc sombre, la question en tete, un seul geste. */}
+          <View style={{ backgroundColor: couleurs.encre, borderRadius: RAYON.carte, padding: PAS * 4, gap: PAS * 2 }}>
+            <Text style={{ fontFamily: POLICE.affiche, fontSize: 26, lineHeight: 30, color: couleurs.sol, letterSpacing: -0.4 }} accessibilityRole="header">Qui décide chez vous ?</Text>
+            <Pressable onPress={() => router.push("/qui-decide")} accessibilityRole="button" accessibilityLabel={`Voir la chaîne complète : qui décide pour ${nom}`}
+              style={({ pressed }) => ({ minHeight: 48, borderRadius: RAYON.bloc, backgroundColor: couleurs.sol, paddingHorizontal: PAS * 4, flexDirection: "row", alignItems: "center", justifyContent: "space-between", opacity: pressed ? 0.7 : 1 })}>
+              <Text style={{ fontSize: 16, fontWeight: "700", color: couleurs.encre }}>Voir la chaîne complète</Text>
+              <Text accessibilityElementsHidden importantForAccessibility="no" style={{ fontSize: 16, fontWeight: "700", color: couleurs.encre }}>→</Text>
+            </Pressable>
+          </View>
+
           {/* OU JE SUIS, ET DE QUAND DATE CE QUE JE LIS */}
           {/* Pas d'etiquette « Chez vous » au-dessus du nom : 20 px gagnes, et la
              troisieme reponse de Paris revient dans le premier ecran (mesure).
