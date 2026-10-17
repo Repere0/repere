@@ -144,7 +144,7 @@ jobs:
               data/journal_collecte.json|data/circos_ministere.xlsx) ;;
               data/auto/*.md) ;;
               docs/schema_*.md) ;;
-              outils/agenda_an.json|outils/evenements.json|outils/scrutins_an.json|outils/circos.json) ;;
+              outils/agenda_an.json|outils/evenements.json|outils/scrutins_an.json|outils/circos.json|outils/senateurs_idf.json) ;;
               mono/scripts/deputes.json|mono/scripts/noms-communes.json|mono/scripts/projets.json|mono/scripts/scrutins.json|app_repere_v18_20.html) ;;
               site_donnees/*) ;;
               *) hors_liste="$hors_liste $f" ;;

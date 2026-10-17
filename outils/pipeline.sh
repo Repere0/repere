@@ -392,6 +392,7 @@ banc "collecte" python3 outils/test_collecte.py
 # Heure de fin des seances (13/10/2026) : l'agenda normalise recopie la fin publiee
 # par la source, et ne la devine jamais. Le controle tourne sur un agenda factice.
 banc "agenda : heure de fin" python3 outils/test_agenda_an.py
+banc "senateurs : colonnes et fichier entier" python3 outils/test_senateurs_idf.py
 
 echo "== banc : le fichier autonome =="
 banc "fichier autonome" node test_repere.mjs "$APP"
