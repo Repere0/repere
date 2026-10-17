@@ -20,7 +20,7 @@ import { useState } from "react";
 import { Pressable, Text, View } from "react-native";
 import { router, Stack } from "expo-router";
 import {
-  AGE_RELEVE_NORMAL, ageReleve, dateFr, ETAPES_LOI, jourFr, jourParis, LIBELLES, minuteParis, regrouperParJour,
+  AGE_RELEVE_NORMAL, ageReleve, dateFr, ETAPES_LOI, etatJourCalendrier, jourFr, jourParis, LIBELLES, minuteParis, regrouperParJour,
 } from "@repere/core";
 import { type Ev, type Groupe, deInstitution, etatCommence, horairesDuGroupe, INSTITUTIONS, parametresRendezVous, rendezVousAffiches } from "../../lib/calendrier";
 import { Carte, Vide } from "../../lib/composants";
@@ -98,19 +98,21 @@ function EnteteJour({ iso, aujourdhui }: { iso: string; aujourdhui: string }) {
   );
 }
 
-/* Une case de jour, semaine ou mois : le chiffre, et un point s'il y a une seance. */
-function Case({ iso, jour, nb, onPress, taille }: { iso: string; jour: string; nb: number; onPress: () => void; taille: "semaine" | "mois" }) {
+/* Une case de jour, semaine ou mois : le chiffre, et un point s'il y a une seance.
+   Son libelle vient du socle (etatJourCalendrier, 17/10/2026) : un jour passe ou au-dela
+   de l'agenda publie n'est jamais annonce « 0 », et le mois n'est plus ecrit en dur. */
+function Case({ iso, jour, nb, onPress, taille, libelle, passe }: { iso: string; jour: string; nb: number; onPress: () => void; taille: "semaine" | "mois"; libelle: string; passe: boolean }) {
   const choisi = iso === jour;
   const numero = Number(iso.slice(8, 10));
   const grand = taille === "semaine";
   return (
     <Pressable onPress={onPress} accessibilityRole="button" accessibilityState={{ selected: choisi }}
-      accessibilityLabel={`${numero} octobre, ${nb} élément${nb > 1 ? "s" : ""}`}
+      accessibilityLabel={libelle}
       style={({ pressed }) => ({ flex: 1, minHeight: grand ? 58 : 42, alignItems: "center", justifyContent: "center", gap: 4, opacity: pressed ? 0.6 : 1 })}>
       {grand ? <Text style={{ fontSize: 13, color: couleurs.sourd, fontWeight: "600" }}>{LETTRES[rangLundi(iso)]}</Text> : null}
       <View style={{ width: grand ? 40 : 34, height: grand ? 40 : 34, borderRadius: 999, alignItems: "center", justifyContent: "center",
         backgroundColor: choisi ? couleurs.encre : "transparent" }}>
-        <Text style={{ fontWeight: choisi ? "800" : "600", fontSize: grand ? 20 : 16, color: choisi ? couleurs.sol : couleurs.encre }}>{numero}</Text>
+        <Text style={{ fontWeight: choisi ? "800" : "600", fontSize: grand ? 20 : 16, color: choisi ? couleurs.sol : passe ? couleurs.sourd : couleurs.encre }}>{numero}</Text>
       </View>
       <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: nb > 0 ? (choisi ? couleurs.encre : couleurs.sourd) : "transparent" }} />
     </Pressable>
@@ -152,10 +154,15 @@ export default function AVenir() {
       for (let i = 0; i < nbJours; i++) cases.push(decaler(premier, i));
       while (cases.length % 7) cases.push(null);
       const etiquetteJour = jourFr(jour);
+      /* Le dernier jour publie par l'agenda lu (celui du filtre, ou le plus lointain des
+         deux) : au-dela, un jour n'est pas « vide », il n'est pas encore publie. */
+      const horizon = ((d.semaineParlement && d.semaineParlement.institutions) || [] as { institution: string; jusquau?: string }[])
+        .filter((x: { institution: string }) => !institution || x.institution === institution)
+        .reduce((max: string, x: { jusquau?: string }) => (x.jusquau && x.jusquau > max ? x.jusquau : max), "");
+      const aujourdhui = jourParis(new Date());
+      const etatDe = (iso: string) => etatJourCalendrier({ iso, aujourdhui, nb: compte[iso] || 0, horizon });
       const phrase = choisi
-        ? (duJour.length
-          ? `${duJour.length} rendez-vous ${duJour.length > 1 ? "publiés" : "publié"} ce jour-là.`
-          : "Rien de publié pour ce jour et ce filtre. Repère n'affiche que ce qui est annoncé ou publié.")
+        ? etatDe(jour).phrase
         : (deuxSemaines.length
           ? `${deuxSemaines.length} rendez-vous publiés dans les deux prochaines semaines.`
           : "Rien de publié dans les deux prochaines semaines pour ce filtre. Repère n'affiche que ce qui est annoncé ou publié.");
@@ -198,14 +205,14 @@ export default function AVenir() {
                   {Array.from({ length: cases.length / 7 }, (_, ligne) => (
                     <View key={ligne} style={{ flexDirection: "row" }}>
                       {cases.slice(ligne * 7, ligne * 7 + 7).map((c, k) => c ? (
-                        <Case key={c} iso={c} jour={jour} nb={compte[c] || 0} taille="mois" onPress={() => choisirJour(c)} />
+                        <Case key={c} iso={c} jour={jour} nb={compte[c] || 0} taille="mois" libelle={etatDe(c).libelle} passe={etatDe(c).etat === "passe"} onPress={() => choisirJour(c)} />
                       ) : <View key={"v" + k} style={{ flex: 1, minHeight: 42 }} />)}
                     </View>
                   ))}
                 </View>
               ) : (
                 <View style={{ flexDirection: "row", alignItems: "flex-end" }}>
-                  {semaine.map(c => <Case key={c} iso={c} jour={jour} nb={compte[c] || 0} taille="semaine" onPress={() => choisirJour(c)} />)}
+                  {semaine.map(c => <Case key={c} iso={c} jour={jour} nb={compte[c] || 0} taille="semaine" libelle={etatDe(c).libelle} passe={etatDe(c).etat === "passe"} onPress={() => choisirJour(c)} />)}
                 </View>
               )}
 
