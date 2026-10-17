@@ -42,3 +42,31 @@ test("chaque lien renvoie a une entree existante du glossaire", () => {
   const texte = Object.values(GLOSSAIRE).map(m => m.titre).join(" ; ");
   for (const [, cle] of liens(termesDuTexte(texte))) assert.ok(GLOSSAIRE[cle], `cle inconnue : ${cle}`);
 });
+
+/* 17/10/2026 : la definition disait « Ses elus ne sont pas elus directement par vous ».
+   C'est faux dans les communes de 1 000 habitants ou plus : les conseillers
+   communautaires y sont elus au suffrage universel direct, sur le meme bulletin que le
+   conseil municipal (« flechage », code electoral art. L273-6 et suivants ; source :
+   collectivites-locales.gouv.fr, « Les conseillers communautaires »). En dessous de
+   1 000 habitants, ce sont des conseillers municipaux designes dans l'ordre du tableau
+   (art. L273-11), y compris apres la loi du 21 mai 2025. */
+test("intercommunalite : le mode d'election dit les deux cas, sans contre-verite", () => {
+  const d = GLOSSAIRE["intercommunalité"].corps;
+  assert.doesNotMatch(d, /pas élus directement/, "faux pour les communes de 1 000 habitants ou plus");
+  assert.match(d, /1\s000 habitants/, "le seuil qui change le mode d'election est nomme");
+  assert.match(d, /même bulletin/, "le flechage est dit en mots simples");
+  assert.match(d, /ordre du tableau/, "le cas des petites communes est dit aussi");
+});
+
+/* 17/10/2026 : le calendrier annonce le 20/10 le « Vote solennel sur le projet de loi de
+   finances pour 2027 (premiere partie) ». Rien ne disait ce qu'est une loi de finances, ni
+   ce qu'est sa « premiere partie ». Source : Assemblee nationale, « Budget et securite
+   sociale » (assemblee-nationale.fr/dyn/budget-et-securite-sociale), lue le 17/10/2026. */
+test("projet de loi de finances : l'intitule du calendrier mene a sa definition", () => {
+  const t = "Vote solennel sur le projet de loi de finances pour 2027 (première partie).";
+  assert.deepEqual(liens(termesDuTexte(t)), [["projet de loi de finances", "projet de loi de finances"]]);
+  const d = GLOSSAIRE["projet de loi de finances"].corps;
+  assert.match(d, /budget de l.État/);
+  assert.match(d, /première partie/, "la premiere partie, votee le 20/10, est expliquee");
+  assert.match(d, /70 jours/);
+});

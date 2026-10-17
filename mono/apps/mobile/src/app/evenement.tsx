@@ -10,7 +10,8 @@
  * retirée depuis le dernier relevé), on le dit, sans rien inventer. */
 import { Text, View } from "react-native";
 import { Stack, useLocalSearchParams } from "expo-router";
-import { ageReleve, dateFr, heureFr, jourFr, minuteParis, regrouperParJour } from "@repere/core";
+import { ageReleve, dateFr, heureFr, jourFr, minuteParis, regrouperParJour, termesDuTexte } from "@repere/core";
+import { LienDefinition } from "../lib/termes";
 import { Vide } from "../lib/composants";
 import { deInstitution, horairesDuGroupe, rendezVousAffiches, type Ev, type Groupe } from "../lib/calendrier";
 import { srcAgenda } from "../lib/sources";
@@ -59,6 +60,10 @@ export default function Evenement() {
           {/* La question d'abord : le sujet, puis quand, puis qui. */}
           <Question etiquette={g.institution} question={g.titre}
             sous={[jourFr(g.jour), g.categorie].filter(Boolean).join(" · ")} />
+          {/* 17/10/2026 : un mot de l'intitule qui a une definition (« projet de loi de
+              finances ») y mene, juste sous la question. Un intitule sans mot defini ne
+              change pas. */}
+          {[...new Set(termesDuTexte(g.titre).flatMap(x => (x.cle ? [x.cle] : [])))].map(cle => <LienDefinition key={cle} cle={cle} />)}
 
           <View style={{ gap: PAS }}>
             <Etiquette texte={g.seances > 1 ? `Horaires publiés · ${g.seances} séances` : "Horaire publié"} />
