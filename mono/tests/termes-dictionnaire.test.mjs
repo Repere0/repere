@@ -56,6 +56,10 @@ test("intercommunalite : le mode d'election dit les deux cas, sans contre-verite
   assert.match(d, /1\s000 habitants/, "le seuil qui change le mode d'election est nomme");
   assert.match(d, /même bulletin/, "le flechage est dit en mots simples");
   assert.match(d, /ordre du tableau/, "le cas des petites communes est dit aussi");
+  /* 17/10/2026 : dans la Metropole du Grand Paris, une partie des conseillers de territoire
+     (EPT) est designee par le conseil municipal (reponse du Gouvernement, question ecrite
+     AN n° 16989, 15e legislature) : la regle generale ne vaut pas partout en Ile-de-France. */
+  assert.match(d, /Métropole du Grand Paris/, "l'exception francilienne est signalee");
 });
 
 /* 17/10/2026 : le calendrier annonce le 20/10 le « Vote solennel sur le projet de loi de
@@ -69,4 +73,9 @@ test("projet de loi de finances : l'intitule du calendrier mene a sa definition"
   assert.match(d, /budget de l.État/);
   assert.match(d, /première partie/, "la premiere partie, votee le 20/10, est expliquee");
   assert.match(d, /70 jours/);
+  /* 17/10/2026 (relecture) : la premiere partie n'est pas le budget complet. */
+  assert.match(d, /n.adopte pas le budget/, "voter la premiere partie n'est pas adopter le budget");
+  assert.match(d, /vote final/, "le texte entier est vote a la fin");
+  assert.match(d, /recettes/); assert.match(d, /plafonds des dépenses/);
+  assert.match(d, /Sécurité sociale fait l.objet d.un autre texte/, "le budget de l'Etat n'est pas celui de la Securite sociale");
 });
