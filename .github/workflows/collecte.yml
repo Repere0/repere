@@ -312,7 +312,7 @@ jobs:
         run: exit 1
 
       - name: Signaler les echecs de collecte
-        if: steps.collecte.outcome == 'failure'
+        if: always() && steps.collecte.outcome == 'failure'
         run: |
           echo "::warning::Au moins une source n'a pas pu etre telechargee."
           cat data/journal_collecte.json
