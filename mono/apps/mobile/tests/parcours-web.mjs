@@ -60,7 +60,9 @@ const CAL = await (async () => {
   const limite = jourParis(new Date(Date.now() + 14 * 864e5));
   let proches = aVenir.filter(e => e.debut.slice(0, 10) < limite);
   if (!proches.length) proches = aVenir.slice(0, 5);
-  return { lignes: regrouperParJour(proches).length, vieux };
+  /* agendaLu : au moins un agenda servi. La CI « Mobile » n'extrait que le fichier autonome :
+     aucun agenda, l'ecran dit l'absence et n'a pas de frise (constate le 17/10/2026). */
+  return { lignes: regrouperParJour(proches).length, vieux, agendaLu: !!(cal || agendaAN) };
 })();
 /* Les elus du canton de Meaux, lus dans les donnees servies (07/10/2026). */
 const ELUS_CANTON = await (async () => {
@@ -291,6 +293,20 @@ for (const largeur of [360, 390, 430]) {
       verifier(lignes === CAL.lignes, `${largeur}px · Le calendrier : une ligne par texte et par jour (${lignes} affichées, ${CAL.lignes} attendues)`);
       verifier(CAL.vieux.every(x => new RegExp("Agenda " + x.de + " relevé le .+, il y a " + x.age + " jours").test(m.brut)),
         `${largeur}px · Le calendrier : un relevé ancien le dit, avec sa date ${JSON.stringify(CAL.vieux)}`);
+      /* 17/10/2026 : « 13 octobre, 0 élément » pour un jour passe qui avait deux seances.
+         Chaque case dit l'un des quatre etats du socle, et les jours deja passes de la
+         semaine sont dits passes (ni « 0 », ni « aucun »). */
+      const cases = await page.evaluate(() => [...document.querySelectorAll('[role="button"]')].filter(e => e.checkVisibility())
+        .map(e => e.getAttribute("aria-label") || "").filter(l => /^(lundi|mardi|mercredi|jeudi|vendredi|samedi|dimanche) \d/.test(l)));
+      const forme = /^(lundi|mardi|mercredi|jeudi|vendredi|samedi|dimanche) \d{1,2}(er)? \S+, (jour passé|\d+ rendez-vous publiés?|aucun rendez-vous publié|agenda pas encore publié)$/;
+      const rangAujourdhui = (new Date(new Date().toLocaleString("en-US", { timeZone: "Europe/Paris" })).getDay() + 6) % 7;
+      if (CAL.agendaLu) {
+        verifier(cases.length === 7 && cases.every(l => forme.test(l)) && cases.filter(l => /jour passé$/.test(l)).length === rangAujourdhui,
+          `${largeur}px · Le calendrier : chaque jour de la semaine dit vrai, les ${rangAujourdhui} jours passés le disent ${JSON.stringify(cases)}`);
+      } else {
+        /* sans agenda servi, aucune case ne pretend dire un jour (ni « 0 », ni « aucun ») */
+        verifier(cases.length === 0, `${largeur}px · Le calendrier sans agenda servi : aucune case de jour n'annonce quoi que ce soit ${JSON.stringify(cases)}`);
+      }
     }
     if (action === QUI) verifier(/Île-de-France Mobilités/.test(m.brut) && !/Décide : les transports/.test(m.brut), `${largeur}px · Qui décide : en Île-de-France, l'intercommunalité ne « décide » pas des transports`);
     verifier(preuve.test(m.brut), `${largeur}px · ${action} : l'écran répond à sa question`);

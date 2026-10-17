@@ -65,6 +65,23 @@ export function phraseCirconscription({ nbCircos, nomCommune, nomDep }, circo) {
     : `Vote du député élu dans votre circonscription (${ordinal(circo)} circonscription${nomDep ? " — " + nomDep : ""}), à l'Assemblée nationale :`;
 }
 
+/* CHEZ VOUS : QUI A VOTE, ET POURQUOI CETTE PERSONNE (17/10/2026). Mesure : « Votre
+   commune est dans la 6e circonscription. Le 21 juillet 2026, Béatrice Roullaud a voté
+   pour. » ne disait pas qui est cette personne pour le lecteur. Une circonscription
+   unique : la phrase nomme qui la represente a l'Assemblee nationale (le mandat ouvert
+   publie par l'Assemblee, deputes.json), puis son vote. « représentée » s'accorde avec
+   la circonscription : la donnee ne dit pas le genre de l'elu, la phrase ne le devine
+   pas. Plusieurs circonscriptions : aucun depute n'est designe comme celui du lecteur
+   (son adresse decide, Repere ne la demande pas) ; le vote d'exemple reste dans la note
+   de l'ecran. Sans nom publie, la phrase ne nomme personne. */
+export function phraseVoteChezVous({ nbCircos, nomCommune }, vote) {
+  if (nbCircos > 1) {
+    return [{ t: `${nomCommune} est partagée entre ${nbCircos} circonscriptions. Votre député dépend de votre adresse, que Repère ne demande pas.` }];
+  }
+  const qui = vote.qui ? `, représentée à l'Assemblée nationale par ${vote.qui}` : "";
+  return [{ t: `Votre commune est dans la ${ordinal(vote.circo)} circonscription${qui}. Le ${dateFr(vote.sc.d)}, ` }, ...phrasePosition(vote.position, vote.qui)];
+}
+
 export function phrasePosition(position, qui) {
   const mot = MOTS[position];
   const sujet = qui || "Votre député";

@@ -35,7 +35,7 @@ export const GLOSSAIRE = {
   },
   intercommunalité: {
     titre: "Intercommunalité",
-    corps: "Regroupement de communes qui exerce ensemble certaines compétences (transports, déchets, eau…). Ses élus ne sont pas élus directement par vous : ce sont vos conseillers municipaux qui y siègent.",
+    corps: "Regroupement de communes qui exerce ensemble certaines compétences (transports, déchets, eau…). Dans une commune de 1 000 habitants ou plus, ses conseillers sont élus en même temps que le conseil municipal, sur le même bulletin. En dessous, ce sont des conseillers municipaux désignés dans l'ordre du tableau (le maire, puis les adjoints…). La Métropole du Grand Paris et ses territoires ont des règles particulières.",
   },
   "conseil départemental": {
     titre: "Conseil départemental",
@@ -44,6 +44,12 @@ export const GLOSSAIRE = {
   "conseil régional": {
     titre: "Conseil régional",
     corps: "Assemblée élue de la région. Elle décide notamment des lycées, des trains express régionaux et de la formation professionnelle.",
+  },
+  /* 17/10/2026. Source : Assemblee nationale, « Budget et securite sociale »
+     (assemblee-nationale.fr/dyn/budget-et-securite-sociale), lue le 17/10/2026. */
+  "projet de loi de finances": {
+    titre: "Projet de loi de finances",
+    corps: "Texte que le Gouvernement présente chaque automne au Parlement pour fixer le budget de l'État de l'année suivante ; celui de la Sécurité sociale fait l'objet d'un autre texte. La première partie autorise la perception des impôts, évalue les recettes et fixe les plafonds des dépenses. Elle doit être votée avant l'examen de la seconde, qui répartit les crédits entre les missions de l'État. Voter la première partie n'adopte pas le budget : le texte entier fait l'objet d'un vote final. Le Parlement a 70 jours au plus pour se prononcer.",
   },
   "adjoint au maire": {
     titre: "Adjoint au maire",
