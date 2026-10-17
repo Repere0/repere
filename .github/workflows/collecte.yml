@@ -52,8 +52,9 @@ jobs:
     # existe-t-il ? » etait toujours faux et le deploiement etait saute meme apres
     # creation des secrets — une panne muette, la pire espece.
     env:
-      NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
-      NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+      # Seule la PRESENCE des secrets est au niveau du job (17/10/2026) : la valeur du jeton
+      # n'est remise qu'a l'etape « Publier sur Netlify », pas aux etapes qui installent du code tiers.
+      A_NETLIFY: ${{ secrets.NETLIFY_AUTH_TOKEN != '' && secrets.NETLIFY_SITE_ID != '' }}
       # Identifiant (non secret en soi) de l'App « repere-collecte », seule identite
       # autorisee a contourner la protection de main. Au niveau du job pour la meme
       # raison que les deux lignes au-dessus : le if: d'une etape ne lit pas son env.
@@ -177,7 +178,10 @@ jobs:
 
       - name: Publier sur Netlify
         id: deploy
-        if: env.NETLIFY_AUTH_TOKEN != '' && env.NETLIFY_SITE_ID != ''
+        if: env.A_NETLIFY == 'true'
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
         # continue-on-error : on veut que l'etape suivante puisse LIRE le resultat et
         # le dire. Le job est quand meme mis au rouge, plus bas, si la publication a
         # echoue — mais apres avoir explique pourquoi.
@@ -203,7 +207,8 @@ jobs:
             *)   echo "::warning::Sonde inattendue (HTTP $CODE). Reseau ? Reessayer." ;;
           esac
           echo "node $(node --version)"
-          npx --yes netlify-cli --version || echo "version de netlify-cli illisible"
+          # version epinglee : celle publiee lors du dernier deploiement reussi (09/10/2026)
+          npx --yes netlify-cli@27.12.0 --version || echo "version de netlify-cli illisible"
           # POURQUOI CES TROIS PRECAUTIONS, ajoutees le 20/08/2026 apres une etape RESTEE
           # BLOQUEE au lieu d'echouer :
           #  1. --auth et --site en clair plutot que par variables d'environnement. Quand
@@ -226,7 +231,7 @@ jobs:
           # La sortie est recopiee, et le message d'erreur JSON de Netlify remonte en
           # ::error::. Aucun secret n'y figure : la CLI ne les imprime pas, et GitHub
           # masque de toute facon leurs valeurs.
-          timeout 300 npx --yes netlify-cli deploy \
+          timeout 300 npx --yes netlify-cli@27.12.0 deploy \
             --dir=site_engendre --prod --no-build \
             --auth "$NETLIFY_AUTH_TOKEN" --site "$NETLIFY_SITE_ID" \
             --message "Collecte du $(date -u +%d/%m/%Y)" 2>&1 | tee "$RUNNER_TEMP/deploiement-netlify.txt"
@@ -267,7 +272,7 @@ jobs:
         # elle fait perdre le temps qu'on aurait passe a chercher.
         if: always()
         run: |
-          if [ -z "$NETLIFY_AUTH_TOKEN" ] || [ -z "$NETLIFY_SITE_ID" ]; then
+          if [ "$A_NETLIFY" != "true" ]; then
             echo "::notice::Site reconstruit mais NON publie : les secrets NETLIFY_AUTH_TOKEN et/ou NETLIFY_SITE_ID sont absents."
           elif [ "${{ steps.deploy.outcome }}" = "success" ]; then
             echo "::notice::Site reconstruit, eprouve par le banc, et publie sur Netlify."
