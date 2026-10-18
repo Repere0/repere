@@ -23,6 +23,9 @@ import { createRequire } from "node:module";
 import path from "node:path";
 import fs from "node:fs";
 
+/* Le parcours et toutes ses pages partagent un seul instant, y compris au changement de jour. */
+const INSTANTANE = new Date();
+
 /* Playwright : celui de l'application si elle l'a (CI mobile), sinon celui de
    mono/ (poste de developpement ou il est deja installe par pnpm). */
 let chromium;
@@ -55,9 +58,9 @@ const CAL = await (async () => {
   }
   /* ce qui a commence aujourd'hui compte aussi (16/10/2026 : lib/calendrier rendezVousAffiches) */
   const { aVenir: aVenirSeul, commenceesAujourdhui } = deriverAujourdhui({ fiche: { nom: "x", circo: null }, commune: "00000", dep: "77", index: { agregats: [], sources: {} },
-    projets: null, cat: null, pos: null, deputes: null, cal, agendaAN, evenements: null, maintenant: new Date() });
+    projets: null, cat: null, pos: null, deputes: null, cal, agendaAN, evenements: null, maintenant: INSTANTANE });
   const aVenir = [...(commenceesAujourdhui || []), ...aVenirSeul];
-  const limite = jourParis(new Date(Date.now() + 14 * 864e5));
+  const limite = jourParis(new Date(INSTANTANE.getTime() + 14 * 864e5));
   let proches = aVenir.filter(e => e.debut.slice(0, 10) < limite);
   if (!proches.length) proches = aVenir.slice(0, 5);
   /* agendaLu : au moins un agenda servi. La CI « Mobile » n'extrait que le fichier autonome :
@@ -73,7 +76,7 @@ const ELUS_CANTON = await (async () => {
    (07/10/2026). Un fichier absent n'est pas compte, comme dans l'application. */
 const { semaineParlement, jourParis } = await import("../../../packages/core/src/aujourdhui.js");
 const servi = async f => { try { const r = await fetch(BASE + "/data/" + f); return r.ok ? await r.json() : null; } catch { return null; } };
-const SEMAINE = semaineParlement({ agendaAN: await servi("agenda-an.json"), cal: await servi("calendrier-senat.json"), maintenant: new Date() });
+const SEMAINE = semaineParlement({ agendaAN: await servi("agenda-an.json"), cal: await servi("calendrier-senat.json"), maintenant: INSTANTANE });
 /* Les explications de la carte sont repliees (16/10/2026) : on les ouvre avant de lire. */
 const lireSemaine = async page => {
   const r = page.getByTestId("semaine-parlement").getByRole("button", { name: "Le détail (semaine)", expanded: false });
@@ -102,6 +105,15 @@ const verifier = (ok, texte) => {
 };
 
 const navigateur = await chromium.launch();
+async function installerHorloge(page) {
+  await page.clock.setFixedTime(INSTANTANE);
+  await page.waitForTimeout(10);
+  const lu = await page.evaluate(() => Date.now());
+  if (lu !== INSTANTANE.getTime()) throw new Error(`Horloge Playwright non fixée : ${lu} au lieu de ${INSTANTANE.getTime()}`);
+  return page;
+}
+const nouvellePage = async options => installerHorloge(await nouvellePage(options));
+const pageDuContexte = async contexte => installerHorloge(await contexte.newPage());
 /* GARDE-TEMPS — 08/10/2026. Le 07/10, la CI mobile de #94 a tourne 24 minutes
    sans un seul echec, puis a ete coupee par la limite du travail (25 min) : rien
    ne disait ou elle s'etait arretee. Un parcours normal dure 3 a 5 minutes. Passe
@@ -117,7 +129,7 @@ setTimeout(() => {
   process.exit(3);
 }, LIMITE_MS).unref();
 for (const largeur of [360, 390, 430]) {
-  const page = await navigateur.newPage({ viewport: { width: largeur, height: 800 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true });
+  const page = await nouvellePage({ viewport: { width: largeur, height: 800 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true });
   const demandees = [];
   page.on("request", r => demandees.push(r.url()));
   await page.goto(BASE + "/", { waitUntil: "networkidle" });
@@ -362,7 +374,7 @@ for (const largeur of [360, 390, 430]) {
 /* UNE DETTE NULLE PUBLIEE SE DIT — 08/10/2026 (audit). Bassevelle (77024) publie
    un encours de dette nul : la carte disparaissait sans un mot. */
 {
-  const page = await navigateur.newPage({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, reducedMotion: "reduce" });
+  const page = await nouvellePage({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, reducedMotion: "reduce" });
   await page.goto(BASE + "/", { waitUntil: "networkidle" });
   await page.getByLabel(/Où habitez-vous/).fill("bassevelle");
   await page.getByRole("button", { name: /^Bassevelle,/ }).first().click();
@@ -377,7 +389,7 @@ for (const largeur of [360, 390, 430]) {
 /* HORS D'ILE-DE-FRANCE — 08/10/2026 : une commune d'ailleurs n'est jamais dite
    introuvable ; la phrase dit que la beta ne la couvre pas encore. */
 {
-  const page = await navigateur.newPage({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
+  const page = await nouvellePage({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
   await page.goto(BASE + "/", { waitUntil: "networkidle" });
   await page.getByLabel(/Où habitez-vous/).fill("Lyon");
   await page.waitForTimeout(800);
@@ -390,7 +402,7 @@ for (const largeur of [360, 390, 430]) {
    #45, 29/09/2026. Avant correction, un fichier de projets ou de votes coupe
    faisait afficher « Aucun projet ... n'est publie » : une phrase fausse. */
 async function ouvrirAvecPanne(motif) {
-  const page = await navigateur.newPage({ viewport: { width: 390, height: 800 }, isMobile: true, hasTouch: true });
+  const page = await nouvellePage({ viewport: { width: 390, height: 800 }, isMobile: true, hasTouch: true });
   await page.route(motif, r => r.abort());
   await page.goto(BASE + "/", { waitUntil: "networkidle" });
   await page.getByLabel(/Où habitez-vous/).fill(COMMUNE.saisie);
@@ -424,7 +436,7 @@ async function ouvrirAvecPanne(motif) {
    compteur part bien de plus bas : preuve que le controle voit la difference. */
 async function montantA100ms(reduit) {
   const ctx = await navigateur.newContext({ viewport: { width: 390, height: 800 }, isMobile: true, hasTouch: true, reducedMotion: reduit ? "reduce" : "no-preference" });
-  const page = await ctx.newPage();
+  const page = await pageDuContexte(ctx);
   await page.goto(BASE + "/", { waitUntil: "networkidle" });
   await page.getByLabel(/Où habitez-vous/).fill(COMMUNE.saisie);
   await page.getByRole("button", { name: new RegExp("^" + COMMUNE.nom + ",") }).first().click();
@@ -455,7 +467,7 @@ async function montantA100ms(reduit) {
    et aucune requete ne porte jamais le code de la commune. */
 {
   const ctx = await navigateur.newContext({ viewport: { width: 390, height: 800 }, isMobile: true, hasTouch: true });
-  const page = await ctx.newPage();
+  const page = await pageDuContexte(ctx);
   const demandees = [];
   page.on("request", r => demandees.push(r.url()));
   const stockage = () => page.evaluate(() => ({
@@ -517,7 +529,7 @@ async function ouvrirSemaine({ agenda, senatCoupe, fuseau }) {
   const ctx = await navigateur.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, reducedMotion: "reduce", ...(fuseau ? { timezoneId: fuseau } : {}) });
   await ctx.route("**/data/agenda-an.json", r => agenda ? r.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(agenda) }) : r.abort());
   if (senatCoupe) await ctx.route("**/data/calendrier-senat.json", r => r.abort());
-  const page = await ctx.newPage();
+  const page = await pageDuContexte(ctx);
   await page.goto(BASE + "/", { waitUntil: "networkidle" });
   await page.getByLabel(/Où habitez-vous/).fill(COMMUNE.saisie);
   await page.getByRole("button", { name: new RegExp("^" + COMMUNE.nom + ",") }).first().click();
@@ -529,7 +541,7 @@ async function ouvrirSemaine({ agenda, senatCoupe, fuseau }) {
   return { ...vu, ...m };
 }
 {
-  const J = k => jourParis(new Date(Date.now() + k * 864e5));
+  const J = k => jourParis(new Date(INSTANTANE.getTime() + k * 864e5));
   const seance = (jour, heure, titre, description = null) => ({ debut: `${jour}T${heure}`, titre, description, categorie: "Séance publique" });
   const agenda = {
     source: { producteur: "Assemblée nationale", licence: "Licence ouverte", url: "https://www.assemblee-nationale.fr/dyn/agenda", releve_le: J(0) },
@@ -562,7 +574,7 @@ async function ouvrirSemaine({ agenda, senatCoupe, fuseau }) {
    (Boulogne-Billancourt) repousse la troisieme de 36 px. */
 {
   const HAUTEUR = Number(process.env.REPERE_HAUTEUR_PLI || 844);
-  const page = await navigateur.newPage({ viewport: { width: 390, height: HAUTEUR }, deviceScaleFactor: 2, isMobile: true, hasTouch: true, reducedMotion: "reduce" });
+  const page = await nouvellePage({ viewport: { width: 390, height: HAUTEUR }, deviceScaleFactor: 2, isMobile: true, hasTouch: true, reducedMotion: "reduce" });
   await page.goto(BASE + "/", { waitUntil: "networkidle" });
   await page.getByLabel(/Où habitez-vous/).fill(COMMUNE.saisie);
   await page.getByRole("button", { name: new RegExp("^" + COMMUNE.nom + ",") }).first().click();
@@ -578,7 +590,7 @@ async function ouvrirSemaine({ agenda, senatCoupe, fuseau }) {
    est a jour. En ligne, aucun bandeau : rien a signaler. */
 {
   const ctx = await navigateur.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, reducedMotion: "reduce" });
-  const page = await ctx.newPage();
+  const page = await pageDuContexte(ctx);
   const ouvrir = async () => {
     await page.goto(BASE + "/", { waitUntil: "networkidle" });
     await page.getByLabel(/Où habitez-vous/).fill(COMMUNE.saisie);
