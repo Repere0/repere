@@ -110,7 +110,7 @@ export default function ChezVous() {
               partage={{
                 titre: `Une information sur ${nom}`,
                 texte: f.partPct !== null && cout
-                  ? `À ${nom} : l'État finance ${partEnMots(f.partPct)} d'un projet de ${cout.texte} hors taxes, soit ${euros(f.subvention)} (${f.partPct} % du coût annoncé).`
+                  ? `À ${nom} : l'État finance ${partEnMots(f.partPct)} d'un projet de ${montantEnMots(f.cout)} hors taxes, soit ${euros(f.subvention)} (${f.partPct} % du coût annoncé).`
                   : `À ${nom} : l'État apporte ${euros(f.subvention)} à un projet.`,
                 sourceUrl: srcProjets(d, f.partPct !== null)?.url,
               }}

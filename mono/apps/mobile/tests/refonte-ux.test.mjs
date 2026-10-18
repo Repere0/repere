@@ -46,6 +46,9 @@ test("l'accueil et Où va l'argent parlent en euros et en personnes employées",
   const argent = lire("app/argent.tsx");
   assert.match(chez, /montantEnMots\(f\.cout\)/, "le premier écran affiche encore l'abréviation M€");
   assert.match(argent, /personnes employées par la commune/i, "la carte d'argent garde le mot technique agents");
+  assert.match(argent, /montantEnMots\(f\.cout\)/, "le coût du projet reste écrit en toutes lettres dans Où va l'argent");
+  assert.match(chez, /texte: f\.partPct !== null && cout[\s\S]*?montantEnMots\(f\.cout\)/,
+    "le texte de partage ne réintroduit pas l'abréviation M€");
   assert.match(argent, /libelle="Personnes employées par la commune"/, "la barre accessible conserve un intitulé ambigu");
   const comptes = readFileSync(join(ici, "../../../packages/core/src/comptes.js"), "utf8");
   assert.match(comptes, /personnes employées par la commune/, "le site et l'application n'utilisent pas le même vocabulaire partagé");
