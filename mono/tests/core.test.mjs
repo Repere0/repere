@@ -200,17 +200,18 @@ test("core — « a venir » se juge a l'heure de Paris, comme les agendas, pas 
   assert.deepEqual(a.prochains.map(e => e.titre), ["Séance de 16 h, à venir"], "la seance de 14 h n'est plus annoncee a 15 h 30");
 });
 
-test("core — l'explication des salaires ne prete pas au departement ni a la region les services d'une commune", async () => {
+test("core — l'explication des dépenses de personnel est simple sans prêter les services communaux", async () => {
   const { rapports } = await import("../packages/core/src/comptes.js");
   /* exercice fabrique : recettes, depenses, dette, investissement, salaires, impots */
   const ex = [1000, 1000000, 1000, 900000, 900, 100000, 100, 200000, 200, 300000, 300, 400000, 400];
-  const sal = n => (rapports(ex, n).find(o => /salaires/.test(o.v)) || {}).d || "";
-  assert.match(sal("commune"), /l'école, la cantine/);
+  const sal = n => rapports(ex, n).find(o => /personnes employées/.test(o.v));
+  assert.equal(sal("commune").v, "33 € pour les personnes employées par la commune");
+  assert.match(sal("commune").d, /La commune emploie ces personnes.*l'école, la cantine/);
   for (const n of ["departement", "region"]) {
-    assert.ok(sal(n), n + " : la part des salaires existe");
-    assert.doesNotMatch(sal(n), /école|cantine|état civil/, n);
+    assert.match(sal(n).v, /personnes employées par la collectivité/, n);
+    assert.doesNotMatch(sal(n).d, /école|cantine|état civil/, n);
   }
-  assert.match(sal(undefined), /l'école, la cantine/, "par defaut, la commune");
+  assert.match(sal("commune").d, /l'école, la cantine/);
 });
 
 test("core — la recherche ignore accents, traits d'union et apostrophes", () => {
@@ -315,7 +316,7 @@ test("visuels — les nombres dessines sont ceux des phrases, et aucune part ne 
       if (!e) continue;
       const ch = m.chiffresComptes(e.ex);
       const texte = m.rapports(e.ex).map(o => o.v).join(" | ");
-      if (ch.partSalaires !== null) assert.ok(texte.includes(ch.partSalaires + " € de salaires"), texte);
+      if (ch.partSalaires !== null) assert.ok(texte.includes(ch.partSalaires + " € pour les personnes employées par la commune"), texte);
       if (ch.parJour !== null) assert.ok(texte.includes(ch.parJour.toLocaleString("fr-FR") + " € par jour"), texte);
       for (const k of ["partSalaires", "partInvestissement", "partImpots"]) {
         assert.ok(ch[k] === null || (ch[k] >= 0 && ch[k] <= 100), k + " hors bornes : " + ch[k]);
@@ -363,6 +364,7 @@ test("visuels — grands nombres et parts en mots : jamais plus de 3 points d'ar
   assert.equal(m.montantCourt(121272659).texte, "121,3 M€");
   assert.equal(m.montantCourt(121272659).arrondi, true);
   assert.equal(m.montantCourt(726800).arrondi, false);
+  assert.equal(m.montantEnMots(1533500), "1,5 million d'euros");
   assert.equal(m.partEnMots(47), "près de la moitié");
   assert.equal(m.partEnMots(52), "un peu plus de la moitié");
   assert.equal(m.partEnMots(31), "près d'un tiers");

@@ -28,7 +28,7 @@
 import { Pressable, Text, View } from "react-native";
 import { router, Stack } from "expo-router";
 import {
-  dateFr, datePublication, decompte, euros, financementProjet, montantCourt, ordinal, parHabitant, partEnMots, phrasePosition, phraseVoteChezVous,
+  dateFr, datePublication, decompte, euros, financementProjet, montantCourt, montantEnMots, ordinal, parHabitant, partEnMots, phrasePosition, phraseVoteChezVous,
   repartitionVote, texteDe,
   titreLisible, REFUS_APPARIEMENT, LIBELLES,
 } from "@repere/core";
@@ -101,7 +101,7 @@ export default function ChezVous() {
                  sur « Où va l'argent » ; le pourcentage exact reste dans la barre et sa
                  source (« Calcul Repère »). Sans repere proche : le pourcentage. */
               phrase={f.partPct !== null && cout
-                ? `L'État finance ${partEnMots(f.partPct)} d'un projet de ${cout.texte} hors taxes à ${nom} : ${euros(f.subvention)}.`
+                ? `L'État finance ${partEnMots(f.partPct)} d'un projet de ${montantEnMots(f.cout)} hors taxes à ${nom} : ${euros(f.subvention)}.`
                 : `L'État apporte ${euros(f.subvention)} à un projet à ${nom}.`}
               preuve={f.partPct !== null ? <BarrePart sansLibelle part={f.partPct} libelle="Part de l'État dans le coût annoncé" valeur={`${f.partPct} € sur 100 €`} /> : undefined}
               note={`« ${projet.p.intitule} » : ${euros(f.subvention)} engagés par l'État en ${projet.p.annee}${f.cout ? ` sur un coût annoncé de ${euros(f.cout)} hors taxes` : ""}.`}

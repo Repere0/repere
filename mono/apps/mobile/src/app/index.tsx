@@ -11,7 +11,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { router } from "expo-router";
 import { mots, motsCible, correspond, trouverCommunes, departementDe } from "@repere/core";
 import { chargerCommunesBeta, chargerIndex, ETATS, PHRASES } from "../lib/donnees";
-import { Bouton, Carte, Texte, Vide } from "../lib/composants";
+import { Bouton, Carte, LienAction, Texte, Vide } from "../lib/composants";
 import { useSelection } from "../lib/selection";
 import { Marque } from "../ui/marque";
 import { couleurs, CIBLE, PAS, POLICE, RAYON, TYPO } from "../lib/theme";
@@ -122,6 +122,8 @@ export default function Accueil() {
               accessibilityLabelledBy="question"
               style={s.champ}
             />
+            <LienAction texte="Vous avez moins de 18 ans ?" etiquette="Vous avez moins de 18 ans ? Lire les repères utiles"
+              onPress={() => router.push("/avant-18")} />
             {etat !== ETATS.SERVI && phrase ? (
               <Vide titre={phrase.titre} corps={phrase.corps}
                 action={etat === ETATS.EN_COURS ? undefined : "Réessayer"} onAction={() => setEssai(n => n + 1)} />

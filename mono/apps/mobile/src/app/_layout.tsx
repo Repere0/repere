@@ -58,6 +58,7 @@ export default function Coquille() {
             <Stack.Screen name="vote" options={{ title: "Votre député", headerLeft: () => <Retour texte="Retour" etiquette="Revenir à l'écran précédent" /> }} />
             <Stack.Screen name="scrutins" options={{ title: "Scrutins publics", headerLeft: () => <Retour texte="Retour" etiquette="Revenir à l'écran précédent" /> }} />
             <Stack.Screen name="sources" options={{ title: LIBELLES.sources, headerLeft: () => <Retour texte="Retour" etiquette="Revenir à l'écran précédent" /> }} />
+            <Stack.Screen name="avant-18" options={{ title: "Avant 18 ans", headerLeft: () => <Retour texte="Retour" etiquette="Revenir à l'écran précédent" /> }} />
             {/* Le dictionnaire s'ouvre depuis cinq ecrans (liens « Ce que veut dire ») : le retour
                 ne nomme pas un ecran qu'il ne visera pas (16/10/2026 : il disait « Le calendrier »
                 en revenant au vote). */}

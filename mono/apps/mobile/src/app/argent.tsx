@@ -133,8 +133,8 @@ export default function Argent() {
                 <Carte echelon="ville" titre={`Où vont 100 € dépensés, comptes ${ex.an}`}>
                   {/* 08/10/2026 (audit) : « Deux postes… » s'affichait avec une seule barre
                      (part des salaires absente) ; l'annee des comptes manquait au titre. */}
-                  <Resume phrase={ch.partSalaires !== null ? `Sur 100 € dépensés, ${ch.partSalaires} € vont aux salaires des agents.` : `Sur 100 € dépensés, ${ch.partInvestissement} € vont aux investissements.`}>
-                    {ch.partSalaires !== null ? <BarrePart part={ch.partSalaires} libelle="Salaires des agents" valeur={rap(/salaires/)?.v || ""} />
+                  <Resume phrase={ch.partSalaires !== null ? `Sur 100 € dépensés, ${ch.partSalaires} € servent à payer les personnes employées par la commune.` : `Sur 100 € dépensés, ${ch.partInvestissement} € vont aux investissements.`}>
+                    {ch.partSalaires !== null ? <BarrePart part={ch.partSalaires} libelle="Personnes employées par la commune" valeur={rap(/salaires/)?.v || ""} />
                       : <BarrePart part={ch.partInvestissement as number} libelle="Investissements : travaux, équipements…" valeur={rap(/investir/)?.v || ""} />}
                   </Resume>
                   <PastilleSource source={srcComptes(d)} />
