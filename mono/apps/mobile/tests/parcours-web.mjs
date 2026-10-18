@@ -112,7 +112,7 @@ async function installerHorloge(page) {
   if (lu !== INSTANTANE.getTime()) throw new Error(`Horloge Playwright non fixée : ${lu} au lieu de ${INSTANTANE.getTime()}`);
   return page;
 }
-const nouvellePage = async options => installerHorloge(await nouvellePage(options));
+const nouvellePage = async options => installerHorloge(await navigateur.newPage(options));
 const pageDuContexte = async contexte => installerHorloge(await contexte.newPage());
 /* GARDE-TEMPS — 08/10/2026. Le 07/10, la CI mobile de #94 a tourne 24 minutes
    sans un seul echec, puis a ete coupee par la limite du travail (25 min) : rien
