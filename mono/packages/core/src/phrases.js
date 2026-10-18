@@ -78,8 +78,12 @@ export function phraseVoteChezVous({ nbCircos, nomCommune }, vote) {
   if (nbCircos > 1) {
     return [{ t: `${nomCommune} est partagée entre ${nbCircos} circonscriptions. Votre député dépend de votre adresse, que Repère ne demande pas.` }];
   }
-  const qui = vote.qui ? `, représentée à l'Assemblée nationale par ${vote.qui}` : "";
-  return [{ t: `Votre commune est dans la ${ordinal(vote.circo)} circonscription${qui}. Le ${dateFr(vote.sc.d)}, ` }, ...phrasePosition(vote.position, vote.qui)];
+  const position = MOTS[vote.position];
+  if (!position) return [{ t: `Dans la ${ordinal(vote.circo)} circonscription, le relevé de l'Assemblée ne porte pas de position pour ce vote.` }];
+  const qui = vote.qui
+    ? `À l'Assemblée, ${vote.qui} représente votre commune (${ordinal(vote.circo)} circonscription).`
+    : `Vote du député de la ${ordinal(vote.circo)} circonscription à l'Assemblée.`;
+  return [{ t: `${qui} Le ${dateFr(vote.sc.d)}, ${vote.qui ? "son vote" : "sa position publiée"} : ${position.toLowerCase()}.` }];
 }
 
 export function phrasePosition(position, qui) {

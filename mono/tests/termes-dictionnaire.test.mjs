@@ -22,6 +22,10 @@ test("le pluriel, la casse et les accents sont reconnus", () => {
   assert.deepEqual(liens(termesDuTexte("Des scrutins solennels")), [["scrutins solennels", "scrutin solennel"]]);
 });
 
+test("« vote solennel » mène à la même définition que « scrutin solennel »", () => {
+  assert.deepEqual(liens(termesDuTexte("Vote solennel sur un texte.")), [["Vote solennel", "scrutin solennel"]]);
+});
+
 test("un mot seul dans un mot plus long n'est pas relie", () => {
   assert.deepEqual(liens(termesDuTexte("une circonscriptionnelle seule")), []);
 });
@@ -68,7 +72,10 @@ test("intercommunalite : le mode d'election dit les deux cas, sans contre-verite
    sociale » (assemblee-nationale.fr/dyn/budget-et-securite-sociale), lue le 17/10/2026. */
 test("projet de loi de finances : l'intitule du calendrier mene a sa definition", () => {
   const t = "Vote solennel sur le projet de loi de finances pour 2027 (première partie).";
-  assert.deepEqual(liens(termesDuTexte(t)), [["projet de loi de finances", "projet de loi de finances"]]);
+  assert.deepEqual(liens(termesDuTexte(t)), [
+    ["Vote solennel", "scrutin solennel"],
+    ["projet de loi de finances", "projet de loi de finances"],
+  ]);
   const d = GLOSSAIRE["projet de loi de finances"].corps;
   assert.match(d, /budget de l.État/);
   assert.match(d, /première partie/, "la premiere partie, votee le 20/10, est expliquee");

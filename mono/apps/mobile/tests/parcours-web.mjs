@@ -223,7 +223,7 @@ for (const largeur of [360, 390, 430]) {
   verifier(new RegExp(MAIRE).test(mesure.texte), `${largeur}px : le maire est nommé (${MAIRE})`);
   verifier(/Publication Repère du \d/.test(mesure.texte), `${largeur}px : la date de la publication affichée est dite`);
   verifier((mesure.etiquettes.match(/D'où vient cette information/g) || []).length >= 3, `${largeur}px : chaque réponse de l'accueil porte sa source`);
-  verifier(/a voté (pour|contre|l'abstention)/.test(mesure.texte) && /députés ayant pris part au vote/.test(mesure.etiquettes),
+  verifier(/son\s+vote\s*:\s*(pour|contre|l'abstention)/.test(mesure.texte) && /députés ayant pris part au vote/.test(mesure.etiquettes),
     `${largeur}px : le vote du député s'affiche, et sa répartition se lit aussi en phrase`);
   verifier(/a dépensé [\d\s]+€ par habitant/.test(mesure.texte), `${largeur}px : l'argent de la commune se dit en une phrase`);
   /* « Réponses d'abord » (30/09/2026) : une reponse, pas une rubrique ; jamais
@@ -277,7 +277,7 @@ for (const largeur of [360, 390, 430]) {
      « Aller plus loin »), deux depuis « Aller plus loin ». */
   const QUI = "Voir la chaîne complète : qui décide pour Meaux";
   for (const [action, question, preuve] of [
-    ["Où va cet argent ?", /Où va l'argent de Meaux/, /Sur 100 € dépensés, \d+ € vont aux salaires/],
+    ["Où va cet argent ?", /Où va l'argent de Meaux/, /Sur 100 € dépensés, \d+ € servent à payer les personnes employées par la commune/],
     ["Comprendre ce vote", /Qu'a voté votre député/, /Le parcours d'une loi|Où en est ce texte/],
     [QUI, /Qui décide pour Meaux/, /Décide : /],
     /* L'écran du calendrier porte, depuis le canevas du 13/10/2026, le titre « Calendrier »
@@ -417,7 +417,7 @@ async function ouvrirAvecPanne(motif) {
   const t = await ouvrirAvecPanne("**/data/projets/**");
   verifier(/projets financés par l'État ne sont pas arrivés/.test(t) && !/Aucun projet financé/.test(t),
     "panne des projets : « pas arrivés », jamais « aucun projet »");
-  verifier(new RegExp(MAIRE).test(t) && /a voté/.test(t), "panne des projets : le reste de l'écran s'affiche");
+  verifier(new RegExp(MAIRE).test(t) && /son\s+vote\s*:/.test(t), "panne des projets : le reste de l'écran s'affiche");
 }
 {
   const t = await ouvrirAvecPanne("**/data/scrutins/**");

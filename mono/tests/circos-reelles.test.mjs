@@ -76,8 +76,9 @@ test("Chez vous, circonscription unique (Meaux) : la phrase dit qui represente l
   const dep = deputes.deputes[`77-${fiche.circo}`];
   assert.equal(v.qui, `${dep.prenom} ${dep.nom}`, "la personne du vote n'est pas le depute de cette circonscription");
   const p = texteDe(phraseVoteChezVous(d, v));
-  assert.ok(p.startsWith(`Votre commune est dans la ${ordinal(fiche.circo)} circonscription, représentée à l'Assemblée nationale par ${v.qui}.`), p);
-  assert.match(p, new RegExp(`Le \\d{1,2}(er)? \\S+ \\d{4}, ${v.qui} a voté (pour|contre|l'abstention)\\.$`), p);
+  assert.ok(p.startsWith(`À l'Assemblée, ${v.qui} représente votre commune (${ordinal(fiche.circo)} circonscription).`), p);
+  assert.match(p, /Le \d{1,2}(er)? \S+ \d{4}, son vote : (pour|contre|abstention)\.$/, p);
+  assert.ok(p.length < 150, `la phrase reste longue (${p.length} caractères) : ${p}`);
 });
 
 test("Chez vous, plusieurs circonscriptions (Paris) : aucun depute personnel n'est designe", () => {
@@ -93,7 +94,7 @@ test("Chez vous, plusieurs circonscriptions (Paris) : aucun depute personnel n'e
 });
 
 test("Chez vous, nom du depute absent : la phrase ne nomme personne et ne l'invente pas", () => {
-  const p = texteDe(phraseVoteChezVous({ nbCircos: 1, nomCommune: "X" }, { circo: 3, qui: "", position: "pour", sc: { d: "2026-07-21" } }));
-  assert.ok(p.startsWith("Votre commune est dans la 3e circonscription. Le 21 juillet 2026, "), p);
-  assert.doesNotMatch(p, /représentée/, p);
+  const p = texteDe(phraseVoteChezVous({ nbCircos: 1, nomCommune: "X" }, { circo: 3, qui: "", position: "p", sc: { d: "2026-07-21" } }));
+  assert.equal(p, "Vote du député de la 3e circonscription à l'Assemblée. Le 21 juillet 2026, sa position publiée : pour.");
+  assert.doesNotMatch(p, /représenté|représentée/, p);
 });

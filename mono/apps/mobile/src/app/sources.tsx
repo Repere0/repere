@@ -5,9 +5,9 @@
  * source (publiee, ou relevee pour l'Assemblee) et celle ou Repere a traite
  * les fichiers. Ne jamais les confondre. */
 import { Text, View } from "react-native";
-import { Stack } from "expo-router";
+import { router, Stack } from "expo-router";
 import { dateFr, datePublication, LIBELLES } from "@repere/core";
-import { Carte, LienSortant } from "../lib/composants";
+import { Carte, LienAction, LienSortant } from "../lib/composants";
 import { couleurs, PAS, TYPO } from "../lib/theme";
 import { AvecDonnees, Page, Question } from "../ui/page";
 import { Depli } from "../ui/visuels";
@@ -35,6 +35,8 @@ export default function Sources() {
           <Stack.Screen options={{ title: LIBELLES.sources }} />
           <Question question="D'où viennent ces informations ?"
             sous={traite ? `Repère a traité ces fichiers le ${dateFr(traite)}. Chaque source a sa propre date, écrite ci\u2011dessous\u00a0: c'est celle de la donnée.` : undefined} />
+          <LienAction texte="Repères utiles avant 18 ans" etiquette="Ouvrir les repères utiles avant 18 ans"
+            onPress={() => router.push("/avant-18")} />
           {/* Au premier niveau : qui publie, quand, et le lien vers la donnée.
              La licence et l'usage que Repère en fait se déplient (16/10/2026). */}
           {/* DENSITE (16/10/2026) : une seule carte, une ligne par source (etait une

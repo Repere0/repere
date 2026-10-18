@@ -294,6 +294,16 @@ export function montantCourt(n) {
   return { texte: Math.round(n).toLocaleString("fr-FR") + " €", arrondi: false };
 }
 
+/* Premier écran : éviter « M€ », tout en gardant l'arrondi explicitement lisible.
+   Le détail de chaque projet conserve toujours le montant publié exact en euros. */
+export function montantEnMots(n) {
+  if (typeof n !== "number" || !Number.isFinite(n)) return null;
+  const a = Math.abs(n);
+  if (a >= 1e9) return (n / 1e9).toLocaleString("fr-FR", { maximumFractionDigits: 1 }) + " milliard d'euros";
+  if (a >= 1e6) return (n / 1e6).toLocaleString("fr-FR", { maximumFractionDigits: 1 }) + " million d'euros";
+  return Math.round(n).toLocaleString("fr-FR") + " euros";
+}
+
 /* Une part en mots, pour la phrase humaine. N'arrondit jamais au-dela de 3
    points de la VRAIE fraction (un tiers = 33,33) : 47 % -> « près de la
    moitié », 30 % -> rien (3,33 points d'un tiers). partReperee rend null hors

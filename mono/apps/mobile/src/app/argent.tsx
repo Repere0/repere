@@ -17,7 +17,7 @@ import {
   chiffresComptes, comptesAbsents, comptesIncoherents, comptesInsuffisants, diffEuros, eurosArrondis,
   evolution, exercicesEcartes, financementProjet, INTRO_EVOLUTION, introRapports, montantCourt, noteRattachement,
   NOTE_EVOLUTION, NOTE_FINANCEMENT, nomDispositif, parHabitant, partReperee, perimetreChange, phraseEcartes,
-  phraseProjetLocal, rapports, sousTitreRapports, euros, CALCUL_REPERE, LIBELLES,
+  phraseProjetLocal, rapports, sousTitreRapports, euros, montantEnMots, CALCUL_REPERE, LIBELLES,
   OFGL_URL, phraseCalculPart, valeur,
 } from "@repere/core";
 import { Carte, Vide } from "../lib/composants";
@@ -65,8 +65,8 @@ function CarteProjet({ p, nom, projets }: { p: Projet; nom: string; projets: Par
       <Text style={TYPO.reponse}>{p.intitule}</Text>
       {f && f.partPct !== null && cout ? (
         <Resume phrase={partReperee(f.partPct)
-          ? `L'État finance ${partReperee(f.partPct)} de ce projet de ${cout.texte} hors taxes.`
-          : `Pour 100 € de ce projet de ${cout.texte} hors taxes, ${f.partPct} € viennent de l'État.`}>
+          ? `L'État finance ${partReperee(f.partPct)} de ce projet de ${montantEnMots(f.cout)} hors taxes.`
+          : `Pour 100 € de ce projet de ${montantEnMots(f.cout)} hors taxes, ${f.partPct} € viennent de l'État.`}>
           <Financement subvention={f.subvention} cout={f.cout as number} partPct={f.partPct}
             subventionTexte={`${euros(f.subvention)} sur ${euros(f.cout as number)} hors taxes`}
             resteTexte={`${euros(f.reste as number)}, financement non détaillé par la source`} />
@@ -133,8 +133,8 @@ export default function Argent() {
                 <Carte echelon="ville" titre={`Où vont 100 € dépensés, comptes ${ex.an}`}>
                   {/* 08/10/2026 (audit) : « Deux postes… » s'affichait avec une seule barre
                      (part des salaires absente) ; l'annee des comptes manquait au titre. */}
-                  <Resume phrase={ch.partSalaires !== null ? `Sur 100 € dépensés, ${ch.partSalaires} € vont aux salaires des agents.` : `Sur 100 € dépensés, ${ch.partInvestissement} € vont aux investissements.`}>
-                    {ch.partSalaires !== null ? <BarrePart part={ch.partSalaires} libelle="Salaires des agents" valeur={rap(/salaires/)?.v || ""} />
+                  <Resume phrase={ch.partSalaires !== null ? `Sur 100 € dépensés, ${ch.partSalaires} € servent à payer les personnes employées par la commune.` : `Sur 100 € dépensés, ${ch.partInvestissement} € vont aux investissements.`}>
+                    {ch.partSalaires !== null ? <BarrePart part={ch.partSalaires} libelle="Personnes employées par la commune" valeur={rap(/salaires/)?.v || ""} />
                       : <BarrePart part={ch.partInvestissement as number} libelle="Investissements : travaux, équipements…" valeur={rap(/investir/)?.v || ""} />}
                   </Resume>
                   <PastilleSource source={srcComptes(d)} />
