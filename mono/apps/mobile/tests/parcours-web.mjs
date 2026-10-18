@@ -1,336 +1,616 @@
-YªçŠx-®éÜj×¢ëiºÚ+Š§j[h‘éÜ¢éí×ôõ:-jZ.¶›­–)Ş³Rò¢ÄR$4õU%2DRÄE$ä4„RdU%D”4ÄRÂÔU5U$RDå2Tâäd”tDUU"(	B#’ó’ó##bà¢ ¢¢7W"ÂvW‡÷'BvV"FRÂvÆ–6F–öâÖö&–ÆR†ÖVÖR6öFR&V7BæF—fRÂ&VæGR ¢¢&V7BÖæF—fR×vV"’ÂG&ö—2Æ&vWW'2FRFVÆW†öæR¢3cÂ3“ÂC3‚à¢¢6RâvW7B2VâFVÆW†öæR¢æ’fö–6T÷fW"Âæ’FÆ´&6²Âæ’ÆR6Æf–W"æF–`¢¢æR6öçBW&÷WfW2–6’â6RVR6R6öçG&öÆRÖW7W&Rg&–ÖVçB ¢¢âÆR&6÷W'267VV–ÂÓâ&V6†W&6†RÓâ6öÖ×VæRÓâ&WF÷W"&÷WF—B°¢¢"âV7VæRG&W76RFVÖæFVRæR÷'FRVâ6öFRFR6öÖ×VæR†–çf&–çB"’°¢¢2âV7VâFV&÷&FVÖVçB†÷&—¦öçFÂ°¢¢BâF÷WFR6–&ÆRF7F–ÆRf—BRÖö–ç2CB‚FR†WB°¢¢Râ6†VR&÷WFöâWBÆ–VâVâæöÒ66W76–&ÆR°¢¢V"âV7VâÖ÷BFRÔõE5ôô44TåE2âvW7Bff–6†R6ç26W266VçG2°¢¢bâÂvV7&âFR6öÖ×VæRff–6†RVâÖ—&RÂVæR6÷W&6RFFVRWBVæR‡&6P¢¢÷W"6†VR'6Væ6R(	B¦Ö—2VæR6'FRf–FRà¢ ¢¢W6vR ¢¢U…õõT$Ä”5õ$UU$UôDôääTU3ÒöFFç‚W‡òW‡÷'BÒ×ÆFf÷&ÒvV"ÒÖ÷WGWBÖF—"F—7B×vV ¢¢7×"ââòââöFFF—7B×vV"öFF¢¢æöFRââòââ÷67&—G2÷6W'fWW"×7FF—VRæÖ§2F—7B×vV"ƒƒ`¢¢æöFRFW7G2÷&6÷W'2×vV"æÖ§2‡GG¢òöÆö6Æ†÷7C£ƒƒ¶F÷76–W"Ö6GW&W5Ğ¢¢ğ¦–×÷'B²7&VFU&WV—&RÒg&öÒ&æöFS¦ÖöGVÆR#°¦–×÷'BF‚g&öÒ&æöFS§F‚#°¦–×÷'Bg2g&öÒ&æöFS¦g2#° ¢ò¢ÆR&6÷W'2WBF÷WFW26W2vW2'FvVçBVâ6WVÂ–ç7FçBÂ’6ö×&—2R6†ævVÖVçBFR¦÷W"â¢ğ¦6öç7B”å5DåDäRÒæWrFFR‚“° ¢ò¢Æ—w&–v‡B¢6VÇV’FRÂvÆ–6F–öâ6’VÆÆRÂv„4’Öö&–ÆR’Â6–æöâ6VÇV’FP¢Ööæòò‡÷7FRFRFWfVÆ÷VÖVçB÷R–ÂW7BFV¦–ç7FÆÆR"çÒ’â¢ğ¦ÆWB6‡&öÖ—VÓ°¦f÷"†6öç7B&6–æRöb²"ââ÷6¶vRæ§6öâ"Â"ââòââòââ÷6¶vRæ§6öâ%Ò’°¢G'’²‡²6‡&öÖ—VÒÒÒ7&VFU&WV—&R‡F‚ç&W6öÇfR†–×÷'BæÖWFæF—&æÖRÂ&6–æR’’‚'Æ—w&–v‡B"’“²'&V³²Ò6F6‚²ò¢7V—fçB¢òĞ§Ğ¦–b‚6‡&öÖ—VÒ’²6öç6öÆRæW'&÷"‚'Æ—w&–v‡B–çG&÷Wf&ÆR"“²&ö6W72æW†—Bƒ"“²Ğ¦6öç7B²G&W76TfWF—fRÂÔõE5ôô44TåE2ÒÒv—B–×÷'B‚"ââòââòââ÷6¶vW2öFF×WF–Ç2÷7&2ö–çf&–çG2æ§2"“° ¦6öç7B$4RÒ&ö6W72æ&we³%ÒÇÂ&‡GG¢òöÆö6Æ†÷7C£ƒƒ#°¦6öç7B4EU$U2Ò&ö6W72æ&we³5ÒÇÂçVÆÃ°¦–b„4EU$U2’g2æÖ¶F—%7–æ2„4EU$U2Â²&V7W'6—fS¢G'VRÒ“°¦6öç7B4ôÔÕTäRÒ²6—6–S¢&ÖVW‚"ÂæöÓ¢$ÖVW‚"Ó°¢ò¢ÆRæöÒGRÖ—&RÂÇRFç2ÆW2FöææVW26W'f–W2†¦Ö—2&V6÷–R–6’’â¢ğ¦6öç7BÔ•$RÒv—B†7–æ2‚’Óâ°¢G'’²6öç7B"Òv—BfWF6‚„$4R²"öFFöFW'FÖVçG2ósræ§6öâ"“²6öç7B¢Òv—B"æ§6öâ‚“²&WGW&â¢æ6öÖ×VæW5²#ss#ƒB%ÒæÖ—&RææöÒç&WÆ6R‚õ²â¢³õâG·Ò‚—ÅµÅÕÅÅÒörÂ%ÅÂBb"“²Ğ¢6F6‚²&WGW&â$Ö—&R–çG&÷Wf&ÆRFç2ÆW2Föæì:–W26W'f–W2#²Ğ§Ò’‚“°¢ò¢ÆR6ÆVæG&–W"GFVæGRÂ&V6Æ7VÆR"ÆR6ö6ÆR7W"ÆW2f–6†–W'26W'f—2ƒróó##b’ ¢*²fVæ—"+²f–VçBFRFW&—fW$V¦÷W&F‡V’ÇV’ÖÖVÖRÂ¦Ö—2BwVæR&VvÆR&V6÷–VR–6’â¢ğ¦6öç7B4ÂÒv—B†7–æ2‚’Óâ°¢6öç7B²&Vw&÷WW%$¦÷W"ÂvU&VÆWfRÂtUõ$TÄUdUôäõ$ÔÂÒÒv—B–×÷'B‚"ââòââòââ÷6¶vW2ö6÷&R÷7&2ö6ÆVæG&–W"æ§2"“°¢6öç7B²¦÷W%&—2ÂFW&—fW$V¦÷W&F‡V’ÒÒv—B–×÷'B‚"ââòââòââ÷6¶vW2ö6÷&R÷7&2öV¦÷W&F‡V’æ§2"“°¢6öç7BÆ—&RÒ7–æ2bÓâ²G'’²6öç7B"Òv—BfWF6‚„$4R²"öFFò"²b“²&WGW&â"æö²òv—B"æ§6öâ‚’¢çVÆÃ²Ò6F6‚²&WGW&âçVÆÃ²ÒÓ°¢6öç7B6ÂÒv—BÆ—&R‚&6ÆVæG&–W"×6VæBæ§6öâ"’ÂvVæFâÒv—BÆ—&R‚&vVæFÖâæ§6öâ"“°¢6öç7Bf–WW‚ÒµÓ°¢f÷"†6öç7B¶FRÂ¥Òöbµ²&GR<:–æB"Â6ÅÒÂ²&FRÂt76VÖ&Ì:–RæF–öæÆR"ÂvVæFåÕÒ’°¢6öç7BvRÒ¢bb¢ç6÷W&6RòvU&VÆWfR†¢ç6÷W&6Rç&VÆWfUöÆR’¢çVÆÃ°¢–b†vRÓÒçVÆÂbbvRâtUõ$TÄUdUôäõ$ÔÂ’f–WW‚çW6‚‡²FRÂvRÒ“°¢Ğ¢ò¢6RV’6öÖÖVæ6RV¦÷W&Bv‡V’6ö×FRW76’ƒbóó##b¢Æ–"ö6ÆVæG&–W"&VæFW¥f÷W4ff–6†W2’¢ğ¢6öç7B²fVæ—#¢fVæ—%6WVÂÂ6öÖÖVæ6VW4V¦÷W&F‡V’ÒÒFW&—fW$V¦÷W&F‡V’‡²f–6†S¢²æöÓ¢'‚"Â6—&6ó¢çVÆÂÒÂ6öÖ×VæS¢#"ÂFW¢#sr"Â–æFWƒ¢²w&VvG3¢µÒÂ6÷W&6W3¢·ÒÒÀ¢&ö¦WG3¢çVÆÂÂ6C¢çVÆÂÂ÷3¢çVÆÂÂFWWFW3¢çVÆÂÂ6ÂÂvVæFâÂWfVæVÖVçG3¢çVÆÂÂÖ–çFVæçC¢”å5DåDäRÒ“°¢6öç7BfVæ—"Ò²âââ†6öÖÖVæ6VW4V¦÷W&F‡V’ÇÂµÒ’ÂââæfVæ—%6WVÅÓ°¢6öç7BÆ–Ö—FRÒ¦÷W%&—2†æWrFFR„”å5DåDäRævWEF–ÖR‚’²B¢ƒcFSR’“°¢ÆWB&ö6†W2ÒfVæ—"æf–ÇFW"†RÓâRæFV'WBç6Æ–6RƒÂ’ÂÆ–Ö—FR“°¢–b‚&ö6†W2æÆVæwF‚’&ö6†W2ÒfVæ—"ç6Æ–6RƒÂR“°¢ò¢vVæFÇR¢RÖö–ç2VâvVæF6W'f’âÆ4’*²Öö&–ÆR+²âvW‡G&—BVRÆRf–6†–W"WFöæöÖR ¢V7VâvVæFÂÂvV7&âF—BÂv'6Væ6RWBâv2FRg&—6R†6öç7FFRÆRróó##b’â¢ğ¢&WGW&â²Æ–væW3¢&Vw&÷WW%$¦÷W"‡&ö6†W2’æÆVæwF‚Âf–WW‚ÂvVæFÇS¢†6ÂÇÂvVæFâ’Ó°§Ò’‚“°¢ò¢ÆW2VÇW2GR6çFöâFRÖVW‚ÂÇW2Fç2ÆW2FöææVW26W'f–W2ƒróó##b’â¢ğ¦6öç7BTÅU5ô4åDôâÒv—B†7–æ2‚’Óâ°¢G'’²6öç7B"Òv—BfWF6‚„$4R²"öFFöFW'FÖVçG2ósræ§6öâ"“²6öç7B¢Òv—B"æ§6öâ‚“²6öç7BbÒ¢æ6öÖ×VæW5²#ss#ƒB%Ó²&WGW&â†¢æ6öç6V–ÅöFW'FVÖVçFÂÇÂµÒ’æf–ÇFW"†RÓâ†bæ6çFöâÇÂµÒ’æ–æ6ÇVFW2†Ræ6çFöâ’’æÖ†RÓâRææöÒ“²Ğ¢6F6‚²&WGW&âµÓ²Ğ§Ò’‚“°¢ò¢Æ6VÖ–æRR&ÆVÖVçBGFVæGVRÂ6Æ7VÆVR"ÆR6ö6ÆR7W"ÆW2f–6†–W'26W'f—0¢ƒróó##b’âVâf–6†–W"'6VçBâvW7B26ö×FRÂ6öÖÖRFç2ÂvÆ–6F–öââ¢ğ¦6öç7B²6VÖ–æU&ÆVÖVçBÂ¦÷W%&—2ÒÒv—B–×÷'B‚"ââòââòââ÷6¶vW2ö6÷&R÷7&2öV¦÷W&F‡V’æ§2"“°¦6öç7B6W'f’Ò7–æ2bÓâ²G'’²6öç7B"Òv—BfWF6‚„$4R²"öFFò"²b“²&WGW&â"æö²òv—B"æ§6öâ‚’¢çVÆÃ²Ò6F6‚²&WGW&âçVÆÃ²ÒÓ°¦6öç7B4TÔ”äRÒ6VÖ–æU&ÆVÖVçB‡²vVæFã¢v—B6W'f’‚&vVæFÖâæ§6öâ"’Â6Ã¢v—B6W'f’‚&6ÆVæG&–W"×6VæBæ§6öâ"’ÂÖ–çFVæçC¢”å5DåDäRÒ“°¢ò¢ÆW2W‡Æ–6F–öç2FRÆ6'FR6öçB&WÆ–VW2ƒbóó##b’¢öâÆW2÷Wg&RfçBFRÆ—&Râ¢ğ¦6öç7BÆ—&U6VÖ–æRÒ7–æ2vRÓâ°¢6öç7B"ÒvRævWD'•FW7D–B‚'6VÖ–æR×&ÆVÖVçB"’ævWD'•&öÆR‚&'WGFöâ"Â²æÖS¢$ÆRL:—F–Â‡6VÖ–æR’"ÂW‡æFVC¢fÇ6RÒ“°¢–b†v—B"æ6÷VçB‚’’²v—B"æf—'7B‚’æ6Æ–6²‚“²v—BvRçv—Df÷%F–ÖV÷WBƒ#“²Ğ¢&WGW&âÆ—&U6VÖ–æTFöÒ‡vR“°§Ó°¦6öç7BÆ—&U6VÖ–æTFöÒÒvRÓâvRæWfÇVFR‚‚’Óâ°¢6öç7B2ÒFö7VÖVçBçVW'•6VÆV7F÷"‚u¶FF×FW7F–CÒ'6VÖ–æR×&ÆVÖVçB%Òr“°¢–b‚2ÇÂ2æöfg6WE&VçB’&WGW&âçVÆÃ°¢6öç7B&W2Ò²ââæFö7VÖVçBçVW'•6VÆV7F÷$ÆÂ‚u¶FF×FW7F–CÒ'&Wöç6R%Òr•Òæf–ÇFW"†RÓâRæöfg6WE&VçB“°¢6öç7B÷&G&RÒ²†WC¢ÖF‚ç&÷VæB†2ævWD&÷VæF–æt6Æ–VçE&V7B‚’çF÷’Â&5&Wöç6W3¢&W2æÖ†RÓâÖF‚ç&÷VæB†RævWD&÷VæF–æt6Æ–VçE&V7B‚’æ&÷GFöÒ’’Ó°¢&WGW&â°¢6÷W3¢&W2æÆVæwF‚âbb÷&G&Ræ&5&Wöç6W2æWfW'’†"Óâ"ÃÒ÷&G&Ræ†WB’Â÷&G&RÀ¢¦÷W'3¢²ââæ2çVW'•6VÆV7F÷$ÆÂ‚u¶FF×FW7F–CÒ'6VÖ–æRÖ¦÷W"%Òr•ÒæÖ†RÓâRævWDGG&–'WFR‚&&–ÖÆ&VÂ"’’À¢f÷FW3¢2çVW'•6VÆV7F÷$ÆÂ‚u¶FF×FW7F–CÒ'6VÖ–æR×f÷FR%Òr’æÆVæwF‚À¢FW‡FS¢2æ–ææW%FW‡BÀ¢Ó°§Ò“°¦ÆWBV6†V72Ò°¢ò¢róó##b¢7W"v—D‡V"Â6†VRV6†V2FWf–VçBVæRææ÷FF–öâGR'VâÒÆP¢¦÷W&æÂ6ö×ÆWBâvW7BÆ—6–&ÆRæ’FWV—2ÆR6öçFVæWW"FRG&f–Âæ’FWV—2Và¢FVÆW†öæR†ÖVÖR&–æ6—RVR&æ2‚’Fç2÷WF–Ç2÷—VÆ–æRç6‚’â¢ğ¦6öç7BfW&–f–W"Ò†ö²ÂFW‡FR’Óâ°¢6öç6öÆRæÆör‚†ö²ò&ö²"¢$T4„T2"’²""²FW‡FR“°¢–b‚ö²’²V6†V72²³²–b‡&ö6W72æVçbät•D…T%ô5D”ôå2’6öç6öÆRæÆör‚#£¦W'&÷"F—FÆS×&6÷W'2Öö&–ÆS£¢"²7G&–ær‡FW‡FR’ç&WÆ6R‚õÇ#õÆâörÂ""’ç6Æ–6RƒÂ“’“²Ğ§Ó° ¦6öç7Bæf–vFWW"Òv—B6‡&öÖ—VÒæÆVæ6‚‚“°¦7–æ2gVæ7F–öâ–ç7FÆÆW$†÷&ÆövR‡vR’°¢v—BvRæ6Æö6²ç6WDf—†VEF–ÖR„”å5DåDäR“°¢v—BvRçv—Df÷%F–ÖV÷WBƒ“°¢6öç7BÇRÒv—BvRæWfÇVFR‚‚’ÓâFFRææ÷r‚’“°¢–b†ÇRÓÒ”å5DåDäRævWEF–ÖR‚’’F‡&÷ræWrW'&÷"††÷&ÆövRÆ—w&–v‡Bæöâf—Œ:–R¢G¶ÇWÒRÆ–WRFRG´”å5DåDäRævWEF–ÖR‚—Ö“°¢&WGW&âvS°§Ğ¦6öç7Bæ÷WfVÆÆUvRÒ7–æ2÷F–öç2Óâ–ç7FÆÆW$†÷&ÆövR†v—Bæf–vFWW"ææWuvR†÷F–öç2’“°¦6öç7BvTGT6öçFW‡FRÒ7–æ26öçFW‡FRÓâ–ç7FÆÆW$†÷&ÆövR†v—B6öçFW‡FRææWuvR‚’“°¢ò¢t$DRÕDTÕ2(	B‚óó##bâÆRróÂÆ4’Öö&–ÆRFR3“BF÷W&æR#BÖ–çWFW0¢6ç2Vâ6WVÂV6†V2ÂV—2WFR6÷WVR"ÆÆ–Ö—FRGRG&f–Âƒ#RÖ–â’¢&–Và¢æRF—6—B÷RVÆÆR2vWF—B'&WFVRâVâ&6÷W'2æ÷&ÖÂGW&R2RÖ–çWFW2â76P¢6RFVÆ’ÂÆR&6÷W'22v'&WFRFRÇV’ÖÖVÖRWBäôÔÔRÆRFW&æ–W"6öçG&öÆR76RÀ¢Vâææ÷FF–öâÆ—6–&ÆR6ç2ÆW2¦÷W&æW‚â¢ğ¦6öç7BÄ”Ô•DUôÕ2ÒçVÖ&W"‡&ö6W72æVçbå$UU$Uõ$4õU%5ôÄ”Ô•DUôÕ2ÇÂ"¢cS2“°¦ÆWBFW&æ–W$6öçG&öÆRÒ"†V7Vâ6öçG&öÆRVæ6÷&R’#°¦6öç7BV7&—&RÒ6öç6öÆRæÆös°¦6öç6öÆRæÆörÒ‚ââæ’Óâ²FW&æ–W$6öçG&öÆRÒæ¦ö–â‚""’ç6Æ–6RƒÂ#“²V7&—&R‚ââæ“²Ó°§6WEF–ÖV÷WB‚‚’Óâ°¢6öç7B×6rÒ&6÷W'2&Æ÷VRFWV—2G´ÖF‚ç&÷VæB„Ä”Ô•DUôÕ2ò—Ò2²FW&æ–W"6öçG&öÆR76R¢G¶FW&æ–W$6öçG&öÆWÖ°¢V7&—&R‡&ö6W72æVçbät•D…T%ô5D”ôå2ò£¦W'&÷"F—FÆS×&6÷W'2Öö&–ÆS£¢G¶×6wÖ¢$T4„T2"²×6r“°¢&ö6W72æW†—Bƒ2“°§ÒÂÄ”Ô•DUôÕ2’çVç&Vb‚“°¦f÷"†6öç7BÆ&vWW"öb³3cÂ3“ÂC3Ò’°¢6öç7BvRÒv—Bæ÷WfVÆÆUvR‡²f–Ww÷'C¢²v–GFƒ¢Æ&vWW"Â†V–v‡C¢ƒÒÂFWf–6U66ÆTf7F÷#¢"Â—4Öö&–ÆS¢G'VRÂ†5F÷V6ƒ¢G'VRÒ“°¢6öç7BFVÖæFVW2ÒµÓ°¢vRæöâ‚'&WVW7B"Â"ÓâFVÖæFVW2çW6‚‡"çW&Â‚’’“°¢v—BvRæv÷Fò„$4R²"ò"Â²v—EVçF–Ã¢&æWGv÷&¶–FÆR"Ò“° ¢6öç7B6†×ÒvRævWD'”Æ&VÂ‚ôü;’†&—FW¢×f÷W2ò“°¢v—B6†×æf–ÆÂ„4ôÔÕTäRç6—6–R“°¢6öç7B&W7VÇFBÒvRævWD'•&öÆR‚&'WGFöâ"Â²æÖS¢æWr&VtW‡‚%â"²4ôÔÕTäRææöÒ²"Â"’Ò’æf—'7B‚“°¢v—B&W7VÇFBçv—Df÷"‡²F–ÖV÷WC¢Ò“°¢–b„4EU$U2’v—BvRç67&VVç6†÷B‡²Fƒ¢F‚æ¦ö–â„4EU$U2Â67VV–ÂÒG¶Æ&vWW'Òçæv’ÂgVÆÅvS¢G'VRÒ“°¢v—B&W7VÇFBæ6Æ–6²‚“° ¢v—BvRævWD'•FW‡B‚$ÆÆW"ÇW2Æö–â"’æf—'7B‚’çv—Df÷"‡²F–ÖV÷WC¢SÒ“°¢v—BvRçv—Df÷$ÆöE7FFR‚&æWGv÷&¶–FÆR"“°¢ò¢ÆR67&öÆÅf–WrFR&V7BæF—fRFVf–ÆRÂv–çFW&–WW"FRÆvR¢VæR6GW&P¢*²ÆV–æRvR+²âvVâÖöçG&W&—BVRÆR†WBâöâÆRf—BFVf–ÆW"â¢ğ¢–b„4EU$U2’°¢f÷"†ÆWB’Ò²’Âc²’²²’°¢v—BvRç67&VVç6†÷B‡²Fƒ¢F‚æ¦ö–â„4EU$U2Â6†W¢×f÷W2ÒG¶Æ&vWW'ÒÒG¶—Òçæv’Ò“°¢6öç7Bf–æ’Òv—BvRæWfÇVFR‚‚’Óâ°¢6öç7BVÂÒ²ââæFö7VÖVçBçVW'•6VÆV7F÷$ÆÂ‚&F—b"•Òæf–ÇFW"†RÓâRç67&öÆÄ†V–v‡BâRæ6Æ–VçD†V–v‡B²Bbbò†WF÷Ç67&öÆÂ’òçFW7B†vWD6ö×WFVE7G–ÆR†R’æ÷fW&fÆ÷u’’¢ç6÷'B‚‡‚Â’’Óâ’ç67&öÆÄ†V–v‡BÒ‚ç67&öÆÄ†V–v‡B•³Ó°¢–b‚VÂ’&WGW&âG'VS°¢6öç7BfçBÒVÂç67&öÆÅF÷²VÂç67&öÆÅF÷³ÒVÂæ6Æ–VçD†V–v‡BÒ#²&WGW&âVÂç67&öÆÅF÷ÓÓÒfçC°¢Ò“°¢–b†f–æ’’'&V³°¢v—BvRçv—Df÷%F–ÖV÷WBƒS“°¢Ğ¢Ğ ¢ò¢ÖW7W&RBwVâV7&â¢FV&÷&FVÖVçBÂ6–&ÆW2Âæö×266W76–&ÆW2ÂFW‡FR†fV2W@¢6ç26—FÆW2FR7G–ÆR’âÆ—VVRÂv67VV–ÂUBW‚G&ö—2V7&ç2FP¢FWF–ÂFWV—2Æ&VföçFRGR3ó’ó##bâ¢ğ¢6öç7BÖW7W&W"Ò‚’ÓâvRæWfÇVFR‚‚’Óâ°¢6öç7BBÒFö7VÖVçBæFö7VÖVçDVÆVÖVçC°¢6öç7B6–&ÆW2Ò²ââæFö7VÖVçBçVW'•6VÆV7F÷$ÆÂ‚u·&öÆSÒ&'WGFöâ%ÒÅ·&öÆSÒ&Æ–æ²%ÒÆ'WGFöâÆÆ–çWBr•Ğ¢æf–ÇFW"†RÓâRæöfg6WE&VçBÓÒçVÆÂ“°¢&WGW&â°¢FV&÷&FS¢Bç67&öÆÅv–GF‚âBæ6Æ–VçEv–GF‚²À¢WF—FW3¢6–&ÆW2æÖ†RÓâ‡²C¢†RævWDGG&–'WFR‚&&–ÖÆ&VÂ"’ÇÂRçFW‡D6öçFVçBÇÂ""’çG&–Ò‚’ç6Æ–6RƒÂC’Âƒ¢RævWD&÷VæF–æt6Æ–VçE&V7B‚’æ†V–v‡BÒ’¢æf–ÇFW"†2Óâ2æ‚ÂCB’À¢6ç4æöÓ¢6–&ÆW2æf–ÇFW"†RÓâ†RævWDGG&–'WFR‚&&–ÖÆ&VÂ"’ÇÂRçFW‡D6öçFVçBÇÂ""’çG&–Ò‚’’æÆVæwF‚À¢FW‡FS¢Fö7VÖVçBæ&öG’æ–ææW%FW‡BÀ¢WF—VWGFW3¢²ââæFö7VÖVçBçVW'•6VÆV7F÷$ÆÂ‚%¶&–ÖÆ&VÅÒ"•ÒæÖ†RÓâRævWDGG&–'WFR‚&&–ÖÆ&VÂ"’’æ¦ö–â‚"Â"’À¢ò¢4ôåE$5DRÔU5U$R5U"ÄR$TäER‡7–¶RGR3ó’ó##b’¢6†VRFW‡FP¢f—6–&ÆR6öçG&RÆR&VÖ–W"föæB÷VRFR6W2&VçG2âBÃS£Â÷R3£÷W ¢ÆRw&æBFW‡FRƒ#B‚Â÷R‚Ãcb‚w&2’â–ÂG&÷WfRÂR&VÖ–W"F÷W"À¢ÆW2Æ–&VÆÆW2BvV6†VÆöâFRÆ6†–æR¢Âv–çFW&6öÖ×VæÆ—FR2Ã#£â¢ğ¢6öçG&7FW3¢‚‚’Óâ°¢6öç7B&v"Ò‚Óâ‡‚æÖF6‚‚õµÆBåÒ²ör’ÇÂµÒ’æÖ„çVÖ&W"“°¢6öç7BÇVÒÒ…·"ÂrÂ%Ò’Óâ·"ÂrÂ%ÒæÖ‡bÓâ²bóÒ#SS²&WGW&âbÃÒã3“#‚òbò"ã“"¢‚‡b²ãSR’òãSR’¢¢"ãC²Ò¢ç&VGV6R‚†ÂbÂ’’Óâ²b¢³ã##bÂãsS"Âãs#%Õ¶•ÒÂ“°¢6öç7BföæBÒRÓâ²f÷"ƒ²S²RÒRç&VçDVÆVÖVçB’²6öç7B2Ò&v"†vWD6ö×WFVE7G–ÆR†R’æ&6¶w&÷VæD6öÆ÷"“²–b†2æÆVæwF‚ãÒ2bb†2æÆVæwF‚ÂBÇÂ5³5ÒâãR’’&WGW&â3²Ò&WGW&â³#SRÂ#SRÂ#SUÓ²Ó°¢6öç7B÷WBÒæWr6WB‚“°¢6öç7BrÒFö7VÖVçBæ7&VFUG&VUvÆ¶W"†Fö7VÖVçBæ&öG’ÂæöFTf–ÇFW"å4„õuõDU…B“°¢f÷"†ÆWBã²†âÒrææW‡DæöFR‚’“²’°¢6öç7BBÒâçFW‡D6öçFVçBçG&–Ò‚’ÂRÒâç&VçDVÆVÖVçC°¢–b‚BÇÂRÇÂRæöfg6WE&VçBÓÓÒçVÆÂ’6öçF–çVS°¢6öç7B7BÒvWD6ö×WFVE7G–ÆR†R’Â2Ò&v"‡7Bæ6öÆ÷"“°¢–b†2æÆVæwF‚ãÒBbb5³5ÒÂ’6öçF–çVS°¢6öç7B¶Â%ÒÒ¶ÇVÒ†2’ÂÇVÒ†föæB†R’•Òç6÷'B‚‡‚Â’’Óâ’Ò‚“°¢6öç7B"Ò†²ãR’ò†"²ãR’Â‚Ò'6TfÆöB‡7BæföçE6—¦R“°¢6öç7B6WV–ÂÒ‚ãÒ#BÇÂ„çVÖ&W"‡7BæföçEvV–v‡B’ãÒsbb‚ãÒ‚ãcb’ò2¢BãS°¢–b‡"Â6WV–Â’÷WBæFB†G·"çFôf—†VBƒ"—Ó£*²G·Bç6Æ–6RƒÂ3—Ò+¶“°¢Ğ¢&WGW&â²ââæ÷WEÓ°¢Ò’‚’À¢ò¢ÆRFW‡FR4å2ÆW26—FÆW2FR7G–ÆR¢6÷W2FW‡EG&ç6f÷&ÒÂ*²DUUDR+°¢V6†—BÆ&V6†W&6†RFR*²FWWFR+²ƒ#’ó’ó##b’â¢ğ¢''WC¢‚‚’Óâ°¢6öç7B7BÒFö7VÖVçBæ7&VFTVÆVÖVçB‚'7G–ÆR"“°¢7BçFW‡D6öçFVçBÒ"§·FW‡B×G&ç6f÷&Ó¦æöæR–×÷'FçGÒ#°¢Fö7VÖVçBæ†VBæVæD6†–ÆB‡7B“°¢6öç7BBÒFö7VÖVçBæ&öG’æ–ææW%FW‡C°¢7Bç&VÖ÷fR‚“°¢&WGW&âC°¢Ò’‚’À¢Ó°¢Ò“°¢6öç7B6öÖ×Vç2Ò†ÒÂV7&â’Óâ°¢fW&–f–W"‚ÒæFV&÷&FRÂG¶Æ&vWW'×‚+rG¶V7&çÒ¢V7VâL:–&÷&FVÖVçB†÷&—¦öçFÆ“°¢fW&–f–W"†ÒçWF—FW2æÆVæwF‚ÓÓÒÂG¶Æ&vWW'×‚+rG¶V7&çÒ¢6–&ÆW2F7F–ÆW2ãÒCB‚G´¥4ôâç7G&–æv–g’†ÒçWF—FW2—Ö“°¢fW&–f–W"†Òç6ç4æöÒÓÓÒÂG¶Æ&vWW'×‚+rG¶V7&çÒ¢6†VR6öçG,;FÆRVâæöÒ66W76–&ÆR‚G¶Òç6ç4æö×Ò6ç2æöÒ–“°¢fW&–f–W"†Òæ6öçG&7FW2æÆVæwF‚ÓÓÒÂG¶Æ&vWW'×‚+rG¶V7&çÒ¢F÷WBFW‡FRf—6–&ÆRGFV–çBÆR6öçG&7FRG´¥4ôâç7G&–æv–g’†Òæ6öçG&7FW2—Ö“°¢6öç7B6ç466VçG2ÒÔõE5ôô44TåE2æf–ÇFW"‡‚ÓâæWr&VtW‡‚"…çÅµåÅÇ´ÇÕÒ’"²‚²"‚GÅµåÅÇ´ÇÕÒ’"Â'R"’çFW7B†Òæ''WB’“°¢fW&–f–W"‡6ç466VçG2æÆVæwF‚ÓÓÒÂG¶Æ&vWW'×‚+rG¶V7&çÒ¢V7VâÖ÷Bff–6Œ:’6ç26W266VçG2G´¥4ôâç7G&–æv–g’‡6ç466VçG2—Ö“°¢Ó° ¢ò¢Ât45TT”Â*²T¤õU$Bt…T’+²Œ*²6†W¢f÷W2+²fçBÆRróó##b’¢6–çVW7F–öç2Â6†7VæRfV266÷W&6R¢ğ¢6öç7BÖW7W&RÒv—BÖW7W&W"‚“°¢6öÖ×Vç2†ÖW7W&RÂ$V¦÷W&Bv‡V’"“°¢fW&–f–W"†æWr&VtW‡„Ô•$R’çFW7B†ÖW7W&RçFW‡FR’ÂG¶Æ&vWW'×‚¢ÆRÖ—&RW7BæöÖÜ:’‚G´Ô•$WÒ–“°¢fW&–f–W"‚õV&Æ–6F–öâ&W:‡&RGRÆBòçFW7B†ÖW7W&RçFW‡FR’ÂG¶Æ&vWW'×‚¢ÆFFRFRÆV&Æ–6F–öâff–6Œ:–RW7BF—FV“°¢fW&–f–W"‚†ÖW7W&RæWF—VWGFW2æÖF6‚‚ôBvü;’f–VçB6WGFR–æf÷&ÖF–öâör’ÇÂµÒ’æÆVæwF‚ãÒ2ÂG¶Æ&vWW'×‚¢6†VR,:—öç6RFRÂv67VV–Â÷'FR66÷W&6V“°¢fW&–f–W"‚÷6öåÇ2·f÷FUÇ2£¥Ç2¢‡÷W'Æ6öçG&WÆÂv'7FVçF–öâ’òçFW7B†ÖW7W&RçFW‡FR’bböL:—WL:—2–çB&—2'BRf÷FRòçFW7B†ÖW7W&RæWF—VWGFW2’À¢G¶Æ&vWW'×‚¢ÆRf÷FRGRL:—WL:’2vff–6†RÂWB6,:—'F—F–öâ6RÆ—BW76’Vâ‡&6V“°¢fW&–f–W"‚öL:—Vç<:’µÆEÇ5Ò¾(*Â"†&—FçBòçFW7B†ÖW7W&RçFW‡FR’ÂG¶Æ&vWW'×‚¢Âv&vVçBFRÆ6öÖ×VæR6RF—BVâVæR‡&6V“°¢ò¢*²,:—öç6W2Bv&÷&B+²ƒ3ó’ó##b’¢VæR&Wöç6RÂ2VæR'V'&—VR²¦Ö—0¢VæRFöææVRFR&W6Væ6RÂ¦Ö—2*²FW&æ–W"+²â¢ğ¢fW&–f–W"‚ö'F–6—:—Æâv2'F–6—:—ÆFW&æ–W"f÷FRö’çFW7B†ÖW7W&Ræ''WB’ÂG¶Æ&vWW'×‚¢V7VæRFöæì:–RFR,:—6Væ6RÂV7Vâ*²FW&æ–W"f÷FR+¶“°¢ò¢7–¶RGR3ó’ó##b¢Æ6÷W&6RFWf–VçBF—67&WFRÂÖ—2Vâ6Æ7VÂ6RF—@¢6Æ7VÂÂtôT”Â†–çf&–çBB’Â26WVÆVÖVçBFç2ÆfWV–ÆÆRâ¢ğ¢fW&–f–W"‚ô6Æ7VÂ&W:‡&RòçFW7B†ÖW7W&RçFW‡FR’ÂG¶Æ&vWW'×‚¢Vâ6†–fg&R6Æ7VÌ:’6RF—B6Æ7VÌ:’6ç2÷Wg&—"ÆfWV–ÆÆV“°¢fW&–f–W"‚ôÆR6ÆVæG&–W"òçFW7B†ÖW7W&Ræ''WB’ÂG¶Æ&vWW'×‚¢Æ6'FR*²6RV’'&—fR+²W7B,:—6VçFR†÷R6‡&6RBv'6Væ6R–“°¢ò¢Ä4TÔ”äRR$ÄTÔTåB…""Âróó##b’¢6÷W2ÆW2G&ö—2&Wöç6W2Â¦Ö—0¢&Ö’VÆÆW2²æF–öæÆRÂF—FR6öÖÖRFVÆÆR²6RRvVÆÆR6ö×FRW7B&V6Æ7VÆP¢–6’FWV—2ÆW2f–6†–W'24U%d•2Â"ÆÖVÖRföæ7F–öâGR6ö6ÆRâ¢ğ¢°¢6öç7BgRÒv—BÆ—&U6VÖ–æR‡vR“°¢fW&–f–W"‡gRbbgRç6÷W2ÂG¶Æ&vWW'×‚+r6VÖ–æR¢Æ6'FRW7B6÷W2ÆW2G&ö—2,:—öç6W2G´¥4ôâç7G&–æv–g’‡gRbbgRæ÷&G&R—Ö“°¢–b…4TÔ”äRæ–ç7F—GWF–öç2æÆVæwF‚’°¢6öç7BF÷FÂÒgRæ¦÷W'2ç&VGV6R‚†âÂÂ’Óââ²„çVÖ&W"‚‚ó¢…ÆB²’<:–æ6RòæW†V2†Â’ÇÂµÒ•³Ò’ÇÂ’Â“°¢fW&–f–W"‡gRæ¦÷W'2æÆVæwF‚ÓÓÒrbbF÷FÂÓÓÒ4TÔ”äRçF÷FÂÀ¢G¶Æ&vWW'×‚+r6VÖ–æR¢6WB¦÷W'2ÂGµ4TÔ”äRçF÷FÇÒ<:–æ6R‡2’V&Æ—VR‡2’Â6öÖÖRÆR6ö6ÆR‚G·F÷FÇÒÇVW2–“°¢fW&–f–W"‡gRçf÷FW2ÓÓÒÖF‚æÖ–âƒ"Â4TÔ”äRçf÷FW56öÆVææVÇ2æÆVæwF‚’ÂG¶Æ&vWW'×‚+r6VÖ–æR¢ÆW2f÷FW26öÆVææVÇ2ææöæ<:—26öçBÖöçG,:—2‚G·gRçf÷FW7Ò–“°¢fW&–f–W"‚÷F÷WBÆR—2Â26WVÆVÖVçBÖVW‚òçFW7B‡gRçFW‡FR’ÂG¶Æ&vWW'×‚+r6VÖ–æR¢Æ6'FRF—BRvVÆÆRW7BæF–öæÆV“°¢ò¢‚óó##b¢Vâ&VÆWfRFRÇW2BwVâ¦÷W"ÆRF—BÂ7W"Âv67VV–ÂW76’¢ğ¢°¢6öç7B²vU&VÆWfRÂtUõ$TÄUdUôäõ$ÔÂÒÒv—B–×÷'B‚"ââòââòââ÷6¶vW2ö6÷&R÷7&2ö6ÆVæG&–W"æ§2"“°¢6öç7Bf–WW‚Ò4TÔ”äRæ–ç7F—GWF–öç2æÖ‡‚Óâ‡²FS¢‚æ–ç7F—GWF–öâÓÓÒ%<:–æB"ò&GR<:–æB"¢&FRÂt76VÖ&Ì:–RæF–öæÆR"ÂvS¢vU&VÆWfR‡‚ç6÷W&6Rbb‚ç6÷W&6Rç&VÆWfUöÆR’Ò’¢æf–ÇFW"‡‚Óâ‚ævRÓÒçVÆÂbb‚ævRâtUõ$TÄUdUôäõ$ÔÂ“°¢fW&–f–W"‡f–WW‚æWfW'’‡‚ÓâæWr&VtW‡‚$vVæF"²‚æFR²"&VÆWl:’ÆRâ²Â–Â’"²‚ævR²"¦÷W'2"’çFW7B‡gRçFW‡FR’’À¢G¶Æ&vWW'×‚+r6VÖ–æR¢Vâ&VÆWl:’æ6–VâÆRF—BG´¥4ôâç7G&–æv–g’‡f–WW‚—Ö“°¢Ğ¢ÒVÇ6R°¢fW&–f–W"‚öâvW7B'&—l:’§W7R|:6WB&V–Â÷W"V7VæR–ç7F—GWF–öâòçFW7B‡gRçFW‡FR’À¢G¶Æ&vWW'×‚+r6VÖ–æR¢6ç26ÆVæG&–W"6W'f’ÂÆ‡&6RBv'6Væ6R†¦Ö—2VæR6VÖ–æRf–FR–“°¢Ğ¢Ğ¢6öç7BfWF—fW2ÒFVÖæFVW2æf–ÇFW"‡RÓâG&W76TfWF—fR‡R’“°¢fW&–f–W"†fWF—fW2æÆVæwF‚ÓÓÒÂG¶Æ&vWW'×‚¢V7VæRG&W76RæR÷'FRVâ6öFRFR6öÖ×VæRG´¥4ôâç7G&–æv–g’†fWF—fW2—Ö“°¢fW&–f–W"‚óss#ƒBòçFW7B‡vRçW&Â‚’’ÂG¶Æ&vWW'×‚¢ÂvG&W76RFRÆvRæR÷'FR2ÆR6öFRFRÆ6öÖ×VæV“° ¢ò¢ÄdUT”ÄÄRDR4õU$4R†æ—fVRB’¢ğ¢v—BvRævWD'•&öÆR‚&'WGFöâ"Â²æÖS¢ôBvü;’f–VçB6WGFR–æf÷&ÖF–öâòÒ’æf—'7B‚’æ6Æ–6²‚“°¢v—BvRævWD'•FW‡B‚$6öÖÖVçB&W:‡&RÂwWF–Æ—6R"’æf—'7B‚’çv—Df÷"‡²F–ÖV÷WC¢SÒ“°¢6öç7BfWV–ÆÆRÒv—BvRæWfÇVFR‚‚’ÓâFö7VÖVçBæ&öG’æ–ææW%FW‡B“°¢fW&–f–W"‚ôFöæì:–W2V&Æœ:–W2ÆRÆBòçFW7B†fWV–ÆÆR’bbş(iròçFW7B†fWV–ÆÆR’À¢G¶Æ&vWW'×‚¢VæR7F–ÆÆR÷Wg&RÆfWV–ÆÆRFR6÷W&6R¢&öGV7FWW"ÂFFRÂW6vRWBÆ–VâfW'2ÆFöæì:–R÷&–v–æÆV“°¢fW&–f–W"‚õG&—L:–W2"&W:‡&RÆRÆBòçF]»ÓÛh‘éì¶»§q«^vÈ˜[YNˆ‘0ê]Z[ÈHØ[İ[ˆJK™š\œİ
+/* LE PARCOURS DE LA TRANCHE VERTICALE, MESURE DANS UN NAVIGATEUR â€” 29/09/2026.
+ *
+ * Sur l'export web de l'application mobile (meme code React Native, rendu par
+ * react-native-web), a trois largeurs de telephone : 360, 390, 430 px.
+ * Ce n'est pas un telephone : ni VoiceOver, ni TalkBack, ni le clavier natif
+ * ne sont eprouves ici. Ce que ce controle mesure vraiment :
+ *   1. le parcours accueil -> recherche -> commune -> retour aboutit ;
+ *   2. aucune adresse demandee ne porte un code de commune (invariant 2) ;
+ *   3. aucun debordement horizontal ;
+ *   4. toute cible tactile fait au moins 44 px de haut ;
+ *   5. chaque bouton et lien a un nom accessible ;
+ *   5b. aucun mot de MOTS_A_ACCENTS n'est affiche sans ses accents ;
+ *   6. l'ecran de commune affiche un maire, une source datee et une phrase
+ *      pour chaque absence â€” jamais une carte vide.
+ *
+ * Usage :
+ *   EXPO_PUBLIC_REPERE_DONNEES=/data npx expo export --platform web --output-dir dist-web
+ *   cp -r ../../data dist-web/data
+ *   node ../../scripts/serveur-statique.mjs dist-web 8811 &
+ *   node tests/parcours-web.mjs http://localhost:8811 [dossier-captures]
+ */
+import { createRequire } from "node:module";
+import path from "node:path";
+import fs from "node:fs";
 
-K˜ÛXÚÊ
-NÂˆ]ØZ]YÙK™Ù]U^
-ØÙH‰Ù\İ\È[ˆÚY™œ™HX›pêKÊK™š\œİ
+/* Le parcours et toutes ses pages partagent un seul instant, y compris au changement de jour. */
+const INSTANTANE = new Date();
 
-KØZ]›ÜŠÈ[Y[İ]ˆLJNÂˆ™\šYšY\ŠYK	Û\™Ù]\Ÿ\0­È	ØXİ[ÛŸHˆH0ê]Z[HØ[İ[ÉÛİ]œ™X
-NÂˆBˆÊˆ]ZH0êXÚYH]HØ[[™šY\ˆÛÛ\ÈÛ™Û]È
-LËÌLÌŒŠHˆÛˆH™]šY[\ˆBˆ˜\œ™H˜\ÜÙK\È\ˆ[ˆ›İ]Ûˆ0ªÈ™]™[š\ˆ0®Ëˆ\È]]™\È0êXÜ˜[œÈØ\™[H›İ]Û‹ˆ
-‹ÂˆYˆ
-Xİ[ÛˆOOHURHXİ[ÛˆOOH“HØ[[™šY\ˆŠHÂˆ]ØZ]YÙK™Ù]U^
-]Z›İ\™	ÚZH‹È^XİˆYHJK›\İ
+/* Playwright : celui de l'application si elle l'a (CI mobile), sinon celui de
+   mono/ (poste de developpement ou il est deja installe par pnpm). */
+let chromium;
+for (const racine of ["../package.json", "../../../package.json"]) {
+  try { ({ chromium } = createRequire(path.resolve(import.meta.dirname, racine))("playwright")); break; } catch { /* suivant */ }
+}
+if (!chromium) { console.error("playwright introuvable"); process.exit(2); }
+const { adresseFautive, MOTS_A_ACCENTS } = await import("../../../packages/data-utils/src/invariants.js");
 
-K˜ÛXÚÊ
-NÂˆH[ÙHÂˆ]ØZ]YÙK™Ù]T›ÛJ˜]Ûˆ‹È˜[YNˆ”™]™[š\ˆ0è	ğêXÜ˜[ˆ°êXğêY[ˆJK›\İ
+const BASE = process.argv[2] || "http://localhost:8811";
+const CAPTURES = process.argv[3] || null;
+if (CAPTURES) fs.mkdirSync(CAPTURES, { recursive: true });
+const COMMUNE = { saisie: "meaux", nom: "Meaux" };
+/* Le nom du maire, lu dans les donnees servies (jamais recopie ici). */
+const MAIRE = await (async () => {
+  try { const r = await fetch(BASE + "/data/departments/77.json"); const j = await r.json(); return j.communes["77284"].maire.nom.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"); }
+  catch { return "Maire introuvable dans les donnÃ©es servies"; }
+})();
+/* Le calendrier attendu, recalcule par le socle sur les fichiers servis (07/10/2026) :
+   Â« a venir Â» vient de deriverAujourdhui lui-meme, jamais d'une regle recopiee ici. */
+const CAL = await (async () => {
+  const { regrouperParJour, ageReleve, AGE_RELEVE_NORMAL } = await import("../../../packages/core/src/calendrier.js");
+  const { jourParis, deriverAujourdhui } = await import("../../../packages/core/src/aujourdhui.js");
+  const lire = async f => { try { const r = await fetch(BASE + "/data/" + f); return r.ok ? await r.json() : null; } catch { return null; } };
+  const cal = await lire("calendrier-senat.json"), agendaAN = await lire("agenda-an.json");
+  const vieux = [];
+  for (const [de, j] of [["du SÃ©nat", cal], ["de l'AssemblÃ©e nationale", agendaAN]]) {
+    const age = j && j.source ? ageReleve(j.source.releve_le) : null;
+    if (age !== null && age > AGE_RELEVE_NORMAL) vieux.push({ de, age });
+  }
+  /* ce qui a commence aujourd'hui compte aussi (16/10/2026 : lib/calendrier rendezVousAffiches) */
+  const { aVenir: aVenirSeul, commenceesAujourdhui } = deriverAujourdhui({ fiche: { nom: "x", circo: null }, commune: "00000", dep: "77", index: { agregats: [], sources: {} },
+    projets: null, cat: null, pos: null, deputes: null, cal, agendaAN, evenements: null, maintenant: INSTANTANE });
+  const aVenir = [...(commenceesAujourdhui || []), ...aVenirSeul];
+  const limite = jourParis(new Date(INSTANTANE.getTime() + 14 * 864e5));
+  let proches = aVenir.filter(e => e.debut.slice(0, 10) < limite);
+  if (!proches.length) proches = aVenir.slice(0, 5);
+  /* agendaLu : au moins un agenda servi. La CI Â« Mobile Â» n'extrait que le fichier autonome :
+     aucun agenda, l'ecran dit l'absence et n'a pas de frise (constate le 17/10/2026). */
+  return { lignes: regrouperParJour(proches).length, vieux, agendaLu: !!(cal || agendaAN) };
+})();
+/* Les elus du canton de Meaux, lus dans les donnees servies (07/10/2026). */
+const ELUS_CANTON = await (async () => {
+  try { const r = await fetch(BASE + "/data/departments/77.json"); const j = await r.json(); const f = j.communes["77284"]; return (j.conseil_departemental || []).filter(e => (f.canton || []).includes(e.canton)).map(e => e.nom); }
+  catch { return []; }
+})();
+/* La semaine au Parlement attendue, calculee par le socle sur les fichiers servis
+   (07/10/2026). Un fichier absent n'est pas compte, comme dans l'application. */
+const { semaineParlement, jourParis } = await import("../../../packages/core/src/aujourdhui.js");
+const servi = async f => { try { const r = await fetch(BASE + "/data/" + f); return r.ok ? await r.json() : null; } catch { return null; } };
+const SEMAINE = semaineParlement({ agendaAN: await servi("agenda-an.json"), cal: await servi("calendrier-senat.json"), maintenant: INSTANTANE });
+/* Les explications de la carte sont repliees (16/10/2026) : on les ouvre avant de lire. */
+const lireSemaine = async page => {
+  const r = page.getByTestId("semaine-parlement").getByRole("button", { name: "Le dÃ©tail (semaine)", expanded: false });
+  if (await r.count()) { await r.first().click(); await page.waitForTimeout(200); }
+  return lireSemaineDom(page);
+};
+const lireSemaineDom = page => page.evaluate(() => {
+  const c = document.querySelector('[data-testid="semaine-parlement"]');
+  if (!c || !c.offsetParent) return null;
+  const reps = [...document.querySelectorAll('[data-testid="reponse"]')].filter(e => e.offsetParent);
+  const ordre = { haut: Math.round(c.getBoundingClientRect().top), basReponses: reps.map(e => Math.round(e.getBoundingClientRect().bottom)) };
+  return {
+    sous: reps.length > 0 && ordre.basReponses.every(b => b <= ordre.haut), ordre,
+    jours: [...c.querySelectorAll('[data-testid="semaine-jour"]')].map(e => e.getAttribute("aria-label")),
+    votes: c.querySelectorAll('[data-testid="semaine-vote"]').length,
+    texte: c.innerText,
+  };
+});
+let echecs = 0;
+/* 07/10/2026 : sur GitHub, chaque echec devient une annotation du run - le
+   journal complet n'est lisible ni depuis le conteneur de travail ni depuis un
+   telephone (meme principe que banc() dans outils/pipeline.sh). */
+const verifier = (ok, texte) => {
+  console.log((ok ? "ok   " : "ECHEC") + " " + texte);
+  if (!ok) { echecs++; if (process.env.GITHUB_ACTIONS) console.log("::error title=parcours mobile::" + String(texte).replace(/\r?\n/g, " ").slice(0, 900)); }
+};
 
-K˜ÛXÚÊ
-NÂˆBˆ]ØZ]YÙK™Ù]U^
-[\ˆ\ÈÚ[ˆŠK™š\œİ
+const navigateur = await chromium.launch();
+async function installerHorloge(page) {
+  await page.clock.setFixedTime(INSTANTANE);
+  await page.waitForTimeout(10);
+  const lu = await page.evaluate(() => Date.now());
+  if (lu !== INSTANTANE.getTime()) throw new Error(`Horloge Playwright non fixÃ©e : ${lu} au lieu de ${INSTANTANE.getTime()}`);
+  return page;
+}
+const nouvellePage = async options => installerHorloge(await navigateur.newPage(options));
+const pageDuContexte = async contexte => installerHorloge(await contexte.newPage());
+/* GARDE-TEMPS â€” 08/10/2026. Le 07/10, la CI mobile de #94 a tourne 24 minutes
+   sans un seul echec, puis a ete coupee par la limite du travail (25 min) : rien
+   ne disait ou elle s'etait arretee. Un parcours normal dure 3 a 5 minutes. Passe
+   ce delai, le parcours s'arrete de lui-meme et NOMME le dernier controle passe,
+   en annotation lisible sans les journaux. */
+const LIMITE_MS = Number(process.env.REPERE_PARCOURS_LIMITE_MS || 12 * 60e3);
+let dernierControle = "(aucun controle encore)";
+const ecrire = console.log;
+console.log = (...a) => { dernierControle = a.join(" ").slice(0, 200); ecrire(...a); };
+setTimeout(() => {
+  const msg = `parcours bloque depuis ${Math.round(LIMITE_MS / 1000)} s ; dernier controle passe : ${dernierControle}`;
+  ecrire(process.env.GITHUB_ACTIONS ? `::error title=parcours mobile::${msg}` : "ECHEC " + msg);
+  process.exit(3);
+}, LIMITE_MS).unref();
+for (const largeur of [360, 390, 430]) {
+  const page = await nouvellePage({ viewport: { width: largeur, height: 800 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true });
+  const demandees = [];
+  page.on("request", r => demandees.push(r.url()));
+  await page.goto(BASE + "/", { waitUntil: "networkidle" });
 
-KØZ]›ÜŠÈ[Y[İ]ˆLJNÂˆB‚ˆ]ØZ]YÙK™Ù]T›ÛJ˜]Ûˆ‹È˜[YNˆ”™]™[š\ˆ0è	ØXØİYZ[ˆJK›\İ
+  const champ = page.getByLabel(/OÃ¹ habitez-vous/);
+  await champ.fill(COMMUNE.saisie);
+  const resultat = page.getByRole("button", { name: new RegExp("^" + COMMUNE.nom + ",") }).first();
+  await resultat.waitFor({ timeout: 10000 });
+  if (CAPTURES) await page.screenshot({ path: path.join(CAPTURES, `accueil-${largeur}.png`), fullPage: true });
+  await resultat.click();
 
-K˜ÛXÚÊ
-NÂˆ]ØZ]YÙK™Ù]U^
-“ğîHXš]^‹]›İ\ÈÈŠKØZ]›ÜŠÈ[Y[İ]ˆLJNÂˆ™\šYšY\ŠYK	Û\™Ù]\Ÿ\ˆ™]İ\ˆ0è	ØXØİYZ[
-NÂˆ]ØZ]YÙK˜ÛÜÙJ
-NÂŸB‹ÊˆS‘HUH•SHP“QQHÑHU8 %ÌLÌŒˆ
-]Y]
-Kˆ˜\ÜÙ]™[H
-ÍÌ
-HX›YBˆ[ˆ[˜Ûİ\œÈH]H[ˆHØ\H\Ü\˜Z\ÜØZ]Ø[œÈ[ˆ[İˆ
-‹ÂÂˆÛÛœİYÙHH]ØZ]›İ]™[TYÙJÈšY]ÜÜˆÈÚYˆÎLZYÚˆK\Ó[Øš[NˆYK\ÕİXÚˆYK™YXÙY[İ[Ûˆœ™YXÙHˆJNÂˆ]ØZ]YÙK™ÛİÊTÑH
-È‹È‹ÈØZ][[ˆ›™]ÛÜšÚYHˆJNÂˆ]ØZ]YÙK™Ù]SX™[
-ÓğîHXš]^‹]›İ\ËÊK™š[
-˜˜\ÜÙ]™[HŠNÂˆ]ØZ]YÙK™Ù]T›ÛJ˜]Ûˆ‹È˜[YNˆ×˜\ÜÙ]™[KÈJK™š\œİ
+  await page.getByText("Aller plus loin").first().waitFor({ timeout: 15000 });
+  await page.waitForLoadState("networkidle");
+  /* Le ScrollView de React Native defile a l'interieur de la page : une capture
+     Â« pleine page Â» n'en montrerait que le haut. On le fait defiler. */
+  if (CAPTURES) {
+    for (let i = 0; i < 6; i++) {
+      await page.screenshot({ path: path.join(CAPTURES, `chez-vous-${largeur}-${i}.png`) });
+      const fini = await page.evaluate(() => {
+        const el = [...document.querySelectorAll("div")].filter(e => e.scrollHeight > e.clientHeight + 4 && /(auto|scroll)/.test(getComputedStyle(e).overflowY))
+          .sort((x, y) => y.scrollHeight - x.scrollHeight)[0];
+        if (!el) return true;
+        const avant = el.scrollTop; el.scrollTop += el.clientHeight - 120; return el.scrollTop === avant;
+      });
+      if (fini) break;
+      await page.waitForTimeout(150);
+    }
+  }
 
-K˜ÛXÚÊ
-NÂˆ]ØZ]YÙK™Ù]U^
-[\ˆ\ÈÚ[ˆŠK™š\œİ
+  /* Mesure d'un ecran : debordement, cibles, noms accessibles, texte (avec et
+     sans capitales de style). Appliquee a l'accueil ET aux trois ecrans de
+     detail depuis la refonte du 30/09/2026. */
+  const mesurer = () => page.evaluate(() => {
+    const d = document.documentElement;
+    const cibles = [...document.querySelectorAll('[role="button"],[role="link"],button,a,input')]
+      .filter(e => e.offsetParent !== null);
+    return {
+      deborde: d.scrollWidth > d.clientWidth + 1,
+      petites: cibles.map(e => ({ t: (e.getAttribute("aria-label") || e.textContent || "").trim().slice(0, 40), h: e.getBoundingClientRect().height }))
+        .filter(c => c.h < 44),
+      sansNom: cibles.filter(e => !(e.getAttribute("aria-label") || e.textContent || "").trim()).length,
+      texte: document.body.innerText,
+      etiquettes: [...document.querySelectorAll("[aria-label]")].map(e => e.getAttribute("aria-label")).join(" | "),
+      /* CONTRASTE AA MESURE SUR LE RENDU (spike du 30/09/2026) : chaque texte
+         visible contre le premier fond opaque de ses parents. 4,5:1, ou 3:1 pour
+         le grand texte (24 px, ou 18,66 px gras). Il a trouve, au premier tour,
+         les libelles d'echelon de la chaine : l'intercommunalite a 3,21:1. */
+      contrastes: (() => {
+        const rgb = x => (x.match(/[\d.]+/g) || []).map(Number);
+        const lum = ([r, g, b]) => [r, g, b].map(v => { v /= 255; return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; })
+          .reduce((a, v, i) => a + v * [0.2126, 0.7152, 0.0722][i], 0);
+        const fond = e => { for (; e; e = e.parentElement) { const c = rgb(getComputedStyle(e).backgroundColor); if (c.length >= 3 && (c.length < 4 || c[3] > 0.5)) return c; } return [255, 255, 255]; };
+        const out = new Set();
+        const w = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+        for (let n; (n = w.nextNode());) {
+          const t = n.textContent.trim(), e = n.parentElement;
+          if (!t || !e || e.offsetParent === null) continue;
+          const st = getComputedStyle(e), c = rgb(st.color);
+          if (c.length >= 4 && c[3] < 1) continue;
+          const [a, b] = [lum(c), lum(fond(e))].sort((x, y) => y - x);
+          const r = (a + 0.05) / (b + 0.05), px = parseFloat(st.fontSize);
+          const seuil = px >= 24 || (Number(st.fontWeight) >= 700 && px >= 18.66) ? 3 : 4.5;
+          if (r < seuil) out.add(`${r.toFixed(2)}:1 Â« ${t.slice(0, 30)} Â»`);
+        }
+        return [...out];
+      })(),
+      /* Le texte SANS les capitales de style : sous textTransform, Â« DEPUTE Â»
+         echappait a la recherche de Â« depute Â» (29/09/2026). */
+      brut: (() => {
+        const st = document.createElement("style");
+        st.textContent = "*{text-transform:none!important}";
+        document.head.appendChild(st);
+        const t = document.body.innerText;
+        st.remove();
+        return t;
+      })(),
+    };
+  });
+  const communs = (m, ecran) => {
+    verifier(!m.deborde, `${largeur}px Â· ${ecran} : aucun dÃ©bordement horizontal`);
+    verifier(m.petites.length === 0, `${largeur}px Â· ${ecran} : cibles tactiles >= 44 px ${JSON.stringify(m.petites)}`);
+    verifier(m.sansNom === 0, `${largeur}px Â· ${ecran} : chaque contrÃ´le a un nom accessible (${m.sansNom} sans nom)`);
+    verifier(m.contrastes.length === 0, `${largeur}px Â· ${ecran} : tout texte visible atteint le contraste AA ${JSON.stringify(m.contrastes)}`);
+    const sansAccents = MOTS_A_ACCENTS.filter(x => new RegExp("(^|[^\\p{L}])" + x + "($|[^\\p{L}])", "u").test(m.brut));
+    verifier(sansAccents.length === 0, `${largeur}px Â· ${ecran} : aucun mot affichÃ© sans ses accents ${JSON.stringify(sansAccents)}`);
+  };
 
-KØZ]›ÜŠÈ[Y[İ]ˆMLJNÂˆ]ØZ]YÙK™Ù]T›ÛJ˜]Ûˆ‹È˜[YNˆ“ğîH˜HÙ]\™Ù[È‹^XİˆYHJK™š\œİ
+  /* L'ACCUEIL Â« AUJOURD'HUI Â» (Â« Chez vous Â» avant le 07/10/2026) : cinq questions, chacune avec sa source */
+  const mesure = await mesurer();
+  communs(mesure, "Aujourd'hui");
+  verifier(new RegExp(MAIRE).test(mesure.texte), `${largeur}px : le maire est nommÃ© (${MAIRE})`);
+  verifier(/Publication RepÃ¨re du \d/.test(mesure.texte), `${largeur}px : la date de la publication affichÃ©e est dite`);
+  verifier((mesure.etiquettes.match(/D'oÃ¹ vient cette information/g) || []).length >= 3, `${largeur}px : chaque rÃ©ponse de l'accueil porte sa source`);
+  verifier(/son\s+vote\s*:\s*(pour|contre|l'abstention)/.test(mesure.texte) && /dÃ©putÃ©s ayant pris part au vote/.test(mesure.etiquettes),
+    `${largeur}px : le vote du dÃ©putÃ© s'affiche, et sa rÃ©partition se lit aussi en phrase`);
+  verifier(/a dÃ©pensÃ© [\d\s]+â‚¬ par habitant/.test(mesure.texte), `${largeur}px : l'argent de la commune se dit en une phrase`);
+  /* Â« RÃ©ponses d'abord Â» (30/09/2026) : une reponse, pas une rubrique ; jamais
+     une donnee de presence, jamais Â« dernier Â». */
+  verifier(!/a participÃ©|n'a pas participÃ©|dernier vote/i.test(mesure.brut), `${largeur}px : aucune donnÃ©e de prÃ©sence, aucun Â« dernier vote Â»`);
+  /* Spike du 30/09/2026 : la source devient discrete, mais un calcul se dit
+     calcul A L'OEIL (invariant 4), pas seulement dans la feuille. */
+  verifier(/Calcul RepÃ¨re/.test(mesure.texte), `${largeur}px : un chiffre calculÃ© se dit calculÃ© sans ouvrir la feuille`);
+  verifier(/Le calendrier/.test(mesure.brut), `${largeur}px : la carte Â« ce qui arrive Â» est prÃ©sente (ou sa phrase d'absence)`);
+  /* LA SEMAINE AU PARLEMENT (PR B, 07/10/2026) : sous les trois reponses, jamais
+     parmi elles ; nationale, dite comme telle ; ce qu'elle compte est recalcule
+     ici depuis les fichiers SERVIS, par la meme fonction du socle. */
+  {
+    const vu = await lireSemaine(page);
+    verifier(vu && vu.sous, `${largeur}px Â· semaine : la carte est sous les trois rÃ©ponses ${JSON.stringify(vu && vu.ordre)}`);
+    if (SEMAINE.institutions.length) {
+      const total = vu.jours.reduce((n, l) => n + (Number((/: (\d+) sÃ©ance/.exec(l) || [])[1]) || 0), 0);
+      verifier(vu.jours.length === 7 && total === SEMAINE.total,
+        `${largeur}px Â· semaine : sept jours, ${SEMAINE.total} sÃ©ance(s) publique(s), comme le socle (${total} lues)`);
+      verifier(vu.votes === Math.min(2, SEMAINE.votesSolennels.length), `${largeur}px Â· semaine : les votes solennels annoncÃ©s sont montrÃ©s (${vu.votes})`);
+      verifier(/tout le pays, pas seulement Meaux/.test(vu.texte), `${largeur}px Â· semaine : la carte dit qu'elle est nationale`);
+      /* 08/10/2026 : un releve de plus d'un jour le dit, sur l'accueil aussi */
+      {
+        const { ageReleve, AGE_RELEVE_NORMAL } = await import("../../../packages/core/src/calendrier.js");
+        const vieux = SEMAINE.institutions.map(x => ({ de: x.institution === "SÃ©nat" ? "du SÃ©nat" : "de l'AssemblÃ©e nationale", age: ageReleve(x.source && x.source.releve_le) }))
+          .filter(x => x.age !== null && x.age > AGE_RELEVE_NORMAL);
+        verifier(vieux.every(x => new RegExp("Agenda " + x.de + " relevÃ© le .+, il y a " + x.age + " jours").test(vu.texte)),
+          `${largeur}px Â· semaine : un relevÃ© ancien le dit ${JSON.stringify(vieux)}`);
+      }
+    } else {
+      verifier(/n'est arrivÃ© jusqu'Ã  cet appareil pour aucune institution/.test(vu.texte),
+        `${largeur}px Â· semaine : sans calendrier servi, la phrase d'absence (jamais une semaine vide)`);
+    }
+  }
+  const fautives = demandees.filter(u => adresseFautive(u));
+  verifier(fautives.length === 0, `${largeur}px : aucune adresse ne porte un code de commune ${JSON.stringify(fautives)}`);
+  verifier(!/77284/.test(page.url()), `${largeur}px : l'adresse de la page ne porte pas le code de la commune`);
 
-K˜ÛXÚÊ
-NÂˆ]ØZ]YÙK™Ù]U^
-ÓğîH˜H	Ø\™Ù[H˜\ÜÙ]™[KÊK™š\œİ
+  /* LA FEUILLE DE SOURCE (niveau 4) */
+  await page.getByRole("button", { name: /D'oÃ¹ vient cette information/ }).first().click();
+  await page.getByText("Comment RepÃ¨re l'utilise").first().waitFor({ timeout: 5000 });
+  const feuille = await page.evaluate(() => document.body.innerText);
+  verifier(/DonnÃ©es publiÃ©es le \d/.test(feuille) && /â†—/.test(feuille),
+    `${largeur}px : une pastille ouvre la feuille de source : producteur, date, usage et lien vers la donnÃ©e originale`);
+  verifier(/TraitÃ©es par RepÃ¨re le \d/.test(feuille), `${largeur}px : la feuille distingue la date de la source de celle du traitement par RepÃ¨re`);
+  await page.getByRole("button", { name: "Fermer" }).first().click();
+  await page.waitForTimeout(400);
 
-KØZ]›ÜŠÈ[Y[İ]ˆLJNÂˆ]ØZ]YÙKØZ]›Ü•[Y[İ]
-
-NÂˆÛÛœİH]ØZ]YÙK™]˜[X]J
+  /* LES QUESTIONS SUIVANTES : deux depuis les reponses, une depuis le bloc sombre
+     Â« Qui dÃ©cide chez vous ? Â» (16/10/2026 : il remplace l'entree Â« Qui dÃ©cide Â» de
+     Â« Aller plus loin Â»), deux depuis Â« Aller plus loin Â». */
+  const QUI = "Voir la chaÃ®ne complÃ¨te : qui dÃ©cide pour Meaux";
+  for (const [action, question, preuve] of [
+    ["OÃ¹ va cet argent ?", /OÃ¹ va l'argent de Meaux/, /Sur 100 â‚¬ dÃ©pensÃ©s, \d+ â‚¬ servent Ã  payer les personnes employÃ©es par la commune/],
+    ["Comprendre ce vote", /Qu'a votÃ© votre dÃ©putÃ©/, /Le parcours d'une loi|OÃ¹ en est ce texte/],
+    [QUI, /Qui dÃ©cide pour Meaux/, /DÃ©cide : /],
+    /* L'Ã©cran du calendrier porte, depuis le canevas du 13/10/2026, le titre Â« Calendrier Â»
+       et la phrase Â« Les sÃ©ances annoncÃ©esâ€¦ Â» : c'est elle qui rÃ©pond Ã  la question. */
+    ["Le calendrier", /Les sÃ©ances annoncÃ©es Ã  l'AssemblÃ©e nationale/, /concernent tout le pays/],
+    ["Sources", /RepÃ¨re a traitÃ© ces fichiers/, /RepÃ¨re a traitÃ© ces fichiers le \d.*DonnÃ©es publiÃ©es le \d.*DonnÃ©es relevÃ©es le \d/s],
+  ]) {
+    await page.getByRole("button", { name: action, exact: true }).first().click();
+    await page.getByText(question).first().waitFor({ timeout: 10000 });
+    await page.waitForTimeout(800);
+    /* Les explications sont repliees (16/10/2026) : on les ouvre toutes, en deux
+       passes, avant de mesurer â€” le contraste, les cibles et le texte se verifient
+       aussi dans les replis. */
+    /* Le premier repli ferme, jusqu'a ce qu'il n'en reste aucun : la liste se
+       recalcule apres chaque ouverture (replis imbriques). Plafond : 40. */
+    const fermes = page.getByRole("button", { name: /^Le dÃ©tail|^En savoir plus|Ce que veut dire chaque Ã©tape|^Le parcours d'une loi|^Voir ses \d+ autres votes|^Voir les \d+ autres rendez-vous/, expanded: false }).filter({ visible: true });
+    for (let k = 0; k < 40 && await fermes.count(); k++) await fermes.first().click();
+    await page.waitForTimeout(300);
+    const m = await mesurer();
+    communs(m, action);
+    if (action === "Le calendrier") {
+      /* PAR JOURNEE (07/10/2026) : autant de lignes que de groupes calcules par le
+         socle sur les fichiers servis, pour les deux prochaines semaines. */
+      const lignes = await page.evaluate(() => document.querySelectorAll('[data-testid="cal-ligne"]').length);
+      verifier(lignes === CAL.lignes, `${largeur}px Â· Le calendrier : une ligne par texte et par jour (${lignes} affichÃ©es, ${CAL.lignes} attendues)`);
+      verifier(CAL.vieux.every(x => new RegExp("Agenda " + x.de + " relevÃ© le .+, il y a " + x.age + " jours").test(m.brut)),
+        `${largeur}px Â· Le calendrier : un relevÃ© ancien le dit, avec sa date ${JSON.stringify(CAL.vieux)}`);
+      /* 17/10/2026 : Â« 13 octobre, 0 Ã©lÃ©ment Â» pour un jour passe qui avait deux seances.
+         Chaque case dit l'un des quatre etats du socle, et les jours deja passes de la
+         semaine sont dits passes (ni Â« 0 Â», ni Â« aucun Â»). */
+      const cases = await page.evaluate(() => [...document.querySelectorAll('[role="button"]')].filter(e => e.checkVisibility())
+        .map(e => e.getAttribute("aria-label") || "").filter(l => /^(lundi|mardi|mercredi|jeudi|vendredi|samedi|dimanche) \d/.test(l)));
+      const forme = /^(lundi|mardi|mercredi|jeudi|vendredi|samedi|dimanche) \d{1,2}(er)? \S+, (jour passÃ©|\d+ rendez-vous publiÃ©s?|aucun rendez-vous publiÃ©|agenda pas encore publiÃ©)$/;
+      const rangAujourdhui = (new Date(INSTANTANE.toLocaleString("en-US", { timeZone: "Europe/Paris" })).getDay() + 6) % 7;
+      if (CAL.agendaLu) {
+        verifier(cases.length === 7 && cases.every(l => forme.test(l)) && cases.filter(l => /jour passÃ©$/.test(l)).length === rangAujourdhui,
+          `${largeur}px Â· Le calendrier : chaque jour de la semaine dit vrai, les ${rangAujourdhui} jours passÃ©s le disent ${JSON.stringify(cases)}`);
+      } else {
+        /* sans agenda servi, aucune case ne pretend dire un jour (ni Â« 0 Â», ni Â« aucun Â») */
+        verifier(cases.length === 0, `${largeur}px Â· Le calendrier sans agenda servi : aucune case de jour n'annonce quoi que ce soit ${JSON.stringify(cases)}`);
+      }
+    }
+    if (action === QUI) verifier(/Ãle-de-France MobilitÃ©s/.test(m.brut) && !/DÃ©cide : les transports/.test(m.brut), `${largeur}px Â· Qui dÃ©cide : en Ãle-de-France, l'intercommunalitÃ© ne Â« dÃ©cide Â» pas des transports`);
+    verifier(preuve.test(m.brut), `${largeur}px Â· ${action} : l'Ã©cran rÃ©pond Ã  sa question`);
+    if (action === "Sources") {
+      /* Depuis le 15/10/2026 (360b264, Â« sources repliÃ©es Â»), la licence est sous
+         Â« Ce que RepÃ¨re en tire et sa licence Â» : un geste l'ouvre. On l'ouvre, puis on
+         lit. Le controle reste le meme : la licence est dite, et la source des noms des
+         deputes est citee. */
+      const repli = page.getByRole("button", { name: /Ce que RepÃ¨re en tire et sa licence/ }).first();
+      if (await repli.count()) { await repli.click(); await page.waitForTimeout(400); }
+      const brut = await page.evaluate(() => document.body.innerText);
+      verifier(/Licence : /.test(brut) && /Les noms des dÃ©putÃ©s/.test(brut), `${largeur}px Â· Sources : chaque source dit sa licence, et la source des noms des dÃ©putÃ©s est citÃ©e`);
+    }
+    if (action === QUI) verifier(ELUS_CANTON.length >= 2 && ELUS_CANTON.every(n => m.brut.includes(n)), `${largeur}px Â· Qui dÃ©cide : tous les Ã©lus du canton sont nommÃ©s ${JSON.stringify(ELUS_CANTON)}`);
+    /* 16/10/2026 : toucher le point Â« RÃ©gion Â» amene la carte RÃ©gion en haut de l'ecran. */
+    if (action === QUI) {
+      const point = page.getByRole("button", { name: /^RÃ©gion :.*Aller Ã  ce niveau$/ }).first();
+      /* Point de depart connu : le haut de l'ecran, la ou sont les points. Le parcours a
+         deja fait defiler la page plus haut ; sans ce retour, la carte pouvait etre deja
+         en vue et le controle ne prouvait rien. */
+      await page.evaluate(() => { for (const d of document.querySelectorAll("div")) if (d.scrollHeight > d.clientHeight + 4 && /(auto|scroll)/.test(getComputedStyle(d).overflowY)) d.scrollTop = 0; });
+      await page.waitForTimeout(300);
+      const avant = await page.evaluate(() => { const e = [...document.querySelectorAll("div")].filter(d => d.checkVisibility() && d.children.length === 0).find(d => (d.innerText || "").startsWith("RÃ©gion Â·")); return e ? Math.round(e.getBoundingClientRect().top) : null; });
+      if (await point.count()) { await point.click(); await page.waitForTimeout(900); }
+      const apres = await page.evaluate(() => { const e = [...document.querySelectorAll("div")].filter(d => d.checkVisibility() && d.children.length === 0).find(d => (d.innerText || "").startsWith("RÃ©gion Â·")); return e ? Math.round(e.getBoundingClientRect().top) : null; });
+      verifier(apres !== null && apres >= 0 && apres < 260 && avant !== null && avant > 260 && apres < avant, `${largeur}px Â· Qui dÃ©cide : le point Â« RÃ©gion Â» amÃ¨ne Ã  sa carte (${avant} px -> ${apres} px)`);
+    }
+    if (action !== "Sources") verifier(/D'oÃ¹ vient cette information/.test(m.etiquettes) || /Le calendrier n'est arrivÃ©/.test(m.texte), `${largeur}px Â· ${action} : la source est Ã  portÃ©e de doigt`);
+    if (/argent/.test(action)) {
+      verifier(/CalculÃ© par RepÃ¨re Â· source/.test(m.texte), `${largeur}px Â· ${action} : les parts calculÃ©es se disent calculÃ©es`);
+      /* 08/10/2026 (audit) : chaque carte de chiffres dit l'annee de ses comptes */
+      const titres = (m.brut.match(/(OÃ¹ vont 100 â‚¬ dÃ©pensÃ©s|D'oÃ¹ vient l'argent|Sa dette|Chaque jour, en moyenne)[^\n]*/g) || []);
+      verifier(titres.length > 0 && titres.every(t => /\d{4}/.test(t)), `${largeur}px Â· ${action} : chaque carte de chiffres porte l'annÃ©e de ses comptes ${JSON.stringify(titres)}`);
+      await page.getByRole("button", { name: "DÃ©tails du calcul" }).first().click();
+      await page.getByText(/ce n'est pas un chiffre publiÃ©/).first().waitFor({ timeout: 5000 });
+      verifier(true, `${largeur}px Â· ${action} : le dÃ©tail du calcul s'ouvre`);
+    }
+    /* Qui dÃ©cide et Le calendrier sont des onglets (13/10/2026) : on y revient par la
+       barre basse, pas par un bouton Â« Revenir Â». Les autres Ã©crans gardent le bouton. */
+    if (action === QUI || action === "Le calendrier") {
+      await page.getByText("Aujourd'hui", { exact: true }).last().click();
+    } else {
+      await page.getByRole("button", { name: "Revenir Ã  l'Ã©cran prÃ©cÃ©dent" }).last().click();
+    }
+    await page.getByText("Aller plus loin").first().waitFor({ timeout: 5000 });
+  }
 
-HOˆØİ[Y[˜›ÙKš[›™\•^
-NÂˆ™\šYšY\ŠÜX›YH[ˆ[˜Ûİ\œÈH]H[İ\ˆ˜\ÜÙ]™[H[ˆÍKİ\ˆHYÙ]š[˜Ú\[ˆ]Xİ[ˆ[\[‰ŞH™\İH0è™[X›İ\œÙ\‹Ë\İ
-
-K˜\™Ù[ˆ[™H]H[HX›pêYHÙH]HØ\H™H\Ü\˜pë\ÈŠNÂˆ]ØZ]YÙK˜ÛÜÙJ
-NÂŸB‹ÊˆÔ”È	ÒSKQKQ”SÑH8 %ÌLÌŒˆˆ[™HÛÛ[][™H	ØZ[]\œÈ‰Ù\İ˜[XZ\È]Bˆ[›İ]˜X›HÈH˜\ÙH]]YHH™]H™HHÛİ]œ™H\È[˜ÛÜ™Kˆ
-‹ÂÂˆÛÛœİYÙHH]ØZ]›İ]™[TYÙJÈšY]ÜÜˆÈÚYˆÎLZYÚˆK\Ó[Øš[NˆYK\ÕİXÚˆYHJNÂˆ]ØZ]YÙK™ÛİÊTÑH
-È‹È‹ÈØZ][[ˆ›™]ÛÜšÚYHˆJNÂˆ]ØZ]YÙK™Ù]SX™[
-ÓğîHXš]^‹]›İ\ËÊK™š[
-“[ÛˆŠNÂˆ]ØZ]YÙKØZ]›Ü•[Y[İ]
-
-NÂˆÛÛœİH]ØZ]YÙK™]˜[X]J
+  await page.getByRole("button", { name: "Revenir Ã  l'accueil" }).last().click();
+  await page.getByText("OÃ¹ habitez-vous ?").waitFor({ timeout: 5000 });
+  verifier(true, `${largeur}px : retour Ã  l'accueil`);
+  await page.close();
+}
+/* UNE DETTE NULLE PUBLIEE SE DIT â€” 08/10/2026 (audit). Bassevelle (77024) publie
+   un encours de dette nul : la carte disparaissait sans un mot. */
+{
+  const page = await nouvellePage({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, reducedMotion: "reduce" });
+  await page.goto(BASE + "/", { waitUntil: "networkidle" });
+  await page.getByLabel(/OÃ¹ habitez-vous/).fill("bassevelle");
+  await page.getByRole("button", { name: /^Bassevelle,/ }).first().click();
+  await page.getByText("Aller plus loin").first().waitFor({ timeout: 15000 });
+  await page.getByRole("button", { name: "OÃ¹ va cet argent ?", exact: true }).first().click();
+  await page.getByText(/OÃ¹ va l'argent de Bassevelle/).first().waitFor({ timeout: 10000 });
+  await page.waitForTimeout(800);
+  const t = await page.evaluate(() => document.body.innerText);
+  verifier(/publie un encours de dette nul pour Bassevelle en \d{4}, sur le budget principal : aucun emprunt n'y reste Ã  rembourser/.test(t), "argent : une dette nulle publiÃ©e se dit, la carte ne disparaÃ®t pas");
+  await page.close();
+}
+/* HORS D'ILE-DE-FRANCE â€” 08/10/2026 : une commune d'ailleurs n'est jamais dite
+   introuvable ; la phrase dit que la beta ne la couvre pas encore. */
+{
+  const page = await nouvellePage({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
+  await page.goto(BASE + "/", { waitUntil: "networkidle" });
+  await page.getByLabel(/OÃ¹ habitez-vous/).fill("Lyon");
+  await page.waitForTimeout(800);
+  const t = await page.evaluate(() => document.body.innerText);
+  verifier(/Aucune commune d'Ãle-de-France ne correspond Ã  Â«\s?Lyon\s?Â»/.test(t) && /pas encore disponibles ici/.test(t) && !/Rien ne correspond/.test(t),
+    "recherche : hors d'Ãle-de-France, la couverture de la bÃªta est dite, jamais une absence");
+  await page.close();
+}
+/* LES PANNES PARTIELLES DISENT Â« PAS ARRIVE Â», JAMAIS Â« ABSENT Â» â€” audit de
+   #45, 29/09/2026. Avant correction, un fichier de projets ou de votes coupe
+   faisait afficher Â« Aucun projet ... n'est publie Â» : une phrase fausse. */
+async function ouvrirAvecPanne(motif) {
+  const page = await nouvellePage({ viewport: { width: 390, height: 800 }, isMobile: true, hasTouch: true });
+  await page.route(motif, r => r.abort());
+  await page.goto(BASE + "/", { waitUntil: "networkidle" });
+  await page.getByLabel(/OÃ¹ habitez-vous/).fill(COMMUNE.saisie);
+  await page.getByRole("button", { name: new RegExp("^" + COMMUNE.nom + ",") }).first().click();
+  await page.waitForTimeout(1500);
+  await page.waitForLoadState("networkidle");
+  const texte = await page.evaluate(() => document.body.textContent);
+  await page.close();
+  return texte;
+}
+{
+  const t = await ouvrirAvecPanne("**/data/projets/**");
+  verifier(/projets financÃ©s par l'Ã‰tat ne sont pas arrivÃ©s/.test(t) && !/Aucun projet financÃ©/.test(t),
+    "panne des projets : Â« pas arrivÃ©s Â», jamais Â« aucun projet Â»");
+  verifier(new RegExp(MAIRE).test(t) && /son\s+vote\s*:/.test(t), "panne des projets : le reste de l'Ã©cran s'affiche");
+}
+{
+  const t = await ouvrirAvecPanne("**/data/scrutins/**");
+  verifier(/votes de l'AssemblÃ©e ne sont pas arrivÃ©s/.test(t) && !/Aucun vote solennel/.test(t),
+    "panne des votes : Â« pas arrivÃ©s Â», jamais Â« aucun vote Â»");
+}
+{
+  const t = await ouvrirAvecPanne("**/data/departments/**");
+  verifier(/n'a pas rÃ©ussi Ã  joindre le serveur/.test(t) && /RÃ©essayer/.test(t),
+    "panne du dÃ©partement : phrase d'Ã©chec et bouton RÃ©essayer");
+}
 
-HOˆØİ[Y[˜›ÙKš[›™\•^
-NÂˆ™\šYšY\ŠĞ]Xİ[™HÛÛ[][™H	ğã›KYKQœ˜[˜ÙH™HÛÜœ™\ÜÛ™0è0ª×ÏÓ[Û—Ïğ®ËË\İ
-
-H	‰ˆÜ\È[˜ÛÜ™H\ÜÛšX›\ÈXÚKË\İ
-
-H	‰ˆKÔšY[ˆ™HÛÜœ™\ÜÛ™Ë\İ
-
-Kˆœ™XÚ\˜ÚHˆÜœÈ	ğã›KYKQœ˜[˜ÙKHÛİ]™\\™HHH°êH\İ]K˜[XZ\È[™HXœÙ[˜ÙHŠNÂˆ]ØZ]YÙK˜ÛÜÙJ
-NÂŸB‹ÊˆTÈS“‘TÈT•QSTÈTÑS•0ªÈTÈT”’U‘H0®ËSPRTÈ0ªÈP”ÑS•0®È8 %]Y]BˆÍKKÌKÌŒ‹ˆ]˜[ÛÜœ™Xİ[Û‹[ˆšXÚY\ˆH›Ú™]ÈİHH›İ\ÈÛİ\Bˆ˜Z\ØZ]Y™šXÚ\ˆ0ªÈ]Xİ[ˆ›Ú™]‹‹ˆ‰Ù\İX›YH0®Èˆ[™H˜\ÙH˜]\ÜÙKˆ
-‹Â˜\Ş[˜È[˜İ[Ûˆİ]œš\]™XÔ[›™J[İYŠHÂˆÛÛœİYÙHH]ØZ]›İ]™[TYÙJÈšY]ÜÜˆÈÚYˆÎLZYÚˆK\Ó[Øš[NˆYK\ÕİXÚˆYHJNÂˆ]ØZ]YÙKœ›İ]J[İY‹ˆOˆ‹˜X›Ü
+/* MOUVEMENT REDUIT (refonte du 30/09/2026) : quand le systeme demande moins
+   d'animations, le montant s'affiche d'emblee a sa valeur finale. Mesure a
+   100 ms, bien avant la fin d'une animation (520 ms). Et sans reduction, le
+   compteur part bien de plus bas : preuve que le controle voit la difference. */
+async function montantA100ms(reduit) {
+  const ctx = await navigateur.newContext({ viewport: { width: 390, height: 800 }, isMobile: true, hasTouch: true, reducedMotion: reduit ? "reduce" : "no-preference" });
+  const page = await pageDuContexte(ctx);
+  await page.goto(BASE + "/", { waitUntil: "networkidle" });
+  await page.getByLabel(/OÃ¹ habitez-vous/).fill(COMMUNE.saisie);
+  await page.getByRole("button", { name: new RegExp("^" + COMMUNE.nom + ",") }).first().click();
+  /* Depuis le spike du 30/09/2026, le compteur anime vit sur l'ecran Â« OÃ¹ va l'argent Â». */
+  await page.getByRole("button", { name: "OÃ¹ va cet argent ?" }).first().click();
+  /* La moyenne par jour est repliee depuis le 16/10/2026 : on ouvre son repli. */
+  await page.getByRole("button", { name: /^Le dÃ©tail : par jour/ }).first().click();
+  const cible = page.locator('[aria-label$="â‚¬ par jour"]').first();
+  await cible.waitFor({ timeout: 15000 });
+  await page.waitForTimeout(100);
+  const r = await cible.evaluate(e => ({ final: e.getAttribute("aria-label"), vu: e.innerText }));
+  await ctx.close();
+  const chiffres = t => Number(String(t).replace(/[^\d]/g, "").slice(0, 12));
+  return { final: chiffres(r.final), vu: chiffres(r.vu.split("\n")[0]) };
+}
+{
+  const a = await montantA100ms(true);
+  verifier(a.vu === a.final, `mouvement rÃ©duit : le montant est final d'emblÃ©e (${a.vu} / ${a.final})`);
+  const b = await montantA100ms(false);
+  verifier(b.vu < b.final, `sans rÃ©duction, le compteur se rÃ©vÃ¨le (${b.vu} < ${b.final}) : le contrÃ´le ci-dessus mesure bien quelque chose`);
+}
 
-JNÂˆ]ØZ]YÙK™ÛİÊTÑH
-È‹È‹ÈØZ][[ˆ›™]ÛÜšÚYHˆJNÂˆ]ØZ]YÙK™Ù]SX™[
-ÓğîHXš]^‹]›İ\ËÊK™š[
-ÓÓSUS‘KœØZ\ÚYJNÂˆ]ØZ]YÙK™Ù]T›ÛJ˜]Ûˆ‹È˜[YNˆ™]È™YÑ^
-—ˆˆ
-ÈÓÓSUS‘K››ÛH
-È‹ŠHJK™š\œİ
+/* SE SOUVENIR DE LA COMMUNE, SEULEMENT SI LE LECTEUR LE DEMANDE â€” D-M3,
+   29/09/2026. Mesure sur la version web de l'application (sur telephone, le
+   meme code ecrit un fichier du cache, voir lib/memoire.ts) :
+   rien n'est garde avant la demande ; apres, une seule cle, deux codes
+   publics ; la commune est proposee au retour ; Â« Oublier Â» efface tout ;
+   et aucune requete ne porte jamais le code de la commune. */
+{
+  const ctx = await navigateur.newContext({ viewport: { width: 390, height: 800 }, isMobile: true, hasTouch: true });
+  const page = await pageDuContexte(ctx);
+  const demandees = [];
+  page.on("request", r => demandees.push(r.url()));
+  const stockage = () => page.evaluate(() => ({
+    ls: Object.fromEntries(Object.keys(localStorage).map(k => [k, localStorage.getItem(k)])),
+    ss: sessionStorage.length, cookies: document.cookie,
+  }));
+  await page.goto(BASE + "/", { waitUntil: "networkidle" });
+  await page.getByLabel(/OÃ¹ habitez-vous/).fill(COMMUNE.saisie);
+  await page.getByRole("button", { name: new RegExp("^" + COMMUNE.nom + ",") }).first().click();
+  await page.getByText("Aller plus loin").first().waitFor({ timeout: 15000 });
+  let st = await stockage();
+  verifier(Object.keys(st.ls).length === 0, "mÃ©moire : rien n'est gardÃ© tant que le lecteur ne l'a pas demandÃ© " + JSON.stringify(st.ls));
+  await page.getByRole("button", { name: "Retenir Meaux sur ce tÃ©lÃ©phone" }).click();
+  await page.getByText(/Meaux est retenue sur ce tÃ©lÃ©phone/).waitFor({ timeout: 5000 });
+  st = await stockage();
+  verifier(JSON.stringify(st.ls) === JSON.stringify({ "repere.departement": '{"d":"77","c":"77284"}' }),
+    "mÃ©moire : une seule clÃ©, deux codes publics, rien d'autre " + JSON.stringify(st.ls));
+  verifier(st.ss === 0 && st.cookies === "", "mÃ©moire : ni sessionStorage, ni cookie");
+  await page.goto(BASE + "/", { waitUntil: "networkidle" });
+  const reprendre = page.getByRole("button", { name: "Voir ce qui se passe Ã  Meaux" });
+  await reprendre.waitFor({ timeout: 10000 });
+  verifier(true, "mÃ©moire : Meaux est proposÃ©e Ã  la rÃ©ouverture");
+  await reprendre.click();
+  await page.getByText("Aller plus loin").first().waitFor({ timeout: 15000 });
+  verifier(true, "mÃ©moire : un geste suffit pour retrouver sa commune");
+  await page.getByRole("button", { name: "Oublier Meaux" }).click();
+  st = await stockage();
+  verifier(Object.keys(st.ls).length === 0, "mÃ©moire : Â« Oublier Â» efface tout " + JSON.stringify(st.ls));
+  await page.goto(BASE + "/", { waitUntil: "networkidle" });
+  await page.getByText("OÃ¹ habitez-vous ?").waitFor({ timeout: 10000 });
+  verifier(await page.getByText("Votre commune, sur ce tÃ©lÃ©phone").count() === 0, "mÃ©moire : oubliÃ©e, elle n'est plus proposÃ©e");
+  /* Une valeur trafiquee n'est jamais affichee : elle est effacee. */
+  await page.evaluate(() => localStorage.setItem("repere.departement", '{"d":"77","c":"<script>"}'));
+  await page.goto(BASE + "/", { waitUntil: "networkidle" });
+  await page.getByText("OÃ¹ habitez-vous ?").waitFor({ timeout: 10000 });
+  st = await stockage();
+  verifier(Object.keys(st.ls).length === 0 && await page.getByText("Votre commune, sur ce tÃ©lÃ©phone").count() === 0,
+    "mÃ©moire : une valeur mal formÃ©e est effacÃ©e, jamais affichÃ©e");
+  /* Un departement qui n'est pas celui de la commune (07/10/2026) : Â« 97 Â» pour
+     97101 passait, parce que seuls les deux premiers chiffres etaient compares. */
+  await page.evaluate(() => localStorage.setItem("repere.departement", '{"d":"97","c":"97101"}'));
+  await page.goto(BASE + "/", { waitUntil: "networkidle" });
+  await page.getByText("OÃ¹ habitez-vous ?").waitFor({ timeout: 10000 });
+  st = await stockage();
+  verifier(Object.keys(st.ls).length === 0 && await page.getByText("Votre commune, sur ce tÃ©lÃ©phone").count() === 0,
+    "mÃ©moire : un dÃ©partement qui n'est pas celui de la commune (97 pour 97101) est effacÃ©");
+  const fautives = demandees.filter(u => adresseFautive(u) || /77284/.test(u));
+  verifier(fautives.length === 0, "mÃ©moire : aucune requÃªte ne porte le code de la commune " + JSON.stringify(fautives));
+  await ctx.close();
+}
 
-K˜ÛXÚÊ
-NÂˆ]ØZ]YÙKØZ]›Ü•[Y[İ]
-ML
-NÂˆ]ØZ]YÙKØZ]›Ü“ØYİ]J›™]ÛÜšÚYHŠNÂˆÛÛœİ^HH]ØZ]YÙK™]˜[X]J
+/* LA SEMAINE, CAS FABRIQUES â€” 07/10/2026. Un agenda de l'Assemblee construit a
+   partir d'aujourd'hui (heure de Paris), le Senat coupe, un telephone regle en
+   Guadeloupe. Ce que la carte doit dire : le texte du vote mot pour mot, le
+   Senat manquant nomme, Â« agenda pas encore publiÃ© Â» au-dela du dernier jour
+   publie (jamais Â« aucune sÃ©ance Â»), l'heure de Paris dite. Puis les deux
+   institutions coupees : la phrase d'absence. */
+async function ouvrirSemaine({ agenda, senatCoupe, fuseau }) {
+  const ctx = await navigateur.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, reducedMotion: "reduce", ...(fuseau ? { timezoneId: fuseau } : {}) });
+  await ctx.route("**/data/agenda-an.json", r => agenda ? r.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(agenda) }) : r.abort());
+  if (senatCoupe) await ctx.route("**/data/calendrier-senat.json", r => r.abort());
+  const page = await pageDuContexte(ctx);
+  await page.goto(BASE + "/", { waitUntil: "networkidle" });
+  await page.getByLabel(/OÃ¹ habitez-vous/).fill(COMMUNE.saisie);
+  await page.getByRole("button", { name: new RegExp("^" + COMMUNE.nom + ",") }).first().click();
+  await page.getByText("Aller plus loin").first().waitFor({ timeout: 15000 });
+  await page.waitForTimeout(600);
+  const vu = await lireSemaine(page);
+  const m = await page.evaluate(() => ({ deborde: document.documentElement.scrollWidth > document.documentElement.clientWidth + 1 }));
+  await ctx.close();
+  return { ...vu, ...m };
+}
+{
+  const J = k => jourParis(new Date(INSTANTANE.getTime() + k * 864e5));
+  const seance = (jour, heure, titre, description = null) => ({ debut: `${jour}T${heure}`, titre, description, categorie: "SÃ©ance publique" });
+  const agenda = {
+    source: { producteur: "AssemblÃ©e nationale", licence: "Licence ouverte", url: "https://www.assemblee-nationale.fr/dyn/agenda", releve_le: J(0) },
+    evenements: [
+      seance(J(1), "15:00", "Questions au Gouvernement", "Ã‰galement Ã  l'ordre du jour : Vote solennel sur le projet de loi tÃ©moin relatif aux essais ; DÃ©bat d'orientation"),
+      seance(J(1), "17:00", "Vote solennel sur la proposition de loi A"),
+      seance(J(2), "09:30", "Vote solennel sur la proposition de loi B"),
+    ],
+  };
+  const vu = await ouvrirSemaine({ agenda, senatCoupe: true, fuseau: "America/Guadeloupe" });
+  verifier(vu && /Vote solennel sur le projet de loi tÃ©moin relatif aux essais/.test(vu.texte), "semaine (cas fabriquÃ©) : le vote solennel est citÃ© mot pour mot");
+  verifier(vu && vu.votes === 2 && /Et 1 autre vote solennel dans le calendrier/.test(vu.texte), "semaine (cas fabriquÃ©) : deux votes montrÃ©s, le troisiÃ¨me comptÃ©, pas tu");
+  verifier(vu && /Le calendrier du SÃ©nat n'est pas arrivÃ©\s: seules les sÃ©ances de l'AssemblÃ©e nationale sont comptÃ©es/.test(vu.texte), "semaine (cas fabriquÃ©) : le SÃ©nat manquant est nommÃ©");
+  verifier(vu && vu.jours.length === 7 && vu.jours.slice(3).every(l => /agenda pas encore publiÃ©/.test(l)) && /aucune sÃ©ance publique annoncÃ©e/.test(vu.jours[0]),
+    "semaine (cas fabriquÃ©) : au-delÃ  du dernier jour publiÃ©, Â« agenda pas encore publiÃ© Â», jamais Â« aucune sÃ©ance Â» " + JSON.stringify(vu && vu.jours));
+  verifier(vu && /: 2 sÃ©ances publiques/.test(vu.jours[1]) && /: 1 sÃ©ance publique/.test(vu.jours[2]), "semaine (cas fabriquÃ©) : les sÃ©ances sont comptÃ©es par jour");
+  verifier(vu && /Ã  l'heure de Paris/.test(vu.texte), "semaine (cas fabriquÃ©) : rÃ©glÃ© hors de Paris, le tÃ©lÃ©phone dit que les heures sont celles de Paris");
+  verifier(vu && !vu.deborde, "semaine (cas fabriquÃ©) : aucun dÃ©bordement horizontal");
+  const coupe = await ouvrirSemaine({ agenda: null, senatCoupe: true });
+  verifier(coupe && /Le calendrier n'est arrivÃ© jusqu'Ã  cet appareil pour aucune institution/.test(coupe.texte) && coupe.jours.length === 0,
+    "semaine (cas fabriquÃ©) : les deux calendriers coupÃ©s, une phrase vraie, aucune semaine prÃ©tendue");
+  const paris = await ouvrirSemaine({ agenda, senatCoupe: true, fuseau: "Europe/Paris" });
+  verifier(paris && !/Ã  l'heure de Paris/.test(paris.texte), "semaine (cas fabriquÃ©) : Ã  Paris, la prÃ©cision d'heure n'encombre pas la carte");
+}
 
-HOˆØİ[Y[˜›ÙK^ÛÛ[
-NÂˆ]ØZ]YÙK˜ÛÜÙJ
-NÂˆ™]\›ˆ^NÂŸBÂˆÛÛœİH]ØZ]İ]œš\]™XÔ[›™JŠŠ‹Ù]KÜ›Ú™]ËÊŠˆŠNÂˆ™\šYšY\ŠÜ›Ú™]Èš[˜[˜ğê\È\ˆ	ğâ]]™HÛÛ\È\œš]°ê\ËË\İ
-
-H	‰ˆKĞ]Xİ[ˆ›Ú™]š[˜[˜ğêKË\İ
-
-Kˆœ[›™H\È›Ú™]Èˆ0ªÈ\È\œš]°ê\È0®Ë˜[XZ\È0ªÈ]Xİ[ˆ›Ú™]0®ÈŠNÂˆ™\šYšY\Š™]È™YÑ^
-PRT‘JK\İ
-
-H	‰ˆÜÛÛ—Êİ›İWÊ‹Ë\İ
-
-Kœ[›™H\È›Ú™]ÈˆH™\İHH	ğêXÜ˜[ˆÉØY™šXÚHŠNÂŸBÂˆÛÛœİH]ØZ]İ]œš\]™XÔ[›™JŠŠ‹Ù]KÜØÜ][œËÊŠˆŠNÂˆ™\šYšY\Šİ›İ\ÈH	Ğ\ÜÙ[X›0êYH™HÛÛ\È\œš]°ê\ËË\İ
-
-H	‰ˆKĞ]Xİ[ˆ›İHÛÛ[›™[Ë\İ
-
-Kˆœ[›™H\È›İ\Èˆ0ªÈ\È\œš]°ê\È0®Ë˜[XZ\È0ªÈ]Xİ[ˆ›İH0®ÈŠNÂŸBÂˆÛÛœİH]ØZ]İ]œš\]™XÔ[›™JŠŠ‹Ù]KÙ\\Y[ËÊŠˆŠNÂˆ™\šYšY\ŠÛ‰ØH\È°ê]\ÜÚH0è›Ú[™™HHÙ\™]\‹Ë\İ
-
-H	‰ˆÔ°êY\ÜØ^Y\‹Ë\İ
-
-Kˆœ[›™HH0ê\\[Y[ˆ˜\ÙH	ğêXÚXÈ]›İ]Ûˆ°êY\ÜØ^Y\ˆŠNÂŸB‚‹ÊˆSÕU‘SQS•‘QRU
-™Y›ÛHHÌÌKÌŒŠHˆ]X[™HŞ\İ[YH[X[™H[Ú[œÂˆ	Ø[š[X][ÛœËH[Û[ÉØY™šXÚH	Ù[X›YHHØH˜[]\ˆš[˜[KˆY\İ\™HBˆL\ËšY[ˆ]˜[Hš[ˆ	İ[™H[š[X][Ûˆ
-LŒ\ÊKˆ]Ø[œÈ™YXİ[Û‹BˆÛÛ\]\ˆ\šY[ˆH\È˜\Èˆ™]]™H]YHHÛÛ›ÛH›Ú]HY™™\™[˜ÙKˆ
-‹Â˜\Ş[˜È[˜İ[Ûˆ[Û[LL\Ê™YZ]
-HÂˆÛÛœİİH]ØZ]˜]šYØ]]\‹›™]ĞÛÛ^
-ÈšY]ÜÜˆÈÚYˆÎLZYÚˆK\Ó[Øš[NˆYK\ÕİXÚˆYK™YXÙY[İ[Ûˆ™YZ]Èœ™YXÙHˆˆ››Ë\™Y™\™[˜ÙHˆJNÂˆÛÛœİYÙHH]ØZ]YÙQPÛÛ^Jİ
-NÂˆ]ØZ]YÙK™ÛİÊTÑH
-È‹È‹ÈØZ][[ˆ›™]ÛÜšÚYHˆJNÂˆ]ØZ]YÙK™Ù]SX™[
-ÓğîHXš]^‹]›İ\ËÊK™š[
-ÓÓSUS‘KœØZ\ÚYJNÂˆ]ØZ]YÙK™Ù]T›ÛJ˜]Ûˆ‹È˜[YNˆ™]È™YÑ^
-—ˆˆ
-ÈÓÓSUS‘K››ÛH
-È‹ŠHJK™š\œİ
+/* RÃ‰PONSES D'ABORD â€” 30/09/2026. A 390 x 844 (iPhone 12 a 16), les trois
+   reponses de Meaux tiennent entieres dans le premier ecran, sans defiler.
+   Mesure honnete des limites, ecrite dans docs/ux/reponses-dabord-2026.md :
+   a 360 x 740, deux reponses seulement ; un intitule de projet tres long
+   (Boulogne-Billancourt) repousse la troisieme de 36 px. */
+{
+  const HAUTEUR = Number(process.env.REPERE_HAUTEUR_PLI || 844);
+  const page = await nouvellePage({ viewport: { width: 390, height: HAUTEUR }, deviceScaleFactor: 2, isMobile: true, hasTouch: true, reducedMotion: "reduce" });
+  await page.goto(BASE + "/", { waitUntil: "networkidle" });
+  await page.getByLabel(/OÃ¹ habitez-vous/).fill(COMMUNE.saisie);
+  await page.getByRole("button", { name: new RegExp("^" + COMMUNE.nom + ",") }).first().click();
+  await page.getByText("Aller plus loin").first().waitFor({ timeout: 15000 });
+  await page.waitForTimeout(600);
+  const bas = await page.evaluate(() => [...document.querySelectorAll('[data-testid="reponse"]')].filter(e => e.offsetParent).map(e => Math.round(e.getBoundingClientRect().bottom)));
+  verifier(bas.length === 3 && bas.every(b => b <= HAUTEUR), `390 x ${HAUTEUR} : les trois rÃ©ponses tiennent dans le premier Ã©cran ${JSON.stringify(bas)}`);
+  await page.close();
+}
 
-K˜ÛXÚÊ
-NÂˆÊˆ\Z\ÈHÜZÙHHÌÌKÌŒ‹HÛÛ\]\ˆ[š[YHš]İ\ˆ	ÙXÜ˜[ˆ0ªÈğîH˜H	Ø\™Ù[0®Ëˆ
-‹Âˆ]ØZ]YÙK™Ù]T›ÛJ˜]Ûˆ‹È˜[YNˆ“ğîH˜HÙ]\™Ù[ÈˆJK™š\œİ
+/* INVARIANT 9 â€” FRAICHEUR (30/09/2026). Serveur injoignable apres une premiere
+   lecture : la donnee gardee reste lisible, mais l'ecran ne pretend pas qu'elle
+   est a jour. En ligne, aucun bandeau : rien a signaler. */
+{
+  const ctx = await navigateur.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, reducedMotion: "reduce" });
+  const page = await pageDuContexte(ctx);
+  const ouvrir = async () => {
+    await page.goto(BASE + "/", { waitUntil: "networkidle" });
+    await page.getByLabel(/OÃ¹ habitez-vous/).fill(COMMUNE.saisie);
+    await page.getByRole("button", { name: new RegExp("^" + COMMUNE.nom + ",") }).first().click();
+    await page.getByText("Aller plus loin").first().waitFor({ timeout: 15000 });
+    await page.waitForTimeout(600);
+    return { texte: await page.evaluate(() => document.body.innerText), bandeau: await page.getByTestId("fraicheur").count() };
+  };
+  const enLigne = await ouvrir();
+  verifier(enLigne.bandeau === 0, "fraÃ®cheur : en ligne, publication vÃ©rifiÃ©e, aucun bandeau");
+  await ctx.route("**/data/**", r => r.abort("internetdisconnected"));
+  const coupe = await ouvrir();
+  verifier(coupe.bandeau === 1 && /n'a pas pu vÃ©rifier s'il existe une publication plus rÃ©cente/.test(coupe.texte),
+    "fraÃ®cheur : serveur injoignable, l'Ã©cran dit que la publication n'a pas pu Ãªtre vÃ©rifiÃ©e");
+  verifier(new RegExp(MAIRE).test(coupe.texte), "fraÃ®cheur : serveur injoignable, la donnÃ©e gardÃ©e reste lisible");
+  verifier(!/Mis Ã  jour/.test(coupe.texte), "fraÃ®cheur : aucun Â« mis Ã  jour Â» affichÃ© quand rien n'a pu Ãªtre vÃ©rifiÃ©");
+  await ctx.close();
+}
 
-K˜ÛXÚÊ
-NÂˆÊˆH[ŞY[›™H\ˆ›İ\ˆ\İ™\YYH\Z\ÈHM‹ÌLÌŒˆˆÛˆİ]œ™HÛÛˆ™\Kˆ
-‹Âˆ]ØZ]YÙK™Ù]T›ÛJ˜]Ûˆ‹È˜[YNˆ×“H0ê]Z[ˆ\ˆ›İ\‹ÈJK™š\œİ
-
-K˜ÛXÚÊ
-NÂˆÛÛœİÚX›HHYÙK›ØØ]ÜŠ	ÖØ\šXK[X™[	H¸ «\ˆ›İ\ˆ—IÊK™š\œİ
-
-NÂˆ]ØZ]ÚX›KØZ]›ÜŠÈ[Y[İ]ˆMLJNÂˆ]ØZ]YÙKØZ]›Ü•[Y[İ]
-L
-NÂˆÛÛœİˆH]ØZ]ÚX›K™]˜[X]JHOˆ
-Èš[˜[ˆK™Ù]]šX]J˜\šXK[X™[ŠKNˆKš[›™\•^JJNÂˆ]ØZ]İ˜ÛÜÙJ
-NÂˆÛÛœİÚY™œ™\ÈHOˆ[X™\Šİš[™Ê
-Kœ™\XÙJÖ×—KÙËˆŠKœÛXÙJLŠJNÂˆ™]\›ˆÈš[˜[ˆÚY™œ™\Ê‹™š[˜[
-KNˆÚY™œ™\Ê‹KœÜ]
-—ˆŠVÌJHNÂŸBÂˆÛÛœİHH]ØZ][Û[LL\ÊYJNÂˆ™\šYšY\ŠKHOOHK™š[˜[[İ]™[Y[°êYZ]ˆH[Û[\İš[˜[	Ù[X›0êYH
-	ØK_HÈ	ØK™š[˜[JX
-NÂˆÛÛœİˆH]ØZ][Û[LL\Ê˜[ÙJNÂˆ™\šYšY\Š‹H‹™š[˜[Ø[œÈ°êYXİ[Û‹HÛÛ\]\ˆÙH°ê]°êH
-	Ø‹_H	Ø‹™š[˜[JHˆHÛÛ°íHÚKY\Üİ\ÈY\İ\™HšY[ˆ]Y[]YHÚÜÙX
-NÂŸB‚‹ÊˆÑHÓÕU‘S’TˆHHÓÓSUS‘KÑUSSQS•ÒHHPÕUTˆHSPS‘H8 %SLËˆKÌKÌŒ‹ˆY\İ\™Hİ\ˆH™\œÚ[ÛˆÙXˆH	Ø\XØ][Ûˆ
-İ\ˆ[\Û™KBˆY[YHÛÙHXÜš][ˆšXÚY\ˆHØXÚK›Ú\ˆX‹ÛY[[Ú\™KÊH‚ˆšY[ˆ‰Ù\İØ\™H]˜[H[X[™HÈ\™\Ë[™HÙ][HÛK]^ÛÙ\ÂˆX›XÜÈÈHÛÛ[][™H\İ›ÜÜÙYH]H™]İ\ˆÈ0ªÈİX›Y\ˆ0®ÈY™˜XÙHİ]Âˆ]]Xİ[™H™\]Y]H™HÜH˜[XZ\ÈHÛÙHHHÛÛ[][™Kˆ
-‹ÂÂˆÛÛœİİH]ØZ]˜]šYØ]]\‹›™]ĞÛÛ^
-ÈšY]ÜÜˆÈÚYˆÎLZYÚˆK\Ó[Øš[NˆYK\ÕİXÚˆYHJNÂˆÛÛœİYÙHH]ØZ]YÙQPÛÛ^Jİ
-NÂˆÛÛœİ[X[™Y\ÈH×NÂˆYÙK›ÛŠœ™\]Y\İ‹ˆOˆ[X[™Y\Ëœ\Ú
-‹\›
-
-JJNÂˆÛÛœİİØÚØYÙHH
-
-HOˆYÙK™]˜[X]J
-
-HOˆ
-ÂˆÎˆØš™Xİ™œ›ÛQ[šY\ÊØš™XİšÙ^\ÊØØ[İÜ˜YÙJK›X\
-ÈOˆÚËØØ[İÜ˜YÙK™Ù]][JÊWJJKˆÜÎˆÙ\ÜÚ[Û”İÜ˜YÙK›[™İÛÛÚÚY\ÎˆØİ[Y[˜ÛÛÚÚYKˆJJNÂˆ]ØZ]YÙK™ÛİÊTÑH
-È‹È‹ÈØZ][[ˆ›™]ÛÜšÚYHˆJNÂˆ]ØZ]YÙK™Ù]SX™[
-ÓğîHXš]^‹]›İ\ËÊK™š[
-ÓÓSUS‘KœØZ\ÚYJNÂˆ]ØZ]YÙK™Ù]T›ÛJ˜]Ûˆ‹È˜[YNˆ™]È™YÑ^
-—ˆˆ
-ÈÓÓSUS‘K››ÛH
-È‹ŠHJK™š\œİ
-
-K˜ÛXÚÊ
-NÂˆ]ØZ]YÙK™Ù]U^
-[\ˆ\ÈÚ[ˆŠK™š\œİ
-
-KØZ]›ÜŠÈ[Y[İ]ˆMLJNÂˆ]İH]ØZ]İØÚØYÙJ
-NÂˆ™\šYšY\ŠØš™XİšÙ^\Êİ›ÊK›[™İOOH›pê[[Ú\™HˆšY[ˆ‰Ù\İØ\™0êH[]YHHXİ]\ˆ™H	ØH\È[X[™0êHˆ
-È”ÓÓ‹œİš[™ÚYJİ›ÊJNÂˆ]ØZ]YÙK™Ù]T›ÛJ˜]Ûˆ‹È˜[YNˆ”™][š\ˆYX]^İ\ˆÙH0ê[0ê\Û™HˆJK˜ÛXÚÊ
-NÂˆ]ØZ]YÙK™Ù]U^
-ÓYX]^\İ™][YHİ\ˆÙH0ê[0ê\Û™KÊKØZ]›ÜŠÈ[Y[İ]ˆLJNÂˆİH]ØZ]İØÚØYÙJ
-NÂˆ™\šYšY\Š”ÓÓ‹œİš[™ÚYJİ›ÊHOOH”ÓÓ‹œİš[™ÚYJÈœ™\\™K™\\[Y[ˆ	ŞÈ™ˆÍÈ‹˜ÈˆÍÌŸIÈJKˆ›pê[[Ú\™Hˆ[™HÙ][HÛ0êK]^ÛÙ\ÈX›XÜËšY[ˆ	Ø]]™Hˆ
-È”ÓÓ‹œİš[™ÚYJİ›ÊJNÂˆ™\šYšY\ŠİœÜÈOOH	‰ˆİ˜ÛÛÚÚY\ÈOOHˆ‹›pê[[Ú\™HˆšHÙ\ÜÚ[Û”İÜ˜YÙKšHÛÛÚÚYHŠNÂˆ]ØZ]YÙK™ÛİÊTÑH
-È‹È‹ÈØZ][[ˆ›™]ÛÜšÚYHˆJNÂˆÛÛœİ™\™[™™HHYÙK™Ù]T›ÛJ˜]Ûˆ‹È˜[YNˆ•›Ú\ˆÙH]ZHÙH\ÜÙH0èYX]^ˆJNÂˆ]ØZ]™\™[™™KØZ]›ÜŠÈ[Y[İ]ˆLJNÂˆ™\šYšY\ŠYK›pê[[Ú\™HˆYX]^\İ›ÜÜğêYH0èH°ê[İ]™\\™HŠNÂˆ]ØZ]™\™[™™K˜ÛXÚÊ
-NÂˆ]ØZ]YÙK™Ù]U^
-[\ˆ\ÈÚ[ˆŠK™š\œİ
-
-KØZ]›ÜŠÈ[Y[İ]ˆMLJNÂˆ™\šYšY\ŠYK›pê[[Ú\™Hˆ[ˆÙ\İHİY™š]İ\ˆ™]›İ]™\ˆØHÛÛ[][™HŠNÂˆ]ØZ]YÙK™Ù]T›ÛJ˜]Ûˆ‹È˜[YNˆ“İX›Y\ˆYX]^ˆJK˜ÛXÚÊ
-NÂˆİH]ØZ]İØÚØYÙJ
-NÂˆ™\šYšY\ŠØš™XİšÙ^\Êİ›ÊK›[™İOOH›pê[[Ú\™Hˆ0ªÈİX›Y\ˆ0®ÈY™˜XÙHİ]ˆ
-È”ÓÓ‹œİš[™ÚYJİ›ÊJNÂˆ]ØZ]YÙK™ÛİÊTÑH
-È‹È‹ÈØZ][[ˆ›™]ÛÜšÚYHˆJNÂˆ]ØZ]YÙK™Ù]U^
-“ğîHXš]^‹]›İ\ÈÈŠKØZ]›ÜŠÈ[Y[İ]ˆLJNÂˆ™\šYšY\Š]ØZ]YÙK™Ù]U^
-•›İ™HÛÛ[][™Kİ\ˆÙH0ê[0ê\Û™HŠK˜Ûİ[
-
-HOOH›pê[[Ú\™HˆİX›pêYK[H‰Ù\İ\È›ÜÜğêYHŠNÂˆÊˆ[™H˜[]\ˆ˜Yš\]YYH‰Ù\İ˜[XZ\ÈY™šXÚYHˆ[H\İY™˜XÙYKˆ
-‹Âˆ]ØZ]YÙK™]˜[X]J
-
-HOˆØØ[İÜ˜YÙKœÙ]][Jœ™\\™K™\\[Y[‹	ŞÈ™ˆÍÈ‹˜ÈˆØÜš\ˆŸIÊJNÂˆ]ØZ]YÙK™ÛİÊTÑH
-È‹È‹ÈØZ][[ˆ›™]ÛÜšÚYHˆJNÂˆ]ØZ]YÙK™Ù]U^
-“ğîHXš]^‹]›İ\ÈÈŠKØZ]›ÜŠÈ[Y[İ]ˆLJNÂˆİH]ØZ]İØÚØYÙJ
-NÂˆ™\šYšY\ŠØš™XİšÙ^\Êİ›ÊK›[™İOOH	‰ˆ]ØZ]YÙK™Ù]U^
-•›İ™HÛÛ[][™Kİ\ˆÙH0ê[0ê\Û™HŠK˜Ûİ[
-
-HOOHˆ›pê[[Ú\™Hˆ[™H˜[]\ˆX[›Ü›pêYH\İY™˜XğêYK˜[XZ\ÈY™šXÚ0êYHŠNÂˆÊˆ[ˆ\\[Y[]ZH‰Ù\İ\ÈÙ[ZHHHÛÛ[][™H
-ËÌLÌŒŠHˆ0ªÈMÈ0®Èİ\‚ˆMÌLH\ÜØZ]\˜ÙH]YHÙ][È\È]^™[ZY\œÈÚY™œ™\È]ZY[ÛÛ\\™\Ëˆ
-‹Âˆ]ØZ]YÙK™]˜[X]J
-
-HOˆØØ[İÜ˜YÙKœÙ]][Jœ™\\™K™\\[Y[‹	ŞÈ™ˆMÈ‹˜ÈˆMÌLHŸIÊJNÂˆ]ØZ]YÙK™ÛİÊTÑH
-È‹È‹ÈØZ][[ˆ›™]ÛÜšÚYHˆJNÂˆ]ØZ]YÙK™Ù]U^
-“ğîHXš]^‹]›İ\ÈÈŠKØZ]›ÜŠÈ[Y[İ]ˆLJNÂˆİH]ØZ]İØÚØYÙJ
-NÂˆ™\šYšY\ŠØš™XİšÙ^\Êİ›ÊK›[™İOOH	‰ˆ]ØZ]YÙK™Ù]U^
-•›İ™HÛÛ[][™Kİ\ˆÙH0ê[0ê\Û™HŠK˜Ûİ[
-
-HOOHˆ›pê[[Ú\™Hˆ[ˆ0ê\\[Y[]ZH‰Ù\İ\ÈÙ[ZHHHÛÛ[][™H
-MÈİ\ˆMÌLJH\İY™˜XğêHŠNÂˆÛÛœİ˜]]]™\ÈH[X[™Y\Ë™š[\ŠHOˆY™\ÜÙQ˜]]]™JJHÍÍÌË\İ
-JJNÂˆ™\šYšY\Š˜]]]™\Ë›[™İOOH›pê[[Ú\™Hˆ]Xİ[™H™\]pêH™HÜHHÛÙHHHÛÛ[][™Hˆ
-È”ÓÓ‹œİš[™ÚYJ˜]]]™\ÊJNÂˆ]ØZ]İ˜ÛÜÙJ
-NÂŸB‚‹ÊˆHÑSPRS‘KĞTÈP”’TUQTÈ8 %ËÌLÌŒ‹ˆ[ˆYÙ[™HH	Ğ\ÜÙ[X›YHÛÛœİZ]Bˆ\\ˆ	Ø]Z›İ\™	ÚZH
-]\™HH\š\ÊKHÙ[˜]Ûİ\K[ˆ[\Û™H™YÛH[‚ˆİXY[İ\KˆÙH]YHHØ\HÚ]\™HˆH^HH›İH[İİ\ˆ[İBˆÙ[˜]X[œ]X[›Û[YK0ªÈYÙ[™H\È[˜ÛÜ™HX›pêH0®È]KY[HH\›šY\ˆ›İ\‚ˆX›YH
-˜[XZ\È0ªÈ]Xİ[™HğêX[˜ÙH0®ÊK	Ú]\™HH\š\È]KˆZ\È\È]^ˆ[œİ]][ÛœÈÛİ\Y\ÈˆH˜\ÙH	ØXœÙ[˜ÙKˆ
-‹Â˜\Ş[˜È[˜İ[Ûˆİ]œš\”Ù[XZ[™JÈYÙ[™KÙ[˜]Ûİ\K\ÙX]HJHÂˆÛÛœİİH]ØZ]˜]šYØ]]\‹›™]ĞÛÛ^
-ÈšY]ÜÜˆÈÚYˆÎLZYÚˆK\Ó[Øš[NˆYK\ÕİXÚˆYK™YXÙY[İ[Ûˆœ™YXÙH‹‹‹Š\ÙX]HÈÈ[Y^›Û™RYˆ\ÙX]HHˆßJHJNÂˆ]ØZ]İœ›İ]JŠŠ‹Ù]KØYÙ[™KX[‹šœÛÛˆ‹ˆOˆYÙ[™HÈ‹™[š[
-Èİ]\ÎˆŒÛÛ[\Nˆ˜\XØ][Û‹ÚœÛÛˆ‹›ÙNˆ”ÓÓ‹œİš[™ÚYJYÙ[™JHJHˆ‹˜X›Ü
-
-JNÂˆYˆ
-Ù[˜]Ûİ\JH]ØZ]İœ›İ]JŠŠ‹Ù]KØØ[[™šY\‹\Ù[˜]šœÛÛˆ‹ˆOˆ‹˜X›Ü
-
-JNÂˆÛÛœİYÙHH]ØZ]YÙQPÛÛ^Jİ
-NÂˆ]ØZ]YÙK™ÛİÊTÑH
-È‹È‹ÈØZ][[ˆ›™]ÛÜšÚYHˆJNÂˆ]ØZ]YÙK™Ù]SX™[
-ÓğîHXš]^‹]›İ\ËÊK™š[
-ÓÓSUS‘KœØZ\ÚYJNÂˆ]ØZ]YÙK™Ù]T›ÛJ˜]Ûˆ‹È˜[YNˆ™]È™YÑ^
-—ˆˆ
-ÈÓÓSUS‘K››ÛH
-È‹ŠHJK™š\œİ
-
-K˜ÛXÚÊ
-NÂˆ]ØZ]YÙK™Ù]U^
-[\ˆ\ÈÚ[ˆŠK™š\œİ
-
-KØZ]›ÜŠÈ[Y[İ]ˆMLJNÂˆ]ØZ]YÙKØZ]›Ü•[Y[İ]
-Œ
-NÂˆÛÛœİHH]ØZ]\™TÙ[XZ[™JYÙJNÂˆÛÛœİHH]ØZ]YÙK™]˜[X]J
-
-HOˆ
-ÈX›Ü™NˆØİ[Y[™Øİ[Y[[[Y[œØÜ›ÛÚYˆØİ[Y[™Øİ[Y[[[Y[˜ÛY[ÚY
-ÈHJJNÂˆ]ØZ]İ˜ÛÜÙJ
-NÂˆ™]\›ˆÈ‹‹K‹‹›HNÂŸBÂˆÛÛœİˆHÈOˆ›İ\”\š\Ê™]È]JS”ÕS•S‘K™Ù][YJ
-H
-ÈÈ
-ˆMJJNÂˆÛÛœİÙX[˜ÙHH
-›İ\‹]\™K]™K\ØÜš\[ÛˆH[
-HOˆ
-ÈX]ˆ	Ú›İ\ŸU	Ú]\™_X]™K\ØÜš\[Û‹Ø]YÛÜšYNˆ”ğêX[˜ÙHX›\]YHˆJNÂˆÛÛœİYÙ[™HHÂˆÛİ\˜ÙNˆÈ›ÙXİ]\ˆ\ÜÙ[X›0êYH˜][Û˜[H‹XÙ[˜ÙNˆ“XÙ[˜ÙHİ]™\H‹\›ˆšÎ‹ËİİİË˜\ÜÙ[X›YK[˜][Û˜[K™œ‹Ù[‹ØYÙ[™H‹™[]™WÛNˆŠ
-HKˆ]™[™[Y[ÎˆÂˆÙX[˜ÙJŠJKŒMNŒ‹”]Y\İ[ÛœÈ]HÛİ]™\›™[Y[‹°âYØ[[Y[0è	ÛÜ™™HH›İ\ˆˆ›İHÛÛ[›™[İ\ˆH›Ú™]HÚH0ê[[Ú[ˆ™[]Yˆ]^\ÜØZ\ÈÈ0êX˜]	ÛÜšY[][ÛˆŠKˆÙX[˜ÙJŠJKŒMÎŒ‹•›İHÛÛ[›™[İ\ˆH›ÜÜÚ][ÛˆHÚHHŠKˆÙX[˜ÙJŠŠKŒNŒÌ‹•›İHÛÛ[›™[İ\ˆH›ÜÜÚ][ÛˆHÚHˆŠKˆKˆNÂˆÛÛœİHH]ØZ]İ]œš\”Ù[XZ[™JÈYÙ[™KÙ[˜]Ûİ\NˆYK\ÙX]Nˆ[Y\šXØKÑİXY[İ\HˆJNÂˆ™\šYšY\ŠH	‰ˆÕ›İHÛÛ[›™[İ\ˆH›Ú™]HÚH0ê[[Ú[ˆ™[]Yˆ]^\ÜØZ\ËË\İ
-K^JKœÙ[XZ[™H
-Ø\È˜Xœš\]pêJHˆH›İHÛÛ[›™[\İÚ]0êH[İİ\ˆ[İŠNÂˆ™\šYšY\ŠH	‰ˆK›İ\ÈOOHˆ	‰ˆÑ]H]]™H›İHÛÛ[›™[[œÈHØ[[™šY\‹Ë\İ
-K^JKœÙ[XZ[™H
-Ø\È˜Xœš\]pêJHˆ]^›İ\È[Û°ê\ËH›Ú\ÚpêYHÛÛ\0êK\ÈHŠNÂˆ™\šYšY\ŠH	‰ˆÓHØ[[™šY\ˆHğê[˜]‰Ù\İ\È\œš]°êWÎˆÙ][\È\ÈğêX[˜Ù\ÈH	Ğ\ÜÙ[X›0êYH˜][Û˜[HÛÛÛÛ\0êY\ËË\İ
-K^JKœÙ[XZ[™H
-Ø\È˜Xœš\]pêJHˆHğê[˜]X[œ]X[\İ›Û[pêHŠNÂˆ™\šYšY\ŠH	‰ˆKš›İ\œË›[™İOOHÈ	‰ˆKš›İ\œËœÛXÙJÊK™]™\JOˆØYÙ[™H\È[˜ÛÜ™HX›pêKË\İ
-
-JH	‰ˆØ]Xİ[™HğêX[˜ÙHX›\]YH[››Û˜ğêYKË\İ
-Kš›İ\œÖÌJKˆœÙ[XZ[™H
-Ø\È˜Xœš\]pêJHˆ]KY[0èH\›šY\ˆ›İ\ˆX›pêK0ªÈYÙ[™H\È[˜ÛÜ™HX›pêH0®Ë˜[XZ\È0ªÈ]Xİ[™HğêX[˜ÙH0®Èˆ
-È”ÓÓ‹œİš[™ÚYJH	‰ˆKš›İ\œÊJNÂˆ™\šYšY\ŠH	‰ˆÎˆˆğêX[˜Ù\ÈX›\]Y\ËË\İ
-Kš›İ\œÖÌWJH	‰ˆÎˆHğêX[˜ÙHX›\]YKË\İ
-Kš›İ\œÖÌ—JKœÙ[XZ[™H
-Ø\È˜Xœš\]pêJHˆ\ÈğêX[˜Ù\ÈÛÛÛÛ\0êY\È\ˆ›İ\ˆŠNÂˆ™\šYšY\ŠH	‰ˆğè	Ú]\™HH\š\ËË\İ
-K^JKœÙ[XZ[™H
-Ø\È˜Xœš\]pêJHˆ°êYÛ0êHÜœÈH\š\ËH0ê[0ê\Û™H]]YH\È]\™\ÈÛÛÙ[\ÈH\š\ÈŠNÂˆ™\šYšY\ŠH	‰ˆ]K™X›Ü™KœÙ[XZ[™H
-Ø\È˜Xœš\]pêJHˆ]Xİ[ˆ0êX›Ü™[Y[Üš^›Û[ŠNÂˆÛÛœİÛİ\HH]ØZ]İ]œš\”Ù[XZ[™JÈYÙ[™Nˆ[Ù[˜]Ûİ\NˆYHJNÂˆ™\šYšY\ŠÛİ\H	‰ˆÓHØ[[™šY\ˆ‰Ù\İ\œš]°êH\Ü]IğèÙ]\\™Z[İ\ˆ]Xİ[™H[œİ]][Û‹Ë\İ
-Ûİ\K^JH	‰ˆÛİ\Kš›İ\œË›[™İOOHˆœÙ[XZ[™H
-Ø\È˜Xœš\]pêJHˆ\È]^Ø[[™šY\œÈÛİ\0ê\Ë[™H˜\ÙHœ˜ZYK]Xİ[™HÙ[XZ[™H°ê][™YHŠNÂˆÛÛœİ\š\ÈH]ØZ]İ]œš\”Ù[XZ[™JÈYÙ[™KÙ[˜]Ûİ\NˆYK\ÙX]Nˆ‘]\›ÜKÔ\š\ÈˆJNÂˆ™\šYšY\Š\š\È	‰ˆKğè	Ú]\™HH\š\ËË\İ
-\š\Ë^JKœÙ[XZ[™H
-Ø\È˜Xœš\]pêJHˆ0è\š\ËH°êXÚ\Ú[Ûˆ	Ú]\™H‰Ù[˜ÛÛXœ™H\ÈHØ\HŠNÂŸB‚‹Êˆ°âTÓ”ÑTÈ	ĞP“Ô‘8 %ÌÌKÌŒ‹ˆHÎL
-TÛ™HLˆHMŠK\È›Ú\Âˆ™\ÛœÙ\ÈHYX]^Y[›™[[Y\™\È[œÈH™[ZY\ˆXÜ˜[‹Ø[œÈYš[\‹‚ˆY\İ\™HÛ›™]H\È[Z]\ËXÜš]H[œÈØÜËİ^Ü™\ÛœÙ\ËYX›Ü™LŒ‹›Y‚ˆHÍŒÍ]^™\ÛœÙ\ÈÙ][[Y[È[ˆ[][HH›Ú™]™\ÈÛ™Âˆ
-›İ[ÙÛ™KPš[[˜Ûİ\
-H™\İ\ÜÙHH›Ú\ÚY[YHHÍˆˆ
-‹ÂÂˆÛÛœİUUUTˆH[X™\Š›ØÙ\ÜË™[‹”‘TT‘WÒUUUT—ÔH
-NÂˆÛÛœİYÙHH]ØZ]›İ]™[TYÙJÈšY]ÜÜˆÈÚYˆÎLZYÚˆUUUTˆK]šXÙTØØ[Q˜XİÜˆ‹\Ó[Øš[NˆYK\ÕİXÚˆYK™YXÙY[İ[Ûˆœ™YXÙHˆJNÂˆ]ØZ]YÙK™ÛİÊTÑH
-È‹È‹ÈØZ][[ˆ›™]ÛÜšÚYHˆJNÂˆ]ØZ]YÙK™Ù]SX™[
-ÓğîHXš]^‹]›İ\ËÊK™š[
-ÓÓSUS‘KœØZ\ÚYJNÂˆ]ØZ]YÙK™Ù]T›ÛJ˜]Ûˆ‹È˜[YNˆ™]È™YÑ^
-—ˆˆ
-ÈÓÓSUS‘K››ÛH
-È‹ŠHJK™š\œİ
-
-K˜ÛXÚÊ
-NÂˆ]ØZ]YÙK™Ù]U^
-[\ˆ\ÈÚ[ˆŠK™š\œİ
-
-KØZ]›ÜŠÈ[Y[İ]ˆMLJNÂˆ]ØZ]YÙKØZ]›Ü•[Y[İ]
-Œ
-NÂˆÛÛœİ˜\ÈH]ØZ]YÙK™]˜[X]J
-
-HOˆË‹‹™Øİ[Y[œ]Y\TÙ[XİÜ[
-	ÖÙ]K]\İYHœ™\ÛœÙH—IÊWK™š[\ŠHOˆK›Ù™œÙ]\™[
-K›X\
-HOˆX]œ›İ[™
-K™Ù]›İ[™[™ĞÛY[™Xİ
-
-K˜›İÛJJJNÂˆ™\šYšY\Š˜\Ë›[™İOOHÈ	‰ˆ˜\Ë™]™\JˆOˆˆHUUUTŠKÎL	ÒUUUTŸHˆ\È›Ú\È°ê\ÛœÙ\ÈY[›™[[œÈH™[ZY\ˆ0êXÜ˜[ˆ	Ò”ÓÓ‹œİš[™ÚYJ˜\Ê_X
-NÂˆ]ØZ]YÙK˜ÛÜÙJ
-NÂŸB‚‹ÊˆS•T’PS•H8 %”RPÒUTˆ
-ÌÌKÌŒŠKˆÙ\™]\ˆ[š›ÚYÛ˜X›H\™\È[™H™[ZY\™BˆXİ\™HˆHÛ›™YHØ\™YH™\İH\ÚX›KXZ\È	ÙXÜ˜[ˆ™H™][™\È]IÙ[Bˆ\İH›İ\‹ˆ[ˆYÛ™K]Xİ[ˆ˜[™X]HˆšY[ˆHÚYÛ˜[\‹ˆ
-‹ÂÂˆÛÛœİİH]ØZ]˜]šYØ]]\‹›™]ĞÛÛ^
-ÈšY]ÜÜˆÈÚYˆÎLZYÚˆK\Ó[Øš[NˆYK\ÕİXÚˆYK™YXÙY[İ[Ûˆœ™YXÙHˆJNÂˆÛÛœİYÙHH]ØZ]YÙQPÛÛ^Jİ
-NÂˆÛÛœİİ]œš\ˆH\Ş[˜È
-
-HOˆÂˆ]ØZ]YÙK™ÛİÊTÑH
-È‹È‹ÈØZ][[ˆ›™]ÛÜšÚYHˆJNÂˆ]ØZ]YÙK™Ù]SX™[
-ÓğîHXš]^‹]›İ\ËÊK™š[
-ÓÓSUS‘KœØZ\ÚYJNÂˆ]ØZ]YÙK™Ù]T›ÛJ˜]Ûˆ‹È˜[YNˆ™]È™YÑ^
-—ˆˆ
-ÈÓÓSUS‘K››ÛH
-È‹ŠHJK™š\œİ
-
-K˜ÛXÚÊ
-NÂˆ]ØZ]YÙK™Ù]U^
-[\ˆ\ÈÚ[ˆŠK™š\œİ
-
-KØZ]›ÜŠÈ[Y[İ]ˆMLJNÂˆ]ØZ]YÙKØZ]›Ü•[Y[İ]
-Œ
-NÂˆ™]\›ˆÈ^Nˆ]ØZ]YÙK™]˜[X]J
-
-HOˆØİ[Y[˜›ÙKš[›™\•^
-K˜[™X]Nˆ]ØZ]YÙK™Ù]U\İY
-™œ˜ZXÚ]\ˆŠK˜Ûİ[
-
-HNÂˆNÂˆÛÛœİ[“YÛ™HH]ØZ]İ]œš\Š
-NÂˆ™\šYšY\Š[“YÛ™K˜˜[™X]HOOH™œ˜pë˜Ú]\ˆˆ[ˆYÛ™KX›XØ][Ûˆ°ê\šYšpêYK]Xİ[ˆ˜[™X]HŠNÂˆ]ØZ]İœ›İ]JŠŠ‹Ù]KÊŠˆ‹ˆOˆ‹˜X›Ü
-š[\›™]\ØÛÛ›™XİYŠJNÂˆÛÛœİÛİ\HH]ØZ]İ]œš\Š
-NÂˆ™\šYšY\ŠÛİ\K˜˜[™X]HOOHH	‰ˆÛ‰ØH\ÈH°ê\šYšY\ˆÉÚ[^\İH[™HX›XØ][Ûˆ\È°êXÙ[KË\İ
-Ûİ\K^JKˆ™œ˜pë˜Ú]\ˆˆÙ\™]\ˆ[š›ÚYÛ˜X›K	ğêXÜ˜[ˆ]]YHHX›XØ][Ûˆ‰ØH\ÈH0ê™H°ê\šYšpêYHŠNÂˆ™\šYšY\Š™]È™YÑ^
-PRT‘JK\İ
-Ûİ\K^JK™œ˜pë˜Ú]\ˆˆÙ\™]\ˆ[š›ÚYÛ˜X›KHÛ›°êYHØ\™0êYH™\İH\ÚX›HŠNÂˆ™\šYšY\ŠKÓZ\È0è›İ\‹Ë\İ
-Ûİ\K^JK™œ˜pë˜Ú]\ˆˆ]Xİ[ˆ0ªÈZ\È0è›İ\ˆ0®ÈY™šXÚ0êH]X[™šY[ˆ‰ØHH0ê™H°ê\šYšpêHŠNÂˆ]ØZ]İ˜ÛÜÙJ
-NÂŸB‚˜]ØZ]˜]šYØ]]\‹˜ÛÜÙJ
-NÂšYˆ
-ĞTT‘TÊHÛÛœÛÛK›ÙÊ˜Ø\\™\Èˆˆ
-ÈœËœ™XY\”Ş[˜ÊĞTT‘TÊK™š[\ŠˆOˆ‹™[™ÕÚ]
-‹œ™ÈŠJKš›Ú[Š‹ŠJNÂ˜ÛÛœÛÛK›ÙÊXÚXÜÈÈ	ÙXÚXÜßH0êXÚXÊÊXˆœ\˜Ûİ\œÈÛÛ\]°ê\›È0êXÚXÈŠNÂœ›ØÙ\ÜË™^]
-XÚXÜÈÈHˆ
-NÂ
+await navigateur.close();
+if (CAPTURES) console.log("captures : " + fs.readdirSync(CAPTURES).filter(f => f.endsWith(".png")).join(", "));
+console.log(echecs ? `${echecs} Ã©chec(s)` : "parcours complet, zÃ©ro Ã©chec");
+process.exit(echecs ? 1 : 0);
