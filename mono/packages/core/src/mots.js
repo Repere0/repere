@@ -28,6 +28,8 @@ export const GLOSSAIRE = {
   "scrutin solennel": {
     titre: "Scrutin solennel",
     corps: "Vote à l'Assemblée nationale portant sur l'ensemble d'un texte (et non sur un article de détail), dont la position de chaque député est enregistrée et publiée officiellement.",
+    /* Le calendrier emploie aussi « vote solennel » ; c'est le même terme. */
+    aliases: ["vote solennel"],
   },
   "groupe parlementaire": {
     titre: "Groupe parlementaire",
@@ -35,7 +37,7 @@ export const GLOSSAIRE = {
   },
   intercommunalité: {
     titre: "Intercommunalité",
-    corps: "Regroupement de communes qui exerce ensemble certaines compétences (transports, déchets, eau…). Ses élus ne sont pas élus directement par vous : ce sont vos conseillers municipaux qui y siègent.",
+    corps: "Regroupement de communes qui exerce ensemble certaines compétences (transports, déchets, eau…). Dans une commune de 1 000 habitants ou plus, ses conseillers sont élus en même temps que le conseil municipal, sur le même bulletin. En dessous, ce sont des conseillers municipaux désignés dans l'ordre du tableau (le maire, puis les adjoints…). La Métropole du Grand Paris et ses territoires ont des règles particulières.",
   },
   "conseil départemental": {
     titre: "Conseil départemental",
@@ -44,6 +46,31 @@ export const GLOSSAIRE = {
   "conseil régional": {
     titre: "Conseil régional",
     corps: "Assemblée élue de la région. Elle décide notamment des lycées, des trains express régionaux et de la formation professionnelle.",
+  },
+  /* 17/10/2026. Source : Assemblee nationale, « Budget et securite sociale »
+     (assemblee-nationale.fr/dyn/budget-et-securite-sociale), lue le 17/10/2026. */
+  "projet de loi de finances": {
+    titre: "Projet de loi de finances",
+    corps: "Texte que le Gouvernement présente chaque automne au Parlement pour fixer le budget de l'État de l'année suivante ; celui de la Sécurité sociale fait l'objet d'un autre texte. La première partie autorise la perception des impôts, évalue les recettes et fixe les plafonds des dépenses. Elle doit être votée avant l'examen de la seconde, qui répartit les crédits entre les missions de l'État. Voter la première partie n'adopte pas le budget : le texte entier fait l'objet d'un vote final. Le Parlement a 70 jours au plus pour se prononcer.",
+  },
+  /* Sources officielles : Assemblée nationale, Fiche de synthèse n° 46,
+     https://www.assemblee-nationale.fr/dyn/synthese/fonctionnement-assemblee-nationale/travail-legislatif/la-procedure-legislative
+     et Petit lexique parlementaire, https://www.assemblee-nationale.fr/connaissance/lexique.asp (consultés le 18/10/2026). */
+  "projet de loi": {
+    titre: "Projet de loi",
+    corps: "Texte proposé par le Gouvernement au Parlement. Il est examiné par l'Assemblée nationale et le Sénat, qui peuvent le modifier avant de voter.",
+  },
+  /* Source officielle : Assemblée nationale, « Proposition de loi »,
+     https://www.assemblee-nationale.fr/depute/proposition-loi.asp (consultée le 18/10/2026). */
+  "proposition de loi": {
+    titre: "Proposition de loi",
+    corps: "Texte proposé par un député ou un sénateur. Il est examiné par le Parlement et peut devenir une loi si la procédure aboutit.",
+  },
+  /* Source officielle : Assemblée nationale, Lexique, « Commission mixte paritaire »,
+     https://www2.assemblee-nationale.fr/decouvrir-l-assemblee/folder/lexique (consulté le 18/10/2026). */
+  "commission mixte paritaire": {
+    titre: "Commission mixte paritaire",
+    corps: "Quand l'Assemblée nationale et le Sénat ne sont pas d'accord sur un texte, cette commission réunit sept députés et sept sénateurs pour chercher une version de compromis.",
   },
   "adjoint au maire": {
     titre: "Adjoint au maire",
@@ -74,13 +101,14 @@ export function termesDuTexte(texte) {
   for (const c of src) { const n = sansAccent(c); for (const k of n) { norm.push(k); pos.push(i); } i += c.length; }
   const forme = norm.join("");
   const trouves = [];
-  for (const cle of Object.keys(GLOSSAIRE)) {
+  for (const [cle, entree] of Object.entries(GLOSSAIRE)) {
     /* chaque mot peut prendre un « s » : « adjoints au maires » et « scrutins solennels » */
-    const motif = sansAccent(cle).split(" ").map(w => w.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "s?").join(" ");
-    const re = new RegExp(`(^|[^a-z0-9])(${motif})(?=$|[^a-z0-9])`);
-    const m = re.exec(forme);
-    if (!m) continue;
-    trouves.push({ debut: m.index + m[1].length, fin: m.index + m[0].length, cle });
+    for (const alias of [cle, ...(entree.aliases || [])]) {
+      const motif = sansAccent(alias).split(" ").map(w => w.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "s?").join(" ");
+      const re = new RegExp(`(^|[^a-z0-9])(${motif})(?=$|[^a-z0-9])`);
+      const m = re.exec(forme);
+      if (m) trouves.push({ debut: m.index + m[1].length, fin: m.index + m[0].length, cle });
+    }
   }
   trouves.sort((a, b) => a.debut - b.debut);
   const segments = []; let curseur = 0;

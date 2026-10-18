@@ -23,6 +23,48 @@ test("les etiquettes ne sont plus en capitales de style", () => {
   assert.doesNotMatch(lire("lib/theme.ts"), /textTransform/, "les etiquettes repassent en capitales de style");
 });
 
+test("« Avant 18 ans » est accessible depuis l'accueil et Sources, avec ses sources officielles", () => {
+  const page = lire("app/avant-18.tsx");
+  assert.match(lire("app/index.tsx"), /router\.push\("\/avant-18"\)/, "l'accueil ne mène pas à la page");
+  assert.match(lire("app/sources.tsx"), /router\.push\("\/avant-18"\)/, "Sources ne mène pas à la page");
+  assert.match(lire("app/_layout.tsx"), /name="avant-18"/, "la page n'est pas déclarée dans la navigation");
+  for (const texte of ["À 16 ans", "Journée défense et citoyenneté", "À 18 ans", "liste électorale", "collèges publics", "lycées publics"]) {
+    assert.ok(page.includes(texte), `information manquante : ${texte}`);
+  }
+  for (const source of ["F870", "F871", "F1961", "R51788", "education.gouv.fr"]) {
+    assert.ok(page.includes(source), `source manquante : ${source}`);
+  }
+  for (const date of ["10 avril 2026", "14 avril 2026", "28 novembre 2025", "29 décembre 2025"]) {
+    assert.ok(page.includes(date), `date de source manquante : ${date}`);
+  }
+  assert.doesNotMatch(page, /TextInput|useState|AsyncStorage|localStorage|recensement.*stock/i,
+    "la page demande ou conserve une information personnelle");
+});
+
+test("l'accueil et Où va l'argent parlent en euros et en personnes employées", () => {
+  const chez = lire("app/(onglets)/chez-vous.tsx");
+  const argent = lire("app/argent.tsx");
+  assert.match(chez, /montantEnMots\(f\.cout\)/, "le premier écran affiche encore l'abréviation M€");
+  assert.match(argent, /personnes employées par la commune/i, "la carte d'argent garde le mot technique agents");
+  assert.match(argent, /rap\(\/personnes employées\//, "le rapport détaillé reste lié après le changement de libellé");
+  assert.match(argent, /montantEnMots\(f\.cout\)/, "le coût du projet reste écrit en toutes lettres dans Où va l'argent");
+  assert.match(chez, /texte: f\.partPct !== null && cout[\s\S]*?montantEnMots\(f\.cout\)/,
+    "le texte de partage ne réintroduit pas l'abréviation M€");
+  assert.match(argent, /libelle="Personnes employées par la commune"/, "la barre accessible conserve un intitulé ambigu");
+  const comptes = readFileSync(join(ici, "../../../packages/core/src/comptes.js"), "utf8");
+  assert.match(comptes, /personnes employées par la commune/, "le site et l'application n'utilisent pas le même vocabulaire partagé");
+});
+
+test("le glossaire distingue les textes de loi et comprend « vote solennel »", () => {
+  const m = readFileSync(join(ici, "../../../packages/core/src/mots.js"), "utf8");
+  for (const mot of ["Projet de loi", "Proposition de loi", "Commission mixte paritaire"]) {
+    assert.match(m, new RegExp(`titre: "${mot}"`), `entrée manquante : ${mot}`);
+  }
+  assert.match(m, /aliases:\s*\["vote solennel"\]/i, "« vote solennel » ne mène pas à « scrutin solennel »");
+  assert.match(m, /assemblee-nationale\.fr\/dyn\/synthese/);
+  assert.match(m, /assemblee-nationale\.fr\/decouvrir-l-assemblee\/folder\/lexique/);
+});
+
 test("votes : l'etiquette ne dit pas « Dernier scrutin » au-dessus du total de l'archive", () => {
   const v = lire("app/scrutins.tsx");
   assert.doesNotMatch(v, />\s*Dernier scrutin\s*</, "l'etiquette « Dernier scrutin » est revenue au-dessus du total");
@@ -197,3 +239,4 @@ test("invariant 6 : le retour haptique ne touche ni un vote ni un partage (16/10
   }
   assert.deepEqual(fautifs, [], "retour haptique hors des replis et des onglets : " + fautifs.join(", "));
 });
+

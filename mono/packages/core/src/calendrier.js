@@ -20,6 +20,8 @@
  * A ; B »). Ils sont listes mot pour mot, sans doublon (au sens du texte), et sans le texte du
  * groupe lui-meme. Une description d'une autre forme (Senat) reste un texte libre. */
 
+import { dateFr, jourFr } from "./format.js";
+
 const AMORCE = /^(suite de la discussion|discussion)\s+/i;
 const PREFIXE_POINTS = /^Également à l'ordre du jour\s*:\s*/;
 
@@ -85,3 +87,33 @@ export function ageReleve(releve_le, maintenant) {
   return Math.round((auj - rel) / 864e5);
 }
 export const AGE_RELEVE_NORMAL = 1;
+
+/* UNE CASE DE JOUR DIT VRAI — 17/10/2026 (garde : tests/calendrier-jours.test.mjs).
+   Mesure : la frise annoncait « 13 octobre, 0 élément » le 17/10, alors que l'agenda
+   publie deux seances ce jour-la ; le compte vient des rendez-vous A VENIR, ou un jour
+   passe vaut toujours zero. Et le mois etait ecrit en dur (« octobre »). Quatre etats,
+   jamais confondus (doctrine du vide) :
+     - passe : le calendrier ne montre que ce qui est a venir, il ne dit rien d'autre ;
+     - publie : le nombre de rendez-vous (une ligne par texte et par jour, comme la liste) ;
+     - vide : jour couvert par l'agenda publie, sans rendez-vous ;
+     - non-publie : au-dela du dernier jour publie (`horizon`), ou aucun agenda lu.
+   `aujourdhui` et `horizon` sont des dates « AAAA-MM-JJ » a l'heure de Paris. */
+export function etatJourCalendrier({ iso, aujourdhui, nb, horizon }) {
+  const jour = jourFr(iso).replace(/ \d{4}$/, "");
+  if (iso < aujourdhui) {
+    return { etat: "passe", libelle: `${jour}, jour passé`,
+      phrase: "Ce jour est passé. Le calendrier ne montre que les rendez-vous d'aujourd'hui et des jours à venir." };
+  }
+  if (nb > 0) {
+    const n = `${nb} rendez-vous ${nb > 1 ? "publiés" : "publié"}`;
+    return { etat: "publie", libelle: `${jour}, ${n}`, phrase: `${n} ce jour-là.` };
+  }
+  if (!horizon || iso > horizon) {
+    return { etat: "non-publie", libelle: `${jour}, agenda pas encore publié`,
+      phrase: horizon
+        ? `L'agenda publié s'arrête au ${dateFr(horizon)} : rien n'est encore annoncé pour ce jour.`
+        : "Aucun agenda n'est arrivé jusqu'ici : Repère ne peut rien dire de ce jour." };
+  }
+  return { etat: "vide", libelle: `${jour}, aucun rendez-vous publié`,
+    phrase: "Aucun rendez-vous publié pour ce jour et ce filtre. Repère n'affiche que ce qui est annoncé ou publié." };
+}

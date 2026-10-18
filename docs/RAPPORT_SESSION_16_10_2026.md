@@ -413,3 +413,41 @@ https://github.com/Repere0/repere/pull/149. Comparatifs avant/après (artefact p
 https://claude.ai/artifact/Gbfb6h1uTw2CZvtq67idMe (captures de 21 h, avant la reprise ; rien
 d'affiché n'a changé depuis). Les 47 empreintes de commits citées dans ce rapport ont été
 vérifiées présentes sur GitHub.
+
+---
+
+# Nuit du 16 au 17/10 (23 h 42 – 0 h 30) — ce qui se voit sur le téléphone
+
+## Vert (prouvé)
+
+- `758ea03` : les replis « En savoir plus » s'ouvrent en 220 ms (LayoutAnimation, coupée si
+  le mouvement est réduit et sur le web) ; retour haptique `selectionAsync` à l'ouverture d'un
+  repli et au changement d'onglet. `expo-haptics` ~57.0.3 = version embarquée par Expo Go
+  SDK 57 (`bundledNativeModules.json`). Garde d'invariant 6 dans `tests/refonte-ux.test.mjs`
+  (aucun haptique hors des deux fichiers autorisés, jamais `notificationAsync`/`impactAsync`),
+  vue rouge deux fois. CI « Mobile » verte.
+- `87488f4` : les cinq points de Qui décide deviennent des boutons qui amènent à la carte du
+  niveau. Mesuré à 390 px : carte Région à 1 266 px du haut, 88 px après le toucher. Une
+  première version mémorisait les positions à l'affichage et amenait au mauvais endroit dès
+  qu'un repli s'ouvrait (40 → 366 px). La version poussée mesure au toucher. Contrôle ajouté
+  à `tests/parcours-web.mjs` : la page est remise en haut, la carte doit partir de plus de
+  260 px et arriver entre 0 et 260 px. Vert à 360/390/430 px ; rouge sur l'export sans
+  raccourcis (1 256 → 1 256).
+- Banc du conteneur sur `87488f4` : `tsc` propre, refonte-ux 22/22, parcours web complet zéro
+  échec, même vérité 107 faits zéro échec.
+
+## Rouge (mesuré)
+
+- Un premier passage du parcours web a eu deux échecs « calendrier » à 430 px : le passage à
+  minuit (17/10) est tombé pendant le run. Le second passage complet, lancé à 0 h 01, n'a
+  eu aucun échec. Ce test dépend de l'heure ; ce n'est pas corrigé.
+- PR #150 : épreuve rouge (run 38972037670) sur `votes — les lois…` et `retention (0
+  nouveaute)`, les deux contrôles que #147 corrige (`91c1185`, `fd64196`, `090b129`). Le banc
+  s'arrête au premier rouge : la suite de la chaîne n'a pas tourné sur `ubuntu-24.04`. #150
+  n'est pas prouvée verte.
+
+## Non vérifié
+
+- Le tic et l'animation sur un vrai téléphone (le web n'a ni l'un ni l'autre).
+- Les données de production lues par le téléphone (Netlify est injoignable depuis le
+  conteneur) ; elles datent de la dernière publication réussie.

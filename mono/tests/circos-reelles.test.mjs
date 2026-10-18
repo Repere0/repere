@@ -50,3 +50,51 @@ test("une commune sans circonscription publiee ne recoit pas de circonscription 
     assert.equal(echelonFrance(c).personne, null, `${c.fiche.nom} : un depute est nomme sans circonscription publiee`);
   }
 });
+
+/* CHEZ VOUS : QUI EST LA PERSONNE QUI A VOTE (17/10/2026). Mesure : la phrase de Chez vous
+   disait « Votre commune est dans la 6e circonscription. Le 21 juillet 2026, Béatrice
+   Roullaud a voté pour. » sans dire qui est cette personne pour le lecteur. Une seule
+   regle (phraseVoteChezVous, dans le socle), lue sur la donnee reelle : la commune ->
+   sa circonscription (fiche) -> le depute de CETTE circonscription (deputes.json) ->
+   son vote (deriverAujourdhui). Aucun numero de scrutin n'est fige ici : le vote affiche
+   change a chaque collecte, la chaine, elle, ne doit jamais casser. */
+const { deriverAujourdhui, phraseVoteChezVous, texteDe, ordinal } = await import("../packages/core/src/index.js");
+const pourCommune = (dep, insee) => {
+  const paquet = lire(`departments/${dep}.json`);
+  return deriverAujourdhui({ fiche: paquet.communes[insee], commune: insee, dep, index, projets: null,
+    cat: lire("scrutins.json"), pos: lire(`scrutins/${dep}.json`), deputes, cal: null, agendaAN: null,
+    evenements: null, maintenant: new Date() });
+};
+
+test("Chez vous, circonscription unique (Meaux) : la phrase dit qui represente la circonscription, et c'est la personne qui a vote", () => {
+  const d = pourCommune("77", "77284");
+  assert.equal(d.nbCircos, 1, "Meaux n'a plus une seule circonscription : choisir une autre commune temoin");
+  const v = d.dernierVote;
+  assert.ok(v, "aucun vote avec position pour Meaux dans la donnee : la regle n'est pas testee");
+  const fiche = lire("departments/77.json").communes["77284"];
+  assert.equal(v.circo, fiche.circo, "le vote n'est pas celui de la circonscription de la commune");
+  const dep = deputes.deputes[`77-${fiche.circo}`];
+  assert.equal(v.qui, `${dep.prenom} ${dep.nom}`, "la personne du vote n'est pas le depute de cette circonscription");
+  const p = texteDe(phraseVoteChezVous(d, v));
+  assert.ok(p.startsWith(`À l'Assemblée, ${v.qui} représente votre commune (${ordinal(fiche.circo)} circonscription).`), p);
+  assert.match(p, /Le \d{1,2}(er)? \S+ \d{4}, son vote : (pour|contre|abstention)\.$/, p);
+  assert.ok(p.length < 150, `la phrase reste longue (${p.length} caractères) : ${p}`);
+});
+
+test("Chez vous, plusieurs circonscriptions (Paris) : aucun depute personnel n'est designe", () => {
+  const d = pourCommune("75", "75056");
+  assert.ok(d.nbCircos > 1, "Paris n'a plus plusieurs circonscriptions dans la donnee");
+  const v = d.dernierVote;
+  assert.ok(v, "aucun vote d'exemple pour Paris : le cas n'est pas teste");
+  const p = texteDe(phraseVoteChezVous(d, v));
+  assert.ok(p.includes(`Paris est partagée entre ${d.nbCircos} circonscriptions`), p);
+  assert.match(p, /dépend de votre adresse, que Repère ne demande pas/, p);
+  assert.ok(!p.includes(v.qui), `un depute est presente comme celui du lecteur : « ${p} »`);
+  assert.doesNotMatch(p, /représentée|votre député a voté/i, p);
+});
+
+test("Chez vous, nom du depute absent : la phrase ne nomme personne et ne l'invente pas", () => {
+  const p = texteDe(phraseVoteChezVous({ nbCircos: 1, nomCommune: "X" }, { circo: 3, qui: "", position: "p", sc: { d: "2026-07-21" } }));
+  assert.equal(p, "Vote du député de la 3e circonscription à l'Assemblée. Le 21 juillet 2026, sa position publiée : pour.");
+  assert.doesNotMatch(p, /représenté|représentée/, p);
+});

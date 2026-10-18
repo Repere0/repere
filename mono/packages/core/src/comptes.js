@@ -43,8 +43,13 @@ export function rapports(ex, niveau = "commune") {
     d: "Si tout ce qui est encaissé allait au remboursement, il faudrait ce temps-là. Ce n'est pas ce qui se passe : une dette se rembourse sur des années, et un emprunt sert le plus souvent à payer un équipement qui durera plus longtemps que lui.",
   });
   if (nn(sal) && nn(dep)) out.push({
-    l: "Sur 100 € dépensés", v: pourCent(sal.m, dep.m) + " € de salaires",
-    d: (niveau === "commune" ? "Ce sont les agents qui tiennent l'école, la cantine, l'état civil, les espaces verts." : "Ce sont les agents de la collectivité.")
+    l: "Sur 100 € dépensés",
+    v: pourCent(sal.m, dep.m) + (niveau === "commune"
+      ? " € pour les personnes employées par la commune"
+      : " € pour les personnes employées par la collectivité"),
+    d: (niveau === "commune"
+      ? "La commune emploie ces personnes pour faire fonctionner l'école, la cantine, l'état civil et les espaces verts."
+      : "Ces personnes travaillent pour cette collectivité.")
       + " Une part élevée n'est pas un gaspillage : c'est souvent le signe d'une collectivité qui rend ses services elle-même plutôt que de les acheter à l'extérieur.",
   });
   if (nn(inv) && nn(dep)) out.push({
