@@ -134,7 +134,7 @@ export default function Argent() {
                   {/* 08/10/2026 (audit) : « Deux postes… » s'affichait avec une seule barre
                      (part des salaires absente) ; l'annee des comptes manquait au titre. */}
                   <Resume phrase={ch.partSalaires !== null ? `Sur 100 € dépensés, ${ch.partSalaires} € servent à payer les personnes employées par la commune.` : `Sur 100 € dépensés, ${ch.partInvestissement} € vont aux investissements.`}>
-                    {ch.partSalaires !== null ? <BarrePart part={ch.partSalaires} libelle="Personnes employées par la commune" valeur={rap(/salaires/)?.v || ""} />
+                    {ch.partSalaires !== null ? <BarrePart part={ch.partSalaires} libelle="Personnes employées par la commune" valeur={rap(/personnes employées/)?.v || ""} />
                       : <BarrePart part={ch.partInvestissement as number} libelle="Investissements : travaux, équipements…" valeur={rap(/investir/)?.v || ""} />}
                   </Resume>
                   <PastilleSource source={srcComptes(d)} />
@@ -144,7 +144,7 @@ export default function Argent() {
                       .filter(Boolean).map(t => <Text key={t as string} style={TYPO.note}>{t}</Text>)}
                     {ch.partSalaires !== null && ch.partInvestissement !== null ? <BarrePart part={ch.partInvestissement} libelle="Investissements : travaux, équipements…" valeur={rap(/investir/)?.v || ""} delai={120} /> : null}
                     <Text style={TYPO.corps}>En clair : le reste des dépenses n'est pas détaillé par la source.</Text>
-                    <PasCeQueCaDit r={rap(/salaires/)} sujet="salaires" />
+                    <PasCeQueCaDit r={rap(/personnes employées/)} sujet="personnes employées" />
                     <PasCeQueCaDit r={rap(/investir/)} sujet="investissements" />
                   </Detail>
                 </Carte>
@@ -281,3 +281,4 @@ export default function Argent() {
     }} />
   );
 }
+
