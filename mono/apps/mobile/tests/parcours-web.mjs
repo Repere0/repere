@@ -311,7 +311,7 @@ for (const largeur of [360, 390, 430]) {
       const cases = await page.evaluate(() => [...document.querySelectorAll('[role="button"]')].filter(e => e.checkVisibility())
         .map(e => e.getAttribute("aria-label") || "").filter(l => /^(lundi|mardi|mercredi|jeudi|vendredi|samedi|dimanche) \d/.test(l)));
       const forme = /^(lundi|mardi|mercredi|jeudi|vendredi|samedi|dimanche) \d{1,2}(er)? \S+, (jour passé|\d+ rendez-vous publiés?|aucun rendez-vous publié|agenda pas encore publié)$/;
-      const rangAujourdhui = (new Date(new Date().toLocaleString("en-US", { timeZone: "Europe/Paris" })).getDay() + 6) % 7;
+      const rangAujourdhui = (new Date(INSTANTANE.toLocaleString("en-US", { timeZone: "Europe/Paris" })).getDay() + 6) % 7;
       if (CAL.agendaLu) {
         verifier(cases.length === 7 && cases.every(l => forme.test(l)) && cases.filter(l => /jour passé$/.test(l)).length === rangAujourdhui,
           `${largeur}px · Le calendrier : chaque jour de la semaine dit vrai, les ${rangAujourdhui} jours passés le disent ${JSON.stringify(cases)}`);
