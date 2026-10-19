@@ -10,7 +10,10 @@ description: Toute modification du code ou des données de Repère (mono/, outil
    `app_repere_v18_20.html` en entier (17 Mo).
 2. Écrire en une phrase **ce que le citoyen verra de différent**. Si la réponse est
    « rien », se demander si le changement mérite d'exister.
-3. Vérifier qu'aucun invariant de `CLAUDE.md` n'est touché. Si un l'est : s'arrêter
+3. Chercher le sujet dans les PR ouvertes et les branches distantes
+   (`git log --all --grep=<mot>`) : semaine du 13/10, plusieurs correctifs ont été
+   écrits deux ou trois fois faute de fusion (CONTEXTE_PROJET § 9).
+4. Vérifier qu'aucun invariant de `CLAUDE.md` n'est touché. Si un l'est : s'arrêter
    et le dire au porteur **avant** d'écrire.
 
 ## Écrire
@@ -21,6 +24,10 @@ description: Toute modification du code ou des données de Repère (mono/, outil
 - Dans le fichier autonome : patch Python à assertions, `assert src.count(ancre) == 1`
   sur chaque ancre **avant** d'écrire ; ancre introuvable = re-dériver par `grep`,
   jamais deviner. Apostrophes ASCII seulement dans les ancres.
+- Toute commande tactile : 48 pt au moins (quatre correctifs la même semaine :
+  `9a93e1b` #135, `01b564d` #137, `1683b3e` #138, `360b264`).
+- Toute date affichée ou comparée : à l'heure de Paris, par la fonction existante,
+  jamais l'heure de l'appareil ni UTC (cinq correctifs, CONTEXTE_PROJET § 9).
 - Texte affiché : accents obligatoires, dates écrites en toutes lettres comme
   ailleurs dans l'app (« jeudi 1er octobre 2026 »).
 
