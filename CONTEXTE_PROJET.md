@@ -10,7 +10,8 @@ quel en début de session.
 > les chiffres du banc, la carte des fichiers et l'ordre de travail qu'elles donnent
 > sont historiques.
 
-- **Dernière mise à jour :** 26 août 2026
+- **Dernière mise à jour :** 19 octobre 2026 (consolidation hebdomadaire : § 3 aligné sur
+  `CLAUDE.md`, § 9 enrichi ; les sections historiques restent datées de leur mesure)
 - **Version de l'application :** `app_repere_v18_20.html`
 - **Dépôt :** `C:\Users\APina\repere` (Windows) — la chaîne tourne sur GitHub Actions
 - **En ligne :** https://repereapp.netlify.app/
@@ -92,7 +93,9 @@ mesure le cache et pas le déploiement. Cette erreur a déjà été commise deux
 
 ## 3. Les neuf invariants
 
-Ils ne se négocient pas. Le banc en garde la plupart.
+Ils ne se négocient pas. Le banc en garde la plupart. **Le texte qui fait foi est celui
+de `CLAUDE.md`** (scellé par `.claude/invariants.sha256`) ; ce qui suit en est un
+commentaire, et peut retarder sur lui.
 
 1. **Autonomie.** L'application fonctionne hors ligne, sans serveur applicatif.
 2. **Une seule clé de stockage local**, `repere.serie` (`repere.departement` dans
@@ -114,7 +117,11 @@ Ils ne se négocient pas. Le banc en garde la plupart.
 5. **Doctrine du vide.** Une absence de donnée produit une **phrase** et un lien,
    jamais une forme vide, jamais un zéro, jamais une barre minuscule. Deux causes
    d'absence différentes exigent deux phrases différentes.
-6. **Rien qui gamifie le vote ou l'opinion.**
+6. **Rien qui gamifie le vote ou l'opinion** : aucun score, aucune récompense, aucune
+   série, aucun gain ni son de réussite lié à un vote, une position ou un partage. Les
+   effets de mouvement sont permis pour lire, naviguer et suivre une heure ou une durée.
+   *(Assoupli par décision du porteur le 13/10/2026, commit `1a3e2ab` ; recopié ici le
+   19/10/2026.)*
 7. **Cinq couleurs d'échelon gelées.** Aucune autre couleur ne dépasse une amplitude
    de 24 sur les canaux RGB.
 8. **Jamais le patrimoine d'un élu, jamais de donnée de présence ou d'absence.**
@@ -256,7 +263,7 @@ Le banc, lui, est bloquant : c'est ce qui autorise à publier sans qu'un humain 
 
 ---
 
-## 7. Inventaire des données — mesuré le 25 août 2026
+## 7. Inventaire des données au 25 août 2026 (historique, non remesuré depuis)
 
 | donnée | couverture | source · mise à jour |
 |---|---:|---|
@@ -318,6 +325,9 @@ PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers node test_repere.mjs site_v18_20/index
 | **Une annotation qui affirme sans mesurer** | Trois fois. Une annotation doit mesurer ce qu'elle affirme. |
 | **Un garde-fou qui filtre sur une sous-chaîne** | `pousser.bat` refusait tout envoi contenant le mot `token` n'importe où dans un chemin. `packages/ui/src/tokens.css` a bloqué tous les envois pendant trois heures, sans nommer le fichier en cause. Un garde doit dire QUI il refuse, et filtrer sur ce qu'il veut dire — ici l'extension, pas la sous-chaîne. |
 | **Corriger du batch sans pouvoir l'exécuter** | Deux tentatives à l'aveugle avant que ça marche. `pousser.bat --test` existe désormais : il éprouve son propre filtre sans toucher à git. Quand on ne peut pas vérifier soi-même, on livre le moyen de vérifier. |
+| **Un test qui dépend de la date du jour** | Le scénario « 0 nouveauté » fixait la visite au 1er septembre : vert sur les données du 13/10, rouge sur celles du 14/10. Le banc est bloquant, et la collecte est rouge chaque jour du 14 au 18/10 (runs 94 à 98 ; journal du 18/10 lu : « publication non tentée », les autres non relus). Correctif écrit trois fois dans trois sessions (`742af89` #129, `2e874fc`, `090b129`) faute de fusion ; même famille : horloge du parcours web figée (`81fdbaf`, `34218cf`). Une garde lit sa date dans la donnée servie (`genere_le`) ou fige l'horloge, jamais une date calendaire en dur. |
+| **L'heure de l'appareil ou UTC au lieu de l'heure de Paris** | Cinq correctifs en douze jours : jour de la semaine (`f661e6b`), « à venir » (`375bf1e`), agenda web (`bdd8a45`), horaires du calendrier (`0effea8` #145), jour du parcours web (`34218cf`). Toute date affichée ou comparée passe par la même fonction d'heure de Paris ; un test la vérifie avec un fuseau d'appareil différent. |
+| **Le même correctif écrit dans plusieurs sessions** | Semaine du 13 au 19/10 : `main` immobile depuis `6a68f1b` (13/10), une quarantaine de PR ouvertes, dont des correctifs en double (`d74844c` / `056a889`, `2e874fc` / `090b129`) et des commits qui adaptent une PR à une autre (`e133c66`, `3854c33`). Avant d'écrire, chercher le sujet dans les PR ouvertes et les branches (`git log --all --grep`). |
 
 ---
 
@@ -453,7 +463,7 @@ mesurés en local, au kilo-octet près.
 **Une seule chaîne de vérité (mis à jour le 28/09/2026).** La bascule a eu lieu :
 `collecte.yml` construit le site **depuis `mono/`** (via `outils/pipeline.sh`),
 lance le banc complet après le build, et publie. Le mono-HTML reste la source des
-données (`extract-html.js` lit ses blocs `REPERE_*`). L'ancien `build-publish.yml`,
+données (`extract-html.js` lit ses blocs `REPERE_*`). L'ancien workflow « build-publish » (fichier retiré),
 qui construisait le monorepo par ses propres étapes « en attendant la bascule »,
 divergeait de la vraie chaîne et était rouge chaque jour depuis le 23/09 (invariants
 relisant `dist/` lancés avant le build). Il est remplacé par `epreuve.yml` : les
