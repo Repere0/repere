@@ -266,7 +266,7 @@ export function chaineDecision({ fiche, paquet, index, deputes, elusRegion, dep 
       /* 15/10/2026 : UN depute seulement. Une commune partagee entre plusieurs
          circonscriptions n'en a pas un : le premier de la liste serait un choix
          arbitraire. Le depute depend de l'adresse, que Repere ne demande pas. */
-      personne: dd.length === 1 && dd[0].d ? { nom: [dd[0].d.prenom, dd[0].d.nom].filter(Boolean).join(" "), role: "À l'Assemblée nationale pour votre circonscription" } : null,
+      personne: dd.length === 1 && dd[0].d ? { nom: [dd[0].d.prenom, dd[0].d.nom].filter(Boolean).join(" "), role: "À l'Assemblée nationale pour votre circonscription", acteurRef: dd[0].d.acteurRef || null } : null,
       autresCircos: dd.length > 1 ? dd.length - 1 : 0,
       decide: COMPETENCES.france },
   ];

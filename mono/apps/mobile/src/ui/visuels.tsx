@@ -10,7 +10,8 @@
  *   - les nombres viennent de @repere/core (visuels.js), jamais d'ici.
  * Construites avec des View : aucune bibliotheque de graphiques. */
 import { useState, type ReactNode } from "react";
-import { Animated, LayoutAnimation, Pressable, StyleSheet, Text, View } from "react-native";
+import { Animated, Image, LayoutAnimation, Pressable, StyleSheet, Text, View } from "react-native";
+import { PHOTOS } from "../lib/photos-index";
 import { couleurs, GRIS_VOTE, OMBRE, PAS, POLICE, RAYON, TEINTES, TYPO, CIBLE, type Echelon } from "../lib/theme";
 import { useApparition, useCompteur, useMouvementReduit } from "./mouvement";
 import { toucherLeger } from "./toucher";
@@ -169,7 +170,7 @@ export function Frise({ jalons, etiquette }: { jalons: Jalon[]; etiquette?: stri
 /* ── La chaine des echelons, de chez vous a l'Assemblee ────────────────── */
 export type Niveau = {
   echelon: Echelon; niveau: string; institution: string; lieu?: string | null;
-  personne?: { nom: string; role: string } | null; decide?: string; note?: string; pied?: ReactNode;
+  personne?: { nom: string; role: string; acteurRef?: string | null } | null; decide?: string; note?: string; pied?: ReactNode;
 };
 /* `surNom` : quand il est donne, le nom de chaque personne ouvre sa fiche. Le nom
    est alors une cible de 48 px, lue comme un lien. */
@@ -199,7 +200,11 @@ export function Chaine({ niveaux, compact, surNom, refNiveau, cartes }: { niveau
               <Text style={[TYPO.etiquette, { flex: 1 }]}>{n.niveau}{n.lieu ? " · " + n.lieu : ""}</Text>
               {/* 20/10/2026 : pas de photo dans les donnees publiques : les initiales de la personne
                   nommee, sur une pastille (rien d'invente, rien de charge depuis un autre hote). */}
-              {n.personne ? (
+              {n.personne && n.personne.acteurRef && PHOTOS[n.personne.acteurRef] ? (
+                /* 20/10/2026 : photo institutionnelle, embarquee dans l'application (licence validee
+                   par le porteur, voir mono/scripts/photos-institutionnelles.mjs). Hors ligne. */
+                <Image source={PHOTOS[n.personne.acteurRef]} style={s.photo} accessible={false} importantForAccessibility="no" />
+              ) : n.personne ? (
                 <View accessible={false} importantForAccessibility="no" style={s.initiales}>
                   <Text style={s.initialesTexte}>{initiales(n.personne.nom)}</Text>
                 </View>
@@ -343,6 +348,7 @@ const s = StyleSheet.create({
   carteAction: { fontSize: 16, fontWeight: "700", color: couleurs.primaire },
   initiales: { width: 48, height: 48, borderRadius: 24, backgroundColor: couleurs.primaireClair, alignItems: "center", justifyContent: "center" },
   initialesTexte: { fontFamily: POLICE.affiche, fontSize: 17, color: couleurs.primaire },
+  photo: { width: 48, height: 48, borderRadius: 24, backgroundColor: couleurs.voile },
   jalonAxe: { width: 18, alignItems: "center" },
   jalonPoint: { width: 14, height: 14, borderRadius: 7, borderWidth: 2, backgroundColor: couleurs.sol, marginTop: 4 },
   jalonActif: { width: 18, height: 18, borderRadius: 9, marginTop: 2 },
