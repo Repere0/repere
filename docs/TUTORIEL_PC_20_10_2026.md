@@ -24,6 +24,10 @@ Puis Expo Go, même réseau Wi-Fi, scan du QR.
 
 ### Le parcours de 3 minutes, écran par écran
 
+> **Mis à jour en fin de soirée.** La branche contient maintenant onze commits,
+> dont le quatrième onglet et les couleurs politiques. Le parcours ci-dessous
+> les inclut.
+
 1. **Bascule ton téléphone en thème sombre** (Réglages → Luminosité → Sombre),
    Repère ouvert. L'application suit, sans réglage à l'intérieur : tu as déjà
    choisi dans ton système, et l'invariant 2 interdit de garder un second
@@ -41,7 +45,15 @@ Puis Expo Go, même réseau Wi-Fi, scan du QR.
 5. **Accueil → « Vous avez moins de 18 ans ? »** → la fiche F870 porte sa
    nouvelle date de vérification (19 octobre 2026), et le point-virgule du
    paragraphe JDC ne tombe plus seul en début de ligne.
-6. **Repasse en clair** : rien ne doit avoir bougé. C'est le but — le thème
+6. **Regarde la barre du bas** : elle a **quatre onglets**, comme sur ta
+   maquette — Aujourd'hui, Chez vous, Calendrier, **Qui décide**, avec son icône
+   personne-et-coche. C'est le même écran qu'avant : les deux chemins existants
+   (le bloc « Qui décide chez vous ? » et « Aller plus loin ») y mènent toujours.
+7. **Ouvre une fiche d'élu** depuis « Qui décide » (touche le nom du maire) :
+   elle dit « Parti : non publié par la source. Repère ne le déduit pas. » —
+   c'est la réponse honnête tant que la nuance politique n'est pas collectée
+   (voir § 5).
+8. **Repasse en clair** : rien ne doit avoir bougé. C'est le but — le thème
    clair n'a pas été retouché.
 
 Si quelque chose est faux à l'écran, c'est l'écran qui a raison : dis-le-moi
@@ -166,6 +178,33 @@ Les quatre plus anciennes n'ont pas bougé depuis le 5–8 octobre : `#77`, `#10
 explicitement « À VALIDER » : elles attendent toi, pas un agent.
 
 ---
+
+## 3 bis. Les couleurs politiques : ce qui est fait, ce qui manque
+
+**FAIT.** L'invariant 7 est modifié par ta décision et scellé
+(`.claude/invariants.sha256` régénéré). Un groupe parlementaire peut désormais
+porter sa couleur. Elle devient le fond de son sigle quand elle peut porter du
+texte à 4,5:1, sinon elle reste un point à côté.
+
+**CE QUE J'AI FAIT AUTREMENT QUE DEMANDÉ.** Tu donnais une grille par famille
+(gauche rose, droite bleu, extrême droite bleu très foncé). L'appliquer
+obligerait Repère à ranger chaque groupe dans un bord, donc à écrire une
+qualification politique. J'ai pris la couleur que **l'Assemblée publie
+elle-même** pour chaque groupe (`organe.couleurAssociee`). Le résultat visuel
+est celui que tu veux ; c'est l'institution qui le dit, pas nous. Si tu
+préfères quand même ta grille, dis-le et je la pose.
+
+**CE QUI MANQUE, ET C'EST BLOQUANT POUR TON BESOIN RÉEL.** Mesuré sur la donnée
+publiée : le maire de Meaux ne porte que `nom` et `fonction`. Les conseillers
+départementaux non plus. **Aucune étiquette politique n'existe dans nos données
+pour les élus locaux.** « Savoir de quel bord est son représentant local »
+demande d'ajouter la nuance politique du Répertoire national des élus à la
+collecte — un chantier de données, impossible depuis le conteneur (il ne joint
+pas data.gouv.fr) et bloqué tant que la collecte est rouge.
+
+Et les couleurs des groupes n'apparaîtront qu'une fois la collecte réparée :
+la donnée locale ne contient aucun groupe, donc je n'ai pas pu les voir à
+l'œil.
 
 ## 4. Les décisions qui n'attendent que toi
 
