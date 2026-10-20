@@ -50,7 +50,9 @@ export function Reponse({ phrase, preuve, note, sources, suite, partage, noteRep
       {preuve}
       {note && noteRepliee ? (
         <Depli titre={noteRepliee}>{typeof note === "string" ? <Text style={TYPO.note}>{typo(note)}</Text> : note}</Depli>
-      ) : note ? (typeof note === "string" ? <Text style={TYPO.note}>{typo(note)}</Text> : note) : null}
+      ) : note ? (
+        typeof note === "string" ? <Text style={TYPO.note}>{typo(note)}</Text> : note
+      ) : null}
       <View style={s.pied}>
         <View style={{ flexDirection: "row", flexWrap: "wrap", flexShrink: 1 }}>{sources}</View>
         {partage ? <BoutonPartager {...partage} /> : null}
@@ -77,7 +79,8 @@ export function Plus({ texte, onPress, premier, dernier, etiquette }: { texte: s
 }
 
 const s = StyleSheet.create({
-  carte: { borderRadius: RAYON.carte, paddingHorizontal: PAS * 4, paddingTop: PAS, paddingBottom: 0, gap: PAS, ...OMBRE },
+  carte: { borderRadius: RAYON.carte, borderCurve: "continuous", paddingHorizontal: PAS * 4, paddingTop: PAS, paddingBottom: 0, gap: PAS, ...OMBRE },
+
   phrase: { ...TYPO.reponse, fontSize: 19, lineHeight: 25 },
   pied: { flexDirection: "row", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", columnGap: PAS * 2 },
   suite: { minHeight: CIBLE, justifyContent: "center", marginLeft: "auto" },
