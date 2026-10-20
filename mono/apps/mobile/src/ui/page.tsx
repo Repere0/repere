@@ -9,7 +9,7 @@ import { ETATS, PHRASES } from "../lib/donnees";
 import { Bouton, Vide } from "../lib/composants";
 import { useSelection } from "../lib/selection";
 import { useCommuneChoisie, type EtatCommune } from "../lib/useCommune";
-import { couleurs, PAS, TYPO } from "../lib/theme";
+import { couleurs, feuille, PAS, TYPO } from "../lib/theme";
 import { Etiquette } from "./resume";
 import { BandeauFraicheur } from "./fraicheur";
 
@@ -51,7 +51,7 @@ export function AvecDonnees({ rendu }: { rendu: (r: Extract<EtatCommune, { pret:
   const { r, reessayer } = useCommuneChoisie();
   if (!choix) {
     return (
-      <View style={[s.page, { paddingTop: PAS * 6 }]}>
+      <View style={[s.page, s.pleinFond, { paddingTop: PAS * 6 }]}>
         <Vide titre="Aucune commune n'est choisie." corps="Revenez à l'accueil et tapez le nom de votre commune." />
         <Bouton texte="Revenir à l'accueil" onPress={() => router.replace("/")} />
       </View>
@@ -60,7 +60,7 @@ export function AvecDonnees({ rendu }: { rendu: (r: Extract<EtatCommune, { pret:
   if (!r.pret) {
     const p = (PHRASES as Record<string, { titre: string; corps: string }>)[r.etat] || PHRASES[ETATS.ECHEC];
     return (
-      <View style={[s.page, { paddingTop: PAS * 6 }]}>
+      <View style={[s.page, s.pleinFond, { paddingTop: PAS * 6 }]}>
         <Vide titre={p.titre} corps={p.corps}
           action={r.etat === ETATS.EN_COURS ? undefined : "Réessayer"} onAction={reessayer} />
       </View>
@@ -69,6 +69,10 @@ export function AvecDonnees({ rendu }: { rendu: (r: Extract<EtatCommune, { pret:
   return <>{rendu(r)}</>;
 }
 
-const s = StyleSheet.create({
+const s = feuille(() => StyleSheet.create({
+  /* LES ETATS « PAS PRETE » NE PASSENT PAS PAR Page : sans fond propre, le
+     conteneur de navigation laissait voir son gris clair sur tout l'ecran en
+     theme sombre (mesure rgb(242,242,242) le 20/10/2026). */
+  pleinFond: { flex: 1, minHeight: "100%", backgroundColor: couleurs.sol },
   page: { paddingHorizontal: PAS * 4, paddingTop: PAS * 1, gap: PAS * 3, maxWidth: 640, width: "100%", alignSelf: "center" },
-});
+}));

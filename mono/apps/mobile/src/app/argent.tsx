@@ -100,7 +100,7 @@ export default function Argent() {
       const listeProjets: Projet[] = r.projetsLus
         ? ((d.faits || []).filter((x: { type: string }) => x.type === "projet").map((x: { p: Projet }) => x.p) as Projet[])
         : [];
-      const dep = ch && ch.depenses !== null ? montantCourt(ch.depenses) : null;
+      const depTotal = ch && ch.depenses !== null ? montantEnMots(ch.depenses) : null;
       /* montants publies de l'exercice affiche : 0 recettes, 1 depenses, 3 investissement, 4 personnel, 5 impots */
       const calcul = (i: number, j: number, a: string, b: string) => (ex ? phraseCalculPart(valeur(ex.ex, i)?.m, valeur(ex.ex, j)?.m, a, b) : null);
       const dette = ch && ch.dette !== null ? montantCourt(ch.dette) : null;
@@ -118,7 +118,9 @@ export default function Argent() {
             <>
               {/* COMBIEN */}
               <Carte echelon="ville" titre={`Ce que ${nom} a dépensé en ${ex.an}`}>
-                <Resume phrase={dep ? `${dep.texte} au total sur l'année.` : ""}
+                {/* `montantEnMots` et non `dep.texte` (20/10/2026) : le second ecrit
+                    « 121,3 M€ », une abreviation que personne ne lit a voix haute. */}
+                <Resume phrase={depTotal ? `${depTotal} au total sur l'année.` : ""}
                   chiffre={hab && hab.depenses !== null ? `${hab.depenses.toLocaleString("fr-FR")} €` : null}
                   legende="par habitant" />
                 {/* Deux chiffres PUBLIES, donc une source sans « calcul ». La moyenne
@@ -134,8 +136,12 @@ export default function Argent() {
                   {/* 08/10/2026 (audit) : « Deux postes… » s'affichait avec une seule barre
                      (part des salaires absente) ; l'annee des comptes manquait au titre. */}
                   <Resume phrase={ch.partSalaires !== null ? `Sur 100 € dépensés, ${ch.partSalaires} € servent à payer les personnes employées par la commune.` : `Sur 100 € dépensés, ${ch.partInvestissement} € vont aux investissements.`}>
-                    {ch.partSalaires !== null ? <BarrePart part={ch.partSalaires} libelle="Personnes employées par la commune" valeur={rap(/personnes employées/)?.v || ""} />
-                      : <BarrePart part={ch.partInvestissement as number} libelle="Investissements : travaux, équipements…" valeur={rap(/investir/)?.v || ""} />}
+                    {/* `sansLibelle` (20/10/2026) : la phrase au-dessus dit deja le montant ET
+                        le poste. La barre repetait les deux, soit la meme donnee trois fois de
+                        suite — l'inverse d'une donnee lisible en cinq secondes. Le libelle reste
+                        pour le lecteur d'ecran (accessibilityLabel de BarrePart). */}
+                    {ch.partSalaires !== null ? <BarrePart sansLibelle part={ch.partSalaires} libelle="Personnes employées par la commune" valeur={rap(/personnes employées/)?.v || ""} />
+                      : <BarrePart sansLibelle part={ch.partInvestissement as number} libelle="Investissements : travaux, équipements…" valeur={rap(/investir/)?.v || ""} />}
                   </Resume>
                   <PastilleSource source={srcComptes(d)} />
                   <Detail sujet="dépenses">

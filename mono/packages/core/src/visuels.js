@@ -299,8 +299,13 @@ export function montantCourt(n) {
 export function montantEnMots(n) {
   if (typeof n !== "number" || !Number.isFinite(n)) return null;
   const a = Math.abs(n);
-  if (a >= 1e9) return (n / 1e9).toLocaleString("fr-FR", { maximumFractionDigits: 1 }) + " milliard d'euros";
-  if (a >= 1e6) return (n / 1e6).toLocaleString("fr-FR", { maximumFractionDigits: 1 }) + " million d'euros";
+  /* ACCORD (20/10/2026) : « 1,5 million », mais « 121,3 millions ». L'ecran
+     « Ou va l'argent » ecrivait « 121,3 million d'euros ». Le pluriel part a 2,
+     comme en francais, et l'arrondi a un chiffre est fait AVANT la comparaison
+     pour que 1,96 million s'ecrive « 2 millions » et non « 2 million ». */
+  const pluriel = (q, mot) => `${q.toLocaleString("fr-FR", { maximumFractionDigits: 1 })} ${mot}${Math.abs(Number(q.toFixed(1))) >= 2 ? "s" : ""} d'euros`;
+  if (a >= 1e9) return pluriel(n / 1e9, "milliard");
+  if (a >= 1e6) return pluriel(n / 1e6, "million");
   return Math.round(n).toLocaleString("fr-FR") + " euros";
 }
 

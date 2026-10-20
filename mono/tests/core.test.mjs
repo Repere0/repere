@@ -365,6 +365,13 @@ test("visuels — grands nombres et parts en mots : jamais plus de 3 points d'ar
   assert.equal(m.montantCourt(121272659).arrondi, true);
   assert.equal(m.montantCourt(726800).arrondi, false);
   assert.equal(m.montantEnMots(1533500), "1,5 million d'euros");
+  /* ACCORD (20/10/2026) : l'ecran « Ou va l'argent » ecrivait « 121,3 million
+     d'euros ». Le pluriel part a 2, et l'arrondi est fait avant la comparaison,
+     sinon 1,96 million s'ecrivait « 2 million ». */
+  assert.equal(m.montantEnMots(121300000), "121,3 millions d'euros");
+  assert.equal(m.montantEnMots(1960000), "2 millions d'euros");
+  assert.equal(m.montantEnMots(1200000000), "1,2 milliard d'euros");
+  assert.equal(m.montantEnMots(2400000000), "2,4 milliards d'euros");
   assert.equal(m.partEnMots(47), "près de la moitié");
   assert.equal(m.partEnMots(52), "un peu plus de la moitié");
   assert.equal(m.partEnMots(31), "près d'un tiers");
