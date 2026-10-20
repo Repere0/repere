@@ -128,8 +128,20 @@ setTimeout(() => {
   ecrire(process.env.GITHUB_ACTIONS ? `::error title=parcours mobile::${msg}` : "ECHEC " + msg);
   process.exit(3);
 }, LIMITE_MS).unref();
-for (const largeur of [360, 390, 430]) {
-  const page = await nouvellePage({ viewport: { width: largeur, height: 800 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true });
+/* LE PARCOURS PASSE AUSSI EN THEME SOMBRE (20/10/2026). Le theme sombre est arrive
+   ce jour-la, et trois de ses defauts ont ete trouves a l'oeil sur des captures : un
+   fond de page reste clair, un bloc inverse devenu une glacure, une carte de partage
+   qui suivait le theme. L'oeil ne passe pas sur tous les ecrans ; ce parcours, si.
+   Il mesure deja le contraste, les debordements, les cibles tactiles et les noms
+   accessibles de CHAQUE ecran — il suffisait de le refaire en sombre.
+   Une seule largeur en sombre (390 px) : le theme ne change pas la mise en page, et
+   tripler le parcours le ferait sortir de son garde-temps. */
+for (const { largeur, theme } of [
+  { largeur: 360, theme: "light" }, { largeur: 390, theme: "light" },
+  { largeur: 430, theme: "light" }, { largeur: 390, theme: "dark" },
+]) {
+  const etq = theme === "dark" ? largeur + "px sombre" : largeur + "px";
+  const page = await nouvellePage({ viewport: { width: largeur, height: 800 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true, colorScheme: theme });
   const demandees = [];
   page.on("request", r => demandees.push(r.url()));
   await page.goto(BASE + "/", { waitUntil: "networkidle" });
@@ -174,19 +186,54 @@ for (const largeur of [360, 390, 430]) {
       texte: document.body.innerText,
       etiquettes: [...document.querySelectorAll("[aria-label]")].map(e => e.getAttribute("aria-label")).join(" | "),
       /* CONTRASTE AA MESURE SUR LE RENDU (spike du 30/09/2026) : chaque texte
-         visible contre le premier fond opaque de ses parents. 4,5:1, ou 3:1 pour
-         le grand texte (24 px, ou 18,66 px gras). Il a trouve, au premier tour,
-         les libelles d'echelon de la chaine : l'intercommunalite a 3,21:1. */
+         visible contre le fond REELLEMENT PEINT sous lui. 4,5:1, ou 3:1 pour le
+         grand texte (24 px, ou 18,66 px gras). Il a trouve, au premier tour, les
+         libelles d'echelon de la chaine : l'intercommunalite a 3,21:1.
+
+         20/10/2026 — LE FOND N'EST PAS TOUJOURS CELUI D'UN PARENT. La mesure
+         remontait les ancetres. En theme sombre, elle a declare le bouton retour de
+         l'en-tete a 1,08:1 sur TOUS les ecrans : son premier ancetre opaque est le
+         conteneur de navigation, reste clair, alors que la barre sombre est peinte
+         A COTE de cette chaine, au-dessus de lui. A l'oeil, le texte est lisible ;
+         la mesure avait tort. Elle demande donc au navigateur ce qu'il peint sous
+         le texte (elementsFromPoint) et ne retombe sur les ancetres que si ce point
+         ne donne rien. Une mesure fausse qui crie est aussi dangereuse qu'une
+         mesure absente : elle apprend a ignorer les alertes. */
       contrastes: (() => {
         const rgb = x => (x.match(/[\d.]+/g) || []).map(Number);
         const lum = ([r, g, b]) => [r, g, b].map(v => { v /= 255; return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; })
           .reduce((a, v, i) => a + v * [0.2126, 0.7152, 0.0722][i], 0);
-        const fond = e => { for (; e; e = e.parentElement) { const c = rgb(getComputedStyle(e).backgroundColor); if (c.length >= 3 && (c.length < 4 || c[3] > 0.5)) return c; } return [255, 255, 255]; };
+        const opaque = x => { const c = rgb(x); return c.length >= 3 && (c.length < 4 || c[3] > 0.5) ? c : null; };
+        const parAncetres = e => { for (; e; e = e.parentElement) { const c = opaque(getComputedStyle(e).backgroundColor); if (c) return c; } return null; };
+        const fond = e => {
+          /* Le point n'est interrogeable que si l'element est VRAIMENT dans la
+             fenetre : plus bas, elementsFromPoint echantillonnerait un autre endroit
+             de l'ecran (mesure du 20/10/2026 : en bornant les coordonnees, la garde
+             a declare faux 15 textes parfaitement lisibles). Hors fenetre, les
+             ancetres restent la meilleure approximation. */
+          const b = e.getBoundingClientRect();
+          const visible = b.width > 0 && b.height > 0
+            && b.top >= 0 && b.bottom <= innerHeight && b.left >= 0 && b.right <= innerWidth;
+          if (visible) {
+            for (const sous of document.elementsFromPoint(b.left + b.width / 2, b.top + b.height / 2)) {
+              const c = opaque(getComputedStyle(sous).backgroundColor);
+              if (c) return c;
+            }
+          }
+          return parAncetres(e) || [255, 255, 255];
+        };
         const out = new Set();
         const w = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
         for (let n; (n = w.nextNode());) {
           const t = n.textContent.trim(), e = n.parentElement;
           if (!t || !e || e.offsetParent === null) continue;
+          /* L'ECRAN PRECEDENT RESTE DANS LE DOM. expo-router garde les ecrans montes
+             et marque les inactifs aria-hidden="true" : ni le lecteur ni un lecteur
+             d'ecran ne les voient. Les mesurer faisait crier la garde sur des textes
+             invisibles (20/10/2026 : « Qui décide chez vous ? » declare illisible
+             depuis l'ecran du calendrier). Une garde qui crie a tort apprend a
+             ignorer les alertes. */
+          if (e.closest('[aria-hidden="true"]')) continue;
           const st = getComputedStyle(e), c = rgb(st.color);
           if (c.length >= 4 && c[3] < 1) continue;
           const [a, b] = [lum(c), lum(fond(e))].sort((x, y) => y - x);
@@ -209,73 +256,73 @@ for (const largeur of [360, 390, 430]) {
     };
   });
   const communs = (m, ecran) => {
-    verifier(!m.deborde, `${largeur}px · ${ecran} : aucun débordement horizontal`);
-    verifier(m.petites.length === 0, `${largeur}px · ${ecran} : cibles tactiles >= 44 px ${JSON.stringify(m.petites)}`);
-    verifier(m.sansNom === 0, `${largeur}px · ${ecran} : chaque contrôle a un nom accessible (${m.sansNom} sans nom)`);
-    verifier(m.contrastes.length === 0, `${largeur}px · ${ecran} : tout texte visible atteint le contraste AA ${JSON.stringify(m.contrastes)}`);
+    verifier(!m.deborde, `${etq} · ${ecran} : aucun débordement horizontal`);
+    verifier(m.petites.length === 0, `${etq} · ${ecran} : cibles tactiles >= 44 px ${JSON.stringify(m.petites)}`);
+    verifier(m.sansNom === 0, `${etq} · ${ecran} : chaque contrôle a un nom accessible (${m.sansNom} sans nom)`);
+    verifier(m.contrastes.length === 0, `${etq} · ${ecran} : tout texte visible atteint le contraste AA ${JSON.stringify(m.contrastes)}`);
     const sansAccents = MOTS_A_ACCENTS.filter(x => new RegExp("(^|[^\\p{L}])" + x + "($|[^\\p{L}])", "u").test(m.brut));
-    verifier(sansAccents.length === 0, `${largeur}px · ${ecran} : aucun mot affiché sans ses accents ${JSON.stringify(sansAccents)}`);
+    verifier(sansAccents.length === 0, `${etq} · ${ecran} : aucun mot affiché sans ses accents ${JSON.stringify(sansAccents)}`);
     /* AUCUNE ABREVIATION DE MONTANT A L'ECRAN (20/10/2026). « 121,3 M€ » ne se lit
        pas a voix haute et ne se comprend pas en cinq secondes ; le produit dit
        « 121,3 millions d'euros » (montantEnMots). La garde porte sur une
        PROPRIETE du texte affiche, pas sur la liste des ecrans ou des fonctions :
        une nouvelle carte qui emploierait montantCourt la fera rougir. */
     const abreges = (m.brut.match(/\d[\s\u00a0]?(?:M€|Md€|K€|k€)/g) || []);
-    verifier(abreges.length === 0, `${largeur}px · ${ecran} : aucun montant abrégé affiché ${JSON.stringify(abreges)}`);
+    verifier(abreges.length === 0, `${etq} · ${ecran} : aucun montant abrégé affiché ${JSON.stringify(abreges)}`);
   };
 
   /* L'ACCUEIL « AUJOURD'HUI » (« Chez vous » avant le 07/10/2026) : cinq questions, chacune avec sa source */
   const mesure = await mesurer();
   communs(mesure, "Aujourd'hui");
-  verifier(new RegExp(MAIRE).test(mesure.texte), `${largeur}px : le maire est nommé (${MAIRE})`);
-  verifier(/Publication Repère du \d/.test(mesure.texte), `${largeur}px : la date de la publication affichée est dite`);
-  verifier((mesure.etiquettes.match(/D'où vient cette information/g) || []).length >= 3, `${largeur}px : chaque réponse de l'accueil porte sa source`);
+  verifier(new RegExp(MAIRE).test(mesure.texte), `${etq} : le maire est nommé (${MAIRE})`);
+  verifier(/Publication Repère du \d/.test(mesure.texte), `${etq} : la date de la publication affichée est dite`);
+  verifier((mesure.etiquettes.match(/D'où vient cette information/g) || []).length >= 3, `${etq} : chaque réponse de l'accueil porte sa source`);
   verifier(/son\s+vote\s*:\s*(pour|contre|l'abstention)/.test(mesure.texte) && /députés ayant pris part au vote/.test(mesure.etiquettes),
-    `${largeur}px : le vote du député s'affiche, et sa répartition se lit aussi en phrase`);
-  verifier(/a dépensé [\d\s]+€ par habitant/.test(mesure.texte), `${largeur}px : l'argent de la commune se dit en une phrase`);
+    `${etq} : le vote du député s'affiche, et sa répartition se lit aussi en phrase`);
+  verifier(/a dépensé [\d\s]+€ par habitant/.test(mesure.texte), `${etq} : l'argent de la commune se dit en une phrase`);
   /* « Réponses d'abord » (30/09/2026) : une reponse, pas une rubrique ; jamais
      une donnee de presence, jamais « dernier ». */
-  verifier(!/a participé|n'a pas participé|dernier vote/i.test(mesure.brut), `${largeur}px : aucune donnée de présence, aucun « dernier vote »`);
+  verifier(!/a participé|n'a pas participé|dernier vote/i.test(mesure.brut), `${etq} : aucune donnée de présence, aucun « dernier vote »`);
   /* Spike du 30/09/2026 : la source devient discrete, mais un calcul se dit
      calcul A L'OEIL (invariant 4), pas seulement dans la feuille. */
-  verifier(/Calcul Repère/.test(mesure.texte), `${largeur}px : un chiffre calculé se dit calculé sans ouvrir la feuille`);
-  verifier(/Le calendrier/.test(mesure.brut), `${largeur}px : la carte « ce qui arrive » est présente (ou sa phrase d'absence)`);
+  verifier(/Calcul Repère/.test(mesure.texte), `${etq} : un chiffre calculé se dit calculé sans ouvrir la feuille`);
+  verifier(/Le calendrier/.test(mesure.brut), `${etq} : la carte « ce qui arrive » est présente (ou sa phrase d'absence)`);
   /* LA SEMAINE AU PARLEMENT (PR B, 07/10/2026) : sous les trois reponses, jamais
      parmi elles ; nationale, dite comme telle ; ce qu'elle compte est recalcule
      ici depuis les fichiers SERVIS, par la meme fonction du socle. */
   {
     const vu = await lireSemaine(page);
-    verifier(vu && vu.sous, `${largeur}px · semaine : la carte est sous les trois réponses ${JSON.stringify(vu && vu.ordre)}`);
+    verifier(vu && vu.sous, `${etq} · semaine : la carte est sous les trois réponses ${JSON.stringify(vu && vu.ordre)}`);
     if (SEMAINE.institutions.length) {
       const total = vu.jours.reduce((n, l) => n + (Number((/: (\d+) séance/.exec(l) || [])[1]) || 0), 0);
       verifier(vu.jours.length === 7 && total === SEMAINE.total,
-        `${largeur}px · semaine : sept jours, ${SEMAINE.total} séance(s) publique(s), comme le socle (${total} lues)`);
-      verifier(vu.votes === Math.min(2, SEMAINE.votesSolennels.length), `${largeur}px · semaine : les votes solennels annoncés sont montrés (${vu.votes})`);
-      verifier(/tout le pays, pas seulement Meaux/.test(vu.texte), `${largeur}px · semaine : la carte dit qu'elle est nationale`);
+        `${etq} · semaine : sept jours, ${SEMAINE.total} séance(s) publique(s), comme le socle (${total} lues)`);
+      verifier(vu.votes === Math.min(2, SEMAINE.votesSolennels.length), `${etq} · semaine : les votes solennels annoncés sont montrés (${vu.votes})`);
+      verifier(/tout le pays, pas seulement Meaux/.test(vu.texte), `${etq} · semaine : la carte dit qu'elle est nationale`);
       /* 08/10/2026 : un releve de plus d'un jour le dit, sur l'accueil aussi */
       {
         const { ageReleve, AGE_RELEVE_NORMAL } = await import("../../../packages/core/src/calendrier.js");
         const vieux = SEMAINE.institutions.map(x => ({ de: x.institution === "Sénat" ? "du Sénat" : "de l'Assemblée nationale", age: ageReleve(x.source && x.source.releve_le) }))
           .filter(x => x.age !== null && x.age > AGE_RELEVE_NORMAL);
         verifier(vieux.every(x => new RegExp("Agenda " + x.de + " relevé le .+, il y a " + x.age + " jours").test(vu.texte)),
-          `${largeur}px · semaine : un relevé ancien le dit ${JSON.stringify(vieux)}`);
+          `${etq} · semaine : un relevé ancien le dit ${JSON.stringify(vieux)}`);
       }
     } else {
       verifier(/n'est arrivé jusqu'à cet appareil pour aucune institution/.test(vu.texte),
-        `${largeur}px · semaine : sans calendrier servi, la phrase d'absence (jamais une semaine vide)`);
+        `${etq} · semaine : sans calendrier servi, la phrase d'absence (jamais une semaine vide)`);
     }
   }
   const fautives = demandees.filter(u => adresseFautive(u));
-  verifier(fautives.length === 0, `${largeur}px : aucune adresse ne porte un code de commune ${JSON.stringify(fautives)}`);
-  verifier(!/77284/.test(page.url()), `${largeur}px : l'adresse de la page ne porte pas le code de la commune`);
+  verifier(fautives.length === 0, `${etq} : aucune adresse ne porte un code de commune ${JSON.stringify(fautives)}`);
+  verifier(!/77284/.test(page.url()), `${etq} : l'adresse de la page ne porte pas le code de la commune`);
 
   /* LA FEUILLE DE SOURCE (niveau 4) */
   await page.getByRole("button", { name: /D'où vient cette information/ }).first().click();
   await page.getByText("Comment Repère l'utilise").first().waitFor({ timeout: 5000 });
   const feuille = await page.evaluate(() => document.body.innerText);
   verifier(/Données publiées le \d/.test(feuille) && /↗/.test(feuille),
-    `${largeur}px : une pastille ouvre la feuille de source : producteur, date, usage et lien vers la donnée originale`);
-  verifier(/Traitées par Repère le \d/.test(feuille), `${largeur}px : la feuille distingue la date de la source de celle du traitement par Repère`);
+    `${etq} : une pastille ouvre la feuille de source : producteur, date, usage et lien vers la donnée originale`);
+  verifier(/Traitées par Repère le \d/.test(feuille), `${etq} : la feuille distingue la date de la source de celle du traitement par Repère`);
   await page.getByRole("button", { name: "Fermer" }).first().click();
   await page.waitForTimeout(400);
 
@@ -309,9 +356,9 @@ for (const largeur of [360, 390, 430]) {
       /* PAR JOURNEE (07/10/2026) : autant de lignes que de groupes calcules par le
          socle sur les fichiers servis, pour les deux prochaines semaines. */
       const lignes = await page.evaluate(() => document.querySelectorAll('[data-testid="cal-ligne"]').length);
-      verifier(lignes === CAL.lignes, `${largeur}px · Le calendrier : une ligne par texte et par jour (${lignes} affichées, ${CAL.lignes} attendues)`);
+      verifier(lignes === CAL.lignes, `${etq} · Le calendrier : une ligne par texte et par jour (${lignes} affichées, ${CAL.lignes} attendues)`);
       verifier(CAL.vieux.every(x => new RegExp("Agenda " + x.de + " relevé le .+, il y a " + x.age + " jours").test(m.brut)),
-        `${largeur}px · Le calendrier : un relevé ancien le dit, avec sa date ${JSON.stringify(CAL.vieux)}`);
+        `${etq} · Le calendrier : un relevé ancien le dit, avec sa date ${JSON.stringify(CAL.vieux)}`);
       /* 17/10/2026 : « 13 octobre, 0 élément » pour un jour passe qui avait deux seances.
          Chaque case dit l'un des quatre etats du socle, et les jours deja passes de la
          semaine sont dits passes (ni « 0 », ni « aucun »). */
@@ -321,14 +368,14 @@ for (const largeur of [360, 390, 430]) {
       const rangAujourdhui = (new Date(INSTANTANE.toLocaleString("en-US", { timeZone: "Europe/Paris" })).getDay() + 6) % 7;
       if (CAL.agendaLu) {
         verifier(cases.length === 7 && cases.every(l => forme.test(l)) && cases.filter(l => /jour passé$/.test(l)).length === rangAujourdhui,
-          `${largeur}px · Le calendrier : chaque jour de la semaine dit vrai, les ${rangAujourdhui} jours passés le disent ${JSON.stringify(cases)}`);
+          `${etq} · Le calendrier : chaque jour de la semaine dit vrai, les ${rangAujourdhui} jours passés le disent ${JSON.stringify(cases)}`);
       } else {
         /* sans agenda servi, aucune case ne pretend dire un jour (ni « 0 », ni « aucun ») */
-        verifier(cases.length === 0, `${largeur}px · Le calendrier sans agenda servi : aucune case de jour n'annonce quoi que ce soit ${JSON.stringify(cases)}`);
+        verifier(cases.length === 0, `${etq} · Le calendrier sans agenda servi : aucune case de jour n'annonce quoi que ce soit ${JSON.stringify(cases)}`);
       }
     }
-    if (action === QUI) verifier(/Île-de-France Mobilités/.test(m.brut) && !/Décide : les transports/.test(m.brut), `${largeur}px · Qui décide : en Île-de-France, l'intercommunalité ne « décide » pas des transports`);
-    verifier(preuve.test(m.brut), `${largeur}px · ${action} : l'écran répond à sa question`);
+    if (action === QUI) verifier(/Île-de-France Mobilités/.test(m.brut) && !/Décide : les transports/.test(m.brut), `${etq} · Qui décide : en Île-de-France, l'intercommunalité ne « décide » pas des transports`);
+    verifier(preuve.test(m.brut), `${etq} · ${action} : l'écran répond à sa question`);
     if (action === "Sources") {
       /* Depuis le 15/10/2026 (360b264, « sources repliées »), la licence est sous
          « Ce que Repère en tire et sa licence » : un geste l'ouvre. On l'ouvre, puis on
@@ -337,9 +384,9 @@ for (const largeur of [360, 390, 430]) {
       const repli = page.getByRole("button", { name: /Ce que Repère en tire et sa licence/ }).first();
       if (await repli.count()) { await repli.click(); await page.waitForTimeout(400); }
       const brut = await page.evaluate(() => document.body.innerText);
-      verifier(/Licence : /.test(brut) && /Les noms des députés/.test(brut), `${largeur}px · Sources : chaque source dit sa licence, et la source des noms des députés est citée`);
+      verifier(/Licence : /.test(brut) && /Les noms des députés/.test(brut), `${etq} · Sources : chaque source dit sa licence, et la source des noms des députés est citée`);
     }
-    if (action === QUI) verifier(ELUS_CANTON.length >= 2 && ELUS_CANTON.every(n => m.brut.includes(n)), `${largeur}px · Qui décide : tous les élus du canton sont nommés ${JSON.stringify(ELUS_CANTON)}`);
+    if (action === QUI) verifier(ELUS_CANTON.length >= 2 && ELUS_CANTON.every(n => m.brut.includes(n)), `${etq} · Qui décide : tous les élus du canton sont nommés ${JSON.stringify(ELUS_CANTON)}`);
     /* 16/10/2026 : toucher le point « Région » amene la carte Région en haut de l'ecran. */
     if (action === QUI) {
       const point = page.getByRole("button", { name: /^Région :.*Aller à ce niveau$/ }).first();
@@ -351,17 +398,17 @@ for (const largeur of [360, 390, 430]) {
       const avant = await page.evaluate(() => { const e = [...document.querySelectorAll("div")].filter(d => d.checkVisibility() && d.children.length === 0).find(d => (d.innerText || "").startsWith("Région ·")); return e ? Math.round(e.getBoundingClientRect().top) : null; });
       if (await point.count()) { await point.click(); await page.waitForTimeout(900); }
       const apres = await page.evaluate(() => { const e = [...document.querySelectorAll("div")].filter(d => d.checkVisibility() && d.children.length === 0).find(d => (d.innerText || "").startsWith("Région ·")); return e ? Math.round(e.getBoundingClientRect().top) : null; });
-      verifier(apres !== null && apres >= 0 && apres < 260 && avant !== null && avant > 260 && apres < avant, `${largeur}px · Qui décide : le point « Région » amène à sa carte (${avant} px -> ${apres} px)`);
+      verifier(apres !== null && apres >= 0 && apres < 260 && avant !== null && avant > 260 && apres < avant, `${etq} · Qui décide : le point « Région » amène à sa carte (${avant} px -> ${apres} px)`);
     }
-    if (action !== "Sources") verifier(/D'où vient cette information/.test(m.etiquettes) || /Le calendrier n'est arrivé/.test(m.texte), `${largeur}px · ${action} : la source est à portée de doigt`);
+    if (action !== "Sources") verifier(/D'où vient cette information/.test(m.etiquettes) || /Le calendrier n'est arrivé/.test(m.texte), `${etq} · ${action} : la source est à portée de doigt`);
     if (/argent/.test(action)) {
-      verifier(/Calculé par Repère · source/.test(m.texte), `${largeur}px · ${action} : les parts calculées se disent calculées`);
+      verifier(/Calculé par Repère · source/.test(m.texte), `${etq} · ${action} : les parts calculées se disent calculées`);
       /* 08/10/2026 (audit) : chaque carte de chiffres dit l'annee de ses comptes */
       const titres = (m.brut.match(/(Où vont 100 € dépensés|D'où vient l'argent|Sa dette|Chaque jour, en moyenne)[^\n]*/g) || []);
-      verifier(titres.length > 0 && titres.every(t => /\d{4}/.test(t)), `${largeur}px · ${action} : chaque carte de chiffres porte l'année de ses comptes ${JSON.stringify(titres)}`);
+      verifier(titres.length > 0 && titres.every(t => /\d{4}/.test(t)), `${etq} · ${action} : chaque carte de chiffres porte l'année de ses comptes ${JSON.stringify(titres)}`);
       await page.getByRole("button", { name: "Détails du calcul" }).first().click();
       await page.getByText(/ce n'est pas un chiffre publié/).first().waitFor({ timeout: 5000 });
-      verifier(true, `${largeur}px · ${action} : le détail du calcul s'ouvre`);
+      verifier(true, `${etq} · ${action} : le détail du calcul s'ouvre`);
     }
     /* Qui décide et Le calendrier sont des onglets (13/10/2026) : on y revient par la
        barre basse, pas par un bouton « Revenir ». Les autres écrans gardent le bouton. */
@@ -375,7 +422,7 @@ for (const largeur of [360, 390, 430]) {
 
   await page.getByRole("button", { name: "Revenir à l'accueil" }).last().click();
   await page.getByText("Où habitez-vous ?").waitFor({ timeout: 5000 });
-  verifier(true, `${largeur}px : retour à l'accueil`);
+  verifier(true, `${etq} : retour à l'accueil`);
   await page.close();
 }
 /* UNE DETTE NULLE PUBLIEE SE DIT — 08/10/2026 (audit). Bassevelle (77024) publie
