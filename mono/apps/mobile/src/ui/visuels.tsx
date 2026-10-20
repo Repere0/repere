@@ -11,7 +11,7 @@
  * Construites avec des View : aucune bibliotheque de graphiques. */
 import { useState, type ReactNode } from "react";
 import { Animated, LayoutAnimation, Pressable, StyleSheet, Text, View } from "react-native";
-import { couleurs, GRIS_VOTE, PAS, RAYON, TEINTES, TYPO, CIBLE, type Echelon } from "../lib/theme";
+import { couleurs, GRIS_VOTE, OMBRE, PAS, POLICE, RAYON, TEINTES, TYPO, CIBLE, type Echelon } from "../lib/theme";
 import { useApparition, useCompteur, useMouvementReduit } from "./mouvement";
 import { toucherLeger } from "./toucher";
 
@@ -176,7 +176,55 @@ export type Niveau = {
 /* `refNiveau` : la vue de chaque niveau, mesuree au moment ou un raccourci y amene le
    lecteur (Qui decide, 16/10/2026). Une position memorisee a l'affichage devenait fausse
    des qu'un repli s'ouvrait au-dessus (mesure sur l'export web). */
-export function Chaine({ niveaux, compact, surNom, refNiveau }: { niveaux: Niveau[]; compact?: boolean; surNom?: (n: Niveau) => void; refNiveau?: (echelon: string, vue: View | null) => void }) {
+export function Chaine({ niveaux, compact, surNom, refNiveau, cartes }: { niveaux: Niveau[]; compact?: boolean; surNom?: (n: Niveau) => void; refNiveau?: (echelon: string, vue: View | null) => void; cartes?: boolean }) {
+  /* 20/10/2026 (maquette « Qui decide pour vous ? ») : une carte blanche par niveau. Meme
+     contenu que la frise (libelle « Niveau · lieu », nom, role, ce qu'il decide, fiche),
+     seule la mise en page change. La couleur d'echelon reste sur le point. */
+  if (cartes && !compact) {
+    return (
+      <View style={{ gap: PAS * 4 }}>
+        {niveaux.map(n => (
+          <View key={n.echelon} style={s.carteNiveau} ref={refNiveau ? v => refNiveau(n.echelon, v) : undefined}>
+            <View style={s.carteTeteNiveau}>
+              <View style={[s.maillon, { backgroundColor: couleurs[n.echelon], marginTop: 0 }]} />
+              <Text style={[TYPO.etiquette, { flex: 1 }]}>{n.niveau}{n.lieu ? " · " + n.lieu : ""}</Text>
+            </View>
+            {n.personne && surNom ? (
+              <Pressable onPress={() => surNom(n)} accessibilityRole="link"
+                accessibilityLabel={`Voir la fiche de ${n.personne.nom}, ${n.personne.role}`}
+                style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", opacity: pressed ? 0.6 : 1 })}>
+                <Text style={s.carteNom}>{n.personne.nom}</Text>
+              </Pressable>
+            ) : n.personne ? (
+              <Text style={s.carteNom}>{n.personne.nom}</Text>
+            ) : (
+              <Text style={[TYPO.reponse, { color: couleurs.encre }]}>{n.institution}</Text>
+            )}
+            {n.personne ? <Text style={TYPO.note}>{n.personne.role}</Text> : null}
+            {n.decide ? (
+              <View style={s.boiteDecide}>
+                <Text style={TYPO.etiquette}>Ce que ce niveau décide</Text>
+                <Text style={TYPO.corps}>{n.decide}.</Text>
+              </View>
+            ) : null}
+            {n.personne && surNom ? (
+              <Pressable onPress={() => surNom(n)} accessibilityRole="button"
+                accessibilityLabel={`Voir la fiche de ${n.personne.nom}`}
+                style={({ pressed }) => ({ minHeight: CIBLE, borderRadius: RAYON.pastille, backgroundColor: couleurs.primaireClair, alignItems: "center", justifyContent: "center", opacity: pressed ? 0.7 : 1 })}>
+                <Text style={s.carteAction}>Voir la fiche</Text>
+              </Pressable>
+            ) : null}
+            {n.note || n.pied ? (
+              <Depli titre={`En savoir plus (${n.niveau})`}>
+                {n.note ? <Text style={TYPO.note}>{n.note}</Text> : null}
+                {n.pied ? n.pied : null}
+              </Depli>
+            ) : null}
+          </View>
+        ))}
+      </View>
+    );
+  }
   return (
     <View>
       {niveaux.map((n, i) => (
@@ -272,6 +320,11 @@ const s = StyleSheet.create({
   marque: { fontSize: 13, fontWeight: "700", color: couleurs.blanc, backgroundColor: couleurs.ville, paddingHorizontal: 8, paddingVertical: 2, borderRadius: RAYON.pastille, overflow: "hidden", maxWidth: 170 },
   annee: { flexDirection: "row", alignItems: "center", gap: PAS * 2 },
   jalon: { flexDirection: "row", gap: PAS * 3 },
+  carteNiveau: { backgroundColor: couleurs.carte, borderRadius: RAYON.carte, borderCurve: "continuous", padding: PAS * 4, gap: PAS * 2, borderWidth: 1, borderColor: couleurs.trait, ...OMBRE },
+  carteTeteNiveau: { flexDirection: "row", alignItems: "center", gap: PAS * 2 },
+  carteNom: { fontFamily: POLICE.titre, fontSize: 26, lineHeight: 30, color: couleurs.primaire, letterSpacing: -0.3 },
+  boiteDecide: { backgroundColor: couleurs.voile, borderRadius: RAYON.bloc, padding: PAS * 3, gap: PAS },
+  carteAction: { fontSize: 16, fontWeight: "700", color: couleurs.primaire },
   jalonAxe: { width: 18, alignItems: "center" },
   jalonPoint: { width: 14, height: 14, borderRadius: 7, borderWidth: 2, backgroundColor: couleurs.sol, marginTop: 4 },
   jalonActif: { width: 18, height: 18, borderRadius: 9, marginTop: 2 },

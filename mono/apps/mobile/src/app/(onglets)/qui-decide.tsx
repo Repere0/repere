@@ -6,8 +6,8 @@
  * du lecteur (COMPETENCES, @repere/core — les memes phrases que le site).
  * Un niveau sans personne nommee par la source garde sa place et le dit.
  * L'ordre est un ordre de distance, pas d'importance : c'est ecrit. */
-import { useRef } from "react";
-import { Pressable, ScrollView, Text, View } from "react-native";
+import { useRef, useState } from "react";
+import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { router, Stack } from "expo-router";
 import { chaineDecision, dateFr, MAIRE_ABSENT, nomIntercommunalite, phraseAdjoints, presidentIntercommunalite, RNE_URL, LIBELLES } from "@repere/core";
 import { sansConseilDepartemental } from "@repere/core";
@@ -15,7 +15,7 @@ import { LienAction, Segments } from "../../lib/composants";
 import { LienDefinition } from "../../lib/termes";
 import { REGION_PAS_ARRIVEE } from "../../lib/absences";
 import { srcElus } from "../../lib/sources";
-import { CIBLE, couleurs, PAS, TYPO } from "../../lib/theme";
+import { CIBLE, couleurs, PAS, POLICE, RAYON, TYPO } from "../../lib/theme";
 import { AvecDonnees, Page, Question } from "../../ui/page";
 import { PastilleSource } from "../../ui/source";
 import { Chaine, type Niveau } from "../../ui/visuels";
@@ -47,6 +47,56 @@ function Parcours({ niveaux, aller }: { niveaux: Niveau[]; aller: (echelon: stri
   );
 }
 
+/* 20/10/2026 (maquette) : filtre par niveau. « Tous les niveaux » montre la chaine entiere ;
+   un niveau ne montre que sa carte. Les niveaux restent ordonnes de chez vous a l'Assemblee. */
+const FILTRES: ReadonlyArray<readonly [string, string]> = [
+  ["tous", "Tous les niveaux"], ["ville", "Ville"], ["agglo", "Intercommunalité"],
+  ["dept", "Département"], ["region", "Région"], ["france", "France"],
+];
+function FiltresNiveau({ valeur, onChange }: { valeur: string; onChange: (v: string) => void }) {
+  return (
+    <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: PAS * 2, paddingVertical: PAS }}>
+      {FILTRES.map(([cle, libelle]) => {
+        const actif = valeur === cle;
+        return (
+          <Pressable key={cle} onPress={() => onChange(cle)} accessibilityRole="button"
+            accessibilityState={{ selected: actif }} accessibilityLabel={`Afficher : ${libelle}`}
+            style={({ pressed }) => ({ minHeight: CIBLE, paddingHorizontal: PAS * 4, borderRadius: RAYON.pastille, justifyContent: "center",
+              backgroundColor: actif ? couleurs.primaire : couleurs.primaireClair, opacity: pressed ? 0.7 : 1 })}>
+            <Text style={{ fontSize: 16, fontWeight: "700", color: actif ? couleurs.blanc : couleurs.primaire }}>{libelle}</Text>
+          </Pressable>
+        );
+      })}
+    </ScrollView>
+  );
+}
+
+/* 20/10/2026 (maquette « Aiguilleur express ») : les niveaux qui decident d'une vie
+   quotidienne (region, commune, departement), chacun avec ce qu'il decide, tels que
+   COMPETENCES les ecrit. Toucher une ligne amene a la carte du niveau. Rien d'invente :
+   pas de question inventee, pas de lien vers une source absente. */
+function Aiguilleur({ niveaux, surChoix }: { niveaux: Niveau[]; surChoix: (echelon: string) => void }) {
+  const lignes = niveaux.filter(n => n.decide && (n.echelon === "ville" || n.echelon === "dept" || n.echelon === "region"));
+  if (!lignes.length) return null;
+  return (
+    <View style={s.aiguilleur}>
+      <Text style={[TYPO.reponse, { fontFamily: POLICE.titre, color: couleurs.primaire }]} accessibilityRole="header">Aiguilleur express</Text>
+      <Text style={TYPO.note}>Touchez le niveau qui décide : vous allez à sa carte.</Text>
+      {lignes.map(n => (
+        <Pressable key={n.echelon} onPress={() => surChoix(n.echelon)} accessibilityRole="button"
+          accessibilityLabel={`${n.niveau}${n.lieu ? " " + n.lieu : ""} : ${n.decide}. Aller à ce niveau`}
+          style={({ pressed }) => ({ minHeight: CIBLE, flexDirection: "row", alignItems: "flex-start", gap: PAS * 3, backgroundColor: couleurs.carte, borderRadius: RAYON.bloc, padding: PAS * 3, opacity: pressed ? 0.7 : 1 })}>
+          <View style={{ width: 14, height: 14, borderRadius: 7, marginTop: 4, backgroundColor: couleurs[n.echelon] }} />
+          <View style={{ flex: 1, gap: 2 }}>
+            <Text style={TYPO.etiquette}>{n.niveau}{n.lieu ? " · " + n.lieu : ""}</Text>
+            <Text style={TYPO.corps}>Décide : {n.decide}.</Text>
+          </View>
+        </Pressable>
+      ))}
+    </View>
+  );
+}
+
 /* 16/10/2026 (audit Lovable) : « aucune personne nommee » pouvait se lire « personne n'est
    elu ». La raison varie (intercommunalite dont le president vient d'une autre commune ;
    Paris, qui n'a reellement pas de conseil departemental) : la legende renvoie a la note
@@ -60,6 +110,7 @@ function LegendeParcours({ niveaux }: { niveaux: Niveau[] }) {
 
 export default function QuiDecide() {
   const defil = useRef<ScrollView>(null);
+  const [filtre, setFiltre] = useState("tous");
   const vues = useRef<Record<string, View | null>>({});
   const decalage = useRef(0);
   const reduit = useMouvementReduit();
@@ -143,12 +194,14 @@ export default function QuiDecide() {
              ce qu'elle protege : un ordre de distance, pas d'importance (invariant 3). */}
           <Question question={`Qui décide pour ${d.nomCommune} ?`}
             sous="Du plus proche de chez vous au plus lointain : un ordre de distance, pas d'importance." />
+          <FiltresNiveau valeur={filtre} onChange={setFiltre} />
           <Parcours niveaux={niveaux} aller={aller} />
           <LegendeParcours niveaux={niveaux} />
-          <Chaine niveaux={niveaux} refNiveau={(echelon, v) => { vues.current[echelon] = v; }}
+          <Chaine cartes niveaux={filtre === "tous" ? niveaux : niveaux.filter(n => n.echelon === filtre)} refNiveau={(echelon, v) => { vues.current[echelon] = v; }}
             surNom={n => router.push({ pathname: "/elu", params: {
             nom: n.personne ? n.personne.nom : "", role: n.personne ? n.personne.role : "", echelon: n.echelon,
             niveau: n.niveau, institution: n.institution, lieu: n.lieu || "" } })} />
+          <Aiguilleur niveaux={niveaux} surChoix={echelon => { setFiltre("tous"); setTimeout(() => aller(echelon), 80); }} />
           <PastilleSource source={srcElus(r.srcElus ? { ...r.srcElus, url: r.srcElus.url || RNE_URL } : null)} />
           {prefet ? (
             <Pressable onPress={() => router.push({ pathname: "/elu", params: { nom: prefet.nom, role: prefet.titre, echelon: "", niveau: "L'État", institution: "Préfecture de région", lieu: "Île-de-France" } })}
@@ -164,3 +217,7 @@ export default function QuiDecide() {
     }} />
   );
 }
+
+const s = StyleSheet.create({
+  aiguilleur: { backgroundColor: couleurs.voile, borderRadius: RAYON.carte, padding: PAS * 4, gap: PAS * 3 },
+});

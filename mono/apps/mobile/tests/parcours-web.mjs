@@ -265,7 +265,7 @@ for (const largeur of [360, 390, 430]) {
   for (const [action, question, preuve] of [
     ["Où va cet argent ?", /Où va l'argent de Meaux/, /Sur 100 € dépensés, \d+ € vont aux salaires/],
     ["Comprendre ce vote", /Qu'a voté votre député/, /Le parcours d'une loi|Où en est ce texte/],
-    [QUI, /Qui décide pour Meaux/, /Décide : /],
+    [QUI, /Qui décide pour Meaux/, /Ce que ce niveau décide/],
     /* L'écran du calendrier porte, depuis le canevas du 13/10/2026, le titre « Calendrier »
        et la phrase « Les séances annoncées… » : c'est elle qui répond à la question. */
     ["Le calendrier", /Les séances annoncées à l'Assemblée nationale/, /concernent tout le pays/],
