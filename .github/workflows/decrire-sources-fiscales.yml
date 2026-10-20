@@ -29,11 +29,6 @@ jobs:
           python-version: "3.12"
 
       - name: Decrire les jeux (lecture seule)
-        # Le releve est un artefact de l'execution : rien n'est ecrit dans le depot.
-        run: python3 outils/decrire_sources_fiscales.py > releve-sources-fiscales.txt 2>&1 || true
-
-      - name: Televerser le releve
-        uses: actions/upload-artifact@v4
-        with:
-          name: releve-sources-fiscales
-          path: releve-sources-fiscales.txt
+        # Le releve remonte en annotations de controle (lisibles par l'API) : rien n'est
+        # ecrit dans le depot ni televerse ailleurs.
+        run: python3 outils/decrire_sources_fiscales.py
