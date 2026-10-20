@@ -109,7 +109,7 @@ function Case({ iso, jour, nb, onPress, taille }: { iso: string; jour: string; n
       style={({ pressed }) => ({ flex: 1, minHeight: grand ? 58 : 42, alignItems: "center", justifyContent: "center", gap: 4, opacity: pressed ? 0.6 : 1 })}>
       {grand ? <Text style={{ fontSize: 13, color: couleurs.sourd, fontWeight: "600" }}>{LETTRES[rangLundi(iso)]}</Text> : null}
       <View style={{ width: grand ? 40 : 34, height: grand ? 40 : 34, borderRadius: 999, alignItems: "center", justifyContent: "center",
-        backgroundColor: choisi ? couleurs.encre : "transparent" }}>
+        backgroundColor: choisi ? couleurs.primaire : "transparent" }}>
         <Text style={{ fontWeight: choisi ? "800" : "600", fontSize: grand ? 20 : 16, color: choisi ? couleurs.sol : couleurs.encre }}>{numero}</Text>
       </View>
       <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: nb > 0 ? (choisi ? couleurs.encre : couleurs.sourd) : "transparent" }} />
@@ -216,8 +216,8 @@ export default function AVenir() {
                   return (
                     <Pressable key={o.t} onPress={() => setInstitution(o.c)} accessibilityRole="tab"
                       accessibilityState={{ selected: actif }} accessibilityLabel={`Afficher : ${o.c ? o.c : "toutes les institutions"}`}
-                      style={{ flex: 1, minHeight: 40, borderRadius: 999, backgroundColor: actif ? couleurs.carte : "transparent", alignItems: "center", justifyContent: "center" }}>
-                      <Text style={{ fontWeight: actif ? "800" : "600", color: couleurs.encre }}>{o.t}</Text>
+                      style={{ flex: 1, minHeight: 40, borderRadius: 999, backgroundColor: actif ? couleurs.primaire : "transparent", alignItems: "center", justifyContent: "center" }}>
+                      <Text style={{ fontWeight: actif ? "800" : "600", color: actif ? couleurs.sol : couleurs.encre }}>{o.t}</Text>
                     </Pressable>
                   );
                 })}

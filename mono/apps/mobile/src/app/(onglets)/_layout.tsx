@@ -5,9 +5,10 @@
  *                             intercommunalite, circonscription ; « Qui decide »
  *                             en est une sortie, pas l'onglet)
  * Calendrier   -> a-venir     (le Parlement, semaine et mois)
+ * Qui decide  -> qui-decide   (la chaine de decision de la commune)
  *
- * « Qui decide » reste un ecran (route qui-decide), ouvert depuis « Aller plus
- * loin », mais il n'a plus d'onglet : href null le retire de la barre.
+ * Quatre onglets depuis le 20/10/2026 (maquette) : « Qui decide » revient dans la
+ * barre, decision du porteur qui remplace celle du 13/10/2026.
  * Les ecrans de detail (argent, vote, fiche, partage, dictionnaire...) restent
  * dans la pile, au-dessus de la barre. */
 import { PixelRatio, Text, type ColorValue } from "react-native";
@@ -15,8 +16,8 @@ import { Tabs } from "expo-router";
 import { toucherLeger } from "../../ui/toucher";
 import { LIBELLES } from "@repere/core";
 import { couleurs } from "../../lib/theme";
-import { Retour } from "../../ui/retour";
-import { IconeCalendrier, IconeHorloge, IconeMaison } from "../../ui/icones";
+import { PastilleCommune, Retour } from "../../ui/retour";
+import { IconeBoussole, IconeCalendrier, IconeHorloge, IconeMaison } from "../../ui/icones";
 
 /* Au-dela de ce facteur d'agrandissement du texte du telephone, le libelle d'onglet
    est masque : l'onglet ne montre que son icone. Le nom reste lu par les lecteurs
@@ -51,7 +52,7 @@ export default function Onglets() {
         headerStyle: { backgroundColor: couleurs.sol },
         headerTintColor: couleurs.encre,
         headerShadowVisible: false,
-        tabBarActiveTintColor: couleurs.encre,
+        tabBarActiveTintColor: couleurs.primaire,
         tabBarInactiveTintColor: couleurs.sourd,
         /* minHeight et non height : la barre grandit avec le texte (15/10/2026). */
         tabBarStyle: { backgroundColor: couleurs.carte, borderTopColor: couleurs.trait, minHeight: 72, paddingTop: 6 },
@@ -75,8 +76,18 @@ export default function Onglets() {
           headerLeft: () => <Retour texte="Communes" etiquette="Revenir à l'accueil pour changer de commune" />,
         }}
       />
-      <Tabs.Screen name="qui-decide" options={{ title: LIBELLES.qui, href: null }} />
       <Tabs.Screen name="a-venir" options={{ title: LIBELLES.calendrier, ...nomOnglet("Calendrier"), tabBarIcon: icone(IconeCalendrier) }} />
+      <Tabs.Screen
+        name="qui-decide"
+        options={{
+          title: LIBELLES.qui,
+          ...nomOnglet(LIBELLES.qui),
+          tabBarIcon: icone(IconeBoussole),
+          headerLeft: () => <PastilleCommune />,
+          /* 20/10/2026 : la maquette n'a pas de titre d'en-tete ici ; la question de l'ecran la porte. */
+          headerTitle: "",
+        }}
+      />
     </Tabs>
   );
 }

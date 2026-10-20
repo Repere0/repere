@@ -4,7 +4,9 @@
  * (invariant 7), jamais recopiees ici ; tout le reste est neutre, sous
  * l'amplitude de 24 sur les canaux RGB. Consequence assumee : l'identite passe
  * par la typographie, la composition et le mouvement, pas par une palette. Et
- * un vote n'a jamais de vert ni de rouge : pas de « bon » ni de « mauvais ».
+ * un vote a un vert (« Pour ») et un rouge (« Contre ») depuis le 20/10/2026, decision du
+ * porteur : ce sont les seuls repères de couleur d'un scrutin, l'abstention reste grise.
+ * Les libelles et les nombres portent toujours le sens (accessibilite).
  *
  * TYPOGRAPHIE. Bricolage Grotesque (OFL, embarquee dans l'application, jamais
  * chargee depuis un hote tiers — decision 4 du monorepo) pour les questions,
@@ -12,7 +14,7 @@
  * courant reste dans la police du systeme (SF, Roboto) : la plus lisible sur
  * chaque telephone, et celle qui suit le mieux la taille de texte choisie par
  * le lecteur (Dynamic Type, taille de police Android). */
-import { ECHELONS } from "@repere/data-utils";
+import { ECHELONS, PALETTE_INTERFACE, PALETTE_VOTE } from "@repere/data-utils";
 
 export type Echelon = keyof typeof ECHELONS;
 
@@ -25,7 +27,9 @@ export type Echelon = keyof typeof ECHELONS;
  * LE TEXTE D'ACTION EST EN ENCRE, dans tout l'ecran. Mesure : les couleurs
  * d'echelon tombent sous 4,5:1 sur leur propre teinte (ville 4,34, agglo 3,24,
  * dept 4,32). La couleur ne porte donc jamais seule une action : elle sert aux
- * points, aux traits et aux barres. Un vote reste en gris. */
+ * points, aux traits et aux barres. Un vote prend le vert « Pour » et le rouge
+ * « Contre » (invariant 7, 20/10/2026) ; l'abstention reste grise, et chaque
+ * position porte son libelle, jamais la seule couleur. */
 export const TEINTES: Record<Echelon, string> = {
   ville: "#dbeaee", agglo: "#e4f3f7", dept: "#f7ece4", region: "#efe7fb", france: "#ecebe8",
 };
@@ -41,12 +45,19 @@ export const couleurs = {
   blanc: "#ffffff",
   /* le texte d'une action (« Comprendre ce vote › ») : en encre, voir plus haut */
   lien: "#1a1917",
+  /* Palette d'interface (decision du porteur, 20/10/2026, invariant 7) : boutons, onglets,
+     pastilles. Jamais une couleur d'echelon, jamais un vote. */
+  primaire: PALETTE_INTERFACE.primaire,
+  primaireClair: PALETTE_INTERFACE.primaireClair,
+  /* Repères de vote (decision du porteur, 20/10/2026, invariant 7) : vert pour « Pour », rouge pour « Contre ». */
+  pour: PALETTE_VOTE.pour,
+  contre: PALETTE_VOTE.contre,
 } as const;
 
-/* Les trois gris d'une repartition de vote, du plus fonce au plus clair : ils
-   se distinguent aussi par leur libelle et leur nombre, jamais par la couleur
-   seule (accessibilite). */
-export const GRIS_VOTE = { p: couleurs.encre, c: couleurs.sourd, a: couleurs.trait } as const;
+/* Les repères d'une repartition de vote : vert pour « Pour », rouge pour « Contre »,
+   gris pour l'abstention (invariant 7). Ils se distinguent aussi par leur libelle
+   et leur nombre, jamais par la couleur seule (accessibilite). */
+export const GRIS_VOTE = { p: couleurs.pour, c: couleurs.contre, a: couleurs.trait } as const;
 
 /* 44 points : cible tactile minimale d'Apple, au-dessus des 48 dp d'Android
    une fois la marge interne comptee. */
@@ -64,7 +75,7 @@ export const TYPO = {
   affiche: { fontFamily: POLICE.affiche, fontSize: 36, lineHeight: 40, color: couleurs.encre, letterSpacing: -0.5 },
   chiffre: { fontFamily: POLICE.affiche, fontSize: 38, lineHeight: 44, color: couleurs.encre, letterSpacing: -0.5 },
   /* la question d'un ecran */
-  question: { fontFamily: POLICE.affiche, fontSize: 34, lineHeight: 38, color: couleurs.encre, letterSpacing: -0.6 },
+  question: { fontFamily: POLICE.affiche, fontSize: 34, lineHeight: 38, color: couleurs.primaire, letterSpacing: -0.6 },
   /* la reponse d'une carte : lisible en trois secondes */
   reponse: { fontFamily: POLICE.titre, fontSize: 22, lineHeight: 28, color: couleurs.encre },
   corps: { fontSize: 16, lineHeight: 23, color: couleurs.encre },

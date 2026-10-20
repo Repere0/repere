@@ -20,16 +20,17 @@ import {
   phraseProjetLocal, rapports, sousTitreRapports, euros, CALCUL_REPERE, LIBELLES,
   OFGL_URL, phraseCalculPart, valeur,
 } from "@repere/core";
-import { Carte, Vide } from "../lib/composants";
+import { Carte, Source, Vide } from "../lib/composants";
 import { PROJETS_PAS_ARRIVES, projetsAucun } from "../lib/absences";
 import { srcComptes, srcComptesPublies, srcProjets } from "../lib/sources";
 import { useCommuneChoisie } from "../lib/useCommune";
-import { couleurs, PAS, TYPO } from "../lib/theme";
+import { couleurs, PAS, RAYON, TYPO } from "../lib/theme";
 import { AvecDonnees, Page, Question } from "../ui/page";
 import { PastilleSource } from "../ui/source";
 import { LienDefinition } from "../lib/termes";
 import { Emoji, Resume } from "../ui/resume";
 import { BarrePart, Compteur, DeuxAnnees, Depli, Financement, Mois } from "../ui/visuels";
+import { TauxCommune } from "../ui/fiscalite";
 
 /* DENSITE (16/10/2026). Mesure : l'ecran faisait 4,1 hauteurs d'ecran (3 469 px a
    390 x 844), chaque carte empilant phrase, visuels, « En clair », deux replis et la
@@ -79,6 +80,54 @@ function CarteProjet({ p, nom, projets }: { p: Projet; nom: string; projets: Par
         <Text style={TYPO.note}>{NOTE_FINANCEMENT}</Text>
       </Depli>
     </Carte>
+  );
+}
+
+/* Une variation en pourcentage (calcul Repere, annonce comme tel sous les tuiles). */
+function variationTexte(m1: number, m2: number): string {
+  const v = ((m2 - m1) / m1) * 100;
+  const s = Math.abs(v).toLocaleString("fr-FR", { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+  return `${v > 0 ? "+" : v < 0 ? "-" : ""}${s} %`;
+}
+
+/* OU VONT LES DEPENSES (maquette « Où va cet argent ? ») : chaque poste a son montant
+   PUBLIE par habitant et sa part, CALCULEE par Repere sur les depenses totales. Le
+   reste (depenses moins personnel et investissement) est un calcul, dit comme tel. */
+function LignesDepenses({ ex, ch, valeurs }: { ex: Parameters<typeof parHabitant>[0]; ch: { partSalaires: number | null; partInvestissement: number | null }; valeurs: { salaires?: string; investissement?: string } }) {
+  const hab = parHabitant(ex);
+  const montant = (v: number) => `${Math.round(v).toLocaleString("fr-FR")} €`;
+  const reste = hab.depenses !== null && hab.salaires !== null && hab.investissement !== null ? hab.depenses - hab.salaires - hab.investissement : null;
+  const partReste = ch.partSalaires !== null && ch.partInvestissement !== null ? Math.max(0, Math.round(100 - ch.partSalaires - ch.partInvestissement)) : null;
+  const lignes = [
+    { libelle: "Frais de personnel", part: ch.partSalaires, par: hab.salaires, calcul: false, valeur: valeurs.salaires },
+    { libelle: "Investissements", part: ch.partInvestissement, par: hab.investissement, calcul: false, valeur: valeurs.investissement },
+    { libelle: "Autres dépenses", part: partReste, par: reste, calcul: true, valeur: undefined },
+  ].filter(l => l.part !== null && l.par !== null) as { libelle: string; part: number; par: number; calcul: boolean; valeur?: string }[];
+  return (
+    <View style={{ gap: PAS * 4 }}>
+      {lignes.map((l, i) => (
+        <View key={l.libelle} accessible accessibilityLabel={`${l.libelle} : ${l.part} % des dépenses, ${montant(l.par)} par habitant${l.calcul ? ", calcul Repère" : ""}`} style={{ gap: PAS * 2 }}>
+          <View style={{ flexDirection: "row", alignItems: "center", gap: PAS * 3 }}>
+            <View style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: couleurs.primaireClair, alignItems: "center", justifyContent: "center" }}>
+              <Text style={{ fontWeight: "800", color: couleurs.primaire }}>{i + 1}</Text>
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={TYPO.corps}>{l.libelle}</Text>
+              {/* Le texte publie du rapport d'abord (« 47 € de salaires »), puis la part calculee. */}
+              {l.valeur ? <Text style={TYPO.micro}>{l.valeur}</Text> : null}
+              <Text style={TYPO.micro}>{`${l.part} % des dépenses${l.calcul ? " · calcul Repère" : ""}`}</Text>
+            </View>
+            <View style={{ alignItems: "flex-end" }}>
+              <Text style={{ fontWeight: "800", fontSize: 18, color: couleurs.encre }}>{montant(l.par)}</Text>
+              <Text style={TYPO.micro}>par habitant</Text>
+            </View>
+          </View>
+          <View style={{ height: 8, borderRadius: 4, backgroundColor: couleurs.voile, overflow: "hidden" }}>
+            <View style={{ height: 8, width: `${l.part}%`, borderRadius: 4, backgroundColor: couleurs.primaire }} />
+          </View>
+        </View>
+      ))}
+    </View>
   );
 }
 
@@ -134,8 +183,7 @@ export default function Argent() {
                   {/* 08/10/2026 (audit) : « Deux postes… » s'affichait avec une seule barre
                      (part des salaires absente) ; l'annee des comptes manquait au titre. */}
                   <Resume phrase={ch.partSalaires !== null ? `Sur 100 € dépensés, ${ch.partSalaires} € vont aux salaires des agents.` : `Sur 100 € dépensés, ${ch.partInvestissement} € vont aux investissements.`}>
-                    {ch.partSalaires !== null ? <BarrePart part={ch.partSalaires} libelle="Salaires des agents" valeur={rap(/salaires/)?.v || ""} />
-                      : <BarrePart part={ch.partInvestissement as number} libelle="Investissements : travaux, équipements…" valeur={rap(/investir/)?.v || ""} />}
+                    <LignesDepenses ex={ex.ex} ch={ch} valeurs={{ salaires: rap(/salaires/)?.v, investissement: rap(/investir/)?.v }} />
                   </Resume>
                   <PastilleSource source={srcComptes(d)} />
                   <Detail sujet="dépenses">
@@ -206,8 +254,8 @@ export default function Argent() {
 
           {/* DENSITE (16/10/2026) : la moyenne par jour (un calcul) et l'evolution sur un
              an, chacune dans sa carte et avec sa source, sous un meme repli. */}
-          {ex && ch && (ch.parJour !== null || evo) ? (
-            <Detail sujet="par jour et sur un an">
+          {ex && ch && ch.parJour !== null ? (
+            <Detail sujet="par jour">
               {/* LE JOUR LE JOUR, POUR QUI VEUT LE VOIR COMPTER */}
                 {ch.parJour !== null ? (
                   <Carte echelon="ville" titre={`Chaque jour, en moyenne, en ${ex.an}`}>
@@ -219,21 +267,36 @@ export default function Argent() {
                   </Carte>
                 ) : null}
 
-          {/* CE QUI A CHANGE EN UN AN : jamais deux territoires, jamais un jugement */}
+            </Detail>
+          ) : null}
+
+          {/* CE QUI A CHANGE EN UN AN, visible sans repli (maquette « Ce qui change par rapport
+              à … ») : jamais deux territoires, jamais un jugement */}
+          {ex && ch && evo ? (
+            <>
               {evo ? (
                 evo.perimetreChange ? (
                   <Vide {...perimetreChange(evo, nom)} lien={VERIFIER_COMPTES} />
                 ) : (
                   <Carte echelon="ville" titre={`Ce qui a changé entre ${evo.an1} et ${evo.an2}`}>
-                    {/* La premiere ligne visible ; les autres, l'intro et la note dans le detail. */}
-                    {[1, 0, 2].map(i => evo.lignes[i]).filter(l => l && l.m1 !== null && l.m2 !== null).slice(0, 1).map((l: { libelle: string; m1: number; m2: number; diff: number }) => (
-                      <DeuxAnnees key={l.libelle} libelle={l.libelle} an1={evo.an1} an2={evo.an2} m1={l.m1} m2={l.m2}
-                        texte1={eurosArrondis(l.m1)} texte2={eurosArrondis(l.m2)} diffTexte={diffEuros(l.diff)} />
-                    ))}
+                    {/* Trois tuiles, une variation en pourcentage chacune (calcul Repere, dit sous
+                        elles) ; les barres en euros et la note restent dans le detail. */}
+                    <View style={{ flexDirection: "row", gap: PAS * 2 }}>
+                      {[1, 0, 2].map(i => evo.lignes[i]).filter(l => l && l.m1 !== null && l.m2 !== null && l.m1 !== 0).slice(0, 3).map((l: { libelle: string; m1: number; m2: number; diff: number }) => (
+                        <View key={l.libelle} accessible accessibilityLabel={`${l.libelle} : ${variationTexte(l.m1, l.m2)} entre ${evo.an1} et ${evo.an2}, calcul Repère`}
+                          style={{ flex: 1, backgroundColor: couleurs.voile, borderRadius: RAYON.bloc, padding: PAS * 3, gap: PAS * 2 }}>
+                          <Text style={TYPO.micro}>{l.libelle}</Text>
+                          <View style={{ alignSelf: "flex-start", backgroundColor: couleurs.primaireClair, borderRadius: RAYON.pastille, paddingHorizontal: PAS * 2, paddingVertical: 2 }}>
+                            <Text style={{ fontWeight: "800", color: couleurs.encre }}>{variationTexte(l.m1, l.m2)}</Text>
+                          </View>
+                        </View>
+                      ))}
+                    </View>
+                    <Text style={TYPO.micro}>{`Variation calculée par Repère entre ${evo.an1} et ${evo.an2}, à partir des montants publiés.`}</Text>
                     <PastilleSource source={srcComptes(d)} />
                     <Detail sujet="évolution">
                       <Text style={TYPO.note}>{INTRO_EVOLUTION}</Text>
-                      {[1, 0, 2].map(i => evo.lignes[i]).filter(l => l && l.m1 !== null && l.m2 !== null).slice(1).map((l: { libelle: string; m1: number; m2: number; diff: number }) => (
+                      {[1, 0, 2].map(i => evo.lignes[i]).filter(l => l && l.m1 !== null && l.m2 !== null).map((l: { libelle: string; m1: number; m2: number; diff: number }) => (
                         <DeuxAnnees key={l.libelle} libelle={l.libelle} an1={evo.an1} an2={evo.an2} m1={l.m1} m2={l.m2}
                           texte1={eurosArrondis(l.m1)} texte2={eurosArrondis(l.m2)} diffTexte={diffEuros(l.diff)} />
                       ))}
@@ -243,9 +306,32 @@ export default function Argent() {
                   </Carte>
                 )
               ) : null}
-
-            </Detail>
+            </>
           ) : null}
+
+          {/* CE QUE VOUS PAYEZ A LA COMMUNE (20/10/2026). Faits de droit par profil, sans
+              montant personnel en euros et sans donnee publiee : la doctrine du vide
+              s'applique tant que les taux ne sont pas branches. */}
+          <View style={{ gap: PAS * 3 }}>
+            <View style={{ flexDirection: "row", gap: PAS * 2, alignItems: "center" }}>
+              <Emoji c="💶" taille={24} />
+              <Text style={[TYPO.question, { flex: 1, fontSize: 24, lineHeight: 28 }]} accessibilityRole="header">Ce que vous payez à la commune</Text>
+            </View>
+            <Carte echelon="ville" titre="Si vous êtes propriétaire">
+              <Text style={TYPO.corps}>Vous payez la taxe foncière sur les propriétés bâties, et, si votre commune la lève, la taxe d'enlèvement des ordures ménagères, établie au nom du propriétaire.</Text>
+              <TauxCommune dep={d.dep} insee={d.commune} />
+            </Carte>
+            <Carte echelon="ville" titre="Si vous êtes locataire">
+              <Text style={TYPO.reponse}>Le propriétaire peut récupérer auprès de vous la taxe d'enlèvement des ordures ménagères, de plein droit et sans frais de gestion.</Text>
+              <Text style={TYPO.corps}>Il doit vous remettre le détail des taxes locatives.</Text>
+              <Source producteur="Direction générale des Finances publiques (DGFiP)" maj="20/07/2026" calcul={false}
+                url="https://www.impots.gouv.fr/portail/particulier/questions/je-suis-locataire-mon-proprietaire-me-demande-de-payer-la-taxe-denlevement-des" />
+            </Carte>
+            <Carte echelon="ville" titre="Famille et étudiant">
+              <Text style={TYPO.reponse}>Repère ne donne pas de règle générale pour votre foyer.</Text>
+              <Text style={TYPO.corps}>Pour votre situation précise, vérifiez auprès de la DGFiP ou de votre commune. Repère n'affiche aucun montant en euros pour votre logement : la valeur locative est une donnée personnelle.</Text>
+            </Carte>
+          </View>
 
           {/* LES PROJETS AIDES PAR L'ETAT */}
           <View style={{ gap: PAS * 3 }}>

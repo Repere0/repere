@@ -45,6 +45,16 @@ export function IconeMaison({ couleur }: P) {
   );
 }
 
+/* Qui decide : une boussole (un cercle, une aiguille). Decision du 20/10/2026. */
+export function IconeBoussole({ couleur }: P) {
+  return (
+    <Boite>
+      <View style={{ position: "absolute", left: 2, top: 2, width: 20, height: 20, borderRadius: 10, borderWidth: T, borderColor: couleur }} />
+      <View style={{ position: "absolute", left: 9, top: 6, width: 6, height: 12, borderRadius: 2, backgroundColor: couleur, transform: [{ rotate: "45deg" }] }} />
+    </Boite>
+  );
+}
+
 /* Calendrier : une page, sa bande du haut, deux anneaux. */
 export function IconeCalendrier({ couleur }: P) {
   return (

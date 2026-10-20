@@ -85,7 +85,7 @@ export default function Procedure() {
         </Pressable>
         <Pressable onPress={() => aller(etape + 1)} disabled={etape === dernier} accessibilityRole="button"
           accessibilityLabel="Étape suivante" accessibilityState={{ disabled: etape === dernier }}
-          style={({ pressed }) => ({ flex: 1, minHeight: CIBLE, borderRadius: 14, backgroundColor: couleurs.encre,
+          style={({ pressed }) => ({ flex: 1, minHeight: CIBLE, borderRadius: 14, backgroundColor: couleurs.primaire,
             alignItems: "center", justifyContent: "center", opacity: etape === dernier ? 0.4 : pressed ? 0.7 : 1 })}>
           <Text style={{ fontWeight: "700", color: couleurs.sol }}>Suivante</Text>
         </Pressable>

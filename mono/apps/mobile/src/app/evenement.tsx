@@ -11,7 +11,7 @@
 import { Text, View } from "react-native";
 import { Stack, useLocalSearchParams } from "expo-router";
 import { ageReleve, dateFr, heureFr, jourFr, minuteParis, regrouperParJour } from "@repere/core";
-import { Vide } from "../lib/composants";
+import { Carte, Vide } from "../lib/composants";
 import { deInstitution, horairesDuGroupe, rendezVousAffiches, type Ev, type Groupe } from "../lib/calendrier";
 import { srcAgenda } from "../lib/sources";
 import { couleurs, PAS, POLICE, TYPO } from "../lib/theme";
@@ -60,7 +60,7 @@ export default function Evenement() {
           <Question etiquette={g.institution} question={g.titre}
             sous={[jourFr(g.jour), g.categorie].filter(Boolean).join(" · ")} />
 
-          <View style={{ gap: PAS }}>
+          <Carte echelon="france">
             <Etiquette texte={g.seances > 1 ? `Horaires publiés · ${g.seances} séances` : "Horaire publié"} />
             {!horaires.length ? <Text style={TYPO.note}>Heure non publiée.</Text>
               : sansAucuneFin ? (
@@ -80,7 +80,7 @@ export default function Evenement() {
               </Text>
             ) : null}
             {g.lieu ? <Text style={TYPO.corps}>Lieu : {g.lieu}</Text> : null}
-          </View>
+          </Carte>
 
           {points.length ? (
             <View style={{ gap: PAS * 2 }}>

@@ -47,7 +47,7 @@ export default function Dictionnaire() {
 
   const chip = (actif: boolean) => ({
     minHeight: CIBLE, paddingHorizontal: 14, borderRadius: 999, borderWidth: 1,
-    borderColor: actif ? couleurs.encre : couleurs.trait, backgroundColor: actif ? couleurs.encre : couleurs.carte,
+    borderColor: actif ? couleurs.primaire : couleurs.trait, backgroundColor: actif ? couleurs.primaire : couleurs.carte,
     alignItems: "center" as const, justifyContent: "center" as const,
   });
 

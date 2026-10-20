@@ -199,6 +199,12 @@ python3 outils/projets_etat.py --test \
   && python3 outils/projets_etat.py . \
   || echo "::warning::les projets finances par l'Etat n'ont pas ete rafraichis (voir ci-dessus)"
 
+# TAUX DES IMPOTS LOCAUX PAR COMMUNE (DGFiP, 20/10/2026). Meme regle que les projets :
+# l'autotest passe avant la lecture de la source ; une source tronquee n'ecrit rien.
+python3 outils/fiscalite_taux.py --test \
+  && python3 outils/fiscalite_taux.py . \
+  || echo "::warning::les taux des impots locaux n'ont pas ete rafraichis (voir ci-dessus)"
+
 # ------------------- 3 quinquies. decrire les acteurs (pour nommer les references)
 # Les scrutins designent les deputes par une reference opaque (PA1234). Le referentiel
 # AMO30 porte les noms et les circonscriptions. On le fait decrire avant d'ecrire le

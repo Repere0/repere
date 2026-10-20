@@ -470,7 +470,7 @@ const s = StyleSheet.create({
     width: 230, minHeight: 112, padding: PAS * 4, borderRadius: RAYON.bloc,
     backgroundColor: couleurs.carte, borderWidth: 1, borderColor: couleurs.trait, justifyContent: "space-between",
   },
-  selectionCardActive: { borderColor: couleurs.encre, borderWidth: 1.5 },
+  selectionCardActive: { borderColor: couleurs.primaire, borderWidth: 1.5 },
   selectionTitre: { fontFamily: "BricolageGrotesque_600SemiBold", fontSize: 17, lineHeight: 21, color: couleurs.encre, marginTop: PAS * 2 },
   detail: { gap: PAS * 4 },
   detailTitre: { fontFamily: "BricolageGrotesque_800ExtraBold", fontSize: 28, lineHeight: 32, color: couleurs.encre, letterSpacing: -0.4 },

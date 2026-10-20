@@ -40,7 +40,9 @@ export function estDonneePublique(cle, valeur) {
      l'erreur, et les projets n'etaient jamais gardes, pas meme en memoire —
      jamais disponibles hors ligne. Mesure en lisant le code, prouve par
      tests/donnees.test.mjs. */
-  if (!/^(dep|vote|reg|proj|socle):[0-9A-Z]{1,3}$/.test(String(cle))) return false;
+  /* « fisc » rejoint les autres le 20/10/2026 : les taux des impots locaux sont ranges
+     par DEPARTEMENT, comme les projets. Meme garde : jamais un code INSEE de commune. */
+  if (!/^(dep|vote|reg|proj|socle|fisc):[0-9A-Z]{1,3}$/.test(String(cle))) return false;
   if (!valeur || typeof valeur !== "object") return false;
   if ("insee" in valeur && !("communes" in valeur)) return false;
   const interdits = ["utilisateur", "user", "email", "id_client", "session",

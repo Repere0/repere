@@ -27,7 +27,15 @@ import { PastilleSource } from "../ui/source";
 import { useApparition } from "../ui/mouvement";
 import { IconePartage } from "../ui/icones";
 
-type Params = { nom?: string; role?: string; echelon?: string; niveau?: string; institution?: string; lieu?: string };
+type Params = { nom?: string; role?: string; echelon?: string; niveau?: string; institution?: string; lieu?: string; debut?: string };
+
+/* Le debut du mandat, tel que la source le publie. Quand la source ne le donne pas,
+   une phrase le dit (doctrine du vide) : jamais une case vide. */
+function phraseMandat(debut?: string): string {
+  return debut
+    ? `En fonction depuis le ${dateFr(debut)}, date publiée par la source.`
+    : "La date de début de ce mandat n'est pas publiée par la source.";
+}
 type Onglet = "apercu" | "votes" | "parcours";
 
 const PARTI_NON_PUBLIE = "Parti : non publié par la source. Repère ne le déduit pas.";
@@ -37,7 +45,7 @@ function Initiales({ nom }: { nom: string }) {
   const lettres = nom.split(/\s+/).filter(Boolean).map(m => m[0]).slice(0, 2).join("").toUpperCase();
   return (
     <View accessible={false}
-      style={{ width: 72, height: 72, borderRadius: 36, backgroundColor: couleurs.encre, alignItems: "center", justifyContent: "center" }}>
+      style={{ width: 72, height: 72, borderRadius: 36, backgroundColor: couleurs.primaire, alignItems: "center", justifyContent: "center" }}>
       <Text style={{ color: couleurs.sol, fontWeight: "800", fontSize: 26 }}>{lettres}</Text>
     </View>
   );
@@ -56,8 +64,8 @@ function Onglets({ actif, choisir, votes }: { actif: Onglet; choisir: (o: Onglet
         return (
           <Pressable key={o.cle} onPress={() => choisir(o.cle)} accessibilityRole="tab" accessibilityState={{ selected: on }}
             accessibilityLabel={o.t}
-            style={{ flex: 1, minHeight: 40, borderRadius: 999, backgroundColor: on ? couleurs.carte : "transparent", alignItems: "center", justifyContent: "center" }}>
-            <Text style={{ fontWeight: on ? "800" : "600", color: couleurs.encre }}>{o.t}</Text>
+            style={{ flex: 1, minHeight: 40, borderRadius: 999, backgroundColor: on ? couleurs.primaire : "transparent", alignItems: "center", justifyContent: "center" }}>
+            <Text style={{ fontWeight: on ? "800" : "600", color: on ? couleurs.sol : couleurs.encre }}>{o.t}</Text>
           </Pressable>
         );
       })}
@@ -114,6 +122,9 @@ export default function Elu() {
                 {/* « Institution », pas « Fonction » (16/10/2026) : la carte disait « Fonction :
                     Conseil municipal » sous « Maire · Meaux ». La fonction est dans l'en-tete ;
                     la carte dit ou elle s'exerce, sur une ligne. */}
+                <Carte titre="Mandat">
+                  <Text style={TYPO.corps}>{phraseMandat(p.debut)}</Text>
+                </Carte>
                 {p.institution || p.lieu ? (
                   <Carte echelon={echelon as Echelon} titre="Institution">
                     <Text style={TYPO.corps}>{[p.institution, p.lieu].filter(Boolean).join(" · ")}</Text>

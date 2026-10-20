@@ -246,7 +246,7 @@ export function chaineDecision({ fiche, paquet, index, deputes, elusRegion, dep 
   const region = elusRegion && Array.isArray(elusRegion.elus) && elusRegion.elus.length ? elusRegion.elus[0] : null;
   return [
     { echelon: "ville", niveau: "Commune", institution: "Conseil municipal", lieu: fiche.nom,
-      personne: fiche.maire && fiche.maire.nom ? { nom: fiche.maire.nom, role: "Maire" } : null,
+      personne: fiche.maire && fiche.maire.nom ? { nom: fiche.maire.nom, role: "Maire", debut: fiche.maire.debut || null } : null,
       decide: COMPETENCES.ville },
     { echelon: "agglo", niveau: "Intercommunalité", institution: fiche.agglo && fiche.agglo.nom ? fiche.agglo.nom : "Intercommunalité",
       lieu: null,
@@ -255,18 +255,18 @@ export function chaineDecision({ fiche, paquet, index, deputes, elusRegion, dep 
       ...(() => { const ci = competencesIntercommunalite({ agglo: fiche.agglo, regionCode: depIndex && depIndex.region_code, dep });
         return { decide: ci.decide, precisions: ci.precisions, sources: ci.sources }; })() },
     { echelon: "dept", niveau: "Département", institution: "Conseil départemental", lieu: depIndex ? depIndex.nom : null,
-      personne: ed ? { nom: ed.nom, role: ed.role } : null,
+      personne: ed ? { nom: ed.nom, role: ed.role, debut: ((ed.elus || []).find(e => e.nom === ed.nom) || {}).debut || null } : null,
       personnes: ed ? ed.elus.map(e => ({ nom: e.nom, role: e.fonction || "Conseil départemental" })) : [],
       decide: COMPETENCES.dept },
     { echelon: "region", niveau: "Région", institution: "Conseil régional", lieu: depIndex ? depIndex.region : null,
-      personne: region ? { nom: region.nom, role: region.fonction } : null,
+      personne: region ? { nom: region.nom, role: region.fonction, debut: region.debut || null } : null,
       decide: COMPETENCES.region },
     { echelon: "france", niveau: "Assemblée nationale", institution: "Assemblée nationale",
       lieu: circos.length ? circos.map(c => `${c === 1 ? "1re" : c + "e"} circonscription`).join(", ") : null,
       /* 15/10/2026 : UN depute seulement. Une commune partagee entre plusieurs
          circonscriptions n'en a pas un : le premier de la liste serait un choix
          arbitraire. Le depute depend de l'adresse, que Repere ne demande pas. */
-      personne: dd.length === 1 && dd[0].d ? { nom: [dd[0].d.prenom, dd[0].d.nom].filter(Boolean).join(" "), role: "À l'Assemblée nationale pour votre circonscription" } : null,
+      personne: dd.length === 1 && dd[0].d ? { nom: [dd[0].d.prenom, dd[0].d.nom].filter(Boolean).join(" "), role: "À l'Assemblée nationale pour votre circonscription", acteurRef: dd[0].d.acteurRef || null, debut: dd[0].d.dateDebut || null } : null,
       autresCircos: dd.length > 1 ? dd.length - 1 : 0,
       decide: COMPETENCES.france },
   ];
