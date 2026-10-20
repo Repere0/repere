@@ -11,7 +11,7 @@
  * Construites avec des View : aucune bibliotheque de graphiques. */
 import { useState, type ReactNode } from "react";
 import { Animated, LayoutAnimation, Pressable, StyleSheet, Text, View } from "react-native";
-import { couleurs, GRIS_VOTE, PAS, RAYON, TEINTES, TYPO, CIBLE, type Echelon } from "../lib/theme";
+import { feuille, couleurs, GRIS_VOTE, PAS, RAYON, TEINTES, TYPO, CIBLE, type Echelon } from "../lib/theme";
 import { useApparition, useCompteur, useMouvementReduit } from "./mouvement";
 import { toucherLeger } from "./toucher";
 
@@ -259,7 +259,7 @@ export function Depli({ titre, children, etiquette }: { titre: string; children:
   );
 }
 
-const s = StyleSheet.create({
+const s = feuille(() => StyleSheet.create({
   ligneH: { flexDirection: "row", justifyContent: "space-between", alignItems: "baseline", gap: PAS * 2, flexWrap: "wrap" },
   piste: { height: 12, borderRadius: 6, backgroundColor: couleurs.voile, overflow: "hidden" },
   rempli: { height: "100%", borderRadius: 6 },
@@ -278,4 +278,4 @@ const s = StyleSheet.create({
   jalonTrait: { flex: 1, width: 2, backgroundColor: couleurs.trait, marginTop: 2 },
   maillon: { width: 14, height: 14, borderRadius: 7, marginTop: 3 },
   depli: { minHeight: CIBLE, flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
-});
+}));

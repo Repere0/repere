@@ -14,7 +14,7 @@ import { chargerCommunesBeta, chargerIndex, ETATS, PHRASES } from "../lib/donnee
 import { Bouton, Carte, LienAction, Texte, Vide } from "../lib/composants";
 import { useSelection } from "../lib/selection";
 import { Marque } from "../ui/marque";
-import { couleurs, CIBLE, PAS, POLICE, RAYON, TYPO } from "../lib/theme";
+import { feuille, couleurs, CIBLE, PAS, POLICE, RAYON, TYPO } from "../lib/theme";
 
 type Ligne = [string, string, string[]];
 type Beta = { communes: Record<string, string>; manquantes?: Record<string, string>; source?: { producteur?: string } };
@@ -179,7 +179,7 @@ export default function Accueil() {
   );
 }
 
-const s = StyleSheet.create({
+const s = feuille(() => StyleSheet.create({
   page: { paddingHorizontal: PAS * 4, gap: PAS * 2, maxWidth: 640, width: "100%", alignSelf: "center" },
   tete: { gap: PAS * 3, marginBottom: PAS * 2 },
   promesse: { fontSize: 17, lineHeight: 24, color: couleurs.encre },
@@ -200,4 +200,4 @@ const s = StyleSheet.create({
   pastille: { width: 10, height: 10, borderRadius: 5, backgroundColor: couleurs.ville },
   resultatNom: { fontSize: 17, lineHeight: 22, color: couleurs.encre, fontWeight: "600" },
   resultatDep: { fontSize: 14, lineHeight: 19, color: couleurs.sourd },
-});
+}));

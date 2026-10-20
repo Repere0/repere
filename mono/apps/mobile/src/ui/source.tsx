@@ -18,7 +18,7 @@ import { Linking, Modal, Pressable, ScrollView, StyleSheet, Text, View } from "r
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { CALCUL_REPERE, dateFr, datePublication, ligneSource } from "@repere/core";
 import { useCommuneChoisie } from "../lib/useCommune";
-import { couleurs, CIBLE, PAS, RAYON, TYPO } from "../lib/theme";
+import { feuille, couleurs, CIBLE, PAS, RAYON, TYPO } from "../lib/theme";
 import { Etiquette } from "./resume";
 
 export type InfoSource = {
@@ -130,7 +130,7 @@ export function FeuilleSource({ source, visible, onFermer }: { source: InfoSourc
   );
 }
 
-const s = StyleSheet.create({
+const s = feuille(() => StyleSheet.create({
   zone: { alignSelf: "flex-start", minHeight: CIBLE, justifyContent: "center", paddingRight: PAS * 3 },
   lien: { fontSize: 14, fontWeight: "600", color: couleurs.sourd },
   feuille: { padding: PAS * 6, gap: PAS * 5 },
@@ -139,4 +139,4 @@ const s = StyleSheet.create({
   boutonTexte: { color: couleurs.blanc, fontSize: 17, fontWeight: "700", textAlign: "center" },
   fermer: { minHeight: CIBLE, alignItems: "center", justifyContent: "center" },
   fermerHaut: { minHeight: CIBLE, minWidth: CIBLE, alignItems: "flex-end", justifyContent: "center", paddingLeft: PAS * 2 },
-});
+}));

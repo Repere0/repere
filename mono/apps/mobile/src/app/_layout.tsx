@@ -19,7 +19,7 @@ import { BricolageGrotesque_600SemiBold } from "@expo-google-fonts/bricolage-gro
 import type { ReactNode } from "react";
 import { FournisseurSelection, useSelection } from "../lib/selection";
 import { FournisseurCommune } from "../lib/useCommune";
-import { couleurs } from "../lib/theme";
+import { couleurs, useModeSysteme } from "../lib/theme";
 import { LIBELLES } from "@repere/core";
 import { Retour } from "../ui/retour";
 
@@ -34,12 +34,17 @@ export default function Coquille() {
      instant de plus sur l'ecran de demarrage. En cas d'echec, la police du
      systeme. */
   const [polices, erreur] = useFonts({ BricolageGrotesque_800ExtraBold, BricolageGrotesque_600SemiBold });
+  /* LE THEME SUIT LE TELEPHONE (20/10/2026). Pas de reglage dans
+     l'application : le lecteur a deja choisi, dans son systeme, et l'invariant 2
+     interdit de garder un second reglage sur l'appareil. `cle` remonte l'arbre a
+     la bascule, pour que les feuilles de style deja rendues soient refaites. */
+  const mode = useModeSysteme();
   if (!polices && !erreur) return null;
   return (
-    <SafeAreaProvider>
+    <SafeAreaProvider key={mode}>
       <FournisseurSelection>
         <AvecCommune>
-          <StatusBar style="dark" />
+          <StatusBar style={mode === "sombre" ? "light" : "dark"} />
           <Stack
             screenOptions={{
               headerStyle: { backgroundColor: couleurs.sol },

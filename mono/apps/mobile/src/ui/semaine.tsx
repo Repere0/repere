@@ -22,7 +22,7 @@ import { AGE_RELEVE_NORMAL, ageReleve, dateFr, heureFr, jourCourt, jourFr, LIBEL
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { AGENDA_PAS_ARRIVE } from "../lib/absences";
 import { srcAgenda } from "../lib/sources";
-import { couleurs, CIBLE, OMBRE, PAS, RAYON, TYPO } from "../lib/theme";
+import { feuille, couleurs, CIBLE, OMBRE, PAS, RAYON, TYPO } from "../lib/theme";
 import { typo } from "./reponse";
 import { Depli } from "./visuels";
 import { PastilleSource } from "./source";
@@ -168,7 +168,7 @@ function Suite({ onPress }: { onPress: () => void }) {
   );
 }
 
-const s = StyleSheet.create({
+const s = feuille(() => StyleSheet.create({
   carte: { backgroundColor: couleurs.carte, borderRadius: RAYON.carte, paddingHorizontal: PAS * 4, paddingTop: PAS * 3, gap: PAS * 2, ...OMBRE },
   phrase: { ...TYPO.reponse, fontSize: 19, lineHeight: 25 },
   bande: { flexDirection: "row", gap: PAS },
@@ -182,4 +182,4 @@ const s = StyleSheet.create({
   pied: { flexDirection: "row", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", columnGap: PAS * 2 },
   suite: { minHeight: CIBLE, justifyContent: "center", marginLeft: "auto" },
   suiteTexte: { fontSize: 15, fontWeight: "700", color: couleurs.lien },
-});
+}));

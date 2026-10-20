@@ -7,7 +7,7 @@
 import type { ReactNode } from "react";
 import { Linking, Pressable, StyleSheet, Text, View } from "react-native";
 import { ligneSource, CALCUL_REPERE } from "@repere/core";
-import { couleurs, CIBLE, PAS, RAYON, OMBRE, TYPO, type Echelon } from "./theme";
+import { feuille, couleurs, CIBLE, PAS, RAYON, OMBRE, TYPO, type Echelon } from "./theme";
 import { AVEC_EMOJIS, Emoji } from "../ui/resume";
 
 /* Refonte du 30/09/2026 : plus de filet de couleur a gauche ; l'echelon se
@@ -136,7 +136,7 @@ export function Bouton({ texte, onPress, discret }: { texte: string; onPress: ()
   );
 }
 
-const s = StyleSheet.create({
+const s = feuille(() => StyleSheet.create({
   /* DENSITE (16/10/2026) : marge interne 16 pt (etait 20) — plus de place pour le texte,
      moins de retours a la ligne sur toute l'application ; coins continus. */
   carte: { backgroundColor: couleurs.carte, borderRadius: RAYON.carte, borderCurve: "continuous", padding: PAS * 4, gap: PAS * 3, borderWidth: 1, borderColor: couleurs.trait, ...OMBRE },
@@ -166,4 +166,4 @@ const s = StyleSheet.create({
   },
   boutonDiscret: { backgroundColor: couleurs.voile },
   boutonTexte: { color: couleurs.blanc, fontSize: 17, fontWeight: "700" },
-});
+}));

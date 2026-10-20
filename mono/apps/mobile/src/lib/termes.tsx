@@ -11,7 +11,7 @@
 import { Pressable, StyleSheet, Text, View, type StyleProp, type TextStyle } from "react-native";
 import { router } from "expo-router";
 import { GLOSSAIRE, termesDuTexte } from "@repere/core";
-import { couleurs, CIBLE, PAS, TYPO } from "./theme";
+import { feuille, couleurs, CIBLE, PAS, TYPO } from "./theme";
 import { typo } from "../ui/reponse";
 
 export function Termes({ texte, style = TYPO.note }: { texte: string; style?: StyleProp<TextStyle> }) {
@@ -52,7 +52,7 @@ export function LienDefinition({ cle }: { cle: string }) {
   );
 }
 
-const s = StyleSheet.create({
+const s = feuille(() => StyleSheet.create({
   lien: { minHeight: CIBLE, justifyContent: "center" },
   lienTexte: { fontSize: 15, fontWeight: "700", color: couleurs.lien },
-});
+}));
