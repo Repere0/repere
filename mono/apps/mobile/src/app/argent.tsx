@@ -211,47 +211,44 @@ export default function Argent() {
               </Depli>
             </>
           )}
+          {/* CE QUI A CHANGE EN UN AN : jamais deux territoires, jamais un jugement.
+             SORTIE DU REPLI LE 20/10/2026. « Ce qui a changé » est la réponse que le
+             lecteur vient chercher ; elle demandait deux gestes (ouvrir « par jour et
+             sur un an », puis « évolution ») pour voir deux de ses trois lignes. La
+             maquette du porteur la montre en pleine carte, et la revue des maquettes
+             (docs/REVUE_MAQUETTES_FONTAINEBLEAU_2026-10-20.md, § 5) retient les trois
+             tuiles de variation. Ce qui NE change pas : des euros datés, jamais un
+             pourcentage ; aucune couleur de hausse ou de baisse ; aucune cause, aucun
+             jugement. */}
+          {evo ? (
+            evo.perimetreChange ? (
+              <Vide {...perimetreChange(evo, nom)} lien={VERIFIER_COMPTES} />
+            ) : (
+              <Carte echelon="ville" titre={`Ce qui a changé entre ${evo.an1} et ${evo.an2}`}>
+                {[1, 0, 2].map(i => evo.lignes[i]).filter(l => l && l.m1 !== null && l.m2 !== null).map((l: { libelle: string; m1: number; m2: number; diff: number }) => (
+                  <DeuxAnnees key={l.libelle} libelle={l.libelle} an1={evo.an1} an2={evo.an2} m1={l.m1} m2={l.m2}
+                    texte1={eurosArrondis(l.m1)} texte2={eurosArrondis(l.m2)} diffTexte={diffEuros(l.diff)} />
+                ))}
+                <Text style={TYPO.micro}>Chaque paire de barres a sa propre échelle : on compare une ligne à elle-même, jamais deux lignes entre elles.</Text>
+                <PastilleSource source={srcComptes(d)} />
+                <Detail sujet="évolution">
+                  <Text style={TYPO.note}>{INTRO_EVOLUTION}</Text>
+                  <Depli titre="Ce que ça ne veut pas dire (évolution)"><Text style={TYPO.corps}>{NOTE_EVOLUTION}</Text></Depli>
+                </Detail>
+              </Carte>
+            )
+          ) : null}
 
-          {/* DENSITE (16/10/2026) : la moyenne par jour (un calcul) et l'evolution sur un
-             an, chacune dans sa carte et avec sa source, sous un meme repli. */}
-          {ex && ch && (ch.parJour !== null || evo) ? (
-            <Detail sujet="par jour et sur un an">
-              {/* LE JOUR LE JOUR, POUR QUI VEUT LE VOIR COMPTER */}
-                {ch.parJour !== null ? (
-                  <Carte echelon="ville" titre={`Chaque jour, en moyenne, en ${ex.an}`}>
-                    <Compteur valeur={ch.parJour} suffixe="€ par jour" />
-                    <PastilleSource source={srcComptes(d)} />
-                    <Detail sujet="dépense par jour">
-                      <PasCeQueCaDit r={rap(/par jour/)} sujet="dépense par jour" />
-                    </Detail>
-                  </Carte>
-                ) : null}
-
-          {/* CE QUI A CHANGE EN UN AN : jamais deux territoires, jamais un jugement */}
-              {evo ? (
-                evo.perimetreChange ? (
-                  <Vide {...perimetreChange(evo, nom)} lien={VERIFIER_COMPTES} />
-                ) : (
-                  <Carte echelon="ville" titre={`Ce qui a changé entre ${evo.an1} et ${evo.an2}`}>
-                    {/* La premiere ligne visible ; les autres, l'intro et la note dans le detail. */}
-                    {[1, 0, 2].map(i => evo.lignes[i]).filter(l => l && l.m1 !== null && l.m2 !== null).slice(0, 1).map((l: { libelle: string; m1: number; m2: number; diff: number }) => (
-                      <DeuxAnnees key={l.libelle} libelle={l.libelle} an1={evo.an1} an2={evo.an2} m1={l.m1} m2={l.m2}
-                        texte1={eurosArrondis(l.m1)} texte2={eurosArrondis(l.m2)} diffTexte={diffEuros(l.diff)} />
-                    ))}
-                    <PastilleSource source={srcComptes(d)} />
-                    <Detail sujet="évolution">
-                      <Text style={TYPO.note}>{INTRO_EVOLUTION}</Text>
-                      {[1, 0, 2].map(i => evo.lignes[i]).filter(l => l && l.m1 !== null && l.m2 !== null).slice(1).map((l: { libelle: string; m1: number; m2: number; diff: number }) => (
-                        <DeuxAnnees key={l.libelle} libelle={l.libelle} an1={evo.an1} an2={evo.an2} m1={l.m1} m2={l.m2}
-                          texte1={eurosArrondis(l.m1)} texte2={eurosArrondis(l.m2)} diffTexte={diffEuros(l.diff)} />
-                      ))}
-                      <Text style={TYPO.micro}>Chaque paire de barres a sa propre échelle : on compare une ligne à elle-même, jamais deux lignes entre elles.</Text>
-                      <Depli titre="Ce que ça ne veut pas dire (évolution)"><Text style={TYPO.corps}>{NOTE_EVOLUTION}</Text></Depli>
-                    </Detail>
-                  </Carte>
-                )
-              ) : null}
-
+          {/* DENSITE (16/10/2026) : la moyenne par jour, un calcul, sous son repli. */}
+          {ex && ch && ch.parJour !== null ? (
+            <Detail sujet="par jour">
+              <Carte echelon="ville" titre={`Chaque jour, en moyenne, en ${ex.an}`}>
+                <Compteur valeur={ch.parJour} suffixe="€ par jour" />
+                <PastilleSource source={srcComptes(d)} />
+                <Detail sujet="dépense par jour">
+                  <PasCeQueCaDit r={rap(/par jour/)} sujet="dépense par jour" />
+                </Detail>
+              </Carte>
             </Detail>
           ) : null}
 
