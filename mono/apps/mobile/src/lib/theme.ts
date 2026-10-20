@@ -4,7 +4,9 @@
  * (invariant 7), jamais recopiees ici ; tout le reste est neutre, sous
  * l'amplitude de 24 sur les canaux RGB. Consequence assumee : l'identite passe
  * par la typographie, la composition et le mouvement, pas par une palette. Et
- * un vote n'a jamais de vert ni de rouge : pas de « bon » ni de « mauvais ».
+ * un vote a un vert (« Pour ») et un rouge (« Contre ») depuis le 20/10/2026, decision du
+ * porteur : ce sont les seuls repères de couleur d'un scrutin, l'abstention reste grise.
+ * Les libelles et les nombres portent toujours le sens (accessibilite).
  *
  * TYPOGRAPHIE. Bricolage Grotesque (OFL, embarquee dans l'application, jamais
  * chargee depuis un hote tiers — decision 4 du monorepo) pour les questions,
@@ -12,7 +14,7 @@
  * courant reste dans la police du systeme (SF, Roboto) : la plus lisible sur
  * chaque telephone, et celle qui suit le mieux la taille de texte choisie par
  * le lecteur (Dynamic Type, taille de police Android). */
-import { ECHELONS, PALETTE_INTERFACE } from "@repere/data-utils";
+import { ECHELONS, PALETTE_INTERFACE, PALETTE_VOTE } from "@repere/data-utils";
 
 export type Echelon = keyof typeof ECHELONS;
 
@@ -45,12 +47,15 @@ export const couleurs = {
      pastilles. Jamais une couleur d'echelon, jamais un vote. */
   primaire: PALETTE_INTERFACE.primaire,
   primaireClair: PALETTE_INTERFACE.primaireClair,
+  /* Repères de vote (decision du porteur, 20/10/2026, invariant 7) : vert pour « Pour », rouge pour « Contre ». */
+  pour: PALETTE_VOTE.pour,
+  contre: PALETTE_VOTE.contre,
 } as const;
 
 /* Les trois gris d'une repartition de vote, du plus fonce au plus clair : ils
    se distinguent aussi par leur libelle et leur nombre, jamais par la couleur
    seule (accessibilite). */
-export const GRIS_VOTE = { p: couleurs.encre, c: couleurs.sourd, a: couleurs.trait } as const;
+export const GRIS_VOTE = { p: couleurs.pour, c: couleurs.contre, a: couleurs.trait } as const;
 
 /* 44 points : cible tactile minimale d'Apple, au-dessus des 48 dp d'Android
    une fois la marge interne comptee. */

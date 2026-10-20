@@ -13,7 +13,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
 import {
-  INVARIANTS, ECHELONS, AMPLITUDE_MAX, PALETTE_INTERFACE, amplitude, adresseFautive, TRICOLORE_MARQUE, FICHIERS_MARQUE, couleurDeGroupeAdmise,
+  INVARIANTS, ECHELONS, AMPLITUDE_MAX, PALETTE_INTERFACE, PALETTE_VOTE, amplitude, adresseFautive, TRICOLORE_MARQUE, FICHIERS_MARQUE, couleurDeGroupeAdmise,
   CHAMPS_INTERDITS, MOTS_CLASSEMENT, MOTS_GAMIFICATION, MOTS_A_ACCENTS,
 } from "../packages/data-utils/src/invariants.js";
 import { execFileSync } from "node:child_process";
@@ -154,7 +154,7 @@ test("invariant 7 — palette gelée, et aucune couleur hors palette", () => {
   let controlees = 0;
   /* Palette d'interface (decision du porteur, 20/10/2026) : deux teintes fixes,
      jamais une couleur d'echelon ni une couleur du tricolore. */
-  const interfaces = Object.values(PALETTE_INTERFACE).map(h => h.toLowerCase());
+  const interfaces = [...Object.values(PALETTE_INTERFACE), ...Object.values(PALETTE_VOTE)].map(h => h.toLowerCase());
   for (const h of interfaces) {
     assert.ok(!gelees.includes(h), `la palette d'interface ${h} reprend une couleur d'echelon`);
     assert.ok(!Object.values(TRICOLORE_MARQUE).includes(h), `la palette d'interface ${h} reprend le tricolore du logo`);

@@ -24,7 +24,7 @@ export const INVARIANTS = [
     regle: "Rien qui gamifie le vote ou l'opinion : aucun score, aucune récompense, aucune série, aucun gain ni son de réussite lié à un vote, une position ou un partage. Les effets de mouvement sont permis pour lire, naviguer et suivre une heure ou une durée (assouplie par décision du porteur, 13/10/2026).",
     garde: "statique: vocabulaire de bonne/mauvaise réponse interdit" },
   { n: 7, nom: "palette gelée",
-    regle: "Cinq couleurs d'échelon gelées ; aucune autre couleur ne dépasse une amplitude de 24 sur les canaux RGB, sauf deux teintes d'interface fixes (décision du porteur, 20/10/2026 : bleu sarcelle et bleu clair), pour les boutons, les onglets et les pastilles, jamais pour un vote, un parti, un score ni un territoire. Seule exception (décision du porteur, 16/10/2026) : le bleu, le blanc et le rouge du logo, réservés au logo et à ses déclinaisons de marque, jamais à l'interface ni à une information.",
+    regle: "Cinq couleurs d'échelon gelées ; aucune autre couleur ne dépasse une amplitude de 24 sur les canaux RGB, sauf quatre teintes fixes (décision du porteur, 20/10/2026) : deux d'interface, bleu sarcelle et bleu clair, pour les boutons, les onglets et les pastilles ; deux de vote, vert pour « Pour » et rouge pour « Contre », pour les seuls repères d'un scrutin (l'abstention reste grise) ; jamais pour un parti, un score ni un territoire. Seule exception (décision du porteur, 16/10/2026) : le bleu, le blanc et le rouge du logo, réservés au logo et à ses déclinaisons de marque, jamais à l'interface ni à une information.",
     garde: "statique: lecture des jetons CSS, et le tricolore confiné à la marque (outils/marque_repere.py, ui/marque.tsx)" },
   { n: 8, nom: "ni patrimoine ni présence",
     regle: "Jamais le patrimoine d'un élu, jamais de donnée de présence ou d'absence.",
@@ -57,6 +57,14 @@ export const AMPLITUDE_MAX = 24;
 export const PALETTE_INTERFACE = Object.freeze({
   primaire: "#0e3b4b",
   primaireClair: "#bde7f4",
+});
+
+/* PALETTE DE VOTE — decision du porteur, 20/10/2026 : vert pour « Pour », rouge pour
+   « Contre ». Seules ces deux teintes, pour les repères d'un scrutin ; l'abstention
+   reste un gris neutre. Jamais une couleur de parti ni d'echelon. */
+export const PALETTE_VOTE = Object.freeze({
+  pour: "#15803d",
+  contre: "#be123c",
 });
 
 /* LE TRICOLORE DU LOGO — seule exception a l'invariant 7 (decision du porteur,
