@@ -114,7 +114,7 @@ setTimeout(() => {
   ecrire(process.env.GITHUB_ACTIONS ? `::error title=parcours mobile::${msg}` : "ECHEC " + msg);
   process.exit(3);
 }, LIMITE_MS).unref();
-for (const largeur of [360, 390, 430]) {
+for (const largeur of [360, 375, 390, 430]) {
   const page = await navigateur.newPage({ viewport: { width: largeur, height: 800 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true });
   const demandees = [];
   page.on("request", r => demandees.push(r.url()));
