@@ -10,6 +10,7 @@
     "ios": "expo start --ios",
     "web": "expo start --web",
     "verifier": "tsc --noEmit",
+    "tester": "node --test tests/*.test.mjs",
     "exporter": "expo export --platform android --platform ios --platform web --output-dir dist",
     "parcours": "node tests/parcours-web.mjs",
     "telephone:wifi": "expo start"
