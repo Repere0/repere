@@ -134,7 +134,9 @@ export default function Accueil() {
                     departement, commune gardee seulement sur demande) passe dans
                     « Sources », section « Ce que Repère sait de vous » : elle reste vraie
                     et trouvable, sans peser sur le premier ecran. */}
-                <Text style={[s.note, { color: couleurs.encre }]}>Pas de compte, pas d'e-mail : Repère ne sait pas qui vous êtes.</Text>
+                <View style={{ alignSelf: "flex-start", backgroundColor: couleurs.voile, borderRadius: RAYON.pastille, paddingHorizontal: PAS * 3, paddingVertical: PAS * 2 }}>
+                  <Text style={[s.note, { color: couleurs.encre }]}>Pas de compte, pas d'e-mail : Repère ne sait pas qui vous êtes.</Text>
+                </View>
               </>
             ) : null}
             {manquante ? (
@@ -195,7 +197,7 @@ const s = StyleSheet.create({
     minHeight: CIBLE + 8, flexDirection: "row", alignItems: "center", gap: PAS * 3,
     paddingHorizontal: PAS * 4, paddingVertical: PAS * 2, borderRadius: RAYON.bloc, backgroundColor: couleurs.carte,
   },
-  pastille: { width: 10, height: 10, borderRadius: 5, backgroundColor: couleurs.ville },
+  pastille: { width: 10, height: 10, borderRadius: 5, backgroundColor: couleurs.primaire },
   resultatNom: { fontSize: 17, lineHeight: 22, color: couleurs.encre, fontWeight: "600" },
   resultatDep: { fontSize: 14, lineHeight: 19, color: couleurs.sourd },
 });

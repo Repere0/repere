@@ -37,7 +37,7 @@ function Initiales({ nom }: { nom: string }) {
   const lettres = nom.split(/\s+/).filter(Boolean).map(m => m[0]).slice(0, 2).join("").toUpperCase();
   return (
     <View accessible={false}
-      style={{ width: 72, height: 72, borderRadius: 36, backgroundColor: couleurs.encre, alignItems: "center", justifyContent: "center" }}>
+      style={{ width: 72, height: 72, borderRadius: 36, backgroundColor: couleurs.primaire, alignItems: "center", justifyContent: "center" }}>
       <Text style={{ color: couleurs.sol, fontWeight: "800", fontSize: 26 }}>{lettres}</Text>
     </View>
   );
@@ -56,8 +56,8 @@ function Onglets({ actif, choisir, votes }: { actif: Onglet; choisir: (o: Onglet
         return (
           <Pressable key={o.cle} onPress={() => choisir(o.cle)} accessibilityRole="tab" accessibilityState={{ selected: on }}
             accessibilityLabel={o.t}
-            style={{ flex: 1, minHeight: 40, borderRadius: 999, backgroundColor: on ? couleurs.carte : "transparent", alignItems: "center", justifyContent: "center" }}>
-            <Text style={{ fontWeight: on ? "800" : "600", color: couleurs.encre }}>{o.t}</Text>
+            style={{ flex: 1, minHeight: 40, borderRadius: 999, backgroundColor: on ? couleurs.primaire : "transparent", alignItems: "center", justifyContent: "center" }}>
+            <Text style={{ fontWeight: on ? "800" : "600", color: on ? couleurs.sol : couleurs.encre }}>{o.t}</Text>
           </Pressable>
         );
       })}

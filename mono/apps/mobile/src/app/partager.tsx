@@ -19,7 +19,7 @@ import { Stack } from "expo-router";
 import * as Sharing from "expo-sharing";
 import { captureRef } from "react-native-view-shot";
 import { chaineDecision, dateFr, etapeDuScrutin, ETAPES_LOI, jourParis, procedure, titreLisible } from "@repere/core";
-import { couleurs, CIBLE, PAS } from "../lib/theme";
+import { couleurs, CIBLE, GRIS_VOTE, PAS } from "../lib/theme";
 import { srcVote } from "../lib/sources";
 import { AvecDonnees, Page, Question } from "../ui/page";
 import { useApparition } from "../ui/mouvement";
@@ -86,6 +86,10 @@ export default function Partager() {
          circonscriptions n'a pas un depute, et la carte dit « Un depute de ... ». */
       const nom = vote.qui || (d.nbCircos > 1 ? `Un député de ${d.nomCommune}` : niveaux.find(n => n.echelon === "france")?.personne?.nom || "Votre député");
       const verbe = VERBE[vote.position];
+      /* La couleur du vote (invariant 7, 20/10/2026) : une bande en haut de la carte 1,
+         et le verbe ; l'abstention reste grise, son verbe en encre pour la lisibilite. */
+      const couleurVote = (GRIS_VOTE as Record<string, string>)[vote.position];
+      const couleurVerbe = vote.position === "a" ? couleurs.encre : couleurVote;
       const sujet = titreLisible(vote.sc.t);
       const date = dateFr(vote.sc.d);
       const aujourdhui = dateFr(jourParis(new Date()));
@@ -126,12 +130,14 @@ export default function Partager() {
             {/* CARTE 1 — L'ANNONCE (canevas « Partage ») */}
             <View ref={carte1} collapsable={false} accessible
               accessibilityLabel={`${nom} ${verbe} ${sujet}. Vote à l'Assemblée nationale, ${date}.`}
-              style={{ width: largeur, minHeight: largeur * 1.25, alignSelf: "center", backgroundColor: couleurs.sol,
-                borderRadius: 18 * echelle, padding: 28 * echelle, justifyContent: "space-between", gap: 16 * echelle }}>
+              style={{ width: largeur, minHeight: largeur * 1.25, alignSelf: "center", backgroundColor: couleurs.carte,
+                borderRadius: 18 * echelle, padding: 28 * echelle, paddingTop: 40 * echelle, overflow: "hidden", justifyContent: "space-between", gap: 16 * echelle }}>
+              <View accessibilityElementsHidden importantForAccessibility="no"
+                style={{ position: "absolute", left: 0, right: 0, top: 0, height: 14 * echelle, backgroundColor: couleurVote }} />
               <Logo />
               <View style={{ gap: 10 * echelle }}>
                 <Text style={{ color: couleurs.encre, fontWeight: "800", fontSize: 26 * echelle, lineHeight: 30 * echelle, letterSpacing: -0.5 }}>{nom}</Text>
-                <Text style={{ color: couleurs.encre, fontWeight: "800", fontSize: 50 * echelle, lineHeight: 52 * echelle, letterSpacing: -2 * echelle }}>{verbe}</Text>
+                <Text style={{ color: couleurVerbe, fontWeight: "800", fontSize: 50 * echelle, lineHeight: 52 * echelle, letterSpacing: -2 * echelle }}>{verbe}</Text>
               </View>
               <View style={{ gap: 12 * echelle }}>
                 <Text style={{ color: couleurs.encre, fontWeight: "800", fontSize: 22 * echelle, lineHeight: 27 * echelle, letterSpacing: -0.3 }}>{sujet}</Text>
@@ -190,13 +196,13 @@ export default function Partager() {
             <View style={{ gap: PAS * 2 }}>
               <Pressable onPress={() => partagerImage(carte1, "Carte 1 : l'annonce", message)} accessibilityRole="button"
                 accessibilityLabel="Partager la carte 1, le vote, en image"
-                style={({ pressed }) => ({ minHeight: CIBLE, borderRadius: 14, backgroundColor: couleurs.encre,
+                style={({ pressed }) => ({ minHeight: CIBLE, borderRadius: 14, backgroundColor: couleurs.primaire,
                   alignItems: "center", justifyContent: "center", padding: 14, opacity: pressed ? 0.7 : 1 })}>
                 <Text style={{ color: couleurs.sol, fontWeight: "700" }}>Partager la carte 1 : le vote (image)</Text>
               </Pressable>
               <Pressable onPress={() => partagerImage(carte2, "Carte 2 : pour comprendre", message)} accessibilityRole="button"
                 accessibilityLabel="Partager la carte 2, où en est le texte, en image"
-                style={({ pressed }) => ({ minHeight: CIBLE, borderRadius: 14, backgroundColor: couleurs.encre,
+                style={({ pressed }) => ({ minHeight: CIBLE, borderRadius: 14, backgroundColor: couleurs.primaire,
                   alignItems: "center", justifyContent: "center", padding: 14, opacity: pressed ? 0.7 : 1 })}>
                 <Text style={{ color: couleurs.sol, fontWeight: "700" }}>Partager la carte 2 : le texte (image)</Text>
               </Pressable>

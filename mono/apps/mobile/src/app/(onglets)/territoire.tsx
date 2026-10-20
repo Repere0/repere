@@ -19,18 +19,21 @@ import { datePublication, dateFr, LIBELLES, nomIntercommunalite, ordinal } from 
 import { Carte, Vide } from "../../lib/composants";
 import { circoInconnue } from "../../lib/absences";
 import { srcElus } from "../../lib/sources";
-import { PAS, TYPO } from "../../lib/theme";
+import { couleurs, type Echelon, PAS, RAYON, TEINTES, TYPO } from "../../lib/theme";
 import { AvecDonnees, Page, Question } from "../../ui/page";
 import { PastilleSource } from "../../ui/source";
 import { Plus } from "../../ui/reponse";
 import { Depli } from "../../ui/visuels";
 import { Termes } from "../../lib/termes";
 
-/* Une rubrique de la carte : un libelle discret, puis la reponse. */
-function Rubrique({ titre, children }: { titre: string; children: ReactNode }) {
+/* Une rubrique de la carte : un libelle en pastille, dans la teinte de son echelon
+   (la meme que « Qui decide »), puis la reponse. Le texte reste en encre. */
+function Rubrique({ titre, echelon, children }: { titre: string; echelon: Echelon; children: ReactNode }) {
   return (
     <View style={{ gap: PAS }}>
-      <Text style={[TYPO.micro, { fontWeight: "700" }]}>{titre}</Text>
+      <View style={{ alignSelf: "flex-start", backgroundColor: TEINTES[echelon], borderRadius: RAYON.pastille, paddingHorizontal: PAS * 2, paddingVertical: 2 }}>
+        <Text style={[TYPO.micro, { fontWeight: "700", color: couleurs.encre }]}>{titre}</Text>
+      </View>
       {children}
     </View>
   );
@@ -55,7 +58,7 @@ export default function ChezVousTerritoire() {
           {publie ? <Text style={TYPO.micro}>Publication Repère du {dateFr(publie)}</Text> : null}
 
           <Carte>
-            <Rubrique titre="Département et région">
+            <Rubrique titre="Département et région" echelon="dept">
               {/* Le departement, puis la region sur sa ligne (16/10/2026) : sur une seule
                  ligne, « Île-de-France » se coupait au trait d'union (capture 390 px). */}
               {depIndex ? (
@@ -66,7 +69,7 @@ export default function ChezVousTerritoire() {
               ) : <Text style={TYPO.reponse}>Le département de cette commune n'est pas arrivé jusqu'ici.</Text>}
             </Rubrique>
 
-            <Rubrique titre="Intercommunalité">
+            <Rubrique titre="Intercommunalité" echelon="agglo">
               <Text style={TYPO.reponse}>
                 {agglo || "Le Répertoire national des élus ne porte pas d'intercommunalité pour cette commune."}
               </Text>
@@ -79,7 +82,7 @@ export default function ChezVousTerritoire() {
             </Rubrique>
 
             {d.nbCircos > 1 ? (
-              <Rubrique titre="Circonscription législative">
+              <Rubrique titre="Circonscription législative" echelon="france">
                 <Termes texte={`${nom} est partagée entre ${d.nbCircos} circonscriptions.`} style={TYPO.reponse} />
                 <Depli titre="Pourquoi aucun député n'est-il nommé ici ?">
                   <Text style={TYPO.note}>
@@ -88,7 +91,7 @@ export default function ChezVousTerritoire() {
                 </Depli>
               </Rubrique>
             ) : d.nbCircos === 1 && circos.length === 1 ? (
-              <Rubrique titre="Circonscription législative">
+              <Rubrique titre="Circonscription législative" echelon="france">
                 {/* Le lien « Ce que veut dire « Circonscription » » suffit (16/10/2026) : un repli
                     « C'est quoi ? » redisait la meme definition juste en dessous. */}
                 <Termes texte={`${nom} est dans la ${ordinal(circos[0])} circonscription.`} style={TYPO.reponse} />
