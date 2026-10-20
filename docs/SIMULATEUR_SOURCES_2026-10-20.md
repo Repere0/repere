@@ -28,9 +28,17 @@ Les articles de blogs (immobilier, forums) n'ont pas été retenus comme sources
 
 ## 3. Points ouverts (à trancher avant tout affichage de chiffre)
 
-1. **Libellés des fonctions.** Le jeu nature-fonction ne donne aucun nom de domaine. Il faut
-   une nomenclature officielle M57 des fonctions (arrêté ou instruction budgétaire) pour
-   passer du code à un domaine lisible. Ne pas recopier une liste de mémoire.
+1. **Libellés des fonctions.** Le jeu nature-fonction ne donne aucun nom de domaine. Le
+   premier chiffre du code de fonction donne le domaine (les codes sont à trois chiffres :
+   020, 021, 025… appartiennent au domaine 0). Source trouvée, **provisoire** : fichier DGCL
+   « M57 Plan de compte développé, modèle de compte administratif voté par fonction »
+   (https://collectivites-locales.gouv.fr/files/finances-locales/M57/IBC%202025/2024-M57-M57_D-fonction-CA%20avec%20budget%20vert.pdf).
+   Il donne les dix libellés (0 Services généraux ; 1 Sécurité ; 2 Enseignement, formation
+   professionnelle, apprentissage ; 3 Culture, vie sociale, jeunesse, sports, loisirs ;
+   4 Santé et action sociale ; 5 Aménagement des territoires et habitat ; 6 Action économique ;
+   7 Environnement ; 8 Transports ; 9 Fonction en réserve). Mais il est **sans date**, et sa
+   portée (communes ou départements) n'est pas écrite. À confirmer avant publication, par
+   l'instruction budgétaire M57 en vigueur pour le bloc communal.
 2. **Définition de « dépense ».** Choisir les comptes (classes 6 et 2, débit) et vérifier la
    somme commune par commune contre les agrégats publiés de l'OFGL (`ofgl-base-communes`),
    sur Meaux 2025 d'abord. Un écart non expliqué bloque la publication.
