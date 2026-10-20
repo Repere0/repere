@@ -1,0 +1,32 @@
+# Description, sans ecriture, des jeux de donnees du simulateur « Mon impact personnel »
+# (decision du porteur, 20/10/2026). Ne publie rien, ne modifie rien dans le depot :
+# le journal de l'etape est le seul resultat. Lance sur la branche de travail seulement.
+
+name: Décrire les sources fiscales
+
+on:
+  push:
+    branches: [design/stitch-direction]
+    paths:
+      - "outils/decrire_sources_fiscales.py"
+      - ".github/workflows/decrire-sources-fiscales.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  decrire:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Recuperer le depot
+        uses: actions/checkout@v5
+
+      - name: Installer Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Decrire les jeux (lecture seule)
+        run: python3 outils/decrire_sources_fiscales.py
