@@ -92,16 +92,16 @@ function variationTexte(m1: number, m2: number): string {
 /* OU VONT LES DEPENSES (maquette « Où va cet argent ? ») : chaque poste a son montant
    PUBLIE par habitant et sa part, CALCULEE par Repere sur les depenses totales. Le
    reste (depenses moins personnel et investissement) est un calcul, dit comme tel. */
-function LignesDepenses({ ex, ch }: { ex: Parameters<typeof parHabitant>[0]; ch: { partSalaires: number | null; partInvestissement: number | null } }) {
+function LignesDepenses({ ex, ch, valeurs }: { ex: Parameters<typeof parHabitant>[0]; ch: { partSalaires: number | null; partInvestissement: number | null }; valeurs: { salaires?: string; investissement?: string } }) {
   const hab = parHabitant(ex);
   const montant = (v: number) => `${Math.round(v).toLocaleString("fr-FR")} €`;
   const reste = hab.depenses !== null && hab.salaires !== null && hab.investissement !== null ? hab.depenses - hab.salaires - hab.investissement : null;
   const partReste = ch.partSalaires !== null && ch.partInvestissement !== null ? Math.max(0, Math.round(100 - ch.partSalaires - ch.partInvestissement)) : null;
   const lignes = [
-    { libelle: "Frais de personnel", part: ch.partSalaires, par: hab.salaires, calcul: false },
-    { libelle: "Investissements", part: ch.partInvestissement, par: hab.investissement, calcul: false },
-    { libelle: "Autres dépenses", part: partReste, par: reste, calcul: true },
-  ].filter(l => l.part !== null && l.par !== null) as { libelle: string; part: number; par: number; calcul: boolean }[];
+    { libelle: "Frais de personnel", part: ch.partSalaires, par: hab.salaires, calcul: false, valeur: valeurs.salaires },
+    { libelle: "Investissements", part: ch.partInvestissement, par: hab.investissement, calcul: false, valeur: valeurs.investissement },
+    { libelle: "Autres dépenses", part: partReste, par: reste, calcul: true, valeur: undefined },
+  ].filter(l => l.part !== null && l.par !== null) as { libelle: string; part: number; par: number; calcul: boolean; valeur?: string }[];
   return (
     <View style={{ gap: PAS * 4 }}>
       {lignes.map((l, i) => (
@@ -112,6 +112,8 @@ function LignesDepenses({ ex, ch }: { ex: Parameters<typeof parHabitant>[0]; ch:
             </View>
             <View style={{ flex: 1 }}>
               <Text style={TYPO.corps}>{l.libelle}</Text>
+              {/* Le texte publie du rapport d'abord (« 47 € de salaires »), puis la part calculee. */}
+              {l.valeur ? <Text style={TYPO.micro}>{l.valeur}</Text> : null}
               <Text style={TYPO.micro}>{`${l.part} % des dépenses${l.calcul ? " · calcul Repère" : ""}`}</Text>
             </View>
             <View style={{ alignItems: "flex-end" }}>
@@ -180,7 +182,7 @@ export default function Argent() {
                   {/* 08/10/2026 (audit) : « Deux postes… » s'affichait avec une seule barre
                      (part des salaires absente) ; l'annee des comptes manquait au titre. */}
                   <Resume phrase={ch.partSalaires !== null ? `Sur 100 € dépensés, ${ch.partSalaires} € vont aux salaires des agents.` : `Sur 100 € dépensés, ${ch.partInvestissement} € vont aux investissements.`}>
-                    <LignesDepenses ex={ex.ex} ch={ch} />
+                    <LignesDepenses ex={ex.ex} ch={ch} valeurs={{ salaires: rap(/salaires/)?.v, investissement: rap(/investir/)?.v }} />
                   </Resume>
                   <PastilleSource source={srcComptes(d)} />
                   <Detail sujet="dépenses">
