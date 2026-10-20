@@ -7,8 +7,10 @@
  * generale sourcee a la Constitution ; l'etape surlignee vient de l'intitule
  * officiel du scrutin et de rien d'autre. Niveau 4 : le scrutin officiel.
  *
- * Neutralite : trois gris, jamais de vert ni de rouge ; aucune position n'est
- * dite bonne ou mauvaise ; « ses autres votes » sont dans l'ordre du temps. */
+ * Neutralite : le vert (« Pour ») et le rouge (« Contre ») sont les seuls repères
+ * de vote (invariant 7, decision du porteur du 20/10/2026) ; l'abstention reste
+ * grise ; aucune position n'est dite bonne ou mauvaise ; « ses autres votes »
+ * sont dans l'ordre du temps. */
 import { Text, View } from "react-native";
 import { router, Stack } from "expo-router";
 import { Pressable } from "react-native";
@@ -21,7 +23,7 @@ import { Carte, Segments, Vide } from "../lib/composants";
 import { circoInconnue, refusAppariement, VOTE_AUCUN, VOTES_PAS_ARRIVES } from "../lib/absences";
 import { srcScrutins, srcVote } from "../lib/sources";
 import { useCommuneChoisie } from "../lib/useCommune";
-import { couleurs, PAS, TYPO, CIBLE } from "../lib/theme";
+import { couleurs, GRIS_VOTE, PAS, RAYON, TYPO, CIBLE } from "../lib/theme";
 import { AvecDonnees, Page, Question } from "../ui/page";
 import { PastilleSource } from "../ui/source";
 import { Termes } from "../lib/termes";
@@ -92,6 +94,15 @@ export default function Vote() {
 
           {/* NIVEAU 1 : la position */}
           <Carte echelon="france" titre={`Le ${dateFr(vote.sc.d)}`}>
+            {/* La position en pastille, sa couleur de vote (invariant 7). Le libelle est
+               la-meme que dans la phrase : la couleur ne porte jamais seule l'information. */}
+            {mot ? (
+              <View accessibilityElementsHidden importantForAccessibility="no"
+                style={{ alignSelf: "flex-start", paddingHorizontal: PAS * 3, paddingVertical: PAS, borderRadius: RAYON.pastille,
+                  backgroundColor: (GRIS_VOTE as Record<string, string>)[vote.position || ""] }}>
+                <Text style={{ color: vote.position === "a" ? couleurs.encre : couleurs.carte, fontWeight: "800", fontSize: 15 }}>{mot}</Text>
+              </View>
+            ) : null}
             <Text style={TYPO.question}><Segments s={phrasePosition(vote.position, vote.qui)} /></Text>
             <Text style={[TYPO.reponse, { fontSize: 19, lineHeight: 25 }]}>{titreLisible(vote.sc.t)}</Text>
             {/* le numero du scrutin, pour le retrouver sur le site de l'Assemblee (audit Lovable) */}

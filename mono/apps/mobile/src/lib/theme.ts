@@ -27,7 +27,9 @@ export type Echelon = keyof typeof ECHELONS;
  * LE TEXTE D'ACTION EST EN ENCRE, dans tout l'ecran. Mesure : les couleurs
  * d'echelon tombent sous 4,5:1 sur leur propre teinte (ville 4,34, agglo 3,24,
  * dept 4,32). La couleur ne porte donc jamais seule une action : elle sert aux
- * points, aux traits et aux barres. Un vote reste en gris. */
+ * points, aux traits et aux barres. Un vote prend le vert « Pour » et le rouge
+ * « Contre » (invariant 7, 20/10/2026) ; l'abstention reste grise, et chaque
+ * position porte son libelle, jamais la seule couleur. */
 export const TEINTES: Record<Echelon, string> = {
   ville: "#dbeaee", agglo: "#e4f3f7", dept: "#f7ece4", region: "#efe7fb", france: "#ecebe8",
 };
@@ -52,9 +54,9 @@ export const couleurs = {
   contre: PALETTE_VOTE.contre,
 } as const;
 
-/* Les trois gris d'une repartition de vote, du plus fonce au plus clair : ils
-   se distinguent aussi par leur libelle et leur nombre, jamais par la couleur
-   seule (accessibilite). */
+/* Les repères d'une repartition de vote : vert pour « Pour », rouge pour « Contre »,
+   gris pour l'abstention (invariant 7). Ils se distinguent aussi par leur libelle
+   et leur nombre, jamais par la couleur seule (accessibilite). */
 export const GRIS_VOTE = { p: couleurs.pour, c: couleurs.contre, a: couleurs.trait } as const;
 
 /* 44 points : cible tactile minimale d'Apple, au-dessus des 48 dp d'Android
