@@ -20,7 +20,7 @@ import {
   phraseProjetLocal, rapports, sousTitreRapports, euros, CALCUL_REPERE, LIBELLES,
   OFGL_URL, phraseCalculPart, valeur,
 } from "@repere/core";
-import { Carte, Vide } from "../lib/composants";
+import { Carte, Source, Vide } from "../lib/composants";
 import { PROJETS_PAS_ARRIVES, projetsAucun } from "../lib/absences";
 import { srcComptes, srcComptesPublies, srcProjets } from "../lib/sources";
 import { useCommuneChoisie } from "../lib/useCommune";
@@ -307,6 +307,30 @@ export default function Argent() {
               ) : null}
             </>
           ) : null}
+
+          {/* CE QUE VOUS PAYEZ A LA COMMUNE (20/10/2026). Faits de droit par profil, sans
+              montant personnel en euros et sans donnee publiee : la doctrine du vide
+              s'applique tant que les taux ne sont pas branches. */}
+          <View style={{ gap: PAS * 3 }}>
+            <View style={{ flexDirection: "row", gap: PAS * 2, alignItems: "center" }}>
+              <Emoji c="💶" taille={24} />
+              <Text style={[TYPO.question, { flex: 1, fontSize: 24, lineHeight: 28 }]} accessibilityRole="header">Ce que vous payez à la commune</Text>
+            </View>
+            <Carte echelon="ville" titre="Si vous êtes propriétaire">
+              <Text style={TYPO.reponse}>Vous payez la taxe foncière sur les propriétés bâties. Le taux de votre commune est publié par la DGFiP ; Repère ne l'affiche pas encore.</Text>
+              <Text style={TYPO.corps}>Si votre commune lève la taxe d'enlèvement des ordures ménagères, elle est établie au nom du propriétaire.</Text>
+            </Carte>
+            <Carte echelon="ville" titre="Si vous êtes locataire">
+              <Text style={TYPO.reponse}>Le propriétaire peut récupérer auprès de vous la taxe d'enlèvement des ordures ménagères, de plein droit et sans frais de gestion.</Text>
+              <Text style={TYPO.corps}>Il doit vous remettre le détail des taxes locatives.</Text>
+              <Source producteur="Direction générale des Finances publiques (DGFiP)" maj="20/07/2026" calcul={false}
+                url="https://www.impots.gouv.fr/portail/particulier/questions/je-suis-locataire-mon-proprietaire-me-demande-de-payer-la-taxe-denlevement-des" />
+            </Carte>
+            <Carte echelon="ville" titre="Famille et étudiant">
+              <Text style={TYPO.reponse}>Repère ne donne pas de règle générale pour votre foyer.</Text>
+              <Text style={TYPO.corps}>Pour votre situation précise, vérifiez auprès de la DGFiP ou de votre commune. Repère n'affiche aucun montant en euros pour votre logement : la valeur locative est une donnée personnelle.</Text>
+            </Carte>
+          </View>
 
           {/* LES PROJETS AIDES PAR L'ETAT */}
           <View style={{ gap: PAS * 3 }}>
