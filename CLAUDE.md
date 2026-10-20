@@ -48,9 +48,12 @@ explicite du porteur les change ; la PR qui l'applique met alors à jour
    jamais une forme vide, un zéro ou une barre minuscule.
 6. **Rien qui gamifie le vote ou l'opinion** : aucun score, aucune récompense, aucune série, aucun gain ni son de réussite lié à un vote, une position ou un partage. Les effets de mouvement sont permis pour lire, naviguer et suivre une heure ou une durée (assouplie par décision du porteur, 13/10/2026).
 7. **Cinq couleurs d'échelon gelées** ; aucune autre couleur ne dépasse une
-   amplitude de 24 sur les canaux RGB. Seule exception (décision du porteur,
-   16/10/2026) : le bleu, le blanc et le rouge du logo, réservés au logo et à ses
-   déclinaisons de marque, jamais à l'interface ni à une information.
+   amplitude de 24 sur les canaux RGB, sauf deux teintes d'interface fixes
+   (décision du porteur, 20/10/2026 : bleu sarcelle et bleu clair), pour les
+   boutons, les onglets et les pastilles, jamais pour un vote, un parti, un score
+   ni un territoire. Seule exception (décision du porteur, 16/10/2026) : le bleu,
+   le blanc et le rouge du logo, réservés au logo et à ses déclinaisons de marque,
+   jamais à l'interface ni à une information.
 8. **Jamais le patrimoine d'un élu, jamais de donnée de présence ou d'absence.**
 9. **Fraîcheur** (décision du porteur, 30/09/2026). Une donnée gardée sur
    l'appareil peut être affichée pour préserver l'accès hors ligne, mais jamais

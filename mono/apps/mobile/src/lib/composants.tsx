@@ -162,8 +162,8 @@ const s = StyleSheet.create({
   vide: { gap: PAS * 2, padding: PAS * 4, backgroundColor: couleurs.voile, borderRadius: RAYON.bloc, borderWidth: 1, borderColor: couleurs.trait },
   bouton: {
     minHeight: CIBLE + 4, borderRadius: RAYON.bloc, paddingHorizontal: PAS * 4, alignItems: "center", justifyContent: "center",
-    backgroundColor: couleurs.ville,
+    backgroundColor: couleurs.primaire,
   },
-  boutonDiscret: { backgroundColor: couleurs.voile },
+  boutonDiscret: { backgroundColor: couleurs.primaireClair },
   boutonTexte: { color: couleurs.blanc, fontSize: 17, fontWeight: "700" },
 });

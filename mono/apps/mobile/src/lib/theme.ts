@@ -12,7 +12,7 @@
  * courant reste dans la police du systeme (SF, Roboto) : la plus lisible sur
  * chaque telephone, et celle qui suit le mieux la taille de texte choisie par
  * le lecteur (Dynamic Type, taille de police Android). */
-import { ECHELONS } from "@repere/data-utils";
+import { ECHELONS, PALETTE_INTERFACE } from "@repere/data-utils";
 
 export type Echelon = keyof typeof ECHELONS;
 
@@ -41,6 +41,10 @@ export const couleurs = {
   blanc: "#ffffff",
   /* le texte d'une action (« Comprendre ce vote › ») : en encre, voir plus haut */
   lien: "#1a1917",
+  /* Palette d'interface (decision du porteur, 20/10/2026, invariant 7) : boutons, onglets,
+     pastilles. Jamais une couleur d'echelon, jamais un vote. */
+  primaire: PALETTE_INTERFACE.primaire,
+  primaireClair: PALETTE_INTERFACE.primaireClair,
 } as const;
 
 /* Les trois gris d'une repartition de vote, du plus fonce au plus clair : ils
@@ -64,7 +68,7 @@ export const TYPO = {
   affiche: { fontFamily: POLICE.affiche, fontSize: 36, lineHeight: 40, color: couleurs.encre, letterSpacing: -0.5 },
   chiffre: { fontFamily: POLICE.affiche, fontSize: 38, lineHeight: 44, color: couleurs.encre, letterSpacing: -0.5 },
   /* la question d'un ecran */
-  question: { fontFamily: POLICE.affiche, fontSize: 34, lineHeight: 38, color: couleurs.encre, letterSpacing: -0.6 },
+  question: { fontFamily: POLICE.affiche, fontSize: 34, lineHeight: 38, color: couleurs.primaire, letterSpacing: -0.6 },
   /* la reponse d'une carte : lisible en trois secondes */
   reponse: { fontFamily: POLICE.titre, fontSize: 22, lineHeight: 28, color: couleurs.encre },
   corps: { fontSize: 16, lineHeight: 23, color: couleurs.encre },

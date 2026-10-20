@@ -24,7 +24,7 @@ export const INVARIANTS = [
     regle: "Rien qui gamifie le vote ou l'opinion : aucun score, aucune récompense, aucune série, aucun gain ni son de réussite lié à un vote, une position ou un partage. Les effets de mouvement sont permis pour lire, naviguer et suivre une heure ou une durée (assouplie par décision du porteur, 13/10/2026).",
     garde: "statique: vocabulaire de bonne/mauvaise réponse interdit" },
   { n: 7, nom: "palette gelée",
-    regle: "Cinq couleurs d'échelon gelées ; aucune autre couleur ne dépasse une amplitude de 24 sur les canaux RGB. Seule exception (décision du porteur, 16/10/2026) : le bleu, le blanc et le rouge du logo, réservés au logo et à ses déclinaisons de marque, jamais à l'interface ni à une information.",
+    regle: "Cinq couleurs d'échelon gelées ; aucune autre couleur ne dépasse une amplitude de 24 sur les canaux RGB, sauf deux teintes d'interface fixes (décision du porteur, 20/10/2026 : bleu sarcelle et bleu clair), pour les boutons, les onglets et les pastilles, jamais pour un vote, un parti, un score ni un territoire. Seule exception (décision du porteur, 16/10/2026) : le bleu, le blanc et le rouge du logo, réservés au logo et à ses déclinaisons de marque, jamais à l'interface ni à une information.",
     garde: "statique: lecture des jetons CSS, et le tricolore confiné à la marque (outils/marque_repere.py, ui/marque.tsx)" },
   { n: 8, nom: "ni patrimoine ni présence",
     regle: "Jamais le patrimoine d'un élu, jamais de donnée de présence ou d'absence.",
@@ -48,6 +48,16 @@ export const ECHELONS = Object.freeze({
   france: "#1d1d1f",
 });
 export const AMPLITUDE_MAX = 24;
+
+/* PALETTE D'INTERFACE — decision du porteur, 20/10/2026 (invariant 7 modifie pour
+   l'interface : la maquette de l'application demande un bleu sarcelle et un bleu
+   clair). Liste FERMEE de deux teintes : elles ne sont ni une couleur d'echelon,
+   ni le tricolore du logo, ni une couleur de vote ou de parti. Toute autre
+   couleur du produit reste soumise au plafond AMPLITUDE_MAX. */
+export const PALETTE_INTERFACE = Object.freeze({
+  primaire: "#0e3b4b",
+  primaireClair: "#bde7f4",
+});
 
 /* LE TRICOLORE DU LOGO — seule exception a l'invariant 7 (decision du porteur,
    16/10/2026). Declare ICI, une seule fois : outils/marque_repere.py le recopie pour

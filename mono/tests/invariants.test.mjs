@@ -13,7 +13,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
 import {
-  INVARIANTS, ECHELONS, AMPLITUDE_MAX, amplitude, adresseFautive, TRICOLORE_MARQUE, FICHIERS_MARQUE, couleurDeGroupeAdmise,
+  INVARIANTS, ECHELONS, AMPLITUDE_MAX, PALETTE_INTERFACE, amplitude, adresseFautive, TRICOLORE_MARQUE, FICHIERS_MARQUE, couleurDeGroupeAdmise,
   CHAMPS_INTERDITS, MOTS_CLASSEMENT, MOTS_GAMIFICATION, MOTS_A_ACCENTS,
 } from "../packages/data-utils/src/invariants.js";
 import { execFileSync } from "node:child_process";
@@ -152,6 +152,13 @@ test("invariant 7 — palette gelée, et aucune couleur hors palette", () => {
     assert.ok(css.includes(hex), `la couleur d'echelon ${nom} (${hex}) a disparu des jetons`);
   }
   let controlees = 0;
+  /* Palette d'interface (decision du porteur, 20/10/2026) : deux teintes fixes,
+     jamais une couleur d'echelon ni une couleur du tricolore. */
+  const interfaces = Object.values(PALETTE_INTERFACE).map(h => h.toLowerCase());
+  for (const h of interfaces) {
+    assert.ok(!gelees.includes(h), `la palette d'interface ${h} reprend une couleur d'echelon`);
+    assert.ok(!Object.values(TRICOLORE_MARQUE).includes(h), `la palette d'interface ${h} reprend le tricolore du logo`);
+  }
   /* Seule exception (decision du porteur, 16/10/2026) : le tricolore du logo, et
      SEULEMENT dans le fichier qui le declare. Partout ailleurs il reste refuse ici,
      et le controle suivant dit pourquoi. */
@@ -161,6 +168,7 @@ test("invariant 7 — palette gelée, et aucune couleur hors palette", () => {
     for (const m of lire(f).matchAll(/#[0-9a-fA-F]{6}\b/g)) {
       const hex = m[0].toLowerCase();
       if (gelees.includes(hex)) continue;
+      if (interfaces.includes(hex)) continue;
       if (f === declaration && tricolore.includes(hex)) continue;
       controlees++;
       assert.ok(amplitude(hex) <= AMPLITUDE_MAX,

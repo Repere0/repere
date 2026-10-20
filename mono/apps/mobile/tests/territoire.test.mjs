@@ -35,12 +35,17 @@ test("la barre basse a un onglet « Chez vous » qui ouvre l'ecran territoire", 
   assert.ok(lire("territoire.tsx").length > 0, "app/(onglets)/territoire.tsx absent");
 });
 
-test("« Qui decide » n'est plus un onglet : href null le retire de la barre", () => {
+/* Decision du porteur, 20/10/2026 (maquette) : « Qui decide » redevient un onglet, le
+   quatrieme. Il remplace la decision du 13/10/2026 (href: null, retire de la barre). */
+test("« Qui decide » est un onglet de la barre basse, avec sa boussole (20/10/2026)", () => {
   const layout = lire("_layout.tsx");
   const qui = bloc(layout, "qui-decide");
-  assert.ok(qui, "la route qui-decide doit rester declaree (ecran ouvert depuis « Aller plus loin »)");
-  assert.match(qui, /href:\s*null/, "qui-decide doit porter href: null");
-  assert.doesNotMatch(qui, /tabBarLabel:\s*"Chez vous"/, "« Chez vous » ne doit plus designer qui-decide");
+  assert.ok(qui, "la route qui-decide doit etre declaree dans la barre");
+  assert.doesNotMatch(qui, /href:\s*null/, "qui-decide ne doit plus porter href: null");
+  assert.match(qui, /IconeBoussole/, "l'onglet « Qui decide » doit porter son icone");
+  assert.doesNotMatch(qui, /tabBarLabel:\s*"Chez vous"/, "« Chez vous » ne doit pas designer qui-decide");
+  const ordre = ["chez-vous", "territoire", "a-venir", "qui-decide"].map(n => layout.indexOf(`name="${n}"`));
+  assert.deepEqual(ordre, [...ordre].sort((a, b) => a - b), "l'ordre des onglets doit etre Aujourd'hui, Chez vous, Calendrier, Qui decide");
 });
 
 test("l'ecran territoire est distinct de « Qui decide » : ni chaine des elus, ni composant Chaine", () => {
