@@ -83,7 +83,14 @@ export function Repartition({ segments, total, position, qui, compact }: {
           <Animated.View key={x.cle} style={{ width: largeur(v, x.part * 100), backgroundColor: GRIS_VOTE[x.cle as keyof typeof GRIS_VOTE] }} />
         ))}
       </View>
-      {compact ? null : <View style={{ gap: PAS * 2 }}>
+      {compact ? <View style={s.legendeCompacte}>
+        {segments.map(x => (
+          <View key={x.cle} style={s.legendeItem}>
+            <View style={[s.pastilleCouleur, { backgroundColor: GRIS_VOTE[x.cle as keyof typeof GRIS_VOTE] }]} />
+            <Text style={TYPO.note}>{x.libelle} {x.nombre}</Text>
+          </View>
+        ))}
+      </View> : <View style={{ gap: PAS * 2 }}>
         {segments.map(x => (
           <View key={x.cle} style={s.legende}>
             <View style={[s.pastilleCouleur, { backgroundColor: GRIS_VOTE[x.cle as keyof typeof GRIS_VOTE] }]} />
@@ -268,6 +275,9 @@ const s = StyleSheet.create({
   moisRempli: { height: "100%" },
   barreVote: { flexDirection: "row", height: 22, borderRadius: 8, overflow: "hidden", backgroundColor: couleurs.voile },
   legende: { flexDirection: "row", alignItems: "center", gap: PAS * 2 },
+  /* La legende de la reponse d'accueil : une ligne qui passe a la ligne, la couleur est lue tout de suite. */
+  legendeCompacte: { flexDirection: "row", flexWrap: "wrap", gap: PAS * 3 },
+  legendeItem: { flexDirection: "row", alignItems: "center", gap: PAS },
   pastilleCouleur: { width: 14, height: 14, borderRadius: 4, borderWidth: StyleSheet.hairlineWidth, borderColor: couleurs.sourd },
   marque: { fontSize: 13, fontWeight: "700", color: couleurs.blanc, backgroundColor: couleurs.ville, paddingHorizontal: 8, paddingVertical: 2, borderRadius: RAYON.pastille, overflow: "hidden", maxWidth: 170 },
   annee: { flexDirection: "row", alignItems: "center", gap: PAS * 2 },
