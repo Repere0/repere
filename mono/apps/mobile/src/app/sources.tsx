@@ -66,7 +66,9 @@ export default function Sources() {
               gardee que sur demande (lib/memoire.ts). */}
           <View style={{ gap: PAS }}>
             <Text style={[TYPO.corps, { fontWeight: "800" }]} accessibilityRole="header">Ce que Repère sait de vous</Text>
-            <Text style={TYPO.note}>Rien : pas de compte, pas d'e-mail. Pour afficher votre commune, l'application télécharge le fichier public de tout votre département, jamais celui de votre seule commune. Elle ne garde votre commune sur ce téléphone que si vous le lui demandez.</Text>
+            <Text style={TYPO.note}>Rien : pas de compte, pas d'e-mail.</Text>
+            <Text style={TYPO.note}>L'application télécharge le fichier public de tout votre département, jamais celui de votre seule commune.</Text>
+            <Text style={TYPO.note}>Elle ne garde votre commune sur ce téléphone que si vous le lui demandez.</Text>
           </View>
         </Page>
       );

@@ -152,7 +152,7 @@ export default function QuiDecide() {
           return { ...n, personne: president, institution: nomIntercommunalite(n.institution) || n.institution, note: [n.delegues
             ? `Le Répertoire national des élus y liste ${n.delegues} élu${n.delegues > 1 ? "s" : ""} de ${d.nomCommune}. Vous ne l'élisez pas directement : ce sont des conseillers municipaux qui y siègent.`
             : "Le Répertoire national des élus ne porte pas de délégué pour cette commune à son intercommunalité.",
-            president ? null : "L'intercommunalité a un président ; Repère n'affiche pas son nom, car il ne figure pas parmi les élus de cette commune que liste le Répertoire.",
+            president ? null : "Le nom du président de l'intercommunalité n'est pas publié parmi les élus de cette commune.",
             ...precisions].filter(Boolean).join(" ") };
         }
         if (n.echelon === "region" && !n.personne) {
