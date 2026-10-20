@@ -16,9 +16,13 @@ export function Carte({ echelon, children, titre }: { echelon?: Echelon; childre
   return (
     <View style={[s.carte, { backgroundColor: couleurs.carte }]}>
       {titre ? (
+        /* 20/10/2026 (maquette) : le libelle de carte en pastille grise, le point de niveau
+           a sa gauche. Aucun texte change. */
         <View style={s.carteTete}>
-          {echelon ? <View style={[s.point, { backgroundColor: couleurs[echelon] }]} /> : null}
-          <Text style={s.carteTitre} accessibilityRole="header">{titre}</Text>
+          <View style={s.pastilleCarte}>
+            {echelon ? <View style={[s.point, { backgroundColor: couleurs[echelon] }]} /> : null}
+            <Text style={s.carteTitre} accessibilityRole="header">{titre}</Text>
+          </View>
         </View>
       ) : null}
       {children}
@@ -142,7 +146,8 @@ const s = StyleSheet.create({
   carte: { backgroundColor: couleurs.carte, borderRadius: RAYON.carte, borderCurve: "continuous", padding: PAS * 4, gap: PAS * 3, borderWidth: 1, borderColor: couleurs.trait, ...OMBRE },
   carteTete: { flexDirection: "row", alignItems: "center", gap: PAS * 2 },
   point: { width: 10, height: 10, borderRadius: 5 },
-  carteTitre: { ...TYPO.etiquette, flex: 1 },
+  carteTitre: { ...TYPO.etiquette, color: couleurs.encre },
+  pastilleCarte: { flexDirection: "row", alignItems: "center", gap: PAS * 2, alignSelf: "flex-start", backgroundColor: couleurs.voile, borderRadius: RAYON.pastille, paddingHorizontal: PAS * 3, paddingVertical: PAS },
   action: {
     minHeight: CIBLE, flexDirection: "row", alignItems: "center", justifyContent: "space-between",
     borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: couleurs.trait, marginTop: PAS,
