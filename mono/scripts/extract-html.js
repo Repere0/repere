@@ -71,7 +71,8 @@ function sourceFiscalite(dossier) {
   try {
     const p = JSON.parse(fs.readFileSync(path.join(d, f), "utf8"));
     return p.source ? { producteur: p.source.producteur, licence: p.source.licence,
-      maj: p.source.mis_a_jour_le, releve_le: p.source.releve_le, url: p.source.url } : null;
+      maj: p.source.mis_a_jour_le, releve_le: p.source.releve_le, url: p.source.url,
+      exercice: p.exercice } : null;
   } catch { return null; }
 }
 function nomsTerritoires() {

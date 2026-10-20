@@ -72,6 +72,12 @@ export default function Sources({ index, paquet }) {
           mention={(s.projets.exercices ? "années " + s.projets.exercices.join(" et ") + ", " : "")
             + "relevé le " + dateFr(s.projets.releve_le)}
           url={s.projets.url} /> : null}
+        {s.fiscalite ? <Source producteur={"Taux des impôts locaux — " + s.fiscalite.producteur}
+          licence={s.fiscalite.licence}
+          maj={s.fiscalite.maj}
+          mention={(s.fiscalite.exercice ? "exercice " + s.fiscalite.exercice + ", " : "")
+            + "relevé le " + dateFr(s.fiscalite.releve_le)}
+          url={s.fiscalite.url} /> : null}
         {/* LE FIL EDITORIAL N'A PAS UN PRODUCTEUR, IL A UN GESTE : chaque fait
             porte sa propre source officielle, deja citee ligne par ligne dans
             « Ce qui a été décidé ». Cette ligne dit ce que les autres ne
