@@ -203,7 +203,7 @@ export default function QuiDecide() {
           <Chaine cartes niveaux={filtre === "tous" ? niveaux : niveaux.filter(n => n.echelon === filtre)} refNiveau={(echelon, v) => { vues.current[echelon] = v; }}
             surNom={n => router.push({ pathname: "/elu", params: {
             nom: n.personne ? n.personne.nom : "", role: n.personne ? n.personne.role : "", echelon: n.echelon,
-            niveau: n.niveau, institution: n.institution, lieu: n.lieu || "" } })} />
+            niveau: n.niveau, institution: n.institution, lieu: n.lieu || "", debut: n.personne && n.personne.debut ? n.personne.debut : "" } })} />
           <Aiguilleur niveaux={niveaux} surChoix={echelon => { setFiltre("tous"); setTimeout(() => aller(echelon), 80); }} />
           <PastilleSource source={srcElus(r.srcElus ? { ...r.srcElus, url: r.srcElus.url || RNE_URL } : null)} />
           {prefet ? (

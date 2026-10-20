@@ -27,7 +27,15 @@ import { PastilleSource } from "../ui/source";
 import { useApparition } from "../ui/mouvement";
 import { IconePartage } from "../ui/icones";
 
-type Params = { nom?: string; role?: string; echelon?: string; niveau?: string; institution?: string; lieu?: string };
+type Params = { nom?: string; role?: string; echelon?: string; niveau?: string; institution?: string; lieu?: string; debut?: string };
+
+/* Le debut du mandat, tel que la source le publie. Quand la source ne le donne pas,
+   une phrase le dit (doctrine du vide) : jamais une case vide. */
+function phraseMandat(debut?: string): string {
+  return debut
+    ? `En fonction depuis le ${dateFr(debut)}, date publiée par la source.`
+    : "La date de début de ce mandat n'est pas publiée par la source.";
+}
 type Onglet = "apercu" | "votes" | "parcours";
 
 const PARTI_NON_PUBLIE = "Parti : non publié par la source. Repère ne le déduit pas.";
@@ -114,6 +122,9 @@ export default function Elu() {
                 {/* « Institution », pas « Fonction » (16/10/2026) : la carte disait « Fonction :
                     Conseil municipal » sous « Maire · Meaux ». La fonction est dans l'en-tete ;
                     la carte dit ou elle s'exerce, sur une ligne. */}
+                <Carte titre="Mandat">
+                  <Text style={TYPO.corps}>{phraseMandat(p.debut)}</Text>
+                </Carte>
                 {p.institution || p.lieu ? (
                   <Carte echelon={echelon as Echelon} titre="Institution">
                     <Text style={TYPO.corps}>{[p.institution, p.lieu].filter(Boolean).join(" · ")}</Text>

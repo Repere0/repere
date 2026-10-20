@@ -170,7 +170,7 @@ export function Frise({ jalons, etiquette }: { jalons: Jalon[]; etiquette?: stri
 /* ── La chaine des echelons, de chez vous a l'Assemblee ────────────────── */
 export type Niveau = {
   echelon: Echelon; niveau: string; institution: string; lieu?: string | null;
-  personne?: { nom: string; role: string; acteurRef?: string | null } | null; decide?: string; note?: string; pied?: ReactNode;
+  personne?: { nom: string; role: string; acteurRef?: string | null; debut?: string | null } | null; decide?: string; note?: string; pied?: ReactNode;
 };
 /* `surNom` : quand il est donne, le nom de chaque personne ouvre sa fiche. Le nom
    est alors une cible de 48 px, lue comme un lien. */
