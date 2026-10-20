@@ -461,6 +461,18 @@ export async function chargerVotes(dep, { delaiMs = 8000 } = {}) {
 export async function chargerProjets(dep, { delaiMs = 8000 } = {}) {
   return chargerSocle("proj:" + String(dep).toUpperCase(), adresseProjets(dep), delaiMs);
 }
+/* LES TAUX DES IMPOTS LOCAUX (DGFiP), PAR DEPARTEMENT — 20/10/2026. Meme regle
+   que les projets : un paquet par departement, jamais une adresse par commune. */
+export function adresseFiscalite(dep) {
+  const d = String(dep).toUpperCase();
+  if (!/^(\d{2,3}|2[AB])$/.test(d)) throw new Error("code de departement invalide : " + dep);
+  const url = `${BASE_DONNEES}/fiscalite/${d}.json`;
+  if (adresseFautive(url)) throw new Error("adresse fautive composee : " + url);
+  return url;
+}
+export async function chargerFiscalite(dep, { delaiMs = 8000 } = {}) {
+  return chargerSocle("fisc:" + String(dep).toUpperCase(), adresseFiscalite(dep), delaiMs);
+}
 export async function chargerCalendrierSenat({ delaiMs = 8000 } = {}) {
   return chargerSocle("socle:CAL", adresseCalendrierSenat(), delaiMs);
 }

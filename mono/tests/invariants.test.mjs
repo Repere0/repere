@@ -364,6 +364,10 @@ test("invariant 4 — aucune donnée n'est servie sans source déclarée", () =>
      ajoutees le 13/09/2026, a la meme condition : la source « scrutins » est
      exigee dans index.json quelques lignes plus bas. Elargir cette liste sans
      elargir l'autre fait echouer le test — c'est le but.
+     La huitieme, /fiscalite/{dep}.json, est ajoutee le 20/10/2026 : les taux des
+     impots locaux par commune, DGFiP, servis par DEPARTEMENT comme les projets. Sa
+     source est declaree dans le bloc « source » de chaque fichier, et dans
+     index.json des qu'un fichier existe (fiscalite_taux.py puis extract-html.js).
      La sixieme, /projets/{dep}.json, est ajoutee le 14/09/2026 pour l'ecran
      « Ce qui a ete decide ». C'est la donnee la plus indiscrete du produit — elle
      est propre a UNE commune — et c'est pour cela qu'elle est servie par
@@ -415,7 +419,7 @@ test("invariant 4 — aucune donnée n'est servie sans source déclarée", () =>
   const composees = [...client.matchAll(/\$\{BASE_DONNEES\}(\/[A-Za-z0-9_${}./-]*)/g)].map(m => m[1]);
   assert.deepEqual([...new Set(composees)].sort(),
     ["/agenda-an.json", "/calendrier-senat.json", "/communes-beta.json", "/comptes-regions.json", "/departments/${d}.json",
-     "/deputes.json", "/elus-regions/${c}.json", "/evenements.json", "/index.json",
+     "/deputes.json", "/elus-regions/${c}.json", "/evenements.json", "/fiscalite/${d}.json", "/index.json",
      "/projets/${d}.json", "/questions-gouvernement-index.json", "/questions-gouvernement/${lotPadded}.json", "/scrutins-details/${lotPadded}.json", "/scrutins-index.json", "/scrutins-solennels-recents.json", "/scrutins-solennels.json", "/scrutins.json", "/scrutins/${d}.json"],
     "client.js compose une adresse de donnees inattendue : " + composees.join(", "));
   const sources = existe("data/index.json") ? (JSON.parse(lire("data/index.json")).sources || {}) : {};

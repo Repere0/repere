@@ -59,6 +59,21 @@ function informationsBuild() {
     construit_le: new Date().toISOString(),
   };
 }
+/* LA SOURCE DES TAUX (DGFiP, 20/10/2026) : lue dans le bloc « source » du premier
+   fichier departemental produit par outils/fiscalite_taux.py. Absente tant que
+   aucun fichier n'a ete ecrit : l'index le dit par null, jamais par une source
+   inventee. */
+function sourceFiscalite(dossier) {
+  const d = path.join(dossier, "fiscalite");
+  if (!fs.existsSync(d)) return null;
+  const f = fs.readdirSync(d).filter(n => /^\d{2,3}\.json$/.test(n)).sort()[0];
+  if (!f) return null;
+  try {
+    const p = JSON.parse(fs.readFileSync(path.join(d, f), "utf8"));
+    return p.source ? { producteur: p.source.producteur, licence: p.source.licence,
+      maj: p.source.mis_a_jour_le, releve_le: p.source.releve_le, url: p.source.url } : null;
+  } catch { return null; }
+}
 function nomsTerritoires() {
   const f = path.join(ICI, "noms-territoires.json");
   if (!fs.existsSync(f)) { console.warn("noms-territoires.json absent : index.json n'aura que les codes"); return null; }
@@ -871,6 +886,7 @@ async function extraire() {
       circonscriptions: (CIRCOS && { producteur: reaccentuer(CIRCOS.source), licence: CIRCOS.licence, decoupage: CIRCOS.decoupage,
         ...(CIRCOS.source_url ? { url: CIRCOS.source_url } : {}) }) || null,
       territoires: (noms && noms.sources) || null,
+      fiscalite: sourceFiscalite(SORTIE),
       /* Les libelles de communes ont leur propre producteur, distinct de celui des
          elus : ce sont deux jeux de donnees, releves a deux dates. */
       communes: (officiels && {
