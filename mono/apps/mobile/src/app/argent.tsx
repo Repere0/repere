@@ -30,6 +30,7 @@ import { PastilleSource } from "../ui/source";
 import { LienDefinition } from "../lib/termes";
 import { Emoji, Resume } from "../ui/resume";
 import { BarrePart, Compteur, DeuxAnnees, Depli, Financement, Mois } from "../ui/visuels";
+import { TauxCommune } from "../ui/fiscalite";
 
 /* DENSITE (16/10/2026). Mesure : l'ecran faisait 4,1 hauteurs d'ecran (3 469 px a
    390 x 844), chaque carte empilant phrase, visuels, « En clair », deux replis et la
@@ -317,8 +318,8 @@ export default function Argent() {
               <Text style={[TYPO.question, { flex: 1, fontSize: 24, lineHeight: 28 }]} accessibilityRole="header">Ce que vous payez à la commune</Text>
             </View>
             <Carte echelon="ville" titre="Si vous êtes propriétaire">
-              <Text style={TYPO.reponse}>Vous payez la taxe foncière sur les propriétés bâties. Le taux de votre commune est publié par la DGFiP ; Repère ne l'affiche pas encore.</Text>
-              <Text style={TYPO.corps}>Si votre commune lève la taxe d'enlèvement des ordures ménagères, elle est établie au nom du propriétaire.</Text>
+              <Text style={TYPO.corps}>Vous payez la taxe foncière sur les propriétés bâties, et, si votre commune la lève, la taxe d'enlèvement des ordures ménagères, établie au nom du propriétaire.</Text>
+              <TauxCommune dep={d.dep} insee={d.commune} />
             </Carte>
             <Carte echelon="ville" titre="Si vous êtes locataire">
               <Text style={TYPO.reponse}>Le propriétaire peut récupérer auprès de vous la taxe d'enlèvement des ordures ménagères, de plein droit et sans frais de gestion.</Text>
