@@ -1,4 +1,5 @@
-/* LA BARRE BASSE A TROIS ONGLETS DU CANEVAS « ACCUEIL » (13/10/2026, « Chez vous » corrige le 15/10/2026).
+/* LA BARRE BASSE (13/10/2026, « Chez vous » corrige le 15/10/2026,
+ * quatrieme onglet le 20/10/2026).
  *
  * Aujourd'hui  -> chez-vous   (les trois reponses du jour)
  * Chez vous    -> territoire (le territoire de la commune : departement, region,
@@ -6,8 +7,9 @@
  *                             en est une sortie, pas l'onglet)
  * Calendrier   -> a-venir     (le Parlement, semaine et mois)
  *
- * « Qui decide » reste un ecran (route qui-decide), ouvert depuis « Aller plus
- * loin », mais il n'a plus d'onglet : href null le retire de la barre.
+ * Qui decide   -> qui-decide (la chaine commune -> Assemblee). Il reste ouvert
+ *                             aussi depuis « Aller plus loin » et depuis le bloc
+ *                             de « Aujourd'hui » : trois chemins, un seul ecran.
  * Les ecrans de detail (argent, vote, fiche, partage, dictionnaire...) restent
  * dans la pile, au-dessus de la barre. */
 import { PixelRatio, Text, type ColorValue } from "react-native";
@@ -16,7 +18,7 @@ import { toucherLeger } from "../../ui/toucher";
 import { LIBELLES } from "@repere/core";
 import { couleurs } from "../../lib/theme";
 import { Retour } from "../../ui/retour";
-import { IconeCalendrier, IconeHorloge, IconeMaison } from "../../ui/icones";
+import { IconeCalendrier, IconeHorloge, IconeMaison, IconePersonne } from "../../ui/icones";
 
 /* Au-dela de ce facteur d'agrandissement du texte du telephone, le libelle d'onglet
    est masque : l'onglet ne montre que son icone. Le nom reste lu par les lecteurs
@@ -75,8 +77,22 @@ export default function Onglets() {
           headerLeft: () => <Retour texte="Communes" etiquette="Revenir à l'accueil pour changer de commune" />,
         }}
       />
-      <Tabs.Screen name="qui-decide" options={{ title: LIBELLES.qui, href: null }} />
       <Tabs.Screen name="a-venir" options={{ title: LIBELLES.calendrier, ...nomOnglet("Calendrier"), tabBarIcon: icone(IconeCalendrier) }} />
+      {/* QUATRIEME ONGLET (20/10/2026, maquette du porteur). « Qui decide » etait
+         un ecran sans onglet (href null) : on y arrivait par « Aller plus loin »
+         ou par le bloc de « Aujourd'hui ». C'est l'une des deux questions
+         fondatrices du produit ; elle vaut une porte dans la barre, et c'est ce
+         que montre la maquette. Les deux chemins existants continuent de
+         fonctionner : ils menent au meme ecran. */}
+      <Tabs.Screen
+        name="qui-decide"
+        options={{
+          title: LIBELLES.qui,
+          ...nomOnglet(LIBELLES.qui),
+          tabBarIcon: icone(IconePersonne),
+          headerLeft: () => <Retour texte="Communes" etiquette="Revenir à l'accueil pour changer de commune" />,
+        }}
+      />
     </Tabs>
   );
 }

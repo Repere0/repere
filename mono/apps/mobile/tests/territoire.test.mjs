@@ -35,12 +35,21 @@ test("la barre basse a un onglet « Chez vous » qui ouvre l'ecran territoire", 
   assert.ok(lire("territoire.tsx").length > 0, "app/(onglets)/territoire.tsx absent");
 });
 
-test("« Qui decide » n'est plus un onglet : href null le retire de la barre", () => {
+test("« Qui decide » est le quatrieme onglet, et reste joignable autrement", () => {
+  /* DECISION DU PORTEUR, 20/10/2026 (maquette Stitch) : la barre passe a quatre
+     onglets. Le 13/10, la decision etait l'inverse — « Qui decide » etait une sortie
+     de « Chez vous », pas un onglet. Ce qui ne change pas : c'est le MEME ecran, et
+     les chemins existants continuent d'y mener, sinon on aurait deux produits.
+     Ce que la garde protege toujours : « Chez vous » designe territoire, jamais
+     qui-decide — c'est la confusion corrigee le 15/10. */
   const layout = lire("_layout.tsx");
   const qui = bloc(layout, "qui-decide");
-  assert.ok(qui, "la route qui-decide doit rester declaree (ecran ouvert depuis « Aller plus loin »)");
-  assert.match(qui, /href:\s*null/, "qui-decide doit porter href: null");
+  assert.ok(qui, "la route qui-decide doit rester declaree");
+  assert.doesNotMatch(qui, /href:\s*null/, "qui-decide ne doit plus etre retire de la barre");
+  assert.match(qui, /tabBarIcon/, "un onglet sans icone n'est pas un onglet");
   assert.doesNotMatch(qui, /tabBarLabel:\s*"Chez vous"/, "« Chez vous » ne doit plus designer qui-decide");
+  const aujourdhui = lire("chez-vous.tsx");
+  assert.match(aujourdhui, /\/qui-decide/, "le chemin depuis « Aujourd'hui » doit rester");
 });
 
 test("l'ecran territoire est distinct de « Qui decide » : ni chaine des elus, ni composant Chaine", () => {

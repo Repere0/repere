@@ -71,3 +71,17 @@ export function IconePartage({ couleur }: P) {
     </Boite>
   );
 }
+
+/* Qui decide : une personne et une coche — le quatrieme onglet (20/10/2026).
+   La coche ne vaut pas approbation : elle dit « identifie », comme sur la
+   maquette du porteur. Meme construction que les autres, en vues. */
+export function IconePersonne({ couleur }: P) {
+  return (
+    <Boite>
+      <View style={{ position: "absolute", left: 5, top: 3, width: 9, height: 9, borderRadius: 4.5, borderWidth: T, borderColor: couleur }} />
+      <View style={{ position: "absolute", left: 2, top: 14, width: 15, height: 12, borderRadius: 7.5, borderWidth: T, borderColor: couleur }} />
+      <View style={{ position: "absolute", left: 15, top: 14, width: 4, height: T, borderRadius: 1, backgroundColor: couleur, transform: [{ rotate: "45deg" }] }} />
+      <View style={{ position: "absolute", left: 17, top: 12, width: 7, height: T, borderRadius: 1, backgroundColor: couleur, transform: [{ rotate: "-45deg" }] }} />
+    </Boite>
+  );
+}
