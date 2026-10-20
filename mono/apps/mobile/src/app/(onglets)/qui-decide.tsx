@@ -91,6 +91,9 @@ function Aiguilleur({ niveaux, surChoix }: { niveaux: Niveau[]; surChoix: (echel
             <Text style={TYPO.etiquette}>{n.niveau}{n.lieu ? " · " + n.lieu : ""}</Text>
             <Text style={TYPO.corps}>Décide : {n.decide}.</Text>
           </View>
+          <View style={{ alignSelf: "center", backgroundColor: couleurs.voile, borderRadius: RAYON.pastille, paddingHorizontal: PAS * 3, paddingVertical: PAS }}>
+            <Text style={{ fontSize: 13, fontWeight: "700", color: couleurs.encre }}>{LIBELLE_ECHELON[n.echelon] || n.echelon}</Text>
+          </View>
         </Pressable>
       ))}
     </View>

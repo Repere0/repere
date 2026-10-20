@@ -16,7 +16,7 @@ import { Tabs } from "expo-router";
 import { toucherLeger } from "../../ui/toucher";
 import { LIBELLES } from "@repere/core";
 import { couleurs } from "../../lib/theme";
-import { Retour } from "../../ui/retour";
+import { PastilleCommune, Retour } from "../../ui/retour";
 import { IconeBoussole, IconeCalendrier, IconeHorloge, IconeMaison } from "../../ui/icones";
 
 /* Au-dela de ce facteur d'agrandissement du texte du telephone, le libelle d'onglet
@@ -83,7 +83,9 @@ export default function Onglets() {
           title: LIBELLES.qui,
           ...nomOnglet(LIBELLES.qui),
           tabBarIcon: icone(IconeBoussole),
-          headerLeft: () => <Retour texte="Communes" etiquette="Revenir à l'accueil pour changer de commune" />,
+          headerLeft: () => <PastilleCommune />,
+          /* 20/10/2026 : la maquette n'a pas de titre d'en-tete ici ; la question de l'ecran la porte. */
+          headerTitle: "",
         }}
       />
     </Tabs>

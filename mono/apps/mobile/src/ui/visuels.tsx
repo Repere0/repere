@@ -176,6 +176,15 @@ export type Niveau = {
 /* `refNiveau` : la vue de chaque niveau, mesuree au moment ou un raccourci y amene le
    lecteur (Qui decide, 16/10/2026). Une position memorisee a l'affichage devenait fausse
    des qu'un repli s'ouvrait au-dessus (mesure sur l'export web). */
+/* Les initiales d'une personne : premiere lettre du prenom et du nom (« Jean-François COPE » -> « JC »). */
+function initiales(nom: string): string {
+  const morceaux = nom.split(/[\s-]+/).filter(Boolean);
+  if (morceaux.length === 0) return "";
+  const debut = morceaux[0][0];
+  const fin = morceaux.length > 1 ? morceaux[morceaux.length - 1][0] : "";
+  return (debut + fin).toUpperCase();
+}
+
 export function Chaine({ niveaux, compact, surNom, refNiveau, cartes }: { niveaux: Niveau[]; compact?: boolean; surNom?: (n: Niveau) => void; refNiveau?: (echelon: string, vue: View | null) => void; cartes?: boolean }) {
   /* 20/10/2026 (maquette « Qui decide pour vous ? ») : une carte blanche par niveau. Meme
      contenu que la frise (libelle « Niveau · lieu », nom, role, ce qu'il decide, fiche),
@@ -188,6 +197,13 @@ export function Chaine({ niveaux, compact, surNom, refNiveau, cartes }: { niveau
             <View style={s.carteTeteNiveau}>
               <View style={[s.maillon, { backgroundColor: couleurs[n.echelon], marginTop: 0 }]} />
               <Text style={[TYPO.etiquette, { flex: 1 }]}>{n.niveau}{n.lieu ? " · " + n.lieu : ""}</Text>
+              {/* 20/10/2026 : pas de photo dans les donnees publiques : les initiales de la personne
+                  nommee, sur une pastille (rien d'invente, rien de charge depuis un autre hote). */}
+              {n.personne ? (
+                <View accessible={false} importantForAccessibility="no" style={s.initiales}>
+                  <Text style={s.initialesTexte}>{initiales(n.personne.nom)}</Text>
+                </View>
+              ) : null}
             </View>
             {n.personne && surNom ? (
               <Pressable onPress={() => surNom(n)} accessibilityRole="link"
@@ -325,6 +341,8 @@ const s = StyleSheet.create({
   carteNom: { fontFamily: POLICE.titre, fontSize: 26, lineHeight: 30, color: couleurs.primaire, letterSpacing: -0.3 },
   boiteDecide: { backgroundColor: couleurs.voile, borderRadius: RAYON.bloc, padding: PAS * 3, gap: PAS },
   carteAction: { fontSize: 16, fontWeight: "700", color: couleurs.primaire },
+  initiales: { width: 48, height: 48, borderRadius: 24, backgroundColor: couleurs.primaireClair, alignItems: "center", justifyContent: "center" },
+  initialesTexte: { fontFamily: POLICE.affiche, fontSize: 17, color: couleurs.primaire },
   jalonAxe: { width: 18, alignItems: "center" },
   jalonPoint: { width: 14, height: 14, borderRadius: 7, borderWidth: 2, backgroundColor: couleurs.sol, marginTop: 4 },
   jalonActif: { width: 18, height: 18, borderRadius: 9, marginTop: 2 },
