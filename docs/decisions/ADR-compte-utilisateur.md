@@ -60,3 +60,53 @@ Ces deux textes ne seront modifiés qu'après décision explicite du porteur, av
 3. Le consentement parental sous 15 ans est-il obligatoire ?
 4. Quel service d'authentification (hébergé dans l'UE) ?
 5. Calendrier : compte en bêta (oui/non) ?
+
+---
+
+## 8. Décisions du porteur (20/10/2026, 13:40)
+
+1. **Option : mix A + C**, avec la création de compte orientée localité (ci-dessous).
+2. **Consentement parental sous 15 ans : non.** Voir 8.2 : le compte est refusé sous 15 ans, sans collecte.
+3. **Hébergement de l'authentification : dans l'UE, idéalement en France.** Obligatoire.
+4. **Budget bêta : 20 € maximum.** Hypothèse retenue : par mois. À confirmer.
+
+### 8.1 Choix d'hébergement (sourcé, à vérifier avant commande)
+
+| Option | Coût mensuel indicatif | Verdict |
+|---|---|---|
+| Authentik ou Keycloak auto-hébergé sur VPS français (OVHcloud ou Scaleway) | VPS d'entrée environ 8 à 15 € HT/mois ([Kolonell, 12/09/2026](https://kolonell.com/fr/blog/hebergement-site-france-ovh-scaleway-prix-2026)) | **Retenu.** Données en France, logiciel ouvert, dans le budget. |
+| SaaS d'identité managé (Zitadel/Authentik cloud, Keycloak géré) | 80 à 800 € HT/mois ([Kolonell, 05/10/2026](https://kolonell.com/fr/blog/cout-sso-authentification-application-metier-entreprise-2026)) | Rejeté : dépasse 20 €, hébergement non confirmé. |
+| Microsoft Entra External ID | Gratuit jusqu'à 50 000 utilisateurs actifs (même source) | Rejeté : société américaine, hébergement non confirmé. |
+
+Limites :
+- Les prix sont des ordres de grandeur. Ils doivent être vérifiés sur le site de l'hébergeur avant commande.
+- Auto-hébergé, les mises à jour de sécurité, les sauvegardes et la supervision sont à la charge de l'équipe. C'est le vrai coût, il n'est pas chiffré ici.
+- Aucune souscription n'a été faite. Le paiement doit être fait par le porteur.
+
+### 8.2 Moins de 15 ans : pas de compte
+
+Le consentement parental étant refusé, les moins de 15 ans ne peuvent pas créer de compte. C'est la seule solution compatible avec la loi : un compte sans autorisation parentale exposerait Repère à une sanction, et la CNIL ne le permet pas pour un mineur de moins de 15 ans.
+Ce qui reste ouvert à tous, sans compte, sans collecte : l'application entière (lecture hors ligne, calendrier, votes, dictionnaire, sources).
+Ce qui est proposé à partir de 15 ans : le compte. Un changement de cette règle demanderait une analyse juridique et n'est pas recommandé.
+
+### 8.3 Création de compte orientée localité
+
+Le compte doit reconnecter la personne à son territoire. Parcours d'inscription proposé, écran par écran :
+
+1. **Où vivez-vous ?** Recherche de commune, déjà existante dans l'application.
+2. **Votre territoire** : la commune, l'agglomération (déduite de la commune, jamais saisie), le département et la région, avec la chaîne de décision.
+3. **Votre député et votre maire** : nom, parti et photo si libre de droits (les portraits de l'Assemblée restent interdits sans autorisation, voir ADR de l'app).
+4. **Ce qui se décide cette semaine** chez vous : conseil municipal, Assemblée, Sénat, agglomération.
+5. **Votre tranche d'âge** (pas la date exacte) et votre pseudonyme. Prénom et nom facultatifs.
+6. **Créer mon compte** : identifiant (courriel) et mot de passe, ou connexion sans mot de passe par lien.
+7. **Confirmation** : retour sur « Aujourd'hui », avec la commune déjà choisie.
+
+Données conservées : identifiant, pseudonyme, code INSEE de la commune, tranche d'âge, consentements horodatés. Pas de lien avec les votes consultés ni avec les pages lues.
+
+### 8.4 Prochaines étapes (ordre)
+
+1. Vérifier les tarifs VPS sur les sites OVHcloud et Scaleway, puis choisir.
+2. Rédiger les mentions d'information et la politique de confidentialité (juridique, porteur).
+3. Déployer Authentik sur le VPS choisi, avec sauvegardes et mises à jour automatiques.
+4. Implémenter le parcours 8.3 dans l'application, avec tests (refus sous 15 ans, suppression de compte, aucune donnée de compte dans les URL ou les journaux).
+5. Bêta : comptes de test uniquement, avant toute collecte réelle.
