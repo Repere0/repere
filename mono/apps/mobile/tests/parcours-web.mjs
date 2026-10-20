@@ -133,6 +133,9 @@ for (const largeur of [360, 390, 430]) {
      « pleine page » n'en montrerait que le haut. On le fait defiler. */
   if (CAPTURES) {
     for (let i = 0; i < 6; i++) {
+      /* Les barres se remplissent en ~820 ms (700 ms + delai) : sans attente,
+         la capture figeait une barre a moitie pleine ou vide (vu le 20/10/2026). */
+      await page.waitForTimeout(1200);
       await page.screenshot({ path: path.join(CAPTURES, `chez-vous-${largeur}-${i}.png`) });
       const fini = await page.evaluate(() => {
         const el = [...document.querySelectorAll("div")].filter(e => e.scrollHeight > e.clientHeight + 4 && /(auto|scroll)/.test(getComputedStyle(e).overflowY))
