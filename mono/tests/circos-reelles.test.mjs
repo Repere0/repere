@@ -76,9 +76,15 @@ test("Chez vous, circonscription unique (Meaux) : la phrase dit qui represente l
   const dep = deputes.deputes[`77-${fiche.circo}`];
   assert.equal(v.qui, `${dep.prenom} ${dep.nom}`, "la personne du vote n'est pas le depute de cette circonscription");
   const p = texteDe(phraseVoteChezVous(d, v));
-  assert.ok(p.startsWith(`À l'Assemblée, ${v.qui} représente votre commune (${ordinal(fiche.circo)} circonscription).`), p);
-  assert.match(p, /Le \d{1,2}(er)? \S+ \d{4}, son vote : (pour|contre|abstention)\.$/, p);
-  assert.ok(p.length < 150, `la phrase reste longue (${p.length} caractères) : ${p}`);
+  /* 20/10/2026 : une reponse, pas un paragraphe. La phrase portait le lien au
+     lecteur, le numero de circonscription, la date ET la position — 117 caracteres,
+     quatre lignes a 360 px. Numero et date sont passes dans la note de la carte.
+     Ce que la garde protege toujours : la personne est nommee, le lien a la commune
+     est dit, la position est dite, et aucun accord de genre n'est devine. */
+  assert.ok(p.startsWith(`${v.qui}, qui représente ${d.nomCommune} à l'Assemblée, a voté `), p);
+  assert.match(p, /a voté (pour|contre|l'abstention)\.$/, p);
+  assert.doesNotMatch(p, /représentée|élue|députée/, `un genre est deviné : ${p}`);
+  assert.ok(p.length < 90, `la phrase reste longue (${p.length} caractères) : ${p}`);
 });
 
 test("Chez vous, plusieurs circonscriptions (Paris) : aucun depute personnel n'est designe", () => {
@@ -95,6 +101,6 @@ test("Chez vous, plusieurs circonscriptions (Paris) : aucun depute personnel n'e
 
 test("Chez vous, nom du depute absent : la phrase ne nomme personne et ne l'invente pas", () => {
   const p = texteDe(phraseVoteChezVous({ nbCircos: 1, nomCommune: "X" }, { circo: 3, qui: "", position: "p", sc: { d: "2026-07-21" } }));
-  assert.equal(p, "Vote du député de la 3e circonscription à l'Assemblée. Le 21 juillet 2026, sa position publiée : pour.");
+  assert.equal(p, "Le député de la 3e circonscription a voté pour.");
   assert.doesNotMatch(p, /représenté|représentée/, p);
 });

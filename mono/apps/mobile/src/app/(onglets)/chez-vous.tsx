@@ -163,13 +163,16 @@ export default function ChezVous() {
                    pour 844). Le resultat et le decompte viennent EN TETE, jamais coupes ;
                    l'intitule suit, non reecrit, et peut etre coupe : le texte entier est
                    sur « Comprendre ce vote », a un geste. */
-                : <Text style={TYPO.note}>{typo(`${vote.sc.s.charAt(0).toUpperCase()}${vote.sc.s.slice(1)}, ${decompte(vote.sc.dec)} : ${titreLisible(vote.sc.t)}`)}</Text>}
+                /* 20/10/2026 : la circonscription et la date descendent ici, pour que
+                   la phrase ne porte que la reponse. */
+                : <Text style={TYPO.note}>{typo(`${ordinal(vote.circo)} circonscription · ${dateFr(vote.sc.d)}. ${vote.sc.s.charAt(0).toUpperCase()}${vote.sc.s.slice(1)}, ${decompte(vote.sc.dec)} : ${titreLisible(vote.sc.t)}`)}</Text>}
               sources={<PastilleSource court source={srcVote(d, vote.sc)} />}
               partage={{
                 titre: `Un vote concernant ${nom}`,
                 texte: d.nbCircos > 1
                   ? `${nom} est partagée entre ${d.nbCircos} circonscriptions. Votre député dépend de votre adresse. Exemple : dans la ${ordinal(vote.circo)}, le ${dateFr(vote.sc.d)}, ${texteDe(phrasePosition(vote.position, vote.qui)).replace(/\.$/, "")}.`
-                  : texteDe(phraseVoteChezVous(d, vote)).replace(/^Votre commune/, nom),
+                  /* la carte partagee garde la date : elle part sans l'ecran autour */
+                  : `${texteDe(phraseVoteChezVous(d, vote))} Vote du ${dateFr(vote.sc.d)} à l'Assemblée nationale.`,
                 sourceUrl: srcVote(d, vote.sc)?.url,
               }}
               suite={{ texte: "Comprendre ce vote", onPress: () => router.push("/vote") }} />

@@ -80,10 +80,23 @@ export function phraseVoteChezVous({ nbCircos, nomCommune }, vote) {
   }
   const position = MOTS[vote.position];
   if (!position) return [{ t: `Dans la ${ordinal(vote.circo)} circonscription, le relevé de l'Assemblée ne porte pas de position pour ce vote.` }];
-  const qui = vote.qui
-    ? `À l'Assemblée, ${vote.qui} représente votre commune (${ordinal(vote.circo)} circonscription).`
-    : `Vote du député de la ${ordinal(vote.circo)} circonscription à l'Assemblée.`;
-  return [{ t: `${qui} Le ${dateFr(vote.sc.d)}, ${vote.qui ? "son vote" : "sa position publiée"} : ${position.toLowerCase()}.` }];
+  /* UNE REPONSE, PAS UN PARAGRAPHE — 20/10/2026. La phrase faisait 117 caracteres
+     et quatre lignes a 360 px, pour une seule reponse : « À l'Assemblée, X
+     représente votre commune (6e circonscription). Le 21 juillet 2026, son vote :
+     pour. » Elle portait a la fois le lien au lecteur, le numero de circonscription,
+     la date et la position. Le numero et la date descendent dans la note de la
+     carte ; la phrase garde le lien (« qui représente Meaux à l'Assemblée ») et la
+     reponse. Mesure : 67 caracteres pour Meaux, trois lignes a 360 px au lieu de
+     quatre. La position est rendue en segment distinct (fort) pour les ecrans qui
+     savent la mettre en avant ; « Aujourd'hui » aplatit encore la phrase par
+     texteDe, et c'est sans consequence.
+     AUCUN ACCORD DE GENRE : la donnee ne publie pas le genre de l'elu, et « a voté »
+     n'en demande pas. */
+  const mot = position === "Abstention" ? "l'abstention" : position.toLowerCase();
+  const tete = vote.qui
+    ? `${vote.qui}, qui représente ${nomCommune} à l'Assemblée, a voté `
+    : `Le député de la ${ordinal(vote.circo)} circonscription a voté `;
+  return [{ t: tete }, { t: mot, fort: true }, { t: "." }];
 }
 
 export function phrasePosition(position, qui) {

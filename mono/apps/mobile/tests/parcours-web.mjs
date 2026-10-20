@@ -214,8 +214,14 @@ for (const { largeur, theme } of [
           const b = e.getBoundingClientRect();
           const visible = b.width > 0 && b.height > 0
             && b.top >= 0 && b.bottom <= innerHeight && b.left >= 0 && b.right <= innerWidth;
-          if (visible) {
-            for (const sous of document.elementsFromPoint(b.left + b.width / 2, b.top + b.height / 2)) {
+          /* Et le point doit tomber SUR ce texte : s'il tombe sur autre chose (un
+             element par-dessus, un decalage de rendu), la pile interrogee n'est pas
+             celle du texte. Mesure du 20/10/2026 : sans cette condition, « Qui décide
+             chez vous ? » etait declare a 1,12:1 a 430 px seulement. */
+          const x = b.left + b.width / 2, y = b.top + b.height / 2;
+          const dessus = visible ? document.elementFromPoint(x, y) : null;
+          if (visible && dessus && (dessus === e || e.contains(dessus) || dessus.contains(e))) {
+            for (const sous of document.elementsFromPoint(x, y)) {
               const c = opaque(getComputedStyle(sous).backgroundColor);
               if (c) return c;
             }
@@ -277,7 +283,9 @@ for (const { largeur, theme } of [
   verifier(new RegExp(MAIRE).test(mesure.texte), `${etq} : le maire est nommé (${MAIRE})`);
   verifier(/Publication Repère du \d/.test(mesure.texte), `${etq} : la date de la publication affichée est dite`);
   verifier((mesure.etiquettes.match(/D'où vient cette information/g) || []).length >= 3, `${etq} : chaque réponse de l'accueil porte sa source`);
-  verifier(/son\s+vote\s*:\s*(pour|contre|l'abstention)/.test(mesure.texte) && /députés ayant pris part au vote/.test(mesure.etiquettes),
+  /* 20/10/2026 : la phrase dit « a voté pour » et non plus « son vote : pour » —
+     une reponse, pas un paragraphe (packages/core/src/phrases.js). */
+  verifier(/a voté (pour|contre|l'abstention)/.test(mesure.texte) && /députés ayant pris part au vote/.test(mesure.etiquettes),
     `${etq} : le vote du député s'affiche, et sa répartition se lit aussi en phrase`);
   verifier(/a dépensé [\d\s]+€ par habitant/.test(mesure.texte), `${etq} : l'argent de la commune se dit en une phrase`);
   /* « Réponses d'abord » (30/09/2026) : une reponse, pas une rubrique ; jamais
@@ -471,7 +479,7 @@ async function ouvrirAvecPanne(motif) {
   const t = await ouvrirAvecPanne("**/data/projets/**");
   verifier(/projets financés par l'État ne sont pas arrivés/.test(t) && !/Aucun projet financé/.test(t),
     "panne des projets : « pas arrivés », jamais « aucun projet »");
-  verifier(new RegExp(MAIRE).test(t) && /son\s+vote\s*:/.test(t), "panne des projets : le reste de l'écran s'affiche");
+  verifier(new RegExp(MAIRE).test(t) && /a voté /.test(t), "panne des projets : le reste de l'écran s'affiche");
 }
 {
   const t = await ouvrirAvecPanne("**/data/scrutins/**");
