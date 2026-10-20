@@ -215,6 +215,13 @@ for (const largeur of [360, 390, 430]) {
     verifier(m.contrastes.length === 0, `${largeur}px · ${ecran} : tout texte visible atteint le contraste AA ${JSON.stringify(m.contrastes)}`);
     const sansAccents = MOTS_A_ACCENTS.filter(x => new RegExp("(^|[^\\p{L}])" + x + "($|[^\\p{L}])", "u").test(m.brut));
     verifier(sansAccents.length === 0, `${largeur}px · ${ecran} : aucun mot affiché sans ses accents ${JSON.stringify(sansAccents)}`);
+    /* AUCUNE ABREVIATION DE MONTANT A L'ECRAN (20/10/2026). « 121,3 M€ » ne se lit
+       pas a voix haute et ne se comprend pas en cinq secondes ; le produit dit
+       « 121,3 millions d'euros » (montantEnMots). La garde porte sur une
+       PROPRIETE du texte affiche, pas sur la liste des ecrans ou des fonctions :
+       une nouvelle carte qui emploierait montantCourt la fera rougir. */
+    const abreges = (m.brut.match(/\d[\s\u00a0]?(?:M€|Md€|K€|k€)/g) || []);
+    verifier(abreges.length === 0, `${largeur}px · ${ecran} : aucun montant abrégé affiché ${JSON.stringify(abreges)}`);
   };
 
   /* L'ACCUEIL « AUJOURD'HUI » (« Chez vous » avant le 07/10/2026) : cinq questions, chacune avec sa source */

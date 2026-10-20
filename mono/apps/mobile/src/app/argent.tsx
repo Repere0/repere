@@ -103,7 +103,9 @@ export default function Argent() {
       const depTotal = ch && ch.depenses !== null ? montantEnMots(ch.depenses) : null;
       /* montants publies de l'exercice affiche : 0 recettes, 1 depenses, 3 investissement, 4 personnel, 5 impots */
       const calcul = (i: number, j: number, a: string, b: string) => (ex ? phraseCalculPart(valeur(ex.ex, i)?.m, valeur(ex.ex, j)?.m, a, b) : null);
-      const dette = ch && ch.dette !== null ? montantCourt(ch.dette) : null;
+      /* En toutes lettres, comme les depenses (20/10/2026) : « 48,2 M€ » ne se lit
+         pas a voix haute. `detteCourte` sert encore a savoir s'il y a une dette. */
+      const dette = ch && ch.dette !== null ? montantEnMots(ch.dette) : null;
       return (
         <Page>
           <Stack.Screen options={{ title: LIBELLES.argent }} />
@@ -176,7 +178,7 @@ export default function Argent() {
               {/* LA DETTE */}
               {ch.detteMois !== null && dette ? (
                 <Carte echelon="ville" titre={`Sa dette, fin ${ex.an}`}>
-                  <Resume phrase={`${nom} doit encore rembourser ${dette.texte}.`}
+                  <Resume phrase={`${nom} doit encore rembourser ${dette}.`}
                     /* « 7,6 mois de recettes » en corps d'affiche tenait sur deux lignes :
                        le nombre en grand, l'unite dans la legende, la phrase partagee
                        avec le site reste lisible d'un seul tenant. */
