@@ -119,7 +119,7 @@ function positionsDuBloc(g, noms) {
 function provenanceCouleurs() {
   return {
     origine: "Assemblée nationale — organes (couleurAssociee), données ouvertes",
-    regle: "retenue seulement si l'amplitude RGB reste inférieure ou égale à 24 (invariant 7) ; sinon aucune couleur, le sigle et le nom suffisent",
+    regle: "publiée telle que l'Assemblée la publie (décision du porteur, 20/10/2026) ; refusée seulement si elle imite une couleur d'échelon. Sans couleur : le sigle et le nom suffisent",
     ...COULEURS_MESURE,
   };
 }

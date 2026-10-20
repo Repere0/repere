@@ -14,6 +14,7 @@ import fs from "node:fs";
 import path from "node:path";
 import {
   INVARIANTS, ECHELONS, AMPLITUDE_MAX, amplitude, adresseFautive, TRICOLORE_MARQUE, FICHIERS_MARQUE, couleurDeGroupeAdmise,
+  texteSurCouleur, contrasteWcag, peutPorterDuTexte,
   CHAMPS_INTERDITS, MOTS_CLASSEMENT, MOTS_GAMIFICATION, MOTS_A_ACCENTS,
 } from "../packages/data-utils/src/invariants.js";
 import { execFileSync } from "node:child_process";
@@ -229,14 +230,42 @@ test("invariant 7 — le tricolore du logo reste dans la marque", () => {
    organes fabriques (une couleur saturee, une neutre, une absente, une couleur
    d'echelon) : seule la neutre est publiee, la provenance est ecrite, et la palette
    de gris inventee qui remplacait la source a disparu. */
-test("invariant 7 — une couleur de groupe n'est publiée que si elle est officielle et neutre", () => {
-  /* La couleur saturee de l'essai est une couleur deja declaree (le rouge du logo) :
+test("invariant 7 — une couleur de groupe vient de la source, et jamais de Repère", () => {
+  /* DECISION DU PORTEUR, 20/10/2026 : « rajoute-moi les couleurs politiques ».
+     Jusqu'ici la saturation faisait refuser TOUTES les couleurs officielles, et aucun
+     groupe n'en avait. Ce qui est garde : Repere ne choisit pas la couleur, il publie
+     celle de l'Assemblee ; et une couleur d'echelon ne devient jamais celle d'un
+     groupe, sinon un groupe passerait pour un niveau de decision.
+     La couleur saturee de l'essai est une couleur deja declaree (le rouge du logo) :
      aucune couleur hors palette n'est ecrite en clair dans ce fichier. */
   const SATUREE = TRICOLORE_MARQUE.rouge;
-  assert.equal(couleurDeGroupeAdmise(SATUREE), null, "une couleur saturee ne doit pas passer");
+  assert.equal(couleurDeGroupeAdmise(SATUREE), SATUREE, "une couleur officielle saturee doit desormais passer");
   assert.equal(couleurDeGroupeAdmise("#747474"), "#747474");
   assert.equal(couleurDeGroupeAdmise(ECHELONS.ville), null, "une couleur d'echelon ne doit pas devenir celle d'un groupe");
   assert.equal(couleurDeGroupeAdmise(""), null);
+  assert.equal(couleurDeGroupeAdmise("pas une couleur"), null);
+
+  /* DEUX REGLES DISTINCTES, et c'est la mesure qui les a separees.
+     1. texteSurCouleur rend toujours le MEILLEUR des deux (un groupe sombre prend du
+        blanc, un groupe clair prend l'encre) ;
+     2. mais certaines couleurs ne peuvent porter AUCUN texte : le rouge du logo
+        plafonne a 4,29:1 avec l'encre. peutPorterDuTexte le dit, et l'ecran retombe
+        alors sur un point a cote du nom — la regle deja suivie par les couleurs
+        d'echelon. Les couleurs d'essai sont construites ici, jamais ecrites en clair :
+        une couleur hors palette dans ce fichier ferait rougir la garde voisine. */
+  const essais = [SATUREE, "#747474", "#" + "0a".repeat(3), "#" + "f5".repeat(3)];
+  for (const c of essais) {
+    const t = texteSurCouleur(c);
+    assert.ok(contrasteWcag(t, c) >= Math.max(contrasteWcag("#ffffff", c), contrasteWcag("#171614", c)) - 1e-9,
+      `texteSurCouleur n'a pas choisi le meilleur des deux sur ${c}`);
+    if (peutPorterDuTexte(c)) {
+      assert.ok(contrasteWcag(t, c) >= 4.5,
+        `${c} est annoncee lisible mais mesure ${contrasteWcag(t, c).toFixed(2)}:1`);
+    }
+  }
+  assert.equal(peutPorterDuTexte(SATUREE), false,
+    "le rouge du logo mesure 4,29:1 au mieux : il ne peut pas porter de texte");
+  assert.equal(peutPorterDuTexte(ECHELONS.ville), false, "une couleur d'echelon n'est pas une couleur de groupe");
 
   const t = fs.mkdtempSync(path.join(os.tmpdir(), "repere-groupes-"));
   try {
@@ -264,11 +293,13 @@ test("invariant 7 — une couleur de groupe n'est publiée que si elle est offic
     const lots = fs.readdirSync(path.join(sortie, "scrutins-details"));
     const detail = JSON.parse(fs.readFileSync(path.join(sortie, "scrutins-details", lots[0]), "utf8"));
     const couleurs = Object.fromEntries(detail.scrutins[0].groupes.map(g => [g.nom, g.couleur]));
+    /* 20/10/2026 : la couleur officielle saturee est desormais publiee telle quelle.
+       Restent refusees : l'absence de couleur, et une couleur d'echelon. */
     assert.deepEqual(couleurs, {
-      "Groupe sature": null, "Groupe neutre": "#747474", "Groupe sans couleur": null, "Groupe couleur d'echelon": null,
-    }, "seule la couleur officielle neutre est publiee " + JSON.stringify(couleurs));
+      "Groupe sature": SATUREE, "Groupe neutre": "#747474", "Groupe sans couleur": null, "Groupe couleur d'echelon": null,
+    }, "la couleur officielle est publiee telle quelle " + JSON.stringify(couleurs));
     assert.deepEqual({ lues: index.source.couleurs_groupes.lues, retenues: index.source.couleurs_groupes.retenues, refusees: index.source.couleurs_groupes.refusees },
-      { lues: 3, retenues: 1, refusees: 2 }, "la provenance des couleurs dit ce qui a ete lu, retenu et refuse");
+      { lues: 3, retenues: 2, refusees: 1 }, "la provenance des couleurs dit ce qui a ete lu, retenu et refuse");
     assert.match(index.source.couleurs_groupes.origine, /couleurAssociee/);
   } finally {
     fs.rmSync(t, { recursive: true, force: true });

@@ -6,7 +6,8 @@
  * 3. la position des groupes ;
  * 4. puis seulement les positions individuelles et la source.
  *
- * Les groupes se reconnaissent à leur sigle (lib/groupes.ts) : leurs couleurs,
+ * Les groupes se reconnaissent à leur sigle (lib/groupes.ts) et, depuis le
+ * 20/10/2026, à la couleur que l'Assemblée publie pour eux : leurs couleurs,
  * neutres par règle, ne servent pas à les distinguer.
  * Elles ne codent jamais Pour / Contre / Abstention.
  */
@@ -26,6 +27,7 @@ import { Vide } from "../lib/composants";
 import { SCRUTINS_AN } from "../lib/absences";
 import { PastilleSource } from "../ui/source";
 import { feuille, PAS, TYPO, couleurs, CIBLE, RAYON, OMBRE } from "../lib/theme";
+import { couleurDeGroupeAdmise, peutPorterDuTexte, texteSurCouleur } from "@repere/data-utils";
 import { SIGLES_GROUPES } from "../lib/groupes";
 import { dateFr, titreLisible } from "@repere/core";
 
@@ -141,6 +143,8 @@ function StatutVote({ detail }: { detail: Detail }) {
 function GroupeRow({ groupe, ouvert, onPress }: { groupe: Groupe; ouvert: boolean; onPress: () => void }) {
   const total = (groupe.pour || 0) + (groupe.contre || 0) + (groupe.abstentions || 0);
   const sigle = groupe.abrege || SIGLES_GROUPES[groupe.nom] || null;
+  const couleurAdmise = couleurDeGroupeAdmise(groupe.couleur);
+  const teinte = couleurAdmise && peutPorterDuTexte(couleurAdmise, couleurs.encre, couleurs.blanc) ? couleurAdmise : null;
   return (
     <View style={s.groupe}>
       <Pressable
@@ -150,14 +154,23 @@ function GroupeRow({ groupe, ouvert, onPress }: { groupe: Groupe; ouvert: boolea
         accessibilityLabel={`${groupe.nom}, ${total} positions publiées`}
         style={({ pressed }) => [s.groupeTete, pressed && { opacity: 0.65 }]}
       >
-        {/* 16/10/2026 : la couleur d'un groupe est neutre (invariant 7), donc un point
-           gris ne dit rien. Le sigle sert d'étiquette ; le point reste seulement pour
-           un groupe absent de la table (lib/groupes.ts). */}
+        {/* LA COULEUR DU GROUPE (20/10/2026, décision du porteur). C'est celle que
+           l'Assemblée publie, jamais une couleur choisie par Repère, et elle sert
+           seulement à reconnaître CE groupe — jamais une position de vote.
+           Elle devient le fond du sigle quand elle peut porter du texte à 4,5:1
+           (peutPorterDuTexte) ; sinon elle reste un point à côté du sigle, qui garde
+           son fond neutre. Mesuré : certaines couleurs officielles plafonnent sous
+           4,5:1 dans les deux sens. */}
         {sigle ? (
-          <View style={s.groupeBadge} importantForAccessibility="no-hide-descendants" accessibilityElementsHidden>
-            <Text style={s.groupeBadgeTexte}>{sigle}</Text>
+          <View style={[s.groupeBadge, teinte ? { backgroundColor: teinte, borderColor: teinte } : null]}
+            importantForAccessibility="no-hide-descendants" accessibilityElementsHidden>
+            <Text style={[s.groupeBadgeTexte, teinte ? { color: texteSurCouleur(teinte, couleurs.encre, couleurs.blanc) } : null]}>{sigle}</Text>
           </View>
-        ) : <View style={[s.groupePoint, { backgroundColor: groupe.couleur || couleurs.trait }]} />}
+        ) : <View style={[s.groupePoint, { backgroundColor: couleurAdmise || couleurs.trait }]} />}
+        {sigle && couleurAdmise && !teinte ? (
+          <View style={[s.groupePoint, { backgroundColor: couleurAdmise, marginLeft: -PAS }]}
+            importantForAccessibility="no-hide-descendants" accessibilityElementsHidden />
+        ) : null}
         <View style={s.groupeTexte}>
           <Text style={s.groupeNom}>{groupe.nom}</Text>
           <Text style={s.groupeStats}>

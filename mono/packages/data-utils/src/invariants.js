@@ -24,8 +24,8 @@ export const INVARIANTS = [
     regle: "Rien qui gamifie le vote ou l'opinion : aucun score, aucune récompense, aucune série, aucun gain ni son de réussite lié à un vote, une position ou un partage. Les effets de mouvement sont permis pour lire, naviguer et suivre une heure ou une durée (assouplie par décision du porteur, 13/10/2026).",
     garde: "statique: vocabulaire de bonne/mauvaise réponse interdit" },
   { n: 7, nom: "palette gelée",
-    regle: "Cinq couleurs d'échelon gelées ; aucune autre couleur ne dépasse une amplitude de 24 sur les canaux RGB. Seule exception (décision du porteur, 16/10/2026) : le bleu, le blanc et le rouge du logo, réservés au logo et à ses déclinaisons de marque, jamais à l'interface ni à une information.",
-    garde: "statique: lecture des jetons CSS, et le tricolore confiné à la marque (outils/marque_repere.py, ui/marque.tsx)" },
+    regle: "Cinq couleurs d'échelon gelées ; aucune autre couleur ne dépasse une amplitude de 24 sur les canaux RGB. Deux exceptions, chacune décidée par le porteur. (a) 16/10/2026 : le bleu, le blanc et le rouge du logo, réservés au logo et à ses déclinaisons de marque, jamais à l'interface ni à une information. (b) 20/10/2026 : la couleur d'un groupe parlementaire, telle que l'Assemblée nationale la publie (`organe.couleurAssociee`), jamais choisie par Repère, utilisée seulement pour identifier ce groupe — jamais pour une position de vote, jamais pour un classement, jamais pour qualifier un bord politique. Le texte posé dessus atteint 4,5:1.",
+    garde: "statique: lecture des jetons CSS ; le tricolore confiné à la marque ; une couleur de groupe vient de la source et porte un texte à 4,5:1" },
   { n: 8, nom: "ni patrimoine ni présence",
     regle: "Jamais le patrimoine d'un élu, jamais de donnée de présence ou d'absence.",
     garde: "statique: champs interdits dans les données produites" },
@@ -60,18 +60,64 @@ export const TRICOLORE_MARQUE = Object.freeze({
   blanc: "#ffffff",
   rouge: "#ed2939",
 });
-/* LA COULEUR D'UN GROUPE PARLEMENTAIRE — 16/10/2026 (decision du porteur : « utiliser
-   uniquement les couleurs officielles réellement disponibles et vérifiables, sans
-   modifier l'invariant 7 pour elles »). Une couleur publiee par l'Assemblee
-   (organe.couleurAssociee) n'est retenue que si elle reste un neutre (amplitude <=
-   AMPLITUDE_MAX) et n'imite pas une couleur d'echelon. Sinon : null, et l'ecran
-   montre le sigle et le nom du groupe, sans couleur. */
+/* LA COULEUR D'UN GROUPE PARLEMENTAIRE — 20/10/2026.
+   DECISION DU PORTEUR : « rajoute-moi les couleurs politiques ; je veux que chaque
+   utilisateur puisse savoir de quel bord est son depute ». Le 16/10, la regle etait
+   l'inverse (« sans modifier l'invariant 7 ») : la saturation faisait refuser toutes
+   les couleurs officielles, et aucun groupe n'en avait.
+
+   CE QUI N'A PAS CHANGE, ET QUI EST L'ESSENTIEL : Repere ne CHOISIT pas la couleur
+   d'un groupe. Il publie celle que l'Assemblee publie elle-meme
+   (organe.couleurAssociee, donnees ouvertes). Repere n'ecrit donc jamais « extreme
+   droite » ni « gauche » : qualifier un bord est un acte editorial, montrer la couleur
+   que l'institution attache a un groupe ne l'est pas. Une couleur de groupe ne sert
+   qu'a identifier CE groupe : jamais une position de vote (invariant : un vote n'a ni
+   vert ni rouge), jamais un classement (invariant 3).
+
+   Refusee encore : une couleur mal formee, et une couleur qui imite un echelon — sinon
+   un groupe passerait pour un niveau de decision. Sans couleur : le sigle et le nom
+   suffisent (doctrine du vide). */
 export function couleurDeGroupeAdmise(hex) {
   const m = /^#?([0-9a-f]{6})$/i.exec(String(hex || "").trim());
   if (!m) return null;
   const h = "#" + m[1].toLowerCase();
   if (Object.values(ECHELONS).includes(h)) return null;
-  return amplitude(h) <= AMPLITUDE_MAX ? h : null;
+  return h;
+}
+
+/* Le texte a poser SUR une couleur de groupe : celui des deux qui lit le mieux.
+   « Blanc par defaut » rendait illisibles les groupes clairs. */
+export function texteSurCouleur(hex, encre = "#171614", clair = "#ffffff") {
+  const c = couleurDeGroupeAdmise(hex) || encre;
+  return contrasteWcag(clair, c) >= contrasteWcag(encre, c) ? clair : encre;
+}
+
+/* CERTAINES COULEURS NE PEUVENT PORTER AUCUN TEXTE. Mesure du 20/10/2026 : le rouge
+   #ed2939 plafonne a 4,29:1 avec l'encre et 3,99:1 avec le blanc — sous les 4,5:1
+   exiges (WCAG 1.4.3). Une couleur de groupe ne devient donc une PASTILLE DE FOND
+   que si elle peut porter du texte ; sinon elle reste un point ou un trait a cote du
+   nom, qui lui est en encre. C'est deja la regle des couleurs d'echelon. */
+export function peutPorterDuTexte(hex, encre = "#171614", clair = "#ffffff") {
+  const c = couleurDeGroupeAdmise(hex);
+  if (!c) return false;
+  return Math.max(contrasteWcag(clair, c), contrasteWcag(encre, c)) >= 4.5;
+}
+
+function luminanceRelative(hex) {
+  const m = /^#?([0-9a-f]{6})$/i.exec(String(hex).trim());
+  if (!m) return 0;
+  const v = m[1];
+  const [r, g, b] = [0, 2, 4].map(i => {
+    const s = parseInt(v.slice(i, i + 2), 16) / 255;
+    return s <= 0.03928 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4;
+  });
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+}
+
+export function contrasteWcag(a, b) {
+  const l1 = luminanceRelative(a), l2 = luminanceRelative(b);
+  const [h, l] = l1 > l2 ? [l1, l2] : [l2, l1];
+  return (h + 0.05) / (l + 0.05);
 }
 
 /* Les seuls fichiers qui peuvent porter le tricolore ou afficher les images de marque. */
