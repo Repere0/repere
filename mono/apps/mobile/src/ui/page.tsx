@@ -40,7 +40,9 @@ export function Question({ etiquette, question, sous, emoji }: { etiquette?: str
     <View style={{ gap: PAS * 2, marginBottom: PAS * 1 }}>
       {etiquette ? <Etiquette emoji={emoji} texte={etiquette} /> : null}
       <Text style={TYPO.question} accessibilityRole="header">{insecable(question)}</Text>
-      {sous ? <Text style={TYPO.note}>{sous}</Text> : null}
+      {/* `insecable` aussi sur le sous-titre (20/10/2026) : sans lui, le « ; » de
+          la page « Avant 18 ans » tombait seul en debut de ligne. */}
+      {sous ? <Text style={TYPO.note}>{insecable(sous)}</Text> : null}
     </View>
   );
 }

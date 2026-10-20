@@ -34,7 +34,13 @@ test("« Avant 18 ans » est accessible depuis l'accueil et Sources, avec ses so
   for (const source of ["F870", "F871", "F1961", "R51788", "education.gouv.fr"]) {
     assert.ok(page.includes(source), `source manquante : ${source}`);
   }
-  for (const date of ["10 avril 2026", "14 avril 2026", "28 novembre 2025", "29 décembre 2025"]) {
+  /* F870 EST PASSEE DU 10 AVRIL AU 19 OCTOBRE 2026 : la fiche officielle a ete
+     relue le 20/10/2026 et porte cette date de verification. Le fond n'a pas
+     change (3 mois apres le 16e anniversaire, en ligne ou en mairie,
+     attestation demandee pour un examen avant 18 ans, inscription d'office a
+     18 ans). Cette liste est une garde : une date ne bouge ici qu'apres
+     relecture de la fiche, jamais pour faire passer un test. */
+  for (const date of ["19 octobre 2026", "14 avril 2026", "28 novembre 2025", "29 décembre 2025"]) {
     assert.ok(page.includes(date), `date de source manquante : ${date}`);
   }
   assert.doesNotMatch(page, /TextInput|useState|AsyncStorage|localStorage|recensement.*stock/i,
