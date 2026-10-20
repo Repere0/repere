@@ -9,7 +9,7 @@ import { ETATS, PHRASES } from "../lib/donnees";
 import { Bouton, Vide } from "../lib/composants";
 import { useSelection } from "../lib/selection";
 import { useCommuneChoisie, type EtatCommune } from "../lib/useCommune";
-import { PAS, TYPO } from "../lib/theme";
+import { couleurs, PAS, TYPO } from "../lib/theme";
 import { Etiquette } from "./resume";
 import { BandeauFraicheur } from "./fraicheur";
 
@@ -18,9 +18,13 @@ import { BandeauFraicheur } from "./fraicheur";
 export function Page({ children, defilement, surDefilement }: { children: ReactNode; defilement?: Ref<ScrollView>; surDefilement?: (y: number) => void }) {
   const marges = useSafeAreaInsets();
   return (
+    /* LE FOND EST EXPLICITE (20/10/2026). Le defilement etait transparent : en
+       theme sombre, le conteneur de navigation laissait passer son propre gris
+       clair (#f2f2f2 mesure) tout autour des cartes. */
     <ScrollView ref={defilement} scrollEventThrottle={32}
+      style={{ backgroundColor: couleurs.sol }}
       onScroll={surDefilement ? e => surDefilement(e.nativeEvent.contentOffset.y) : undefined}
-      contentContainerStyle={[s.page, { paddingBottom: marges.bottom + PAS * 10 }]}>
+      contentContainerStyle={[s.page, { backgroundColor: couleurs.sol, paddingBottom: marges.bottom + PAS * 10 }]}>
       <BandeauFraicheur />
       {children}
     </ScrollView>

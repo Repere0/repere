@@ -184,15 +184,17 @@ export default function ChezVous() {
              APRES les trois reponses (16/10/2026) : la reponse d'abord, la chaine
              ensuite. Il remplace l'entree « Qui décide » de « Aller plus loin » : deux
              chemins vers le meme ecran se faisaient concurrence. */}
-          <View style={{ backgroundColor: couleurs.encre, borderRadius: 28, borderCurve: "continuous", padding: PAS * 4, gap: PAS * 3 }}>
+          {/* `inverse` et non `encre` : en theme sombre, un bloc creme eblouit —
+             il devient une surface soulevee (theme.ts, 20/10/2026). */}
+          <View style={{ backgroundColor: couleurs.inverse, borderRadius: 28, borderCurve: "continuous", padding: PAS * 4, gap: PAS * 3 }}>
             <View style={{ gap: PAS }}>
-              <Text style={{ fontFamily: POLICE.affiche, fontSize: 26, lineHeight: 30, color: couleurs.sol, letterSpacing: -0.4 }} accessibilityRole="header">Qui décide chez vous ?</Text>
-              <Text style={{ fontSize: 16, lineHeight: 22, color: couleurs.voile }}>{typo(`De la mairie à l'Assemblée nationale : qui décide de quoi pour ${nom}.`)}</Text>
+              <Text style={{ fontFamily: POLICE.affiche, fontSize: 26, lineHeight: 30, color: couleurs.surInverse, letterSpacing: -0.4 }} accessibilityRole="header">Qui décide chez vous ?</Text>
+              <Text style={{ fontSize: 16, lineHeight: 22, color: couleurs.inverseDoux }}>{typo(`De la mairie à l'Assemblée nationale : qui décide de quoi pour ${nom}.`)}</Text>
             </View>
             <Pressable onPress={() => router.push("/qui-decide")} accessibilityRole="button" accessibilityLabel={`Voir la chaîne complète : qui décide pour ${nom}`}
-              style={({ pressed }) => ({ minHeight: 48, borderRadius: 12, borderCurve: "continuous", backgroundColor: couleurs.sol, paddingHorizontal: PAS * 4, flexDirection: "row", alignItems: "center", justifyContent: "space-between", opacity: pressed ? 0.7 : 1 })}>
-              <Text style={{ fontSize: 16, fontWeight: "700", color: couleurs.encre }}>Voir la chaîne complète</Text>
-              <Text accessibilityElementsHidden importantForAccessibility="no" style={{ fontSize: 16, fontWeight: "700", color: couleurs.encre }}>→</Text>
+              style={({ pressed }) => ({ minHeight: 48, borderRadius: 12, borderCurve: "continuous", backgroundColor: couleurs.inverseAction, paddingHorizontal: PAS * 4, flexDirection: "row", alignItems: "center", justifyContent: "space-between", opacity: pressed ? 0.7 : 1 })}>
+              <Text style={{ fontSize: 16, fontWeight: "700", color: couleurs.surInverseAction }}>Voir la chaîne complète</Text>
+              <Text accessibilityElementsHidden importantForAccessibility="no" style={{ fontSize: 16, fontWeight: "700", color: couleurs.surInverseAction }}>→</Text>
             </Pressable>
           </View>
 

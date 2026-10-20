@@ -35,12 +35,29 @@ const NEUTRES: Record<Mode, Record<string, string>> = {
   clair: {
     sol: "#F5F2EC", carte: "#FFFFFF", encre: "#171614", sourd: "#625E57",
     trait: "#DDD8D0", voile: "#ECE8E1", blanc: "#ffffff", lien: "#1a1917",
+    /* LE BLOC APPUYE (« Qui décide chez vous ? », la fiche d'un élu) : en
+       clair c'est l'encre, et le texte passe en clair dessus. */
+    inverse: "#171614", surInverse: "#F5F2EC", inverseDoux: "#ECE8E1",
+    inverseAction: "#F5F2EC", surInverseAction: "#171614",
   },
   sombre: {
     sol: "#141310", carte: "#1d1b17", encre: "#ede9e0", sourd: "#9c968b",
     trait: "#33302a", voile: "#24211c", blanc: "#ffffff", lien: "#ede9e0",
+    /* EN SOMBRE, INVERSER N'EST PAS ECLAIRER. Un bloc creme plein ecran dans
+       une interface sombre eblouit : mesure du premier essai, #ede9e0 sur un
+       fond a #141310. Le bloc appuye devient donc une surface SOULEVEE —
+       plus claire que la carte, jamais blanche — et le texte y reste l'encre.
+       Mesures : encre 11,77:1 dessus, sourd 4,85:1, amplitude 10. */
+    inverse: "#2e2a24", surInverse: "#ede9e0", inverseDoux: "#9c968b",
+    inverseAction: "#ede9e0", surInverseAction: "#141310",
   },
 };
+
+/* LA PALETTE CLAIRE, FIGEE. La carte de partage n'est pas de l'interface :
+   c'est une image qui part dans une messagerie, lue par quelqu'un qui n'a
+   jamais ouvert Repere, sur un fond que nous ne choisissons pas. Elle garde
+   donc la marque en clair, quel que soit le theme du telephone. */
+export const PALETTE_CLAIRE = Object.freeze({ ...ECHELONS, ...NEUTRES.clair }) as Readonly<Palette>;
 
 /* L'ECHELON « FRANCE » N'EST PAS UNE COULEUR : c'est l'encre du produit
    (#1d1d1f, amplitude 2). En theme sombre l'encre change de bord, et lui avec —
@@ -134,6 +151,8 @@ function construire(m: Mode) {
 type Palette = Record<Echelon, string> & {
   sol: string; carte: string; encre: string; sourd: string;
   trait: string; voile: string; blanc: string; lien: string;
+  inverse: string; surInverse: string; inverseDoux: string;
+  inverseAction: string; surInverseAction: string;
 };
 type Vue = ReturnType<typeof construire>;
 

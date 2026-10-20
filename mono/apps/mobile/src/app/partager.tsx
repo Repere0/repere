@@ -19,7 +19,13 @@ import { Stack } from "expo-router";
 import * as Sharing from "expo-sharing";
 import { captureRef } from "react-native-view-shot";
 import { chaineDecision, dateFr, etapeDuScrutin, ETAPES_LOI, jourParis, procedure, titreLisible } from "@repere/core";
-import { couleurs, CIBLE, PAS } from "../lib/theme";
+import { couleurs, PALETTE_CLAIRE, CIBLE, PAS } from "../lib/theme";
+
+/* LA CARTE PARTAGEE GARDE LA MARQUE EN CLAIR (20/10/2026). Ce n'est pas de
+   l'interface : c'est une image qui part dans une messagerie, lue par
+   quelqu'un qui n'a jamais ouvert Repere, sur un fond que nous ne choisissons
+   pas. Le reste de l'ecran, lui, suit le theme du telephone. */
+const marque = PALETTE_CLAIRE;
 import { srcVote } from "../lib/sources";
 import { AvecDonnees, Page, Question } from "../ui/page";
 import { useApparition } from "../ui/mouvement";
@@ -51,10 +57,10 @@ async function partagerImage(carte: RefObject<View | null>, titre: string, repli
 function Logo() {
   return (
     <View style={{ flexDirection: "row", alignItems: "center", gap: PAS * 2 }}>
-      <View style={{ width: 34, height: 34, borderRadius: 10, backgroundColor: couleurs.encre, alignItems: "center", justifyContent: "center" }}>
-        <Text style={{ color: couleurs.sol, fontWeight: "800", fontSize: 20 }}>R</Text>
+      <View style={{ width: 34, height: 34, borderRadius: 10, backgroundColor: marque.encre, alignItems: "center", justifyContent: "center" }}>
+        <Text style={{ color: marque.sol, fontWeight: "800", fontSize: 20 }}>R</Text>
       </View>
-      <Text style={{ color: couleurs.encre, fontWeight: "800", fontSize: 20, letterSpacing: -0.4 }}>Repère</Text>
+      <Text style={{ color: marque.encre, fontWeight: "800", fontSize: 20, letterSpacing: -0.4 }}>Repère</Text>
     </View>
   );
 }
@@ -126,62 +132,62 @@ export default function Partager() {
             {/* CARTE 1 — L'ANNONCE (canevas « Partage ») */}
             <View ref={carte1} collapsable={false} accessible
               accessibilityLabel={`${nom} ${verbe} ${sujet}. Vote à l'Assemblée nationale, ${date}.`}
-              style={{ width: largeur, minHeight: largeur * 1.25, alignSelf: "center", backgroundColor: couleurs.sol,
+              style={{ width: largeur, minHeight: largeur * 1.25, alignSelf: "center", backgroundColor: marque.sol,
                 borderRadius: 18 * echelle, padding: 28 * echelle, justifyContent: "space-between", gap: 16 * echelle }}>
               <Logo />
               <View style={{ gap: 10 * echelle }}>
-                <Text style={{ color: couleurs.encre, fontWeight: "800", fontSize: 26 * echelle, lineHeight: 30 * echelle, letterSpacing: -0.5 }}>{nom}</Text>
-                <Text style={{ color: couleurs.encre, fontWeight: "800", fontSize: 50 * echelle, lineHeight: 52 * echelle, letterSpacing: -2 * echelle }}>{verbe}</Text>
+                <Text style={{ color: marque.encre, fontWeight: "800", fontSize: 26 * echelle, lineHeight: 30 * echelle, letterSpacing: -0.5 }}>{nom}</Text>
+                <Text style={{ color: marque.encre, fontWeight: "800", fontSize: 50 * echelle, lineHeight: 52 * echelle, letterSpacing: -2 * echelle }}>{verbe}</Text>
               </View>
               <View style={{ gap: 12 * echelle }}>
-                <Text style={{ color: couleurs.encre, fontWeight: "800", fontSize: 22 * echelle, lineHeight: 27 * echelle, letterSpacing: -0.3 }}>{sujet}</Text>
-                <Text style={{ color: couleurs.sourd, fontSize: 16 * echelle, lineHeight: 21 * echelle }}>Vote à l'Assemblée nationale, {date}.</Text>
+                <Text style={{ color: marque.encre, fontWeight: "800", fontSize: 22 * echelle, lineHeight: 27 * echelle, letterSpacing: -0.3 }}>{sujet}</Text>
+                <Text style={{ color: marque.sourd, fontSize: 16 * echelle, lineHeight: 21 * echelle }}>Vote à l'Assemblée nationale, {date}.</Text>
               </View>
               <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-end", gap: PAS * 2 }}>
                 {/* La source et la date sur la carte 1 aussi (16/10/2026) : une image partagee
                     seule doit dire d'ou elle vient, comme la carte 2. */}
-                <Text style={{ color: couleurs.sourd, fontSize: 15 * echelle, lineHeight: 20 * echelle, flex: 1 }}>Source : Assemblée nationale, scrutin n° {vote.sc.n}. Résumé Repère du {aujourdhui}.</Text>
-                <Text style={{ color: couleurs.encre, fontWeight: "800", fontSize: 18 * echelle }}>{d.nomCommune}</Text>
+                <Text style={{ color: marque.sourd, fontSize: 15 * echelle, lineHeight: 20 * echelle, flex: 1 }}>Source : Assemblée nationale, scrutin n° {vote.sc.n}. Résumé Repère du {aujourdhui}.</Text>
+                <Text style={{ color: marque.encre, fontWeight: "800", fontSize: 18 * echelle }}>{d.nomCommune}</Text>
               </View>
             </View>
 
             {/* CARTE 2 — L'EXPLICATION (canevas « Partage 2 ») */}
             <View ref={carte2} collapsable={false} accessible
               accessibilityLabel={`Comment ce texte avance. ${ou}`}
-              style={{ width: largeur, minHeight: largeur * 1.25, alignSelf: "center", backgroundColor: couleurs.sol,
+              style={{ width: largeur, minHeight: largeur * 1.25, alignSelf: "center", backgroundColor: marque.sol,
                 borderRadius: 18 * echelle, padding: 28 * echelle, justifyContent: "space-between", gap: 16 * echelle }}>
               <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
                 <Logo />
-                <Text style={{ fontWeight: "700", fontSize: 15 * echelle, borderWidth: 2, borderColor: couleurs.encre, borderRadius: 999, paddingHorizontal: 10 * echelle, paddingVertical: 4 * echelle, color: couleurs.encre }}>Explication</Text>
+                <Text style={{ fontWeight: "700", fontSize: 15 * echelle, borderWidth: 2, borderColor: marque.encre, borderRadius: 999, paddingHorizontal: 10 * echelle, paddingVertical: 4 * echelle, color: marque.encre }}>Explication</Text>
               </View>
 
               <View style={{ gap: 8 * echelle }}>
-                <Text style={{ color: couleurs.encre, fontWeight: "800", fontSize: 26 * echelle, lineHeight: 29 * echelle, letterSpacing: -0.7 }}>{sujet}</Text>
-                <Text style={{ color: couleurs.sourd, fontSize: 15 * echelle, lineHeight: 20 * echelle }}>Où en est le texte, selon la procédure</Text>
+                <Text style={{ color: marque.encre, fontWeight: "800", fontSize: 26 * echelle, lineHeight: 29 * echelle, letterSpacing: -0.7 }}>{sujet}</Text>
+                <Text style={{ color: marque.sourd, fontSize: 15 * echelle, lineHeight: 20 * echelle }}>Où en est le texte, selon la procédure</Text>
               </View>
 
               {/* Le schema : le vote, puis la place du texte. Les liaisons sont des traits, comme sur le canevas. */}
               <View style={{ gap: 0 }}>
-                <View style={{ minHeight: 44 * echelle, borderWidth: 2, borderColor: couleurs.encre, borderRadius: 14 * echelle,
+                <View style={{ minHeight: 44 * echelle, borderWidth: 2, borderColor: marque.encre, borderRadius: 14 * echelle,
                   paddingHorizontal: 14 * echelle, paddingVertical: 8 * echelle, justifyContent: "center" }}>
-                  <Text style={{ fontWeight: "800", fontSize: 16 * echelle, color: couleurs.encre }}>Vote à l'Assemblée nationale, {date.replace(/ /g, "\u00a0")}</Text>
+                  <Text style={{ fontWeight: "800", fontSize: 16 * echelle, color: marque.encre }}>Vote à l'Assemblée nationale, {date.replace(/ /g, "\u00a0")}</Text>
                 </View>
-                <View style={{ height: 22 * echelle, width: 2, backgroundColor: couleurs.encre, marginLeft: 22 * echelle }} />
-                <View style={{ borderRadius: 14 * echelle, backgroundColor: couleurs.encre, padding: 14 * echelle, gap: 6 * echelle }}>
-                  <Text style={{ fontWeight: "800", fontSize: 19 * echelle, lineHeight: 23 * echelle, color: couleurs.sol }}>
+                <View style={{ height: 22 * echelle, width: 2, backgroundColor: marque.encre, marginLeft: 22 * echelle }} />
+                <View style={{ borderRadius: 14 * echelle, backgroundColor: marque.encre, padding: 14 * echelle, gap: 6 * echelle }}>
+                  <Text style={{ fontWeight: "800", fontSize: 19 * echelle, lineHeight: 23 * echelle, color: marque.sol }}>
                     {jalon ? jalon.titre : "Étape non précisée"}
                   </Text>
-                  <Text style={{ fontSize: 15 * echelle, lineHeight: 20 * echelle, color: couleurs.trait }}>
+                  <Text style={{ fontSize: 15 * echelle, lineHeight: 20 * echelle, color: marque.trait }}>
                     {jalon ? jalon.texte : "Le scrutin ne précise pas l'étape du texte : Repère ne la devine pas."}
                   </Text>
                 </View>
               </View>
 
               <View style={{ gap: 6 * echelle }}>
-                <Text style={{ color: couleurs.sourd, fontSize: 15 * echelle, lineHeight: 20 * echelle }}>
+                <Text style={{ color: marque.sourd, fontSize: 15 * echelle, lineHeight: 20 * echelle }}>
                   Source : Assemblée nationale, scrutin n° {vote.sc.n}, {date}.
                 </Text>
-                <Text style={{ color: couleurs.sourd, fontSize: 15 * echelle, lineHeight: 20 * echelle }}>
+                <Text style={{ color: marque.sourd, fontSize: 15 * echelle, lineHeight: 20 * echelle }}>
                   Résumé Repère du {aujourdhui}. Le texte officiel fait foi.
                 </Text>
               </View>
