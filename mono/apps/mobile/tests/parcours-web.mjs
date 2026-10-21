@@ -636,6 +636,67 @@ for (const { largeur, theme } of [
     await page.getByText("Aller plus loin").first().waitFor({ timeout: 5000 });
   }
 
+  /* LE DETAIL D'UN RENDEZ-VOUS — `/evenement`, jamais visite (22/10/2026).
+   *
+   * Quatrieme ecran absent du banc : on mesurait la LISTE du calendrier, jamais
+   * le detail d'une de ses lignes. C'est pourtant l'ecran ou trois invariants se
+   * rencontrent, et ou l'on peut donc le plus se tromper.
+   *
+   * L'ADRESSE PORTE DES DONNEES. `/evenement?jour=…&institution=…&categorie=…
+   * &titre=…` : c'est le seul ecran du produit qui met le contenu dans l'URL.
+   * L'invariant 2 interdit qu'une adresse porte un code de commune — la garde
+   * globale ne le verifiait que sur les ecrans visites, donc pas sur celui-la.
+   *
+   * LA DOCTRINE DU VIDE Y EST VISIBLE A L'OEIL NU (invariant 5) : la source ne
+   * publie pas d'heure de fin, et l'ecran l'ECRIT (« Repère ne la devine pas »)
+   * au lieu d'afficher un tiret ou de calculer une duree plausible. C'est
+   * exactement ce que l'invariant demande, et rien ne le gardait. */
+  {
+    await page.getByText("Calendrier", { exact: true }).last().click();
+    await page.waitForTimeout(600);
+    const lignes = page.getByTestId("cal-ligne");
+    const nb = await lignes.count();
+    /* La garde ne doit pas etre muette : sans ligne servie, elle le DIT, au lieu
+       de passer en silence sur un ecran qu'elle n'a pas pu atteindre. */
+    if (!nb) {
+      verifier(false, `${etq} · Un rendez-vous : aucune ligne de calendrier servie — le détail n'a pas pu être mesuré`);
+    } else {
+      await lignes.first().click();
+      await page.getByRole("button", { name: /^Revenir à l'écran/ }).last().waitFor({ timeout: 10000 });
+      await page.waitForTimeout(700);
+      const mEvt = await mesurer();
+      communs(mEvt, "Un rendez-vous");
+      verifier(/\/evenement/.test(page.url()),
+        `${etq} · Un rendez-vous : le détail du rendez-vous est bien ouvert (${page.url().slice(0, 40)})`);
+      /* INVARIANT 2 sur une adresse qui porte, elle, des donnees. */
+      verifier(!/\b\d{5}\b/.test(decodeURIComponent(page.url())),
+        `${etq} · Un rendez-vous : l'adresse ne porte aucun code de commune, alors qu'elle porte des données`);
+      /* INVARIANT 4 : l'institution est nommee, la date est dite, la source est la. */
+      verifier(/Assemblée nationale|Sénat/.test(mEvt.brut),
+        `${etq} · Un rendez-vous : l'institution est nommée`);
+      verifier(/\b(lundi|mardi|mercredi|jeudi|vendredi|samedi|dimanche) \d{1,2} \p{L}+ \d{4}/u.test(mEvt.brut),
+        `${etq} · Un rendez-vous : la date est écrite en toutes lettres`);
+      verifier(/D'où vient cette information/.test(mEvt.etiquettes),
+        `${etq} · Un rendez-vous : l'écran porte sa source`);
+      /* INVARIANT 9 : l'age du releve est dit, et le site officiel fait foi. */
+      verifier(/relevé le .+, il y a \d+ jours?\. Il a pu changer depuis/.test(mEvt.brut),
+        `${etq} · Un rendez-vous : l'âge du relevé est dit, et que la source officielle fait foi`);
+      /* INVARIANT 5 : ce que la source ne publie pas n'est jamais devine. La
+         garde porte sur une PROPRIETE du texte affiche : si un jour l'ecran
+         inventait une heure de fin, cette phrase disparaitrait. */
+      /* ELLE EST CONDITIONNELLE, DONC ELLE DIT SI ELLE A SERVI. Une implication
+         passe A VIDE quand son antecedent est absent : si le rendez-vous ouvert
+         publiait une heure de fin, cette garde serait verte sans avoir rien
+         mesure, et son vert se lirait comme une preuve. Le message porte donc le
+         cas rencontre, pour qu'un vert a vide reste lisible dans le journal. */
+      const mentionne = /Heure de fin/.test(mEvt.brut);
+      verifier(!mentionne || /Repère ne la devine pas/.test(mEvt.brut),
+        `${etq} · Un rendez-vous : une heure de fin non publiée se dit, elle ne se devine pas (cas rencontré : ${mentionne ? "oui" : "non — garde non exercée sur cette passe"})`);
+      await page.getByRole("button", { name: /^Revenir à l'écran/ }).last().click();
+      await page.waitForTimeout(400);
+    }
+  }
+
   /* TROIS ECRANS QUE LE PARCOURS NE VISITAIT PAS — 21/10/2026.
    *
    * `procedure.tsx`, `dictionnaire.tsx` et `avant-18.tsx` n'etaient mesures que
