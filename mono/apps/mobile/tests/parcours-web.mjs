@@ -828,6 +828,60 @@ async function ouvrirSemaine({ agenda, senatCoupe, fuseau }) {
   await ctx.close();
 }
 
+/* LE CADRE D'APERCU NE TOUCHE PAS L'IMAGE PARTAGEE — 21/10/2026.
+ *
+ * `partager.tsx` entoure chaque carte d'un conteneur bordé, pour qu'on voie ses
+ * limites : son fond (`marque.sol`) est la couleur du fond de page en clair.
+ * Ce conteneur est EXTERIEUR a la ref que `captureRef` photographie — donc
+ * l'image partagee ne change pas. C'etait un raisonnement ; le voici mesure.
+ *
+ * Avec et sans le cadre, le noeud photographie mesure exactement 350 x 438 et
+ * 350 x 543, meme fond, meme rayon, meme padding. La garde verifie ce qui
+ * pourrait casser cette propriete : que la carte elle-meme ne porte AUCUNE
+ * bordure. Si quelqu'un deplace le cadre sur la carte, la bordure entrerait
+ * dans l'image exportee.
+ *
+ * CE QUE CECI NE PROUVE PAS : `captureRef` natif. react-native-view-shot passe
+ * par la hierarchie de vues iOS/Android, que ce banc ne peut pas executer. La
+ * propriete structurelle (le cadre est un PARENT de la ref) et l'identite des
+ * dimensions sont tout ce qui est prouvable ici.
+ * Eprouvee en posant la bordure sur la carte : la garde tombe. */
+{
+  const ctx = await navigateur.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
+  const page = await ctx.newPage();
+  await page.goto(BASE + "/", { waitUntil: "networkidle" });
+  await page.getByLabel(/Où habitez-vous/).fill(COMMUNE.saisie);
+  await page.getByRole("button", { name: new RegExp("^" + COMMUNE.nom + ",") }).first().click();
+  await page.getByText("Aller plus loin").first().waitFor({ timeout: 15000 });
+  await page.getByRole("button", { name: "Comprendre ce vote", exact: true }).first().click();
+  await page.waitForTimeout(900);
+  const versPartage = page.getByRole("button", { name: "Partager ce vote en deux cartes" }).first();
+  if (!(await versPartage.count())) {
+    verifier(false, "partage : le bouton « Partager ce vote en deux cartes » est introuvable sur l'écran du vote");
+  } else {
+    await versPartage.click();
+    await page.getByText("Deux cartes, à lire dans l'ordre").waitFor({ timeout: 15000 });
+    await page.waitForTimeout(700);
+    const cartes = await page.evaluate(() => [...document.querySelectorAll("[aria-label]")]
+      .filter(e => /a voté|Comment ce texte avance/.test(e.getAttribute("aria-label") || ""))
+      .map(e => {
+        const r = e.getBoundingClientRect(), st = getComputedStyle(e);
+        return { nom: (e.getAttribute("aria-label") || "").slice(0, 30), l: Math.round(r.width), h: Math.round(r.height),
+          bordure: parseFloat(st.borderTopWidth) || 0, parentBordure: e.parentElement ? (parseFloat(getComputedStyle(e.parentElement).borderTopWidth) || 0) : 0 };
+      }));
+    verifier(cartes.length === 2, `partage : les deux cartes à partager sont rendues (${cartes.length} trouvée(s))`);
+    for (const c of cartes) {
+      verifier(c.bordure === 0,
+        `partage : la carte « ${c.nom} » ne porte aucune bordure — sinon elle entrerait dans l'image exportée (mesuré ${c.bordure}px)`);
+      verifier(c.l > 200 && c.h > 200,
+        `partage : la carte « ${c.nom} » a des dimensions plausibles (${c.l}x${c.h})`);
+    }
+    verifier(cartes.some(c => c.parentBordure > 0),
+      "partage : le cadre visible est porté par le PARENT, hors de la zone capturée");
+  }
+  await ctx.close();
+}
+
 /* LES SCRUTINS, CAS FABRIQUE — 21/10/2026.
  *
  * La vue peuplee ne se rend pas dans le conteneur : elle demande
