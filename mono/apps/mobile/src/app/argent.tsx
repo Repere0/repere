@@ -24,7 +24,7 @@ import { Carte, Vide } from "../lib/composants";
 import { PROJETS_PAS_ARRIVES, projetsAucun } from "../lib/absences";
 import { srcComptes, srcComptesPublies, srcProjets } from "../lib/sources";
 import { useCommuneChoisie } from "../lib/useCommune";
-import { couleurs, PAS, TYPO } from "../lib/theme";
+import { couleurs, PAS, TYPO, POLICE } from "../lib/theme";
 import { AvecDonnees, Page, Question } from "../ui/page";
 import { PastilleSource } from "../ui/source";
 import { LienDefinition } from "../lib/termes";
@@ -137,14 +137,42 @@ export default function Argent() {
                 <Carte echelon="ville" titre={`Où vont 100 € dépensés, comptes ${ex.an}`}>
                   {/* 08/10/2026 (audit) : « Deux postes… » s'affichait avec une seule barre
                      (part des salaires absente) ; l'annee des comptes manquait au titre. */}
-                  <Resume phrase={ch.partSalaires !== null ? `Sur 100 € dépensés, ${ch.partSalaires} € servent à payer les personnes employées par la commune.` : `Sur 100 € dépensés, ${ch.partInvestissement} € vont aux investissements.`}>
-                    {/* `sansLibelle` (20/10/2026) : la phrase au-dessus dit deja le montant ET
-                        le poste. La barre repetait les deux, soit la meme donnee trois fois de
-                        suite — l'inverse d'une donnee lisible en cinq secondes. Le libelle reste
-                        pour le lecteur d'ecran (accessibilityLabel de BarrePart). */}
-                    {ch.partSalaires !== null ? <BarrePart sansLibelle part={ch.partSalaires} libelle="Personnes employées par la commune" valeur={rap(/personnes employées/)?.v || ""} />
-                      : <BarrePart sansLibelle part={ch.partInvestissement as number} libelle="Investissements : travaux, équipements…" valeur={rap(/investir/)?.v || ""} />}
-                  </Resume>
+                  {/* LES TROIS POSTES, VISIBLES D'UN COUP (20/10/2026, maquettes du
+                      porteur). Une seule barre etait montree, la seconde repliee, et le
+                      reste n'etait dit nulle part. Les trois lignes sont desormais
+                      cote a cote, chacune avec sa part et son montant par habitant.
+                      LE TROISIEME POSTE N'EST PAS UNE INVENTION : c'est 100 moins les
+                      deux parts publiees, et il s'appelle « Autres dépenses » — Repere
+                      ne sait pas ce qu'il contient et ne le devine pas. Le calcul
+                      s'annonce comme un calcul (invariant 4, pastille plus bas). */}
+                  {(() => {
+                    const sal = ch.partSalaires, inv = ch.partInvestissement;
+                    const autres = sal !== null && inv !== null ? Math.max(0, 100 - sal - inv) : null;
+                    const postes: [string, number | null, string][] = [
+                      /* La maquette emploie un mot technique pour ce poste ; la garde de
+                         refonte-ux le refuse, et elle a raison : la carte parle des
+                         personnes, comme partout ailleurs dans Repere. */
+                      ["Personnes employées par la commune", sal, rap(/personnes employées/)?.v || ""],
+                      ["Chantiers et investissements", inv, rap(/investir/)?.v || ""],
+                      ["Autres dépenses", autres, ""],
+                    ];
+                    return (
+                      <View style={{ gap: PAS * 3 }}>
+                        {postes.filter(([, p]) => p !== null).map(([nom, part, valeur], i) => (
+                          <View key={nom} style={{ gap: PAS }}>
+                            <View style={{ flexDirection: "row", alignItems: "baseline", gap: PAS * 2 }}>
+                              <Text style={[TYPO.corps, { flex: 1, fontWeight: "600" }]}>{nom}</Text>
+                              <Text style={{ fontFamily: POLICE.affiche, fontSize: 24, lineHeight: 28, color: couleurs.encre }}>{part} €</Text>
+                            </View>
+                            <BarrePart sansLibelle part={part as number}
+                              libelle={nom}
+                              valeur={valeur || `${part} € sur 100 € dépensés`}
+                              echelon="ville" delai={i * 90} />
+                          </View>
+                        ))}
+                      </View>
+                    );
+                  })()}
                   <PastilleSource source={srcComptes(d)} />
                   <Detail sujet="dépenses">
                     {/* Le calcul, avec les deux montants publies (16/10/2026) : la part se verifie. */}

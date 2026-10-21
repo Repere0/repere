@@ -26,6 +26,7 @@ import { AvecDonnees, Page, Question } from "../ui/page";
 import { PastilleSource } from "../ui/source";
 import { Termes } from "../lib/termes";
 import { Depli, Frise, Repartition } from "../ui/visuels";
+import { Etiq } from "../ui/signatures";
 import { IconePartage } from "../ui/icones";
 
 /* DENSITE (16/10/2026). Mesure : 3,8 hauteurs d'ecran (3 188 px a 390 x 844). La
@@ -92,6 +93,19 @@ export default function Vote() {
 
           {/* NIVEAU 1 : la position */}
           <Carte echelon="france" titre={`Le ${dateFr(vote.sc.d)}`}>
+            {/* LA LIGNE D'ETIQUETTES (20/10/2026, maquettes du porteur) : la nature du
+               scrutin et son sort, cote a cote, avant la position. Le sort vient du
+               champ `s` publie par l'Assemblee (« adopté », « rejeté »), jamais d'un
+               calcul : il est teinte selon ce que la source dit, et il dit ce que le
+               texte est devenu, pas si c'est une bonne chose. */}
+            <View style={{ flexDirection: "row", alignItems: "center", gap: PAS * 2, flexWrap: "wrap" }}>
+              <Etiq texte="Scrutin public" />
+              {vote.sc.s ? (
+                <Etiq texte={vote.sc.s}
+                  fond={/adopt/i.test(vote.sc.s) ? couleurs.accentVoile : couleurs.corailVoile}
+                  texteCouleur={/adopt/i.test(vote.sc.s) ? couleurs.accent : couleurs.corail} />
+              ) : null}
+            </View>
             <Text style={TYPO.question}><Segments s={phrasePosition(vote.position, vote.qui)} /></Text>
             <Text style={[TYPO.reponse, { fontSize: 19, lineHeight: 25 }]}>{titreLisible(vote.sc.t)}</Text>
             {/* le numero du scrutin, pour le retrouver sur le site de l'Assemblee (audit Lovable) */}

@@ -20,6 +20,8 @@ import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const racine = join(dirname(fileURLToPath(import.meta.url)), "..");
+/* La palette decidee, lue a sa source unique : si elle grossit, la garde le voit. */
+const { PALETTE_INTERFACE } = await import("../../../packages/data-utils/src/invariants.js");
 const theme = readFileSync(join(racine, "src/lib/theme.ts"), "utf8");
 
 /* ---- mesures, refaites ici, jamais importees ---- */
@@ -53,11 +55,16 @@ test("les deux themes existent, avec les memes jetons", () => {
   assert.equal(Object.keys(TEINTES.sombre).length, 5, "cinq echelons, pas un de plus");
 });
 
-test("invariant 7 — aucun neutre ne depasse une amplitude RGB de 24", () => {
+test("invariant 7 — tout jeton est soit sous l'amplitude 24, soit dans la palette decidee", () => {
+  /* 20/10/2026 : le porteur a decide une palette d'interface (gris-bleu lin,
+     teal, emeraude, ambre, corail) d'apres ses maquettes. Elle est declaree une
+     seule fois, dans data-utils/invariants.js, et la garde la relit : une
+     couleur hors palette ET au-dessus de l'amplitude 24 reste refusee. C'est ce
+     qui empeche la palette de s'elargir en silence, jeton par jeton. */
   for (const mode of ["clair", "sombre"]) {
     for (const [nom, hex] of Object.entries(NEUTRES[mode])) {
-      /* le blanc pur est a 0 ; il est liste pour memoire */
-      assert.ok(amplitude(hex) <= 24, `${mode}.${nom} = ${hex} : amplitude ${amplitude(hex)} > 24`);
+      assert.ok(amplitude(hex) <= 24 || PALETTE_INTERFACE.includes(hex.toLowerCase()),
+        `${mode}.${nom} = ${hex} : amplitude ${amplitude(hex)} > 24 et absent de la palette decidee`);
     }
   }
 });

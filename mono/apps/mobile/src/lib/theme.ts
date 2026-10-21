@@ -33,23 +33,52 @@ export type Mode = "clair" | "sombre";
    contraste du texte >= 5,46:1 en sombre, >= 5,28:1 en clair. */
 const NEUTRES: Record<Mode, Record<string, string>> = {
   clair: {
-    sol: "#F5F2EC", carte: "#FFFFFF", encre: "#171614", sourd: "#625E57",
-    trait: "#DDD8D0", voile: "#ECE8E1", blanc: "#ffffff", lien: "#1a1917",
-    /* LE BLOC APPUYE (« Qui décide chez vous ? », la fiche d'un élu) : en
-       clair c'est l'encre, et le texte passe en clair dessus. */
-    inverse: "#171614", surInverse: "#F5F2EC", inverseDoux: "#ECE8E1",
-    inverseAction: "#F5F2EC", surInverseAction: "#171614",
+    /* DESIGN SYSTEM 2026 — decision du porteur du 20/10/2026, d'apres ses
+       maquettes. Les neutres passent du beige chaud au gris-bleu lin : fond
+       #F7FAFD, cartes blanches, encre ardoise #0F172A. L'invariant 7 (amplitude
+       RGB <= 24 hors echelons) est leve par la meme decision : voir
+       data-utils/invariants.js. */
+    sol: "#F7FAFD", carte: "#FFFFFF", encre: "#0F172A", sourd: "#556576",
+    trait: "#E8EEF3", voile: "#EEF2F6", blanc: "#ffffff", lien: "#0D3B43",
+    /* LE BLOC APPUYE (« Qui décide chez vous ? », la fiche d'un élu) : le teal
+       republicain, et le texte passe en clair dessus. */
+    inverse: "#0D3B43", surInverse: "#FFFFFF", inverseDoux: "#BFD9DD",
+    inverseAction: "#FFFFFF", surInverseAction: "#0D3B43",
   },
   sombre: {
-    sol: "#141310", carte: "#1d1b17", encre: "#ede9e0", sourd: "#9c968b",
-    trait: "#33302a", voile: "#24211c", blanc: "#ffffff", lien: "#ede9e0",
-    /* EN SOMBRE, INVERSER N'EST PAS ECLAIRER. Un bloc creme plein ecran dans
-       une interface sombre eblouit : mesure du premier essai, #ede9e0 sur un
-       fond a #141310. Le bloc appuye devient donc une surface SOULEVEE —
-       plus claire que la carte, jamais blanche — et le texte y reste l'encre.
-       Mesures : encre 11,77:1 dessus, sourd 4,85:1, amplitude 10. */
-    inverse: "#2e2a24", surInverse: "#ede9e0", inverseDoux: "#9c968b",
-    inverseAction: "#ede9e0", surInverseAction: "#141310",
+    sol: "#0A1116", carte: "#111C23", encre: "#E8EFF4", sourd: "#94A8B6",
+    trait: "#1E2E38", voile: "#17242C", blanc: "#ffffff", lien: "#5EC8BC",
+    /* EN SOMBRE, INVERSER N'EST PAS ECLAIRER. Un bloc clair plein ecran dans
+       une interface sombre eblouit. Le bloc appuye devient une surface
+       SOULEVEE — le teal, assombri — et le texte y reste clair. */
+    inverse: "#0D3B43", surInverse: "#FFFFFF", inverseDoux: "#A8C9CE",
+    inverseAction: "#5EC8BC", surInverseAction: "#06222A",
+  },
+};
+
+/* LES COULEURS D'ACCENT — design system 2026, decision du porteur.
+   Elles portent un SENS FIXE, jamais un jugement :
+   - `accent` (emeraude) : ce qui est confirme, cofinance, valide ;
+   - `energie` (ambre)   : recettes et investissements ;
+   - `corail`            : la position « contre » d'un scrutin.
+   MISE EN GARDE ECRITE AU PORTEUR LE 20/10/2026 : vert pour « pour » et rouge
+   pour « contre » est le code couleur du bien et du mal. Repere l'avait refuse
+   jusqu'ici (« un vote n'a jamais de vert ni de rouge »). Le porteur a tranche
+   pour la lisibilite de ses maquettes ; la garde de neutralite se deplace donc
+   sur le TEXTE : aucune phrase ne qualifie un vote, et les trois positions
+   portent toujours leur libelle en toutes lettres a cote de la couleur. */
+const ACCENTS: Record<Mode, Record<string, string>> = {
+  clair: {
+    primaire: "#0D3B43", accent: "#00A896", energie: "#F59E0B",
+    corail: "#BE123C", abstention: "#94A3B8",
+    accentVoile: "#EBF7F5", energieVoile: "#FEF3E2", corailVoile: "#FDE8EE",
+    primaireVoile: "#EEF2F6",
+  },
+  sombre: {
+    primaire: "#5EC8BC", accent: "#2DD4BF", energie: "#FBBF24",
+    corail: "#FB7185", abstention: "#94A3B8",
+    accentVoile: "#0E2A2B", energieVoile: "#2A2113", corailVoile: "#2E161D",
+    primaireVoile: "#17242C",
   },
 };
 
@@ -57,7 +86,7 @@ const NEUTRES: Record<Mode, Record<string, string>> = {
    c'est une image qui part dans une messagerie, lue par quelqu'un qui n'a
    jamais ouvert Repere, sur un fond que nous ne choisissons pas. Elle garde
    donc la marque en clair, quel que soit le theme du telephone. */
-export const PALETTE_CLAIRE = Object.freeze({ ...ECHELONS, ...NEUTRES.clair }) as Readonly<Palette>;
+export const PALETTE_CLAIRE = Object.freeze({ ...ECHELONS, ...NEUTRES.clair, ...ACCENTS.clair }) as Readonly<Palette>;
 
 /* L'ECHELON « FRANCE » N'EST PAS UNE COULEUR : c'est l'encre du produit
    (#1d1d1f, amplitude 2). En theme sombre l'encre change de bord, et lui avec —
@@ -93,7 +122,8 @@ const TEINTES_PAR_MODE: Record<Mode, Record<Echelon, string>> = {
    une fois la marge interne comptee. Invariant de forme : jamais thematique. */
 export const CIBLE = 48;
 export const PAS = 4;
-export const RAYON = { carte: 22, bloc: 16, pastille: 999 } as const;
+/* Design system 2026 : cartes a 20, blocs a 14 (maquettes du porteur). */
+export const RAYON = { carte: 20, bloc: 14, pastille: 999 } as const;
 
 export const POLICE = {
   affiche: "BricolageGrotesque_800ExtraBold",
@@ -121,7 +151,7 @@ export function appliquerMode(m: Mode): void {
 
 function construire(m: Mode) {
   const n = NEUTRES[m];
-  const couleurs = { ...ECHELONS_PAR_MODE[m], ...n } as Palette;
+  const couleurs = { ...ECHELONS_PAR_MODE[m], ...n, ...ACCENTS[m] } as Palette;
   const TYPO = {
     /* le nom de la commune, les grands nombres */
     affiche: { fontFamily: POLICE.affiche, fontSize: 36, lineHeight: 40, color: couleurs.encre, letterSpacing: -0.5 },
@@ -136,15 +166,20 @@ function construire(m: Mode) {
     etiquette: { fontSize: 14, lineHeight: 20, fontWeight: "700" as const, color: couleurs.sourd },
     micro: { fontSize: 13, lineHeight: 18, color: couleurs.sourd },
   };
-  /* Les trois gris d'une repartition de vote, du plus fonce au plus clair en
-     clair, du plus clair au plus fonce en sombre : ils se distinguent aussi par
-     leur libelle et leur nombre, jamais par la couleur seule (accessibilite). */
-  const GRIS_VOTE = { p: couleurs.encre, c: couleurs.sourd, a: couleurs.trait };
+  /* LES TROIS COULEURS D'UNE REPARTITION DE VOTE — design system 2026, decision
+     du porteur du 20/10/2026 (ses maquettes). C'etaient trois gris jusque-la,
+     parce qu'« un vote n'a jamais de vert ni de rouge » : le porteur a tranche
+     pour la lisibilite. Le nom reste `GRIS_VOTE` pour ne pas toucher aux
+     vingt-huit appels ; ce sont desormais l'emeraude, le corail et l'ardoise
+     claire. La garde de neutralite se deplace sur le TEXTE : chaque position
+     porte son libelle en toutes lettres a cote de sa couleur, et aucune phrase
+     ne qualifie un vote. */
+  const GRIS_VOTE = { p: couleurs.accent, c: couleurs.corail, a: couleurs.abstention };
   /* En sombre une ombre portee ne se voit pas : c'est l'opacite du noir qui
      creuse, pas la couleur de l'encre. */
   const OMBRE = m === "sombre"
-    ? { shadowColor: "#000000", shadowOpacity: 0.45, shadowRadius: 12, shadowOffset: { width: 0, height: 4 }, elevation: 1 }
-    : { shadowColor: couleurs.encre, shadowOpacity: 0.045, shadowRadius: 10, shadowOffset: { width: 0, height: 4 }, elevation: 1 };
+    ? { shadowColor: "#000000", shadowOpacity: 0.5, shadowRadius: 12, shadowOffset: { width: 0, height: 4 }, elevation: 2 }
+    : { shadowColor: "#0F172A", shadowOpacity: 0.04, shadowRadius: 10, shadowOffset: { width: 0, height: 4 }, elevation: 2 };
   return { couleurs, TYPO, TEINTES: TEINTES_PAR_MODE[m], GRIS_VOTE, OMBRE };
 }
 
@@ -153,6 +188,9 @@ type Palette = Record<Echelon, string> & {
   trait: string; voile: string; blanc: string; lien: string;
   inverse: string; surInverse: string; inverseDoux: string;
   inverseAction: string; surInverseAction: string;
+  primaire: string; accent: string; energie: string; corail: string;
+  abstention: string; accentVoile: string; energieVoile: string;
+  corailVoile: string; primaireVoile: string;
 };
 type Vue = ReturnType<typeof construire>;
 

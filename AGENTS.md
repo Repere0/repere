@@ -47,15 +47,17 @@ explicite du porteur les change ; la PR qui l'applique met alors à jour
 5. **Doctrine du vide.** Une absence de donnée produit une phrase vraie et un lien,
    jamais une forme vide, un zéro ou une barre minuscule.
 6. **Rien qui gamifie le vote ou l'opinion** : aucun score, aucune récompense, aucune série, aucun gain ni son de réussite lié à un vote, une position ou un partage. Les effets de mouvement sont permis pour lire, naviguer et suivre une heure ou une durée (assouplie par décision du porteur, 13/10/2026).
-7. **Cinq couleurs d'échelon gelées** ; aucune autre couleur ne dépasse une
-   amplitude de 24 sur les canaux RGB. **Deux exceptions**, chacune décidée par le
-   porteur. (a) 16/10/2026 : le bleu, le blanc et le rouge du logo, réservés au logo
-   et à ses déclinaisons de marque, jamais à l'interface ni à une information.
-   (b) 20/10/2026 : **la couleur d'un groupe parlementaire**, telle que l'Assemblée
-   nationale la publie (`organe.couleurAssociee`), **jamais choisie par Repère**,
-   utilisée seulement pour identifier ce groupe — jamais pour une position de vote,
-   jamais pour un classement, jamais pour qualifier un bord politique. Le texte posé
-   dessus atteint 4,5:1.
+7. **Cinq couleurs d'échelon gelées.** Une **palette d'interface fixe**, décidée
+   par le porteur le 20/10/2026 d'après ses maquettes (teal `#0D3B43`, émeraude
+   `#00A896`, ambre `#F59E0B`, corail `#BE123C`, ardoise `#0F172A`, et leurs
+   équivalents sombres — déclarée dans `data-utils/invariants.js`). Toute autre
+   couleur reste sous une amplitude de 24 sur les canaux RGB. **Trois exceptions**,
+   chacune décidée par le porteur : le tricolore du logo (16/10/2026), réservé à la
+   marque ; **la couleur d'un groupe parlementaire** telle que l'Assemblée la publie
+   (`organe.couleurAssociee`, 20/10/2026), **jamais choisie par Repère** ; la palette
+   d'interface ci-dessus. Aucune couleur ne qualifie jamais une personne, un parti ou
+   un territoire, et **chaque position de vote porte son libellé en toutes lettres à
+   côté de sa couleur**. Le texte posé sur une couleur atteint 4,5:1.
 8. **Jamais le patrimoine d'un élu, jamais de donnée de présence ou d'absence.**
 9. **Fraîcheur** (décision du porteur, 30/09/2026). Une donnée gardée sur
    l'appareil peut être affichée pour préserver l'accès hors ligne, mais jamais

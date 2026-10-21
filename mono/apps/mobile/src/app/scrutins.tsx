@@ -167,10 +167,6 @@ function GroupeRow({ groupe, ouvert, onPress }: { groupe: Groupe; ouvert: boolea
             <Text style={[s.groupeBadgeTexte, teinte ? { color: texteSurCouleur(teinte, couleurs.encre, couleurs.blanc) } : null]}>{sigle}</Text>
           </View>
         ) : <View style={[s.groupePoint, { backgroundColor: couleurAdmise || couleurs.trait }]} />}
-        {sigle && couleurAdmise && !teinte ? (
-          <View style={[s.groupePoint, { backgroundColor: couleurAdmise, marginLeft: -PAS }]}
-            importantForAccessibility="no-hide-descendants" accessibilityElementsHidden />
-        ) : null}
         <View style={s.groupeTexte}>
           <Text style={s.groupeNom}>{groupe.nom}</Text>
           <Text style={s.groupeStats}>

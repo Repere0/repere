@@ -56,7 +56,16 @@ test("l'accueil et Où va l'argent parlent en euros et en personnes employées",
   assert.match(argent, /montantEnMots\(f\.cout\)/, "le coût du projet reste écrit en toutes lettres dans Où va l'argent");
   assert.match(chez, /texte: f\.partPct !== null && cout[\s\S]*?montantEnMots\(f\.cout\)/,
     "le texte de partage ne réintroduit pas l'abréviation M€");
-  assert.match(argent, /libelle="Personnes employées par la commune"/, "la barre accessible conserve un intitulé ambigu");
+  /* 20/10/2026 : les trois postes sont desormais rendus par une boucle, et le
+     libelle accessible vient de la liste des postes. La garde porte donc sur la
+     PROPRIETE — le poste des salaires s'appelle « Personnes employées par la
+     commune » partout ou il est nomme — et non plus sur une chaine litterale
+     dans un attribut, qu'un simple passage en boucle faisait disparaitre sans
+     que rien ne soit casse pour le lecteur. */
+  assert.match(argent, /"Personnes employées par la commune"/, "le poste des salaires reprend un intitulé technique");
+  assert.doesNotMatch(argent, /\bagents\b/i, "le mot technique « agents » est revenu dans la carte d'argent");
+  assert.match(argent, /libelle=\{nom\}|libelle="Personnes employées par la commune"/,
+    "la barre ne porte plus de libellé accessible");
   const comptes = readFileSync(join(ici, "../../../packages/core/src/comptes.js"), "utf8");
   assert.match(comptes, /personnes employées par la commune/, "le site et l'application n'utilisent pas le même vocabulaire partagé");
 });

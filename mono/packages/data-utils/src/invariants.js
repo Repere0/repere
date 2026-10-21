@@ -24,7 +24,7 @@ export const INVARIANTS = [
     regle: "Rien qui gamifie le vote ou l'opinion : aucun score, aucune récompense, aucune série, aucun gain ni son de réussite lié à un vote, une position ou un partage. Les effets de mouvement sont permis pour lire, naviguer et suivre une heure ou une durée (assouplie par décision du porteur, 13/10/2026).",
     garde: "statique: vocabulaire de bonne/mauvaise réponse interdit" },
   { n: 7, nom: "palette gelée",
-    regle: "Cinq couleurs d'échelon gelées ; aucune autre couleur ne dépasse une amplitude de 24 sur les canaux RGB. Deux exceptions, chacune décidée par le porteur. (a) 16/10/2026 : le bleu, le blanc et le rouge du logo, réservés au logo et à ses déclinaisons de marque, jamais à l'interface ni à une information. (b) 20/10/2026 : la couleur d'un groupe parlementaire, telle que l'Assemblée nationale la publie (`organe.couleurAssociee`), jamais choisie par Repère, utilisée seulement pour identifier ce groupe — jamais pour une position de vote, jamais pour un classement, jamais pour qualifier un bord politique. Le texte posé dessus atteint 4,5:1.",
+    regle: "Cinq couleurs d'échelon gelées. Une palette d'interface fixe, décidée par le porteur le 20/10/2026 d'après ses maquettes : teal #0D3B43, émeraude #00A896, ambre #F59E0B, corail #BE123C, ardoise #0F172A, et leurs équivalents en thème sombre. Toute autre couleur reste sous une amplitude de 24 sur les canaux RGB. Trois exceptions, chacune décidée par le porteur : le bleu, le blanc et le rouge du logo (16/10/2026), réservés à la marque ; la couleur d'un groupe parlementaire telle que l'Assemblée la publie (20/10/2026), jamais choisie par Repère ; la palette d'interface ci-dessus. Aucune couleur ne qualifie jamais une personne, un parti ou un territoire, et chaque position de vote porte son libellé en toutes lettres à côté de sa couleur.",
     garde: "statique: lecture des jetons CSS ; le tricolore confiné à la marque ; une couleur de groupe vient de la source et porte un texte à 4,5:1" },
   { n: 8, nom: "ni patrimoine ni présence",
     regle: "Jamais le patrimoine d'un élu, jamais de donnée de présence ou d'absence.",
@@ -48,6 +48,21 @@ export const ECHELONS = Object.freeze({
   france: "#1d1d1f",
 });
 export const AMPLITUDE_MAX = 24;
+
+/* LA PALETTE D'INTERFACE — decision du porteur, 20/10/2026, d'apres ses maquettes.
+   Ces couleurs sont les SEULES couleurs saturees que l'interface a le droit
+   d'employer hors echelons, hors marque et hors couleur de groupe. Elles portent
+   un sens fixe (voir apps/mobile/src/lib/theme.ts) et jamais un jugement sur une
+   personne, un parti ou un territoire. Declarees ici pour que la garde de
+   l'invariant 7 les reconnaisse au lieu de les refuser une par une. */
+export const PALETTE_INTERFACE = Object.freeze([
+  "#0d3b43", "#00a896", "#f59e0b", "#be123c", "#0f172a", "#64748b", "#94a3b8",
+  "#f7fafd", "#e8eef3", "#eef2f6", "#556576", "#ebf7f5", "#fef3e2", "#fde8ee", "#bfd9dd",
+  "#5ec8bc", "#2dd4bf", "#fbbf24", "#fb7185", "#0a1116", "#111c23", "#e8eff4",
+  "#94a8b6", "#1e2e38", "#17242c", "#0e2a2b", "#2a2113", "#2e161d", "#a8c9ce",
+  "#06222a",
+]);
+export const estPaletteInterface = h => PALETTE_INTERFACE.includes(String(h || "").trim().toLowerCase());
 
 /* LE TRICOLORE DU LOGO — seule exception a l'invariant 7 (decision du porteur,
    16/10/2026). Declare ICI, une seule fois : outils/marque_repere.py le recopie pour
