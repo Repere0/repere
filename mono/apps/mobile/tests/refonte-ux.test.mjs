@@ -5,7 +5,7 @@
  * Lancer : node --test tests/refonte-ux.test.mjs (MOBILE_SRC pour prouver la garde). */
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { readFileSync, readdirSync, statSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -277,4 +277,45 @@ test("le repere d'echelon de l'en-tete ne parait jamais sans son libelle", () =>
   }
   assert.ok(/importantForAccessibility="no"/.test(branche),
     "le filet doit etre masque au lecteur d'ecran : le libelle dit deja le niveau");
+});
+
+/* Tous les .ts/.tsx de src/, lus une fois. (`lire` du haut de ce fichier prend un
+   chemin precis ; ces deux gardes balaient l'arborescence entiere.) */
+function sources(dossier = SRC) {
+  return readdirSync(dossier).flatMap(n => {
+    const chemin = join(dossier, n);
+    if (statSync(chemin).isDirectory()) return sources(chemin);
+    return /\.tsx?$/.test(n) ? [[chemin.slice(SRC.length + 1), readFileSync(chemin, "utf8")]] : [];
+  });
+}
+
+test("aucun texte pose sur du flou ou de la translucidite", () => {
+  /* 21/10/2026, appuye sur une source datee. L'effet « Liquid Glass » d'iOS 26 a
+     produit des ecrans mesures a 1,5:1 par des praticiens (Infinum, 12/06/2025),
+     et Apple lui-meme recommande de le reserver aux composants de navigation.
+     Pour une application dont la promesse est la confiance dans un chiffre, un
+     libelle de vote pose sur un fond translucide est un risque, pas un style.
+     La garde refuse le flou et les opacites intermediaires dans les surfaces.
+     `pressed` reste permis : c'est le retour d'un appui, pas un fond. */
+  const coupables = [];
+  for (const [p, src] of sources()) {
+    for (const ligne of src.split("\n")) {
+      if (/pressed/.test(ligne)) continue;
+      if (/backdropFilter|BlurView|blurRadius/.test(ligne)) coupables.push(`${p} : ${ligne.trim().slice(0, 70)}`);
+    }
+  }
+  assert.deepEqual(coupables, [], "du flou est applique sous du contenu : le texte doit rester sur une surface opaque");
+});
+
+test("aucune fermeture automatique sur minuterie", () => {
+  /* Apple classe les elements qui se referment seuls en charge cognitive : ils
+     penalisent qui lit lentement ou utilise une aide technique (HIG, journal du
+     07/03 et 09/06/2025). Chez Repere, c'est aussi l'invariant 9 : un etat
+     « publication precedente » ou « impossible a verifier » doit rester affiche
+     jusqu'a une action du lecteur, jamais disparaitre tout seul. */
+  const coupables = [];
+  for (const [p, src] of sources()) {
+    if (/setTimeout|setInterval/.test(src)) coupables.push(p);
+  }
+  assert.deepEqual(coupables, [], "une minuterie pilote l'affichage : un etat de fraicheur pourrait disparaitre seul");
 });
