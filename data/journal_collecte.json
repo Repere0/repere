@@ -1,15 +1,15 @@
 {
- "execute_le": "2026-10-21T00:30:11Z",
+ "execute_le": "2026-10-21T10:37:40Z",
  "sources": [
   {
    "cle": "agenda_an",
    "titre": "Assemblee nationale — reunions (seance, commissions, enquetes)",
    "url": "https://data.assemblee-nationale.fr/static/openData/repository/17/vp/reunions/Agenda.json.zip",
-   "tentee_le": "2026-10-21T00:30:11Z",
+   "tentee_le": "2026-10-21T10:37:40Z",
    "http": 200,
-   "octets": 8470424,
-   "empreinte": "54054519db6014a1",
-   "secondes": 1.0,
+   "octets": 8473977,
+   "empreinte": "71f2e5102a405faa",
+   "secondes": 1.2,
    "ok": true,
    "tentatives": [
     "ok"
@@ -19,11 +19,11 @@
    "cle": "senateurs",
    "titre": "Senat — base Senateurs (dernier etat connu, ODSEN_GENERAL)",
    "url": "https://data.senat.fr/data/senateurs/ODSEN_GENERAL.csv",
-   "tentee_le": "2026-10-21T00:30:13Z",
+   "tentee_le": "2026-10-21T10:37:41Z",
    "http": 200,
-   "octets": 443316,
-   "empreinte": "3f5b9a8cfd8bc020",
-   "secondes": 2.3,
+   "octets": 443318,
+   "empreinte": "d2fd003c426616a1",
+   "secondes": 2.2,
    "ok": true,
    "tentatives": [
     "ok"
@@ -33,11 +33,11 @@
    "cle": "organes_an",
    "titre": "Assemblee nationale — acteurs, mandats et organes (historique)",
    "url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip",
-   "tentee_le": "2026-10-21T00:30:15Z",
+   "tentee_le": "2026-10-21T10:37:43Z",
    "http": 200,
-   "octets": 13705458,
-   "empreinte": "cbafc1311ff08df3",
-   "secondes": 0.7,
+   "octets": 13708479,
+   "empreinte": "331addb75d7212ae",
+   "secondes": 8.1,
    "ok": true,
    "tentatives": [
     "ok"
@@ -47,11 +47,11 @@
    "cle": "questions_gouvernement",
    "titre": "Assemblée nationale — Questions au Gouvernement",
    "url": "https://data.assemblee-nationale.fr/static/openData/repository/17/questions/questions_gouvernement/Questions_gouvernement.json.zip",
-   "tentee_le": "2026-10-21T00:30:16Z",
+   "tentee_le": "2026-10-21T10:37:52Z",
    "http": 200,
    "octets": 5440556,
-   "empreinte": "e0536190f46bb962",
-   "secondes": 2.5,
+   "empreinte": "469302774941a004",
+   "secondes": 0.9,
    "ok": true,
    "tentatives": [
     "ok"
@@ -61,11 +61,11 @@
    "cle": "scrutins_an",
    "titre": "Assemblee nationale — scrutins publics",
    "url": "https://data.assemblee-nationale.fr/static/openData/repository/17/loi/scrutins/Scrutins.json.zip",
-   "tentee_le": "2026-10-21T00:30:19Z",
+   "tentee_le": "2026-10-21T10:37:53Z",
    "http": 200,
    "octets": 27658761,
-   "empreinte": "01e4976c4e981100",
-   "secondes": 0.7,
+   "empreinte": "d1bd2cad0104ee43",
+   "secondes": 1.1,
    "ok": true,
    "tentatives": [
     "ok"
@@ -75,11 +75,11 @@
    "cle": "circos_min",
    "titre": "Communes et cantons par circonscription legislative (ministere de l'Interieur, 2017)",
    "url": "https://www.data.gouv.fr/api/1/datasets/r/4d0b70e1-7757-43cc-882b-5c3b04fe38b4",
-   "tentee_le": "2026-10-21T00:30:20Z",
+   "tentee_le": "2026-10-21T10:37:54Z",
    "http": 200,
    "octets": 1682216,
    "empreinte": "46ff9b58d8ee4cb6",
-   "secondes": 3.5,
+   "secondes": 5.9,
    "ok": true,
    "tentatives": [
     "ok"
@@ -89,11 +89,11 @@
    "cle": "circos_bv",
    "titre": "Bureaux de vote et leur circonscription legislative (derive des resultats 2022)",
    "url": "https://www.data.gouv.fr/api/1/datasets/r/ed6c2f24-2b83-4a26-a1a2-14c928b58b0b",
-   "tentee_le": "2026-10-21T00:30:23Z",
+   "tentee_le": "2026-10-21T10:38:00Z",
    "http": 200,
    "octets": 5302597,
    "empreinte": "49cf4eeff6b6f9b6",
-   "secondes": 13.1,
+   "secondes": 8.1,
    "ok": true,
    "tentatives": [
     "ok"
