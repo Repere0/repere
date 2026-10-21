@@ -104,6 +104,9 @@ export default function ChezVous() {
               phrase={f.partPct !== null && cout
                 ? `L'État finance ${partEnMots(f.partPct)} d'un projet de ${montantEnMots(f.cout)} hors taxes à ${nom} : ${euros(f.subvention)}.`
                 : `L'État apporte ${euros(f.subvention)} à un projet à ${nom}.`}
+              /* CE QUE L'ETAT PAIE est la reponse de cette carte, pas le cout du
+                 projet : c'est lui qui grossit (21/10/2026). */
+              chiffre={euros(f.subvention)}
               preuve={f.partPct !== null ? <BarrePart sansLibelle part={f.partPct} libelle="Part de l'État dans le coût annoncé" valeur={`${f.partPct} € sur 100 €`} /> : undefined}
               note={`« ${projet.p.intitule} » : ${euros(f.subvention)} engagés par l'État en ${projet.p.annee}${f.cout ? ` sur un coût annoncé de ${euros(f.cout)} hors taxes` : ""}.`}
               noteRepliee="Le détail (projet)"
@@ -127,6 +130,7 @@ export default function ChezVous() {
           {d.exercice && hab && hab.depenses !== null ? (
             <Reponse echelon="ville"
               phrase={`En ${d.exercice.an}, ${nom} a dépensé ${hab.depenses.toLocaleString("fr-FR")} € par habitant.`}
+              chiffre={`${hab.depenses.toLocaleString("fr-FR")} €`}
               note={maire ? `Le maire, ${maire}, prépare ce budget ; le conseil municipal le vote.` : "Le maire prépare ce budget ; le conseil municipal le vote."}
               sources={<>
                 <PastilleSource court nom="Comptes" source={srcComptesPublies(d)} />

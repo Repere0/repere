@@ -171,6 +171,54 @@ for (const { largeur, theme } of [
     }
   }
 
+  /* LE CHIFFRE AGRANDI — 21/10/2026.
+     La carte agrandit le morceau de sa phrase qui EST sa reponse. Deux choses
+     peuvent casser sans que rien ne rougisse :
+       a) la phrase affichee n'est plus la phrase entiere (le decoupage mange un
+          morceau) — le lecteur d'ecran, lui, doit toujours recevoir la phrase ;
+       b) c'est le MAUVAIS nombre qui grossit. C'est arrive : le premier jet
+          devinait le premier montant et a grossi le cout du projet (1,5 million)
+          au lieu de ce que l'Etat paie (726 800 €), ce qui induit en erreur.
+     Cette garde a ete eprouvee en inversant `chiffre` sur la carte des projets :
+     elle tombe (« le chiffre agrandi ... n'est pas la reponse »). */
+  {
+    const gros = await page.evaluate(() => {
+      const out = [];
+      for (const e of document.querySelectorAll('[data-testid="reponse"] *')) {
+        if (e.children.length || !(e.textContent || "").trim()) continue;
+        if (parseFloat(getComputedStyle(e).fontSize) < 24) continue;
+        const porteur = e.closest("[aria-label]");
+        out.push({ gros: e.textContent.trim(), phrase: porteur ? porteur.getAttribute("aria-label") : null });
+      }
+      return out;
+    });
+    for (const g of gros) {
+      verifier(g.phrase !== null && g.phrase.includes(g.gros),
+        `chiffre agrandi : « ${g.gros} » est dans la phrase entiere lue par le lecteur d'ecran`);
+      verifier(/\d/.test(g.gros) && /[%€]|million|milliard/.test(g.gros),
+        `chiffre agrandi : « ${g.gros} » est bien un montant`);
+    }
+    /* QUAND LA PHRASE POSE SA REPONSE APRES UN DEUX-POINTS, c'est elle qu'on
+       agrandit. « L'Etat finance pres de la moitie d'un projet de 1,5 million
+       d'euros hors taxes a Meaux : 726 800 €. » porte deux montants ; le premier
+       jet a grossi le cout du projet, qui n'est pas la reponse. Cette regle ne
+       depend d'aucun nom de champ : elle se lit dans la phrase affichee.
+       (Une premiere version de cette garde interrogeait `communes[].projets`,
+       qui n'existe pas dans le fichier departemental : elle ne s'executait
+       jamais. Une garde muette ne garde rien.) */
+    let posees = 0;
+    for (const g of gros) {
+      if (!g.phrase) continue;
+      const apres = g.phrase.split(/\s:\s/).pop();
+      const dernier = (apres.match(/[\d][\d \u00a0\u202f]*(?:,\d+)?\s*[%€]/g) || []).pop();
+      if (!dernier) continue;
+      posees++;
+      verifier(g.gros.replace(/\s/g, "") === dernier.replace(/\s/g, ""),
+        `chiffre agrandi : « ${g.gros} » est bien la reponse que pose la phrase (${dernier.trim()})`);
+    }
+    verifier(posees > 0, `chiffre agrandi : ${posees} phrase(s) reellement mesuree(s) — la garde n'est pas muette`);
+  }
+
   /* Mesure d'un ecran : debordement, cibles, noms accessibles, texte (avec et
      sans capitales de style). Appliquee a l'accueil ET aux trois ecrans de
      detail depuis la refonte du 30/09/2026. */

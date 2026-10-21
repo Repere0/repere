@@ -32,10 +32,50 @@ function BoutonPartager({ titre, texte, sourceUrl }: { titre: string; texte: str
    symbole euro ne tombent seuls a la ligne (vu sur capture : « 332 372 / € »). */
 export const typo = (t: string) => t.replace(/ ([?!:;€»])/g, "\u00a0$1").replace(/« /g, "«\u00a0");
 
-export function Reponse({ phrase, preuve, note, sources, suite, partage, noteRepliee, etiquettes, enClair }: {
+/* LE CHIFFRE SORT DE LA PHRASE — 21/10/2026, d'apres les maquettes du porteur.
+ *
+ * Dans les maquettes le montant est le premier element lu : il est grand, la
+ * phrase qui l'explique est petite. Jusqu'ici les trois cartes etaient trois
+ * paves du meme poids, et le montant se noyait au milieu.
+ *
+ * LA CARTE DIT QUEL NOMBRE EST LA REPONSE, on ne le devine pas. Un premier jet
+ * prenait le premier montant de la phrase : sur la carte des projets, il a
+ * grossi « 1,5 million d'euros » (le cout du projet) au lieu de « 726 800 € »
+ * (ce que l'Etat paie, qui est la reponse). Mettre en avant le mauvais nombre
+ * induit le lecteur en erreur ; aucune heuristique ne vaut le fait que la carte
+ * sache ce qu'elle repond.
+ *
+ * Ce decoupage NE REECRIT PAS la phrase et n'en retire rien : la reponse reste
+ * une phrase entiere (sujet + verbe + fait date, consigne du 30/09/2026), le
+ * lecteur d'ecran la recoit telle quelle, et le chiffre n'est pas repete — il
+ * est agrandi la ou il se trouve deja. Si le texte demande ne figure pas dans
+ * la phrase, rien ne grossit : jamais d'affichage faux. */
+export function decouperChiffre(phrase: string, chiffre?: string): [string, string, string] | null {
+  if (!chiffre) return null;
+  const i = phrase.indexOf(chiffre);
+  if (i < 0) return null;
+  return [phrase.slice(0, i), chiffre, phrase.slice(i + chiffre.length)];
+}
+
+/* La phrase d'une reponse. Le lecteur d'ecran recoit UNE seule chaine, entiere :
+   `accessibilityLabel` la porte, et le decoupage ne le concerne pas. */
+function Phrase({ texte, chiffre }: { texte: string; chiffre?: string }) {
+  const parts = decouperChiffre(texte, chiffre);
+  if (!parts) return <Text style={s.phrase} accessibilityRole="header">{texte}</Text>;
+  const [avant, nombre, apres] = parts;
+  return (
+    <Text style={s.phraseChiffree} accessibilityRole="header" accessibilityLabel={texte}>
+      {avant}<Text style={s.chiffre}>{nombre}</Text>{apres}
+    </Text>
+  );
+}
+
+export function Reponse({ phrase, chiffre, preuve, note, sources, suite, partage, noteRepliee, etiquettes, enClair }: {
   /* l'echelon qui decide : porte par la donnee, pas encore par le rendu
      (cartes blanches en palette B partiel) ; la PR « Chez vous » s'en servira. */
   echelon: Echelon; phrase: string; preuve?: ReactNode; note?: ReactNode;
+  /* le morceau de `phrase` qui EST la reponse, agrandi ; absent = rien ne grossit */
+  chiffre?: string;
   sources?: ReactNode; suite?: { texte: string; onPress: () => void };
   partage?: { titre: string; texte: string; sourceUrl?: string | null };
   /* le titre du repli quand la note n'est qu'un detail de la phrase (16/10/2026) */
@@ -52,7 +92,7 @@ export function Reponse({ phrase, preuve, note, sources, suite, partage, noteRep
   return (
     <View testID="reponse" style={[s.carte, { backgroundColor: couleurs.carte }]}>
       {etiquettes ? <View style={{ flexDirection: "row", flexWrap: "wrap", gap: PAS * 2 }}>{etiquettes}</View> : null}
-      <Text style={s.phrase} accessibilityRole="header">{typo(phrase)}</Text>
+      <Phrase texte={typo(phrase)} chiffre={chiffre ? typo(chiffre) : undefined} />
       {preuve}
       {enClair ? <EnClair texte={enClair} /> : null}
       {note && noteRepliee ? (
@@ -86,6 +126,11 @@ export function Plus({ texte, onPress, premier, dernier, etiquette }: { texte: s
 const s = feuille(() => StyleSheet.create({
   carte: { borderRadius: RAYON.carte, paddingHorizontal: PAS * 4, paddingTop: PAS, paddingBottom: 0, gap: PAS, ...OMBRE },
   phrase: { ...TYPO.reponse, fontSize: 19, lineHeight: 25 },
+  /* La phrase qui porte un montant : elle passe a 17 px pour laisser la place
+     au chiffre, et son interligne monte a 34 pour que le grand chiffre ne
+     chevauche pas la ligne du dessus. */
+  phraseChiffree: { ...TYPO.reponse, fontSize: 17, lineHeight: 30, color: couleurs.sourd },
+  chiffre: { fontFamily: "BricolageGrotesque_800ExtraBold", fontSize: 28, lineHeight: 30, color: couleurs.encre, letterSpacing: -0.8 },
   pied: { flexDirection: "row", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", columnGap: PAS * 2 },
   suite: { minHeight: CIBLE, justifyContent: "center", marginLeft: "auto" },
   suiteTexte: { fontSize: 15, fontWeight: "700", color: couleurs.lien },
