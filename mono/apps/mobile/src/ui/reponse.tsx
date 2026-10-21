@@ -112,12 +112,21 @@ export function Reponse({ phrase, chiffre, preuve, note, sources, suite, partage
   );
 }
 
-/* Un lien de la liste « Aller plus loin ». */
-export function Plus({ texte, onPress, premier, dernier, etiquette }: { texte: string; onPress: () => void; premier?: boolean; dernier?: boolean; etiquette?: string }) {
+/* Un lien de la liste « Aller plus loin ».
+ *
+ * `sous` — 21/10/2026. Les entrees etaient des lignes identiques ou seul le
+ * libelle changeait : rien ne disait ce qu'on trouverait derriere, et rien ne
+ * donnait envie d'ouvrir. Une ligne de description transforme le lien en tuile.
+ * Elle DECRIT le contenu, elle ne le vend pas et ne promet aucun delai de
+ * comprehension. Facultative : une entree sans description reste une ligne. */
+export function Plus({ texte, sous, onPress, premier, dernier, etiquette }: { texte: string; sous?: string; onPress: () => void; premier?: boolean; dernier?: boolean; etiquette?: string }) {
   return (
     <Pressable onPress={onPress} accessibilityRole="button" accessibilityLabel={etiquette || texte}
-      style={({ pressed }) => [s.plus, premier && s.plusPremier, dernier && s.plusDernier, pressed && { opacity: 0.6 }]}>
-      <Text style={[s.suiteTexte, { flex: 1 }]}>{texte}</Text>
+      style={({ pressed }) => [s.plus, sous && s.plusHaut, premier && s.plusPremier, dernier && s.plusDernier, pressed && { opacity: 0.6 }]}>
+      <View style={{ flex: 1, gap: 2 }}>
+        <Text style={s.suiteTexte}>{texte}</Text>
+        {sous ? <Text style={s.plusSous}>{typo(sous)}</Text> : null}
+      </View>
       <Text style={s.suiteTexte} accessibilityElementsHidden importantForAccessibility="no">›</Text>
     </Pressable>
   );
@@ -140,6 +149,8 @@ const s = feuille(() => StyleSheet.create({
   partage: { minHeight: CIBLE, minWidth: CIBLE, alignItems: "center", justifyContent: "center" },
   plus: { minHeight: CIBLE + 4, flexDirection: "row", alignItems: "center", paddingHorizontal: PAS * 4, backgroundColor: couleurs.carte,
     borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: couleurs.trait },
+  plusHaut: { minHeight: CIBLE + 22, paddingVertical: PAS * 2 },
+  plusSous: { fontSize: 13, lineHeight: 18, color: couleurs.sourd },
   plusPremier: { borderTopLeftRadius: RAYON.bloc, borderTopRightRadius: RAYON.bloc },
   plusDernier: { borderBottomLeftRadius: RAYON.bloc, borderBottomRightRadius: RAYON.bloc, borderBottomWidth: 0 },
 }));

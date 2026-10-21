@@ -230,7 +230,7 @@ export default function ChezVous() {
             <View>
               {/* « Le calendrier » n'est plus ici (16/10/2026) : la carte de la semaine
                  et l'onglet y menent deja. */}
-              <Plus premier dernier texte={LIBELLES.sources} onPress={() => router.push("/sources")} />
+              <Plus premier dernier texte={LIBELLES.sources} sous="D'où vient chaque chiffre, et quand il a été relevé." onPress={() => router.push("/sources")} />
             </View>
           </View>
 

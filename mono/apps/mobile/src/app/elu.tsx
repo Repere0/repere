@@ -33,11 +33,14 @@ type Onglet = "apercu" | "votes" | "parcours";
 const PARTI_NON_PUBLIE = "Parti : non publié par la source. Repère ne le déduit pas.";
 const POSITION: Record<string, string> = { p: "Pour", c: "Contre", a: "Abstention" };
 
-function Initiales({ nom }: { nom: string }) {
+/* La pastille prend la couleur de l'echelon (21/10/2026) : la fiche d'un maire et
+   celle d'un depute ne se ressemblent plus. Les initiales restent ecrites — la
+   couleur ne dit rien a elle seule, le niveau est nomme juste a cote. */
+function Initiales({ nom, echelon }: { nom: string; echelon?: Echelon }) {
   const lettres = nom.split(/\s+/).filter(Boolean).map(m => m[0]).slice(0, 2).join("").toUpperCase();
   return (
     <View accessible={false}
-      style={{ width: 72, height: 72, borderRadius: 36, backgroundColor: couleurs.encre, alignItems: "center", justifyContent: "center" }}>
+      style={{ width: 72, height: 72, borderRadius: 36, backgroundColor: echelon ? couleurs[echelon] : couleurs.encre, alignItems: "center", justifyContent: "center" }}>
       <Text style={{ color: couleurs.sol, fontWeight: "800", fontSize: 26 }}>{lettres}</Text>
     </View>
   );
@@ -86,22 +89,28 @@ export default function Elu() {
         <Page>
           <Stack.Screen options={{ title: "Fiche" }} />
           <Animated.View style={{ opacity: apparition, gap: PAS * 4 }}>
-            {/* Le partage seul (16/10/2026) : le lien « Retour » doublait le retour de la
-                barre haute, qui ramene deja a « Qui décide ». */}
-            <View style={{ flexDirection: "row", justifyContent: "flex-end", alignItems: "center" }}>
-              <Pressable onPress={partager} accessibilityRole="button" accessibilityLabel="Partager la fiche"
-                style={({ pressed }) => ({ minHeight: CIBLE, flexDirection: "row", alignItems: "center", gap: PAS * 2, opacity: pressed ? 0.6 : 1 })}>
-                <IconePartage couleur={couleurs.encre} />
-                <Text style={{ color: couleurs.encre, fontWeight: "700", fontSize: 15 }}>Partager</Text>
-              </Pressable>
-            </View>
-
-            {/* Identite */}
-            <View style={{ flexDirection: "row", gap: PAS * 4, alignItems: "center" }}>
-              <Initiales nom={nom} />
-              <View style={{ flex: 1, gap: 6 }}>
-                <Question etiquette={p.niveau || LIBELLES.qui} echelon={echelon ? (echelon as Echelon) : undefined} question={nom} sous={libelleRole || undefined} />
+            {/* Identite. LE PARTAGE REJOINT CETTE LIGNE (21/10/2026) : seul sur sa
+                rangee, il mangeait 64 px au-dessus du nom — l'endroit le plus precieux
+                de l'ecran — pour une action secondaire. Il garde sa cible de 48 px et
+                son nom lu (« Partager la fiche ») ; seule l'etiquette visible tombe,
+                l'icone suffit a cote du nom qu'elle partage. */}
+            <View>
+              <View style={{ flexDirection: "row", gap: PAS * 4, alignItems: "center" }}>
+                <Initiales nom={nom} echelon={echelon ? (echelon as Echelon) : undefined} />
+                <View style={{ flex: 1, gap: 6 }}>
+                  <Question etiquette={p.niveau || LIBELLES.qui} echelon={echelon ? (echelon as Echelon) : undefined} question={nom} sous={libelleRole || undefined} />
+                </View>
               </View>
+              {/* EN SURIMPRESSION, PAS DANS LA COLONNE DU NOM. Place dans la rangee, le
+                  bouton volait 48 px de largeur au nom, qui passait de deux a trois
+                  lignes — mesure sur capture. Pose ici, il occupe l'espace laisse libre
+                  par l'etiquette (« Commune »), toujours courte. Cible de 48 px et nom
+                  lu inchanges. */}
+              <Pressable onPress={partager} accessibilityRole="button" accessibilityLabel="Partager la fiche"
+                style={({ pressed }) => ({ position: "absolute", top: 0, right: 0, minHeight: CIBLE, minWidth: CIBLE,
+                  alignItems: "center", justifyContent: "center", opacity: pressed ? 0.6 : 1 })}>
+                <IconePartage couleur={couleurs.encre} />
+              </Pressable>
             </View>
 
             {/* Parti : une phrase vraie tant que la source ne le publie pas. */}
@@ -120,7 +129,7 @@ export default function Elu() {
                   </Carte>
                 ) : null}
                 {decide ? (
-                  <Carte titre="Ce que ce niveau décide">
+                  <Carte titre="Ce que ce niveau décide" ton="secondaire">
                     {/* « Les mêmes phrases que sur Qui décide » retire (16/10/2026) : une note
                         de coherence pour l'equipe, pas une information pour le lecteur. */}
                     <Text style={TYPO.corps}>{decide}.</Text>
@@ -171,7 +180,7 @@ export default function Elu() {
               </View>
             ) : null}
 
-            <Carte titre="D'où viennent ces informations">
+            <Carte titre="D'où viennent ces informations" ton="secondaire">
               <PastilleSource source={srcElus(r.srcElus ?? null)} />
             </Carte>
           </Animated.View>

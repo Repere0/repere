@@ -294,8 +294,8 @@ export default function AVenir() {
           {/* Trois entrees en une liste compacte (16/10/2026 ; etaient trois cartes). */}
           <View>
             <Plus premier texte={`Comment une loi devient loi · ${ETAPES_LOI.length} étapes`} etiquette="Ouvrir : comment une loi devient loi" onPress={() => router.push("/procedure")} />
-            <Plus texte="Questions au Gouvernement" etiquette="Ouvrir les Questions au Gouvernement" onPress={() => router.push("/scrutins?mode=qag")} />
-            <Plus dernier texte="Dictionnaire citoyen" etiquette="Ouvrir le dictionnaire citoyen" onPress={() => router.push("/dictionnaire")} />
+            <Plus texte="Questions au Gouvernement" sous="Les séances publiées par l'Assemblée nationale." etiquette="Ouvrir les Questions au Gouvernement" onPress={() => router.push("/scrutins?mode=qag")} />
+            <Plus dernier texte="Dictionnaire citoyen" sous="Les mots de la vie publique, expliqués simplement." etiquette="Ouvrir le dictionnaire citoyen" onPress={() => router.push("/dictionnaire")} />
           </View>
         </Page>
       );

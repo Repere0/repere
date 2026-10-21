@@ -12,9 +12,16 @@ import { AVEC_EMOJIS, Emoji } from "../ui/resume";
 
 /* Refonte du 30/09/2026 : plus de filet de couleur a gauche ; l'echelon se
    dit par un point de couleur devant l'etiquette, et la carte prend de l'air. */
-export function Carte({ echelon, children, titre }: { echelon?: Echelon; children: ReactNode; titre?: string }) {
+/* `ton` — 21/10/2026. Toutes les cartes etaient blanches, avec le meme rayon et la
+   meme ombre, quel que soit leur role : un fait, une explication, une source. La
+   surface ne disait plus rien. « secondaire » pose la carte sur le voile, sans
+   ombre : elle se lit comme un commentaire de la precedente, pas comme un fait de
+   plus. Deux tons, pas cinq : c'est une hierarchie, pas une palette. */
+export function Carte({ echelon, children, titre, ton }: { echelon?: Echelon; children: ReactNode; titre?: string; ton?: "secondaire" }) {
   return (
-    <View style={[s.carte, { backgroundColor: couleurs.carte }]}>
+    <View style={[s.carte, ton === "secondaire"
+      ? { backgroundColor: couleurs.voile, shadowOpacity: 0, elevation: 0 }
+      : { backgroundColor: couleurs.carte }]}>
       {titre ? (
         <View style={s.carteTete}>
           {echelon ? <View style={[s.point, { backgroundColor: couleurs[echelon] }]} /> : null}

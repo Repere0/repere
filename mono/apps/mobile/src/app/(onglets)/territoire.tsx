@@ -117,11 +117,11 @@ export default function ChezVousTerritoire() {
           <View style={{ gap: PAS * 2 }}>
             <Text style={[TYPO.etiquette, { paddingHorizontal: PAS }]}>Aller plus loin</Text>
             <View>
-              <Plus premier texte={`${LIBELLES.qui} pour ${nom}`} onPress={() => router.push("/qui-decide")} />
-              <Plus texte={LIBELLES.argent} onPress={() => router.push("/argent")} />
+              <Plus premier texte={`${LIBELLES.qui} pour ${nom}`} sous="Du maire au député : qui décide de quoi, échelon par échelon." onPress={() => router.push("/qui-decide")} />
+              <Plus texte={LIBELLES.argent} sous="Le budget de la commune, et où vont 100 € dépensés." onPress={() => router.push("/argent")} />
               {/* « Le calendrier » retire d'ici (16/10/2026, audit Lovable) : c'est un onglet de
                   la barre basse, toujours visible ; deux chemins pour le meme ecran. */}
-              <Plus dernier texte={LIBELLES.sources} onPress={() => router.push("/sources")} />
+              <Plus dernier texte={LIBELLES.sources} sous="D'où vient chaque chiffre, et quand il a été relevé." onPress={() => router.push("/sources")} />
             </View>
           </View>
 
