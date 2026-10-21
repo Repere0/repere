@@ -171,3 +171,31 @@ export function EtiquetteGroupe({ sigle, nom, couleur }: { sigle: string; nom?: 
     </View>
   );
 }
+
+/* ── Le sort d'un texte, tel que l'Assemblee le publie ────────────────── */
+
+/* UNE VALEUR INATTENDUE N'EST PAS UN REJET — 21/10/2026.
+ *
+ * Les trois ecrans qui affichent le sort ecrivaient la meme chose :
+ *   fond={/adopt/i.test(s) ? vert : corail}
+ * Autrement dit, TOUT ce qui n'est pas « adopté » recevait la couleur du rejet.
+ * Les douze scrutins publies aujourd'hui disent tous « adopté » : le chemin
+ * « rejeté » n'a jamais tourne sur des donnees reelles, et une valeur tierce
+ * (« retiré », « non renseigné », un libelle que la source changerait) aurait
+ * ete montree comme un rejet. Colorer ainsi, c'est AFFIRMER un resultat que la
+ * source n'a pas dit — exactement l'inference que l'application s'interdit.
+ *
+ * Desormais : vert si la source dit adopte, corail si elle dit rejete, NEUTRE
+ * sinon. Le libelle est toujours ecrit en toutes lettres, tel que publie : la
+ * couleur ne porte jamais seule l'information (invariant 7). */
+export function EtiquetteSort({ sort }: { sort?: string | null }) {
+  const texte = (sort || "").trim();
+  if (!texte) return null;
+  const adopte = /adopt/i.test(texte);
+  const rejete = /rejet/i.test(texte);
+  return (
+    <Etiq texte={texte}
+      fond={adopte ? couleurs.accentVoile : rejete ? couleurs.corailVoile : couleurs.primaireVoile}
+      texteCouleur={adopte ? couleurs.accentTexte : rejete ? couleurs.corail : couleurs.sourd} />
+  );
+}

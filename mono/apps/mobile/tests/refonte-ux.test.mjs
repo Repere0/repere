@@ -319,3 +319,22 @@ test("aucune fermeture automatique sur minuterie", () => {
   }
   assert.deepEqual(coupables, [], "une minuterie pilote l'affichage : un etat de fraicheur pourrait disparaitre seul");
 });
+
+test("le sort d'un texte n'est colore que si la source le dit", () => {
+  /* 21/10/2026. Les trois ecrans qui affichent le sort ecrivaient
+     `/adopt/i.test(s) ? vert : corail` : TOUT ce qui n'est pas « adopté »
+     recevait la couleur du rejet. Les douze scrutins publies disent tous
+     « adopté » — le chemin « rejeté » n'avait jamais tourne, et une valeur
+     tierce aurait ete montree comme un rejet. Colorer ainsi, c'est affirmer un
+     resultat que la source n'a pas publie.
+     La garde refuse le retour de ce ternaire dans les ecrans : le sort passe
+     desormais par `EtiquetteSort`, qui neutralise l'inconnu.
+     Eprouvee en remettant le ternaire dans un ecran : elle tombe. */
+  const coupables = [];
+  for (const [p, src] of sources()) {
+    if (p.startsWith("ui/")) continue;              /* le composant a le droit de decider */
+    if (/\/adopt\/i\.test\(/.test(src)) coupables.push(p);
+  }
+  assert.deepEqual(coupables, [],
+    "un ecran decide seul de la couleur du sort : passer par EtiquetteSort, sinon un sort inconnu s'affiche comme un rejet");
+});

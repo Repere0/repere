@@ -27,7 +27,7 @@ import { Vide } from "../lib/composants";
 import { SCRUTINS_AN } from "../lib/absences";
 import { PastilleSource } from "../ui/source";
 import { feuille, PAS, TYPO, couleurs, CIBLE, RAYON, OMBRE } from "../lib/theme";
-import { Etiq } from "../ui/signatures";
+import { EtiquetteSort } from "../ui/signatures";
 import { couleurDeGroupeAdmise, peutPorterDuTexte, texteSurCouleur } from "@repere/data-utils";
 import { SIGLES_GROUPES } from "../lib/groupes";
 import { dateFr, titreLisible } from "@repere/core";
@@ -426,13 +426,9 @@ export default function Scrutins() {
                    Le sort vient du champ `s` publie par l'Assemblee, jamais d'un calcul,
                    et il porte les memes couleurs que sur « Aujourd'hui » et « Comprendre
                    ce vote » : un seul langage pour un meme fait. */}
-                {detail.s ? (
-                  <View style={{ flexDirection: "row", flexWrap: "wrap", gap: PAS * 2 }}>
-                    <Etiq texte={detail.s}
-                      fond={/adopt/i.test(detail.s) ? couleurs.accentVoile : couleurs.corailVoile}
-                      texteCouleur={/adopt/i.test(detail.s) ? couleurs.accentTexte : couleurs.corail} />
-                  </View>
-                ) : null}
+                <View style={{ flexDirection: "row", flexWrap: "wrap", gap: PAS * 2 }}>
+                  <EtiquetteSort sort={detail.s} />
+                </View>
                 <Text style={[s.detailTitre, titreLisible(detail.t).length > 90 && s.detailTitreLongue]}>{titreLisible(detail.t)}</Text>
 
                 <View style={s.blocLecture}>

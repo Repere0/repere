@@ -33,7 +33,7 @@ import {
   titreLisible, REFUS_APPARIEMENT, LIBELLES,
 } from "@repere/core";
 import { Vide } from "../../lib/composants";
-import { Etiq } from "../../ui/signatures";
+import { Etiq, EtiquetteSort } from "../../ui/signatures";
 import { CarteMemoire } from "../../cartes/CarteMemoire";
 import { useSelection } from "../../lib/selection";
 import { useCommuneChoisie } from "../../lib/useCommune";
@@ -166,9 +166,7 @@ export default function ChezVous() {
                    pour les douze scrutins publies). Si la source ne porte rien, aucune
                    etiquette : on ne qualifie pas un scrutin a sa place (invariant 5). */}
                 {vote.sc.tv ? <Etiq texte={vote.sc.tv} /> : null}
-                {vote.sc.s ? <Etiq texte={vote.sc.s}
-                  fond={/adopt/i.test(vote.sc.s) ? couleurs.accentVoile : couleurs.corailVoile}
-                  texteCouleur={/adopt/i.test(vote.sc.s) ? couleurs.accentTexte : couleurs.corail} /> : null}
+                <EtiquetteSort sort={vote.sc.s} />
               </>}
               /* une seule regle, dans le socle : qui represente la circonscription, ou,
                  si la commune en a plusieurs, que le depute depend de l'adresse (17/10/2026) */

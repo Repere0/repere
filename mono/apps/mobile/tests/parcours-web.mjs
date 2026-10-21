@@ -924,6 +924,11 @@ async function ouvrirSemaine({ agenda, senatCoupe, fuseau }) {
   const temoins = [
     faire("9002", "2026-10-16", "l'ensemble du projet de loi témoin portant mesures d'essai", "rejeté", 1, 4, 0),
     faire("9001", "2026-10-15", "l'ensemble de la proposition de loi témoin relative aux essais", "adopté", 4, 1, 0),
+    /* UN SORT INATTENDU. Les douze scrutins publies disent tous « adopté » : ni le
+       chemin « rejeté » ni celui d'une valeur tierce n'ont jamais tourne sur des
+       donnees reelles. Ce temoin exerce le troisieme cas — il doit s'afficher tel
+       quel, en neutre, jamais dans la couleur du rejet. */
+    faire("9003", "2026-10-14", "l'ensemble de la proposition de loi témoin sans suite", "retiré avant le vote", 0, 0, 0),
   ];
   const indexTemoin = { v: 2, source: srcTemoin, total_source: 2, total_publics: 2, taille_lot: 64,
     scrutins: temoins.map(x => ({ n: x.n, d: x.d, t: x.t, ty: x.ty, s: x.s, dec: x.dec, nv: x.nv, url: x.url, lot: 0 })) };

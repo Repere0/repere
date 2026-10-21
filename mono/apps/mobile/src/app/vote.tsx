@@ -26,7 +26,7 @@ import { AvecDonnees, Page, Question } from "../ui/page";
 import { PastilleSource } from "../ui/source";
 import { Termes } from "../lib/termes";
 import { Depli, Frise, Repartition } from "../ui/visuels";
-import { Etiq } from "../ui/signatures";
+import { Etiq, EtiquetteSort } from "../ui/signatures";
 import { IconePartage } from "../ui/icones";
 
 /* DENSITE (16/10/2026). Mesure : 3,8 hauteurs d'ecran (3 188 px a 390 x 844). La
@@ -105,11 +105,7 @@ export default function Vote() {
                    pour les douze scrutins publies). Si la source ne porte rien, aucune
                    etiquette : on ne qualifie pas un scrutin a sa place (invariant 5). */}
                 {vote.sc.tv ? <Etiq texte={vote.sc.tv} /> : null}
-              {vote.sc.s ? (
-                <Etiq texte={vote.sc.s}
-                  fond={/adopt/i.test(vote.sc.s) ? couleurs.accentVoile : couleurs.corailVoile}
-                  texteCouleur={/adopt/i.test(vote.sc.s) ? couleurs.accentTexte : couleurs.corail} />
-              ) : null}
+              <EtiquetteSort sort={vote.sc.s} />
             </View>
             <Text style={TYPO.question}><Segments s={phrasePosition(vote.position, vote.qui)} /></Text>
             <Text style={[TYPO.reponse, { fontSize: 19, lineHeight: 25 }]}>{titreLisible(vote.sc.t)}</Text>
