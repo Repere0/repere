@@ -122,7 +122,7 @@ const s = feuille(() => StyleSheet.create({
   },
   enClairTete: { flexDirection: "row", alignItems: "center", gap: PAS * 1.5 },
   enClairPastille: { width: 8, height: 8, borderRadius: 4, backgroundColor: couleurs.accent },
-  enClairTitre: { fontSize: 12, fontWeight: "800", color: couleurs.accent, letterSpacing: 0.6, textTransform: "uppercase" },
+  enClairTitre: { fontSize: 12, fontWeight: "800", color: couleurs.accentTexte, letterSpacing: 0.6, textTransform: "uppercase" },
   enClairCorps: { fontSize: 14, lineHeight: 20, color: couleurs.encre, fontWeight: "500" },
 
   piste: { flexDirection: "row", height: 10, borderRadius: 5, overflow: "hidden", backgroundColor: couleurs.trait },

@@ -14,6 +14,7 @@ import fs from "node:fs";
 import path from "node:path";
 import {
   INVARIANTS, ECHELONS, AMPLITUDE_MAX, amplitude, adresseFautive, TRICOLORE_MARQUE, FICHIERS_MARQUE, couleurDeGroupeAdmise,
+  PALETTE_INTERFACE,
   texteSurCouleur, contrasteWcag, peutPorterDuTexte,
   CHAMPS_INTERDITS, MOTS_CLASSEMENT, MOTS_GAMIFICATION, MOTS_A_ACCENTS,
 } from "../packages/data-utils/src/invariants.js";
@@ -163,6 +164,11 @@ test("invariant 7 — palette gelée, et aucune couleur hors palette", () => {
       const hex = m[0].toLowerCase();
       if (gelees.includes(hex)) continue;
       if (f === declaration && tricolore.includes(hex)) continue;
+      /* LA PALETTE D'INTERFACE (decision du porteur, 20/10/2026) : declaree une
+         seule fois dans invariants.js, lue ici. Tout le reste reste refuse, donc
+         une couleur ajoutee a la main dans un ecran fera toujours rougir cette
+         garde — c'est ce qui empeche la palette de s'elargir en silence. */
+      if (PALETTE_INTERFACE.includes(hex)) continue;
       controlees++;
       assert.ok(amplitude(hex) <= AMPLITUDE_MAX,
         `${f} : ${hex} a une amplitude de ${amplitude(hex)} (plafond ${AMPLITUDE_MAX}) — c'est une couleur, pas un neutre`);

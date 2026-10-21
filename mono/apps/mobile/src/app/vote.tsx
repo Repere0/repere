@@ -103,7 +103,7 @@ export default function Vote() {
               {vote.sc.s ? (
                 <Etiq texte={vote.sc.s}
                   fond={/adopt/i.test(vote.sc.s) ? couleurs.accentVoile : couleurs.corailVoile}
-                  texteCouleur={/adopt/i.test(vote.sc.s) ? couleurs.accent : couleurs.corail} />
+                  texteCouleur={/adopt/i.test(vote.sc.s) ? couleurs.accentTexte : couleurs.corail} />
               ) : null}
             </View>
             <Text style={TYPO.question}><Segments s={phrasePosition(vote.position, vote.qui)} /></Text>

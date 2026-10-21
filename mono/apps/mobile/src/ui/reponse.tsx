@@ -12,6 +12,7 @@ import type { ReactNode } from "react";
 import { Pressable, Share, StyleSheet, Text, View } from "react-native";
 import { feuille, couleurs, CIBLE, OMBRE, PAS, RAYON, TYPO, type Echelon } from "../lib/theme";
 import { IconePartage } from "./icones";
+import { EnClair } from "./signatures";
 import { Depli } from "./visuels";
 
 function BoutonPartager({ titre, texte, sourceUrl }: { titre: string; texte: string; sourceUrl?: string | null }) {
@@ -31,7 +32,7 @@ function BoutonPartager({ titre, texte, sourceUrl }: { titre: string; texte: str
    symbole euro ne tombent seuls a la ligne (vu sur capture : « 332 372 / € »). */
 export const typo = (t: string) => t.replace(/ ([?!:;€»])/g, "\u00a0$1").replace(/« /g, "«\u00a0");
 
-export function Reponse({ phrase, preuve, note, sources, suite, partage, noteRepliee }: {
+export function Reponse({ phrase, preuve, note, sources, suite, partage, noteRepliee, etiquettes, enClair }: {
   /* l'echelon qui decide : porte par la donnee, pas encore par le rendu
      (cartes blanches en palette B partiel) ; la PR « Chez vous » s'en servira. */
   echelon: Echelon; phrase: string; preuve?: ReactNode; note?: ReactNode;
@@ -39,6 +40,10 @@ export function Reponse({ phrase, preuve, note, sources, suite, partage, noteRep
   partage?: { titre: string; texte: string; sourceUrl?: string | null };
   /* le titre du repli quand la note n'est qu'un detail de la phrase (16/10/2026) */
   noteRepliee?: string;
+  /* 20/10/2026, maquettes du porteur : une ligne d'etiquettes au-dessus de la
+     reponse (la rubrique, le statut), et un cartouche « En clair » en dessous. */
+  etiquettes?: ReactNode;
+  enClair?: string;
 }) {
   /* Pas de rubrique au-dessus : la reponse vient d'abord (consigne du
      30/09/2026 : « une réponse », pas « une rubrique puis du texte »). La
@@ -46,8 +51,10 @@ export function Reponse({ phrase, preuve, note, sources, suite, partage, noteRep
      sauter d'une reponse a l'autre. */
   return (
     <View testID="reponse" style={[s.carte, { backgroundColor: couleurs.carte }]}>
+      {etiquettes ? <View style={{ flexDirection: "row", flexWrap: "wrap", gap: PAS * 2 }}>{etiquettes}</View> : null}
       <Text style={s.phrase} accessibilityRole="header">{typo(phrase)}</Text>
       {preuve}
+      {enClair ? <EnClair texte={enClair} /> : null}
       {note && noteRepliee ? (
         <Depli titre={noteRepliee}>{typeof note === "string" ? <Text style={TYPO.note}>{typo(note)}</Text> : note}</Depli>
       ) : note ? (typeof note === "string" ? <Text style={TYPO.note}>{typo(note)}</Text> : note) : null}

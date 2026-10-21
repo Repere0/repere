@@ -24,7 +24,7 @@ export const INVARIANTS = [
     regle: "Rien qui gamifie le vote ou l'opinion : aucun score, aucune récompense, aucune série, aucun gain ni son de réussite lié à un vote, une position ou un partage. Les effets de mouvement sont permis pour lire, naviguer et suivre une heure ou une durée (assouplie par décision du porteur, 13/10/2026).",
     garde: "statique: vocabulaire de bonne/mauvaise réponse interdit" },
   { n: 7, nom: "palette gelée",
-    regle: "Cinq couleurs d'échelon gelées. Une palette d'interface fixe, décidée par le porteur le 20/10/2026 d'après ses maquettes : teal #0D3B43, émeraude #00A896, ambre #F59E0B, corail #BE123C, ardoise #0F172A, et leurs équivalents en thème sombre. Toute autre couleur reste sous une amplitude de 24 sur les canaux RGB. Trois exceptions, chacune décidée par le porteur : le bleu, le blanc et le rouge du logo (16/10/2026), réservés à la marque ; la couleur d'un groupe parlementaire telle que l'Assemblée la publie (20/10/2026), jamais choisie par Repère ; la palette d'interface ci-dessus. Aucune couleur ne qualifie jamais une personne, un parti ou un territoire, et chaque position de vote porte son libellé en toutes lettres à côté de sa couleur.",
+    regle: "Cinq couleurs d'échelon gelées. Une palette d'interface fixe, décidée par le porteur le 20/10/2026 d'après ses maquettes (teal `#0D3B43`, émeraude `#00A896`, ambre `#F59E0B`, corail `#BE123C`, ardoise `#0F172A`, et leurs équivalents sombres — déclarée dans `data-utils/invariants.js`). Toute autre couleur reste sous une amplitude de 24 sur les canaux RGB. Trois exceptions, chacune décidée par le porteur : le tricolore du logo (16/10/2026), réservé à la marque ; la couleur d'un groupe parlementaire telle que l'Assemblée la publie (`organe.couleurAssociee`, 20/10/2026), jamais choisie par Repère ; la palette d'interface ci-dessus. Aucune couleur ne qualifie jamais une personne, un parti ou un territoire, et chaque position de vote porte son libellé en toutes lettres à côté de sa couleur. Le texte posé sur une couleur atteint 4,5:1.",
     garde: "statique: lecture des jetons CSS ; le tricolore confiné à la marque ; une couleur de groupe vient de la source et porte un texte à 4,5:1" },
   { n: 8, nom: "ni patrimoine ni présence",
     regle: "Jamais le patrimoine d'un élu, jamais de donnée de présence ou d'absence.",
@@ -58,7 +58,7 @@ export const AMPLITUDE_MAX = 24;
 export const PALETTE_INTERFACE = Object.freeze([
   "#0d3b43", "#00a896", "#f59e0b", "#be123c", "#0f172a", "#64748b", "#94a3b8",
   "#f7fafd", "#e8eef3", "#eef2f6", "#556576", "#ebf7f5", "#fef3e2", "#fde8ee", "#bfd9dd",
-  "#5ec8bc", "#2dd4bf", "#fbbf24", "#fb7185", "#0a1116", "#111c23", "#e8eff4",
+  "#5ec8bc", "#2dd4bf", "#00705f", "#fbbf24", "#fb7185", "#0a1116", "#111c23", "#e8eff4",
   "#94a8b6", "#1e2e38", "#17242c", "#0e2a2b", "#2a2113", "#2e161d", "#a8c9ce",
   "#06222a",
 ]);

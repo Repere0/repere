@@ -145,6 +145,14 @@ export default function Argent() {
                       deux parts publiees, et il s'appelle « Autres dépenses » — Repere
                       ne sait pas ce qu'il contient et ne le devine pas. Le calcul
                       s'annonce comme un calcul (invariant 4, pastille plus bas). */}
+                  {/* LA PHRASE D'ABORD, LES TROIS POSTES ENSUITE (20/10/2026). Le
+                      tableau seul avait fait disparaitre la reponse en toutes lettres :
+                      la garde du parcours l'a vu (« l'écran répond à sa question »). */}
+                  <Text style={[TYPO.reponse, { fontSize: 19, lineHeight: 25 }]}>
+                    {ch.partSalaires !== null
+                      ? `Sur 100 € dépensés, ${ch.partSalaires} € servent à payer les personnes employées par la commune.`
+                      : `Sur 100 € dépensés, ${ch.partInvestissement} € vont aux investissements.`}
+                  </Text>
                   {(() => {
                     const sal = ch.partSalaires, inv = ch.partInvestissement;
                     const autres = sal !== null && inv !== null ? Math.max(0, 100 - sal - inv) : null;

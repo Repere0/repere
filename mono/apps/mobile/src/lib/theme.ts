@@ -71,12 +71,20 @@ const ACCENTS: Record<Mode, Record<string, string>> = {
   clair: {
     primaire: "#0D3B43", accent: "#00A896", energie: "#F59E0B",
     corail: "#BE123C", abstention: "#94A3B8",
+    /* MESURE DU 20/10/2026 : l'emeraude vive de la maquette (#00A896) tombe a
+       2,72:1 sur son propre voile — illisible comme TEXTE. Elle reste la couleur
+       des barres et des points, ou seul le contraste graphique (3:1) s'applique ;
+       le texte sur fond emeraude prend cette version assombrie, mesuree a 5,50:1
+       sur le voile et 6,03:1 sur blanc. */
+    accentTexte: "#00705F",
     accentVoile: "#EBF7F5", energieVoile: "#FEF3E2", corailVoile: "#FDE8EE",
     primaireVoile: "#EEF2F6",
   },
   sombre: {
     primaire: "#5EC8BC", accent: "#2DD4BF", energie: "#FBBF24",
     corail: "#FB7185", abstention: "#94A3B8",
+    /* en sombre, la version vive est deja lisible sur le voile sombre */
+    accentTexte: "#2DD4BF",
     accentVoile: "#0E2A2B", energieVoile: "#2A2113", corailVoile: "#2E161D",
     primaireVoile: "#17242C",
   },
@@ -189,7 +197,7 @@ type Palette = Record<Echelon, string> & {
   inverse: string; surInverse: string; inverseDoux: string;
   inverseAction: string; surInverseAction: string;
   primaire: string; accent: string; energie: string; corail: string;
-  abstention: string; accentVoile: string; energieVoile: string;
+  abstention: string; accentTexte: string; accentVoile: string; energieVoile: string;
   corailVoile: string; primaireVoile: string;
 };
 type Vue = ReturnType<typeof construire>;
