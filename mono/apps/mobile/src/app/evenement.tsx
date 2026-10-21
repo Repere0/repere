@@ -12,7 +12,7 @@ import { Text, View } from "react-native";
 import { Stack, useLocalSearchParams } from "expo-router";
 import { ageReleve, dateFr, heureFr, jourFr, minuteParis, regrouperParJour, termesDuTexte } from "@repere/core";
 import { LienDefinition } from "../lib/termes";
-import { Vide } from "../lib/composants";
+import { Carte, Vide } from "../lib/composants";
 import { deInstitution, horairesDuGroupe, rendezVousAffiches, type Ev, type Groupe } from "../lib/calendrier";
 import { srcAgenda } from "../lib/sources";
 import { couleurs, PAS, POLICE, TYPO } from "../lib/theme";
@@ -58,13 +58,20 @@ export default function Evenement() {
         <Page>
           <Stack.Screen options={{ title: "Rendez-vous" }} />
           {/* La question d'abord : le sujet, puis quand, puis qui. */}
-          <Question etiquette={g.institution} question={g.titre}
+          <Question etiquette={g.institution} echelon="france" question={g.titre}
             sous={[jourFr(g.jour), g.categorie].filter(Boolean).join(" · ")} />
           {/* 17/10/2026 : un mot de l'intitule qui a une definition (« projet de loi de
               finances ») y mene, juste sous la question. Un intitule sans mot defini ne
               change pas. */}
           {[...new Set(termesDuTexte(g.titre).flatMap(x => (x.cle ? [x.cle] : [])))].map(cle => <LienDefinition key={cle} cle={cle} />)}
 
+          {/* UNE SURFACE, COMME PARTOUT AILLEURS — 21/10/2026, vu sur capture. Cet ecran
+              etait le seul a poser tout son contenu a plat sur le fond : a cote de
+              « Comprendre ce vote » ou de « Où va l'argent », il paraissait inacheve.
+              Les deux blocs publies (l'horaire, l'ordre du jour) prennent la carte que le
+              reste de l'application utilise deja. Le releve et sa date restent EN DEHORS :
+              ils parlent de la fraicheur de la page, pas de son contenu. */}
+          <Carte>
           <View style={{ gap: PAS }}>
             <Etiquette texte={g.seances > 1 ? `Horaires publiés · ${g.seances} séances` : "Horaire publié"} />
             {!horaires.length ? <Text style={TYPO.note}>Heure non publiée.</Text>
@@ -86,12 +93,15 @@ export default function Evenement() {
             ) : null}
             {g.lieu ? <Text style={TYPO.corps}>Lieu : {g.lieu}</Text> : null}
           </View>
+          </Carte>
 
           {points.length ? (
+            <Carte>
             <View style={{ gap: PAS * 2 }}>
               <Etiquette texte={points.length > 1 ? `Ordre du jour publié · ${points.length} points` : "Ordre du jour publié"} />
               {points.map((t, k) => <Text key={k} style={TYPO.corps}>• {t}</Text>)}
             </View>
+            </Carte>
           ) : null}
 
           {g.textesLibres.length ? (

@@ -50,7 +50,7 @@ export default function Procedure() {
   return (
     <Page>
       <Stack.Screen options={{ title: "La procédure" }} />
-      <Question etiquette="Au Parlement" question="Comment une loi devient loi"
+      <Question etiquette="Au Parlement" echelon="france" question="Comment une loi devient loi"
         sous={`${ETAPES_LOI.length} étapes, du dépôt à la publication. Touchez une étape pour la lire.`} />
 
       {/* LES SIX ETAPES D'UN COUP D'OEIL (16/10/2026, audit Lovable). Avant : une barre de
