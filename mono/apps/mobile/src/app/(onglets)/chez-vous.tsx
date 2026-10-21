@@ -160,7 +160,12 @@ export default function ChezVous() {
                  etiquettes, avant la reponse. Le sort vient du champ publie par
                  l'Assemblee, jamais d'un calcul. */
               etiquettes={<>
-                <Etiq texte="Scrutin public" />
+                {/* LA NATURE DU SCRUTIN VIENT DE LA SOURCE — 21/10/2026. « Scrutin public »
+                   etait ecrit EN DUR : une affirmation de Repere, non sourcee, et moins
+                   precise que ce que l'Assemblee publie (`tv`, « scrutin public solennel »
+                   pour les douze scrutins publies). Si la source ne porte rien, aucune
+                   etiquette : on ne qualifie pas un scrutin a sa place (invariant 5). */}
+                {vote.sc.tv ? <Etiq texte={vote.sc.tv} /> : null}
                 {vote.sc.s ? <Etiq texte={vote.sc.s}
                   fond={/adopt/i.test(vote.sc.s) ? couleurs.accentVoile : couleurs.corailVoile}
                   texteCouleur={/adopt/i.test(vote.sc.s) ? couleurs.accentTexte : couleurs.corail} /> : null}

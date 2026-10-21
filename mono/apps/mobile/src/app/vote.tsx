@@ -57,7 +57,7 @@ function AutreVote({ a }: { a: FaitVote }) {
   );
 }
 
-type FaitVote = { cle: string; type: string; sc: { t: string; d: string; n: string; s: string; dec?: Record<string, string> }; position?: string; qui: string; circo: number };
+type FaitVote = { cle: string; type: string; sc: { t: string; d: string; n: string; s: string; dec?: Record<string, string>; /* la nature publiee par l'Assemblee : « scrutin public solennel » */ tv?: string }; position?: string; qui: string; circo: number };
 
 export default function Vote() {
   const { reessayer } = useCommuneChoisie();
@@ -99,7 +99,12 @@ export default function Vote() {
                calcul : il est teinte selon ce que la source dit, et il dit ce que le
                texte est devenu, pas si c'est une bonne chose. */}
             <View style={{ flexDirection: "row", alignItems: "center", gap: PAS * 2, flexWrap: "wrap" }}>
-              <Etiq texte="Scrutin public" />
+              {/* LA NATURE DU SCRUTIN VIENT DE LA SOURCE — 21/10/2026. « Scrutin public »
+                   etait ecrit EN DUR : une affirmation de Repere, non sourcee, et moins
+                   precise que ce que l'Assemblee publie (`tv`, « scrutin public solennel »
+                   pour les douze scrutins publies). Si la source ne porte rien, aucune
+                   etiquette : on ne qualifie pas un scrutin a sa place (invariant 5). */}
+                {vote.sc.tv ? <Etiq texte={vote.sc.tv} /> : null}
               {vote.sc.s ? (
                 <Etiq texte={vote.sc.s}
                   fond={/adopt/i.test(vote.sc.s) ? couleurs.accentVoile : couleurs.corailVoile}

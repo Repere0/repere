@@ -44,6 +44,16 @@ const MAIRE = await (async () => {
   try { const r = await fetch(BASE + "/data/departments/77.json"); const j = await r.json(); return j.communes["77284"].maire.nom.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"); }
   catch { return "Maire introuvable dans les données servies"; }
 })();
+/* LA NATURE DU SCRUTIN, telle que l'Assemblee la publie (21/10/2026). Relevee
+   dans les donnees servies : l'ecran ne doit pas la reecrire ni l'inventer. */
+const NATURE = await (async () => {
+  try {
+    const j = await (await fetch(BASE + "/data/scrutins.json")).json();
+    const avec = (j.scrutins || []).filter(x => x.tv);
+    return avec.length ? avec[0].tv : null;
+  } catch { return null; }
+})();
+
 /* LA MEME PERSONNE A DEUX ECHELONS (21/10/2026). Releve dans les donnees servies,
    jamais recopie ici : si le Repertoire change, la garde suit. */
 const CUMUL = await (async () => {
@@ -443,6 +453,14 @@ for (const { largeur, theme } of [
     await page.waitForTimeout(300);
     const m = await mesurer();
     communs(m, action);
+
+    /* L'etiquette de nature est CELLE DE LA SOURCE, pas une phrase de Repere.
+       Elle etait ecrite en dur (« Scrutin public »), donc non sourcee et moins
+       precise que `tv` (« scrutin public solennel »). Eprouvee en remettant la
+       chaine en dur : la garde tombe. */
+    if (action === "Comprendre ce vote" && NATURE) verifier(m.brut.includes(NATURE),
+      `${etq} · Comprendre ce vote : la nature affichée est celle publiée par l'Assemblée (« ${NATURE} »)`);
+
     if (action === "Le calendrier") {
       /* PAR JOURNEE (07/10/2026) : autant de lignes que de groupes calcules par le
          socle sur les fichiers servis, pour les deux prochaines semaines. */
