@@ -9,6 +9,28 @@ poussée. Rien n'a été fusionné, rien n'a été poussé sur `main` ni sur ta 
 
 ---
 
+## 0. POUR LANCER MAINTENANT — les cinq commandes
+
+```powershell
+cd C:\Users\APina\repere
+git fetch origin ux/theme-sombre-20-10
+git checkout -B ux/theme-sombre-20-10 origin/ux/theme-sombre-20-10
+cd mono\apps\mobile
+npm.cmd install
+npm.cmd start
+```
+
+Puis Expo Go, même Wi-Fi, scan du QR. Si l'application ne charge pas : `r` dans
+le terminal d'Expo pour recharger.
+
+**Ce que tu dois voir, dans l'ordre :** l'accueil avec sa bannière « moins de
+18 ans » en carte (badge et flèche ronde) et les trois piliers en tuiles ; sur
+« Aujourd'hui », les étiquettes « Scrutin public » et « Adopté » au-dessus du
+vote ; sur « Où va cet argent », les trois postes des 100 € avec leurs jauges et
+le cartouche « EN CLAIR » à filet émeraude ; sur « Comprendre ce vote », la
+jauge verte/corail et la pastille du député sur son banc. Bascule ton téléphone
+en sombre à n'importe quel moment : tout suit.
+
 ## 1. Voir la nouvelle version sur ton téléphone (5 minutes)
 
 ```powershell
