@@ -328,6 +328,17 @@ PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers node test_repere.mjs site_v18_20/index
 
 Ne pas reproposer sans argument neuf.
 
+- **Nommer la destination des six liens « ‹ Retour »** (`argent`, `vote`, `scrutins`,
+  `sources`, `avant-18`, `dictionnaire`, déclarés dans `mono/apps/mobile/src/app/_layout.tsx`). Examiné le
+  21/10/2026 : **c'est déjà la bonne réponse.** Ces écrans sont atteignables depuis
+  plusieurs points — « Où va l'argent » s'ouvre depuis « Aujourd'hui » *et* depuis
+  « Chez vous », « Sources » depuis trois écrans. Un libellé fixe (« ‹ Chez vous »)
+  mentirait une fois sur deux. Les cinq autres écrans nomment bien leur destination
+  (`elu` → « Qui décide », `evenement` et `procedure` → « Le calendrier`, les onglets
+  → « Communes ») parce qu'ils n'ont qu'une seule entrée. Le nom accessible dit déjà
+  « Revenir à l'écran précédent ». À ne rouvrir que si quelqu'un dérive le libellé de
+  l'historique de navigation réel — et seulement si ça ne peut jamais se tromper.
+
 - **Étiquettes de rubrique sur les cartes 1 et 2 d'« Aujourd'hui »** (« Projet aidé
   par l'État », « Budget municipal »), dans le langage visuel des maquettes Stitch.
   Essayées le 21/10/2026, **mesurées à 45 px**, et retirées : la troisième réponse
