@@ -152,6 +152,7 @@ function GroupeRow({ groupe, ouvert, onPress }: { groupe: Groupe; ouvert: boolea
         onPress={onPress}
         accessibilityRole="button"
         accessibilityState={{ expanded: ouvert }}
+        aria-expanded={ouvert}
         accessibilityLabel={`${groupe.nom}, ${total} positions publiées`}
         style={({ pressed }) => [s.groupeTete, pressed && { opacity: 0.65 }]}
       >
@@ -193,11 +194,11 @@ function GroupeRow({ groupe, ouvert, onPress }: { groupe: Groupe; ouvert: boolea
 
 function Onglets({ mode, setMode }: { mode: "votes" | "qag"; setMode: (m: "votes" | "qag") => void }) {
   return (
-    <View style={s.onglets}>
-      <Pressable onPress={() => setMode("votes")} accessibilityRole="tab" accessibilityState={{ selected: mode === "votes" }} style={[s.onglet, mode === "votes" && s.ongletActif]}>
+    <View accessibilityRole="tablist" style={s.onglets}>
+      <Pressable onPress={() => setMode("votes")} accessibilityRole="tab" accessibilityState={{ selected: mode === "votes" }} aria-selected={mode === "votes"} style={[s.onglet, mode === "votes" && s.ongletActif]}>
         <Text style={[s.ongletTexte, mode === "votes" && s.ongletTexteActif]}>Votes publics</Text>
       </Pressable>
-      <Pressable onPress={() => setMode("qag")} accessibilityRole="tab" accessibilityState={{ selected: mode === "qag" }} style={[s.onglet, mode === "qag" && s.ongletActif]}>
+      <Pressable onPress={() => setMode("qag")} accessibilityRole="tab" accessibilityState={{ selected: mode === "qag" }} aria-selected={mode === "qag"} style={[s.onglet, mode === "qag" && s.ongletActif]}>
         <Text style={[s.ongletTexte, mode === "qag" && s.ongletTexteActif]}>Questions au Gouvernement</Text>
       </Pressable>
     </View>

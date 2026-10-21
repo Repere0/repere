@@ -105,9 +105,20 @@ function Case({ iso, jour, nb, onPress, taille, libelle, passe }: { iso: string;
   const choisi = iso === jour;
   const numero = Number(iso.slice(8, 10));
   const grand = taille === "semaine";
+  /* aria-current="date" et non aria-selected (21/10/2026) : la case est un
+     bouton, pas un onglet, et aria-selected n'est valide que sur tab, option
+     ou row. ARIA a l'attribut exact pour « le jour actuellement choisi ». */
   return (
     <Pressable onPress={onPress} accessibilityRole="button" accessibilityState={{ selected: choisi }}
+      aria-current={choisi ? "date" : undefined}
       accessibilityLabel={libelle}
+      /* Le libelle dit QUEL jour, jamais ce que toucher la case produit : la
+         liste du dessous change, hors du champ du lecteur d'ecran. Les points
+         de la chaine, eux, portent « Aller a ce niveau » dans leur libelle et
+         n'ont donc pas besoin d'indice. A VERIFIER A L'OREILLE (section 1 de
+         docs/TEST_NATIF_IPHONE.md) : la verbosite de VoiceOver ne se mesure
+         pas depuis ce conteneur. */
+      accessibilityHint="Affiche les textes examinés ce jour"
       style={({ pressed }) => ({ flex: 1, minHeight: grand ? 58 : 42, alignItems: "center", justifyContent: "center", gap: 4, opacity: pressed ? 0.6 : 1 })}>
       {grand ? <Text style={{ fontSize: 13, color: couleurs.sourd, fontWeight: "600" }}>{LETTRES[rangLundi(iso)]}</Text> : null}
       <View style={{ width: grand ? 40 : 34, height: grand ? 40 : 34, borderRadius: 999, alignItems: "center", justifyContent: "center",
@@ -231,7 +242,7 @@ export default function AVenir() {
                   const actif = institution === o.c;
                   return (
                     <Pressable key={o.t} onPress={() => setInstitution(o.c)} accessibilityRole="tab"
-                      accessibilityState={{ selected: actif }} accessibilityLabel={`Afficher : ${o.c ? o.c : "toutes les institutions"}`}
+                      accessibilityState={{ selected: actif }} aria-selected={actif} accessibilityLabel={`Afficher : ${o.c ? o.c : "toutes les institutions"}`}
                       style={{ flex: 1, minHeight: 40, borderRadius: 999, backgroundColor: actif ? couleurs.carte : "transparent", alignItems: "center", justifyContent: "center" }}>
                       <Text style={{ fontWeight: actif ? "800" : "600", color: couleurs.encre }}>{o.t}</Text>
                     </Pressable>

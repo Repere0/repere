@@ -79,12 +79,13 @@ export default function Dictionnaire() {
       {/* Lettres : une seule rangee, seules les lettres presentes. */}
       <View accessibilityRole="tablist" style={{ flexDirection: "row", flexWrap: "wrap", gap: 6 }}>
         <Pressable onPress={() => setLettre(null)} accessibilityRole="tab" accessibilityState={{ selected: lettre === null }}
+          aria-selected={lettre === null}
           accessibilityLabel="Tous les mots" style={chip(lettre === null)}>
           <Text style={{ fontWeight: "700", color: lettre === null ? couleurs.sol : couleurs.encre }}>Tous</Text>
         </Pressable>
         {lettres.map(l => (
           <Pressable key={l} onPress={() => setLettre(lettre === l ? null : l)} accessibilityRole="tab"
-            accessibilityState={{ selected: lettre === l }} accessibilityLabel={`Lettre ${l}`}
+            accessibilityState={{ selected: lettre === l }} aria-selected={lettre === l} accessibilityLabel={`Lettre ${l}`}
             style={[chip(lettre === l), { width: CIBLE, paddingHorizontal: 0 }]}>
             <Text style={{ fontWeight: "800", fontSize: 16, color: lettre === l ? couleurs.sol : couleurs.encre }}>{l}</Text>
           </Pressable>

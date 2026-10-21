@@ -254,6 +254,46 @@ for (const { largeur, theme } of [
       petites: cibles.map(e => ({ t: (e.getAttribute("aria-label") || e.textContent || "").trim().slice(0, 40), h: e.getBoundingClientRect().height }))
         .filter(c => c.h < 44),
       sansNom: cibles.filter(e => !(e.getAttribute("aria-label") || e.textContent || "").trim()).length,
+      /* L'ETAT D'UN ONGLET EST-IL EXPOSE ? — 21/10/2026.
+         Un lecteur d'ecran doit pouvoir dire QUEL onglet est actif. Sans etat,
+         les trois filtres du calendrier se lisent « Afficher : Sénat, onglet »,
+         identiques, et on ne sait pas lequel s'applique.
+         Mesure du 21/10/2026 : react-native-web 0.21.3 NE TRADUIT PAS
+         `accessibilityState={{ selected }}`. Les onglets de la barre basse
+         portaient aria-selected (expo-router le pose lui-meme), les sept
+         autres onglets de l'application n'exposaient rien. Meme defaut que
+         celui trouve le 16/10 pour `expanded`, et meme correction : l'attribut
+         aria-* accole a accessibilityState.
+         CE QUE CETTE GARDE NE DIT PAS : elle mesure le rendu web. Sur iOS,
+         React Native honore accessibilityState sans aria-*, donc ce defaut
+         n'etait probablement pas celui de VoiceOver. Non verifie : ce conteneur
+         n'a ni simulateur ni appareil. */
+      ongletsSansEtat: [...document.querySelectorAll('[role="tab"]')]
+        .filter(e => e.offsetParent !== null && !e.closest('[aria-hidden="true"]'))
+        .filter(e => e.getAttribute("aria-selected") === null)
+        .map(e => (e.getAttribute("aria-label") || e.textContent || "").trim().slice(0, 40)),
+      /* UN ONGLET VIT DANS UNE LISTE D'ONGLETS. Un role="tab" sans ancetre
+         role="tablist" est une structure ARIA invalide, que le lecteur d'ecran
+         peut ignorer en bloc. Trouve le 21/10/2026 sur les deux onglets de
+         « Comprendre ce vote ». */
+      ongletsHorsListe: [...document.querySelectorAll('[role="tab"]')]
+        .filter(e => e.offsetParent !== null && !e.closest('[aria-hidden="true"]'))
+        .filter(e => !e.closest('[role="tablist"]'))
+        .map(e => (e.getAttribute("aria-label") || e.textContent || "").trim().slice(0, 40)),
+      /* DEUX CONTROLES EMBOITES — VoiceOver fusionne l'exterieur et l'interieur,
+         ou rend l'interieur inatteignable au balayage. Mesure du 21/10/2026 :
+         zero sur les quatre onglets. La garde tient la propriete pour qu'une
+         carte rendue cliquable autour d'un bouton existant la fasse rougir. */
+      emboites: (() => {
+        const SEL = '[role="button"],[role="link"],[role="tab"],button,a,input';
+        const vus = [...document.querySelectorAll(SEL)]
+          .filter(e => e.offsetParent !== null && !e.closest('[aria-hidden="true"]'));
+        const nom = e => (e.getAttribute("aria-label") || e.textContent || "").trim().slice(0, 30);
+        return vus.filter(e => {
+          const p = e.parentElement && e.parentElement.closest(SEL);
+          return p && p !== e && vus.includes(p);
+        }).map(e => `« ${nom(e)} » dans « ${nom(e.parentElement.closest(SEL))} »`);
+      })(),
       texte: document.body.innerText,
       etiquettes: [...document.querySelectorAll("[aria-label]")].map(e => e.getAttribute("aria-label")).join(" | "),
       /* CONTRASTE AA MESURE SUR LE RENDU (spike du 30/09/2026) : chaque texte
@@ -337,6 +377,9 @@ for (const { largeur, theme } of [
     verifier(m.petites.length === 0, `${etq} · ${ecran} : cibles tactiles >= 44 px ${JSON.stringify(m.petites)}`);
     verifier(m.sansNom === 0, `${etq} · ${ecran} : chaque contrôle a un nom accessible (${m.sansNom} sans nom)`);
     verifier(m.contrastes.length === 0, `${etq} · ${ecran} : tout texte visible atteint le contraste AA ${JSON.stringify(m.contrastes)}`);
+    verifier(m.ongletsSansEtat.length === 0, `${etq} · ${ecran} : chaque onglet dit s'il est actif ${JSON.stringify(m.ongletsSansEtat)}`);
+    verifier(m.ongletsHorsListe.length === 0, `${etq} · ${ecran} : chaque onglet vit dans une liste d'onglets ${JSON.stringify(m.ongletsHorsListe)}`);
+    verifier(m.emboites.length === 0, `${etq} · ${ecran} : aucun contrôle emboîté dans un autre ${JSON.stringify(m.emboites)}`);
     const sansAccents = MOTS_A_ACCENTS.filter(x => new RegExp("(^|[^\\p{L}])" + x + "($|[^\\p{L}])", "u").test(m.brut));
     verifier(sansAccents.length === 0, `${etq} · ${ecran} : aucun mot affiché sans ses accents ${JSON.stringify(sansAccents)}`);
     /* AUCUNE ABREVIATION DE MONTANT A L'ECRAN (20/10/2026). « 121,3 M€ » ne se lit
@@ -981,6 +1024,40 @@ async function ouvrirSemaine({ agenda, senatCoupe, fuseau }) {
       "scrutins (cas fabriqué) : chaque groupe est nommé en toutes lettres");
     verifier(!/Témoin UN/i.test(vu),
       "scrutins (cas fabriqué) : les députés restent repliés tant qu'on n'ouvre pas un groupe");
+
+    /* L'ACCESSIBILITE DE CET ECRAN NE SE MESURE QUE PEUPLE — 21/10/2026.
+       Les deux onglets (« Votes publics » / « Questions au Gouvernement ») et
+       les en-tetes de groupe n'existent pas tant que la donnee manque : le
+       parcours nominal passe donc a cote. Les trois memes proprietes que
+       `communs`, mesurees ici, sur le cas fabrique.
+       Avant correction de ce soir, les deux onglets etaient hors tablist ET
+       sans etat : cette garde les attrapait tous les deux. */
+    const a11y = await page.evaluate(() => {
+      const SEL = '[role="button"],[role="link"],[role="tab"],button,a,input';
+      const visible = e => e.offsetParent !== null && !e.closest('[aria-hidden="true"]');
+      const nom = e => (e.getAttribute("aria-label") || e.textContent || "").trim().slice(0, 40);
+      const onglets = [...document.querySelectorAll('[role="tab"]')].filter(visible);
+      const vus = [...document.querySelectorAll(SEL)].filter(visible);
+      return {
+        onglets: onglets.length,
+        sansEtat: onglets.filter(e => e.getAttribute("aria-selected") === null).map(nom),
+        horsListe: onglets.filter(e => !e.closest('[role="tablist"]')).map(nom),
+        emboites: vus.filter(e => {
+          const p = e.parentElement && e.parentElement.closest(SEL);
+          return p && p !== e && vus.includes(p);
+        }).map(e => `« ${nom(e)} » dans « ${nom(e.parentElement.closest(SEL))} »`),
+        /* UN GROUPE REPLIE DIT QU'IL EST REPLIE. Sans aria-expanded, le lecteur
+           d'ecran ne sait pas qu'il y a quelque chose a ouvrir. */
+        sansExpanded: vus.filter(e => /positions publiées/.test(nom(e)) && e.getAttribute("aria-expanded") === null).map(nom),
+      };
+    });
+    /* La garde ne doit pas etre muette : si l'ecran ne portait plus d'onglet,
+       les trois assertions suivantes passeraient sans rien mesurer. */
+    verifier(a11y.onglets > 0, `scrutins (cas fabriqué) : des onglets sont réellement mesurés (${a11y.onglets})`);
+    verifier(a11y.sansEtat.length === 0, `scrutins (cas fabriqué) : chaque onglet dit s'il est actif ${JSON.stringify(a11y.sansEtat)}`);
+    verifier(a11y.horsListe.length === 0, `scrutins (cas fabriqué) : chaque onglet vit dans une liste d'onglets ${JSON.stringify(a11y.horsListe)}`);
+    verifier(a11y.emboites.length === 0, `scrutins (cas fabriqué) : aucun contrôle emboîté dans un autre ${JSON.stringify(a11y.emboites)}`);
+    verifier(a11y.sansExpanded.length === 0, `scrutins (cas fabriqué) : chaque groupe replié dit qu'il peut s'ouvrir ${JSON.stringify(a11y.sansExpanded)}`);
   }
   await ctx.close();
 }

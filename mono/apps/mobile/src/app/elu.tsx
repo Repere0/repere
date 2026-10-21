@@ -58,7 +58,7 @@ function Onglets({ actif, choisir, votes }: { actif: Onglet; choisir: (o: Onglet
         const on = actif === o.cle;
         return (
           <Pressable key={o.cle} onPress={() => choisir(o.cle)} accessibilityRole="tab" accessibilityState={{ selected: on }}
-            accessibilityLabel={o.t}
+            aria-selected={on} accessibilityLabel={o.t}
             style={{ flex: 1, minHeight: 40, borderRadius: 999, backgroundColor: on ? couleurs.carte : "transparent", alignItems: "center", justifyContent: "center" }}>
             <Text style={{ fontWeight: on ? "800" : "600", color: couleurs.encre }}>{o.t}</Text>
           </Pressable>
