@@ -27,6 +27,26 @@ const RACINE = path.resolve(import.meta.dirname, "..");
 const lire = p => fs.readFileSync(path.join(RACINE, p), "utf8");
 const existe = p => fs.existsSync(path.join(RACINE, p));
 
+test("convention — aucune apostrophe typographique dans le code source", () => {
+  /* 21/10/2026. CLAUDE.md porte cette regle depuis le debut : « apostrophe U+2019
+     interdite dans le code ». RIEN NE L'APPLIQUAIT. Trouve en lisant le texte
+     rendu de l'ecran « Avant 18 ans » : « Gardez l'attestation » — dix occurrences
+     dans apps/mobile/src/app/avant-18.tsx, et un banc vert.
+     Une regle sans garde n'est pas une regle, c'est un souhait.
+
+     LE MOTIF SE CONSTRUIT PAR CODE DE CARACTERE, jamais en litteral : sinon la
+     garde se declencherait sur son propre fichier (le piege que ce fichier
+     documente deja plus bas pour l'invariant 3). */
+  const typographique = new RegExp(String.fromCharCode(8217), "g");
+  const coupables = [];
+  for (const f of sourcesEcrites()) {
+    const n = (lire(f).match(typographique) || []).length;
+    if (n) coupables.push(`${f} (${n})`);
+  }
+  assert.deepEqual(coupables, [],
+    "apostrophe typographique dans le code : ecrire l'apostrophe droite, le rendu s'en charge");
+});
+
 /* Le code écrit à la main, hors données engendrées et hors dépendances.
  *
  * LE BALAYAGE NE LISAIT QUE .js .jsx .mjs .css. Le document HTML et le manifeste
