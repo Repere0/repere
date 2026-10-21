@@ -462,6 +462,18 @@ for (const { largeur, theme } of [
       `${etq} · Comprendre ce vote : la nature affichée est celle publiée par l'Assemblée (« ${NATURE} »)`);
 
     if (action === "Le calendrier") {
+      /* LE SOUS-TITRE NE PROMET QUE CE QUI EST ARRIVE — 21/10/2026.
+         Il annoncait « a l'Assemblee nationale et au Senat » alors que le corps de
+         l'ecran disait « a l'Assemblee nationale seulement » : le lecteur lit le
+         sous-titre en premier. La garde compare les deux affirmations du MEME ecran,
+         sans recopier aucun nom d'institution. Eprouvee en remettant le sous-titre en
+         dur : elle tombe. */
+      const seulement = /à l'Assemblée nationale seulement|au Sénat seulement/.exec(m.brut);
+      if (seulement) {
+        const sousTitre = /Les séances annoncées ([^.]+)\./.exec(m.brut);
+        verifier(sousTitre && !/ et /.test(sousTitre[1]),
+          `${etq} · Le calendrier : le sous-titre (« ${sousTitre ? sousTitre[1] : "?"} ») ne promet que ce que l'écran tient (« ${seulement[0]} »)`);
+      }
       /* PAR JOURNEE (07/10/2026) : autant de lignes que de groupes calcules par le
          socle sur les fichiers servis, pour les deux prochaines semaines. */
       const lignes = await page.evaluate(() => document.querySelectorAll('[data-testid="cal-ligne"]').length);

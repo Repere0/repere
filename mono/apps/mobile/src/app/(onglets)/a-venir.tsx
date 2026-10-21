@@ -184,7 +184,16 @@ export default function AVenir() {
               <Text style={{ color: couleurs.encre, fontWeight: "700", textDecorationLine: "underline" }}>{mois ? "Voir la semaine" : "Voir le mois"}</Text>
             </Pressable>
           </View>
-          <Text style={TYPO.note}>Les séances annoncées à l'Assemblée nationale et au Sénat. Elles concernent tout le pays.</Text>
+          {/* LE SOUS-TITRE DIT CE QUI EST ARRIVE — 21/10/2026, constate sur capture.
+             Il annoncait « a l'Assemblee nationale ET AU SENAT » pendant que le corps de
+             l'ecran disait, trois lignes plus bas, « a l'Assemblee nationale seulement ».
+             Le lecteur lit le sous-titre en premier : c'etait une promesse que l'ecran ne
+             tenait pas. `lues` porte deja les institutions dont le calendrier est arrive,
+             l'ecran s'en sert plus bas — il ne restait qu'a le dire ici aussi. Le cas du
+             Senat absent garde sa phrase explicite (« rien n'est inventé à sa place »). */}
+          <Text style={TYPO.note}>{`Les séances annoncées ${lues.length
+            ? lues.map(x => x.institution === "Sénat" ? "au Sénat" : "à l'Assemblée nationale").join(" et ")
+            : "au Parlement"}. Elles concernent tout le pays.`}</Text>
 
           {!r.agendaLu ? (
             <Vide {...AGENDA_PAS_ARRIVE} action="Réessayer" onAction={reessayer} />
