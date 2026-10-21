@@ -636,6 +636,101 @@ for (const { largeur, theme } of [
     await page.getByText("Aller plus loin").first().waitFor({ timeout: 5000 });
   }
 
+  /* TROIS ECRANS QUE LE PARCOURS NE VISITAIT PAS — 21/10/2026.
+   *
+   * `procedure.tsx`, `dictionnaire.tsx` et `avant-18.tsx` n'etaient mesures que
+   * par lecture de leurs sources. Aucun d'eux n'avait jamais ete RENDU dans ce
+   * banc : ni debordement, ni cible tactile, ni contraste, ni nom accessible.
+   * C'est le meme trou que celui du selecteur `[role="tab"]` et celui de la vue
+   * mois, decouverts le meme jour — et le meme enseignement : une garde ne dit
+   * rien des ecrans ou elle ne va pas, et son vert se lit comme leur absence de
+   * defaut.
+   *
+   * Les deux premiers s'ouvrent depuis l'onglet « Calendrier » (les entrees
+   * `Plus` de a-venir.tsx) ; `avant-18` depuis l'accueil, AVANT tout choix de
+   * commune — c'est pour cela qu'il echappait a un parcours qui commence par
+   * choisir Meaux. On les mesure aux quatre combinaisons de largeur et de theme,
+   * comme les autres. */
+  for (const [etiquetteEntree, attendu, nom] of [
+    ["Ouvrir : comment une loi devient loi", /Comment une loi devient loi|Le parcours d'une loi/, "Comment une loi devient loi"],
+    ["Ouvrir le dictionnaire citoyen", /Dictionnaire|Les mots de la vie publique/, "Dictionnaire citoyen"],
+  ]) {
+    await page.getByText("Calendrier", { exact: true }).last().click();
+    await page.waitForTimeout(500);
+    const entree = page.getByRole("button", { name: etiquetteEntree, exact: true }).last();
+    if (!(await entree.count())) {
+      verifier(false, `${etq} · ${nom} : l'entrée « ${etiquetteEntree} » est introuvable — l'écran n'a pas pu être mesuré`);
+      continue;
+    }
+    await entree.click();
+    /* ON N'ATTEND PAS LE TITRE PAR SON TEXTE SEUL. L'entree de la liste porte le
+       MEME texte que le titre de l'ecran qu'elle ouvre (« Comment une loi devient
+       loi · 6 étapes »), et expo-router laisse l'ecran precedent monte en
+       aria-hidden : `.first()` tombait sur l'entree MASQUEE et l'attente expirait
+       sur un ecran pourtant correctement affiche. Le bouton de retour, lui,
+       n'existe que sur un ecran empile — c'est le signal de navigation. Le titre
+       est ensuite exige VISIBLE, ce qui garde l'assertion entiere.
+
+       SON LIBELLE N'EST PAS FIXE : il NOMME l'ecran d'origine (« Revenir à
+       l'écran Le calendrier »), et ne dit « précédent » que quand cet ecran n'a
+       pas de nom, comme l'accueil. Premiere version de cette attente : le libelle
+       en dur, et une expiration sur une navigation pourtant reussie. */
+    await page.getByRole("button", { name: /^Revenir à l'écran/ }).last().waitFor({ timeout: 10000 });
+    await page.waitForTimeout(700);
+    verifier(await page.getByText(attendu).filter({ visible: true }).count() > 0,
+      `${etq} · ${nom} : l'écran affiche bien son titre`);
+    communs(await mesurer(), nom);
+    await page.getByRole("button", { name: /^Revenir à l'écran/ }).last().click();
+    await page.waitForTimeout(400);
+  }
+  /* « Avant 18 ans » : depuis l'accueil, sans commune choisie. On repart donc de
+     l'accueil nu, et on revient ensuite choisir Meaux pour la suite du parcours. */
+  {
+    /* « Revenir à l'accueil » n'existe QUE sur l'onglet « Aujourd'hui » : apres
+       le dictionnaire on est revenu sur l'onglet « Calendrier », ou ce bouton
+       n'est pas. Premiere version : une expiration de 30 s sur un bouton qui
+       n'avait aucune raison d'etre la. */
+    await page.getByText("Aujourd'hui", { exact: true }).last().click();
+    await page.getByText("Aller plus loin").first().waitFor({ timeout: 10000 });
+    await page.getByRole("button", { name: /^Revenir à l'accueil/ }).last().click();
+    await page.getByText("Où habitez-vous ?").waitFor({ timeout: 5000 });
+    const vers18 = page.getByRole("button", { name: /moins de 18 ans/ }).first();
+    if (await vers18.count()) {
+      await vers18.click();
+      await page.getByRole("button", { name: /^Revenir à l'écran/ }).last().waitFor({ timeout: 10000 });
+      await page.waitForTimeout(700);
+      const m18 = await mesurer();
+      communs(m18, "Avant 18 ans");
+      /* L'ECRAN NE DEMANDE RIEN (invariant 2, et c'est un ecran destine a des
+         mineurs) : il le dit lui-meme, et aucun champ de saisie ne s'y trouve. */
+      verifier(/ne demande ni votre âge ni aucune information personnelle/.test(m18.brut),
+        `${etq} · Avant 18 ans : l'écran dit qu'il ne demande ni l'âge ni aucune information personnelle`);
+      /* ON NE COMPTE QUE LES CHAMPS REELLEMENT PRESENTS A L'ECRAN. expo-router
+         laisse l'accueil monte en aria-hidden derriere cet ecran : un
+         `locator("input")` nu comptait son champ de recherche et la garde
+         accusait « Avant 18 ans » d'un champ qui n'est pas le sien. */
+      const champs = await page.evaluate(() => [...document.querySelectorAll("input, textarea, select")]
+        .filter(e => e.offsetParent !== null && !e.closest('[aria-hidden="true"]')).length);
+      verifier(champs === 0, `${etq} · Avant 18 ans : aucun champ de saisie sur cet écran (${champs})`);
+      /* Chaque repere renvoie a sa source officielle, NOMMEE (invariant 4).
+         La garde compte par le LIBELLE, pas par le role : ces affordances sont
+         des `role="link"` — ce qui est juste, elles ouvrent une page exterieure —
+         et une premiere version qui cherchait `role="button"` en trouvait zero,
+         puis accusait l'ecran de n'avoir aucune source alors qu'il en porte
+         quatre. Compter ce que l'on veut dire, pas la forme qu'on suppose. */
+      const sources = await page.evaluate(() => document.querySelectorAll('[aria-label^="Lire la source officielle"]').length);
+      verifier(sources >= 3, `${etq} · Avant 18 ans : chaque repère renvoie à sa source officielle nommée (${sources})`);
+      await page.getByRole("button", { name: /^Revenir à l'écran/ }).last().click();
+      await page.getByText("Où habitez-vous ?").waitFor({ timeout: 5000 });
+    } else {
+      verifier(false, `${etq} · Avant 18 ans : l'entrée est introuvable sur l'accueil — l'écran n'a pas pu être mesuré`);
+    }
+    /* On remet le parcours la ou il etait : commune choisie. */
+    await page.getByLabel(/Où habitez-vous/).fill(COMMUNE.saisie);
+    await page.getByRole("button", { name: new RegExp("^" + COMMUNE.nom + ",") }).first().click();
+    await page.getByText("Aller plus loin").first().waitFor({ timeout: 15000 });
+  }
+
   await page.getByRole("button", { name: "Revenir à l'accueil" }).last().click();
   await page.getByText("Où habitez-vous ?").waitFor({ timeout: 5000 });
   verifier(true, `${etq} : retour à l'accueil`);
