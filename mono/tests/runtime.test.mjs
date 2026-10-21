@@ -1228,14 +1228,20 @@ async function auj(marqueur) {
   await c.close();
   return t;
 }
-const zero = await auj("2026-09-01T10:00:00.000Z");
+/* La visite « zero nouveaute » est la date du jour, et non une date figee : la donnee
+   publiee change a chaque collecte (Ustaritz a recu un vote posterieur au 1er
+   septembre 2026), et une date figee rendait ce controle faux sans que l'application
+   ait tort. Le controle garde son sens : aucun fait posterieur a la visite => la phrase
+   datee, sans bloc « Depuis votre visite ». */
+const JOUR = new Date().toISOString().slice(0, 10);
+const zero = await auj(JOUR + "T00:00:00.000Z");
 verif("retention (0 nouveaute) — rien de nouveau depuis la visite : aucun bloc, aucun « 0 », aucune fausse nouveaute",
   !/Depuis votre visite/.test(zero) && !/\b0 nouveaut/.test(zero), zero.slice(0, 300).replace(/\n+/g, " / "));
 /* 28/09/2026 : une absence produit une phrase. Avant, le lecteur revenu voyait
    la meme page qu'au premier passage, sans rien qui lui dise qu'aucun fait
    n'avait ete publie depuis. */
 verif("retention (0 nouveaute) — le dit en une phrase datee, sans alarme",
-  /Rien de nouveau depuis votre visite du 1er septembre 2026 : aucune décision datée n.a été publiée pour Ustaritz entre-temps\. Voici la plus récente\./.test(zero),
+  new RegExp("Rien de nouveau depuis votre visite du " + dateFr(JOUR).replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + " : aucune décision datée n.a été publiée pour Ustaritz entre-temps\\. Voici la plus récente\\.").test(zero),
   zero.slice(0, 300).replace(/\n+/g, " / "));
 const quelques = await auj("2026-07-20T10:00:00.000Z");
 verif("retention (quelques) — depuis le 20/07 : les faits du 21/07 apparaissent, ceux du 20/07 non",
