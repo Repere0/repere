@@ -51,13 +51,25 @@ complet est inaccessible : il est servi depuis
 `productionresultssa4.blob.core.windows.net`, que le proxy du conteneur refuse.
 Mesuré, pas supposé.
 
-**5. L'issue d'état de santé n'existe pas.** `outils/sante_publique.sh` doit
-tenir « une seule issue GitHub, toujours ouverte, dont le TITRE seul dit
-l'état ». Parmi les **100 issues les plus récentes** du dépôt, aucune ne porte un
-titre `[OK]` ou `[ECHEC]`, ni ne contient « collecte quotidienne ». L'étape qui
-l'appelle porte `continue-on-error: true` : si le script échoue, personne ne le
-voit. Le signal de santé sur lequel le porteur compte **n'est donc pas en
-service** — c'est un second problème, indépendant de Netlify.
+**5. ~~L'issue d'état de santé n'existe pas.~~ FAUX — corrigé le 22/10/2026.**
+
+> Ce point affirmait que le signal de santé n'était pas en service. **C'était une
+> erreur de ma part, répétée deux fois.** L'issue **#18 « [ECHEC] etat de la
+> collecte quotidienne »** existe, est **ouverte**, et a été mise à jour le
+> 21/10/2026 à 10 h 45 UTC par le run en échec lui-même — avec le lien du run et
+> la dernière prod saine mesurée en direct. `outils/sante_publique.sh` fonctionne
+> exactement comme prévu, et l'étape qui l'appelle réussit réellement.
+>
+> **La cause de mon erreur**, qui vaut d'être connue : `gh api --paginate` suit
+> l'en-tête `Link`, que GitHub écrit sous la forme `repositories/{id}/…`, et le
+> proxy du conteneur de l'agent refuse les chemins à identifiant numérique. La
+> commande rend **la page 1 puis sort en 1**. L'issue #18 est en page 2. Avec un
+> `2>/dev/null`, une liste tronquée ressemble à une liste complète. Il faut
+> paginer à la main (`&page=N`) — et ne jamais conclure « ça n'existe pas » d'une
+> commande dont on n'a pas relevé le code de sortie.
+>
+> Rien dans ce document ne dépendait de ce point : le diagnostic Netlify (points
+> 1 à 4) reste établi.
 
 ## Hypothèse, clairement étiquetée comme telle
 
@@ -96,15 +108,20 @@ le téléphone affiche la dernière publication réussie. **La fraîcheur affich
 reste honnête** : l'invariant 9 et ses trois états sont tenus, et le parcours le
 vérifie. Le lecteur n'est pas trompé — il est seulement en retard.
 
-## Deux corrections possibles, non appliquées
+## Corrections — état au 22/10/2026
 
-Aucune n'a été faite : elles touchent `.github/workflows/`, protégé en écriture
-contre les outils distants, et aucune n'est urgente.
+L'affirmation « `.github/workflows/` est protégé en écriture contre les outils
+distants », écrite ici le 21/10, est **fausse** : l'écriture y est possible depuis
+le conteneur de l'agent, vérifiée. Elle n'avait simplement jamais été tentée.
 
-1. **Faire remonter la raison hors du journal.** Écrire le message de
-   `netlify-cli` dans le résumé de job (`$GITHUB_STEP_SUMMARY`) en plus de
-   l'annotation : le résumé est lisible depuis un téléphone et depuis l'API.
-2. **Rendre l'échec de l'issue de santé visible.** Retirer le
-   `continue-on-error: true` de cette étape, ou lui faire émettre un
-   `::warning::` quand le script sort en erreur — sinon le signal reste muet
-   sans que personne l'apprenne.
+1. **Faire remonter la raison hors du journal — APPLIQUÉE le 22/10/2026,**
+   avec l'accord du porteur. L'étape de publication écrit désormais dans
+   `$GITHUB_STEP_SUMMARY` le code de sortie, le code HTTP, la raison extraite et
+   les quarante dernières lignes de `netlify-cli`. Le résumé de job se lit depuis
+   un téléphone **et** depuis l'API, contrairement au journal complet. Dès le
+   prochain échec, la cause sera donc lisible sans ouvrir le journal.
+2. **~~Rendre l'échec de l'issue de santé visible.~~ Sans objet** : l'issue #18
+   est tenue correctement (voir le point 5 corrigé ci-dessus). Il n'y avait aucun
+   échec à rendre visible. Le `continue-on-error: true` de cette étape reste en
+   place, et sa raison d'être tient : une étape qui *rapporte* l'état ne doit pas
+   *décider* de la couleur du job.

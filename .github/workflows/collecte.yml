@@ -239,6 +239,38 @@ jobs:
             if grep -q "credit usage exceeded" "$RUNNER_TEMP/deploiement-netlify.txt"; then
               echo "::error title=Netlify::Le compte Netlify n'a plus de credits : aucune publication ne passera avant l'ajout de credits ou un changement d'hebergeur. Decision du porteur (depense)."
             fi
+            # LA RAISON DANS LE RESUME DE JOB — 22/10/2026.
+            #
+            # LE DEFAUT MESURE, LE 21/10. L'annotation ci-dessus N'EST PAS ARRIVEE :
+            # releve sur le run 39585904143, trois annotations de niveau `failure`,
+            # aucune portant le titre « Netlify refuse la publication ». La raison
+            # n'existait donc que dans le journal complet, servi depuis
+            # `productionresultssa4.blob.core.windows.net`, que le proxy du
+            # conteneur de l'agent refuse. Resultat : une publication en echec
+            # depuis des jours, et PERSONNE ne pouvait lire pourquoi — ni depuis un
+            # telephone, ni depuis une session d'agent.
+            #
+            # Le resume de job, lui, se lit dans les deux. On y recopie la raison
+            # extraite et une fin de sortie bornee.
+            #
+            # SECRETS : meme garantie que le `tee` du journal ci-dessus — GitHub
+            # masque la VALEUR des secrets enregistres dans le resume comme dans le
+            # journal, et netlify-cli n'imprime pas le jeton qu'on lui passe.
+            {
+              echo "## Publication Netlify : ECHEC"
+              echo ""
+              echo "Code de sortie : \`$CODE_DEPLOI\`${HTTP:+ · }${HTTP}"
+              echo ""
+              echo "Raison extraite : ${RAISON:-_aucun message d'erreur lisible dans la sortie de netlify-cli_}"
+              echo ""
+              echo "<details><summary>40 dernieres lignes de netlify-cli</summary>"
+              echo ""
+              echo '```'
+              tail -n 40 "$RUNNER_TEMP/deploiement-netlify.txt" 2>/dev/null || echo "(sortie absente)"
+              echo '```'
+              echo ""
+              echo "</details>"
+            } >> "$GITHUB_STEP_SUMMARY"
           fi
           if [ "$CODE_DEPLOI" = "124" ]; then
             echo "::error::La publication est restee BLOQUEE et a ete interrompue au bout de 5 minutes. netlify-cli attendait probablement une reponse a une question posee dans le vide."
