@@ -12,6 +12,8 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
+/* Les cinq echelons geles, lus a leur source unique. */
+const { ECHELONS } = await import("../../../packages/data-utils/src/invariants.js");
 
 const ici = dirname(fileURLToPath(import.meta.url));
 const SRC = process.env.MOBILE_SRC || join(ici, "..", "src");
@@ -58,4 +60,23 @@ test("l'ecran territoire est distinct de « Qui decide » : ni chaine des elus, 
   assert.doesNotMatch(territoire, /chaineDecision/, "territoire.tsx calcule la chaine des elus");
   assert.match(territoire, /Circonscription législative|Circonscription legislative/);
   assert.match(territoire, /Intercommunalité|Intercommunalite/);
+});
+
+test("chaque rubrique de territoire porte la couleur de son echelon, et son nom en toutes lettres", () => {
+  /* 21/10/2026. « Chez vous » nommait des echelons sans jamais les relier a la
+     legende de couleurs de « Qui decide ». Un filet dans la couleur de l'echelon
+     fait le lien. Cette garde verifie deux choses :
+       1. les echelons cites existent parmi les CINQ GELES — pas de sixieme
+          couleur introduite en douce par une faute de frappe ;
+       2. chaque rubrique coloree garde son LIBELLE ECRIT : la couleur ne porte
+          jamais seule l'information (invariant 7).
+     Eprouvee en remplacant echelon="dept" par echelon="departement" : elle tombe
+     sur « echelon inconnu ». */
+  const territoire = lire("territoire.tsx");
+  const cites = [...territoire.matchAll(/<Rubrique\s+titre="([^"]+)"\s+echelon="([^"]+)"/g)];
+  assert.ok(cites.length >= 4, `attendu au moins 4 rubriques a echelon, trouve ${cites.length}`);
+  for (const [, titre, echelon] of cites) {
+    assert.ok(Object.keys(ECHELONS).includes(echelon), `echelon inconnu « ${echelon} » sur la rubrique « ${titre} »`);
+    assert.ok(titre.trim().length > 2, `la rubrique a echelon « ${echelon} » n'a pas de libelle ecrit`);
+  }
 });
