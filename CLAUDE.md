@@ -50,7 +50,7 @@ explicite du porteur les change ; la PR qui l'applique met alors à jour
 7. **Cinq couleurs d'échelon gelées.** Une **palette d'interface fixe**, décidée
    par le porteur le 20/10/2026 d'après ses maquettes (teal `#0D3B43`, émeraude
    `#00A896`, ambre `#F59E0B`, corail `#BE123C`, ardoise `#0F172A`, et leurs
-   équivalents sombres — déclarée dans `data-utils/invariants.js`). Toute autre
+   équivalents sombres — déclarée dans `mono/packages/data-utils/src/invariants.js`). Toute autre
    couleur reste sous une amplitude de 24 sur les canaux RGB. **Trois exceptions**,
    chacune décidée par le porteur : le tricolore du logo (16/10/2026), réservé à la
    marque ; **la couleur d'un groupe parlementaire** telle que l'Assemblée la publie
@@ -112,8 +112,7 @@ explicite du porteur les change ; la PR qui l'applique met alors à jour
 
 - Mesurer plutôt que supposer ; un chiffre non mesuré s'écrit comme non mesuré.
 - Un garde-fou se prouve en le cassant.
-- Apostrophe typographique `’` interdite dans le code ; accents obligatoires dans
-  tout texte affiché.
+- Apostrophe `’` interdite dans le code ; accents obligatoires à l'écran.
 - Un fait durable va dans `CONTEXTE_PROJET.md`, une procédure dans une skill,
   jamais dans ce fichier.
 - Avant toute PR qui touche ce fichier, `AGENTS.md`, une skill ou

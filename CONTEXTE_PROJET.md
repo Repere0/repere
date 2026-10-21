@@ -10,7 +10,7 @@ quel en début de session.
 > les chiffres du banc, la carte des fichiers et l'ordre de travail qu'elles donnent
 > sont historiques.
 
-- **Dernière mise à jour :** 26 août 2026
+- **Dernière mise à jour :** 21 octobre 2026
 - **Version de l'application :** `app_repere_v18_20.html`
 - **Dépôt :** `C:\Users\APina\repere` (Windows) — la chaîne tourne sur GitHub Actions
 - **En ligne :** https://repereapp.netlify.app/
@@ -256,7 +256,10 @@ Le banc, lui, est bloquant : c'est ce qui autorise à publier sans qu'un humain 
 
 ---
 
-## 7. Inventaire des données — mesuré le 25 août 2026
+## 7. Inventaire des données — état historique au 25 août 2026
+
+> Photographie d'août 2026, gardée pour l'historique. Ne pas la lire comme l'état
+> courant : les couvertures ont bougé depuis.
 
 | donnée | couverture | source · mise à jour |
 |---|---:|---|
@@ -324,6 +327,20 @@ PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers node test_repere.mjs site_v18_20/index
 ## 10. Ce qui a été refusé, et pourquoi
 
 Ne pas reproposer sans argument neuf.
+
+- **Étiquettes de rubrique sur les cartes 1 et 2 d'« Aujourd'hui »** (« Projet aidé
+  par l'État », « Budget municipal »), dans le langage visuel des maquettes Stitch.
+  Essayées le 21/10/2026, **mesurées à 45 px**, et retirées : la troisième réponse
+  passait sous le pli (`886 px pour 844` à 390 × 844), ce que la garde
+  « les trois réponses tiennent dans le premier écran » refuse. Les 45 px n'existent
+  nulle part gratuitement — le pied de la carte 2 fait honnêtement 96 px (deux
+  rangées de cibles tactiles de 48 px, 338 px de contenu pour 326 disponibles) et le
+  réduire casserait une cible de 44 px ou le nom d'une source (invariant 4).
+  **Arbitrage du porteur, 21/10/2026 : option 1, on garde les trois réponses
+  au-dessus du pli sans étiquettes.** Les deux autres sorties, écartées par lui :
+  retirer le bloc `<Marque />` de l'écran commune (~60 px, mais décision de marque
+  déjà prise le 16/10), ou accepter le défilement. À ne rouvrir que si le pli
+  lui-même est rediscuté.
 
 - **Ingestion de flux de presse.** Reproduction d'œuvre protégée, et un produit qui
   promet « sources officielles uniquement » ne peut pas hériter de la ligne
@@ -453,7 +470,7 @@ mesurés en local, au kilo-octet près.
 **Une seule chaîne de vérité (mis à jour le 28/09/2026).** La bascule a eu lieu :
 `collecte.yml` construit le site **depuis `mono/`** (via `outils/pipeline.sh`),
 lance le banc complet après le build, et publie. Le mono-HTML reste la source des
-données (`extract-html.js` lit ses blocs `REPERE_*`). L'ancien `build-publish.yml`,
+données (`extract-html.js` lit ses blocs `REPERE_*`). L'ancien workflow build-publish.yml,
 qui construisait le monorepo par ses propres étapes « en attendant la bascule »,
 divergeait de la vraie chaîne et était rouge chaque jour depuis le 23/09 (invariants
 relisant `dist/` lancés avant le build). Il est remplacé par `epreuve.yml` : les
