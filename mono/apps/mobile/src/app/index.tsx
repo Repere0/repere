@@ -14,7 +14,7 @@ import { chargerCommunesBeta, chargerIndex, ETATS, PHRASES } from "../lib/donnee
 import { Bouton, Carte, LienAction, Texte, Vide } from "../lib/composants";
 import { useSelection } from "../lib/selection";
 import { Marque } from "../ui/marque";
-import { feuille, couleurs, CIBLE, PAS, POLICE, RAYON, TYPO } from "../lib/theme";
+import { feuille, couleurs, CIBLE, PAS, POLICE, RAYON, TYPO, OMBRE } from "../lib/theme";
 
 type Ligne = [string, string, string[]];
 type Beta = { communes: Record<string, string>; manquantes?: Record<string, string>; source?: { producteur?: string } };
@@ -122,8 +122,21 @@ export default function Accueil() {
               accessibilityLabelledBy="question"
               style={s.champ}
             />
-            <LienAction texte="Vous avez moins de 18 ans ?" etiquette="Vous avez moins de 18 ans ? Lire les repères utiles"
-              onPress={() => router.push("/avant-18")} />
+            {/* LA BANNIERE « MOINS DE 18 ANS » (20/10/2026, maquettes du porteur) :
+                une carte avec son badge et sa fleche, au lieu d'un lien de texte.
+                C'est une page du produit, pas une note de bas de page. */}
+            <Pressable onPress={() => router.push("/avant-18")} accessibilityRole="button"
+              accessibilityLabel="Vous avez moins de 18 ans ? Lire les repères utiles"
+              style={({ pressed }) => [s.banniere, pressed && { opacity: 0.75 }]}>
+              <View style={{ flex: 1, gap: PAS }}>
+                <View style={s.badge}><Text style={s.badgeTexte}>Repères pour les jeunes</Text></View>
+                <Text style={s.banniereTitre}>Vous avez moins de 18 ans&nbsp;?</Text>
+                <Text style={s.banniereCorps}>Le recensement, la JDC, l'inscription sur la liste électorale, et ce qui vous concerne déjà.</Text>
+              </View>
+              <View style={s.rond} accessibilityElementsHidden importantForAccessibility="no">
+                <Text style={s.rondFleche}>→</Text>
+              </View>
+            </Pressable>
             {etat !== ETATS.SERVI && phrase ? (
               <Vide titre={phrase.titre} corps={phrase.corps}
                 action={etat === ETATS.EN_COURS ? undefined : "Réessayer"} onAction={() => setEssai(n => n + 1)} />
@@ -136,7 +149,23 @@ export default function Accueil() {
                     departement, commune gardee seulement sur demande) passe dans
                     « Sources », section « Ce que Repère sait de vous » : elle reste vraie
                     et trouvable, sans peser sur le premier ecran. */}
-                <Text style={[s.note, { color: couleurs.encre }]}>Pas de compte, pas d'e-mail : Repère ne sait pas qui vous êtes.</Text>
+                {/* LES TROIS PILIERS (20/10/2026, maquettes du porteur) : trois
+                    promesses tenues, en trois tuiles. Chacune est VRAIE et
+                    verifiable ailleurs dans l'application — aucune n'est un slogan :
+                    l'absence de compte est l'invariant 2, les sources sont sur chaque
+                    chiffre (invariant 4), et la couverture est celle de la beta. */}
+                <View style={s.piliers}>
+                  {[
+                    ["Pas de compte", "ni e-mail : Repère ne sait pas qui vous êtes"],
+                    ["Chaque chiffre sourcé", "producteur, date et lien officiel"],
+                    ["Hors ligne", "une fois chargé, votre territoire reste lisible"],
+                  ].map(([titre, corps]) => (
+                    <View key={titre} style={s.pilier}>
+                      <Text style={s.pilierTitre}>{titre}</Text>
+                      <Text style={s.pilierCorps}>{corps}</Text>
+                    </View>
+                  ))}
+                </View>
               </>
             ) : null}
             {manquante ? (
@@ -200,4 +229,28 @@ const s = feuille(() => StyleSheet.create({
   pastille: { width: 10, height: 10, borderRadius: 5, backgroundColor: couleurs.ville },
   resultatNom: { fontSize: 17, lineHeight: 22, color: couleurs.encre, fontWeight: "600" },
   resultatDep: { fontSize: 14, lineHeight: 19, color: couleurs.sourd },
+  banniere: {
+    flexDirection: "row", alignItems: "center", gap: PAS * 3,
+    backgroundColor: couleurs.carte, borderRadius: RAYON.carte, padding: PAS * 4,
+    borderWidth: 1, borderColor: couleurs.trait, ...OMBRE,
+  },
+  badge: {
+    alignSelf: "flex-start", backgroundColor: couleurs.accentVoile,
+    borderRadius: RAYON.pastille, paddingHorizontal: PAS * 2.5, paddingVertical: 3,
+  },
+  badgeTexte: { fontSize: 11, fontWeight: "800", color: couleurs.accentTexte, letterSpacing: 0.4, textTransform: "uppercase" },
+  banniereTitre: { fontFamily: POLICE.titre, fontSize: 19, lineHeight: 24, color: couleurs.encre },
+  banniereCorps: { fontSize: 14, lineHeight: 19, color: couleurs.sourd },
+  rond: {
+    width: 44, height: 44, borderRadius: 22, backgroundColor: couleurs.inverse,
+    alignItems: "center", justifyContent: "center",
+  },
+  rondFleche: { color: couleurs.surInverse, fontSize: 20, fontWeight: "700" },
+  piliers: { gap: PAS * 2 },
+  pilier: {
+    backgroundColor: couleurs.carte, borderRadius: RAYON.bloc, padding: PAS * 3,
+    borderWidth: 1, borderColor: couleurs.trait, gap: 2,
+  },
+  pilierTitre: { fontSize: 15, fontWeight: "700", color: couleurs.encre },
+  pilierCorps: { fontSize: 13, lineHeight: 18, color: couleurs.sourd },
 }));
