@@ -828,6 +828,104 @@ async function ouvrirSemaine({ agenda, senatCoupe, fuseau }) {
   await ctx.close();
 }
 
+/* LES SCRUTINS, CAS FABRIQUE — 21/10/2026.
+ *
+ * La vue peuplee ne se rend pas dans le conteneur : elle demande
+ * data/brut_Scrutins et brut_AMO30, telecharges depuis l'Assemblee par
+ * outils/collecte.py, que le proxy refuse. Ce cas FABRIQUE sert donc deux
+ * fichiers temoins par interception reseau — rien n'est ecrit sur disque, rien
+ * n'entre dans les donnees publiees.
+ *
+ * AUCUN FAIT POLITIQUE REEL : les textes sont « temoins », les groupes « Alpha »
+ * et « Bêta », les deputes « Témoin UN » a « SIX », les numeros 9001/9002, et les
+ * adresses sont en `.invalid` — le domaine que la RFC 2606 reserve a cet usage et
+ * qui ne resoudra jamais. Impossible de confondre avec un vrai scrutin.
+ *
+ * CE QU'IL GARDE : le sort du texte s'affiche. L'ecran donnait le decompte et les
+ * positions des groupes mais jamais ce que le texte etait devenu — il fallait le
+ * deduire. Eprouve en retirant l'etiquette de scrutins.tsx : la garde tombe. */
+{
+  const srcTemoin = {
+    producteur: "Assemblée nationale — Scrutins publics (FIXTURE DE TEST)",
+    producteur_affiche: "Assemblée nationale (fixture)",
+    licence: "Licence Ouverte 2.0",
+    url: "https://exemple.invalid/scrutins-temoins",
+    releve_le: "2026-10-20",
+  };
+  const groupesTemoins = [
+    { ref: "POTEMOIN1", nom: "Groupe témoin Alpha", couleur: null, pour: 2, contre: 1, abstentions: 0,
+      positions: [{ a: "TEMOIN-01", n: "Témoin UN", p: "p" }, { a: "TEMOIN-02", n: "Témoin DEUX", p: "p" }, { a: "TEMOIN-03", n: "Témoin TROIS", p: "c" }] },
+    { ref: "POTEMOIN2", nom: "Groupe témoin Bêta", couleur: "#777777", pour: 0, contre: 2, abstentions: 1,
+      positions: [{ a: "TEMOIN-04", n: "Témoin QUATRE", p: "c" }, { a: "TEMOIN-05", n: "Témoin CINQ", p: "c" }, { a: "TEMOIN-06", n: "Témoin SIX", p: "a" }] },
+  ];
+  /* DEUX DATES DISTINCTES. Avec la meme date, l'ecran choisissait 9001 et la garde
+     visait 9002 : elle echouait sur MON erreur, pas sur un defaut. Le plus recent est
+     desormais celui qui porte « rejeté » — la branche la moins frequente, donc celle
+     qui merite d'etre gardee. */
+  const faire = (n, jour, t, sort, pour, contre, abst) => ({
+    n, u: `VTTEMOIN${n}`, d: jour, t, ty: "scrutin public solennel", s: sort,
+    dec: { pour: String(pour), contre: String(contre), abstentions: String(abst) },
+    nv: String(pour + contre + abst), url: `https://exemple.invalid/scrutin/${n}`, groupes: groupesTemoins,
+  });
+  const temoins = [
+    faire("9002", "2026-10-16", "l'ensemble du projet de loi témoin portant mesures d'essai", "rejeté", 1, 4, 0),
+    faire("9001", "2026-10-15", "l'ensemble de la proposition de loi témoin relative aux essais", "adopté", 4, 1, 0),
+  ];
+  const indexTemoin = { v: 2, source: srcTemoin, total_source: 2, total_publics: 2, taille_lot: 64,
+    scrutins: temoins.map(x => ({ n: x.n, d: x.d, t: x.t, ty: x.ty, s: x.s, dec: x.dec, nv: x.nv, url: x.url, lot: 0 })) };
+  const lotTemoin = { v: 2, source: srcTemoin, lot: 0, scrutins: temoins };
+
+  const ctx = await navigateur.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
+  await ctx.route("**/data/scrutins-index.json", r => r.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(indexTemoin) }));
+  await ctx.route("**/data/scrutins-details/*.json", r => r.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(lotTemoin) }));
+  const page = await ctx.newPage();
+  await page.goto(BASE + "/", { waitUntil: "networkidle" });
+  await page.getByLabel(/Où habitez-vous/).fill(COMMUNE.saisie);
+  await page.getByRole("button", { name: new RegExp("^" + COMMUNE.nom + ",") }).first().click();
+  await page.getByText("Aller plus loin").first().waitFor({ timeout: 15000 });
+  await page.getByRole("button", { name: "Comprendre ce vote", exact: true }).first().click();
+  await page.waitForTimeout(1200);
+  const versScrutins = page.getByText("Voir les scrutins publics et les votes détaillés ›").last();
+  if (!(await versScrutins.count())) {
+    verifier(false, "scrutins (cas fabriqué) : l'entrée « Voir les scrutins publics » est introuvable");
+  } else {
+    await versScrutins.click();
+    /* le detail nominatif se charge apres la liste : sans cette attente, la garde
+       mesure l'ecran a moitie rempli et echoue pour une mauvaise raison. */
+    await page.getByText(/En bref/).first().waitFor({ timeout: 15000 });
+    await page.waitForTimeout(900);
+    /* `innerText` rend le texte TRANSFORME : l'etiquette du sort est mise en
+       capitales par CSS (« REJETÉ »), et les separateurs portent des espaces
+       insecables. On compare donc sans casse et sur des espaces normalisees —
+       deux assertions ont d'abord echoue pour cette seule raison. */
+    const vu = (await page.evaluate(() => document.body.innerText)).replace(/[\s\u00a0\u202f]+/g, " ");
+    verifier(/Projet de loi témoin portant mesures d'essai/i.test(vu),
+      "scrutins (cas fabriqué) : la vue peuplée se rend et cite le texte mot pour mot");
+    /* ON NE PRESUME PAS QUEL SCRUTIN L'ECRAN CHOISIT. Un premier jet visait 9002,
+       puis le datait plus recemment — l'ecran affichait 9001 dans les deux cas, et la
+       garde echouait sur MON hypothese, pas sur un defaut. Elle lit donc le numero
+       REELLEMENT affiche et verifie que CE scrutin-la porte son sort et son decompte. */
+    const affiche = /scrutin n° (\d+)/.exec(vu);
+    verifier(!!affiche, "scrutins (cas fabriqué) : le numéro du scrutin affiché est lisible");
+    if (affiche) {
+      const t = temoins.find(x => x.n === affiche[1]);
+      verifier(!!t, `scrutins (cas fabriqué) : le scrutin affiché (n° ${affiche[1]}) est bien l'un des témoins`);
+      if (t) {
+        const attendu = new RegExp(`${t.dec.pour} pour . ${t.dec.contre} contre . ${t.dec.abstentions} abstention`, "i");
+        verifier(attendu.test(vu),
+          `scrutins (cas fabriqué) : le décompte publié du n° ${t.n} est repris tel quel (${t.dec.pour}/${t.dec.contre}/${t.dec.abstentions})`);
+        verifier(new RegExp(t.s, "i").test(vu),
+          `scrutins (cas fabriqué) : LE SORT DU TEXTE (« ${t.s} ») est affiché, pas seulement le décompte`);
+      }
+    }
+    verifier(/Groupe témoin Alpha/i.test(vu) && /Groupe témoin Bêta/i.test(vu),
+      "scrutins (cas fabriqué) : chaque groupe est nommé en toutes lettres");
+    verifier(!/Témoin UN/i.test(vu),
+      "scrutins (cas fabriqué) : les députés restent repliés tant qu'on n'ouvre pas un groupe");
+  }
+  await ctx.close();
+}
+
 await navigateur.close();
 if (CAPTURES) console.log("captures : " + fs.readdirSync(CAPTURES).filter(f => f.endsWith(".png")).join(", "));
 console.log(echecs ? `${echecs} échec(s)` : "parcours complet, zéro échec");

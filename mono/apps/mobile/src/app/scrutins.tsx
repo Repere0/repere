@@ -27,6 +27,7 @@ import { Vide } from "../lib/composants";
 import { SCRUTINS_AN } from "../lib/absences";
 import { PastilleSource } from "../ui/source";
 import { feuille, PAS, TYPO, couleurs, CIBLE, RAYON, OMBRE } from "../lib/theme";
+import { Etiq } from "../ui/signatures";
 import { couleurDeGroupeAdmise, peutPorterDuTexte, texteSurCouleur } from "@repere/data-utils";
 import { SIGLES_GROUPES } from "../lib/groupes";
 import { dateFr, titreLisible } from "@repere/core";
@@ -417,6 +418,21 @@ export default function Scrutins() {
             ) : detail ? (
               <View style={s.detail}>
                 <Text style={TYPO.etiquette}>{detail.ty} · {dateFr(detail.d)} · scrutin n° {detail.n}</Text>
+                {/* LE SORT DU TEXTE — 21/10/2026, vu en rendant la vue peuplee avec une
+                   fixture temoin. L'ecran donnait le decompte (« 1 pour · 4 contre ») et
+                   les positions des groupes, mais JAMAIS ce que le texte est devenu. Le
+                   lecteur devait le deduire du decompte — or deduire est exactement ce
+                   que l'application s'interdit de lui demander.
+                   Le sort vient du champ `s` publie par l'Assemblee, jamais d'un calcul,
+                   et il porte les memes couleurs que sur « Aujourd'hui » et « Comprendre
+                   ce vote » : un seul langage pour un meme fait. */}
+                {detail.s ? (
+                  <View style={{ flexDirection: "row", flexWrap: "wrap", gap: PAS * 2 }}>
+                    <Etiq texte={detail.s}
+                      fond={/adopt/i.test(detail.s) ? couleurs.accentVoile : couleurs.corailVoile}
+                      texteCouleur={/adopt/i.test(detail.s) ? couleurs.accentTexte : couleurs.corail} />
+                  </View>
+                ) : null}
                 <Text style={[s.detailTitre, titreLisible(detail.t).length > 90 && s.detailTitreLongue]}>{titreLisible(detail.t)}</Text>
 
                 <View style={s.blocLecture}>
