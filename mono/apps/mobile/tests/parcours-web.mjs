@@ -780,7 +780,32 @@ async function ouvrirSemaine({ agenda, senatCoupe, fuseau }) {
   await ctx.close();
 }
 
+/* LA DOCTRINE DU VIDE PORTE UN LIEN — 21/10/2026, invariant 5.
+   Une commune d'Ile-de-France que Repere ne couvre pas encore (Barbey, Lissy)
+   recoit une phrase vraie qui NOMME la source en cause. Il lui manquait la
+   seconde moitie de l'invariant : un lien, pour que le lecteur verifie lui-meme.
+   Eprouvee en retirant `lien={{...}}` de index.tsx : la garde tombe. */
+{
+  const ctx = await navigateur.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
+  const page = await ctx.newPage();
+  await page.goto(BASE + "/", { waitUntil: "networkidle" });
+  await page.getByLabel(/Où habitez-vous/).fill("barbey");
+  await page.waitForTimeout(1200);
+  const etat = await page.evaluate(() => {
+    const t = document.body.innerText;
+    const liens = [...document.querySelectorAll('[role="link"],a')]
+      .map(e => (e.getAttribute("aria-label") || e.textContent || "").trim());
+    return { phrase: /existe bien en Île-de-France/.test(t), source: /Répertoire national des élus/.test(t), liens };
+  });
+  verifier(etat.phrase, "vide : une commune non couverte recoit une phrase vraie, pas une liste vide");
+  verifier(etat.source, "vide : la phrase nomme la source qui ne porte rien");
+  verifier(etat.liens.some(l => /Répertoire national des élus/i.test(l)),
+    `vide : la phrase porte AUSSI un lien vers la source (invariant 5) ${JSON.stringify(etat.liens.slice(0, 6))}`);
+  await ctx.close();
+}
+
 await navigateur.close();
 if (CAPTURES) console.log("captures : " + fs.readdirSync(CAPTURES).filter(f => f.endsWith(".png")).join(", "));
 console.log(echecs ? `${echecs} échec(s)` : "parcours complet, zéro échec");
 process.exit(echecs ? 1 : 0);
+

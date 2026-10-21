@@ -9,7 +9,7 @@ import { useEffect, useMemo, useState } from "react";
 import { FlatList, KeyboardAvoidingView, Platform, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { router } from "expo-router";
-import { mots, motsCible, correspond, trouverCommunes, departementDe } from "@repere/core";
+import { mots, motsCible, correspond, trouverCommunes, departementDe, RNE_URL } from "@repere/core";
 import { chargerCommunesBeta, chargerIndex, ETATS, PHRASES } from "../lib/donnees";
 import { Bouton, Carte, LienAction, Texte, Vide } from "../lib/composants";
 import { useSelection } from "../lib/selection";
@@ -169,8 +169,14 @@ export default function Accueil() {
               </>
             ) : null}
             {manquante ? (
+              /* UN LIEN, PAS SEULEMENT UNE PHRASE — 21/10/2026. L'invariant 5 demande
+                 « une phrase vraie ET un lien ». L'etat « aucune commune ne correspond »
+                 portait bien une sortie ; celui-ci, non : le lecteur de Barbey lisait que
+                 le Repertoire ne porte rien sur sa commune, sans pouvoir le verifier.
+                 Le lien mene a la source nommee, pas a une page de Repere. */
               <Vide titre={`${manquante[1]} existe bien en Île-de-France : c'est nous qui n'avons pas encore sa fiche.`}
-                corps="Le Répertoire national des élus ne porte aucune ligne pour cette commune. Ce n'est pas une erreur de votre part, et ce n'est pas la preuve que la commune n'existe pas." />
+                corps="Le Répertoire national des élus ne porte aucune ligne pour cette commune. Ce n'est pas une erreur de votre part, et ce n'est pas la preuve que la commune n'existe pas."
+                lien={{ texte: "Le Répertoire national des élus", url: RNE_URL }} />
             ) : null}
             {rien ? (
               /* 08/10/2026 : « Rien ne correspond » laissait croire que la commune
