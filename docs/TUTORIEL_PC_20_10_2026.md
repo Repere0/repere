@@ -24,9 +24,11 @@ Puis Expo Go, même réseau Wi-Fi, scan du QR.
 
 ### Le parcours de 3 minutes, écran par écran
 
-> **Mis à jour en fin de soirée.** La branche contient maintenant onze commits,
-> dont le quatrième onglet et les couleurs politiques. Le parcours ci-dessous
-> les inclut.
+> **Mis à jour dans la nuit.** La branche contient quatorze commits. Les deux
+> derniers appliquent **le design system de tes maquettes Stitch** : palette
+> gris-bleu lin, teal républicain, jauges émeraude/corail, étiquettes de
+> scrutin, et les trois postes des 100 € visibles d'un coup. Le parcours
+> ci-dessous les inclut.
 
 1. **Bascule ton téléphone en thème sombre** (Réglages → Luminosité → Sombre),
    Repère ouvert. L'application suit, sans réglage à l'intérieur : tu as déjà
@@ -53,8 +55,14 @@ Puis Expo Go, même réseau Wi-Fi, scan du QR.
    elle dit « Parti : non publié par la source. Repère ne le déduit pas. » —
    c'est la réponse honnête tant que la nuance politique n'est pas collectée
    (voir § 5).
-8. **Repasse en clair** : rien ne doit avoir bougé. C'est le but — le thème
-   clair n'a pas été retouché.
+8. **« Où va cet argent »** montre les **trois postes** des 100 € dépensés
+   (47 € / 28 € / 25 €), chacun avec sa jauge, comme sur ta maquette. Le
+   troisième est « Autres dépenses » : c'est 100 moins les deux parts publiées,
+   et Repère ne devine pas ce qu'il contient.
+9. **« Comprendre ce vote »** : étiquettes « Scrutin public » et « Adopté », la
+   position en grand, la jauge tricolore et la pastille du député sur son banc.
+10. **Repasse en clair, puis en sombre, sur chaque écran** : les deux thèmes
+   sont déclinés.
 
 Si quelque chose est faux à l'écran, c'est l'écran qui a raison : dis-le-moi
 avec la capture.
