@@ -52,3 +52,9 @@ mono/scripts/questions-gouvernement/
 # du 06/10 au 08/10/2026. Jamais une sortie : jamais suivi.
 __pycache__/
 *.pyc
+
+# Le banc visuel (mono/apps/mobile/tests/captures.mjs) regenere la serie complete
+# en une commande : elle ne va pas dans le depot. Seules les images qui PROUVENT
+# un changement sont versionnees, sous docs/captures/preuves/.
+docs/captures/*
+!docs/captures/preuves/

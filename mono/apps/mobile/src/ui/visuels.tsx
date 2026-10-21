@@ -170,6 +170,12 @@ export function Frise({ jalons, etiquette }: { jalons: Jalon[]; etiquette?: stri
 export type Niveau = {
   echelon: Echelon; niveau: string; institution: string; lieu?: string | null;
   personne?: { nom: string; role: string } | null; decide?: string; note?: string; pied?: ReactNode;
+  /* UN FAIT QUI NE SE REPLIE PAS (21/10/2026). Tout ce qui va dans `note` part
+     dans « En savoir plus » : invisible tant qu'on ne deplie pas. Certains faits
+     doivent se lire SANS GESTE — par exemple que le president de
+     l'intercommunalite est aussi le maire, sans quoi deux cartes identiques se
+     suivent et se lisent comme un doublon. Court : une ligne, pas un paragraphe. */
+  aussi?: string;
 };
 /* `surNom` : quand il est donne, le nom de chaque personne ouvre sa fiche. Le nom
    est alors une cible de 48 px, lue comme un lien. */
@@ -209,6 +215,7 @@ export function Chaine({ niveaux, compact, surNom, refNiveau }: { niveaux: Nivea
               <Text style={compact ? TYPO.corps : TYPO.reponse}>{n.institution}</Text>
             )}
             {!compact && n.personne ? <Text style={TYPO.note}>{n.personne.role}</Text> : null}
+            {!compact && n.aussi ? <Text style={s.aussi}>{n.aussi}</Text> : null}
             {!compact && n.decide ? <Text style={TYPO.corps}>Décide : {n.decide}.</Text> : null}
             {/* DENSITE (16/10/2026) : le nom, le role et ce que le niveau decide restent
                 visibles ; les precisions (composition, nuances d'Ile-de-France, liens de
@@ -260,6 +267,9 @@ export function Depli({ titre, children, etiquette }: { titre: string; children:
 }
 
 const s = feuille(() => StyleSheet.create({
+  /* Le fait qui ne se replie pas : lisible sans etre criard — c'est une precision,
+     pas un avertissement, et Repere ne qualifie jamais un elu. */
+  aussi: { fontSize: 13, lineHeight: 18, fontWeight: "700", color: couleurs.accentTexte },
   ligneH: { flexDirection: "row", justifyContent: "space-between", alignItems: "baseline", gap: PAS * 2, flexWrap: "wrap" },
   piste: { height: 12, borderRadius: 6, backgroundColor: couleurs.voile, overflow: "hidden" },
   rempli: { height: "100%", borderRadius: 6 },

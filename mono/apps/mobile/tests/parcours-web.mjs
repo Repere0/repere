@@ -44,6 +44,19 @@ const MAIRE = await (async () => {
   try { const r = await fetch(BASE + "/data/departments/77.json"); const j = await r.json(); return j.communes["77284"].maire.nom.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"); }
   catch { return "Maire introuvable dans les données servies"; }
 })();
+/* LA MEME PERSONNE A DEUX ECHELONS (21/10/2026). Releve dans les donnees servies,
+   jamais recopie ici : si le Repertoire change, la garde suit. */
+const CUMUL = await (async () => {
+  try {
+    const j = await (await fetch(BASE + "/data/departments/77.json")).json();
+    const c = j.communes["77284"];
+    const maire = c.maire && c.maire.nom;
+    const pres = ((c.agglo && c.agglo.delegues) || []).find(x => /^Président/i.test(x.fonction || ""));
+    const net = x => x.normalize("NFD").replace(/\p{Diacritic}/gu, "").toLowerCase().replace(/\s+/g, " ").trim();
+    return maire && pres && net(maire) === net(pres.nom) ? pres.nom : null;
+  } catch { return null; }
+})();
+
 /* Le calendrier attendu, recalcule par le socle sur les fichiers servis (07/10/2026) :
    « a venir » vient de deriverAujourdhui lui-meme, jamais d'une regle recopiee ici. */
 const CAL = await (async () => {
@@ -398,6 +411,28 @@ for (const { largeur, theme } of [
     await page.getByRole("button", { name: action, exact: true }).first().click();
     await page.getByText(question).first().waitFor({ timeout: 10000 });
     await page.waitForTimeout(800);
+
+    /* LA MEME PERSONNE A DEUX ECHELONS — MESURE AVANT D'OUVRIR LES REPLIS.
+       Quand le Repertoire donne le meme nom au maire et au president de
+       l'intercommunalite, l'ecran doit le dire SANS QUE LE LECTEUR DEPLIE : sinon
+       deux cartes identiques se suivent et se lisent comme un doublon ou une
+       erreur (constate sur capture a Meaux, 21/10/2026).
+
+       POURQUOI ICI ET PAS PLUS BAS : la boucle qui suit ouvre tous les replis avant
+       de mesurer. Une premiere version de cette garde s'executait apres, donc apres
+       dépliage : elle restait VERTE avec la phrase cachee dans « En savoir plus »,
+       c'est-a-dire dans le cas exact qu'elle pretendait garder. Eprouvee ensuite en
+       remettant la phrase dans `note` : elle tombe.
+
+       Si un jour les deux mandats sont tenus par deux personnes, CUMUL vaut null et
+       la garde ne demande rien. */
+    if (action === QUI && CUMUL) {
+      const vu = await page.evaluate(() => [...document.querySelectorAll("*")]
+        .some(e => !e.children.length && /Également maire de/i.test(e.textContent || "")
+          && e.getBoundingClientRect().height > 0 && !e.closest('[aria-hidden="true"]')));
+      verifier(vu, `${etq} · Qui décide : ${CUMUL} est maire ET président de l'intercommunalité — l'écran doit le dire SANS déplier`);
+    }
+
     /* Les explications sont repliees (16/10/2026) : on les ouvre toutes, en deux
        passes, avant de mesurer — le contraste, les cibles et le texte se verifient
        aussi dans les replis. */
@@ -443,6 +478,13 @@ for (const { largeur, theme } of [
       verifier(/Licence : /.test(brut) && /Les noms des députés/.test(brut), `${etq} · Sources : chaque source dit sa licence, et la source des noms des députés est citée`);
     }
     if (action === QUI) verifier(ELUS_CANTON.length >= 2 && ELUS_CANTON.every(n => m.brut.includes(n)), `${etq} · Qui décide : tous les élus du canton sont nommés ${JSON.stringify(ELUS_CANTON)}`);
+    /* Quand le Repertoire donne le MEME nom au maire et au president de
+       l'intercommunalite, l'ecran doit le dire. Sans cette phrase, deux cartes
+       identiques se suivent et se lisent comme un doublon ou une erreur
+       (constate sur capture le 21/10/2026, a Meaux). Eprouvee en retirant la
+       phrase : « la meme personne au maire et a l'intercommunalite n'est pas
+       annoncee ». Si un jour les deux mandats sont tenus par deux personnes,
+       CUMUL vaut null et la garde ne demande rien. */
     /* 16/10/2026 : toucher le point « Région » amene la carte Région en haut de l'ecran. */
     if (action === QUI) {
       const point = page.getByRole("button", { name: /^Région :.*Aller à ce niveau$/ }).first();

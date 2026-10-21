@@ -47,6 +47,15 @@ function Parcours({ niveaux, aller }: { niveaux: Niveau[]; aller: (echelon: stri
   );
 }
 
+/* Deux noms publies designent-ils la meme personne ? On compare sans accents ni
+   casse ni espaces doubles : le Repertoire ecrit « Jean-François COPE » ici et
+   « Jean-Francois Cope » la. On ne rapproche QUE des chaines egales apres ce
+   nettoyage — jamais deux noms proches, qui seraient une supposition. */
+const meme = (a: string, b: string) => {
+  const net = (x: string) => x.normalize("NFD").replace(/\p{Diacritic}/gu, "").toLowerCase().replace(/\s+/g, " ").trim();
+  return net(a) === net(b);
+};
+
 /* 16/10/2026 (audit Lovable) : « aucune personne nommee » pouvait se lire « personne n'est
    elu ». La raison varie (intercommunalite dont le president vient d'une autre commune ;
    Paris, qui n'a reellement pas de conseil departemental) : la legende renvoie a la note
@@ -95,7 +104,22 @@ export default function QuiDecide() {
              la commune (@repere/core presidentIntercommunalite) ; sinon on dit pourquoi
              aucun nom n'est affiche, sans laisser croire qu'il n'y a pas d'elu. */
           const president = presidentIntercommunalite(f.agglo && f.agglo.delegues);
-          return { ...n, personne: president, institution: nomIntercommunalite(n.institution) || n.institution, note: [n.delegues
+          /* LA MEME PERSONNE A DEUX ECHELONS — 21/10/2026, vu sur capture.
+             A Meaux, « Jean-Francois COPE » apparaissait deux fois de suite, maire puis
+             president du conseil communautaire. Les deux mandats sont exacts et viennent
+             du meme Repertoire ; c'est la LECTURE qui trompait : deux cartes identiques
+             se lisent comme un doublon, ou comme une erreur. On le dit donc, comme un
+             fait publie, sans le qualifier : ni « cumul », ni appreciation. C'est
+             exactement ce que l'application promet de montrer — qui decide chez vous. */
+          const memePersonne = president && f.maire && f.maire.nom
+            && meme(president.nom, f.maire.nom);
+          return { ...n, personne: president, institution: nomIntercommunalite(n.institution) || n.institution,
+            /* VISIBLE, pas replie : dans `note`, la phrase partait dans « En savoir
+               plus » et l'ecran montrait toujours deux cartes identiques sans un mot
+               (constate sur capture apres un premier essai, 21/10/2026). */
+            aussi: memePersonne ? `Également maire de ${d.nomCommune} : la même personne décide à deux échelons.` : undefined,
+            note: [
+            n.delegues
             ? `Le Répertoire national des élus y liste ${n.delegues} élu${n.delegues > 1 ? "s" : ""} de ${d.nomCommune}. Vous ne l'élisez pas directement : ce sont des conseillers municipaux qui y siègent.`
             : "Le Répertoire national des élus ne porte pas de délégué pour cette commune à son intercommunalité.",
             president ? null : "L'intercommunalité a un président ; Repère n'affiche pas son nom, car il ne figure pas parmi les élus de cette commune que liste le Répertoire.",

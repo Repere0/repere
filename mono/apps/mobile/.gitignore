@@ -7,3 +7,6 @@ expo-env.d.ts
 *.tsbuildinfo
 dist-web/
 captures/
+
+# Le paquet natif bati pour verifier que le bundler iOS/Android passe (21/10/2026).
+dist-natif/
