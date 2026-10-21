@@ -105,6 +105,13 @@ function Case({ iso, jour, nb, onPress, taille, libelle, passe }: { iso: string;
   const choisi = iso === jour;
   const numero = Number(iso.slice(8, 10));
   const grand = taille === "semaine";
+  /* 44 ET NON 42 EN VUE MOIS (21/10/2026). La case du mois etait a 42 px, sous le
+     minimum. Elle avait echappe au banc deux fois : le selecteur des cibles ne
+     listait pas role="tab" (sans effet ici, la case est un bouton), mais surtout
+     le parcours ne basculait JAMAIS en vue mois — une vue derriere une bascule
+     n'est mesuree que si quelqu'un la bascule. Le parcours le fait desormais.
+     44 plutot que CIBLE (48) : la grille compte jusqu'a six rangees, et le
+     minimum suffit a la regle sans pousser la grille hors du premier ecran. */
   /* aria-current="date" et non aria-selected (21/10/2026) : la case est un
      bouton, pas un onglet, et aria-selected n'est valide que sur tab, option
      ou row. ARIA a l'attribut exact pour « le jour actuellement choisi ». */
@@ -119,7 +126,7 @@ function Case({ iso, jour, nb, onPress, taille, libelle, passe }: { iso: string;
          docs/TEST_NATIF_IPHONE.md) : la verbosite de VoiceOver ne se mesure
          pas depuis ce conteneur. */
       accessibilityHint="Affiche les textes examinés ce jour"
-      style={({ pressed }) => ({ flex: 1, minHeight: grand ? 58 : 42, alignItems: "center", justifyContent: "center", gap: 4, opacity: pressed ? 0.6 : 1 })}>
+      style={({ pressed }) => ({ flex: 1, minHeight: grand ? 58 : 44, alignItems: "center", justifyContent: "center", gap: 4, opacity: pressed ? 0.6 : 1 })}>
       {grand ? <Text style={{ fontSize: 13, color: couleurs.sourd, fontWeight: "600" }}>{LETTRES[rangLundi(iso)]}</Text> : null}
       <View style={{ width: grand ? 40 : 34, height: grand ? 40 : 34, borderRadius: 999, alignItems: "center", justifyContent: "center",
         backgroundColor: choisi ? couleurs.encre : "transparent" }}>
@@ -226,7 +233,7 @@ export default function AVenir() {
                     <View key={ligne} style={{ flexDirection: "row" }}>
                       {cases.slice(ligne * 7, ligne * 7 + 7).map((c, k) => c ? (
                         <Case key={c} iso={c} jour={jour} nb={compte[c] || 0} taille="mois" libelle={etatDe(c).libelle} passe={etatDe(c).etat === "passe"} onPress={() => choisirJour(c)} />
-                      ) : <View key={"v" + k} style={{ flex: 1, minHeight: 42 }} />)}
+                      ) : <View key={"v" + k} style={{ flex: 1, minHeight: 44 }} />)}
                     </View>
                   ))}
                 </View>
@@ -243,7 +250,8 @@ export default function AVenir() {
                   return (
                     <Pressable key={o.t} onPress={() => setInstitution(o.c)} accessibilityRole="tab"
                       accessibilityState={{ selected: actif }} aria-selected={actif} accessibilityLabel={`Afficher : ${o.c ? o.c : "toutes les institutions"}`}
-                      style={{ flex: 1, minHeight: 40, borderRadius: 999, backgroundColor: actif ? couleurs.carte : "transparent", alignItems: "center", justifyContent: "center" }}>
+                      /* CIBLE et non 40 — meme defaut, meme date que elu.tsx. */
+                      style={{ flex: 1, minHeight: CIBLE, borderRadius: 999, backgroundColor: actif ? couleurs.carte : "transparent", alignItems: "center", justifyContent: "center" }}>
                       <Text style={{ fontWeight: actif ? "800" : "600", color: couleurs.encre }}>{o.t}</Text>
                     </Pressable>
                   );

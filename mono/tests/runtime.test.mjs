@@ -89,12 +89,61 @@ if (fs.existsSync(FIXTURE) && !fs.existsSync(path.join(DIST, "data", "projets"))
     + Object.keys(parDep).length + " departements)");
 }
 
+/* LA FIXTURE DES SCRUTINS SOLENNELS — 21/10/2026, meme raison, meme idiome.
+ *
+ * LE DEFAUT MESURE. `scripts/scrutins-solennels.mjs` lit `../data/brut_Scrutins`,
+ * l'archive publiee par l'Assemblee. Ce conteneur ne joint pas
+ * data.assemblee-nationale.fr (verifie : CONNECT tunnel failed, 403), donc
+ * l'archive est absente, donc le script sort sur un `::warning::` sans rien
+ * ecrire, donc `/data/scrutins-solennels-recents.json` repond 404, et trois
+ * controles de rendu echouaient : le teaser, son lien source, et le bouton de
+ * detail. Ces trois echecs ne disaient rien du produit — ils disaient qu'une
+ * dependance RESEAU s'etait glissee dans un banc de RENDU.
+ *
+ * CE QU'ELLE NE FAIT PAS : masquer un echec. Comme celle des projets, elle n'est
+ * posee QUE si la vraie donnee est absente. Sur le runner GitHub, qui telecharge
+ * l'archive, c'est la vraie qui est mesuree, et une regression du producteur
+ * reste rouge. Et elle AUGMENTE la couverture : le teaser et la couche 2 n'avaient
+ * jamais ete eprouves peuples ici, seulement constates manquants.
+ *
+ * Elle porte le mot FIXTURE, que la garde de invariants.test.mjs cherche dans
+ * tout .json de data/ et de apps/web/dist/data : si un banc interrompu la laissait
+ * derriere lui, le banc suivant la nomme. */
+const FIXTURE_SCRUTINS = path.resolve(import.meta.dirname, "fixtures", "scrutins-solennels-temoin.json");
+const F_SOL = path.join(DIST, "data", "scrutins-solennels.json");
+const F_SOL_REC = path.join(DIST, "data", "scrutins-solennels-recents.json");
+let fixtureScrutinsPosee = false;
+if (fs.existsSync(FIXTURE_SCRUTINS) && !fs.existsSync(F_SOL_REC) && !fs.existsSync(F_SOL)) {
+  const paquet = JSON.parse(fs.readFileSync(FIXTURE_SCRUTINS, "utf8"));
+  delete paquet._lisez_moi;
+  fs.writeFileSync(F_SOL, JSON.stringify(paquet));
+  /* La couche 1 est DERIVEE de la couche 2, exactement comme le fait le
+     producteur (meme `source`, donc meme fraicheur) : les deux niveaux ne
+     peuvent pas divergir dans le banc alors qu'ils ne peuvent pas divergir en
+     production. Titre tronque a 70 caracteres, comme lui. */
+  const recents = paquet.scrutins.map(r => ({
+    n: r.numero, d: r.date,
+    t: r.titre.length > 70 ? r.titre.slice(0, 67) + "..." : r.titre,
+    ty: r.type === "motion de censure" ? "censure" : "solennel",
+    url: r.url,
+  }));
+  fs.writeFileSync(F_SOL_REC, JSON.stringify({ v: 1, source: paquet.source, recents }));
+  fixtureScrutinsPosee = true;
+  console.log("  (fixture des scrutins solennels posee dans le build de mesure : "
+    + recents.length + " scrutins fictifs — la vraie donnee etait absente)");
+}
+
 /* ELLE EST RETIREE A LA FIN, QUOI QU'IL ARRIVE. Sinon le repertoire publie
    garderait des projets de banc apres la mesure, et un deploiement lance dans la
    foulee les servirait a de vrais habitants. Le nettoyage est branche sur la
    sortie du processus, pas sur la fin du script : un controle qui echoue ne doit
    pas laisser la fixture derriere lui. */
 function retirerFixture() {
+  if (fixtureScrutinsPosee) {
+    fs.rmSync(F_SOL, { force: true });
+    fs.rmSync(F_SOL_REC, { force: true });
+    fixtureScrutinsPosee = false;
+  }
   if (!fixturePosee) return;
   fs.rmSync(path.join(DIST, "data", "projets"), { recursive: true, force: true });
   const fIndex = path.join(DIST, "data", "index.json");
@@ -700,8 +749,19 @@ const argent = await page.evaluate(() => {
   const barres = [...document.querySelectorAll(".barre i")].map(i => Math.round(i.getBoundingClientRect().width));
   return { t, barres, nulles: barres.filter(w => w === 0).length };
 });
+/* ASSERTION PERIMEE, CORRIGEE LE 21/10/2026 — PAS RELACHEE.
+   Ce controle exigeait « € de salaires ». Mesure dans le build servi : cette
+   chaine n'existe NULLE PART dans le produit web, et n'y existait plus depuis la
+   reecriture de `rapports()` (packages/core/src/comptes.js), qui dit desormais
+   « € pour les personnes employées par la commune ». Le controle echouait donc
+   sur son propre texte, pas sur un defaut — et il echouait en silence, noye
+   parmi les echecs de prerequis des scrutins. L'intention est gardee entiere :
+   l'ecran doit TRADUIRE les comptes (un rapport interprete), pas seulement
+   aligner des montants. Les deux phrases exigees sont celles que le produit
+   rend reellement, verifiees presentes dans apps/web/dist/assets. */
 verif("rendu — les comptes sont traduits, pas seulement affiches",
-  /mois de recettes/.test(argent.t) && /€ de salaires/.test(argent.t), "aucun rapport interne affiche");
+  /mois de recettes/.test(argent.t) && /€ pour les personnes employées par la commune/.test(argent.t),
+  "aucun rapport interne affiche : ni « mois de recettes » ni la part des personnes employées");
 verif("invariant 4 — un calcul est annonce comme un calcul",
   /ce n'est pas un chiffre publié/i.test(argent.t), "la mention manque : un calcul passerait pour une donnee officielle");
 /* Le lecteur doit pouvoir separer d'un coup d'oeil ce qui est publie de ce que
@@ -2192,8 +2252,19 @@ console.log("\n--- argent : ce que la source couvre, sans plus -----------------
     return t;
   };
   const bag = await argent("Bagnolet");
+  /* ASSERTION PERIMEE, CORRIGEE LE 21/10/2026 — LA REGLE EST INCHANGEE.
+     Les deux chaines exigees (« qui tiennent l'école, la cantine » et « Ce sont
+     les agents de la collectivité ») n'existent plus dans le produit : la
+     reecriture de `rapports()` dit « pour faire fonctionner l'école, la cantine »
+     et « Ces personnes travaillent pour cette collectivité ». Verifie dans
+     apps/web/dist/assets. La regle du 08/10/2026 qu'il garde ne bouge pas d'un
+     mot : hors commune, l'explication ne nomme aucun service, donc la mention de
+     l'ecole et de la cantine n'apparait QU'UNE FOIS sur l'ecran, et la phrase
+     neutre doit etre presente pour les autres echelons. */
   verif("argent — « l'école, la cantine » n'explique les salaires que de la commune, jamais du departement ni de la region",
-    (bag.match(/qui tiennent l'école, la cantine/g) || []).length === 1 && /Ce sont les agents de la collectivité/.test(bag), "");
+    (bag.match(/pour faire fonctionner l'école, la cantine/g) || []).length === 1
+    && /Ces personnes travaillent pour cette collectivité/.test(bag),
+    "la mention des services n'apparait pas exactement une fois, ou la phrase neutre des autres echelons manque");
   const mont = await argent("Montenils");
   verif("argent — un ecart de population n'est jamais presente comme une fusion de communes",
     !/fusion de communes/.test(mont), "");

@@ -1,0 +1,48 @@
+{
+  "_lisez_moi": "FIXTURE DE BANC — NE PAS PUBLIER. Scrutins fictifs, posés dans apps/web/dist/data le temps d'une mesure et retirés en sortant (tests/runtime.test.mjs). Ils ne sont posés QUE si la vraie donnée est absente : sur le runner GitHub, qui télécharge data/brut_Scrutins, c'est la vraie qui est mesurée. Les numéros 91xx n'existent pas à l'Assemblée ; le format d'URL est celui que produit scripts/scrutins-solennels.mjs, pour que le contrôle de forme du lien porte sur la vraie règle.",
+  "v": 1,
+  "source": {
+    "producteur": "FIXTURE DE BANC — NE PAS PUBLIER",
+    "producteur_affiche": "FIXTURE DE BANC — NE PAS PUBLIER",
+    "licence": "FIXTURE",
+    "url": "https://data.assemblee-nationale.fr/travaux-parlementaires/votes",
+    "portee": "FIXTURE — trois scrutins fictifs, aucun lien avec un vote réel",
+    "releve_le": "2026-10-21"
+  },
+  "total_source": 3,
+  "scrutins": [
+    {
+      "numero": "9101",
+      "date": "2026-09-17",
+      "titre": "Projet de loi témoin relatif aux essais de banc",
+      "type": "scrutin public solennel",
+      "sort": "adopté",
+      "pour": 311,
+      "contre": 204,
+      "abstentions": 23,
+      "url": "https://www.assemblee-nationale.fr/dyn/17/scrutins/9101"
+    },
+    {
+      "numero": "9102",
+      "date": "2026-10-01",
+      "titre": "Motion de censure témoin déposée pour la mesure du banc",
+      "type": "motion de censure",
+      "sort": "rejeté",
+      "pour": 198,
+      "contre": 289,
+      "abstentions": 11,
+      "url": "https://www.assemblee-nationale.fr/dyn/17/scrutins/9102"
+    },
+    {
+      "numero": "9103",
+      "date": "2026-10-15",
+      "titre": "Proposition de loi témoin portant mesures d'essai du banc de Repère",
+      "type": "scrutin public solennel",
+      "sort": "adopté",
+      "pour": 276,
+      "contre": 241,
+      "abstentions": 17,
+      "url": "https://www.assemblee-nationale.fr/dyn/17/scrutins/9103"
+    }
+  ]
+}

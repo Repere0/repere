@@ -59,7 +59,11 @@ function Onglets({ actif, choisir, votes }: { actif: Onglet; choisir: (o: Onglet
         return (
           <Pressable key={o.cle} onPress={() => choisir(o.cle)} accessibilityRole="tab" accessibilityState={{ selected: on }}
             aria-selected={on} accessibilityLabel={o.t}
-            style={{ flex: 1, minHeight: 40, borderRadius: 999, backgroundColor: on ? couleurs.carte : "transparent", alignItems: "center", justifyContent: "center" }}>
+            /* CIBLE et non 40 (21/10/2026). Ces deux onglets etaient a 40 px, sous
+               le minimum de 44 que le banc exige partout ailleurs. Ils y ont echappe
+               parce que le selecteur des cibles tactiles ne listait pas role="tab" :
+               le defaut n'etait pas tolere, il n'etait pas regarde. */
+            style={{ flex: 1, minHeight: CIBLE, borderRadius: 999, backgroundColor: on ? couleurs.carte : "transparent", alignItems: "center", justifyContent: "center" }}>
             <Text style={{ fontWeight: on ? "800" : "600", color: couleurs.encre }}>{o.t}</Text>
           </Pressable>
         );

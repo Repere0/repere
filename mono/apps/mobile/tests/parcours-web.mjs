@@ -247,7 +247,15 @@ for (const { largeur, theme } of [
      detail depuis la refonte du 30/09/2026. */
   const mesurer = () => page.evaluate(() => {
     const d = document.documentElement;
-    const cibles = [...document.querySelectorAll('[role="button"],[role="link"],button,a,input')]
+    /* `[role="tab"]` MANQUAIT — 21/10/2026. Le selecteur ne listait que les
+       boutons, les liens et les champs : AUCUN onglet de l'application n'avait
+       donc jamais ete mesure, ni pour sa taille de cible ni pour son nom
+       accessible, depuis que cette garde existe. Elle a trouve deux cibles a
+       40 px des qu'on les a inclus (le filtre du calendrier, les deux onglets de
+       la fiche d'elu) — deux defauts restes invisibles derriere un selecteur
+       incomplet. Une garde qui ne regarde pas tout ne dit rien de ce qu'elle ne
+       regarde pas, et son vert se lit comme une absence de defaut. */
+    const cibles = [...document.querySelectorAll('[role="button"],[role="link"],[role="tab"],button,a,input')]
       .filter(e => e.offsetParent !== null);
     return {
       deborde: d.scrollWidth > d.clientWidth + 1,
@@ -549,6 +557,31 @@ for (const { largeur, theme } of [
         /* sans agenda servi, aucune case ne pretend dire un jour (ni « 0 », ni « aucun ») */
         verifier(cases.length === 0, `${etq} · Le calendrier sans agenda servi : aucune case de jour n'annonce quoi que ce soit ${JSON.stringify(cases)}`);
       }
+      /* LA VUE MOIS, JAMAIS BASCULEE JUSQU'ICI — 21/10/2026.
+         Le parcours mesurait la frise de la SEMAINE et s'arretait la. La grille du
+         mois vit derriere une bascule : une vue derriere un geste n'est mesuree que
+         si quelqu'un fait le geste. Ses cases etaient a 42 px, sous le minimum, sans
+         que rien ne le dise. On bascule, on remesure tout l'ecran, on rebascule pour
+         ne pas changer l'etat des controles suivants. */
+      const versMois = page.getByLabel("Voir le mois", { exact: true });
+      if (await versMois.count()) {
+        await versMois.click();
+        await page.waitForTimeout(700);
+        const mMois = await mesurer();
+        communs(mMois, "Le calendrier (vue mois)");
+        const casesMois = await page.evaluate(() => [...document.querySelectorAll('[role="button"]')]
+          .filter(e => e.checkVisibility())
+          .map(e => ({ l: e.getAttribute("aria-label") || "", h: Math.round(e.getBoundingClientRect().height) }))
+          .filter(c => /^(lundi|mardi|mercredi|jeudi|vendredi|samedi|dimanche) \d/.test(c.l)));
+        verifier(casesMois.length >= 28,
+          `${etq} · Le calendrier (vue mois) : la grille du mois est bien affichée (${casesMois.length} cases)`);
+        verifier(casesMois.every(c => c.h >= 44),
+          `${etq} · Le calendrier (vue mois) : chaque case atteint 44 px ${JSON.stringify(casesMois.filter(c => c.h < 44).slice(0, 4))}`);
+        const retour = page.getByLabel("Voir la semaine", { exact: true });
+        if (await retour.count()) { await retour.click(); await page.waitForTimeout(500); }
+      } else {
+        verifier(false, `${etq} · Le calendrier : la bascule « Voir le mois » est introuvable — la vue mois n'a pas pu être mesurée`);
+      }
     }
     if (action === QUI) verifier(/Île-de-France Mobilités/.test(m.brut) && !/Décide : les transports/.test(m.brut), `${etq} · Qui décide : en Île-de-France, l'intercommunalité ne « décide » pas des transports`);
     verifier(preuve.test(m.brut), `${etq} · ${action} : l'écran répond à sa question`);
@@ -844,6 +877,149 @@ async function ouvrirSemaine({ agenda, senatCoupe, fuseau }) {
     "fraîcheur : serveur injoignable, l'écran dit que la publication n'a pas pu être vérifiée");
   verifier(new RegExp(MAIRE).test(coupe.texte), "fraîcheur : serveur injoignable, la donnée gardée reste lisible");
   verifier(!/Mis à jour/.test(coupe.texte), "fraîcheur : aucun « mis à jour » affiché quand rien n'a pu être vérifié");
+  await ctx.close();
+}
+
+/* INVARIANT 9 — « PUBLICATION PRECEDENTE », L'ETAT QUI N'AVAIT JAMAIS ETE VU
+ * A L'ECRAN (21/10/2026).
+ *
+ * Le bloc ci-dessus eprouvait deux des trois etats : ACTUELLE (aucun bandeau) et
+ * INCONNUE (serveur injoignable). PRECEDENTE ne l'avait jamais ete — et c'est
+ * le seul des trois ou une donnee PERIMEE est bel et bien affichee au lecteur.
+ * C'est donc celui qui demande le plus au produit : « le lecteur le comprend
+ * immediatement », dit l'invariant. Un etat jamais rendu est un etat dont
+ * personne ne sait s'il se rend.
+ *
+ * COMMENT ON LE DECLENCHE, SANS RIEN SIMULER DANS LE PRODUIT. La generation est
+ * lue par `generationDe` dans `build.construit_le` de l'index (verifie dans
+ * l'index servi, pas suppose). On ouvre l'application sous la generation reelle,
+ * puis on sert le MEME index avec une autre `construit_le`, et on repasse
+ * l'application au premier plan. react-native-web mappe AppState « active » sur
+ * `visibilitychange` + `document.visibilityState` (lu dans sa source) : un
+ * evenement suffit, la page etant visible. `verifierPublication` compare alors
+ * les deux generations et l'ecran doit le dire.
+ *
+ * CE QU'ON EXIGE EN PLUS DU BANDEAU : que la donnee reste lisible (on n'efface
+ * pas ce que le lecteur lisait), que rien ne se recharge tout seul (le titre de
+ * l'etat reste affiche tant que le lecteur n'a pas agi), et que l'action porte
+ * un nom en toutes lettres plutot qu'une icone. */
+{
+  const ctx = await navigateur.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, reducedMotion: "reduce" });
+  const page = await pageDuContexte(ctx);
+  /* null = l'index passe tel quel ; une chaine = on le sert sous cette generation. */
+  let generationServie = null;
+  await ctx.route("**/data/index.json", async r => {
+    const rep = await r.fetch();
+    const brut = await rep.text();
+    if (!generationServie) return r.fulfill({ status: 200, contentType: "application/json", body: brut });
+    const ix = JSON.parse(brut);
+    if (ix.build) ix.build.construit_le = generationServie; else ix.genere_le = generationServie;
+    await r.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(ix) });
+  });
+  await page.goto(BASE + "/", { waitUntil: "networkidle" });
+  await page.getByLabel(/Où habitez-vous/).fill(COMMUNE.saisie);
+  await page.getByRole("button", { name: new RegExp("^" + COMMUNE.nom + ",") }).first().click();
+  await page.getByText("Aller plus loin").first().waitFor({ timeout: 15000 });
+  await page.waitForTimeout(600);
+  verifier(await page.getByTestId("fraicheur").count() === 0,
+    "fraîcheur · précédente : avant toute nouvelle publication, aucun bandeau (état actuel)");
+
+  /* Une publication plus recente parait pendant que le lecteur lit. */
+  generationServie = "2099-12-31T23:59:59.000Z";
+  await page.evaluate(() => document.dispatchEvent(new Event("visibilitychange")));
+  await page.waitForTimeout(1500);
+  const apres = { texte: await page.evaluate(() => document.body.innerText), bandeau: await page.getByTestId("fraicheur").count() };
+  verifier(apres.bandeau === 1 && /Une publication plus récente est disponible/.test(apres.texte),
+    "fraîcheur · précédente : une publication plus récente est annoncée au lecteur");
+  verifier(/Ce qui s'affiche date de la publication précédente/.test(apres.texte),
+    "fraîcheur · précédente : l'écran dit que ce qu'il montre date de la publication précédente");
+  verifier(new RegExp(MAIRE).test(apres.texte),
+    "fraîcheur · précédente : la donnée déjà lue reste lisible, rien n'est effacé");
+  /* RIEN NE SE RECHARGE TOUT SEUL (consigne du 30/09 : « le lecteur decide »). */
+  await page.waitForTimeout(1200);
+  verifier(await page.getByTestId("fraicheur").count() === 1,
+    "fraîcheur · précédente : aucun rechargement automatique — le bandeau reste jusqu'à l'action du lecteur");
+  const action = page.getByRole("button", { name: "Mettre à jour" });
+  const aAction = await action.count() === 1;
+  verifier(aAction, "fraîcheur · précédente : l'action porte son nom en toutes lettres (« Mettre à jour »)");
+  if (aAction) {
+    const boite = await action.boundingBox();
+    verifier(boite && boite.height >= 44, `fraîcheur · précédente : l'action atteint 44 px (${boite && Math.round(boite.height)})`);
+  }
+  await ctx.close();
+}
+
+/* INVARIANT 9 — LE CINQUIEME ETAT : UNE SEULE PARTIE EST PERIMEE (21/10/2026).
+ *
+ * `BandeauFraicheur` a cinq rendus possibles, pas trois. EN_COURS et ACTUELLE
+ * n'affichent rien ; INCONNUE et PRECEDENTE-avec-nouvelle sont eprouves plus
+ * haut. Le cinquieme — PRECEDENTE avec `nouvelle: false` — ne l'avait JAMAIS
+ * ete : sa phrase (« Une partie de ce qui s'affiche date d'une publication
+ * précédente. ») n'apparaissait dans aucun banc du depot.
+ *
+ * C'est pourtant le cas le plus exigeant de l'invariant 9, et le seul des cinq
+ * qui dit une verite PARTIELLE : l'index est a jour, Repere sait donc qu'une
+ * publication plus recente existe, mais UN fichier n'a pas pu etre rafraichi et
+ * c'est la copie precedente qui s'affiche. Dire « tout est a jour » serait faux ;
+ * dire « rien n'a pu etre verifie » le serait aussi.
+ *
+ * COMMENT ON L'ATTEINT, SANS RIEN SIMULER DANS LE PRODUIT (lu dans
+ * packages/data-utils/src/client.js, `chargerSocle`) : le fichier doit etre en
+ * cache sous une generation, l'index doit etre joignable et annoncer une AUTRE
+ * generation, et la requete de ce fichier-la doit echouer. `marquer(cle, true)`
+ * remplit alors `clesPrecedentes`, et `etatFraicheur` rend PRECEDENTE sans
+ * `nouvelle` — car `verifierPublication` n'est pas appele sur un chargement neuf.
+ *
+ * L'ASSERTION DISCRIMINE LES DEUX PHRASES. Si le banc declenchait par megarde
+ * l'etat « une publication plus recente est disponible », il afficherait un
+ * bandeau et une garde naive serait verte en mesurant le mauvais etat. On exige
+ * donc la phrase du cinquieme etat ET l'absence de celle du quatrieme. */
+{
+  const ctx = await navigateur.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, reducedMotion: "reduce" });
+  const page = await pageDuContexte(ctx);
+  let generationServie = null;        /* null = l'index reel passe tel quel */
+  let departementCoupe = false;
+  await ctx.route("**/data/index.json", async r => {
+    const brut = await (await r.fetch()).text();
+    if (!generationServie) return r.fulfill({ status: 200, contentType: "application/json", body: brut });
+    const ix = JSON.parse(brut);
+    if (ix.build) ix.build.construit_le = generationServie; else ix.genere_le = generationServie;
+    await r.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(ix) });
+  });
+  await ctx.route("**/data/departments/*.json", async r => {
+    if (departementCoupe) return r.abort("internetdisconnected");
+    await r.continue();
+  });
+  const ouvrir = async () => {
+    await page.goto(BASE + "/", { waitUntil: "networkidle" });
+    const champ = page.getByLabel(/Où habitez-vous/);
+    if (await champ.count()) {
+      await champ.fill(COMMUNE.saisie);
+      await page.getByRole("button", { name: new RegExp("^" + COMMUNE.nom + ",") }).first().click();
+    }
+    await page.getByText("Aller plus loin").first().waitFor({ timeout: 15000 });
+    await page.waitForTimeout(900);
+    return { texte: await page.evaluate(() => document.body.innerText), bandeau: await page.getByTestId("fraicheur").count() };
+  };
+  /* 1. Lecture normale : le paquet departemental est garde sous la generation reelle. */
+  const sain = await ouvrir();
+  verifier(sain.bandeau === 0, "fraîcheur · partielle : première lecture en ligne, aucun bandeau (état actuel)");
+  verifier(new RegExp(MAIRE).test(sain.texte), "fraîcheur · partielle : la première lecture a bien servi le paquet départemental");
+  /* 2. Une publication a paru, et CE fichier-la ne repond plus. */
+  generationServie = "2099-12-31T23:59:59.000Z";
+  departementCoupe = true;
+  const partiel = await ouvrir();
+  verifier(partiel.bandeau === 1, "fraîcheur · partielle : un bandeau de fraîcheur est affiché");
+  verifier(/Une partie de ce qui s'affiche date d'une publication précédente/.test(partiel.texte),
+    "fraîcheur · partielle : l'écran dit qu'une PARTIE seulement date d'une publication précédente");
+  verifier(!/Une publication plus récente est disponible/.test(partiel.texte),
+    "fraîcheur · partielle : ce n'est pas l'état « une publication plus récente » qui est affiché (les deux ne doivent pas se confondre)");
+  verifier(/Rien n'est inventé/.test(partiel.texte),
+    "fraîcheur · partielle : l'écran dit que la donnée a été publiée, qu'elle n'est simplement pas la dernière");
+  verifier(new RegExp(MAIRE).test(partiel.texte),
+    "fraîcheur · partielle : la donnée précédente reste lisible, jamais un écran vide (invariant 5)");
+  verifier(!/Mis à jour|à jour\b/.test(partiel.texte.replace(/pas de tout mettre à jour|mettre à jour/gi, "")),
+    "fraîcheur · partielle : rien n'est présenté comme « à jour »");
   await ctx.close();
 }
 

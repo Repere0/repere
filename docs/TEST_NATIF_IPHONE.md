@@ -12,13 +12,19 @@ mieux qu'une case cochée par habitude.
 
 ## 0. Lancer
 
+Dans **PowerShell**, un bloc à la fois (pas de `&&`, et `npm.cmd` plutôt que
+`npm`). D'abord cette seule ligne :
+
 ```powershell
 cd C:\Users\APina\repere
 git status
 ```
 
-Si des modifications apparaissent, **arrête-toi** : on en parle avant de changer
-de branche. Sinon :
+Lis la réponse. **Si elle finit par `nothing to commit, working tree clean`**,
+continue. **Si elle liste des fichiers** sous `Changes not staged` ou
+`Untracked files`, tu as du travail en cours sur ton PC : **arrête-toi ici et
+dis-le-moi** — la commande suivante remettrait la branche à l'état du serveur et
+tu perdrais ces modifications.
 
 ```powershell
 git fetch origin ux/theme-sombre-20-10
@@ -28,7 +34,20 @@ npm.cmd install
 npm.cmd start
 ```
 
-Expo Go, même Wi-Fi, scan du QR.
+Puis Expo Go, même Wi-Fi, scan du QR. Si l'application ne charge pas : tape `r`
+dans le terminal d'Expo pour recharger.
+
+Pour être sûr de tester la dernière version, et non une plus ancienne :
+
+```powershell
+git log --oneline -1
+git rev-parse HEAD origin/ux/theme-sombre-20-10
+```
+
+Les **deux lignes** de la seconde commande doivent afficher le **même**
+identifiant. Si elles diffèrent, le `git fetch` ci-dessus n'a pas abouti —
+relance-le. (On ne note pas de numéro de commit en dur ici : il change à chaque
+livraison, et un numéro périmé dans un protocole est pire que pas de numéro.)
 
 ---
 
@@ -133,12 +152,18 @@ exprès : un contrôle sur le code ne dit rien du rendu.
 
 **Mesuré dans le rendu, en Chromium** (`tests/parcours-web.mjs`) :
 
-- aucun débordement horizontal à 360, 390 et 430 px, clair et sombre ;
+- aucun débordement horizontal à 360, 390 et 430 px en clair — **et à 390 px
+  seulement en sombre** : le thème sombre n'est pas éprouvé aux deux autres
+  largeurs, c'est un trou connu du banc ;
 - toute cible tactile atteint 44 px ;
 - chaque contrôle a un nom accessible (zéro sans nom) ;
 - le contraste du texte atteint AA contre le fond **réellement peint** ;
 - chaque onglet expose s'il est actif, et vit dans une liste d'onglets ;
 - aucun contrôle emboîté dans un autre ;
+- la vue **mois** du calendrier est basculée et remesurée (elle ne l'était pas) ;
+- les **cinq** états de fraîcheur de l'invariant 9, dont les deux qui affichent
+  une donnée périmée : « une publication plus récente est disponible » et
+  « une partie de ce qui s'affiche date d'une publication précédente » ;
 - aucun mot affiché sans ses accents, aucun montant abrégé.
 
 **Lu dans les sources, pas dans le rendu** (`tests/refonte-ux.test.mjs`,
