@@ -100,7 +100,7 @@ export default function Elu() {
             <View style={{ flexDirection: "row", gap: PAS * 4, alignItems: "center" }}>
               <Initiales nom={nom} />
               <View style={{ flex: 1, gap: 6 }}>
-                <Question etiquette={p.niveau || LIBELLES.qui} question={nom} sous={libelleRole || undefined} />
+                <Question etiquette={p.niveau || LIBELLES.qui} echelon={echelon ? (echelon as Echelon) : undefined} question={nom} sous={libelleRole || undefined} />
               </View>
             </View>
 

@@ -174,7 +174,7 @@ export default function AVenir() {
           <Stack.Screen options={{ title: LIBELLES.calendrier }} />
           <View style={{ flexDirection: "row", alignItems: "flex-end", justifyContent: "space-between", gap: PAS * 2 }}>
             <View style={{ flex: 1 }}>
-              <Question etiquette="Au Parlement" question="Calendrier" />
+              <Question etiquette="Au Parlement" echelon="france" question="Calendrier" />
             </View>
             {/* La bascule semaine / mois sur la ligne du titre (16/10/2026) : a 375 x 667,
                l'en-tete occupait tout le premier ecran. */}

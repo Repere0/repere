@@ -68,7 +68,7 @@ export default function Vote() {
       /* 15/10/2026 : partagee entre plusieurs circonscriptions, la page montre le vote d'UN
          depute, en exemple : la question le dit. */
       /* Sans etiquette ni emoji (16/10/2026) : la barre haute dit deja « Votre député ». */
-      const entete = <Question question={d.nbCircos > 1 ? `Qu'a voté un député de ${d.nomCommune} ?` : "Qu'a voté votre député ?"} />;
+      const entete = <Question etiquette="À l'Assemblée nationale" echelon="france" question={d.nbCircos > 1 ? `Qu'a voté un député de ${d.nomCommune} ?` : "Qu'a voté votre député ?"} />;
       if (!r.votesLus) return <Page>{entete}<Vide {...VOTES_PAS_ARRIVES} action="Réessayer" onAction={reessayer} /></Page>;
       if (!r.votesFiables) return <Page>{entete}<Vide {...refusAppariement(REFUS_APPARIEMENT)} /></Page>;
       if (!vote) return <Page>{entete}<Vide {...(d.nbCircos === 0 ? circoInconnue(d.nomCommune, r.index?.sources?.circonscriptions?.url) : { ...VOTE_AUCUN, corps: POSITION_NON_PORTEE })} /></Page>;
@@ -89,7 +89,7 @@ export default function Vote() {
       return (
         <Page>
           <Stack.Screen options={{ title: "Votre député" }} />
-          <Question question={d.nbCircos > 1 ? `Qu'a voté un député de ${d.nomCommune} ?` : "Qu'a voté votre député ?"} sous={pourquoi} />
+          <Question etiquette="À l'Assemblée nationale" echelon="france" question={d.nbCircos > 1 ? `Qu'a voté un député de ${d.nomCommune} ?` : "Qu'a voté votre député ?"} sous={pourquoi} />
 
           {/* NIVEAU 1 : la position */}
           <Carte echelon="france" titre={`Le ${dateFr(vote.sc.d)}`}>

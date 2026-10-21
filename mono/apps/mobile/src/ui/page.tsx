@@ -9,7 +9,7 @@ import { ETATS, PHRASES } from "../lib/donnees";
 import { Bouton, Vide } from "../lib/composants";
 import { useSelection } from "../lib/selection";
 import { useCommuneChoisie, type EtatCommune } from "../lib/useCommune";
-import { couleurs, feuille, PAS, TYPO } from "../lib/theme";
+import { couleurs, feuille, PAS, TYPO, type Echelon } from "../lib/theme";
 import { Etiquette } from "./resume";
 import { BandeauFraicheur } from "./fraicheur";
 
@@ -35,10 +35,26 @@ export function Page({ children, defilement, surDefilement }: { children: ReactN
    point d'interrogation ne tombe jamais seul a la ligne (vu sur capture). */
 export const insecable = (t: string) => t.replace(/ ([?!:;])/g, "\u00a0$1");
 
-export function Question({ etiquette, question, sous, emoji }: { etiquette?: string; question: string; sous?: string; emoji?: string }) {
+/* LE REPERE D'ECHELON — 21/10/2026.
+ *
+ * Un filet de 3 px dans la couleur de l'echelon, colle a l'etiquette du titre.
+ * Il dit, avant la premiere phrase, DE QUEL NIVEAU DE DECISION parle l'ecran :
+ * c'est la question meme du produit. Le meme dispositif qu'on a pose sur « Chez
+ * vous » le matin meme — un seul langage visuel dans toute l'application.
+ *
+ * Ce sont les cinq couleurs gelees, aucune couleur nouvelle. ET LE FILET NE
+ * PARAIT JAMAIS SEUL : il exige `etiquette`, qui nomme le niveau en toutes
+ * lettres juste a cote (invariant 7). Sans etiquette, pas de filet. */
+export function Question({ etiquette, question, sous, emoji, echelon }: { etiquette?: string; question: string; sous?: string; emoji?: string; echelon?: Echelon }) {
   return (
     <View style={{ gap: PAS * 2, marginBottom: PAS * 1 }}>
-      {etiquette ? <Etiquette emoji={emoji} texte={etiquette} /> : null}
+      {etiquette ? (
+        <View style={{ flexDirection: "row", alignItems: "center", gap: PAS * 2 }}>
+          {echelon ? <View style={{ width: 3, height: 16, borderRadius: 2, backgroundColor: couleurs[echelon] }}
+            importantForAccessibility="no" accessibilityElementsHidden /> : null}
+          <View style={{ flex: 1 }}><Etiquette emoji={emoji} texte={etiquette} /></View>
+        </View>
+      ) : null}
       <Text style={TYPO.question} accessibilityRole="header">{insecable(question)}</Text>
       {/* `insecable` aussi sur le sous-titre (20/10/2026) : sans lui, le « ; » de
           la page « Avant 18 ans » tombait seul en debut de ligne. */}

@@ -255,3 +255,26 @@ test("invariant 6 : le retour haptique ne touche ni un vote ni un partage (16/10
   assert.deepEqual(fautifs, [], "retour haptique hors des replis et des onglets : " + fautifs.join(", "));
 });
 
+
+test("le repere d'echelon de l'en-tete ne parait jamais sans son libelle", () => {
+  /* 21/10/2026. Le filet de couleur d'echelon pose sur Question dit de quel
+     niveau de decision parle l'ecran. L'invariant 7 interdit qu'une couleur
+     porte seule une information : le filet doit donc rester A L'INTERIEUR de la
+     branche `etiquette ?`, qui nomme le niveau en toutes lettres juste a cote.
+     Garde STATIQUE, assumee comme telle : elle lit la structure du composant,
+     elle ne mesure pas le rendu. Eprouvee en sortant le filet de la branche :
+     elle tombe sur « le filet d'echelon est rendu hors de la branche ». */
+  const page = lire("ui/page.tsx");
+  const i = page.indexOf("{etiquette ? (");
+  assert.ok(i > 0, "la branche `etiquette ?` a disparu de Question");
+  const fin = page.indexOf(") : null}", i);
+  const branche = page.slice(i, fin);
+  const filets = [...page.matchAll(/backgroundColor:\s*couleurs\[echelon\]/g)].map(m => m.index);
+  assert.ok(filets.length >= 1, "le filet d'echelon a disparu de Question");
+  for (const pos of filets) {
+    assert.ok(pos > i && pos < fin,
+      "le filet d'echelon est rendu hors de la branche `etiquette ?` : la couleur porterait seule l'information");
+  }
+  assert.ok(/importantForAccessibility="no"/.test(branche),
+    "le filet doit etre masque au lecteur d'ecran : le libelle dit deja le niveau");
+});
