@@ -4,8 +4,11 @@ Tout ce qui demande ton ordinateur, dans l'ordre. Chaque bloc est à copier tel
 quel dans **PowerShell** (pas de `&&`, et `npm.cmd` plutôt que `npm`).
 
 Le travail de la session est sur la branche **`ux/theme-sombre-20-10`**, déjà
-poussée. Rien n'a été fusionné, rien n'a été poussé sur `main` ni sur ta branche
-`feat/ux-densite-16-10`.
+poussée. Rien n'a été poussé sur ta branche `feat/ux-densite-16-10`.
+
+**Une seule chose a été fusionnée sur `main`, sur ton ordre explicite** (« fusionne
+147 ») : la PR #147, qui débloquait la collecte. Détail en § 2. Tout le reste de la
+pile est intact.
 
 ---
 
@@ -46,7 +49,7 @@ Puis Expo Go, même réseau Wi-Fi, scan du QR.
 
 ### Le parcours de 3 minutes, écran par écran
 
-> **Mis à jour dans la nuit.** La branche contient quatorze commits. Les deux
+> **Mis à jour dans la nuit.** La branche contient dix-huit commits. Les
 > derniers appliquent **le design system de tes maquettes Stitch** : palette
 > gris-bleu lin, teal républicain, jauges émeraude/corail, étiquettes de
 > scrutin, et les trois postes des 100 € visibles d'un coup. Le parcours
@@ -91,81 +94,69 @@ avec la capture.
 
 ---
 
-## 2. URGENT — la donnée de ton téléphone a sept jours
+## 2. La collecte est réparée — il reste Netlify
 
-**Mesuré ce soir, directement sur la production :**
-`https://repereapp.netlify.app/data/index.json` porte `"genere_le": "2026-10-13"`.
-L'application mobile lit cette adresse (`mono/apps/mobile/src/lib/donnees.ts`,
-`PRODUCTION`). Ton téléphone affiche donc, ce soir, la publication du 13 octobre.
+**Rien à faire pour toi dans cette section.** Elle est gardée pour que tu saches
+ce qui a été décidé en ton nom, et ce qui bloque encore.
 
-**La cause, mesurée :** la collecte quotidienne de `main` a échoué **tous les
-jours depuis le 9 octobre**, sans exception (15 derniers runs relevés par l'API
-GitHub : un seul succès, le 09/10 à 12:06 UTC). L'étape qui tombe est
-« Exécuter la chaîne ».
+### Ce qui est fait (nuit du 20 au 21 octobre)
 
-**Pourquoi elle tombe**, lu dans les annotations d'une PR qui ne touche que des
-documents (`#159`), donc sur du code identique à `main` :
+Tu as écrit « fusionne 147 ». Je l'ai fusionnée d'ici, en *squash*, commit
+`90bb5e03`. **Tu n'as pas besoin de `gh` pour ça — c'est déjà fait.** Si tu as
+lancé `gh pr view 147 --web` et obtenu `HTTP 401: Bad credentials`, c'est
+seulement que le jeton `gh` de ton PC a expiré ; ça ne change rien à la fusion.
+Pour le réparer quand tu auras le temps : `gh auth login -h github.com`.
 
-```
-not ok 92 - votes — les lois sont distinguées des votes de détail
-ECHEC | retention (0 nouveaute) — rien de nouveau depuis la visite
-```
+**En fusionnant, j'ai appliqué la décision produit qui était dans cette PR** :
+le vote sur « la première partie du projet de loi de finances » compte désormais
+comme un vote sur un texte entier. Un *article* du budget reste refusé. Si tu
+n'es pas d'accord, c'est une ligne à défaire dans `mono/tests/invariants.test.mjs`.
 
-Deux contrôles du banc, et aucun des deux ne dit que l'application est fausse :
+Puis j'ai relancé la collecte à la main. **L'étape « Exécuter la chaîne » est
+passée au vert pour la première fois depuis le 9 octobre**, et elle a produit sur
+`main` le commit `e975a3f « Collecte du 21/10/2026 »` : deux nouveaux scrutins en
+brouillon (`data/auto/scrutin-2026-10-13-8705.md`, `…-8706.md`) et les sources
+rafraîchies.
 
-- le premier refuse le scrutin solennel **8705** parce que son intitulé ne
-  commence pas par « l'ensemble de… » — l'Assemblée a changé sa formulation ;
-- le second compare à une visite figée au 1er septembre 2026, alors que la
-  donnée publiée a bougé depuis.
+### Ce qui bloque encore : la publication Netlify
 
-**C'est la raison pour laquelle presque toutes tes PR sont rouges.** L'épreuve
-échoue sur `main`, donc sur tout ce qui en descend. Ce n'est pas 40 PR cassées :
-c'est une seule cause, 40 fois.
+La chaîne tourne, mais **le site en ligne n'est pas mis à jour**. L'annotation du
+run, mot pour mot :
 
-### Ce qu'il faut faire
+> La publication sur Netlify a ECHOUE (le site en ligne est inchange). Lis la
+> ligne « sonde Netlify » de l'etape : HTTP 200 = ni le jeton ni le site ne sont
+> en cause, HTTP 401 = jeton, HTTP 403 = jeton d'un autre compte, HTTP 404 =
+> identifiant du site.
 
-**La PR #147 corrige exactement ces deux contrôles.** C'est la seule de la pile
-dont l'épreuve est verte, et elle est `mergeable_state: clean`. Elle touche
-3 fichiers : `mono/tests/invariants.test.mjs`, `mono/tests/runtime.test.mjs`,
-`outils/pipeline.sh`. Elle ne rend rien permissif : un vote solennel doit
-toujours porter sur un **texte**, jamais sur un article, un amendement ou une
-motion.
+**Je ne peux pas aller plus loin d'ici** : le proxy du conteneur me refuse l'accès
+aux journaux de run (403) et aux secrets du dépôt. Il me faut cette ligne, que toi
+seul peux lire.
 
-```powershell
-cd C:\Users\APina\repere
-gh pr view 147 --web
-```
+Ouvre la page du run — `collecte.yml`, run `39521636183` — déplie l'étape de
+publication, cherche « sonde Netlify », et donne-moi le code HTTP. Trois lignes de
+diagnostic selon ce que tu lis :
 
-**Elle contient une décision produit qui t'appartient**, écrite par son auteur
-« à valider par le porteur » : accepter que le vote sur **« la première partie
-du projet de loi de finances »** compte comme un vote sur un texte entier, et
-non comme un vote de détail.
+| code | cause | ce qu'il faut refaire |
+|---|---|---|
+| 401 | le jeton `NETLIFY_AUTH_TOKEN` a expiré | en régénérer un dans Netlify → User settings → Applications, et le remettre dans les secrets du dépôt |
+| 403 | le jeton appartient à un autre compte Netlify | idem, mais depuis le compte qui possède `repereapp` |
+| 404 | `NETLIFY_SITE_ID` ne désigne plus le bon site | relever l'`Site ID` dans Netlify → Site configuration, et corriger le secret |
+| 200 | ni le jeton ni le site | me le dire : la cause est ailleurs dans l'étape, et je reprends |
 
-> **Mon avis :** oui. Le vote sur une partie entière du budget est un vote
-> politique majeur, pas un vote de détail — et un *article* du budget
-> (« l'article liminaire… ») reste refusé par la règle. **Et c'est urgent :**
-> le vote solennel sur la première partie du budget 2027 est inscrit au
-> **20 octobre**, c'est-à-dire aujourd'hui. Sans cette forme, la collecte
-> retombera demain pour cette raison-là, même une fois #147 fusionnée.
+La PR **#154** traite déjà ce sujet ; je ne l'ai pas fusionnée faute de pouvoir
+vérifier qu'elle corrige la bonne des quatre causes.
 
-Si tu valides : sors #147 du brouillon, fusionne-la, puis relance la collecte à
-la main et regarde si elle passe au vert :
+### Conséquence, ce soir, sur ton téléphone
 
-```powershell
-gh pr ready 147
-gh pr merge 147 --squash
-gh workflow run collecte.yml
-```
+**L'application lit la production, qui date toujours du 13 octobre**
+(`genere_le: "2026-10-13"`, mesuré sur `https://repereapp.netlify.app/data/index.json`).
+Donc : **ce que tu vas voir ce soir en Expo Go, c'est le nouveau design sur les
+données du 13 octobre.** Je préfère te le dire plutôt que de laisser croire que
+les chiffres sont d'aujourd'hui — la donnée fraîche est sur `main`, pas en ligne.
 
-Puis, deux minutes plus tard :
-
-```powershell
-gh run list --workflow=collecte.yml --limit 3
-```
-
-**Ne fusionne rien d'autre tant que celle-là n'est pas verte.** Les autres PR
-rouges le sont à cause de `main` ; elles redeviendront vertes en se rebasant,
-sans qu'on y touche.
+Je n'ai pas bricolé de contournement : pointer l'application ailleurs
+(`EXPO_PUBLIC_REPERE_DONNEES`) demanderait de construire la chaîne sur ton PC, et
+ça te coûterait plus que les quinze minutes qu'il te reste avant de lancer.
 
 ---
 
@@ -192,7 +183,7 @@ celles du dessous.
 
 **Ordre que je recommande, une fois #147 verte :**
 
-1. `#147` — débloque l'épreuve (ci-dessus).
+1. ~~`#147`~~ — **déjà fusionnée** dans la nuit (§ 2). L'épreuve est débloquée.
 2. Relancer l'épreuve sur `#159` (documents seuls) : si elle passe au vert sans
    aucune modification, la cause est confirmée pour toute la pile.
 3. Les trois PR de collecte : `#154` (sénateurs + jeton Netlify), `#133`
@@ -238,7 +229,9 @@ l'œil.
 
 ## 4. Les décisions qui n'attendent que toi
 
-1. **Budget 2027 dans #147** (§ 2). Urgent, aujourd'hui.
+1. ~~**Budget 2027 dans #147**~~ — tranchée en fusionnant #147 sur ton ordre (§ 2).
+   À défaire si tu n'es pas d'accord. **Ce qui reste urgent à sa place : le code
+   HTTP de la « sonde Netlify »**, sans lequel la donnée en ligne reste au 13 octobre.
 2. **Couleurs d'échelon sur fond sombre.** Mesuré : sur une carte sombre,
    l'échelon `region` est à **2,42:1** et `ville` à **3,21:1**, pour 3:1 exigé
    sur un élément graphique (WCAG). Les éclaircir dépasserait l'amplitude RGB de
