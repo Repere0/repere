@@ -461,6 +461,18 @@ for (const { largeur, theme } of [
     if (action === "Comprendre ce vote" && NATURE) verifier(m.brut.includes(NATURE),
       `${etq} · Comprendre ce vote : la nature affichée est celle publiée par l'Assemblée (« ${NATURE} »)`);
 
+    /* L'ECRAN DE CONFIANCE DIT L'AGE DE CHAQUE SOURCE — 21/10/2026.
+       Il donnait la date de publication et s'arretait la : au lecteur de compter.
+       La garde relit les dates AFFICHEES et verifie que chacune porte son age ;
+       elle ne recopie aucune date. Eprouvee en retirant `age(...)` : elle tombe. */
+    if (action === "Sources") {
+      const dates = [...m.brut.matchAll(/Données (?:publiées|relevées) le ([^\n,]+)(,[^\n]*)?/g)];
+      verifier(dates.length > 0, `${etq} · Sources : au moins une source datée est affichée`);
+      const sansAge = dates.filter(d => !d[2] || !/il y a |aujourd'hui/.test(d[2])).map(d => d[1].trim());
+      verifier(sansAge.length === 0,
+        `${etq} · Sources : chaque date affichée porte son âge ${sansAge.length ? JSON.stringify(sansAge.slice(0, 3)) : ""}`);
+    }
+
     if (action === "Le calendrier") {
       /* LE SOUS-TITRE NE PROMET QUE CE QUI EST ARRIVE — 21/10/2026.
          Il annoncait « a l'Assemblee nationale et au Senat » alors que le corps de

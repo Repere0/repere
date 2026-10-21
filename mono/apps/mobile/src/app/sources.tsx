@@ -6,11 +6,20 @@
  * les fichiers. Ne jamais les confondre. */
 import { Text, View } from "react-native";
 import { router, Stack } from "expo-router";
-import { dateFr, datePublication, LIBELLES } from "@repere/core";
+import { ageReleve, dateFr, datePublication, LIBELLES } from "@repere/core";
 import { Carte, LienAction, LienSortant } from "../lib/composants";
 import { couleurs, PAS, TYPO } from "../lib/theme";
 import { AvecDonnees, Page, Question } from "../ui/page";
 import { Depli } from "../ui/visuels";
+
+/* « , il y a N jours » — rien quand la date est illisible ou dans le futur :
+   on prefere ne rien dire a dire un nombre faux. */
+function age(iso?: string) {
+  const n = ageReleve(iso) as number | null;
+  if (n === null || n < 0) return "";
+  if (n === 0) return ", aujourd'hui";
+  return n === 1 ? ", il y a 1 jour" : `, il y a ${n} jours`;
+}
 
 type Ligne = { quoi: string; producteur?: string; licence?: string; maj?: string; releve?: string; url?: string; usage: string };
 
@@ -46,8 +55,14 @@ export default function Sources() {
               <View key={l.quoi} style={{ gap: 2, paddingTop: i ? PAS * 3 : 0, borderTopWidth: i ? 1 : 0, borderTopColor: couleurs.trait }}>
                 <Text style={[TYPO.corps, { fontWeight: "800" }]} accessibilityRole="header">{l.quoi}</Text>
                 <Text style={TYPO.note}>{l.producteur}</Text>
-                {l.maj ? <Text style={TYPO.note}>Données publiées le {dateFr(l.maj)}</Text>
-                  : l.releve ? <Text style={TYPO.note}>Données relevées le {dateFr(l.releve)}</Text>
+                {/* L'AGE, PAS SEULEMENT LA DATE — 21/10/2026. L'ecran de confiance donnait
+                   « Données publiées le 11 août 2026 » et s'arretait la : il faut compter
+                   soi-meme pour savoir que la donnee a 71 jours. Le calendrier, lui, ecrit
+                   deja « relevé le 13 octobre, il y a 8 jours ». Meme calcul (ageReleve du
+                   socle, pas un second), meme phrase. C'est un FAIT, pas un jugement : aucune
+                   couleur, aucun seuil, aucun « périmé ». Le lecteur decide. */}
+                {l.maj ? <Text style={TYPO.note}>Données publiées le {dateFr(l.maj)}{age(l.maj)}</Text>
+                  : l.releve ? <Text style={TYPO.note}>Données relevées le {dateFr(l.releve)}{age(l.releve)}</Text>
                   : <Text style={TYPO.note}>Ce fichier ne porte pas de date de publication que Repère puisse afficher.</Text>}
                 {l.url ? <LienSortant url={l.url} texte="Voir la donnée originale" etiquette={`Voir la donnée originale : ${l.quoi}`} /> : null}
                 {/* Titre visible court, sur une ligne ; le nom de la source, avec ses majuscules
