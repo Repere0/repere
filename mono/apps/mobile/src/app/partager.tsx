@@ -129,6 +129,14 @@ export default function Partager() {
             <Question etiquette="Partager ce vote" question="Deux cartes, à lire dans l'ordre"
               sous={"Carte 1\u00a0: le vote. Carte 2\u00a0: où en est le texte. Chaque bouton partage une seule image\u00a0; si le téléphone ne le permet pas, le texte et le lien du scrutin partent à la place."} />
 
+            {/* UN CADRE POUR L'APERCU, PAS POUR L'IMAGE — 21/10/2026, vu sur capture.
+                Les deux cartes portent `marque.sol`, qui est AUSSI la couleur du fond de
+                la page en theme clair : elles etaient donc peintes, mais sans limite
+                visible. Sur un ecran qui annonce « deux cartes, a lire dans l'ordre »,
+                on ne voyait ni ou l'une commence ni ou elle finit.
+                Ce conteneur est EXTERIEUR a la ref que `captureRef` photographie :
+                l'image partagee est identique au pixel pres, seul l'apercu change. */}
+            <View style={{ borderWidth: 1, borderColor: couleurs.trait, borderRadius: 22, padding: 6, alignSelf: "center" }}>
             {/* CARTE 1 — L'ANNONCE (canevas « Partage ») */}
             <View ref={carte1} collapsable={false} accessible
               accessibilityLabel={`${nom} ${verbe} ${sujet}. Vote à l'Assemblée nationale, ${date}.`}
@@ -151,6 +159,9 @@ export default function Partager() {
               </View>
             </View>
 
+            </View>
+
+            <View style={{ borderWidth: 1, borderColor: couleurs.trait, borderRadius: 22, padding: 6, alignSelf: "center" }}>
             {/* CARTE 2 — L'EXPLICATION (canevas « Partage 2 ») */}
             <View ref={carte2} collapsable={false} accessible
               accessibilityLabel={`Comment ce texte avance. ${ou}`}
@@ -191,6 +202,7 @@ export default function Partager() {
                   Résumé Repère du {aujourdhui}. Le texte officiel fait foi.
                 </Text>
               </View>
+            </View>
             </View>
 
             <View style={{ gap: PAS * 2 }}>
