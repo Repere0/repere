@@ -26,6 +26,7 @@ import { srcComptes, srcComptesPublies, srcProjets } from "../lib/sources";
 import { useCommuneChoisie } from "../lib/useCommune";
 import { couleurs, PAS, TYPO, POLICE } from "../lib/theme";
 import { AvecDonnees, Page, Question } from "../ui/page";
+import { EnClair } from "../ui/signatures";
 import { PastilleSource } from "../ui/source";
 import { LienDefinition } from "../lib/termes";
 import { Emoji, Resume } from "../ui/resume";
@@ -181,6 +182,11 @@ export default function Argent() {
                       </View>
                     );
                   })()}
+                  {/* LE CARTOUCHE, AVEC LE TEXTE DU SOCLE (20/10/2026). L'explication
+                      de l'investissement est ecrite une seule fois, dans
+                      packages/core/src/comptes.js (champ `d`), et partagee avec le
+                      site : l'ecran ne la reformule pas. */}
+                  {rap(/investir/)?.d ? <EnClair texte={rap(/investir/)!.d as string} /> : null}
                   <PastilleSource source={srcComptes(d)} />
                   <Detail sujet="dépenses">
                     {/* Le calcul, avec les deux montants publies (16/10/2026) : la part se verifie. */}

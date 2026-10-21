@@ -11,6 +11,7 @@
 import type { ReactNode } from "react";
 import { Text, View } from "react-native";
 import { couleurs, PAS, TYPO } from "../lib/theme";
+import { EnClair } from "./signatures";
 
 /* Decision du 30/09/2026 : pas d'emojis pour l'instant. Ils ne reviennent
    que construits avec EXPO_PUBLIC_REPERE_EMOJIS=1, pour un test qui
@@ -45,12 +46,11 @@ export function Resume({ phrase, chiffre, legende, enClair, children }: {
         </View>
       ) : null}
       {children}
-      {enClair ? (
-        <View style={{ flexDirection: "row", gap: PAS * 2, paddingTop: PAS }}>
-          <Text style={[TYPO.corps, { fontWeight: "800", color: couleurs.lien }]}>En clair</Text>
-          <Text style={[TYPO.corps, { flex: 1 }]}>{enClair}</Text>
-        </View>
-      ) : null}
+      {/* LE CARTOUCHE « EN CLAIR » (20/10/2026, maquettes du porteur). C'etait deux
+          lignes de texte cote a cote ; c'est maintenant un bloc teinte a filet
+          emeraude, le composant signature des maquettes. Le texte ne change pas :
+          il vient toujours du socle, jamais d'une reformulation d'ecran. */}
+      {enClair ? <EnClair texte={enClair} /> : null}
     </View>
   );
 }
