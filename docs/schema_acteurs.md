@@ -56,21 +56,21 @@ une seule fois sont reprises a part, plus bas.
 | `acteur.adresses.adresse[].ville` | texte/vide | 2805 | Paris 07 SP · Cenon |
 | `acteur.adresses.adresse[].valElec` | texte/vide | 6205 | 01 40 63 75 53 · 01 40 63 79 37 |
 | `acteur.mandats.mandat[]` | liste | 2995 | de 2 a 814 entrees |
-| `acteur.mandats.mandat[].@xmlns:xsi` | texte | 97889 | http://www.w3.org/2001/XMLSchema-instance |
-| `acteur.mandats.mandat[].@xsi:type` | texte | 97889 | MandatSimple_Type · MandatMission_Type |
-| `acteur.mandats.mandat[].uid` | texte | 97889 | PM391145 · PM778068 |
-| `acteur.mandats.mandat[].acteurRef` | texte | 97889 | PA1001 · PA1002 |
-| `acteur.mandats.mandat[].legislature` | texte/vide | 97889 | 13 · 14 |
-| `acteur.mandats.mandat[].typeOrgane` | texte | 97889 | DELEGBUREAU · DELEGSENAT |
-| `acteur.mandats.mandat[].dateDebut` | texte | 97889 | 2007-06-28 · 2020-10-20 |
-| `acteur.mandats.mandat[].datePublication` | texte/vide | 97889 | 2010-03-23 · 2012-06-27 |
-| `acteur.mandats.mandat[].dateFin` | texte/vide | 97889 | 2008-10-08 · 2010-11-13 |
-| `acteur.mandats.mandat[].preseance` | texte/vide | 97889 | 24 · 4 |
-| `acteur.mandats.mandat[].nominPrincipale` | texte | 97889 | 0 · 1 |
-| `acteur.mandats.mandat[].infosQualite.codeQualite` | texte/vide | 97889 | Membre · membre |
-| `acteur.mandats.mandat[].infosQualite.libQualite` | texte | 97889 | Membre · membre |
-| `acteur.mandats.mandat[].infosQualite.libQualiteSex` | texte/vide | 97889 | Membre · membre |
-| `acteur.mandats.mandat[].organes.organeRef` | texte | 97768 | PO391141 · PO420388 |
+| `acteur.mandats.mandat[].@xmlns:xsi` | texte | 97892 | http://www.w3.org/2001/XMLSchema-instance |
+| `acteur.mandats.mandat[].@xsi:type` | texte | 97892 | MandatSimple_Type · MandatMission_Type |
+| `acteur.mandats.mandat[].uid` | texte | 97892 | PM391145 · PM778068 |
+| `acteur.mandats.mandat[].acteurRef` | texte | 97892 | PA1001 · PA1002 |
+| `acteur.mandats.mandat[].legislature` | texte/vide | 97892 | 13 · 14 |
+| `acteur.mandats.mandat[].typeOrgane` | texte | 97892 | DELEGBUREAU · DELEGSENAT |
+| `acteur.mandats.mandat[].dateDebut` | texte | 97892 | 2007-06-28 · 2020-10-20 |
+| `acteur.mandats.mandat[].datePublication` | texte/vide | 97892 | 2010-03-23 · 2012-06-27 |
+| `acteur.mandats.mandat[].dateFin` | texte/vide | 97892 | 2008-10-08 · 2010-11-13 |
+| `acteur.mandats.mandat[].preseance` | texte/vide | 97892 | 24 · 4 |
+| `acteur.mandats.mandat[].nominPrincipale` | texte | 97892 | 0 · 1 |
+| `acteur.mandats.mandat[].infosQualite.codeQualite` | texte/vide | 97892 | Membre · membre |
+| `acteur.mandats.mandat[].infosQualite.libQualite` | texte | 97892 | Membre · membre |
+| `acteur.mandats.mandat[].infosQualite.libQualiteSex` | texte/vide | 97892 | Membre · membre |
+| `acteur.mandats.mandat[].organes.organeRef` | texte | 97771 | PO391141 · PO420388 |
 | `acteur.mandats.mandat[].libelle` | texte/vide | 6034 | Mise en place du plan de relance · La pratique d'une activité physique et sportive pour les élèves et les étudiants |
 | `acteur.mandats.mandat[].missionSuivanteRef` | texte/vide | 6034 | PM773756 · PM789978 |
 | `acteur.mandats.mandat[].missionPrecedenteRef` | texte/vide | 6034 | PM769451 · PM786854 |
