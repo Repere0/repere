@@ -1,11 +1,13 @@
-/* LA BARRE BASSE A TROIS ONGLETS DU CANEVAS « ACCUEIL » (13/10/2026).
+/* LA BARRE BASSE A TROIS ONGLETS DU CANEVAS « ACCUEIL » (13/10/2026, « Chez vous » corrige le 15/10/2026).
  *
  * Aujourd'hui  -> chez-vous   (les trois reponses du jour)
- * Chez vous    -> qui-decide  (la chaine de decision de la commune)
+ * Chez vous    -> territoire (le territoire de la commune : departement, region,
+ *                             intercommunalite, circonscription ; « Qui decide »
+ *                             en est une sortie, pas l'onglet)
  * Calendrier   -> a-venir     (le Parlement, semaine et mois)
  *
- * Le canevas dessine « Aujourd'hui » et « Calendrier » ; « Chez vous » n'a pas
- * d'ecran dessine : il ouvre « Qui decide », a confirmer par le porteur.
+ * « Qui decide » reste un ecran (route qui-decide), ouvert depuis « Aller plus
+ * loin », mais il n'a plus d'onglet : href null le retire de la barre.
  * Les ecrans de detail (argent, vote, fiche, partage, dictionnaire...) restent
  * dans la pile, au-dessus de la barre. */
 import { Text, type ColorValue } from "react-native";
@@ -41,7 +43,16 @@ export default function Onglets() {
           headerLeft: () => <Retour texte="Communes" etiquette="Revenir à l'accueil pour changer de commune" />,
         }}
       />
-      <Tabs.Screen name="qui-decide" options={{ title: LIBELLES.qui, tabBarLabel: "Chez vous", tabBarIcon: icone("⌂") }} />
+      <Tabs.Screen
+        name="territoire"
+        options={{
+          title: "Chez vous",
+          tabBarLabel: "Chez vous",
+          tabBarIcon: icone("⌂"),
+          headerLeft: () => <Retour texte="Communes" etiquette="Revenir à l'accueil pour changer de commune" />,
+        }}
+      />
+      <Tabs.Screen name="qui-decide" options={{ title: LIBELLES.qui, href: null }} />
       <Tabs.Screen name="a-venir" options={{ title: LIBELLES.calendrier, tabBarLabel: "Calendrier", tabBarIcon: icone("▦") }} />
     </Tabs>
   );

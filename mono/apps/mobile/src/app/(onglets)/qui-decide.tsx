@@ -8,7 +8,7 @@
  * L'ordre est un ordre de distance, pas d'importance : c'est ecrit. */
 import { Pressable, Text } from "react-native";
 import { router, Stack } from "expo-router";
-import { chaineDecision, dateFr, MAIRE_ABSENT, phraseAdjoints, RNE_URL, LIBELLES } from "@repere/core";
+import { chaineDecision, dateFr, MAIRE_ABSENT, nomIntercommunalite, phraseAdjoints, RNE_URL, LIBELLES } from "@repere/core";
 import { sansConseilDepartemental } from "@repere/core";
 import { Segments } from "../../lib/composants";
 import { REGION_PAS_ARRIVEE } from "../../lib/absences";
@@ -33,9 +33,10 @@ export default function QuiDecide() {
         }
         if (n.echelon === "agglo") {
           /* 07/10/2026 : les precisions propres au territoire (Ile-de-France,
-             Metropole du Grand Paris) viennent de @repere/core, comme sur le site. */
+             Metropole du Grand Paris) viennent de @repere/core, comme sur le site.
+             16/10/2026 : le nom publie (« Ca Du Pays De Meaux ») s'ecrit « CA du Pays de Meaux ». */
           const precisions = (n as { precisions?: string[] }).precisions || [];
-          return { ...n, note: [n.delegues
+          return { ...n, institution: nomIntercommunalite(n.institution) || n.institution, note: [n.delegues
             ? `Le Répertoire national des élus y liste ${n.delegues} élu${n.delegues > 1 ? "s" : ""} de ${d.nomCommune}. Vous ne l'élisez pas directement : ce sont des conseillers municipaux qui y siègent.`
             : "Le Répertoire national des élus ne porte pas de délégué pour cette commune à son intercommunalité.", ...precisions].join(" ") };
         }
@@ -46,6 +47,13 @@ export default function QuiDecide() {
           /* 08/10/2026 : certains territoires n'ont REELLEMENT pas de conseil departemental */
           const sans = sansConseilDepartemental(d.dep);
           return { ...n, note: sans ? `${sans.titre} ${sans.corps}` : "Le Répertoire national des élus ne porte pas de conseil départemental pour ce territoire." };
+        }
+        if (n.echelon === "france" && d.nbCircos > 1) {
+          /* 15/10/2026 : une commune partagee entre plusieurs circonscriptions n'a pas UN
+             depute. La chaine ne nomme personne (le premier de la liste serait un choix
+             arbitraire) : le depute depend de l'adresse, et Repere ne la demande pas. */
+          return { ...n, personne: null, lieu: `${d.nbCircos} circonscriptions`, pied: undefined,
+            note: `${d.nomCommune} est partagée entre ${d.nbCircos} circonscriptions. Votre député dépend de votre adresse précise, que Repère ne demande pas : aucun député n'est nommé ici.` };
         }
         if (n.echelon === "france") {
           return { ...n, note: n.autresCircos ? `${d.nomCommune} est partagée entre plusieurs circonscriptions : un seul député est nommé ici.` : undefined,
