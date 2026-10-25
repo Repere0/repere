@@ -27,8 +27,8 @@ export const VOTE_AUCUN = {
   lien: { texte: "Les scrutins sur le site de l'Assemblée", url: SCRUTINS_AN },
 };
 export const AGENDA_PAS_ARRIVE = {
-  titre: "Le calendrier n'est arrivé jusqu'à cet appareil pour aucune institution.",
-  corps: "Il est republié chaque jour par Repère ; il n'a pas pu être chargé cette fois-ci.",
+  titre: "Le calendrier n'a pas pu être chargé.",
+  corps: "Il est republié chaque jour par Repère. Ce n'est pas une absence de séance.",
 };
 export const AGENDA_VIDE = {
   titre: "Aucune séance n'est annoncée sur la période relevée, ni au Sénat ni à l'Assemblée.",

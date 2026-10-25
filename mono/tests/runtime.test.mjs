@@ -1466,7 +1466,7 @@ console.log("\n--- calendrier : chaque institution independante ------------");
     fs.rmSync(fSen, { force: true });
     const t3 = await ecran();
     verif("independance — aucun des deux : un etat explicite, aucun faux calendrier",
-      /n'est arrivé jusqu'à cet appareil pour aucune institution/.test(t3) && !/Séance de banc/.test(t3),
+      /n'a pas pu être chargé/.test(t3) && !/Séance de banc/.test(t3),
       t3.slice(0, 300).replace(/\n+/g, " / "));
     fs.writeFileSync(fAN, paquet("Assemblée nationale", "Licence ouverte", ["Séance de banc AN avec Sénat vide"]));
     fs.writeFileSync(fSen, paquet("Sénat", "non précisée par le Sénat", ["Séance de banc Sénat passée"], -3));
