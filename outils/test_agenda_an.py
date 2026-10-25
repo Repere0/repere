@@ -83,5 +83,19 @@ class AgendaAN(unittest.TestCase):
                           ("2099-10-13T17:00", "seance", "2099-10-13T18:00")])
 
 
+    def test_horaire_avec_decalage_lu_a_l_heure_de_paris(self):
+        # 13 h UTC en juillet = 15 h à Paris (heure d'été) ; fin à 16 h 30 UTC = 18 h 30.
+        sortie = self.lancer([reunion("F", "2099-07-14T13:00:00+00:00", "2099-07-14T16:30:00+00:00")])
+        (r,) = sortie["r"]
+        self.assertEqual(r["d"], "2099-07-14T15:00")
+        self.assertEqual(r["f"], "2099-07-14T18:30")
+
+    def test_horaire_d_hiver_avec_decalage_inchange(self):
+        # 14 h à Paris en janvier s'écrit 13 h UTC : le résultat doit être 14 h.
+        sortie = self.lancer([reunion("G", "2099-01-13T14:00:00+01:00")])
+        (r,) = sortie["r"]
+        self.assertEqual(r["d"], "2099-01-13T14:00")
+
+
 if __name__ == "__main__":
     unittest.main()
