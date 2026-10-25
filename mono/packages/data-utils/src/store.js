@@ -27,6 +27,9 @@ export const VERSION_BASE = 1;
 
 /* La forme d'un paquet départemental. Une écriture qui ne la respecte pas est
    refusée : c'est la garde qui empêche ce magasin de devenir autre chose. */
+// Seule definition des cles gardables : un code de commune (5 caracteres) n'y entre jamais.
+export const CLE_PUBLIQUE = /^((dep|vote|reg|proj):[0-9A-Z]{1,3}|socle:[A-Z]{3,4}(:\d{1,4})?)$/;
+
 export function estDonneePublique(cle, valeur) {
   /* « vote » rejoint « dep » et « socle » le 13/09/2026 : les positions de vote
      sont rangees par DEPARTEMENT, exactement comme les elus. La garde reste ce
@@ -40,7 +43,7 @@ export function estDonneePublique(cle, valeur) {
      l'erreur, et les projets n'etaient jamais gardes, pas meme en memoire —
      jamais disponibles hors ligne. Mesure en lisant le code, prouve par
      tests/donnees.test.mjs. */
-  if (!/^(dep|vote|reg|proj|socle):[0-9A-Z]{1,3}$/.test(String(cle))) return false;
+  if (!CLE_PUBLIQUE.test(String(cle))) return false;
   if (!valeur || typeof valeur !== "object") return false;
   if ("insee" in valeur && !("communes" in valeur)) return false;
   const interdits = ["utilisateur", "user", "email", "id_client", "session",

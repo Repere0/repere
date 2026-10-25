@@ -99,6 +99,20 @@ test("invariant 2 — IndexedDB ne peut contenir que de la donnée publique", ()
   }
 });
 
+// Chaque cle composee par client.js doit passer la garde, sinon le fichier n'est jamais garde (hors ligne impossible).
+test("invariant 2 — toute cle composee par client.js passe la garde, un code de commune non", () => {
+  const src = lire("packages/data-utils/src/client.js");
+  const exemples = { dep: "2A", code: "11", lot: "12" };
+  const cles = [...src.matchAll(/chargerSocle\("([^"]+)"(?:\s*\+\s*String\((\w+)\)(?:\.toUpperCase\(\))?)?/g)]
+    .map(m => m[1] + (m[2] ? exemples[m[2]] : ""));
+  assert.ok(cles.length >= 15, "lecture des cles de client.js : " + cles.length);
+  const refusees = cles.filter(c => !estDonneePublique(c, { a: 1 }));
+  assert.deepEqual(refusees, [], "cles refusees par la garde : jamais gardees sur l'appareil");
+  for (const c of ["dep:77284", "socle:77284", "socle:QGL:77284", "commune:77284"]) {
+    assert.equal(estDonneePublique(c, { a: 1 }), false, "aurait accepte " + c);
+  }
+});
+
 test("invariant 2 — aucune adresse ne porte un code de commune", () => {
   assert.equal(adresseDepartement("64"), "/data/departments/64.json");
   assert.equal(adresseDepartement("2a"), "/data/departments/2A.json");
