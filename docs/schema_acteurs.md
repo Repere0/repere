@@ -33,8 +33,8 @@ une seule fois sont reprises a part, plus bas.
 | `acteur.etatCivil.infoNaissance.villeNais` | texte | 2155 | Lille · Fontevraud-l'Abbaye |
 | `acteur.etatCivil.infoNaissance.depNais` | texte | 2001 | Nord · Maine-et-Loire |
 | `acteur.etatCivil.infoNaissance.paysNais` | texte | 1790 | France · Maroc |
-| `acteur.etatCivil.dateDeces.@xmlns:xsi` | texte | 2732 | http://www.w3.org/2001/XMLSchema-instance |
-| `acteur.etatCivil.dateDeces.@xsi:nil` | texte | 2732 | true |
+| `acteur.etatCivil.dateDeces.@xmlns:xsi` | texte | 2731 | http://www.w3.org/2001/XMLSchema-instance |
+| `acteur.etatCivil.dateDeces.@xsi:nil` | texte | 2731 | true |
 | `acteur.profession.libelleCourant` | texte | 2082 | Ancien directeur d'une société de recrutement · Inspecteur général de l'équipement |
 | `acteur.profession.socProcINSEE.catSocPro` | texte | 2103 | Anciens artisans, commerçants, chefs d'entreprise · Cadres de la fonction publique, professions intellectuelles et  artistiques |
 | `acteur.profession.socProcINSEE.famSocPro` | texte | 2103 | Retraités · Cadres et professions intellectuelles supérieures |
@@ -56,43 +56,43 @@ une seule fois sont reprises a part, plus bas.
 | `acteur.adresses.adresse[].ville` | texte/vide | 2805 | Paris 07 SP · Cenon |
 | `acteur.adresses.adresse[].valElec` | texte/vide | 6205 | 01 40 63 75 53 · 01 40 63 79 37 |
 | `acteur.mandats.mandat[]` | liste | 2995 | de 2 a 814 entrees |
-| `acteur.mandats.mandat[].@xmlns:xsi` | texte | 97892 | http://www.w3.org/2001/XMLSchema-instance |
-| `acteur.mandats.mandat[].@xsi:type` | texte | 97892 | MandatSimple_Type · MandatMission_Type |
-| `acteur.mandats.mandat[].uid` | texte | 97892 | PM391145 · PM778068 |
-| `acteur.mandats.mandat[].acteurRef` | texte | 97892 | PA1001 · PA1002 |
-| `acteur.mandats.mandat[].legislature` | texte/vide | 97892 | 13 · 14 |
-| `acteur.mandats.mandat[].typeOrgane` | texte | 97892 | DELEGBUREAU · DELEGSENAT |
-| `acteur.mandats.mandat[].dateDebut` | texte | 97892 | 2007-06-28 · 2020-10-20 |
-| `acteur.mandats.mandat[].datePublication` | texte/vide | 97892 | 2010-03-23 · 2012-06-27 |
-| `acteur.mandats.mandat[].dateFin` | texte/vide | 97892 | 2008-10-08 · 2010-11-13 |
-| `acteur.mandats.mandat[].preseance` | texte/vide | 97892 | 24 · 4 |
-| `acteur.mandats.mandat[].nominPrincipale` | texte | 97892 | 0 · 1 |
-| `acteur.mandats.mandat[].infosQualite.codeQualite` | texte/vide | 97892 | Membre · membre |
-| `acteur.mandats.mandat[].infosQualite.libQualite` | texte | 97892 | Membre · membre |
-| `acteur.mandats.mandat[].infosQualite.libQualiteSex` | texte/vide | 97892 | Membre · membre |
-| `acteur.mandats.mandat[].organes.organeRef` | texte | 97771 | PO391141 · PO420388 |
+| `acteur.mandats.mandat[].@xmlns:xsi` | texte | 97981 | http://www.w3.org/2001/XMLSchema-instance |
+| `acteur.mandats.mandat[].@xsi:type` | texte | 97981 | MandatSimple_Type · MandatMission_Type |
+| `acteur.mandats.mandat[].uid` | texte | 97981 | PM391145 · PM15423365 |
+| `acteur.mandats.mandat[].acteurRef` | texte | 97981 | PA1001 · PA1002 |
+| `acteur.mandats.mandat[].legislature` | texte/vide | 97981 | 13 · 14 |
+| `acteur.mandats.mandat[].typeOrgane` | texte | 97981 | DELEGBUREAU · GOUVERNEMENT |
+| `acteur.mandats.mandat[].dateDebut` | texte | 97981 | 2007-06-28 · 2010-03-22 |
+| `acteur.mandats.mandat[].datePublication` | texte/vide | 97981 | 2010-03-23 · 2012-06-27 |
+| `acteur.mandats.mandat[].dateFin` | texte/vide | 97981 | 2008-10-08 · 2010-11-13 |
+| `acteur.mandats.mandat[].preseance` | texte/vide | 97981 | 24 · 50 |
+| `acteur.mandats.mandat[].nominPrincipale` | texte | 97981 | 0 · 1 |
+| `acteur.mandats.mandat[].infosQualite.codeQualite` | texte/vide | 97981 | Membre · membre |
+| `acteur.mandats.mandat[].infosQualite.libQualite` | texte | 97981 | Membre · membre |
+| `acteur.mandats.mandat[].infosQualite.libQualiteSex` | texte/vide | 97981 | Membre · membre |
+| `acteur.mandats.mandat[].organes.organeRef` | texte | 97860 | PO391141 · PO384206 |
 | `acteur.mandats.mandat[].libelle` | texte/vide | 6034 | Mise en place du plan de relance · La pratique d'une activité physique et sportive pour les élèves et les étudiants |
 | `acteur.mandats.mandat[].missionSuivanteRef` | texte/vide | 6034 | PM773756 · PM789978 |
 | `acteur.mandats.mandat[].missionPrecedenteRef` | texte/vide | 6034 | PM769451 · PM786854 |
-| `acteur.mandats.mandat[].suppleants` | vide | 4890 |  |
-| `acteur.mandats.mandat[].chambre` | vide | 3216 |  |
-| `acteur.mandats.mandat[].election.lieu.region` | texte/vide | 3387 | Auvergne-Rhône-Alpes · Hauts-de-France |
-| `acteur.mandats.mandat[].election.lieu.regionType` | texte/vide | 3387 | Métropolitain · Collectivités d'outre-mer et Nouvelle-Calédonie |
-| `acteur.mandats.mandat[].election.lieu.departement` | texte/vide | 3387 | Rhône · Nord |
-| `acteur.mandats.mandat[].election.lieu.numDepartement` | texte/vide | 3387 | 59 · 37 |
-| `acteur.mandats.mandat[].election.lieu.numCirco` | texte/vide | 3387 | 13 · 23 |
-| `acteur.mandats.mandat[].election.causeMandat` | texte/vide | 3387 | élections générales · élection partielle, suite à l'annulation de l'élection d'un député |
-| `acteur.mandats.mandat[].mandature.datePriseFonction` | texte/vide | 3387 | 2002-06-19 · 2002-12-16 |
-| `acteur.mandats.mandat[].mandature.causeFin` | texte/vide | 3387 | Fin de législature · Annulation de l'élection sur décision du Conseil constitutionnel |
-| `acteur.mandats.mandat[].mandature.premiereElection` | texte | 3387 | 0 · 1 |
-| `acteur.mandats.mandat[].mandature.placeHemicycle` | texte/vide | 3387 | 424 · 178 |
-| `acteur.mandats.mandat[].mandature.mandatRemplaceRef` | texte/vide | 3387 | PM267876 · PM386168 |
-| `acteur.mandats.mandat[].collaborateurs` | vide | 3250 |  |
+| `acteur.mandats.mandat[].suppleants` | vide | 4888 |  |
+| `acteur.mandats.mandat[].chambre` | vide | 3215 |  |
+| `acteur.mandats.mandat[].election.lieu.region` | texte/vide | 3385 | Auvergne-Rhône-Alpes · Hauts-de-France |
+| `acteur.mandats.mandat[].election.lieu.regionType` | texte/vide | 3385 | Métropolitain · Collectivités d'outre-mer et Nouvelle-Calédonie |
+| `acteur.mandats.mandat[].election.lieu.departement` | texte/vide | 3385 | Rhône · Nord |
+| `acteur.mandats.mandat[].election.lieu.numDepartement` | texte/vide | 3385 | 59 · 37 |
+| `acteur.mandats.mandat[].election.lieu.numCirco` | texte/vide | 3385 | 13 · 23 |
+| `acteur.mandats.mandat[].election.causeMandat` | texte/vide | 3385 | élections générales · élection partielle, suite à l'annulation de l'élection d'un député |
+| `acteur.mandats.mandat[].mandature.datePriseFonction` | texte/vide | 3385 | 2002-06-19 · 2002-12-16 |
+| `acteur.mandats.mandat[].mandature.causeFin` | texte/vide | 3385 | Fin de législature · Annulation de l'élection sur décision du Conseil constitutionnel |
+| `acteur.mandats.mandat[].mandature.premiereElection` | texte | 3385 | 0 · 1 |
+| `acteur.mandats.mandat[].mandature.placeHemicycle` | texte/vide | 3385 | 424 · 178 |
+| `acteur.mandats.mandat[].mandature.mandatRemplaceRef` | texte/vide | 3385 | PM267876 · PM386168 |
+| `acteur.mandats.mandat[].collaborateurs` | vide | 3248 |  |
 | `acteur.etatCivil.infoNaissance.paysNais.@xmlns:xsi` | texte | 1210 | http://www.w3.org/2001/XMLSchema-instance |
 | `acteur.etatCivil.infoNaissance.paysNais.@xsi:nil` | texte | 1210 | true |
 | `acteur.etatCivil.ident.trigramme` | texte | 526 | ADA · JGD |
 | `acteur.uri_hatvp` | texte | 520 | https://www.hatvp.fr/pages_nominatives/david-alain · https://www.hatvp.fr/pages_nominatives/guedj-jerome |
-| `acteur.etatCivil.dateDeces` | texte | 268 | 2025-02-16 · 2022-01-01 |
+| `acteur.etatCivil.dateDeces` | texte | 269 | 2025-02-16 · 2022-01-01 |
 | `acteur.mandats.mandat[].suppleants.suppleant.dateDebut` | texte | 1042 | 2002-06-19 · 2002-12-15 |
 | `acteur.mandats.mandat[].suppleants.suppleant.dateFin` | texte/vide | 1042 | 2007-06-19 · 2012-06-19 |
 | `acteur.mandats.mandat[].suppleants.suppleant.suppleantRef` | texte | 1042 | PA267501 · PA333972 |
