@@ -284,8 +284,8 @@ export default function Scrutins() {
                 <Pressable key={x.uid} onPress={() => choisirQag(x.uid)} accessibilityRole="button"
                   style={({ pressed }) => [s.selectionCard, x.uid === qagSelection && s.selectionCardActive, pressed && { opacity: 0.7 }]}>
                   <Text style={TYPO.micro}>{x.d ? dateFr(x.d) : "Date non fournie"} · n° {x.n}</Text>
-                  <Text numberOfLines={2} style={s.selectionTitre}>{x.auteur.nom || "Auteur non identifié"}</Text>
-                  <Text numberOfLines={1} style={TYPO.note}>{x.ministere || "Ministère non précisé"}</Text>
+                  <Text style={s.selectionTitre}>{x.auteur.nom || "Auteur non identifié"}</Text>
+                  <Text style={TYPO.note}>{x.ministere || "Ministère non précisé"}</Text>
                 </Pressable>
               ))}
             </ScrollView>
@@ -359,7 +359,7 @@ export default function Scrutins() {
                   style={({ pressed }) => [s.selectionCard, x.n === selection && s.selectionCardActive, pressed && { opacity: 0.7 }]}
                 >
                   <Text style={TYPO.micro}>{dateFr(x.d)} · n° {x.n}</Text>
-                  <Text numberOfLines={3} style={s.selectionTitre}>{titreLisible(x.t)}</Text>
+                  <Text style={s.selectionTitre}>{titreLisible(x.t)}</Text>
                 </Pressable>
               ))}
             </ScrollView>
