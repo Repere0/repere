@@ -58,7 +58,8 @@ const CAL = await (async () => {
   const limite = jourParis(new Date(Date.now() + 14 * 864e5));
   let proches = aVenir.filter(e => e.debut.slice(0, 10) < limite);
   if (!proches.length) proches = aVenir.slice(0, 5);
-  return { lignes: regrouperParJour(proches).length, vieux };
+  /* 13/10/2026 : la frise a une colonne par jour portant au moins une séance. */
+  return { lignes: regrouperParJour(proches).length, jours: new Set(regrouperParJour(proches).map(g => g.jour)).size, vieux };
 })();
 /* Les elus du canton de Meaux, lus dans les donnees servies (07/10/2026). */
 const ELUS_CANTON = await (async () => {
@@ -119,7 +120,7 @@ for (const largeur of [360, 390, 430]) {
   if (CAPTURES) await page.screenshot({ path: path.join(CAPTURES, `accueil-${largeur}.png`), fullPage: true });
   await resultat.click();
 
-  await page.getByText("Aller plus loin").first().waitFor({ timeout: 15000 });
+  await page.getByText("Sources et mises à jour").first().waitFor({ timeout: 15000 });
   await page.waitForLoadState("networkidle");
   /* Le ScrollView de React Native defile a l'interieur de la page : une capture
      « pleine page » n'en montrerait que le haut. On le fait defiler. */
@@ -200,16 +201,19 @@ for (const largeur of [360, 390, 430]) {
   communs(mesure, "Aujourd'hui");
   verifier(new RegExp(MAIRE).test(mesure.texte), `${largeur}px : le maire est nommé (${MAIRE})`);
   verifier(/Publication Repère du \d/.test(mesure.texte), `${largeur}px : la date de la publication affichée est dite`);
-  verifier((mesure.etiquettes.match(/D'où vient cette information/g) || []).length >= 3, `${largeur}px : chaque réponse de l'accueil porte sa source`);
-  verifier(/a voté (pour|contre|l'abstention)/.test(mesure.texte) && /députés ayant pris part au vote/.test(mesure.etiquettes),
+  verifier((mesure.etiquettes.match(/D'où vient cette info/g) || []).length >= 3, `${largeur}px : chaque réponse de l'accueil porte sa source`);
+  /* 13/10/2026 : la répartition se lit dans la phrase d'explication (« 276 pour, 86 contre… »),
+     plus dans une barre : le canevas « Main » n'en porte pas. */
+  verifier(/a voté (pour|contre|l'abstention)/.test(mesure.texte) && /\d+ pour, \d+ contre, \d+ abstention/.test(mesure.texte),
     `${largeur}px : le vote du député s'affiche, et sa répartition se lit aussi en phrase`);
   verifier(/a dépensé [\d\s]+€ par habitant/.test(mesure.texte), `${largeur}px : l'argent de la commune se dit en une phrase`);
   /* « Réponses d'abord » (30/09/2026) : une reponse, pas une rubrique ; jamais
      une donnee de presence, jamais « dernier ». */
   verifier(!/a participé|n'a pas participé|dernier vote/i.test(mesure.brut), `${largeur}px : aucune donnée de présence, aucun « dernier vote »`);
-  /* Spike du 30/09/2026 : la source devient discrete, mais un calcul se dit
-     calcul A L'OEIL (invariant 4), pas seulement dans la feuille. */
-  verifier(/Calcul Repère/.test(mesure.texte), `${largeur}px : un chiffre calculé se dit calculé sans ouvrir la feuille`);
+  /* 13/10/2026 (décision du porteur) : le projet financé par l'État n'est plus sur
+     l'accueil. Le calcul, et son marquage « Calculé par Repère », restent sur « Où va cet argent ? »
+     (contrôlé plus bas, dans la boucle des écrans). */
+  verifier(!/Calcul Repère/.test(mesure.texte), `${largeur}px : le calcul du projet de l'État n'est plus sur l'accueil (décision du 13/10/2026)`);
   verifier(/Le calendrier/.test(mesure.brut), `${largeur}px : la carte « ce qui arrive » est présente (ou sa phrase d'absence)`);
   /* LA SEMAINE AU PARLEMENT (PR B, 07/10/2026) : sous les trois reponses, jamais
      parmi elles ; nationale, dite comme telle ; ce qu'elle compte est recalcule
@@ -241,16 +245,27 @@ for (const largeur of [360, 390, 430]) {
   verifier(!/77284/.test(page.url()), `${largeur}px : l'adresse de la page ne porte pas le code de la commune`);
 
   /* LA FEUILLE DE SOURCE (niveau 4) */
+  /* 13/10/2026 : la source d'un bloc se déplie d'abord, puis la pastille ouvre la feuille. */
+  await page.getByRole("button", { name: "D'où vient cette info ?", exact: true }).first().click();
   await page.getByRole("button", { name: /D'où vient cette information/ }).first().click();
   await page.getByText("Comment Repère l'utilise").first().waitFor({ timeout: 5000 });
   const feuille = await page.evaluate(() => document.body.innerText);
-  verifier(/Données publiées le \d/.test(feuille) && /↗/.test(feuille),
+  /* La date d'une source est soit « publiées le » (fichier), soit « relevé le » (agenda, scrutins). */
+  verifier(/(Données publiées|Données relevées|relevé) le \d/.test(feuille) && /↗/.test(feuille),
     `${largeur}px : une pastille ouvre la feuille de source : producteur, date, usage et lien vers la donnée originale`);
   verifier(/Traitées par Repère le \d/.test(feuille), `${largeur}px : la feuille distingue la date de la source de celle du traitement par Repère`);
   await page.getByRole("button", { name: "Fermer" }).first().click();
   await page.waitForTimeout(400);
 
-  /* LES QUESTIONS SUIVANTES : trois depuis les reponses, deux depuis « Aller plus loin » */
+  /* LES QUESTIONS SUIVANTES. 13/10/2026 : « Qui décide » est un onglet de la barre basse,
+     « Le calendrier » s'ouvre par l'onglet « Calendrier », « Sources » par un lien. */
+  const voie = action => {
+    if (action === "Qui décide") return page.getByText("Qui décide", { exact: true }).last();
+    /* « Calendrier » est aussi un onglet de la barre basse (13/10/2026) : le dernier texte exact. */
+    if (action === "Le calendrier") return page.getByText("Calendrier", { exact: true }).last();
+    if (action === "Sources") return page.getByRole("link", { name: "Sources et mises à jour", exact: true }).first();
+    return page.getByRole("button", { name: action, exact: true }).first();
+  };
   for (const [action, question, preuve] of [
     ["Où va cet argent ?", /Où va l'argent de Meaux/, /Sur 100 € dépensés, \d+ € vont aux salaires/],
     ["Comprendre ce vote", /Qu'a voté votre député/, /Le parcours d'une loi|Où en est ce texte/],
@@ -260,7 +275,7 @@ for (const largeur of [360, 390, 430]) {
     ["Le calendrier", /Les séances annoncées à l'Assemblée nationale/, /concernent tout le pays/],
     ["Sources", /Repère a traité ces fichiers/, /Repère a traité ces fichiers le \d.*Données publiées le \d.*Données relevées le \d/s],
   ]) {
-    await page.getByRole("button", { name: action, exact: true }).first().click();
+    await voie(action).click();
     await page.getByText(question).first().waitFor({ timeout: 10000 });
     await page.waitForTimeout(800);
     const m = await mesurer();
@@ -270,6 +285,8 @@ for (const largeur of [360, 390, 430]) {
          socle sur les fichiers servis, pour les deux prochaines semaines. */
       const lignes = await page.evaluate(() => document.querySelectorAll('[data-testid="cal-ligne"]').length);
       verifier(lignes === CAL.lignes, `${largeur}px · Le calendrier : une ligne par texte et par jour (${lignes} affichées, ${CAL.lignes} attendues)`);
+      const colonnes = await page.evaluate(() => document.querySelectorAll('[data-testid="cal-jour"]').length);
+      verifier(colonnes === CAL.jours, `${largeur}px · Le calendrier : une colonne de frise par jour avec séance (${colonnes} affichées, ${CAL.jours} attendues)`);
       verifier(CAL.vieux.every(x => new RegExp("Agenda " + x.de + " relevé le .+, il y a " + x.age + " jours").test(m.brut)),
         `${largeur}px · Le calendrier : un relevé ancien le dit, avec sa date ${JSON.stringify(CAL.vieux)}`);
     }
@@ -277,7 +294,7 @@ for (const largeur of [360, 390, 430]) {
     verifier(preuve.test(m.brut), `${largeur}px · ${action} : l'écran répond à sa question`);
     if (action === "Sources") verifier(/Licence : /.test(m.brut) && /Les noms des députés/.test(m.brut), `${largeur}px · Sources : chaque source dit sa licence, et la source des noms des députés est citée`);
     if (action === "Qui décide") verifier(ELUS_CANTON.length >= 2 && ELUS_CANTON.every(n => m.brut.includes(n)), `${largeur}px · Qui décide : tous les élus du canton sont nommés ${JSON.stringify(ELUS_CANTON)}`);
-    if (action !== "Sources") verifier(/D'où vient cette information/.test(m.etiquettes) || /Le calendrier n'est arrivé/.test(m.texte), `${largeur}px · ${action} : la source est à portée de doigt`);
+    if (action !== "Sources") verifier(/D'où vient cette info/.test(m.etiquettes) || /Le calendrier n'est arrivé/.test(m.texte), `${largeur}px · ${action} : la source est à portée de doigt`);
     if (/argent/.test(action)) {
       verifier(/Calculé par Repère · source/.test(m.texte), `${largeur}px · ${action} : les parts calculées se disent calculées`);
       /* 08/10/2026 (audit) : chaque carte de chiffres dit l'annee de ses comptes */
@@ -294,7 +311,7 @@ for (const largeur of [360, 390, 430]) {
     } else {
       await page.getByRole("button", { name: "Revenir à l'écran Aujourd'hui" }).last().click();
     }
-    await page.getByText("Aller plus loin").first().waitFor({ timeout: 5000 });
+    await page.getByText("Sources et mises à jour").first().waitFor({ timeout: 5000 });
   }
 
   await page.getByRole("button", { name: "Revenir à l'accueil" }).last().click();
@@ -309,7 +326,7 @@ for (const largeur of [360, 390, 430]) {
   await page.goto(BASE + "/", { waitUntil: "networkidle" });
   await page.getByLabel(/Où habitez-vous/).fill("bassevelle");
   await page.getByRole("button", { name: /^Bassevelle,/ }).first().click();
-  await page.getByText("Aller plus loin").first().waitFor({ timeout: 15000 });
+  await page.getByText("Sources et mises à jour").first().waitFor({ timeout: 15000 });
   await page.getByRole("button", { name: "Où va cet argent ?", exact: true }).first().click();
   await page.getByText(/Où va l'argent de Bassevelle/).first().waitFor({ timeout: 10000 });
   await page.waitForTimeout(800);
@@ -332,7 +349,7 @@ for (const largeur of [360, 390, 430]) {
 /* LES PANNES PARTIELLES DISENT « PAS ARRIVE », JAMAIS « ABSENT » — audit de
    #45, 29/09/2026. Avant correction, un fichier de projets ou de votes coupe
    faisait afficher « Aucun projet ... n'est publie » : une phrase fausse. */
-async function ouvrirAvecPanne(motif) {
+async function ouvrirAvecPanne(motif, ecranApres) {
   const page = await navigateur.newPage({ viewport: { width: 390, height: 800 }, isMobile: true, hasTouch: true });
   await page.route(motif, r => r.abort());
   await page.goto(BASE + "/", { waitUntil: "networkidle" });
@@ -340,15 +357,22 @@ async function ouvrirAvecPanne(motif) {
   await page.getByRole("button", { name: new RegExp("^" + COMMUNE.nom + ",") }).first().click();
   await page.waitForTimeout(1500);
   await page.waitForLoadState("networkidle");
+  /* 13/10/2026 : les projets de l'État ne sont plus sur l'accueil : leur panne se voit sur « Où va cet argent ? ». */
+  if (ecranApres) {
+    await page.getByRole("button", { name: ecranApres, exact: true }).first().click();
+    await page.waitForTimeout(1500);
+    await page.waitForLoadState("networkidle");
+  }
   const texte = await page.evaluate(() => document.body.textContent);
   await page.close();
   return texte;
 }
 {
-  const t = await ouvrirAvecPanne("**/data/projets/**");
+  const t = await ouvrirAvecPanne("**/data/projets/**", "Où va cet argent ?");
   verifier(/projets financés par l'État ne sont pas arrivés/.test(t) && !/Aucun projet financé/.test(t),
     "panne des projets : « pas arrivés », jamais « aucun projet »");
-  verifier(new RegExp(MAIRE).test(t) && /a voté/.test(t), "panne des projets : le reste de l'écran s'affiche");
+  const accueil = await ouvrirAvecPanne("**/data/projets/**");
+  verifier(new RegExp(MAIRE).test(accueil) && /a voté/.test(accueil), "panne des projets : le reste de l'écran s'affiche");
 }
 {
   const t = await ouvrirAvecPanne("**/data/scrutins/**");
@@ -406,7 +430,7 @@ async function montantA100ms(reduit) {
   await page.goto(BASE + "/", { waitUntil: "networkidle" });
   await page.getByLabel(/Où habitez-vous/).fill(COMMUNE.saisie);
   await page.getByRole("button", { name: new RegExp("^" + COMMUNE.nom + ",") }).first().click();
-  await page.getByText("Aller plus loin").first().waitFor({ timeout: 15000 });
+  await page.getByText("Sources et mises à jour").first().waitFor({ timeout: 15000 });
   let st = await stockage();
   verifier(Object.keys(st.ls).length === 0, "mémoire : rien n'est gardé tant que le lecteur ne l'a pas demandé " + JSON.stringify(st.ls));
   await page.getByRole("button", { name: "Retenir Meaux sur ce téléphone" }).click();
@@ -420,7 +444,7 @@ async function montantA100ms(reduit) {
   await reprendre.waitFor({ timeout: 10000 });
   verifier(true, "mémoire : Meaux est proposée à la réouverture");
   await reprendre.click();
-  await page.getByText("Aller plus loin").first().waitFor({ timeout: 15000 });
+  await page.getByText("Sources et mises à jour").first().waitFor({ timeout: 15000 });
   verifier(true, "mémoire : un geste suffit pour retrouver sa commune");
   await page.getByRole("button", { name: "Oublier Meaux" }).click();
   st = await stockage();
@@ -462,7 +486,7 @@ async function ouvrirSemaine({ agenda, senatCoupe, fuseau }) {
   await page.goto(BASE + "/", { waitUntil: "networkidle" });
   await page.getByLabel(/Où habitez-vous/).fill(COMMUNE.saisie);
   await page.getByRole("button", { name: new RegExp("^" + COMMUNE.nom + ",") }).first().click();
-  await page.getByText("Aller plus loin").first().waitFor({ timeout: 15000 });
+  await page.getByText("Sources et mises à jour").first().waitFor({ timeout: 15000 });
   await page.waitForTimeout(600);
   const vu = await lireSemaine(page);
   const m = await page.evaluate(() => ({ deborde: document.documentElement.scrollWidth > document.documentElement.clientWidth + 1 }));
@@ -507,10 +531,13 @@ async function ouvrirSemaine({ agenda, senatCoupe, fuseau }) {
   await page.goto(BASE + "/", { waitUntil: "networkidle" });
   await page.getByLabel(/Où habitez-vous/).fill(COMMUNE.saisie);
   await page.getByRole("button", { name: new RegExp("^" + COMMUNE.nom + ",") }).first().click();
-  await page.getByText("Aller plus loin").first().waitFor({ timeout: 15000 });
+  await page.getByText("Sources et mises à jour").first().waitFor({ timeout: 15000 });
   await page.waitForTimeout(600);
-  const bas = await page.evaluate(() => [...document.querySelectorAll('[data-testid="reponse"]')].filter(e => e.offsetParent).map(e => Math.round(e.getBoundingClientRect().bottom)));
-  verifier(bas.length === 3 && bas.every(b => b <= HAUTEUR), `390 x ${HAUTEUR} : les trois réponses tiennent dans le premier écran ${JSON.stringify(bas)}`);
+  /* 13/10/2026 (décision A du porteur) : la règle porte sur le TITRE de chaque réponse, qui doit
+     être lu sans défiler, au-dessus de la barre basse (72 px). Le reste du bloc peut défiler. */
+  const VISIBLE = HAUTEUR - 72;
+  const titres = await page.evaluate(() => [...document.querySelectorAll('[data-testid="reponse"] [role="heading"]')].filter(e => e.offsetParent).map(e => Math.round(e.getBoundingClientRect().bottom)));
+  verifier(titres.length === 2 && titres.every(b => b <= VISIBLE), `390 x ${HAUTEUR} : le titre des deux réponses locales se lit au-dessus de la barre basse (limite ${VISIBLE} px) ${JSON.stringify(titres)}`);
   await page.close();
 }
 
@@ -524,7 +551,7 @@ async function ouvrirSemaine({ agenda, senatCoupe, fuseau }) {
     await page.goto(BASE + "/", { waitUntil: "networkidle" });
     await page.getByLabel(/Où habitez-vous/).fill(COMMUNE.saisie);
     await page.getByRole("button", { name: new RegExp("^" + COMMUNE.nom + ",") }).first().click();
-    await page.getByText("Aller plus loin").first().waitFor({ timeout: 15000 });
+    await page.getByText("Sources et mises à jour").first().waitFor({ timeout: 15000 });
     await page.waitForTimeout(600);
     return { texte: await page.evaluate(() => document.body.innerText), bandeau: await page.getByTestId("fraicheur").count() };
   };

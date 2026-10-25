@@ -18,6 +18,7 @@ import { AvecDonnees, Page, Question } from "../../ui/page";
 import { PastilleSource } from "../../ui/source";
 import { Chaine, type Niveau } from "../../ui/visuels";
 import { prefetDeRegion } from "../../lib/prefet";
+import { casseNom } from "../../lib/casse";
 
 export default function QuiDecide() {
   return (
@@ -25,7 +26,9 @@ export default function QuiDecide() {
       const { d } = r;
       const f = d.fiche;
       const brut = chaineDecision({ fiche: f, paquet: r.paquet, index: r.index, deputes: r.deputes, elusRegion: r.elusRegion, dep: d.dep }) as (Niveau & { delegues?: number; autresCircos?: number })[];
-      const niveaux: Niveau[] = brut.map(n => {
+      const niveaux: Niveau[] = brut.map(brutN => {
+        /* Noms d'institutions en capitales dans la source : casses ici (13/10/2026). */
+        const n = { ...brutN, institution: casseNom(brutN.institution) ?? "" };
         if (n.echelon === "ville") {
           return { ...n, pied: n.personne
             ? <Text style={TYPO.note}><Segments s={phraseAdjoints(f.adjoints, f.maire.nom)} /></Text>
@@ -66,7 +69,7 @@ export default function QuiDecide() {
       return (
         <Page>
           <Stack.Screen options={{ title: LIBELLES.qui }} />
-          <Question emoji="🏛️" etiquette="Qui décide" question={`Qui décide pour ${d.nomCommune} ?`}
+          <Question emoji="🏛️" etiquette="Chaîne de décision" question={`Qui décide pour ${d.nomCommune} ?`}
             sous="Du plus proche de chez vous au plus lointain. Ce n'est pas un ordre d'importance : c'est un ordre de distance." />
           <Chaine niveaux={niveaux} surNom={n => router.push({ pathname: "/elu", params: {
             nom: n.personne ? n.personne.nom : "", role: n.personne ? n.personne.role : "", echelon: n.echelon,
