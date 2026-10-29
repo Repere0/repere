@@ -204,3 +204,18 @@ test("theme — userInterfaceStyle exige expo-system-ui, et la dépendance est d
       "userInterfaceStyle est défini sans expo-system-ui : le thème ne suit pas le système sur Android");
   }
 });
+
+/* LOGO DE REPERE (29/10/2026). L'icone iOS doit etre carree, 1024 px, sans
+   transparence ; le fond du demarrage et de l'icone adaptative Android suit la
+   tuile du logo, et non l'ancien bleu-vert (#0e7490), qui jurait avec lui. */
+test("logo — icone iOS carree 1024 px sans transparence ; fonds du demarrage et Android = tuile du logo", () => {
+  const app = JSON.parse(fs.readFileSync(path.join(import.meta.dirname, "..", "app.json"), "utf8")).expo;
+  const tuile = "#F2F3F6";
+  assert.equal(app.splash.backgroundColor, tuile, "fond du demarrage : ancienne couleur");
+  assert.equal(app.android.adaptiveIcon.backgroundColor, tuile, "fond adaptatif Android : ancienne couleur");
+  const png = fs.readFileSync(path.join(import.meta.dirname, "..", "assets", "icon.png"));
+  assert.equal(png.readUInt32BE(16), 1024, "largeur de l'icone");
+  assert.equal(png.readUInt32BE(20), 1024, "hauteur de l'icone");
+  assert.notEqual(png[25], 4, "icone iOS : canal alpha interdit (type de couleur RGBA)");
+  assert.notEqual(png[25], 6, "icone iOS : canal alpha interdit (type de couleur RGBA)");
+});
