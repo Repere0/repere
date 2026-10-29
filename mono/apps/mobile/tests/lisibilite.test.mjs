@@ -13,6 +13,6 @@ const RACINE = path.resolve(import.meta.dirname, "..");
 const vote = fs.readFileSync(path.join(RACINE, "src", "app", "vote.tsx"), "utf8");
 
 test("lisibilité — la phrase qui explique « solennel » sur la liste des votes n'est pas en TYPO.micro", () => {
-  assert.doesNotMatch(vote, /TYPO\.micro\}>Scrutins solennels relevés/, "la phrase d'explication reste en 13 px");
-  assert.match(vote, /TYPO\.note\}>Scrutins solennels relevés/, "la phrase d'explication passe en TYPO.note (15 px)");
+  assert.doesNotMatch(vote, /TYPO\.micro\}>(Scrutins|Derniers votes) solennels/, "la phrase d'explication reste en 13 px");
+  assert.match(vote, /TYPO\.note\}>(Scrutins|Derniers votes) solennels/, "la phrase d'explication passe en TYPO.note (15 px)");
 });
