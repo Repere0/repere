@@ -60,8 +60,12 @@ test("site — chaque écran JSX compile sans texte parasite « )} » dans le re
   const web = path.join(import.meta.dirname, "..", "apps", "web");
   const viteDir = fs.realpathSync(path.join(web, "node_modules", "vite"));
   const vite = await import(new URL("file://" + path.join(viteDir, "dist", "node", "index.js")));
-  const fichiers = [...fs.readdirSync(ROUTES).filter(f => f.endsWith(".jsx")).map(f => path.join(ROUTES, f)),
-    path.join(web, "src", "App.jsx")];
+  /* Tous les .jsx du site et du paquet ui, pas seulement les écrans : un composant
+     ou une bibliothèque en a le même défaut. */
+  const jsxDans = d => fs.readdirSync(d, { withFileTypes: true })
+    .flatMap(e => e.isDirectory() ? jsxDans(path.join(d, e.name)) : e.name.endsWith(".jsx") ? [path.join(d, e.name)] : []);
+  const fichiers = [...jsxDans(path.join(web, "src")), ...jsxDans(path.join(web, "..", "..", "packages", "ui", "src"))];
+  assert.ok(fichiers.length >= 10, `moins de fichiers JSX trouvés (${fichiers.length}) : la garde ne couvre pas le site`);
   for (const f of fichiers) {
     const r = await vite.transformWithEsbuild(fs.readFileSync(f, "utf8"), path.basename(f), { jsx: "automatic", jsxImportSource: "preact", loader: "jsx" });
     assert.doesNotMatch(r.code, /"\)\}"|"\}"/, `${path.basename(f)} : texte « )} » rendu à l'écran (accolade en trop)`);
