@@ -207,10 +207,11 @@ test("theme — userInterfaceStyle exige expo-system-ui, et la dépendance est d
 
 /* LOGO DE REPERE (29/10/2026). L'icone iOS doit etre carree, 1024 px, sans
    transparence ; le fond du demarrage et de l'icone adaptative Android suit la
-   tuile du logo, et non l'ancien bleu-vert (#0e7490), qui jurait avec lui. */
+   tuile du logo, et non l'ancien bleu-vert (#0e7490), qui jurait avec lui.
+   Le logo est plein cadre (aucune tuile arrondie intégrée : iOS applique seul son masque). */
 test("logo — icone iOS carree 1024 px sans transparence ; fonds du demarrage et Android = tuile du logo", () => {
   const app = JSON.parse(fs.readFileSync(path.join(import.meta.dirname, "..", "app.json"), "utf8")).expo;
-  const tuile = "#F2F3F6";
+  const tuile = "#F7F7F9";
   assert.equal(app.splash.backgroundColor, tuile, "fond du demarrage : ancienne couleur");
   assert.equal(app.android.adaptiveIcon.backgroundColor, tuile, "fond adaptatif Android : ancienne couleur");
   const png = fs.readFileSync(path.join(import.meta.dirname, "..", "assets", "icon.png"));
