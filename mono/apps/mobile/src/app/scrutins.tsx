@@ -101,21 +101,24 @@ function StatutVote({ detail }: { detail: Detail }) {
 }
 
 function GroupeRow({ groupe, ouvert, onPress }: { groupe: Groupe; ouvert: boolean; onPress: () => void }) {
-  const total = (groupe.pour || 0) + (groupe.contre || 0) + (groupe.abstentions || 0);
+  /* Ce qui est publie, et rien d'autre : une position absente n'est pas un zero,
+     elle n'est pas comptee. Le meme texte sert a l'ecran et au lecteur d'ecran. */
+  const texteStats = [groupe.pour != null ? `${groupe.pour} pour` : null, groupe.contre != null ? `${groupe.contre} contre` : null, groupe.abstentions != null ? `${groupe.abstentions} abst.` : null]
+    .filter(Boolean).join(" · ") || "décompte non publié";
   return (
     <View style={s.groupe}>
       <Pressable
         onPress={onPress}
         accessibilityRole="button"
         accessibilityState={{ expanded: ouvert }}
-        accessibilityLabel={`${groupe.nom}, ${total} positions publiées`}
+        accessibilityLabel={`${groupe.nom}, ${texteStats}`}
         style={({ pressed }) => [s.groupeTete, pressed && { opacity: 0.65 }]}
       >
         <View style={[s.groupePoint, { backgroundColor: groupe.couleur }]} />
         <View style={s.groupeTexte}>
           <Text style={s.groupeNom}>{groupe.nom}</Text>
           <Text style={s.groupeStats}>
-            {[groupe.pour != null ? `${groupe.pour} pour` : null, groupe.contre != null ? `${groupe.contre} contre` : null, groupe.abstentions != null ? `${groupe.abstentions} abst.` : null].filter(Boolean).join(" · ")}
+            {texteStats}
           </Text>
         </View>
         <Text style={s.chevron}>{ouvert ? "−" : "+"}</Text>
