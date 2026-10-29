@@ -337,6 +337,12 @@ test("visuels — financement, vote, parcours d'une loi, chaine : denominateurs 
   assert.equal(r.total, 441);
   assert.equal(Math.round(r.segments.reduce((a, s) => a + s.part, 0) * 1000), 1000);
   assert.equal(m.repartitionVote({ dec: { pour: "x", contre: "1", abstentions: "1" } }), null);
+  /* Regression (29/10/2026, invariant 5) : Number(null) et Number("") valent 0 :
+     un decompte absent devenait « Pour : 0 ». Une valeur absente rend null. */
+  for (const absent of [null, undefined, "", "   "]) {
+    assert.equal(m.repartitionVote({ dec: { pour: absent, contre: "10", abstentions: "5" } }), null, `pour=${JSON.stringify(absent)} ne doit jamais valoir 0`);
+    assert.equal(m.repartitionVote({ dec: { pour: "1", contre: absent, abstentions: "5" } }), null, `contre=${JSON.stringify(absent)} ne doit jamais valoir 0`);
+  }
   assert.match(m.phraseDenominateurVote(441), /ayant pris part au vote/);
   assert.equal(m.etapeDuScrutin("texte de la commission mixte paritaire"), "texte de la commission mixte paritaire");
   assert.equal(m.etapeDuScrutin("seconde délibération"), "première lecture");

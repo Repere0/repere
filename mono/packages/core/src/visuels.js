@@ -120,7 +120,13 @@ export const nomDispositif = (projets, code) =>
    composition de l'Assemblee : le denominateur est dit a l'ecran. */
 export function repartitionVote(sc) {
   if (!sc || !sc.dec) return null;
-  const n = k => { const x = Number(sc.dec[k]); return Number.isFinite(x) && x >= 0 ? x : null; };
+  /* Une valeur absente (null, vide) n'est JAMAIS un zero : Number(null) et Number("") valent 0. */
+  const n = k => {
+    const brut = sc.dec[k];
+    if (brut === null || brut === undefined || String(brut).trim() === "") return null;
+    const x = Number(brut);
+    return Number.isFinite(x) && x >= 0 ? x : null;
+  };
   const pour = n("pour"), contre = n("contre"), abst = n("abstentions");
   if (pour === null || contre === null || abst === null) return null;
   const total = pour + contre + abst;
