@@ -67,7 +67,12 @@ test("parcours — chaque écran de l'application est atteignable depuis l'accue
    l'onglet « Qui decide », un retour arriere ouvrirait l'onglet precedent. */
 test("parcours — chaque onglet offre « changer de commune », qui ramene a l'accueil", () => {
   const s = sansCommentaires(lire(path.join(APP, "(onglets)", "_layout.tsx")));
-  const globale = /screenOptions=\{\{[\s\S]*?headerLeft:\s*\(\)\s*=>\s*<ChangerCommune/.test(s);
+  /* Le bloc screenOptions seul : borné au premier « }} » qui le ferme. Une regex
+     non bornée traversait le fichier et trouvait un bouton posé sur un seul onglet. */
+  const debutOpts = s.indexOf("screenOptions={{");
+  const finOpts = debutOpts >= 0 ? s.indexOf("}}", debutOpts) : -1;
+  const blocOpts = debutOpts >= 0 && finOpts > debutOpts ? s.slice(debutOpts, finOpts) : "";
+  const globale = /headerLeft:\s*\(\)\s*=>\s*<ChangerCommune/.test(blocOpts);
   const ecrans = [...s.matchAll(/<Tabs\.Screen\s[\s\S]*?\/>/g)].map(m => m[0]);
   const sans = ecrans
     .filter(x => !globale && !/headerLeft:\s*\(\)\s*=>\s*<ChangerCommune/.test(x))
