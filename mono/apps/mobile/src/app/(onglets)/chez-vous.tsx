@@ -164,7 +164,7 @@ export default function ChezVous() {
           ) : d.nbCircos === 0 ? (
             <Vide {...circoInconnue(nom)} />
           ) : (
-            <Vide {...voteAucun(srcScrutins(d)?.releve)} />
+            <Vide {...voteAucun(srcScrutins(d)?.releve, d.srcScrutins && d.srcScrutins.portee)} />
           )}
           </View>
 

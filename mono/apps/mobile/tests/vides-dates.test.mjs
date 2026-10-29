@@ -76,28 +76,39 @@ test("B — chez-vous passe aussi les exercices à l'état vide", () => {
 /* ── C. Vote solennel absent ─────────────────────────────────────────────── */
 
 test("C — formulation factuelle : « trouvé dans les données disponibles pour la législature actuelle »", () => {
-  assert.match(absences, /Aucun vote solennel trouvé dans les données disponibles pour la législature actuelle/, "formule retenue");
+  assert.match(absences, /Aucun vote solennel trouvé dans les données disponibles\./, "formule retenue, sans « législature actuelle » (voir E)");
   /* Garde sur le TEXTE AFFICHÉ seulement : le commentaire au-dessus de voteAucun peut garder « 17e législature ». */
   const affiche = absences.slice(absences.indexOf("export const voteAucun"), absences.indexOf("export const AGENDA_PAS_ARRIVE"));
   assert.doesNotMatch(affiche, /17e/, "« 17e législature » n'apparaît pas dans le texte affiché");
   assert.doesNotMatch(affiche, /législature de la|scrutins solennels/, "pas de vocabulaire technique affiché");
   assert.doesNotMatch(affiche, /n'apparaît/, "aucune tournure qui laisse entendre une absence du député");
   assert.doesNotMatch(absences, /n'est porté par le relevé/, "formule catégorique retirée");
-  assert.match(absences, /export const voteAucun = \(releve\?: string\)/, "voteAucun reçoit la date du relevé");
-  assert.match(absences, /Données relevées le \$\{dateFr\(releve\)\}/, "la date du relevé est affichée quand elle est connue");
+  assert.match(absences, /export const voteAucun = \(releve\?: string, portee\?: string\)/, "voteAucun reçoit la date du relevé et le périmètre");
+  assert.match(absences, /Relevé le \$\{dateFr\(releve\)\}/, "la date du relevé est affichée quand elle est connue");
   assert.match(absences, /Repère ne connaît pas la date de relevé/, "sans date, l'état le dit");
   assert.match(absences, /vote d'ensemble d'un texte majeur/, "la définition de « vote solennel » reste visible, telle que la source la formule");
   assert.doesNotMatch(absences, /adoption ou le rejet formel/, "la paraphrase non étayée est retirée");
 });
 
 test("C — les deux écrans qui affichent l'état vide passent la date du relevé", () => {
-  assert.match(chez, /voteAucun\(srcScrutins\(d\)\?\.releve\)/, "chez-vous doit passer le relevé");
-  assert.match(vote, /voteAucun\(srcScrutins\(d\)\?\.releve\)/, "vote.tsx doit passer le relevé");
+  assert.match(chez, /voteAucun\(srcScrutins\(d\)\?\.releve/, "chez-vous doit passer le relevé");
+  assert.match(vote, /voteAucun\(srcScrutins\(d\)\?\.releve/, "vote.tsx doit passer le relevé");
 });
 
 /* D — le mot « solennel » est expliqué là où il apparaît sur la liste des votes. */
 test("D — la liste des votes explique « solennel » là où le mot apparaît", () => {
   assert.doesNotMatch(vote, /Scrutins solennels relevés/, "l'intitulé technique est remplacé");
-  assert.match(vote, /Votes solennels[^<]*vote d'ensemble d'un texte majeur/, "le mot est défini sur la même ligne, selon la source");
+  assert.match(vote, /Derniers votes solennels relevés[^<]*vote d'ensemble d'un texte majeur/, "la liste dit qu'il s'agit des derniers votes relevés, pas de tous");
+  assert.doesNotMatch(vote, /Votes solennels publiés par l'Assemblée/, "« publiés par l'Assemblée » laissait croire à une liste complète");
   assert.doesNotMatch(vote, /adoption ou le rejet formel/, "la paraphrase non étayée est retirée");
+});
+
+/* E — le périmètre des votes est dit par la SOURCE (srcScrutins.portee), pas supposé. */
+test("E — l'état vide des votes n'affirme pas « législature actuelle » : il donne le périmètre de la source", () => {
+  assert.doesNotMatch(absences, /pour la législature actuelle/, "la législature entière n'est pas couverte : les données sont les derniers votes");
+  assert.match(absences, /export const voteAucun = \(releve\?: string, portee\?: string\)/, "voteAucun reçoit le périmètre de la source");
+  assert.match(absences, /Périmètre des données : \$\{portee/, "le périmètre écrit par la source est affiché");
+  assert.match(absences, /Les données ne portent que sur les derniers votes/, "la limite de couverture est dite");
+  assert.match(chez, /voteAucun\(srcScrutins\(d\)\?\.releve, d\.srcScrutins && d\.srcScrutins\.portee\)/, "chez-vous passe le périmètre");
+  assert.match(vote, /voteAucun\(srcScrutins\(d\)\?\.releve, d\.srcScrutins && d\.srcScrutins\.portee\)/, "vote.tsx passe le périmètre");
 });

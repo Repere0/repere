@@ -39,12 +39,15 @@ export const SCRUTINS_AN = "https://www.assemblee-nationale.fr/dyn/17/scrutins/"
 /* Le périmètre connu : les scrutins SOLENNELS de la 17e législature, à la date du
    relevé (scripts/mono_donnees.py, champ portee). La période n'est pas une plage de
    dates : sans date de relevé, la phrase le dit au lieu de l'inventer. */
-export const voteAucun = (releve?: string) => ({
-  /* La définition reste dans le titre : chez-vous n'affiche que le titre. */
-  titre: (releve
-    ? `Aucun vote solennel trouvé dans les données disponibles pour la législature actuelle. Données relevées le ${dateFr(releve)}.`
-    : "Aucun vote solennel trouvé dans les données disponibles pour la législature actuelle. Repère ne connaît pas la date de relevé.")
-    + " Un vote solennel est un scrutin public, généralement sur le vote d'ensemble d'un texte majeur (fiche « Votes » de l'Assemblée nationale, juillet 2024).",
+export const voteAucun = (releve?: string, portee?: string) => ({
+  titre: "Aucun vote solennel trouvé dans les données disponibles.",
+  /* Le périmètre est celui que la SOURCE écrit (srcScrutins.portee), pas une supposition. */
+  corps: [
+    `Périmètre des données : ${portee || "non indiqué par la source"}.`,
+    "Les données ne portent que sur les derniers votes, pas sur toute la législature.",
+    releve ? `Relevé le ${dateFr(releve)}.` : "Repère ne connaît pas la date de relevé.",
+    "Un vote solennel est un scrutin public, généralement sur le vote d'ensemble d'un texte majeur (fiche « Votes » de l'Assemblée nationale, juillet 2024).",
+  ].join(" "),
   lien: { texte: "Les scrutins sur le site de l'Assemblée", url: SCRUTINS_AN },
 });
 export const AGENDA_PAS_ARRIVE = {

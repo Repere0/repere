@@ -37,7 +37,8 @@ export default function Vote() {
       const entete = <Question emoji="🗳️" etiquette="Votre député" question="Qu'a voté votre député ?" />;
       if (!r.votesLus) return <Page>{entete}<Vide {...VOTES_PAS_ARRIVES} action="Réessayer" onAction={reessayer} /></Page>;
       if (!r.votesFiables) return <Page>{entete}<Vide titre={REFUS_APPARIEMENT.titre} corps={REFUS_APPARIEMENT.corps} /></Page>;
-      if (!vote) return <Page>{entete}<Vide {...(d.nbCircos === 0 ? circoInconnue(d.nomCommune) : { ...voteAucun(srcScrutins(d)?.releve), corps: POSITION_NON_PORTEE })} /></Page>;
+      const aucun = voteAucun(srcScrutins(d)?.releve, d.srcScrutins && d.srcScrutins.portee);
+      if (!vote) return <Page>{entete}<Vide {...(d.nbCircos === 0 ? circoInconnue(d.nomCommune) : { ...aucun, corps: `${aucun.corps} ${POSITION_NON_PORTEE}` })} /></Page>;
 
       const rep = repartitionVote(vote.sc);
       const mot = (MOTS as Record<string, string>)[vote.position || ""];
@@ -124,7 +125,7 @@ export default function Vote() {
                   <Text style={[TYPO.note, { fontWeight: "700" }]}>{motPosition(a.position) ? "A voté " + motPosition(a.position) : "Position non portée par le relevé"}</Text>
                 </View>
               ))}
-              <Text style={TYPO.micro}>Votes solennels publiés par l'Assemblée : des scrutins publics, généralement sur le vote d'ensemble d'un texte majeur. Du plus récent au plus ancien.</Text>
+              <Text style={TYPO.micro}>Derniers votes solennels relevés par Repère : des scrutins publics, généralement sur le vote d'ensemble d'un texte majeur. Du plus récent au plus ancien.</Text>
             </Carte>
           ) : null}
 
