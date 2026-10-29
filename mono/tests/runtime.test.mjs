@@ -181,7 +181,7 @@ page.on("console", m => {
   /* 07/10/2026 : meme regle pour les deux calendriers, publies seulement si leur
      releve du jour a reussi ; l'ecran dit alors l'absence (controle « independance »). */
   const p404 = /status of 404/.test(t)
-    && /\/data\/(projets\/[0-9AB]{2,3}|calendrier-senat|agenda-an)\.json$/.exec(ou);
+    && /\/data\/(projets\/[0-9AB]{2,3}|calendrier-senat|agenda-an|scrutins-solennels-recents)\.json$/.exec(ou);
   if (p404 && !fs.existsSync(path.join(DIST, "data", p404[1] + ".json"))) return;
   erreurs.push("console: " + t + (ou ? " [" + ou.replace(/^https?:\/\/[^/]+/, "") + "]" : ""));
 });
@@ -814,11 +814,27 @@ console.log("\n--- scrutins solennels : couche d'exploration -----------------")
  * chiffres pour/contre/abstentions ne sont PAS deja charges (sinon
  * l'architecture hybride mesuree n'est qu'une illusion visuelle). */
 const avantClic = await page.evaluate(() => document.body.innerText);
-verif("scrutins — le teaser des scrutins recents est visible sans action",
-  /Les derniers scrutins importants/.test(avantClic) && /Scrutin solennel|Motion de censure/.test(avantClic),
-  avantClic.slice(-500).replace(/\n+/g, " / "));
-verif("scrutins — chaque ligne du teaser porte deja un lien source direct",
-  /source officielle/.test(avantClic), "aucun lien source direct trouve dans le teaser");
+/* PRESENCE OU ABSENCE, DEUX COMPORTEMENTS ATTENDUS — 29/10/2026 (meme regle que
+   le calendrier du Senat). Sans le fichier dans le build, le teaser ne disparait
+   plus en silence : il dit son absence et renvoie a la source. Un fichier present
+   garde les controles de presence. Un fichier absent n'est jamais une reussite
+   de ces controles : seul le texte honnete est verifie. */
+const fScrutinsRecents = path.join(DIST, "data", "scrutins-solennels-recents.json");
+const scrutinsPresents = fs.existsSync(fScrutinsRecents);
+if (!scrutinsPresents) console.log("::warning::scrutins solennels absents du build : l'ecran doit dire leur absence (controles ci-dessous)");
+if (scrutinsPresents) {
+  verif("scrutins — le teaser des scrutins recents est visible sans action",
+    /Les derniers scrutins importants/.test(avantClic) && /Scrutin solennel|Motion de censure/.test(avantClic),
+    avantClic.slice(-500).replace(/\n+/g, " / "));
+  verif("scrutins — chaque ligne du teaser porte deja un lien source direct",
+    /source officielle/.test(avantClic), "aucun lien source direct trouve dans le teaser");
+} else {
+  verif("scrutins — sans fichier, l'ecran dit l'absence des scrutins au lieu de se taire",
+    /Les derniers scrutins importants/.test(avantClic) && /scrutins solennels ne sont pas disponibles|scrutins solennels n'ont pas encore été téléchargés/.test(avantClic),
+    avantClic.slice(-500).replace(/\n+/g, " / "));
+  verif("scrutins — sans fichier, la note renvoie vers le site officiel de l'Assemblee",
+    /site de l'Assemblée nationale/.test(avantClic), "aucun renvoi vers la source officielle dans la note d'absence");
+}
 verif("invariant hybride — le detail complet (pour/contre) n'est PAS charge avant le clic",
   !/Pour : \d+ · Contre/.test(avantClic),
   "les chiffres detailles apparaissent AVANT le clic : la couche 2 n'est plus separee de la couche 1");
@@ -836,7 +852,11 @@ const boutonDetails = page.getByRole("button", { name: /Voir les détails comple
    Les quatre controles du bouton echouent desormais par leur nom, et le banc
    continue. Rien n'est assoupli : un bouton absent reste un echec. */
 const boutonPresent = (await boutonDetails.count()) > 0;
-verif("scrutins — le bouton de details existe", boutonPresent, "aucun bouton « Voir les détails complets »");
+if (!scrutinsPresents) {
+  verif("scrutins — sans fichier, aucun bouton de detail n'est propose", !boutonPresent,
+    "un bouton « Voir les détails complets » existe sans donnee a detailler");
+}
+if (scrutinsPresents) verif("scrutins — le bouton de details existe", boutonPresent, "aucun bouton « Voir les détails complets »");
 if (boutonPresent) {
   verif("scrutins — le bouton de details annonce son etat ferme (aria-expanded=false)",
     await boutonDetails.getAttribute("aria-expanded") === "false", "aria-expanded n'est pas 'false' avant le clic");
