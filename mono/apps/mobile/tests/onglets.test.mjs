@@ -20,12 +20,32 @@ test("onglets — chaque onglet porte l'intitule officiel de son ecran", () => {
   for (const [ecran, libelle] of Object.entries(attendu)) {
     const bloc = src.match(new RegExp(`name="${ecran}"[\\s\\S]*?\\/>|name="${ecran}"[\\s\\S]*?\\}\\)`));
     assert.ok(bloc, `onglet ${ecran} introuvable`);
-    const etiquette = (bloc[0].match(/tabBarLabel: (?:LIBELLES\.(\w+)|"([^"]+)")/) || []);
-    const valeur = etiquette[1] ? LIBELLES[etiquette[1]] : etiquette[2];
+    /* Forme etiquette(LIBELLES.x) (D22) ou LIBELLES.x ou chaine : l'intitule doit rester le meme. */
+    const etiquette = (bloc[0].match(/tabBarLabel: (?:etiquette\(LIBELLES\.(\w+)\)|LIBELLES\.(\w+)|"([^"]+)")/) || []);
+    const valeur = (etiquette[1] || etiquette[2]) ? LIBELLES[etiquette[1] || etiquette[2]] : etiquette[3];
     assert.equal(valeur, libelle, `onglet ${ecran} : etiquette « ${valeur} », attendue « ${libelle} »`);
   }
 });
 
 test("onglets — « Chez vous » n'est plus le nom d'aucun onglet", () => {
   assert.ok(!/tabBarLabel: "Chez vous"/.test(lire("src/app/(onglets)/_layout.tsx")));
+});
+
+/* D22 — navigation à 200 % : la barre basse ne doit ni tronquer les intitulés
+ * sur une ligne (le composant vendu le fait : numberOfLines 1), ni figer sa hauteur
+ * (72 px rognaient le texte agrandi). Garde statique : un test natif sur appareil
+ * reste à faire ; voir le rapport de la livraison. */
+test("onglets a 200 % — intitulés sur deux lignes au plus, hauteur non figée", () => {
+  const src = lire("src/app/(onglets)/_layout.tsx");
+  assert.ok(/numberOfLines=\{2\}/.test(src), "les intitules doivent pouvoir passer sur deux lignes");
+  assert.ok(!/height: 72/.test(src), "la barre ne doit pas figer sa hauteur a 72 px");
+  assert.ok(/minHeight: 72/.test(src), "la barre garde une hauteur minimale de 72 px");
+  assert.ok(/allowFontScaling=\{false\}/.test(src), "le glyphe decoratif reste fixe");
+  assert.ok(/allowFontScaling=\{Platform\.OS !== "ios"\}/.test(src), "iOS garde la taille fixe des libelles (convention native), Android suit le texte");
+});
+
+test("onglets a 200 % — chaque onglet passe par l'etiquette a deux lignes", () => {
+  const src = lire("src/app/(onglets)/_layout.tsx");
+  const n = (src.match(/tabBarLabel: etiquette\(LIBELLES\.\w+\)/g) || []).length;
+  assert.equal(n, 3, `trois onglets attendus avec etiquette(), trouve ${n}`);
 });
