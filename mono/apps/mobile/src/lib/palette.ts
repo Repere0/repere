@@ -68,3 +68,19 @@ export const OMBRE_PAR_MODE = {
 export const PALETTE_CLAIRE = Object.freeze({
   ...ECHELONS_PAR_MODE.clair, ...NEUTRES_CLAIR,
 });
+
+/* Contraste WCAG entre deux couleurs hexadécimales (D17). Sert à décider si un
+   point d'échelon doit recevoir un contour clair pour rester distinct de sa carte. */
+const canal = (h: string) => [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16));
+function luminance(h: string): number {
+  const c = canal(h).map(v => { const x = v / 255; return x <= 0.03928 ? x / 12.92 : ((x + 0.055) / 1.055) ** 2.4; });
+  return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2];
+}
+export function rapportContraste(a: string, b: string): number {
+  const [x, y] = [luminance(a), luminance(b)].sort((p, q) => q - p);
+  return (x + 0.05) / (y + 0.05);
+}
+
+/* Seuil des éléments non textuels (WCAG 1.4.11). En dessous, le point d'échelon
+   reçoit un contour de l'encre (un trait, pas une couleur nouvelle). */
+export const SEUIL_POINT = 3;

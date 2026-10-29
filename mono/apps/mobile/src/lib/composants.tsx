@@ -9,6 +9,7 @@ import { Linking, Pressable, StyleSheet, Text, View } from "react-native";
 import { ligneSource, motsDuTexte, CALCUL_REPERE } from "@repere/core";
 import { router } from "expo-router";
 import { feuille, couleurs, CIBLE, PAS, RAYON, OMBRE, TYPO, type Echelon } from "./theme";
+import { NIVEAU_NOM, pointEchelon } from "./niveaux";
 import { AVEC_EMOJIS, Emoji } from "../ui/resume";
 
 /* Refonte du 30/09/2026 : plus de filet de couleur a gauche ; l'echelon se
@@ -18,8 +19,9 @@ export function Carte({ echelon, children, titre }: { echelon?: Echelon; childre
     <View style={[s.carte, { backgroundColor: couleurs.carte }]}>
       {titre ? (
         <View style={s.carteTete}>
-          {echelon ? <View style={[s.point, { backgroundColor: couleurs[echelon] }]} /> : null}
+          {echelon ? <View style={[s.point, pointEchelon(echelon)]} /> : null}
           <Text style={s.carteTitre} accessibilityRole="header">{titre}</Text>
+          {echelon ? <Text style={s.niveau}>{NIVEAU_NOM[echelon]}</Text> : null}
         </View>
       ) : null}
       {children}
@@ -37,8 +39,9 @@ export function CarteQuestion({ echelon, question, reponse, children, pied, acti
   return (
     <View style={[s.carte, { backgroundColor: couleurs.carte }]}>
       <View style={s.carteTete}>
-        {emoji && AVEC_EMOJIS ? <Emoji c={emoji} /> : <View style={[s.point, { backgroundColor: couleurs[echelon] }]} />}
+        {emoji && AVEC_EMOJIS ? <Emoji c={emoji} /> : <View style={[s.point, pointEchelon(echelon)]} />}
         <Text style={s.carteTitre} accessibilityRole="header">{question}</Text>
+        <Text style={s.niveau}>{NIVEAU_NOM[echelon]}</Text>
       </View>
       {!reponse ? null : typeof reponse === "string" ? <Text style={TYPO.reponse}>{reponse}</Text> : reponse}
       {children}
@@ -155,6 +158,7 @@ const s = feuille(() => StyleSheet.create({
   carteTete: { flexDirection: "row", alignItems: "center", gap: PAS * 2 },
   point: { width: 10, height: 10, borderRadius: 5 },
   carteTitre: { ...TYPO.etiquette, flex: 1 },
+  niveau: { ...TYPO.micro, flexShrink: 0, textAlign: "right", maxWidth: "45%" },
   action: {
     minHeight: CIBLE, flexDirection: "row", alignItems: "center", justifyContent: "space-between",
     borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: couleurs.trait, marginTop: PAS,
