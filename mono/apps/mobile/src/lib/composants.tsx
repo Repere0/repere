@@ -6,7 +6,7 @@
  * reecrite : elle vient de @repere/core. */
 import type { ReactNode } from "react";
 import { Linking, Pressable, StyleSheet, Text, View } from "react-native";
-import { ligneSource, titreDuMot, CALCUL_REPERE } from "@repere/core";
+import { ligneSource, motsDuTexte, CALCUL_REPERE } from "@repere/core";
 import { router } from "expo-router";
 import { feuille, couleurs, CIBLE, PAS, RAYON, OMBRE, TYPO, type Echelon } from "./theme";
 import { AVEC_EMOJIS, Emoji } from "../ui/resume";
@@ -55,23 +55,35 @@ export function CarteQuestion({ echelon, question, reponse, children, pied, acti
 }
 
 /* Une phrase de @repere/core (phrases.js) : texte, gras, mot du dictionnaire.
-   Un mot defini est TAPABLE : il ouvre sa definition dans le dictionnaire, deja
-   cherchee (comme le site, qui en fait un bouton). Un mot sans definition reste
-   du texte : un tap ne mene jamais a une impasse (tests/dictionnaire.test.mjs).
-   Le mot est un Text imbrique dans la phrase : il ne casse pas la mise en page. */
+   Le mot du dictionnaire s'affiche dans la phrase ; sa definition s'ouvre par
+   le bouton de <Definitions>, sous la phrase, dans une zone de 44 px. Un mot
+   tapable DANS la phrase ne fait que ~21 px : le parcours navigateur de la CI
+   l'a refuse (29/10/2026). */
 export type Segment = { t: string; fort?: boolean; mot?: string };
 export function Segments({ s: seg }: { s: Segment[] }) {
-  return <>{seg.map((x, i) => {
-    if (x.mot && titreDuMot(x.mot)) {
-      return (
-        <Text key={i} style={s.motDefini} accessibilityRole="button"
-          accessibilityLabel={`${x.t}, voir la définition`}
+  return <>{seg.map((x, i) => (x.fort ? <Text key={i} style={s.fort}>{x.t}</Text> : <Text key={i}>{x.t}</Text>))}</>;
+}
+
+/* Un bouton par mot defini de la phrase, sous elle : « Voir la definition : … ».
+   Zone tactile d'au moins 44 px (CIBLE). Ouvre le dictionnaire, mot deja cherche. */
+export function Definitions({ s: seg }: { s: Segment[] }) {
+  const mots = motsDuTexte(seg);
+  if (mots.length === 0) return null;
+  return (
+    <View style={{ gap: PAS }}>
+      {mots.map(m => (
+        <Pressable key={m.mot} accessibilityRole="button"
+          accessibilityLabel={`Voir la définition : ${m.titre}`}
           accessibilityHint="Ouvre la définition dans le dictionnaire"
-          onPress={() => router.push({ pathname: "/dictionnaire", params: { mot: x.mot } })}>{x.t}</Text>
-      );
-    }
-    return x.fort ? <Text key={i} style={s.fort}>{x.t}</Text> : <Text key={i}>{x.t}</Text>;
-  })}</>;
+          onPress={() => router.push({ pathname: "/dictionnaire", params: { mot: m.mot } })}
+          style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", opacity: pressed ? 0.6 : 1 })}>
+          <Text style={{ fontSize: 16, fontWeight: "600", color: couleurs.lien, textDecorationLine: "underline" }}>
+            Voir la définition : {m.titre}
+          </Text>
+        </Pressable>
+      ))}
+    </View>
+  );
 }
 
 export function Texte({ children, fort, sourd }: { children: ReactNode; fort?: boolean; sourd?: boolean }) {
@@ -150,7 +162,6 @@ const s = feuille(() => StyleSheet.create({
   actionTexte: { fontSize: 17, fontWeight: "600", color: couleurs.lien },
   texte: { fontSize: 17, lineHeight: 24, color: couleurs.encre },
   fort: { fontWeight: "700" },
-  motDefini: { fontWeight: "600", textDecorationLine: "underline", textDecorationStyle: "dotted", color: couleurs.encre },
   sourd: { color: couleurs.sourd, fontSize: 15, lineHeight: 21 },
   source: { gap: PAS, paddingTop: PAS * 2, borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: couleurs.trait },
   sourceTexte: { fontSize: 13, lineHeight: 18, color: couleurs.sourd },

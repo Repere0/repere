@@ -6,11 +6,11 @@
  * du lecteur (COMPETENCES, @repere/core — les memes phrases que le site).
  * Un niveau sans personne nommee par la source garde sa place et le dit.
  * L'ordre est un ordre de distance, pas d'importance : c'est ecrit. */
-import { Pressable, Text } from "react-native";
+import { Pressable, Text, View } from "react-native";
 import { router, Stack } from "expo-router";
 import { chaineDecision, dateFr, MAIRE_ABSENT, phraseAdjoints, RNE_URL, LIBELLES } from "@repere/core";
 import { sansConseilDepartemental } from "@repere/core";
-import { Segments } from "../../lib/composants";
+import { Definitions, Segments } from "../../lib/composants";
 import { REGION_PAS_ARRIVEE } from "../../lib/absences";
 import { srcElus } from "../../lib/sources";
 import { CIBLE, couleurs, PAS, TYPO } from "../../lib/theme";
@@ -28,7 +28,10 @@ export default function QuiDecide() {
       const niveaux: Niveau[] = brut.map(n => {
         if (n.echelon === "ville") {
           return { ...n, pied: n.personne
-            ? <Text style={TYPO.note}><Segments s={phraseAdjoints(f.adjoints, f.maire.nom)} /></Text>
+            ? <View style={{ gap: PAS }}>
+                <Text style={TYPO.note}><Segments s={phraseAdjoints(f.adjoints, f.maire.nom)} /></Text>
+                <Definitions s={phraseAdjoints(f.adjoints, f.maire.nom)} />
+              </View>
             : <Text style={TYPO.note}>{MAIRE_ABSENT.titre} {MAIRE_ABSENT.corps}</Text> };
         }
         if (n.echelon === "agglo") {

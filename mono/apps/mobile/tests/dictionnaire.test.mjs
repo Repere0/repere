@@ -38,3 +38,15 @@ test("chaque entree du glossaire porte un titre et une definition non vides", ()
     assert.ok(m.corps && m.corps.trim().length > 40, `definition trop courte : ${cle}`);
   }
 });
+
+// Les mots definis d'une phrase, une fois chacun, avec leur titre : la liste que
+// l'application affiche sous la phrase, chaque bouton dans une zone de 44 px.
+test("motsDuTexte : chaque mot defini d'une phrase, une fois, avec son titre", () => {
+  assert.deepEqual(
+    core.motsDuTexte(core.phraseAdjoints(2, "Nom du maire")),
+    [{ mot: "adjoint au maire", titre: "Adjoint au maire" }],
+  );
+  assert.deepEqual(core.motsDuTexte(core.phraseAdjoints(0, "Nom du maire")), []);
+  assert.deepEqual(core.motsDuTexte([{ t: "a", mot: "mot-qui-nexiste-pas" }]), []);
+  assert.deepEqual(core.motsDuTexte(undefined), []);
+});

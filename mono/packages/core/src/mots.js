@@ -66,3 +66,19 @@ export function titreDuMot(cle) {
   const m = definition(cle);
   return m ? m.titre : null;
 }
+/* Les mots definis d'une phrase, une fois chacun, avec leur titre. L'application
+ * les affiche SOUS la phrase, chacun dans une zone tactile de 44 px : un mot dans
+ * la phrase ne fait que ~21 px de haut (refuse par le parcours navigateur de la CI,
+ * 29/10/2026). */
+export function motsDuTexte(segments) {
+  const vus = new Set();
+  const sortie = [];
+  for (const s of segments || []) {
+    const titre = s && s.mot ? titreDuMot(s.mot) : null;
+    if (titre && !vus.has(s.mot)) {
+      vus.add(s.mot);
+      sortie.push({ mot: s.mot, titre });
+    }
+  }
+  return sortie;
+}
