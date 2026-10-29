@@ -79,3 +79,12 @@ test("les termes affichés sur les écrans ont une définition dans le glossaire
   const manquants = affiches.filter(t => core.titreDuMot(t) === null);
   assert.deepEqual(manquants, [], "termes affiches sans definition : " + manquants.join(", "));
 });
+
+/* LE SENAT : LE COLLEGE DES GRANDS ELECTEURS COMPTE DES DEPUTES (29/10/2026). La
+   definition disait « eux-mêmes élus locaux » : c'est incomplet. Le college comprend
+   des parlementaires (deputes) et des elus locaux. Garde rouge avant la correction. */
+test("le Sénat : le collège des grands électeurs compte des députés, pas seulement des élus locaux", () => {
+  const corps = core.definition("sénat").corps;
+  assert.match(corps, /députés/, "la definition du Senat omet les deputes parmi les grands electeurs");
+  assert.match(corps, /élus locaux/, "la definition du Senat doit nommer les elus locaux");
+});

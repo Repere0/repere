@@ -55,7 +55,7 @@ export const GLOSSAIRE = {
   },
   "sénat": {
     titre: "Sénat",
-    corps: "L'autre chambre du Parlement. Ses membres, les sénateurs, sont élus par un collège de grands électeurs, eux-mêmes élus locaux. Il vote la loi avec l'Assemblée nationale.",
+    corps: "L'autre chambre du Parlement. Ses membres, les sénateurs, sont élus au suffrage indirect par un collège de grands électeurs : des députés et des élus locaux (conseillers régionaux, départementaux et municipaux). Il vote la loi avec l'Assemblée nationale.",
   },
   scrutin: {
     titre: "Scrutin",
