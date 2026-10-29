@@ -1,0 +1,106 @@
+name: Verification (PR vers main)
+
+# PROPOSITION DE CONTRÔLE STABLE — NON REQUIS, NON ACTIVÉ SUR main.
+#
+# Pourquoi : « Mobile (application, socle partagé) » ne se lance que pour certains
+# chemins, et « Épreuve » ignore les PR qui ne touchent que l'application mobile.
+# Un contrôle requis qui ne se lance pas bloque la fusion indéfiniment. Celui-ci se
+# lance sur TOUTE PR vers main, sans filtre de chemins, avec un nom de job stable.
+#
+# Il reprend à l'identique les étapes de mobile.yml (même texte, même ordre) : cela
+# ne change que le déclencheur, la concurrence et le nom. Il ne couvre PAS la
+# chaîne de publication (epreuve.yml) : il ne télécharge aucune source publique.
+#
+# Généré depuis mobile.yml par script ; vérifié par diff (voir le suivi, section 16).
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: verification-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  verification:
+    # NOM DU CONTRÔLE À EXIGER : « verification ». Ne pas le renommer sans mettre à jour la règle.
+    name: verification
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    defaults:
+      run:
+        working-directory: mono
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: mono/apps/mobile/package-lock.json
+
+      - name: Installer l'application (verrou exact)
+        working-directory: mono/apps/mobile
+        run: npm ci --no-audit --no-fund
+
+      - name: Types
+        working-directory: mono/apps/mobile
+        run: npx tsc --noEmit
+
+      - name: Extraire les donnees du depot (hors reseau)
+        run: |
+          APP=$(cd .. && ls -1 app_repere_v18_*.html | grep -v '\.bak$' | sort -V | tail -1)
+          echo "fichier autonome : $APP"
+          node scripts/extract-html.js "../$APP" ./data
+
+      - name: Construire le site (deux invariants relisent sa sortie)
+        run: |
+          corepack enable pnpm
+          pnpm install --frozen-lockfile
+          pnpm build
+
+      - name: Socle partage et invariants
+        run: node --test --test-concurrency=1 tests/core.test.mjs tests/invariants.test.mjs tests/sante.test.mjs tests/donnees.test.mjs tests/votes-vides.test.mjs tests/vote-vide-site.test.mjs apps/mobile/tests/cibles.test.mjs apps/mobile/tests/onglets.test.mjs apps/mobile/tests/theme.test.mjs apps/mobile/tests/parcours.test.mjs apps/mobile/tests/absences.test.mjs apps/mobile/tests/chaine.test.mjs apps/mobile/tests/dictionnaire.test.mjs apps/mobile/tests/niveaux.test.mjs apps/mobile/tests/vides-dates.test.mjs
+
+      - name: Construire l'application (iOS, Android, web)
+        working-directory: mono/apps/mobile
+        env:
+          CI: "1"
+          EXPO_OFFLINE: "1"
+        run: |
+          npx expo export --platform ios --platform android --output-dir dist
+          EXPO_PUBLIC_REPERE_DONNEES=/data npx expo export --platform web --output-dir dist-web
+          cp -r ../../data dist-web/data
+          ls -la dist/_expo/static/js/ios dist/_expo/static/js/android
+
+      - name: Parcours dans un navigateur (360 / 390 / 430 px, pannes)
+        run: |
+          npx playwright install --with-deps chromium
+          node scripts/serveur-statique.mjs apps/mobile/dist-web 8811 &
+          for i in $(seq 1 20); do curl -sf http://localhost:8811/ >/dev/null && break; sleep 0.5; done
+          node apps/mobile/tests/parcours-web.mjs http://localhost:8811 apps/mobile/captures
+
+      - name: Meme verite sur le site et dans l'application
+        # Pour cinq communes representatives, le maire, les adjoints, la
+        # circonscription, le depute, le vote, son explication, les sources
+        # et leurs dates doivent etre lus a l'identique dans les deux rendus.
+        # L'attendu est calcule depuis les donnees, jamais recopie d'un rendu.
+        run: |
+          rm -rf apps/web/dist/data && cp -r data apps/web/dist/data
+          node scripts/empreinte-sw.mjs apps/web/dist
+          node scripts/serveur-statique.mjs apps/web/dist 8821 &
+          curl -sf http://localhost:8811/ >/dev/null || (node scripts/serveur-statique.mjs apps/mobile/dist-web 8811 &)
+          for i in $(seq 1 20); do curl -sf http://localhost:8821/ >/dev/null && curl -sf http://localhost:8811/ >/dev/null && break; sleep 0.5; done
+          node tests/meme-verite.mjs http://localhost:8821 http://localhost:8811
+
+      - name: Garder les captures
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mobile-captures
+          path: mono/apps/mobile/captures
+          retention-days: 7
+          if-no-files-found: ignore
