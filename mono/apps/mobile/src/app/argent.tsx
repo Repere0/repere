@@ -18,7 +18,7 @@ import {
   NOTE_EVOLUTION, NOTE_FINANCEMENT, nomDispositif, parHabitant, partReperee, perimetreChange, phraseEcartes,
   phraseProjetLocal, rapports, sousTitreRapports, euros, CALCUL_REPERE, LIBELLES,
 } from "@repere/core";
-import { Carte, Vide } from "../lib/composants";
+import { Carte, Definitions, Vide } from "../lib/composants";
 import { PROJETS_PAS_ARRIVES, projetsAucun } from "../lib/absences";
 import { srcComptes, srcComptesPublies, srcProjets } from "../lib/sources";
 import { useCommuneChoisie } from "../lib/useCommune";
@@ -145,6 +145,9 @@ export default function Argent() {
                     <Mois mois={ch.detteMois} />
                     <Text style={TYPO.micro}>Une case = un mois de recettes de la commune.</Text>
                   </Resume>
+                  {/* D20 (premier lot) : « encours de dette » est une notion que le lecteur
+                      ne connait pas. Terme tapable, qui ouvre sa definition du dictionnaire. */}
+                  <Definitions s={[{ t: "encours de dette", mot: "encours de dette" }]} />
                   <PasCeQueCaDit r={rap(/mois de recettes/)} sujet="dette" />
                   <PastilleSource source={srcComptes(d)} />
                 </Carte>

@@ -667,3 +667,13 @@ test("mobile — argent : la dette inconnue et le montant sans ratio ont leur br
   assert.ok(/etatDette\(ex\.ex\) === "montant_sans_ratio"/.test(src), "branche « montant sans ratio » absente de argent.tsx");
   assert.ok(/Non renseignée dans les comptes/.test(src), "phrase de l'absence absente");
 });
+
+/* D20, PREMIER LOT (29/10/2026). « encours de dette » est affiche sur l'ecran Argent :
+   le terme doit etre tapable et sa definition doit exister dans le glossaire partage. */
+test("mobile — argent : « encours de dette » est tapable et sa definition existe", async () => {
+  const m = await import("../packages/core/src/index.js");
+  assert.ok(m.titreDuMot("encours de dette"), "definition « encours de dette » absente du glossaire");
+  const src = fs.readFileSync(path.join(import.meta.dirname, "..", "apps/mobile/src/app/argent.tsx"), "utf8");
+  assert.ok(/<Definitions s=\{\[\{ t: "encours de dette", mot: "encours de dette" \}\]\}/.test(src),
+    "argent.tsx ne rend pas « encours de dette » tapable (composant Definitions)");
+});
