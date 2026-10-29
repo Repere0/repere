@@ -93,3 +93,9 @@ test("C — les deux écrans qui affichent l'état vide passent la date du relev
   assert.match(chez, /voteAucun\(srcScrutins\(d\)\?\.releve\)/, "chez-vous doit passer le relevé");
   assert.match(vote, /voteAucun\(srcScrutins\(d\)\?\.releve\)/, "vote.tsx doit passer le relevé");
 });
+
+/* D — le mot « solennel » est expliqué là où il apparaît sur la liste des votes. */
+test("D — la liste des votes explique « solennel » là où le mot apparaît", () => {
+  assert.doesNotMatch(vote, /Scrutins solennels relevés/, "l'intitulé technique est remplacé");
+  assert.match(vote, /Votes solennels[^<]*adoption ou le rejet formel d'un texte entier/, "le mot est défini sur la même ligne");
+});
