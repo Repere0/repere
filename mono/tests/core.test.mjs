@@ -337,6 +337,12 @@ test("visuels — financement, vote, parcours d'une loi, chaine : denominateurs 
   assert.equal(r.total, 441);
   assert.equal(Math.round(r.segments.reduce((a, s) => a + s.part, 0) * 1000), 1000);
   assert.equal(m.repartitionVote({ dec: { pour: "x", contre: "1", abstentions: "1" } }), null);
+  /* Regression (29/10/2026, invariant 5) : Number(null) et Number("") valent 0 :
+     un decompte absent devenait « Pour : 0 ». Une valeur absente rend null. */
+  for (const absent of [null, undefined, "", "   "]) {
+    assert.equal(m.repartitionVote({ dec: { pour: absent, contre: "10", abstentions: "5" } }), null, `pour=${JSON.stringify(absent)} ne doit jamais valoir 0`);
+    assert.equal(m.repartitionVote({ dec: { pour: "1", contre: absent, abstentions: "5" } }), null, `contre=${JSON.stringify(absent)} ne doit jamais valoir 0`);
+  }
   assert.match(m.phraseDenominateurVote(441), /ayant pris part au vote/);
   assert.equal(m.etapeDuScrutin("texte de la commission mixte paritaire"), "texte de la commission mixte paritaire");
   assert.equal(m.etapeDuScrutin("seconde délibération"), "première lecture");
@@ -492,4 +498,182 @@ test("core — un territoire sans conseil departemental dit pourquoi, et seuleme
     assert.ok(s.source && /^https:\/\/www\.insee\.fr\//.test(s.source.url), d + " : la phrase porte sa source");
     assert.ok(!/source qui est incomplète/.test(s.titre + s.corps), d);
   }
+});
+
+/* Regression (29/10/2026, invariant 5 : une absence n'est jamais un zero ni un
+   texte parasite). Trois defauts latents trouves a la relecture : un decompte
+   avec abstentions nulles s'ecrivait « null abstention » ; un numero de lot
+   vide tombait silencieusement sur le lot 0000. */
+test("regression — une valeur absente n'ecrit ni « null », ni un lot 0000 silencieux", async () => {
+  assert.equal(decompte({ pour: "10", contre: "2", abstentions: null }), "décompte non publié", "un decompte incomplet le dit, sans « null »");
+  assert.equal(decompte({ pour: "10", contre: "2", abstentions: "" }), "décompte non publié", "une abstention vide le dit aussi");
+  assert.equal(decompte({ pour: "10", contre: "2", abstentions: "5" }), "10 pour, 2 contre, 5 abstentions", "un decompte complet reste inchange");
+  const c = await import("../packages/data-utils/src/client.js");
+  for (const absent of [null, "", "   "]) {
+    assert.throws(() => c.adresseScrutinLot(absent), /invalide/, `lot ${JSON.stringify(absent)} ne doit pas devenir le lot 0000`);
+    assert.throws(() => c.adresseQuestionGouvernementLot(absent), /invalide/, `lot QAG ${JSON.stringify(absent)} ne doit pas devenir 0000`);
+  }
+  assert.equal(c.adresseScrutinLot("0"), c.adresseScrutinLot(0), "le lot 0 reste le lot 0 (valeur reelle)");
+});
+
+/* Regression (29/10/2026, invariant 5 et « un zero publie reste un zero »).
+   Un montant publie a 0 disparaissait des phrases (nn exigeait m > 0 meme pour
+   un NUMERATEUR), alors que le site affiche « 0 € » avec « ce n'est pas une
+   donnee manquante ». Numerateur : zero accepte. Denominateur : strictement > 0. */
+test("regression — un montant publie a zero reste zero ; un denominateur nul ne produit rien", async () => {
+  const m = await import("../packages/core/src/index.js");
+  const ex = (inv, dep = 1000000) => [1000, 1200000, 1200, dep, 1000, 600000, 600, inv, inv / 1000, 500000, 500, 100000, 100];
+  const zeroInv = m.rapports(ex(0)).find(o => /investir/.test(o.v));
+  assert.ok(zeroInv, "un investissement publie a 0 doit figurer");
+  assert.equal(zeroInv.v, "0 € pour investir");
+  assert.equal(m.chiffresComptes(ex(0)).partInvestissement, 0, "la part reste 0, pas null");
+  const pasDeDepenses = m.rapports(ex(250000, 0));
+  assert.ok(!pasDeDepenses.some(o => /salaires|investir/.test(o.v)), "depenses a zero : aucune part (denominateur nul)");
+  assert.ok(!pasDeDepenses.some(o => /NaN|Infinity/.test(o.v)), "jamais NaN ni Infinity");
+  assert.equal(m.chiffresComptes(ex(0, 0)).partSalaires, null, "denominateur nul : pas de part");
+});
+
+test("regression — un decompte de scrutin vide n'est jamais affiche comme zero (ecran scrutins)", async () => {
+  const C = await import("../packages/core/src/index.js");
+  for (const absent of [null, undefined, "", "   "]) {
+    assert.equal(C.nombreDecompte(absent), "—", `nombreDecompte(${JSON.stringify(absent)}) doit etre un tiret`);
+  }
+  assert.equal(C.nombreDecompte("0"), "0", "un zero publie reste zero");
+  assert.equal(C.nombreDecompte("1234"), (1234).toLocaleString("fr-FR"), "separateur de milliers francais (celui du navigateur)");
+  assert.equal(C.nombreDecompte("abc"), "—", "une valeur non numerique n'est pas un nombre");
+  assert.equal(
+    C.resultatDecompteCourt({ pour: "", contre: "2", abstentions: "1" }),
+    "2 contre · 1 abstention",
+    "pour vide : pas de « 0 pour »"
+  );
+  assert.equal(
+    C.resultatDecompteCourt({ pour: "10", contre: "2", abstentions: "" }),
+    "10 pour · 2 contre",
+    "abstention vide : pas de « 0 abstention »"
+  );
+  assert.equal(
+    C.resultatDecompteCourt({ pour: "0", contre: "0", abstentions: "0" }),
+    "0 pour · 0 contre · 0 abstention",
+    "des zeros publies restent des zeros"
+  );
+});
+
+test("regression — une intercommunalite absente des donnees n'est pas un zero de delegues (ni « ne porte pas de délégué »)", async () => {
+  const C = await import("../packages/core/src/index.js");
+  const base = { nom: "Amillis", maire: { nom: "Prénom Nom" }, circo: 2 };
+  const agglo = fiche => C.chaineDecision({ fiche, paquet: { elus: [] }, index: { departements: [] }, deputes: null, elusRegion: null, dep: "77" })
+    .find(n => n.echelon === "agglo");
+  assert.equal(agglo(base).delegues, null, "agglo absent du fichier : inconnu, pas zero");
+  assert.equal(agglo({ ...base, agglo: { nom: "CC test", delegues: [] } }).delegues, 0, "liste publiee vide : zero publie reste zero");
+  assert.equal(agglo({ ...base, agglo: { nom: "CC test", delegues: [{ nom: "A B" }] } }).delegues, 1);
+});
+
+/* Numero de scrutin absent : il n'est jamais compare comme zero (Number(null) = 0,
+   Number("") = 0). Deux votes du meme jour dont un numero manque gardent l'ordre
+   de la source : la comparaison rend 0. */
+test("core — un numéro de scrutin absent n'est pas comparé comme zéro (ordre du jour)", async () => {
+  const { ordreDesFaits } = await import("../packages/core/src/faits.js");
+  const base = { quand: "2026-07-21", rang: 1, type: "vote" };
+  for (const absent of [null, "", undefined]) {
+    const sans = { ...base, sc: { n: absent } };
+    const avec = { ...base, sc: { n: 5 } };
+    /* Absent APRES un numerote du meme jour : ce n'est ni 0 (egalite) ni une
+       valeur numerique (5 - 0). */
+    assert.equal(ordreDesFaits(sans, avec), 1, `numéro absent (${JSON.stringify(absent)}) doit venir après le numéroté`);
+    assert.equal(ordreDesFaits(avec, sans), -1, `numéro absent (${JSON.stringify(absent)}) doit venir après le numéroté`);
+  }
+  assert.equal(ordreDesFaits({ ...base, sc: { n: 8430 } }, { ...base, sc: { n: 8434 } }) > 0, true, "le plus grand numéro doit venir en premier");
+});
+
+/* La date de début du mandat d'un député est transmise à la chaîne (fiche).
+   Absente de la source : elle reste absente (null), jamais inventée. */
+test("core — la chaîne transmet la date de début du mandat du député, ou rien", async () => {
+  const { chaineDecision } = await import("../packages/core/src/visuels.js");
+  const deputes = { deputes: { "93-1": { prenom: "Ada", nom: "Exemple", dateDebut: "2024-07-07" }, "93-2": { prenom: "Bo", nom: "Sans" } } };
+  const france = (fiche) => chaineDecision({ fiche, paquet: null, index: null, deputes, elusRegion: null, dep: "93" }).find(n => n.echelon === "france");
+  assert.equal(france({ nom: "X", circo: 1 }).personne.debut, "2024-07-07");
+  assert.strictEqual(france({ nom: "X", circo: 2 }).personne.debut, null, "une date absente de la source ne doit pas être inventée");
+});
+
+/* Ce que la fiche affiche de la date de début : une date seulement si la
+   source la publie ET dit quand elle a été relevée (invariant 4). La phrase
+   « non publiée » ne concerne que le député, jamais les autres échelons. */
+test("core — la date de début n'est affichée qu'avec la date de relevé de sa source", async () => {
+  const { debutDeMandat } = await import("../packages/core/src/visuels.js");
+  const source = { producteur: "Assemblée nationale — Acteurs, mandats et organes", releve_le: "2026-10-28" };
+  const avec = { echelon: "france", personne: { nom: "A", debut: "2024-07-07" } };
+  assert.deepEqual(debutDeMandat(avec, source),
+    { etat: "date", date: "2024-07-07", producteur: source.producteur, releve_le: "2026-10-28" });
+  const sansReleve = debutDeMandat(avec, { producteur: "X" });
+  assert.equal(sansReleve.etat, "sans_releve");
+  assert.equal(sansReleve.date, undefined, "sans date de relevé, aucune date n'est affichée");
+  assert.equal(debutDeMandat({ echelon: "france", personne: { nom: "A", debut: null } }, source).etat, "non_publie");
+  assert.equal(debutDeMandat({ echelon: "france", personne: null }, source).etat, "absent");
+  assert.equal(debutDeMandat({ echelon: "ville", personne: { nom: "Maire" } }, source).etat, "absent");
+});
+
+/* Ordre total du jour : quel que soit l'ordre d'entree, les votes numerotes
+   sortent du plus grand numero au plus petit, et le vote sans numero vient
+   apres eux. Un comparateur qui n'est pas un ordre total (0 pour une absence
+   contre tous, mais une comparaison pour les autres) donne un tri qui depend
+   de l'ordre d'entree : c'est le defaut trouve par l'audit du 29/10/2026. */
+test("core — ordre du jour total : quel que soit l'ordre d'entrée, numérotés décroissants puis absent", async () => {
+  const { ordreDesFaits } = await import("../packages/core/src/faits.js");
+  const base = { quand: "2026-07-21", rang: 1, type: "vote" };
+  const items = [8434, 8430, 8431, null].map(n => ({ ...base, sc: { n } }));
+  const permutations = (xs) => xs.length <= 1 ? [xs] : xs.flatMap((x, i) => permutations([...xs.slice(0, i), ...xs.slice(i + 1)]).map(p => [x, ...p]));
+  const mauvais = [];
+  for (const p of permutations(items)) {
+    const tri = [...p].sort(ordreDesFaits).map(f => f.sc.n);
+    if (JSON.stringify(tri) !== JSON.stringify([8434, 8431, 8430, null])) mauvais.push(JSON.stringify(tri));
+  }
+  assert.deepEqual(mauvais, [], `ordre dépendant de l'entrée : ${mauvais.length} permutation(s) mal triée(s)`);
+});
+
+/* Un montant absent n'est jamais « 0 € » (Number(null) = 0) ni « NaN € ».
+   Doctrine du vide (invariant 5) : une phrase vraie, pas un zéro. */
+test("core — euros() : un montant absent n'est pas 0 €, ni NaN €", async () => {
+  const { euros } = await import("../packages/core/src/format.js");
+  assert.notEqual(euros(null), "0 €", "null devient 0 €");
+  assert.notEqual(euros(undefined), "0 €");
+  assert.doesNotMatch(euros(undefined), /NaN/, "undefined devient NaN €");
+  assert.doesNotMatch(euros(null), /NaN/);
+  assert.equal(euros(0), "0 €", "un vrai zéro reste 0 €");
+});
+
+/* DETTE — 29/10/2026. Trois etats que l'application ne doit jamais confondre : valeur
+   inconnue (rien a dire, pas de zero), zero publie (« aucun emprunt »), et montant
+   connu mais sans ratio en mois (recettes absentes ou nulles). Le mobile, avant ce
+   controle, ne rendait rien dans les deux premiers cas : une carte absente sans un mot. */
+test("visuels — dette : inconnue, nulle, sans ratio : trois etats distincts, jamais un zero invente", async () => {
+  const m = await import("../packages/core/src/index.js");
+  // [population, recettes m, h, depenses m, h, dette m, h]
+  const ex = (rec, det) => [1000, rec, rec, 1100, 1100, det, det];
+  assert.equal(typeof m.etatDette, "function", "etatDette doit exister : la decision est dans le paquet, pas dans l'ecran");
+  assert.equal(m.etatDette(ex(1200, null)), "inconnue", "dette absente : inconnue, pas zero");
+  assert.equal(m.chiffresComptes(ex(1200, null)).dette, null, "null reste null");
+  assert.equal(m.etatDette(ex(1200, 0)), "nulle", "zero publie : aucun emprunt, pas inconnu");
+  assert.equal(m.etatDette(ex(1200, 1600)), "mois", "dette et recettes connues : le ratio en mois");
+  assert.equal(m.etatDette(ex(null, 1600)), "montant_sans_ratio", "dette connue, recettes absentes : le montant, sans ratio invente");
+  assert.equal(m.etatDette(ex(0, 1600)), "montant_sans_ratio", "recettes a zero : pas de division, le montant reste dit");
+});
+
+/* GARDE DU MOBILE — 29/10/2026. Les deux etats qui se taisaient (dette inconnue,
+   montant sans ratio) doivent avoir leur branche dans l'ecran : sans elle, la carte
+   disparait sans un mot. Lu sur le source, car l'ecran n'est pas rendu en Node. */
+test("mobile — argent : la dette inconnue et le montant sans ratio ont leur branche, jamais une carte absente", () => {
+  const src = fs.readFileSync(path.join(import.meta.dirname, "..", "apps/mobile/src/app/argent.tsx"), "utf8");
+  assert.ok(/etatDette\(ex\.ex\) === "inconnue"/.test(src), "branche « dette inconnue » absente de argent.tsx");
+  assert.ok(/etatDette\(ex\.ex\) === "montant_sans_ratio"/.test(src), "branche « montant sans ratio » absente de argent.tsx");
+  assert.ok(/Non renseignée dans les comptes/.test(src), "phrase de l'absence absente");
+});
+
+/* D20, PREMIER LOT (29/10/2026). « encours de dette » est affiche sur l'ecran Argent :
+   le terme doit etre tapable et sa definition doit exister dans le glossaire partage. */
+test("mobile — argent : « encours de dette » est tapable et sa definition existe", async () => {
+  const m = await import("../packages/core/src/index.js");
+  assert.ok(m.titreDuMot("encours de dette"), "definition « encours de dette » absente du glossaire");
+  const src = fs.readFileSync(path.join(import.meta.dirname, "..", "apps/mobile/src/app/argent.tsx"), "utf8");
+  assert.ok(/<Definitions s=\{\[\{ t: "encours de dette", mot: "encours de dette" \}\]\}/.test(src),
+    "argent.tsx ne rend pas « encours de dette » tapable (composant Definitions)");
 });

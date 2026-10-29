@@ -353,8 +353,16 @@ rm -rf site_engendre
   # complete le 23/09/2026 : 95 scrutins sur 8434 (72 solennels + 23
   # motions de censure), 29,8 Ko - pas les ~843 qu'un echantillon de 80
   # scrutins recents avait suggere a tort avant cette mesure.
+  # ECHEC BLOQUANT (29/10/2026). Avant, un echec ne faisait qu'un avertissement :
+  # la publication sortait avec une note « indisponible » qui masquait le defaut.
+  # Le generateur sort en 0 quand l'archive est absente (cas honnete, traite par
+  # la note du site) ; toute autre sortie non nulle arrete la chaine.
   node scripts/scrutins-solennels.mjs ./data \
-    || echo "::warning::scrutins solennels non rafraichis - le reste de l'application continue"
+    || { echo "::error::scrutins solennels : production en echec - publication bloquee"; exit 1; }
+  # ETAT ANNONCE DANS LA CI (29/10/2026). Le banc ne montre sa sortie qu'en cas
+  # d'echec : sans cette annotation, une CI verte ne disait pas si le teaser
+  # etait present ou si sa note d'absence avait ete testee a sa place.
+  bash ../outils/teaser_scrutins_etat.sh ./data ../data/brut_Scrutins
   pnpm install --frozen-lockfile
   # RISQUE CONFIRME PAR AUDIT LE 22/09/2026, PAS SUPPOSE : ce bloc n'installait
   # aucun Chromium pour mono/. Le premier essai reel sur le runner GitHub
@@ -398,6 +406,8 @@ banc "collecte" python3 outils/test_collecte.py
 # Heure de fin des seances (13/10/2026) : l'agenda normalise recopie la fin publiee
 # par la source, et ne la devine jamais. Le controle tourne sur un agenda factice.
 banc "agenda : heure de fin" python3 outils/test_agenda_an.py
+banc "teaser des scrutins : etat annonce" bash outils/test_teaser_scrutins_etat.sh
+banc "scrutins solennels : erreurs bloquantes" bash outils/test_scrutins_solennels_erreurs.sh
 
 echo "== banc : le fichier autonome =="
 banc "fichier autonome" node test_repere.mjs "$APP"

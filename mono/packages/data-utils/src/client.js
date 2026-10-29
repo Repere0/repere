@@ -119,6 +119,8 @@ export function adresseScrutinsSolennels() { return `${BASE_DONNEES}/scrutins-so
 export function adresseScrutinsSolennelsRecents() { return `${BASE_DONNEES}/scrutins-solennels-recents.json`; }
 export function adresseQuestionsGouvernementIndex() { return `${BASE_DONNEES}/questions-gouvernement-index.json`; }
 export function adresseQuestionGouvernementLot(lot) {
+  /* Number("") et Number(null) valent 0 : une absence ne doit JAMAIS tomber sur le lot 0000. */
+  if (lot === null || lot === undefined || String(lot).trim() === "") throw new Error("lot QAG invalide : " + lot);
   const n = Number(lot);
   if (!Number.isInteger(n) || n < 0 || n > 9999) throw new Error("lot QAG invalide : " + lot);
   const lotPadded = String(n).padStart(4, "0");
@@ -126,6 +128,8 @@ export function adresseQuestionGouvernementLot(lot) {
 }
 export function adresseScrutinsIndex() { return `${BASE_DONNEES}/scrutins-index.json`; }
 export function adresseScrutinLot(lot) {
+  /* Number("") et Number(null) valent 0 : une absence ne doit JAMAIS tomber sur le lot 0000. */
+  if (lot === null || lot === undefined || String(lot).trim() === "") throw new Error("lot de scrutin invalide : " + lot);
   const n = Number(lot);
   if (!Number.isInteger(n) || n < 0 || n > 9999) throw new Error("lot de scrutin invalide : " + lot);
   const lotPadded = String(n).padStart(4, "0");
@@ -305,6 +309,26 @@ export const PHRASES_FRAICHEUR = Object.freeze({
     action: "Mettre à jour",
   },
 });
+/* LA DATE DE LA PUBLICATION AFFICHEE (29/10/2026). « Publication précédente »
+   ne dit ni laquelle, ni depuis quand : le lecteur doit savoir la date de ce
+   qu'il voit. Même formulation sur le site et sur l'application. */
+const MOIS_FR = ["janvier", "février", "mars", "avril", "mai", "juin", "juillet", "août", "septembre", "octobre", "novembre", "décembre"];
+function jourPublication(generation) {
+  const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(generation || ""));
+  if (!m) return null;
+  const [an, mois, jour] = [Number(m[1]), Number(m[2]), Number(m[3])];
+  /* une date doit EXISTER (pas de 13e mois, pas de 31 avril) : sinon, aucune date */
+  const reelle = new Date(Date.UTC(an, mois - 1, jour));
+  if (reelle.getUTCFullYear() !== an || reelle.getUTCMonth() !== mois - 1 || reelle.getUTCDate() !== jour) return null;
+  return jour + " " + MOIS_FR[mois - 1] + " " + an;
+}
+export function phraseFraicheur(e) {
+  const base = e.nouvelle ? PHRASES_FRAICHEUR.nouvelle : PHRASES_FRAICHEUR[e.etat];
+  if (!base) return null;
+  const jour = jourPublication(e.generation);
+  if (!jour) return base;
+  return { ...base, corps: base.corps + " Publication du " + jour + "." };
+}
 let indexVerifie = null;                 /* null : pas encore de reponse */
 let nouvelleParue = false;
 const clesPrecedentes = new Set();

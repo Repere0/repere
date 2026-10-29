@@ -18,7 +18,7 @@
 import { useState } from "react";
 import { Animated, Pressable, Share, Text, View } from "react-native";
 import { router, Stack, useLocalSearchParams } from "expo-router";
-import { chaineDecision, dateFr, LIBELLES, titreLisible } from "@repere/core";
+import { chaineDecision, dateFr, debutDeMandat, LIBELLES, titreLisible } from "@repere/core";
 import { Carte } from "../lib/composants";
 import { srcElus } from "../lib/sources";
 import { couleurs, CIBLE, PAS, TYPO, type Echelon } from "../lib/theme";
@@ -52,7 +52,7 @@ function Onglets({ actif, choisir, votes }: { actif: Onglet; choisir: (o: Onglet
         return (
           <Pressable key={o.cle} onPress={() => choisir(o.cle)} accessibilityRole="tab" accessibilityState={{ selected: on }}
             accessibilityLabel={`${o.t}${o.cle === "votes" && !votes ? " (cette fonction ne vote pas)" : ""}`}
-            style={{ flex: 1, minHeight: 40, borderRadius: 999, backgroundColor: on ? couleurs.carte : "transparent", alignItems: "center", justifyContent: "center" }}>
+            style={{ flex: 1, minHeight: 44, borderRadius: 999, backgroundColor: on ? couleurs.carte : "transparent", alignItems: "center", justifyContent: "center" }}>
             <Text style={{ fontWeight: on ? "800" : "600", color: couleurs.encre }}>{o.t}</Text>
           </Pressable>
         );
@@ -70,7 +70,10 @@ export default function Elu() {
   return (
     <AvecDonnees rendu={r => {
       const niveaux = chaineDecision({ fiche: r.d.fiche, paquet: r.paquet, index: r.index, deputes: r.deputes, elusRegion: r.elusRegion, dep: r.d.dep });
-      const decide = (niveaux as { echelon: string; decide?: string }[]).find(n => n.echelon === echelon)?.decide;
+      const niveau = (niveaux as { echelon: string; decide?: string; personne?: { debut?: string | null } | null }[]).find(n => n.echelon === echelon);
+      const decide = niveau?.decide;
+      /* Date de debut du mandat : montree seulement avec la date de relevé de sa source (core). */
+      const debutMandat = debutDeMandat(niveau, r.deputes && r.deputes.source);
       const depute = echelon === "france";
       const vote = depute ? r.d.dernierVote as { sc: { t: string; d: string }; position?: string } | undefined : undefined;
       const libelleRole = [p.role, p.lieu].filter(Boolean).join(" · ");
@@ -157,6 +160,16 @@ export default function Elu() {
                 <Text style={[TYPO.corps, { fontWeight: "800" }]}>{p.role || nom}</Text>
                 {p.institution ? <Text style={TYPO.note}>{p.institution}</Text> : null}
                 {p.lieu ? <Text style={TYPO.note}>{p.lieu}</Text> : null}
+                {debutMandat.etat === "date" ? (
+                  <Text style={[TYPO.note, { marginTop: PAS * 2 }]}>En fonction depuis le {dateFr(debutMandat.date)}.</Text>
+                ) : debutMandat.etat === "sans_releve" ? (
+                  <Text style={[TYPO.note, { marginTop: PAS * 2 }]}>Date de début de la fonction : non affichée, la source ne dit pas quand ses données ont été relevées.</Text>
+                ) : debutMandat.etat === "non_publie" ? (
+                  <Text style={[TYPO.note, { marginTop: PAS * 2 }]}>Date de début de la fonction : non publiée par la source. Repère ne la devine pas.</Text>
+                ) : null}
+                {debutMandat.etat === "date" ? (
+                  <Text style={TYPO.note}>Source : {debutMandat.producteur}, données relevées le {dateFr(debutMandat.releve_le)}.</Text>
+                ) : null}
                 <Text style={[TYPO.note, { marginTop: PAS * 2 }]}>
                   Repère n'affiche que les faits de mandat publiés. Le patrimoine des élus, et leur présence ou absence aux séances, ne figurent jamais.
                 </Text>

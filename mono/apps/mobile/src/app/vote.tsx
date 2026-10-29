@@ -15,7 +15,7 @@ import { Pressable } from "react-native";
 import {
   CONSTITUTION_45_URL, dateFr, ETAPES_LOI, etapeDuScrutin, ligneScrutin, motPosition,
   phraseCirconscription, phraseDenominateurVote, phrasePosition, POSITION_NON_PORTEE, procedure,
-  repartitionVote, REFUS_APPARIEMENT, titreLisible, MOTS,
+  repartitionVote, REFUS_APPARIEMENT, titreLisible, MOTS, chaineDecision,
 } from "@repere/core";
 import { Carte, Segments, Vide } from "../lib/composants";
 import { circoInconnue, VOTE_AUCUN, VOTES_PAS_ARRIVES } from "../lib/absences";
@@ -44,6 +44,15 @@ export default function Vote() {
       const etape = etapeDuScrutin(procedure(vote.sc.t));
       const autres = (d.faits as FaitVote[]).filter(x => x.type === "vote" && x.cle !== vote.cle && x.circo === vote.circo).slice(0, 4);
       const depIndex = r.index.departements.find((x: { code: string }) => x.code === d.dep);
+      /* Le député : le niveau « France » de la chaîne de décision, celui de « Qui décide ».
+         Sa fiche s'ouvre avec les mêmes paramètres que depuis cet onglet. */
+      type NiveauFiche = { echelon: string; niveau?: string; institution?: string; lieu?: string; personne?: { nom: string; role?: string } | null };
+      const fiche = (chaineDecision({ fiche: d.fiche, paquet: r.paquet, index: r.index, deputes: r.deputes, elusRegion: r.elusRegion, dep: d.dep }) as NiveauFiche[])
+        .find(n => n.echelon === "france" && n.personne);
+      const parametresFiche = fiche && fiche.personne ? {
+        nom: fiche.personne.nom, role: fiche.personne.role ?? "", echelon: fiche.echelon,
+        niveau: fiche.niveau ?? "", institution: fiche.institution ?? "", lieu: fiche.lieu ?? "",
+      } : null;
       return (
         <Page>
           <Stack.Screen options={{ title: "Votre député" }} />
@@ -58,6 +67,13 @@ export default function Vote() {
             {!mot ? <Text style={TYPO.note}>{POSITION_NON_PORTEE}</Text> : null}
             <PastilleSource source={srcVote(d, vote.sc)} />
           </Carte>
+          {parametresFiche ? (
+            <Pressable onPress={() => router.push({ pathname: "/elu", params: parametresFiche })}
+              accessibilityRole="button" accessibilityLabel={`Voir la fiche de ${parametresFiche.nom}`}
+              style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", opacity: pressed ? 0.6 : 1 })}>
+              <Text style={[TYPO.corps, { color: couleurs.lien, fontWeight: "600" }]}>Voir la fiche de {parametresFiche.nom} ›</Text>
+            </Pressable>
+          ) : null}
           <Pressable onPress={() => router.push("/partager")} accessibilityRole="button"
             accessibilityLabel="Partager ce vote en deux cartes"
             style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", opacity: pressed ? 0.6 : 1 })}>
@@ -79,8 +95,9 @@ export default function Vote() {
               { cle: "c", titre: d.nomCommune, texte: "Votre commune.", echelon: "ville" },
               { cle: "ci", titre: `${vote.circo === 1 ? "1re" : vote.circo + "e"} circonscription${depIndex ? " · " + depIndex.nom : ""}`, texte: "Le territoire qui élit un député. Il regroupe plusieurs communes, ou une partie d'une grande ville.", echelon: "france" },
               { cle: "d", titre: vote.qui, texte: "Élu par les électeurs de cette circonscription.", echelon: "france", actif: true },
-              { cle: "an", titre: "Assemblée nationale", texte: "577 députés y votent les lois et le budget de l'État.", echelon: "france" },
+              { cle: "an", titre: "Assemblée nationale", texte: "Au plus 577 députés y votent les lois et le budget de l'État, selon l'article 24 de la Constitution.", echelon: "france" },
             ]} />
+            <PastilleSource source={{ producteur: "Constitution du 4 octobre 1958, article 24", court: "Constitution, art. 24", url: CONSTITUTION_45_URL }} />
           </Carte>
 
           {/* NIVEAU 3 : ou en est le texte */}

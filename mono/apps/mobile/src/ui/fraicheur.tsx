@@ -12,10 +12,10 @@
 import { useEffect, useState } from "react";
 import { AppState, Pressable, StyleSheet, Text, View } from "react-native";
 import {
-  etatFraicheur, surFraicheur, verifierPublication, publicationPriseEnCompte, FRAICHEUR, PHRASES_FRAICHEUR,
+  etatFraicheur, surFraicheur, verifierPublication, publicationPriseEnCompte, phraseFraicheur, FRAICHEUR,
 } from "../lib/donnees";
 import { useCommuneChoisie } from "../lib/useCommune";
-import { CIBLE, couleurs, PAS, RAYON, TYPO } from "../lib/theme";
+import { feuille, CIBLE, couleurs, PAS, RAYON, TYPO } from "../lib/theme";
 
 export function BandeauFraicheur() {
   const [e, setE] = useState(etatFraicheur());
@@ -26,7 +26,9 @@ export function BandeauFraicheur() {
     return () => { desabonner(); abo.remove(); };
   }, []);
   if (e.etat !== FRAICHEUR.PRECEDENTE && e.etat !== FRAICHEUR.INCONNUE) return null;
-  const p: { titre: string; corps: string; action?: string } = e.nouvelle ? PHRASES_FRAICHEUR.nouvelle : PHRASES_FRAICHEUR[e.etat];
+  /* La phrase porte la date de la publication affichee (phraseFraicheur, partagee avec le site). */
+  const p = phraseFraicheur(e);
+  if (!p) return null;
   return (
     <View style={s.bandeau} testID="fraicheur" accessibilityRole="summary">
       <Text style={[TYPO.note, { color: couleurs.encre, fontWeight: "700" }]}>{p.titre}</Text>
@@ -41,9 +43,9 @@ export function BandeauFraicheur() {
   );
 }
 
-const s = StyleSheet.create({
+const s = feuille(() => StyleSheet.create({
   bandeau: { borderLeftWidth: 3, borderLeftColor: couleurs.encre, backgroundColor: couleurs.voile,
     borderTopRightRadius: RAYON.bloc, borderBottomRightRadius: RAYON.bloc, paddingHorizontal: PAS * 3, paddingVertical: PAS * 2, gap: PAS },
   bouton: { minHeight: CIBLE, justifyContent: "center", alignSelf: "flex-start" },
   boutonTexte: { fontSize: 15, fontWeight: "700", color: couleurs.lien },
-});
+}));

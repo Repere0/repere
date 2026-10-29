@@ -298,7 +298,15 @@ for (const largeur of [360, 390, 430]) {
   }
 
   await page.getByRole("button", { name: "Revenir à l'accueil" }).last().click();
-  await page.getByText("Où habitez-vous ?").waitFor({ timeout: 5000 });
+  /* UN SEUL ACCUEIL DANS LA PILE APRES LE RETOUR (29/10/2026). Un router.replace("/")
+     empilait un second accueil sous le premier : le retour arriere ramenait a un ecran
+     identique. On COMPTE tous les accueils (cachés compris), pas seulement le visible :
+     un accueil caché sous l'autre est justement le defaut. Le contrôle vient AVANT
+     l'attente de l'accueil visible, pour que l'échec dise « deux accueils », pas « délai ». */
+  await page.waitForTimeout(400);
+  const accueils = await page.getByText("Où habitez-vous ?").count();
+  verifier(accueils === 1, `${largeur}px : un seul accueil après « Revenir à l'accueil » (trouvé : ${accueils})`);
+  await page.getByText("Où habitez-vous ?").filter({ visible: true }).first().waitFor({ timeout: 5000 });
   verifier(true, `${largeur}px : retour à l'accueil`);
   await page.close();
 }
@@ -315,6 +323,20 @@ for (const largeur of [360, 390, 430]) {
   await page.waitForTimeout(800);
   const t = await page.evaluate(() => document.body.innerText);
   verifier(/publie un encours de dette nul pour Bassevelle en \d{4}, sur le budget principal : aucun emprunt n'y reste à rembourser/.test(t), "argent : une dette nulle publiée se dit, la carte ne disparaît pas");
+  await page.close();
+}
+/* LE DICTIONNAIRE SE TROUVE DEPUIS « AUJOURD'HUI » (29/10/2026) : une entree dans
+   « Aller plus loin ». Le contrôle ouvre l'écran, il ne se contente pas du libellé. */
+{
+  const page = await navigateur.newPage({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, reducedMotion: "reduce" });
+  await page.goto(BASE + "/", { waitUntil: "networkidle" });
+  await page.getByLabel(/Où habitez-vous/).fill("bassevelle");
+  await page.getByRole("button", { name: /^Bassevelle,/ }).first().click();
+  await page.getByText("Aller plus loin").first().waitFor({ timeout: 15000 });
+  await page.getByRole("button", { name: "Dictionnaire citoyen", exact: true }).first().click();
+  const champ = page.getByLabel("Rechercher un mot du dictionnaire").first();
+  await champ.waitFor({ timeout: 8000 });
+  verifier(await champ.isVisible(), "le dictionnaire s'ouvre depuis « Aujourd'hui » (Aller plus loin)");
   await page.close();
 }
 /* HORS D'ILE-DE-FRANCE — 08/10/2026 : une commune d'ailleurs n'est jamais dite

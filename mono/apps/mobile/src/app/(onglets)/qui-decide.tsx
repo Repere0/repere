@@ -6,11 +6,11 @@
  * du lecteur (COMPETENCES, @repere/core — les memes phrases que le site).
  * Un niveau sans personne nommee par la source garde sa place et le dit.
  * L'ordre est un ordre de distance, pas d'importance : c'est ecrit. */
-import { Pressable, Text } from "react-native";
+import { Pressable, Text, View } from "react-native";
 import { router, Stack } from "expo-router";
 import { chaineDecision, dateFr, MAIRE_ABSENT, phraseAdjoints, RNE_URL, LIBELLES } from "@repere/core";
 import { sansConseilDepartemental } from "@repere/core";
-import { Segments } from "../../lib/composants";
+import { Definitions, Segments } from "../../lib/composants";
 import { REGION_PAS_ARRIVEE } from "../../lib/absences";
 import { srcElus } from "../../lib/sources";
 import { CIBLE, couleurs, PAS, TYPO } from "../../lib/theme";
@@ -28,14 +28,20 @@ export default function QuiDecide() {
       const niveaux: Niveau[] = brut.map(n => {
         if (n.echelon === "ville") {
           return { ...n, pied: n.personne
-            ? <Text style={TYPO.note}><Segments s={phraseAdjoints(f.adjoints, f.maire.nom)} /></Text>
+            ? <View style={{ gap: PAS }}>
+                <Text style={TYPO.note}><Segments s={phraseAdjoints(f.adjoints, f.maire.nom)} /></Text>
+                <Definitions s={phraseAdjoints(f.adjoints, f.maire.nom)} />
+              </View>
             : <Text style={TYPO.note}>{MAIRE_ABSENT.titre} {MAIRE_ABSENT.corps}</Text> };
         }
         if (n.echelon === "agglo") {
           /* 07/10/2026 : les precisions propres au territoire (Ile-de-France,
              Metropole du Grand Paris) viennent de @repere/core, comme sur le site. */
           const precisions = (n as { precisions?: string[] }).precisions || [];
-          return { ...n, note: [n.delegues
+          /* D20, lot L2 : le mot « intercommunalité » se definit sous la carte (bouton, cible 44 px). */
+          return { ...n, pied: <Definitions s={[{ t: "intercommunalité", mot: "intercommunalité" }]} />, note: [n.delegues === null
+            ? "La source ne liste pas l'intercommunalité de cette commune. C'est la source qui est incomplète, pas la commune qui n'en a pas."
+            : n.delegues
             ? `Le Répertoire national des élus y liste ${n.delegues} élu${n.delegues > 1 ? "s" : ""} de ${d.nomCommune}. Vous ne l'élisez pas directement : ce sont des conseillers municipaux qui y siègent.`
             : "Le Répertoire national des élus ne porte pas de délégué pour cette commune à son intercommunalité.", ...precisions].join(" ") };
         }
@@ -45,7 +51,8 @@ export default function QuiDecide() {
         if (n.echelon === "dept" && !n.personne) {
           /* 08/10/2026 : certains territoires n'ont REELLEMENT pas de conseil departemental */
           const sans = sansConseilDepartemental(d.dep);
-          return { ...n, note: sans ? `${sans.titre} ${sans.corps}` : "Le Répertoire national des élus ne porte pas de conseil départemental pour ce territoire." };
+          /* D20, lot L2 : « conseil départemental » se definit sous la carte. */
+          return { ...n, pied: <Definitions s={[{ t: "conseil départemental", mot: "conseil départemental" }]} />, note: sans ? `${sans.titre} ${sans.corps}` : "Le Répertoire national des élus ne porte pas de conseil départemental pour ce territoire." };
         }
         if (n.echelon === "france") {
           return { ...n, note: n.autresCircos ? `${d.nomCommune} est partagée entre plusieurs circonscriptions : un seul député est nommé ici.` : undefined,

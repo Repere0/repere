@@ -13,7 +13,7 @@ import { mots, motsCible, correspond, trouverCommunes, departementDe } from "@re
 import { chargerCommunesBeta, chargerIndex, ETATS, PHRASES } from "../lib/donnees";
 import { Bouton, Carte, Texte, Vide } from "../lib/composants";
 import { useSelection } from "../lib/selection";
-import { couleurs, CIBLE, PAS, POLICE, RAYON, TYPO } from "../lib/theme";
+import { feuille, couleurs, CIBLE, PAS, POLICE, RAYON, TYPO } from "../lib/theme";
 
 type Ligne = [string, string, string[]];
 type Beta = { communes: Record<string, string>; manquantes?: Record<string, string>; source?: { producteur?: string } };
@@ -153,7 +153,7 @@ export default function Accueil() {
   );
 }
 
-const s = StyleSheet.create({
+const s = feuille(() => StyleSheet.create({
   page: { paddingHorizontal: PAS * 4, gap: PAS * 2, maxWidth: 640, width: "100%", alignSelf: "center" },
   tete: { gap: PAS * 3, marginBottom: PAS * 2 },
   marque: { fontFamily: POLICE.affiche, fontSize: 22, color: couleurs.ville, marginBottom: PAS * 4 },
@@ -176,4 +176,4 @@ const s = StyleSheet.create({
   pastille: { width: 10, height: 10, borderRadius: 5, backgroundColor: couleurs.ville },
   resultatNom: { flex: 1, fontSize: 17, color: couleurs.encre, fontWeight: "600" },
   resultatDep: { fontSize: 14, color: couleurs.sourd, flexShrink: 1, textAlign: "right" },
-});
+}));

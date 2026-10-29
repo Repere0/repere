@@ -11,8 +11,9 @@
  * Construites avec des View : aucune bibliotheque de graphiques. */
 import { useState, type ReactNode } from "react";
 import { Animated, Pressable, StyleSheet, Text, View } from "react-native";
-import { couleurs, GRIS_VOTE, PAS, RAYON, TEINTES, TYPO, CIBLE, type Echelon } from "../lib/theme";
+import { feuille, couleurs, GRIS_VOTE, PAS, RAYON, TEINTES, TYPO, CIBLE, type Echelon } from "../lib/theme";
 import { useApparition, useCompteur } from "./mouvement";
+import { pointEchelon } from "../lib/niveaux";
 
 const largeur = (v: Animated.Value, pct: number) =>
   v.interpolate({ inputRange: [0, 1], outputRange: ["0%", `${Math.max(0, Math.min(100, pct))}%`] });
@@ -179,7 +180,9 @@ export function Chaine({ niveaux, compact, surNom }: { niveaux: Niveau[]; compac
           accessible={compact}
           accessibilityLabel={compact ? `${n.niveau} : ${n.personne ? n.personne.nom + ", " + n.personne.role : n.institution}` : undefined}>
           <View style={s.jalonAxe}>
-            <View style={[s.maillon, { backgroundColor: couleurs[n.echelon] }]} />
+            {/* Le niveau est ecrit en texte, au-dessus (etiquette) ; le maillon garde son
+                contour s'il est sous 3:1 sur la carte (D17, region en sombre). */}
+            <View style={[s.maillon, pointEchelon(n.echelon)]} />
             {i < niveaux.length - 1 ? <View style={[s.jalonTrait, { backgroundColor: couleurs.trait }]} /> : null}
           </View>
           {/* Palette B : chaque echelon dans sa teinte — c'est ici que la palette
@@ -228,7 +231,7 @@ export function Depli({ titre, children }: { titre: string; children: ReactNode 
   );
 }
 
-const s = StyleSheet.create({
+const s = feuille(() => StyleSheet.create({
   ligneH: { flexDirection: "row", justifyContent: "space-between", alignItems: "baseline", gap: PAS * 2, flexWrap: "wrap" },
   piste: { height: 12, borderRadius: 6, backgroundColor: couleurs.voile, overflow: "hidden" },
   rempli: { height: "100%", borderRadius: 6 },
@@ -247,4 +250,4 @@ const s = StyleSheet.create({
   jalonTrait: { flex: 1, width: 2, backgroundColor: couleurs.trait, marginTop: 2 },
   maillon: { width: 14, height: 14, borderRadius: 7, marginTop: 3 },
   depli: { minHeight: CIBLE, flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
-});
+}));
