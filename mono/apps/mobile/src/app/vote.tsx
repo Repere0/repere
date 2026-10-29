@@ -95,8 +95,9 @@ export default function Vote() {
               { cle: "c", titre: d.nomCommune, texte: "Votre commune.", echelon: "ville" },
               { cle: "ci", titre: `${vote.circo === 1 ? "1re" : vote.circo + "e"} circonscription${depIndex ? " · " + depIndex.nom : ""}`, texte: "Le territoire qui élit un député. Il regroupe plusieurs communes, ou une partie d'une grande ville.", echelon: "france" },
               { cle: "d", titre: vote.qui, texte: "Élu par les électeurs de cette circonscription.", echelon: "france", actif: true },
-              { cle: "an", titre: "Assemblée nationale", texte: "577 députés y votent les lois et le budget de l'État.", echelon: "france" },
+              { cle: "an", titre: "Assemblée nationale", texte: "Au plus 577 députés y votent les lois et le budget de l'État, selon l'article 24 de la Constitution.", echelon: "france" },
             ]} />
+            <PastilleSource source={{ producteur: "Constitution du 4 octobre 1958, article 24", court: "Constitution, art. 24", url: CONSTITUTION_45_URL }} />
           </Carte>
 
           {/* NIVEAU 3 : ou en est le texte */}

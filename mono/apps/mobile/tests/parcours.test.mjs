@@ -92,3 +92,12 @@ test("parcours — le chemin de première utilisation relie accueil, « qui déc
   assert.match(lectureDe("(onglets)/qui-decide.tsx"), /pathname:\s*"\/elu"/, "« qui décide » ne mène pas à la fiche");
   assert.match(lectureDe("elu.tsx"), /D'où viennent ces informations/, "la fiche ne donne pas ses sources");
 });
+
+/* Le nombre de députés est un plafond fixé par la Constitution (article 24),
+   pas un effectif constaté. La carte qui le donne cite cet article (invariant 4). */
+test("parcours — le nombre de députés est donné comme plafond constitutionnel, avec sa source", () => {
+  const s = sansCommentaires(lire(path.join(APP, "vote.tsx")));
+  assert.doesNotMatch(s, /(?<!Au plus )577 députés y votent/, "« 577 députés y votent » affirme un effectif sans source");
+  assert.match(s, /Au plus 577 députés/, "le nombre doit être donné comme plafond");
+  assert.match(s, /article 24 de la Constitution/, "le plafond doit citer l'article 24 de la Constitution");
+});
