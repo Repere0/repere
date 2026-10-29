@@ -50,3 +50,20 @@ test("site et app — répertoire : « ne porte aucune ligne » est remplacé pa
     assert.match(src, /ne contiennent pas de fiche pour cette commune/, `${path.basename(f)} : formulation attendue absente`);
   }
 });
+
+/* Syntaxe JSX des écrans du site : une accolade fermante en trop après une
+   expression devient du TEXTE rendu à l'écran (« )} »). esbuild ne l'arrête pas,
+   il l'émet en avertissement. La garde compile chaque écran avec le même
+   transformateur que Vite et refuse tout texte parasite. Écrit rouge avant
+   correction (Aujourd'hui.jsx, défaut apparu avec le vide du vote). */
+test("site — chaque écran JSX compile sans texte parasite « )} » dans le rendu", async () => {
+  const web = path.join(import.meta.dirname, "..", "apps", "web");
+  const viteDir = fs.realpathSync(path.join(web, "node_modules", "vite"));
+  const vite = await import(new URL("file://" + path.join(viteDir, "dist", "node", "index.js")));
+  const fichiers = [...fs.readdirSync(ROUTES).filter(f => f.endsWith(".jsx")).map(f => path.join(ROUTES, f)),
+    path.join(web, "src", "App.jsx")];
+  for (const f of fichiers) {
+    const r = await vite.transformWithEsbuild(fs.readFileSync(f, "utf8"), path.basename(f), { jsx: "automatic", jsxImportSource: "preact", loader: "jsx" });
+    assert.doesNotMatch(r.code, /"\)\}"|"\}"/, `${path.basename(f)} : texte « )} » rendu à l'écran (accolade en trop)`);
+  }
+});

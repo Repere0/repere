@@ -154,7 +154,6 @@ export default function Aujourdhui({ paquet, index, commune, aller, derniereVisi
             corps="Ni projet financé par l'État, ni vote solennel du député dans les données disponibles."
             lien={{ texte: "Projets financés par l'État — données publiques", url: DGCL_URL }} />
         )}
-      )}
 
       {/* LES QUESTIONS SUIVANTES SONT PLUS DISCRETES — meme structure que la
           premiere aurait repete trois fois le meme motif (chasse au

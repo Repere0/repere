@@ -80,7 +80,6 @@ export default function AujourdhuiJournal({ paquet, index, commune, aller }) {
             corps="Ni projet financé par l'État, ni vote solennel du député dans les données disponibles."
             lien={{ texte: "Projets financés par l'État — données publiques", url: DGCL_URL }} />
         )}
-      )}
 
       {rapportDette ? (
         <Fait echelon="ville" titre={`Votre argent : ${rapportDette.v}`}
