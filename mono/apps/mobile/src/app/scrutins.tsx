@@ -105,13 +105,16 @@ function GroupeRow({ groupe, ouvert, onPress }: { groupe: Groupe; ouvert: boolea
      elle n'est pas comptee. Le meme texte sert a l'ecran et au lecteur d'ecran. */
   const texteStats = [groupe.pour != null ? `${groupe.pour} pour` : null, groupe.contre != null ? `${groupe.contre} contre` : null, groupe.abstentions != null ? `${groupe.abstentions} abst.` : null]
     .filter(Boolean).join(" · ") || "décompte non publié";
+  /* Version lue par un lecteur d'écran : le mot entier, pas l'abréviation. */
+  const texteAccessible = [groupe.pour != null ? `${groupe.pour} pour` : null, groupe.contre != null ? `${groupe.contre} contre` : null, groupe.abstentions != null ? `${groupe.abstentions} abstentions` : null]
+    .filter(Boolean).join(" · ") || "décompte non publié";
   return (
     <View style={s.groupe}>
       <Pressable
         onPress={onPress}
         accessibilityRole="button"
         accessibilityState={{ expanded: ouvert }}
-        accessibilityLabel={`${groupe.nom}, ${texteStats}`}
+        accessibilityLabel={`${groupe.nom}, ${texteAccessible}`}
         style={({ pressed }) => [s.groupeTete, pressed && { opacity: 0.65 }]}
       >
         <View style={[s.groupePoint, { backgroundColor: groupe.couleur }]} />

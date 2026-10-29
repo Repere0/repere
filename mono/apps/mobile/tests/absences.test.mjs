@@ -30,6 +30,18 @@ test("absences — le libellé d'un groupe de scrutin n'additionne pas une posit
   assert.doesNotMatch(corps, /positions publiées/, "le libellé annonce une somme au lieu de ce qui est publié");
 });
 
+/* Le libellé lu par un lecteur d'écran écrit « abstentions », non l'abréviation « abst. ». */
+test("absences — le libellé d'accessibilité d'un groupe écrit « abstentions », non « abst. »", async () => {
+  const fs = await import("node:fs");
+  const path = await import("node:path");
+  const src = fs.readFileSync(path.join(import.meta.dirname, "..", "src", "app", "scrutins.tsx"), "utf8");
+  const debut = src.indexOf("function GroupeRow");
+  const corps = src.slice(debut, src.indexOf("\n}\n", debut));
+  const ligne = (corps.match(/accessibilityLabel=\{[^\n]*\}/) || [""])[0];
+  assert.match(ligne, /texteAccessible/, "le libellé d'accessibilité doit venir d'un texte réservé à la lecture");
+  assert.doesNotMatch(corps.match(/const texteAccessible[\s\S]*?;\n/)?.[0] || "", /abst\./, "le texte lu ne doit pas contenir « abst. »");
+});
+
 /* La date de debut d'un mandat est affichee avec sa source, ou le manque est dit. */
 test("absences — la fiche dit la date de début de mandat avec sa source, ou qu'elle n'est pas publiée", async () => {
   const fs = await import("node:fs");
