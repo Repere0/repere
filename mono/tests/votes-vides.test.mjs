@@ -63,7 +63,7 @@ test("copie — chaque état a son titre ; aucun titre d'un état de données n'
       assert.doesNotMatch(c.titre, /^Aucun/, `${e} : un état de données ne doit pas s'annoncer « Aucun »`);
     }
   }
-  assert.match(copieVoteVide(ETAT_VOTE.POSITION_ABSENTE, { releve: "2026-10-28", portee: "P" }).titre, /^Aucun vote solennel/);
+  assert.match(copieVoteVide(ETAT_VOTE.POSITION_ABSENTE, { releve: "2026-10-28", portee: "P" }).titre, /^Aucune position/);
 });
 
 test("copie — un relevé non lu ou une donnée manquante ne se présente jamais comme une absence", () => {
@@ -82,7 +82,7 @@ test("copie — la position absente dit le périmètre, la date, et qu'un non-vo
   assert.match(c.corps, /Les données ne portent que sur les derniers votes, pas sur toute la législature\./);
   assert.match(c.corps, /Une position non portée n'est pas une absence/);
   const sans = copieVoteVide(ETAT_VOTE.POSITION_ABSENTE, { portee: "" });
-  assert.match(sans.corps, /la source ne l'indique pas/);
+  assert.match(sans.corps, /La source ne précise pas le périmètre de ces données/);
   assert.match(sans.corps, /La date à laquelle ces données ont été récupérées n'est pas connue/);
   assert.doesNotMatch(sans.corps, /undefined|null/);
 });
@@ -145,6 +145,29 @@ test("copie — la circonscription inconnue n'invente aucune cause que la source
   const c = copieVoteVide(ETAT_VOTE.CIRCO_INCONNUE, { nom: "Meaux" });
   assert.doesNotMatch(c.corps, /créée|découpage|après|dernier/, "cause non sourcée");
   assert.match(c.corps, /Repère ne devine pas/);
+});
+
+/* POSITION ABSENTE : le titre dit ce qui a été constaté, pas une absence d'activité.
+   Pour une fiche d'élu (option `elu`), il nomme la personne ; pour une commune, il
+   ne donne jamais le nom de la commune comme nom de député. Sans périmètre
+   explicite, il dit la limite au lieu d'annoncer « aucune position ». Écrit rouge
+   avant correction. */
+test("copie — position absente d'un élu : le titre nomme la personne et le périmètre consulté", () => {
+  const c = copieVoteVide(ETAT_VOTE.POSITION_ABSENTE, { elu: true, nom: "Ada Test", releve: "2026-10-28", portee: "P" });
+  assert.equal(c.titre, "Aucune position de Ada Test n'est enregistrée dans les scrutins consultés.");
+  assert.doesNotMatch(c.titre, /Aucun vote/);
+});
+
+test("copie — position absente au niveau commune : jamais le nom de la commune comme nom de député", () => {
+  const c = copieVoteVide(ETAT_VOTE.POSITION_ABSENTE, { nom: "Meaux", releve: "2026-10-28", portee: "P" });
+  assert.equal(c.titre, "Aucune position de député de cette commune n'est enregistrée dans les scrutins consultés.");
+  assert.doesNotMatch(c.titre, /Meaux/);
+});
+
+test("copie — position absente sans périmètre écrit : la limite est dite, « aucune position » n'est pas annoncé", () => {
+  const c = copieVoteVide(ETAT_VOTE.POSITION_ABSENTE, { elu: true, nom: "Ada Test", releve: "2026-10-28", portee: "" });
+  assert.match(c.titre, /ne peut pas dire quels scrutins ont été consultés/);
+  assert.doesNotMatch(c.titre + c.corps, /Aucune position|Aucun vote/);
 });
 
 /* Lisibilité, par la structure du texte : la position absente porte cinq

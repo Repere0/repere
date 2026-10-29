@@ -65,8 +65,10 @@ export function etatVotePersonne({ fiche, dep, cat, pos, deputes, faits, nom }) 
 /** Le texte affiché pour chaque état. `releve` : date de récupération (ISO) ;
    `portee` : le périmètre écrit par la source (srcScrutins.portee).
    @param {string} etat  un des valeurs de ETAT_VOTE
-   @param {{ nom?: string, releve?: string, portee?: string }} [o] */
-export function copieVoteVide(etat, { nom = "", releve, portee } = {}) {
+   `elu` : vrai quand `nom` est la personne dont on parle (fiche d'élu, partage) ;
+   sans lui, `nom` est celui de la commune et ne sert jamais de nom de député.
+   @param {{ nom?: string, releve?: string, portee?: string, elu?: boolean }} [o] */
+export function copieVoteVide(etat, { nom = "", releve, portee, elu = false } = {}) {
   const lien = { texte: "Les scrutins sur le site de l'Assemblée", url: URL_SCRUTINS_AN };
   switch (etat) {
     case ETAT_VOTE.RELEVE_NON_LU:
@@ -88,9 +90,21 @@ export function copieVoteVide(etat, { nom = "", releve, portee } = {}) {
       return { titre: nom ? `Repère ne retrouve pas ${nom} dans le fichier des députés.` : "Repère ne retrouve pas cet élu dans le fichier des députés.",
         corps: "Ce n'est pas une absence de vote : aucun député de la circonscription ne porte ce nom dans le fichier que Repère lit. Repère ne devine pas.", lien };
     case ETAT_VOTE.POSITION_ABSENTE:
-      return { titre: "Aucun vote solennel trouvé dans les données disponibles.",
+      /* Ce qui est constaté : aucune position enregistrée dans le périmètre consulté.
+         Ce n'est ni une absence d'activité, ni une donnée sur la présence. */
+      if (!portee) {
+        return { titre: "Repère ne peut pas dire quels scrutins ont été consultés pour ce relevé.",
+          corps: [
+            "La source ne précise pas le périmètre de ces données, donc Repère ne peut pas dire si une position manque.",
+            releve ? `Données récupérées le ${dateFr(releve)}.` : "La date à laquelle ces données ont été récupérées n'est pas connue.",
+            POSITION_NON_PORTEE,
+          ].join("\n"),
+          lien };
+      }
+      return { titre: elu && nom ? `Aucune position de ${nom} n'est enregistrée dans les scrutins consultés.`
+          : "Aucune position de député de cette commune n'est enregistrée dans les scrutins consultés.",
         corps: [
-          `Ce que couvrent les données : ${portee || "la source ne l'indique pas"}.`,
+          `Ce que couvrent les données : ${portee}.`,
           "Les données ne portent que sur les derniers votes, pas sur toute la législature.",
           releve ? `Données récupérées le ${dateFr(releve)}.` : "La date à laquelle ces données ont été récupérées n'est pas connue.",
           "Un vote solennel est un scrutin public, généralement sur le vote d'ensemble d'un texte majeur, c'est-à-dire le vote sur le texte entier (fiche « Votes » de l'Assemblée nationale, juillet 2024).",

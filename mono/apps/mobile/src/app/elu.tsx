@@ -84,7 +84,7 @@ export default function Elu() {
         : !r.votesLus ? ETAT_VOTE.RELEVE_NON_LU
         : !r.votesFiables ? ETAT_VOTE.RELEVE_INCOHERENT
         : (r.d as unknown as { etatVotePour: (n: string) => string | null }).etatVotePour(nom);
-      const videVote = etatVote ? copieVoteVide(etatVote, { nom, releve: srcScrutins(r.d)?.releve, portee: r.d.srcScrutins && r.d.srcScrutins.portee }) : null;
+      const videVote = etatVote ? copieVoteVide(etatVote, { nom, elu: true, releve: srcScrutins(r.d)?.releve, portee: r.d.srcScrutins && r.d.srcScrutins.portee }) : null;
       const libelleRole = [p.role, p.lieu].filter(Boolean).join(" · ");
       const partager = () => Share.share({
         message: `${nom}${libelleRole ? `, ${libelleRole}` : ""}.${p.institution ? ` ${p.institution}.` : ""}\nRésumé Repère, à partir des données publiées. Le détail est dans l'application.`,

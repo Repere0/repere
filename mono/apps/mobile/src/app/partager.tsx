@@ -88,7 +88,7 @@ export default function Partager() {
           : france && france.autresCircos ? ETAT_VOTE.CIRCO_PARTAGEE
           : !personne ? ETAT_VOTE.CIRCO_SANS_DEPUTE
           : (d as unknown as { etatVotePour: (n: string) => string | null }).etatVotePour(personne) || ETAT_VOTE.POSITION_ABSENTE;
-        const copie = copieVoteVide(etat, { nom: personne || "", releve: srcScrutins(d)?.releve, portee: d.srcScrutins && d.srcScrutins.portee });
+        const copie = copieVoteVide(etat, { nom: personne || "", elu: !!personne, releve: srcScrutins(d)?.releve, portee: d.srcScrutins && d.srcScrutins.portee });
         return (
           <Page>
             <Stack.Screen options={{ title: "Partager" }} />
