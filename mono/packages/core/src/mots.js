@@ -54,6 +54,15 @@ export const GLOSSAIRE = {
 /* MOTS_ALIAS : au cas ou un texte affiche emploie une variante du mot (au
  * pluriel, ou avec un article) — la cle de recherche dans MOTS reste unique,
  * l'alias n'est qu'une facilite d'appel depuis un composant. */
+/* Une cle n'est un mot que si l'objet la porte EN PROPRE : sans cela, « constructor »
+ * ou « __proto__ » (heritees de tout objet) passeraient pour des definitions. */
+const estMot = (cle) => typeof cle === "string" && Object.prototype.hasOwnProperty.call(GLOSSAIRE, cle);
 export function definition(cle) {
-  return GLOSSAIRE[cle] || null;
+  return estMot(cle) ? GLOSSAIRE[cle] : null;
+}
+/* Le titre a afficher pour un mot tapable, ou null : un mot sans definition n'est
+ * jamais tapable (apps/mobile, Segments). Partage par le site et l'application. */
+export function titreDuMot(cle) {
+  const m = definition(cle);
+  return m ? m.titre : null;
 }

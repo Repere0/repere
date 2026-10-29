@@ -8,13 +8,16 @@
  * LE CANEVAS MONTRE : une recherche, une rangee de lettres (seules celles qui ont
  * un mot), la liste. Une recherche ignore la lettre choisie, comme sur la maquette.
  *
- * ETAT ACTUEL : la table ne compte que trois mots. Les vingt autres du canevas ne
- * sont pas publies : leurs definitions n'ont pas de source verifiee (cadrage du
- * 13/10). Ajouter un mot = ajouter une entree dans mots.js, rien d'autre a faire ici. */
+ * ETAT ACTUEL : la table (packages/core/src/mots.js) porte les mots dont la definition
+ * est verifiee ; le canevas en prevoyait davantage, non publies faute de source
+ * verifiee (cadrage du 13/10). Ajouter un mot = une entree dans mots.js, rien d'autre.
+ *
+ * ENTREE PAR UN MOT (H1, 29/10/2026) : un mot tapable dans une phrase ouvre cet ecran
+ * avec le mot deja cherche (?mot=cle). Une cle inconnue ou heritee est ignoree. */
 import { useMemo, useState } from "react";
 import { Pressable, Text, TextInput, View } from "react-native";
-import { Stack } from "expo-router";
-import { GLOSSAIRE } from "@repere/core";
+import { Stack, useLocalSearchParams } from "expo-router";
+import { GLOSSAIRE, titreDuMot } from "@repere/core";
 import { couleurs, PAS, TYPO } from "../lib/theme";
 import { Page, Question } from "../ui/page";
 
@@ -23,7 +26,9 @@ const normaliser = (s: string) => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toL
 type Entree = { cle: string; titre: string; corps: string; lettre: string };
 
 export default function Dictionnaire() {
-  const [recherche, setRecherche] = useState("");
+  const parametres = useLocalSearchParams<{ mot?: string | string[] }>();
+  const cleMot = Array.isArray(parametres.mot) ? parametres.mot[0] : parametres.mot;
+  const [recherche, setRecherche] = useState(() => titreDuMot(cleMot) || "");
   const [lettre, setLettre] = useState<string | null>(null);
   const toutes = useMemo<Entree[]>(
     () => Object.entries(GLOSSAIRE as Record<string, { titre: string; corps: string }>)
