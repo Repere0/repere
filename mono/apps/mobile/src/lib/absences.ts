@@ -27,29 +27,6 @@ export const projetsAucun = (nom: string, exercices?: string[], publieLe?: strin
     lien: { texte: "Projets financés par l'État — données publiques", url: DGCL_URL },
   };
 };
-export const VOTES_PAS_ARRIVES = {
-  titre: "Les votes de l'Assemblée ne sont pas arrivés jusqu'ici.",
-  corps: "Les fichiers existent, ils n'ont pas pu être chargés. Ce n'est pas une absence de vote.",
-};
-export const circoInconnue = (nom: string) => ({
-  titre: `Repère ne connaît pas la circonscription de ${nom}.`,
-  corps: "La commune est absente de la table du ministère de l'Intérieur, souvent parce qu'elle a été créée après son dernier découpage. Repère ne devine pas.",
-});
-export const SCRUTINS_AN = "https://www.assemblee-nationale.fr/dyn/17/scrutins/";
-/* Le périmètre connu : les scrutins SOLENNELS de la 17e législature, à la date du
-   relevé (scripts/mono_donnees.py, champ portee). La période n'est pas une plage de
-   dates : sans date de relevé, la phrase le dit au lieu de l'inventer. */
-export const voteAucun = (releve?: string, portee?: string) => ({
-  titre: "Aucun vote solennel trouvé dans les données disponibles.",
-  /* Le périmètre est celui que la SOURCE écrit (srcScrutins.portee), pas une supposition. */
-  corps: [
-    `Ce que couvrent les données : ${portee || "la source ne l'indique pas"}.`,
-    "Les données ne portent que sur les derniers votes, pas sur toute la législature.",
-    releve ? `Données récupérées le ${dateFr(releve)}.` : "La date à laquelle ces données ont été récupérées n'est pas connue.",
-    "Un vote solennel est un scrutin public, généralement sur le vote d'ensemble d'un texte majeur, c'est-à-dire le vote sur le texte entier (fiche « Votes » de l'Assemblée nationale, juillet 2024).",
-  ].join(" "),
-  lien: { texte: "Les scrutins sur le site de l'Assemblée", url: SCRUTINS_AN },
-});
 export const AGENDA_PAS_ARRIVE = {
   titre: "Le calendrier n'est arrivé jusqu'à cet appareil pour aucune institution.",
   corps: "Il est republié chaque jour par Repère ; il n'a pas pu être chargé cette fois-ci.",

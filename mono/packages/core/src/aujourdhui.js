@@ -11,6 +11,7 @@
  * remplace par sa version habillee. */
 import { calculerFaits } from "./faits.js";
 import { rapports, dernierExercice } from "./comptes.js";
+import { etatVoteVide } from "./votesVides.js";
 
 /* LA SEMAINE AU PARLEMENT, JOUR PAR JOUR — 07/10/2026 (refonte « Aujourd'hui »).
    Sept jours a partir d'aujourd'hui (heure de Paris, comme l'agenda), et pour
@@ -88,6 +89,8 @@ export function deriverAujourdhui({ fiche, commune, dep, index, projets, cat, po
   const faits = calculerFaits({ dep, fiche, projets, commune, cat, pos, deputes, evenements });
   const base = (cat && cat.url_scrutin) || "";
   const dernierVote = faits.find(f => f.type === "vote" && f.position);
+  /* Pas de vote affiché : la cause du vide (relevé non lu, circonscription, position absente). */
+  const etatVote = dernierVote ? null : etatVoteVide({ fiche, dep, cat, pos, deputes });
   const dernierFait = faits[0];
 
   const agregats = (index && index.agregats) || [];
@@ -156,7 +159,7 @@ export function deriverAujourdhui({ fiche, commune, dep, index, projets, cat, po
   const dernierProjet = faits.find(f => f.type === "projet");
 
   return {
-    pret: true, fiche, nomCommune, dep, base, faits, nbCircos, nomDep, dernierProjet,
+    pret: true, fiche, nomCommune, dep, base, faits, nbCircos, nomDep, dernierProjet, etatVote,
     dernierVote, dernierFait, exercice, rapportsComptes: rr, rapportDette,
     semaineParlement: semaineParlement({ cal, agendaAN, maintenant: now }),
     /* tous les rendez-vous a venir, fusionnes et tries : le calendrier mobile les

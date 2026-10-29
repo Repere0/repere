@@ -54,12 +54,11 @@ test("absences — la fiche dit la date de début de mandat avec sa source, ou q
 });
 
 /* « Vote solennel » est un terme institutionnel : il est expliqué au point où il
-   apparaît (chez-vous n'affiche que le titre de VOTE_AUCUN). Définition reprise
-   de scripts/scrutins-solennels.mjs : l'adoption ou le rejet formel d'un texte entier. */
+   apparaît. Le texte du vide vit dans @repere/core (votesVides.js), partagé avec le site. */
 test("absences — « vote solennel » est expliqué là où le mot apparaît", async () => {
   const fs = await import("node:fs");
   const path = await import("node:path");
-  const src = fs.readFileSync(path.join(import.meta.dirname, "..", "src", "lib", "absences.ts"), "utf8");
-  const bloc = src.slice(src.indexOf("export const voteAucun"), src.indexOf("export const AGENDA_PAS_ARRIVE"));
-  assert.match(bloc, /vote d'ensemble d'un texte majeur/, "« vote solennel » doit être défini dans le titre, affiché sur chez-vous comme sur la fiche du vote");
+  const src = fs.readFileSync(path.join(import.meta.dirname, "..", "..", "..", "packages", "core", "src", "votesVides.js"), "utf8");
+  const bloc = src.slice(src.indexOf("default:"));
+  assert.match(bloc, /vote d'ensemble d'un texte majeur/, "« vote solennel » doit être défini dans le texte du vide");
 });

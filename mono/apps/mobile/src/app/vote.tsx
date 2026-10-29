@@ -15,10 +15,9 @@ import { Pressable } from "react-native";
 import {
   CONSTITUTION_45_URL, dateFr, ETAPES_LOI, etapeDuScrutin, ligneScrutin, motPosition,
   phraseCirconscription, phraseDenominateurVote, phrasePosition, POSITION_NON_PORTEE, procedure,
-  repartitionVote, REFUS_APPARIEMENT, titreLisible, MOTS, chaineDecision,
+  repartitionVote, titreLisible, MOTS, chaineDecision, copieVoteVide, ETAT_VOTE,
 } from "@repere/core";
 import { Carte, Segments, Vide } from "../lib/composants";
-import { circoInconnue, voteAucun, VOTES_PAS_ARRIVES } from "../lib/absences";
 import { srcScrutins, srcVote } from "../lib/sources";
 import { useCommuneChoisie } from "../lib/useCommune";
 import { couleurs, PAS, TYPO, CIBLE } from "../lib/theme";
@@ -35,10 +34,10 @@ export default function Vote() {
       const { d } = r;
       const vote: FaitVote | undefined = d.dernierVote;
       const entete = <Question emoji="🗳️" etiquette="Votre député" question="Qu'a voté votre député ?" />;
-      if (!r.votesLus) return <Page>{entete}<Vide {...VOTES_PAS_ARRIVES} action="Réessayer" onAction={reessayer} /></Page>;
-      if (!r.votesFiables) return <Page>{entete}<Vide titre={REFUS_APPARIEMENT.titre} corps={REFUS_APPARIEMENT.corps} /></Page>;
-      const aucun = voteAucun(srcScrutins(d)?.releve, d.srcScrutins && d.srcScrutins.portee);
-      if (!vote) return <Page>{entete}<Vide {...(d.nbCircos === 0 ? circoInconnue(d.nomCommune) : { ...aucun, corps: `${aucun.corps} ${POSITION_NON_PORTEE}` })} /></Page>;
+      if (!r.votesLus) return <Page>{entete}<Vide {...copieVoteVide(ETAT_VOTE.RELEVE_NON_LU)} action="Réessayer" onAction={reessayer} /></Page>;
+      if (!r.votesFiables) return <Page>{entete}<Vide {...copieVoteVide(ETAT_VOTE.RELEVE_INCOHERENT)} /></Page>;
+      /* Un seul endroit décide du texte du vide : @repere/core (votesVides.js). */
+      if (!vote) return <Page>{entete}<Vide {...copieVoteVide(d.etatVote, { nom: d.nomCommune, releve: srcScrutins(d)?.releve, portee: d.srcScrutins && d.srcScrutins.portee })} /></Page>;
 
       const rep = repartitionVote(vote.sc);
       const mot = (MOTS as Record<string, string>)[vote.position || ""];
