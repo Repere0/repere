@@ -18,12 +18,13 @@ import { Animated, Pressable, Share, Text, View, useWindowDimensions } from "rea
 import { Stack } from "expo-router";
 import * as Sharing from "expo-sharing";
 import { captureRef } from "react-native-view-shot";
-import { chaineDecision, dateFr, etapeDuScrutin, ETAPES_LOI, jourParis, procedure, titreLisible } from "@repere/core";
+import { chaineDecision, copieVoteVide, dateFr, etapeDuScrutin, ETAPES_LOI, ETAT_VOTE, jourParis, procedure, titreLisible } from "@repere/core";
 import { couleurs, CIBLE, PAS, PALETTE_CLAIRE } from "../lib/theme";
 
 /* Les cartes sont des images partagées hors de l'application : elles restent claires, quel que soit le thème du téléphone. */
 const cl: Record<string, string> = PALETTE_CLAIRE;
-import { srcVote } from "../lib/sources";
+import { srcScrutins, srcVote } from "../lib/sources";
+import { Vide } from "../lib/composants";
 import { AvecDonnees, Page, Question } from "../ui/page";
 import { useApparition } from "../ui/mouvement";
 
@@ -73,18 +74,31 @@ export default function Partager() {
   return (
     <AvecDonnees rendu={r => {
       const { d } = r;
-      const vote = d.dernierVote as Vote | undefined;
+      /* LE VOTE DE LA PERSONNE NOMMÉE, jamais le dernier vote de la commune. Sans
+         personne identifiée, aucun vote n'est partagé : on le dit (core/votesVides.js). */
+      const niveaux = chaineDecision({ fiche: d.fiche, paquet: r.paquet, index: r.index, deputes: r.deputes, elusRegion: r.elusRegion, dep: d.dep }) as { echelon: string; personne?: { nom: string } | null; autresCircos?: number }[];
+      const france = niveaux.find(n => n.echelon === "france");
+      const personne = france?.personne?.nom;
+      const nom = personne || "Votre député";
+      const vote = (d.faits as (Vote & { type: string; qui: string })[]).find(f => f.type === "vote" && !!f.position && f.qui === personne) as Vote | undefined;
       if (!vote || !vote.position || !VERBE[vote.position]) {
+        /* Le repli : la règle partagée décide du texte selon l'état réel des données. */
+        /* Un vote existe mais sa position n'a pas de libellé : ce n'est pas une absence. */
+        const etat = vote ? ETAT_VOTE.DONNEE_ILLISIBLE
+          : !r.votesLus ? ETAT_VOTE.RELEVE_NON_LU
+          : !r.votesFiables ? ETAT_VOTE.RELEVE_INCOHERENT
+          : france && france.autresCircos ? ETAT_VOTE.CIRCO_PARTAGEE
+          : !personne ? ETAT_VOTE.CIRCO_SANS_DEPUTE
+          : (d as unknown as { etatVotePour: (n: string) => string | null }).etatVotePour(personne) || ETAT_VOTE.POSITION_ABSENTE;
+        const copie = copieVoteVide(etat, { nom: personne || "", elu: !!personne, releve: srcScrutins(d)?.releve, portee: d.srcScrutins && d.srcScrutins.portee });
         return (
           <Page>
             <Stack.Screen options={{ title: "Partager" }} />
-            <Question etiquette="Partager" question="Rien à partager pour l'instant"
-              sous="Repère n'a pas de vote publié à partager pour votre député. Le partage n'invente rien." />
+            <Question etiquette="Partager" question="Rien à partager pour l'instant" />
+            <Vide {...copie} />
           </Page>
         );
       }
-      const niveaux = chaineDecision({ fiche: d.fiche, paquet: r.paquet, index: r.index, deputes: r.deputes, elusRegion: r.elusRegion, dep: d.dep }) as { echelon: string; personne?: { nom: string } | null }[];
-      const nom = niveaux.find(n => n.echelon === "france")?.personne?.nom || "Votre député";
       const verbe = VERBE[vote.position];
       const sujet = titreLisible(vote.sc.t);
       const date = dateFr(vote.sc.d);

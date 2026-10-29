@@ -6,9 +6,9 @@
  * du lecteur (COMPETENCES, @repere/core — les memes phrases que le site).
  * Un niveau sans personne nommee par la source garde sa place et le dit.
  * L'ordre est un ordre de distance, pas d'importance : c'est ecrit. */
-import { Pressable, Text, View } from "react-native";
+import { Linking, Pressable, Text, View } from "react-native";
 import { router, Stack } from "expo-router";
-import { chaineDecision, dateFr, MAIRE_ABSENT, phraseAdjoints, RNE_URL, LIBELLES } from "@repere/core";
+import { chaineDecision, dateFr, listeFr, MAIRE_ABSENT, ordinal, phraseAdjoints, RNE_URL, LIBELLES } from "@repere/core";
 import { sansConseilDepartemental } from "@repere/core";
 import { Definitions, Segments } from "../../lib/composants";
 import { REGION_PAS_ARRIVEE } from "../../lib/absences";
@@ -24,7 +24,7 @@ export default function QuiDecide() {
     <AvecDonnees rendu={r => {
       const { d } = r;
       const f = d.fiche;
-      const brut = chaineDecision({ fiche: f, paquet: r.paquet, index: r.index, deputes: r.deputes, elusRegion: r.elusRegion, dep: d.dep }) as (Niveau & { delegues?: number; autresCircos?: number })[];
+      const brut = chaineDecision({ fiche: f, paquet: r.paquet, index: r.index, deputes: r.deputes, elusRegion: r.elusRegion, dep: d.dep }) as (Niveau & { delegues?: number; autresCircos?: number; personnes?: { nom: string; circo: number }[] })[];
       const niveaux: Niveau[] = brut.map(n => {
         if (n.echelon === "ville") {
           return { ...n, pied: n.personne
@@ -55,7 +55,10 @@ export default function QuiDecide() {
           return { ...n, pied: <Definitions s={[{ t: "conseil départemental", mot: "conseil départemental" }]} />, note: sans ? `${sans.titre} ${sans.corps}` : "Le Répertoire national des élus ne porte pas de conseil départemental pour ce territoire." };
         }
         if (n.echelon === "france") {
-          return { ...n, note: n.autresCircos ? `${d.nomCommune} est partagée entre plusieurs circonscriptions : un seul député est nommé ici.` : undefined,
+          /* Commune partagée : aucun député n'est désigné (invariant 3). On liste ceux
+             que le fichier des députés porte, sans en choisir un. */
+          const liste = n.personnes || [];
+          return { ...n, note: n.autresCircos ? `${d.nomCommune} est partagée entre plusieurs circonscriptions. Repère ne peut pas dire lequel de ces députés est le vôtre sans votre adresse, que Repère ne demande pas. Dans le fichier des députés : ${listeFr(liste.map(p => `${p.nom} (${ordinal(p.circo)} circonscription)`))}.` : undefined,
             pied: n.personne && r.votesLus ? (
               /* Le vote affiche est le plus recent depuis le 07/10/2026 (ordreDesFaits,
                  @repere/core : date, puis numero de scrutin). On dit quand meme sa
@@ -85,8 +88,18 @@ export default function QuiDecide() {
               style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", opacity: pressed ? 0.6 : 1, gap: PAS })}>
               <Text style={TYPO.etiquette}>L'État · préfet de la région</Text>
               <Text style={[TYPO.reponse, { color: couleurs.lien, textDecorationLine: "underline" }]}>{prefet.nom}</Text>
-              <Text style={TYPO.note}>{prefet.titre}, selon la page de la préfecture. Ce n'est pas le préfet de votre département : leur liste n'est pas encore publiée ici.</Text>
             </Pressable>
+          ) : null}
+          {prefet ? (
+            <View style={{ gap: PAS }}>
+              <Text style={TYPO.note}>{prefet.titre}. Ce n'est pas le préfet de votre département : leur liste n'est pas encore publiée ici.</Text>
+              <Text style={TYPO.note}>Source : page de la préfecture de région. Dernier contrôle réussi du titre de la page : {prefet.titreControleLe}. La date de nomination n'est pas contrôlée.</Text>
+              <Pressable onPress={() => Linking.openURL(prefet.url)} accessibilityRole="link"
+                accessibilityLabel="Voir la page de la préfecture de région (site officiel)"
+                style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", opacity: pressed ? 0.6 : 1 })}>
+                <Text style={[TYPO.corps, { color: couleurs.lien, fontWeight: "600" }]}>Page de la préfecture de région ↗</Text>
+              </Pressable>
+            </View>
           ) : null}
         </Page>
       );

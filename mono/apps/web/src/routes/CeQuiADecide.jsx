@@ -5,7 +5,7 @@ import {
 } from "@repere/data-utils";
 import { LigneVote } from "../lib/votes.jsx";
 import { calculerFaits, noteRattachement } from "../lib/faits.js";
-import { montantEngage, de } from "@repere/core";
+import { montantEngage, de, etatVoteVide, copieVoteVide } from "@repere/core";
 
 const DGCL_URL = "https://www.data.gouv.fr/datasets/projets-finances-par-les-dotations-"
   + "de-soutien-a-linvestissement-des-collectivites-territoriales";
@@ -274,17 +274,14 @@ export default function CeQuiADecide({ paquet, index, commune }) {
             silence plutot qu'affirmation fausse, mais la doctrine du vide
             demande une phrase pour CHAQUE absence, pas seulement celles qui
             auraient pu devenir une fausse affirmation. */}
-        {!nbVotes ? (
-          etatScrutins === ETATS.SERVI ? (
-            <Vide titre={`Le relevé des scrutins ne porte aucune position pour le député de ${nomCommune}.`}
-              corps="Les projets financés affichés ci-dessus ne dépendent pas de ce fichier."
-              lien={{ texte: "Votes de l'Assemblée nationale — données publiques", url: AN_VOTES_URL }} />
-          ) : (
-            <Vide titre="Repère n'a pas réussi à obtenir le relevé des scrutins pour ce département."
-              corps="Ce n'est pas une information sur ce que votre député a ou n'a pas voté : c'est notre chaîne de collecte qui n'a pas ce fichier pour ce département. Les projets affichés ci-dessus ne dépendent pas de ce fichier."
-              lien={{ texte: "Votes de l'Assemblée nationale — données publiques", url: AN_VOTES_URL }} />
-          )
-        ) : null}
+        {!nbVotes ? (() => {
+          /* MÊME RÈGLE QUE L'APPLICATION (core/votesVides.js) : relevé non lu, relevé
+             non apparié, circonscription ou député inconnus, ou position absente.
+             Un relevé non apparié ne se lit jamais comme « aucune position ». */
+          const etat = etatVoteVide({ fiche, dep, cat, pos, deputes });
+          const c = copieVoteVide(etat, { nom: nomCommune, releve: cat && cat.source && cat.source.releve_le, portee: cat && cat.source && cat.source.portee });
+          return <Vide titre={c.titre} corps={c.corps} lien={c.lien} />;
+        })() : null}
 
         {/* TROISIEME TROU SYMETRIQUE — BLOCKER #3, MISSION DU 22/09/2026. Meme
             doctrine que les deux ci-dessus : une absence se dit, et elle dit

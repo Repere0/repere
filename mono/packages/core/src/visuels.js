@@ -250,6 +250,7 @@ export function chaineDecision({ fiche, paquet, index, deputes, elusRegion, dep 
   const dd = deputes && deputes.deputes ? circos.map(c => ({ circo: c, d: deputes.deputes[dep + "-" + c] })) : [];
   const ed = elusDepartement(paquet, fiche);
   const region = elusRegion && Array.isArray(elusRegion.elus) && elusRegion.elus.length ? elusRegion.elus[0] : null;
+  const tousDeputes = dd.filter(x => x.d).map(x => ({ nom: [x.d.prenom, x.d.nom].filter(Boolean).join(" "), role: "À l'Assemblée nationale pour votre circonscription", debut: x.d.dateDebut || null, circo: x.circo }));
   return [
     { echelon: "ville", niveau: "Commune", institution: "Conseil municipal", lieu: fiche.nom,
       personne: fiche.maire && fiche.maire.nom ? { nom: fiche.maire.nom, role: "Maire" } : null,
@@ -270,7 +271,11 @@ export function chaineDecision({ fiche, paquet, index, deputes, elusRegion, dep 
       decide: COMPETENCES.region },
     { echelon: "france", niveau: "Assemblée nationale", institution: "Assemblée nationale",
       lieu: circos.length ? circos.map(c => `${c === 1 ? "1re" : c + "e"} circonscription`).join(", ") : null,
-      personne: dd.length && dd[0].d ? { nom: [dd[0].d.prenom, dd[0].d.nom].filter(Boolean).join(" "), role: "À l'Assemblée nationale pour votre circonscription", debut: dd[0].d.dateDebut || null } : null,
+      /* Une commune a une seule circonscription : son député est « le » député.
+         Une commune partagée n'en désigne aucun (invariant 3) : la liste est
+         donnée (`personnes`), et l'écran la présente sans choisir. */
+      personne: dd.length === 1 && tousDeputes[0] ? tousDeputes[0] : null,
+      personnes: tousDeputes,
       autresCircos: dd.length > 1 ? dd.length - 1 : 0,
       decide: COMPETENCES.france },
   ];

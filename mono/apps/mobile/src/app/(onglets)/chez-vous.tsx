@@ -30,16 +30,16 @@ import { router, Stack } from "expo-router";
 import {
   dateFr, datePublication, decompte, euros, financementProjet, montantCourt, ordinal, parHabitant, phrasePosition,
   repartitionVote, texteDe,
-  titreLisible, REFUS_APPARIEMENT, LIBELLES,
+  titreLisible, LIBELLES, copieVoteVide, ETAT_VOTE,
 } from "@repere/core";
 import { Vide } from "../../lib/composants";
 import { CarteMemoire } from "../../cartes/CarteMemoire";
 import { useSelection } from "../../lib/selection";
 import { useCommuneChoisie } from "../../lib/useCommune";
 import {
-  PROJETS_PAS_ARRIVES, projetsAucun, VOTES_PAS_ARRIVES, circoInconnue, VOTE_AUCUN,
+  PROJETS_PAS_ARRIVES, projetsAucun,
 } from "../../lib/absences";
-import { srcComptesPublies, srcElus, srcProjets, srcVote } from "../../lib/sources";
+import { srcComptesPublies, srcElus, srcProjets, srcScrutins, srcVote } from "../../lib/sources";
 import { PAS, TYPO } from "../../lib/theme";
 import { AvecDonnees, Page } from "../../ui/page";
 import { PastilleSource } from "../../ui/source";
@@ -104,7 +104,7 @@ export default function ChezVous() {
               }}
               suite={{ texte: nbProjets > 1 ? `${nbProjets} projets aidés` : "Le projet", onPress: () => router.push("/argent") }} />
           ) : (
-            <Reponse echelon="ville" phrase={projetsAucun(nom).titre} note={projetsAucun(nom).corps}
+            <Reponse echelon="ville" phrase={projetsAucun(nom, d.srcProjets && d.srcProjets.exercices, d.srcProjets && d.srcProjets.mis_a_jour_le).titre} note={projetsAucun(nom, d.srcProjets && d.srcProjets.exercices, d.srcProjets && d.srcProjets.mis_a_jour_le).corps}
               sources={<PastilleSource court source={srcProjets(d)} />} />
           )}
 
@@ -134,15 +134,15 @@ export default function ChezVous() {
           {/* 3. A L'ASSEMBLEE NATIONALE — une position, jamais une presence ; une
              date, jamais « dernier » ; plusieurs circonscriptions, jamais UN depute. */}
           {!r.votesLus ? (
-            <Vide {...VOTES_PAS_ARRIVES} action="Réessayer" onAction={reessayer} />
+            <Vide {...copieVoteVide(ETAT_VOTE.RELEVE_NON_LU)} action="Réessayer" onAction={reessayer} />
           ) : !r.votesFiables ? (
-            <Vide titre={REFUS_APPARIEMENT.titre} corps={REFUS_APPARIEMENT.corps} />
-          ) : vote && rep ? (
+            <Vide {...copieVoteVide(ETAT_VOTE.RELEVE_INCOHERENT)} />
+          ) : vote ? (
             <Reponse echelon="france"
               phrase={d.nbCircos > 1
                 ? `${nom} est partagée entre ${d.nbCircos} circonscriptions. Votre député dépend de votre adresse.`
                 : `Votre commune est dans la ${ordinal(vote.circo)} circonscription. Le ${dateFr(vote.sc.d)}, ${texteDe(phrasePosition(vote.position, vote.qui))}`}
-              preuve={<Repartition compact segments={rep.segments} total={rep.total} position={vote.position} qui={vote.qui} />}
+              preuve={rep ? <Repartition compact segments={rep.segments} total={rep.total} position={vote.position} qui={vote.qui} /> : null}
               note={d.nbCircos > 1
                 ? `Une circonscription est une partie du territoire dont les électeurs élisent un député. Par exemple, dans la ${ordinal(vote.circo)}, le ${dateFr(vote.sc.d)}, ${texteDe(phrasePosition(vote.position, vote.qui)).replace(/\.$/, "")} (texte ${vote.sc.s}).`
                 /* DEUX LIGNES AU PLUS SUR L'ACCUEIL — 07/10/2026. Le vote affiche est
@@ -161,10 +161,8 @@ export default function ChezVous() {
                 sourceUrl: srcVote(d, vote.sc)?.url,
               }}
               suite={{ texte: "Comprendre ce vote", onPress: () => router.push("/vote") }} />
-          ) : d.nbCircos === 0 ? (
-            <Vide {...circoInconnue(nom)} />
           ) : (
-            <Vide {...VOTE_AUCUN} />
+            <Vide {...copieVoteVide(d.etatVote, { nom, releve: srcScrutins(d)?.releve, portee: d.srcScrutins && d.srcScrutins.portee })} />
           )}
           </View>
 

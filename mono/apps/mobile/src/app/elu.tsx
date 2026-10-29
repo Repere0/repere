@@ -18,9 +18,9 @@
 import { useState } from "react";
 import { Animated, Pressable, Share, Text, View } from "react-native";
 import { router, Stack, useLocalSearchParams } from "expo-router";
-import { chaineDecision, dateFr, debutDeMandat, LIBELLES, titreLisible } from "@repere/core";
-import { Carte } from "../lib/composants";
-import { srcElus } from "../lib/sources";
+import { chaineDecision, copieVoteVide, dateFr, debutDeMandat, ETAT_VOTE, LIBELLES, titreLisible } from "@repere/core";
+import { Carte, Vide } from "../lib/composants";
+import { srcElus, srcScrutins } from "../lib/sources";
 import { couleurs, CIBLE, PAS, TYPO, type Echelon } from "../lib/theme";
 import { AvecDonnees, Page, Question } from "../ui/page";
 import { PastilleSource } from "../ui/source";
@@ -75,7 +75,16 @@ export default function Elu() {
       /* Date de debut du mandat : montree seulement avec la date de relevé de sa source (core). */
       const debutMandat = debutDeMandat(niveau, r.deputes && r.deputes.source);
       const depute = echelon === "france";
-      const vote = depute ? r.d.dernierVote as { sc: { t: string; d: string }; position?: string } | undefined : undefined;
+      /* LE VOTE DE CET ÉLU, PAS CELUI DE LA COMMUNE : filtré sur son nom. Si le
+         vote manque, l'état vient de la règle partagée (core/votesVides.js) ; il ne
+         dit jamais « aucun vote » pour un relevé non lu ou non apparié. */
+      type FaitElu = { type: string; position?: string; qui: string; sc: { t: string; d: string } };
+      const vote = depute ? (r.d.faits as FaitElu[]).find(f => f.type === "vote" && !!f.position && f.qui === nom) : undefined;
+      const etatVote = !depute || vote ? null
+        : !r.votesLus ? ETAT_VOTE.RELEVE_NON_LU
+        : !r.votesFiables ? ETAT_VOTE.RELEVE_INCOHERENT
+        : (r.d as unknown as { etatVotePour: (n: string) => string | null }).etatVotePour(nom);
+      const videVote = etatVote ? copieVoteVide(etatVote, { nom, elu: true, releve: srcScrutins(r.d)?.releve, portee: r.d.srcScrutins && r.d.srcScrutins.portee }) : null;
       const libelleRole = [p.role, p.lieu].filter(Boolean).join(" · ");
       const partager = () => Share.share({
         message: `${nom}${libelleRole ? `, ${libelleRole}` : ""}.${p.institution ? ` ${p.institution}.` : ""}\nRésumé Repère, à partir des données publiées. Le détail est dans l'application.`,
@@ -141,9 +150,9 @@ export default function Elu() {
                       <Text style={[TYPO.corps, { fontWeight: "700" }]}>{titreLisible(vote.sc.t)}</Text>
                       <Text style={[TYPO.corps, { fontWeight: "800" }]}>{POSITION[vote.position]}</Text>
                     </View>
-                  ) : (
-                    <Text style={TYPO.note}>Aucun vote publié à montrer pour l'instant.</Text>
-                  )}
+                  ) : videVote ? (
+                    <Vide {...videVote} />
+                  ) : null}
                   <Pressable onPress={() => router.push("/vote")} accessibilityRole="button"
                     accessibilityLabel={`Voir tous les votes de ${nom}`}
                     style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", opacity: pressed ? 0.6 : 1 })}>
