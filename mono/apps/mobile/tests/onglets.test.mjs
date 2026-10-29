@@ -49,3 +49,13 @@ test("onglets a 200 % — chaque onglet passe par l'etiquette a deux lignes", ()
   const n = (src.match(/tabBarLabel: etiquette\(LIBELLES\.\w+\)/g) || []).length;
   assert.equal(n, 3, `trois onglets attendus avec etiquette(), trouve ${n}`);
 });
+
+/* D22, arbitrage : plafond de 1,2 sur les seuls libelles d'onglet (Android). Le test
+   fige la valeur : elle ne bouge pas sans une decision ecrite. Le plafond doit etre
+   applique aux libelles, pas a tout le texte. */
+test("onglets a 200 % — plafond de 1,2 sur les seuls libelles d'onglet (arbitrage D22)", () => {
+  const src = lire("src/app/(onglets)/_layout.tsx");
+  assert.match(src, /export const TAILLE_MAX_LIBELLE_ONGLET = 1\.2;/, "la valeur du plafond a change : relire l'arbitrage D22");
+  assert.match(src, /maxFontSizeMultiplier=\{TAILLE_MAX_LIBELLE_ONGLET\}/, "le plafond doit s'appliquer au libelle d'onglet");
+  assert.ok(!/maxFontSizeMultiplier/.test(lire("src/app/(onglets)/chez-vous.tsx")), "aucun plafond ailleurs que sur la barre basse");
+});

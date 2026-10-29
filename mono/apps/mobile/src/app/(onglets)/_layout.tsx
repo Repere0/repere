@@ -26,8 +26,17 @@ const icone = (glyphe: string) => ({ color }: { color: ColorValue }) => (
  * barre basse ne grossit pas, le « Large Content Viewer » la remplace) : on la
  * garde telle quelle. Sur Android, le libelle suit la taille choisie par le
  * lecteur, sans plafond, et la barre n'a plus de hauteur figee (voir tabBarStyle). */
+/* ARBITRAGE (D22, 29/10/2026) : sur Android, le libelle d'onglet ne grossit pas au-dela
+ * de 1,2 fois sa taille. A 13 px, « Aujourd'hui » mesure 75 px ; une colonne d'onglet
+ * d'un ecran de 360 px en laisse environ 96 px utiles. A 1,2 : 90 px. Au-dela, le mot
+ * ne tient plus et Android le coupe. Le reste de l'ecran suit la taille choisie,
+ * sans plafond. Mesure navigateur, pas appareil : a valider sur Android. Pour
+ * lever ce plafond, changer cette seule constante (et sa garde dans onglets.test.mjs). */
+export const TAILLE_MAX_LIBELLE_ONGLET = 1.2;
+
 const etiquette = (texte: string) => ({ color }: { color: ColorValue }) => (
-  <Text numberOfLines={2} allowFontScaling={Platform.OS !== "ios"} style={{ color, fontSize: 13, fontWeight: "700", textAlign: "center" }}>{texte}</Text>
+  <Text numberOfLines={2} allowFontScaling={Platform.OS !== "ios"} maxFontSizeMultiplier={TAILLE_MAX_LIBELLE_ONGLET}
+    style={{ color, fontSize: 13, fontWeight: "700", textAlign: "center" }}>{texte}</Text>
 );
 
 export default function Onglets() {
