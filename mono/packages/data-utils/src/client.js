@@ -309,6 +309,22 @@ export const PHRASES_FRAICHEUR = Object.freeze({
     action: "Mettre à jour",
   },
 });
+/* LA DATE DE LA PUBLICATION AFFICHEE (29/10/2026). « Publication précédente »
+   ne dit ni laquelle, ni depuis quand : le lecteur doit savoir la date de ce
+   qu'il voit. Même formulation sur le site et sur l'application. */
+const MOIS_FR = ["janvier", "février", "mars", "avril", "mai", "juin", "juillet", "août", "septembre", "octobre", "novembre", "décembre"];
+function jourPublication(generation) {
+  const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(generation || ""));
+  if (!m) return null;
+  return Number(m[3]) + " " + MOIS_FR[Number(m[2]) - 1] + " " + m[1];
+}
+export function phraseFraicheur(e) {
+  const base = e.nouvelle ? PHRASES_FRAICHEUR.nouvelle : PHRASES_FRAICHEUR[e.etat];
+  if (!base) return null;
+  const jour = jourPublication(e.generation);
+  if (!jour) return base;
+  return { ...base, corps: base.corps + " Publication du " + jour + "." };
+}
 let indexVerifie = null;                 /* null : pas encore de reponse */
 let nouvelleParue = false;
 const clesPrecedentes = new Set();

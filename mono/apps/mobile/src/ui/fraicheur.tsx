@@ -12,7 +12,7 @@
 import { useEffect, useState } from "react";
 import { AppState, Pressable, StyleSheet, Text, View } from "react-native";
 import {
-  etatFraicheur, surFraicheur, verifierPublication, publicationPriseEnCompte, FRAICHEUR, PHRASES_FRAICHEUR,
+  etatFraicheur, surFraicheur, verifierPublication, publicationPriseEnCompte, phraseFraicheur, FRAICHEUR,
 } from "../lib/donnees";
 import { useCommuneChoisie } from "../lib/useCommune";
 import { feuille, CIBLE, couleurs, PAS, RAYON, TYPO } from "../lib/theme";
@@ -26,7 +26,9 @@ export function BandeauFraicheur() {
     return () => { desabonner(); abo.remove(); };
   }, []);
   if (e.etat !== FRAICHEUR.PRECEDENTE && e.etat !== FRAICHEUR.INCONNUE) return null;
-  const p: { titre: string; corps: string; action?: string } = e.nouvelle ? PHRASES_FRAICHEUR.nouvelle : PHRASES_FRAICHEUR[e.etat];
+  /* La phrase porte la date de la publication affichee (phraseFraicheur, partagee avec le site). */
+  const p = phraseFraicheur(e);
+  if (!p) return null;
   return (
     <View style={s.bandeau} testID="fraicheur" accessibilityRole="summary">
       <Text style={[TYPO.note, { color: couleurs.encre, fontWeight: "700" }]}>{p.titre}</Text>

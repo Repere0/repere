@@ -19,6 +19,7 @@ import {
   FRAICHEUR, PHRASES_FRAICHEUR, etatFraicheur, surFraicheur, verifierPublication, publicationPriseEnCompte,
 } from "../packages/data-utils/src/client.js";
 import { magasin, configurerStockage } from "../packages/data-utils/src/store.js";
+import * as clientDonnees from "../packages/data-utils/src/client.js";
 
 /* Un faux disque : ce qui survit a une reouverture de l'application. */
 const disque = new Map();
@@ -232,4 +233,22 @@ test("fraicheur — trois phrases distinctes, les memes pour le site et l'applic
   assert.ok(t.every(Boolean));
   assert.equal(new Set(t).size, 3);
   assert.ok(!/à jour\./.test(PHRASES_FRAICHEUR[FRAICHEUR.INCONNUE].titre), "l'etat inconnu ne pretend pas que c'est a jour");
+});
+
+/* DATE DE LA DONNEE AFFICHEE — 29/10/2026. Une donnee gardee sur l'appareil dit
+   de quelle publication elle date, pour que le lecteur sache quand elle a ete
+   publiee. Sans cette date, « publication precedente » ne dit ni laquelle ni depuis quand. */
+test("fraicheur — la phrase dit la date de la publication affichee (PRECEDENTE et INCONNUE)", async () => {
+  await toutEffacer();
+  reponses = { "/data/index.json": index("2026-09-30T05:00:00Z"), "/data/departments/77.json": dep("A") };
+  await chargerDepartement("77");
+  ouvrirApplication();
+  reponses = {};
+  await chargerDepartement("77");
+  const e = etatFraicheur();
+  assert.equal(e.etat, FRAICHEUR.INCONNUE);
+  assert.equal(typeof clientDonnees.phraseFraicheur, "function", "phraseFraicheur doit exister : la phrase et sa date viennent du paquet partage");
+  const p = clientDonnees.phraseFraicheur(e);
+  assert.ok(p.corps.includes("30 septembre 2026"), "la date de la publication affichee manque : " + p.corps);
+  assert.ok(!/undefined|null/.test(p.corps + p.titre), "phrase invalide : " + JSON.stringify(p));
 });
