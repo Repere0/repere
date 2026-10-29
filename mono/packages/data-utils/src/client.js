@@ -316,7 +316,11 @@ const MOIS_FR = ["janvier", "février", "mars", "avril", "mai", "juin", "juillet
 function jourPublication(generation) {
   const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(generation || ""));
   if (!m) return null;
-  return Number(m[3]) + " " + MOIS_FR[Number(m[2]) - 1] + " " + m[1];
+  const [an, mois, jour] = [Number(m[1]), Number(m[2]), Number(m[3])];
+  /* une date doit EXISTER (pas de 13e mois, pas de 31 avril) : sinon, aucune date */
+  const reelle = new Date(Date.UTC(an, mois - 1, jour));
+  if (reelle.getUTCFullYear() !== an || reelle.getUTCMonth() !== mois - 1 || reelle.getUTCDate() !== jour) return null;
+  return jour + " " + MOIS_FR[mois - 1] + " " + an;
 }
 export function phraseFraicheur(e) {
   const base = e.nouvelle ? PHRASES_FRAICHEUR.nouvelle : PHRASES_FRAICHEUR[e.etat];

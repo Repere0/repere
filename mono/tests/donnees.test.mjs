@@ -252,3 +252,20 @@ test("fraicheur — la phrase dit la date de la publication affichee (PRECEDENTE
   assert.ok(p.corps.includes("30 septembre 2026"), "la date de la publication affichee manque : " + p.corps);
   assert.ok(!/undefined|null/.test(p.corps + p.titre), "phrase invalide : " + JSON.stringify(p));
 });
+
+/* GARDES DE LA DATE AFFICHEE — 29/10/2026. Ces cas passent des le premier essai
+   (la fonction les traitait deja) : ils fixent le comportement pour l'avenir.
+   Une date absente ou invalide ne doit JAMAIS produire une date inventee, ni la
+   date du jour, ni la date de consultation. */
+test("garde — date de publication absente ou invalide : la phrase ne fabrique aucune date", () => {
+  for (const generation of [null, undefined, "", "pas une date", "2026-13-45"]) {
+    const p = clientDonnees.phraseFraicheur({ etat: FRAICHEUR.INCONNUE, generation });
+    assert.ok(!/Publication du/.test(p.corps), `date inventee pour ${JSON.stringify(generation)} : ${p.corps}`);
+    assert.ok(!/undefined|null|NaN/.test(p.corps), `phrase invalide pour ${JSON.stringify(generation)}`);
+  }
+});
+
+test("garde — la date affichee vient de la generation fournie, jamais de l'horloge", () => {
+  const p = clientDonnees.phraseFraicheur({ etat: FRAICHEUR.PRECEDENTE, generation: "2019-02-03T05:47:00Z" });
+  assert.ok(p.corps.endsWith("Publication du 3 février 2019."), p.corps);
+});
