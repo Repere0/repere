@@ -5,7 +5,25 @@
 // portent sur les fonctions reelles de @repere/core, pas sur une liste recopiee.
 import { test } from "node:test";
 import assert from "node:assert/strict";
+import fs from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import * as core from "../../../packages/core/src/index.js";
+
+const ICI = path.dirname(fileURLToPath(import.meta.url));
+
+/* LE DICTIONNAIRE SE TROUVE DEPUIS « AUJOURD'HUI » (29/10/2026). Il n'avait qu'une
+   porte d'entree (le Calendrier) et les mots tapables : un novice ne savait pas ou
+   chercher un mot lu sur l'ecran. Le garde borne son extrait a la section « Aller
+   plus loin » elle-meme : le commentaire d'en-tete porte la meme expression. */
+test("le dictionnaire est atteignable depuis « Aujourd'hui », dans « Aller plus loin »", () => {
+  const src = fs.readFileSync(path.join(ICI, "..", "src", "app", "(onglets)", "chez-vous.tsx"), "utf8");
+  const debut = src.indexOf('<Etiquette texte="Aller plus loin"');
+  const fin = src.indexOf("{choix ? <CarteMemoire");
+  assert.ok(debut > 0 && fin > debut, "section « Aller plus loin » introuvable : le garde ne prouve rien");
+  const section = src.slice(debut, fin);
+  assert.match(section, /router\.push\("\/dictionnaire"\)/, "le dictionnaire n'a pas de porte d'entree depuis « Aujourd'hui »");
+});
 
 test("tous les mots tapables produits par une phrase ont une definition", () => {
   let tapables = 0;
