@@ -125,7 +125,7 @@ export default function Vote() {
                   <Text style={[TYPO.note, { fontWeight: "700" }]}>{motPosition(a.position) ? "A voté " + motPosition(a.position) : "Position non portée par le relevé"}</Text>
                 </View>
               ))}
-              <Text style={TYPO.micro}>Derniers votes solennels relevés par Repère : des scrutins publics, généralement sur le vote d'ensemble d'un texte majeur. Du plus récent au plus ancien.</Text>
+              <Text style={TYPO.micro}>Derniers votes solennels récupérés par Repère : des scrutins publics, généralement sur le vote d'ensemble d'un texte majeur, c'est-à-dire le vote sur le texte entier. Du plus récent au plus ancien.</Text>
             </Carte>
           ) : null}
 

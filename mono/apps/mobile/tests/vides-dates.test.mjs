@@ -11,6 +11,8 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
+import { createRequire } from "node:module";
+import { dateFr } from "../../../packages/core/src/format.js";
 
 const RACINE = path.resolve(import.meta.dirname, "..");
 const lire = (...p) => fs.readFileSync(path.join(RACINE, ...p), "utf8");
@@ -84,8 +86,8 @@ test("C — formulation factuelle : « trouvé dans les données disponibles pou
   assert.doesNotMatch(affiche, /n'apparaît/, "aucune tournure qui laisse entendre une absence du député");
   assert.doesNotMatch(absences, /n'est porté par le relevé/, "formule catégorique retirée");
   assert.match(absences, /export const voteAucun = \(releve\?: string, portee\?: string\)/, "voteAucun reçoit la date du relevé et le périmètre");
-  assert.match(absences, /Relevé le \$\{dateFr\(releve\)\}/, "la date du relevé est affichée quand elle est connue");
-  assert.match(absences, /Repère ne connaît pas la date de relevé/, "sans date, l'état le dit");
+  assert.match(absences, /Données récupérées le \$\{dateFr\(releve\)\}/, "la date de récupération est affichée quand elle est connue");
+  assert.match(absences, /La date à laquelle ces données ont été récupérées n'est pas connue/, "sans date, l'état le dit");
   assert.match(absences, /vote d'ensemble d'un texte majeur/, "la définition de « vote solennel » reste visible, telle que la source la formule");
   assert.doesNotMatch(absences, /adoption ou le rejet formel/, "la paraphrase non étayée est retirée");
 });
@@ -98,7 +100,7 @@ test("C — les deux écrans qui affichent l'état vide passent la date du relev
 /* D — le mot « solennel » est expliqué là où il apparaît sur la liste des votes. */
 test("D — la liste des votes explique « solennel » là où le mot apparaît", () => {
   assert.doesNotMatch(vote, /Scrutins solennels relevés/, "l'intitulé technique est remplacé");
-  assert.match(vote, /Derniers votes solennels relevés[^<]*vote d'ensemble d'un texte majeur/, "la liste dit qu'il s'agit des derniers votes relevés, pas de tous");
+  assert.match(vote, /Derniers votes solennels récupérés par Repère[^<]*vote d'ensemble d'un texte majeur/, "la liste dit qu'il s'agit des derniers votes récupérés, pas de tous");
   assert.doesNotMatch(vote, /Votes solennels publiés par l'Assemblée/, "« publiés par l'Assemblée » laissait croire à une liste complète");
   assert.doesNotMatch(vote, /adoption ou le rejet formel/, "la paraphrase non étayée est retirée");
 });
@@ -107,8 +109,53 @@ test("D — la liste des votes explique « solennel » là où le mot apparaît"
 test("E — l'état vide des votes n'affirme pas « législature actuelle » : il donne le périmètre de la source", () => {
   assert.doesNotMatch(absences, /pour la législature actuelle/, "la législature entière n'est pas couverte : les données sont les derniers votes");
   assert.match(absences, /export const voteAucun = \(releve\?: string, portee\?: string\)/, "voteAucun reçoit le périmètre de la source");
-  assert.match(absences, /Périmètre des données : \$\{portee/, "le périmètre écrit par la source est affiché");
+  assert.match(absences, /Ce que couvrent les données : \$\{portee/, "le périmètre écrit par la source est affiché, en clair");
   assert.match(absences, /Les données ne portent que sur les derniers votes/, "la limite de couverture est dite");
   assert.match(chez, /voteAucun\(srcScrutins\(d\)\?\.releve, d\.srcScrutins && d\.srcScrutins\.portee\)/, "chez-vous passe le périmètre");
   assert.match(vote, /voteAucun\(srcScrutins\(d\)\?\.releve, d\.srcScrutins && d\.srcScrutins\.portee\)/, "vote.tsx passe le périmètre");
+});
+
+/* ── F. Rendu réel de voteAucun ───────────────────────────────────────────────
+ * absences.ts est transpilé en mémoire (TypeScript de apps/mobile) et exécuté :
+ * on teste le TEXTE que l'utilisateur lit, pour chaque cas de la source. */
+const requireMobile = createRequire(path.join(RACINE, "package.json"));
+const ts = requireMobile("typescript");
+const sortie = ts.transpileModule(absences, { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2020 } }).outputText;
+const modul = { exports: {} };
+new Function("require", "exports", "module", sortie)(
+  (nom) => { if (nom === "@repere/core") return { DGCL_URL: "https://example.test/dgcl", dateFr }; throw new Error("import inattendu : " + nom); },
+  modul.exports, modul);
+const { voteAucun } = modul.exports;
+const PORTEE = "les 12 derniers scrutins solennels (votes sur l'ensemble d'un texte) de la 17e législature, sur 9155 scrutins publics publiés à la date du relevé";
+
+test("F — périmètre et date présents : la source est écrite telle quelle, la date en toutes lettres", () => {
+  const v = voteAucun("2026-10-28", PORTEE);
+  assert.equal(v.titre, "Aucun vote solennel trouvé dans les données disponibles.");
+  assert.match(v.corps, /Ce que couvrent les données : les 12 derniers scrutins solennels/);
+  assert.match(v.corps, /Données récupérées le 28 octobre 2026\./);
+  assert.match(v.corps, /Les données ne portent que sur les derniers votes, pas sur toute la législature\./);
+  assert.doesNotMatch(v.corps, /undefined|null/);
+});
+
+test("F — périmètre absent, null ou vide : la phrase le dit, sans mot technique ni valeur vide", () => {
+  for (const portee of [undefined, null, ""]) {
+    const v = voteAucun("2026-10-28", portee);
+    assert.match(v.corps, /Ce que couvrent les données : la source ne l'indique pas\./, `portee=${portee}`);
+    assert.doesNotMatch(v.corps, /undefined|null|Périmètre|relevé/, `portee=${portee}`);
+  }
+});
+
+test("F — date de relevé absente, null ou vide : la phrase le dit, sans inventer de date", () => {
+  for (const releve of [undefined, null, ""]) {
+    const v = voteAucun(releve, PORTEE);
+    assert.match(v.corps, /La date à laquelle ces données ont été récupérées n'est pas connue\./, `releve=${releve}`);
+    assert.doesNotMatch(v.corps, /récupérées le|undefined|null/, `releve=${releve}`);
+  }
+});
+
+test("F — jamais « pour la législature actuelle », quel que soit le cas", () => {
+  for (const [releve, portee] of [["2026-10-28", PORTEE], [undefined, undefined], [undefined, null]]) {
+    const v = voteAucun(releve, portee);
+    assert.doesNotMatch(v.titre + " " + v.corps, /législature actuelle/);
+  }
 });

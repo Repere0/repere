@@ -43,10 +43,10 @@ export const voteAucun = (releve?: string, portee?: string) => ({
   titre: "Aucun vote solennel trouvé dans les données disponibles.",
   /* Le périmètre est celui que la SOURCE écrit (srcScrutins.portee), pas une supposition. */
   corps: [
-    `Périmètre des données : ${portee || "non indiqué par la source"}.`,
+    `Ce que couvrent les données : ${portee || "la source ne l'indique pas"}.`,
     "Les données ne portent que sur les derniers votes, pas sur toute la législature.",
-    releve ? `Relevé le ${dateFr(releve)}.` : "Repère ne connaît pas la date de relevé.",
-    "Un vote solennel est un scrutin public, généralement sur le vote d'ensemble d'un texte majeur (fiche « Votes » de l'Assemblée nationale, juillet 2024).",
+    releve ? `Données récupérées le ${dateFr(releve)}.` : "La date à laquelle ces données ont été récupérées n'est pas connue.",
+    "Un vote solennel est un scrutin public, généralement sur le vote d'ensemble d'un texte majeur, c'est-à-dire le vote sur le texte entier (fiche « Votes » de l'Assemblée nationale, juillet 2024).",
   ].join(" "),
   lien: { texte: "Les scrutins sur le site de l'Assemblée", url: SCRUTINS_AN },
 });
