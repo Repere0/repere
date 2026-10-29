@@ -25,6 +25,7 @@ test("site — « Ce qui a décidé » : le vide du vote passe par la règle par
 test("site — « Qui décide » : le vote d'un député identifié sans position dit le périmètre, sans cause inventée", () => {
   const src = lire("QuiDecide.jsx");
   assert.match(src, /copieVoteVide\(ETAT_VOTE\.POSITION_ABSENTE/, "position absente : texte de la règle partagée");
+  assert.match(src, /copieVoteVide\(ETAT_VOTE\.POSITION_ABSENTE, \{ nom, elu: true/, "position absente d'un député nommé : le titre porte son nom (elu: true), pas le titre de commune");
   assert.match(src, /copieVoteVide\(ETAT_VOTE\.CIRCO_SANS_DEPUTE/, "député absent du fichier : texte de la règle partagée");
   assert.doesNotMatch(src, /Un mandat ouvert|Un siège vacant|un découpage plus récent/, "cause inventée, non sourcée");
   assert.doesNotMatch(src, /ne porte aucune position pour \$\{nom\}/, "ancienne phrase : une absence de position n'est pas une absence de vote");

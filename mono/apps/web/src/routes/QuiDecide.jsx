@@ -172,7 +172,7 @@ function Votes({ dep, acteurRef, nom }) {
   if (!lignes.some(l => l.p)) {
     /* Même texte que partout ailleurs (core/votesVides.js) : une position absente
        dit le périmètre et la date, sans cause que la source ne donne pas. */
-    return <Vide {...copieVoteVide(ETAT_VOTE.POSITION_ABSENTE, { releve: s.releve_le, portee: s.portee })} />;
+    return <Vide {...copieVoteVide(ETAT_VOTE.POSITION_ABSENTE, { nom, elu: true, releve: s.releve_le, portee: s.portee })} />;
   }
   const base = cat.url_scrutin || "";
 
