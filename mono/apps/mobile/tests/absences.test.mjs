@@ -35,6 +35,8 @@ test("absences — la fiche dit la date de début de mandat avec sa source, ou q
   const fs = await import("node:fs");
   const path = await import("node:path");
   const src = fs.readFileSync(path.join(import.meta.dirname, "..", "src", "app", "elu.tsx"), "utf8");
+  assert.match(src, /debutDeMandat\(/, "la fiche lit la date de début par le cœur, qui exige la date de relevé");
+  assert.match(src, /debutMandat\.etat === "date"/, "la date ne s'affiche que dans l'état « date »");
   assert.match(src, /non publiée par la source/, "la fiche doit dire quand la date n'est pas publiée");
-  assert.match(src, /r\.deputes\.source\.releve_le/, "la date de début doit citer la date de relevé de sa source");
+  assert.match(src, /non affichée, la source ne dit pas quand/, "la fiche doit dire quand la date existe sans date de relevé");
 });

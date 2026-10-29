@@ -260,6 +260,18 @@ export function chaineDecision({ fiche, paquet, index, deputes, elusRegion, dep 
   ];
 }
 
+/* La date de début de fonction, telle qu'elle peut être affichée. Seul le
+   député (échelon France) porte une date dans les données. Une date n'est
+   montrée que si sa source dit quand elle a été relevée (invariant 4).
+   Renvoie un état, jamais une phrase : la phrase relève de l'écran. */
+export function debutDeMandat(niveau, source) {
+  if (!niveau || niveau.echelon !== "france" || !niveau.personne) return { etat: "absent" };
+  const debut = niveau.personne.debut || null;
+  if (!debut) return { etat: "non_publie" };
+  if (!source || !source.releve_le) return { etat: "sans_releve" };
+  return { etat: "date", date: debut, producteur: source.producteur, releve_le: source.releve_le };
+}
+
 /* --- la fraicheur ---------------------------------------------------------- */
 
 /* La date de publication des fichiers, lue dans l'index, jamais l'horloge du

@@ -592,7 +592,24 @@ test("core — la chaîne transmet la date de début du mandat du député, ou r
   const deputes = { deputes: { "93-1": { prenom: "Ada", nom: "Exemple", dateDebut: "2024-07-07" }, "93-2": { prenom: "Bo", nom: "Sans" } } };
   const france = (fiche) => chaineDecision({ fiche, paquet: null, index: null, deputes, elusRegion: null, dep: "93" }).find(n => n.echelon === "france");
   assert.equal(france({ nom: "X", circo: 1 }).personne.debut, "2024-07-07");
-  assert.equal(france({ nom: "X", circo: 2 }).personne.debut ?? null, null, "une date absente de la source ne doit pas être inventée");
+  assert.strictEqual(france({ nom: "X", circo: 2 }).personne.debut, null, "une date absente de la source ne doit pas être inventée");
+});
+
+/* Ce que la fiche affiche de la date de début : une date seulement si la
+   source la publie ET dit quand elle a été relevée (invariant 4). La phrase
+   « non publiée » ne concerne que le député, jamais les autres échelons. */
+test("core — la date de début n'est affichée qu'avec la date de relevé de sa source", async () => {
+  const { debutDeMandat } = await import("../packages/core/src/visuels.js");
+  const source = { producteur: "Assemblée nationale — Acteurs, mandats et organes", releve_le: "2026-10-28" };
+  const avec = { echelon: "france", personne: { nom: "A", debut: "2024-07-07" } };
+  assert.deepEqual(debutDeMandat(avec, source),
+    { etat: "date", date: "2024-07-07", producteur: source.producteur, releve_le: "2026-10-28" });
+  const sansReleve = debutDeMandat(avec, { producteur: "X" });
+  assert.equal(sansReleve.etat, "sans_releve");
+  assert.equal(sansReleve.date, undefined, "sans date de relevé, aucune date n'est affichée");
+  assert.equal(debutDeMandat({ echelon: "france", personne: { nom: "A", debut: null } }, source).etat, "non_publie");
+  assert.equal(debutDeMandat({ echelon: "france", personne: null }, source).etat, "absent");
+  assert.equal(debutDeMandat({ echelon: "ville", personne: { nom: "Maire" } }, source).etat, "absent");
 });
 
 /* Ordre total du jour : quel que soit l'ordre d'entree, les votes numerotes
