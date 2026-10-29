@@ -515,3 +515,20 @@ test("regression — une valeur absente n'ecrit ni « null », ni un lot 0000 si
   }
   assert.equal(c.adresseScrutinLot("0"), c.adresseScrutinLot(0), "le lot 0 reste le lot 0 (valeur reelle)");
 });
+
+/* Regression (29/10/2026, invariant 5 et « un zero publie reste un zero »).
+   Un montant publie a 0 disparaissait des phrases (nn exigeait m > 0 meme pour
+   un NUMERATEUR), alors que le site affiche « 0 € » avec « ce n'est pas une
+   donnee manquante ». Numerateur : zero accepte. Denominateur : strictement > 0. */
+test("regression — un montant publie a zero reste zero ; un denominateur nul ne produit rien", async () => {
+  const m = await import("../packages/core/src/index.js");
+  const ex = (inv, dep = 1000000) => [1000, 1200000, 1200, dep, 1000, 600000, 600, inv, inv / 1000, 500000, 500, 100000, 100];
+  const zeroInv = m.rapports(ex(0)).find(o => /investir/.test(o.v));
+  assert.ok(zeroInv, "un investissement publie a 0 doit figurer");
+  assert.equal(zeroInv.v, "0 € pour investir");
+  assert.equal(m.chiffresComptes(ex(0)).partInvestissement, 0, "la part reste 0, pas null");
+  const pasDeDepenses = m.rapports(ex(250000, 0));
+  assert.ok(!pasDeDepenses.some(o => /salaires|investir/.test(o.v)), "depenses a zero : aucune part (denominateur nul)");
+  assert.ok(!pasDeDepenses.some(o => /NaN|Infinity/.test(o.v)), "jamais NaN ni Infinity");
+  assert.equal(m.chiffresComptes(ex(0, 0)).partSalaires, null, "denominateur nul : pas de part");
+});

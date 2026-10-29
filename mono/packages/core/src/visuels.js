@@ -79,15 +79,17 @@ export function chiffresComptes(ex) {
   const v = i => valeur(ex, i);
   const [rec, dep, det, inv, sal, imp] = [0, 1, 2, 3, 4, 5].map(v);
   const nn = x => !!(x && typeof x.m === "number" && x.m > 0);
+  /* numerateur : zero publie reste zero ; denominateur : strictement > 0 */
+  const nnNum = x => !!(x && typeof x.m === "number" && Number.isFinite(x.m) && x.m >= 0);
   const borne = p => (p >= 0 && p <= 100 ? p : null);
   return {
-    detteMois: nn(det) && nn(rec) ? det.m / (rec.m / 12) : null,
-    partSalaires: nn(sal) && nn(dep) ? borne(pourCent(sal.m, dep.m)) : null,
-    partInvestissement: nn(inv) && nn(dep) ? borne(pourCent(inv.m, dep.m)) : null,
-    partImpots: nn(imp) && nn(rec) ? borne(pourCent(imp.m, rec.m)) : null,
-    parJour: nn(dep) ? Math.round(dep.m / 365) : null,
-    depenses: nn(dep) ? dep.m : null,
-    recettes: nn(rec) ? rec.m : null,
+    detteMois: nnNum(det) && nn(rec) ? det.m / (rec.m / 12) : null,
+    partSalaires: nnNum(sal) && nn(dep) ? borne(pourCent(sal.m, dep.m)) : null,
+    partInvestissement: nnNum(inv) && nn(dep) ? borne(pourCent(inv.m, dep.m)) : null,
+    partImpots: nnNum(imp) && nn(rec) ? borne(pourCent(imp.m, rec.m)) : null,
+    parJour: nnNum(dep) ? Math.round(dep.m / 365) : null,
+    depenses: nnNum(dep) ? dep.m : null,
+    recettes: nnNum(rec) ? rec.m : null,
     dette: det && typeof det.m === "number" ? det.m : null,
   };
 }
