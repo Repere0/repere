@@ -81,3 +81,14 @@ test("parcours — chaque onglet offre « changer de commune », qui ramene a l'
   const retour = sansCommentaires(lire(path.join(RACINE, "src", "ui", "retour.tsx")));
   assert.match(retour, /export function ChangerCommune[\s\S]*router\.replace\("\/"\)/, "le bouton doit remplacer la route par l'accueil");
 });
+
+/* Le chemin de première utilisation, de bout en bout : l'accueil mène au
+   territoire, le territoire à « qui décide », qui mène à la fiche, et la
+   fiche donne ses sources. Chaque maillon est une navigation réelle. */
+test("parcours — le chemin de première utilisation relie accueil, « qui décide », fiche et sources", () => {
+  const lectureDe = f => sansCommentaires(lire(path.join(APP, f)));
+  assert.match(lectureDe("index.tsx"), /router\.push\(\s*"\/chez-vous"\s*\)/, "l'accueil ne mène pas au territoire");
+  assert.match(lectureDe("(onglets)/chez-vous.tsx"), /pathname:\s*"\/qui-decide"|router\.push\(\s*"\/qui-decide"\s*\)/, "le territoire ne mène pas à « qui décide »");
+  assert.match(lectureDe("(onglets)/qui-decide.tsx"), /pathname:\s*"\/elu"/, "« qui décide » ne mène pas à la fiche");
+  assert.match(lectureDe("elu.tsx"), /D'où viennent ces informations/, "la fiche ne donne pas ses sources");
+});
