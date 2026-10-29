@@ -92,3 +92,16 @@ test("epreuve.yml n'ignore que apps/mobile, et mobile.yml se declenche sur ce ch
     "mobile.yml ne se declenche plus sur mono/apps/mobile/** : une PR mobile ne serait verifiee nulle part",
   );
 });
+
+// LACUNE FERMEE (29/10/2026). Le filtre `.test.mjs` ignorait les scripts de
+// controle qui ne portent pas ce suffixe (ex. parcours-web.mjs, le parcours
+// navigateur a 200 %) : un script ajoute sans etre cite dans mobile.yml ne tournait
+// jamais, et la CI restait verte. Tout .mjs du dossier de tests doit etre cite
+// quelque part dans mobile.yml, sauf les aides explicitement listees ici.
+const AIDES_NON_LANCEES = new Set([]);
+test("chaque script .mjs de apps/mobile/tests est cite par mobile.yml (pas seulement les *.test.mjs)", () => {
+  const yml = lire(join(DEPOT, ".github", "workflows", "mobile.yml"));
+  const scripts = readdirSync(ICI).filter((f) => f.endsWith(".mjs") && !f.endsWith(".test.mjs") && !AIDES_NON_LANCEES.has(f));
+  const orphelins = scripts.filter((f) => !yml.includes(f));
+  assert.deepEqual(orphelins, [], `scripts presents mais jamais cites par mobile.yml : ${orphelins.join(", ")}`);
+});
