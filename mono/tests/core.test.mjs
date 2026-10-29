@@ -577,8 +577,10 @@ test("core — un numéro de scrutin absent n'est pas comparé comme zéro (ordr
   for (const absent of [null, "", undefined]) {
     const sans = { ...base, sc: { n: absent } };
     const avec = { ...base, sc: { n: 5 } };
-    assert.equal(ordreDesFaits(sans, avec), 0, `numéro absent (${JSON.stringify(absent)}) comparé comme un numéro`);
-    assert.equal(ordreDesFaits(avec, sans), 0, `numéro absent (${JSON.stringify(absent)}) comparé comme un numéro`);
+    /* Absent APRES un numerote du meme jour : ce n'est ni 0 (egalite) ni une
+       valeur numerique (5 - 0). */
+    assert.equal(ordreDesFaits(sans, avec), 1, `numéro absent (${JSON.stringify(absent)}) doit venir après le numéroté`);
+    assert.equal(ordreDesFaits(avec, sans), -1, `numéro absent (${JSON.stringify(absent)}) doit venir après le numéroté`);
   }
   assert.equal(ordreDesFaits({ ...base, sc: { n: 8430 } }, { ...base, sc: { n: 8434 } }) > 0, true, "le plus grand numéro doit venir en premier");
 });
@@ -591,4 +593,22 @@ test("core — la chaîne transmet la date de début du mandat du député, ou r
   const france = (fiche) => chaineDecision({ fiche, paquet: null, index: null, deputes, elusRegion: null, dep: "93" }).find(n => n.echelon === "france");
   assert.equal(france({ nom: "X", circo: 1 }).personne.debut, "2024-07-07");
   assert.equal(france({ nom: "X", circo: 2 }).personne.debut ?? null, null, "une date absente de la source ne doit pas être inventée");
+});
+
+/* Ordre total du jour : quel que soit l'ordre d'entree, les votes numerotes
+   sortent du plus grand numero au plus petit, et le vote sans numero vient
+   apres eux. Un comparateur qui n'est pas un ordre total (0 pour une absence
+   contre tous, mais une comparaison pour les autres) donne un tri qui depend
+   de l'ordre d'entree : c'est le defaut trouve par l'audit du 29/10/2026. */
+test("core — ordre du jour total : quel que soit l'ordre d'entrée, numérotés décroissants puis absent", async () => {
+  const { ordreDesFaits } = await import("../packages/core/src/faits.js");
+  const base = { quand: "2026-07-21", rang: 1, type: "vote" };
+  const items = [8434, 8430, 8431, null].map(n => ({ ...base, sc: { n } }));
+  const permutations = (xs) => xs.length <= 1 ? [xs] : xs.flatMap((x, i) => permutations([...xs.slice(0, i), ...xs.slice(i + 1)]).map(p => [x, ...p]));
+  const mauvais = [];
+  for (const p of permutations(items)) {
+    const tri = [...p].sort(ordreDesFaits).map(f => f.sc.n);
+    if (JSON.stringify(tri) !== JSON.stringify([8434, 8431, 8430, null])) mauvais.push(JSON.stringify(tri));
+  }
+  assert.deepEqual(mauvais, [], `ordre dépendant de l'entrée : ${mauvais.length} permutation(s) mal triée(s)`);
 });
