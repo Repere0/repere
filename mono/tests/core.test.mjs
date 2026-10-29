@@ -567,3 +567,18 @@ test("regression — une intercommunalite absente des donnees n'est pas un zero 
   assert.equal(agglo({ ...base, agglo: { nom: "CC test", delegues: [] } }).delegues, 0, "liste publiee vide : zero publie reste zero");
   assert.equal(agglo({ ...base, agglo: { nom: "CC test", delegues: [{ nom: "A B" }] } }).delegues, 1);
 });
+
+/* Numero de scrutin absent : il n'est jamais compare comme zero (Number(null) = 0,
+   Number("") = 0). Deux votes du meme jour dont un numero manque gardent l'ordre
+   de la source : la comparaison rend 0. */
+test("core — un numéro de scrutin absent n'est pas comparé comme zéro (ordre du jour)", async () => {
+  const { ordreDesFaits } = await import("../packages/core/src/faits.js");
+  const base = { quand: "2026-07-21", rang: 1, type: "vote" };
+  for (const absent of [null, "", undefined]) {
+    const sans = { ...base, sc: { n: absent } };
+    const avec = { ...base, sc: { n: 5 } };
+    assert.equal(ordreDesFaits(sans, avec), 0, `numéro absent (${JSON.stringify(absent)}) comparé comme un numéro`);
+    assert.equal(ordreDesFaits(avec, sans), 0, `numéro absent (${JSON.stringify(absent)}) comparé comme un numéro`);
+  }
+  assert.equal(ordreDesFaits({ ...base, sc: { n: 8430 } }, { ...base, sc: { n: 8434 } }) > 0, true, "le plus grand numéro doit venir en premier");
+});
