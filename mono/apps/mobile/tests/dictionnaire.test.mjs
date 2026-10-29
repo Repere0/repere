@@ -68,3 +68,14 @@ test("motsDuTexte : chaque mot defini d'une phrase, une fois, avec son titre", (
   assert.deepEqual(core.motsDuTexte([{ t: "a", mot: "mot-qui-nexiste-pas" }]), []);
   assert.deepEqual(core.motsDuTexte(undefined), []);
 });
+
+/* LES TERMES AFFICHES SUR LES ECRANS ONT UNE DEFINITION (29/10/2026). Liste issue du
+   comptage des fichiers de l'application ou ces mots apparaissent (scrutin : 14,
+   Assemblée nationale : 7, séance : 5, Sénat : 4…) et de la revue simulée : ce sont
+   les termes qu'un lecteur rencontre sans les avoir appris. */
+test("les termes affichés sur les écrans ont une définition dans le glossaire", () => {
+  const affiches = ["assemblée nationale", "sénat", "scrutin", "séance", "ordre du jour",
+    "subvention", "investissement", "fonctionnement", "préfet"];
+  const manquants = affiches.filter(t => core.titreDuMot(t) === null);
+  assert.deepEqual(manquants, [], "termes affiches sans definition : " + manquants.join(", "));
+});
