@@ -111,8 +111,9 @@ export default function Argent() {
                 </Carte>
               ) : null}
 
-              {/* LA DETTE */}
-              {ch.detteMois !== null && dette ? (
+              {/* LA DETTE. Une dette publiee a zero a sa propre branche, plus bas : elle
+                  ne passe pas ici (depuis fba0bf9, detteMois vaut 0 et non plus null). */}
+              {ch.detteMois !== null && ch.dette !== 0 && dette ? (
                 <Carte echelon="ville" titre={`Sa dette, fin ${ex.an}`}>
                   <Resume phrase={`${nom} doit encore rembourser ${dette.texte}.`}
                     /* « 7,6 mois de recettes » en corps d'affiche tenait sur deux lignes :
