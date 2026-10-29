@@ -86,7 +86,8 @@ test("C — formulation factuelle : « trouvé dans les données disponibles pou
   assert.match(absences, /export const voteAucun = \(releve\?: string\)/, "voteAucun reçoit la date du relevé");
   assert.match(absences, /Données relevées le \$\{dateFr\(releve\)\}/, "la date du relevé est affichée quand elle est connue");
   assert.match(absences, /Repère ne connaît pas la date de relevé/, "sans date, l'état le dit");
-  assert.match(absences, /texte entier/, "la définition de « vote solennel » reste visible");
+  assert.match(absences, /vote d'ensemble d'un texte majeur/, "la définition de « vote solennel » reste visible, telle que la source la formule");
+  assert.doesNotMatch(absences, /adoption ou le rejet formel/, "la paraphrase non étayée est retirée");
 });
 
 test("C — les deux écrans qui affichent l'état vide passent la date du relevé", () => {
@@ -97,5 +98,6 @@ test("C — les deux écrans qui affichent l'état vide passent la date du relev
 /* D — le mot « solennel » est expliqué là où il apparaît sur la liste des votes. */
 test("D — la liste des votes explique « solennel » là où le mot apparaît", () => {
   assert.doesNotMatch(vote, /Scrutins solennels relevés/, "l'intitulé technique est remplacé");
-  assert.match(vote, /Votes solennels[^<]*adoption ou le rejet formel d'un texte entier/, "le mot est défini sur la même ligne");
+  assert.match(vote, /Votes solennels[^<]*vote d'ensemble d'un texte majeur/, "le mot est défini sur la même ligne, selon la source");
+  assert.doesNotMatch(vote, /adoption ou le rejet formel/, "la paraphrase non étayée est retirée");
 });

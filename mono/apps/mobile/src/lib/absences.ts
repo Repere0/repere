@@ -44,7 +44,7 @@ export const voteAucun = (releve?: string) => ({
   titre: (releve
     ? `Aucun vote solennel trouvé dans les données disponibles pour la législature actuelle. Données relevées le ${dateFr(releve)}.`
     : "Aucun vote solennel trouvé dans les données disponibles pour la législature actuelle. Repère ne connaît pas la date de relevé.")
-    + " Un vote solennel est l'adoption ou le rejet formel d'un texte entier.",
+    + " Un vote solennel est un scrutin public, généralement sur le vote d'ensemble d'un texte majeur (fiche « Votes » de l'Assemblée nationale, juillet 2024).",
   lien: { texte: "Les scrutins sur le site de l'Assemblée", url: SCRUTINS_AN },
 });
 export const AGENDA_PAS_ARRIVE = {
