@@ -355,6 +355,10 @@ rm -rf site_engendre
   # scrutins recents avait suggere a tort avant cette mesure.
   node scripts/scrutins-solennels.mjs ./data \
     || echo "::warning::scrutins solennels non rafraichis - le reste de l'application continue"
+  # ETAT ANNONCE DANS LA CI (29/10/2026). Le banc ne montre sa sortie qu'en cas
+  # d'echec : sans cette annotation, une CI verte ne disait pas si le teaser
+  # etait present ou si sa note d'absence avait ete testee a sa place.
+  bash ../outils/teaser_scrutins_etat.sh ./data ../data/brut_Scrutins
   pnpm install --frozen-lockfile
   # RISQUE CONFIRME PAR AUDIT LE 22/09/2026, PAS SUPPOSE : ce bloc n'installait
   # aucun Chromium pour mono/. Le premier essai reel sur le runner GitHub
@@ -398,6 +402,7 @@ banc "collecte" python3 outils/test_collecte.py
 # Heure de fin des seances (13/10/2026) : l'agenda normalise recopie la fin publiee
 # par la source, et ne la devine jamais. Le controle tourne sur un agenda factice.
 banc "agenda : heure de fin" python3 outils/test_agenda_an.py
+banc "teaser des scrutins : etat annonce" bash outils/test_teaser_scrutins_etat.sh
 
 echo "== banc : le fichier autonome =="
 banc "fichier autonome" node test_repere.mjs "$APP"
