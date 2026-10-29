@@ -1,0 +1,1 @@
+Test de déclenchement de verification sur une PR empilée (base test/workflow-verification, donc différente de main). Ne pas fusionner.
