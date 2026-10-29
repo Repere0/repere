@@ -9,7 +9,7 @@ import { ETATS, PHRASES } from "../lib/donnees";
 import { Bouton, Vide } from "../lib/composants";
 import { useSelection } from "../lib/selection";
 import { useCommuneChoisie, type EtatCommune } from "../lib/useCommune";
-import { PAS, TYPO } from "../lib/theme";
+import { feuille, PAS, TYPO } from "../lib/theme";
 import { Etiquette } from "./resume";
 import { BandeauFraicheur } from "./fraicheur";
 
@@ -61,6 +61,6 @@ export function AvecDonnees({ rendu }: { rendu: (r: Extract<EtatCommune, { pret:
   return <>{rendu(r)}</>;
 }
 
-const s = StyleSheet.create({
+const s = feuille(() => StyleSheet.create({
   page: { paddingHorizontal: PAS * 5, paddingTop: PAS * 1, gap: PAS * 3, maxWidth: 640, width: "100%", alignSelf: "center" },
-});
+}));

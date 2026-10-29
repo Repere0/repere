@@ -22,7 +22,7 @@ import {
 import { Page } from "../ui/page";
 import { Vide } from "../lib/composants";
 import { PastilleSource } from "../ui/source";
-import { PAS, TYPO, couleurs, CIBLE, RAYON, OMBRE } from "../lib/theme";
+import { feuille, PAS, TYPO, couleurs, CIBLE, RAYON, OMBRE } from "../lib/theme";
 import { dateFr, titreLisible, nombreDecompte, resultatDecompteCourt } from "@repere/core";
 
 type Resume = {
@@ -393,7 +393,7 @@ export default function Scrutins() {
   );
 }
 
-const s = StyleSheet.create({
+const s = feuille(() => StyleSheet.create({
   intro: { gap: PAS, paddingTop: PAS * 2 },
   onglets: {
     flexDirection: "row", backgroundColor: couleurs.voile, borderRadius: RAYON.bloc,
@@ -452,4 +452,4 @@ const s = StyleSheet.create({
   positionValeur: { fontSize: 14, lineHeight: 19, fontWeight: "700", color: couleurs.sourd },
   absence: { backgroundColor: couleurs.voile, borderRadius: RAYON.bloc, padding: PAS * 4, gap: PAS, },
   reponseBloc: { backgroundColor: couleurs.carte, borderRadius: RAYON.carte, padding: PAS * 5, gap: PAS * 3, ...OMBRE },
-});
+}));

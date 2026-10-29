@@ -15,7 +15,7 @@ import {
   etatFraicheur, surFraicheur, verifierPublication, publicationPriseEnCompte, FRAICHEUR, PHRASES_FRAICHEUR,
 } from "../lib/donnees";
 import { useCommuneChoisie } from "../lib/useCommune";
-import { CIBLE, couleurs, PAS, RAYON, TYPO } from "../lib/theme";
+import { feuille, CIBLE, couleurs, PAS, RAYON, TYPO } from "../lib/theme";
 
 export function BandeauFraicheur() {
   const [e, setE] = useState(etatFraicheur());
@@ -41,9 +41,9 @@ export function BandeauFraicheur() {
   );
 }
 
-const s = StyleSheet.create({
+const s = feuille(() => StyleSheet.create({
   bandeau: { borderLeftWidth: 3, borderLeftColor: couleurs.encre, backgroundColor: couleurs.voile,
     borderTopRightRadius: RAYON.bloc, borderBottomRightRadius: RAYON.bloc, paddingHorizontal: PAS * 3, paddingVertical: PAS * 2, gap: PAS },
   bouton: { minHeight: CIBLE, justifyContent: "center", alignSelf: "flex-start" },
   boutonTexte: { fontSize: 15, fontWeight: "700", color: couleurs.lien },
-});
+}));
