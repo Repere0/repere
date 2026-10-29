@@ -27,6 +27,11 @@ test("A — le préfet porte la date de son contrôle (la dernière consignée, 
   assert.match(prefet, /titreControleLe:\s*"13\/10\/2026"/, "la date du contrôle du titre doit être dans PREFET_IDF");
 });
 
+test("A — le préfet annonce le DERNIER contrôle réussi, sans le présenter comme une vérification du jour", () => {
+  assert.match(qui, /Dernier contrôle réussi du titre de la page : \{prefet\.titreControleLe\}/, "formulation explicite du dernier contrôle réussi");
+  assert.doesNotMatch(qui, /titre contrôlé le/, "l'ancienne formulation ne doit plus apparaître");
+});
+
 test("A — le préfet dit que la date de nomination n'est pas contrôlée", () => {
   assert.match(qui, /n'est pas contrôlée/, "l'écran doit dire ce qui n'est pas vérifié");
 });
@@ -43,8 +48,18 @@ test("B — « sur les années relevées » n'existe plus : la phrase nomme les 
   assert.match(absences, /export const projetsAucun = \(nom: string, exercices\?: string\[\]/, "projetsAucun reçoit les exercices");
 });
 
-test("B — la phrase dit que les autres exercices ne sont pas couverts (couverture partielle, pas exhaustive)", () => {
-  assert.match(absences, /Les autres exercices ne sont pas couverts/, "une couverture partielle doit être dite comme telle");
+test("B — le texte public parle d'années budgétaires et nomme les années couvertes dans le titre", () => {
+  assert.match(absences, /sur les années budgétaires \$\{ex\} couvertes par la source/, "titre avec les années réelles");
+  assert.doesNotMatch(absences, /sur les exercices/, "« exercices » ne doit plus apparaître dans le texte public");
+  assert.doesNotMatch(absences, /Les autres exercices/, "« exercices » ne doit plus apparaître dans le texte public");
+  assert.match(absences, /Les autres années budgétaires ne sont pas couvertes/, "une couverture partielle doit être dite comme telle");
+});
+
+test("B — la date de publication de la source est écrite dans le texte, pas seulement derrière la pastille", () => {
+  assert.match(absences, /export const projetsAucun = \(nom: string, exercices\?: string\[\], publieLe\?: string\)/, "projetsAucun reçoit la date de publication");
+  assert.match(absences, /Données publiées le \$\{dateFr\(publieLe\)\}/, "la date est écrite dans le corps");
+  assert.match(argent, /projetsAucun\(nom, [^)]*mis_a_jour_le[^)]*\)/, "argent.tsx passe mis_a_jour_le");
+  assert.match(chez, /projetsAucun\(nom, [^)]*mis_a_jour_le[^)]*\)/, "chez-vous.tsx passe mis_a_jour_le");
 });
 
 test("B — l'écran « Argent » vide passe les exercices et affiche la pastille source avec sa date", () => {
@@ -60,10 +75,17 @@ test("B — chez-vous passe aussi les exercices à l'état vide", () => {
 
 /* ── C. Vote solennel absent ─────────────────────────────────────────────── */
 
-test("C — « n'est porté par le relevé » est remplacé : la phrase dit le périmètre et la date du relevé", () => {
-  assert.doesNotMatch(absences, /n'est porté par le relevé de l'Assemblée/, "formule catégorique retirée");
+test("C — formulation factuelle : « trouvé dans les données disponibles pour la législature actuelle »", () => {
+  assert.match(absences, /Aucun vote solennel trouvé dans les données disponibles pour la législature actuelle/, "formule retenue");
+  /* Garde sur le TEXTE AFFICHÉ seulement : le commentaire au-dessus de voteAucun peut garder « 17e législature ». */
+  const affiche = absences.slice(absences.indexOf("export const voteAucun"), absences.indexOf("export const AGENDA_PAS_ARRIVE"));
+  assert.doesNotMatch(affiche, /17e/, "« 17e législature » n'apparaît pas dans le texte affiché");
+  assert.doesNotMatch(affiche, /législature de la|scrutins solennels/, "pas de vocabulaire technique affiché");
+  assert.doesNotMatch(affiche, /n'apparaît/, "aucune tournure qui laisse entendre une absence du député");
+  assert.doesNotMatch(absences, /n'est porté par le relevé/, "formule catégorique retirée");
   assert.match(absences, /export const voteAucun = \(releve\?: string\)/, "voteAucun reçoit la date du relevé");
-  assert.match(absences, /17e législature/, "le périmètre (législature) est dit");
+  assert.match(absences, /Données relevées le \$\{dateFr\(releve\)\}/, "la date du relevé est affichée quand elle est connue");
+  assert.match(absences, /Repère ne connaît pas la date de relevé/, "sans date, l'état le dit");
   assert.match(absences, /texte entier/, "la définition de « vote solennel » reste visible");
 });
 

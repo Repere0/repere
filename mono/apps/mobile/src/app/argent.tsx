@@ -207,7 +207,7 @@ export default function Argent() {
               <Vide {...PROJETS_PAS_ARRIVES} action="Réessayer" onAction={reessayer} />
             ) : !listeProjets.length ? (
               <>
-                <Vide {...projetsAucun(nom, d.srcProjets && d.srcProjets.exercices)} />
+                <Vide {...projetsAucun(nom, d.srcProjets && d.srcProjets.exercices, d.srcProjets && d.srcProjets.mis_a_jour_le)} />
                 <PastilleSource source={srcProjets(d)} />
               </>
             ) : (

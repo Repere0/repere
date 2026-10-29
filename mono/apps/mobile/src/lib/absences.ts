@@ -16,13 +16,14 @@ export const listerExercices = (exercices?: string[]): string => {
   if (ex.length === 1) return ex[0];
   return `${ex.slice(0, -1).join(", ")} et ${ex[ex.length - 1]}`;
 };
-export const projetsAucun = (nom: string, exercices?: string[]) => {
+export const projetsAucun = (nom: string, exercices?: string[], publieLe?: string) => {
   const ex = listerExercices(exercices);
   return {
     titre: ex
-      ? `Aucun projet financé par l'État n'est publié pour ${nom} sur les exercices ${ex} de la source.`
+      ? `Aucun projet financé par l'État n'est publié pour ${nom} sur les années budgétaires ${ex} couvertes par la source.`
       : `Aucun projet financé par l'État n'est publié pour ${nom} dans la source.`,
-    corps: "La source ne couvre que les dotations d'investissement de l'État : une commune finance aussi des projets par elle-même. Les autres exercices ne sont pas couverts.",
+    corps: "La source ne couvre que les dotations d'investissement de l'État : une commune finance aussi des projets par elle-même. Les autres années budgétaires ne sont pas couvertes."
+      + (publieLe ? ` Données publiées le ${dateFr(publieLe)}.` : ""),
     lien: { texte: "Projets financés par l'État — données publiques", url: DGCL_URL },
   };
 };
@@ -41,8 +42,8 @@ export const SCRUTINS_AN = "https://www.assemblee-nationale.fr/dyn/17/scrutins/"
 export const voteAucun = (releve?: string) => ({
   /* La définition reste dans le titre : chez-vous n'affiche que le titre. */
   titre: (releve
-    ? `Aucun vote solennel de votre député n'apparaît parmi les scrutins solennels de la 17e législature relevés le ${dateFr(releve)}.`
-    : "Aucun vote solennel de votre député n'apparaît dans le relevé de l'Assemblée. Repère ne connaît pas la date de ce relevé.")
+    ? `Aucun vote solennel trouvé dans les données disponibles pour la législature actuelle. Données relevées le ${dateFr(releve)}.`
+    : "Aucun vote solennel trouvé dans les données disponibles pour la législature actuelle. Repère ne connaît pas la date de relevé.")
     + " Un vote solennel est l'adoption ou le rejet formel d'un texte entier.",
   lien: { texte: "Les scrutins sur le site de l'Assemblée", url: SCRUTINS_AN },
 });

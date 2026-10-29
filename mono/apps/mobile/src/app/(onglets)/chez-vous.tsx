@@ -104,7 +104,7 @@ export default function ChezVous() {
               }}
               suite={{ texte: nbProjets > 1 ? `${nbProjets} projets aidés` : "Le projet", onPress: () => router.push("/argent") }} />
           ) : (
-            <Reponse echelon="ville" phrase={projetsAucun(nom, d.srcProjets && d.srcProjets.exercices).titre} note={projetsAucun(nom, d.srcProjets && d.srcProjets.exercices).corps}
+            <Reponse echelon="ville" phrase={projetsAucun(nom, d.srcProjets && d.srcProjets.exercices, d.srcProjets && d.srcProjets.mis_a_jour_le).titre} note={projetsAucun(nom, d.srcProjets && d.srcProjets.exercices, d.srcProjets && d.srcProjets.mis_a_jour_le).corps}
               sources={<PastilleSource court source={srcProjets(d)} />} />
           )}
 
