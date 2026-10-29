@@ -18,7 +18,12 @@ archive="$2"
 if [ -s "$genere/scrutins-solennels-recents.json" ]; then
   echo "::notice::teaser des scrutins produit pour cette publication ($(wc -c < "$genere/scrutins-solennels-recents.json") octets)"
 elif [ -d "$archive" ]; then
-  echo "::warning::teaser des scrutins absent alors que l'archive de l'Assemblee est presente : production en echec, la note d'absence sera publiee"
+  # PANNE DE PRODUCTION = ECHEC, PAS AVERTISSEMENT (29/10/2026). L'archive est la,
+  # le teaser devait l'etre : publier une note « indisponible » masquerait un
+  # defaut de Repere. La publication s'arrete, la publication precedente reste
+  # en ligne, et l'ecran le dit (fraicheur, invariant 9).
+  echo "::error::teaser des scrutins absent alors que l'archive de l'Assemblee est presente : production en echec, publication bloquee"
+  exit 1
 else
   echo "::notice::teaser des scrutins absent : archive de l'Assemblee non obtenue, la note d'absence sera publiee"
 fi

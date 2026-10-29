@@ -79,10 +79,16 @@ function principal() {
   const fichiers = fichiersJson(ENTREE);
   const retenus = [];
   let totalSource = 0;
+  /* ERREURS DE PRODUCTION (29/10/2026). Un fichier illisible, ou une archive
+     presente sans aucun scrutin retenu, ne sont plus ignores en silence : le
+     script sort en echec et n'ecrit aucun teaser. Une liste vide serait lue
+     par le site comme « aucun scrutin », ce qui est faux, et une archive
+     presente ne doit jamais se publier comme « absente ». */
+  let fichiersIllisibles = 0;
   for (const f of fichiers) {
     let d;
     try { d = JSON.parse(fs.readFileSync(f, "utf8")).scrutin; }
-    catch { continue; }
+    catch { fichiersIllisibles++; continue; }
     if (!d || !d.dateScrutin) continue;
     totalSource++;
     const type = d.typeVote && d.typeVote.libelleTypeVote;
@@ -99,6 +105,16 @@ function principal() {
       abstentions: dec.abstentions != null ? Number(dec.abstentions) : null,
       url: `${URL_SCRUTIN_UN}${d.numero}`,
     });
+  }
+  if (fichiersIllisibles > 0) {
+    console.error(`::error::scrutins solennels : ${fichiersIllisibles} fichier(s) illisible(s) dans ${ENTREE} - aucun teaser ecrit`);
+    process.exitCode = 1;
+    return;
+  }
+  if (retenus.length === 0) {
+    console.error(`::error::scrutins solennels : archive presente (${totalSource} scrutins publics) mais aucun scrutin solennel ni motion retenu - aucun teaser ecrit`);
+    process.exitCode = 1;
+    return;
   }
   retenus.sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : (a.numero || "").localeCompare(b.numero || "", "fr", { numeric: true })));
 

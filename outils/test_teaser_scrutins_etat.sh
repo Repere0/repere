@@ -3,7 +3,7 @@
 # par outils/teaser_scrutins_etat.sh. Trois cas, chacun prouve par sa sortie :
 #   1. teaser produit          -> notice « produit », code 0
 #   2. archive absente         -> notice « absente, archive non obtenue », code 0
-#   3. archive presente, teaser non produit -> warning « production en echec », code 0
+#   3. archive presente, teaser non produit -> error « production en echec », code 1 (bloquant)
 # Ce banc n'accepte aucun cas comme vrai sans que la sortie le dise.
 set -euo pipefail
 ici=$(cd "$(dirname "$0")" && pwd)
@@ -25,7 +25,8 @@ echo "$out2" | grep -q "::notice::teaser des scrutins absent : archive de l'Asse
 
 # Cas 3 : archive presente mais teaser non produit : c'est une panne de production.
 mkdir -p "$tmp/c3/data" "$tmp/c3/archive"
-out3=$(bash "$etat" "$tmp/c3/data" "$tmp/c3/archive")
-echo "$out3" | grep -q "::warning::teaser des scrutins absent alors que l'archive" || { echo "ECHEC cas 3 : $out3"; exit 1; }
+set +e; out3=$(bash "$etat" "$tmp/c3/data" "$tmp/c3/archive" 2>&1); code3=$?; set -e
+echo "$out3" | grep -q "::error::teaser des scrutins absent alors que l'archive" || { echo "ECHEC cas 3 : $out3"; exit 1; }
+[ "$code3" -eq 1 ] || { echo "ECHEC cas 3 : code $code3, attendu 1 (panne de production bloquante)"; exit 1; }
 
-echo "teaser des scrutins : 3 cas verifies (produit, archive absente, panne de production)"
+echo "teaser des scrutins : 3 cas verifies (produit, archive absente, panne de production bloquee)"
