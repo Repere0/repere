@@ -24,6 +24,10 @@ un contrôle vert gardait une propriété fausse.
    qu'il refuse.
 6. **Un contrôle indépendant** relit la source brute sans réutiliser une ligne du
    code qu'il vérifie.
+7. **Aucune date calendaire en dur.** Une garde qui passe aujourd'hui et tombe demain
+   bloque la publication : la collecte est restée rouge du 14 au 18/10 pour une date
+   de visite fixée à la main (#129, #147). Lire la date dans la donnée servie
+   (`genere_le`) ou figer l'horloge, et le dire dans le test.
 
 ## Procédure
 1. Écrire le contrôle.
