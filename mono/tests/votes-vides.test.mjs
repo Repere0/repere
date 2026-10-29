@@ -147,3 +147,53 @@ test("copie — la position absente est en paragraphes séparés, pas en un seul
   assert.match(c.corps.split("\n")[0], /^Ce que couvrent les données : P\.$/);
   assert.match(c.corps.split("\n")[4], /Une position non portée n'est pas une absence/);
 });
+
+/* ÉLU : LE VOTE DE CETTE PERSONNE, ET NON DE LA COMMUNE. Passe du 29/10/2026 (soir).
+   La fiche d'un élu affichait « Aucun vote publié » pour tout vide, et le dernier
+   vote de la COMMUNE (toutes circonscriptions) pour l'élu nommé. Écrit rouge avant
+   correction : etatVotePersonne n'existe pas encore. */
+import { etatVotePersonne } from "../packages/core/src/votesVides.js";
+const faitsAvec = (qui, position = "p") => [{ type: "vote", position, qui, sc: { t: "texte", d: "2026-10-13", n: "8434", s: "adopté", dec: {} } }];
+
+test("élu — échec de chargement : relevé non lu, jamais une absence", () => {
+  assert.equal(etatVotePersonne({ fiche, dep: "77", cat: null, pos, deputes, faits: [], nom: "Ana Test" }), ETAT_VOTE.RELEVE_NON_LU);
+});
+
+test("élu — relevé non apparié : incohérent, jamais une absence", () => {
+  const inconnu = { ...pos, positions: { 9999: { PA1: "p" } } };
+  assert.equal(etatVotePersonne({ fiche, dep: "77", cat, pos: inconnu, deputes, faits: [], nom: "Ana Test" }), ETAT_VOTE.RELEVE_INCOHERENT);
+});
+
+test("élu — commune sans circonscription, circonscription sans député : états distincts", () => {
+  assert.equal(etatVotePersonne({ fiche: { nom: "X", circo: null }, dep: "77", cat, pos, deputes, faits: [], nom: "Ana Test" }), ETAT_VOTE.CIRCO_INCONNUE);
+  assert.equal(etatVotePersonne({ fiche: { nom: "X", circo: 3 }, dep: "77", cat, pos, deputes, faits: [], nom: "Ana Test" }), ETAT_VOTE.CIRCO_SANS_DEPUTE);
+});
+
+test("élu — nom absent du fichier des députés : « élu non identifié », jamais « aucun vote »", () => {
+  const e = etatVotePersonne({ fiche, dep: "77", cat, pos, deputes, faits: [], nom: "Quelqu'un Autre" });
+  assert.equal(e, ETAT_VOTE.ELU_NON_IDENTIFIE);
+  const c = copieVoteVide(e, { nom: "Quelqu'un Autre" });
+  assert.doesNotMatch(c.titre + c.corps, /^Aucun|Aucun vote/, "un élu non identifié n'a pas d'absence de vote à annoncer");
+  assert.match(c.corps, /Ce n'est pas une absence de vote/);
+});
+
+test("élu — son vote est trouvé : pas d'état de vide (la fiche affiche ce vote)", () => {
+  assert.equal(etatVotePersonne({ fiche, dep: "77", cat, pos, deputes, faits: faitsAvec("Ana Test"), nom: "Ana Test" }), null);
+});
+
+test("élu — identifié sans position : position absente, pas une absence d'activité", () => {
+  assert.equal(etatVotePersonne({ fiche, dep: "77", cat, pos, deputes, faits: [], nom: "Ana Test" }), ETAT_VOTE.POSITION_ABSENTE);
+});
+
+test("élu — RÉGRESSION : le vote d'un autre député de la commune ne compte pas pour cet élu", () => {
+  // La commune a un vote, mais celui d'une autre personne : l'élu nommé n'a pas de vote.
+  assert.equal(etatVotePersonne({ fiche, dep: "77", cat, pos, deputes, faits: faitsAvec("Autre Personne"), nom: "Ana Test" }), ETAT_VOTE.POSITION_ABSENTE);
+});
+
+test("élu — la dérivation expose etatVotePour(nom), même règle que etatVotePersonne", () => {
+  const sortie = deriverAujourdhui({ fiche, commune: "77000", dep: "77", index: { agregats: [], sources: {} },
+    projets: null, cat, pos: { ...pos, positions: { 8434: { PA2: "p" } } }, deputes, cal: null, agendaAN: null, evenements: null });
+  assert.equal(typeof sortie.etatVotePour, "function");
+  assert.equal(sortie.etatVotePour("Ana Test"), ETAT_VOTE.POSITION_ABSENTE);
+  assert.equal(sortie.etatVotePour("Quelqu'un Autre"), ETAT_VOTE.ELU_NON_IDENTIFIE);
+});

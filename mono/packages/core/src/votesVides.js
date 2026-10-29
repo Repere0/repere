@@ -22,6 +22,7 @@ export const ETAT_VOTE = Object.freeze({
   CIRCO_INCONNUE: "circo-inconnue",
   CIRCO_SANS_DEPUTE: "circo-sans-depute",
   POSITION_ABSENTE: "position-absente",
+  ELU_NON_IDENTIFIE: "elu-non-identifie",
 });
 
 export const URL_SCRUTINS_AN = "https://www.assemblee-nationale.fr/dyn/17/scrutins/";
@@ -42,6 +43,22 @@ export function etatVoteVide({ fiche, dep, cat, pos, deputes }) {
   return ETAT_VOTE.POSITION_ABSENTE;
 }
 
+/* L'état du vide POUR UNE PERSONNE (la fiche d'un élu). Rend null quand cette
+   personne a un vote : la fiche l'affiche. Ne lit jamais le vote d'un autre député
+   de la commune : `faits` est filtré sur le nom de la personne. */
+export function etatVotePersonne({ fiche, dep, cat, pos, deputes, faits, nom }) {
+  if (!cat || !pos || !deputes || !deputes.deputes) return ETAT_VOTE.RELEVE_NON_LU;
+  if (!positionsFiables(cat, pos)) return ETAT_VOTE.RELEVE_INCOHERENT;
+  const circos = circosDe(fiche || {});
+  if (circos.length === 0) return ETAT_VOTE.CIRCO_INCONNUE;
+  const identifies = circos.map(c => deputes.deputes[dep + "-" + c]).filter(d => d && d.acteurRef);
+  if (identifies.length === 0) return ETAT_VOTE.CIRCO_SANS_DEPUTE;
+  const moi = identifies.find(d => [d.prenom, d.nom].filter(Boolean).join(" ") === nom);
+  if (!moi) return ETAT_VOTE.ELU_NON_IDENTIFIE;
+  const a_un_vote = (faits || []).some(f => f.type === "vote" && f.position && f.qui === nom);
+  return a_un_vote ? null : ETAT_VOTE.POSITION_ABSENTE;
+}
+
 /** Le texte affiché pour chaque état. `releve` : date de récupération (ISO) ;
    `portee` : le périmètre écrit par la source (srcScrutins.portee).
    @param {string} etat  un des valeurs de ETAT_VOTE
@@ -60,6 +77,9 @@ export function copieVoteVide(etat, { nom = "", releve, portee } = {}) {
     case ETAT_VOTE.CIRCO_SANS_DEPUTE:
       return { titre: nom ? `Le fichier des députés ne porte aucun député pour la circonscription de ${nom}.` : "Le fichier des députés ne porte aucun député pour cette circonscription.",
         corps: "Ce n'est pas une absence de vote : la donnée manque dans le fichier que Repère lit. Repère ne devine pas le député.", lien };
+    case ETAT_VOTE.ELU_NON_IDENTIFIE:
+      return { titre: nom ? `Repère ne retrouve pas ${nom} dans le fichier des députés.` : "Repère ne retrouve pas cet élu dans le fichier des députés.",
+        corps: "Ce n'est pas une absence de vote : aucun député de la circonscription ne porte ce nom dans le fichier que Repère lit. Repère ne devine pas.", lien };
     case ETAT_VOTE.POSITION_ABSENTE:
       return { titre: "Aucun vote solennel trouvé dans les données disponibles.",
         corps: [

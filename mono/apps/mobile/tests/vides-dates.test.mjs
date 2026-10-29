@@ -115,3 +115,27 @@ test("vides — chez-vous : un vote présent n'est jamais rendu comme un vide", 
   assert.doesNotMatch(src, /vote && rep \?/, "la branche « vote » ne doit pas dépendre de la répartition");
   assert.match(src, /preuve=\{rep \?/, "la répartition devient une preuve optionnelle");
 });
+
+/* La fiche d'un élu : pas de phrase « aucun vote » fixe, et le vote affiché est
+   celui de cet élu (filtré sur son nom), jamais celui de la commune. Garde statique. */
+test("vides — elu.tsx : aucune phrase « aucun vote » fixe ; le vote est celui de cet élu", async () => {
+  const fs = await import("node:fs");
+  const path = await import("node:path");
+  const src = fs.readFileSync(path.join(import.meta.dirname, "..", "src", "app", "elu.tsx"), "utf8");
+  assert.doesNotMatch(src, /Aucun vote publié à montrer/, "phrase fixe : elle ne distingue ni l'échec ni les données non appariées");
+  assert.doesNotMatch(src, /r\.d\.dernierVote/, "la fiche ne doit pas lire le dernier vote de la commune");
+  assert.match(src, /f\.qui === nom/, "le vote affiché doit être filtré sur le nom de l'élu");
+  assert.match(src, /etatVotePour\(nom\)/, "les états viennent de la règle partagée, par personne");
+});
+
+/* Le partage d'un vote : pas d'affirmation « n'a pas de vote publié » pour tous les
+   replis, et le vote partagé est celui de la personne nommée, pas de la commune.
+   Garde statique : elle échoue sur la version d'avant. */
+test("vides — partager.tsx : le repli passe par la règle partagée ; le vote partagé est celui de la personne", async () => {
+  const fs = await import("node:fs");
+  const path = await import("node:path");
+  const src = fs.readFileSync(path.join(import.meta.dirname, "..", "src", "app", "partager.tsx"), "utf8");
+  assert.doesNotMatch(src, /n'a pas de vote publié à partager/, "phrase fixe pour tous les replis");
+  assert.doesNotMatch(src, /d\.dernierVote/, "le vote partagé ne doit pas être le dernier vote de la commune");
+  assert.match(src, /copieVoteVide\(/, "le repli vient de la règle partagée");
+});
