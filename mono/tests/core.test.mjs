@@ -499,3 +499,19 @@ test("core — un territoire sans conseil departemental dit pourquoi, et seuleme
     assert.ok(!/source qui est incomplète/.test(s.titre + s.corps), d);
   }
 });
+
+/* Regression (29/10/2026, invariant 5 : une absence n'est jamais un zero ni un
+   texte parasite). Trois defauts latents trouves a la relecture : un decompte
+   avec abstentions nulles s'ecrivait « null abstention » ; un numero de lot
+   vide tombait silencieusement sur le lot 0000. */
+test("regression — une valeur absente n'ecrit ni « null », ni un lot 0000 silencieux", async () => {
+  assert.equal(decompte({ pour: "10", contre: "2", abstentions: null }), "décompte non publié", "un decompte incomplet le dit, sans « null »");
+  assert.equal(decompte({ pour: "10", contre: "2", abstentions: "" }), "décompte non publié", "une abstention vide le dit aussi");
+  assert.equal(decompte({ pour: "10", contre: "2", abstentions: "5" }), "10 pour, 2 contre, 5 abstentions", "un decompte complet reste inchange");
+  const c = await import("../packages/data-utils/src/client.js");
+  for (const absent of [null, "", "   "]) {
+    assert.throws(() => c.adresseScrutinLot(absent), /invalide/, `lot ${JSON.stringify(absent)} ne doit pas devenir le lot 0000`);
+    assert.throws(() => c.adresseQuestionGouvernementLot(absent), /invalide/, `lot QAG ${JSON.stringify(absent)} ne doit pas devenir 0000`);
+  }
+  assert.equal(c.adresseScrutinLot("0"), c.adresseScrutinLot(0), "le lot 0 reste le lot 0 (valeur reelle)");
+});

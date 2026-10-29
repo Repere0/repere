@@ -119,6 +119,8 @@ export function adresseScrutinsSolennels() { return `${BASE_DONNEES}/scrutins-so
 export function adresseScrutinsSolennelsRecents() { return `${BASE_DONNEES}/scrutins-solennels-recents.json`; }
 export function adresseQuestionsGouvernementIndex() { return `${BASE_DONNEES}/questions-gouvernement-index.json`; }
 export function adresseQuestionGouvernementLot(lot) {
+  /* Number("") et Number(null) valent 0 : une absence ne doit JAMAIS tomber sur le lot 0000. */
+  if (lot === null || lot === undefined || String(lot).trim() === "") throw new Error("lot QAG invalide : " + lot);
   const n = Number(lot);
   if (!Number.isInteger(n) || n < 0 || n > 9999) throw new Error("lot QAG invalide : " + lot);
   const lotPadded = String(n).padStart(4, "0");
@@ -126,6 +128,8 @@ export function adresseQuestionGouvernementLot(lot) {
 }
 export function adresseScrutinsIndex() { return `${BASE_DONNEES}/scrutins-index.json`; }
 export function adresseScrutinLot(lot) {
+  /* Number("") et Number(null) valent 0 : une absence ne doit JAMAIS tomber sur le lot 0000. */
+  if (lot === null || lot === undefined || String(lot).trim() === "") throw new Error("lot de scrutin invalide : " + lot);
   const n = Number(lot);
   if (!Number.isInteger(n) || n < 0 || n > 9999) throw new Error("lot de scrutin invalide : " + lot);
   const lotPadded = String(n).padStart(4, "0");

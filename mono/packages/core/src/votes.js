@@ -46,6 +46,9 @@ export function procedure(t) {
 }
 export function decompte(d) {
   if (!d) return "";
+  /* Un decompte incomplet le dit : jamais « null » ecrit a l'ecran (invariant 5). */
+  const absent = v => v === null || v === undefined || String(v).trim() === "";
+  if (absent(d.pour) || absent(d.contre) || absent(d.abstentions)) return "décompte non publié";
   const n = Number(d.abstentions);
   return `${d.pour} pour, ${d.contre} contre, ${d.abstentions} abstention${n > 1 ? "s" : ""}`;
 }
