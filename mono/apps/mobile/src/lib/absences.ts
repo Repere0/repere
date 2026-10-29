@@ -23,7 +23,7 @@ export const circoInconnue = (nom: string) => ({
 });
 export const SCRUTINS_AN = "https://www.assemblee-nationale.fr/dyn/17/scrutins/";
 export const VOTE_AUCUN = {
-  titre: "Aucun vote solennel de votre député n'est porté par le relevé de l'Assemblée.",
+  titre: "Aucun vote solennel de votre député n'est porté par le relevé de l'Assemblée. Un vote solennel est l'adoption ou le rejet formel d'un texte entier.",
   lien: { texte: "Les scrutins sur le site de l'Assemblée", url: SCRUTINS_AN },
 };
 export const AGENDA_PAS_ARRIVE = {
