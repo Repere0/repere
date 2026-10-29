@@ -107,7 +107,7 @@ export default function Vote() {
                   <Text style={[TYPO.note, { fontWeight: "700" }]}>{motPosition(a.position) ? "A voté " + motPosition(a.position) : "Position non portée par le relevé"}</Text>
                 </View>
               ))}
-              <Text style={TYPO.micro}>Scrutins solennels relevés, du plus récent au plus ancien.</Text>
+              <Text style={TYPO.note}>Scrutins solennels relevés, du plus récent au plus ancien.</Text>
             </Carte>
           ) : null}
 
