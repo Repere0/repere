@@ -63,8 +63,10 @@ test("parcours — chaque écran de l'application est atteignable depuis l'accue
 });
 
 /* Changer de commune depuis chaque onglet. Le bouton de la barre doit ramener
-   a l'accueil (remplacement de la route), et non revenir dans l'historique : sur
-   l'onglet « Qui decide », un retour arriere ouvrirait l'onglet precedent. */
+   a l'accueil DEJA EMPILE (dismissTo), et non revenir dans l'historique : sur
+   l'onglet « Qui decide », un retour arriere ouvrirait l'onglet precedent. Un
+   remplacement de route (replace) empilait un second accueil : retour arriere
+   vers un ecran identique (parcours navigateur, 29/10/2026). */
 test("parcours — chaque onglet offre « changer de commune », qui ramene a l'accueil", () => {
   const s = sansCommentaires(lire(path.join(APP, "(onglets)", "_layout.tsx")));
   /* Le bloc screenOptions seul : borné au premier « }} » qui le ferme. Une regex
@@ -79,7 +81,9 @@ test("parcours — chaque onglet offre « changer de commune », qui ramene a l'
     .map(x => x.match(/name="([^"]+)"/)[1]);
   assert.deepEqual(sans, [], "onglets sans « changer de commune » : " + sans.join(", "));
   const retour = sansCommentaires(lire(path.join(RACINE, "src", "ui", "retour.tsx")));
-  assert.match(retour, /export function ChangerCommune[\s\S]*router\.replace\("\/"\)/, "le bouton doit remplacer la route par l'accueil");
+  const corps = retour.slice(retour.indexOf("export function ChangerCommune"));
+  assert.match(corps, /router\.dismissTo\("\/"\)/, "le bouton doit revenir a l'accueil deja empile (dismissTo)");
+  assert.doesNotMatch(corps, /router\.(back|replace)\(/, "le bouton ne doit ni revenir dans l'historique ni empiler un second accueil");
 });
 
 /* Le chemin de première utilisation, de bout en bout : l'accueil mène au

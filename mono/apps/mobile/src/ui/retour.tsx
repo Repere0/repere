@@ -19,13 +19,15 @@ export function Retour({ texte, etiquette }: { texte: string; etiquette: string 
   );
 }
 
-/* CHANGER DE COMMUNE, DEPUIS UN ONGLET. Ramene a l'accueil en remplacant la
-   route : un simple retour arriere ouvrirait l'onglet precedent (sur « Qui
-   decide », c'etait « Aujourd'hui »), pas le choix de commune. */
+/* CHANGER DE COMMUNE, DEPUIS UN ONGLET. Ramene a l'accueil DEJA EMPILE (dismissTo) :
+   un simple retour arriere ouvrirait l'onglet precedent (sur « Qui decide », c'etait
+   « Aujourd'hui »), pas le choix de commune. Un router.replace("/") empilait un
+   second accueil sous le premier : le retour arriere revenait a un ecran identique
+   (parcours navigateur, 29/10/2026). */
 export function ChangerCommune() {
   return (
     <Pressable
-      onPress={() => router.replace("/")}
+      onPress={() => router.dismissTo("/")}
       accessibilityRole="button"
       accessibilityLabel="Changer de commune : revenir à l'accueil"
       style={({ pressed }) => ({ minHeight: CIBLE, minWidth: CIBLE, justifyContent: "center", paddingHorizontal: 8, opacity: pressed ? 0.6 : 1 })}
