@@ -193,3 +193,14 @@ test("theme — les cartes de partage restent sur la palette claire (image sorta
   assert.equal((cartes.match(/couleurs\./g) || []).length, 0, "une carte lit encore le thème courant");
   assert.match(cartes, /<Logo c=\{cl\} \/>/, "le logo des cartes doit prendre la palette claire");
 });
+
+/* userInterfaceStyle « automatic » n'agit sur Android qu'avec expo-system-ui
+   (avertissement de `expo prebuild`, 29/10/2026). La dépendance doit être déclarée. */
+test("theme — userInterfaceStyle exige expo-system-ui, et la dépendance est déclarée", () => {
+  const appJson = JSON.parse(fs.readFileSync(path.join(import.meta.dirname, "..", "app.json"), "utf8"));
+  const pkg = JSON.parse(fs.readFileSync(path.join(import.meta.dirname, "..", "package.json"), "utf8"));
+  if (appJson.expo && appJson.expo.userInterfaceStyle) {
+    assert.ok(pkg.dependencies && pkg.dependencies["expo-system-ui"],
+      "userInterfaceStyle est défini sans expo-system-ui : le thème ne suit pas le système sur Android");
+  }
+});
