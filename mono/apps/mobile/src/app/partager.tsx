@@ -83,7 +83,9 @@ export default function Partager() {
       const vote = (d.faits as (Vote & { type: string; qui: string })[]).find(f => f.type === "vote" && !!f.position && f.qui === personne) as Vote | undefined;
       if (!vote || !vote.position || !VERBE[vote.position]) {
         /* Le repli : la règle partagée décide du texte selon l'état réel des données. */
-        const etat = !r.votesLus ? ETAT_VOTE.RELEVE_NON_LU
+        /* Un vote existe mais sa position n'a pas de libellé : ce n'est pas une absence. */
+        const etat = vote ? ETAT_VOTE.DONNEE_ILLISIBLE
+          : !r.votesLus ? ETAT_VOTE.RELEVE_NON_LU
           : !r.votesFiables ? ETAT_VOTE.RELEVE_INCOHERENT
           : france && france.autresCircos ? ETAT_VOTE.CIRCO_PARTAGEE
           : !personne ? ETAT_VOTE.CIRCO_SANS_DEPUTE

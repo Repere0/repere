@@ -72,3 +72,9 @@ test("site — chaque écran JSX compile sans texte parasite « )} » dans le re
     assert.doesNotMatch(r.code, /"\)\}"|"\}"/, `${path.basename(f)} : texte « )} » rendu à l'écran (accolade en trop)`);
   }
 });
+
+test("app — partager : un vote existant sans libellé de position n'est jamais « aucune position »", () => {
+  const APP = path.join(import.meta.dirname, "..", "apps");
+  const src = fs.readFileSync(path.join(APP, "mobile", "src", "app", "partager.tsx"), "utf8");
+  assert.match(src, /vote \? ETAT_VOTE\.DONNEE_ILLISIBLE/, "le repli doit distinguer un vote existant sans libellé");
+});

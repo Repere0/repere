@@ -25,6 +25,7 @@ export const ETAT_VOTE = Object.freeze({
   CIRCO_SANS_DEPUTE: "circo-sans-depute",
   CIRCO_PARTAGEE: "circo-partagee",
   POSITION_ABSENTE: "position-absente",
+  DONNEE_ILLISIBLE: "donnee-illisible",
   ELU_NON_IDENTIFIE: "elu-non-identifie",
 });
 
@@ -111,6 +112,10 @@ export function copieVoteVide(etat, { nom = "", releve, portee, elu = false } = 
           POSITION_NON_PORTEE,
         ].join("\n"),
         lien };
+    case ETAT_VOTE.DONNEE_ILLISIBLE:
+      /* Un vote existe, mais sa position n'a pas de libellé connu : ce n'est jamais une absence. */
+      return { titre: "Repère ne peut pas afficher le vote de ce député.",
+        corps: "Une donnée attendue manque ou n'a pas le bon format. Ce n'est pas une absence de vote.", lien };
     default:
       /* Un état inconnu ou absent ne prend jamais le texte « Aucun » : on le dit. */
       return { titre: "Repère ne peut pas afficher le vote de ce député.",

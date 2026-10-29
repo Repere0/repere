@@ -229,3 +229,10 @@ test("élu — la dérivation expose etatVotePour(nom), même règle que etatVot
   assert.equal(sortie.etatVotePour("Ana Test"), ETAT_VOTE.POSITION_ABSENTE);
   assert.equal(sortie.etatVotePour("Quelqu'un Autre"), ETAT_VOTE.ELU_NON_IDENTIFIE);
 });
+
+test("vote illisible : un vote réel dont la position n'a pas de libellé ne devient jamais « aucune position »", () => {
+  assert.equal(ETAT_VOTE.DONNEE_ILLISIBLE, "donnee-illisible", "l'état doit exister : sans lui, le texte par défaut sert sans garde");
+  const c = copieVoteVide(ETAT_VOTE.DONNEE_ILLISIBLE, { nom: "Ada Test", elu: true });
+  assert.doesNotMatch(c.titre, /Aucune position|Aucun vote/, "un vote existe : ni « aucune position » ni « aucun vote »");
+  assert.match(c.corps, /Ce n'est pas une absence de vote/);
+});
