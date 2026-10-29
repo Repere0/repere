@@ -71,7 +71,18 @@ function fichiersJson(dir) {
   return res;
 }
 
+/* UN TEASER ANCIEN NE SURVIT JAMAIS A UNE GENERATION (29/10/2026). Ces deux
+   fichiers sont produits par ce script seul : on les retire AVANT toute lecture.
+   Ainsi, une generation qui echoue ou dont l'archive manque ne peut pas laisser
+   un ancien JSON valide que l'etape suivante annoncerait comme « produit ». */
+function retirerSorties() {
+  for (const f of ["scrutins-solennels.json", "scrutins-solennels-recents.json"]) {
+    fs.rmSync(path.join(SORTIE, f), { force: true });
+  }
+}
+
 function principal() {
+  retirerSorties();
   if (!fs.existsSync(ENTREE)) {
     console.warn(`::warning::${ENTREE} absent - les scrutins solennels ne seront pas publies`);
     return;

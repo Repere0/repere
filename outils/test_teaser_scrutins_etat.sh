@@ -14,7 +14,7 @@ echo "[]" > "$tmp/ref.json"
 
 # Cas 1 : le teaser existe dans le dossier genere.
 mkdir -p "$tmp/c1/data" "$tmp/c1/archive"
-echo '{"recents":[{"n":1}]}' > "$tmp/c1/data/scrutins-solennels-recents.json"
+echo '{"v":1,"source":{"url":"https://www.assemblee-nationale.fr/dyn/17/scrutins/"},"recents":[{"n":"1","d":"2026-03-01","t":"Projet de loi","ty":"solennel","url":"https://www.assemblee-nationale.fr/dyn/17/scrutins/1"}]}' > "$tmp/c1/data/scrutins-solennels-recents.json"
 out1=$(bash "$etat" "$tmp/c1/data" "$tmp/c1/archive")
 echo "$out1" | grep -q "::notice::teaser des scrutins produit" || { echo "ECHEC cas 1 : $out1"; exit 1; }
 
@@ -29,4 +29,11 @@ set +e; out3=$(bash "$etat" "$tmp/c3/data" "$tmp/c3/archive" 2>&1); code3=$?; se
 echo "$out3" | grep -q "::error::teaser des scrutins absent alors que l'archive" || { echo "ECHEC cas 3 : $out3"; exit 1; }
 [ "$code3" -eq 1 ] || { echo "ECHEC cas 3 : code $code3, attendu 1 (panne de production bloquante)"; exit 1; }
 
-echo "teaser des scrutins : 3 cas verifies (produit, archive absente, panne de production bloquee)"
+# Cas 4 : teaser present mais invalide (contrat du site non respecte) -> erreur, code 1.
+mkdir -p "$tmp/c4/data" "$tmp/c4/archive"
+echo '{"recents":[{"n":1}]}' > "$tmp/c4/data/scrutins-solennels-recents.json"
+set +e; out4=$(bash "$etat" "$tmp/c4/data" "$tmp/c4/archive" 2>&1); code4=$?; set -e
+echo "$out4" | grep -q "::error::teaser des scrutins present mais invalide" || { echo "ECHEC cas 4 : $out4"; exit 1; }
+[ "$code4" -eq 1 ] || { echo "ECHEC cas 4 : code $code4, attendu 1"; exit 1; }
+
+echo "teaser des scrutins : 4 cas verifies (produit, archive absente, panne de production bloquee, teaser invalide bloque)"

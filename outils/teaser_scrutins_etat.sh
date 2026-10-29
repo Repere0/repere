@@ -15,8 +15,28 @@
 set -uo pipefail
 genere="$1"
 archive="$2"
-if [ -s "$genere/scrutins-solennels-recents.json" ]; then
-  echo "::notice::teaser des scrutins produit pour cette publication ($(wc -c < "$genere/scrutins-solennels-recents.json") octets)"
+# UN FICHIER PRESENT N'EST PAS UN TEASER VALIDE (29/10/2026). Le site lit
+# `recents` (tableau non vide) et, pour chaque entree, `d`, `t` et `url`, plus
+# `source.url`. Un JSON qui ne respecte pas ce contrat n'est jamais annonce « produit ».
+fichier="$genere/scrutins-solennels-recents.json"
+if [ -e "$fichier" ]; then
+  if raison=$(node -e '
+    const fs = require("fs");
+    let d;
+    try { d = JSON.parse(fs.readFileSync(process.argv[1], "utf8")); }
+    catch (e) { console.log("JSON illisible"); process.exit(1); }
+    if (!d || !Array.isArray(d.recents) || d.recents.length === 0) { console.log("recents absent ou vide"); process.exit(1); }
+    for (const r of d.recents) {
+      if (!r || typeof r.d !== "string" || typeof r.t !== "string" || typeof r.url !== "string") { console.log("entree mal formee"); process.exit(1); }
+    }
+    if (!d.source || typeof d.source.url !== "string") { console.log("source absente"); process.exit(1); }
+    console.log(d.recents.length + " teaser(s)");
+  ' "$fichier" 2>&1); then
+    echo "::notice::teaser des scrutins produit pour cette publication ($(wc -c < "$fichier") octets, $raison)"
+  else
+    echo "::error::teaser des scrutins present mais invalide ($raison) : publication bloquee"
+    exit 1
+  fi
 elif [ -d "$archive" ]; then
   # PANNE DE PRODUCTION = ECHEC, PAS AVERTISSEMENT (29/10/2026). L'archive est la,
   # le teaser devait l'etre : publier une note « indisponible » masquerait un
