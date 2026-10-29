@@ -88,7 +88,7 @@ jobs:
           pnpm build
 
       - name: Socle partage et invariants
-        run: node --test --test-concurrency=1 tests/core.test.mjs tests/invariants.test.mjs tests/sante.test.mjs tests/donnees.test.mjs tests/votes-vides.test.mjs apps/mobile/tests/cibles.test.mjs apps/mobile/tests/onglets.test.mjs apps/mobile/tests/theme.test.mjs apps/mobile/tests/parcours.test.mjs apps/mobile/tests/absences.test.mjs apps/mobile/tests/chaine.test.mjs apps/mobile/tests/dictionnaire.test.mjs apps/mobile/tests/niveaux.test.mjs apps/mobile/tests/vides-dates.test.mjs
+        run: node --test --test-concurrency=1 tests/core.test.mjs tests/invariants.test.mjs tests/sante.test.mjs tests/donnees.test.mjs tests/votes-vides.test.mjs tests/vote-vide-site.test.mjs apps/mobile/tests/cibles.test.mjs apps/mobile/tests/onglets.test.mjs apps/mobile/tests/theme.test.mjs apps/mobile/tests/parcours.test.mjs apps/mobile/tests/absences.test.mjs apps/mobile/tests/chaine.test.mjs apps/mobile/tests/dictionnaire.test.mjs apps/mobile/tests/niveaux.test.mjs apps/mobile/tests/vides-dates.test.mjs
 
       - name: Construire l'application (iOS, Android, web)
         working-directory: mono/apps/mobile

@@ -59,6 +59,6 @@ test("absences — « vote solennel » est expliqué là où le mot apparaît", 
   const fs = await import("node:fs");
   const path = await import("node:path");
   const src = fs.readFileSync(path.join(import.meta.dirname, "..", "..", "..", "packages", "core", "src", "votesVides.js"), "utf8");
-  const bloc = src.slice(src.indexOf("default:"));
+  const bloc = src.slice(src.indexOf("case ETAT_VOTE.POSITION_ABSENTE:"));
   assert.match(bloc, /vote d'ensemble d'un texte majeur/, "« vote solennel » doit être défini dans le texte du vide");
 });

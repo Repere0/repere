@@ -55,12 +55,12 @@ export function copieVoteVide(etat, { nom = "", releve, portee } = {}) {
     case ETAT_VOTE.RELEVE_INCOHERENT:
       return { titre: REFUS_APPARIEMENT.titre, corps: REFUS_APPARIEMENT.corps, lien };
     case ETAT_VOTE.CIRCO_INCONNUE:
-      return { titre: `Repère ne connaît pas la circonscription de ${nom}.`,
-        corps: "La commune est absente de la table du ministère de l'Intérieur, souvent parce qu'elle a été créée après son dernier découpage. Repère ne devine pas.", lien };
+      return { titre: nom ? `Repère ne connaît pas la circonscription de ${nom}.` : "Repère ne connaît pas la circonscription de cette commune.",
+        corps: "Le fichier du ministère de l'Intérieur que Repère lit ne donne pas de circonscription pour cette commune. Repère ne devine pas.", lien };
     case ETAT_VOTE.CIRCO_SANS_DEPUTE:
-      return { titre: `Le fichier des députés ne porte aucun député pour la circonscription de ${nom}.`,
+      return { titre: nom ? `Le fichier des députés ne porte aucun député pour la circonscription de ${nom}.` : "Le fichier des députés ne porte aucun député pour cette circonscription.",
         corps: "Ce n'est pas une absence de vote : la donnée manque dans le fichier que Repère lit. Repère ne devine pas le député.", lien };
-    default:
+    case ETAT_VOTE.POSITION_ABSENTE:
       return { titre: "Aucun vote solennel trouvé dans les données disponibles.",
         corps: [
           `Ce que couvrent les données : ${portee || "la source ne l'indique pas"}.`,
@@ -70,5 +70,9 @@ export function copieVoteVide(etat, { nom = "", releve, portee } = {}) {
           POSITION_NON_PORTEE,
         ].join(" "),
         lien };
+    default:
+      /* Un état inconnu ou absent ne prend jamais le texte « Aucun » : on le dit. */
+      return { titre: "Repère ne peut pas afficher le vote de ce député.",
+        corps: "Une donnée attendue manque ou n'a pas le bon format. Ce n'est pas une absence de vote.", lien };
   }
 }

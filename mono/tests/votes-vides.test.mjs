@@ -111,3 +111,29 @@ test("donnees reelles — une commune de Seine-et-Marne : l'état du vide est co
     cat: cat2, pos: pos2, deputes: dep, cal: null, agendaAN: null, evenements: null });
   assert.equal(sortie.dernierVote !== undefined, sortie.etatVote === null, "vote affiché ⇔ pas d'état de vide");
 });
+
+/* PASSE DU 29/10/2026 (soir) : reprise des cas limites. Chacun est écrit ROUGE
+   avant la correction : un nom vide ne doit pas produire « de . », un état
+   inconnu ne doit jamais s'annoncer « Aucun », et la circonscription inconnue ne
+   doit pas inventer une cause que la source ne donne pas. */
+test("copie — nom de commune vide : aucune phrase « de . » ni « de  »", () => {
+  for (const e of [ETAT_VOTE.CIRCO_INCONNUE, ETAT_VOTE.CIRCO_SANS_DEPUTE]) {
+    const c = copieVoteVide(e, { nom: "" });
+    assert.doesNotMatch(c.titre, / de \.|de\s{2}|de $/, `${e} : titre incomplet « ${c.titre} »`);
+    assert.match(c.titre, /cette (commune|circonscription)/, `${e} : repli attendu`);
+  }
+});
+
+test("copie — un état inconnu ou absent (null) ne s'annonce jamais « Aucun vote »", () => {
+  for (const e of [null, undefined, "etat-inconnu"]) {
+    const c = copieVoteVide(e, { releve: "2026-10-28", portee: "P" });
+    assert.doesNotMatch(c.titre, /^Aucun/, `${String(e)} : ne doit pas dire « Aucun »`);
+    assert.match(c.corps, /Ce n'est pas une absence de vote/, `${String(e)} : la phrase doit le dire`);
+  }
+});
+
+test("copie — la circonscription inconnue n'invente aucune cause que la source ne donne pas", () => {
+  const c = copieVoteVide(ETAT_VOTE.CIRCO_INCONNUE, { nom: "Meaux" });
+  assert.doesNotMatch(c.corps, /créée|découpage|après|dernier/, "cause non sourcée");
+  assert.match(c.corps, /Repère ne devine pas/);
+});

@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { Carte, Vide, Source, Chargement, dateFr, Mot } from "@repere/ui";
 import { Pile } from "@repere/ui/amicro";
 import { competencesIntercommunalite } from "@repere/core";
+import { copieVoteVide, ETAT_VOTE } from "@repere/core";
 import { delegationIntercommunalite } from "@repere/core";
 import { sansConseilDepartemental, listeFr } from "@repere/core";
 import { LigneVote, positionSur, positionsFiables, REFUS_APPARIEMENT, ordinal } from "../lib/votes.jsx";
@@ -169,9 +170,9 @@ function Votes({ dep, acteurRef, nom }) {
      lit par le numero du scrutin, jamais par un indice. */
   const lignes = cat.scrutins.map(sc => ({ sc, p: positionSur(pos, acteurRef, sc.n) })).reverse();
   if (!lignes.some(l => l.p)) {
-    return <Vide titre={`Le relevé des scrutins ne porte aucune position pour ${nom}.`}
-      corps="Un mandat ouvert après la période relevée, un siège pourvu en cours de législature : c'est la source qui est muette sur cette période, et Repère n'en déduit rien."
-      lien={{ texte: "Assemblée nationale — scrutins publics", url: s.url || AN_VOTES_URL }} />;
+    /* Même texte que partout ailleurs (core/votesVides.js) : une position absente
+       dit le périmètre et la date, sans cause que la source ne donne pas. */
+    return <Vide {...copieVoteVide(ETAT_VOTE.POSITION_ABSENTE, { releve: s.releve_le, portee: s.portee })} />;
   }
   const base = cat.url_scrutin || "";
 
@@ -321,9 +322,7 @@ function Depute({ dep, circo }) {
 
   const d = fichier.deputes[dep + "-" + circo];
   if (!d) {
-    return <Vide titre="Le fichier des mandats de l'Assemblée nationale ne porte personne pour cette circonscription."
-      corps="Un siège vacant, une législature qui change, un découpage plus récent que le relevé : c'est la source qui est muette, et Repère n'invente pas de nom."
-      lien={{ texte: "Assemblée nationale — députés en exercice", url: AN_URL }} />;
+    return <Vide {...copieVoteVide(ETAT_VOTE.CIRCO_SANS_DEPUTE, {})} />;
   }
 
   return (

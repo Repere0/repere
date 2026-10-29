@@ -103,3 +103,15 @@ test("E — l'application n'affirme nulle part « pour la législature actuelle 
   assert.doesNotMatch(vote + chez + absences, /pour la législature actuelle/, "la législature entière n'est pas couverte : les données sont les derniers votes");
 });
 
+
+/* Repli « vote présent, répartition absente » : le texte du vide ne doit jamais
+   être pris pour un vote absent. Avant, `vote && rep` tombait sur copieVoteVide
+   avec d.etatVote = null, donc sur le texte « Aucun vote solennel trouvé ».
+   Garde statique : elle lit le branchement, pas l'écran. */
+test("vides — chez-vous : un vote présent n'est jamais rendu comme un vide", async () => {
+  const fs = await import("node:fs");
+  const path = await import("node:path");
+  const src = fs.readFileSync(path.join(import.meta.dirname, "..", "src", "app", "(onglets)", "chez-vous.tsx"), "utf8");
+  assert.doesNotMatch(src, /vote && rep \?/, "la branche « vote » ne doit pas dépendre de la répartition");
+  assert.match(src, /preuve=\{rep \?/, "la répartition devient une preuve optionnelle");
+});
