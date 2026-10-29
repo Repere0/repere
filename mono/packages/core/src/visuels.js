@@ -254,7 +254,7 @@ export function chaineDecision({ fiche, paquet, index, deputes, elusRegion, dep 
       decide: COMPETENCES.region },
     { echelon: "france", niveau: "Assemblée nationale", institution: "Assemblée nationale",
       lieu: circos.length ? circos.map(c => `${c === 1 ? "1re" : c + "e"} circonscription`).join(", ") : null,
-      personne: dd.length && dd[0].d ? { nom: [dd[0].d.prenom, dd[0].d.nom].filter(Boolean).join(" "), role: "À l'Assemblée nationale pour votre circonscription" } : null,
+      personne: dd.length && dd[0].d ? { nom: [dd[0].d.prenom, dd[0].d.nom].filter(Boolean).join(" "), role: "À l'Assemblée nationale pour votre circonscription", debut: dd[0].d.dateDebut || null } : null,
       autresCircos: dd.length > 1 ? dd.length - 1 : 0,
       decide: COMPETENCES.france },
   ];

@@ -29,3 +29,12 @@ test("absences — le libellé d'un groupe de scrutin n'additionne pas une posit
   assert.doesNotMatch(corps, /\|\|\s*0\b/, "GroupeRow additionne une position absente comme zéro (|| 0)");
   assert.doesNotMatch(corps, /positions publiées/, "le libellé annonce une somme au lieu de ce qui est publié");
 });
+
+/* La date de debut d'un mandat est affichee avec sa source, ou le manque est dit. */
+test("absences — la fiche dit la date de début de mandat avec sa source, ou qu'elle n'est pas publiée", async () => {
+  const fs = await import("node:fs");
+  const path = await import("node:path");
+  const src = fs.readFileSync(path.join(import.meta.dirname, "..", "src", "app", "elu.tsx"), "utf8");
+  assert.match(src, /non publiée par la source/, "la fiche doit dire quand la date n'est pas publiée");
+  assert.match(src, /r\.deputes\.source\.releve_le/, "la date de début doit citer la date de relevé de sa source");
+});

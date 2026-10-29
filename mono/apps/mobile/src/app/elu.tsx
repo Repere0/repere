@@ -70,7 +70,10 @@ export default function Elu() {
   return (
     <AvecDonnees rendu={r => {
       const niveaux = chaineDecision({ fiche: r.d.fiche, paquet: r.paquet, index: r.index, deputes: r.deputes, elusRegion: r.elusRegion, dep: r.d.dep });
-      const decide = (niveaux as { echelon: string; decide?: string }[]).find(n => n.echelon === echelon)?.decide;
+      const niveau = (niveaux as { echelon: string; decide?: string; personne?: { debut?: string | null } | null }[]).find(n => n.echelon === echelon);
+      const decide = niveau?.decide;
+      /* Date de debut du mandat : seulement si la source la publie. Sinon, on le dit. */
+      const debut = niveau?.personne?.debut ?? null;
       const depute = echelon === "france";
       const vote = depute ? r.d.dernierVote as { sc: { t: string; d: string }; position?: string } | undefined : undefined;
       const libelleRole = [p.role, p.lieu].filter(Boolean).join(" · ");
@@ -157,6 +160,12 @@ export default function Elu() {
                 <Text style={[TYPO.corps, { fontWeight: "800" }]}>{p.role || nom}</Text>
                 {p.institution ? <Text style={TYPO.note}>{p.institution}</Text> : null}
                 {p.lieu ? <Text style={TYPO.note}>{p.lieu}</Text> : null}
+                <Text style={[TYPO.note, { marginTop: PAS * 2 }]}>
+                  {debut ? `En fonction depuis le ${dateFr(debut)}.` : "Date de début de la fonction : non publiée par la source. Repère ne la devine pas."}
+                </Text>
+                {debut && r.deputes && r.deputes.source && r.deputes.source.releve_le ? (
+                  <Text style={TYPO.note}>Source : {r.deputes.source.producteur}, données relevées le {dateFr(r.deputes.source.releve_le)}.</Text>
+                ) : null}
                 <Text style={[TYPO.note, { marginTop: PAS * 2 }]}>
                   Repère n'affiche que les faits de mandat publiés. Le patrimoine des élus, et leur présence ou absence aux séances, ne figurent jamais.
                 </Text>

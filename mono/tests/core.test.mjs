@@ -582,3 +582,13 @@ test("core — un numéro de scrutin absent n'est pas comparé comme zéro (ordr
   }
   assert.equal(ordreDesFaits({ ...base, sc: { n: 8430 } }, { ...base, sc: { n: 8434 } }) > 0, true, "le plus grand numéro doit venir en premier");
 });
+
+/* La date de début du mandat d'un député est transmise à la chaîne (fiche).
+   Absente de la source : elle reste absente (null), jamais inventée. */
+test("core — la chaîne transmet la date de début du mandat du député, ou rien", async () => {
+  const { chaineDecision } = await import("../packages/core/src/visuels.js");
+  const deputes = { deputes: { "93-1": { prenom: "Ada", nom: "Exemple", dateDebut: "2024-07-07" }, "93-2": { prenom: "Bo", nom: "Sans" } } };
+  const france = (fiche) => chaineDecision({ fiche, paquet: null, index: null, deputes, elusRegion: null, dep: "93" }).find(n => n.echelon === "france");
+  assert.equal(france({ nom: "X", circo: 1 }).personne.debut, "2024-07-07");
+  assert.equal(france({ nom: "X", circo: 2 }).personne.debut ?? null, null, "une date absente de la source ne doit pas être inventée");
+});
