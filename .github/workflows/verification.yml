@@ -1,11 +1,13 @@
-name: Verification (PR vers main)
+name: Verification (toute PR)
 
 # PROPOSITION DE CONTRÔLE STABLE — NON REQUIS, NON ACTIVÉ SUR main.
 #
 # Pourquoi : « Mobile (application, socle partagé) » ne se lance que pour certains
 # chemins, et « Épreuve » ignore les PR qui ne touchent que l'application mobile.
 # Un contrôle requis qui ne se lance pas bloque la fusion indéfiniment. Celui-ci se
-# lance sur TOUTE PR vers main, sans filtre de chemins, avec un nom de job stable.
+# lance sur TOUTE PR, sans filtre de chemins ni de base, avec un nom de job stable.
+#
+# Sans filtre de base : une PR empilée (base autre que main) reçoit aussi ce statut.
 #
 # Il reprend à l'identique les étapes de mobile.yml (même texte, même ordre) : cela
 # ne change que le déclencheur, la concurrence et le nom. Il ne couvre PAS la
@@ -15,7 +17,6 @@ name: Verification (PR vers main)
 
 on:
   pull_request:
-    branches: [main]
 
 permissions:
   contents: read
