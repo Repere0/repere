@@ -106,3 +106,19 @@ export const REFUS_APPARIEMENT = {
     + " dates différentes. Plutôt que d'afficher une position qui pourrait être celle"
     + " d'un autre scrutin, Repère n'affiche rien. Le reste de l'écran est complet.",
 };
+
+/* Un decompte absent n'est JAMAIS un zero (doctrine du vide). Number(null) et
+   Number("") valent 0 : on teste l'absence avant toute conversion. */
+export function decompteAbsent(v) {
+  return v === null || v === undefined || String(v).trim() === "" || !Number.isFinite(Number(v));
+}
+export function nombreDecompte(v) {
+  return decompteAbsent(v) ? "—" : Number(v).toLocaleString("fr-FR");
+}
+export function resultatDecompteCourt(dec) {
+  return [
+    decompteAbsent(dec.pour) ? null : `${nombreDecompte(dec.pour)} pour`,
+    decompteAbsent(dec.contre) ? null : `${nombreDecompte(dec.contre)} contre`,
+    decompteAbsent(dec.abstentions) ? null : `${nombreDecompte(dec.abstentions)} abstention${Number(dec.abstentions) > 1 ? "s" : ""}`,
+  ].filter(Boolean).join(" · ");
+}

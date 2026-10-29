@@ -23,7 +23,7 @@ import { Page } from "../ui/page";
 import { Vide } from "../lib/composants";
 import { PastilleSource } from "../ui/source";
 import { PAS, TYPO, couleurs, CIBLE, RAYON, OMBRE } from "../lib/theme";
-import { dateFr, titreLisible } from "@repere/core";
+import { dateFr, titreLisible, nombreDecompte, resultatDecompteCourt } from "@repere/core";
 
 type Resume = {
   n: string; d: string; t: string; ty: string; s: string;
@@ -67,18 +67,6 @@ type Index = {
 
 const position = (p: string) => p === "p" ? "Pour" : p === "c" ? "Contre" : "Abstention";
 
-function nombre(v: string | number | null | undefined) {
-  return v == null ? "—" : Number(v).toLocaleString("fr-FR");
-}
-
-function resultatCourt(x: Resume) {
-  return [
-    x.dec.pour != null ? `${nombre(x.dec.pour)} pour` : null,
-    x.dec.contre != null ? `${nombre(x.dec.contre)} contre` : null,
-    x.dec.abstentions != null ? `${nombre(x.dec.abstentions)} abstention${Number(x.dec.abstentions) > 1 ? "s" : ""}` : null,
-  ].filter(Boolean).join(" · ");
-}
-
 /* Les archives QAG contiennent du HTML dans certains champs. Repère n'affiche
  * jamais les balises brutes : on nettoie uniquement la présentation, sans
  * reconstituer ni résumer le contenu absent. */
@@ -102,12 +90,12 @@ function textePropre(value: string | null | undefined) {
 
 function StatutVote({ detail }: { detail: Detail }) {
   return (
-    <View style={s.resultat} accessible accessibilityLabel={resultatCourt(detail)}>
-      <View style={s.stat}><Text style={s.statNombre}>{nombre(detail.dec.pour)}</Text><Text style={s.statLibelle}>pour</Text></View>
+    <View style={s.resultat} accessible accessibilityLabel={resultatDecompteCourt(detail.dec)}>
+      <View style={s.stat}><Text style={s.statNombre}>{nombreDecompte(detail.dec.pour)}</Text><Text style={s.statLibelle}>pour</Text></View>
       <View style={s.statSep} />
-      <View style={s.stat}><Text style={s.statNombre}>{nombre(detail.dec.contre)}</Text><Text style={s.statLibelle}>contre</Text></View>
+      <View style={s.stat}><Text style={s.statNombre}>{nombreDecompte(detail.dec.contre)}</Text><Text style={s.statLibelle}>contre</Text></View>
       <View style={s.statSep} />
-      <View style={s.stat}><Text style={s.statNombre}>{nombre(detail.dec.abstentions)}</Text><Text style={s.statLibelle}>abstention</Text></View>
+      <View style={s.stat}><Text style={s.statNombre}>{nombreDecompte(detail.dec.abstentions)}</Text><Text style={s.statLibelle}>abstention</Text></View>
     </View>
   );
 }
@@ -373,7 +361,7 @@ export default function Scrutins() {
 
                 <View style={s.blocLecture}>
                   <Text style={TYPO.etiquette}>En bref</Text>
-                  <Text style={s.phraseResultat}>{resultatCourt(detail)}</Text>
+                  <Text style={s.phraseResultat}>{resultatDecompteCourt(detail.dec)}</Text>
                   <StatutVote detail={detail} />
                 </View>
 

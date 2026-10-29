@@ -532,3 +532,28 @@ test("regression — un montant publie a zero reste zero ; un denominateur nul n
   assert.ok(!pasDeDepenses.some(o => /NaN|Infinity/.test(o.v)), "jamais NaN ni Infinity");
   assert.equal(m.chiffresComptes(ex(0, 0)).partSalaires, null, "denominateur nul : pas de part");
 });
+
+test("regression — un decompte de scrutin vide n'est jamais affiche comme zero (ecran scrutins)", async () => {
+  const C = await import("../packages/core/src/index.js");
+  for (const absent of [null, undefined, "", "   "]) {
+    assert.equal(C.nombreDecompte(absent), "—", `nombreDecompte(${JSON.stringify(absent)}) doit etre un tiret`);
+  }
+  assert.equal(C.nombreDecompte("0"), "0", "un zero publie reste zero");
+  assert.equal(C.nombreDecompte("1234"), (1234).toLocaleString("fr-FR"), "separateur de milliers francais (celui du navigateur)");
+  assert.equal(C.nombreDecompte("abc"), "—", "une valeur non numerique n'est pas un nombre");
+  assert.equal(
+    C.resultatDecompteCourt({ pour: "", contre: "2", abstentions: "1" }),
+    "2 contre · 1 abstention",
+    "pour vide : pas de « 0 pour »"
+  );
+  assert.equal(
+    C.resultatDecompteCourt({ pour: "10", contre: "2", abstentions: "" }),
+    "10 pour · 2 contre",
+    "abstention vide : pas de « 0 abstention »"
+  );
+  assert.equal(
+    C.resultatDecompteCourt({ pour: "0", contre: "0", abstentions: "0" }),
+    "0 pour · 0 contre · 0 abstention",
+    "des zeros publies restent des zeros"
+  );
+});
