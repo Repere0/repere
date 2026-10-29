@@ -137,3 +137,13 @@ test("copie — la circonscription inconnue n'invente aucune cause que la source
   assert.doesNotMatch(c.corps, /créée|découpage|après|dernier/, "cause non sourcée");
   assert.match(c.corps, /Repère ne devine pas/);
 });
+
+/* Lisibilité, par la structure du texte : la position absente porte cinq
+   informations distinctes ; elles ne forment pas un seul bloc. Un saut de ligne
+   entre elles ne change aucun mot. Écrit rouge avant correction. */
+test("copie — la position absente est en paragraphes séparés, pas en un seul bloc", () => {
+  const c = copieVoteVide(ETAT_VOTE.POSITION_ABSENTE, { releve: "2026-10-28", portee: "P" });
+  assert.equal(c.corps.split("\n").length, 5, "cinq paragraphes attendus : périmètre, durée, date, définition, non-vote");
+  assert.match(c.corps.split("\n")[0], /^Ce que couvrent les données : P\.$/);
+  assert.match(c.corps.split("\n")[4], /Une position non portée n'est pas une absence/);
+});

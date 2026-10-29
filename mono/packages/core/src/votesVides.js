@@ -68,7 +68,7 @@ export function copieVoteVide(etat, { nom = "", releve, portee } = {}) {
           releve ? `Données récupérées le ${dateFr(releve)}.` : "La date à laquelle ces données ont été récupérées n'est pas connue.",
           "Un vote solennel est un scrutin public, généralement sur le vote d'ensemble d'un texte majeur, c'est-à-dire le vote sur le texte entier (fiche « Votes » de l'Assemblée nationale, juillet 2024).",
           POSITION_NON_PORTEE,
-        ].join(" "),
+        ].join("\n"),
         lien };
     default:
       /* Un état inconnu ou absent ne prend jamais le texte « Aucun » : on le dit. */
