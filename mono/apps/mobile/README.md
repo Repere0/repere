@@ -50,9 +50,34 @@ d'Île-de-France. Les données sont celles du site en production.
 | Réglages > Accessibilité > Mouvement > Réduire les animations | les montants s'affichent d'un coup, les barres pleines d'emblée |
 | VoiceOver | chaque graphique se lit en une phrase (« Pour : 378, contre : 7… ») |
 
-Ce qui est normal aujourd'hui : pas de fonctionnement hors ligne ; la source du maire n'a pas
-encore de lien (il arrive avec #42) ; l'app n'existe qu'en mode clair ; Paris et les
-communes à plusieurs circonscriptions ne nomment qu'un député dans « Qui décide ».
+**Hors ligne, ce qui est vrai (les deux supports ne se valent pas) :**
+
+- **Le site** (navigateur) garde le département consulté dans le navigateur et le relit sans réseau. C'est testé dans un vrai navigateur, serveur coupé (`tests/runtime.test.mjs`).
+- **L'application** garde le département consulté dans le dossier cache de l'application et le relit sans réseau. C'est testé sur les modules de données (`tests/donnees.test.mjs`), **pas encore sur un iPhone ni sur un Android** : à valider avec les bêta-testeurs.
+- **Un département jamais consulté** ne se télécharge pas hors ligne. Sur l'application, l'écran affiche la phrase d'échec de connexion, et non la phrase « vous êtes hors ligne » : React Native ne permet pas de savoir que l'appareil est hors ligne. Défaut documenté : B-06.
+
+**Autres points normaux aujourd'hui :** l'application suit le thème clair ou sombre du téléphone ; la source du maire n'a pas encore de lien (il arrive avec #42, numéro non vérifié dans ce dépôt) ; Paris et les communes à plusieurs circonscriptions ne nomment qu'un député dans « Qui décide ».
+
+## Les messages d'état, tels qu'ils s'affichent
+
+Ces phrases sont celles du code (`packages/data-utils/src/client.js`, constantes `PHRASES` et `PHRASES_FRAICHEUR`). Le titre est lu tel quel à l'écran ; le corps est affiché dessous. Ce qui suit est extrait des constantes, pas réécrit.
+
+| situation | titre affiché | constante |
+|---|---|---|
+| les données arrivent | Chargement des données de votre département. | `PHRASES["en cours"]` |
+| le serveur ne répond pas | Repère n'a pas réussi à joindre le serveur. | `PHRASES["echec"]` (bouton « Réessayer ») |
+| hors ligne, département jamais reçu | Vous êtes hors ligne, et ce département n'a jamais été téléchargé sur cet appareil. | `PHRASES["hors ligne"]`, **inatteignable sur l'application (B-06)** |
+| le fichier n'existe pas (404) | Ce département ne figure pas dans le découpage publié. | `PHRASES["introuvable"]` |
+| le serveur répond, mais pas avec les données | Le serveur a répondu, mais pas avec les données attendues. | `PHRASES["invalide"]` |
+| une partie date d'une publication précédente | Une partie de ce qui s'affiche date d'une publication précédente. | `PHRASES_FRAICHEUR["precedente"]` |
+| le serveur n'a pas pu confirmer la dernière publication | Repère n'a pas pu vérifier s'il existe une publication plus récente. | `PHRASES_FRAICHEUR["inconnue"]` |
+| une publication plus récente est arrivée pendant l'usage | Une publication plus récente est disponible. (bouton « Mettre à jour ») | `PHRASES_FRAICHEUR["nouvelle"]` |
+
+**Attendu :** un message d'échec ne s'affiche jamais au-dessus de données présentes (un test de navigateur le vérifie sur le site, `tests/runtime.test.mjs`). Hors ligne, un département déjà reçu reste lisible.
+
+**Non attendu :** un message qui dit « pas de réseau » alors que le téléphone est connecté ; des données anciennes présentées comme du jour sans la mention « publication précédente ».
+
+**Pour signaler un problème :** dis le département, le message exact affiché, ce que tu venais de faire, et si tu étais en Wi-Fi, en 4G ou en mode avion.
 
 ## Si ça bloque
 
