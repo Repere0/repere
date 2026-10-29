@@ -18,3 +18,19 @@ export function Retour({ texte, etiquette }: { texte: string; etiquette: string 
     </Pressable>
   );
 }
+
+/* CHANGER DE COMMUNE, DEPUIS UN ONGLET. Ramene a l'accueil en remplacant la
+   route : un simple retour arriere ouvrirait l'onglet precedent (sur « Qui
+   decide », c'etait « Aujourd'hui »), pas le choix de commune. */
+export function ChangerCommune() {
+  return (
+    <Pressable
+      onPress={() => router.replace("/")}
+      accessibilityRole="button"
+      accessibilityLabel="Changer de commune : revenir à l'accueil"
+      style={({ pressed }) => ({ minHeight: CIBLE, minWidth: CIBLE, justifyContent: "center", paddingHorizontal: 8, opacity: pressed ? 0.6 : 1 })}
+    >
+      <Text style={{ fontSize: 17, color: couleurs.lien, fontWeight: "600" }}>‹ Communes</Text>
+    </Pressable>
+  );
+}

@@ -12,7 +12,7 @@ import { Text, type ColorValue } from "react-native";
 import { Tabs } from "expo-router";
 import { LIBELLES } from "@repere/core";
 import { couleurs } from "../../lib/theme";
-import { Retour } from "../../ui/retour";
+import { ChangerCommune } from "../../ui/retour";
 
 /* Une icone sobre par onglet : un caractere, sans bibliotheque d'icones de plus. */
 const icone = (glyphe: string) => ({ color }: { color: ColorValue }) => (
@@ -30,6 +30,7 @@ export default function Onglets() {
         tabBarInactiveTintColor: couleurs.sourd,
         tabBarStyle: { backgroundColor: couleurs.carte, borderTopColor: couleurs.trait, height: 72, paddingTop: 6 },
         tabBarLabelStyle: { fontSize: 13, fontWeight: "700" },
+        headerLeft: () => <ChangerCommune />,
       }}
     >
       <Tabs.Screen
@@ -38,7 +39,6 @@ export default function Onglets() {
           title: LIBELLES.aujourdhui,
           tabBarLabel: LIBELLES.aujourdhui,
           tabBarIcon: icone("◷"),
-          headerLeft: () => <Retour texte="Communes" etiquette="Revenir à l'accueil pour changer de commune" />,
         }}
       />
       <Tabs.Screen name="qui-decide" options={{ title: LIBELLES.qui, tabBarLabel: LIBELLES.qui, tabBarIcon: icone("⌂") }} />

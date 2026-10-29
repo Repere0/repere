@@ -61,3 +61,18 @@ test("parcours — chaque écran de l'application est atteignable depuis l'accue
   const impasses = TOUS.filter(e => !vus.has(e));
   assert.deepEqual(impasses, [], "écrans sans geste d'accès : " + impasses.join(", "));
 });
+
+/* Changer de commune depuis chaque onglet. Le bouton de la barre doit ramener
+   a l'accueil (remplacement de la route), et non revenir dans l'historique : sur
+   l'onglet « Qui decide », un retour arriere ouvrirait l'onglet precedent. */
+test("parcours — chaque onglet offre « changer de commune », qui ramene a l'accueil", () => {
+  const s = sansCommentaires(lire(path.join(APP, "(onglets)", "_layout.tsx")));
+  const globale = /screenOptions=\{\{[\s\S]*?headerLeft:\s*\(\)\s*=>\s*<ChangerCommune/.test(s);
+  const ecrans = [...s.matchAll(/<Tabs\.Screen\s[\s\S]*?\/>/g)].map(m => m[0]);
+  const sans = ecrans
+    .filter(x => !globale && !/headerLeft:\s*\(\)\s*=>\s*<ChangerCommune/.test(x))
+    .map(x => x.match(/name="([^"]+)"/)[1]);
+  assert.deepEqual(sans, [], "onglets sans « changer de commune » : " + sans.join(", "));
+  const retour = sansCommentaires(lire(path.join(RACINE, "src", "ui", "retour.tsx")));
+  assert.match(retour, /export function ChangerCommune[\s\S]*router\.replace\("\/"\)/, "le bouton doit remplacer la route par l'accueil");
+});
