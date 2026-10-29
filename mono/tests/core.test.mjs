@@ -629,3 +629,14 @@ test("core — ordre du jour total : quel que soit l'ordre d'entrée, numéroté
   }
   assert.deepEqual(mauvais, [], `ordre dépendant de l'entrée : ${mauvais.length} permutation(s) mal triée(s)`);
 });
+
+/* Un montant absent n'est jamais « 0 € » (Number(null) = 0) ni « NaN € ».
+   Doctrine du vide (invariant 5) : une phrase vraie, pas un zéro. */
+test("core — euros() : un montant absent n'est pas 0 €, ni NaN €", async () => {
+  const { euros } = await import("../packages/core/src/format.js");
+  assert.notEqual(euros(null), "0 €", "null devient 0 €");
+  assert.notEqual(euros(undefined), "0 €");
+  assert.doesNotMatch(euros(undefined), /NaN/, "undefined devient NaN €");
+  assert.doesNotMatch(euros(null), /NaN/);
+  assert.equal(euros(0), "0 €", "un vrai zéro reste 0 €");
+});
