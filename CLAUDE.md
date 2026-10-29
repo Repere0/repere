@@ -105,6 +105,9 @@ explicite du porteur les change ; la PR qui l'applique met alors à jour
 - Un garde-fou se prouve en le cassant.
 - Apostrophe typographique `’` interdite dans le code ; accents obligatoires dans
   tout texte affiché.
+- Commentaires (convention Ponytail, décision du porteur, 17/10/2026) : une ligne, le
+  pourquoi que le code ne dit pas ; mesure, date et historique vont dans le message de
+  commit ; limite assumée : `shortcut: <limite>, <quand revoir>`. Pas de réécriture en masse.
 - Un fait durable va dans `CONTEXTE_PROJET.md`, une procédure dans une skill,
   jamais dans ce fichier.
 - Avant toute PR qui touche ce fichier, `AGENTS.md`, une skill ou
