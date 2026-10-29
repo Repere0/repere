@@ -640,3 +640,30 @@ test("core — euros() : un montant absent n'est pas 0 €, ni NaN €", async (
   assert.doesNotMatch(euros(null), /NaN/);
   assert.equal(euros(0), "0 €", "un vrai zéro reste 0 €");
 });
+
+/* DETTE — 29/10/2026. Trois etats que l'application ne doit jamais confondre : valeur
+   inconnue (rien a dire, pas de zero), zero publie (« aucun emprunt »), et montant
+   connu mais sans ratio en mois (recettes absentes ou nulles). Le mobile, avant ce
+   controle, ne rendait rien dans les deux premiers cas : une carte absente sans un mot. */
+test("visuels — dette : inconnue, nulle, sans ratio : trois etats distincts, jamais un zero invente", async () => {
+  const m = await import("../packages/core/src/index.js");
+  // [population, recettes m, h, depenses m, h, dette m, h]
+  const ex = (rec, det) => [1000, rec, rec, 1100, 1100, det, det];
+  assert.equal(typeof m.etatDette, "function", "etatDette doit exister : la decision est dans le paquet, pas dans l'ecran");
+  assert.equal(m.etatDette(ex(1200, null)), "inconnue", "dette absente : inconnue, pas zero");
+  assert.equal(m.chiffresComptes(ex(1200, null)).dette, null, "null reste null");
+  assert.equal(m.etatDette(ex(1200, 0)), "nulle", "zero publie : aucun emprunt, pas inconnu");
+  assert.equal(m.etatDette(ex(1200, 1600)), "mois", "dette et recettes connues : le ratio en mois");
+  assert.equal(m.etatDette(ex(null, 1600)), "montant_sans_ratio", "dette connue, recettes absentes : le montant, sans ratio invente");
+  assert.equal(m.etatDette(ex(0, 1600)), "montant_sans_ratio", "recettes a zero : pas de division, le montant reste dit");
+});
+
+/* GARDE DU MOBILE — 29/10/2026. Les deux etats qui se taisaient (dette inconnue,
+   montant sans ratio) doivent avoir leur branche dans l'ecran : sans elle, la carte
+   disparait sans un mot. Lu sur le source, car l'ecran n'est pas rendu en Node. */
+test("mobile — argent : la dette inconnue et le montant sans ratio ont leur branche, jamais une carte absente", () => {
+  const src = fs.readFileSync(path.join(import.meta.dirname, "..", "apps/mobile/src/app/argent.tsx"), "utf8");
+  assert.ok(/etatDette\(ex\.ex\) === "inconnue"/.test(src), "branche « dette inconnue » absente de argent.tsx");
+  assert.ok(/etatDette\(ex\.ex\) === "montant_sans_ratio"/.test(src), "branche « montant sans ratio » absente de argent.tsx");
+  assert.ok(/Non renseignée dans les comptes/.test(src), "phrase de l'absence absente");
+});

@@ -94,6 +94,22 @@ export function chiffresComptes(ex) {
   };
 }
 
+/* LA DETTE, EN TROIS ETATS (29/10/2026). Decision partagee par le site et
+   l'application, pour qu'un seul endroit decide ce qui s'affiche :
+     "inconnue"            : la source ne porte pas la ligne -> une phrase « non renseigne »,
+                             jamais un zero, jamais une carte absente sans un mot ;
+     "nulle"               : zero publie -> « aucun emprunt », une vraie information ;
+     "mois"                : dette et recettes connues -> le ratio en mois de recettes ;
+     "montant_sans_ratio"  : dette connue, recettes absentes ou nulles -> le montant
+                             seul, sans ratio invente. */
+export function etatDette(ex) {
+  const c = chiffresComptes(ex);
+  if (c.dette === null) return "inconnue";
+  if (c.dette === 0) return "nulle";
+  if (c.detteMois !== null) return "mois";
+  return "montant_sans_ratio";
+}
+
 /* Un projet finance par l'Etat : la subvention rapportee au cout declare du
    projet, tous deux publies par la DGCL. La part est un calcul de Repere. Le
    reste n'est attribue a personne : la source ne dit pas qui le paie. */

@@ -13,7 +13,7 @@
 import { Text, View } from "react-native";
 import { Stack } from "expo-router";
 import {
-  chiffresComptes, comptesAbsents, comptesIncoherents, comptesInsuffisants, diffEuros, eurosArrondis,
+  chiffresComptes, etatDette, comptesAbsents, comptesIncoherents, comptesInsuffisants, diffEuros, eurosArrondis,
   evolution, exercicesEcartes, financementProjet, INTRO_EVOLUTION, introRapports, montantCourt, noteRattachement,
   NOTE_EVOLUTION, NOTE_FINANCEMENT, nomDispositif, parHabitant, partReperee, perimetreChange, phraseEcartes,
   phraseProjetLocal, rapports, sousTitreRapports, euros, CALCUL_REPERE, LIBELLES,
@@ -113,6 +113,26 @@ export default function Argent() {
 
               {/* LA DETTE. Une dette publiee a zero a sa propre branche, plus bas : elle
                   ne passe pas ici (depuis fba0bf9, detteMois vaut 0 et non plus null). */}
+              {/* TROIS ETATS DE LA DETTE (29/10/2026), decides par etatDette() dans
+                  @repere/core, comme sur le site : inconnue -> une phrase « non renseignee »
+                  (jamais une carte absente) ; nulle -> « aucun emprunt » ; montant sans
+                  ratio -> le montant seul ; mois -> la carte complete. */}
+              {ex && etatDette(ex.ex) === "inconnue" ? (
+                <Carte echelon="ville" titre={`Sa dette, fin ${ex.an}`}>
+                  <Resume phrase={`Non renseignée dans les comptes ${ex.an}.`} />
+                  <Text style={TYPO.micro}>Le fichier ne porte pas cette ligne : ce n'est pas un montant nul.</Text>
+                  <PastilleSource source={srcComptes(d)} />
+                </Carte>
+              ) : null}
+
+              {ex && etatDette(ex.ex) === "montant_sans_ratio" && dette ? (
+                <Carte echelon="ville" titre={`Sa dette, fin ${ex.an}`}>
+                  <Resume phrase={`${nom} doit encore rembourser ${dette}.`} />
+                  <Text style={TYPO.micro}>Le ratio en mois de recettes n'est pas calculable : les recettes ne sont pas publiées pour cet exercice.</Text>
+                  <PastilleSource source={srcComptes(d)} />
+                </Carte>
+              ) : null}
+
               {ch.detteMois !== null && ch.dette !== 0 && dette ? (
                 <Carte echelon="ville" titre={`Sa dette, fin ${ex.an}`}>
                   <Resume phrase={`${nom} doit encore rembourser ${dette.texte}.`}
