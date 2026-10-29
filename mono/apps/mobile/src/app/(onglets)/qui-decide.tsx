@@ -38,7 +38,8 @@ export default function QuiDecide() {
           /* 07/10/2026 : les precisions propres au territoire (Ile-de-France,
              Metropole du Grand Paris) viennent de @repere/core, comme sur le site. */
           const precisions = (n as { precisions?: string[] }).precisions || [];
-          return { ...n, note: [n.delegues === null
+          /* D20, lot L2 : le mot « intercommunalité » se definit sous la carte (bouton, cible 44 px). */
+          return { ...n, pied: <Definitions s={[{ t: "intercommunalité", mot: "intercommunalité" }]} />, note: [n.delegues === null
             ? "La source ne liste pas l'intercommunalité de cette commune. C'est la source qui est incomplète, pas la commune qui n'en a pas."
             : n.delegues
             ? `Le Répertoire national des élus y liste ${n.delegues} élu${n.delegues > 1 ? "s" : ""} de ${d.nomCommune}. Vous ne l'élisez pas directement : ce sont des conseillers municipaux qui y siègent.`
@@ -50,7 +51,8 @@ export default function QuiDecide() {
         if (n.echelon === "dept" && !n.personne) {
           /* 08/10/2026 : certains territoires n'ont REELLEMENT pas de conseil departemental */
           const sans = sansConseilDepartemental(d.dep);
-          return { ...n, note: sans ? `${sans.titre} ${sans.corps}` : "Le Répertoire national des élus ne porte pas de conseil départemental pour ce territoire." };
+          /* D20, lot L2 : « conseil départemental » se definit sous la carte. */
+          return { ...n, pied: <Definitions s={[{ t: "conseil départemental", mot: "conseil départemental" }]} />, note: sans ? `${sans.titre} ${sans.corps}` : "Le Répertoire national des élus ne porte pas de conseil départemental pour ce territoire." };
         }
         if (n.echelon === "france") {
           return { ...n, note: n.autresCircos ? `${d.nomCommune} est partagée entre plusieurs circonscriptions : un seul député est nommé ici.` : undefined,

@@ -88,3 +88,14 @@ test("le Sénat : le collège des grands électeurs compte des députés, pas se
   assert.match(corps, /députés/, "la definition du Senat omet les deputes parmi les grands electeurs");
   assert.match(corps, /élus locaux/, "la definition du Senat doit nommer les elus locaux");
 });
+
+/* D20, lot L2 (29/10/2026) : sur « Qui decide », l'intercommunalite et le conseil
+   departemental ont un bouton « Voir la definition » ; chaque terme doit exister
+   dans le glossaire de @repere/core (sinon le bouton est une impasse). */
+test("D20 L2 — « Qui décide » définit l'intercommunalité et le conseil départemental", () => {
+  const src = fs.readFileSync(path.join(ICI, "..", "src", "app", "(onglets)", "qui-decide.tsx"), "utf8");
+  for (const mot of ["intercommunalité", "conseil départemental"]) {
+    assert.ok(src.includes(`<Definitions s={[{ t: "${mot}", mot: "${mot}" }]} />`), `pas de bouton de définition pour « ${mot} »`);
+    assert.ok(core.GLOSSAIRE[mot], `« ${mot} » absent du glossaire de @repere/core`);
+  }
+});
