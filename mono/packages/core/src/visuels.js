@@ -241,7 +241,8 @@ export function chaineDecision({ fiche, paquet, index, deputes, elusRegion, dep 
     { echelon: "agglo", niveau: "Intercommunalité", institution: fiche.agglo && fiche.agglo.nom ? fiche.agglo.nom : "Intercommunalité",
       lieu: null,
       personne: null,
-      delegues: fiche.agglo && Array.isArray(fiche.agglo.delegues) ? fiche.agglo.delegues.length : 0,
+      /* Bloc absent du fichier : on ne sait pas (null). Liste publiee, meme vide : c'est un zero publie. */
+      delegues: fiche.agglo && Array.isArray(fiche.agglo.delegues) ? fiche.agglo.delegues.length : null,
       ...(() => { const ci = competencesIntercommunalite({ agglo: fiche.agglo, regionCode: depIndex && depIndex.region_code, dep });
         return { decide: ci.decide, precisions: ci.precisions, sources: ci.sources }; })() },
     { echelon: "dept", niveau: "Département", institution: "Conseil départemental", lieu: depIndex ? depIndex.nom : null,

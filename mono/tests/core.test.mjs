@@ -557,3 +557,13 @@ test("regression — un decompte de scrutin vide n'est jamais affiche comme zero
     "des zeros publies restent des zeros"
   );
 });
+
+test("regression — une intercommunalite absente des donnees n'est pas un zero de delegues (ni « ne porte pas de délégué »)", async () => {
+  const C = await import("../packages/core/src/index.js");
+  const base = { nom: "Amillis", maire: { nom: "Prénom Nom" }, circo: 2 };
+  const agglo = fiche => C.chaineDecision({ fiche, paquet: { elus: [] }, index: { departements: [] }, deputes: null, elusRegion: null, dep: "77" })
+    .find(n => n.echelon === "agglo");
+  assert.equal(agglo(base).delegues, null, "agglo absent du fichier : inconnu, pas zero");
+  assert.equal(agglo({ ...base, agglo: { nom: "CC test", delegues: [] } }).delegues, 0, "liste publiee vide : zero publie reste zero");
+  assert.equal(agglo({ ...base, agglo: { nom: "CC test", delegues: [{ nom: "A B" }] } }).delegues, 1);
+});
