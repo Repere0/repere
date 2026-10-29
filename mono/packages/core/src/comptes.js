@@ -26,29 +26,31 @@ export function rapports(ex, niveau = "commune") {
   const v = i => valeur(ex, i);
   const [rec, dep, det, inv, sal, imp] = [0, 1, 2, 3, 4, 5].map(v);
   const nn = x => x && typeof x.m === "number" && x.m > 0;
+  /* numerateur : un montant publie a zero reste zero (le site l'affiche « 0 € ») */
+  const nnNum = x => !!(x && typeof x.m === "number" && Number.isFinite(x.m) && x.m >= 0);
   const out = [];
-  if (nn(det) && nn(rec)) out.push({
+  if (nnNum(det) && nn(rec)) out.push({
     l: "Son encours de dette", mot: "encours de dette",
     v: (det.m / (rec.m / 12)).toLocaleString("fr-FR", { minimumFractionDigits: 1, maximumFractionDigits: 1 }) + " mois de recettes",
     d: "Si tout ce qui est encaissé allait au remboursement, il faudrait ce temps-là. Ce n'est pas ce qui se passe : une dette se rembourse sur des années, et un emprunt sert le plus souvent à payer un équipement qui durera plus longtemps que lui.",
   });
-  if (nn(sal) && nn(dep)) out.push({
+  if (nnNum(sal) && nn(dep)) out.push({
     l: "Sur 100 € dépensés", v: pourCent(sal.m, dep.m) + " € de salaires",
     d: (niveau === "commune" ? "Ce sont les agents qui tiennent l'école, la cantine, l'état civil, les espaces verts." : "Ce sont les agents de la collectivité.")
       + " Une part élevée n'est pas un gaspillage : c'est souvent le signe d'une collectivité qui rend ses services elle-même plutôt que de les acheter à l'extérieur.",
   });
-  if (nn(inv) && nn(dep)) out.push({
+  if (nnNum(inv) && nn(dep)) out.push({
     l: "Sur 100 € dépensés", v: pourCent(inv.m, dep.m) + " € pour investir",
     d: "Investir, c'est payer ce qui durera : des travaux, des bâtiments, des équipements, et parfois une aide versée au projet d'un autre. Cette part bouge beaucoup d'une année à l'autre — haute l'année d'un chantier, basse ensuite. Une seule année ne dit rien d'une tendance.",
   });
-  if (nn(imp) && nn(rec)) {
+  if (nnNum(imp) && nn(rec)) {
     const p = pourCent(imp.m, rec.m);
     out.push({
       l: "Sur 100 € encaissés", v: p + " € d'impôts et taxes",
       d: `Les ${100 - p} € restants viennent d'ailleurs : dotations versées par l'État, subventions d'autres collectivités, sommes payées par les usagers de certains services. Repère ne détaille pas cette composition — le fichier ne la porte pas.`,
     });
   }
-  if (nn(dep)) out.push({
+  if (nnNum(dep)) out.push({
     l: "Ses dépenses", v: Math.round(dep.m / 365).toLocaleString("fr-FR") + " € par jour",
     d: "Moyenne sur l'année, pas un rythme réel : les dépenses d'une collectivité sont très irrégulières. C'est une façon de rendre un total annuel imaginable, rien de plus.",
   });

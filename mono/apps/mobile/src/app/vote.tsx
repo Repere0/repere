@@ -15,10 +15,9 @@ import { Pressable } from "react-native";
 import {
   CONSTITUTION_45_URL, dateFr, ETAPES_LOI, etapeDuScrutin, ligneScrutin, motPosition,
   phraseCirconscription, phraseDenominateurVote, phrasePosition, POSITION_NON_PORTEE, procedure,
-  repartitionVote, REFUS_APPARIEMENT, titreLisible, MOTS,
+  repartitionVote, titreLisible, MOTS, chaineDecision, copieVoteVide, ETAT_VOTE,
 } from "@repere/core";
 import { Carte, Segments, Vide } from "../lib/composants";
-import { circoInconnue, VOTE_AUCUN, VOTES_PAS_ARRIVES } from "../lib/absences";
 import { srcScrutins, srcVote } from "../lib/sources";
 import { useCommuneChoisie } from "../lib/useCommune";
 import { couleurs, PAS, TYPO, CIBLE } from "../lib/theme";
@@ -34,19 +33,31 @@ export default function Vote() {
     <AvecDonnees rendu={r => {
       const { d } = r;
       const vote: FaitVote | undefined = d.dernierVote;
-      const entete = <Question emoji="🗳️" etiquette="Votre député" question="Qu'a voté votre député ?" />;
-      if (!r.votesLus) return <Page>{entete}<Vide {...VOTES_PAS_ARRIVES} action="Réessayer" onAction={reessayer} /></Page>;
-      if (!r.votesFiables) return <Page>{entete}<Vide titre={REFUS_APPARIEMENT.titre} corps={REFUS_APPARIEMENT.corps} /></Page>;
-      if (!vote) return <Page>{entete}<Vide {...(d.nbCircos === 0 ? circoInconnue(d.nomCommune) : { ...VOTE_AUCUN, corps: POSITION_NON_PORTEE })} /></Page>;
+      /* Commune partagée : le vote affiché est celui d'un exemple, pas « votre » député (invariant 3). */
+      const partagee = d.nbCircos > 1;
+      const entete = <Question emoji="🗳️" etiquette={partagee ? "Un député de votre commune" : "Votre député"} question={partagee ? "Qu'a voté un député de votre commune ?" : "Qu'a voté votre député ?"} />;
+      if (!r.votesLus) return <Page>{entete}<Vide {...copieVoteVide(ETAT_VOTE.RELEVE_NON_LU)} action="Réessayer" onAction={reessayer} /></Page>;
+      if (!r.votesFiables) return <Page>{entete}<Vide {...copieVoteVide(ETAT_VOTE.RELEVE_INCOHERENT)} /></Page>;
+      /* Un seul endroit décide du texte du vide : @repere/core (votesVides.js). */
+      if (!vote) return <Page>{entete}<Vide {...copieVoteVide(d.etatVote, { nom: d.nomCommune, releve: srcScrutins(d)?.releve, portee: d.srcScrutins && d.srcScrutins.portee })} /></Page>;
 
       const rep = repartitionVote(vote.sc);
       const mot = (MOTS as Record<string, string>)[vote.position || ""];
       const etape = etapeDuScrutin(procedure(vote.sc.t));
       const autres = (d.faits as FaitVote[]).filter(x => x.type === "vote" && x.cle !== vote.cle && x.circo === vote.circo).slice(0, 4);
       const depIndex = r.index.departements.find((x: { code: string }) => x.code === d.dep);
+      /* Le député : le niveau « France » de la chaîne de décision, celui de « Qui décide ».
+         Sa fiche s'ouvre avec les mêmes paramètres que depuis cet onglet. */
+      type NiveauFiche = { echelon: string; niveau?: string; institution?: string; lieu?: string; personne?: { nom: string; role?: string } | null };
+      const fiche = (chaineDecision({ fiche: d.fiche, paquet: r.paquet, index: r.index, deputes: r.deputes, elusRegion: r.elusRegion, dep: d.dep }) as NiveauFiche[])
+        .find(n => n.echelon === "france" && n.personne);
+      const parametresFiche = fiche && fiche.personne ? {
+        nom: fiche.personne.nom, role: fiche.personne.role ?? "", echelon: fiche.echelon,
+        niveau: fiche.niveau ?? "", institution: fiche.institution ?? "", lieu: fiche.lieu ?? "",
+      } : null;
       return (
         <Page>
-          <Stack.Screen options={{ title: "Votre député" }} />
+          <Stack.Screen options={{ title: partagee ? "Un député de votre commune" : "Votre député" }} />
           {entete}
           <Text style={TYPO.note}>{phraseCirconscription(d, vote.circo)}</Text>
 
@@ -58,6 +69,13 @@ export default function Vote() {
             {!mot ? <Text style={TYPO.note}>{POSITION_NON_PORTEE}</Text> : null}
             <PastilleSource source={srcVote(d, vote.sc)} />
           </Carte>
+          {parametresFiche ? (
+            <Pressable onPress={() => router.push({ pathname: "/elu", params: parametresFiche })}
+              accessibilityRole="button" accessibilityLabel={`Voir la fiche de ${parametresFiche.nom}`}
+              style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", opacity: pressed ? 0.6 : 1 })}>
+              <Text style={[TYPO.corps, { color: couleurs.lien, fontWeight: "600" }]}>Voir la fiche de {parametresFiche.nom} ›</Text>
+            </Pressable>
+          ) : null}
           <Pressable onPress={() => router.push("/partager")} accessibilityRole="button"
             accessibilityLabel="Partager ce vote en deux cartes"
             style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", opacity: pressed ? 0.6 : 1 })}>
@@ -74,13 +92,14 @@ export default function Vote() {
           ) : null}
 
           {/* POURQUOI C'EST « VOTRE » DEPUTE */}
-          <Carte echelon="france" titre="Pourquoi c'est votre député">
+          <Carte echelon="france" titre={d.nbCircos > 1 ? "Pourquoi ce député est pris en exemple" : "Pourquoi c'est votre député"}>
             <Frise etiquette="De votre commune à l'Assemblée" jalons={[
               { cle: "c", titre: d.nomCommune, texte: "Votre commune.", echelon: "ville" },
               { cle: "ci", titre: `${vote.circo === 1 ? "1re" : vote.circo + "e"} circonscription${depIndex ? " · " + depIndex.nom : ""}`, texte: "Le territoire qui élit un député. Il regroupe plusieurs communes, ou une partie d'une grande ville.", echelon: "france" },
               { cle: "d", titre: vote.qui, texte: "Élu par les électeurs de cette circonscription.", echelon: "france", actif: true },
-              { cle: "an", titre: "Assemblée nationale", texte: "577 députés y votent les lois et le budget de l'État.", echelon: "france" },
+              { cle: "an", titre: "Assemblée nationale", texte: "Au plus 577 députés y votent les lois et le budget de l'État, selon l'article 24 de la Constitution.", echelon: "france" },
             ]} />
+            <PastilleSource source={{ producteur: "Constitution du 4 octobre 1958, article 24", court: "Constitution, art. 24", url: CONSTITUTION_45_URL }} />
           </Carte>
 
           {/* NIVEAU 3 : ou en est le texte */}
@@ -107,7 +126,7 @@ export default function Vote() {
                   <Text style={[TYPO.note, { fontWeight: "700" }]}>{motPosition(a.position) ? "A voté " + motPosition(a.position) : "Position non portée par le relevé"}</Text>
                 </View>
               ))}
-              <Text style={TYPO.micro}>Scrutins solennels relevés, du plus récent au plus ancien.</Text>
+              <Text style={TYPO.micro}>Derniers votes solennels récupérés par Repère : des scrutins publics, généralement sur le vote d'ensemble d'un texte majeur, c'est-à-dire le vote sur le texte entier. Du plus récent au plus ancien.</Text>
             </Carte>
           ) : null}
 

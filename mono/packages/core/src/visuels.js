@@ -79,17 +79,35 @@ export function chiffresComptes(ex) {
   const v = i => valeur(ex, i);
   const [rec, dep, det, inv, sal, imp] = [0, 1, 2, 3, 4, 5].map(v);
   const nn = x => !!(x && typeof x.m === "number" && x.m > 0);
+  /* numerateur : zero publie reste zero ; denominateur : strictement > 0 */
+  const nnNum = x => !!(x && typeof x.m === "number" && Number.isFinite(x.m) && x.m >= 0);
   const borne = p => (p >= 0 && p <= 100 ? p : null);
   return {
-    detteMois: nn(det) && nn(rec) ? det.m / (rec.m / 12) : null,
-    partSalaires: nn(sal) && nn(dep) ? borne(pourCent(sal.m, dep.m)) : null,
-    partInvestissement: nn(inv) && nn(dep) ? borne(pourCent(inv.m, dep.m)) : null,
-    partImpots: nn(imp) && nn(rec) ? borne(pourCent(imp.m, rec.m)) : null,
-    parJour: nn(dep) ? Math.round(dep.m / 365) : null,
-    depenses: nn(dep) ? dep.m : null,
-    recettes: nn(rec) ? rec.m : null,
+    detteMois: nnNum(det) && nn(rec) ? det.m / (rec.m / 12) : null,
+    partSalaires: nnNum(sal) && nn(dep) ? borne(pourCent(sal.m, dep.m)) : null,
+    partInvestissement: nnNum(inv) && nn(dep) ? borne(pourCent(inv.m, dep.m)) : null,
+    partImpots: nnNum(imp) && nn(rec) ? borne(pourCent(imp.m, rec.m)) : null,
+    parJour: nnNum(dep) ? Math.round(dep.m / 365) : null,
+    depenses: nnNum(dep) ? dep.m : null,
+    recettes: nnNum(rec) ? rec.m : null,
     dette: det && typeof det.m === "number" ? det.m : null,
   };
+}
+
+/* LA DETTE, EN TROIS ETATS (29/10/2026). Decision partagee par le site et
+   l'application, pour qu'un seul endroit decide ce qui s'affiche :
+     "inconnue"            : la source ne porte pas la ligne -> une phrase « non renseigne »,
+                             jamais un zero, jamais une carte absente sans un mot ;
+     "nulle"               : zero publie -> « aucun emprunt », une vraie information ;
+     "mois"                : dette et recettes connues -> le ratio en mois de recettes ;
+     "montant_sans_ratio"  : dette connue, recettes absentes ou nulles -> le montant
+                             seul, sans ratio invente. */
+export function etatDette(ex) {
+  const c = chiffresComptes(ex);
+  if (c.dette === null) return "inconnue";
+  if (c.dette === 0) return "nulle";
+  if (c.detteMois !== null) return "mois";
+  return "montant_sans_ratio";
 }
 
 /* Un projet finance par l'Etat : la subvention rapportee au cout declare du
@@ -120,7 +138,13 @@ export const nomDispositif = (projets, code) =>
    composition de l'Assemblee : le denominateur est dit a l'ecran. */
 export function repartitionVote(sc) {
   if (!sc || !sc.dec) return null;
-  const n = k => { const x = Number(sc.dec[k]); return Number.isFinite(x) && x >= 0 ? x : null; };
+  /* Une valeur absente (null, vide) n'est JAMAIS un zero : Number(null) et Number("") valent 0. */
+  const n = k => {
+    const brut = sc.dec[k];
+    if (brut === null || brut === undefined || String(brut).trim() === "") return null;
+    const x = Number(brut);
+    return Number.isFinite(x) && x >= 0 ? x : null;
+  };
   const pour = n("pour"), contre = n("contre"), abst = n("abstentions");
   if (pour === null || contre === null || abst === null) return null;
   const total = pour + contre + abst;
@@ -226,6 +250,7 @@ export function chaineDecision({ fiche, paquet, index, deputes, elusRegion, dep 
   const dd = deputes && deputes.deputes ? circos.map(c => ({ circo: c, d: deputes.deputes[dep + "-" + c] })) : [];
   const ed = elusDepartement(paquet, fiche);
   const region = elusRegion && Array.isArray(elusRegion.elus) && elusRegion.elus.length ? elusRegion.elus[0] : null;
+  const tousDeputes = dd.filter(x => x.d).map(x => ({ nom: [x.d.prenom, x.d.nom].filter(Boolean).join(" "), role: "À l'Assemblée nationale pour votre circonscription", debut: x.d.dateDebut || null, circo: x.circo }));
   return [
     { echelon: "ville", niveau: "Commune", institution: "Conseil municipal", lieu: fiche.nom,
       personne: fiche.maire && fiche.maire.nom ? { nom: fiche.maire.nom, role: "Maire" } : null,
@@ -233,7 +258,8 @@ export function chaineDecision({ fiche, paquet, index, deputes, elusRegion, dep 
     { echelon: "agglo", niveau: "Intercommunalité", institution: fiche.agglo && fiche.agglo.nom ? fiche.agglo.nom : "Intercommunalité",
       lieu: null,
       personne: null,
-      delegues: fiche.agglo && Array.isArray(fiche.agglo.delegues) ? fiche.agglo.delegues.length : 0,
+      /* Bloc absent du fichier : on ne sait pas (null). Liste publiee, meme vide : c'est un zero publie. */
+      delegues: fiche.agglo && Array.isArray(fiche.agglo.delegues) ? fiche.agglo.delegues.length : null,
       ...(() => { const ci = competencesIntercommunalite({ agglo: fiche.agglo, regionCode: depIndex && depIndex.region_code, dep });
         return { decide: ci.decide, precisions: ci.precisions, sources: ci.sources }; })() },
     { echelon: "dept", niveau: "Département", institution: "Conseil départemental", lieu: depIndex ? depIndex.nom : null,
@@ -245,10 +271,26 @@ export function chaineDecision({ fiche, paquet, index, deputes, elusRegion, dep 
       decide: COMPETENCES.region },
     { echelon: "france", niveau: "Assemblée nationale", institution: "Assemblée nationale",
       lieu: circos.length ? circos.map(c => `${c === 1 ? "1re" : c + "e"} circonscription`).join(", ") : null,
-      personne: dd.length && dd[0].d ? { nom: [dd[0].d.prenom, dd[0].d.nom].filter(Boolean).join(" "), role: "À l'Assemblée nationale pour votre circonscription" } : null,
+      /* Une commune a une seule circonscription : son député est « le » député.
+         Une commune partagée n'en désigne aucun (invariant 3) : la liste est
+         donnée (`personnes`), et l'écran la présente sans choisir. */
+      personne: dd.length === 1 && tousDeputes[0] ? tousDeputes[0] : null,
+      personnes: tousDeputes,
       autresCircos: dd.length > 1 ? dd.length - 1 : 0,
       decide: COMPETENCES.france },
   ];
+}
+
+/* La date de début de fonction, telle qu'elle peut être affichée. Seul le
+   député (échelon France) porte une date dans les données. Une date n'est
+   montrée que si sa source dit quand elle a été relevée (invariant 4).
+   Renvoie un état, jamais une phrase : la phrase relève de l'écran. */
+export function debutDeMandat(niveau, source) {
+  if (!niveau || niveau.echelon !== "france" || !niveau.personne) return { etat: "absent" };
+  const debut = niveau.personne.debut || null;
+  if (!debut) return { etat: "non_publie" };
+  if (!source || !source.releve_le) return { etat: "sans_releve" };
+  return { etat: "date", date: debut, producteur: source.producteur, releve_le: source.releve_le };
 }
 
 /* --- la fraicheur ---------------------------------------------------------- */

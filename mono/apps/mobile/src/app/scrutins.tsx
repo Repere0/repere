@@ -22,8 +22,8 @@ import {
 import { Page } from "../ui/page";
 import { Vide } from "../lib/composants";
 import { PastilleSource } from "../ui/source";
-import { PAS, TYPO, couleurs, CIBLE, RAYON, OMBRE } from "../lib/theme";
-import { dateFr, titreLisible } from "@repere/core";
+import { feuille, PAS, TYPO, couleurs, CIBLE, RAYON, OMBRE } from "../lib/theme";
+import { dateFr, titreLisible, nombreDecompte, resultatDecompteCourt } from "@repere/core";
 
 type Resume = {
   n: string; d: string; t: string; ty: string; s: string;
@@ -67,18 +67,6 @@ type Index = {
 
 const position = (p: string) => p === "p" ? "Pour" : p === "c" ? "Contre" : "Abstention";
 
-function nombre(v: string | number | null | undefined) {
-  return v == null ? "—" : Number(v).toLocaleString("fr-FR");
-}
-
-function resultatCourt(x: Resume) {
-  return [
-    x.dec.pour != null ? `${nombre(x.dec.pour)} pour` : null,
-    x.dec.contre != null ? `${nombre(x.dec.contre)} contre` : null,
-    x.dec.abstentions != null ? `${nombre(x.dec.abstentions)} abstention${Number(x.dec.abstentions) > 1 ? "s" : ""}` : null,
-  ].filter(Boolean).join(" · ");
-}
-
 /* Les archives QAG contiennent du HTML dans certains champs. Repère n'affiche
  * jamais les balises brutes : on nettoie uniquement la présentation, sans
  * reconstituer ni résumer le contenu absent. */
@@ -102,32 +90,38 @@ function textePropre(value: string | null | undefined) {
 
 function StatutVote({ detail }: { detail: Detail }) {
   return (
-    <View style={s.resultat} accessible accessibilityLabel={resultatCourt(detail)}>
-      <View style={s.stat}><Text style={s.statNombre}>{nombre(detail.dec.pour)}</Text><Text style={s.statLibelle}>pour</Text></View>
+    <View style={s.resultat} accessible accessibilityLabel={resultatDecompteCourt(detail.dec)}>
+      <View style={s.stat}><Text style={s.statNombre}>{nombreDecompte(detail.dec.pour)}</Text><Text style={s.statLibelle}>pour</Text></View>
       <View style={s.statSep} />
-      <View style={s.stat}><Text style={s.statNombre}>{nombre(detail.dec.contre)}</Text><Text style={s.statLibelle}>contre</Text></View>
+      <View style={s.stat}><Text style={s.statNombre}>{nombreDecompte(detail.dec.contre)}</Text><Text style={s.statLibelle}>contre</Text></View>
       <View style={s.statSep} />
-      <View style={s.stat}><Text style={s.statNombre}>{nombre(detail.dec.abstentions)}</Text><Text style={s.statLibelle}>abstention</Text></View>
+      <View style={s.stat}><Text style={s.statNombre}>{nombreDecompte(detail.dec.abstentions)}</Text><Text style={s.statLibelle}>abstention</Text></View>
     </View>
   );
 }
 
 function GroupeRow({ groupe, ouvert, onPress }: { groupe: Groupe; ouvert: boolean; onPress: () => void }) {
-  const total = (groupe.pour || 0) + (groupe.contre || 0) + (groupe.abstentions || 0);
+  /* Ce qui est publie, et rien d'autre : une position absente n'est pas un zero,
+     elle n'est pas comptee. Le meme texte sert a l'ecran et au lecteur d'ecran. */
+  const texteStats = [groupe.pour != null ? `${groupe.pour} pour` : null, groupe.contre != null ? `${groupe.contre} contre` : null, groupe.abstentions != null ? `${groupe.abstentions} abst.` : null]
+    .filter(Boolean).join(" · ") || "décompte non publié";
+  /* Version lue par un lecteur d'écran : le mot entier, pas l'abréviation. */
+  const texteAccessible = [groupe.pour != null ? `${groupe.pour} pour` : null, groupe.contre != null ? `${groupe.contre} contre` : null, groupe.abstentions != null ? `${groupe.abstentions} abstentions` : null]
+    .filter(Boolean).join(" · ") || "décompte non publié";
   return (
     <View style={s.groupe}>
       <Pressable
         onPress={onPress}
         accessibilityRole="button"
         accessibilityState={{ expanded: ouvert }}
-        accessibilityLabel={`${groupe.nom}, ${total} positions publiées`}
+        accessibilityLabel={`${groupe.nom}, ${texteAccessible}`}
         style={({ pressed }) => [s.groupeTete, pressed && { opacity: 0.65 }]}
       >
         <View style={[s.groupePoint, { backgroundColor: groupe.couleur }]} />
         <View style={s.groupeTexte}>
           <Text style={s.groupeNom}>{groupe.nom}</Text>
           <Text style={s.groupeStats}>
-            {[groupe.pour != null ? `${groupe.pour} pour` : null, groupe.contre != null ? `${groupe.contre} contre` : null, groupe.abstentions != null ? `${groupe.abstentions} abst.` : null].filter(Boolean).join(" · ")}
+            {texteStats}
           </Text>
         </View>
         <Text style={s.chevron}>{ouvert ? "−" : "+"}</Text>
@@ -373,7 +367,7 @@ export default function Scrutins() {
 
                 <View style={s.blocLecture}>
                   <Text style={TYPO.etiquette}>En bref</Text>
-                  <Text style={s.phraseResultat}>{resultatCourt(detail)}</Text>
+                  <Text style={s.phraseResultat}>{resultatDecompteCourt(detail.dec)}</Text>
                   <StatutVote detail={detail} />
                 </View>
 
@@ -405,7 +399,7 @@ export default function Scrutins() {
   );
 }
 
-const s = StyleSheet.create({
+const s = feuille(() => StyleSheet.create({
   intro: { gap: PAS, paddingTop: PAS * 2 },
   onglets: {
     flexDirection: "row", backgroundColor: couleurs.voile, borderRadius: RAYON.bloc,
@@ -464,4 +458,4 @@ const s = StyleSheet.create({
   positionValeur: { fontSize: 14, lineHeight: 19, fontWeight: "700", color: couleurs.sourd },
   absence: { backgroundColor: couleurs.voile, borderRadius: RAYON.bloc, padding: PAS * 4, gap: PAS, },
   reponseBloc: { backgroundColor: couleurs.carte, borderRadius: RAYON.carte, padding: PAS * 5, gap: PAS * 3, ...OMBRE },
-});
+}));
