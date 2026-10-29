@@ -37,9 +37,9 @@ import { CarteMemoire } from "../../cartes/CarteMemoire";
 import { useSelection } from "../../lib/selection";
 import { useCommuneChoisie } from "../../lib/useCommune";
 import {
-  PROJETS_PAS_ARRIVES, projetsAucun, VOTES_PAS_ARRIVES, circoInconnue, VOTE_AUCUN,
+  PROJETS_PAS_ARRIVES, projetsAucun, VOTES_PAS_ARRIVES, circoInconnue, voteAucun,
 } from "../../lib/absences";
-import { srcComptesPublies, srcElus, srcProjets, srcVote } from "../../lib/sources";
+import { srcComptesPublies, srcElus, srcProjets, srcScrutins, srcVote } from "../../lib/sources";
 import { PAS, TYPO } from "../../lib/theme";
 import { AvecDonnees, Page } from "../../ui/page";
 import { PastilleSource } from "../../ui/source";
@@ -104,7 +104,7 @@ export default function ChezVous() {
               }}
               suite={{ texte: nbProjets > 1 ? `${nbProjets} projets aidés` : "Le projet", onPress: () => router.push("/argent") }} />
           ) : (
-            <Reponse echelon="ville" phrase={projetsAucun(nom).titre} note={projetsAucun(nom).corps}
+            <Reponse echelon="ville" phrase={projetsAucun(nom, d.srcProjets && d.srcProjets.exercices).titre} note={projetsAucun(nom, d.srcProjets && d.srcProjets.exercices).corps}
               sources={<PastilleSource court source={srcProjets(d)} />} />
           )}
 
@@ -164,7 +164,7 @@ export default function ChezVous() {
           ) : d.nbCircos === 0 ? (
             <Vide {...circoInconnue(nom)} />
           ) : (
-            <Vide {...VOTE_AUCUN} />
+            <Vide {...voteAucun(srcScrutins(d)?.releve)} />
           )}
           </View>
 

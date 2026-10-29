@@ -2,17 +2,30 @@
  * Deux causes d'absence, deux phrases : « le fichier n'est pas arrive » (panne,
  * on peut reessayer) n'est jamais « la source ne porte rien ». Reprises des
  * cartes de #46 et, pour le calendrier, mot pour mot de Calendrier.jsx. */
-import { DGCL_URL } from "@repere/core";
+import { DGCL_URL, dateFr } from "@repere/core";
 
 export const PROJETS_PAS_ARRIVES = {
   titre: "Les projets financés par l'État ne sont pas arrivés jusqu'ici.",
   corps: "Le fichier existe, il n'a pas pu être chargé. Ce n'est pas une absence de projet.",
 };
-export const projetsAucun = (nom: string) => ({
-  titre: `Aucun projet financé par l'État n'est publié pour ${nom} sur les années relevées.`,
-  corps: "La source ne couvre que les dotations d'investissement de l'État : une commune finance aussi des projets par elle-même.",
-  lien: { texte: "Projets financés par l'État — données publiques", url: DGCL_URL },
-});
+/* Les exercices de la source, en clair (« 2024 et 2025 »), dans l'ordre croissant.
+   Une liste vide ou absente ne produit aucune année : la phrase reste sans année. */
+export const listerExercices = (exercices?: string[]): string => {
+  const ex = [...new Set((exercices || []).filter(e => /^\d{4}$/.test(e)))].sort();
+  if (ex.length === 0) return "";
+  if (ex.length === 1) return ex[0];
+  return `${ex.slice(0, -1).join(", ")} et ${ex[ex.length - 1]}`;
+};
+export const projetsAucun = (nom: string, exercices?: string[]) => {
+  const ex = listerExercices(exercices);
+  return {
+    titre: ex
+      ? `Aucun projet financé par l'État n'est publié pour ${nom} sur les exercices ${ex} de la source.`
+      : `Aucun projet financé par l'État n'est publié pour ${nom} dans la source.`,
+    corps: "La source ne couvre que les dotations d'investissement de l'État : une commune finance aussi des projets par elle-même. Les autres exercices ne sont pas couverts.",
+    lien: { texte: "Projets financés par l'État — données publiques", url: DGCL_URL },
+  };
+};
 export const VOTES_PAS_ARRIVES = {
   titre: "Les votes de l'Assemblée ne sont pas arrivés jusqu'ici.",
   corps: "Les fichiers existent, ils n'ont pas pu être chargés. Ce n'est pas une absence de vote.",
@@ -22,10 +35,17 @@ export const circoInconnue = (nom: string) => ({
   corps: "La commune est absente de la table du ministère de l'Intérieur, souvent parce qu'elle a été créée après son dernier découpage. Repère ne devine pas.",
 });
 export const SCRUTINS_AN = "https://www.assemblee-nationale.fr/dyn/17/scrutins/";
-export const VOTE_AUCUN = {
-  titre: "Aucun vote solennel de votre député n'est porté par le relevé de l'Assemblée. Un vote solennel est l'adoption ou le rejet formel d'un texte entier.",
+/* Le périmètre connu : les scrutins SOLENNELS de la 17e législature, à la date du
+   relevé (scripts/mono_donnees.py, champ portee). La période n'est pas une plage de
+   dates : sans date de relevé, la phrase le dit au lieu de l'inventer. */
+export const voteAucun = (releve?: string) => ({
+  /* La définition reste dans le titre : chez-vous n'affiche que le titre. */
+  titre: (releve
+    ? `Aucun vote solennel de votre député n'apparaît parmi les scrutins solennels de la 17e législature relevés le ${dateFr(releve)}.`
+    : "Aucun vote solennel de votre député n'apparaît dans le relevé de l'Assemblée. Repère ne connaît pas la date de ce relevé.")
+    + " Un vote solennel est l'adoption ou le rejet formel d'un texte entier.",
   lien: { texte: "Les scrutins sur le site de l'Assemblée", url: SCRUTINS_AN },
-};
+});
 export const AGENDA_PAS_ARRIVE = {
   titre: "Le calendrier n'est arrivé jusqu'à cet appareil pour aucune institution.",
   corps: "Il est republié chaque jour par Repère ; il n'a pas pu être chargé cette fois-ci.",

@@ -6,7 +6,7 @@
  * du lecteur (COMPETENCES, @repere/core — les memes phrases que le site).
  * Un niveau sans personne nommee par la source garde sa place et le dit.
  * L'ordre est un ordre de distance, pas d'importance : c'est ecrit. */
-import { Pressable, Text, View } from "react-native";
+import { Linking, Pressable, Text, View } from "react-native";
 import { router, Stack } from "expo-router";
 import { chaineDecision, dateFr, MAIRE_ABSENT, phraseAdjoints, RNE_URL, LIBELLES } from "@repere/core";
 import { sansConseilDepartemental } from "@repere/core";
@@ -85,8 +85,18 @@ export default function QuiDecide() {
               style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", opacity: pressed ? 0.6 : 1, gap: PAS })}>
               <Text style={TYPO.etiquette}>L'État · préfet de la région</Text>
               <Text style={[TYPO.reponse, { color: couleurs.lien, textDecorationLine: "underline" }]}>{prefet.nom}</Text>
-              <Text style={TYPO.note}>{prefet.titre}, selon la page de la préfecture. Ce n'est pas le préfet de votre département : leur liste n'est pas encore publiée ici.</Text>
             </Pressable>
+          ) : null}
+          {prefet ? (
+            <View style={{ gap: PAS }}>
+              <Text style={TYPO.note}>{prefet.titre}. Ce n'est pas le préfet de votre département : leur liste n'est pas encore publiée ici.</Text>
+              <Text style={TYPO.note}>Source : page de la préfecture de région, titre contrôlé le {prefet.titreControleLe}. La date de nomination n'est pas contrôlée.</Text>
+              <Pressable onPress={() => Linking.openURL(prefet.url)} accessibilityRole="link"
+                accessibilityLabel="Voir la page de la préfecture de région (site officiel)"
+                style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", opacity: pressed ? 0.6 : 1 })}>
+                <Text style={[TYPO.corps, { color: couleurs.lien, fontWeight: "600" }]}>Page de la préfecture de région ↗</Text>
+              </Pressable>
+            </View>
           ) : null}
         </Page>
       );

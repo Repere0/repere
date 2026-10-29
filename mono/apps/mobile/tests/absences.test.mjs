@@ -60,6 +60,6 @@ test("absences — « vote solennel » est expliqué là où le mot apparaît", 
   const fs = await import("node:fs");
   const path = await import("node:path");
   const src = fs.readFileSync(path.join(import.meta.dirname, "..", "src", "lib", "absences.ts"), "utf8");
-  const bloc = src.slice(src.indexOf("export const VOTE_AUCUN"), src.indexOf("export const AGENDA_PAS_ARRIVE"));
+  const bloc = src.slice(src.indexOf("export const voteAucun"), src.indexOf("export const AGENDA_PAS_ARRIVE"));
   assert.match(bloc, /texte entier/, "« vote solennel » doit être défini dans le titre, affiché sur chez-vous comme sur la fiche du vote");
 });
