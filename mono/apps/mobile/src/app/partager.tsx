@@ -76,14 +76,16 @@ export default function Partager() {
       const { d } = r;
       /* LE VOTE DE LA PERSONNE NOMMÉE, jamais le dernier vote de la commune. Sans
          personne identifiée, aucun vote n'est partagé : on le dit (core/votesVides.js). */
-      const niveaux = chaineDecision({ fiche: d.fiche, paquet: r.paquet, index: r.index, deputes: r.deputes, elusRegion: r.elusRegion, dep: d.dep }) as { echelon: string; personne?: { nom: string } | null }[];
-      const personne = niveaux.find(n => n.echelon === "france")?.personne?.nom;
+      const niveaux = chaineDecision({ fiche: d.fiche, paquet: r.paquet, index: r.index, deputes: r.deputes, elusRegion: r.elusRegion, dep: d.dep }) as { echelon: string; personne?: { nom: string } | null; autresCircos?: number }[];
+      const france = niveaux.find(n => n.echelon === "france");
+      const personne = france?.personne?.nom;
       const nom = personne || "Votre député";
       const vote = (d.faits as (Vote & { type: string; qui: string })[]).find(f => f.type === "vote" && !!f.position && f.qui === personne) as Vote | undefined;
       if (!vote || !vote.position || !VERBE[vote.position]) {
         /* Le repli : la règle partagée décide du texte selon l'état réel des données. */
         const etat = !r.votesLus ? ETAT_VOTE.RELEVE_NON_LU
           : !r.votesFiables ? ETAT_VOTE.RELEVE_INCOHERENT
+          : france && france.autresCircos ? ETAT_VOTE.CIRCO_PARTAGEE
           : !personne ? ETAT_VOTE.CIRCO_SANS_DEPUTE
           : (d as unknown as { etatVotePour: (n: string) => string | null }).etatVotePour(personne) || ETAT_VOTE.POSITION_ABSENTE;
         const copie = copieVoteVide(etat, { nom: personne || "", releve: srcScrutins(d)?.releve, portee: d.srcScrutins && d.srcScrutins.portee });

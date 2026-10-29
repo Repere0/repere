@@ -116,6 +116,15 @@ test("donnees reelles — une commune de Seine-et-Marne : l'état du vide est co
    avant la correction : un nom vide ne doit pas produire « de . », un état
    inconnu ne doit jamais s'annoncer « Aucun », et la circonscription inconnue ne
    doit pas inventer une cause que la source ne donne pas. */
+test("copie — commune partagée : l'état dit qu'aucun député n'est choisi, sans « Aucun » ni nom inventé", () => {
+  assert.equal(ETAT_VOTE.CIRCO_PARTAGEE, "circo-partagee");
+  const c = copieVoteVide(ETAT_VOTE.CIRCO_PARTAGEE, { nom: "Exemple-sur-Seine" });
+  assert.match(c.titre, /partagée entre plusieurs circonscriptions/);
+  assert.match(c.corps, /pas.*votre adresse|votre adresse/);
+  assert.doesNotMatch(c.titre, /Aucun/, "le titre ne dit jamais « Aucun vote »");
+  assert.doesNotMatch(c.corps, /Aucun vote|aucun vote/);
+});
+
 test("copie — nom de commune vide : aucune phrase « de . » ni « de  »", () => {
   for (const e of [ETAT_VOTE.CIRCO_INCONNUE, ETAT_VOTE.CIRCO_SANS_DEPUTE]) {
     const c = copieVoteVide(e, { nom: "" });

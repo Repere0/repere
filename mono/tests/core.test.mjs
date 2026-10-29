@@ -595,6 +595,21 @@ test("core — la chaîne transmet la date de début du mandat du député, ou r
   assert.strictEqual(france({ nom: "X", circo: 2 }).personne.debut, null, "une date absente de la source ne doit pas être inventée");
 });
 
+/* Commune à plusieurs circonscriptions : aucun député n'est désigné par défaut
+   (invariant 3 et règle « votre député »). Le premier de la liste n'est pas
+   « votre député » : la chaîne liste tous les députés de la commune. */
+test("core — commune à plusieurs circonscriptions : aucun député désigné par défaut", async () => {
+  const { chaineDecision } = await import("../packages/core/src/visuels.js");
+  const deputes = { deputes: { "93-1": { prenom: "Ada", nom: "Exemple", acteurRef: "A1" }, "93-2": { prenom: "Bo", nom: "Sans", acteurRef: "A2" } } };
+  const france = (circo) => chaineDecision({ fiche: { nom: "X", circo }, paquet: null, index: null, deputes, elusRegion: null, dep: "93" }).find(n => n.echelon === "france");
+  const partagee = france([1, 2]);
+  assert.equal(partagee.personne, null, "une commune partagée ne désigne pas un député au hasard");
+  assert.deepEqual(partagee.personnes.map(p => p.nom), ["Ada Exemple", "Bo Sans"], "les deux députés sont listés");
+  assert.equal(partagee.autresCircos, 1);
+  assert.equal(france(1).personne.nom, "Ada Exemple", "une commune à une circonscription garde son député");
+  assert.equal(france(1).personnes.length, 1);
+});
+
 /* Ce que la fiche affiche de la date de début : une date seulement si la
    source la publie ET dit quand elle a été relevée (invariant 4). La phrase
    « non publiée » ne concerne que le député, jamais les autres échelons. */

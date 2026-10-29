@@ -37,3 +37,16 @@ test("site — les trois pages « Aujourd'hui » n'ont pas de repli « Aucun vot
     assert.doesNotMatch(src, /Aucun vote solennel de votre député/, `${f} : ancienne phrase du site`);
   }
 });
+
+/* Répertoire des élus : le producteur ne sait que ce que la source a donné. La
+   phrase ne généralise donc pas une cause (« ne porte aucune ligne ») : elle dit
+   ce que Repère a lu. Le site et l'application disent la même chose. */
+test("site et app — répertoire : « ne porte aucune ligne » est remplacé par ce que Repère a lu", () => {
+  const APP = path.join(import.meta.dirname, "..", "apps");
+  const fichiers = [path.join(APP, "web", "src", "App.jsx"), path.join(APP, "mobile", "src", "app", "index.tsx")];
+  for (const f of fichiers) {
+    const src = fs.readFileSync(f, "utf8");
+    assert.doesNotMatch(src, /ne porte aucune ligne pour cette commune/, `${path.basename(f)} : formulation à remplacer`);
+    assert.match(src, /ne contiennent pas de fiche pour cette commune/, `${path.basename(f)} : formulation attendue absente`);
+  }
+});

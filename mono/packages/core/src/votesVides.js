@@ -7,6 +7,8 @@
  *   RELEVE_INCOHERENT    les deux relevés ne se correspondent pas (appariement refusé) ;
  *   CIRCO_INCONNUE       la commune n'a pas de circonscription dans la fiche ;
  *   CIRCO_SANS_DEPUTE    aucun député de la commune n'est dans le fichier des députés ;
+ *   CIRCO_PARTAGEE       la commune est à cheval sur plusieurs circonscriptions : aucun
+ *                        député n'est désigné sans l'adresse du lecteur ;
  *   POSITION_ABSENTE     le relevé est lu, le député est identifié, mais il n'a
  *                        aucune position dans le périmètre publié.
  * Seul le dernier état dit « aucun vote » : les quatre autres disent ce qui manque.
@@ -21,6 +23,7 @@ export const ETAT_VOTE = Object.freeze({
   RELEVE_INCOHERENT: "releve-incoherent",
   CIRCO_INCONNUE: "circo-inconnue",
   CIRCO_SANS_DEPUTE: "circo-sans-depute",
+  CIRCO_PARTAGEE: "circo-partagee",
   POSITION_ABSENTE: "position-absente",
   ELU_NON_IDENTIFIE: "elu-non-identifie",
 });
@@ -77,6 +80,10 @@ export function copieVoteVide(etat, { nom = "", releve, portee } = {}) {
     case ETAT_VOTE.CIRCO_SANS_DEPUTE:
       return { titre: nom ? `Le fichier des députés ne porte aucun député pour la circonscription de ${nom}.` : "Le fichier des députés ne porte aucun député pour cette circonscription.",
         corps: "Ce n'est pas une absence de vote : la donnée manque dans le fichier que Repère lit. Repère ne devine pas le député.", lien };
+    case ETAT_VOTE.CIRCO_PARTAGEE:
+      /* Pas un état de donnée : une règle de rattachement. Aucun député n'est nommé. */
+      return { titre: "Votre commune est partagée entre plusieurs circonscriptions.",
+        corps: "Repère ne peut pas dire quel député est le vôtre sans votre adresse, que Repère ne demande pas. Ce vote n'est donc attribué à personne en particulier.", lien };
     case ETAT_VOTE.ELU_NON_IDENTIFIE:
       return { titre: nom ? `Repère ne retrouve pas ${nom} dans le fichier des députés.` : "Repère ne retrouve pas cet élu dans le fichier des députés.",
         corps: "Ce n'est pas une absence de vote : aucun député de la circonscription ne porte ce nom dans le fichier que Repère lit. Repère ne devine pas.", lien };
