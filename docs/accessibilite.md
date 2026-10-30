@@ -24,7 +24,7 @@ Date : 30/10/2026. Bloc 7 de la mission v8.
 Réglages > Accessibilité > VoiceOver activé. Parcourir l'application de l'accueil à la fiche élu.
 
 1. **Accueil de commune** : le premier élément lu est le nom de la commune ou la question, pas un bouton décoratif.
-2. **Onglets** : chaque onglet annonce son nom (« Aujourd'hui », « Qui décide », « Calendrier », « Élus », « Actualités ») et son état « sélectionné ».
+2. **Onglets** : chaque onglet annonce son nom (« Aujourd'hui », « Qui décide », « Calendrier », « Élus ») et son état « sélectionné ».
 3. **Icônes de la barre basse** : les glyphes (◷, ⌂, ▦, ◎) ne sont pas lus ; seul le nom de l'onglet l'est.
 4. **Bouton retour** : « Revenir à l'écran Aujourd'hui » (ou le nom de l'écran précédent) ; il ramène bien à l'écran d'origine.
 5. **Question en titre** : chaque écran de détail a une question lue comme en-tête, et on peut passer d'en-tête en en-tête.

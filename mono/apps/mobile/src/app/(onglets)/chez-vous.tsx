@@ -179,7 +179,7 @@ export default function ChezVous() {
               <Plus premier texte={LIBELLES.qui} onPress={() => router.push("/qui-decide")} />
               <Plus texte={LIBELLES.calendrier} onPress={() => router.push("/a-venir")} />
               <Plus texte="Élus" onPress={() => router.push("/elus")} />
-              <Plus texte="Actualités" onPress={() => router.push("/actus")} />
+              <Plus texte="Voir les actualités" onPress={() => router.push("/actus")} />
               <Plus texte="Dictionnaire citoyen" onPress={() => router.push("/dictionnaire")} />
               <Plus dernier texte={LIBELLES.sources} onPress={() => router.push("/sources")} />
             </View>
