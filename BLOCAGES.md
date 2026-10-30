@@ -156,3 +156,22 @@ Pas de temps consacré au bonus, pour ne pas multiplier les changements non relu
 - **Annuaire « Élus » sans photos** : il faudrait charger le fichier de photos de chaque département de France pour une seule liste.
 - **Droit à l'image** à faire valider par un juriste (une licence libre ne le couvre pas). Je ne suis pas juriste.
 - **Incident** : le commit d4773ac (bloc 0) a été poussé avec CLAUDE.md à 121 lignes (erreur E1 du contrôle des invariants). Corrigé quelques minutes après par a6ddbd2. Les commits suivants s'arrêtent sur ce contrôle.
+
+## 21. Sprint v17 (30/10/2026) — confirmations du CEO et collecte en CI
+
+**Le proxy de session Claude bloque les API, mais les scripts de collecte tournent en CI GitHub Actions où le réseau est ouvert.**
+
+Confirmations apportées par le CEO (non revérifiées depuis la session : le proxy refuse ces sites) :
+
+1. **P4123 est la bonne propriété** : « French National Assembly ID », URL de formatage `https://www.assemblee-nationale.fr/dyn/deputes/PA$1`. La valeur Wikidata est donc le numéro sans « PA ». `collecte-photos-elus.mjs` retire « PA » des deux côtés avant de comparer : cohérent, aucun changement.
+2. **API DILA** : le champ du site s'appelle `site_internet` ; le point d'accès `.../api-lannuaire-administration/records` est confirmé ; Licence Ouverte Etalab. **Reste non confirmé** : les champs `pivot` (type de service, « mairie ») et `code_insee_commune`, que le script utilise aussi. S'ils manquent, le script s'arrête avec la liste des champs reçus et n'écrit rien : la première exécution en CI le dira. Le script utilise le point d'export (`/exports/json`) du même jeu, pour éviter la pagination à 100 fiches de `/records`.
+3. **Les scripts tournent en CI, pas en local.** Le travail de la session est de rendre les scripts justes et de faire que la CI les exécute. C'est l'objet du bloc 1.
+
+**Bloc 1 — déclenchement manuel depuis une branche d'essai.** `collecte.yml` avait déjà `workflow_dispatch`. Mais lancé depuis `test/sdk58-expo-go`, il aurait :
+- fait `git pull --rebase origin main` puis `git push` sur la branche ;
+- **publié le site et les données de la branche en production sur Netlify** ;
+- ouvert ou modifié les issues de santé.
+
+Ajout d'une garde `HORS_MAIN` : hors de `main`, la chaîne tourne, un bilan de couverture s'écrit dans le résumé du job, et les sorties partent en artefact `collectes-essai` (7 jours). **Rien n'est enregistré ni publié.** À vérifier au premier lancement manuel : le résumé doit montrer le bilan, et l'étape « Publier sur Netlify » doit apparaître comme sautée.
+
+**Brief v17 tronqué** : le message s'arrête au milieu du YAML du bloc 1. La suite (autres blocs, « droit image », « rapport ») n'est pas arrivée.
