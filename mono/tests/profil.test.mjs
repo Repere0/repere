@@ -50,3 +50,18 @@ test("D47 : « tout » n'existe plus ; un profil gardé avec « tout » devient 
 test("D45 : le profil par défaut est exactement celui du « Passer »", () => {
   assert.deepEqual(valideProfil({}), PROFIL_DEFAUT);
 });
+
+/* V31, bloc 1 (D57) : thèmes d'intérêt. */
+import { THEMES, themesDuTexte } from "../packages/core/src/themes.js";
+test("thèmes : seules les valeurs de THEMES sont gardées, sans doublon", () => {
+  assert.deepEqual(valideProfil({ themes: ["Santé", "inconnu", "Santé", "École"] }).themes, ["Santé", "École"]);
+  assert.deepEqual(valideProfil({ themes: "Santé" }).themes, []);
+  assert.deepEqual(valideProfil(null).themes, []);
+  assert.equal(THEMES.length, 7);
+});
+test("thèmes : un titre se range par mots-clés, sans accents, en début de mot", () => {
+  assert.deepEqual(themesDuTexte("Projet de loi sur les écoles et la santé"), ["Santé", "École"]);
+  assert.deepEqual(themesDuTexte("Le budget de la commune"), ["Budget"]);
+  assert.deepEqual(themesDuTexte("Une loi sans rapport"), []);
+  assert.deepEqual(themesDuTexte("entraînement sportif"), [], "« train » ne doit pas être trouvé au milieu d'un mot");
+});

@@ -34,7 +34,7 @@ explicite du porteur les change ; la PR qui l'applique met alors à jour
 1. **Autonomie.** L'application fonctionne hors ligne, sans serveur applicatif.
 2. **Deux clés de stockage local, nommées, rien d'autre.** `repere.departement` (la commune,
    `{d, v}` depuis le 23/09/2026) et `repere.profil` (réglages de lecture : taille, contraste,
-   espacement, police, animations, daltonisme, images ; ADR 0006). Ni l'une ni l'autre n'est
+   espacement, police, animations, daltonisme, images, et depuis D57 `themes` : les thèmes d'intérêt choisis, parmi une liste fixe ; ADR 0006 amendé). Ni l'une ni l'autre n'est
    transmise : aucun compte, email, traceur, cookie. Le magasin de données (IndexedDB sur le
    site, cache de l'application sur le téléphone) ne garde que les fichiers publics publiés
    par Repère, sous une garde unique (`store.js`). Aucune adresse réseau ne porte un code de

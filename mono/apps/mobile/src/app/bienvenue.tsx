@@ -1,13 +1,13 @@
-/* BIENVENUE — trois questions, trente secondes (V26, bloc 1).
+/* BIENVENUE — quatre questions, trente secondes (V26, bloc 1 ; thèmes ajoutés en V31, D57).
  *
  * Affiché quand aucun profil n'est gardé sur ce telephone (repere.profil absent). La
  * question 1 (la commune) est répondue sur l'accueil avant d'arriver ici. « Terminer »
- * garde les réponses 2 et 3 sur ce téléphone. « Passer » garde les réglages par défaut
+ * garde les réponses 2, 3 et 4 sur ce téléphone. La question 4 (les thèmes) peut rester vide. « Passer » garde les réglages par défaut
  * (D45, V27) : c'est un choix explicite. Aucune réponse ne part. */
 import { useState } from "react";
 import { Pressable, ScrollView, Text, View } from "react-native";
 import { router, Stack } from "expo-router";
-import { LIBELLE_NIVEAU, PROFIL_DEFAUT, TAILLES_TEXTE } from "@repere/core";
+import { LIBELLE_NIVEAU, PROFIL_DEFAUT, TAILLES_TEXTE, THEMES } from "@repere/core";
 import { useSelection } from "../lib/selection";
 import { useProfil } from "../lib/profil";
 import { CIBLE, couleurs, PAS, TYPO } from "../lib/theme";
@@ -24,9 +24,10 @@ export default function Bienvenue() {
   const { enregistrer, passer: garderDefauts } = useProfil();
   const [niveau, setNiveau] = useState<string>("france");
   const [taille, setTaille] = useState<number>(PROFIL_DEFAUT.tailleTexte);
+  const [themes, setThemes] = useState<string[]>([]);
 
   const terminer = () => {
-    enregistrer({ ...PROFIL_DEFAUT, niveauZoom: niveau, tailleTexte: taille });
+    enregistrer({ ...PROFIL_DEFAUT, niveauZoom: niveau, tailleTexte: taille, themes });
     router.replace("/chez-vous");
   };
   const passer = () => {
@@ -39,13 +40,13 @@ export default function Bienvenue() {
       <Stack.Screen options={{ title: "Bienvenue", headerShown: true }} />
 
       <View style={{ gap: PAS * 2 }}>
-        <Text style={TYPO.etiquette}>Question 1 sur 3</Text>
+        <Text style={TYPO.etiquette}>Question 1 sur 4</Text>
         <Text style={TYPO.question} accessibilityRole="header">Où habitez-vous ?</Text>
         <Texte>{choix ? `Votre commune : ${choix.nom}.` : "Aucune commune choisie."}</Texte>
       </View>
 
       <View style={{ gap: PAS * 2 }}>
-        <Text style={TYPO.etiquette}>Question 2 sur 3</Text>
+        <Text style={TYPO.etiquette}>Question 2 sur 4</Text>
         <Text style={TYPO.question} accessibilityRole="header">Qu'est-ce qui vous intéresse ?</Text>
         {CHOIX_NIVEAU.map(c => {
           const actif = niveau === c.niveau;
@@ -65,7 +66,7 @@ export default function Bienvenue() {
       </View>
 
       <View style={{ gap: PAS * 2 }}>
-        <Text style={TYPO.etiquette}>Question 3 sur 3</Text>
+        <Text style={TYPO.etiquette}>Question 3 sur 4</Text>
         <Text style={TYPO.question} accessibilityRole="header">Comment lisez-vous le mieux ?</Text>
         <View style={{ flexDirection: "row", gap: PAS * 2, flexWrap: "wrap" }}>
           {TAILLES_TEXTE.filter(t => t <= 22).map(t => {
@@ -87,6 +88,28 @@ export default function Bienvenue() {
           <Text style={{ fontSize: taille, lineHeight: Math.round(taille * 1.5), color: couleurs.encre }} accessibilityLabel={`Aperçu à ${taille} points`}>
             Repère vous dit ce qui se décide près de chez vous, avec les sources.
           </Text>
+        </View>
+      </View>
+
+      <View style={{ gap: PAS * 2 }}>
+        <Text style={TYPO.etiquette}>Question 4 sur 4 (facultative)</Text>
+        <Text style={TYPO.question} accessibilityRole="header">Quels sujets vous intéressent ?</Text>
+        <Text style={TYPO.note}>Le fil « Pour vous » ne montrera que ces sujets. Vous pourrez les changer à tout moment.</Text>
+        <View style={{ flexDirection: "row", gap: PAS * 2, flexWrap: "wrap" }}>
+          {THEMES.map(th => {
+            const coche = themes.includes(th);
+            return (
+              <Pressable key={th} accessibilityRole="checkbox" accessibilityState={{ checked: coche }} accessibilityLabel={`${th}${coche ? ", coché" : ""}`}
+                onPress={() => setThemes(t => (t.includes(th) ? t.filter(x => x !== th) : [...t, th]))}
+                style={({ pressed }) => ({
+                  minHeight: CIBLE, paddingHorizontal: PAS * 3, justifyContent: "center", borderRadius: 999,
+                  borderWidth: coche ? 2 : 1, borderColor: coche ? couleurs.encre : couleurs.trait,
+                  backgroundColor: couleurs.carte, opacity: pressed ? 0.7 : 1,
+                })}>
+                <Text style={[TYPO.corps, { color: couleurs.encre, fontWeight: coche ? "700" : "400" }]}>{coche ? "✓ " : ""}{th}</Text>
+              </Pressable>
+            );
+          })}
         </View>
       </View>
 

@@ -5,6 +5,8 @@
  * stockage ici (c'est lib/profil.tsx, dans l'application, qui lit et ecrit). Il dit
  * seulement ce qui est valide, et ce que chaque niveau de zoom garde. */
 
+import { THEMES } from "./themes.js";
+
 export const NIVEAUX_ZOOM = ["rue", "region", "france"];
 export const TAILLES_TEXTE = [16, 18, 22, 26];
 export const ESPACEMENTS = [1.5, 1.8, 2.1];
@@ -19,6 +21,7 @@ export const PROFIL_DEFAUT = {
   animationsReduites: false,
   modeDaltonien: false,
   masquerImages: false,
+  themes: [],
 };
 
 /* Valeur par champ : une valeur absente ou mal formee revient au defaut de ce champ,
@@ -38,6 +41,8 @@ export function valideProfil(v) {
     animationsReduites: bool(src.animationsReduites),
     modeDaltonien: bool(src.modeDaltonien),
     masquerImages: bool(src.masquerImages),
+    /* D57 (V31) : thèmes d'intérêt, parmi THEMES, sans doublon. */
+    themes: Array.isArray(src.themes) ? [...new Set(src.themes)].filter(t => THEMES.includes(t)) : [],
   };
   for (const k of Object.keys(out)) if (out[k] === undefined) out[k] = PROFIL_DEFAUT[k];
   return out;

@@ -18,3 +18,10 @@ Les réglages d'accessibilité (taille du texte, contraste, daltonisme, réducti
 
 - **Sur le téléphone, le système peut vider le dossier cache** s'il manque de place. Le lecteur retrouve alors les réglages par défaut. Aucune donnée n'est perdue ailleurs.
 - **Les réglages ne suivent pas le lecteur** d'un appareil à l'autre. C'est voulu : rien ne part.
+
+## Amendement D57 (30/10/2026, V31 bloc 1)
+
+- **Décision CEO D57** : `repere.profil` porte aussi un champ `themes` : la liste des thèmes d'intérêt choisis par le lecteur, parmi une liste fixe (`mono/packages/core/src/themes.js` : Santé, École, Transport, Environnement, Budget, Sécurité, Économie). Vide par défaut.
+- **Ce que cela change** : le champ ne règle plus seulement la lecture. Il dit ce que le lecteur veut suivre. Il reste sur l'appareil, n'est jamais transmis, et ne contient ni identité, ni commune, ni historique.
+- **Ce qui ne change pas** : la clé reste la même (`repere.profil`), aucune autre clé n'est ajoutée, et la règle « aucune transmission » s'applique.
+- **Limite connue** : le rangement des publications par thème se fait par mots-clés dans le titre. Il peut se tromper (exemple : « sécurité sociale » est rangé dans Sécurité). L'écran « Pour vous » le dit au lecteur.

@@ -302,3 +302,10 @@ Recherche faite sur le site officiel (melun.fr / ville-melun.fr) :
 
 - **Constat (antérieur à V30).** Une commune gardée sur le téléphone (`repere.departement`) s'affiche sur l'accueil, mais le choix en mémoire reste vide. « Qui décide », « Élus » et « Mes élus » répondaient « Aucune commune n'est choisie » après un redémarrage.
 - **Correction.** L'accueil remet la commune retenue dans le choix (`useEffect` dans `index.tsx`). Vérifié dans Chromium à 390 px. À vérifier sur iPhone.
+
+## 33. Thèmes d'intérêt (D57, V31 bloc 1) — à confirmer par le CEO
+
+- Amendement appliqué selon le brief V31 : l'ADR 0006 et l'invariant 2 autorisent désormais `themes` dans `repere.profil` (liste fixe de 7 thèmes, dans `@repere/core`). Le sceau a été régénéré. Le CEO doit confirmer l'amendement.
+- Le rangement des publications par thème repose sur des mots-clés du titre. Il est approximatif : « sécurité sociale » est rangé en Sécurité (faux positif connu).
+- Une publication dont le titre ne contient aucun mot-clé n'apparaît que lorsque le filtre est vide (« Tout voir »).
+- Vérifié : onboarding question 4 enregistre les thèmes ; le fil ne montre que les thèmes choisis ; l'état vide propose « Voir tous les sujets ». Pas de test sur iPhone.

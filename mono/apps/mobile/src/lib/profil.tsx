@@ -13,6 +13,8 @@ import { ecrireProfilGarde, lireProfilGarde } from "./memoire";
 export type Profil = {
   niveauZoom: string; tailleTexte: number; espacement: number; contraste: string;
   policeDyslexie: boolean; animationsReduites: boolean; modeDaltonien: boolean; masquerImages: boolean;
+  /* D57 (V31) : thèmes d'intérêt choisis par le lecteur, parmi THEMES (@repere/core). */
+  themes: string[];
 };
 /* valideProfil est en JavaScript (@repere/core) : son type est rendu ici, une fois. */
 const valide = (x: unknown): Profil => valideProfil(x) as Profil;

@@ -15,7 +15,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { router } from "expo-router";
 import { Linking, Pressable, Text, View } from "react-native";
-import { ageReleve, dateFr, dernierExercice, parHabitant, titreLisible, visibleAuNiveau } from "@repere/core";
+import { ageReleve, dateFr, dernierExercice, parHabitant, THEMES, themesDuTexte, titreLisible, visibleAuNiveau } from "@repere/core";
 import { chargerCatalogueScrutins, chargerCommunesBeta, chargerDepartement, chargerEvenements, chargerIndex } from "../lib/donnees";
 import { srcComptesPublies, srcVote } from "../lib/sources";
 import { useSelection } from "../lib/selection";
@@ -33,6 +33,8 @@ const PAR_TRANCHE = 10;
 type Entree = {
   cle: string; echelon: string; d: string | null; an: string | null;
   quoi: string; icone: string; titre: string; lien: string | null; source: string;
+  /* V31 (D57) : thèmes rangés par mots-clés du titre ; le budget est un sujet « Budget ». */
+  themes: string[];
 };
 
 const DATE_ISO = /^\d{4}-\d{2}-\d{2}$/;
@@ -53,7 +55,7 @@ const estCetteSemaine = (e: Entree): boolean => {
 
 export default function PourVous() {
   const niveau = useNiveauZoom();
-  const { modifier } = useProfil();
+  const { modifier, profil } = useProfil();
   const { choix, retenue } = useSelection();
   const [nationales, setNationales] = useState<Entree[] | null>(null);
   const [budget, setBudget] = useState<Entree | null>(null);
@@ -73,14 +75,14 @@ export default function PourVous() {
         .filter(x => DATE_ISO.test(x.d))
         .map(x => ({
           cle: "s" + x.n, echelon: "france", d: x.d, an: null, quoi: "Vote à l'Assemblée", icone: "⚖",
-          titre: titreLisible(x.t), lien: srcVote(cat, x)?.url ?? null, source: "Assemblée nationale",
+          titre: titreLisible(x.t), lien: srcVote(cat, x)?.url ?? null, source: "Assemblée nationale", themes: themesDuTexte(x.t),
         }));
       const faits: Entree[] = ((ev?.r as { id: string; d: string; t: string; e: string; src?: string; srcn?: string }[]) || [])
         /* Les faits qui sont aussi des scrutins ne sont pas comptés deux fois. */
         .filter(x => DATE_ISO.test(x.d) && !x.id.startsWith("scrutin-"))
         .map(x => ({
           cle: "e" + x.id, echelon: x.e, d: x.d, an: null, quoi: "Fait publié", icone: "✎",
-          titre: x.t, lien: x.src ?? null, source: x.srcn ?? "Repère (rédaction)",
+          titre: x.t, lien: x.src ?? null, source: x.srcn ?? "Repère (rédaction)", themes: themesDuTexte(x.t),
         }));
       setNationales([...scrutins, ...faits]);
     }).catch(() => { if (vivant) setEchec(true); });
@@ -107,16 +109,24 @@ export default function PourVous() {
       setBudget({
         cle: "budget", echelon: "ville", d: null, an: ex.an, quoi: "Comptes de la commune", icone: "€",
         titre: `${nom} : ${Math.round(hab.depenses).toLocaleString("fr-FR")} € de dépenses par habitant en ${ex.an}`,
-        lien: srcComptesPublies(pq.donnees)?.url ?? null, source: "OFGL",
+        lien: srcComptesPublies(pq.donnees)?.url ?? null, source: "OFGL", themes: ["Budget"],
       });
     }).catch(() => { if (vivant) setBudget(null); });
     return () => { vivant = false; };
   }, [choix, retenue]);
 
-  const visibles = useMemo(
+  /* Les sujets choisis par le lecteur (vide = tout montrer). Le filtre de vue passe d'abord. */
+  const choisis: string[] = profil?.themes ?? [];
+  const zoneVisibles = useMemo(
     () => [...(budget ? [budget] : []), ...(nationales ?? [])].filter(e => visibleAuNiveau(niveau, e.echelon)).sort(ordonner),
     [budget, nationales, niveau],
   );
+  const visibles = useMemo(
+    () => (choisis.length ? zoneVisibles.filter(e => e.themes.some(t => choisis.includes(t))) : zoneVisibles),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [zoneVisibles, choisis.join("|")],
+  );
+  const basculer = (th: string) => modifier({ themes: choisis.includes(th) ? choisis.filter(x => x !== th) : [...choisis, th] });
   const recentes = visibles.filter(estCetteSemaine);
   const anciennes = visibles.filter(e => !estCetteSemaine(e));
   const montrees = anciennes.slice(0, tranches * PAR_TRANCHE);
@@ -126,9 +136,35 @@ export default function PourVous() {
     <Page sansDate>
       <BadgeZoom />
       <Question etiquette="Selon votre vue" question="Pour vous" sous="Ce qui a été publié, du plus récent au plus ancien." />
+      <View style={{ gap: PAS * 2 }}>
+        <Text style={TYPO.etiquette}>Mes sujets</Text>
+        <View style={{ flexDirection: "row", gap: PAS * 2, flexWrap: "wrap" }}>
+          {THEMES.map(th => {
+            const coche = choisis.includes(th);
+            return (
+              <Pressable key={th} accessibilityRole="checkbox" accessibilityState={{ checked: coche }} accessibilityLabel={`${th}${coche ? ", coché" : ""}`}
+                onPress={() => basculer(th)}
+                style={({ pressed }) => ({
+                  minHeight: CIBLE, paddingHorizontal: PAS * 3, justifyContent: "center", borderRadius: 999,
+                  borderWidth: coche ? 2 : 1, borderColor: coche ? couleurs.encre : couleurs.trait,
+                  backgroundColor: couleurs.carte, opacity: pressed ? 0.7 : 1,
+                })}>
+                <Text style={[TYPO.note, { color: couleurs.encre, fontWeight: coche ? "700" : "400" }]}>{coche ? "✓ " : ""}{th}</Text>
+              </Pressable>
+            );
+          })}
+        </View>
+        <Text style={TYPO.note}>
+          {choisis.length ? `Le fil ne montre que : ${choisis.join(", ")}.` : "Aucun sujet choisi : le fil montre tout."}
+        </Text>
+        <Text style={TYPO.note}>Les publications sont rangées d'après les mots de leur titre. Ce rangement peut se tromper.</Text>
+      </View>
       {echec ? <Vide titre="Les publications ne sont pas disponibles pour le moment." /> : null}
       {!echec && nationales === null ? <SquelettesListe n={3} hauteur={96} /> : null}
-      {!echec && nationales !== null && visibles.length === 0 ? (
+      {!echec && nationales !== null && zoneVisibles.length > 0 && visibles.length === 0 ? (
+        <Vide titre="Aucune publication ne correspond à vos sujets pour cette vue." action="Voir tous les sujets" onAction={() => modifier({ themes: [] })} />
+      ) : null}
+      {!echec && nationales !== null && zoneVisibles.length === 0 ? (
         <Vide
           titre={niveau === "rue" ? "Pas d'actu locale." : "Rien à montrer pour cette vue."}
           action={niveau === "france" ? undefined : "Voir la France"}
