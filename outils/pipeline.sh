@@ -364,6 +364,11 @@ rm -rf site_engendre
   # Non bloquant : sans ce fichier, l'application recalcule a partir des departements.
   node scripts/agregats-regionaux.mjs ./data \
     || echo "::warning::agregats regionaux non produits - l'application recalculera depuis les departements"
+  # ACTU LOCALE HEBDOMADAIRE (30/10/2026, D29-D31) - redigee par le CEO dans
+  # data/actus-hebdo.json (versionne, a la racine), recopiee telle quelle dans les donnees
+  # publiees. Aucune transformation, aucune generation. Absent : l'application n'affiche rien.
+  cp ../data/actus-hebdo.json ./data/actus-hebdo.json 2>/dev/null \
+    || echo "::warning::data/actus-hebdo.json absent - aucune actu locale publiee"
   # SITES DES MAIRIES (30/10/2026, D28) - annuaire DILA, Licence Ouverte 2.0. Reseau
   # requis. Non bloquant : sans ce fichier, l'application n'affiche simplement pas le lien.
   node scripts/collecte-sites-mairies.mjs ./data \

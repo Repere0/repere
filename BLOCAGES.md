@@ -176,3 +176,12 @@ Ajout d'une garde `HORS_MAIN` : hors de `main`, la chaîne tourne, un bilan de c
 
 **Brief v17 tronqué** : le message s'arrête au milieu du YAML du bloc 1. La suite (autres blocs, « droit image », « rapport ») n'est pas arrivée.
 - **V18, script DILA** : `code_insee_commune` est confirmé (note DILA du 17/07/2024). Le champ de type de service est probablement `code_type_service_local` d'après la même note, mais non vu sur une vraie réponse : le script accepte les trois noms candidats (`code_type_service_local`, `type_service_local`, `type_organisme`). La première exécution en CI tranchera.
+
+## 22. Sprint v21 (30/10/2026)
+
+- **Brief v21 tronqué** au point a) du bloc 3, au milieu du JSON. La suite du bloc 3 et les blocs suivants ne sont pas arrivés. Seul le point a) est fait.
+- **`date_publication` corrigée dans le gabarit** : la brief proposait `2026-11-03`, qui est un mardi. D31 dit « chaque lundi », et le lundi de la semaine ISO 2026-W45 est le **2 novembre 2026**. Le gabarit porte `2026-11-02`.
+- **`source_nom` ajouté au format** : l'invariant 4 demande le producteur de la source, pas seulement son adresse.
+- **Libellé du groupe** : « Groupe politique : non publié », sans « (source AN) ». Ce serait inexact : l'Assemblée publie les groupes, c'est Repère qui ne les extrait pas (D3).
+- **« Repère publie chaque lundi »** est désormais affiché aux lecteurs des 3 communes pilotes. Une semaine sans pull request fusionnée avant lundi matin affichera « Aucune actu cette semaine ». La promesse dépend du CEO, pas du code.
+- **Publication** : `data/actus-hebdo.json` n'arrive en production qu'après fusion sur `main` (pull request, `main` est protégée), puis passage de `collecte.yml`.
