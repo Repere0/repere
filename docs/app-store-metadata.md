@@ -11,7 +11,7 @@ Préparé le 30/10/2026. Les champs marqués **À DÉCIDER** ou **À FOURNIR** n
 | Langue principale | Français | Prêt |
 | Identifiant de l'app (bundle ID) | `com.repere.app` | **PLACEHOLDER**. Ne pas modifier sans accord du porteur. Il n'est pas écrit dans `app.json`. |
 | Version | 0.1.0 (build à définir) | Prêt |
-| Catégorie principale | Actualités ou Éducation | **À DÉCIDER** par le porteur. Actualités correspond à l'écran Actualités ; Éducation correspond au Dictionnaire citoyen. |
+| Catégorie principale | Actualités | **Décidé** le 30/10/2026 (décision D7). Éducation n'est pas retenue pour la bêta. |
 
 ## Mots-clés (100 caractères max., séparés par des virgules)
 
@@ -62,6 +62,7 @@ Tailles exigées par App Store Connect, à vérifier sur la page officielle au m
 - iPhone 6,5 pouces (1284 × 2778 px ou 1242 × 2688 px) : **À FOURNIR**.
 - iPhone 5,5 pouces (1242 × 2208 px) : **À FOURNIR** si la boutique le demande encore.
 - iPad 13 pouces (2064 × 2752 px) ou 12,9 pouces (2048 × 2732 px) : **requis tant que `supportsTablet` vaut `true`** dans `app.json`. Le porteur doit trancher : produire ces captures, ou passer `supportsTablet` à `false`. Le rendu tablette n'a pas été vérifié.
+- Décision D7 (30/10/2026) : iPad hors bêta. `supportsTablet` reste `true` dans `app.json` : tant que le porteur ne le passe pas à `false`, ces captures restent exigées.
 
 Les captures doivent montrer des écrans réels de l'application, avec des données réelles. Aucune capture de données inventées.
 

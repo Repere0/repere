@@ -1,57 +1,102 @@
-# Blocages — session du 30/10/2026
+# Blocages — session du 30/10/2026 (sprint V7)
 
-Ce qui n'a pas été fait, pourquoi, et la décision attendue. Rien ici n'a été contourné.
+Ce qui n'a pas été fait, pourquoi, et la décision attendue. Rien ici n'a été contourné et rien n'a été inventé.
 
-## 1. Groupes politiques des élus (bloc 2, sprint 8 bis) — DÉCISION : téléchargement manuel
+## 0. Décisions du CEO appliquées (D1 à D9)
 
-**Ce qui existe déjà** : aucun fichier `data/deputes-groupes.json`, aucun `acteurs.json` ni `AMO30` dans le dépôt. `data/deputes.json` ne porte pas le groupe.
+| Décision | Statut | Où |
+|---|---|---|
+| D1 Photos : pas de photo AN, avatars à initiales | ✅ appliquée | `src/ui/avatar.tsx`, section 2 |
+| D2 Contact : placeholder documenté, boutons conditionnels | ⚠️ code fait, adresse réelle manquante | section 3 |
+| D3 AMO30 : pas de téléchargement, procédure manuelle | ✅ procédure écrite, fichier absent | section 1 |
+| D4 « Cette semaine » : fichier vide, structure documentée | ⚠️ fichier créé, non commité, carte non faite | section 4 |
+| D5 Carte de partage sombre | ✅ appliquée (inverse la règle « cartes claires ») | section 8 |
+| D6 Identifiant `com.repere.app` : placeholder documenté | ✅ documenté, non écrit dans `app.json` | section 6 |
+| D7 iPad hors bêta ; catégorie « Actualités » | ⚠️ catégorie faite ; iPad à trancher | section 7 |
+| D8 U+2019 remplacé par `’` | ✅ appliquée | `conformite.test.mjs` |
+| D9 Logo vectoriel en React Native | ✅ appliquée ; icône PNG à faire | `src/ui/logo.tsx`, section 5 |
 
-**Source** (lue dans `outils/collecte.py`, ligne 59) :
-`https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip`
+## 1. Groupes politiques des élus (AMO30) — téléchargement manuel (D3)
 
-**Ce qui est demandé** :
-- Télécharger ce fichier à la main depuis data.assemblee-nationale.fr (le classifieur bloque le téléchargement depuis cette session).
-- Extraire le JSON et produire `data/deputes-groupes.json` au format :
-  `{ "PA123": { "groupe": "<libellé du groupe, tel que publié>", "nom": "..." }, ... }`
-- Le déposer dans `data/`.
+**Ce qui existe déjà** : aucun fichier `data/deputes-groupes.json`, aucun `AMO30` dans le dépôt. `data/deputes.json` ne porte pas le groupe. L'application affiche « Inconnu » (`src/lib/groupes.ts`, `groupeDe()` renvoie toujours « Inconnu » : raccourci documenté).
 
-**Remarque** : `outils/construire_deputes.py` et `outils/pipeline.sh` lisent déjà l'archive extraite dans `data/brut_AMO30/json/acteur`. Le plus simple est de déposer l'archive extraite à cet endroit, puis d'ajouter l'extraction des groupes au pipeline, plutôt que d'ajouter un fichier à part.
+**Procédure exacte, à faire par le porteur sur sa machine** (le téléchargement depuis cette session est bloqué) :
 
-**Fallback refusé** : la table de groupes « depuis la mémoire » (20 députés) n'a pas été écrite. Un groupe qu'on ne peut pas citer à sa source est une donnée inventée, et la règle du projet l'interdit. L'application affiche « Inconnu » tant que le fichier manque (`src/lib/groupes.ts`, inchangé).
+1. Ouvrir dans un navigateur :
+   `https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip`
+   (URL lue dans `outils/collecte.py`, ligne 59.)
+2. Enregistrer le fichier `.zip`, puis l'extraire dans un dossier vide.
+3. Placer le dossier extrait à la racine du dépôt, de sorte que les fichiers acteurs soient dans `data/brut_AMO30/json/acteur/`. C'est le chemin lu par `outils/construire_deputes.py` et `outils/pipeline.sh`.
+4. Ne rien écrire à la main : la table des groupes ne doit pas venir de la mémoire. Un groupe qu'on ne peut pas citer à sa source est une donnée inventée.
 
-**Test visuel du badge** (point e) : impossible tant qu'aucun groupe n'est connu.
+**Ce qui manque ensuite (tâche de code, non faite)** : aucun script n'extrait aujourd'hui le champ groupe vers `data/deputes-groupes.json`. Format visé : `{ "PA123": { "groupe": "<libellé tel que publié>", "nom": "..." } }`. Quand ce fichier existe, `groupeDe()` doit le lire. Tant qu'il n'existe pas, le badge reste « Inconnu » (couleur `#6B7280`).
 
-## 2. Photos des élus (bloc 3, sprint 9) — DÉCISION : ne pas charger de photos depuis l'Assemblée
+**Vérification impossible ici** : le badge n'a pas été regardé avec un vrai groupe, puisqu'aucun n'est connu.
 
-- **Vérification impossible ici** : la session n'a pas le réseau vers assemblee-nationale.fr, et la commande demandée (`Invoke-WebRequest`, PowerShell) n'existe pas dans ce conteneur. L'URL `.../static/tribun/17/photos/PA[ID].jpg` vient de la mémoire, pas d'une source vérifiée.
-- **Décision existante** : `src/ui/avatar.tsx` et l'ADR 0001 disent qu'on n'utilise pas une adresse devinée pour les photos. La stratégie 1 la contredit.
-- **Conséquence vie privée** : afficher une photo depuis un serveur tiers envoie l'adresse IP du lecteur à ce serveur, à chaque affichage. La politique de confidentialité et le questionnaire App Store devraient alors le dire. Aujourd'hui, le texte dit « Repère ne publie ni photo ».
-- **Droits sur les photos** : à confirmer avant tout usage.
-- **Ce qui est fait** : rien. L'avatar à initiales reste l'image unique.
-- **Avatar premium (stratégie 2)** : non fait. Le dégradé demande une bibliothèque (`expo-linear-gradient`) absente du projet ; l'ajouter pour un dégradé va contre la règle « pas de dépendance pour quelques lignes ». À décider.
+## 2. Photos des élus — décision D1 (appliquée)
 
-## 3. Contact : adresse e-mail (bloc 4, bloc 5)
+- Aucune photo n'est chargée. Aucune requête vers `assemblee-nationale.fr`.
+- Raison : une requête depuis le téléphone révèle l'adresse IP du lecteur à un tiers. Cela contredit la promesse de confidentialité (`docs/privacy-policy.md`).
+- Remplacement : avatar à initiales (`src/ui/avatar.tsx`), bordure calculée à partir de la couleur du groupe.
+- Écart avec le brief : les initiales ne sont pas toujours blanches. Elles prennent la couleur qui se lit sur le fond (`texteSur`). Sur une couleur de groupe claire, le blanc serait illisible.
+- Avatar avec dégradé : non fait. Il demanderait une dépendance (`expo-linear-gradient`) pour quelques lignes.
 
-- Le brief demande `contact@repere-app.fr` « placeholder à valider CEO ». Cette adresse n'a pas été vérifiée : rien ne prouve qu'elle existe ou qu'elle appartient au projet. La règle « zéro donnée inventée » interdit de la publier dans l'application.
-- **Non fait** : le bouton « Signaler un bug », le bouton « Donner mon avis » (mailto), et l'affichage du contact dans « À propos ».
-- **Décision attendue** : quelle adresse de contact réelle utiliser (et qui reçoit les messages).
-- **Fait** : l'écran « À propos » existe sans contact ; le lien est dans les réglages, sous « Confidentialité ».
-- **Fait** : `docs/testeurs.md` décrit la stratégie mailto (recommandée) et le formulaire (à éviter pour l'instant).
+## 3. Contact — décision D2 (code fait, adresse à fournir)
 
-## 4. Carte « Cette semaine » (bloc 6, sprint 12) — SPÉCIFICATION INCOMPLÈTE
+- Placeholder : `contact@repere-app.fr`. Il est **à remplacer avant distribution**. Cette adresse n'a pas été vérifiée : rien ne prouve qu'elle existe ni qu'elle appartient au projet. Elle n'est écrite dans aucun fichier de l'application.
+- Code : `src/app/a-propos.tsx` lit `process.env.EXPO_PUBLIC_CONTACT_EMAIL`. Si elle est définie, les boutons « Signaler un bug » et « Donner mon avis » (mailto) apparaissent. Sinon : « Contact : bientôt disponible dans la bêta. » en gris.
+- **À faire** : fournir la vraie adresse de réception, puis la définir au moment du build. Où la définir dans le profil de build n'a pas été vérifié (aucun profil EAS n'a encore été lancé).
+- Décision ouverte : qui lit les messages reçus (boîte réelle, personne désignée).
 
-- Le brief ne contient que la structure de `data/cette-semaine.json`. Les étapes b et suivantes sont absentes.
-- Non fait : aucun fichier créé. `data/` est publié tel quel ; un fichier sans spécification de contenu créerait une donnée publique sans règle.
-- **Décision attendue** : envoyer la suite du brief (ce que contient chaque semaine, qui l'écrit, à quelle source elle renvoie).
+## 4. Carte « Cette semaine » — D4 (fichier vide, carte non faite)
 
-## 5. Blocs bonus (bloc 7) — NON COMMENCÉS
+- `mono/data/cette-semaine.json` est créé, vide, avec la structure du brief (`semaine`, `date_publication`, `communes: {}`). Structure documentée dans `docs/cette-semaine.md`.
+- **Non commité** : `mono/.gitignore` exclut `data/`. De plus, `.github/workflows/collecte.yml` indique qu'un nouvel artefact de `data/` s'ajoute par une PR relue, et qu'un fait n'est publié que par un humain. Le fichier reste donc sur le disque. Décision à prendre : l'ajouter par PR, ou le laisser local.
+- Melun : aucun événement de Melun dans `data/evenements.json` (8 enregistrements, tous nationaux, le plus récent du 14/08/2026). Le fichier reste vide, comme prévu par D4.
+- **Spécification incomplète** : le brief s'arrête à la structure JSON. Les étapes b et suivantes manquent. Aucune carte n'est faite.
+- Décision attendue : envoyer la suite du brief (ce que contient chaque semaine, qui l'écrit, à quelle source il renvoie).
 
-Pas de temps restant consacré au bonus, pour ne pas multiplier les changements non relus avant la distribution.
+## 5. Icône de l'application et logo — décision D9 (icône à faire par le CEO)
 
-## 6. expo-doctor — NON VÉRIFIÉ
+- Le logo est un composant : `src/ui/logo.tsx`. Documentation : `docs/ux/logo.md`.
+- **À faire par le CEO** : exporter le logo en PNG 1024 × 1024 (fond et proportions à choisir) et remplacer `assets/icon.png`. Un composant React ne produit pas de fichier binaire. L'icône actuelle est inchangée.
+- Tailles : 48 px (en-tête) vu dans un navigateur, en mode sombre. Les tailles 24 px, 34 px (cartes), 96 px (À propos) et 128 px ne sont pas regardées : à vérifier sur appareil.
+- Une capture de parcours en pleine page (`captures/accueil-390.png`) ne montre pas le logo, alors que le DOM le contient et que deux captures de zone visible le montrent. Cause non trouvée (probablement la méthode de capture). À revérifier sur appareil.
 
-La commande `npx --yes expo-doctor@latest` a été refusée par le classifieur (téléchargement et exécution d'un paquet). Elle n'a pas été relancée ni contournée. Voir `APP_STORE_READINESS.md`.
+## 6. Identifiant d'application — décision D6 (placeholder)
 
-## 7. Étape « distribution » (commit « docs(distribution) ») — PARTIELLEMENT CONNUE
+- `com.repere.app` est un **placeholder**. Il n'est pas écrit dans `app.json`.
+- À décider par le porteur avant `eas build`. Sans identifiant, `eas build` en demandera un : ne pas le créer sans accord.
 
-Le message fourni commence à l'étape 5 : les étapes 1 à 4 (guide testeurs, script de lancement, checklist, message type) ne sont pas dans la session. Seul `docs/testeurs.md` (stratégie feedback) a été écrit. Le reste n'a pas été inventé.
+## 7. iPad et catégorie — décision D7
+
+- **Catégorie** : « Actualités » (décision D7). Documentée dans `docs/app-store-metadata.md`.
+- **iPad** : D7 dit « skip pour la bêta ». Mais `supportsTablet` vaut toujours `true` dans `app.json`, et Apple exige alors des captures iPad. Je n'ai pas modifié `app.json` : c'est la configuration de build, et l'intention exacte du CEO (passer à `false`, ou seulement ne pas faire de captures) n'est pas claire.
+- **Question au CEO** : passer `supportsTablet` à `false` ? Si oui, je le fais dans un commit à part.
+
+## 8. Cartes de partage sombres — décision D5 (inverse une règle précédente)
+
+- Les cartes de partage utilisent désormais la palette fixe sombre `PALETTE_CARTE` (`src/lib/palette.ts`). Elles ne dépendent plus du thème du téléphone.
+- Cela **inverse** la règle « cartes claires par défaut » qui était documentée jusqu'ici, et que `theme.test.mjs` verrouillait. Le test a été mis à jour.
+- Vérification : par le code et les tests seulement. Aucune carte n'a été regardée sur appareil.
+
+## 9. Vérification sur appareil, expo-doctor, captures
+
+- **expo-doctor : non vérifié.** La commande `npx --yes expo-doctor@latest` a été refusée par le classifieur (téléchargement et exécution d'un paquet). Elle n'a pas été relancée ni contournée. À lancer par le porteur : `npx expo-doctor` depuis `mono/apps/mobile`.
+- **Aucun appareil** (ni iPhone, ni Android) dans cette session. Aucune capture officielle d'App Store n'a été faite.
+- **Parcours navigateur** : 222/222 sur le dernier build web local (après les changements du sprint V7).
+- **Tests partagés** : 246/246 (liste de la CI, `.github/workflows/mobile.yml`, ligne 91).
+
+## 10. Étape « distribution » (commit « docs(distribution) ») — partiellement connue
+
+Le message fourni commence à l'étape 5 : les étapes 1 à 4 (guide testeurs, script de lancement, checklist, message type) ne sont pas dans la session. Seul `docs/testeurs.md` (stratégie de retour, mailto recommandé) a été écrit. Le reste n'a pas été inventé.
+
+## 11. Blocs bonus — non commencés
+
+Pas de temps consacré au bonus, pour ne pas multiplier les changements non relus avant la distribution.
+
+## 12. Compte Apple Developer et premier build
+
+- Compte payant à ouvrir par le porteur. Nécessaire pour `eas submit` et TestFlight.
+- Première construction iOS jamais faite (pas de dossier `ios/`). Le manifeste de confidentialité reste à valider par le rapport de confidentialité de Xcode (voir `APP_STORE_READINESS.md`).
+- URL publique de la politique de confidentialité : proposée `https://repereapp.netlify.app/confidentialite`, à vérifier (voir `docs/privacy-policy-hosting.md`).

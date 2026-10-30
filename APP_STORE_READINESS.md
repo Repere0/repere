@@ -15,10 +15,12 @@ Repère n'a pas encore été construit en binaire iOS (pas de dossier `ios/`, pa
 | Icône 1024 × 1024 sans transparence | ✅ | `assets/icon.png` : 1024 × 1024, RGB, sans canal alpha (vérifié avec PIL). |
 | Écran de démarrage (splash) | ⚠️ | Configuré dans `app.json` (`splash-icon.png`, fond `#F7F7F9`). Rendu non vérifié sur appareil. |
 | Identifiant d'application (bundle ID) | ❌ placeholder | `com.repere.app` n'est **pas** écrit dans `app.json`. À décider par le porteur avant `eas build`. |
-| Logo vectoriel / `assets/logo.png` | ❌ | Absent du dépôt. Le partage utilise un « R » vectoriel de repli. |
-| Métadonnées App Store | ⚠️ | `docs/app-store-metadata.md`. Catégorie, URL de politique, URL d'assistance et contact sont à décider ou à fournir. |
+| Logo vectoriel | ⚠️ | `src/ui/logo.tsx` : vues React Native, sans image (décision D9). Icône 1024 × 1024 non régénérée : le CEO doit l'exporter à partir du composant (voir `BLOCAGES.md`). |
+| Métadonnées App Store | ⚠️ | `docs/app-store-metadata.md`. Catégorie décidée (Actualités, D7). URL de politique et URL d'assistance restent à fournir. |
+| Contact (adresse d'assistance) | ⚠️ | `contact@repere-app.fr` est un placeholder : à remplacer avant distribution. Les boutons « Signaler un bug » et « Donner mon avis » n'apparaissent que si `EXPO_PUBLIC_CONTACT_EMAIL` est défini (décision D2). |
+| Photos des élus | ✅ | Aucune photo chargée (décision D1) : aucune requête vers assemblee-nationale.fr, donc pas d'adresse IP transmise à un tiers. Avatar à initiales, bordure couleur du groupe. |
 | Captures d'écran | ❌ | À produire sur appareil ou simulateur. Tailles dans `docs/app-store-metadata.md`. |
-| iPad | ❌ | `supportsTablet: true`. Des captures iPad sont alors exigées ; le rendu tablette n'a pas été vérifié. Décision : garder ou passer à `false`. |
+| iPad | ❌ | `supportsTablet: true`. Décision D7 : iPad hors bêta. Tant que `supportsTablet` vaut `true`, des captures iPad sont exigées ; le rendu tablette n'a pas été vérifié. Le porteur passe à `false` ou fournit les captures. |
 | Compte Apple Developer | ❌ | Payant, à ouvrir par le porteur. Nécessaire pour `eas submit` et TestFlight. |
 | Test sur iPhone réel | ❌ | Non fait. Pas d'iPhone dans cette session. |
 | Accessibilité (VoiceOver, Dynamic Type) | ❌ | Non testé sur appareil. |
@@ -60,7 +62,7 @@ Contrôle automatique (Chromium, préférence système « sombre », 390 px) sur
 
 - Aucun fond blanc de page. Le fond du corps est transparent ; l'app peint son propre fond.
 - Un élément clair sur Aujourd'hui (une barre de vote, remplie en couleur du texte `encre`, rendue `rgb(243, 240, 234)`) : c'est une barre voulue, pas un fond oublié. Elle est lisible sur le fond sombre.
-- Les cartes de partage (« story ») sont claires par conception (décision documentée : « claire par défaut »). Elles ne sont pas affichées à l'écran, mais elles existent dans le document. Le brief demandait des cartes « premium sombres » : cet écart n'est pas tranché et reste à décider.
+- Les cartes de partage sont sombres (décision D5, 30/10/2026) : palette fixe `PALETTE_CARTE`, indépendante du thème du téléphone. Cette décision inverse la règle « cartes claires » qui était documentée jusqu'ici. Le rendu n'a été vérifié que par le code et les tests, pas sur appareil.
 
 ## Risques de rejet et correctifs proposés
 
