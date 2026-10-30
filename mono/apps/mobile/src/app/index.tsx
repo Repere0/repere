@@ -40,6 +40,10 @@ type Index = { departements: { code: string; nom?: string }[]; agregats?: unknow
 type Argent = { nom: string; an: string; depenses: number };
 /* Sans commune retenue, la carte montre un exemple, dit comme tel : Melun. */
 const EXEMPLE = { insee: "77288", nom: "Melun" };
+/* COMMUNES RECENTES, POUR LA SESSION SEULEMENT (bloc D, 30/10/2026) : une variable en
+   memoire, perdue a la fermeture de l'application. Rien n'est ecrit sur le telephone :
+   la seule cle locale reste repere.departement (invariant 2). */
+const RECENTES: { insee: string; nom: string }[] = [];
 
 export default function Accueil() {
   const marges = useSafeAreaInsets();
@@ -53,6 +57,8 @@ export default function Accueil() {
   const [page, setPage] = useState(0);
   const [essai, setEssai] = useState(0);
   const [argent, setArgent] = useState<Argent | null>(null);
+  const [tout, setTout] = useState(false);
+  const [recentes, setRecentes] = useState(() => [...RECENTES]);
   /* Une carte occupe toute la largeur de lecture ; la suivante commence apres un ecart. */
   const larg = Math.min(width, 640) - PAS * 8;
   const pas = larg + PAS * 3;
@@ -78,6 +84,8 @@ export default function Accueil() {
     [beta],
   );
   const cherches = mots(filtre);
+  /* Toutes les communes de la beta, de A a Z : l'issue d'une recherche sans resultat. */
+  const toutes = useMemo(() => (tout ? [...communes].sort((a, b) => a[1].localeCompare(b[1], "fr")) : []), [tout, communes]);
   const trouvees = trouverCommunes(communes, cherches) as Ligne[];
   const manquante = cherches.length ? manquantes.find(([, , c]) => correspond(cherches, c)) : undefined;
   const rien = cherches.length > 0 && trouvees.length === 0 && !manquante;
@@ -92,6 +100,13 @@ export default function Accueil() {
     const dep = departementDe(insee);
     if (!dep) return;
     choisir({ dep, insee, nom });
+    const i = RECENTES.findIndex(x => x.insee === insee);
+    if (i >= 0) RECENTES.splice(i, 1);
+    RECENTES.unshift({ insee, nom });
+    RECENTES.length = Math.min(RECENTES.length, 3);
+    setRecentes([...RECENTES]);
+    /* La recherche se referme une fois la commune choisie : au retour, l'accueil est propre. */
+    setFiltre(""); setCherche(false); setTout(false);
     router.push("/chez-vous");
   };
 
@@ -167,7 +182,7 @@ export default function Accueil() {
   return (
     <KeyboardAvoidingView style={{ flex: 1, backgroundColor: D.sol }} behavior={Platform.OS === "ios" ? "padding" : undefined}>
       <FlatList
-        data={trouvees}
+        data={tout && !cherches.length ? toutes : trouvees}
         keyExtractor={l => l[0]}
         keyboardShouldPersistTaps="handled"
         contentContainerStyle={[s.page, { paddingTop: marges.top + PAS * 6, paddingBottom: marges.bottom + PAS * 6 }]}
@@ -231,7 +246,26 @@ export default function Accueil() {
               <Vide titre={phrase.titre} corps={phrase.corps}
                 action="Réessayer" onAction={() => setEssai(n => n + 1)} />
             ) : null}
-            {etat === ETATS.SERVI && !cherches.length ? (
+            {champOuvert && !cherches.length && !tout && recentes.length ? (
+              <View style={{ gap: PAS * 2 }}>
+                <Text style={s.note}>Ouvertes pendant cette session</Text>
+                {recentes.map(c => (
+                  <Pressable key={c.insee} onPress={() => ouvrir(c.insee, c.nom)} accessibilityRole="button"
+                    accessibilityLabel={`${c.nom}, ouverte pendant cette session`}
+                    style={({ pressed }) => [s.resultat, pressed && { opacity: 0.7 }]}>
+                    <View style={s.pastille} />
+                    <Text style={s.resultatNom}>{c.nom}</Text>
+                  </Pressable>
+                ))}
+              </View>
+            ) : null}
+            {tout && !cherches.length ? (
+              <View style={{ gap: PAS * 2 }}>
+                <Text style={s.question} accessibilityRole="header">Les {communes.length} communes de la bêta, de A à Z</Text>
+                <Bouton texte="Fermer la liste" discret onPress={() => setTout(false)} />
+              </View>
+            ) : null}
+            {etat === ETATS.SERVI && !cherches.length && !tout ? (
               <>
                 <Text style={s.note}>La bêta couvre les {communes.length} communes d'Île-de-France qui ont une fiche.</Text>
                 {/* CE QUE REPERE SAIT DE VOUS : rien. Phrase vraie a la lettre :
@@ -243,7 +277,7 @@ export default function Accueil() {
                 </View>
               </>
             ) : null}
-            {premiere && !cherches.length ? cartes : null}
+            {premiere && !cherches.length && !tout ? cartes : null}
             {manquante ? (
               <Vide titre={`${manquante[1]} existe bien en Île-de-France : c'est nous qui n'avons pas encore sa fiche.`}
                 corps="Les données publiées que Repère lit ne contiennent pas de fiche pour cette commune. Ce n'est pas une erreur de votre part, et ce n'est pas la preuve que la commune n'existe pas."
@@ -256,6 +290,9 @@ export default function Accueil() {
               <Vide titre={`Aucune commune d'Île-de-France ne correspond à « ${filtre.trim()} ».`}
                 corps="Pendant la bêta, l'application ne couvre que l'Île-de-France : pour une commune d'ailleurs, les données ne sont pas encore disponibles ici. Sinon, vérifiez l'orthographe du début du nom."
                 action="Effacer la recherche" onAction={() => setFiltre("")} />
+            ) : null}
+            {rien ? (
+              <Bouton texte="Voir toutes les communes d'Île-de-France" discret onPress={() => { setFiltre(""); setTout(true); }} />
             ) : null}
 
           </View>
