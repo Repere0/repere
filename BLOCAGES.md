@@ -219,3 +219,8 @@ Recherche faite sur le site officiel (melun.fr / ville-melun.fr) :
 - Le message s'arrête au point b) du bloc 4 (« Vérifie que main et test/sdk58-expo-go peuvent fusionner sans conflit : »). Ce point est fait : essai sur une copie jetable de `main`, 0 conflit (`docs/fusion-main.md`). Ce qui suivait n'est pas arrivé.
 - **« Netlify ~5 min » non confirmé** : la fusion seule ne publie rien. La production change à la collecte suivante (05 h 47 UTC ou lancement manuel depuis `main`), dont la durée n'a pas pu être lue (`gh` non authentifié).
 - **Le lien « Voir les dernières publications »** mène à l'écran Actualités, qui ne montre que des événements nationaux. Le plus récent date du 14/08/2026. Le lecteur y trouvera des publications anciennes : c'est honnête, mais peu engageant.
+
+## 24. Sprint v23 (30/10/2026)
+- **Brief V23 tronqué** juste après le titre du bloc 2 (« Crée docs/survie-ceo.md : un document unique qui liste les actions récurrentes du CEO. »). Le contenu attendu n'est pas arrivé. Le kit est construit à partir des procédures déjà présentes dans le dépôt, sans règle nouvelle. Les blocs suivants, s'il y en avait, ne sont pas faits.
+- **Correction** : le filtre des députés sortants est dans `outils/mono_donnees.py`, pas dans `construire_deputes.py`, que la chaîne n'appelle pas. Corrigé en section 23 et dans un commentaire de `lib/mandats-termines.ts`.
+- **D36, nommage** : `date_fin_mandat` et `successeur_de` sont en snake_case, alors que `deputes.json` est en camelCase (`dateDebut`). À aligner au moment du changement post-bêta.
