@@ -74,10 +74,12 @@ export default function Elus() {
   useEffect(() => {
     let vivant = true;
     setEtat(ETATS.EN_COURS);
+    if (__DEV__) console.time("annuaire : chargement");
     Promise.all([
       chargerDeputes(), chargerIndex(), chargerComptesRegions(),
       ...REGIONS.map(c => chargerElusRegion(c)),
     ]).then(([dep, idx, comptes, ...regs]) => {
+      if (__DEV__) console.timeEnd("annuaire : chargement");
       if (!vivant) return;
       const noms = ((comptes.donnees && (comptes.donnees as { noms_regions?: Record<string, string> }).noms_regions) || {}) as Record<string, string>;
       const reg = regs.map((r, i) => (r.donnees ? { code: REGIONS[i], ...(r.donnees as object) } : null));
@@ -101,6 +103,9 @@ export default function Elus() {
         data={etat === ETATS.SERVI ? trouves : []}
         keyExtractor={f => f.id}
         keyboardShouldPersistTaps="handled"
+        initialNumToRender={20}
+        maxToRenderPerBatch={20}
+        windowSize={10}
         contentContainerStyle={{ padding: PAS * 4, gap: PAS * 2 }}
         ListHeaderComponent={
           <View style={{ gap: PAS * 3 }}>
