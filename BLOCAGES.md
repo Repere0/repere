@@ -256,3 +256,10 @@ Recherche faite sur le site officiel (melun.fr / ville-melun.fr) :
 ### Vérifications
 - Tests partagés : 257/257 à chaque commit ; invariants à 0 erreur ; `tsc` à 0 erreur ; parcours navigateur (222/222) ; cartes de partage ; zoom et confort (`zoom-web.mjs`).
 - Le test de zoom passe par l'accueil, comme un lecteur : ouvrir `/qui-decide` directement n'a pas de commune en mémoire de session (comportement existant, non modifié).
+
+## 26. V29 bloc 2c — source du nombre d'habitants à vérifier (30/10/2026)
+
+- Le brief citait l'INSEE comme source du nombre d'habitants. **Non vérifié.**
+- Ce que le dépôt dit : chaque exercice du bloc OFGL porte la population qu'il utilise (`mono/scripts/extract-html.js`, règle V-2, 29/09/2026). Les montants par habitant sont ceux que publie l'OFGL.
+- Ce que le dépôt ne dit pas : qui produit cette population (INSEE, DGCL ou autre) ni à quelle date de référence. Rien n'a été écrit dans l'application à ce sujet.
+- Action : vérifier le producteur de la population dans le fichier OFGL source avant d'ajouter une mention de source. Jusque-là, l'application ne cite que l'OFGL.

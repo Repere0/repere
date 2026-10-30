@@ -197,7 +197,7 @@ export default function OuVaArgent({ paquet, index, commune }) {
         tag="Donnée officielle">
         <p className="tx-note tx-intro">
           Les six lignes ci-dessous sont publiées telles quelles par l'Observatoire des finances
-          locales. Elles sont en euros, pour cette commune seule, sur une seule année.
+          et de la gestion publique locales (OFGL). Elles sont en euros, pour cette commune seule, sur une seule année.
         </p>
         {phraseEcartes ? <p className="tx-note">{phraseEcartes}</p> : null}
         {agregats.map((a, i) => {
@@ -284,7 +284,7 @@ export default function OuVaArgent({ paquet, index, commune }) {
           departements d'Ile-de-France. */}
       {etatTerr === ETATS.SERVI && territoireDept && !territoireDept.region_code ? (
         <Vide titre="Aucune donnée régionale n'est publiée pour ce département."
-          corps="L'Observatoire des finances locales ne porte pas de ligne « région » pour ce territoire dans le fichier source — ce n'est pas un manque de Repère." />
+          corps="L'Observatoire des finances et de la gestion publique locales (OFGL) ne porte pas de ligne « région » pour ce territoire dans le fichier source — ce n'est pas un manque de Repère." />
       ) : null}
     </Pile>
   );

@@ -20,7 +20,7 @@
   {
    "producteur": "Repère — correspondance entre départements et régions, d'après le découpage administratif officiel",
    "licence": "donnée publique (découpage administratif officiel)",
-   "portee": "la région de chaque département, et le code de région utilisé par l'Observatoire des finances locales",
+   "portee": "la région de chaque département, et le code de région utilisé par l'Observatoire des finances et de la gestion publique locales (OFGL)",
    "releve_le": "2026-09-22",
    "note": "code numerique verifie par recoupement avec la population reelle de chaque region (voir extract-html.js) ; Mayotte (aucun code) est absente de l echelon region d OFGL",
    "url": "https://geo.api.gouv.fr/regions"

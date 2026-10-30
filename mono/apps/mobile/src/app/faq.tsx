@@ -30,7 +30,7 @@ const FAQ: { q: string; r: string[]; lien?: { texte: string; aller: () => void }
   {
     q: "Comment calculez-vous le budget par habitant ?",
     r: [
-      "Nous ne le calculons pas : le montant par habitant est celui que publie l'Observatoire des finances locales (OFGL), à partir des comptes de la commune.",
+      "Nous ne le calculons pas : le montant par habitant est celui que publie l'Observatoire des finances et de la gestion publique locales (OFGL), à partir des comptes de la commune.",
       "Ce que Repère calcule, il le dit : la comparaison avec la commune médiane d'Île-de-France, et les parts « salaires, investissement, autres », marquées « Calcul Repère ».",
     ],
   },

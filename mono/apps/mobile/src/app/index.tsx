@@ -112,18 +112,18 @@ function SensVote({ cle, texte }: { cle: string; texte: string }) {
  * 3 (« Tout voir ») : le scrutin, le décompte écrit, la façon dont Repère lit la position, le lien. */
 const VERBE_VOTE: Record<string, string> = { p: "a voté pour", c: "a voté contre", a: "s'est abstenu" };
 function CarteVote({ etiquette, nom, acteur, ligne, position, dec, date, titre, lien, exemple = false }: {
-  etiquette: string; nom: string; acteur: string; ligne: string; position: string; dec?: Record<string, string> | null;
+  etiquette: string; nom: string; acteur: string; ligne: string; position: string | null; dec?: Record<string, string> | null;
   date: string; titre: string; lien?: string; exemple?: boolean;
 }) {
   const [tout, setTout] = useState(false);
   return (
     <View style={s.carte}>
       <AvecPicto picto="vote"><Text style={s.etiquette}>{etiquette}</Text></AvecPicto>
-      <Text style={s.carteTitre}>{`${nom} ${VERBE_VOTE[position] ?? "a voté"}.`}</Text>
+      <Text style={s.carteTitre}>{position ? `${nom} ${VERBE_VOTE[position] ?? "a voté"}.` : `${nom} : position non lue`}</Text>
       {/* Groupe inconnu ici : badge gris, aucune couleur de parti (ADR 0001). */}
       <View style={s.badge}><Text style={s.badgeTexte}>{libelleGroupe(groupeDe(acteur))}</Text></View>
       <Text style={s.legende}>{ligne}</Text>
-      <SensVote cle={position} texte={POSITION_MOT[position]} />
+      {position ? <SensVote cle={position} texte={POSITION_MOT[position]} /> : <Text style={s.legende}>Le relevé de l'Assemblée ne donne pas de position vérifiable pour ce scrutin.</Text>}
       <Text style={s.legende}>{date} · {titre}</Text>
       <Details titre="Décompte du scrutin" couleur={D.encre} lien={D.encre}>
         <BarreVote dec={dec} />
@@ -168,6 +168,8 @@ export default function Accueil() {
   const [argent, setArgent] = useState<Argent | null>(null);
   const [voteVu, setVoteVu] = useState<VoteVu | null>(null);
   const [decExemple, setDecExemple] = useState<Record<string, string> | null>(null);
+  /* V29 bloc 2a : la position de l'exemple, lue du relevé de l'Assemblée (null si non lisible). */
+  const [positionExemple, setPositionExemple] = useState<string | null>(null);
   const [tout, setTout] = useState(false);
   const [recentes, setRecentes] = useState(() => [...RECENTES]);
   /* Une carte occupe toute la largeur de lecture ; la suivante commence apres un ecart. */
@@ -239,7 +241,7 @@ export default function Accueil() {
     const exempleIci = cible === EXEMPLE;
     Promise.all([
       chargerDepartement(dep),
-      exempleIci ? null : chargerDeputes(), chargerCatalogueScrutins(), exempleIci ? null : chargerVotes(dep),
+      exempleIci ? null : chargerDeputes(), chargerCatalogueScrutins(), chargerVotes(dep),
     ]).then(([r, de, ca, vo]) => {
       if (!vivant) return;
       /* LE VOTE (D21) : seulement pour la commune retenue, et seulement si les deux releves
@@ -266,6 +268,12 @@ export default function Accueil() {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const scEx = ca && ca.donnees ? ((ca.donnees as any).scrutins || []).find((x: { n: string }) => x.n === VOTE.n) : null;
       setDecExemple(scEx && scEx.dec ? scEx.dec : null);
+      /* V29 bloc 2a : la position de l'exemple vient du relevé, comme pour un vrai député. Si les deux relevés
+         ne se correspondent pas, pas de position : la carte le dit. */
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const posEx: any = ca && ca.donnees && vo && vo.donnees && positionsFiables(ca.donnees as any, vo.donnees as any)
+        ? positionSur(vo.donnees as any, VOTE.acteur, VOTE.n) : undefined;
+      setPositionExemple(posEx === "p" || posEx === "c" || posEx === "a" ? posEx : null);
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const fiche = r.donnees ? (r.donnees as any).communes?.[cible.insee] : null;
       const ex = fiche ? dernierExercice(fiche, index.agregats) : null;
@@ -376,7 +384,7 @@ export default function Accueil() {
                   </View>
                 ) : (
                   <CarteVote etiquette="Un exemple" nom={VOTE.depute} acteur={VOTE.acteur}
-                    ligne="Député de la 1re circonscription de Seine-et-Marne" position="a" dec={decExemple}
+                    ligne="Député de la 1re circonscription de Seine-et-Marne" position={positionExemple} dec={decExemple}
                     date={dateFr(VOTE.date)} titre={titreLisible(VOTE.titre)} exemple />
                 )}
               </View> : null}
