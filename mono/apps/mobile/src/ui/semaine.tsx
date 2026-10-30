@@ -164,7 +164,7 @@ const s = feuille(() => StyleSheet.create({
   jourNom: { fontSize: 13, lineHeight: 18, color: couleurs.sourd },
   encre: { color: couleurs.encre, fontWeight: "700" },
   jourNum: { fontSize: 17, lineHeight: 22, fontWeight: "700", color: couleurs.encre },
-  points: { flexDirection: "row", gap: 3, minHeight: 18, alignItems: "center" },
+  points: { flexDirection: "row", gap: 4, minHeight: 18, alignItems: "center" },
   point: { width: 6, height: 6, borderRadius: 3, backgroundColor: couleurs.france },
   pied: { flexDirection: "row", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", columnGap: PAS * 2 },
   suite: { minHeight: CIBLE, justifyContent: "center", marginLeft: "auto" },

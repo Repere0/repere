@@ -45,7 +45,7 @@ export default function Dictionnaire() {
     : (lettre ? toutes.filter(e => e.lettre === lettre) : toutes);
 
   const chip = (actif: boolean) => ({
-    minHeight: 44, paddingHorizontal: 14, borderRadius: 999, borderWidth: 1,
+    minHeight: 44, paddingHorizontal: 16, borderRadius: 999, borderWidth: 1,
     borderColor: actif ? couleurs.encre : couleurs.trait, backgroundColor: actif ? couleurs.encre : couleurs.carte,
     alignItems: "center" as const, justifyContent: "center" as const,
   });
@@ -64,11 +64,11 @@ export default function Dictionnaire() {
           accessibilityLabel="Rechercher un mot du dictionnaire"
           autoCorrect={false}
           style={{ flex: 1, minHeight: 48, borderWidth: 1, borderColor: couleurs.trait, borderRadius: 999,
-            paddingHorizontal: 18, color: couleurs.encre, backgroundColor: couleurs.carte, fontSize: 17 }}
+            paddingHorizontal: 16, color: couleurs.encre, backgroundColor: couleurs.carte, fontSize: 17 }}
         />
         {recherche.length > 0 ? (
           <Pressable onPress={() => setRecherche("")} accessibilityRole="button" accessibilityLabel="Effacer la recherche"
-            style={({ pressed }) => ({ position: "absolute", right: 4, minHeight: 44, paddingHorizontal: 14, borderRadius: 999,
+            style={({ pressed }) => ({ position: "absolute", right: 4, minHeight: 44, paddingHorizontal: 16, borderRadius: 999,
               backgroundColor: couleurs.voile, justifyContent: "center", opacity: pressed ? 0.6 : 1 })}>
             <Text style={{ fontWeight: "700", color: couleurs.encre, fontSize: 14 }}>Effacer</Text>
           </Pressable>
@@ -76,7 +76,7 @@ export default function Dictionnaire() {
       </View>
 
       {/* Lettres : une seule rangee, seules les lettres presentes. */}
-      <View accessibilityRole="tablist" style={{ flexDirection: "row", flexWrap: "wrap", gap: 6 }}>
+      <View accessibilityRole="tablist" style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
         <Pressable onPress={() => setLettre(null)} accessibilityRole="tab" accessibilityState={{ selected: lettre === null }}
           accessibilityLabel="Tous les mots" style={chip(lettre === null)}>
           <Text style={{ fontWeight: "700", color: lettre === null ? couleurs.sol : couleurs.encre }}>Tous</Text>

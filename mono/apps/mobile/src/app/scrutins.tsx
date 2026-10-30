@@ -403,7 +403,7 @@ const s = feuille(() => StyleSheet.create({
   intro: { gap: PAS, paddingTop: PAS * 2 },
   onglets: {
     flexDirection: "row", backgroundColor: couleurs.voile, borderRadius: RAYON.bloc,
-    padding: 3, gap: 3,
+    padding: 4, gap: 4,
   },
   onglet: {
     minHeight: CIBLE, flex: 1, borderRadius: 11, alignItems: "center", justifyContent: "center", paddingHorizontal: PAS * 2,

@@ -6,7 +6,7 @@ import { couleurGroupe, texteSur } from "../lib/groupes";
 export function BadgeGroupe({ groupe }: { groupe: string }) {
   const fond = couleurGroupe(groupe);
   return (
-    <View style={{ alignSelf: "flex-start", paddingHorizontal: 10, paddingVertical: 4, borderRadius: 999, backgroundColor: fond }}>
+    <View style={{ alignSelf: "flex-start", paddingHorizontal: 12, paddingVertical: 4, borderRadius: 999, backgroundColor: fond }}>
       <Text style={{ color: texteSur(fond), fontSize: 13, fontWeight: "700" }}>Groupe : {groupe}</Text>
     </View>
   );

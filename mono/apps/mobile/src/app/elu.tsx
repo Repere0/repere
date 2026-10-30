@@ -132,7 +132,7 @@ export default function Elu() {
             {/* Identite */}
             <View style={{ flexDirection: "row", gap: PAS * 4, alignItems: "center" }}>
               <Initiales nom={nom} />
-              <View style={{ flex: 1, gap: 6 }}>
+              <View style={{ flex: 1, gap: 8 }}>
                 <Question etiquette={p.niveau || LIBELLES.qui} question={nom} sous={libelleRole || undefined} />
               </View>
             </View>

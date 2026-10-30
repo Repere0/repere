@@ -37,7 +37,7 @@ export function BarrePart({ part, libelle, valeur, echelon = "ville", delai = 0,
 }) {
   const v = useApparition(delai);
   return (
-    <View accessible accessibilityLabel={`${libelle} : ${valeur}`} style={{ gap: 6 }}>
+    <View accessible accessibilityLabel={`${libelle} : ${valeur}`} style={{ gap: 8 }}>
       {sansLibelle ? null : <View style={s.ligneH}>
         <Text style={TYPO.note}>{libelle}</Text>
         <Text style={[TYPO.corps, { fontWeight: "700" }]}>{valeur}</Text>
@@ -123,7 +123,7 @@ export function DeuxAnnees({ libelle, an1, an2, m1, m2, texte1, texte2, diffText
   const max = Math.max(m1, m2) || 1;
   const v = useApparition(60);
   return (
-    <View accessible accessibilityLabel={`${libelle} : ${an1}, ${texte1} ; ${an2}, ${texte2}. ${diffTexte}.`} style={{ gap: 6 }}>
+    <View accessible accessibilityLabel={`${libelle} : ${an1}, ${texte1} ; ${an2}, ${texte2}. ${diffTexte}.`} style={{ gap: 8 }}>
       <View style={s.ligneH}>
         <Text style={TYPO.note}>{libelle}</Text>
         <Text style={[TYPO.corps, { fontWeight: "700" }]}>{diffTexte}</Text>
@@ -248,6 +248,6 @@ const s = feuille(() => StyleSheet.create({
   jalonPoint: { width: 14, height: 14, borderRadius: 7, borderWidth: 2, backgroundColor: couleurs.sol, marginTop: 4 },
   jalonActif: { width: 18, height: 18, borderRadius: 9, marginTop: 2 },
   jalonTrait: { flex: 1, width: 2, backgroundColor: couleurs.trait, marginTop: 2 },
-  maillon: { width: 14, height: 14, borderRadius: 7, marginTop: 3 },
+  maillon: { width: 14, height: 14, borderRadius: 7, marginTop: 4 },
   depli: { minHeight: CIBLE, flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
 }));
