@@ -406,10 +406,12 @@ export default function Accueil() {
                 {/* CE QUE REPERE SAIT DE VOUS : rien. Phrase vraie a la lettre :
                     les adresses se composent par departement (client.js), et la
                     commune n'est gardee que sur demande (lib/memoire.ts). */}
-                <View style={s.confiance}>
-                  <Text style={[s.note, { color: D.encre, fontWeight: "600" }]}>Pas de compte, pas d'e-mail.</Text>
-                  <Text style={s.note}>Repère ne sait pas qui vous êtes. Pour afficher votre commune, il télécharge le fichier public de tout votre département, et ne garde votre commune sur ce téléphone que si vous le lui demandez.</Text>
-                </View>
+                {/* Audit 5 s (V19) : une ligne ; l'explication complete est dans la FAQ. */}
+                <Pressable onPress={() => router.push("/faq")} accessibilityRole="link"
+                  accessibilityLabel="Pas de compte, pas d'e-mail. Pourquoi ? Ouvre les questions fréquentes"
+                  style={({ pressed }) => [s.confiance, { minHeight: 48, justifyContent: "center" }, pressed && { opacity: 0.7 }]}>
+                  <Text style={[s.note, { color: D.encre, fontWeight: "600" }]}>Pas de compte, pas d'e-mail. <Text style={{ textDecorationLine: "underline", fontWeight: "400", color: D.sourd }}>Pourquoi ?</Text></Text>
+                </Pressable>
               </>
             ) : null}
             {/* V13 bloc D : sous le pitch et la recherche, au-dessus des cartes. Masquee sans fait de moins de 7 jours. */}

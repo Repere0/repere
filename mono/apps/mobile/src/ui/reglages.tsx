@@ -67,6 +67,13 @@ function ChoixAffichage({ visible, onFermer }: { visible: boolean; onFermer: () 
           >
             <Text style={s.optionTexte}>À propos</Text>
           </Pressable>
+          <Pressable
+            onPress={() => { onFermer(); router.push("/faq"); }}
+            accessibilityRole="link"
+            style={({ pressed }) => [s.option, pressed && { opacity: 0.7 }]}
+          >
+            <Text style={s.optionTexte}>Questions fréquentes</Text>
+          </Pressable>
         </View>
       </Pressable>
     </Modal>
