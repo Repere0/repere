@@ -724,3 +724,24 @@ test("core — lienScrutin : lien officiel et libellé du scrutin", async () => 
   assert.equal(lien.texte, "Scrutin n° 8434 sur le site de l'Assemblée");
   assert.ok(lien.url.startsWith("https://"), "un lien officiel est toujours en https");
 });
+
+/* D23 (ADR 0002) : moyenne simple par habitant, avec garde de couverture. */
+test("core — moyenneParHabitant : moyenne simple, nombre de communes, garde de couverture", async () => {
+  const { moyenneParHabitant, COUVERTURE_MIN } = await import("../packages/core/src/index.js");
+  /* exercice : [population, recettes m, recettes hab, depenses m, depenses hab, ...] */
+  const ex = hab => [1000, 1, 1, 1, hab];
+  const p1 = { communes: { a: { comptes: { "2025": ex(1000) } }, b: { comptes: { "2025": ex(2000) } } } };
+  const p2 = { communes: { c: { comptes: { "2025": ex(3000) } }, d: { comptes: { "2025": ex(4000) } }, e: { comptes: { "2025": ex(5000) } } } };
+  const m = moyenneParHabitant([p1, p2], 1, "2025");
+  assert.equal(m.moyenne, 3000);
+  assert.equal(m.n, 5);
+  assert.equal(m.total, 5);
+  /* une commune sans le montant ne compte pas comme zero */
+  const p3 = { communes: { ...p2.communes, f: { comptes: { "2024": ex(9) } } } };
+  assert.equal(moyenneParHabitant([p1, p3], 1, "2025").moyenne, 3000);
+  /* sous la couverture minimale, rien */
+  assert.ok(COUVERTURE_MIN > 0.5);
+  const creux = { communes: { a: { comptes: { "2025": ex(1000) } }, b: {}, c: {}, d: {} } };
+  assert.equal(moyenneParHabitant([creux], 1, "2025"), null);
+  assert.equal(moyenneParHabitant([], 1, "2025"), null);
+});

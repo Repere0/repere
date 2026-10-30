@@ -28,6 +28,7 @@ import { SquelettesListe } from "../ui/squelette";
 import { Logo } from "../ui/logo";
 import { DatePublication } from "../ui/fraicheur";
 import { DernieresPublications } from "../ui/dernieres-publications";
+import { phrasesMoyenne, useMoyenneDepenses } from "../lib/moyenne";
 
 /* L'accueil est sombre : il lit la palette sombre, quel que soit le choix d'affichage. */
 const D = NEUTRES_PAR_MODE.sombre;
@@ -206,6 +207,9 @@ export default function Accueil() {
     return () => { vivant = false; };
   }, [index, cible.insee, cible.nom]);
   const exemple = cible === EXEMPLE;
+  /* D23 : la moyenne de la region, pour le meme exercice que le chiffre. */
+  const moyenne = useMoyenneDepenses(index, departementDe(cible.insee), argent ? argent.an : null);
+  const comparaison = argent && moyenne ? phrasesMoyenne(argent.nom, argent.depenses, moyenne) : null;
 
   const phrase = PHRASES[etat as keyof typeof PHRASES] as { titre: string; corps: string; action?: string } | undefined;
 
@@ -230,9 +234,15 @@ export default function Accueil() {
                     <Text style={s.carteTitre}>L'argent de {argent.nom}</Text>
                     <Text style={s.chiffre}>{argent.depenses.toLocaleString("fr-FR")} €</Text>
                     <Text style={s.legende}>dépensés par habitant en {argent.an}</Text>
+                    {comparaison ? (
+                      <View style={{ gap: 2 }}>
+                        <Text style={s.contexte}>{comparaison.ecart}</Text>
+                        <Text style={s.legende}>{comparaison.moyenne} {comparaison.note}</Text>
+                      </View>
+                    ) : null}
                     {argent.avant ? <Text style={s.contexte}>En {argent.avant.an} : {argent.avant.depenses.toLocaleString("fr-FR")} € par habitant.</Text> : null}
                     {argent.salaires !== null && argent.investissement !== null ? (
-                      <Text style={s.contexte}>Dont {argent.salaires.toLocaleString("fr-FR")} € pour les salaires des agents de la commune, et {argent.investissement.toLocaleString("fr-FR")} € d'investissement (travaux, équipements).</Text>
+                      <Text style={s.contexte}>Dont {argent.salaires.toLocaleString("fr-FR")} € pour vos agents (salaires) et {argent.investissement.toLocaleString("fr-FR")} € pour vos équipements (investissement).</Text>
                     ) : null}
                     {argent.salaires !== null && argent.investissement !== null && argent.salaires + argent.investissement <= argent.depenses ? (() => {
                       const sal = Math.round(argent.salaires / argent.depenses * 100);

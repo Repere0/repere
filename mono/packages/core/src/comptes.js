@@ -103,3 +103,26 @@ export function evolution(c, agregats) {
   });
   return { an1, an2, p1, p2, perimetreChange, lignes };
 }
+
+/* MOYENNE PAR HABITANT D'UN AGREGAT SUR UN ENSEMBLE DE COMMUNES — 30/10/2026 (D23, ADR 0002).
+ * Comparaison FACTUELLE permise par l'invariant 3 amende : une moyenne SIMPLE (chaque
+ * commune compte pour un, quelle que soit sa taille) des montants par habitant PUBLIES
+ * par l'OFGL, pour un meme exercice. Aucun rang, aucun tri : une moyenne, son nombre de
+ * communes, et le nombre de communes lues. `couverture` : la part des communes lues qui
+ * publient ce montant ; sous `COUVERTURE_MIN`, la moyenne n'est pas rendue (elle
+ * decrirait une partie de la region, pas la region). */
+export const COUVERTURE_MIN = 0.8;
+export function moyenneParHabitant(paquets, agregat, an) {
+  let somme = 0, n = 0, total = 0;
+  for (const p of paquets || []) {
+    if (!p || !p.communes) continue;
+    for (const c of Object.values(p.communes)) {
+      total++;
+      const ex = c && c.comptes ? c.comptes[an] : null;
+      const v = ex ? valeur(ex, agregat) : null;
+      if (v && typeof v.hab === "number") { somme += v.hab; n++; }
+    }
+  }
+  if (!total || !n || n / total < COUVERTURE_MIN) return null;
+  return { moyenne: Math.round(somme / n), n, total, an, couverture: n / total };
+}

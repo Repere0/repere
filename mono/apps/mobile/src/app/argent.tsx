@@ -25,6 +25,7 @@ import { useCommuneChoisie } from "../lib/useCommune";
 import { couleurs, PAS, TYPO } from "../lib/theme";
 import { AvecDonnees, Page, Question } from "../ui/page";
 import { DateDonnee } from "../ui/fraicheur";
+import { phrasesMoyenne, useMoyenneDepenses } from "../lib/moyenne";
 import { PastilleSource } from "../ui/source";
 import { Emoji, Resume } from "../ui/resume";
 import { BarrePart, Compteur, DeuxAnnees, Depli, Financement, Mois } from "../ui/visuels";
@@ -40,6 +41,20 @@ type Projet = { annee: number; dispositif: string; intitule: string; subvention:
 function PasCeQueCaDit({ r, sujet }: { r?: Rapport; sujet: string }) {
   if (!r) return null;
   return <Depli titre={`Ce que ça ne veut pas dire (${sujet})`}><Text style={TYPO.corps}>{r.d}</Text></Depli>;
+}
+
+/* La comparaison regionale (crochet : les fichiers des departements de la region sont lus
+   une fois par session). Rien tant qu'elle n'est pas calculable : pas de place reservee. */
+function Comparaison({ nom, valeur, index, dep, an }: { nom: string; valeur: number; index: { departements?: { code: string }[] } | null; dep: string; an: string }) {
+  const m = useMoyenneDepenses(index, dep, an);
+  if (!m) return null;
+  const p = phrasesMoyenne(nom, valeur, m);
+  return (
+    <View style={{ gap: 2 }}>
+      <Text style={[TYPO.corps, { fontWeight: "700" }]}>{p.ecart}</Text>
+      <Text style={TYPO.note}>{p.moyenne} {p.note}</Text>
+    </View>
+  );
 }
 
 export default function Argent() {
@@ -83,6 +98,11 @@ export default function Argent() {
                 <Resume phrase={dep ? `${dep.texte} au total sur l'année.` : ""}
                   chiffre={hab && hab.depenses !== null ? `${hab.depenses.toLocaleString("fr-FR")} €` : null}
                   legende="par habitant" />
+                {/* D23 (ADR 0002) : la moyenne de la region, un calcul annonce comme tel. */}
+                {hab && hab.depenses !== null ? <Comparaison nom={nom} valeur={hab.depenses} index={r.index} dep={d.dep} an={ex.an} /> : null}
+                {hab && hab.salaires !== null && hab.investissement !== null ? (
+                  <Text style={TYPO.note}>Dont {hab.salaires.toLocaleString("fr-FR")} € par habitant pour vos agents (salaires) et {hab.investissement.toLocaleString("fr-FR")} € pour vos équipements (investissement).</Text>
+                ) : null}
                 {/* Deux chiffres PUBLIES, donc une source sans « calcul ». La moyenne
                     par jour (un calcul) vit dans sa propre carte, plus bas, avec sa
                     pastille « Calculé par Repère » : la mettre ici l'aurait fait passer
