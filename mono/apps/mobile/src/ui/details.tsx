@@ -7,7 +7,11 @@ import { Animated, Pressable, Text, View } from "react-native";
 import { CIBLE, couleurs, PAS, TYPO } from "../lib/theme";
 import { useMouvementReduit } from "./mouvement";
 
-export function Details({ titre, children, ouvertParDefaut = false }: { titre: string; children: ReactNode; ouvertParDefaut?: boolean }) {
+/* Sur un fond sombre (carte de l'accueil), la couleur du texte et du lien se passe ici :
+   les valeurs par défaut sont celles du thème clair. */
+export function Details({ titre, children, ouvertParDefaut = false, couleur, lien }: {
+  titre: string; children: ReactNode; ouvertParDefaut?: boolean; couleur?: string; lien?: string;
+}) {
   const [ouvert, setOuvert] = useState(ouvertParDefaut);
   const reduit = useMouvementReduit();
   const fondu = useRef(new Animated.Value(ouvertParDefaut ? 1 : 0)).current;
@@ -19,9 +23,9 @@ export function Details({ titre, children, ouvertParDefaut = false }: { titre: s
       <Pressable onPress={() => setOuvert(o => !o)} accessibilityRole="button" accessibilityState={{ expanded: ouvert }}
         accessibilityLabel={`${titre}. ${ouvert ? "Voir moins" : "Voir plus"}`}
         style={({ pressed }) => ({ minHeight: CIBLE, flexDirection: "row", alignItems: "center", gap: PAS * 2, opacity: pressed ? 0.7 : 1 })}>
-        <Text style={[TYPO.corps, { flex: 1, fontWeight: "700" }]}>{titre}</Text>
-        <Text style={{ color: couleurs.lien, fontWeight: "700" }}>{ouvert ? "Voir moins" : "Voir plus"}</Text>
-        <Text aria-hidden style={{ color: couleurs.lien, fontSize: 22, transform: [{ rotate: ouvert ? "90deg" : "0deg" }] }}>›</Text>
+        <Text style={[TYPO.corps, { flex: 1, fontWeight: "700" }, couleur ? { color: couleur } : null]}>{titre}</Text>
+        <Text style={{ color: lien ?? couleurs.lien, fontWeight: "700" }}>{ouvert ? "Voir moins" : "Voir plus"}</Text>
+        <Text aria-hidden style={{ color: lien ?? couleurs.lien, fontSize: 22, transform: [{ rotate: ouvert ? "90deg" : "0deg" }] }}>›</Text>
       </Pressable>
       {ouvert ? (
         <Animated.View style={{ opacity: fondu, gap: PAS * 2 }}>{children}</Animated.View>

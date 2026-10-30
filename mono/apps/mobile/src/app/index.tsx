@@ -22,7 +22,7 @@ import { Bouton, Carte, Texte, Vide } from "../lib/composants";
 import { useSelection } from "../lib/selection";
 import { useProfil } from "../lib/profil";
 import { BadgeZoom, useNiveauZoom } from "../ui/badge-zoom";
-import { feuille, CIBLE, PAS, POLICE, RAYON } from "../lib/theme";
+import { feuille, CIBLE, PAS, POLICE, RAYON, TYPO } from "../lib/theme";
 import { ECHELONS_PAR_MODE, NEUTRES_PAR_MODE, OMBRE_PAR_MODE } from "../lib/palette";
 import { groupeDe } from "../lib/groupes";
 import { VOTE } from "../ui/partage/donnees";
@@ -34,6 +34,9 @@ import { phrasesMoyenne, useMoyenneDepenses } from "../lib/moyenne";
 import { COULEUR_VOTE } from "../lib/theme";
 import { AvecPicto } from "../ui/picto";
 import { libelleGroupe } from "../ui/badge-groupe";
+import { Details } from "../ui/details";
+import { ModaleExhaustif } from "../ui/modale-exhaustif";
+import { METHODE_COMPTES, USAGE_PAR_HABITANT } from "../lib/sources";
 
 /* L'accueil est sombre : il lit la palette sombre, quel que soit le choix d'affichage. */
 const D = NEUTRES_PAR_MODE.sombre;
@@ -67,6 +70,11 @@ function Barre({ parts }: { parts: { cle: string; valeur: number; couleur: strin
 }
 const nombre = (x: unknown) => { const n = Number(x); return Number.isFinite(n) && n >= 0 && x !== null && String(x).trim() !== "" ? n : null; };
 const POSITION_MOT: Record<string, string> = { p: "Pour", c: "Contre", a: "Abstention" };
+/* NIVEAU 1 DU BUDGET (V28, bloc 3) : la phrase-conclusion est un calcul sur les montants lus,
+   jamais un texte écrit à la main. Sans part des salaires, on garde le titre neutre. */
+const accroche = (a: Argent) => a.salaires !== null && a.depenses > 0
+  ? `Sur 100 € dépensés à ${a.nom}, ${Math.round(a.salaires / a.depenses * 100)} € vont aux salaires des agents.`
+  : `L'argent de ${a.nom}`;
 /* Sans commune retenue, la carte montre un exemple, dit comme tel : Melun. */
 const EXEMPLE = { insee: "77288", nom: "Melun" };
 /* COMMUNES RECENTES, POUR LA SESSION SEULEMENT (bloc D, 30/10/2026) : une variable en
@@ -234,6 +242,12 @@ export default function Accueil() {
   const comparaison = argent && moyenne ? phrasesMoyenne(argent.nom, argent.depenses, moyenne) : null;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const urlComptes: string | null = (index as any)?.sources?.comptes?.url ?? null;
+  /* La répartition des montants par habitant (salaires, investissement, autres) : seulement si elle s'additionne. */
+  const repartition = argent && argent.salaires !== null && argent.investissement !== null && argent.salaires + argent.investissement <= argent.depenses
+    ? { sal: Math.round(argent.salaires / argent.depenses * 100), inv: Math.round(argent.investissement / argent.depenses * 100), aut: 0 }
+    : null;
+  if (repartition) repartition.aut = 100 - repartition.sal - repartition.inv;
+  const [budgetTout, setBudgetTout] = useState(false);
 
   const phrase = PHRASES[etat as keyof typeof PHRASES] as { titre: string; corps: string; action?: string } | undefined;
 
@@ -258,24 +272,44 @@ export default function Accueil() {
                     {/* A3 (30/10/2026) : quatre lignes. Titre ; chiffre ; comparaison ; repartition.
                         Puis la source, en pied, cliquable. L'annee precedente et le detail des
                         depenses vivent dans le budget de la commune (argent.tsx). */}
-                    <Text style={s.carteTitre}>L'argent de {argent.nom}</Text>
+                    {/* NIVEAU 1 (V28, bloc 3) : l'accroche calculée, le chiffre, la source.
+                        NIVEAU 2 (« Voir plus ») : comparaison à la médiane régionale, année précédente,
+                        répartition. NIVEAU 3 (« Tout voir ») : méthode, source, lien officiel.
+                        Rien n'est retiré : ce qui était affiché reste à un geste. */}
+                    <Text style={s.carteTitre}>{accroche(argent)}</Text>
                     <View style={{ flexDirection: "row", alignItems: "baseline", flexWrap: "wrap", columnGap: PAS * 2 }}>
                       <Text style={s.chiffre}>{argent.depenses.toLocaleString("fr-FR")} €</Text>
                       <Text style={s.legende}>par habitant · {argent.an}</Text>
                     </View>
-                    {comparaison ? <Text style={s.contexte}>{comparaison.rapport}</Text>
-                      : argent.avant ? <Text style={s.contexte}>En {argent.avant.an} : {argent.avant.depenses.toLocaleString("fr-FR")} € par habitant</Text> : null}
-                    {argent.salaires !== null && argent.investissement !== null && argent.salaires + argent.investissement <= argent.depenses ? (() => {
-                      const sal = Math.round(argent.salaires / argent.depenses * 100);
-                      const inv = Math.round(argent.investissement / argent.depenses * 100);
-                      const aut = 100 - sal - inv;
-                      return (
-                        <View style={{ gap: PAS * 2 }}>
-                          <Barre parts={[{ cle: "s", valeur: sal, couleur: D.encre }, { cle: "i", valeur: inv, couleur: D.sourd }, { cle: "a", valeur: aut, couleur: D.trait }]} />
-                          <Text style={s.legende}>{sal} % salaires · {inv} % invest. · {aut} % autres</Text>
-                        </View>
-                      );
-                    })() : null}
+                    {comparaison || argent.avant || repartition ? (
+                      <Details titre="Comparaison et répartition" couleur={D.encre} lien={D.encre}>
+                        {comparaison ? <Text style={s.contexte}>{comparaison.rapport}</Text> : null}
+                        {argent.avant ? <Text style={s.contexte}>En {argent.avant.an} : {argent.avant.depenses.toLocaleString("fr-FR")} € par habitant</Text> : null}
+                        {repartition ? (
+                          <View style={{ gap: PAS * 2 }}>
+                            <Barre parts={[{ cle: "s", valeur: repartition.sal, couleur: D.encre }, { cle: "i", valeur: repartition.inv, couleur: D.sourd }, { cle: "a", valeur: repartition.aut, couleur: D.trait }]} />
+                            <Text style={s.legende}>{repartition.sal} % salaires · {repartition.inv} % invest. · {repartition.aut} % autres</Text>
+                          </View>
+                        ) : null}
+                      </Details>
+                    ) : null}
+                    <Pressable onPress={() => setBudgetTout(true)} accessibilityRole="button"
+                      accessibilityLabel={`Tout voir sur le budget de ${argent.nom} : méthode, sources, lien officiel`}
+                      style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", alignSelf: "flex-start", opacity: pressed ? 0.7 : 1 })}>
+                      <Text style={[s.legende, { fontSize: 14, textDecorationLine: "underline" }]}>Tout voir : méthode et sources</Text>
+                    </Pressable>
+                    <ModaleExhaustif titre={`Budget de ${argent.nom}`} visible={budgetTout} onFermer={() => setBudgetTout(false)} sections={[
+                      { titre: "Le montant", contenu: `${argent.depenses.toLocaleString("fr-FR")} € par habitant en ${argent.an}. ${USAGE_PAR_HABITANT}`, source: "Observatoire des finances et de la gestion publique locales (OFGL)" },
+                      { titre: "La répartition", contenu: repartition ? `Sur 100 € dépensés : ${repartition.sal} € vont aux salaires des agents, ${repartition.inv} € aux investissements, ${repartition.aut} € aux autres dépenses.` : "Les comptes publiés ne permettent pas de calculer cette répartition.", source: "Observatoire des finances et de la gestion publique locales (OFGL)" },
+                      { titre: "Comment Repère calcule", contenu: METHODE_COMPTES },
+                      { titre: "La comparaison", contenu: comparaison ? comparaison.note : "Pas de commune médiane calculable pour ce budget." },
+                      { titre: "Source officielle", contenu: urlComptes
+                        ? <Pressable onPress={() => Linking.openURL(urlComptes)} accessibilityRole="link" accessibilityLabel="Les comptes publiés, sur le site de l'OFGL, ouvre un site externe"
+                            style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", opacity: pressed ? 0.7 : 1 })}>
+                            <Text style={[TYPO.corps, { textDecorationLine: "underline" }]}>Les comptes publiés, sur le site de l'OFGL (site externe)</Text>
+                          </Pressable>
+                        : "Aucun lien officiel publié." },
+                    ]} />
                     <Pressable onPress={() => { if (urlComptes) Linking.openURL(urlComptes); }} accessibilityRole="link"
                       accessibilityLabel="Source : comptes des communes publiés par l'OFGL, ouvre un site externe. Médiane et parts calculées par Repère."
                       style={({ pressed }) => ({ minHeight: 44, justifyContent: "center", opacity: pressed ? 0.7 : 1 })}>
@@ -332,7 +366,7 @@ export default function Accueil() {
         ListHeaderComponent={
           <View style={s.tete}>
             <DatePublication />
-      <BadgeZoom />
+      <BadgeZoom sombre />
       <Pressable onPress={() => router.push("/confort-lecture")} accessibilityRole="link"
         style={({ pressed }) => ({ minHeight: 44, justifyContent: "center", alignSelf: "flex-start", opacity: pressed ? 0.7 : 1 })}>
         <Text style={[s.legende, { textDecorationLine: "underline" }]}>Confort de lecture ›</Text>
