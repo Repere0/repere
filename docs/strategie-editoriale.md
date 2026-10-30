@@ -25,7 +25,7 @@ Date : 30/10/2026. Questions posées en V20, tranchées par le CEO en V21 (D29, 
 
 ### D31 — Rythme
 - **Hebdomadaire au minimum** pour le manuel.
-- L'application affiche « Cette semaine à [Commune] » avec l'actualité si elle existe. Sinon, un état vide honnête : « Repère publie chaque lundi. Aucune actu cette semaine pour [Commune]. [Voir la semaine dernière] ».
+- L'application affiche « Cette semaine à [Commune] » avec l'actualité si elle existe. Sinon, un état vide honnête : « Repère publie quand il y a du nouveau. Aucune actu cette semaine pour [Commune]. [Voir les dernières publications] » (formulation D35, 30/10/2026 ; la brief D31 disait « Repère publie chaque lundi »).
 - La carte n'apparaît que pour les communes pilotes : pour les autres, elle annoncerait une actualité qui ne viendra pas.
 
 ## Format de `data/actus-hebdo.json`
@@ -61,7 +61,7 @@ Règles appliquées par l'application et par les tests :
 4. Commiter, puis **ouvrir une pull request vers `main`**. `main` est protégée : pas de push direct. L'épreuve (`epreuve.yml`) doit passer.
 5. Après fusion, **la publication se fait par la CI** (`collecte.yml`, chaque jour à 05 h 47 UTC, ou en la relançant à la main) : pas de déploiement manuel. La chaîne copie `data/actus-hebdo.json` dans les données publiées.
 
-Point de vigilance : « Repère publie chaque lundi » est une promesse affichée aux lecteurs. Une semaine sans pull request fusionnée avant lundi matin fera afficher l'état vide.
+D35 (30/10/2026) : la promesse « chaque lundi » est retirée de l'application. Le rythme hebdomadaire reste l'objectif interne, mais il n'est plus affiché comme un engagement.
 
 ## Ce qu'il faut pour commencer, quelle que soit la décision
 

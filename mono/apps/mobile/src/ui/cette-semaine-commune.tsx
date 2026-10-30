@@ -8,11 +8,14 @@
  * - publication de moins de 7 jours, entree remplie : le titre, le resume, la source, le
  *   partage (carte story « Actualité locale ») ;
  * - entree plus ancienne : « Aucune actu cette semaine », et la derniere derriere « Voir la
- *   semaine dernière », avec sa date ;
+ *   dernière actu de [Commune] », avec sa date ;
  * - entree vide ou absente : « Aucune actu cette semaine ».
+ * D35 (30/10/2026) : aucune promesse de rythme (« Repère publie quand il y a du nouveau »),
+ * et un lien vers l'ecran Actualites (« Voir les dernières publications »).
  * Une date de publication dans le futur n'est pas montree avant ce jour. */
 import { useEffect, useState } from "react";
 import { Linking, Pressable, Text, View } from "react-native";
+import { router } from "expo-router";
 import { ageReleve, dateFr } from "@repere/core";
 import { chargerActusHebdo } from "../lib/donnees";
 import { Carte } from "../lib/composants";
@@ -61,14 +64,18 @@ export function CetteSemaineCommune({ insee, nom }: { insee: string; nom: string
     <Carte echelon="ville" titre={`Cette semaine à ${nom}`}>
       {recente ? bloc : (
         <View style={{ gap: PAS * 2 }}>
-          <Text style={TYPO.corps}>Repère publie chaque lundi. Aucune actu cette semaine pour {nom}.</Text>
+          <Text style={TYPO.corps}>Repère publie quand il y a du nouveau. Aucune actu cette semaine pour {nom}.</Text>
           {publiee && !voir ? (
             <Pressable onPress={() => setVoir(true)} accessibilityRole="button"
               style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", alignSelf: "flex-start", opacity: pressed ? 0.7 : 1 })}>
-              <Text style={{ color: couleurs.lien, fontWeight: "700", textDecorationLine: "underline" }}>Voir la semaine dernière</Text>
+              <Text style={{ color: couleurs.lien, fontWeight: "700", textDecorationLine: "underline" }}>Voir la dernière actu de {nom}</Text>
             </Pressable>
           ) : null}
           {publiee && voir ? bloc : null}
+          <Pressable onPress={() => router.push("/actus")} accessibilityRole="link"
+            style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", alignSelf: "flex-start", opacity: pressed ? 0.7 : 1 })}>
+            <Text style={{ color: couleurs.lien, fontWeight: "700", textDecorationLine: "underline" }}>Voir les dernières publications</Text>
+          </Pressable>
         </View>
       )}
     </Carte>
