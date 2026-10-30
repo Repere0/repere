@@ -7,16 +7,17 @@
  * site, mot pour mot.
  *
  * 30/10/2026 — REFONTE VISUELLE A TITRE D'ESSAI (direction artistique, sombre).
- * Les cartes du haut sont STATIQUES et glissent horizontalement : Melun (77288),
- * son chiffre par habitant 2025 (OFGL) et son dernier vote (député 77-1, scrutin
- * 8706). Valeurs verifiees dans data/ le 30/10/2026, figees dans le code.
+ * Les cartes glissent horizontalement. La premiere (D18, 30/10/2026) lit la depense
+ * par habitant dans les comptes OFGL publies : celle de la commune retenue, sinon
+ * celle de Melun, annoncee comme un exemple. La seconde est un vote fige (depute
+ * 77-1, scrutin 8706, verifie le 30/10/2026), annonce lui aussi comme un exemple.
  * Le partage n'est plus sur l'accueil : il est sur les ecrans de contexte (src/ui/partage). */
 import { useEffect, useMemo, useState } from "react";
 import { FlatList, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View, useWindowDimensions } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { router } from "expo-router";
-import { mots, motsCible, correspond, trouverCommunes, departementDe, titreLisible } from "@repere/core";
-import { chargerCommunesBeta, chargerIndex, ETATS, PHRASES } from "../lib/donnees";
+import { mots, motsCible, correspond, trouverCommunes, departementDe, titreLisible, dernierExercice, parHabitant } from "@repere/core";
+import { chargerCommunesBeta, chargerDepartement, chargerIndex, ETATS, PHRASES } from "../lib/donnees";
 import { Bouton, Carte, Texte, Vide } from "../lib/composants";
 import { useSelection } from "../lib/selection";
 import { feuille, CIBLE, PAS, POLICE, RAYON } from "../lib/theme";
@@ -33,7 +34,12 @@ const E = ECHELONS_PAR_MODE.sombre;
 
 type Ligne = [string, string, string[]];
 type Beta = { communes: Record<string, string>; manquantes?: Record<string, string>; source?: { producteur?: string } };
-type Index = { departements: { code: string; nom?: string }[] };
+type Index = { departements: { code: string; nom?: string }[]; agregats?: unknown[] };
+/* Le chiffre de la carte « L'argent de … » (D18) : lu dans les comptes OFGL publies
+   du departement, jamais ecrit dans le code. */
+type Argent = { nom: string; an: string; depenses: number };
+/* Sans commune retenue, la carte montre un exemple, dit comme tel : Melun. */
+const EXEMPLE = { insee: "77288", nom: "Melun" };
 
 export default function Accueil() {
   const marges = useSafeAreaInsets();
@@ -46,6 +52,7 @@ export default function Accueil() {
   const [cherche, setCherche] = useState(false);
   const [page, setPage] = useState(0);
   const [essai, setEssai] = useState(0);
+  const [argent, setArgent] = useState<Argent | null>(null);
   /* Une carte occupe toute la largeur de lecture ; la suivante commence apres un ecart. */
   const larg = Math.min(width, 640) - PAS * 8;
   const pas = larg + PAS * 3;
@@ -93,6 +100,26 @@ export default function Accueil() {
      plus, on ne propose rien plutot qu'un code nu. */
   const nomRetenue = retenue && beta ? beta.communes[retenue.c] : undefined;
 
+  /* D18 : la commune retenue si le lecteur l'a demande, sinon l'exemple. Si les comptes
+     ne donnent pas de depense par habitant, la carte n'est pas affichee. */
+  const cible = retenue && nomRetenue ? { insee: retenue.c, nom: nomRetenue } : EXEMPLE;
+  useEffect(() => {
+    if (!index || !index.agregats) return undefined;
+    let vivant = true;
+    const dep = departementDe(cible.insee);
+    if (!dep) return undefined;
+    chargerDepartement(dep).then(r => {
+      if (!vivant) return;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const fiche = r.donnees ? (r.donnees as any).communes?.[cible.insee] : null;
+      const ex = fiche ? dernierExercice(fiche, index.agregats) : null;
+      const hab = ex ? parHabitant(ex.ex) : null;
+      setArgent(ex && hab && typeof hab.depenses === "number" ? { nom: cible.nom, an: ex.an, depenses: hab.depenses } : null);
+    }).catch(() => { if (vivant) setArgent(null); });
+    return () => { vivant = false; };
+  }, [index, cible.insee, cible.nom]);
+  const exemple = cible === EXEMPLE;
+
   const phrase = PHRASES[etat as keyof typeof PHRASES] as { titre: string; corps: string; action?: string } | undefined;
 
   /* PREMIERE OUVERTURE (D15, 30/10/2026) : aucune commune retenue sur ce telephone
@@ -106,20 +133,22 @@ export default function Accueil() {
   const cartes = (
     <>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} decelerationRate="fast" snapToInterval={pas}
-              accessibilityLabel="Cartes à faire défiler : le chiffre du jour, puis le dernier vote"
+              accessibilityLabel={argent ? "Cartes à faire défiler : l'argent de la commune, puis un vote" : "Un vote, à titre d'exemple"}
               contentContainerStyle={{ gap: PAS * 3 }}
               onMomentumScrollEnd={e => setPage(Math.round(e.nativeEvent.contentOffset.x / pas))}>
-              <View style={{ width: larg }}>
-                <View style={s.carte}>
-                  <Text style={s.etiquette}>Le chiffre du jour</Text>
-                  <Text style={s.carteTitre}>L'argent de Melun</Text>
-                  <Text style={s.chiffre}>2 495 €</Text>
-                  <Text style={s.legende}>dépensés par habitant en 2025 · source : OFGL</Text>
+              {argent ? (
+                <View style={{ width: larg }}>
+                  <View style={s.carte}>
+                    <Text style={s.etiquette}>{exemple ? "Un exemple, en attendant votre commune" : "Votre commune"}</Text>
+                    <Text style={s.carteTitre}>L'argent de {argent.nom}</Text>
+                    <Text style={s.chiffre}>{argent.depenses.toLocaleString("fr-FR")} €</Text>
+                    <Text style={s.legende}>dépensés par habitant en {argent.an} · source : OFGL</Text>
+                  </View>
                 </View>
-              </View>
+              ) : null}
               <View style={{ width: larg }}>
                 <View style={s.carte}>
-                  <Text style={s.etiquette}>Dernier vote enregistré</Text>
+                  <Text style={s.etiquette}>Un vote, à titre d'exemple</Text>
                   <Text style={s.carteTitre}>Arnaud Saint-Martin</Text>
                   {/* Groupe inconnu ici : badge gris, aucune couleur de parti (ADR 0001). */}
                   <View style={s.badge}><Text style={s.badgeTexte}>Groupe : {groupeDe(VOTE.acteur)}</Text></View>
@@ -130,7 +159,7 @@ export default function Accueil() {
               </View>
             </ScrollView>
             <View style={s.points} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
-              {[0, 1].map(i => <View key={i} style={[s.point, page === i && s.pointActif]} />)}
+              {(argent ? [0, 1] : [0]).map(i => <View key={i} style={[s.point, page === i && s.pointActif]} />)}
             </View>
     </>
   );
