@@ -700,3 +700,27 @@ test("actualites : la plus recente d'abord, et deux jours identiques gardent leu
   assert.deepEqual(plusRecentEnPremier(liste).map(x => x.id), ["c", "a", "b", "d"]);
   assert.deepEqual(liste.map(x => x.id), ["a", "b", "c", "d"], "la liste d'origine ne doit pas être modifiée");
 });
+
+/* Fonctions critiques : cas limites des dates et des liens (bloc 9, 30/10/2026). */
+test("core — dateFr et jourFr : cas limites (vide, invalide, format inattendu)", async () => {
+  assert.equal(dateFr("2026-02-01"), "1er février 2026", "le premier du mois prend « 1er »");
+  assert.equal(dateFr("2026-12-31"), "31 décembre 2026");
+  assert.equal(dateFr(""), "", "une date vide reste vide");
+  assert.equal(dateFr(undefined), undefined, "rien en entrée, rien en sortie");
+  assert.equal(dateFr(null), null);
+  assert.equal(dateFr("2026-1-5"), "2026-1-5", "un format non ISO est rendu tel quel, jamais deviné");
+  assert.equal(dateFr("bientôt"), "bientôt");
+  assert.equal(jourFr("2026-10-08"), "jeudi 8 octobre 2026", "le jour se lit sur la date écrite");
+  assert.equal(jourFr(""), "");
+  assert.equal(jourFr(null), "");
+  assert.equal(jourFr("pas une date"), "");
+  assert.equal(jourFr("2026-10-08T23:30:00Z"), "jeudi 8 octobre 2026", "seule la partie date compte");
+});
+
+test("core — lienScrutin : lien officiel et libellé du scrutin", async () => {
+  const { lienScrutin } = await import("../packages/core/src/phrases.js");
+  const lien = lienScrutin("https://www2.assemblee-nationale.fr/scrutins/detail/(legislature)/17/(num)/", { n: 8434 });
+  assert.equal(lien.url, "https://www2.assemblee-nationale.fr/scrutins/detail/(legislature)/17/(num)/8434");
+  assert.equal(lien.texte, "Scrutin n° 8434 sur le site de l'Assemblée");
+  assert.ok(lien.url.startsWith("https://"), "un lien officiel est toujours en https");
+});
