@@ -59,3 +59,7 @@ __pycache__/
 .env.local
 .env.*
 !.env.example
+
+# Tableau de retours rempli (noms de testeurs) : jamais commite. Le modele vierge est docs/tableau-retours.csv.
+docs/tableau-retours-rempli*.csv
+!docs/tableau-retours.csv
