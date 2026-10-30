@@ -20,7 +20,7 @@ import { chargerCommunesBeta, chargerIndex, ETATS, PHRASES } from "../lib/donnee
 import { Bouton, Carte, Texte, Vide } from "../lib/composants";
 import { useSelection } from "../lib/selection";
 import { feuille, CIBLE, PAS, POLICE, RAYON } from "../lib/theme";
-import { ECHELONS_PAR_MODE, NEUTRES_PAR_MODE } from "../lib/palette";
+import { ECHELONS_PAR_MODE, NEUTRES_PAR_MODE, OMBRE_PAR_MODE } from "../lib/palette";
 import { groupeDe } from "../lib/groupes";
 import { VOTE } from "../ui/partage/donnees";
 
@@ -102,7 +102,8 @@ export default function Accueil() {
         ListHeaderComponent={
           <View style={s.tete}>
             <View style={s.haut}>
-              <Text style={s.marque}>Repère</Text>
+              {/* Pas de logo.png dans assets/ : marque textuelle, avec un point de couleur (jeton de palette). */}
+              <Text style={s.marque} accessibilityLabel="Repère">Repère<Text style={{ color: E.ville }}>.</Text></Text>
               {!cherche && !filtre ? (
                 <Pressable onPress={() => setCherche(true)} accessibilityRole="button" accessibilityLabel="Chercher une commune"
                   style={({ pressed }) => [s.chercher, pressed && { opacity: 0.7 }]}>
@@ -110,9 +111,8 @@ export default function Accueil() {
                 </Pressable>
               ) : null}
             </View>
-            {/* CE QU'EST REPERE, EN UNE PHRASE ; POURQUOI C'EST UTILE, EN UNE LIGNE */}
-            <Text style={s.titre} accessibilityRole="header">Ce qui se passe chez vous.</Text>
-            <Text style={s.promesse}>Qui décide, où va l'argent, ce qu'a voté votre député, ce qui arrive. Chaque chiffre avec sa source officielle.</Text>
+            {/* LE PITCH : une citation, en grand. Demande du CEO (30/10/2026) : elle remplace le paragraphe. */}
+            <Text style={s.citation} accessibilityRole="header">L'application qui vous raccroche à votre citoyenneté française.</Text>
 
             {/* Les cartes glissent horizontalement : le chiffre, puis le vote. */}
             <ScrollView horizontal showsHorizontalScrollIndicator={false} decelerationRate="fast" snapToInterval={pas}
@@ -152,6 +152,11 @@ export default function Accueil() {
             {cherche || filtre ? (
               <>
                 <Text style={s.question} nativeID="question">{retenue && nomRetenue ? "Une autre commune ?" : "Où habitez-vous ?"}</Text>
+                <View style={s.champLigne}>
+                  <View accessibilityElementsHidden importantForAccessibility="no-hide-descendants" style={s.loupe}>
+                    <View style={s.loupeRond} />
+                    <View style={s.loupeManche} />
+                  </View>
                 <TextInput
                   value={filtre}
                   onChangeText={setFiltre}
@@ -165,6 +170,7 @@ export default function Accueil() {
                   accessibilityLabelledBy="question"
                   style={s.champ}
                 />
+                </View>
               </>
             ) : null}
             {etat !== ETATS.SERVI && phrase ? (
@@ -219,10 +225,10 @@ const s = feuille(() => StyleSheet.create({
   page: { paddingHorizontal: PAS * 4, gap: PAS * 2, maxWidth: 640, width: "100%", alignSelf: "center" },
   tete: { gap: PAS * 3, marginBottom: PAS * 2 },
   haut: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
-  marque: { fontFamily: POLICE.affiche, fontSize: 22, color: D.encre },
-  chercher: { minHeight: CIBLE, borderRadius: RAYON.bloc, borderWidth: 1, borderColor: D.trait, paddingHorizontal: PAS * 3, justifyContent: "center" },
+  marque: { fontFamily: POLICE.affiche, fontSize: 26, color: D.encre },
+  chercher: { minHeight: CIBLE, borderRadius: 999, borderWidth: 1, borderColor: D.trait, paddingHorizontal: PAS * 4, justifyContent: "center" },
   chercherTexte: { fontSize: 15, fontWeight: "700", color: D.encre },
-  titre: { fontFamily: POLICE.affiche, fontSize: 44, lineHeight: 48, color: D.encre },
+  citation: { fontFamily: POLICE.affiche, fontSize: 38, lineHeight: 43, letterSpacing: -0.6, color: D.encre, marginTop: PAS * 4 },
   carte: { gap: PAS * 2, padding: PAS * 4, borderRadius: RAYON.carte, backgroundColor: D.carte, borderWidth: 1, borderColor: D.trait },
   etiquette: { fontSize: 13, fontWeight: "700", color: D.sourd },
   carteTitre: { fontFamily: POLICE.titre, fontSize: 24, lineHeight: 30, color: D.encre },
@@ -235,11 +241,16 @@ const s = feuille(() => StyleSheet.create({
   point: { width: 8, height: 8, borderRadius: 4, backgroundColor: D.trait },
   pointActif: { backgroundColor: E.ville },
   confiance: { gap: PAS, padding: PAS * 4, borderRadius: RAYON.bloc, backgroundColor: D.voile, marginTop: PAS * 2 },
-  promesse: { fontSize: 17, lineHeight: 24, color: D.encre },
   question: { fontFamily: POLICE.titre, fontSize: 24, lineHeight: 30, color: D.encre, marginTop: PAS * 6 },
+  champLigne: {
+    flexDirection: "row", alignItems: "center", minHeight: CIBLE + 8, borderRadius: 999, borderWidth: 1.5, borderColor: D.trait,
+    backgroundColor: D.carte, paddingLeft: PAS * 4, ...OMBRE_PAR_MODE.sombre, shadowOpacity: 0.3,
+  },
+  loupe: { width: 18, height: 18, marginRight: PAS * 2 },
+  loupeRond: { position: "absolute", top: 0, left: 0, width: 13, height: 13, borderRadius: 7, borderWidth: 2, borderColor: D.sourd },
+  loupeManche: { position: "absolute", right: 0, bottom: 1, width: 7, height: 2, borderRadius: 1, backgroundColor: D.sourd, transform: [{ rotate: "45deg" }] },
   champ: {
-    minHeight: CIBLE + 8, borderRadius: RAYON.bloc, borderWidth: 1.5, borderColor: D.trait,
-    backgroundColor: D.carte, paddingHorizontal: PAS * 4, fontSize: 18, color: D.encre,
+    flex: 1, minHeight: CIBLE + 8, paddingHorizontal: PAS * 2, fontSize: 18, color: D.encre,
     /* Sur l'export web, le contour de focus par defaut du navigateur est orange :
        une sixieme couleur (invariant 7). Le focus reste visible, dans la couleur
        de la commune. Sans effet sur iOS et Android. */
@@ -249,6 +260,7 @@ const s = feuille(() => StyleSheet.create({
   resultat: {
     minHeight: CIBLE + 8, flexDirection: "row", alignItems: "center", gap: PAS * 3,
     paddingHorizontal: PAS * 4, borderRadius: RAYON.bloc, backgroundColor: D.carte,
+    ...OMBRE_PAR_MODE.sombre, shadowOpacity: 0.25, shadowRadius: 8, shadowOffset: { width: 0, height: 2 },
   },
   pastille: { width: 10, height: 10, borderRadius: 5, backgroundColor: E.ville },
   resultatNom: { flex: 1, fontSize: 17, color: D.encre, fontWeight: "600" },
