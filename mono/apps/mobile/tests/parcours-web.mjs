@@ -470,7 +470,7 @@ async function montantA100ms(reduit) {
   await page.getByRole("button", { name: new RegExp("^" + COMMUNE.nom + ",") }).first().click();
   await page.getByText("Aller plus loin").first().waitFor({ timeout: 15000 });
   let st = await stockage();
-  verifier(Object.keys(st.ls).filter(k => k !== "repere.profil").length === 0, "mémoire : rien n'est gardé tant que le lecteur ne l'a pas demandé " + JSON.stringify(st.ls));
+  verifier(Object.keys(st.ls).filter(k => k !== "repere.profil").length === 0, "mémoire : la commune n'est pas gardée tant que le lecteur ne l'a pas demandée (le profil est à part, D45)" + JSON.stringify(st.ls));
   await page.getByRole("button", { name: "Retenir Meaux sur ce téléphone" }).click();
   await page.getByText(/Meaux est retenue sur ce téléphone/).waitFor({ timeout: 5000 });
   st = await stockage();

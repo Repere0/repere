@@ -32,7 +32,7 @@ function Interrupteur({ texte, actif, onPress }: { texte: string; actif: boolean
 
 export default function ConfortLecture() {
   const { profil, modifier } = useProfil();
-  const p = profil ?? { tailleTexte: 16, espacement: 1.5, contraste: "normal", animationsReduites: false, masquerImages: false, niveauZoom: "tout", policeDyslexie: false, modeDaltonien: false };
+  const p = profil ?? { tailleTexte: 16, espacement: 1.5, contraste: "normal", animationsReduites: false, masquerImages: false, niveauZoom: "france", policeDyslexie: false, modeDaltonien: false };
   return (
     <ScrollView style={{ flex: 1, backgroundColor: couleurs.sol }} contentContainerStyle={{ padding: PAS * 4, gap: PAS * 4 }}>
       <Stack.Screen options={{ title: "Confort de lecture" }} />

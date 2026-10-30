@@ -5,13 +5,13 @@
  * stockage ici (c'est lib/profil.tsx, dans l'application, qui lit et ecrit). Il dit
  * seulement ce qui est valide, et ce que chaque niveau de zoom garde. */
 
-export const NIVEAUX_ZOOM = ["rue", "region", "france", "tout"];
+export const NIVEAUX_ZOOM = ["rue", "region", "france"];
 export const TAILLES_TEXTE = [16, 18, 22, 26];
 export const ESPACEMENTS = [1.5, 1.8, 2.1];
 export const CONTRASTES = ["normal", "eleve", "tres-eleve"];
 
 export const PROFIL_DEFAUT = {
-  niveauZoom: "tout",
+  niveauZoom: "france",
   tailleTexte: 16,
   espacement: 1.5,
   contraste: "normal",
@@ -27,8 +27,10 @@ export function valideProfil(v) {
   const src = v && typeof v === "object" && !Array.isArray(v) ? v : {};
   const pris = (x, liste) => (liste.includes(x) ? x : undefined);
   const bool = x => (typeof x === "boolean" ? x : undefined);
+  /* D47 (V27) : « tout » n'existe plus. Un profil gardé avant garde le même comportement en « France ». */
+  const niveau = src.niveauZoom === "tout" ? "france" : src.niveauZoom;
   const out = {
-    niveauZoom: pris(src.niveauZoom, NIVEAUX_ZOOM),
+    niveauZoom: pris(niveau, NIVEAUX_ZOOM),
     tailleTexte: pris(src.tailleTexte, TAILLES_TEXTE),
     espacement: pris(src.espacement, ESPACEMENTS),
     contraste: pris(src.contraste, CONTRASTES),
@@ -41,10 +43,9 @@ export function valideProfil(v) {
   return out;
 }
 
-/* Le filtre de zoom (V26 bloc 2), sur l'echelon d'un element : ville, agglo, dept,
-   region, france. « rue » garde le local et cache l'echelon regional et national ;
-   « region » cache le national seulement ; « france » et « tout » ne cachent rien.
-   France et tout coincident pour l'instant : voir BLOCAGES 25. */
+/* Le filtre de zoom (V26 bloc 2, D47 V27), sur l'echelon d'un element : ville, agglo,
+   dept, region, france. « rue » garde le local ; « region » cache le national ;
+   « france » ne cache rien (c'est l'affichage complet d'avant). */
 const LOCAL = ["ville", "agglo", "dept"];
 export function visibleAuNiveau(niveau, echelon) {
   if (niveau === "rue") return LOCAL.includes(echelon);
@@ -56,5 +57,4 @@ export const LIBELLE_NIVEAU = {
   rue: "Ma rue",
   region: "Ma région",
   france: "La France",
-  tout: "Tout",
 };

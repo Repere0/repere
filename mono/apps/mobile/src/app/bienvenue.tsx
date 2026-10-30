@@ -2,8 +2,8 @@
  *
  * Affiché quand aucun profil n'est gardé sur ce telephone (repere.profil absent). La
  * question 1 (la commune) est répondue sur l'accueil avant d'arriver ici. « Terminer »
- * garde les réponses 2 et 3 sur ce téléphone. « Passer » ne garde rien : la question
- * reviendra à la prochaine ouverture. Aucune réponse ne part. */
+ * garde les réponses 2 et 3 sur ce téléphone. « Passer » garde les réglages par défaut
+ * (D45, V27) : c'est un choix explicite. Aucune réponse ne part. */
 import { useState } from "react";
 import { Pressable, ScrollView, Text, View } from "react-native";
 import { router, Stack } from "expo-router";
@@ -17,13 +17,12 @@ const CHOIX_NIVEAU: { niveau: string; emoji: string; aide: string }[] = [
   { niveau: "rue", emoji: "🏘️", aide: "Votre commune et votre intercommunalité" },
   { niveau: "region", emoji: "🏛️", aide: "Ce qui se décide dans votre commune et votre région" },
   { niveau: "france", emoji: "🇫🇷", aide: "Ce qui se décide au niveau national" },
-  { niveau: "tout", emoji: "👀", aide: "Tous les niveaux, sans filtre" },
 ];
 
 export default function Bienvenue() {
   const { choix } = useSelection();
-  const { enregistrer, passer: sansGarder } = useProfil();
-  const [niveau, setNiveau] = useState<string>("tout");
+  const { enregistrer, passer: garderDefauts } = useProfil();
+  const [niveau, setNiveau] = useState<string>("france");
   const [taille, setTaille] = useState<number>(PROFIL_DEFAUT.tailleTexte);
 
   const terminer = () => {
@@ -31,7 +30,7 @@ export default function Bienvenue() {
     router.replace("/chez-vous");
   };
   const passer = () => {
-    sansGarder();
+    garderDefauts();
     router.replace("/chez-vous");
   };
 
@@ -93,7 +92,7 @@ export default function Bienvenue() {
 
       <View style={{ gap: PAS * 3 }}>
         <Bouton texte="Terminer" onPress={terminer} />
-        <Bouton texte="Passer (rien n'est gardé sur ce téléphone)" onPress={passer} discret />
+        <Bouton texte="Passer (garde les réglages par défaut)" onPress={passer} discret />
       </View>
     </ScrollView>
   );

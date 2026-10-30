@@ -30,14 +30,23 @@ test("profil : toutes les valeurs listées sont acceptées", () => {
   for (const c of CONTRASTES) assert.equal(valideProfil({ contraste: c }).contraste, c);
 });
 
-test("zoom : « rue » ne garde que le local, « region » cache le national, « france » et « tout » gardent tout", () => {
+test("zoom : « rue » ne garde que le local, « region » cache le national, « france » garde tout", () => {
   const echelons = ["ville", "agglo", "dept", "region", "france"];
   assert.deepEqual(echelons.filter(e => visibleAuNiveau("rue", e)), ["ville", "agglo", "dept"]);
   assert.deepEqual(echelons.filter(e => visibleAuNiveau("region", e)), ["ville", "agglo", "dept", "region"]);
   assert.deepEqual(echelons.filter(e => visibleAuNiveau("france", e)), echelons);
-  assert.deepEqual(echelons.filter(e => visibleAuNiveau("tout", e)), echelons);
 });
 
 test("zoom : un échelon inconnu est caché en vue « rue » (jamais affiché par défaut)", () => {
   assert.equal(visibleAuNiveau("rue", "inconnu"), false);
+});
+
+test("D47 : « tout » n'existe plus ; un profil gardé avec « tout » devient « france »", () => {
+  assert.equal(valideProfil({ niveauZoom: "tout" }).niveauZoom, "france");
+  assert.deepEqual(NIVEAUX_ZOOM, ["rue", "region", "france"]);
+  assert.equal(PROFIL_DEFAUT.niveauZoom, "france");
+});
+
+test("D45 : le profil par défaut est exactement celui du « Passer »", () => {
+  assert.deepEqual(valideProfil({}), PROFIL_DEFAUT);
 });

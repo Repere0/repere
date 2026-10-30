@@ -37,6 +37,7 @@ async function ouvrir(niveau, chemin) {
 }
 /* 2. Qui décide, vue « Tout » : tous les échelons. */
 {
+  /* Profil gardé avec « tout » (avant D47) : il doit se lire comme « France ». */
   const p = await ouvrir("tout", "/qui-decide");
   const t = (await p.locator("body").innerText()).toLowerCase();
   verifier(t.includes("assemblée nationale") && t.includes("région"), "zoom « tout » : Qui décide montre tous les échelons");
@@ -53,10 +54,27 @@ async function ouvrir(niveau, chemin) {
 {
   const p = await ouvrir("rue", "/qui-decide");
   await p.getByRole("button", { name: /Vue : Ma rue/ }).click();
-  await p.getByRole("radio", { name: /Vue Tout/ }).click();
+  await p.getByRole("radio", { name: /Vue La France/ }).click();
   await p.waitForTimeout(800);
   const t = (await p.locator("body").innerText()).toLowerCase();
-  verifier(t.includes("vue : tout") && t.includes("assemblée nationale"), "zoom : « Changer » puis « Tout » remontre le national");
+  verifier(t.includes("vue : la france") && t.includes("assemblée nationale"), "zoom : « Changer » puis « La France » remontre le national");
+  await p.close();
+}
+/* 4 bis. D45 : « Passer » sur l'onboarding garde les réglages par défaut (choix explicite). */
+{
+  const ctx = await navigateur.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
+  const p = await ctx.newPage();
+  /* Téléphone vierge : aucune commune gardée, donc la recherche est ouverte. */
+  await p.goto(BASE + "/", { waitUntil: "networkidle" });
+  if (!(await p.getByLabel(/Où habitez-vous/).isVisible())) await p.getByRole("button", { name: "Chercher une commune" }).first().click();
+  await p.getByLabel(/Où habitez-vous/).fill("meaux");
+  await p.getByRole("button", { name: /^Meaux,/ }).first().click();
+  await p.getByText("Question 2 sur 3").first().waitFor({ timeout: 10000 });
+  await p.getByText("Passer (garde les réglages par défaut)").first().click();
+  await p.getByText("Aller plus loin").first().waitFor({ timeout: 15000 });
+  const gardé = await p.evaluate(() => JSON.parse(localStorage.getItem("repere.profil") || "null"));
+  verifier(gardé && gardé.niveauZoom === "france" && gardé.tailleTexte === 16 && gardé.espacement === 1.5,
+    "D45 : « Passer » garde les réglages par défaut dans repere.profil");
   await p.close();
 }
 /* 5. Confort de lecture : un réglage se garde, se voit, et se retrouve au rechargement. */

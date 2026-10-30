@@ -43,9 +43,8 @@ export function useEtatProfil(): Etat {
     ecrireProfil(v);
     setProfil(v);
   };
-  /* « Passer » ne garde rien : les réglages par défaut valent pour cette session seulement.
-     La question reviendra à la prochaine ouverture (voir BLOCAGES 25). */
-  const passer = () => setProfil(valide(PROFIL_DEFAUT));
+  /* D45 (V27) : « Passer » est un choix explicite : il garde les réglages par défaut. */
+  const passer = () => enregistrer(valide(PROFIL_DEFAUT));
   const modifier = (m: Partial<Profil>) => enregistrer({ ...(profil ?? (PROFIL_DEFAUT as Profil)), ...m });
   return { profil, absent: profil === null, enregistrer, passer, modifier };
 }

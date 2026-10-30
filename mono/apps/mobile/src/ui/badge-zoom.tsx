@@ -9,14 +9,14 @@ import { CIBLE, couleurs, PAS, TYPO } from "../lib/theme";
 
 export function useNiveauZoom(): string {
   const { profil } = useProfil();
-  return profil?.niveauZoom ?? "tout";
+  return profil?.niveauZoom ?? "france";
 }
 
 export function BadgeZoom() {
   const { modifier } = useProfil();
   const niveau = useNiveauZoom();
   const [ouvert, setOuvert] = useState(false);
-  const libelle = LIBELLE_NIVEAU[niveau as keyof typeof LIBELLE_NIVEAU] ?? LIBELLE_NIVEAU.tout;
+  const libelle = LIBELLE_NIVEAU[niveau as keyof typeof LIBELLE_NIVEAU] ?? LIBELLE_NIVEAU.france;
   return (
     <View style={{ gap: PAS * 2 }}>
       <Pressable onPress={() => setOuvert(o => !o)} accessibilityRole="button" accessibilityState={{ expanded: ouvert }}
