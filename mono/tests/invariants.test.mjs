@@ -129,17 +129,27 @@ test("invariant 6 — rien ne gamifie le vote", () => {
   }
 });
 
-test("invariant 7 — palette gelée, et aucune couleur hors palette", () => {
+test("invariant 7 — palette gelée ; couleurs de groupes seulement dans palette.ts ; aucune autre couleur hors palette", () => {
+  /* Amendement du 30/10/2026 (CEO) : les couleurs de groupes politiques servent a
+     identifier un elu. Elles vivent dans palette.ts (table COULEURS_GROUPES), et
+     nulle part ailleurs. Toute autre couleur reste soumise au plafond d'amplitude. */
   const gelees = Object.values(ECHELONS);
   const css = lire("packages/ui/src/tokens.css");
   for (const [nom, hex] of Object.entries(ECHELONS)) {
     assert.ok(css.includes(hex), `la couleur d'echelon ${nom} (${hex}) a disparu des jetons`);
   }
+  const bloc = (lire("apps/mobile/src/lib/palette.ts").match(/COULEURS_GROUPES[\s\S]*?\}\);/) || [""])[0];
+  const groupes = [...bloc.matchAll(/#[0-9a-fA-F]{6}\b/g)].map(m => m[0].toLowerCase());
+  assert.equal(groupes.length, 12, "la table des groupes doit porter 12 couleurs (ADR 0001)");
   let controlees = 0;
   for (const f of sourcesEcrites()) {
     for (const m of lire(f).matchAll(/#[0-9a-fA-F]{6}\b/g)) {
       const hex = m[0].toLowerCase();
       if (gelees.includes(hex)) continue;
+      if (groupes.includes(hex)) {
+        assert.equal(f, "apps/mobile/src/lib/palette.ts", `${f} : couleur de groupe ${hex} hors palette.ts`);
+        continue;
+      }
       controlees++;
       assert.ok(amplitude(hex) <= AMPLITUDE_MAX,
         `${f} : ${hex} a une amplitude de ${amplitude(hex)} (plafond ${AMPLITUDE_MAX}) — c'est une couleur, pas un neutre`);

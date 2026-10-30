@@ -1,8 +1,10 @@
 # ADR 0001 — Couleurs de groupes politiques sur les badges d'identification
 
 - **Date :** 30/10/2026
-- **Statut :** proposé. **Non appliqué.** Ni le bloc des invariants de `CLAUDE.md`,
-  ni `.claude/invariants.sha256`, ni `mono/apps/mobile/src/lib/palette.ts` ne sont modifiés.
+- **Statut :** **appliqué le 30/10/2026**, sur décision explicite du CEO (réponse D1). Le bloc
+  des invariants de `CLAUDE.md`, `AGENTS.md` et `.claude/invariants.sha256` (scellé par
+  `outils/derive_contexte.mjs --sceller`) portent le nouvel invariant 7. Les codes sont dans
+  `mono/apps/mobile/src/lib/palette.ts`.
 - **Porte la décision :** le porteur. Un agent ne modifie pas un invariant de sa propre initiative
   (`CLAUDE.md`, section « Les invariants — lecture seule »).
 

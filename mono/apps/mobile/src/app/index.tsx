@@ -216,7 +216,7 @@ export default function Accueil() {
             {/* Hors ecran : les cartes de partage, capturees au moment du partage. */}
             <View style={s.cache} pointerEvents="none" accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
               <ChiffreStory refCarte={partageChiffre.carte} />
-              <VoteStory refCarte={partageVote.carte} />
+              <VoteStory refCarte={partageVote.carte} groupe={groupeDe(VOTE.acteur)} />
             </View>
           </View>
         }

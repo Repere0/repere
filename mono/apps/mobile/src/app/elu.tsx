@@ -15,6 +15,8 @@
  *     Une fonction qui ne vote pas au Parlement le dit.
  *   - Patrimoine, presence ou absence aux seances : jamais (invariant 8).
  * Une fiche n'affiche que des faits de mandat, sources. */
+import { BadgeGroupe } from "../ui/badge-groupe";
+import { groupeDe } from "../lib/groupes";
 import { useState } from "react";
 import { Animated, Pressable, Share, Text, View } from "react-native";
 import { router, Stack, useLocalSearchParams } from "expo-router";
@@ -114,6 +116,8 @@ export default function Elu() {
               </View>
             </View>
 
+            {/* Groupe : identifie l'élu. Gris « Inconnu » tant que le lien n'est pas publié. */}
+            {depute ? <BadgeGroupe groupe={groupeDe()} /> : null}
             {/* Parti : une phrase vraie tant que la source ne le publie pas. */}
             <Text style={TYPO.note}>{PARTI_NON_PUBLIE}</Text>
 

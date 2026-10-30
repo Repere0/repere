@@ -87,3 +87,10 @@ export const SEUIL_POINT = 3;
 
 /* Voile derriere la fenetre de reglage d'affichage (assombrit l'ecran dessous). */
 export const VOILE_MODAL = "rgba(0,0,0,0.4)";
+
+/* Couleurs de groupes politiques (invariant 7, amendé le 30/10/2026) : identification
+   des élus seulement (badges, cartes de partage). Jamais un vote ni un score. « Inconnu » sert de repli : aucun groupe n'est déduit ni estimé. */
+export const COULEURS_GROUPES: Readonly<Record<string, string>> = Object.freeze({
+  LFI: "#C9462C", RN: "#0D378A", EPR: "#FFA500", "LÉ": "#33A02C", LR: "#0066CC", SOC: "#FF8080",
+  HOR: "#00A0C6", DEM: "#F7B32B", LIOT: "#6B7280", GDR: "#B91C1C", NI: "#9CA3AF", Inconnu: "#6B7280",
+});
