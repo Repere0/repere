@@ -27,6 +27,7 @@ import { VOTE } from "../ui/partage/donnees";
 import { SquelettesListe } from "../ui/squelette";
 import { Logo } from "../ui/logo";
 import { DatePublication } from "../ui/fraicheur";
+import { DernieresPublications } from "../ui/dernieres-publications";
 
 /* L'accueil est sombre : il lit la palette sombre, quel que soit le choix d'affichage. */
 const D = NEUTRES_PAR_MODE.sombre;
@@ -315,6 +316,7 @@ export default function Accueil() {
             {premiere ? <View style={s.grandLogo}><Logo size={128} variant="sombre" /></View> : null}
             <Text style={[s.citation, premiere && { marginTop: PAS * 2 }]} accessibilityRole="header">L'application qui vous raccroche à votre citoyenneté française.</Text>
 
+            {premiere ? null : <DernieresPublications />}
             {premiere ? null : cartes}
 
             {retenue && nomRetenue ? (
@@ -384,6 +386,8 @@ export default function Accueil() {
                 </View>
               </>
             ) : null}
+            {/* V13 bloc D : sous le pitch et la recherche, au-dessus des cartes. Masquee sans fait de moins de 7 jours. */}
+            {premiere && !cherches.length && !tout ? <DernieresPublications /> : null}
             {premiere && !cherches.length && !tout ? cartes : null}
             {manquante ? (
               <Vide titre={`${manquante[1]} existe bien en Île-de-France : c'est nous qui n'avons pas encore sa fiche.`}
