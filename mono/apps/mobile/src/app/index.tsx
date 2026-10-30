@@ -440,6 +440,10 @@ export default function Accueil() {
         style={({ pressed }) => ({ minHeight: 44, justifyContent: "center", alignSelf: "flex-start", opacity: pressed ? 0.7 : 1 })}>
         <Text style={[s.legende, { textDecorationLine: "underline" }]}>Confort de lecture ›</Text>
       </Pressable>
+      <Pressable onPress={() => router.push("/pour-vous")} accessibilityRole="link" accessibilityLabel="Pour vous : ce qui a été publié selon votre vue"
+        style={({ pressed }) => ({ minHeight: 48, justifyContent: "center", alignSelf: "flex-start", opacity: pressed ? 0.7 : 1 })}>
+        <Text style={[s.legende, { textDecorationLine: "underline" }]}>Pour vous ›</Text>
+      </Pressable>
             <View style={s.haut}>
               {/* Le logo est une vue (ui/logo.tsx) : aucun fichier image dans assets/. */}
               <View style={{ flexDirection: "row", alignItems: "center", gap: PAS * 3 }}>
