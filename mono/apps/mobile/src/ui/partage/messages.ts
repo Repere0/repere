@@ -25,6 +25,18 @@ export function messageVote({ phrase, titre, date, lien }: { phrase: string; tit
   ].join("\n");
 }
 
+export function messageElu({ nom, fonction, lieu, depuis, producteur, lien }: {
+  nom: string; fonction: string; lieu: string; depuis: string; producteur: string; lien: string | null;
+}): string {
+  return [
+    [nom, fonction, lieu].filter(Boolean).join(", ") + ".",
+    ...(depuis ? [depuis] : []),
+    "",
+    `Fiche Repère, à partir des données de ${producteur}.`,
+    ...(lien ? [lien] : []),
+  ].join("\n");
+}
+
 export function messageAgenda({ titre, quand, lien }: { titre: string; quand: string; lien: string | null }): string {
   return [
     `À venir au Parlement : ${titre}`,

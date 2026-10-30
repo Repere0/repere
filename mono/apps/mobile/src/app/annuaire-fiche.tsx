@@ -8,12 +8,19 @@ import { Carte } from "../lib/composants";
 import { couleurs, PAS, TYPO } from "../lib/theme";
 import { Avatar } from "../ui/avatar";
 import { PastilleSource } from "../ui/source";
+import { PartagerCarte } from "../ui/partage/bouton-partage";
+import { ElusStory } from "../ui/partage/variantes/elu.story";
+import { messageElu } from "../ui/partage/messages";
 
 type Params = { nom?: string; fonction?: string; lieu?: string; depuis?: string; producteur?: string; licence?: string; maj?: string; url?: string };
 
 export default function AnnuaireFiche() {
   const p = useLocalSearchParams<Params>();
   const nom = p.nom || "Élu";
+  const fonction = p.fonction || "";
+  const lieu = p.lieu || "";
+  const depuis = p.depuis ? `En fonction depuis le ${dateFr(p.depuis)}.` : "";
+  const source = p.producteur ? `Source : ${p.producteur}${p.maj ? `, relevé le ${dateFr(p.maj)}` : ""}.` : "";
   return (
     <ScrollView style={{ flex: 1, backgroundColor: couleurs.sol }} contentContainerStyle={{ padding: PAS * 4, gap: PAS * 4 }}>
       <Stack.Screen options={{ title: "Élu" }} />
@@ -34,6 +41,11 @@ export default function AnnuaireFiche() {
         <Text style={TYPO.note}>Ni photo, ni parti : les données publiées ne les contiennent pas.</Text>
       </Carte>
       {p.producteur ? <PastilleSource source={{ producteur: p.producteur, licence: p.licence, maj: p.maj, url: p.url }} /> : null}
+      {p.producteur ? (
+        <PartagerCarte etiquette="Partager cette fiche"
+          repli={messageElu({ nom, fonction, lieu, depuis, producteur: p.producteur, lien: p.url || null })}
+          rendu={ref => <ElusStory refCarte={ref} nom={nom} fonction={fonction} lieu={lieu} depuis={depuis} source={source} />} />
+      ) : null}
     </ScrollView>
   );
 }

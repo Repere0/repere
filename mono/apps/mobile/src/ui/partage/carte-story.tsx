@@ -21,7 +21,10 @@ export function CarteStory({ refCarte, mode = "clair", titre, corps, source }: {
         <Text style={{ color: P.sourd, fontSize: 16 }}>{titre}</Text>
         {corps}
       </View>
-      <Text style={{ color: P.sourd, fontSize: 12, lineHeight: 16 }}>{source}</Text>
+      <View style={{ gap: 8 }}>
+        <Text style={{ color: P.sourd, fontSize: 14, lineHeight: 20 }}>L'application qui vous raccroche à votre citoyenneté française.</Text>
+        <Text style={{ color: P.sourd, fontSize: 12, lineHeight: 16 }}>{source}</Text>
+      </View>
     </View>
   );
 }
