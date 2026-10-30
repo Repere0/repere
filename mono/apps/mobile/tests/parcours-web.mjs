@@ -134,7 +134,7 @@ for (const largeur of [360, 390, 430]) {
 
   /* V26 bloc 1 : premiere visite sans profil -> trois questions. On repond (rue, 18 points),
      puis on verifie que le profil est garde sur l'appareil et que l'accueil s'ouvre ensuite. */
-  await page.getByText("Question 2 sur 3").first().waitFor({ timeout: 10000 });
+  await page.getByText("Question 2 sur 4").first().waitFor({ timeout: 10000 });
   await page.getByText("Ma rue", { exact: false }).first().click();
   await page.getByText("A 18").first().click();
   await page.getByText("Terminer", { exact: true }).first().click();

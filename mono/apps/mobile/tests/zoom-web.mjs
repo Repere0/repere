@@ -69,7 +69,7 @@ async function ouvrir(niveau, chemin) {
   if (!(await p.getByLabel(/Où habitez-vous/).isVisible())) await p.getByRole("button", { name: "Chercher une commune" }).first().click();
   await p.getByLabel(/Où habitez-vous/).fill("meaux");
   await p.getByRole("button", { name: /^Meaux,/ }).first().click();
-  await p.getByText("Question 2 sur 3").first().waitFor({ timeout: 10000 });
+  await p.getByText("Question 2 sur 4").first().waitFor({ timeout: 10000 });
   await p.getByText("Passer (garde les réglages par défaut)").first().click();
   await p.getByText("Aller plus loin").first().waitFor({ timeout: 15000 });
   const gardé = await p.evaluate(() => JSON.parse(localStorage.getItem("repere.profil") || "null"));
