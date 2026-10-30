@@ -10,7 +10,7 @@
  * partagees par les ecrans. La police de Repere est embarquee dans
  * l'application : aucune requete vers un hote tiers. */
 import "../lib/donnees";
-import { Stack } from "expo-router";
+import { DarkTheme, DefaultTheme, Stack, ThemeProvider } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { useFonts } from "expo-font";
@@ -22,6 +22,9 @@ import { FournisseurCommune } from "../lib/useCommune";
 import { couleurs, useModeSysteme } from "../lib/theme";
 import { LIBELLES } from "@repere/core";
 import { Retour } from "../ui/retour";
+
+const themeClair = { ...DefaultTheme, colors: { ...DefaultTheme.colors, background: "#F5F2EC", card: "#FFFFFF", text: "#171614", border: "#DDD8D0", primary: "#171614" } };
+const themeSombre = { ...DarkTheme, colors: { ...DarkTheme.colors, background: "#161513", card: "#1F1D1A", text: "#F3F0EA", border: "#3B3832", primary: "#F3F0EA" } };
 
 function AvecCommune({ children }: { children: ReactNode }) {
   const { choix } = useSelection();
@@ -41,26 +44,28 @@ export default function Coquille() {
       <FournisseurSelection>
         <AvecCommune>
           <StatusBar style={mode === "sombre" ? "light" : "dark"} />
-          <Stack
-            screenOptions={{
-              headerStyle: { backgroundColor: couleurs.sol },
-              headerTintColor: couleurs.encre,
-              headerShadowVisible: false,
-              headerTitle: "",
-              contentStyle: { backgroundColor: couleurs.sol },
-            }}
-          >
-            <Stack.Screen name="index" options={{ headerShown: false, title: "Repère" }} />
-            <Stack.Screen name="(onglets)" options={{ headerShown: false }} />
-            <Stack.Screen name="argent" options={{ title: LIBELLES.argent, headerLeft: () => <Retour texte={LIBELLES.aujourdhui} etiquette={`Revenir à l'écran ${LIBELLES.aujourdhui}`} /> }} />
-            <Stack.Screen name="vote" options={{ title: "Votre député", headerLeft: () => <Retour texte={LIBELLES.aujourdhui} etiquette={`Revenir à l'écran ${LIBELLES.aujourdhui}`} /> }} />
-            <Stack.Screen name="scrutins" options={{ title: "Scrutins publics", headerLeft: () => <Retour texte="Votre député" etiquette="Revenir à l'écran du député" /> }} />
-            <Stack.Screen name="sources" options={{ title: LIBELLES.sources, headerLeft: () => <Retour texte={LIBELLES.aujourdhui} etiquette={`Revenir à l'écran ${LIBELLES.aujourdhui}`} /> }} />
-            <Stack.Screen name="dictionnaire" options={{ title: "Dictionnaire citoyen", headerLeft: () => <Retour texte={LIBELLES.calendrier} etiquette={`Revenir à l'écran ${LIBELLES.calendrier}`} /> }} />
-            <Stack.Screen name="procedure" options={{ title: "La procédure", headerLeft: () => <Retour texte={LIBELLES.calendrier} etiquette={`Revenir à l'écran ${LIBELLES.calendrier}`} /> }} />
-            <Stack.Screen name="elu" options={{ title: "Fiche", headerLeft: () => <Retour texte={LIBELLES.qui} etiquette={`Revenir à l'écran ${LIBELLES.qui}`} /> }} />
-            <Stack.Screen name="partager" options={{ title: "Partager", headerLeft: () => <Retour texte="Votre député" etiquette="Revenir à l'écran du député" /> }} />
-          </Stack>
+          <ThemeProvider value={mode === "sombre" ? themeSombre : themeClair}>
+            <Stack
+              screenOptions={{
+                headerStyle: { backgroundColor: couleurs.sol },
+                headerTintColor: couleurs.encre,
+                headerShadowVisible: false,
+                headerTitle: "",
+                contentStyle: { backgroundColor: couleurs.sol },
+              }}
+            >
+              <Stack.Screen name="index" options={{ headerShown: false, title: "Repère" }} />
+              <Stack.Screen name="(onglets)" options={{ headerShown: false }} />
+              <Stack.Screen name="argent" options={{ title: LIBELLES.argent, headerLeft: () => <Retour texte={LIBELLES.aujourdhui} etiquette={`Revenir à l'écran ${LIBELLES.aujourdhui}`} /> }} />
+              <Stack.Screen name="vote" options={{ title: "Votre député", headerLeft: () => <Retour texte={LIBELLES.aujourdhui} etiquette={`Revenir à l'écran ${LIBELLES.aujourdhui}`} /> }} />
+              <Stack.Screen name="scrutins" options={{ title: "Scrutins publics", headerLeft: () => <Retour texte="Votre député" etiquette="Revenir à l'écran du député" /> }} />
+              <Stack.Screen name="sources" options={{ title: LIBELLES.sources, headerLeft: () => <Retour texte={LIBELLES.aujourdhui} etiquette={`Revenir à l'écran ${LIBELLES.aujourdhui}`} /> }} />
+              <Stack.Screen name="dictionnaire" options={{ title: "Dictionnaire citoyen", headerLeft: () => <Retour texte={LIBELLES.calendrier} etiquette={`Revenir à l'écran ${LIBELLES.calendrier}`} /> }} />
+              <Stack.Screen name="procedure" options={{ title: "La procédure", headerLeft: () => <Retour texte={LIBELLES.calendrier} etiquette={`Revenir à l'écran ${LIBELLES.calendrier}`} /> }} />
+              <Stack.Screen name="elu" options={{ title: "Fiche", headerLeft: () => <Retour texte={LIBELLES.qui} etiquette={`Revenir à l'écran ${LIBELLES.qui}`} /> }} />
+              <Stack.Screen name="partager" options={{ title: "Partager", headerLeft: () => <Retour texte="Votre député" etiquette="Revenir à l'écran du député" /> }} />
+            </Stack>
+          </ThemeProvider>
         </AvecCommune>
       </FournisseurSelection>
     </SafeAreaProvider>
