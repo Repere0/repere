@@ -95,11 +95,12 @@ export const VOILE_MODAL = "rgba(0,0,0,0.4)";
 
 /* Couleurs de groupes politiques (invariant 7, amendé le 30/10/2026) : identification
    des élus seulement (badges, cartes de partage). Jamais un vote ni un score. « Inconnu » sert de repli : aucun groupe n'est déduit ni estimé. */
-/* LES COULEURS DE VOTE (D24, 30/10/2026). Le vert sur le sol clair fait 2,88:1, sous le
-   3:1 des elements graphiques (WCAG 1.4.11) : la barre n'est jamais seule, la position et
-   le decompte sont toujours ecrits a cote. Mesures dans docs/adr/0003-couleurs-votes.md. */
+/* LES COULEURS DE VOTE (D24, puis A2 le 30/10/2026 : vert assombri, valeur D24 remplacee).
+   Sur la carte claire (#FFFFFF) : 4,52 / 5,36 / 4,55:1, au-dessus de 4,5:1 (WCAG AA texte),
+   verifie par tests/theme.test.mjs. Sur le sol clair, le vert et le gris restent sous 4,5:1 :
+   les barres sont toujours posees sur une carte. Detail : docs/adr/0003-couleurs-votes.md. */
 export const COULEURS_VOTE = Object.freeze({
-  votePour: "#2DA44E",
+  votePour: "#1F883D",
   voteContre: "#CF222E",
   voteAbstention: "#6E7781",
 });

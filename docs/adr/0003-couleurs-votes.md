@@ -12,7 +12,7 @@ Jusqu'ici, un vote s'affichait en trois gris (`GRIS_VOTE` : encre, sourd, trait)
 
 | Position | Couleur | Jeton (`palette.ts`, `COULEURS_VOTE`) |
 |---|---|---|
-| Pour | vert `#2DA44E` | `votePour` |
+| Pour | vert `#1F883D` (A2 ; `#2DA44E` dans D24) | `votePour` |
 | Contre | rouge `#CF222E` | `voteContre` |
 | Abstention | gris `#6E7781` | `voteAbstention` |
 
@@ -21,7 +21,23 @@ Jusqu'ici, un vote s'affichait en trois gris (`GRIS_VOTE` : encre, sourd, trait)
 - Les couleurs de groupes restent limitées aux badges d'identification (ADR 0001).
 - Le test d'invariant 7 (`mono/tests/invariants.test.mjs`) accepte ces trois valeurs, dans `palette.ts` seulement.
 
-## Contrastes mesurés (rapport de luminance)
+## Amendement A2 (30/10/2026) — conformité WCAG AA
+
+Décision du CEO : le vert passe de `#2DA44E` à `#1F883D`. Le rouge `#CF222E` reste : il fait 5,36:1 sur blanc, au-dessus de 4,5:1. La valeur de repli `#A40E26`, prévue s'il était sous 4,5:1, n'a pas servi. Le gris `#6E7781` reste aussi (4,55:1 sur blanc).
+
+| Couleur | Carte claire `#FFFFFF` | Sol clair `#F5F2EC` | Carte sombre `#1F1D1A` |
+|---|---|---|---|
+| `#1F883D` (pour) | **4,52** | 4,04 | 3,72 |
+| `#CF222E` (contre) | **5,36** | 4,79 | 3,14 |
+| `#6E7781` (abstention) | **4,55** | 4,07 | 3,70 |
+
+Test automatique (`mono/apps/mobile/tests/theme.test.mjs`) :
+- au moins 4,5:1 sur la carte claire, là où toutes les barres de vote sont posées ;
+- au moins 3:1 sur la carte sombre (seuil WCAG 1.4.11 des éléments graphiques).
+
+Sur la carte sombre, les trois couleurs restent sous 4,5:1 : elles ne servent jamais pour du texte. Sur le sol clair, le vert et le gris restent sous 4,5:1 : aucune barre n'y est posée directement.
+
+## Contrastes mesurés pour D24 (historique, avant A2)
 
 | Couleur | Sur blanc | Sur sol clair `#F5F2EC` | Sur carte sombre `#1F1D1A` | Sur sol sombre `#161513` |
 |---|---|---|---|---|

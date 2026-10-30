@@ -13,7 +13,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
 import { ECHELONS } from "@repere/data-utils";
-import { NEUTRES_PAR_MODE, TEINTES_PAR_MODE, ECHELONS_PAR_MODE, OMBRE_PAR_MODE } from "../src/lib/palette.ts";
+import { NEUTRES_PAR_MODE, TEINTES_PAR_MODE, ECHELONS_PAR_MODE, OMBRE_PAR_MODE, COULEURS_VOTE } from "../src/lib/palette.ts";
 
 const RACINE = path.resolve(import.meta.dirname, "..");
 const SRC = path.join(RACINE, "src");
@@ -221,4 +221,20 @@ test("logo — icone iOS carree 1024 px sans transparence ; fonds du demarrage e
   assert.equal(png.readUInt32BE(20), 1024, "hauteur de l'icone");
   assert.notEqual(png[25], 4, "icone iOS : canal alpha interdit (type de couleur RGBA)");
   assert.notEqual(png[25], 6, "icone iOS : canal alpha interdit (type de couleur RGBA)");
+});
+
+/* ---- A2 (30/10/2026) : couleurs de vote conformes WCAG AA --------------------------
+   Les barres et signes de vote sont poses sur les cartes. Carte claire : 4,5:1 au moins
+   (seuil AA du texte, plus exigeant que les 3:1 des elements graphiques). Carte sombre :
+   3:1 au moins (WCAG 1.4.11) ; ces couleurs n'y servent jamais pour du texte. */
+test("theme — couleurs de vote : 4,5:1 sur la carte claire, 3:1 sur la carte sombre (A2)", () => {
+  const lum = h => { const c = hex(h).map(v => v / 255).map(v => (v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4)); return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2]; };
+  const r = (a, b) => { const x = lum(a), y = lum(b); return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05); };
+  const fautes = [];
+  for (const [nom, c] of Object.entries(COULEURS_VOTE)) {
+    const clair = r(c, NEUTRES_PAR_MODE.clair.carte), sombre = r(c, NEUTRES_PAR_MODE.sombre.carte);
+    if (clair < 4.5) fautes.push(`${nom} ${c} sur carte claire : ${clair.toFixed(2)}:1`);
+    if (sombre < 3) fautes.push(`${nom} ${c} sur carte sombre : ${sombre.toFixed(2)}:1`);
+  }
+  assert.deepEqual(fautes, [], fautes.join(" | "));
 });

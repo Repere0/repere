@@ -52,7 +52,7 @@ explicite du porteur les change ; la PR qui l'applique met alors à jour
 7. **Invariant 7 (amendé le 30/10/2026)** : les couleurs de groupes politiques
    sont autorisées pour l'identification des élus (badges, cartes de partage).
    Elles ne codent JAMAIS un vote, une opinion, un score ou un classement.
-   Mapping dans palette.ts. Complément (D24, 30/10/2026, ADR 0003) : votes en vert `#2DA44E`
+   Mapping dans palette.ts. Complément (D24, 30/10/2026, ADR 0003) : votes en vert `#1F883D`
    (pour), rouge `#CF222E` (contre), gris `#6E7781` (abstention) ; ils codent un FAIT, jamais
    un jugement, et la position reste écrite en toutes lettres.
 8. **Jamais le patrimoine d'un élu, jamais de donnée de présence ou d'absence.**

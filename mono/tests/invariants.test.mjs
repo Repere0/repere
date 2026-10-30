@@ -145,7 +145,7 @@ test("invariant 7 — palette gelée ; couleurs de groupes seulement dans palett
   const blocVote = (lire("apps/mobile/src/lib/palette.ts").match(/export const COULEURS_VOTE[\s\S]*?\}\);/) || [""])[0];
   const votes = [...blocVote.matchAll(/#[0-9a-fA-F]{6}\b/g)].map(m => m[0].toLowerCase());
   /* Valeurs ecrites sans « # » : ce fichier est lui-meme balaye par le controle de palette. */
-  assert.deepEqual(votes, ["2da44e", "cf222e", "6e7781"].map(h => "#" + h), "les couleurs de vote sont celles de D24 (ADR 0003)");
+  assert.deepEqual(votes, ["1f883d", "cf222e", "6e7781"].map(h => "#" + h), "les couleurs de vote sont celles de D24 (ADR 0003)");
   let controlees = 0;
   for (const f of sourcesEcrites()) {
     for (const m of lire(f).matchAll(/#[0-9a-fA-F]{6}\b/g)) {
