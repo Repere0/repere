@@ -10,7 +10,7 @@
  * Les cartes du haut sont STATIQUES et glissent horizontalement : Melun (77288),
  * son chiffre par habitant 2025 (OFGL) et son dernier vote (député 77-1, scrutin
  * 8706). Valeurs verifiees dans data/ le 30/10/2026, figees dans le code.
- * Le partage d'image : src/ui/partage (carte 9:16, feuille de partage native). */
+ * Le partage n'est plus sur l'accueil : il est sur les ecrans de contexte (src/ui/partage). */
 import { useEffect, useMemo, useState } from "react";
 import { FlatList, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View, useWindowDimensions } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -22,23 +22,11 @@ import { useSelection } from "../lib/selection";
 import { feuille, CIBLE, PAS, POLICE, RAYON } from "../lib/theme";
 import { ECHELONS_PAR_MODE, NEUTRES_PAR_MODE } from "../lib/palette";
 import { groupeDe } from "../lib/groupes";
-import { MSG_CHIFFRE, MSG_VOTE, VOTE } from "../ui/partage/donnees";
-import { usePartageStory } from "../ui/partage/use-partage-story";
-import { ChiffreStory } from "../ui/partage/variantes/chiffre.story";
-import { VoteStory } from "../ui/partage/variantes/vote.story";
+import { VOTE } from "../ui/partage/donnees";
 
 /* L'accueil est sombre : il lit la palette sombre, quel que soit le choix d'affichage. */
 const D = NEUTRES_PAR_MODE.sombre;
 const E = ECHELONS_PAR_MODE.sombre;
-
-function BoutonPartager({ etiquette, onPress }: { etiquette: string; onPress: () => void }) {
-  return (
-    <Pressable onPress={onPress} accessibilityRole="button" accessibilityLabel={etiquette}
-      style={({ pressed }) => [s.partager, pressed && { opacity: 0.7 }]}>
-      <Text style={s.partagerTexte}>Partager</Text>
-    </Pressable>
-  );
-}
 
 type Ligne = [string, string, string[]];
 type Beta = { communes: Record<string, string>; manquantes?: Record<string, string>; source?: { producteur?: string } };
@@ -55,8 +43,6 @@ export default function Accueil() {
   const [cherche, setCherche] = useState(false);
   const [page, setPage] = useState(0);
   const [essai, setEssai] = useState(0);
-  const partageChiffre = usePartageStory(MSG_CHIFFRE);
-  const partageVote = usePartageStory(MSG_VOTE);
   /* Une carte occupe toute la largeur de lecture ; la suivante commence apres un ecart. */
   const larg = Math.min(width, 640) - PAS * 8;
   const pas = larg + PAS * 3;
@@ -138,8 +124,6 @@ export default function Accueil() {
                   <Text style={s.carteTitre}>L'argent de Melun</Text>
                   <Text style={s.chiffre}>2 495 €</Text>
                   <Text style={s.legende}>dépensés par habitant en 2025 · source : OFGL</Text>
-                  <BoutonPartager etiquette="Partager le chiffre de Melun"
-                    onPress={partageChiffre.partager} />
                 </View>
               </View>
               <View style={{ width: larg }}>
@@ -151,8 +135,6 @@ export default function Accueil() {
                   <Text style={s.legende}>Député de la 1re circonscription de Seine-et-Marne</Text>
                   <Text style={s.vote}>S'est abstenu</Text>
                   <Text style={s.legende}>13 octobre 2026 · {titreLisible(VOTE.titre)}</Text>
-                  <BoutonPartager etiquette="Partager le vote d'Arnaud Saint-Martin"
-                    onPress={partageVote.partager} />
                 </View>
               </View>
             </ScrollView>
@@ -213,11 +195,6 @@ export default function Accueil() {
                 corps="Pendant la bêta, l'application ne couvre que l'Île-de-France : pour une commune d'ailleurs, les données ne sont pas encore disponibles ici. Sinon, vérifiez l'orthographe du début du nom." />
             ) : null}
 
-            {/* Hors ecran : les cartes de partage, capturees au moment du partage. */}
-            <View style={s.cache} pointerEvents="none" accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
-              <ChiffreStory refCarte={partageChiffre.carte} />
-              <VoteStory refCarte={partageVote.carte} groupe={groupeDe(VOTE.acteur)} />
-            </View>
           </View>
         }
         renderItem={({ item: [insee, nom] }) => (
@@ -254,12 +231,9 @@ const s = feuille(() => StyleSheet.create({
   legende: { fontSize: 15, lineHeight: 21, color: D.sourd },
   badge: { alignSelf: "flex-start", paddingHorizontal: PAS * 2, paddingVertical: PAS, borderRadius: RAYON.bloc, backgroundColor: D.voile },
   badgeTexte: { fontSize: 13, fontWeight: "600", color: D.sourd },
-  partager: { minHeight: CIBLE, borderRadius: RAYON.bloc, borderWidth: 1, borderColor: D.trait, alignItems: "center", justifyContent: "center", paddingHorizontal: PAS * 4 },
-  partagerTexte: { fontSize: 16, fontWeight: "700", color: D.encre },
   points: { flexDirection: "row", justifyContent: "center", gap: PAS * 2 },
   point: { width: 8, height: 8, borderRadius: 4, backgroundColor: D.trait },
   pointActif: { backgroundColor: E.ville },
-  cache: { position: "absolute", left: -10000, top: 0 },
   confiance: { gap: PAS, padding: PAS * 4, borderRadius: RAYON.bloc, backgroundColor: D.voile, marginTop: PAS * 2 },
   promesse: { fontSize: 17, lineHeight: 24, color: D.encre },
   question: { fontFamily: POLICE.titre, fontSize: 24, lineHeight: 30, color: D.encre, marginTop: PAS * 6 },

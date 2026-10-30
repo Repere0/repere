@@ -17,10 +17,13 @@
  * Une fiche n'affiche que des faits de mandat, sources. */
 import { BadgeGroupe } from "../ui/badge-groupe";
 import { groupeDe } from "../lib/groupes";
+import { PartagerCarte } from "../ui/partage/bouton-partage";
+import { VoteStory } from "../ui/partage/variantes/vote.story";
+import { messageVote, VERBE } from "../ui/partage/messages";
 import { useState } from "react";
 import { Animated, Pressable, Share, Text, View } from "react-native";
 import { router, Stack, useLocalSearchParams } from "expo-router";
-import { chaineDecision, copieVoteVide, dateFr, debutDeMandat, ETAT_VOTE, LIBELLES, titreLisible } from "@repere/core";
+import { chaineDecision, copieVoteVide, dateFr, debutDeMandat, ETAT_VOTE, LIBELLES, lienScrutin, titreLisible } from "@repere/core";
 import { Carte, Vide } from "../lib/composants";
 import { srcElus, srcScrutins } from "../lib/sources";
 import { couleurs, CIBLE, PAS, TYPO, type Echelon } from "../lib/theme";
@@ -80,7 +83,7 @@ export default function Elu() {
       /* LE VOTE DE CET ÉLU, PAS CELUI DE LA COMMUNE : filtré sur son nom. Si le
          vote manque, l'état vient de la règle partagée (core/votesVides.js) ; il ne
          dit jamais « aucun vote » pour un relevé non lu ou non apparié. */
-      type FaitElu = { type: string; position?: string; qui: string; sc: { t: string; d: string } };
+      type FaitElu = { type: string; position?: string; qui: string; sc: { n: string; t: string; d: string } };
       const vote = depute ? (r.d.faits as FaitElu[]).find(f => f.type === "vote" && !!f.position && f.qui === nom) : undefined;
       const etatVote = !depute || vote ? null
         : !r.votesLus ? ETAT_VOTE.RELEVE_NON_LU
@@ -88,6 +91,18 @@ export default function Elu() {
         : (r.d as unknown as { etatVotePour: (n: string) => string | null }).etatVotePour(nom);
       const videVote = etatVote ? copieVoteVide(etatVote, { nom, elu: true, releve: srcScrutins(r.d)?.releve, portee: r.d.srcScrutins && r.d.srcScrutins.portee }) : null;
       const libelleRole = [p.role, p.lieu].filter(Boolean).join(" · ");
+      /* Carte de partage : seulement le dernier vote publie de cet elu, avec sa source. Sans
+         vote ou sans source publiee, pas de carte : le partage reste textuel. */
+      const carteVote = vote && vote.position && POSITION[vote.position] && r.d.srcScrutins ? {
+        phrase: `${nom} ${VERBE[vote.position]}`,
+        titre: titreLisible(vote.sc.t),
+        sous: `Vote à l'Assemblée nationale, ${dateFr(vote.sc.d)}.`,
+        source: `Source : ${r.d.srcScrutins.producteur}, scrutin n° ${vote.sc.n}, ${dateFr(vote.sc.d)}.`,
+        repli: messageVote({
+          phrase: `${nom} ${VERBE[vote.position]}`, titre: titreLisible(vote.sc.t), date: dateFr(vote.sc.d),
+          lien: r.d.base ? lienScrutin(r.d.base, vote.sc).url : null,
+        }),
+      } : null;
       const partager = () => Share.share({
         message: `${nom}${libelleRole ? `, ${libelleRole}` : ""}.${p.institution ? ` ${p.institution}.` : ""}\nRésumé Repère, à partir des données publiées. Le détail est dans l'application.`,
       });
@@ -102,10 +117,16 @@ export default function Elu() {
                 accessibilityLabel="Retour" style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", opacity: pressed ? 0.6 : 1 })}>
                 <Text style={{ color: couleurs.encre, fontWeight: "700", textDecorationLine: "underline", fontSize: 15 }}>Retour</Text>
               </Pressable>
-              <Pressable onPress={partager} accessibilityRole="button" accessibilityLabel="Partager la fiche"
-                style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", opacity: pressed ? 0.6 : 1 })}>
-                <Text style={{ color: couleurs.encre, fontWeight: "700", textDecorationLine: "underline", fontSize: 15 }}>Partager</Text>
-              </Pressable>
+              {carteVote ? (
+                <PartagerCarte etiquette={`Partager le dernier vote de ${nom}`} repli={carteVote.repli}
+                  rendu={ref => <VoteStory refCarte={ref} groupe={groupeDe()} etiquette="Dernier vote" phrase={carteVote.phrase}
+                    titre={carteVote.titre} sous={carteVote.sous} source={carteVote.source} />} />
+              ) : (
+                <Pressable onPress={partager} accessibilityRole="button" accessibilityLabel="Partager la fiche"
+                  style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", opacity: pressed ? 0.6 : 1 })}>
+                  <Text style={{ color: couleurs.encre, fontWeight: "700", textDecorationLine: "underline", fontSize: 15 }}>Partager</Text>
+                </Pressable>
+              )}
             </View>
 
             {/* Identite */}

@@ -27,6 +27,9 @@ import { AvecDonnees, Page, Question } from "../ui/page";
 import { PastilleSource } from "../ui/source";
 import { Emoji, Resume } from "../ui/resume";
 import { BarrePart, Compteur, DeuxAnnees, Depli, Financement, Mois } from "../ui/visuels";
+import { PartagerCarte } from "../ui/partage/bouton-partage";
+import { ChiffreStory } from "../ui/partage/variantes/chiffre.story";
+import { messageChiffre } from "../ui/partage/messages";
 
 type Rapport = { l: string; v: string; d: string };
 type Projet = { annee: number; dispositif: string; intitule: string; subvention: number; cout?: number; ancien_code?: string };
@@ -58,6 +61,9 @@ export default function Argent() {
         : [];
       const dep = ch && ch.depenses !== null ? montantCourt(ch.depenses) : null;
       const dette = ch && ch.dette !== null ? montantCourt(ch.dette) : null;
+      /* Carte de partage du chiffre par habitant : seulement quand le montant et sa source sont publies. */
+      const partage = ex && hab && hab.depenses !== null && d.srcComptes
+        ? { euros: `${hab.depenses.toLocaleString("fr-FR")} €`, an: ex.an, producteur: d.srcComptes.producteur } : null;
       return (
         <Page>
           <Stack.Screen options={{ title: LIBELLES.argent }} />
@@ -79,6 +85,12 @@ export default function Argent() {
                     pastille « Calculé par Repère » : la mettre ici l'aurait fait passer
                     pour publiee (invariant 4, relecture du 30/09/2026). */}
                 <PastilleSource source={srcComptesPublies(d)} />
+                {partage ? (
+                  <PartagerCarte etiquette={`Partager le chiffre de ${nom}`}
+                    repli={messageChiffre({ ville: nom, euros: partage.euros, an: partage.an, producteur: partage.producteur })}
+                    rendu={ref => <ChiffreStory refCarte={ref} ville={nom} euros={partage.euros} an={partage.an}
+                      source={`Source : ${partage.producteur}, comptes ${partage.an}.`} />} />
+                ) : null}
               </Carte>
 
               {/* OU VA CHAQUE 100 € */}

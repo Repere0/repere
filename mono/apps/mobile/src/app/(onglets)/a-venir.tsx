@@ -30,6 +30,9 @@ import { couleurs, CIBLE, PAS, TYPO } from "../../lib/theme";
 import { AvecDonnees, Page, Question } from "../../ui/page";
 import { PastilleSource } from "../../ui/source";
 import { Depli } from "../../ui/visuels";
+import { PartagerCarte } from "../../ui/partage/bouton-partage";
+import { AgendaStory } from "../../ui/partage/variantes/agenda.story";
+import { messageAgenda } from "../../ui/partage/messages";
 
 type Ev = { titre: string; debut: string; institution: string; categorie?: string; lieu?: string; description?: string; source: Record<string, string> };
 type Groupe = { jour: string; institution: string; titre: string; debut: string; debuts: string[]; fins?: (string | null)[]; seances: number;
@@ -146,6 +149,10 @@ export default function AVenir() {
       const manquantes = lues.length ? INSTITUTIONS.filter(i => !lues.some(x => x.institution === i)) : [];
       const vieillis = lues.map(x => ({ ...x, age: ageReleve(x.source && x.source.releve_le) }))
         .filter(x => x.age !== null && x.age > AGE_RELEVE_NORMAL);
+      /* Carte de partage : le premier point affiche, avec la source de son institution. */
+      const suivant = affiches[0];
+      const lue = suivant ? lues.find(x => x.institution === suivant.institution) : undefined;
+      const quand = suivant ? [jourFr(suivant.jour), suivant.institution].filter(Boolean).join(", ") : "";
       return (
         <Page>
           <Stack.Screen options={{ title: LIBELLES.calendrier }} />
@@ -224,6 +231,12 @@ export default function AVenir() {
                     {lues.map(x => <PastilleSource key={x.institution} nom={x.institution === "Sénat" ? "Sénat" : "Assemblée"} source={srcAgenda(x.source)} />)}
                   </View>
                 </Carte>
+              ) : null}
+              {suivant && lue && lue.source.releve_le ? (
+                <PartagerCarte etiquette="Partager le premier point affiché"
+                  repli={messageAgenda({ titre: suivant.titre, quand, lien: lue.source.url || null })}
+                  rendu={ref => <AgendaStory refCarte={ref} titre={suivant.titre} date={quand}
+                    source={`Source : ${lue.source.producteur_affiche || lue.source.producteur}, relevé le ${dateFr(lue.source.releve_le)}.`} />} />
               ) : null}
 
               {!aVenir.length && toutes.length ? (
