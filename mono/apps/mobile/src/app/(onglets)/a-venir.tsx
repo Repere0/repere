@@ -169,7 +169,7 @@ export default function AVenir() {
           <View style={{ flexDirection: "row", alignItems: "flex-start", justifyContent: "space-between", gap: PAS * 2 }}>
             <View style={{ flex: 1 }}>
               <Question etiquette="Au Parlement" question="Calendrier"
-                sous="Les séances annoncées à l'Assemblée nationale et au Sénat : elles concernent tout le pays." />
+                sous="Les séances annoncées à l'Assemblée nationale et au Sénat. Elles concernent tout le pays, pas seulement votre commune." />
             </View>
           </View>
           <DateDonnee quoi="Relevé de l'agenda" date={releveAncien} testID="maj-agenda" />

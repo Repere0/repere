@@ -491,6 +491,10 @@ export default function Accueil() {
                   style={({ pressed }) => [s.confiance, { minHeight: 48, justifyContent: "center" }, pressed && { opacity: 0.7 }]}>
                   <Text style={[s.note, { color: D.encre, fontWeight: "600" }]}>Pas de compte, pas d'e-mail. <Text style={{ textDecorationLine: "underline", fontWeight: "400", color: D.sourd }}>Pourquoi ?</Text></Text>
                 </Pressable>
+                {/* V29 bloc 1 (audit D51) : phrase retirée de l'accueil en V20, réintégrée au niveau 2. */}
+                <Details titre="Repère ne sait pas qui vous êtes" couleur={D.encre} lien={D.encre}>
+                  <Text style={[s.note, { color: D.sourd }]}>Pour afficher votre commune, il télécharge le fichier public de tout votre département, et ne garde votre commune sur ce téléphone que si vous le lui demandez.</Text>
+                </Details>
               </>
             ) : null}
             {/* V13 bloc D : sous le pitch et la recherche, au-dessus des cartes. Masquee sans fait de moins de 7 jours. */}

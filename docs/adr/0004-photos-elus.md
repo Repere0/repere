@@ -23,3 +23,7 @@
 
 - **Droit à l'image** : une photo libre de droits d'auteur n'efface pas le droit à l'image de la personne photographiée. L'usage pour un élu dans l'exercice de son mandat est en général admis, mais un élu peut le contester. À faire valider.
 - **Exactitude** : Wikidata est éditable par tous. La photo peut être ancienne ou fausse. Le crédit renvoie à la page Commons pour que chacun puisse vérifier.
+
+## Motif de la règle sur les photos de l'Assemblée (réintégré, V29)
+
+Le motif était écrit dans le commentaire de `mono/apps/mobile/src/ui/avatar.tsx` en V15 : les photos de l'Assemblée nationale ne sont pas chargées par l'application, pour ne pas révéler l'adresse du lecteur. Une image chargée depuis un serveur de l'Assemblée transmettrait en effet l'adresse du lecteur à ce serveur. Ce motif s'ajoute à celui de la licence ci-dessus. Il a disparu d'un commentaire réécrit en V20 et n'était plus écrit nulle part ; il est réintégré ici (audit anti-perte, D51).
