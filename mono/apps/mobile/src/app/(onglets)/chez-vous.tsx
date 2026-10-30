@@ -25,7 +25,9 @@
  * cette information ? » ; celle du traitement par Repere en en-tete.
  *
  * RIEN N'EST CALCULE ICI : @repere/core derive, lib/absences.ts dit les absences. */
-import { Text, View } from "react-native";
+import { useEffect, useState } from "react";
+import { Linking, Text, View } from "react-native";
+import { chargerMairies } from "../../lib/donnees";
 import { router, Stack } from "expo-router";
 import {
   dateFr, datePublication, decompte, euros, financementProjet, montantCourt, ordinal, parHabitant, phrasePosition,
@@ -48,6 +50,22 @@ import { Plus, Reponse, typo } from "../../ui/reponse";
 import { BarrePart, Repartition } from "../../ui/visuels";
 import { SemaineParlement } from "../../ui/semaine";
 import { DateDonnee } from "../../ui/fraicheur";
+
+/* LE SITE OFFICIEL DE LA MAIRIE (D28, ADR 0005) : un lien externe, lu dans l'annuaire DILA
+   (data/mairies-idf.json). Sans adresse declaree, pas de ligne : rien n'est devine. */
+function SiteMairie({ insee }: { insee: string }) {
+  const [site, setSite] = useState<string | null>(null);
+  useEffect(() => {
+    let vivant = true;
+    chargerMairies().then(r => {
+      const c = r.donnees ? (r.donnees as { communes?: Record<string, { site?: string }> }).communes?.[insee] : undefined;
+      if (vivant) setSite(c && typeof c.site === "string" && /^https?:\/\//.test(c.site) ? c.site : null);
+    }).catch(() => {});
+    return () => { vivant = false; };
+  }, [insee]);
+  if (!site) return null;
+  return <Plus texte="Site officiel de la mairie" onPress={() => Linking.openURL(site)} />;
+}
 
 export default function ChezVous() {
   const { choix } = useSelection();
@@ -181,6 +199,7 @@ export default function ChezVous() {
               <Plus texte={LIBELLES.calendrier} onPress={() => router.push("/a-venir")} />
               <Plus texte="Élus" onPress={() => router.push("/elus")} />
               <Plus texte="Voir les actualités" onPress={() => router.push("/actus")} />
+              {choix ? <SiteMairie insee={choix.insee} /> : null}
               <Plus texte="Dictionnaire citoyen" onPress={() => router.push("/dictionnaire")} />
               <Plus dernier texte={LIBELLES.sources} onPress={() => router.push("/sources")} />
             </View>

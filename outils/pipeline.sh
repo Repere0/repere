@@ -364,6 +364,10 @@ rm -rf site_engendre
   # Non bloquant : sans ce fichier, l'application recalcule a partir des departements.
   node scripts/agregats-regionaux.mjs ./data \
     || echo "::warning::agregats regionaux non produits - l'application recalculera depuis les departements"
+  # SITES DES MAIRIES (30/10/2026, D28) - annuaire DILA, Licence Ouverte 2.0. Reseau
+  # requis. Non bloquant : sans ce fichier, l'application n'affiche simplement pas le lien.
+  node scripts/collecte-sites-mairies.mjs ./data \
+    || echo "::warning::sites des mairies non collectes (annuaire DILA) - aucun lien affiche"
   # ETAT ANNONCE DANS LA CI (29/10/2026). Le banc ne montre sa sortie qu'en cas
   # d'echec : sans cette annotation, une CI verte ne disait pas si le teaser
   # etait present ou si sa note d'absence avait ete testee a sa place.

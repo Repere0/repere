@@ -309,10 +309,16 @@ test("invariant 4 — aucune donnée n'est servie sans source déclarée", () =>
   const composees = [...client.matchAll(/\$\{BASE_DONNEES\}(\/[A-Za-z0-9_${}./-]*)/g)].map(m => m[1]);
   assert.deepEqual([...new Set(composees)].sort(),
     ["/agenda-an.json", "/agregats-regionaux.json", "/calendrier-senat.json", "/communes-beta.json", "/comptes-regions.json", "/departments/${d}.json",
-     "/deputes.json", "/elus-regions/${c}.json", "/evenements.json", "/index.json",
+     "/deputes.json", "/elus-regions/${c}.json", "/evenements.json", "/index.json", "/mairies-idf.json",
      "/projets/${d}.json", "/questions-gouvernement-index.json", "/questions-gouvernement/${lotPadded}.json", "/scrutins-details/${lotPadded}.json", "/scrutins-index.json", "/scrutins-solennels-recents.json", "/scrutins-solennels.json", "/scrutins.json", "/scrutins/${d}.json"],
     "client.js compose une adresse de donnees inattendue : " + composees.join(", "));
   const sources = existe("data/index.json") ? (JSON.parse(lire("data/index.json")).sources || {}) : {};
+  /* /mairies-idf.json (D28, ADR 0005) : provenance dans le fichier (annuaire DILA). */
+  if (existe("data/mairies-idf.json")) {
+    const mai = JSON.parse(lire("data/mairies-idf.json"));
+    assert.ok(mai.source && mai.source.producteur && mai.source.licence && mai.genere_le,
+      "mairies-idf.json publie sans source, licence ni date (invariant 4)");
+  }
   if (existe("data/agregats-regionaux.json")) {
     const agr = JSON.parse(lire("data/agregats-regionaux.json"));
     assert.ok(agr.source && agr.source.producteur && agr.genere_le,

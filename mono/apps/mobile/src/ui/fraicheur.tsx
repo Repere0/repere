@@ -85,9 +85,10 @@ export function DateDonnee({ quoi, date, url, testID, avant }: { quoi: string; d
   return (
     <Pressable testID={testID} onPress={ouvrir} accessibilityRole="link"
       accessibilityLabel={`${quoi} du ${dateFr(jour)}, ${ilYa(age)}. ${url ? "Ouvrir la source, site externe" : "Voir les sources"}`}
-      /* 44 px, le minimum de la regle du projet, et non CIBLE (48) : quatre pixels qui
+      /* 45 px : la regle du projet (44) plus un pixel, car le navigateur a mesure 43,99999 px
+         (arrondi sous-pixel) ; et non CIBLE (48) : trois pixels qui
          gardent la troisieme reponse d'Aujourd'hui dans le premier ecran a 390 x 844. */
-      style={({ pressed }) => ({ minHeight: 44, justifyContent: "center", opacity: pressed ? 0.7 : 1 })}>
+      style={({ pressed }) => ({ minHeight: 45, justifyContent: "center", opacity: pressed ? 0.7 : 1 })}>
       {/* Avec « avant », « Source » monte sur la premiere ligne : la date tient alors sur une
          seule ligne a 390 px, et le lien garde 44 px (mesure du parcours navigateur). */}
       {avant ? (
