@@ -59,6 +59,25 @@ async function ouvrir(niveau, chemin) {
   verifier(t.includes("vue : tout") && t.includes("assemblée nationale"), "zoom : « Changer » puis « Tout » remontre le national");
   await p.close();
 }
+/* 5. Confort de lecture : un réglage se garde, se voit, et se retrouve au rechargement. */
+{
+  const p = await (await navigateur.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true })).newPage();
+  await p.addInitScript(() => {
+    if (!localStorage.getItem("repere.departement")) localStorage.setItem("repere.departement", JSON.stringify({ d: "77", c: "77284" }));
+    if (!localStorage.getItem("repere.profil")) localStorage.setItem("repere.profil", JSON.stringify({ niveauZoom: "tout", tailleTexte: 16, espacement: 1.5, contraste: "normal", policeDyslexie: false, animationsReduites: false, modeDaltonien: false, masquerImages: false }));
+  });
+  await p.goto(BASE + "/", { waitUntil: "networkidle" });
+  await p.getByRole("link", { name: "Confort de lecture ›" }).click();
+  await p.getByRole("radio", { name: /Texte de 22 points/ }).click();
+  await p.waitForTimeout(600);
+  const gardé = await p.evaluate(() => JSON.parse(localStorage.getItem("repere.profil") || "{}").tailleTexte);
+  verifier(gardé === 22, "confort : la taille 22 est gardée dans repere.profil");
+  await p.goto(BASE + "/", { waitUntil: "networkidle" });
+  await p.getByRole("link", { name: "Confort de lecture ›" }).click();
+  await p.getByRole("radio", { name: /Texte de 22 points, choisi/ }).first().waitFor({ timeout: 10000 });
+  verifier(true, "confort : la taille choisie est retrouvée après rechargement");
+  await p.close();
+}
 await navigateur.close();
 console.log(echecs === 0 ? "zoom : zéro échec" : `zoom : ${echecs} échec(s)`);
 process.exit(echecs === 0 ? 0 : 1);

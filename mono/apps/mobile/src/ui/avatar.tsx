@@ -5,6 +5,7 @@
  * son crédit (CreditPhoto) affiché dessous. Jamais une photo de l'Assemblée (D1). Sans
  * photo : les initiales. Sans groupe connu (c'est le cas
  * de tous les élus aujourd'hui), la couleur est le gris « Inconnu » (ADR 0001). */
+import { useProfil } from "../lib/profil";
 import { Image, Linking, Pressable, Text, View } from "react-native";
 import type { PhotoElu } from "../lib/photos";
 import { couleurs, OMBRE } from "../lib/theme";
@@ -22,7 +23,9 @@ export function initiales(nom: string): string {
  * couleur de groupe claire, il passe en encre pour rester lisible (texteSur). */
 export function Avatar({ nom, taille = 64, photo }: { nom: string; taille?: number; photo?: PhotoElu | null }) {
   const fond = couleurGroupe(groupeDe());
-  if (photo) {
+  const { profil } = useProfil();
+  /* V26 bloc 3 : « Masquer les images » du confort de lecture garde les initiales. */
+  if (photo && !profil?.masquerImages) {
     return (
       <Image source={{ uri: photo.data }} accessible={false} resizeMode="cover"
         style={[{ width: taille, height: taille, borderRadius: taille / 2, borderWidth: 2, borderColor: bordureGroupe(fond) }, OMBRE]} />

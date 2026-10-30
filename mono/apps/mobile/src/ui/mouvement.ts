@@ -8,16 +8,19 @@
 import { useEffect, useRef, useState } from "react";
 import { AccessibilityInfo, Animated, Easing } from "react-native";
 import { DUREE } from "../lib/theme";
+import { useProfil } from "../lib/profil";
 
 export function useMouvementReduit(): boolean {
   const [reduit, setReduit] = useState(false);
+  /* V26 bloc 3 : réduit si le téléphone le demande OU si le lecteur l'a demandé dans Confort de lecture. */
+  const { profil } = useProfil();
   useEffect(() => {
     let vivant = true;
     AccessibilityInfo.isReduceMotionEnabled().then(r => { if (vivant) setReduit(!!r); }).catch(() => {});
     const abo = AccessibilityInfo.addEventListener("reduceMotionChanged", r => setReduit(!!r));
     return () => { vivant = false; abo.remove(); };
   }, []);
-  return reduit;
+  return reduit || !!profil?.animationsReduites;
 }
 
 /* Une valeur qui va de 0 a 1 une fois, a l'apparition (barres, frises).

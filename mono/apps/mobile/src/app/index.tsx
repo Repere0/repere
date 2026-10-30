@@ -333,6 +333,10 @@ export default function Accueil() {
           <View style={s.tete}>
             <DatePublication />
       <BadgeZoom />
+      <Pressable onPress={() => router.push("/confort-lecture")} accessibilityRole="link"
+        style={({ pressed }) => ({ minHeight: 44, justifyContent: "center", alignSelf: "flex-start", opacity: pressed ? 0.7 : 1 })}>
+        <Text style={[s.legende, { textDecorationLine: "underline" }]}>Confort de lecture ›</Text>
+      </Pressable>
             <View style={s.haut}>
               {/* Le logo est une vue (ui/logo.tsx) : aucun fichier image dans assets/. */}
               <View style={{ flexDirection: "row", alignItems: "center", gap: PAS * 3 }}>
