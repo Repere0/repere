@@ -224,3 +224,35 @@ Recherche faite sur le site officiel (melun.fr / ville-melun.fr) :
 - **Brief V23 tronqué** juste après le titre du bloc 2 (« Crée docs/survie-ceo.md : un document unique qui liste les actions récurrentes du CEO. »). Le contenu attendu n'est pas arrivé. Le kit est construit à partir des procédures déjà présentes dans le dépôt, sans règle nouvelle. Les blocs suivants, s'il y en avait, ne sont pas faits.
 - **Correction** : le filtre des députés sortants est dans `outils/mono_donnees.py`, pas dans `construire_deputes.py`, que la chaîne n'appelle pas. Corrigé en section 23 et dans un commentaire de `lib/mandats-termines.ts`.
 - **D36, nommage** : `date_fin_mandat` et `successeur_de` sont en snake_case, alors que `deputes.json` est en camelCase (`dateDebut`). À aligner au moment du changement post-bêta.
+
+## 25. Sprint V26 (30/10/2026) — universalité, blocs 0 à 3
+
+### Brief V26 : blocs 4, 5, 6, 7
+- **Bloc 4 (data viz : titres-conclusions, encodage non coloriel, labels directs, barres à zéro)** : non fait. Un titre-conclusion (« 45 € sur 100 vont aux salaires ») est une phrase qui affirme un fait ; c'est un texte que le CEO doit valider, pas un gabarit à remplir. Les autres règles touchent la carte budget, la carte vote, la fiche élu et la modale : à faire après validation des titres.
+- **Bloc 5 (« Pourquoi je vois ça »)** : non fait. Source, méthode et « pourquoi ici » sont à écrire pour chaque chiffre ; c'est le cœur de la transparence (invariant 4), donc à relire.
+- **Bloc 6 (fil « Pour vous »)** : non fait. Il demande de trancher quoi entre dans le fil (scrutins, budgets, actus, échéances) et ce qui se passe quand il est vide dans chaque vue.
+- **Bloc 7** : `RESUME-v26.md` écrit. Les tests passent à chaque commit.
+- **Brief V25 absent** : V26 dit « V25 + corrections V23 » et « enchaîne sur l'universalité (V25) ». Le texte de V25 n'a pas été reçu. Seul ce qui figure dans V26 est fait.
+
+### Bloc 0 — invariant 2 (fait, 1ad1d3a et 4f63856)
+- Le sceau a été régénéré sur décision explicite de V26. Un commit intermédiaire (1ad1d3a) a été poussé avec un test rouge (250/251), parce que mon contrôle ne s'arrêtait pas sur un échec. Corrigé dans 4f63856. Le contrôle de `gate.sh` est désormais strict.
+
+### Bloc 1 — onboarding (fait, e3f3bca)
+- **« Passer » ne garde rien.** Le brief demandait de sauvegarder dans `repere.profil`. Garder des réglages par défaut au passage, sans réponse, aurait contredit la règle « rien n'est gardé tant que le lecteur ne l'a pas demandé » (test mémoire). Conséquence : **la question reviendra à chaque ouverture** tant que le lecteur passe. À trancher : soit accepter cette répétition, soit garder les défauts après un passage explicite (il faut alors amender la règle mémoire).
+- **« Oublier » efface aussi le profil** sur le disque. L'état en mémoire de la session garde le profil jusqu'au redémarrage. Effet visible : rien, mais un réglage peut rester actif pendant la session.
+- **Trois questions, pas quatre** : la commune reste répondue sur l'accueil avant l'écran de bienvenue.
+
+### Bloc 2 — zoom (fait, 126931b)
+- **« France » et « Tout » sont identiques** : les deux gardent tout. Le brief les distingue sans dire comment. À trancher.
+- **Calendrier et actualités en vue « Ma rue » ne montrent rien.** Ces deux écrans ne contiennent que des informations nationales (Assemblée, Sénat). L'écran le dit et propose la vue France. C'est le comportement que le brief décrit, mais un lecteur qui choisit « Ma rue » ne voit jamais le calendrier : **à relire avant la bêta**.
+- Le préfet de région est traité comme un échelon régional (masqué en « Ma rue »). La carte de vote de l'accueil est masquée en « Ma rue » et « Ma région ».
+
+### Bloc 3 — confort de lecture (fait, b17b134)
+- **Appliqués** : taille, espacement, contraste (élevé et très élevé remplacent le gris secondaire par l'encre), animations réduites, masquer les images.
+- **Contraste « très élevé » ne fait pas 10:1** : il ne fait pas davantage que « élevé ». Atteindre 10:1 demande de nouvelles couleurs, donc une décision sur la palette (invariant 7).
+- **Non faits, et listés à l'écran** : police de dyslexie (aucune police de ce type dans le dépôt ; il faut en choisir une et vérifier sa licence), mode daltonien (demande une décision sur les couleurs de vote, D24), guide de lecture et mode focus (non conçus).
+- **Taille 26 non vérifiée** : les tailles sont multipliées dans tout le thème. À 26, la plus grande (« affiche », 36) passe à environ 58 points. Un débordement est possible sur les écrans denses. Les tests navigateur ne couvrent que la taille 16 et 22 ; **à vérifier sur iPhone**.
+
+### Vérifications
+- Tests partagés : 257/257 à chaque commit ; invariants à 0 erreur ; `tsc` à 0 erreur ; parcours navigateur (222/222) ; cartes de partage ; zoom et confort (`zoom-web.mjs`).
+- Le test de zoom passe par l'accueil, comme un lecteur : ouvrir `/qui-decide` directement n'a pas de commune en mémoire de session (comportement existant, non modifié).
