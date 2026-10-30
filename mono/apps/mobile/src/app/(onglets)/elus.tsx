@@ -12,7 +12,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { FlatList, Pressable, Text, TextInput, View } from "react-native";
 import { router, Stack } from "expo-router";
-import { correspond, motsCible, mots } from "@repere/core";
+import { correspondFlou, motsCible, mots } from "@repere/core";
 import { chargerComptesRegions, chargerDeputes, chargerElusRegion, chargerIndex, ETATS, PHRASES } from "../../lib/donnees";
 import { Vide } from "../../lib/composants";
 import { couleurs, CIBLE, PAS, RAYON, TYPO } from "../../lib/theme";
@@ -90,7 +90,7 @@ export default function Elus() {
 
   const cherches = mots(filtre);
   const trouves = useMemo(
-    () => (cherches.length ? fiches.filter(f => correspond(cherches, motsCible(`${f.nom} ${f.fonction} ${f.lieu}`))) : fiches),
+    () => (cherches.length ? fiches.filter(f => correspondFlou(cherches, motsCible(`${f.nom} ${f.fonction} ${f.lieu}`))) : fiches),
     [fiches, filtre],
   );
   const phrase = PHRASES[etat as keyof typeof PHRASES] as { titre: string; corps: string; action?: string } | undefined;

@@ -19,6 +19,35 @@ export function correspond(cherches, cible) {
   return cherches.every(m => cible.some(w => w.startsWith(m)));
 }
 
+/* RECHERCHE TOLERANTE : une faute de frappe ne fait pas perdre un élu. Distance
+   « de Damerau » restreinte : une lettre ajoutée, oubliée, changée ou deux lettres
+   inversees comptent chacune pour une faute. */
+export function distanceFrappe(a, b) {
+  const n = a.length, m = b.length;
+  const d = Array.from({ length: n + 1 }, (_, i) => [i, ...Array(m).fill(0)]);
+  for (let j = 0; j <= m; j++) d[0][j] = j;
+  for (let i = 1; i <= n; i++) {
+    for (let j = 1; j <= m; j++) {
+      const c = a[i - 1] === b[j - 1] ? 0 : 1;
+      d[i][j] = Math.min(d[i - 1][j] + 1, d[i][j - 1] + 1, d[i - 1][j - 1] + c);
+      if (i > 1 && j > 1 && a[i - 1] === b[j - 2] && a[i - 2] === b[j - 1]) d[i][j] = Math.min(d[i][j], d[i - 2][j - 2] + 1);
+    }
+  }
+  return d[n][m];
+}
+/* Un mot cherché correspond à un mot de la cible s'il en est le début ; pour un mot
+   d'au moins 5 lettres, aussi à une faute près (deux au-delà de 9 lettres), au mot
+   entier ou à son début de même longueur. Les mots courts (sigles) ne sont jamais
+   rapprochés : « rn » ne doit pas trouver « rhône ». */
+export function correspondFlou(cherches, cible) {
+  return cherches.every(m => cible.some(w => {
+    if (w.startsWith(m)) return true;
+    if (m.length < 5) return false;
+    const seuil = m.length >= 9 ? 2 : 1;
+    return distanceFrappe(m, w) <= seuil || distanceFrappe(m, w.slice(0, m.length)) <= seuil;
+  }));
+}
+
 /* L'ORDRE DES RESULTATS EST CELUI DE LA RECHERCHE, PAS UN ORDRE DE VALEUR.
  * Deplace depuis apps/web/src/App.jsx le 29/09/2026 (voir l'historique complet
  * la-bas, defaut « paris » -> « Cormeilles-en-Parisis » du 13/09/2026) : le
