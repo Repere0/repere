@@ -56,38 +56,38 @@ une seule fois sont reprises a part, plus bas.
 | `acteur.adresses.adresse[].ville` | texte/vide | 2805 | Paris 07 SP · Cenon |
 | `acteur.adresses.adresse[].valElec` | texte/vide | 6205 | 01 40 63 75 53 · 01 40 63 79 37 |
 | `acteur.mandats.mandat[]` | liste | 2995 | de 2 a 814 entrees |
-| `acteur.mandats.mandat[].@xmlns:xsi` | texte | 98004 | http://www.w3.org/2001/XMLSchema-instance |
-| `acteur.mandats.mandat[].@xsi:type` | texte | 98004 | MandatSimple_Type · MandatMission_Type |
-| `acteur.mandats.mandat[].uid` | texte | 98004 | PM391145 · PM15423365 |
-| `acteur.mandats.mandat[].acteurRef` | texte | 98004 | PA1001 · PA1002 |
-| `acteur.mandats.mandat[].legislature` | texte/vide | 98004 | 13 · 14 |
-| `acteur.mandats.mandat[].typeOrgane` | texte | 98004 | DELEGBUREAU · GOUVERNEMENT |
-| `acteur.mandats.mandat[].dateDebut` | texte | 98004 | 2007-06-28 · 2010-03-22 |
-| `acteur.mandats.mandat[].datePublication` | texte/vide | 98004 | 2010-03-23 · 2012-06-27 |
-| `acteur.mandats.mandat[].dateFin` | texte/vide | 98004 | 2008-10-08 · 2010-11-13 |
-| `acteur.mandats.mandat[].preseance` | texte/vide | 98004 | 24 · 50 |
-| `acteur.mandats.mandat[].nominPrincipale` | texte | 98004 | 0 · 1 |
-| `acteur.mandats.mandat[].infosQualite.codeQualite` | texte/vide | 98004 | Membre · membre |
-| `acteur.mandats.mandat[].infosQualite.libQualite` | texte | 98004 | Membre · membre |
-| `acteur.mandats.mandat[].infosQualite.libQualiteSex` | texte/vide | 98004 | Membre · membre |
-| `acteur.mandats.mandat[].organes.organeRef` | texte | 97884 | PO391141 · PO384206 |
+| `acteur.mandats.mandat[].@xmlns:xsi` | texte | 98068 | http://www.w3.org/2001/XMLSchema-instance |
+| `acteur.mandats.mandat[].@xsi:type` | texte | 98068 | MandatSimple_Type · MandatMission_Type |
+| `acteur.mandats.mandat[].uid` | texte | 98068 | PM391145 · PM15423365 |
+| `acteur.mandats.mandat[].acteurRef` | texte | 98068 | PA1001 · PA1002 |
+| `acteur.mandats.mandat[].legislature` | texte/vide | 98068 | 13 · 14 |
+| `acteur.mandats.mandat[].typeOrgane` | texte | 98068 | DELEGBUREAU · GOUVERNEMENT |
+| `acteur.mandats.mandat[].dateDebut` | texte | 98068 | 2007-06-28 · 2010-03-22 |
+| `acteur.mandats.mandat[].datePublication` | texte/vide | 98068 | 2010-03-23 · 2012-06-27 |
+| `acteur.mandats.mandat[].dateFin` | texte/vide | 98068 | 2008-10-08 · 2010-11-13 |
+| `acteur.mandats.mandat[].preseance` | texte/vide | 98068 | 24 · 50 |
+| `acteur.mandats.mandat[].nominPrincipale` | texte | 98068 | 0 · 1 |
+| `acteur.mandats.mandat[].infosQualite.codeQualite` | texte/vide | 98068 | Membre · membre |
+| `acteur.mandats.mandat[].infosQualite.libQualite` | texte | 98068 | Membre · membre |
+| `acteur.mandats.mandat[].infosQualite.libQualiteSex` | texte/vide | 98068 | Membre · membre |
+| `acteur.mandats.mandat[].organes.organeRef` | texte | 97948 | PO391141 · PO384206 |
 | `acteur.mandats.mandat[].libelle` | texte/vide | 6027 | Mise en place du plan de relance · L'avenir des trains d'équilibre du territoire |
 | `acteur.mandats.mandat[].missionSuivanteRef` | texte/vide | 6027 | PM773756 · PM789978 |
 | `acteur.mandats.mandat[].missionPrecedenteRef` | texte/vide | 6027 | PM769451 · PM786854 |
-| `acteur.mandats.mandat[].suppleants` | vide | 4891 |  |
-| `acteur.mandats.mandat[].chambre` | vide | 3205 |  |
-| `acteur.mandats.mandat[].election.lieu.region` | texte/vide | 3375 | Auvergne-Rhône-Alpes · Hauts-de-France |
-| `acteur.mandats.mandat[].election.lieu.regionType` | texte/vide | 3375 | Métropolitain · Collectivités d'outre-mer et Nouvelle-Calédonie |
-| `acteur.mandats.mandat[].election.lieu.departement` | texte/vide | 3375 | Rhône · Nord |
-| `acteur.mandats.mandat[].election.lieu.numDepartement` | texte/vide | 3375 | 59 · 37 |
-| `acteur.mandats.mandat[].election.lieu.numCirco` | texte/vide | 3375 | 13 · 23 |
-| `acteur.mandats.mandat[].election.causeMandat` | texte/vide | 3375 | élections générales · élection partielle, suite à l'annulation de l'élection d'un député |
-| `acteur.mandats.mandat[].mandature.datePriseFonction` | texte/vide | 3375 | 2002-06-19 · 2002-12-16 |
-| `acteur.mandats.mandat[].mandature.causeFin` | texte/vide | 3375 | Fin de législature · Annulation de l'élection sur décision du Conseil constitutionnel |
-| `acteur.mandats.mandat[].mandature.premiereElection` | texte | 3375 | 0 · 1 |
-| `acteur.mandats.mandat[].mandature.placeHemicycle` | texte/vide | 3375 | 424 · 178 |
-| `acteur.mandats.mandat[].mandature.mandatRemplaceRef` | texte/vide | 3375 | PM267876 · PM386168 |
-| `acteur.mandats.mandat[].collaborateurs` | vide | 3238 |  |
+| `acteur.mandats.mandat[].suppleants` | vide | 4890 |  |
+| `acteur.mandats.mandat[].chambre` | vide | 3204 |  |
+| `acteur.mandats.mandat[].election.lieu.region` | texte/vide | 3374 | Auvergne-Rhône-Alpes · Hauts-de-France |
+| `acteur.mandats.mandat[].election.lieu.regionType` | texte/vide | 3374 | Métropolitain · Collectivités d'outre-mer et Nouvelle-Calédonie |
+| `acteur.mandats.mandat[].election.lieu.departement` | texte/vide | 3374 | Rhône · Nord |
+| `acteur.mandats.mandat[].election.lieu.numDepartement` | texte/vide | 3374 | 59 · 37 |
+| `acteur.mandats.mandat[].election.lieu.numCirco` | texte/vide | 3374 | 13 · 23 |
+| `acteur.mandats.mandat[].election.causeMandat` | texte/vide | 3374 | élections générales · élection partielle, suite à l'annulation de l'élection d'un député |
+| `acteur.mandats.mandat[].mandature.datePriseFonction` | texte/vide | 3374 | 2002-06-19 · 2002-12-16 |
+| `acteur.mandats.mandat[].mandature.causeFin` | texte/vide | 3374 | Fin de législature · Annulation de l'élection sur décision du Conseil constitutionnel |
+| `acteur.mandats.mandat[].mandature.premiereElection` | texte | 3374 | 0 · 1 |
+| `acteur.mandats.mandat[].mandature.placeHemicycle` | texte/vide | 3374 | 424 · 178 |
+| `acteur.mandats.mandat[].mandature.mandatRemplaceRef` | texte/vide | 3374 | PM267876 · PM386168 |
+| `acteur.mandats.mandat[].collaborateurs` | vide | 3237 |  |
 | `acteur.etatCivil.infoNaissance.paysNais.@xmlns:xsi` | texte | 1210 | http://www.w3.org/2001/XMLSchema-instance |
 | `acteur.etatCivil.infoNaissance.paysNais.@xsi:nil` | texte | 1210 | true |
 | `acteur.etatCivil.ident.trigramme` | texte | 526 | ADA · JGD |
