@@ -13,11 +13,18 @@ import { Page, Question } from "../ui/page";
 import { SquelettesListe } from "../ui/squelette";
 import { PartagerCarte } from "../ui/partage/bouton-partage";
 import { ActuStory } from "../ui/partage/variantes/actu.story";
+import { BadgeZoom, useNiveauZoom } from "../ui/badge-zoom";
+import { useProfil } from "../lib/profil";
+import { visibleAuNiveau } from "@repere/core";
 import { messageActu } from "../ui/partage/messages";
 
 type Evt = { id: string; t: string; d: string; axes?: string; e: string; src?: string; srcn?: string };
 
 export default function Actus() {
+  const niveauZoom = useNiveauZoom();
+  const { modifier } = useProfil();
+  /* V26 bloc 2 : les actualités sont nationales ; « Ma rue » ne les montre pas. */
+  const nationalVisible = visibleAuNiveau(niveauZoom, "france");
   const [etat, setEtat] = useState<string>(ETATS.EN_COURS);
   const [liste, setListe] = useState<Evt[]>([]);
   const [maj, setMaj] = useState("");
@@ -44,6 +51,7 @@ export default function Actus() {
   return (
     /* Audit 5 s (V15) : sansDate, la ligne DateDonnee de l'ecran dit deja la date et la source. */
     <Page sansDate>
+      <BadgeZoom />
       <Stack.Screen options={{ title: "Actualités" }} />
       <Question etiquette="Au Parlement" question="Actualités"
         sous="Ce qu'ont publié les sources officielles." />
@@ -58,7 +66,11 @@ export default function Actus() {
           corps="Repère n'a pas relevé d'événement national dans ses données. Le calendrier montre les séances annoncées."
           action="Voir le calendrier" onAction={() => router.push("/a-venir")} />
       ) : null}
-      {liste.map(x => <ActuCarte key={x.id} x={x} />)}
+      {!nationalVisible ? (
+        <Vide titre="Ces actualités sont nationales." corps="Votre vue est « Ma rue » : elles ne s'affichent pas à ce niveau. Passez à « La France » ou « Tout » pour les voir."
+          action="Voir la vue La France" onAction={() => modifier({ niveauZoom: "france" })} />
+      ) : null}
+      {nationalVisible ? liste.map(x => <ActuCarte key={x.id} x={x} />) : null}
     </Page>
   );
 }

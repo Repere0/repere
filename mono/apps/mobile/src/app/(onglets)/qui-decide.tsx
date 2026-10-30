@@ -18,11 +18,14 @@ import { AvecDonnees, Page, Question } from "../../ui/page";
 import { PastilleSource } from "../../ui/source";
 import { Chaine, type Niveau } from "../../ui/visuels";
 import { prefetDeRegion } from "../../lib/prefet";
+import { BadgeZoom, useNiveauZoom } from "../../ui/badge-zoom";
+import { visibleAuNiveau } from "@repere/core";
 import { useSelection } from "../../lib/selection";
 import { mandatsTerminesListes } from "../../lib/mandats-termines";
 
 export default function QuiDecide() {
   const { choix } = useSelection();
+  const niveauZoom = useNiveauZoom();
   return (
     <AvecDonnees rendu={r => {
       const { d } = r;
@@ -87,17 +90,20 @@ export default function QuiDecide() {
         }
         return n;
       });
+      /* V26 bloc 2 : le niveau de zoom filtre la chaîne, sans rien retirer des données. */
+      const visibles = niveaux.filter(n => visibleAuNiveau(niveauZoom, n.echelon));
       const prefet = prefetDeRegion(d.dep);
       return (
         <Page>
           <Stack.Screen options={{ title: LIBELLES.qui }} />
+          <BadgeZoom />
           <Question emoji="🏛️" etiquette="Qui décide" question={`Qui décide pour ${d.nomCommune} ?`}
             sous="Du plus proche de chez vous au plus lointain. Ce n'est pas un ordre d'importance : c'est un ordre de distance." />
-          <Chaine niveaux={niveaux} surNom={n => router.push({ pathname: "/elu", params: {
+          <Chaine niveaux={visibles} surNom={n => router.push({ pathname: "/elu", params: {
             nom: n.personne ? n.personne.nom : "", role: n.personne ? n.personne.role : "", echelon: n.echelon,
             niveau: n.niveau, institution: n.institution, lieu: n.lieu || "" } })} />
           <PastilleSource source={srcElus(r.srcElus ? { ...r.srcElus, url: r.srcElus.url || RNE_URL } : null)} />
-          {prefet ? (
+          {prefet && visibleAuNiveau(niveauZoom, "region") ? (
             <Pressable onPress={() => router.push({ pathname: "/elu", params: { nom: prefet.nom, role: prefet.titre, echelon: "", niveau: "L'État", institution: "Préfecture de région", lieu: "Île-de-France" } })}
               accessibilityRole="link" accessibilityLabel={`Voir la fiche de ${prefet.nom}, préfet de la région`}
               style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", opacity: pressed ? 0.6 : 1, gap: PAS })}>
@@ -105,7 +111,7 @@ export default function QuiDecide() {
               <Text style={[TYPO.reponse, { color: couleurs.lien, textDecorationLine: "underline" }]}>{prefet.nom}</Text>
             </Pressable>
           ) : null}
-          {prefet ? (
+          {prefet && visibleAuNiveau(niveauZoom, "region") ? (
             <View style={{ gap: PAS }}>
               <Text style={TYPO.note}>{prefet.titre}. Ce n'est pas le préfet de votre département : leur liste n'est pas encore publiée ici.</Text>
               <Text style={TYPO.note}>Source : page de la préfecture de région. Dernier contrôle réussi du titre de la page : {prefet.titreControleLe}. La date de nomination n'est pas contrôlée.</Text>

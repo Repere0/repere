@@ -107,6 +107,7 @@ jobs:
           node scripts/serveur-statique.mjs apps/mobile/dist-web 8811 &
           for i in $(seq 1 20); do curl -sf http://localhost:8811/ >/dev/null && break; sleep 0.5; done
           node apps/mobile/tests/parcours-web.mjs http://localhost:8811 apps/mobile/captures
+          node apps/mobile/tests/zoom-web.mjs http://localhost:8811
 
       - name: Cartes de partage (story 1080 x 1920, logo, contraste, source)
         run: node apps/mobile/tests/partage-story-web.mjs http://localhost:8811 apps/mobile/captures

@@ -32,6 +32,8 @@ import { AvecDonnees, Page, Question } from "../../ui/page";
 import { PastilleSource } from "../../ui/source";
 import { Depli } from "../../ui/visuels";
 import { PartagerCarte } from "../../ui/partage/bouton-partage";
+import { BadgeZoom, useNiveauZoom } from "../../ui/badge-zoom";
+import { visibleAuNiveau } from "@repere/core";
 import { AgendaStory } from "../../ui/partage/variantes/agenda.story";
 import { messageAgenda } from "../../ui/partage/messages";
 
@@ -106,6 +108,7 @@ function Case({ iso, jour, nb, onPress, taille }: { iso: string; jour: string; n
 
 export default function AVenir() {
   const { reessayer } = useCommuneChoisie();
+  const niveauZoom = useNiveauZoom();
   /* Filtre par institution : null = les deux. */
   const [institution, setInstitution] = useState<string | null>(null);
   const [jour, setJour] = useState<string>(() => jourParis(new Date()));
@@ -118,7 +121,9 @@ export default function AVenir() {
     <AvecDonnees rendu={r => {
       const { d } = r;
       const toutes = (d.aVenir || []) as Ev[];
-      const aVenir = institution ? toutes.filter(e => e.institution === institution) : toutes;
+      /* V26 bloc 2 : le calendrier est national ; en vue « Ma rue » ou « Ma région », il ne s'affiche pas. */
+      const nationalVisible = visibleAuNiveau(niveauZoom, "france");
+      const aVenir = !nationalVisible ? [] : institution ? toutes.filter(e => e.institution === institution) : toutes;
       const lues = ((d.semaineParlement && d.semaineParlement.institutions) || []) as { institution: string; source: Record<string, string> }[];
       const groupes = regrouperParJour(aVenir) as Groupe[];
       const compte: Record<string, number> = {};
@@ -160,6 +165,7 @@ export default function AVenir() {
         /* Audit 5 s (V15) : sansDate, la ligne DateDonnee de l'ecran dit deja la date et la source. */
         <Page sansDate>
           <Stack.Screen options={{ title: LIBELLES.calendrier }} />
+          <BadgeZoom />
           <View style={{ flexDirection: "row", alignItems: "flex-start", justifyContent: "space-between", gap: PAS * 2 }}>
             <View style={{ flex: 1 }}>
               <Question etiquette="Au Parlement" question="Calendrier"

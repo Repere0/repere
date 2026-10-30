@@ -16,11 +16,12 @@ import { useEffect, useMemo, useState } from "react";
 import { FlatList, KeyboardAvoidingView, Linking, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View, useWindowDimensions } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { router } from "expo-router";
-import { mots, motsCible, correspond, trouverCommunes, departementDe, titreLisible, dernierExercice, evolution, parHabitant, dateFr, decompte, ordinal, positionSur, positionsFiables } from "@repere/core";
+import { mots, motsCible, correspond, trouverCommunes, departementDe, titreLisible, dernierExercice, evolution, parHabitant, dateFr, decompte, ordinal, positionSur, positionsFiables, visibleAuNiveau } from "@repere/core";
 import { chargerCatalogueScrutins, chargerCommunesBeta, chargerDepartement, chargerDeputes, chargerIndex, chargerVotes, ETATS, PHRASES } from "../lib/donnees";
 import { Bouton, Carte, Texte, Vide } from "../lib/composants";
 import { useSelection } from "../lib/selection";
 import { useProfil } from "../lib/profil";
+import { BadgeZoom, useNiveauZoom } from "../ui/badge-zoom";
 import { feuille, CIBLE, PAS, POLICE, RAYON } from "../lib/theme";
 import { ECHELONS_PAR_MODE, NEUTRES_PAR_MODE, OMBRE_PAR_MODE } from "../lib/palette";
 import { groupeDe } from "../lib/groupes";
@@ -101,6 +102,9 @@ export default function Accueil() {
   const { width } = useWindowDimensions();
   const { choisir, retenue, oublier } = useSelection();
   const { absent } = useProfil();
+  const niveauZoom = useNiveauZoom();
+  /* V26 bloc 2 : le vote d'un député est une information nationale (échelon France). */
+  const voteAffiche = visibleAuNiveau(niveauZoom, "france");
   const [etat, setEtat] = useState<string>(ETATS.EN_COURS);
   const [beta, setBeta] = useState<Beta | null>(null);
   const [index, setIndex] = useState<Index | null>(null);
@@ -280,7 +284,7 @@ export default function Accueil() {
                   </View>
                 </View>
               ) : null}
-              <View style={{ width: larg }}>
+              {voteAffiche ? <View style={{ width: larg }}>
                 {voteVu && "depute" in voteVu ? (
                   <View style={s.carte}>
                     <AvecPicto picto="vote"><Text style={s.etiquette}>Le dernier vote publié de votre député</Text></AvecPicto>
@@ -310,10 +314,10 @@ export default function Accueil() {
                     <Text style={s.legende}>{dateFr(VOTE.date)} · {titreLisible(VOTE.titre)}</Text>
                   </View>
                 )}
-              </View>
+              </View> : null}
             </ScrollView>
             <View style={s.points} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
-              {(argent ? [0, 1] : [0]).map(i => <View key={i} style={[s.point, page === i && s.pointActif]} />)}
+              {(argent && voteAffiche ? [0, 1] : [0]).map(i => <View key={i} style={[s.point, page === i && s.pointActif]} />)}
             </View>
     </>
   );
@@ -328,6 +332,7 @@ export default function Accueil() {
         ListHeaderComponent={
           <View style={s.tete}>
             <DatePublication />
+      <BadgeZoom />
             <View style={s.haut}>
               {/* Le logo est une vue (ui/logo.tsx) : aucun fichier image dans assets/. */}
               <View style={{ flexDirection: "row", alignItems: "center", gap: PAS * 3 }}>
