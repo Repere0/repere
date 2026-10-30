@@ -154,6 +154,8 @@ export function adresseEvenements() { return `${BASE_DONNEES}/evenements.json`; 
 export function adresseAgregatsRegionaux() { return `${BASE_DONNEES}/agregats-regionaux.json`; }
 /* Sites des mairies d'Ile-de-France (D28, 30/10/2026) : un seul fichier, les codes INSEE sont des cles internes. */
 export function adresseMairies() { return `${BASE_DONNEES}/mairies-idf.json`; }
+/* L'actu locale hebdomadaire des communes pilotes (D29-D31, 30/10/2026) : un seul fichier, les codes INSEE sont des cles internes. */
+export function adresseActusHebdo() { return `${BASE_DONNEES}/actus-hebdo.json`; }
 /* LES POSITIONS, PAR DEPARTEMENT — jamais par depute, jamais par commune. Une
    adresse par depute dirait au serveur quel elu on regarde, donc, a une
    circonscription pres, ou l'on habite. Deuxieme et derniere fabrique
@@ -527,6 +529,9 @@ export async function chargerEvenements({ delaiMs = 8000 } = {}) {
 }
 export async function chargerPhotosElus(dep, { delaiMs = 8000 } = {}) {
   return chargerSocle("photos:" + String(dep).toUpperCase(), adressePhotosElus(dep), delaiMs);
+}
+export async function chargerActusHebdo({ delaiMs = 8000 } = {}) {
+  return chargerSocle("socle:HEB", adresseActusHebdo(), delaiMs);
 }
 export async function chargerMairies({ delaiMs = 8000 } = {}) {
   return chargerSocle("socle:MAI", adresseMairies(), delaiMs);

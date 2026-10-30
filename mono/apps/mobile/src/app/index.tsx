@@ -31,6 +31,7 @@ import { DernieresPublications } from "../ui/dernieres-publications";
 import { phrasesMoyenne, useMoyenneDepenses } from "../lib/moyenne";
 import { COULEUR_VOTE } from "../lib/theme";
 import { AvecPicto } from "../ui/picto";
+import { libelleGroupe } from "../ui/badge-groupe";
 
 /* L'accueil est sombre : il lit la palette sombre, quel que soit le choix d'affichage. */
 const D = NEUTRES_PAR_MODE.sombre;
@@ -281,7 +282,7 @@ export default function Accueil() {
                     <AvecPicto picto="vote"><Text style={s.etiquette}>Le dernier vote publié de votre député</Text></AvecPicto>
                     <Text style={s.carteTitre}>{voteVu.depute}</Text>
                     {/* Groupe inconnu ici : badge gris, aucune couleur de parti (ADR 0001). */}
-                    <View style={s.badge}><Text style={s.badgeTexte}>Groupe : {groupeDe(voteVu.acteur)}</Text></View>
+                    <View style={s.badge}><Text style={s.badgeTexte}>{libelleGroupe(groupeDe(voteVu.acteur))}</Text></View>
                     <Text style={s.legende}>Député de la {ordinal(voteVu.circo)} circonscription · {nomDep(departementDe(cible.insee) || "")}</Text>
                     <SensVote cle={voteVu.position} texte={POSITION_MOT[voteVu.position]} />
                     <BarreVote dec={voteVu.dec} />
@@ -298,7 +299,7 @@ export default function Accueil() {
                     <AvecPicto picto="vote"><Text style={s.etiquette}>Un exemple</Text></AvecPicto>
                     <Text style={s.carteTitre}>{VOTE.depute}</Text>
                     {/* Groupe inconnu ici : badge gris, aucune couleur de parti (ADR 0001). */}
-                    <View style={s.badge}><Text style={s.badgeTexte}>Groupe : {groupeDe(VOTE.acteur)}</Text></View>
+                    <View style={s.badge}><Text style={s.badgeTexte}>{libelleGroupe(groupeDe(VOTE.acteur))}</Text></View>
                     <Text style={s.legende}>Député de la 1re circonscription de Seine-et-Marne</Text>
                     <SensVote cle="a" texte="S'est abstenu" />
                     <BarreVote dec={decExemple} />

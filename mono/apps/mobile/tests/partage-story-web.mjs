@@ -4,7 +4,11 @@
  *
  * CE QUE CE CONTROLE MESURE : la carte 9:16 rendue par l'application (meme code React
  * Native, via react-native-web), photographiee a l'echelle 3 : 360 x 640 -> 1080 x 1920.
- * Pour trois cartes (budget, vote de la fiche elu, fiche de l'annuaire) :
+ * Pour cinq cartes (V21) : actualite locale, budget, vote de la fiche elu, calendrier, fiche de
+ * l'annuaire. Une carte absente fait echouer le controle.
+ * L'agenda et l'actualite locale sont des DONNEES D'ESSAI injectees par ce test (page.route),
+ * marquees « ESSAI », jamais publiees : les fichiers reels peuvent etre absents ou vides.
+ * Pour chaque carte :
  *   - l'image fait 1080 x 1920 et pese plus de 10 Ko (elle n'est pas vide) ;
  *   - le logo est present (anneau de 34 px) ;
  *   - chaque texte a un contraste d'au moins 4,5:1 sur le fond de la carte ;
@@ -28,7 +32,19 @@ const echecs = [];
 const verifier = (ok, msg) => { console.log((ok ? "ok    " : "ECHEC ") + msg); if (!ok) echecs.push(msg); };
 
 const b = await chromium.launch();
-const p = await b.newPage({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 3 });
+const ctx = await b.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 3 });
+const jourParis = d => new Intl.DateTimeFormat("fr-CA", { timeZone: "Europe/Paris", year: "numeric", month: "2-digit", day: "2-digit" }).format(d);
+const J = k => jourParis(new Date(Date.now() + k * 864e5));
+await ctx.route("**/data/agenda-an.json", r => r.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({
+  source: { producteur: "Assemblée nationale (ESSAI)", licence: "Licence ouverte", url: "https://www.assemblee-nationale.fr/dyn/agenda", releve_le: J(0) },
+  evenements: [{ debut: `${J(1)}T15:00`, titre: "ESSAI — séance construite pour le test", description: null, categorie: "Séance publique" }],
+}) }));
+await ctx.route("**/data/calendrier-senat.json", r => r.abort());
+await ctx.route("**/data/actus-hebdo.json", r => r.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({
+  semaine: "2026-W01", date_publication: J(0),
+  communes: { "77284": { titre: "ESSAI — actualité construite pour le test", resume: "Deux phrases d'essai. Ce n'est pas une donnée réelle.", source: "https://exemple.test/essai", source_nom: "Source d'essai" } },
+}) }));
+const p = await ctx.newPage();
 
 async function controler(nom) {
   const carte = p.locator('[data-testid="carte-story"]').last();
@@ -81,6 +97,10 @@ await p.getByLabel(/Où habitez-vous/).fill("meaux");
 await p.getByRole("button", { name: /^Meaux,/ }).first().click();
 await p.getByText("Aller plus loin").first().waitFor({ timeout: 15000 });
 
+/* 0. Actualite locale de la semaine (ActuStory, D31) — sur Aujourd'hui */
+await p.getByText("Cette semaine à Meaux").first().waitFor({ timeout: 10000 });
+await controler("actu");
+
 /* 1. Budget (ChiffreStory) */
 await p.getByRole("button", { name: "Où va cet argent ?", exact: true }).first().click();
 await p.getByText(/Où va l'argent de Meaux/).first().waitFor({ timeout: 10000 });
@@ -96,7 +116,15 @@ await controler("vote");
 await p.goBack(); await p.goBack();
 await p.getByText("Aller plus loin").first().waitFor({ timeout: 15000 });
 
-/* 3. Annuaire, fiche d'un elu (ElusStory) */
+/* 3. Calendrier (AgendaStory) */
+await p.getByRole("button", { name: "Le calendrier", exact: true }).first().click();
+await p.getByText(/Les séances annoncées/).first().waitFor({ timeout: 10000 });
+await p.waitForTimeout(800);
+await controler("calendrier");
+await p.goBack();
+await p.getByText("Aller plus loin").first().waitFor({ timeout: 15000 });
+
+/* 4. Annuaire, fiche d'un elu (ElusStory) */
 await p.getByRole("button", { name: "Élus", exact: true }).first().click();
 await p.getByPlaceholder(/Nom, département/).first().waitFor({ timeout: 10000 });
 await p.waitForTimeout(800);

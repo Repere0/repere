@@ -50,6 +50,7 @@ import { Plus, Reponse, typo } from "../../ui/reponse";
 import { BarrePart, Repartition } from "../../ui/visuels";
 import { SemaineParlement } from "../../ui/semaine";
 import { DateDonnee } from "../../ui/fraicheur";
+import { CetteSemaineCommune } from "../../ui/cette-semaine-commune";
 
 /* LE SITE OFFICIEL DE LA MAIRIE (D28, ADR 0005) : un lien externe, lu dans l'annuaire DILA
    (data/mairies-idf.json). Sans adresse declaree, pas de ligne : rien n'est devine. */
@@ -187,6 +188,9 @@ export default function ChezVous() {
 
           {/* AU PARLEMENT CETTE SEMAINE — sous les trois reponses, jamais parmi
              elles : c'est national, et la carte le dit (ui/semaine.tsx). */}
+          {/* D31 : l'actu locale de la semaine (communes pilotes), sous les trois reponses. */}
+          {choix ? <CetteSemaineCommune insee={choix.insee} nom={nom} /> : null}
+
           <SemaineParlement sp={d.semaineParlement} lu={r.agendaLu} nom={nom} />
 
           {/* ALLER PLUS LOIN — liens simples. « Actualités » reste : c'est le seul acces a son

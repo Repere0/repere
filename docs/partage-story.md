@@ -40,3 +40,9 @@ Ajouté à `.github/workflows/mobile.yml`, après le parcours navigateur. Il éc
 - un texte est sous 4,5:1 ;
 - la source n'est pas en pied ;
 - quelque chose recouvre la carte pendant la photo.
+
+## V21 (30/10/2026) — cinq cartes, libellé du groupe unifié
+
+- **Test étendu à cinq cartes**, et un échec si l'une manque : actualité locale (nouvelle, D31), budget, vote de la fiche élu, calendrier, fiche de l'annuaire.
+- L'agenda et l'actualité locale sont des **données d'essai injectées par le test** (`page.route`), marquées « ESSAI », parce que ces fichiers sont absents ou vides dans les données réelles. Les images de ces deux cartes ne sont pas versionnées : elles montrent des données d'essai.
+- **Libellé du groupe** : « Groupe politique : non publié » partout (badge des fiches, carte vote, carte annuaire, accueil). La brief proposait « … (source AN) », mais ce serait inexact : l'Assemblée publie les groupes, c'est Repère qui ne les a pas encore extraits (D3).
