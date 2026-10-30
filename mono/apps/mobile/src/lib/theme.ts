@@ -125,11 +125,19 @@ export function feuille<T extends object>(creer: () => T): T {
   return miroir(lire);
 }
 
-/* À appeler une seule fois, à la racine : le thème du système devient celui de
-   l'application. Retourne le mode, pour que la racine puisse le surveiller. */
+/* Le choix d'affichage du lecteur : le systeme, ou un mode fixe. */
+export type ChoixTheme = "systeme" | "clair" | "sombre";
+
+/* Le mode du systeme. Sans effet de bord : la racine le lit, puis applique le choix. */
 export function useModeSysteme(): Mode {
   const systeme = useColorScheme();
-  const m: Mode = systeme === "dark" ? "sombre" : "clair";
+  return systeme === "dark" ? "sombre" : "clair";
+}
+
+/* Le mode effectif (choix du lecteur, sinon systeme), applique au theme courant.
+   A appeler une seule fois, a la racine, a chaque rendu. */
+export function appliquerChoix(choix: ChoixTheme, systeme: Mode): Mode {
+  const m: Mode = choix === "systeme" ? systeme : choix;
   appliquerMode(m);
   return m;
 }

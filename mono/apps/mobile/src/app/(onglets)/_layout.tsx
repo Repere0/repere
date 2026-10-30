@@ -13,6 +13,7 @@ import { Tabs } from "expo-router";
 import { LIBELLES } from "@repere/core";
 import { couleurs } from "../../lib/theme";
 import { ChangerCommune } from "../../ui/retour";
+import { BoutonReglages } from "../../ui/reglages";
 
 /* Une icone sobre par onglet : un caractere, sans bibliotheque d'icones de plus.
  * Le glyphe est decoratif : il ne suit pas l'agrandissement du texte. */
@@ -51,6 +52,7 @@ export default function Onglets() {
         tabBarInactiveTintColor: couleurs.sourd,
         tabBarStyle: { backgroundColor: couleurs.carte, borderTopColor: couleurs.trait, minHeight: 72, paddingTop: 6 },
         headerLeft: () => <ChangerCommune />,
+        headerRight: () => <BoutonReglages />,
       }}
     >
       <Tabs.Screen

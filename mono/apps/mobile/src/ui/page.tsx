@@ -10,13 +10,17 @@ import { Bouton, Vide } from "../lib/composants";
 import { useSelection } from "../lib/selection";
 import { useCommuneChoisie, type EtatCommune } from "../lib/useCommune";
 import { couleurs, feuille, PAS, TYPO } from "../lib/theme";
+import { useTheme } from "../lib/themeChoix";
 import { Etiquette } from "./resume";
 import { BandeauFraicheur } from "./fraicheur";
 
 export function Page({ children }: { children: ReactNode }) {
   const marges = useSafeAreaInsets();
+  /* S'abonne au choix d'affichage : quand il change, cet ecran se redessine et
+     couleurs.sol (lu ci-dessous) donne la couleur du mode courant. */
+  useTheme();
   return (
-    <ScrollView style={{ backgroundColor: couleurs.sol }} contentContainerStyle={[s.page, { paddingBottom: marges.bottom + PAS * 10 }]}>
+    <ScrollView style={{ backgroundColor: couleurs.sol }} contentContainerStyle={[s.page, { paddingTop: PAS * 4, paddingBottom: marges.bottom + PAS * 10 }]}>
       <BandeauFraicheur />
       {children}
     </ScrollView>

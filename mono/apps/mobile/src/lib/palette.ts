@@ -84,3 +84,6 @@ export function rapportContraste(a: string, b: string): number {
 /* Seuil des éléments non textuels (WCAG 1.4.11). En dessous, le point d'échelon
    reçoit un contour de l'encre (un trait, pas une couleur nouvelle). */
 export const SEUIL_POINT = 3;
+
+/* Voile derriere la fenetre de reglage d'affichage (assombrit l'ecran dessous). */
+export const VOILE_MODAL = "rgba(0,0,0,0.4)";
