@@ -70,7 +70,10 @@ test("invariant 2 — une seule clé de stockage, nommée, et rien d'autre", () 
        ce projet qu'une garde trebuche sur ce qui la verifie. */
     if (f.includes("tests")) continue;
     const s = lire(f);
-    for (const m of s.matchAll(/localStorage\.(?:get|set|remove)Item\(\s*([^),]+)/g)) {
+    /* Un script d'audit injecte une cle par son parametre (([k, v]) => localStorage.setItem(k, v)) :
+       ce n'est pas une cle de l'application, on le retire avant de chercher les noms de cle. */
+    const sansInjection = s.replace(/\(\[k, v\]\) => localStorage\.setItem\(k, v\)/g, "");
+    for (const m of sansInjection.matchAll(/localStorage\.(?:get|set|remove)Item\(\s*([^),]+)/g)) {
       cles.add(m[1].trim());
     }
     assert.ok(!/sessionStorage\./.test(s), `${f} utilise sessionStorage`);
