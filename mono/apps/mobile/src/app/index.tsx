@@ -595,7 +595,8 @@ export default function Accueil() {
 const s = feuille(() => StyleSheet.create({
   page: { paddingHorizontal: PAS * 4, gap: PAS * 2, maxWidth: 640, width: "100%", alignSelf: "center" },
   tete: { gap: PAS * 3, marginBottom: PAS * 2 },
-  haut: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
+  /* Taille 26 : la pastille « Chercher » passe sous le logo au lieu de sortir de la marge. */
+  haut: { flexDirection: "row", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", gap: PAS * 3 },
   marque: { fontFamily: POLICE.affiche, fontSize: 26, color: D.encre },
   chercher: { minHeight: CIBLE, borderRadius: 999, borderWidth: 1, borderColor: D.trait, paddingHorizontal: PAS * 4, justifyContent: "center" },
   chercherTexte: { fontSize: 15, fontWeight: "700", color: D.encre },
