@@ -25,19 +25,23 @@ export type Echelon = keyof typeof ECHELONS;
 export type Neutres = {
   sol: string; carte: string; encre: string; sourd: string;
   trait: string; voile: string; blanc: string; lien: string;
+  /* « ancien » (V13, 30/10/2026) : la date d'une donnee de plus de 30 jours. Un gris
+     tire vers le rouge, au plafond d'amplitude 24 de l'invariant 7 : un vrai rouge
+     serait une couleur, que l'invariant reserve aux echelons et aux groupes. */
+  ancien: string;
 };
 
 /* Neutres du clair : valeurs de main, inchangées. */
 const NEUTRES_CLAIR: Neutres = {
   sol: "#F5F2EC", carte: "#FFFFFF", encre: "#171614", sourd: "#625E57",
-  trait: "#DDD8D0", voile: "#ECE8E1", blanc: "#ffffff", lien: "#1a1917",
+  trait: "#DDD8D0", voile: "#ECE8E1", blanc: "#ffffff", lien: "#1a1917", ancien: "#745C5C",
 };
 
 /* Neutres du sombre : même famille chaude que le clair (pas de bleu), mesurés
    dans tests/theme.test.mjs. Texte encre sur sol 16:1 ; sourd sur carte 7,6:1. */
 const NEUTRES_SOMBRE: Neutres = {
   sol: "#161513", carte: "#1F1D1A", encre: "#F3F0EA", sourd: "#B5AEA3",
-  trait: "#3B3832", voile: "#2A2823", blanc: "#ffffff", lien: "#F3F0EA",
+  trait: "#3B3832", voile: "#2A2823", blanc: "#ffffff", lien: "#F3F0EA", ancien: "#CCB4B4",
 };
 
 /* Les échelons : identiques dans les deux thèmes, sauf « France ». */

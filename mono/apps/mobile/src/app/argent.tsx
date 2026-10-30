@@ -24,6 +24,7 @@ import { srcComptes, srcComptesPublies, srcProjets } from "../lib/sources";
 import { useCommuneChoisie } from "../lib/useCommune";
 import { couleurs, PAS, TYPO } from "../lib/theme";
 import { AvecDonnees, Page, Question } from "../ui/page";
+import { DateDonnee } from "../ui/fraicheur";
 import { PastilleSource } from "../ui/source";
 import { Emoji, Resume } from "../ui/resume";
 import { BarrePart, Compteur, DeuxAnnees, Depli, Financement, Mois } from "../ui/visuels";
@@ -68,6 +69,8 @@ export default function Argent() {
         <Page>
           <Stack.Screen options={{ title: LIBELLES.argent }} />
           <Question emoji="💶" etiquette="L'argent de la commune" question={`Où va l'argent de ${nom} ?`} />
+          {/* V13 bloc A : la date des comptes et leur anciennete, avec la source. */}
+          <DateDonnee quoi="Comptes OFGL" date={r.index?.sources?.comptes?.maj} url={r.index?.sources?.comptes?.url} />
 
           {!ex ? (
             <Vide {...(phraseEc ? comptesIncoherents(nom, phraseEc) : comptesAbsents(nom))} />

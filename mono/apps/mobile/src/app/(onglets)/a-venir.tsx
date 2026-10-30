@@ -27,6 +27,7 @@ import { AGENDA_PAS_ARRIVE, AGENDA_VIDE } from "../../lib/absences";
 import { srcAgenda } from "../../lib/sources";
 import { useCommuneChoisie } from "../../lib/useCommune";
 import { couleurs, CIBLE, PAS, TYPO } from "../../lib/theme";
+import { DateDonnee } from "../../ui/fraicheur";
 import { AvecDonnees, Page, Question } from "../../ui/page";
 import { PastilleSource } from "../../ui/source";
 import { Depli } from "../../ui/visuels";
@@ -148,8 +149,9 @@ export default function AVenir() {
       /* Un seul repere de fraicheur, pour l'ecran : le plus ancien des agendas lus. */
       const ages = lues.map(x => ageReleve(x.source && x.source.releve_le)).filter((a): a is number => a !== null);
       const plusAncien = ages.length ? Math.max(...ages) : null;
-      const libelleMaj = plusAncien === null ? null
-        : plusAncien === 0 ? "Mis à jour aujourd'hui" : `Mis à jour il y a ${plusAncien} jour${plusAncien > 1 ? "s" : ""}`;
+      /* V13 bloc A : la date du releve le plus ancien, jamais « mis à jour ». */
+      const releveAncien = plusAncien === null ? null
+        : (lues.find(x => ageReleve(x.source && x.source.releve_le) === plusAncien)?.source?.releve_le ?? null);
       /* Carte de partage : le premier point affiche, avec la source de son institution. */
       const suivant = affiches[0];
       const lue = suivant ? lues.find(x => x.institution === suivant.institution) : undefined;
@@ -162,8 +164,8 @@ export default function AVenir() {
               <Question etiquette="Au Parlement" question="Calendrier"
                 sous="Les séances annoncées à l'Assemblée nationale et au Sénat. Elles concernent tout le pays, pas seulement votre commune." />
             </View>
-            {libelleMaj ? <Text testID="maj-agenda" style={[TYPO.micro, { textAlign: "right", paddingTop: PAS }]}>{libelleMaj}</Text> : null}
           </View>
+          <DateDonnee quoi="Agenda relevé" date={releveAncien} testID="maj-agenda" />
           <Pressable onPress={() => setMois(m => !m)} accessibilityRole="button"
             accessibilityLabel={mois ? "Voir la semaine" : "Voir le mois"}
             style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", alignSelf: "flex-start", opacity: pressed ? 0.6 : 1 })}>

@@ -37,6 +37,7 @@ import { srcElus, srcScrutins } from "../lib/sources";
 import { couleurs, CIBLE, PAS, RAYON, TYPO, type Echelon } from "../lib/theme";
 import { AvecDonnees, Page, Question } from "../ui/page";
 import { PastilleSource } from "../ui/source";
+import { DateDonnee } from "../ui/fraicheur";
 import { useApparition } from "../ui/mouvement";
 
 type Params = { nom?: string; role?: string; echelon?: string; niveau?: string; institution?: string; lieu?: string };
@@ -181,6 +182,11 @@ export default function Elu() {
             </View>
             {/* Groupe : identifie l'élu. Gris « Inconnu » tant que le lien n'est pas publié. */}
             {depute ? <BadgeGroupe groupe={groupe} /> : null}
+            {/* V13 bloc A : la date de ce qu'affiche la fiche (les votes pour un depute,
+               le repertoire des elus sinon), avec la source. */}
+            {depute
+              ? <DateDonnee quoi="Votes relevés à l'Assemblée" date={r.index?.sources?.scrutins?.releve_le} url={r.index?.sources?.scrutins?.url} />
+              : <DateDonnee quoi="Répertoire national des élus" date={r.index?.sources?.elus?.maj} url={r.index?.sources?.elus?.url} />}
 
             {/* LA SYNTHESE : ses trois votes publies les plus recents. */}
             {depute ? (

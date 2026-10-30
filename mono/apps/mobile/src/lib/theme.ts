@@ -80,7 +80,7 @@ function construire(m: Mode) {
 
 type Palette = Record<Echelon, string> & {
   sol: string; carte: string; encre: string; sourd: string;
-  trait: string; voile: string; blanc: string; lien: string;
+  trait: string; voile: string; blanc: string; lien: string; ancien: string;
 };
 type Vue = ReturnType<typeof construire>;
 

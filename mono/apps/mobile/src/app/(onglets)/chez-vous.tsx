@@ -47,6 +47,7 @@ import { Etiquette } from "../../ui/resume";
 import { Plus, Reponse, typo } from "../../ui/reponse";
 import { BarrePart, Repartition } from "../../ui/visuels";
 import { SemaineParlement } from "../../ui/semaine";
+import { DateDonnee } from "../../ui/fraicheur";
 
 export default function ChezVous() {
   const { choix } = useSelection();
@@ -73,12 +74,12 @@ export default function ChezVous() {
              troisieme reponse de Paris revient dans le premier ecran (mesure).
              Le grand nom de commune n'est plus repete ici (13/10/2026) : la barre
              haute le porte deja, et la 3e reponse doit tenir au-dessus de la barre basse. */}
-          <View style={{ gap: 2 }}>
-            <Text style={TYPO.note}>{[depIndex && depIndex.nom, depIndex && depIndex.region].filter(Boolean).join(" · ")}</Text>
+          <View>
             {/* « Publication » et non « mis a jour » : la date est celle de la
                publication affichee, vraie dans les trois etats de l'invariant 9
                — y compris hors ligne, ou rien n'est « a jour » (BandeauFraicheur). */}
-            {publie ? <Text style={TYPO.micro}>Publication Repère du {dateFr(publie)}</Text> : null}
+            <DateDonnee quoi="Publication Repère" date={publie} testID="date-donnee"
+              avant={[depIndex && depIndex.nom, depIndex && depIndex.region].filter(Boolean).join(" · ")} />
           </View>
 
           <View style={{ gap: PAS * 2 }}>
