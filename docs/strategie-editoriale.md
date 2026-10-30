@@ -1,6 +1,6 @@
-# Stratégie éditoriale — trois questions ouvertes pour le CEO
+# Stratégie éditoriale
 
-Date : 30/10/2026. Ce document pose les questions et rassemble les faits du dépôt. Il ne décide rien.
+Date : 30/10/2026. Questions posées en V20, tranchées par le CEO en V21 (D29, D30, D31).
 
 ## Ce qui existe aujourd'hui (faits vérifiés dans le dépôt)
 
@@ -12,36 +12,56 @@ Date : 30/10/2026. Ce document pose les questions et rassemble les faits du dép
   - la carte « Dernières publications » de l'accueil reste masquée (règle : moins de 7 jours) ;
   - les testeurs ne verront « rien de neuf » en revenant.
 
-## Question 1 — Qui publie quoi chaque semaine ?
+## Décisions du CEO (30/10/2026)
 
-| Option | Pour | Contre |
-|---|---|---|
-| **Le CEO lui-même** | contrôle total de la neutralité ; démarrage immédiat | temps ; un seul relecteur ; s'arrête si le CEO est indisponible |
-| **Une association partenaire** (civique, journalisme local) | expertise, légitimité, plusieurs plumes | convention à écrire ; risque de ligne éditoriale perçue comme engagée ; relecture de neutralité nécessaire |
-| **Un flux automatique** (RSS des sites de mairies, Journal officiel, communiqués) | volume, régularité | Repère ne résume pas automatiquement (règle de `evenements-format.md` : « écrits par un humain ») ; il faudrait au minimum une relecture humaine de chaque fait ; les flux de mairies ne sont pas uniformes |
+### D29 — Qui publie : hybride
+- **Automatique**, déjà en place : votes de l'Assemblée, comptes OFGL, calendrier (chaîne quotidienne `collecte.yml`).
+- **Manuel** : une actualité locale par commune pilote, rédigée par le CEO **chaque dimanche soir**, dans `data/actus-hebdo.json`.
+- **Jamais** d'IA générative pour rédiger, ni d'aspiration d'articles de presse (droits d'auteur).
 
-**Ce qu'aucune option ne change** : chaque fait garde une source officielle et une relecture humaine avant publication (invariant 4, règle éditoriale).
+### D30 — Combien de communes
+- **Automatique** : toute l'Île-de-France (1 262 communes).
+- **Manuel, chaque semaine** : 3 communes pilotes au démarrage, **Melun (77288), Meaux (77284), Versailles (78646)**. Extension après les retours des testeurs.
 
-## Question 2 — Sur combien de communes, au minimum ?
+### D31 — Rythme
+- **Hebdomadaire au minimum** pour le manuel.
+- L'application affiche « Cette semaine à [Commune] » avec l'actualité si elle existe. Sinon, un état vide honnête : « Repère publie chaque lundi. Aucune actu cette semaine pour [Commune]. [Voir la semaine dernière] ».
+- La carte n'apparaît que pour les communes pilotes : pour les autres, elle annoncerait une actualité qui ne viendra pas.
 
-| Option | Ce que ça demande |
-|---|---|
-| **Melun seule** (la commune d'exemple de l'accueil) | quelques faits par semaine ; utile pour montrer le format, pas pour les testeurs d'autres communes |
-| **Les communes des testeurs** (5 à 30) | la liste des communes des testeurs, connue après l'envoi du kit (`docs/tableau-retours.csv`, colonne « Commune testée ») |
-| **Un top 20 de l'Île-de-France** | à définir sans classement (invariant 3) : par exemple, les préfectures et les sous-préfectures |
-| **Toute l'Île-de-France** (1 262 communes) | hors de portée d'une rédaction humaine ; seulement les faits nationaux ou départementaux |
+## Format de `data/actus-hebdo.json`
 
-Une piste intermédiaire, non décidée : **des faits nationaux et départementaux pour tous** (une décision de l'Assemblée, du Sénat, du département) plus **des faits communaux pour les communes des testeurs**.
+```json
+{
+  "semaine": "2026-W45",
+  "date_publication": "2026-11-03",
+  "communes": {
+    "77288": {
+      "titre": "Phrase courte, écrite par le CEO",
+      "resume": "Deux phrases. Ce que dit la source, sans jugement.",
+      "source": "https://… (page officielle : mairie, préfecture, Journal officiel…)",
+      "source_nom": "Nom de la source officielle"
+    },
+    "77284": { "titre": "", "resume": "", "source": "", "source_nom": "" },
+    "78646": { "titre": "", "resume": "", "source": "", "source_nom": "" }
+  }
+}
+```
 
-## Question 3 — Quel rythme réaliste ?
+Règles appliquées par l'application et par les tests :
+- une entrée n'est affichée que si `titre`, `resume` et `source` sont remplis, et si `source` commence par `https://`. Une entrée vide n'affiche rien ;
+- `source_nom` est ajouté à la brief : l'invariant 4 demande le producteur, pas seulement l'adresse. Sans lui, l'application écrit « Source » ;
+- `date_publication` ne doit pas être dans le futur : sinon l'entrée n'est pas montrée avant ce jour ;
+- « Cette semaine » : publication de moins de 7 jours. Au-delà, l'actualité reste accessible derrière « Voir la semaine dernière », avec sa date.
 
-| Rythme | Effet dans l'application |
-|---|---|
-| **Hebdomadaire** | la carte « Dernières publications » reste visible en permanence (règle des 7 jours) |
-| **Bimensuel** | elle est visible environ une semaine sur deux |
-| **Mensuel** | elle est presque toujours masquée. Il faudrait allonger la fenêtre à 30 jours (`RECENT_JOURS` dans `src/ui/dernieres-publications.tsx`), une décision produit |
+## Procédure du dimanche soir (CEO)
 
-Rappel : l'Assemblée publie elle-même des scrutins solennels plusieurs fois par mois en session. Ils sont déjà relevés chaque jour et comptent comme « publications » dans la carte. Le rythme éditorial s'ajoute à celui-là.
+1. Ouvrir `data/actus-hebdo.json`.
+2. Mettre à jour `semaine` (semaine ISO, par exemple `2026-W45`) et `date_publication` (le lundi de publication, `AAAA-MM-JJ`).
+3. Pour chaque commune pilote : un titre, deux phrases (`resume`), une source officielle (`source` + `source_nom`). Pas d'actualité cette semaine : laisser les champs vides, l'application le dira.
+4. Commiter, puis **ouvrir une pull request vers `main`**. `main` est protégée : pas de push direct. L'épreuve (`epreuve.yml`) doit passer.
+5. Après fusion, **la publication se fait par la CI** (`collecte.yml`, chaque jour à 05 h 47 UTC, ou en la relançant à la main) : pas de déploiement manuel. La chaîne copie `data/actus-hebdo.json` dans les données publiées.
+
+Point de vigilance : « Repère publie chaque lundi » est une promesse affichée aux lecteurs. Une semaine sans pull request fusionnée avant lundi matin fera afficher l'état vide.
 
 ## Ce qu'il faut pour commencer, quelle que soit la décision
 
