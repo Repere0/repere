@@ -55,7 +55,7 @@ export const GLOSSAIRE = {
   },
   "sénat": {
     titre: "Sénat",
-    corps: "L'autre chambre du Parlement. Ses membres, les sénateurs, sont élus au suffrage indirect par un collège de grands électeurs : des députés, des sénateurs et des élus locaux (conseillers régionaux, conseillers départementaux et délégués des conseils municipaux, soit pas tous les conseillers municipaux). Il vote la loi avec l'Assemblée nationale.",
+    corps: "L'autre chambre du Parlement. Ses membres, les sénateurs, sont élus au suffrage indirect par un collège de grands électeurs, composé de députés, de sénateurs et d'élus locaux : conseillers régionaux, conseillers départementaux et délégués des conseils municipaux. Il vote la loi avec l'Assemblée nationale.",
   },
   scrutin: {
     titre: "Scrutin",
@@ -319,6 +319,45 @@ export const GLOSSAIRE = {
   plu: {
     titre: "PLU (plan local d'urbanisme)",
     corps: "Document qui fixe, à l'échelle d'une commune ou d'une intercommunalité, les règles d'utilisation des sols et de construction.",
+  },
+  /* SIGLES DE PARTIS (30/10/2026, arbitrage du CEO). Définitions factuelles seulement :
+     nom, date de création, renommage. Aucun qualificatif de camp, aucun nom de dirigeant.
+     Le sigle LFI et le sigle EPR ont aussi un autre sens : la définition le dit. */
+  ps: {
+    titre: "PS (Parti socialiste)",
+    corps: "Parti politique français fondé en 1969 pour succéder à la SFIO. Un parti et un groupe parlementaire sont deux choses différentes : voir « Groupe parlementaire ».",
+  },
+  lr: {
+    titre: "LR (Les Républicains)",
+    corps: "Parti politique français fondé en 2002 sous le nom d'UMP, et renommé Les Républicains en 2015. Un parti et un groupe parlementaire sont deux choses différentes : voir « Groupe parlementaire ».",
+  },
+  rn: {
+    titre: "RN (Rassemblement national)",
+    corps: "Parti politique français fondé en 1972 sous le nom de Front national, et renommé Rassemblement national en 2018. Un parti et un groupe parlementaire sont deux choses différentes : voir « Groupe parlementaire ».",
+  },
+  lfi: {
+    titre: "LFI (La France insoumise)",
+    corps: "Mouvement politique français créé en 2016. Le sigle LFI désigne aussi, dans le budget de l'État, la loi de finances initiale : le contexte indique lequel est visé.",
+  },
+  eelv: {
+    titre: "EELV (Europe Écologie Les Verts)",
+    corps: "Parti politique français né en novembre 2010 de la transformation de la coalition Europe Écologie, lancée en 2008, avec Les Verts.",
+  },
+  epr: {
+    titre: "EPR (Ensemble pour la République)",
+    corps: "Nom d'une coalition politique française créée en novembre 2021 sous le nom d'Ensemble Citoyens, et rebaptisée Ensemble en 2022. Le sigle EPR désigne aussi, dans un autre domaine, un type de réacteur nucléaire : le contexte indique lequel est visé.",
+  },
+  pcf: {
+    titre: "PCF (Parti communiste français)",
+    corps: "Parti politique français fondé en 1920 au congrès de Tours, à la suite d'une scission de la SFIO. Un parti et un groupe parlementaire sont deux choses différentes : voir « Groupe parlementaire ».",
+  },
+  modem: {
+    titre: "MoDem (Mouvement démocrate)",
+    corps: "Parti politique français créé en 2007. Un parti et un groupe parlementaire sont deux choses différentes : voir « Groupe parlementaire ».",
+  },
+  udi: {
+    titre: "UDI (Union des démocrates et indépendants)",
+    corps: "Parti politique français créé en 2012, né d'une union de formations du centre et de la droite. Un parti et un groupe parlementaire sont deux choses différentes : voir « Groupe parlementaire ».",
   },
 };
 
