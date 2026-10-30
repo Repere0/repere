@@ -10,7 +10,7 @@ import { Linking, Pressable, Text, View } from "react-native";
 import { router, Stack } from "expo-router";
 import { chaineDecision, dateFr, listeFr, MAIRE_ABSENT, ordinal, phraseAdjoints, RNE_URL, LIBELLES } from "@repere/core";
 import { sansConseilDepartemental } from "@repere/core";
-import { Definitions, Segments } from "../../lib/composants";
+import { Definitions, LienSortant, Segments } from "../../lib/composants";
 import { REGION_PAS_ARRIVEE } from "../../lib/absences";
 import { srcElus } from "../../lib/sources";
 import { CIBLE, couleurs, PAS, TYPO } from "../../lib/theme";
@@ -18,8 +18,11 @@ import { AvecDonnees, Page, Question } from "../../ui/page";
 import { PastilleSource } from "../../ui/source";
 import { Chaine, type Niveau } from "../../ui/visuels";
 import { prefetDeRegion } from "../../lib/prefet";
+import { useSelection } from "../../lib/selection";
+import { mandatsTerminesListes } from "../../lib/mandats-termines";
 
 export default function QuiDecide() {
+  const { choix } = useSelection();
   return (
     <AvecDonnees rendu={r => {
       const { d } = r;
@@ -39,7 +42,19 @@ export default function QuiDecide() {
              Metropole du Grand Paris) viennent de @repere/core, comme sur le site. */
           const precisions = (n as { precisions?: string[] }).precisions || [];
           /* D20, lot L2 : le mot « intercommunalité » se definit sous la carte (bouton, cible 44 px). */
-          return { ...n, pied: <Definitions s={[{ t: "intercommunalité", mot: "intercommunalité" }]} />, note: [n.delegues === null
+          /* D32 : un mandat termine que le RNE porte encore est dit, date et source a l'appui. */
+          const termines = choix ? mandatsTerminesListes(choix.insee, (f as { agglo?: { delegues?: { nom?: string }[] } }).agglo?.delegues) : [];
+          return { ...n, pied: (
+            <View style={{ gap: PAS }}>
+              {termines.map(m => (
+                <View key={m.nom} style={{ gap: PAS }}>
+                  <Text style={TYPO.note}>Mandat terminé le {dateFr(m.fin)}{m.motif ? ` (${m.motif})` : ""} : {m.nomAffiche}, {m.fonction.toLowerCase()}. Le Répertoire national des élus le compte encore dans ce nombre.</Text>
+                  <LienSortant url={m.source} texte={`Source : ${m.sourceNom}`} />
+                </View>
+              ))}
+              <Definitions s={[{ t: "intercommunalité", mot: "intercommunalité" }]} />
+            </View>
+          ), note: [n.delegues === null
             ? "La source ne liste pas l'intercommunalité de cette commune. C'est la source qui est incomplète, pas la commune qui n'en a pas."
             : n.delegues
             ? `Le Répertoire national des élus y liste ${n.delegues} élu${n.delegues > 1 ? "s" : ""} de ${d.nomCommune}. Vous ne l'élisez pas directement : ce sont des conseillers municipaux qui y siègent.`

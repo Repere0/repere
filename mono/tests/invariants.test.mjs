@@ -336,6 +336,17 @@ test("invariant 4 — aucune donnée n'est servie sans source déclarée", () =>
       assert.ok(x.titre && x.resume && /^https:\/\//.test(x.source || ""), `${f} ${insee} : titre, resume et source https exiges`);
     }
   }
+  /* Mandats termines tenus a la main (D32) : chaque entree porte une date passee et une source https. */
+  {
+    const m = lire("apps/mobile/src/lib/mandats-termines.ts");
+    const entrees = m.split("{ insee:").slice(1);
+    assert.ok(entrees.length > 0, "mandats-termines.ts : aucune entree lue");
+    for (const e of entrees) {
+      const fin = (e.match(/fin: "([^"]*)"/) || [])[1] || "";
+      assert.ok(/^\d{4}-\d{2}-\d{2}$/.test(fin) && fin <= new Date().toISOString().slice(0, 10), `mandats-termines.ts : fin absente ou future (${fin})`);
+      assert.ok(/source: "https:\/\//.test(e) && /sourceNom: "[^"]+"/.test(e), "mandats-termines.ts : source https et nom de source exiges (invariant 4)");
+    }
+  }
   /* /mairies-idf.json (D28, ADR 0005) : provenance dans le fichier (annuaire DILA). */
   if (existe("data/mairies-idf.json")) {
     const mai = JSON.parse(lire("data/mairies-idf.json"));

@@ -200,3 +200,17 @@ Recherche faite sur le site officiel (melun.fr / ville-melun.fr) :
 - La presse locale n'a pas été utilisée comme source (D29 : pas de reprise de presse).
 
 **Règle de fond** : D29 exclut l'IA générative pour les actus. Même avec une actu trouvée, un titre et un résumé écrits par Claude seraient en tension avec D29. Le texte doit être écrit, ou au minimum réécrit, par le CEO.
+
+## 23. Sprint v22 (30/10/2026)
+
+### Bloc 2 — mandats terminés (D32)
+- **Aucune donnée publiée ne porte de fin de mandat.** Vérifié fichier par fichier :
+  - `deputes.json` : `construire_deputes.py` écarte tout mandat qui a une `dateFin` ;
+  - `elus-regions/*.json` : seulement `debut` ;
+  - `departments/*.json` (RNE) : seulement `debut`, aucun motif.
+  La détection automatique trouve donc **0 cas**. Aucune source ne dit « décès » : le RNE retire l'élu à sa mise à jour suivante, sans motif.
+- **Henri Mellier n'a pas de fiche dans l'application.** Il figure seulement parmi les 21 délégués de Melun à l'intercommunalité. L'application affiche ce nombre, pas les noms, et l'annuaire « Élus » ne couvre que les députés et les exécutifs régionaux. Il n'y a donc pas de badge « En fonction » à retirer.
+- **Ce qui est fait** : une liste tenue à la main, `mono/apps/mobile/src/lib/mandats-termines.ts`, avec une seule entrée : Henri Mellier, fin le 25/10/2026, décès, source Ville de Melun. Sous la carte Intercommunalité de Melun, l'application affiche « Mandat terminé le 25 octobre 2026 (décès) : Henri Mellier, conseiller communautaire. Le Répertoire national des élus le compte encore dans ce nombre. », avec un lien vers la source. La phrase disparaît d'elle-même quand le RNE ne liste plus son nom. Un garde de test exige une date passée et une source https. Vérifié dans le navigateur : présent pour Melun, absent pour Meaux.
+- **Écart de fonction** : l'avis de la ville dit « adjoint au maire ». Le RNE publié par Repère le classe seulement « conseiller communautaire », et la liste des adjoints de Melun n'est qu'un nombre. J'ai affiché la fonction du RNE, qui est la source du nombre affiché.
+- **Source** : la page de la Ville de Melun est un avis signé par la famille, hébergé sur le site officiel de la commune. C'est la source retenue par D32.
+- **Reste à décider** : garder les mandats terminés des députés comme historique. La brief dit « Ne retire PAS la fiche ». Aujourd'hui la chaîne n'en garde aucun, et la clé est la circonscription : deux députés successifs prendraient la même place. Ce serait un changement de format, que je n'ai pas fait.
