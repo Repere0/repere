@@ -11,6 +11,8 @@ import { useSelection } from "../lib/selection";
 import { useCommuneChoisie, type EtatCommune } from "../lib/useCommune";
 import { couleurs, feuille, PAS, TYPO } from "../lib/theme";
 import { useTheme } from "../lib/themeChoix";
+import { Entree } from "./entree";
+import { SquelettesListe } from "./squelette";
 import { Etiquette } from "./resume";
 import { BandeauFraicheur, DatePublication } from "./fraicheur";
 
@@ -25,7 +27,7 @@ export function Page({ children, sansDate = false }: { children: ReactNode; sans
     <ScrollView style={{ backgroundColor: couleurs.sol }} contentContainerStyle={[s.page, { paddingTop: PAS * 4, paddingBottom: marges.bottom + PAS * 10 }]}>
       {sansDate ? null : <DatePublication flottant />}
       <BandeauFraicheur />
-      {children}
+      <Entree style={{ gap: PAS * 3, width: "100%" }}>{children}</Entree>
     </ScrollView>
   );
 }
@@ -58,6 +60,10 @@ export function AvecDonnees({ rendu }: { rendu: (r: Extract<EtatCommune, { pret:
   }
   if (!r.pret) {
     const p = (PHRASES as Record<string, { titre: string; corps: string }>)[r.etat] || PHRASES[ETATS.ECHEC];
+    /* Pendant le chargement, des blocs qui battent ; le texte d'attente reste lu. */
+    if (r.etat === ETATS.EN_COURS) {
+      return <View style={[s.page, { paddingTop: PAS * 6 }]}><SquelettesListe n={3} hauteur={88} /></View>;
+    }
     return (
       <View style={[s.page, { paddingTop: PAS * 6 }]}>
         <Vide titre={p.titre} corps={p.corps}

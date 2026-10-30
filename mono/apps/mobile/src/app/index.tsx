@@ -23,6 +23,7 @@ import { feuille, CIBLE, PAS, POLICE, RAYON } from "../lib/theme";
 import { ECHELONS_PAR_MODE, NEUTRES_PAR_MODE, OMBRE_PAR_MODE } from "../lib/palette";
 import { groupeDe } from "../lib/groupes";
 import { VOTE } from "../ui/partage/donnees";
+import { SquelettesListe } from "../ui/squelette";
 import { DatePublication } from "../ui/fraicheur";
 
 /* L'accueil est sombre : il lit la palette sombre, quel que soit le choix d'affichage. */
@@ -175,9 +176,10 @@ export default function Accueil() {
                 </View>
               </>
             ) : null}
-            {etat !== ETATS.SERVI && phrase ? (
+            {etat === ETATS.EN_COURS ? <SquelettesListe n={3} hauteur={72} /> : null}
+            {etat !== ETATS.SERVI && etat !== ETATS.EN_COURS && phrase ? (
               <Vide titre={phrase.titre} corps={phrase.corps}
-                action={etat === ETATS.EN_COURS ? undefined : "Réessayer"} onAction={() => setEssai(n => n + 1)} />
+                action="Réessayer" onAction={() => setEssai(n => n + 1)} />
             ) : null}
             {etat === ETATS.SERVI && !cherches.length ? (
               <>
@@ -193,14 +195,16 @@ export default function Accueil() {
             ) : null}
             {manquante ? (
               <Vide titre={`${manquante[1]} existe bien en Île-de-France : c'est nous qui n'avons pas encore sa fiche.`}
-                corps="Les données publiées que Repère lit ne contiennent pas de fiche pour cette commune. Ce n'est pas une erreur de votre part, et ce n'est pas la preuve que la commune n'existe pas." />
+                corps="Les données publiées que Repère lit ne contiennent pas de fiche pour cette commune. Ce n'est pas une erreur de votre part, et ce n'est pas la preuve que la commune n'existe pas."
+                action="Chercher une autre commune" onAction={() => setFiltre("")} />
             ) : null}
             {rien ? (
               /* 08/10/2026 : « Rien ne correspond » laissait croire que la commune
                  n'existe pas. L'application ne couvre que l'Ile-de-France pendant la
                  beta : c'est une limite de couverture, pas une absence de donnees. */
               <Vide titre={`Aucune commune d'Île-de-France ne correspond à « ${filtre.trim()} ».`}
-                corps="Pendant la bêta, l'application ne couvre que l'Île-de-France : pour une commune d'ailleurs, les données ne sont pas encore disponibles ici. Sinon, vérifiez l'orthographe du début du nom." />
+                corps="Pendant la bêta, l'application ne couvre que l'Île-de-France : pour une commune d'ailleurs, les données ne sont pas encore disponibles ici. Sinon, vérifiez l'orthographe du début du nom."
+                action="Effacer la recherche" onAction={() => setFiltre("")} />
             ) : null}
 
           </View>

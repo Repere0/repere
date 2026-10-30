@@ -19,6 +19,7 @@ import { couleurs, CIBLE, PAS, RAYON, TYPO } from "../../lib/theme";
 import { Avatar } from "../../ui/avatar";
 import { Loupe } from "../../ui/loupe";
 import { DatePublication } from "../../ui/fraicheur";
+import { SquelettesListe } from "../../ui/squelette";
 
 /* Les 14 regions dont l'executif est publie : les fichiers de data/elus-regions/. */
 const REGIONS = ["01", "04", "11", "24", "27", "28", "32", "44", "52", "53", "75", "76", "84", "93"];
@@ -118,13 +119,15 @@ export default function Elus() {
             {etat === ETATS.SERVI ? (
               <Text style={TYPO.note}>{trouves.length} élu{trouves.length > 1 ? "s" : ""} affiché{trouves.length > 1 ? "s" : ""}.</Text>
             ) : null}
-            {etat !== ETATS.SERVI && phrase ? (
+            {etat === ETATS.EN_COURS ? <SquelettesListe n={5} hauteur={68} /> : null}
+            {etat !== ETATS.SERVI && etat !== ETATS.EN_COURS && phrase ? (
               <Vide titre={phrase.titre} corps={phrase.corps}
-                action={etat === ETATS.EN_COURS ? undefined : "Réessayer"} onAction={() => setEssai(n => n + 1)} />
+                action="Réessayer" onAction={() => setEssai(n => n + 1)} />
             ) : null}
             {etat === ETATS.SERVI && cherches.length && !trouves.length ? (
               <Vide titre={`Aucun élu publié ne correspond à « ${filtre.trim()} ».`}
-                corps="Essayez le nom de famille, le département ou la fonction." />
+                corps="Essayez le nom de famille, le département ou la fonction."
+                action="Effacer la recherche" onAction={() => setFiltre("")} />
             ) : null}
           </View>
         }

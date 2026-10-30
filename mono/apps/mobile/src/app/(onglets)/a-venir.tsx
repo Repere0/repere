@@ -238,7 +238,10 @@ export default function AVenir() {
               ) : null}
 
               {!aVenir.length && toutes.length ? (
-                <Text style={TYPO.note}>Rien de publié pour ce filtre. Le filtre « Tout » montre le reste.</Text>
+                <Pressable onPress={() => setInstitution(null)} accessibilityRole="button" accessibilityLabel="Afficher toutes les institutions"
+                  style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", opacity: pressed ? 0.6 : 1 })}>
+                  <Text style={{ color: couleurs.lien, fontWeight: "700", textDecorationLine: "underline" }}>Rien de publié pour ce filtre. Afficher toutes les institutions</Text>
+                </Pressable>
               ) : null}
               {!toutes.length ? <Vide {...AGENDA_VIDE} /> : null}
             </>
