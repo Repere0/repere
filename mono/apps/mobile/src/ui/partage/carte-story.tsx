@@ -11,7 +11,7 @@ export function CarteStory({ refCarte, mode = "sombre", titre, corps, source }: 
 }) {
   const P = NEUTRES_PAR_MODE[mode];
   return (
-    <View ref={refCarte} collapsable={false} style={{ width: 360, height: 640, backgroundColor: P.sol, padding: 28, justifyContent: "space-between" }}>
+    <View ref={refCarte} collapsable={false} testID="carte-story" style={{ width: 360, height: 640, backgroundColor: P.sol, padding: 28, justifyContent: "space-between" }}>
       <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
         <Logo size={34} c={P} />
         <Text style={{ color: P.encre, fontWeight: "800", fontSize: 20 }}>Repère</Text>

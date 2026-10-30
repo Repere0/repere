@@ -108,6 +108,9 @@ jobs:
           for i in $(seq 1 20); do curl -sf http://localhost:8811/ >/dev/null && break; sleep 0.5; done
           node apps/mobile/tests/parcours-web.mjs http://localhost:8811 apps/mobile/captures
 
+      - name: Cartes de partage (story 1080 x 1920, logo, contraste, source)
+        run: node apps/mobile/tests/partage-story-web.mjs http://localhost:8811 apps/mobile/captures
+
       - name: Meme verite sur le site et dans l'application
         # Pour cinq communes representatives, le maire, les adjoints, la
         # circonscription, le depute, le vote, son explication, les sources
