@@ -35,12 +35,13 @@ Non fait : l'écran d'accueil (onboarding) n'existe pas dans l'application. Le l
 ## Ce qui n'est pas fait
 
 - **Icône de l'application (1024 × 1024).** Le fichier `assets/icon.png` est inchangé. Un composant React ne produit pas de fichier binaire. Le CEO doit exporter le logo en PNG 1024 × 1024 (voir `BLOCAGES.md`).
-- **Tailles extrêmes.** Le logo est dessiné pour 24 px (icône), 48 px (en-tête) et 128 px (grand format). Seule la taille 48 px (en-tête de l'accueil, mode sombre, 390 px) a été regardée dans un navigateur. Les tailles 24 px, 34 px (cartes), 96 px (À propos) et 128 px n'ont pas été rendues ni regardées : à vérifier sur appareil.
+- **Tailles.** Vérifiées sur une page de test locale (non commitée) aux tailles 24, 34, 48, 96 et 128 px, en `mono` et `clair` sur fond clair : anneaux et point nets. La variante `sombre` (encre claire) est faite pour les fonds sombres ; sur fond clair elle disparaît, comme prévu. Les cartes de partage sombres l'utilisent en situation réelle (34 px). Pas encore vu sur appareil.
 - **Rendu sur appareil.** Aucun contrôle sur iPhone ou Android dans cette session.
 
 ## Règles de construction
 
 - Aucune image, aucune bibliothèque SVG : des `View` avec `borderRadius`. Pas de dépendance ajoutée.
+- Mise en page en flux : anneaux imbriqués en flexbox, sans `position: absolute` (bloc 11, 30/10/2026). Le logo se place comme un bloc ordinaire, dans un en-tête comme dans une capture pleine page.
 - Épaisseur de l'anneau extérieur : `max(2, round(taille × 0,075))` px.
 - Point central : 20 % de la taille.
 - Accessibilité : le logo est masqué aux lecteurs d'écran (`accessible={false}`). Le nom « Repère » est porté par le texte à côté.

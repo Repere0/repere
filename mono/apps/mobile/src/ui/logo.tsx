@@ -19,21 +19,22 @@ export function Logo({ size = 48, variant = "mono", c }: { size?: number; varian
   const t: Teinte = c ?? (variant === "mono" ? { encre: couleurs.encre } : NEUTRES_PAR_MODE[variant]);
   const anneau = Math.max(2, Math.round(size * 0.075));
   const point = Math.round(size * 0.2);
+  const intermediaire = Math.round(size * 0.56);
+  const dot = <View style={{ width: point, height: point, borderRadius: point / 2, backgroundColor: t.encre }} />;
+  /* Mise en page en flux (flexbox imbriquée), sans position absolue : le logo
+     se place comme n'importe quel bloc, dans un en-tête comme dans une capture. */
   return (
-    <View accessible={false} importantForAccessibility="no" style={{ width: size, height: size }}>
-      <View style={{
-        position: "absolute", top: 0, left: 0, right: 0, bottom: 0, borderRadius: size / 2, borderWidth: anneau, borderColor: t.encre,
-      }} />
+    <View accessible={false} importantForAccessibility="no" style={{
+      width: size, height: size, borderRadius: size / 2, borderWidth: anneau, borderColor: t.encre,
+      alignItems: "center", justifyContent: "center",
+    }}>
       {t.sourd ? (
         <View style={{
-          position: "absolute", top: size * 0.22, left: size * 0.22, right: size * 0.22, bottom: size * 0.22,
-          borderRadius: size, borderWidth: Math.max(1, Math.round(size * 0.05)), borderColor: t.sourd,
-        }} />
-      ) : null}
-      <View style={{
-        position: "absolute", width: point, height: point, borderRadius: point / 2, backgroundColor: t.encre,
-        left: (size - point) / 2, top: (size - point) / 2,
-      }} />
+          width: intermediaire, height: intermediaire, borderRadius: intermediaire / 2,
+          borderWidth: Math.max(1, Math.round(size * 0.05)), borderColor: t.sourd,
+          alignItems: "center", justifyContent: "center",
+        }}>{dot}</View>
+      ) : dot}
     </View>
   );
 }
