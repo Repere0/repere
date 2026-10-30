@@ -36,7 +36,7 @@ import { AvecPicto } from "../ui/picto";
 import { libelleGroupe } from "../ui/badge-groupe";
 import { Details } from "../ui/details";
 import { ModaleExhaustif } from "../ui/modale-exhaustif";
-import { METHODE_COMPTES, USAGE_PAR_HABITANT } from "../lib/sources";
+import { METHODE_COMPTES, USAGE_PAR_HABITANT, srcVote } from "../lib/sources";
 
 /* L'accueil est sombre : il lit la palette sombre, quel que soit le choix d'affichage. */
 const D = NEUTRES_PAR_MODE.sombre;
@@ -55,7 +55,7 @@ type Index = { departements: { code: string; nom?: string }[]; agregats?: unknow
 type Argent = { nom: string; an: string; depenses: number; avant: { an: string; depenses: number } | null; salaires: number | null; investissement: number | null };
 /* D21 : le dernier vote publie du depute de la commune retenue. « partagee » : la commune
    est sur plusieurs circonscriptions, le depute depend de l'adresse (aucun n'est choisi). */
-type VoteVu = { depute: string; acteur: string; circo: number; position: string; d: string; t: string; dec?: Record<string, string> } | { partagee: number };
+type VoteVu = { depute: string; acteur: string; circo: number; position: string; d: string; t: string; dec?: Record<string, string>; lien?: string } | { partagee: number };
 
 /* V13 bloc C : une barre empilee, en vues (aucune bibliotheque). Trois gris de la palette
    sombre, jamais une couleur d'echelon ni de groupe (invariant 7) ; la legende en toutes
@@ -101,6 +101,51 @@ function SensVote({ cle, texte }: { cle: string; texte: string }) {
     <View style={{ flexDirection: "row", alignItems: "center", gap: PAS * 2 }}>
       {couleur ? <View accessibilityElementsHidden importantForAccessibility="no" style={{ width: 14, height: 14, borderRadius: 7, backgroundColor: couleur }} /> : null}
       <Text style={s.vote}>{texte}</Text>
+    </View>
+  );
+}
+
+/* CARTE DU VOTE (V28, bloc 4) — trois niveaux, un seul composant pour le député et pour l'exemple.
+ * 1 : la phrase-conclusion, calculée à partir de la position lue ; le sens, en toutes lettres
+ *     et avec un rond de couleur (jamais la couleur seule) ; la date et le titre du scrutin.
+ * 2 (« Voir plus ») : le décompte du scrutin entier.
+ * 3 (« Tout voir ») : le scrutin, le décompte écrit, la façon dont Repère lit la position, le lien. */
+const VERBE_VOTE: Record<string, string> = { p: "a voté pour", c: "a voté contre", a: "s'est abstenu" };
+function CarteVote({ etiquette, nom, acteur, ligne, position, dec, date, titre, lien, exemple = false }: {
+  etiquette: string; nom: string; acteur: string; ligne: string; position: string; dec?: Record<string, string> | null;
+  date: string; titre: string; lien?: string; exemple?: boolean;
+}) {
+  const [tout, setTout] = useState(false);
+  return (
+    <View style={s.carte}>
+      <AvecPicto picto="vote"><Text style={s.etiquette}>{etiquette}</Text></AvecPicto>
+      <Text style={s.carteTitre}>{`${nom} ${VERBE_VOTE[position] ?? "a voté"}.`}</Text>
+      {/* Groupe inconnu ici : badge gris, aucune couleur de parti (ADR 0001). */}
+      <View style={s.badge}><Text style={s.badgeTexte}>{libelleGroupe(groupeDe(acteur))}</Text></View>
+      <Text style={s.legende}>{ligne}</Text>
+      <SensVote cle={position} texte={POSITION_MOT[position]} />
+      <Text style={s.legende}>{date} · {titre}</Text>
+      <Details titre="Décompte du scrutin" couleur={D.encre} lien={D.encre}>
+        <BarreVote dec={dec} />
+      </Details>
+      <Pressable onPress={() => setTout(true)} accessibilityRole="button"
+        accessibilityLabel={`Tout voir sur le vote de ${nom} : scrutin, décompte, lecture, lien officiel`}
+        style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", alignSelf: "flex-start", opacity: pressed ? 0.7 : 1 })}>
+        <Text style={[s.legende, { fontSize: 14, textDecorationLine: "underline" }]}>Tout voir : scrutin et lecture</Text>
+      </Pressable>
+      <ModaleExhaustif titre={`Vote de ${nom}`} visible={tout} onFermer={() => setTout(false)} sections={[
+        { titre: "Le scrutin", contenu: `${date} · ${titre}`, source: "Assemblée nationale" },
+        { titre: "Le décompte", contenu: dec ? decompte(dec) : "Le décompte n'est pas publié pour ce scrutin." },
+        { titre: "Comment Repère lit la position", contenu: exemple
+          ? "Cet exemple est figé : scrutin n° " + VOTE.n + ", vérifié le 30/10/2026. Repère ne l'affiche pas comme le vote d'un député de votre commune."
+          : "Repère n'affiche la position d'un député que si les deux relevés de l'Assemblée nationale se correspondent. Sinon, la carte ne montre aucune position." },
+        { titre: "Lien officiel", contenu: lien
+          ? <Pressable onPress={() => Linking.openURL(lien)} accessibilityRole="link" accessibilityLabel="Le scrutin sur le site de l'Assemblée nationale, ouvre un site externe"
+              style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", opacity: pressed ? 0.7 : 1 })}>
+              <Text style={[TYPO.corps, { textDecorationLine: "underline" }]}>Le scrutin sur le site de l'Assemblée nationale (site externe)</Text>
+            </Pressable>
+          : "Aucun lien officiel vérifié pour ce scrutin." },
+      ]} />
     </View>
   );
 }
@@ -212,7 +257,7 @@ export default function Accueil() {
           if (d && d.acteurRef) {
             const tries = [...cat.scrutins].sort((a: { d: string; n: string }, b: { d: string; n: string }) => (b.d + b.n.padStart(6, "0")).localeCompare(a.d + a.n.padStart(6, "0")));
             const sc = tries.find((x: { n: string }) => POSITION_MOT[positionSur(pos, d.acteurRef, x.n) as string]);
-            if (sc) vu = { depute: [d.prenom, d.nom].filter(Boolean).join(" ") || d.nom, acteur: d.acteurRef, circo: Number(circos[0]), position: positionSur(pos, d.acteurRef, sc.n), d: sc.d, t: sc.t, dec: sc.dec };
+            if (sc) vu = { depute: [d.prenom, d.nom].filter(Boolean).join(" ") || d.nom, acteur: d.acteurRef, circo: Number(circos[0]), position: positionSur(pos, d.acteurRef, sc.n), d: sc.d, t: sc.t, dec: sc.dec, lien: srcVote(r.donnees as any, sc)?.url ?? undefined };
           }
         }
       }
@@ -320,16 +365,9 @@ export default function Accueil() {
               ) : null}
               {voteAffiche ? <View style={{ width: larg }}>
                 {voteVu && "depute" in voteVu ? (
-                  <View style={s.carte}>
-                    <AvecPicto picto="vote"><Text style={s.etiquette}>Le dernier vote publié de votre député</Text></AvecPicto>
-                    <Text style={s.carteTitre}>{voteVu.depute}</Text>
-                    {/* Groupe inconnu ici : badge gris, aucune couleur de parti (ADR 0001). */}
-                    <View style={s.badge}><Text style={s.badgeTexte}>{libelleGroupe(groupeDe(voteVu.acteur))}</Text></View>
-                    <Text style={s.legende}>Député de la {ordinal(voteVu.circo)} circonscription · {nomDep(departementDe(cible.insee) || "")}</Text>
-                    <SensVote cle={voteVu.position} texte={POSITION_MOT[voteVu.position]} />
-                    <BarreVote dec={voteVu.dec} />
-                    <Text style={s.legende}>{dateFr(voteVu.d)} · {titreLisible(voteVu.t)} · source : Assemblée nationale</Text>
-                  </View>
+                  <CarteVote etiquette="Le dernier vote publié de votre député" nom={voteVu.depute} acteur={voteVu.acteur}
+                    ligne={`Député de la ${ordinal(voteVu.circo)} circonscription · ${nomDep(departementDe(cible.insee) || "")}`}
+                    position={voteVu.position} dec={voteVu.dec} date={dateFr(voteVu.d)} titre={titreLisible(voteVu.t)} lien={voteVu.lien} />
                 ) : voteVu && "partagee" in voteVu ? (
                   <View style={s.carte}>
                     <Text style={s.etiquette}>Votre député</Text>
@@ -337,16 +375,9 @@ export default function Accueil() {
                     <Text style={s.legende}>{cible.nom} est partagée entre {voteVu.partagee} circonscriptions. Repère ne choisit pas un député à votre place : ses votes sont sur l'écran de la commune.</Text>
                   </View>
                 ) : (
-                  <View style={s.carte}>
-                    <AvecPicto picto="vote"><Text style={s.etiquette}>Un exemple</Text></AvecPicto>
-                    <Text style={s.carteTitre}>{VOTE.depute}</Text>
-                    {/* Groupe inconnu ici : badge gris, aucune couleur de parti (ADR 0001). */}
-                    <View style={s.badge}><Text style={s.badgeTexte}>{libelleGroupe(groupeDe(VOTE.acteur))}</Text></View>
-                    <Text style={s.legende}>Député de la 1re circonscription de Seine-et-Marne</Text>
-                    <SensVote cle="a" texte="S'est abstenu" />
-                    <BarreVote dec={decExemple} />
-                    <Text style={s.legende}>{dateFr(VOTE.date)} · {titreLisible(VOTE.titre)}</Text>
-                  </View>
+                  <CarteVote etiquette="Un exemple" nom={VOTE.depute} acteur={VOTE.acteur}
+                    ligne="Député de la 1re circonscription de Seine-et-Marne" position="a" dec={decExemple}
+                    date={dateFr(VOTE.date)} titre={titreLisible(VOTE.titre)} exemple />
                 )}
               </View> : null}
             </ScrollView>
