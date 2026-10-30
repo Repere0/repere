@@ -25,6 +25,7 @@ import { srcAgenda } from "../lib/sources";
 import { feuille, couleurs, CIBLE, OMBRE, PAS, RAYON, TYPO } from "../lib/theme";
 import { typo } from "./reponse";
 import { PastilleSource } from "./source";
+import { AvecPicto } from "./picto";
 
 type Jour = { date: string; seances: number; annonce: boolean };
 type Vote = { debut: string; institution: string; texte: string };
@@ -68,7 +69,7 @@ export function SemaineParlement({ sp, lu, nom }: { sp: Semaine | null | undefin
   if (!lu || !sp || !sp.institutions.length) {
     return (
       <View testID="semaine-parlement" style={s.carte}>
-        <Text style={TYPO.etiquette} accessibilityRole="header">Cette semaine au Parlement</Text>
+        <AvecPicto picto="parlement"><Text style={TYPO.etiquette} accessibilityRole="header">Cette semaine au Parlement</Text></AvecPicto>
         <Text style={s.phrase}>{typo(AGENDA_PAS_ARRIVE.titre)}</Text>
         <Text style={TYPO.note}>{typo(AGENDA_PAS_ARRIVE.corps)}</Text>
         <Suite onPress={aller} />
@@ -100,7 +101,7 @@ export function SemaineParlement({ sp, lu, nom }: { sp: Semaine | null | undefin
 
   return (
     <View testID="semaine-parlement" style={s.carte}>
-      <Text style={TYPO.etiquette} accessibilityRole="header">Cette semaine au Parlement</Text>
+      <AvecPicto picto="parlement"><Text style={TYPO.etiquette} accessibilityRole="header">Cette semaine au Parlement</Text></AvecPicto>
       <Text style={s.phrase}>{typo(phrase)}</Text>
 
       {/* Sept colonnes egales : a 360 px, 44 px chacune. Le nombre est ecrit pour

@@ -14,8 +14,8 @@
  *   - Le parti : « non publié par la source » tant que la source ne le donne pas,
  *     en petit, en pied de fiche. Repère ne le devine jamais.
  *   - Les votes : ceux de cet elu (filtre sur son nom), parmi les scrutins publies.
- *     Positions dites en mots et en signes neutres, jamais en couleur (les couleurs
- *     de Repere ne codent jamais Pour / Contre).
+ *     Positions dites en mots, avec un signe de la couleur du sens du vote (D24,
+ *     ADR 0003 : vert pour, rouge contre, gris abstention ; un fait, pas un jugement).
  *   - « Comprendre ce vote » : le resultat publie, et le resume de la redaction
  *     Repere s'il existe (evenements.json, chaque resume porte sa source
  *     officielle). Sinon, le titre seul et le lien vers le scrutin officiel.
@@ -35,7 +35,8 @@ import { Repartition } from "../ui/visuels";
 import { Carte, Vide } from "../lib/composants";
 import { chargerEvenements } from "../lib/donnees";
 import { srcElus, srcScrutins } from "../lib/sources";
-import { couleurs, CIBLE, PAS, RAYON, TYPO, type Echelon } from "../lib/theme";
+import { couleurs, CIBLE, COULEUR_VOTE, PAS, RAYON, TYPO, type Echelon } from "../lib/theme";
+import { AvecPicto } from "../ui/picto";
 import { AvecDonnees, Page, Question } from "../ui/page";
 import { PastilleSource } from "../ui/source";
 import { DateDonnee } from "../ui/fraicheur";
@@ -48,7 +49,7 @@ type Resume = { id: string; axes?: string; src?: string; srcn?: string };
 
 const PARTI_NON_PUBLIE = "Parti : non publié par la source. Repère ne le déduit pas.";
 const POSITION: Record<string, string> = { p: "Pour", c: "Contre", a: "Abstention" };
-/* Signes de texte (variante texte forcee) : ni emoji colores, ni couleur. */
+/* Signes de texte (variante texte forcee, pas d'emoji), colores selon le sens du vote (D24). */
 const SIGNE: Record<string, string> = { p: "✓︎", c: "✕︎", a: "○︎" };
 const SYNTHESE = 3;
 
@@ -79,7 +80,7 @@ function CarteVote({ f, onComprendre }: { f: FaitElu; onComprendre: () => void }
     <View style={{ gap: PAS * 2, padding: PAS * 4, borderRadius: RAYON.bloc, backgroundColor: couleurs.carte, borderWidth: 1, borderColor: couleurs.trait }}
       accessibilityLabel={`${dateFr(f.sc.d)} : ${POSITION[pos]} sur ${titreLisible(f.sc.t)}`}>
       <View style={{ flexDirection: "row", alignItems: "center", gap: PAS * 2 }}>
-        <Text accessibilityElementsHidden importantForAccessibility="no" style={{ fontSize: 18, fontWeight: "800", color: couleurs.encre, width: 20 }}>{SIGNE[pos]}</Text>
+        <Text accessibilityElementsHidden importantForAccessibility="no" style={{ fontSize: 18, fontWeight: "800", color: COULEUR_VOTE[pos as keyof typeof COULEUR_VOTE] ?? couleurs.encre, width: 20 }}>{SIGNE[pos]}</Text>
         <Text style={[TYPO.corps, { fontWeight: "800" }]}>{POSITION[pos]}</Text>
         <Text style={[TYPO.micro, { marginLeft: "auto" }]}>{dateFr(f.sc.d)}</Text>
       </View>
@@ -106,6 +107,13 @@ function FeuilleVote({ f, nom, resume, base, onFermer }: { f: FaitElu | null; no
           <Text style={TYPO.micro}>Scrutin n° {f.sc.n}, {dateFr(f.sc.d)}</Text>
           <Text style={[TYPO.corps, { fontWeight: "700" }]}>{titreLisible(f.sc.t)}</Text>
           <Text style={TYPO.corps}>{nom} : {POSITION[f.position as string].toLowerCase()}.</Text>
+          {/* D24 : la repartition du scrutin, en couleurs de vote, avec sa legende chiffree. */}
+          {/* Sur une carte, jamais sur le sol : le vert y fait 3,22:1 au lieu de 2,88:1 (ADR 0003). */}
+          {repartitionVote(f.sc) ? (
+            <View style={{ padding: PAS * 4, borderRadius: RAYON.bloc, backgroundColor: couleurs.carte }}>
+              <Repartition segments={repartitionVote(f.sc)!.segments} total={repartitionVote(f.sc)!.total} position={f.position} qui={nom} />
+            </View>
+          ) : null}
           {f.sc.sl ? <Text style={TYPO.corps}>{f.sc.sl.charAt(0).toUpperCase() + f.sc.sl.slice(1)}{f.sc.dec ? `, ${decompte(f.sc.dec)}` : ""}.</Text> : null}
           {resume && resume.axes ? (
             <View style={{ gap: PAS * 2, padding: PAS * 4, borderRadius: RAYON.bloc, backgroundColor: couleurs.carte }}>
@@ -201,7 +209,7 @@ export default function Elu() {
             {/* LA SYNTHESE : ses trois votes publies les plus recents. */}
             {depute ? (
               <View style={{ gap: PAS * 3 }}>
-                <Text style={TYPO.etiquette} accessibilityRole="header">Ses derniers votes</Text>
+                <AvecPicto picto="vote"><Text style={TYPO.etiquette} accessibilityRole="header">Ses derniers votes</Text></AvecPicto>
                 {votes.length ? votes.slice(0, SYNTHESE).map(f => (
                   <CarteVote key={f.sc.n} f={f} onComprendre={() => setOuvert(f)} />
                 )) : videVote ? <Vide {...videVote} /> : null}

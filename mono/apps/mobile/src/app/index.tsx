@@ -29,6 +29,8 @@ import { Logo } from "../ui/logo";
 import { DatePublication } from "../ui/fraicheur";
 import { DernieresPublications } from "../ui/dernieres-publications";
 import { phrasesMoyenne, useMoyenneDepenses } from "../lib/moyenne";
+import { COULEUR_VOTE } from "../lib/theme";
+import { AvecPicto } from "../ui/picto";
 
 /* L'accueil est sombre : il lit la palette sombre, quel que soit le choix d'affichage. */
 const D = NEUTRES_PAR_MODE.sombre;
@@ -75,8 +77,19 @@ function BarreVote({ dec }: { dec?: Record<string, string> | null }) {
   if (p === null || c === null || a === null || p + c + a === 0) return null;
   return (
     <View style={{ gap: PAS * 2 }}>
-      <Barre parts={[{ cle: "p", valeur: p, couleur: D.encre }, { cle: "c", valeur: c, couleur: D.sourd }, { cle: "a", valeur: a, couleur: D.trait }]} />
+      <Barre parts={[{ cle: "p", valeur: p, couleur: COULEUR_VOTE.p }, { cle: "c", valeur: c, couleur: COULEUR_VOTE.c }, { cle: "a", valeur: a, couleur: COULEUR_VOTE.a }]} />
       <Text style={s.legende}>L'Assemblée : {decompte(dec)}.</Text>
+    </View>
+  );
+}
+
+/* Le sens du vote : un rond de couleur (D24, un fait) et la position en toutes lettres. */
+function SensVote({ cle, texte }: { cle: string; texte: string }) {
+  const couleur = COULEUR_VOTE[cle as keyof typeof COULEUR_VOTE];
+  return (
+    <View style={{ flexDirection: "row", alignItems: "center", gap: PAS * 2 }}>
+      {couleur ? <View accessibilityElementsHidden importantForAccessibility="no" style={{ width: 14, height: 14, borderRadius: 7, backgroundColor: couleur }} /> : null}
+      <Text style={s.vote}>{texte}</Text>
     </View>
   );
 }
@@ -230,7 +243,7 @@ export default function Accueil() {
               {argent ? (
                 <View style={{ width: larg }}>
                   <View style={s.carte}>
-                    <Text style={s.etiquette}>{exemple ? "Un exemple, en attendant votre commune" : "Votre commune"}</Text>
+                    <AvecPicto picto="budget"><Text style={s.etiquette}>{exemple ? "Un exemple, en attendant votre commune" : "Votre commune"}</Text></AvecPicto>
                     <Text style={s.carteTitre}>L'argent de {argent.nom}</Text>
                     <Text style={s.chiffre}>{argent.depenses.toLocaleString("fr-FR")} €</Text>
                     <Text style={s.legende}>dépensés par habitant en {argent.an}</Text>
@@ -262,12 +275,12 @@ export default function Accueil() {
               <View style={{ width: larg }}>
                 {voteVu && "depute" in voteVu ? (
                   <View style={s.carte}>
-                    <Text style={s.etiquette}>Le dernier vote publié de votre député</Text>
+                    <AvecPicto picto="vote"><Text style={s.etiquette}>Le dernier vote publié de votre député</Text></AvecPicto>
                     <Text style={s.carteTitre}>{voteVu.depute}</Text>
                     {/* Groupe inconnu ici : badge gris, aucune couleur de parti (ADR 0001). */}
                     <View style={s.badge}><Text style={s.badgeTexte}>Groupe : {groupeDe(voteVu.acteur)}</Text></View>
                     <Text style={s.legende}>Député de la {ordinal(voteVu.circo)} circonscription · {nomDep(departementDe(cible.insee) || "")}</Text>
-                    <Text style={s.vote}>{POSITION_MOT[voteVu.position]}</Text>
+                    <SensVote cle={voteVu.position} texte={POSITION_MOT[voteVu.position]} />
                     <BarreVote dec={voteVu.dec} />
                     <Text style={s.legende}>{dateFr(voteVu.d)} · {titreLisible(voteVu.t)} · source : Assemblée nationale</Text>
                   </View>
@@ -279,12 +292,12 @@ export default function Accueil() {
                   </View>
                 ) : (
                   <View style={s.carte}>
-                    <Text style={s.etiquette}>Un exemple</Text>
+                    <AvecPicto picto="vote"><Text style={s.etiquette}>Un exemple</Text></AvecPicto>
                     <Text style={s.carteTitre}>{VOTE.depute}</Text>
                     {/* Groupe inconnu ici : badge gris, aucune couleur de parti (ADR 0001). */}
                     <View style={s.badge}><Text style={s.badgeTexte}>Groupe : {groupeDe(VOTE.acteur)}</Text></View>
                     <Text style={s.legende}>Député de la 1re circonscription de Seine-et-Marne</Text>
-                    <Text style={s.vote}>S'est abstenu</Text>
+                    <SensVote cle="a" texte="S'est abstenu" />
                     <BarreVote dec={decExemple} />
                     <Text style={s.legende}>{dateFr(VOTE.date)} · {titreLisible(VOTE.titre)}</Text>
                   </View>

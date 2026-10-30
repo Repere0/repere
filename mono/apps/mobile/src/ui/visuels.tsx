@@ -11,7 +11,7 @@
  * Construites avec des View : aucune bibliotheque de graphiques. */
 import { useState, type ReactNode } from "react";
 import { Animated, Pressable, StyleSheet, Text, View } from "react-native";
-import { feuille, couleurs, GRIS_VOTE, PAS, RAYON, TEINTES, TYPO, CIBLE, type Echelon } from "../lib/theme";
+import { feuille, couleurs, COULEUR_VOTE, PAS, RAYON, TEINTES, TYPO, CIBLE, type Echelon } from "../lib/theme";
 import { useApparition, useCompteur } from "./mouvement";
 import { pointEchelon } from "../lib/niveaux";
 
@@ -80,13 +80,13 @@ export function Repartition({ segments, total, position, qui, compact }: {
     <View accessible accessibilityLabel={phrase} style={{ gap: PAS * 3 }}>
       <View style={s.barreVote}>
         {segments.map(x => (
-          <Animated.View key={x.cle} style={{ width: largeur(v, x.part * 100), backgroundColor: GRIS_VOTE[x.cle as keyof typeof GRIS_VOTE] }} />
+          <Animated.View key={x.cle} style={{ width: largeur(v, x.part * 100), backgroundColor: COULEUR_VOTE[x.cle as keyof typeof COULEUR_VOTE] }} />
         ))}
       </View>
       {compact ? null : <View style={{ gap: PAS * 2 }}>
         {segments.map(x => (
           <View key={x.cle} style={s.legende}>
-            <View style={[s.pastilleCouleur, { backgroundColor: GRIS_VOTE[x.cle as keyof typeof GRIS_VOTE] }]} />
+            <View style={[s.pastilleCouleur, { backgroundColor: COULEUR_VOTE[x.cle as keyof typeof COULEUR_VOTE] }]} />
             <Text style={[TYPO.corps, { flex: 1 }]}>{x.libelle}</Text>
             {position === x.cle && qui ? <Text style={s.marque} numberOfLines={1}>{qui}</Text> : null}
             <Text style={[TYPO.corps, { fontWeight: "700", minWidth: 44, textAlign: "right" }]}>{x.nombre}</Text>

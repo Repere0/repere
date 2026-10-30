@@ -20,12 +20,16 @@
  * de stockage nouvelle : l'invariant 2 (une seule clé locale) est préservé. */
 import { useColorScheme } from "react-native";
 import {
-  NEUTRES_PAR_MODE, ECHELONS_PAR_MODE, TEINTES_PAR_MODE, OMBRE_PAR_MODE,
+  NEUTRES_PAR_MODE, ECHELONS_PAR_MODE, TEINTES_PAR_MODE, OMBRE_PAR_MODE, COULEURS_VOTE,
   type Mode, type Echelon,
 } from "./palette";
 
 export type { Echelon, Mode } from "./palette";
 export { PALETTE_CARTE } from "./palette";
+
+/* Sens du vote (D24, ADR 0003) : vert pour, rouge contre, gris abstention. Identiques dans
+   les deux themes ; la position est toujours aussi ecrite en toutes lettres. */
+export const COULEUR_VOTE = { p: COULEURS_VOTE.votePour, c: COULEURS_VOTE.voteContre, a: COULEURS_VOTE.voteAbstention } as const;
 
 export const CIBLE = 48;
 export const PAS = 4;
