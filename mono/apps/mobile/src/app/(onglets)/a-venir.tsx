@@ -9,8 +9,8 @@
  *     une seance publiee ont un point. Le mois se deplie d'un geste.
  *   - Filtre segmente : Tout, Assemblée, Sénat. Les filtres « Décisions » et
  *     « Commune » du canevas ne sont pas branches : aucune donnee publiee.
- *   - Une ligne par texte et par jour, avec l'heure de debut et la fin quand la
- *     source la donne (« fin non publiée » sinon). Le detail se deplie.
+ *   - Une ligne par texte et par jour : « HHh : titre (institution) », la fin de
+ *     seance seulement quand la source la donne. Sans fin publiee, l'heure seule.
  *   - L'alerte « me prévenir une heure avant » du canevas n'est pas branchee :
  *     l'application le dit, au lieu de promettre un rappel qui ne vient pas.
  *   - La procedure : une entree vers son ecran, comme avant.
@@ -20,7 +20,7 @@ import { useState } from "react";
 import { Pressable, Text, View } from "react-native";
 import { router, Stack } from "expo-router";
 import {
-  AGE_RELEVE_NORMAL, ageReleve, dateFr, ETAPES_LOI, heureFr, jourFr, jourParis, LIBELLES, regrouperParJour,
+  ageReleve, dateFr, ETAPES_LOI, heureFr, jourFr, jourParis, LIBELLES, regrouperParJour,
 } from "@repere/core";
 import { Carte, Vide } from "../../lib/composants";
 import { AGENDA_PAS_ARRIVE, AGENDA_VIDE } from "../../lib/absences";
@@ -62,13 +62,11 @@ function Ligne({ g }: { g: Groupe }) {
     const debut = heureFr(x);
     if (!debut) return "";
     const fin = g.fins && g.fins[i] ? heureFr(g.fins[i]) : "";
-    return (fin ? `${debut} à ${fin}` : `${debut} (fin non publiée)`).replace(/ /g, " ");
+    return (fin ? `${debut} à ${fin}` : debut).replace(/ /g, " ");
   }).filter(Boolean).join(", ");
   return (
     <View testID="cal-ligne" style={{ gap: PAS, paddingTop: PAS * 3, borderTopWidth: 1, borderTopColor: couleurs.trait }}>
-      <Text style={[TYPO.corps, { fontWeight: "700" }]}>{heures || "Heure non publiée"}</Text>
-      <Text style={TYPO.etiquette}>{g.institution}</Text>
-      <Text style={[TYPO.corps, { fontWeight: "600" }]}>{g.titre}</Text>
+      <Text style={[TYPO.corps, { fontWeight: "600" }]}>{`${heures || "Heure non publiée"} : ${g.titre} (${g.institution})`}</Text>
       <Text style={TYPO.note}>
         {[g.categorie, g.lieu, g.seances > 1 ? `${g.seances} séances ce jour-là` : null].filter(Boolean).join(" · ")}
       </Text>
@@ -147,8 +145,11 @@ export default function AVenir() {
           ? `${deuxSemaines.length} rendez-vous publiés dans les deux prochaines semaines.`
           : "Rien de publié dans les deux prochaines semaines pour ce filtre. Repère n'affiche que ce qui est annoncé ou publié.");
       const manquantes = lues.length ? INSTITUTIONS.filter(i => !lues.some(x => x.institution === i)) : [];
-      const vieillis = lues.map(x => ({ ...x, age: ageReleve(x.source && x.source.releve_le) }))
-        .filter(x => x.age !== null && x.age > AGE_RELEVE_NORMAL);
+      /* Un seul repere de fraicheur, pour l'ecran : le plus ancien des agendas lus. */
+      const ages = lues.map(x => ageReleve(x.source && x.source.releve_le)).filter((a): a is number => a !== null);
+      const plusAncien = ages.length ? Math.max(...ages) : null;
+      const libelleMaj = plusAncien === null ? null
+        : plusAncien === 0 ? "Mis à jour aujourd'hui" : `Mis à jour il y a ${plusAncien} jour${plusAncien > 1 ? "s" : ""}`;
       /* Carte de partage : le premier point affiche, avec la source de son institution. */
       const suivant = affiches[0];
       const lue = suivant ? lues.find(x => x.institution === suivant.institution) : undefined;
@@ -156,11 +157,12 @@ export default function AVenir() {
       return (
         <Page>
           <Stack.Screen options={{ title: LIBELLES.calendrier }} />
-          <View style={{ flexDirection: "row", alignItems: "flex-end", justifyContent: "space-between", gap: PAS * 2 }}>
+          <View style={{ flexDirection: "row", alignItems: "flex-start", justifyContent: "space-between", gap: PAS * 2 }}>
             <View style={{ flex: 1 }}>
               <Question etiquette="Au Parlement" question="Calendrier"
                 sous="Les séances annoncées à l'Assemblée nationale et au Sénat. Elles concernent tout le pays, pas seulement votre commune." />
             </View>
+            {libelleMaj ? <Text testID="maj-agenda" style={[TYPO.micro, { textAlign: "right", paddingTop: PAS }]}>{libelleMaj}</Text> : null}
           </View>
           <Pressable onPress={() => setMois(m => !m)} accessibilityRole="button"
             accessibilityLabel={mois ? "Voir la semaine" : "Voir le mois"}
@@ -174,11 +176,6 @@ export default function AVenir() {
             <>
               {manquantes.map(i => (
                 <Text key={i} style={TYPO.note}>{nbsp(`Le calendrier ${de(i)} n'est pas arrivé jusqu'ici : il n'est pas affiché, et rien n'est inventé à sa place.`)}</Text>
-              ))}
-              {vieillis.map(x => (
-                <Text key={"age-" + x.institution} testID="releve-ancien" style={TYPO.note}>
-                  {nbsp(`Agenda ${de(x.institution)} relevé le ${dateFr(x.source.releve_le)}, il y a ${x.age} jours : il a pu changer depuis. Le site officiel fait foi.`)}
-                </Text>
               ))}
 
               {/* Semaine ou mois : un seul choix de jour, en haut de l'ecran. */}
