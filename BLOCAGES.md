@@ -185,3 +185,18 @@ Ajout d'une garde `HORS_MAIN` : hors de `main`, la chaîne tourne, un bilan de c
 - **Libellé du groupe** : « Groupe politique : non publié », sans « (source AN) ». Ce serait inexact : l'Assemblée publie les groupes, c'est Repère qui ne les extrait pas (D3).
 - **« Repère publie chaque lundi »** est désormais affiché aux lecteurs des 3 communes pilotes. Une semaine sans pull request fusionnée avant lundi matin affichera « Aucune actu cette semaine ». La promesse dépend du CEO, pas du code.
 - **Publication** : `data/actus-hebdo.json` n'arrive en production qu'après fusion sur `main` (pull request, `main` est protégée), puis passage de `collecte.yml`.
+
+### 22 bis. Bloc 3d — première actu Melun : non remplie (30/10/2026, 17 h 30)
+
+**Le CEO doit remplir la première actu Melun manuellement.**
+
+Recherche faite sur le site officiel (melun.fr / ville-melun.fr) :
+- **Aucun article de la ville n'affiche de date de publication.** L'exigence « des 7 derniers jours » ne peut donc pas être vérifiée sur la source officielle.
+- **Seul élément récent et daté par son contenu** : « Obsèques d'Henri Mellier » (https://www.melun.fr/actualites/1303-obseques-dhenri-mellier). Décès le 25/10/2026 d'un adjoint au maire, obsèques le 04/11/2026. Je ne l'ai pas publié, pour deux raisons :
+  - c'est un avis de décès signé par la famille ; en faire la première actu de l'application est un choix éditorial qui revient au CEO ;
+  - si M. Mellier figurait encore dans l'annuaire des élus (RNE), sa fiche resterait affichée comme celle d'un élu en fonction jusqu'à la prochaine mise à jour du RNE. **À vérifier** dans l'application avant toute publication sur ce sujet. Je n'ai pas pu le faire, faute d'accès aux sources d'annuaire depuis cette session.
+- « Travaux en Centre-Ville » (Tzen 2, réseau de chaleur) : la page est marquée « Expiré », sans date. Écarté.
+- Les pages du conseil municipal sont inaccessibles depuis cette session (erreur du site).
+- La presse locale n'a pas été utilisée comme source (D29 : pas de reprise de presse).
+
+**Règle de fond** : D29 exclut l'IA générative pour les actus. Même avec une actu trouvée, un titre et un résumé écrits par Claude seraient en tension avec D29. Le texte doit être écrit, ou au minimum réécrit, par le CEO.
