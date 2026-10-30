@@ -307,8 +307,8 @@ const apres = await page.evaluate(() => ({
    verifie qu'aucune de ses deux valeurs ne ressemble a une commune. */
 let valeurParsee = null;
 try { valeurParsee = JSON.parse(apres.valeur || "null"); } catch { /* laisse null, le controle echouera a raison */ }
-verif("invariant 2 — une seule cle, nommee, et elle ne porte qu'un departement et un instant de visite",
-  apres.local.length === 1 && apres.local[0] === "repere.departement"
+verif("invariant 2 — deux cles au plus, nommees (ADR 0006), et repere.departement ne porte qu'un departement et un instant de visite",
+  apres.local.includes("repere.departement") && apres.local.every(k => k === "repere.departement" || k === "repere.profil")
   && valeurParsee && Object.keys(valeurParsee).sort().join(",") === "d,v"
   && /^(\d{2,3}|2[AB])$/.test(valeurParsee.d || "")
   && (valeurParsee.v === null || /^\d{4}-\d{2}-\d{2}T/.test(valeurParsee.v)),

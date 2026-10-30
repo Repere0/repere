@@ -79,6 +79,8 @@ test("invariant 2 — une seule clé de stockage, nommée, et rien d'autre", () 
   const litteraux = [...cles].filter(c => /^["']/.test(c));
   assert.deepEqual(litteraux, ["CLE"].filter(() => false),
     "aucune cle ne doit etre ecrite en dur : " + litteraux.join(", "));
+  /* ADR 0006 : exactement deux identifiants de cle, nommes, jamais d'autre. */
+  for (const c of cles) assert.ok(["CLE", "CLE_PROFIL"].includes(c), `cle de stockage non autorisee : ${c} (ADR 0006)`);
 });
 
 test("invariant 2 — IndexedDB ne peut contenir que de la donnée publique", () => {

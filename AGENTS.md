@@ -32,14 +32,13 @@ explicite du porteur les change ; la PR qui l'applique met alors à jour
 
 <!-- INVARIANTS:DEBUT -->
 1. **Autonomie.** L'application fonctionne hors ligne, sans serveur applicatif.
-2. **Une seule clé de stockage local** (`repere.departement` dans `mono/`, qui porte
-   `{d, v}` depuis le 23/09/2026). Aucun compte, email, traceur, cookie. Le
-   magasin de données (IndexedDB sur le site, dossier cache de l'application sur
-   le téléphone — décision du 30/09/2026) ne garde que les fichiers publics
-   publiés par Repère, sous une garde unique (`store.js`) : aucune adresse,
-   aucun identifiant, aucune trace du lecteur. La commune choisie reste la seule
-   donnée propre au lecteur. Aucune adresse réseau ne porte un code de commune :
-   données découpées **par département**.
+2. **Deux clés de stockage local, nommées, rien d'autre.** `repere.departement` (la commune,
+   `{d, v}` depuis le 23/09/2026) et `repere.profil` (réglages de lecture : taille, contraste,
+   espacement, police, animations, daltonisme, images ; ADR 0006). Ni l'une ni l'autre n'est
+   transmise : aucun compte, email, traceur, cookie. Le magasin de données (IndexedDB sur le
+   site, cache de l'application sur le téléphone) ne garde que les fichiers publics publiés
+   par Repère, sous une garde unique (`store.js`). Aucune adresse réseau ne porte un code de
+   commune ni un réglage : données découpées **par département**.
 3. **Aucun classement**, score, ou tri numérique de personnes, de partis ou de territoires.
    Amendé (D23, 30/10/2026, ADR 0002) : comparaisons FACTUELLES entre communes permises
    (moyenne IDF ou régionale, « comme X communes sur Y », année N-1), annoncées comme calcul ;
