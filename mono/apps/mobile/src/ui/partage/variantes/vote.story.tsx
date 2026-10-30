@@ -7,7 +7,7 @@ import { NEUTRES_PAR_MODE, type Mode } from "../../../lib/palette";
 import { BadgeGroupe } from "../../badge-groupe";
 import { CarteStory } from "../carte-story";
 
-export function VoteStory({ refCarte, mode = "clair", groupe, etiquette, phrase, titre, sous, source }: {
+export function VoteStory({ refCarte, mode = "sombre", groupe, etiquette, phrase, titre, sous, source }: {
   refCarte: RefObject<ComponentRef<typeof View> | null>; mode?: Mode; groupe: string;
   etiquette: string; phrase: string; titre: string; sous: string; source: string;
 }) {

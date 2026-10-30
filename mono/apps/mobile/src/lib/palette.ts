@@ -62,11 +62,11 @@ export const OMBRE_PAR_MODE = {
   sombre: { shadowColor: "#000000", shadowOpacity: 0.5, shadowRadius: 12, shadowOffset: { width: 0, height: 4 }, elevation: 2 },
 } as const;
 
-/* La palette claire, figée : la carte de partage est une image qui part dans
-   une messagerie, sur un fond que nous ne choisissons pas. Elle garde la marque
-   en clair, quel que soit le thème du téléphone. */
-export const PALETTE_CLAIRE = Object.freeze({
-  ...ECHELONS_PAR_MODE.clair, ...NEUTRES_CLAIR,
+/* La palette des cartes de partage, figée et sombre (décision D5 du porteur, 30/10/2026).
+   La carte est une image qui part dans une messagerie : elle garde la même apparence quel
+   que soit le thème du téléphone. */
+export const PALETTE_CARTE = Object.freeze({
+  ...ECHELONS_PAR_MODE.sombre, ...NEUTRES_SOMBRE,
 });
 
 /* Contraste WCAG entre deux couleurs hexadécimales (D17). Sert à décider si un

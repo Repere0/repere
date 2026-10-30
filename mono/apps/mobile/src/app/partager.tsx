@@ -19,10 +19,11 @@ import { Stack } from "expo-router";
 import * as Sharing from "expo-sharing";
 import { captureRef } from "react-native-view-shot";
 import { chaineDecision, copieVoteVide, dateFr, etapeDuScrutin, ETAPES_LOI, ETAT_VOTE, jourParis, procedure, titreLisible } from "@repere/core";
-import { couleurs, CIBLE, PAS, PALETTE_CLAIRE } from "../lib/theme";
+import { couleurs, CIBLE, PAS, PALETTE_CARTE } from "../lib/theme";
+import { Logo as Marque } from "../ui/logo";
 
 /* Les cartes sont des images partagées hors de l'application : elles restent claires, quel que soit le thème du téléphone. */
-const cl: Record<string, string> = PALETTE_CLAIRE;
+const cl: Record<string, string> = PALETTE_CARTE;
 import { srcScrutins, srcVote } from "../lib/sources";
 import { Vide } from "../lib/composants";
 import { AvecDonnees, Page, Question } from "../ui/page";
@@ -51,13 +52,11 @@ async function partagerImage(carte: RefObject<ComponentRef<typeof View> | null>,
   }
 }
 
-/* Le logo du canevas : un carre encre, une lettre, le nom. */
+/* Le logo du canevas : la marque vectorielle (ui/logo.tsx), puis le nom. */
 function Logo({ c = couleurs }: { c?: Record<string, string> }) {
   return (
     <View style={{ flexDirection: "row", alignItems: "center", gap: PAS * 2 }}>
-      <View style={{ width: 34, height: 34, borderRadius: 10, backgroundColor: c.encre, alignItems: "center", justifyContent: "center" }}>
-        <Text style={{ color: c.sol, fontWeight: "800", fontSize: 20 }}>R</Text>
-      </View>
+      <Marque size={34} c={{ encre: c.encre, sourd: c.sourd }} />
       <Text style={{ color: c.encre, fontWeight: "800", fontSize: 20, letterSpacing: -0.4 }}>Repère</Text>
     </View>
   );

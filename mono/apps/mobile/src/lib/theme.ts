@@ -25,7 +25,7 @@ import {
 } from "./palette";
 
 export type { Echelon, Mode } from "./palette";
-export { PALETTE_CLAIRE } from "./palette";
+export { PALETTE_CARTE } from "./palette";
 
 export const CIBLE = 48;
 export const PAS = 4;

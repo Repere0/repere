@@ -182,7 +182,7 @@ test("theme — chaque champ de saisie fixe sa couleur de texte (lisible dans le
   assert.deepEqual(fautes, [], "champs sans couleur de texte : " + fautes.join(" | "));
 });
 
-test("theme — les cartes de partage restent sur la palette claire (image sortante)", () => {
+test("theme — les cartes de partage ont une palette fixe, sombre (D5), indépendante du thème du téléphone", () => {
   /* brut : les marqueurs « CARTE 1 » et « CARTE 2 » sont dans des commentaires JSX */
   const s = lire(path.join(SRC, "app", "partager.tsx"));
   const a = s.indexOf("CARTE 1");
@@ -191,7 +191,8 @@ test("theme — les cartes de partage restent sur la palette claire (image sorta
   const fin = s.indexOf("\n            </View>\n", b);
   const cartes = s.slice(a, fin);
   assert.equal((cartes.match(/couleurs\./g) || []).length, 0, "une carte lit encore le thème courant");
-  assert.match(cartes, /<Logo c=\{cl\} \/>/, "le logo des cartes doit prendre la palette claire");
+  assert.match(cartes, /<Logo c=\{cl\} \/>/, "le logo des cartes doit prendre la palette de carte");
+  assert.match(s, /PALETTE_CARTE/, "les cartes doivent lire PALETTE_CARTE (palette.ts), pas le thème courant");
 });
 
 /* userInterfaceStyle « automatic » n'agit sur Android qu'avec expo-system-ui

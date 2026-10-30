@@ -5,7 +5,7 @@ import { POLICE } from "../../../lib/theme";
 import { NEUTRES_PAR_MODE, type Mode } from "../../../lib/palette";
 import { CarteStory } from "../carte-story";
 
-export function ChiffreStory({ refCarte, mode = "clair", ville, euros, an, source }: {
+export function ChiffreStory({ refCarte, mode = "sombre", ville, euros, an, source }: {
   refCarte: RefObject<ComponentRef<typeof View> | null>; mode?: Mode; ville: string; euros: string; an: string | number; source: string;
 }) {
   const P = NEUTRES_PAR_MODE[mode];

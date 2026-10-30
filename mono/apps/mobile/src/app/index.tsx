@@ -24,6 +24,7 @@ import { ECHELONS_PAR_MODE, NEUTRES_PAR_MODE, OMBRE_PAR_MODE } from "../lib/pale
 import { groupeDe } from "../lib/groupes";
 import { VOTE } from "../ui/partage/donnees";
 import { SquelettesListe } from "../ui/squelette";
+import { Logo } from "../ui/logo";
 import { DatePublication } from "../ui/fraicheur";
 
 /* L'accueil est sombre : il lit la palette sombre, quel que soit le choix d'affichage. */
@@ -105,8 +106,11 @@ export default function Accueil() {
           <View style={s.tete}>
             <DatePublication />
             <View style={s.haut}>
-              {/* Pas de logo.png dans assets/ : marque textuelle, avec un point de couleur (jeton de palette). */}
-              <Text style={s.marque} accessibilityLabel="Repère">Repère<Text style={{ color: E.ville }}>.</Text></Text>
+              {/* Le logo est une vue (ui/logo.tsx) : aucun fichier image dans assets/. */}
+              <View style={{ flexDirection: "row", alignItems: "center", gap: PAS * 3 }}>
+                <Logo size={48} variant="mono" />
+                <Text style={s.marque} accessibilityLabel="Repère">Repère<Text style={{ color: E.ville }}>.</Text></Text>
+              </View>
               {!cherche && !filtre ? (
                 <Pressable onPress={() => setCherche(true)} accessibilityRole="button" accessibilityLabel="Chercher une commune"
                   style={({ pressed }) => [s.chercher, pressed && { opacity: 0.7 }]}>

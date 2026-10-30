@@ -7,7 +7,7 @@ import { POLICE } from "../../../lib/theme";
 import { NEUTRES_PAR_MODE, type Mode } from "../../../lib/palette";
 import { CarteStory } from "../carte-story";
 
-export function ElusStory({ refCarte, mode = "clair", nom, fonction, lieu, depuis, source }: {
+export function ElusStory({ refCarte, mode = "sombre", nom, fonction, lieu, depuis, source }: {
   refCarte: RefObject<ComponentRef<typeof View> | null>; mode?: Mode; nom: string; fonction: string; lieu: string; depuis: string; source: string;
 }) {
   const P = NEUTRES_PAR_MODE[mode];

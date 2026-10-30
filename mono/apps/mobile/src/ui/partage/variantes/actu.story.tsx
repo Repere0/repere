@@ -6,7 +6,7 @@ import { POLICE } from "../../../lib/theme";
 import { NEUTRES_PAR_MODE, type Mode } from "../../../lib/palette";
 import { CarteStory } from "../carte-story";
 
-export function ActuStory({ refCarte, mode = "clair", titre, corps, source }: {
+export function ActuStory({ refCarte, mode = "sombre", titre, corps, source }: {
   refCarte: RefObject<ComponentRef<typeof View> | null>; mode?: Mode; titre: string; corps: string; source: string;
 }) {
   const P = NEUTRES_PAR_MODE[mode];
