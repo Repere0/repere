@@ -37,6 +37,7 @@ import { chargerEvenements } from "../lib/donnees";
 import { srcElus, srcScrutins } from "../lib/sources";
 import { couleurs, CIBLE, PAS, RAYON, TYPO, type Echelon } from "../lib/theme";
 import { useCouleurVote } from "../lib/couleur-vote";
+import { PourquoiJeVois } from "../ui/pourquoi";
 import { AvecPicto } from "../ui/picto";
 import { Details } from "../ui/details";
 import { ModaleExhaustif } from "../ui/modale-exhaustif";
@@ -251,7 +252,15 @@ export default function Elu() {
             {/* LA SYNTHESE : ses trois votes publies les plus recents. */}
             {depute ? (
               <View style={{ gap: PAS * 3 }}>
-                {accroche ? <Text style={[TYPO.corps, { fontWeight: "700" }]} accessibilityRole="header">{accroche}</Text> : null}
+                {accroche ? (
+                  <View style={{ flexDirection: "row", alignItems: "center", gap: PAS }}>
+                    <Text style={[TYPO.corps, { fontWeight: "700", flex: 1 }]} accessibilityRole="header">{accroche}</Text>
+                    <PourquoiJeVois etiquette={`la phrase sur les votes de ${nom}`}
+                      p={{ source: { texte: `Assemblée nationale, ses ${recents.length} derniers votes publiés`, lien: null },
+                        calcul: "Repère compte les positions (pour, contre, abstention) de ces votes, puis écrit la phrase à partir de ce compte. Il n'y a pas d'autre calcul.",
+                        ici: "Affiché parce que ce sont les votes publiés les plus récents de cet élu, dans sa fiche." }} />
+                  </View>
+                ) : null}
                 {decompteElu ? <Text style={TYPO.note}>Décompte : {decompteElu}</Text> : null}
                 <AvecPicto picto="vote"><Text style={TYPO.etiquette} accessibilityRole="header">Ses derniers votes</Text></AvecPicto>
                 {votes.length ? votes.slice(0, SYNTHESE).map(f => (

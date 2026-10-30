@@ -35,6 +35,7 @@ import { useCouleurVote } from "../lib/couleur-vote";
 import { AvecPicto } from "../ui/picto";
 import { libelleGroupe } from "../ui/badge-groupe";
 import { Details } from "../ui/details";
+import { PourquoiJeVois } from "../ui/pourquoi";
 import { ModaleExhaustif } from "../ui/modale-exhaustif";
 import { METHODE_COMPTES, USAGE_PAR_HABITANT, srcVote } from "../lib/sources";
 
@@ -135,7 +136,13 @@ function CarteVote({ etiquette, nom, acteur, ligne, position, dec, date, titre, 
       <View style={s.badge}><Text style={s.badgeTexte}>{libelleGroupe(groupeDe(acteur))}</Text></View>
       <Text style={s.legende}>{ligne}</Text>
       {position ? <SensVote cle={position} texte={POSITION_MOT[position]} /> : <Text style={s.legende}>Le relevé de l'Assemblée ne donne pas de position vérifiable pour ce scrutin.</Text>}
-      <Text style={s.legende}>{date} · {titre}</Text>
+      <View style={{ flexDirection: "row", alignItems: "center", gap: PAS }}>
+        <Text style={[s.legende, { flex: 1 }]}>{date} · {titre}</Text>
+        <PourquoiJeVois etiquette={exemple ? "l'exemple de vote" : `le vote de ${nom}`} couleur={D.encre} fond={D.voile}
+          p={{ source: { texte: exemple ? `Assemblée nationale, scrutin n° ${VOTE.n} du ${date}` : `Assemblée nationale, scrutin du ${date}`, lien },
+            calcul: "Repère affiche la position du député et le décompte tels que l'Assemblée les publie pour ce scrutin. La position n'est retenue que si les deux relevés de l'Assemblée se correspondent ; sinon, aucune position n'est affichée.",
+            ici: exemple ? "Exemple : affiché tant que votre commune n'est pas choisie, pour montrer la carte." : "Affiché parce que c'est le dernier vote publié de votre député." }} />
+      </View>
       <Details titre="Décompte du scrutin" couleur={D.encre} lien={D.encre}>
         <BarreVote dec={dec} />
       </Details>
@@ -344,10 +351,22 @@ export default function Accueil() {
                     <View style={{ flexDirection: "row", alignItems: "baseline", flexWrap: "wrap", columnGap: PAS * 2 }}>
                       <Text style={s.chiffre}>{argent.depenses.toLocaleString("fr-FR")} €</Text>
                       <Text style={s.legende}>par habitant · {argent.an}</Text>
+                      <PourquoiJeVois etiquette={`le montant de ${argent.nom}`} couleur={D.encre} fond={D.voile}
+                        p={{ source: { texte: `Observatoire des finances et de la gestion publique locales (OFGL), comptes ${argent.an}${(index as any)?.sources?.comptes?.maj ? `, publiés le ${dateFr((index as any).sources.comptes.maj)}` : ""}`, lien: urlComptes },
+                          calcul: USAGE_PAR_HABITANT,
+                          ici: `Affiché parce que ce sont les comptes publiés les plus récents pour ${argent.nom} (${argent.an}).` }} />
                     </View>
                     {comparaison || argent.avant || repartition ? (
                       <Details titre={moyenne ? titreEcart(argent.depenses, moyenne) : "Le détail des dépenses"} couleur={D.encre} lien={D.encre}>
-                        {comparaison ? <Text style={s.contexte}>{comparaison.rapport}</Text> : null}
+                        {moyenne ? (
+                          <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
+                            <Text style={s.contexte}>{comparaison ? comparaison.rapport : ""}</Text>
+                            <PourquoiJeVois etiquette={`la comparaison à la commune médiane`} couleur={D.encre} fond={D.voile}
+                              p={{ source: { texte: `Observatoire des finances et de la gestion publique locales (OFGL), comptes ${moyenne.an}`, lien: urlComptes },
+                                calcul: `Repère classe les ${moyenne.n.toLocaleString("fr-FR")} communes de la région pour ${moyenne.an} selon leur dépense par habitant. La médiane est celle de la commune du milieu : la moitié dépense moins, l'autre moitié plus. Repère calcule cette médiane ; l'OFGL ne la publie pas.`,
+                                ici: `Affiché parce que ${argent.nom} est la commune retenue et que ses comptes ${moyenne.an} sont publiés, comme ceux des communes de sa région.` }} />
+                          </View>
+                        ) : null}
                         {argent.avant ? <Text style={s.contexte}>En {argent.avant.an} : {argent.avant.depenses.toLocaleString("fr-FR")} € par habitant</Text> : null}
                         {repartition ? (
                           <View style={{ gap: PAS * 2 }}>
