@@ -4,16 +4,99 @@
  * arrive en un fichier ; la recherche et l'ordre des resultats sont ceux du
  * site, importes de @repere/core (trouverCommunes) : la meme saisie donne les
  * memes communes sur les deux supports. Les phrases de vide sont celles du
- * site, mot pour mot. */
-import { useEffect, useMemo, useState } from "react";
-import { FlatList, KeyboardAvoidingView, Platform, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+ * site, mot pour mot.
+ *
+ * 30/10/2026 — REFONTE VISUELLE A TITRE D'ESSAI (direction artistique, sombre).
+ * Les cartes du haut sont STATIQUES et glissent horizontalement : Melun (77288),
+ * son chiffre par habitant 2025 (OFGL) et son dernier vote (député 77-1, scrutin
+ * 8706). Valeurs verifiees dans data/ le 30/10/2026, figees dans le code.
+ * Le partage d'image reprend la capture de partager.tsx (view-shot + partage natif). */
+import { useEffect, useMemo, useRef, useState, type ComponentRef, type ReactNode, type RefObject } from "react";
+import { FlatList, KeyboardAvoidingView, Platform, Pressable, ScrollView, Share, StyleSheet, Text, TextInput, View, useWindowDimensions } from "react-native";
+import { captureRef } from "react-native-view-shot";
+import * as Sharing from "expo-sharing";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { router } from "expo-router";
-import { mots, motsCible, correspond, trouverCommunes, departementDe } from "@repere/core";
+import { mots, motsCible, correspond, trouverCommunes, departementDe, dateFr, lienScrutin, titreLisible } from "@repere/core";
 import { chargerCommunesBeta, chargerIndex, ETATS, PHRASES } from "../lib/donnees";
 import { Bouton, Carte, Texte, Vide } from "../lib/composants";
 import { useSelection } from "../lib/selection";
-import { feuille, couleurs, CIBLE, PAS, POLICE, RAYON, TYPO } from "../lib/theme";
+import { feuille, CIBLE, PAS, POLICE, RAYON } from "../lib/theme";
+import { ECHELONS_PAR_MODE, NEUTRES_PAR_MODE, PALETTE_CLAIRE } from "../lib/palette";
+
+/* L'accueil est sombre : il lit la palette sombre, quel que soit le choix d'affichage. */
+const D = NEUTRES_PAR_MODE.sombre;
+const E = ECHELONS_PAR_MODE.sombre;
+/* L'image de partage reste en clair, comme les cartes de partager.tsx (palette.ts). */
+const cl: Record<string, string> = PALETTE_CLAIRE;
+
+/* Donnees publiees, verifiees le 30/10/2026 : scrutins/77.json (position « a »),
+   scrutins.json (titre, date, n), deputes.json (entree 77-1). Figees ici. */
+const VOTE = {
+  depute: "Arnaud Saint-Martin",
+  n: "8706",
+  titre: "la proposition de loi organique visant à adapter l'autorité judiciaire à la lutte contre les violences sexuelles et intrafamiliales (première lecture).",
+  date: "2026-10-13",
+};
+const LIEN_VOTE = lienScrutin("https://www.assemblee-nationale.fr/dyn/17/scrutins/", { n: VOTE.n }).url;
+const MSG_VOTE = [
+  `${VOTE.depute} s'est abstenu.`,
+  titreLisible(VOTE.titre),
+  `Vote à l'Assemblée nationale, ${dateFr(VOTE.date)}.`,
+  "",
+  "Résumé Repère, à partir du scrutin publié. Le détail est dans l'application.",
+  LIEN_VOTE,
+].join("\n");
+const MSG_CHIFFRE = [
+  "Melun : 2 495 € dépensés par habitant en 2025, selon l'OFGL.",
+  "",
+  "Résumé Repère, à partir des comptes publiés.",
+].join("\n");
+
+/* Capture la carte en PNG, puis ouvre la feuille de partage du telephone.
+   Si la capture echoue, on partage le texte : le lecteur ne perd rien. */
+async function partagerImage(carte: RefObject<ComponentRef<typeof View> | null>, titre: string, repli: string) {
+  try {
+    const uri = await captureRef(carte, { format: "png", quality: 1, result: "tmpfile", width: 1080, height: 1920 });
+    if (!(await Sharing.isAvailableAsync())) {
+      await Share.share({ message: repli });
+      return;
+    }
+    await Sharing.shareAsync(uri, { mimeType: "image/png", UTI: "public.png", dialogTitle: titre });
+  } catch {
+    await Share.share({ message: repli });
+  }
+}
+
+/* La carte 9:16 envoyee dans la feuille de partage. Hors ecran : seule la capture la montre. */
+function ImagePartage({ refImage, titre, corps, source }: {
+  refImage: RefObject<ComponentRef<typeof View> | null>; titre: string; corps: ReactNode; source: string;
+}) {
+  return (
+    <View ref={refImage} collapsable={false} style={{ width: 360, height: 640, backgroundColor: cl.sol, padding: 28, justifyContent: "space-between" }}>
+      <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
+        <View style={{ width: 34, height: 34, borderRadius: 10, backgroundColor: cl.encre, alignItems: "center", justifyContent: "center" }}>
+          <Text style={{ color: cl.sol, fontWeight: "800", fontSize: 20 }}>R</Text>
+        </View>
+        <Text style={{ color: cl.encre, fontWeight: "800", fontSize: 20 }}>Repère</Text>
+      </View>
+      <View style={{ gap: 16 }}>
+        <Text style={{ color: cl.sourd, fontSize: 16 }}>{titre}</Text>
+        {corps}
+      </View>
+      <Text style={{ color: cl.sourd, fontSize: 12, lineHeight: 16 }}>{source}</Text>
+    </View>
+  );
+}
+
+function BoutonPartager({ etiquette, onPress }: { etiquette: string; onPress: () => void }) {
+  return (
+    <Pressable onPress={onPress} accessibilityRole="button" accessibilityLabel={etiquette}
+      style={({ pressed }) => [s.partager, pressed && { opacity: 0.7 }]}>
+      <Text style={s.partagerTexte}>Partager</Text>
+    </Pressable>
+  );
+}
 
 type Ligne = [string, string, string[]];
 type Beta = { communes: Record<string, string>; manquantes?: Record<string, string>; source?: { producteur?: string } };
@@ -21,12 +104,20 @@ type Index = { departements: { code: string; nom?: string }[] };
 
 export default function Accueil() {
   const marges = useSafeAreaInsets();
+  const { width } = useWindowDimensions();
   const { choisir, retenue, oublier } = useSelection();
   const [etat, setEtat] = useState<string>(ETATS.EN_COURS);
   const [beta, setBeta] = useState<Beta | null>(null);
   const [index, setIndex] = useState<Index | null>(null);
   const [filtre, setFiltre] = useState("");
+  const [cherche, setCherche] = useState(false);
+  const [page, setPage] = useState(0);
   const [essai, setEssai] = useState(0);
+  const refChiffre = useRef<ComponentRef<typeof View>>(null);
+  const refVote = useRef<ComponentRef<typeof View>>(null);
+  /* Une carte occupe toute la largeur de lecture ; la suivante commence apres un ecart. */
+  const larg = Math.min(width, 640) - PAS * 8;
+  const pas = larg + PAS * 3;
 
   useEffect(() => {
     let vivant = true;
@@ -74,7 +165,7 @@ export default function Accueil() {
   const phrase = PHRASES[etat as keyof typeof PHRASES] as { titre: string; corps: string; action?: string } | undefined;
 
   return (
-    <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === "ios" ? "padding" : undefined}>
+    <KeyboardAvoidingView style={{ flex: 1, backgroundColor: D.sol }} behavior={Platform.OS === "ios" ? "padding" : undefined}>
       <FlatList
         data={trouvees}
         keyExtractor={l => l[0]}
@@ -82,10 +173,51 @@ export default function Accueil() {
         contentContainerStyle={[s.page, { paddingTop: marges.top + PAS * 6, paddingBottom: marges.bottom + PAS * 6 }]}
         ListHeaderComponent={
           <View style={s.tete}>
-            <Text style={s.marque}>Repère</Text>
+            <View style={s.haut}>
+              <Text style={s.marque}>Repère</Text>
+              {!cherche && !filtre ? (
+                <Pressable onPress={() => setCherche(true)} accessibilityRole="button" accessibilityLabel="Chercher une commune"
+                  style={({ pressed }) => [s.chercher, pressed && { opacity: 0.7 }]}>
+                  <Text style={s.chercherTexte}>Chercher une commune</Text>
+                </Pressable>
+              ) : null}
+            </View>
             {/* CE QU'EST REPERE, EN UNE PHRASE ; POURQUOI C'EST UTILE, EN UNE LIGNE */}
-            <Text style={TYPO.affiche} accessibilityRole="header">Ce qui se passe chez vous, expliqué simplement.</Text>
+            <Text style={s.titre} accessibilityRole="header">Ce qui se passe chez vous.</Text>
             <Text style={s.promesse}>Qui décide, où va l'argent, ce qu'a voté votre député, ce qui arrive. Chaque chiffre avec sa source officielle.</Text>
+
+            {/* Les cartes glissent horizontalement : le chiffre, puis le vote. */}
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} decelerationRate="fast" snapToInterval={pas}
+              contentContainerStyle={{ gap: PAS * 3 }}
+              onMomentumScrollEnd={e => setPage(Math.round(e.nativeEvent.contentOffset.x / pas))}>
+              <View style={{ width: larg }}>
+                <View style={s.carte}>
+                  <Text style={s.etiquette}>Le chiffre du jour</Text>
+                  <Text style={s.carteTitre}>L'argent de Melun</Text>
+                  <Text style={s.chiffre}>2 495 €</Text>
+                  <Text style={s.legende}>dépensés par habitant en 2025 · source : OFGL</Text>
+                  <BoutonPartager etiquette="Partager le chiffre de Melun"
+                    onPress={() => partagerImage(refChiffre, "Le chiffre de Melun", MSG_CHIFFRE)} />
+                </View>
+              </View>
+              <View style={{ width: larg }}>
+                <View style={s.carte}>
+                  <Text style={s.etiquette}>Dernier vote enregistré</Text>
+                  <Text style={s.carteTitre}>Arnaud Saint-Martin</Text>
+                  {/* Pas de groupe dans les donnees de Repere : on le dit, sans couleur de parti. */}
+                  <View style={s.badge}><Text style={s.badgeTexte}>Groupe non disponible ici</Text></View>
+                  <Text style={s.legende}>Député de la 1re circonscription de Seine-et-Marne</Text>
+                  <Text style={s.vote}>S'est abstenu</Text>
+                  <Text style={s.legende}>13 octobre 2026 · {titreLisible(VOTE.titre)}</Text>
+                  <BoutonPartager etiquette="Partager le vote d'Arnaud Saint-Martin"
+                    onPress={() => partagerImage(refVote, "Dernier vote enregistré", MSG_VOTE)} />
+                </View>
+              </View>
+            </ScrollView>
+            <View style={s.points} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
+              {[0, 1].map(i => <View key={i} style={[s.point, page === i && s.pointActif]} />)}
+            </View>
+
             {retenue && nomRetenue ? (
               <Carte echelon="ville" titre="Votre commune, sur ce téléphone">
                 <Texte fort>{nomRetenue}</Texte>
@@ -93,19 +225,24 @@ export default function Accueil() {
                 <Bouton texte={`Oublier ${nomRetenue}`} discret onPress={oublier} />
               </Carte>
             ) : null}
-            <Text style={s.question} nativeID="question">{retenue && nomRetenue ? "Une autre commune ?" : "Où habitez-vous ?"}</Text>
-            <TextInput
-              value={filtre}
-              onChangeText={setFiltre}
-              placeholder="Bagnolet, Créteil, Meaux…"
-              placeholderTextColor={couleurs.sourd}
-              autoCorrect={false}
-              autoCapitalize="none"
-              returnKeyType="search"
-              accessibilityLabel="Où habitez-vous ? Tapez le nom de votre commune"
-              accessibilityLabelledBy="question"
-              style={s.champ}
-            />
+            {cherche || filtre ? (
+              <>
+                <Text style={s.question} nativeID="question">{retenue && nomRetenue ? "Une autre commune ?" : "Où habitez-vous ?"}</Text>
+                <TextInput
+                  value={filtre}
+                  onChangeText={setFiltre}
+                  placeholder="Tapez votre ville (ex: Melun...)"
+                  placeholderTextColor={D.sourd}
+                  autoCorrect={false}
+                  autoCapitalize="none"
+                  autoFocus={cherche}
+                  returnKeyType="search"
+                  accessibilityLabel="Où habitez-vous ? Tapez le nom de votre commune"
+                  accessibilityLabelledBy="question"
+                  style={s.champ}
+                />
+              </>
+            ) : null}
             {etat !== ETATS.SERVI && phrase ? (
               <Vide titre={phrase.titre} corps={phrase.corps}
                 action={etat === ETATS.EN_COURS ? undefined : "Réessayer"} onAction={() => setEssai(n => n + 1)} />
@@ -117,7 +254,7 @@ export default function Accueil() {
                     les adresses se composent par departement (client.js), et la
                     commune n'est gardee que sur demande (lib/memoire.ts). */}
                 <View style={s.confiance}>
-                  <Text style={[s.note, { color: couleurs.encre, fontWeight: "600" }]}>Pas de compte, pas d'e-mail.</Text>
+                  <Text style={[s.note, { color: D.encre, fontWeight: "600" }]}>Pas de compte, pas d'e-mail.</Text>
                   <Text style={s.note}>Repère ne sait pas qui vous êtes. Pour afficher votre commune, il télécharge le fichier public de tout votre département, et ne garde votre commune sur ce téléphone que si vous le lui demandez.</Text>
                 </View>
               </>
@@ -133,6 +270,23 @@ export default function Accueil() {
               <Vide titre={`Aucune commune d'Île-de-France ne correspond à « ${filtre.trim()} ».`}
                 corps="Pendant la bêta, l'application ne couvre que l'Île-de-France : pour une commune d'ailleurs, les données ne sont pas encore disponibles ici. Sinon, vérifiez l'orthographe du début du nom." />
             ) : null}
+
+            {/* Hors ecran : les deux images de partage, capturees au moment du partage. */}
+            <View style={s.cache} pointerEvents="none" accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
+              <ImagePartage refImage={refChiffre} titre="Le chiffre du jour · Melun"
+                source="Source : OFGL, comptes 2025."
+                corps={<>
+                  <Text style={{ fontFamily: POLICE.affiche, fontSize: 72, lineHeight: 76, color: cl.encre }}>2 495 €</Text>
+                  <Text style={{ color: cl.sourd, fontSize: 18, lineHeight: 24 }}>dépensés par habitant en 2025</Text>
+                </>} />
+              <ImagePartage refImage={refVote} titre="Dernier vote enregistré"
+                source={`Source : Assemblée nationale, scrutin n° ${VOTE.n}, 13 octobre 2026. ${LIEN_VOTE}`}
+                corps={<>
+                  <Text style={{ fontFamily: POLICE.titre, fontSize: 30, lineHeight: 36, color: cl.encre }}>{VOTE.depute} s'est abstenu.</Text>
+                  <Text style={{ color: cl.sourd, fontSize: 16, lineHeight: 22 }}>{titreLisible(VOTE.titre)}</Text>
+                  <Text style={{ color: cl.sourd, fontSize: 14, lineHeight: 20 }}>Député de la 1re circonscription de Seine-et-Marne.</Text>
+                </>} />
+            </View>
           </View>
         }
         renderItem={({ item: [insee, nom] }) => (
@@ -141,7 +295,7 @@ export default function Accueil() {
             accessibilityRole="button"
             accessibilityLabel={`${nom}, ${nomDep(departementDe(insee) || "")}`}
             accessibilityHint="Ouvre ce qui se passe dans cette commune"
-            style={({ pressed }) => [s.resultat, pressed && { backgroundColor: couleurs.voile }]}
+            style={({ pressed }) => [s.resultat, pressed && { backgroundColor: D.voile }]}
           >
             <View style={s.pastille} />
             <Text style={s.resultatNom}>{nom}</Text>
@@ -156,24 +310,42 @@ export default function Accueil() {
 const s = feuille(() => StyleSheet.create({
   page: { paddingHorizontal: PAS * 4, gap: PAS * 2, maxWidth: 640, width: "100%", alignSelf: "center" },
   tete: { gap: PAS * 3, marginBottom: PAS * 2 },
-  marque: { fontFamily: POLICE.affiche, fontSize: 22, color: couleurs.ville, marginBottom: PAS * 4 },
-  confiance: { gap: PAS, padding: PAS * 4, borderRadius: RAYON.bloc, backgroundColor: couleurs.voile, marginTop: PAS * 2 },
-  promesse: { fontSize: 17, lineHeight: 24, color: couleurs.encre },
-  question: { fontFamily: POLICE.titre, fontSize: 24, lineHeight: 30, color: couleurs.encre, marginTop: PAS * 6 },
+  haut: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
+  marque: { fontFamily: POLICE.affiche, fontSize: 22, color: D.encre },
+  chercher: { minHeight: CIBLE, borderRadius: RAYON.bloc, borderWidth: 1, borderColor: D.trait, paddingHorizontal: PAS * 3, justifyContent: "center" },
+  chercherTexte: { fontSize: 15, fontWeight: "700", color: D.encre },
+  titre: { fontFamily: POLICE.affiche, fontSize: 44, lineHeight: 48, color: D.encre },
+  carte: { gap: PAS * 2, padding: PAS * 4, borderRadius: RAYON.carte, backgroundColor: D.carte, borderWidth: 1, borderColor: D.trait },
+  etiquette: { fontSize: 13, fontWeight: "700", color: D.sourd },
+  carteTitre: { fontFamily: POLICE.titre, fontSize: 24, lineHeight: 30, color: D.encre },
+  chiffre: { fontFamily: POLICE.affiche, fontSize: 64, lineHeight: 68, color: D.encre },
+  vote: { fontFamily: POLICE.titre, fontSize: 22, lineHeight: 28, color: D.encre },
+  legende: { fontSize: 15, lineHeight: 21, color: D.sourd },
+  badge: { alignSelf: "flex-start", paddingHorizontal: PAS * 2, paddingVertical: PAS, borderRadius: RAYON.bloc, backgroundColor: D.voile },
+  badgeTexte: { fontSize: 13, fontWeight: "600", color: D.sourd },
+  partager: { minHeight: CIBLE, borderRadius: RAYON.bloc, borderWidth: 1, borderColor: D.trait, alignItems: "center", justifyContent: "center", paddingHorizontal: PAS * 4 },
+  partagerTexte: { fontSize: 16, fontWeight: "700", color: D.encre },
+  points: { flexDirection: "row", justifyContent: "center", gap: PAS * 2 },
+  point: { width: 8, height: 8, borderRadius: 4, backgroundColor: D.trait },
+  pointActif: { backgroundColor: E.ville },
+  cache: { position: "absolute", left: -10000, top: 0 },
+  confiance: { gap: PAS, padding: PAS * 4, borderRadius: RAYON.bloc, backgroundColor: D.voile, marginTop: PAS * 2 },
+  promesse: { fontSize: 17, lineHeight: 24, color: D.encre },
+  question: { fontFamily: POLICE.titre, fontSize: 24, lineHeight: 30, color: D.encre, marginTop: PAS * 6 },
   champ: {
-    minHeight: CIBLE + 8, borderRadius: RAYON.bloc, borderWidth: 1.5, borderColor: couleurs.trait,
-    backgroundColor: couleurs.carte, paddingHorizontal: PAS * 4, fontSize: 18, color: couleurs.encre,
+    minHeight: CIBLE + 8, borderRadius: RAYON.bloc, borderWidth: 1.5, borderColor: D.trait,
+    backgroundColor: D.carte, paddingHorizontal: PAS * 4, fontSize: 18, color: D.encre,
     /* Sur l'export web, le contour de focus par defaut du navigateur est orange :
        une sixieme couleur (invariant 7). Le focus reste visible, dans la couleur
        de la commune. Sans effet sur iOS et Android. */
-    ...(Platform.OS === "web" ? { outlineColor: couleurs.ville, outlineWidth: 2, outlineStyle: "solid" } : {}),
+    ...(Platform.OS === "web" ? { outlineColor: E.ville, outlineWidth: 2, outlineStyle: "solid" } : {}),
   },
-  note: { fontSize: 15, color: couleurs.sourd },
+  note: { fontSize: 15, color: D.sourd },
   resultat: {
     minHeight: CIBLE + 8, flexDirection: "row", alignItems: "center", gap: PAS * 3,
-    paddingHorizontal: PAS * 4, borderRadius: RAYON.bloc, backgroundColor: couleurs.carte,
+    paddingHorizontal: PAS * 4, borderRadius: RAYON.bloc, backgroundColor: D.carte,
   },
-  pastille: { width: 10, height: 10, borderRadius: 5, backgroundColor: couleurs.ville },
-  resultatNom: { flex: 1, fontSize: 17, color: couleurs.encre, fontWeight: "600" },
-  resultatDep: { fontSize: 14, color: couleurs.sourd, flexShrink: 1, textAlign: "right" },
+  pastille: { width: 10, height: 10, borderRadius: 5, backgroundColor: E.ville },
+  resultatNom: { flex: 1, fontSize: 17, color: D.encre, fontWeight: "600" },
+  resultatDep: { fontSize: 14, color: D.sourd, flexShrink: 1, textAlign: "right" },
 }));
