@@ -39,3 +39,30 @@ Mots relus sur les écrans audités :
 1. Garder ou non la ligne « Données Repère publiées le … » en tête de l'accueil (première ouverture). Elle prend une ligne et ne dit rien d'utile avant le choix d'une commune.
 2. Assouplir « trois réponses dans le premier écran » si l'on veut descendre sous 20 lignes sur Aujourd'hui.
 3. Faire tester par 3 à 5 testeurs la lecture réelle en 5 secondes : ce compte de lignes ne mesure pas la compréhension.
+
+## Deuxième passe — V19 (30/10/2026)
+
+Nouvelle mesure : on compte aussi les lignes de **contenu**, c'est-à-dire sans la barre haute (100 px) ni la barre d'onglets (80 px du bas). C'est ce que l'œil lit vraiment. Même méthode, même écran (390 × 844, Meaux).
+
+| Écran | Total V15 → V19 | Contenu V19 | Décision V19 |
+|---|---|---|---|
+| Accueil (première ouverture) | 16 → 16 | 12 | Bloc « Pas de compte, pas d'e-mail » ramené à une ligne et un lien vers la FAQ (bloc 3 de V19) |
+| Aujourd'hui | 25 → 25 | 20 | Rien : les règles ci-dessous l'empêchent |
+| Budget | 24 → 22 | 17 | Le détail « Dont … pour vos agents, … pour vos équipements » est replié dans « Ce que finance cet argent » ; chiffre et comparaison restent visibles |
+| Fiche élu | 24 → 23 | 20 | Étiquette « Assemblée nationale » retirée quand le rôle la dit déjà |
+| Calendrier | 23 → 22 | 18 | Sous-titre raccourci : « … et au Sénat : elles concernent tout le pays. » |
+| Actualités | 25 → 24 | 19 | Rien de plus |
+
+## Pourquoi l'objectif « 6 lignes » n'est toujours pas atteint
+
+Ce n'est pas un manque de coupes. **Trois règles du produit, toutes vérifiées par des tests, imposent plus de 6 lignes de contenu** :
+
+1. **Trois réponses dans le premier écran d'Aujourd'hui** (`parcours-web`, « les trois réponses tiennent dans le premier écran »). Chaque réponse fait 4 à 6 lignes : phrase, preuve, source.
+2. **Un calcul s'annonce sans ouvrir de feuille** (invariant 4 ; `parcours-web`, « un chiffre calculé se dit calculé sans ouvrir la feuille »). La mention « Calcul Repère » ne peut pas aller dans un « Pourquoi ? ».
+3. **La date et l'ancienneté en haut de chaque écran** (V13, bloc A) : une à deux lignes.
+
+## Ce que le CEO peut décider pour passer sous 6 lignes
+
+- **Option A — une réponse en tête, les deux autres en dessous.** Aujourd'hui afficherait d'abord une seule réponse (le chiffre et sa comparaison, en grand), puis les deux autres au défilement. Gain estimé : 20 → 8 lignes de contenu. Il faut assouplir la règle 1.
+- **Option B — date en pied d'écran.** Gain : 1 à 2 lignes par écran, au prix de la fraîcheur « visible d'un coup d'œil » demandée en V13.
+- **Option C — tester avant de couper.** Faire lire Aujourd'hui à 5 testeurs pendant 5 secondes (question 4 du kit testeur) : le nombre de lignes ne mesure pas la compréhension. Recommandé avant A ou B.

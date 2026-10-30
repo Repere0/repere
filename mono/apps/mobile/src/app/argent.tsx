@@ -104,7 +104,8 @@ export default function Argent() {
                 {/* D23 (ADR 0002), A1 : la commune mediane de la region, un calcul annonce comme tel. */}
                 {hab && hab.depenses !== null ? <Comparaison nom={nom} valeur={hab.depenses} index={r.index} dep={d.dep} an={ex.an} /> : null}
                 {hab && hab.salaires !== null && hab.investissement !== null ? (
-                  <Text style={TYPO.note}>Dont {hab.salaires.toLocaleString("fr-FR")} € par habitant pour vos agents (salaires) et {hab.investissement.toLocaleString("fr-FR")} € pour vos équipements (investissement).</Text>
+                  /* Audit 5 s (V19) : le detail se deplie ; le chiffre et la comparaison restent visibles. */
+                  <Depli titre="Ce que finance cet argent"><Text style={TYPO.corps}>Dont {hab.salaires.toLocaleString("fr-FR")} € par habitant pour vos agents (salaires) et {hab.investissement.toLocaleString("fr-FR")} € pour vos équipements (investissement).</Text></Depli>
                 ) : null}
                 {/* Deux chiffres PUBLIES, donc une source sans « calcul ». La moyenne
                     par jour (un calcul) vit dans sa propre carte, plus bas, avec sa

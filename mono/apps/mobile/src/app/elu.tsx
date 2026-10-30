@@ -216,7 +216,10 @@ export default function Elu() {
             <View style={{ flexDirection: "row", gap: PAS * 4, alignItems: "center" }}>
               <PhotoOuInitiales nom={nom} dep={r.d.dep} cle={clePhoto} />
               <View style={{ flex: 1, gap: 8 }}>
-                <Question etiquette={p.niveau || LIBELLES.qui} question={nom} sous={libelleRole || undefined} />
+                {/* Audit 5 s (V19) : pas d'etiquette quand le role la dit deja (« Assemblée nationale »
+                    au-dessus de « À l'Assemblée nationale pour votre circonscription »). */}
+                <Question etiquette={libelleRole && (p.niveau || "") && libelleRole.toLowerCase().includes((p.niveau || "").toLowerCase()) ? undefined : (p.niveau || LIBELLES.qui)}
+                  question={nom} sous={libelleRole || undefined} />
               </View>
             </View>
             <CreditDe dep={r.d.dep} cle={clePhoto} />
