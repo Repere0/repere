@@ -16,7 +16,7 @@ import { useEffect, useMemo, useState } from "react";
 import { FlatList, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View, useWindowDimensions } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { router } from "expo-router";
-import { mots, motsCible, correspond, trouverCommunes, departementDe, titreLisible, dernierExercice, parHabitant, dateFr, ordinal, positionSur, positionsFiables } from "@repere/core";
+import { mots, motsCible, correspond, trouverCommunes, departementDe, titreLisible, dernierExercice, evolution, parHabitant, dateFr, ordinal, positionSur, positionsFiables } from "@repere/core";
 import { chargerCatalogueScrutins, chargerCommunesBeta, chargerDepartement, chargerDeputes, chargerIndex, chargerVotes, ETATS, PHRASES } from "../lib/donnees";
 import { Bouton, Carte, Texte, Vide } from "../lib/composants";
 import { useSelection } from "../lib/selection";
@@ -37,7 +37,12 @@ type Beta = { communes: Record<string, string>; manquantes?: Record<string, stri
 type Index = { departements: { code: string; nom?: string }[]; agregats?: unknown[] };
 /* Le chiffre de la carte « L'argent de … » (D18) : lu dans les comptes OFGL publies
    du departement, jamais ecrit dans le code. */
-type Argent = { nom: string; an: string; depenses: number };
+/* V13 bloc B : quatre couches. Le chiffre ; le contexte, DANS la commune (l'exercice
+   precedent publie, seulement s'il suit et si le perimetre n'a pas change : core
+   evolution) — jamais une autre commune ni une moyenne (invariant 3) ; la consequence,
+   lue dans les memes comptes (salaires, investissement par habitant, publies par
+   l'OFGL) ; la source. Une couche sans donnee n'est pas affichee. */
+type Argent = { nom: string; an: string; depenses: number; avant: { an: string; depenses: number } | null; salaires: number | null; investissement: number | null };
 /* D21 : le dernier vote publie du depute de la commune retenue. « partagee » : la commune
    est sur plusieurs circonscriptions, le depute depend de l'adresse (aucun n'est choisi). */
 type VoteVu = { depute: string; acteur: string; circo: number; position: string; d: string; t: string } | { partagee: number };
@@ -158,7 +163,14 @@ export default function Accueil() {
       const fiche = r.donnees ? (r.donnees as any).communes?.[cible.insee] : null;
       const ex = fiche ? dernierExercice(fiche, index.agregats) : null;
       const hab = ex ? parHabitant(ex.ex) : null;
-      setArgent(ex && hab && typeof hab.depenses === "number" ? { nom: cible.nom, an: ex.an, depenses: hab.depenses } : null);
+      const evo = fiche ? evolution(fiche, index.agregats) : null;
+      const habAvant = evo && ex && !evo.perimetreChange && evo.an2 === ex.an ? parHabitant(fiche.comptes[evo.an1]) : null;
+      setArgent(ex && hab && typeof hab.depenses === "number" ? {
+        nom: cible.nom, an: ex.an, depenses: hab.depenses,
+        avant: habAvant && typeof habAvant.depenses === "number" && evo ? { an: evo.an1, depenses: habAvant.depenses } : null,
+        salaires: typeof hab.salaires === "number" ? hab.salaires : null,
+        investissement: typeof hab.investissement === "number" ? hab.investissement : null,
+      } : null);
     }).catch(() => { if (vivant) setArgent(null); });
     return () => { vivant = false; };
   }, [index, cible.insee, cible.nom]);
@@ -186,7 +198,12 @@ export default function Accueil() {
                     <Text style={s.etiquette}>{exemple ? "Un exemple, en attendant votre commune" : "Votre commune"}</Text>
                     <Text style={s.carteTitre}>L'argent de {argent.nom}</Text>
                     <Text style={s.chiffre}>{argent.depenses.toLocaleString("fr-FR")} €</Text>
-                    <Text style={s.legende}>dépensés par habitant en {argent.an} · source : OFGL</Text>
+                    <Text style={s.legende}>dépensés par habitant en {argent.an}</Text>
+                    {argent.avant ? <Text style={s.contexte}>En {argent.avant.an} : {argent.avant.depenses.toLocaleString("fr-FR")} € par habitant.</Text> : null}
+                    {argent.salaires !== null && argent.investissement !== null ? (
+                      <Text style={s.contexte}>Dont {argent.salaires.toLocaleString("fr-FR")} € pour les salaires des agents de la commune, et {argent.investissement.toLocaleString("fr-FR")} € d'investissement (travaux, équipements).</Text>
+                    ) : null}
+                    <Text style={s.legende}>Source : OFGL, comptes des communes</Text>
                   </View>
                 </View>
               ) : null}
@@ -377,6 +394,7 @@ const s = feuille(() => StyleSheet.create({
   chiffre: { fontFamily: POLICE.affiche, fontSize: 64, lineHeight: 68, color: D.encre },
   vote: { fontFamily: POLICE.titre, fontSize: 22, lineHeight: 28, color: D.encre },
   legende: { fontSize: 15, lineHeight: 21, color: D.sourd },
+  contexte: { fontSize: 15, lineHeight: 21, color: D.encre },
   badge: { alignSelf: "flex-start", paddingHorizontal: PAS * 2, paddingVertical: PAS, borderRadius: RAYON.bloc, backgroundColor: D.voile },
   badgeTexte: { fontSize: 13, fontWeight: "600", color: D.sourd },
   points: { flexDirection: "row", justifyContent: "center", gap: PAS * 2 },
