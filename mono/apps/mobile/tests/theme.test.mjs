@@ -98,8 +98,9 @@ for (const m of ["clair", "sombre"]) {
   });
 }
 
-/* ---- 5. le sombre n'utilise aucun vert ni rouge pour le vote ---------- */
-test("theme sombre — les trois gris de vote restent des neutres (pas de vert ni de rouge)", () => {
+/* ---- 5. les neutres restent des gris. Depuis D24 (30/10/2026, ADR 0003), les couleurs
+   de vote vivent a part, dans COULEURS_VOTE (palette.ts), controlees par invariants.test.mjs. */
+test("theme — encre, sourd et trait restent des neutres (les couleurs de vote sont a part, D24)", () => {
   for (const m of ["clair", "sombre"]) {
     const n = NEUTRES_PAR_MODE[m];
     for (const c of [n.encre, n.sourd, n.trait]) {

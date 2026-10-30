@@ -185,7 +185,7 @@ Dix sont codées et en service, une est proposée. Toutes dessinent avec `View` 
 | 1 | **Résumé** (`Resume`) | « En une phrase ? » | phrase issue d'une règle de `@repere/core`, jamais écrite au cas par cas | chiffre et légende lus ensemble (`accessibilityLabel`) | aucune | c'est lui, le repli | le composant n'est pas rendu ; la carte affiche une phrase `Vide` |
 | 2 | **Part de 100** (`BarrePart`) | « Sur 100 €, combien pour… ? » | part d'**un même total**, bornée entre 0 et 100, sinon `null` | « Salaires : 47 € sur 100 € dépensés » | la barre se remplit en 520 ms, ou pas du tout si le mouvement est réduit | le libellé et la valeur sont écrits | pas de barre, phrase `comptesInsuffisants` |
 | 3 | **Financement** | « Qui paie ce projet ? » | subvention et coût publiés par la DGCL ; le reste n'est attribué à personne | phrase complète | remplissage | « 726 800 € sur 1 533 500 € » et « Reste · 806 700 €, financement non détaillé par la source » | sans coût, « L'État apporte X € » et pas de barre |
-| 4 | **Répartition de vote** | « Comment l'Assemblée a voté ? » | décompte publié ; **trois gris**, jamais une couleur de groupe | « 378 députés pour, 7 contre, 173 abstentions » | aucune | légende chiffrée | `VOTE_AUCUN`, `circoInconnue`, `REFUS_APPARIEMENT` |
+| 4 | **Répartition de vote** | « Comment l'Assemblée a voté ? » | décompte publié ; **vert / rouge / gris** depuis D24 (30/10/2026, ADR 0003), jamais une couleur de groupe | « 378 députés pour, 7 contre, 173 abstentions » | aucune | légende chiffrée | `VOTE_AUCUN`, `circoInconnue`, `REFUS_APPARIEMENT` |
 | 5 | **Cases de mois** (`Mois`) | « Sa dette, c'est beaucoup ? » (sans jugement) | dette ÷ recettes mensuelles ; une case = un mois | « 7,6 mois de recettes » | cases remplies | « Une case = un mois de recettes » | pas de carte |
 | 6 | **Compteur** | « Ça fait combien par jour ? » | dépenses ÷ 365, **annoncé comme calcul** | la valeur finale, jamais la valeur animée | montée en 520 ms, valeur finale d'emblée si mouvement réduit (contrôlé) | le nombre | pas de carte |
 | 7 | **Deux années** | « Qu'est-ce qui a changé ? » | deux exercices **publiés**, chaque paire à sa propre échelle, écart en euros | valeurs et écart lus | remplissage | les deux montants écrits | `perimetreChange` si la commune a changé de périmètre |
@@ -417,8 +417,12 @@ une seconde. La limite : au-delà de 24 mois, les cases débordent. Il faudra un
 
 ## 15. Votes
 
-- **Neutralité.** Trois gris, identiques dans les quatre palettes. Aucune couleur de
-  groupe, et la marque du député posée sur sa position.
+- **Sens du vote en couleur (D24, 30/10/2026, ADR 0003).** Vert `#2DA44E` pour, rouge
+  `#CF222E` contre, gris `#6E7781` abstention (palette.ts, `COULEURS_VOTE`). Elles codent
+  un fait, jamais un jugement ; la position reste écrite en toutes lettres. Aucune couleur
+  de groupe sur un vote. (Avant D24 : trois gris.)
+- **Comparaisons entre communes (D23, ADR 0002).** Permises si elles sont factuelles et
+  annoncées comme calcul : « comme », « plus que », « moins que ». Jamais « mieux », « pire ».
 - **La phrase d'abord :** « Béatrice Roullaud a voté pour. » Puis le titre, puis la
   répartition.
 - **« En clair » ne dit que le résultat et la date.** Le décompte figure déjà dans la

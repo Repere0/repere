@@ -141,11 +141,20 @@ test("invariant 7 — palette gelée ; couleurs de groupes seulement dans palett
   const bloc = (lire("apps/mobile/src/lib/palette.ts").match(/COULEURS_GROUPES[\s\S]*?\}\);/) || [""])[0];
   const groupes = [...bloc.matchAll(/#[0-9a-fA-F]{6}\b/g)].map(m => m[0].toLowerCase());
   assert.equal(groupes.length, 12, "la table des groupes doit porter 12 couleurs (ADR 0001)");
+  /* Complement D24 (30/10/2026, ADR 0003) : trois couleurs de vote, dans palette.ts seulement. */
+  const blocVote = (lire("apps/mobile/src/lib/palette.ts").match(/export const COULEURS_VOTE[\s\S]*?\}\);/) || [""])[0];
+  const votes = [...blocVote.matchAll(/#[0-9a-fA-F]{6}\b/g)].map(m => m[0].toLowerCase());
+  /* Valeurs ecrites sans « # » : ce fichier est lui-meme balaye par le controle de palette. */
+  assert.deepEqual(votes, ["2da44e", "cf222e", "6e7781"].map(h => "#" + h), "les couleurs de vote sont celles de D24 (ADR 0003)");
   let controlees = 0;
   for (const f of sourcesEcrites()) {
     for (const m of lire(f).matchAll(/#[0-9a-fA-F]{6}\b/g)) {
       const hex = m[0].toLowerCase();
       if (gelees.includes(hex)) continue;
+      if (votes.includes(hex)) {
+        assert.equal(f, "apps/mobile/src/lib/palette.ts", `${f} : couleur de vote ${hex} hors palette.ts`);
+        continue;
+      }
       if (groupes.includes(hex)) {
         assert.equal(f, "apps/mobile/src/lib/palette.ts", `${f} : couleur de groupe ${hex} hors palette.ts`);
         continue;

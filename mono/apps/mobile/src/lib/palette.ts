@@ -10,8 +10,9 @@
  *   jamais recopiées ici ; seule la couleur « France » change de bord en
  *   sombre (c'est l'encre du produit, voir ECHELONS_PAR_MODE) ;
  * - tout le reste est neutre, amplitude RGB <= 24 (invariant 7) ;
- * - aucune couleur de vote n'est ajoutée : un vote reste en gris, sans vert ni
- *   rouge (les trois positions portent leur libellé en toutes lettres).
+ * - couleurs de vote (D24, 30/10/2026, ADR 0003, invariant 7 complété) : vert pour,
+ *   rouge contre, gris abstention, dans COULEURS_VOTE et nulle part ailleurs. Elles
+ *   codent le sens du vote, un fait ; la position reste écrite en toutes lettres.
  *
  * LE THÈME SOMBRE N'EST PAS LA PALETTE 2026 DE LA BRANCHE ux/theme-sombre-20-10 :
  * celle-ci change aussi le clair (fond bleu-gris, accents émeraude, corail pour
@@ -94,6 +95,15 @@ export const VOILE_MODAL = "rgba(0,0,0,0.4)";
 
 /* Couleurs de groupes politiques (invariant 7, amendé le 30/10/2026) : identification
    des élus seulement (badges, cartes de partage). Jamais un vote ni un score. « Inconnu » sert de repli : aucun groupe n'est déduit ni estimé. */
+/* LES COULEURS DE VOTE (D24, 30/10/2026). Le vert sur le sol clair fait 2,88:1, sous le
+   3:1 des elements graphiques (WCAG 1.4.11) : la barre n'est jamais seule, la position et
+   le decompte sont toujours ecrits a cote. Mesures dans docs/adr/0003-couleurs-votes.md. */
+export const COULEURS_VOTE = Object.freeze({
+  votePour: "#2DA44E",
+  voteContre: "#CF222E",
+  voteAbstention: "#6E7781",
+});
+
 export const COULEURS_GROUPES: Readonly<Record<string, string>> = Object.freeze({
   LFI: "#C9462C", RN: "#0D378A", EPR: "#FFA500", "LÉ": "#33A02C", LR: "#0066CC", SOC: "#FF8080",
   HOR: "#00A0C6", DEM: "#F7B32B", LIOT: "#6B7280", GDR: "#B91C1C", NI: "#9CA3AF", Inconnu: "#6B7280",

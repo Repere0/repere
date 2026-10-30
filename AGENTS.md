@@ -40,8 +40,10 @@ explicite du porteur les change ; la PR qui l'applique met alors à jour
    aucun identifiant, aucune trace du lecteur. La commune choisie reste la seule
    donnée propre au lecteur. Aucune adresse réseau ne porte un code de commune :
    données découpées **par département**.
-3. **Aucun classement**, score, ou tri numérique de personnes, de partis ou de
-   territoires.
+3. **Aucun classement**, score, ou tri numérique de personnes, de partis ou de territoires.
+   Amendé (D23, 30/10/2026, ADR 0002) : comparaisons FACTUELLES entre communes permises
+   (moyenne IDF ou régionale, « comme X communes sur Y », année N-1), annoncées comme calcul ;
+   « comme », « plus que », « moins que » oui ; « mieux », « pire », « top », « note », « score » non.
 4. **Chaque chiffre porte sa source officielle et sa date** (producteur, licence,
    mise à jour, URL). Un calcul dérivé s'annonce comme un calcul.
 5. **Doctrine du vide.** Une absence de donnée produit une phrase vraie et un lien,
@@ -50,7 +52,9 @@ explicite du porteur les change ; la PR qui l'applique met alors à jour
 7. **Invariant 7 (amendé le 30/10/2026)** : les couleurs de groupes politiques
    sont autorisées pour l'identification des élus (badges, cartes de partage).
    Elles ne codent JAMAIS un vote, une opinion, un score ou un classement.
-   Les votes restent vert/rouge/gris. Le mapping officiel vit dans palette.ts.
+   Mapping dans palette.ts. Complément (D24, 30/10/2026, ADR 0003) : votes en vert `#2DA44E`
+   (pour), rouge `#CF222E` (contre), gris `#6E7781` (abstention) ; ils codent un FAIT, jamais
+   un jugement, et la position reste écrite en toutes lettres.
 8. **Jamais le patrimoine d'un élu, jamais de donnée de présence ou d'absence.**
 9. **Fraîcheur** (décision du porteur, 30/09/2026). Une donnée gardée sur
    l'appareil peut être affichée pour préserver l'accès hors ligne, mais jamais
