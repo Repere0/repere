@@ -170,14 +170,16 @@ export default function ChezVous() {
              elles : c'est national, et la carte le dit (ui/semaine.tsx). */}
           <SemaineParlement sp={d.semaineParlement} lu={r.agendaLu} nom={nom} />
 
-          {/* ALLER PLUS LOIN — cinq liens simples (30/10/2026). « Actualités » en est retire :
-             aucune actualite n'est publiee, le lien menait a un ecran vide (docs/data/evenements-format.md). */}
+          {/* ALLER PLUS LOIN — liens simples. « Actualités » reste : c'est le seul acces a son
+             ecran (tests/parcours.test.mjs, aucune impasse), meme vide. Le retirer est une
+             decision produit (BLOCAGES.md, section 15). */}
           <View style={{ gap: PAS }}>
             <Etiquette texte="Aller plus loin" />
             <View>
               <Plus premier texte={LIBELLES.qui} onPress={() => router.push("/qui-decide")} />
               <Plus texte={LIBELLES.calendrier} onPress={() => router.push("/a-venir")} />
               <Plus texte="Élus" onPress={() => router.push("/elus")} />
+              <Plus texte="Actualités" onPress={() => router.push("/actus")} />
               <Plus texte="Dictionnaire citoyen" onPress={() => router.push("/dictionnaire")} />
               <Plus dernier texte={LIBELLES.sources} onPress={() => router.push("/sources")} />
             </View>
