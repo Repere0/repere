@@ -41,6 +41,9 @@ import { AvecDonnees, Page, Question } from "../ui/page";
 import { PastilleSource } from "../ui/source";
 import { DateDonnee } from "../ui/fraicheur";
 import { useApparition } from "../ui/mouvement";
+import { Avatar, CreditPhoto } from "../ui/avatar";
+import { usePhotoElu } from "../lib/photos";
+import { useSelection } from "../lib/selection";
 
 type Params = { nom?: string; role?: string; echelon?: string; niveau?: string; institution?: string; lieu?: string };
 type Scrutin = { n: string; t: string; d: string; sl?: string; dec?: unknown };
@@ -136,12 +139,23 @@ function FeuilleVote({ f, nom, resume, base, onFermer }: { f: FaitElu | null; no
   );
 }
 
+/* La photo libre si elle existe (D27), sinon les initiales ; et son credit, dessous. */
+function PhotoOuInitiales({ nom, dep, cle }: { nom: string; dep: string; cle: string | null }) {
+  const photo = usePhotoElu(dep, cle);
+  return photo ? <Avatar nom={nom} taille={72} photo={photo} /> : <Initiales nom={nom} />;
+}
+function CreditDe({ dep, cle }: { dep: string; cle: string | null }) {
+  const photo = usePhotoElu(dep, cle);
+  return photo ? <CreditPhoto photo={photo} /> : null;
+}
+
 export default function Elu() {
   const p = useLocalSearchParams<Params>();
   const nom = p.nom || "Élu";
   const echelon = p.echelon || "";
   const apparition = useApparition(0);
   const [ouvert, setOuvert] = useState<FaitElu | null>(null);
+  const { choix } = useSelection();
   const [resumes, setResumes] = useState<Resume[]>([]);
   /* Les resumes de la redaction : un fichier public ; s'il n'arrive pas, la feuille dit qu'il n'y a pas de resume. */
   useEffect(() => {
@@ -170,6 +184,12 @@ export default function Elu() {
       const videVote = etatVote ? copieVoteVide(etatVote, { nom, elu: true, releve: srcScrutins(r.d)?.releve, portee: r.d.srcScrutins && r.d.srcScrutins.portee }) : null;
       const libelleRole = [p.role, p.lieu].filter(Boolean).join(" · ");
       const groupe = groupeDe();
+      /* La cle de la photo (D27) : l'identifiant de l'Assemblee pour un depute (nom complet
+         identique dans deputes.json), « M » + INSEE pour le maire de la commune choisie. */
+      const deps = ((r.deputes && r.deputes.deputes) || {}) as Record<string, { prenom?: string; nom?: string; acteurRef?: string }>;
+      const refDepute = depute ? Object.values(deps).find(x => [x.prenom, x.nom].filter(Boolean).join(" ") === nom)?.acteurRef : undefined;
+      const estMaire = echelon === "ville" && !!r.d.fiche && !!r.d.fiche.maire && r.d.fiche.maire.nom === nom;
+      const clePhoto = refDepute || (estMaire && choix ? "M" + choix.insee : null);
       const resume = ouvert ? resumes.find(x => x.id === `scrutin-${ouvert.sc.d}-${ouvert.sc.n}`) || null : null;
       /* Carte de partage : seulement le dernier vote publie de cet elu, avec sa source. Sans
          vote ou sans source publiee, pas de carte : le partage reste textuel. */
@@ -194,11 +214,12 @@ export default function Elu() {
           <Animated.View style={{ opacity: apparition, gap: PAS * 4 }}>
             {/* Identite */}
             <View style={{ flexDirection: "row", gap: PAS * 4, alignItems: "center" }}>
-              <Initiales nom={nom} />
+              <PhotoOuInitiales nom={nom} dep={r.d.dep} cle={clePhoto} />
               <View style={{ flex: 1, gap: 8 }}>
                 <Question etiquette={p.niveau || LIBELLES.qui} question={nom} sous={libelleRole || undefined} />
               </View>
             </View>
+            <CreditDe dep={r.d.dep} cle={clePhoto} />
             {/* Groupe : identifie l'élu. Gris « Inconnu » tant que le lien n'est pas publié. */}
             {depute ? <BadgeGroupe groupe={groupe} /> : null}
             {/* V13 bloc A : la date de ce qu'affiche la fiche (les votes pour un depute,

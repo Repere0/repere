@@ -368,6 +368,11 @@ rm -rf site_engendre
   # requis. Non bloquant : sans ce fichier, l'application n'affiche simplement pas le lien.
   node scripts/collecte-sites-mairies.mjs ./data \
     || echo "::warning::sites des mairies non collectes (annuaire DILA) - aucun lien affiche"
+  # PHOTOS D'ELUS (30/10/2026, D27) - Wikidata + Wikimedia Commons, licences libres
+  # seulement, vignettes integrees par departement. Reseau requis. Non bloquant : sans
+  # ce fichier, l'application affiche les initiales.
+  node scripts/collecte-photos-elus.mjs ./data \
+    || echo "::warning::photos d'elus non collectees - initiales affichees"
   # ETAT ANNONCE DANS LA CI (29/10/2026). Le banc ne montre sa sortie qu'en cas
   # d'echec : sans cette annotation, une CI verte ne disait pas si le teaser
   # etait present ou si sa note d'absence avait ete testee a sa place.

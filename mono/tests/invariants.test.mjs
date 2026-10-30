@@ -310,9 +310,21 @@ test("invariant 4 — aucune donnée n'est servie sans source déclarée", () =>
   assert.deepEqual([...new Set(composees)].sort(),
     ["/agenda-an.json", "/agregats-regionaux.json", "/calendrier-senat.json", "/communes-beta.json", "/comptes-regions.json", "/departments/${d}.json",
      "/deputes.json", "/elus-regions/${c}.json", "/evenements.json", "/index.json", "/mairies-idf.json",
-     "/projets/${d}.json", "/questions-gouvernement-index.json", "/questions-gouvernement/${lotPadded}.json", "/scrutins-details/${lotPadded}.json", "/scrutins-index.json", "/scrutins-solennels-recents.json", "/scrutins-solennels.json", "/scrutins.json", "/scrutins/${d}.json"],
+     "/photos-elus/${d}.json", "/projets/${d}.json", "/questions-gouvernement-index.json", "/questions-gouvernement/${lotPadded}.json", "/scrutins-details/${lotPadded}.json", "/scrutins-index.json", "/scrutins-solennels-recents.json", "/scrutins-solennels.json", "/scrutins.json", "/scrutins/${d}.json"],
     "client.js compose une adresse de donnees inattendue : " + composees.join(", "));
   const sources = existe("data/index.json") ? (JSON.parse(lire("data/index.json")).sources || {}) : {};
+  /* /photos-elus/{dep}.json (D27, ADR 0004) : chaque photo porte son auteur et sa licence,
+     et la licence est libre. Servi par departement, comme les comptes. */
+  if (existe("data/photos-elus")) {
+    for (const f of fs.readdirSync(path.join(RACINE, "data/photos-elus"))) {
+      const ph = JSON.parse(lire("data/photos-elus/" + f));
+      assert.ok(ph.source && ph.genere_le, `photos-elus/${f} sans source ni date`);
+      for (const [cle, x] of Object.entries(ph.photos || {})) {
+        assert.ok(x.auteur && x.licence && /^data:image\//.test(x.data), `photos-elus/${f} ${cle} : auteur, licence ou vignette manquant`);
+        assert.ok(!/nc|nd/i.test(x.licence.replace(/cc0/i, "")), `photos-elus/${f} ${cle} : licence non libre (${x.licence})`);
+      }
+    }
+  }
   /* /mairies-idf.json (D28, ADR 0005) : provenance dans le fichier (annuaire DILA). */
   if (existe("data/mairies-idf.json")) {
     const mai = JSON.parse(lire("data/mairies-idf.json"));

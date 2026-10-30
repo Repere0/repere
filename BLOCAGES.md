@@ -147,3 +147,12 @@ Pas de temps consacré au bonus, pour ne pas multiplier les changements non relu
 - **Bloc 4, fichier d'agrégats : pas en dur dans `packages/data-utils/src/agregats-idf.json`.** Une valeur écrite dans le code se fige : c'est exactement le défaut du « 2 495 € » corrigé par D18, et l'invariant 9 l'interdit. À la place, `mono/scripts/agregats-regionaux.mjs` produit `data/agregats-regionaux.json` à chaque publication (`outils/pipeline.sh`), avec la date de l'index et la source OFGL. L'application le lit (environ 1 Ko compressé) et ne télécharge plus que le département de la commune.
 - **Dépendance : la publication se fait depuis `main`.** Tant que cette branche n'est pas fusionnée, la production ne contient pas `agregats-regionaux.json`. L'application retombe alors sur le calcul à partir des 8 départements, soit environ 249 Ko compressés au premier lancement, au lieu de 105 Ko. **À décider par le porteur : la fusion.**
 - **A2, gris d'abstention** : la brief annonçait plus de 5:1. La mesure donne 4,55:1 sur carte blanche et 4,07:1 sur le sol clair. Il passe le test AA sur carte, où toutes les barres sont posées.
+
+## 20. Sprint v16 (30/10/2026)
+
+- **Réseau : l'API DILA, Wikidata et Wikimedia Commons sont refusés par le proxy de la session.** Les deux scripts de collecte sont écrits et vérifiés hors ligne, mais n'ont tourné sur aucune donnée réelle. Ils tourneront dans `outils/pipeline.sh`, qui ne publie que depuis `main` (fusion à décider par le porteur). **Couvertures inconnues** : sites de mairies, photos des 577 députés, photos des maires.
+- **Photos : servies par département, pas chargées chez Wikimedia.** La brief ne le précisait pas. Le faire à l'affichage aurait dit à Wikimedia quel élu chaque lecteur regarde (invariant 2). Choix fait et documenté (ADR 0004).
+- **Maires : rapprochement par commune et par nom seulement.** Un rapprochement par nom seul aurait risqué des homonymes. S'il y a doute, pas de photo.
+- **Annuaire « Élus » sans photos** : il faudrait charger le fichier de photos de chaque département de France pour une seule liste.
+- **Droit à l'image** à faire valider par un juriste (une licence libre ne le couvre pas). Je ne suis pas juriste.
+- **Incident** : le commit d4773ac (bloc 0) a été poussé avec CLAUDE.md à 121 lignes (erreur E1 du contrôle des invariants). Corrigé quelques minutes après par a6ddbd2. Les commits suivants s'arrêtent sur ce contrôle.

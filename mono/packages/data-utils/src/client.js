@@ -69,6 +69,15 @@ export function adresseDepartement(dep) {
   if (adresseFautive(url)) throw new Error("adresse fautive composee : " + url);
   return url;
 }
+/* Photos d'elus sous licence libre (D27, ADR 0004) : PAR DEPARTEMENT, jamais par elu. Une
+   adresse par elu dirait au serveur quel elu le lecteur regarde, donc ou il habite. */
+export function adressePhotosElus(dep) {
+  const d = String(dep).toUpperCase();
+  if (!/^(\d{2,3}|2[AB])$/.test(d)) throw new Error("code de departement invalide : " + dep);
+  const url = `${BASE_DONNEES}/photos-elus/${d}.json`;
+  if (adresseFautive(url)) throw new Error("adresse fautive composee : " + url);
+  return url;
+}
 export function adresseIndex() { return `${BASE_DONNEES}/index.json`; }
 /* Le fichier des deputes ne porte AUCUN code de commune, et n'est demande que
    par l'ecran qui l'affiche : la maille reste la circonscription. */
@@ -515,6 +524,9 @@ export async function chargerScrutinLot(lot, { delaiMs = 8000 } = {}) {
 }
 export async function chargerEvenements({ delaiMs = 8000 } = {}) {
   return chargerSocle("socle:EVT", adresseEvenements(), delaiMs);
+}
+export async function chargerPhotosElus(dep, { delaiMs = 8000 } = {}) {
+  return chargerSocle("photos:" + String(dep).toUpperCase(), adressePhotosElus(dep), delaiMs);
 }
 export async function chargerMairies({ delaiMs = 8000 } = {}) {
   return chargerSocle("socle:MAI", adresseMairies(), delaiMs);

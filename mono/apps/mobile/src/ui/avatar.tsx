@@ -1,10 +1,13 @@
 /* L'AVATAR D'UN ELU : ses initiales sur la couleur de son groupe, avec une bordure de la
  * même teinte, plus sombre, et une ombre douce (clair comme sombre).
- * Aucune photo : décision du porteur (30/10/2026, D1). Les photos de l'Assemblée ne sont
- * pas chargées, pour ne pas révéler l'adresse du lecteur. Sans groupe connu (c'est le cas
+ * Photo (D27, ADR 0004) : seulement une vignette sous licence libre de Wikimedia Commons,
+ * servie par département dans les données de Repère (jamais chargée chez Wikimedia), avec
+ * son crédit (CreditPhoto) affiché dessous. Jamais une photo de l'Assemblée (D1). Sans
+ * photo : les initiales. Sans groupe connu (c'est le cas
  * de tous les élus aujourd'hui), la couleur est le gris « Inconnu » (ADR 0001). */
-import { Text, View } from "react-native";
-import { OMBRE } from "../lib/theme";
+import { Image, Linking, Pressable, Text, View } from "react-native";
+import type { PhotoElu } from "../lib/photos";
+import { couleurs, OMBRE } from "../lib/theme";
 import { bordureGroupe, couleurGroupe, groupeDe, texteSur } from "../lib/groupes";
 
 export function initiales(nom: string): string {
@@ -17,13 +20,34 @@ export function initiales(nom: string): string {
 
 /* 64 px par défaut : initiales à 24 px. Le texte est blanc sur le gris « Inconnu » ; sur une
  * couleur de groupe claire, il passe en encre pour rester lisible (texteSur). */
-export function Avatar({ nom, taille = 64 }: { nom: string; taille?: number }) {
+export function Avatar({ nom, taille = 64, photo }: { nom: string; taille?: number; photo?: PhotoElu | null }) {
   const fond = couleurGroupe(groupeDe());
+  if (photo) {
+    return (
+      <Image source={{ uri: photo.data }} accessible={false} resizeMode="cover"
+        style={[{ width: taille, height: taille, borderRadius: taille / 2, borderWidth: 2, borderColor: bordureGroupe(fond) }, OMBRE]} />
+    );
+  }
   return (
     <View accessible={false}
       style={[{ width: taille, height: taille, borderRadius: taille / 2, backgroundColor: fond,
         borderWidth: 2, borderColor: bordureGroupe(fond), alignItems: "center", justifyContent: "center" }, OMBRE]}>
       <Text style={{ color: texteSur(fond), fontWeight: "800", fontSize: Math.round(taille * 0.375) }}>{initiales(nom)}</Text>
     </View>
+  );
+}
+
+/* LE CREDIT D'UNE PHOTO (CC BY-SA exige auteur, licence, source, et l'indication d'une
+   modification : le recadrage en cercle). Toute la ligne ouvre la page Commons (45 px). */
+export function CreditPhoto({ photo }: { photo: PhotoElu }) {
+  const page = photo.page && /^https:\/\//.test(photo.page) ? photo.page : null;
+  return (
+    <Pressable disabled={!page} onPress={() => { if (page) Linking.openURL(page); }} accessibilityRole={page ? "link" : "text"}
+      accessibilityLabel={`Photo : ${photo.auteur}, licence ${photo.licence}, Wikimedia Commons, recadrée${page ? ". Ouvre la page de la photo, site externe" : ""}`}
+      style={({ pressed }) => ({ minHeight: 45, justifyContent: "center", opacity: pressed ? 0.7 : 1 })}>
+      <Text style={{ fontSize: 12, lineHeight: 16, color: couleurs.sourd, textDecorationLine: page ? "underline" : "none" }} numberOfLines={2}>
+        Photo : {photo.auteur} · {photo.licence} · Wikimedia Commons (recadrée)
+      </Text>
+    </Pressable>
   );
 }
