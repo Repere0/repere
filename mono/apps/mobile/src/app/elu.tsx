@@ -35,7 +35,8 @@ import { Repartition } from "../ui/visuels";
 import { Carte, Vide } from "../lib/composants";
 import { chargerEvenements } from "../lib/donnees";
 import { srcElus, srcScrutins } from "../lib/sources";
-import { couleurs, CIBLE, COULEUR_VOTE, PAS, RAYON, TYPO, type Echelon } from "../lib/theme";
+import { couleurs, CIBLE, PAS, RAYON, TYPO, type Echelon } from "../lib/theme";
+import { useCouleurVote } from "../lib/couleur-vote";
 import { AvecPicto } from "../ui/picto";
 import { Details } from "../ui/details";
 import { ModaleExhaustif } from "../ui/modale-exhaustif";
@@ -78,6 +79,7 @@ function Lien({ texte, onPress, etiquette }: { texte: string; onPress: () => voi
 }
 
 function CarteVote({ f, onComprendre }: { f: FaitElu; onComprendre: () => void }) {
+  const COULEUR_VOTE = useCouleurVote();
   const pos = f.position as string;
   const rep = repartitionVote(f.sc);
   const qui = f.qui;

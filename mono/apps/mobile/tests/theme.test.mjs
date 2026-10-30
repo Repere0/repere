@@ -13,7 +13,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
 import { ECHELONS } from "@repere/data-utils";
-import { NEUTRES_PAR_MODE, TEINTES_PAR_MODE, ECHELONS_PAR_MODE, OMBRE_PAR_MODE, COULEURS_VOTE } from "../src/lib/palette.ts";
+import { NEUTRES_PAR_MODE, TEINTES_PAR_MODE, ECHELONS_PAR_MODE, OMBRE_PAR_MODE, COULEURS_VOTE, COULEURS_VOTE_DALTONIEN } from "../src/lib/palette.ts";
 
 const RACINE = path.resolve(import.meta.dirname, "..");
 const SRC = path.join(RACINE, "src");
@@ -231,7 +231,7 @@ test("theme — couleurs de vote : 4,5:1 sur la carte claire, 3:1 sur la carte s
   const lum = h => { const c = hex(h).map(v => v / 255).map(v => (v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4)); return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2]; };
   const r = (a, b) => { const x = lum(a), y = lum(b); return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05); };
   const fautes = [];
-  for (const [nom, c] of Object.entries(COULEURS_VOTE)) {
+  for (const [nom, c] of [...Object.entries(COULEURS_VOTE), ...Object.entries(COULEURS_VOTE_DALTONIEN).map(([n, v]) => ["daltonien " + n, v])]) {
     const clair = r(c, NEUTRES_PAR_MODE.clair.carte), sombre = r(c, NEUTRES_PAR_MODE.sombre.carte);
     if (clair < 4.5) fautes.push(`${nom} ${c} sur carte claire : ${clair.toFixed(2)}:1`);
     if (sombre < 3) fautes.push(`${nom} ${c} sur carte sombre : ${sombre.toFixed(2)}:1`);

@@ -151,12 +151,17 @@ test("invariant 7 — palette gelée ; couleurs de groupes seulement dans palett
   const votes = [...blocVote.matchAll(/#[0-9a-fA-F]{6}\b/g)].map(m => m[0].toLowerCase());
   /* Valeurs ecrites sans « # » : ce fichier est lui-meme balaye par le controle de palette. */
   assert.deepEqual(votes, ["1f883d", "cf222e", "6e7781"].map(h => "#" + h), "les couleurs de vote sont celles de D24 (ADR 0003)");
+  /* Variante daltonienne (D56, V29 bloc 3) : trois couleurs, dans palette.ts seulement. */
+  const blocVoteD = (lire("apps/mobile/src/lib/palette.ts").match(/export const COULEURS_VOTE_DALTONIEN[\s\S]*?\}\);/) || [""])[0];
+  const votesD = [...blocVoteD.matchAll(/#[0-9a-fA-F]{6}\b/g)].map(m => m[0].toLowerCase());
+  assert.deepEqual(votesD, ["0072b2", "b35900", "6e7781"].map(h => "#" + h), "la variante daltonienne est celle de D56 (ADR 0003)");
+  const tousVotes = [...votes, ...votesD];
   let controlees = 0;
   for (const f of sourcesEcrites()) {
     for (const m of lire(f).matchAll(/#[0-9a-fA-F]{6}\b/g)) {
       const hex = m[0].toLowerCase();
       if (gelees.includes(hex)) continue;
-      if (votes.includes(hex)) {
+      if (tousVotes.includes(hex)) {
         assert.equal(f, "apps/mobile/src/lib/palette.ts", `${f} : couleur de vote ${hex} hors palette.ts`);
         continue;
       }

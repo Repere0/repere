@@ -11,7 +11,8 @@
  * Construites avec des View : aucune bibliotheque de graphiques. */
 import { useState, type ReactNode } from "react";
 import { Animated, Pressable, StyleSheet, Text, View } from "react-native";
-import { feuille, couleurs, COULEUR_VOTE, PAS, RAYON, TEINTES, TYPO, CIBLE, type Echelon } from "../lib/theme";
+import { feuille, couleurs, PAS, RAYON, TEINTES, TYPO, CIBLE, type Echelon } from "../lib/theme";
+import { useCouleurVote } from "../lib/couleur-vote";
 import { useApparition, useCompteur } from "./mouvement";
 import { pointEchelon } from "../lib/niveaux";
 
@@ -74,6 +75,7 @@ export function Repartition({ segments, total, position, qui, compact }: {
   compact?: boolean;
 }) {
   const v = useApparition(80);
+  const COULEUR_VOTE = useCouleurVote();
   const phrase = segments.map(x => `${x.libelle} : ${x.nombre}`).join(", ")
     + `, sur ${total} députés ayant pris part au vote.` + (qui && position ? ` ${qui} : ${segments.find(x => x.cle === position)?.libelle.toLowerCase() || "position non portée"}.` : "");
   return (

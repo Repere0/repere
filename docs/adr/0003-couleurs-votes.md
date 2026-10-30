@@ -46,3 +46,20 @@ Sur la carte sombre, les trois couleurs restent sous 4,5:1 : elles ne servent ja
 | `#6E7781` | 4,55 | 4,07 | 3,70 | 4,01 |
 
 **Point faible :** le vert sur le sol clair fait 2,88:1, sous le seuil de 3:1 des éléments graphiques (WCAG 1.4.11). Les barres de vote sont posées sur des cartes blanches (3,22:1), jamais directement sur le sol. Ces couleurs ne servent jamais pour du texte.
+
+## Amendement D56 (30/10/2026, V29 bloc 3) — variante daltonienne
+
+Réglage « mode daltonien » du profil (`repere.profil`, ADR 0006). Les écrans de l'application (accueil, chez-vous, fiche élu, vote) lisent la palette du réglage ; les cartes de partage gardent leur palette figée (D5).
+
+| Sens | Mode normal (A2, inchangé) | Mode daltonien (D56) | Sur carte blanche | Sur carte sombre |
+|---|---|---|---|---|
+| Pour | vert `#1F883D` | bleu `#0072B2` (Okabe-Ito) | 5,19:1 | 3,24:1 |
+| Contre | rouge `#CF222E` | vermillion assombri `#B35900` | 4,83:1 | 3,48:1 |
+| Abstention | gris `#6E7781` | gris `#6E7781` | 4,55:1 | 3,70:1 |
+
+Écarts ΔE76 (CIELAB) sous simulation (Machado 2009, sévérité 1,0), pour/contre : protanopie 88, deutéranopie 102. Le test `tests/daltonisme.test.mjs` exige 20 au minimum pour les trois paires ; mode normal : 22 (protanopie) et 17 (deutéranopie), mesuré et non testé.
+
+Écarts au brief V29, décidés ici et à valider par le porteur :
+- le rouge du mode normal reste `#CF222E` : A2 le garde (5,36:1 sur blanc). Le brief le voulait en `#A40E26`, mais cette valeur tombe à 2,14:1 sur carte sombre, sous le seuil de 3:1 du test (7,87:1 sur blanc, donc inutile pour l'AA) ;
+- l'orange Okabe-Ito `#E69F00` fait 2,25:1 sur blanc : il échoue le seuil de 4,5:1 des cartes claires. Remplacé par `#B35900`, même famille ;
+- le gris `#999999` du brief fait 2,85:1 sur blanc : il est remplacé par le gris du mode normal `#6E7781`, déjà mesuré.

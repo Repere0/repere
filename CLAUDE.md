@@ -54,7 +54,8 @@ explicite du porteur les change ; la PR qui l'applique met alors à jour
    Elles ne codent JAMAIS un vote, une opinion, un score ou un classement.
    Mapping dans palette.ts. Complément (D24, 30/10/2026, ADR 0003) : votes en vert `#1F883D`
    (pour), rouge `#CF222E` (contre), gris `#6E7781` (abstention) ; ils codent un FAIT, jamais
-   un jugement, et la position reste écrite en toutes lettres. D27 (ADR 0004) : photo d'élu sous licence
+   un jugement, et la position reste écrite en toutes lettres. Variante daltonienne (D56, 30/10/2026, réglage
+   du profil, ADR 0003) : bleu `#0072B2` (pour), vermillion assombri `#B35900` (contre), gris `#6E7781` (abstention). D27 (ADR 0004) : photo d'élu sous licence
    libre de Wikimedia Commons seulement, crédit affiché, servie par département ; jamais celles de l'AN.
 8. **Jamais le patrimoine d'un élu, jamais de donnée de présence ou d'absence.**
 9. **Fraîcheur** (décision du porteur, 30/09/2026). Une donnée gardée sur

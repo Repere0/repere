@@ -105,6 +105,16 @@ export const COULEURS_VOTE = Object.freeze({
   voteAbstention: "#6E7781",
 });
 
+/* VARIANTE DALTONIENNE (D56, 30/10/2026) : réglage « mode daltonien » du profil. Palette
+   Okabe-Ito : bleu #0072B2 (pour), vermillion assombri #B35900 (contre), même gris que le mode
+   normal (abstention). Le vermillion est assombri pour atteindre 4,5:1 sur carte blanche.
+   Vérifié par tests/theme.test.mjs et tests/daltonisme.test.mjs. */
+export const COULEURS_VOTE_DALTONIEN = Object.freeze({
+  votePour: "#0072B2",
+  voteContre: "#B35900",
+  voteAbstention: "#6E7781",
+});
+
 export const COULEURS_GROUPES: Readonly<Record<string, string>> = Object.freeze({
   LFI: "#C9462C", RN: "#0D378A", EPR: "#FFA500", "LÉ": "#33A02C", LR: "#0066CC", SOC: "#FF8080",
   HOR: "#00A0C6", DEM: "#F7B32B", LIOT: "#6B7280", GDR: "#B91C1C", NI: "#9CA3AF", Inconnu: "#6B7280",

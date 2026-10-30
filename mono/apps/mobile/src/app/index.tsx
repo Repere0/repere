@@ -31,7 +31,7 @@ import { Logo } from "../ui/logo";
 import { DatePublication } from "../ui/fraicheur";
 import { DernieresPublications } from "../ui/dernieres-publications";
 import { phrasesMoyenne, useMoyenneDepenses } from "../lib/moyenne";
-import { COULEUR_VOTE } from "../lib/theme";
+import { useCouleurVote } from "../lib/couleur-vote";
 import { AvecPicto } from "../ui/picto";
 import { libelleGroupe } from "../ui/badge-groupe";
 import { Details } from "../ui/details";
@@ -84,6 +84,7 @@ const RECENTES: { insee: string; nom: string }[] = [];
 
 /* La repartition du scrutin entier (pas la position seule) : pour, contre, abstention. */
 function BarreVote({ dec }: { dec?: Record<string, string> | null }) {
+  const COULEUR_VOTE = useCouleurVote();
   const p = dec ? nombre(dec.pour) : null, c = dec ? nombre(dec.contre) : null, a = dec ? nombre(dec.abstentions) : null;
   if (p === null || c === null || a === null || p + c + a === 0) return null;
   return (
@@ -96,6 +97,7 @@ function BarreVote({ dec }: { dec?: Record<string, string> | null }) {
 
 /* Le sens du vote : un rond de couleur (D24, un fait) et la position en toutes lettres. */
 function SensVote({ cle, texte }: { cle: string; texte: string }) {
+  const COULEUR_VOTE = useCouleurVote();
   const couleur = COULEUR_VOTE[cle as keyof typeof COULEUR_VOTE];
   return (
     <View style={{ flexDirection: "row", alignItems: "center", gap: PAS * 2 }}>

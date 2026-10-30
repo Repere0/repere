@@ -263,3 +263,10 @@ Recherche faite sur le site officiel (melun.fr / ville-melun.fr) :
 - Ce que le dépôt dit : chaque exercice du bloc OFGL porte la population qu'il utilise (`mono/scripts/extract-html.js`, règle V-2, 29/09/2026). Les montants par habitant sont ceux que publie l'OFGL.
 - Ce que le dépôt ne dit pas : qui produit cette population (INSEE, DGCL ou autre) ni à quelle date de référence. Rien n'a été écrit dans l'application à ce sujet.
 - Action : vérifier le producteur de la population dans le fichier OFGL source avant d'ajouter une mention de source. Jusque-là, l'application ne cite que l'OFGL.
+
+## 27. V29 bloc 3 — couleurs du brief non retenues (30/10/2026)
+
+- **Rouge `#A40E26` (brief) : non appliqué.** Mesuré : 7,87:1 sur blanc, mais 2,14:1 sur carte sombre (le test exige 3:1). A2 garde `#CF222E` (5,36:1 sur blanc). La prémisse « contraste WCAG AA » ne tient pas : `#CF222E` passe déjà.
+- **Orange `#E69F00` (brief) : remplacé par `#B35900`.** 2,25:1 sur blanc, sous 4,5:1.
+- **Gris `#999999` (brief) : remplacé par `#6E7781`.** 2,85:1 sur blanc. Ce gris n'est pas une couleur Okabe-Ito.
+- Invariant 7 amendé (D56) et scellé. Le porteur doit valider ce texte, qui ne reprend pas les trois valeurs du brief.
