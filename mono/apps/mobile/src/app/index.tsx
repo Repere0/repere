@@ -23,6 +23,7 @@ import { feuille, CIBLE, PAS, POLICE, RAYON } from "../lib/theme";
 import { ECHELONS_PAR_MODE, NEUTRES_PAR_MODE, OMBRE_PAR_MODE } from "../lib/palette";
 import { groupeDe } from "../lib/groupes";
 import { VOTE } from "../ui/partage/donnees";
+import { DatePublication } from "../ui/fraicheur";
 
 /* L'accueil est sombre : il lit la palette sombre, quel que soit le choix d'affichage. */
 const D = NEUTRES_PAR_MODE.sombre;
@@ -101,6 +102,7 @@ export default function Accueil() {
         contentContainerStyle={[s.page, { paddingTop: marges.top + PAS * 6, paddingBottom: marges.bottom + PAS * 6 }]}
         ListHeaderComponent={
           <View style={s.tete}>
+            <DatePublication />
             <View style={s.haut}>
               {/* Pas de logo.png dans assets/ : marque textuelle, avec un point de couleur (jeton de palette). */}
               <Text style={s.marque} accessibilityLabel="Repère">Repère<Text style={{ color: E.ville }}>.</Text></Text>

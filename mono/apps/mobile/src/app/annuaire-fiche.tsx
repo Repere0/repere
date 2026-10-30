@@ -8,6 +8,7 @@ import { Carte } from "../lib/composants";
 import { couleurs, PAS, TYPO } from "../lib/theme";
 import { Avatar } from "../ui/avatar";
 import { PastilleSource } from "../ui/source";
+import { DatePublication } from "../ui/fraicheur";
 import { PartagerCarte } from "../ui/partage/bouton-partage";
 import { ElusStory } from "../ui/partage/variantes/elu.story";
 import { messageElu } from "../ui/partage/messages";
@@ -24,6 +25,7 @@ export default function AnnuaireFiche() {
   return (
     <ScrollView style={{ flex: 1, backgroundColor: couleurs.sol }} contentContainerStyle={{ padding: PAS * 4, gap: PAS * 4 }}>
       <Stack.Screen options={{ title: "Élu" }} />
+      <DatePublication />
       <View style={{ alignItems: "center", gap: PAS * 3 }}>
         <Avatar nom={nom} taille={96} />
         <Text style={[TYPO.question, { textAlign: "center" }]} accessibilityRole="header">{nom}</Text>

@@ -18,6 +18,7 @@ import { Vide } from "../../lib/composants";
 import { couleurs, CIBLE, PAS, RAYON, TYPO } from "../../lib/theme";
 import { Avatar } from "../../ui/avatar";
 import { Loupe } from "../../ui/loupe";
+import { DatePublication } from "../../ui/fraicheur";
 
 /* Les 14 regions dont l'executif est publie : les fichiers de data/elus-regions/. */
 const REGIONS = ["01", "04", "11", "24", "27", "28", "32", "44", "52", "53", "75", "76", "84", "93"];
@@ -103,6 +104,7 @@ export default function Elus() {
         contentContainerStyle={{ padding: PAS * 4, gap: PAS * 2 }}
         ListHeaderComponent={
           <View style={{ gap: PAS * 3 }}>
+            <DatePublication />
             <Text style={TYPO.question} accessibilityRole="header">Élus</Text>
             <Text style={TYPO.corps}>Les députés et les exécutifs régionaux publiés par Repère. Chaque nom porte sa source.</Text>
             <View style={{ flexDirection: "row", alignItems: "center", gap: PAS * 2, minHeight: CIBLE + 8, borderRadius: 999, borderWidth: 1.5,

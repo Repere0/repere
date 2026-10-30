@@ -12,7 +12,7 @@ import { useCommuneChoisie, type EtatCommune } from "../lib/useCommune";
 import { couleurs, feuille, PAS, TYPO } from "../lib/theme";
 import { useTheme } from "../lib/themeChoix";
 import { Etiquette } from "./resume";
-import { BandeauFraicheur } from "./fraicheur";
+import { BandeauFraicheur, DatePublication } from "./fraicheur";
 
 export function Page({ children }: { children: ReactNode }) {
   const marges = useSafeAreaInsets();
@@ -21,6 +21,7 @@ export function Page({ children }: { children: ReactNode }) {
   useTheme();
   return (
     <ScrollView style={{ backgroundColor: couleurs.sol }} contentContainerStyle={[s.page, { paddingTop: PAS * 4, paddingBottom: marges.bottom + PAS * 10 }]}>
+      <DatePublication />
       <BandeauFraicheur />
       {children}
     </ScrollView>

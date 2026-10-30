@@ -11,6 +11,7 @@
  * il ne recharge jamais de lui-meme ce que le lecteur est en train de lire. */
 import { useEffect, useState } from "react";
 import { AppState, Pressable, StyleSheet, Text, View } from "react-native";
+import { dateFr } from "@repere/core";
 import {
   etatFraicheur, surFraicheur, verifierPublication, publicationPriseEnCompte, phraseFraicheur, FRAICHEUR,
 } from "../lib/donnees";
@@ -41,6 +42,20 @@ export function BandeauFraicheur() {
       ) : null}
     </View>
   );
+}
+
+/* La date de publication des donnees, en tete de chaque ecran (chantier 6, 30/10/2026).
+   C'est la date de construction de l'index (generation), pas celle d'un releve par
+   source : l'ecran ne la presente pas comme une date de source. Rien s'il n'y en a pas. */
+export function DatePublication() {
+  const [e, setE] = useState(etatFraicheur());
+  useEffect(() => {
+    const desabonner = surFraicheur(setE);
+    return () => { desabonner(); };
+  }, []);
+  const jour = e.generation ? String(e.generation).slice(0, 10) : "";
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(jour)) return null;
+  return <Text testID="date-publication" style={[TYPO.micro, { marginBottom: PAS * 2 }]}>Données Repère publiées le {dateFr(jour)}.</Text>;
 }
 
 const s = feuille(() => StyleSheet.create({
