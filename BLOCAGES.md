@@ -214,3 +214,8 @@ Recherche faite sur le site officiel (melun.fr / ville-melun.fr) :
 - **Écart de fonction** : l'avis de la ville dit « adjoint au maire ». Le RNE publié par Repère le classe seulement « conseiller communautaire », et la liste des adjoints de Melun n'est qu'un nombre. J'ai affiché la fonction du RNE, qui est la source du nombre affiché.
 - **Source** : la page de la Ville de Melun est un avis signé par la famille, hébergé sur le site officiel de la commune. C'est la source retenue par D32.
 - **Reste à décider** : garder les mandats terminés des députés comme historique. La brief dit « Ne retire PAS la fiche ». Aujourd'hui la chaîne n'en garde aucun, et la clé est la circonscription : deux députés successifs prendraient la même place. Ce serait un changement de format, que je n'ai pas fait.
+
+### Brief V22 tronqué
+- Le message s'arrête au point b) du bloc 4 (« Vérifie que main et test/sdk58-expo-go peuvent fusionner sans conflit : »). Ce point est fait : essai sur une copie jetable de `main`, 0 conflit (`docs/fusion-main.md`). Ce qui suivait n'est pas arrivé.
+- **« Netlify ~5 min » non confirmé** : la fusion seule ne publie rien. La production change à la collecte suivante (05 h 47 UTC ou lancement manuel depuis `main`), dont la durée n'a pas pu être lue (`gh` non authentifié).
+- **Le lien « Voir les dernières publications »** mène à l'écran Actualités, qui ne montre que des événements nationaux. Le plus récent date du 14/08/2026. Le lecteur y trouvera des publications anciennes : c'est honnête, mais peu engageant.
