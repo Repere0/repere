@@ -3,6 +3,7 @@
  * Aujourd'hui  -> chez-vous   (les trois reponses du jour)
  * Chez vous    -> qui-decide  (la chaine de decision de la commune)
  * Calendrier   -> a-venir     (le Parlement, semaine et mois)
+ * Élus         -> elus        (annuaire des élus publiés, recherche)
  *
  * Le canevas dessine « Aujourd'hui » et « Calendrier » ; « Chez vous » n'a pas
  * d'ecran dessine : il ouvre « Qui decide », a confirmer par le porteur.
@@ -65,6 +66,7 @@ export default function Onglets() {
       />
       <Tabs.Screen name="qui-decide" options={{ title: LIBELLES.qui, tabBarLabel: etiquette(LIBELLES.qui), tabBarIcon: icone("⌂") }} />
       <Tabs.Screen name="a-venir" options={{ title: LIBELLES.calendrier, tabBarLabel: etiquette(LIBELLES.calendrier), tabBarIcon: icone("▦") }} />
+      <Tabs.Screen name="elus" options={{ title: "Élus", tabBarLabel: etiquette("Élus"), tabBarIcon: icone("◎") }} />
     </Tabs>
   );
 }
