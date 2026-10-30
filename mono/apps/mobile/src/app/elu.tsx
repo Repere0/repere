@@ -37,6 +37,8 @@ import { chargerEvenements } from "../lib/donnees";
 import { srcElus, srcScrutins } from "../lib/sources";
 import { couleurs, CIBLE, COULEUR_VOTE, PAS, RAYON, TYPO, type Echelon } from "../lib/theme";
 import { AvecPicto } from "../ui/picto";
+import { Details } from "../ui/details";
+import { ModaleExhaustif } from "../ui/modale-exhaustif";
 import { AvecDonnees, Page, Question } from "../ui/page";
 import { PastilleSource } from "../ui/source";
 import { DateDonnee } from "../ui/fraicheur";
@@ -157,6 +159,7 @@ export default function Elu() {
   const [ouvert, setOuvert] = useState<FaitElu | null>(null);
   const { choix } = useSelection();
   const [resumes, setResumes] = useState<Resume[]>([]);
+  const [tout, setTout] = useState(false);
   /* Les resumes de la redaction : un fichier public ; s'il n'arrive pas, la feuille dit qu'il n'y a pas de resume. */
   useEffect(() => {
     let vivant = true;
@@ -203,6 +206,15 @@ export default function Elu() {
           lien: r.d.base ? lienScrutin(r.d.base, vote.sc).url : null,
         }),
       } : null;
+      /* NIVEAU 1 (V28, bloc 5) : la phrase-conclusion, comptée sur les trois votes affichés (un calcul). */
+      const recents = votes.slice(0, SYNTHESE);
+      const comptes: Record<string, number> = { p: 0, c: 0, a: 0 };
+      recents.forEach(f => { if (f.position) comptes[f.position] = (comptes[f.position] || 0) + 1; });
+      const accroche = recents.length === 0 ? null
+        : recents.length === 1 ? `Sur son dernier vote publié, ${nom} ${VERBE[recents[0].position as string]}`
+        : `Sur ses ${recents.length} derniers votes publiés : ${comptes.p} pour, ${comptes.c} contre, ${comptes.a} abstention${comptes.a > 1 ? "s" : ""}.`;
+      const releveVotes = r.index?.sources?.scrutins?.releve_le;
+      const lienElus = srcElus(r.srcElus ?? null)?.url ?? null;
       const partager = () => Share.share({
         message: `${nom}${libelleRole ? `, ${libelleRole}` : ""}.${p.institution ? ` ${p.institution}.` : ""}\nRésumé Repère, à partir des données publiées. Le détail est dans l'application.`,
       });
@@ -234,6 +246,7 @@ export default function Elu() {
             {/* LA SYNTHESE : ses trois votes publies les plus recents. */}
             {depute ? (
               <View style={{ gap: PAS * 3 }}>
+                {accroche ? <Text style={[TYPO.corps, { fontWeight: "700" }]} accessibilityRole="header">{accroche}</Text> : null}
                 <AvecPicto picto="vote"><Text style={TYPO.etiquette} accessibilityRole="header">Ses derniers votes</Text></AvecPicto>
                 {votes.length ? votes.slice(0, SYNTHESE).map(f => (
                   <CarteVote key={f.sc.n} f={f} onComprendre={() => setOuvert(f)} />
@@ -249,23 +262,46 @@ export default function Elu() {
               <Text style={TYPO.note}>Cette fonction ne vote pas au Parlement. Repère n'affiche donc aucun vote pour elle.</Text>
             )}
 
-            <Carte echelon={echelon as Echelon} titre="Fonction">
-              {p.institution ? <Text style={TYPO.corps}>{p.institution}</Text> : null}
-              {p.lieu ? <Text style={TYPO.note}>{p.lieu}</Text> : null}
-              {debutMandat.etat === "date" ? (
-                <Text style={TYPO.note}>En fonction depuis le {dateFr(debutMandat.date)}. Source : {debutMandat.producteur}, données relevées le {dateFr(debutMandat.releve_le)}.</Text>
-              ) : debutMandat.etat === "sans_releve" ? (
-                <Text style={TYPO.note}>Date de début de la fonction : non affichée, la source ne dit pas quand ses données ont été relevées.</Text>
-              ) : debutMandat.etat === "non_publie" ? (
-                <Text style={TYPO.note}>Date de début de la fonction : non publiée par la source. Repère ne la devine pas.</Text>
-              ) : null}
-            </Carte>
-            {decide ? (
-              <Carte titre="Ce que ce niveau décide">
-                <Text style={TYPO.corps}>{decide}.</Text>
-                <Text style={TYPO.note}>Les mêmes phrases que sur « Qui décide ».</Text>
+            {/* NIVEAU 2 (V28, bloc 5) : la fonction et ce que ce niveau décide. Fermé pour un député
+                (ses votes sont au niveau 1) ; ouvert pour les autres fonctions, qui n'ont que cela. */}
+            <Details titre="Fonction et mandat" ouvertParDefaut={!depute}>
+              <Carte echelon={echelon as Echelon} titre="Fonction">
+                {p.institution ? <Text style={TYPO.corps}>{p.institution}</Text> : null}
+                {p.lieu ? <Text style={TYPO.note}>{p.lieu}</Text> : null}
+                {debutMandat.etat === "date" ? (
+                  <Text style={TYPO.note}>En fonction depuis le {dateFr(debutMandat.date)}. Source : {debutMandat.producteur}, données relevées le {dateFr(debutMandat.releve_le)}.</Text>
+                ) : debutMandat.etat === "sans_releve" ? (
+                  <Text style={TYPO.note}>Date de début de la fonction : non affichée, la source ne dit pas quand ses données ont été relevées.</Text>
+                ) : debutMandat.etat === "non_publie" ? (
+                  <Text style={TYPO.note}>Date de début de la fonction : non publiée par la source. Repère ne la devine pas.</Text>
+                ) : null}
               </Carte>
-            ) : null}
+              {decide ? (
+                <Carte titre="Ce que ce niveau décide">
+                  <Text style={TYPO.corps}>{decide}.</Text>
+                  <Text style={TYPO.note}>Les mêmes phrases que sur « Qui décide ».</Text>
+                </Carte>
+              ) : null}
+            </Details>
+            {/* NIVEAU 3 (« Tout voir ») : méthode, dates de relevé, source officielle. */}
+            <Pressable onPress={() => setTout(true)} accessibilityRole="button" accessibilityLabel={`Tout voir sur ${nom} : méthode, sources, lien officiel`}
+              style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", alignSelf: "flex-start", opacity: pressed ? 0.7 : 1 })}>
+              <Text style={[TYPO.note, { textDecorationLine: "underline" }]}>Tout voir : méthode et sources</Text>
+            </Pressable>
+            <ModaleExhaustif titre={`Fiche de ${nom}`} visible={tout} onFermer={() => setTout(false)} sections={[
+              { titre: "Comment Repère compte les votes", contenu: depute
+                  ? `Repère prend les votes publiés par l'Assemblée nationale où ${nom} a une position (pour, contre ou abstention), du plus récent au plus ancien, et affiche les ${SYNTHESE} premiers. Les scrutins sans position de ce député ne sont pas comptés.`
+                  : "Cette fonction ne vote pas au Parlement : Repère ne compte aucun vote." },
+              { titre: "Le relevé des votes", contenu: releveVotes ? `Relevé le ${dateFr(releveVotes)}.` : "La date du relevé n'est pas publiée.", source: "Assemblée nationale" },
+              { titre: "Le répertoire des élus", contenu: "Les noms et les fonctions sont écrits comme le Répertoire national des élus les publie.", source: srcElus(r.srcElus ?? null)?.producteur },
+              { titre: "Ce que Repère n'affiche pas", contenu: "Le patrimoine des élus, et leur présence ou absence aux séances, ne figurent jamais." },
+              { titre: "Lien officiel", contenu: lienElus
+                  ? <Pressable onPress={() => Linking.openURL(lienElus)} accessibilityRole="link" accessibilityLabel="Le répertoire des élus, sur le site officiel, ouvre un site externe"
+                      style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", opacity: pressed ? 0.7 : 1 })}>
+                      <Text style={[TYPO.corps, { textDecorationLine: "underline" }]}>Le répertoire des élus, sur le site officiel (site externe)</Text>
+                    </Pressable>
+                  : "Aucun lien officiel publié." },
+            ]} />
 
             <Carte titre="D'où viennent ces informations">
               <PastilleSource source={srcElus(r.srcElus ?? null)} />
