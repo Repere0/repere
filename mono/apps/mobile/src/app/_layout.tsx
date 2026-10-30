@@ -19,7 +19,9 @@ import { BricolageGrotesque_800ExtraBold } from "@expo-google-fonts/bricolage-gr
 import { BricolageGrotesque_600SemiBold } from "@expo-google-fonts/bricolage-grotesque/600SemiBold";
 import { FournisseurSelection, useSelection } from "../lib/selection";
 import { FournisseurCommune } from "../lib/useCommune";
-import { appliquerChoix, couleurs, useModeSysteme, type ChoixTheme } from "../lib/theme";
+import { appliquerChoix, appliquerLecture, couleurs, useModeSysteme, type ChoixTheme } from "../lib/theme";
+import { FournisseurProfil, useEtatProfil } from "../lib/profil";
+import { PROFIL_DEFAUT } from "@repere/core";
 import { FournisseurTheme } from "../lib/themeChoix";
 import { NEUTRES_PAR_MODE, type Mode } from "../lib/palette";
 import { LIBELLES } from "@repere/core";
@@ -45,6 +47,10 @@ export default function Coquille() {
   const systeme = useModeSysteme();
   const [choix, setChoix] = useState<ChoixTheme>("systeme");
   const mode = appliquerChoix(choix, systeme);
+  /* Le profil de lecture (V26, bloc 3) : appliqué avant le dessin, comme le mode. */
+  const etatProfil = useEtatProfil();
+  const lu = etatProfil.profil ?? PROFIL_DEFAUT;
+  appliquerLecture({ taille: lu.tailleTexte, espacement: lu.espacement, contraste: lu.contraste });
   const valeur = useMemo(() => ({ choix, setChoix, mode }), [choix, mode]);
   const tema = useMemo(() => themeDe(mode), [mode]);
   const fonds = NEUTRES_PAR_MODE[mode];
@@ -54,6 +60,7 @@ export default function Coquille() {
     <FournisseurTheme value={valeur}>
       <SafeAreaProvider>
         <FournisseurSelection>
+        <FournisseurProfil valeur={etatProfil}>
           <AvecCommune>
             <StatusBar style={mode === "sombre" ? "light" : "dark"} />
             <ThemeProvider value={tema}>
@@ -76,6 +83,8 @@ export default function Coquille() {
                 <Stack.Screen name="procedure" options={{ title: "La procédure", headerLeft: () => <Retour texte={LIBELLES.calendrier} etiquette={`Revenir à l'écran ${LIBELLES.calendrier}`} /> }} />
                 <Stack.Screen name="annuaire-fiche" options={{ title: "Élu", headerLeft: () => <Retour texte="Élus" etiquette="Revenir à l'écran Élus" /> }} />
                 <Stack.Screen name="actus" options={{ title: "Actualités", headerLeft: () => <Retour texte={LIBELLES.aujourdhui} etiquette={`Revenir à l'écran ${LIBELLES.aujourdhui}`} /> }} />
+                <Stack.Screen name="bienvenue" options={{ headerShown: false }} />
+                <Stack.Screen name="confort-lecture" options={{ title: "Confort de lecture", headerLeft: () => <Retour texte="Retour" etiquette="Revenir à l'écran précédent" /> }} />
                 <Stack.Screen name="a-propos" options={{ title: "À propos" }} />
                 <Stack.Screen name="confidentialite" options={{ title: "Confidentialité" }} />
                 <Stack.Screen name="faq" options={{ title: "Questions fréquentes", headerLeft: () => <Retour texte="Retour" etiquette="Revenir à l'écran précédent" /> }} />
@@ -84,6 +93,7 @@ export default function Coquille() {
               </Stack>
             </ThemeProvider>
           </AvecCommune>
+        </FournisseurProfil>
         </FournisseurSelection>
       </SafeAreaProvider>
     </FournisseurTheme>

@@ -59,22 +59,40 @@ export function appliquerMode(m: Mode): void {
   generation += 1;
 }
 
+/* La lecture du profil (V26, bloc 3) : taille de base, espacement des lignes, contraste.
+   Appliquee avant le dessin, comme le mode. Une valeur identique ne refait rien. */
+export type Lecture = { taille: number; espacement: number; contraste: string };
+let lecture: Lecture = { taille: 16, espacement: 1.5, contraste: "normal" };
+export function appliquerLecture(l: Lecture): void {
+  if (l.taille === lecture.taille && l.espacement === lecture.espacement && l.contraste === lecture.contraste) return;
+  lecture = l;
+  generation += 1;
+}
+
 function construire(m: Mode) {
   const n = NEUTRES_PAR_MODE[m];
-  const couleurs = { ...ECHELONS_PAR_MODE[m], ...n };
+  /* Contraste « élevé » et « très élevé » : le gris secondaire devient l'encre. Aucune
+     couleur nouvelle (invariant 7). Le palier « très élevé » n'atteint pas 10:1 : BLOCAGES 25. */
+  const sourd = lecture.contraste === "normal" ? n.sourd : n.encre;
+  const couleurs = { ...ECHELONS_PAR_MODE[m], ...n, sourd };
+  /* Taille et espacement : chaque taille de base est multipliee (base 16 = 1). */
+  const ech = lecture.taille / 16;
+  const esp = lecture.espacement / 1.5;
+  const sz = (x: number) => Math.round(x * ech);
+  const lh = (x: number) => Math.round(x * ech * esp);
   const TYPO = {
     /* le nom de la commune, les grands nombres */
-    affiche: { fontFamily: POLICE.affiche, fontSize: 36, lineHeight: 40, color: couleurs.encre, letterSpacing: -0.5 },
-    chiffre: { fontFamily: POLICE.affiche, fontSize: 38, lineHeight: 44, color: couleurs.encre, letterSpacing: -0.5 },
+    affiche: { fontFamily: POLICE.affiche, fontSize: sz(36), lineHeight: lh(40), color: couleurs.encre, letterSpacing: -0.5 },
+    chiffre: { fontFamily: POLICE.affiche, fontSize: sz(38), lineHeight: lh(44), color: couleurs.encre, letterSpacing: -0.5 },
     /* la question d'un écran */
-    question: { fontFamily: POLICE.affiche, fontSize: 28, lineHeight: 33, color: couleurs.encre, letterSpacing: -0.3 },
+    question: { fontFamily: POLICE.affiche, fontSize: sz(28), lineHeight: lh(33), color: couleurs.encre, letterSpacing: -0.3 },
     /* la réponse d'une carte : lisible en trois secondes */
-    reponse: { fontFamily: POLICE.titre, fontSize: 20, lineHeight: 26, color: couleurs.encre },
-    corps: { fontSize: 16, lineHeight: 23, color: couleurs.encre },
-    note: { fontSize: 15, lineHeight: 21, color: couleurs.sourd },
+    reponse: { fontFamily: POLICE.titre, fontSize: sz(20), lineHeight: lh(26), color: couleurs.encre },
+    corps: { fontSize: sz(16), lineHeight: lh(23), color: couleurs.encre },
+    note: { fontSize: sz(15), lineHeight: lh(21), color: couleurs.sourd },
     /* l'étiquette au-dessus d'une réponse, en capitales de style */
-    etiquette: { fontSize: 13, lineHeight: 18, fontWeight: "700" as const, letterSpacing: 0.8, textTransform: "uppercase" as const, color: couleurs.sourd },
-    micro: { fontSize: 13, lineHeight: 18, color: couleurs.sourd },
+    etiquette: { fontSize: sz(13), lineHeight: lh(18), fontWeight: "700" as const, letterSpacing: 0.8, textTransform: "uppercase" as const, color: couleurs.sourd },
+    micro: { fontSize: sz(13), lineHeight: lh(18), color: couleurs.sourd },
   };
   /* Les trois gris d'une répartition de vote : ils se distinguent aussi par leur
      libellé et leur nombre, jamais par la couleur seule (accessibilité). */

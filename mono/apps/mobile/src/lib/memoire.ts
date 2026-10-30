@@ -50,10 +50,14 @@ function lireBrut(): string | null {
 
 export function oublier(): void {
   try {
-    if (Platform.OS === "web") { globalThis.localStorage.removeItem(CLE); return; }
-    const f = fichier();
-    if (f.exists) f.delete();
+    if (Platform.OS === "web") globalThis.localStorage.removeItem(CLE);
+    else {
+      const f = fichier();
+      if (f.exists) f.delete();
+    }
   } catch { /* rien a oublier, ou deja oublie */ }
+  /* V26 : « Oublier » efface aussi les reglages de lecture gardes sur cet appareil. */
+  effacerProfil();
 }
 
 export function lire(): Retenue | null {
@@ -84,6 +88,55 @@ export function retenir(r: Retenue): boolean {
     }
     const relu = lire();
     return !!relu && relu.c === v.c;
+  } catch {
+    return false;
+  }
+}
+
+/* LE PROFIL DE LECTURE (V26, bloc 1, ADR 0006) : seconde et derniere cle de ce fichier.
+ * Meme mecanisme que la commune : localStorage sur le web, fichier du dossier cache sur
+ * le telephone. Il ne porte que des reglages de lecture (valides par @repere/core). */
+export const CLE_PROFIL = "repere.profil";
+const fichierProfil = () => new File(Paths.cache, CLE_PROFIL + ".json");
+
+function lireProfilBrut(): string | null {
+  if (Platform.OS === "web") {
+    try { return globalThis.localStorage.getItem(CLE_PROFIL); } catch { return null; }
+  }
+  const f = fichierProfil();
+  return f.exists ? f.textSync() : null;
+}
+
+/* null = absent (jamais repondu, ou illisible : efface et traite comme absent). */
+export function lireProfilGarde(): unknown {
+  try {
+    const brut = lireProfilBrut();
+    if (!brut) return null;
+    return JSON.parse(brut);
+  } catch {
+    effacerProfil();
+    return null;
+  }
+}
+
+export function effacerProfil(): void {
+  try {
+    if (Platform.OS === "web") { globalThis.localStorage.removeItem(CLE_PROFIL); return; }
+    const f = fichierProfil();
+    if (f.exists) f.delete();
+  } catch { /* rien a effacer */ }
+}
+
+/* Ecrit le texte deja valide, et rend true seulement s'il se relit a l'identique. */
+export function ecrireProfilGarde(texte: string): boolean {
+  try {
+    if (Platform.OS === "web") globalThis.localStorage.setItem(CLE_PROFIL, texte);
+    else {
+      const f = fichierProfil();
+      if (!f.exists) f.create();
+      f.write(texte);
+    }
+    return lireProfilBrut() === texte;
   } catch {
     return false;
   }

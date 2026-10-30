@@ -45,6 +45,7 @@ await ctx.route("**/data/actus-hebdo.json", r => r.fulfill({ status: 200, conten
   communes: { "77284": { titre: "ESSAI — actualité construite pour le test", resume: "Deux phrases d'essai. Ce n'est pas une donnée réelle.", source: "https://exemple.test/essai", source_nom: "Source d'essai" } },
 }) }));
 const p = await ctx.newPage();
+await p.addInitScript(() => { if (!localStorage.getItem("repere.profil")) localStorage.setItem("repere.profil", JSON.stringify({ niveauZoom: "tout", tailleTexte: 16, espacement: 1.5, contraste: "normal", policeDyslexie: false, animationsReduites: false, modeDaltonien: false, masquerImages: false })); });  /* V26 : profil deja repondu, l'accueil ne pose pas les 3 questions */
 
 async function controler(nom) {
   const carte = p.locator('[data-testid="carte-story"]').last();

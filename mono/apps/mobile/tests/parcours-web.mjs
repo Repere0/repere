@@ -132,6 +132,16 @@ for (const largeur of [360, 390, 430]) {
   if (CAPTURES) await page.screenshot({ path: path.join(CAPTURES, `accueil-${largeur}.png`), fullPage: true });
   await resultat.click();
 
+  /* V26 bloc 1 : premiere visite sans profil -> trois questions. On repond (rue, 18 points),
+     puis on verifie que le profil est garde sur l'appareil et que l'accueil s'ouvre ensuite. */
+  await page.getByText("Question 2 sur 3").first().waitFor({ timeout: 10000 });
+  await page.getByText("Ma rue", { exact: false }).first().click();
+  await page.getByText("A 18").first().click();
+  await page.getByText("Terminer", { exact: true }).first().click();
+  const profil = await page.evaluate(() => localStorage.getItem("repere.profil"));
+  verifier(profil && JSON.parse(profil).niveauZoom === "rue" && JSON.parse(profil).tailleTexte === 18,
+    "bienvenue : les réponses sont gardées dans repere.profil (" + profil + ")");
+
   await page.getByText("Aller plus loin").first().waitFor({ timeout: 15000 });
   await page.waitForLoadState("networkidle");
   /* Le ScrollView de React Native defile a l'interieur de la page : une capture
@@ -327,6 +337,7 @@ for (const largeur of [360, 390, 430]) {
    un encours de dette nul : la carte disparaissait sans un mot. */
 {
   const page = await navigateur.newPage({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, reducedMotion: "reduce" });
+  await page.addInitScript(() => { if (!localStorage.getItem("repere.profil")) localStorage.setItem("repere.profil", JSON.stringify({ niveauZoom: "tout", tailleTexte: 16, espacement: 1.5, contraste: "normal", policeDyslexie: false, animationsReduites: false, modeDaltonien: false, masquerImages: false })); });  /* V26 : profil deja repondu, l'accueil ne pose pas les 3 questions */
   await page.goto(BASE + "/", { waitUntil: "networkidle" });
   await chercher(page, "bassevelle");
   await page.getByRole("button", { name: /^Bassevelle,/ }).first().click();
@@ -342,6 +353,7 @@ for (const largeur of [360, 390, 430]) {
    « Aller plus loin ». Le contrôle ouvre l'écran, il ne se contente pas du libellé. */
 {
   const page = await navigateur.newPage({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, reducedMotion: "reduce" });
+  await page.addInitScript(() => { if (!localStorage.getItem("repere.profil")) localStorage.setItem("repere.profil", JSON.stringify({ niveauZoom: "tout", tailleTexte: 16, espacement: 1.5, contraste: "normal", policeDyslexie: false, animationsReduites: false, modeDaltonien: false, masquerImages: false })); });  /* V26 : profil deja repondu, l'accueil ne pose pas les 3 questions */
   await page.goto(BASE + "/", { waitUntil: "networkidle" });
   await chercher(page, "bassevelle");
   await page.getByRole("button", { name: /^Bassevelle,/ }).first().click();
@@ -356,6 +368,7 @@ for (const largeur of [360, 390, 430]) {
    introuvable ; la phrase dit que la beta ne la couvre pas encore. */
 {
   const page = await navigateur.newPage({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
+  await page.addInitScript(() => { if (!localStorage.getItem("repere.profil")) localStorage.setItem("repere.profil", JSON.stringify({ niveauZoom: "tout", tailleTexte: 16, espacement: 1.5, contraste: "normal", policeDyslexie: false, animationsReduites: false, modeDaltonien: false, masquerImages: false })); });  /* V26 : profil deja repondu, l'accueil ne pose pas les 3 questions */
   await page.goto(BASE + "/", { waitUntil: "networkidle" });
   await chercher(page, "Lyon");
   await page.waitForTimeout(800);
@@ -369,6 +382,7 @@ for (const largeur of [360, 390, 430]) {
    faisait afficher « Aucun projet ... n'est publie » : une phrase fausse. */
 async function ouvrirAvecPanne(motif) {
   const page = await navigateur.newPage({ viewport: { width: 390, height: 800 }, isMobile: true, hasTouch: true });
+  await page.addInitScript(() => { if (!localStorage.getItem("repere.profil")) localStorage.setItem("repere.profil", JSON.stringify({ niveauZoom: "tout", tailleTexte: 16, espacement: 1.5, contraste: "normal", policeDyslexie: false, animationsReduites: false, modeDaltonien: false, masquerImages: false })); });  /* V26 : profil deja repondu, l'accueil ne pose pas les 3 questions */
   await page.route(motif, r => r.abort());
   await page.goto(BASE + "/", { waitUntil: "networkidle" });
   await chercher(page, COMMUNE.saisie);
@@ -403,6 +417,7 @@ async function ouvrirAvecPanne(motif) {
 async function montantA100ms(reduit) {
   const ctx = await navigateur.newContext({ viewport: { width: 390, height: 800 }, isMobile: true, hasTouch: true, reducedMotion: reduit ? "reduce" : "no-preference" });
   const page = await ctx.newPage();
+  await page.addInitScript(() => { if (!localStorage.getItem("repere.profil")) localStorage.setItem("repere.profil", JSON.stringify({ niveauZoom: "tout", tailleTexte: 16, espacement: 1.5, contraste: "normal", policeDyslexie: false, animationsReduites: false, modeDaltonien: false, masquerImages: false })); });  /* V26 : profil deja repondu, l'accueil ne pose pas les 3 questions */
   await page.goto(BASE + "/", { waitUntil: "networkidle" });
   await chercher(page, COMMUNE.saisie);
   await page.getByRole("button", { name: new RegExp("^" + COMMUNE.nom + ",") }).first().click();
@@ -443,6 +458,7 @@ async function montantA100ms(reduit) {
 {
   const ctx = await navigateur.newContext({ viewport: { width: 390, height: 800 }, isMobile: true, hasTouch: true });
   const page = await ctx.newPage();
+  await page.addInitScript(() => { if (!localStorage.getItem("repere.profil")) localStorage.setItem("repere.profil", JSON.stringify({ niveauZoom: "tout", tailleTexte: 16, espacement: 1.5, contraste: "normal", policeDyslexie: false, animationsReduites: false, modeDaltonien: false, masquerImages: false })); });  /* V26 : profil deja repondu, l'accueil ne pose pas les 3 questions */
   const demandees = [];
   page.on("request", r => demandees.push(r.url()));
   const stockage = () => page.evaluate(() => ({
@@ -454,12 +470,12 @@ async function montantA100ms(reduit) {
   await page.getByRole("button", { name: new RegExp("^" + COMMUNE.nom + ",") }).first().click();
   await page.getByText("Aller plus loin").first().waitFor({ timeout: 15000 });
   let st = await stockage();
-  verifier(Object.keys(st.ls).length === 0, "mémoire : rien n'est gardé tant que le lecteur ne l'a pas demandé " + JSON.stringify(st.ls));
+  verifier(Object.keys(st.ls).filter(k => k !== "repere.profil").length === 0, "mémoire : rien n'est gardé tant que le lecteur ne l'a pas demandé " + JSON.stringify(st.ls));
   await page.getByRole("button", { name: "Retenir Meaux sur ce téléphone" }).click();
   await page.getByText(/Meaux est retenue sur ce téléphone/).waitFor({ timeout: 5000 });
   st = await stockage();
-  verifier(JSON.stringify(st.ls) === JSON.stringify({ "repere.departement": '{"d":"77","c":"77284"}' }),
-    "mémoire : une seule clé, deux codes publics, rien d'autre " + JSON.stringify(st.ls));
+  verifier(st.ls["repere.departement"] === '{"d":"77","c":"77284"}' && Object.keys(st.ls).every(k => k === "repere.departement" || k === "repere.profil"),
+    "mémoire : deux codes publics pour la commune, et seul « repere.profil » à côté (ADR 0006) " + JSON.stringify(st.ls));
   verifier(st.ss === 0 && st.cookies === "", "mémoire : ni sessionStorage, ni cookie");
   await page.goto(BASE + "/", { waitUntil: "networkidle" });
   const reprendre = page.getByRole("button", { name: "Voir ce qui se passe à Meaux" });
@@ -508,6 +524,7 @@ async function ouvrirSemaine({ agenda, senatCoupe, fuseau }) {
   await ctx.route("**/data/agenda-an.json", r => agenda ? r.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(agenda) }) : r.abort());
   if (senatCoupe) await ctx.route("**/data/calendrier-senat.json", r => r.abort());
   const page = await ctx.newPage();
+  await page.addInitScript(() => { if (!localStorage.getItem("repere.profil")) localStorage.setItem("repere.profil", JSON.stringify({ niveauZoom: "tout", tailleTexte: 16, espacement: 1.5, contraste: "normal", policeDyslexie: false, animationsReduites: false, modeDaltonien: false, masquerImages: false })); });  /* V26 : profil deja repondu, l'accueil ne pose pas les 3 questions */
   await page.goto(BASE + "/", { waitUntil: "networkidle" });
   await chercher(page, COMMUNE.saisie);
   await page.getByRole("button", { name: new RegExp("^" + COMMUNE.nom + ",") }).first().click();
@@ -553,6 +570,7 @@ async function ouvrirSemaine({ agenda, senatCoupe, fuseau }) {
 {
   const HAUTEUR = Number(process.env.REPERE_HAUTEUR_PLI || 844);
   const page = await navigateur.newPage({ viewport: { width: 390, height: HAUTEUR }, deviceScaleFactor: 2, isMobile: true, hasTouch: true, reducedMotion: "reduce" });
+  await page.addInitScript(() => { if (!localStorage.getItem("repere.profil")) localStorage.setItem("repere.profil", JSON.stringify({ niveauZoom: "tout", tailleTexte: 16, espacement: 1.5, contraste: "normal", policeDyslexie: false, animationsReduites: false, modeDaltonien: false, masquerImages: false })); });  /* V26 : profil deja repondu, l'accueil ne pose pas les 3 questions */
   await page.goto(BASE + "/", { waitUntil: "networkidle" });
   await chercher(page, COMMUNE.saisie);
   await page.getByRole("button", { name: new RegExp("^" + COMMUNE.nom + ",") }).first().click();
@@ -569,6 +587,7 @@ async function ouvrirSemaine({ agenda, senatCoupe, fuseau }) {
 {
   const ctx = await navigateur.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, reducedMotion: "reduce" });
   const page = await ctx.newPage();
+  await page.addInitScript(() => { if (!localStorage.getItem("repere.profil")) localStorage.setItem("repere.profil", JSON.stringify({ niveauZoom: "tout", tailleTexte: 16, espacement: 1.5, contraste: "normal", policeDyslexie: false, animationsReduites: false, modeDaltonien: false, masquerImages: false })); });  /* V26 : profil deja repondu, l'accueil ne pose pas les 3 questions */
   const ouvrir = async () => {
     await page.goto(BASE + "/", { waitUntil: "networkidle" });
     await chercher(page, COMMUNE.saisie);

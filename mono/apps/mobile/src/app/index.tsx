@@ -20,6 +20,7 @@ import { mots, motsCible, correspond, trouverCommunes, departementDe, titreLisib
 import { chargerCatalogueScrutins, chargerCommunesBeta, chargerDepartement, chargerDeputes, chargerIndex, chargerVotes, ETATS, PHRASES } from "../lib/donnees";
 import { Bouton, Carte, Texte, Vide } from "../lib/composants";
 import { useSelection } from "../lib/selection";
+import { useProfil } from "../lib/profil";
 import { feuille, CIBLE, PAS, POLICE, RAYON } from "../lib/theme";
 import { ECHELONS_PAR_MODE, NEUTRES_PAR_MODE, OMBRE_PAR_MODE } from "../lib/palette";
 import { groupeDe } from "../lib/groupes";
@@ -99,6 +100,7 @@ export default function Accueil() {
   const marges = useSafeAreaInsets();
   const { width } = useWindowDimensions();
   const { choisir, retenue, oublier } = useSelection();
+  const { absent } = useProfil();
   const [etat, setEtat] = useState<string>(ETATS.EN_COURS);
   const [beta, setBeta] = useState<Beta | null>(null);
   const [index, setIndex] = useState<Index | null>(null);
@@ -159,7 +161,9 @@ export default function Accueil() {
     setRecentes([...RECENTES]);
     /* La recherche se referme une fois la commune choisie : au retour, l'accueil est propre. */
     setFiltre(""); setCherche(false); setTout(false);
-    router.push("/chez-vous");
+    /* V26 bloc 1 : premiere ouverture sans profil -> trois questions, une seule fois. */
+    if (absent) router.replace("/bienvenue");
+    else router.push("/chez-vous");
   };
 
   /* La commune retenue sur ce telephone, si le lecteur l'a demande
