@@ -52,12 +52,20 @@ function ChoixAffichage({ visible, onFermer }: { visible: boolean; onFermer: () 
               </Pressable>
             );
           })}
+          <View style={{ height: 1, backgroundColor: couleurs.trait, marginVertical: PAS }} />
           <Pressable
             onPress={() => { onFermer(); router.push("/confidentialite"); }}
             accessibilityRole="link"
             style={({ pressed }) => [s.option, pressed && { opacity: 0.7 }]}
           >
             <Text style={s.optionTexte}>Confidentialité</Text>
+          </Pressable>
+          <Pressable
+            onPress={() => { onFermer(); router.push("/a-propos"); }}
+            accessibilityRole="link"
+            style={({ pressed }) => [s.option, pressed && { opacity: 0.7 }]}
+          >
+            <Text style={s.optionTexte}>À propos</Text>
           </Pressable>
         </View>
       </Pressable>
