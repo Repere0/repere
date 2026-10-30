@@ -46,7 +46,7 @@ function PasCeQueCaDit({ r, sujet }: { r?: Rapport; sujet: string }) {
 /* La comparaison regionale (crochet : les fichiers des departements de la region sont lus
    une fois par session). Rien tant qu'elle n'est pas calculable : pas de place reservee. */
 function Comparaison({ nom, valeur, index, dep, an }: { nom: string; valeur: number; index: { departements?: { code: string }[] } | null; dep: string; an: string }) {
-  const m = useMoyenneDepenses(index, dep, an);
+  const m = useMoyenneDepenses(index, dep, an, true);
   if (!m) return null;
   const p = phrasesMoyenne(nom, valeur, m);
   return (

@@ -41,3 +41,27 @@ Méthode : export web, serveur local, Chromium (Playwright). On compte les fichi
 - Objectif « moins de 50 Ko au retour » : atteint (environ 4 Ko compressés).
 - `agregats-regionaux.json` : 4 180 octets bruts, 1 246 compressés, 17 régions. Il est produit par `mono/scripts/agregats-regionaux.mjs` dans `outils/pipeline.sh`.
 - En développement, `console.time` mesure la comparaison régionale (`comparaison <région> <année>`) et le chargement de l'annuaire.
+
+## Mesures du 30/10/2026 (V20) — premier lancement léger même avant fusion
+
+Changement : sur l'accueil, sans `agregats-regionaux.json`, l'application ne recalcule plus la médiane à partir de tous les départements de la région. Elle affiche l'exercice précédent à la place de la comparaison. Le recalcul n'est gardé que sur l'écran budget, qu'on ouvre volontairement.
+
+| Parcours (navigateur, fichiers `/data/` reçus) | Sans agrégats (production actuelle) | Avec agrégats (après fusion) |
+|---|---|---|
+| Premier lancement, accueil | 5 fichiers, 365 Ko bruts, **104 Ko compressés** (V15 : 249 Ko) | 6 fichiers, 369 Ko bruts, **105 Ko compressés** |
+| Accueil + budget de Meaux | 16 fichiers, 1 029 Ko bruts, 277 Ko compressés | 10 fichiers, 507 Ko bruts, 132 Ko compressés |
+| Retour, même navigateur | — | 1 requête (`index.json`), 17 Ko bruts, ~4 Ko compressés |
+
+- **Moins de 200 Ko au premier lancement : atteint en compressé**, avec ou sans fusion. Pas en brut : `departments/77.json` pèse 298 Ko bruts.
+- **Moins de 50 Ko au retour : atteint.**
+- **Le chargement ne lit que le département de la commune** : sur l'accueil, `departments/77.json` seul (Melun ou commune retenue). Les autres départements ne sont lus que par le repli de l'écran budget, tant que les agrégats ne sont pas publiés.
+- `console.time` en développement : « comparaison <région> <année> » (`src/lib/moyenne.ts`) et « annuaire : chargement ».
+
+### Pourquoi pas `packages/data-utils/src/agregats-idf.json`
+
+La brief V20 redemande ce fichier dans le code source. Il est produit ailleurs, `data/agregats-regionaux.json`, pour deux raisons :
+
+1. **Une valeur dans le code se fige** jusqu'au prochain commit : c'est le défaut du « 2 495 € » corrigé en D18, et l'invariant 9 l'interdit.
+2. **Le bot de collecte ne peut pas écrire dans `packages/`** : `collecte.yml` refuse d'enregistrer tout chemin qui n'est pas une sortie de la chaîne (« hors_liste »).
+
+Le fichier publié a le contenu demandé (médiane par habitant, nombre de communes, pour l'Île-de-France et 16 autres régions), en 4 180 octets bruts, 1,2 Ko compressés.

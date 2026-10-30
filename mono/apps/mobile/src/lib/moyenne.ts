@@ -20,14 +20,16 @@ const enCours = new Map<string, Promise<Moyenne | null>>();
    (agregats-regionaux.json, environ 1 Ko compresse). S'il manque (publication anterieure
    a ce fichier), repli : le calcul sur les departements de la region, comme avant. */
 type Agregats = { regions?: Record<string, { nom?: string; exercices?: Record<string, { mediane: number; n: number; total: number }> }> };
-function calculer(deps: Dep[], region: string, an: string, code: string): Promise<Moyenne | null> {
+function calculer(deps: Dep[], region: string, an: string, code: string, recalcul: boolean): Promise<Moyenne | null> {
   if (__DEV__) console.time(`comparaison ${code} ${an}`);
   const fin = <T,>(v: T) => { if (__DEV__) console.timeEnd(`comparaison ${code} ${an}`); return v; };
   return chargerAgregatsRegionaux().then(r => {
     const e = r.donnees ? (r.donnees as Agregats).regions?.[code]?.exercices?.[an] : undefined;
     if (e && typeof e.mediane === "number") return fin({ mediane: e.mediane, n: e.n, total: e.total, an, region });
-    return recalculer(deps, region, an).then(fin);
-  }).catch(() => recalculer(deps, region, an).then(fin));
+    /* V20 : sans fichier pre-calcule, le recalcul (tous les departements de la region, ~250 Ko
+       compresses en IDF) n'est fait que si l'ecran le demande expressement (budget). */
+    return recalcul ? recalculer(deps, region, an).then(fin) : fin(null);
+  }).catch(() => (recalcul ? recalculer(deps, region, an).then(fin) : fin(null)));
 }
 function recalculer(deps: Dep[], region: string, an: string): Promise<Moyenne | null> {
   return Promise.all(deps.map(d => chargerDepartement(d.code))).then(rs => {
@@ -40,7 +42,8 @@ function recalculer(deps: Dep[], region: string, an: string): Promise<Moyenne | 
 }
 
 /* agregat 1 : « Dépenses totales » (ordre des agregats publies dans l'index). */
-export function useMoyenneDepenses(index: { departements?: Dep[] } | null | undefined, dep: string | null, an: string | null): Moyenne | null {
+/* « recalcul » (V20) : faux sur l'accueil (premier lancement leger), vrai sur le budget. */
+export function useMoyenneDepenses(index: { departements?: Dep[] } | null | undefined, dep: string | null, an: string | null, recalcul = false): Moyenne | null {
   const [m, setM] = useState<Moyenne | null>(null);
   useEffect(() => {
     setM(null);
@@ -48,12 +51,12 @@ export function useMoyenneDepenses(index: { departements?: Dep[] } | null | unde
     const moi = liste.find(d => d.code === dep);
     if (!moi || !moi.region_code || !moi.region || !an) return undefined;
     const deps = liste.filter(d => d.region_code === moi.region_code);
-    const cle = moi.region_code + "|" + an;
-    if (!enCours.has(cle)) enCours.set(cle, calculer(deps, moi.region, an, moi.region_code));
+    const cle = moi.region_code + "|" + an + (recalcul ? "|r" : "");
+    if (!enCours.has(cle)) enCours.set(cle, calculer(deps, moi.region, an, moi.region_code, recalcul));
     let vivant = true;
     enCours.get(cle)!.then(v => { if (vivant) setM(v); });
     return () => { vivant = false; };
-  }, [index, dep, an]);
+  }, [index, dep, an, recalcul]);
   return m;
 }
 
