@@ -66,6 +66,18 @@ export const fr1 = (x: number) => x.toLocaleString("fr-FR", { maximumFractionDig
 
 /* A1 / A3 : la comparaison a la commune mediane. « fois » arrondi au dixieme ; entre 0,95 et
    1,05 on dit « comme ». Aucun mot de jugement (invariant 3 amende). */
+/* TITRE-CONCLUSION (V29 bloc 4) : l'écart à la commune médiane, en euros par habitant, calculé
+   sur les montants lus. Pas de « de plus » ni « de moins » écrits à la main : le signe décide. */
+export function titreEcart(valeur: number, m: Moyenne): string {
+  const ecart = Math.round(valeur - m.mediane);
+  const dr = deRegion(m.region);
+  if (Math.abs(ecart) < 1) return `Comme la commune médiane ${dr}`;
+  const somme = `${Math.abs(ecart).toLocaleString("fr-FR")} €`;
+  return ecart > 0
+    ? `${somme} de plus par habitant que la commune médiane ${dr}`
+    : `${somme} de moins par habitant que la commune médiane ${dr}`;
+}
+
 export function phrasesMoyenne(nom: string, valeur: number, m: Moyenne) {
   const r = Math.round((valeur / m.mediane) * 10) / 10;
   const dr = deRegion(m.region);

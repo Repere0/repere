@@ -212,9 +212,12 @@ export default function Elu() {
       const recents = votes.slice(0, SYNTHESE);
       const comptes: Record<string, number> = { p: 0, c: 0, a: 0 };
       recents.forEach(f => { if (f.position) comptes[f.position] = (comptes[f.position] || 0) + 1; });
+      /* V29 bloc 4 : la phrase dit ce que le député a fait ; le décompte détaillé reste juste dessous. */
       const accroche = recents.length === 0 ? null
         : recents.length === 1 ? `Sur son dernier vote publié, ${nom} ${VERBE[recents[0].position as string]}`
-        : `Sur ses ${recents.length} derniers votes publiés : ${comptes.p} pour, ${comptes.c} contre, ${comptes.a} abstention${comptes.a > 1 ? "s" : ""}.`;
+        : comptes.p === 0 ? `Sur ses ${recents.length} derniers votes publiés, il n'a voté pour aucun.`
+        : `Sur ses ${recents.length} derniers votes publiés, il a voté pour ${comptes.p} fois.`;
+      const decompteElu = recents.length > 1 ? `${comptes.p} pour, ${comptes.c} contre, ${comptes.a} abstention${comptes.a > 1 ? "s" : ""}.` : null;
       const releveVotes = r.index?.sources?.scrutins?.releve_le;
       const lienElus = srcElus(r.srcElus ?? null)?.url ?? null;
       const partager = () => Share.share({
@@ -249,6 +252,7 @@ export default function Elu() {
             {depute ? (
               <View style={{ gap: PAS * 3 }}>
                 {accroche ? <Text style={[TYPO.corps, { fontWeight: "700" }]} accessibilityRole="header">{accroche}</Text> : null}
+                {decompteElu ? <Text style={TYPO.note}>Décompte : {decompteElu}</Text> : null}
                 <AvecPicto picto="vote"><Text style={TYPO.etiquette} accessibilityRole="header">Ses derniers votes</Text></AvecPicto>
                 {votes.length ? votes.slice(0, SYNTHESE).map(f => (
                   <CarteVote key={f.sc.n} f={f} onComprendre={() => setOuvert(f)} />

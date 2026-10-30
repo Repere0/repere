@@ -30,7 +30,7 @@ import { SquelettesListe } from "../ui/squelette";
 import { Logo } from "../ui/logo";
 import { DatePublication } from "../ui/fraicheur";
 import { DernieresPublications } from "../ui/dernieres-publications";
-import { phrasesMoyenne, useMoyenneDepenses } from "../lib/moyenne";
+import { phrasesMoyenne, titreEcart, useMoyenneDepenses } from "../lib/moyenne";
 import { useCouleurVote } from "../lib/couleur-vote";
 import { AvecPicto } from "../ui/picto";
 import { libelleGroupe } from "../ui/badge-groupe";
@@ -113,6 +113,13 @@ function SensVote({ cle, texte }: { cle: string; texte: string }) {
  * 2 (« Voir plus ») : le décompte du scrutin entier.
  * 3 (« Tout voir ») : le scrutin, le décompte écrit, la façon dont Repère lit la position, le lien. */
 const VERBE_VOTE: Record<string, string> = { p: "a voté pour", c: "a voté contre", a: "s'est abstenu" };
+/* « 503 députés ont voté pour, aucun contre » : calculé sur le décompte publié ; sans décompte, rien. */
+function titreScrutin(dec?: Record<string, string> | null): string | null {
+  const p = nombre(dec?.pour), c = nombre(dec?.contre);
+  if (p === null || c === null) return null;
+  const pour = `${p.toLocaleString("fr-FR")} député${p > 1 ? "s" : ""} ${p > 1 ? "ont" : "a"} voté pour`;
+  return c === 0 ? `${pour}, aucun contre` : `${pour}, ${c.toLocaleString("fr-FR")} contre`;
+}
 function CarteVote({ etiquette, nom, acteur, ligne, position, dec, date, titre, lien, exemple = false }: {
   etiquette: string; nom: string; acteur: string; ligne: string; position: string | null; dec?: Record<string, string> | null;
   date: string; titre: string; lien?: string; exemple?: boolean;
@@ -121,7 +128,9 @@ function CarteVote({ etiquette, nom, acteur, ligne, position, dec, date, titre, 
   return (
     <View style={s.carte}>
       <AvecPicto picto="vote"><Text style={s.etiquette}>{etiquette}</Text></AvecPicto>
-      <Text style={s.carteTitre}>{position ? `${nom} ${VERBE_VOTE[position] ?? "a voté"}.` : `${nom} : position non lue`}</Text>
+      {/* V29 bloc 4 : le titre dit ce que le scrutin a donné, calculé sur son décompte ; le nom du député suit. */}
+      <Text style={s.carteTitre}>{titreScrutin(dec) ?? (position ? `${nom} ${VERBE_VOTE[position] ?? "a voté"}.` : `${nom} : position non lue`)}</Text>
+      {titreScrutin(dec) && position ? <Text style={[s.legende, { fontWeight: "700" }]}>{nom} {VERBE_VOTE[position] ?? "a voté"}.</Text> : null}
       {/* Groupe inconnu ici : badge gris, aucune couleur de parti (ADR 0001). */}
       <View style={s.badge}><Text style={s.badgeTexte}>{libelleGroupe(groupeDe(acteur))}</Text></View>
       <Text style={s.legende}>{ligne}</Text>
@@ -337,7 +346,7 @@ export default function Accueil() {
                       <Text style={s.legende}>par habitant · {argent.an}</Text>
                     </View>
                     {comparaison || argent.avant || repartition ? (
-                      <Details titre="Comparaison et répartition" couleur={D.encre} lien={D.encre}>
+                      <Details titre={moyenne ? titreEcart(argent.depenses, moyenne) : "Le détail des dépenses"} couleur={D.encre} lien={D.encre}>
                         {comparaison ? <Text style={s.contexte}>{comparaison.rapport}</Text> : null}
                         {argent.avant ? <Text style={s.contexte}>En {argent.avant.an} : {argent.avant.depenses.toLocaleString("fr-FR")} € par habitant</Text> : null}
                         {repartition ? (
