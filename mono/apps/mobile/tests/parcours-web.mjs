@@ -407,20 +407,31 @@ async function montantA100ms(reduit) {
   await chercher(page, COMMUNE.saisie);
   await page.getByRole("button", { name: new RegExp("^" + COMMUNE.nom + ",") }).first().click();
   /* Depuis le spike du 30/09/2026, le compteur anime vit sur l'ecran « Où va l'argent ». */
+  /* Premiere valeur affichee au montage du compteur, relevee par un observateur :
+     mesurer 100 ms apres l'apparition ratait souvent l'animation (520 ms) sur le
+     navigateur de la CI, qui la finissait avant la lecture. */
+  await page.evaluate(() => {
+    window.__premier = null;
+    new MutationObserver(() => {
+      const e = document.querySelector('[aria-label$="€ par jour"]');
+      if (e && window.__premier === null) window.__premier = e.innerText.split("\n")[0];
+    }).observe(document.body, { childList: true, subtree: true, characterData: true });
+  });
   await page.getByRole("button", { name: "Où va cet argent ?" }).first().click();
   const cible = page.locator('[aria-label$="€ par jour"]').first();
   await cible.waitFor({ timeout: 15000 });
   await page.waitForTimeout(100);
   const r = await cible.evaluate(e => ({ final: e.getAttribute("aria-label"), vu: e.innerText }));
+  const premier = await page.evaluate(() => window.__premier);
   await ctx.close();
   const chiffres = t => Number(String(t).replace(/[^\d]/g, "").slice(0, 12));
-  return { final: chiffres(r.final), vu: chiffres(r.vu.split("\n")[0]) };
+  return { final: chiffres(r.final), vu: chiffres(r.vu.split("\n")[0]), premier: premier === null ? null : chiffres(premier) };
 }
 {
   const a = await montantA100ms(true);
   verifier(a.vu === a.final, `mouvement réduit : le montant est final d'emblée (${a.vu} / ${a.final})`);
   const b = await montantA100ms(false);
-  verifier(b.vu < b.final, `sans réduction, le compteur se révèle (${b.vu} < ${b.final}) : le contrôle ci-dessus mesure bien quelque chose`);
+  verifier(b.premier !== null && b.premier < b.final, `sans réduction, le compteur se révèle (premier affiché ${b.premier} < ${b.final}) : le contrôle ci-dessus mesure bien quelque chose`);
 }
 
 /* SE SOUVENIR DE LA COMMUNE, SEULEMENT SI LE LECTEUR LE DEMANDE — D-M3,
