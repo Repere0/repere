@@ -29,8 +29,9 @@ const nomDe = f => path.basename(f, ".tsx");
 const TOUS = FICHIERS.map(nomDe);
 
 /* Ce que chaque écran peut ouvrir, lu dans son source. */
-function ouvre(f) {
-  const s = sansCommentaires(lire(f));
+function ouvre(f) { return ouvreTexte(lire(f)); }
+function ouvreTexte(brut) {
+  const s = sansCommentaires(brut);
   const out = new Set();
   for (const m of s.matchAll(/router\.(?:push|replace)\(\s*(?:\{\s*pathname:\s*)?"\/?([^"?]+)/g)) out.add(m[1]);
   return [...out];
@@ -41,6 +42,10 @@ function atteignables() {
   const parNom = new Map(FICHIERS.map(f => [nomDe(f), f]));
   const vus = new Set(["index"]);
   const file = ["index"];
+  /* Le bouton Réglages est dans l'en-tête des onglets (onglets/_layout.tsx) : ce qu'il ouvre est atteignable. */
+  for (const c of ouvreTexte(lire(path.join(RACINE, "src", "ui", "reglages.tsx")))) {
+    if (!vus.has(c)) { vus.add(c); file.push(c); }
+  }
   while (file.length) {
     const f = parNom.get(file.shift());
     if (!f) continue;
