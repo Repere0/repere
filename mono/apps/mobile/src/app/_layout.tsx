@@ -86,6 +86,8 @@ export default function Coquille() {
                 <Stack.Screen name="bienvenue" options={{ headerShown: false }} />
                 <Stack.Screen name="confort-lecture" options={{ title: "Confort de lecture", headerLeft: () => <Retour texte="Retour" etiquette="Revenir à l'écran précédent" /> }} />
                 <Stack.Screen name="pour-vous" options={{ title: "Pour vous", headerLeft: () => <Retour texte="Retour" etiquette="Revenir à l'écran précédent" /> }} />
+                <Stack.Screen name="mes-elus" options={{ title: "Mes élus", headerLeft: () => <Retour texte="Retour" etiquette="Revenir à l'écran précédent" /> }} />
+                <Stack.Screen name="voter" options={{ title: "Voter", headerLeft: () => <Retour texte="Retour" etiquette="Revenir à l'écran précédent" /> }} />
                 <Stack.Screen name="a-propos" options={{ title: "À propos" }} />
                 <Stack.Screen name="confidentialite" options={{ title: "Confidentialité" }} />
                 <Stack.Screen name="faq" options={{ title: "Questions fréquentes", headerLeft: () => <Retour texte="Retour" etiquette="Revenir à l'écran précédent" /> }} />

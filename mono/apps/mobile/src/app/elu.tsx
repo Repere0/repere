@@ -39,6 +39,7 @@ import { couleurs, CIBLE, PAS, RAYON, TYPO, type Echelon } from "../lib/theme";
 import { useCouleurVote } from "../lib/couleur-vote";
 import { PourquoiJeVois } from "../ui/pourquoi";
 import { AvecPicto } from "../ui/picto";
+import { ContacterElu, SignalerErreur } from "../ui/contact";
 import { Details } from "../ui/details";
 import { ModaleExhaustif } from "../ui/modale-exhaustif";
 import { AvecDonnees, Page, Question } from "../ui/page";
@@ -241,6 +242,9 @@ export default function Elu() {
               </View>
             </View>
             <CreditDe dep={r.d.dep} cle={clePhoto} />
+            {/* V30 bloc 3 : contacter l'élu. Les données ne portent pas de courriel : le lien va à la source officielle. */}
+            <ContacterElu nom={nom} courriel={(p as { courriel?: string | null }).courriel ?? null} lienSource={lienElus}
+              sourceNom="Répertoire national des élus" />
             {/* Groupe : identifie l'élu. Gris « Inconnu » tant que le lien n'est pas publié. */}
             {depute ? <BadgeGroupe groupe={groupe} /> : null}
             {/* V13 bloc A : la date de ce qu'affiche la fiche (les votes pour un depute,
@@ -317,6 +321,9 @@ export default function Elu() {
                     </Pressable>
                   : "Aucun lien officiel publié." },
             ]} />
+
+            {/* V30 bloc 4 : signaler une erreur, avec la fiche et son texte pré-remplis. */}
+            <SignalerErreur contexte={`la fiche de ${nom}`} donnee={[nom, libelleRole, p.institution].filter(Boolean).join(" · ")} />
 
             <Carte titre="D'où viennent ces informations">
               <PastilleSource source={srcElus(r.srcElus ?? null)} />

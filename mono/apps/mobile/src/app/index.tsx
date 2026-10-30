@@ -36,6 +36,7 @@ import { AvecPicto } from "../ui/picto";
 import { libelleGroupe } from "../ui/badge-groupe";
 import { Details } from "../ui/details";
 import { PourquoiJeVois } from "../ui/pourquoi";
+import { SignalerErreur } from "../ui/contact";
 import { ModaleExhaustif } from "../ui/modale-exhaustif";
 import { METHODE_COMPTES, USAGE_PAR_HABITANT, srcVote } from "../lib/sources";
 
@@ -151,6 +152,7 @@ function CarteVote({ etiquette, nom, acteur, ligne, position, dec, date, titre, 
         style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", alignSelf: "flex-start", opacity: pressed ? 0.7 : 1 })}>
         <Text style={[s.legende, { fontSize: 14, textDecorationLine: "underline" }]}>Tout voir : scrutin et lecture</Text>
       </Pressable>
+      <SignalerErreur contexte={`le vote de ${nom}`} donnee={`${date} · ${titre} · ${exemple ? "exemple" : nom}`} />
       <ModaleExhaustif titre={`Vote de ${nom}`} visible={tout} onFermer={() => setTout(false)} sections={[
         { titre: "Le scrutin", contenu: `${date} · ${titre}`, source: "Assemblée nationale" },
         { titre: "Le décompte", contenu: dec ? decompte(dec) : "Le décompte n'est pas publié pour ce scrutin." },
@@ -171,7 +173,7 @@ function CarteVote({ etiquette, nom, acteur, ligne, position, dec, date, titre, 
 export default function Accueil() {
   const marges = useSafeAreaInsets();
   const { width } = useWindowDimensions();
-  const { choisir, retenue, oublier } = useSelection();
+  const { choix, choisir, retenue, oublier } = useSelection();
   const { absent } = useProfil();
   const niveauZoom = useNiveauZoom();
   /* V26 bloc 2 : le vote d'un député est une information nationale (échelon France). */
@@ -251,6 +253,11 @@ export default function Accueil() {
   /* D18 : la commune retenue si le lecteur l'a demande, sinon l'exemple. Si les comptes
      ne donnent pas de depense par habitant, la carte n'est pas affichee. */
   const cible = retenue && nomRetenue ? { insee: retenue.c, nom: nomRetenue } : EXEMPLE;
+  /* V30 : la commune gardée sur ce téléphone redevient la commune choisie. Sans cela, « Qui décide »,
+     « Élus » et « Mes élus » répondent « Aucune commune n'est choisie » après un redémarrage. */
+  useEffect(() => {
+    if (!choix && retenue && nomRetenue) choisir({ dep: retenue.d, insee: retenue.c, nom: nomRetenue });
+  }, [choix, retenue, nomRetenue, choisir]);
   useEffect(() => {
     if (!index || !index.agregats) return undefined;
     let vivant = true;
@@ -381,6 +388,7 @@ export default function Accueil() {
                       style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", alignSelf: "flex-start", opacity: pressed ? 0.7 : 1 })}>
                       <Text style={[s.legende, { fontSize: 14, textDecorationLine: "underline" }]}>Tout voir : méthode et sources</Text>
                     </Pressable>
+                    <SignalerErreur contexte={`le budget de ${argent.nom}`} donnee={`${argent.depenses.toLocaleString("fr-FR")} € par habitant en ${argent.an}`} />
                     <ModaleExhaustif titre={`Budget de ${argent.nom}`} visible={budgetTout} onFermer={() => setBudgetTout(false)} sections={[
                       { titre: "Le montant", contenu: `${argent.depenses.toLocaleString("fr-FR")} € par habitant en ${argent.an}. ${USAGE_PAR_HABITANT}`, source: "Observatoire des finances et de la gestion publique locales (OFGL)" },
                       { titre: "La répartition", contenu: repartition ? `Sur 100 € dépensés : ${repartition.sal} € vont aux salaires des agents, ${repartition.inv} € aux investissements, ${repartition.aut} € aux autres dépenses.` : "Les comptes publiés ne permettent pas de calculer cette répartition.", source: "Observatoire des finances et de la gestion publique locales (OFGL)" },
@@ -440,10 +448,20 @@ export default function Accueil() {
         style={({ pressed }) => ({ minHeight: 44, justifyContent: "center", alignSelf: "flex-start", opacity: pressed ? 0.7 : 1 })}>
         <Text style={[s.legende, { textDecorationLine: "underline" }]}>Confort de lecture ›</Text>
       </Pressable>
-      <Pressable onPress={() => router.push("/pour-vous")} accessibilityRole="link" accessibilityLabel="Pour vous : ce qui a été publié selon votre vue"
-        style={({ pressed }) => ({ minHeight: 48, justifyContent: "center", alignSelf: "flex-start", opacity: pressed ? 0.7 : 1 })}>
-        <Text style={[s.legende, { textDecorationLine: "underline" }]}>Pour vous ›</Text>
-      </Pressable>
+      <View style={{ flexDirection: "row", flexWrap: "wrap", columnGap: PAS * 4 }}>
+        <Pressable onPress={() => router.push("/mes-elus")} accessibilityRole="link" accessibilityLabel="Mes élus : qui vous représente"
+          style={({ pressed }) => ({ minHeight: 48, justifyContent: "center", opacity: pressed ? 0.7 : 1 })}>
+          <Text style={[s.legende, { textDecorationLine: "underline" }]}>Mes élus ›</Text>
+        </Pressable>
+        <Pressable onPress={() => router.push("/voter")} accessibilityRole="link" accessibilityLabel="Voter : prochaines élections et guide du vote"
+          style={({ pressed }) => ({ minHeight: 48, justifyContent: "center", opacity: pressed ? 0.7 : 1 })}>
+          <Text style={[s.legende, { textDecorationLine: "underline" }]}>Voter ›</Text>
+        </Pressable>
+        <Pressable onPress={() => router.push("/pour-vous")} accessibilityRole="link" accessibilityLabel="Pour vous : ce qui a été publié selon votre vue"
+          style={({ pressed }) => ({ minHeight: 48, justifyContent: "center", opacity: pressed ? 0.7 : 1 })}>
+          <Text style={[s.legende, { textDecorationLine: "underline" }]}>Pour vous ›</Text>
+        </Pressable>
+      </View>
             <View style={s.haut}>
               {/* Le logo est une vue (ui/logo.tsx) : aucun fichier image dans assets/. */}
               <View style={{ flexDirection: "row", alignItems: "center", gap: PAS * 3 }}>
