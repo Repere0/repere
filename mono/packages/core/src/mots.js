@@ -341,11 +341,11 @@ export const GLOSSAIRE = {
   },
   eelv: {
     titre: "EELV (Europe Écologie Les Verts)",
-    corps: "Parti politique français né en novembre 2010 de la transformation de la coalition Europe Écologie, lancée en 2008, avec Les Verts.",
+    corps: "Parti politique français né en novembre 2010 de la transformation de la coalition Europe Écologie, lancée en 2008, avec Les Verts. Il s'appelle Les Écologistes depuis le 14 octobre 2023.",
   },
   epr: {
     titre: "EPR (Ensemble pour la République)",
-    corps: "Nom d'une coalition politique française créée en novembre 2021 sous le nom d'Ensemble Citoyens, et rebaptisée Ensemble en 2022. Le sigle EPR désigne aussi, dans un autre domaine, un type de réacteur nucléaire : le contexte indique lequel est visé.",
+    corps: "Sigle du groupe parlementaire « Ensemble pour la République » à l'Assemblée nationale, formé le 18 juillet 2024, au début de la 17e législature. Sous la législature précédente, le groupe correspondant s'appelait Renaissance. Un groupe et un parti sont deux choses différentes : voir « Groupe parlementaire ». Le sigle EPR désigne aussi, dans un autre domaine, un type de réacteur nucléaire : le contexte indique lequel est visé.",
   },
   pcf: {
     titre: "PCF (Parti communiste français)",
@@ -354,6 +354,25 @@ export const GLOSSAIRE = {
   modem: {
     titre: "MoDem (Mouvement démocrate)",
     corps: "Parti politique français créé en 2007. Un parti et un groupe parlementaire sont deux choses différentes : voir « Groupe parlementaire ».",
+  },
+  /* SIGLES DE GROUPES DE L'ASSEMBLEE (30/10/2026, sprint v10, bloc F). Verifies sur
+     datan.fr (pages des groupes de la 17e legislature) le 30/10/2026. Meme regle : nom,
+     date de formation, nom precedent ; aucun qualificatif, aucun dirigeant. */
+  hor: {
+    titre: "HOR (Horizons & Indépendants)",
+    corps: "Sigle du groupe parlementaire « Horizons & Indépendants » à l'Assemblée nationale, formé le 18 juillet 2024 (17e législature). Sous la législature précédente, il s'appelait « Horizons et apparentés ». Un groupe et un parti sont deux choses différentes : voir « Groupe parlementaire ».",
+  },
+  dem: {
+    titre: "DEM (Les Démocrates)",
+    corps: "Sigle du groupe parlementaire « Les Démocrates » à l'Assemblée nationale, formé le 18 juillet 2024 (17e législature). Sous la législature précédente, il s'appelait « Démocrate (MoDem et Indépendants) ». Un groupe et un parti sont deux choses différentes : voir « Groupe parlementaire ».",
+  },
+  gdr: {
+    titre: "GDR (Gauche démocrate et républicaine)",
+    corps: "Sigle du groupe parlementaire « Gauche démocrate et républicaine » à l'Assemblée nationale, formé pour la 17e législature le 18 juillet 2024. Un groupe et un parti sont deux choses différentes : voir « Groupe parlementaire ».",
+  },
+  liot: {
+    titre: "LIOT (Libertés, indépendants, outre-mer et territoires)",
+    corps: "Sigle du groupe parlementaire « Libertés, indépendants, outre-mer et territoires » à l'Assemblée nationale, formé pour la 17e législature le 18 juillet 2024. Un groupe du même nom existait sous la législature précédente. Un groupe et un parti sont deux choses différentes : voir « Groupe parlementaire ».",
   },
   udi: {
     titre: "UDI (Union des démocrates et indépendants)",
