@@ -46,13 +46,13 @@ export default function Actus() {
     <Page>
       <Stack.Screen options={{ title: "Actualités" }} />
       <Question etiquette="Au Parlement" question="Actualités"
-        sous="Ce qui a été publié par les sources officielles. Chaque carte renvoie à sa source." />
+        sous="Ce que les sources officielles ont publié. Chaque carte renvoie à sa source." />
       {etat === ETATS.EN_COURS ? <SquelettesListe n={3} hauteur={120} /> : null}
       {etat !== ETATS.SERVI && etat !== ETATS.EN_COURS && phrase ? (
         <Vide titre={phrase.titre} corps={phrase.corps} action="Réessayer" onAction={() => setEssai(n => n + 1)} />
       ) : null}
       {etat === ETATS.SERVI && !liste.length ? (
-        <Vide titre="Aucune actualité nationale publiée pour le moment."
+        <Vide titre="Pas encore d'actualité nationale dans nos données."
           corps="Repère n'a pas relevé d'événement national dans ses données. Le calendrier montre les séances annoncées."
           action="Voir le calendrier" onAction={() => router.push("/a-venir")} />
       ) : null}

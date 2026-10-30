@@ -116,7 +116,7 @@ export default function ChezVous() {
               phrase={`En ${d.exercice.an}, ${nom} a dépensé ${hab.depenses.toLocaleString("fr-FR")} € par habitant.`}
               note={maire ? `Le maire, ${maire}, prépare ce budget ; le conseil municipal le vote.` : "Le maire prépare ce budget ; le conseil municipal le vote."}
               sources={<>
-                <PastilleSource court nom="Comptes" source={srcComptesPublies(d)} />
+                <PastilleSource court nom="Budget" source={srcComptesPublies(d)} />
                 {maire ? <PastilleSource court nom="Élus" source={srcElus(r.srcElus)} /> : null}
               </>}
               partage={{

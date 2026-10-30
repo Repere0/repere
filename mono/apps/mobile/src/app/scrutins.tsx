@@ -322,7 +322,7 @@ export default function Scrutins() {
       ) : (
         !index ? (
           <Vide
-            titre={etat === ETATS.EN_COURS ? "Chargement des scrutins." : "Les scrutins ne sont pas disponibles."}
+            titre={etat === ETATS.EN_COURS ? "Chargement des scrutins." : "On n'a pas encore les scrutins."}
             corps="Repère n'affiche pas une position quand le relevé détaillé n'est pas disponible."
           />
         ) : (
