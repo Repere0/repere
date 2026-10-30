@@ -53,7 +53,8 @@ function Comparaison({ nom, valeur, index, dep, an }: { nom: string; valeur: num
     <View style={{ gap: 2 }}>
       <Text style={[TYPO.corps, { fontWeight: "700" }]}>{nom} : {valeur.toLocaleString("fr-FR")} € · {p.court}</Text>
       <Text style={TYPO.corps}>{p.position}</Text>
-      <Text style={TYPO.note}>{p.note}</Text>
+      {/* Audit 5 s : l'explication du calcul se deplie, elle ne s'impose pas. */}
+      <Depli titre="Comment est calculée la médiane ?"><Text style={TYPO.corps}>{p.note}</Text></Depli>
     </View>
   );
 }
@@ -82,7 +83,8 @@ export default function Argent() {
       const partage = ex && hab && hab.depenses !== null && d.srcComptes
         ? { euros: `${hab.depenses.toLocaleString("fr-FR")} €`, an: ex.an, producteur: d.srcComptes.producteur } : null;
       return (
-        <Page>
+        /* Audit 5 s (V15) : sansDate, la ligne DateDonnee de l'ecran dit deja la date et la source. */
+        <Page sansDate>
           <Stack.Screen options={{ title: LIBELLES.argent }} />
           <Question emoji="💶" etiquette="L'argent de la commune" question={`Où va l'argent de ${nom} ?`} />
           {/* V13 bloc A : la date des comptes et leur anciennete, avec la source. */}

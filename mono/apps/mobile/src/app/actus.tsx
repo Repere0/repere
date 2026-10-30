@@ -8,6 +8,7 @@ import { dateFr, plusRecentEnPremier } from "@repere/core";
 import { chargerEvenements, ETATS, PHRASES } from "../lib/donnees";
 import { Carte, LienSortant, Vide } from "../lib/composants";
 import { PAS, TYPO } from "../lib/theme";
+import { DateDonnee } from "../ui/fraicheur";
 import { Page, Question } from "../ui/page";
 import { SquelettesListe } from "../ui/squelette";
 import { PartagerCarte } from "../ui/partage/bouton-partage";
@@ -40,13 +41,14 @@ export default function Actus() {
   }, [essai]);
 
   const phrase = PHRASES[etat as keyof typeof PHRASES] as { titre: string; corps: string } | undefined;
-  /* Date lisible seulement si le fichier en porte une : sinon la ligne n'existe pas. */
-  const majLisible = /^\d{4}-\d{2}-\d{2}$/.test(maj) ? dateFr(maj) : "";
   return (
-    <Page>
+    /* Audit 5 s (V15) : sansDate, la ligne DateDonnee de l'ecran dit deja la date et la source. */
+    <Page sansDate>
       <Stack.Screen options={{ title: "Actualités" }} />
       <Question etiquette="Au Parlement" question="Actualités"
-        sous="Ce que les sources officielles ont publié. Chaque carte renvoie à sa source." />
+        sous="Ce qu'ont publié les sources officielles." />
+      {/* Invariant 9, D14 : jamais « mis à jour » ; la date du fil et son anciennete. */}
+      {etat === ETATS.SERVI && liste.length ? <DateDonnee quoi="Fil de la rédaction" date={maj} /> : null}
       {etat === ETATS.EN_COURS ? <SquelettesListe n={3} hauteur={120} /> : null}
       {etat !== ETATS.SERVI && etat !== ETATS.EN_COURS && phrase ? (
         <Vide titre={phrase.titre} corps={phrase.corps} action="Réessayer" onAction={() => setEssai(n => n + 1)} />
@@ -56,7 +58,6 @@ export default function Actus() {
           corps="Repère n'a pas relevé d'événement national dans ses données. Le calendrier montre les séances annoncées."
           action="Voir le calendrier" onAction={() => router.push("/a-venir")} />
       ) : null}
-      {etat === ETATS.SERVI && liste.length && majLisible ? <Text style={TYPO.note}>Mis à jour le {majLisible}.</Text> : null}
       {liste.map(x => <ActuCarte key={x.id} x={x} />)}
     </Page>
   );

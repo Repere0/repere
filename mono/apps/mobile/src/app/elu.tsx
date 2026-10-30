@@ -188,7 +188,8 @@ export default function Elu() {
       });
 
       return (
-        <Page>
+        /* Audit 5 s (V15) : sansDate, la ligne DateDonnee de l'ecran dit deja la date et la source. */
+        <Page sansDate>
           <Stack.Screen options={{ title: "Fiche" }} />
           <Animated.View style={{ opacity: apparition, gap: PAS * 4 }}>
             {/* Identite */}

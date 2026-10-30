@@ -157,7 +157,8 @@ export default function AVenir() {
       const lue = suivant ? lues.find(x => x.institution === suivant.institution) : undefined;
       const quand = suivant ? [jourFr(suivant.jour), suivant.institution].filter(Boolean).join(", ") : "";
       return (
-        <Page>
+        /* Audit 5 s (V15) : sansDate, la ligne DateDonnee de l'ecran dit deja la date et la source. */
+        <Page sansDate>
           <Stack.Screen options={{ title: LIBELLES.calendrier }} />
           <View style={{ flexDirection: "row", alignItems: "flex-start", justifyContent: "space-between", gap: PAS * 2 }}>
             <View style={{ flex: 1 }}>
