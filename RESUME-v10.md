@@ -44,7 +44,7 @@ Le commit 60cd81f a été poussé alors qu'un test échouait (247/248). Retirer 
 
 1. `git pull` sur `test/sdk58-expo-go`, puis depuis `mono/apps/mobile` : `npx expo start -c`.
 2. Créer l'adresse e-mail de contact.
-3. Créer `mono/apps/mobile/.env` avec `EXPO_PUBLIC_CONTACT_EMAIL=adresse@…`. Elle s'affiche alors dans « À propos » (`src/app/a-propos.tsx`). Attention : `.env` n'est **pas** ignoré par git dans ce dossier. Ne pas le commiter par erreur.
+3. Créer `mono/apps/mobile/.env` avec `EXPO_PUBLIC_CONTACT_EMAIL=adresse@…`. Elle s'affiche alors dans « À propos » (`src/app/a-propos.tsx`). Depuis V11, `.env` et `.env.*` sont ignorés par git dans tout le dépôt : partir de `mono/apps/mobile/.env.example`. Toute variable `EXPO_PUBLIC_*` est lisible dans l'application : aucun secret.
 4. Lancer `scripts/lancer-pour-testeurs.ps1`. Au premier lancement, accepter l'installation d'`@expo/ngrok`.
 5. Tester avec le QR code sur votre téléphone (Expo Go). Si Expo Go refuse le projet, c'est un problème de version du SDK 58 : à vérifier en premier.
 6. Envoyer aux 5 premiers testeurs (marche à suivre dans `docs/testeurs.md`).
