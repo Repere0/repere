@@ -12,7 +12,7 @@ Date : 30/10/2026 (V20, bloc 3). Données publiées du 30/10/2026, commune Meaux
 
 | Point | Budget | Vote | Annuaire |
 |---|---|---|---|
-| 1080 × 1920, plus de 10 Ko | oui (101 Ko) | oui (160 Ko) | oui (126 Ko) |
+| 1080 × 1920, plus de 10 Ko | oui (108 Ko) | oui (160 Ko) | oui (126 Ko) |
 | Logo en tête | oui | oui | oui |
 | Couleur de groupe | sans objet | badge gris « Groupe : Inconnu » (aucun groupe publié) | pastille « Groupe politique : non publié » |
 | Textes à 4,5:1 au moins sur le fond | oui | oui (le badge se mesure sur son propre fond) | oui |
