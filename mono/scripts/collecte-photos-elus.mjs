@@ -52,6 +52,9 @@ const fichier = url => decodeURIComponent(String(url).split("/").pop()).replace(
 async function main() {
   const deputes = JSON.parse(fs.readFileSync(path.join(SORTIE, "deputes.json"), "utf8")).deputes || {};
   const candidats = [];   /* { cle, dep, famille, image, libelle } */
+  /* RETRAIT SUR DEMANDE (V18) : une cle listee ici n'est jamais reprise, collecte apres
+     collecte. Supprimer l'entree des donnees ne suffirait pas : la chaine la recreerait. */
+  const retirees = new Set(JSON.parse(fs.readFileSync(new URL("./photos-retirees.json", import.meta.url), "utf8")).retirees || []);
 
   /* 1. Deputes : identifiant de l'Assemblee -> image. */
   const parRef = new Map(Object.entries(deputes).map(([k, d]) => [String(d.acteurRef || "").replace(/^PA/, ""), { k, d }]));
@@ -84,6 +87,9 @@ async function main() {
   /* 3. Licence et vignette, par lots de 40 fichiers Commons. */
   const parDep = {};
   let refusees = 0;
+  const avantRetrait = candidats.length;
+  for (let i = candidats.length - 1; i >= 0; i--) if (retirees.has(candidats[i].cle)) candidats.splice(i, 1);
+  if (avantRetrait !== candidats.length) console.log(`photos-elus : ${avantRetrait - candidats.length} photo(s) retiree(s) sur demande, non reprises`);
   for (let i = 0; i < candidats.length; i += 40) {
     const lot = candidats.slice(i, i + 40);
     const titres = lot.map(c => "File:" + fichier(c.image)).join("|");

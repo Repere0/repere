@@ -34,3 +34,21 @@ Charger `upload.wikimedia.org/...` à l'ouverture d'une fiche dirait à Wikimedi
 - Les règles du script ont été vérifiées hors ligne : filtre de licences (CC BY-SA 4.0 accepté, CC BY-NC-SA refusé…) et concordance des noms (« Breton » trouvé dans « Xavier Breton », pas dans « Bretonneau » ; « Kadir MEBAREK » → « MEBAREK »).
 - Affichage vérifié dans le navigateur avec une image d'essai construite (un carré gris, ce n'est pas une photo), retirée ensuite.
 - **Droit à l'image** : une licence libre couvre le droit d'auteur, pas le droit à l'image de la personne. À faire valider (voir l'ADR 0004).
+
+## Transparence et retrait (V18, 30/10/2026)
+
+- **Crédit cliquable** : la ligne « Photo : [auteur] · [licence] · Wikimedia Commons (recadrée) » ouvre la page de la photo sur Commons. Elle y trouve l'auteur, la licence complète et l'original. Le lien est lu dans le champ `page` de `photos-elus/{dep}.json` (la brief disait `source_page` ; le nom existant est gardé).
+- **Mention sous la photo** : « Photo sous licence libre, but informatif. Retrait sur demande : [adresse] ». Elle ne s'affiche que si `EXPO_PUBLIC_CONTACT_EMAIL` est renseigné. Toucher l'adresse ouvre un courriel déjà intitulé « Retrait d'une photo d'élu ».
+
+### Procédure de retrait
+
+Un élu, ou toute personne photographiée, peut demander le retrait de sa photo à l'adresse de contact.
+
+1. Retrouver la clé de la personne : identifiant de l'Assemblée (`PA…`) pour un député, « M » + code INSEE de la commune pour un maire.
+2. L'ajouter à `mono/scripts/photos-retirees.json`, dans la liste `retirees`, et commiter. **C'est cette liste qui empêche la photo de revenir** : sans elle, la collecte suivante la recréerait.
+3. Relancer la collecte (`collecte.yml`) ou attendre celle du lendemain : la photo disparaît des données publiées et les initiales la remplacent.
+4. Répondre à la personne.
+
+**Délai proposé : 48 h**, à confirmer par le porteur. C'est un engagement humain : rien dans le code ne le garantit. Il dépend de la personne qui lit l'adresse de contact.
+
+Vérifié dans le navigateur, avec une image d'essai construite et une adresse de test (`essai@exemple.test`), retirées ensuite : crédit en lien, mention de retrait affichée, aucune requête vers un tiers.
