@@ -13,7 +13,7 @@
  * Tout vient des donnees de la commune et de @repere/core. Rien n'est ecrit a la
  * main : les exemples du canevas (nom, parti, loi, dates de promulgation) ne
  * figurent pas ici. Si le vote n'est pas publie, la carte n'existe pas. */
-import { useRef, type RefObject } from "react";
+import { useRef, type ComponentRef, type RefObject } from "react";
 import { Animated, Pressable, Share, Text, View, useWindowDimensions } from "react-native";
 import { Stack } from "expo-router";
 import * as Sharing from "expo-sharing";
@@ -38,7 +38,7 @@ type Vote = { sc: { t: string; d: string; n: string }; position?: string; qui?: 
 
 /* Une carte devient une image PNG, puis la feuille de partage du telephone la
    transmet. Si la capture echoue, on partage le texte : le lecteur ne perd rien. */
-async function partagerImage(carte: RefObject<View | null>, titre: string, repli: string) {
+async function partagerImage(carte: RefObject<ComponentRef<typeof View> | null>, titre: string, repli: string) {
   try {
     const uri = await captureRef(carte, { format: "png", quality: 1, result: "tmpfile" });
     if (!(await Sharing.isAvailableAsync())) {
@@ -65,8 +65,8 @@ function Logo({ c = couleurs }: { c?: Record<string, string> }) {
 
 export default function Partager() {
   const apparition = useApparition(0);
-  const carte1 = useRef<View>(null);
-  const carte2 = useRef<View>(null);
+  const carte1 = useRef<ComponentRef<typeof View>>(null);
+  const carte2 = useRef<ComponentRef<typeof View>>(null);
   const { width } = useWindowDimensions();
   /* Une carte occupe la largeur de l'ecran, moins les marges ; jamais plus de 420 px. */
   const largeur = Math.min(width - PAS * 10, 420);
