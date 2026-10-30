@@ -35,9 +35,9 @@ function ChoixAffichage({ visible, onFermer }: { visible: boolean; onFermer: () 
   const { choix, setChoix } = useTheme();
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onFermer}>
-      <Pressable style={s.voile} onPress={onFermer} accessibilityLabel="Fermer les réglages">
-        <View style={s.carte}>
-          <Text style={TYPO.corps}>Affichage</Text>
+      <Pressable style={s.voile} onPress={onFermer} accessibilityRole="button" accessibilityLabel="Fermer les réglages">
+        <View style={s.carte} accessibilityViewIsModal>
+          <Text style={TYPO.corps} accessibilityRole="header">Affichage</Text>
           {OPTIONS.map(o => {
             const actif = choix === o.valeur;
             return (

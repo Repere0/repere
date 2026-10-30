@@ -123,6 +123,7 @@ export default function Accueil() {
 
             {/* Les cartes glissent horizontalement : le chiffre, puis le vote. */}
             <ScrollView horizontal showsHorizontalScrollIndicator={false} decelerationRate="fast" snapToInterval={pas}
+              accessibilityLabel="Cartes à faire défiler : le chiffre du jour, puis le dernier vote"
               contentContainerStyle={{ gap: PAS * 3 }}
               onMomentumScrollEnd={e => setPage(Math.round(e.nativeEvent.contentOffset.x / pas))}>
               <View style={{ width: larg }}>
