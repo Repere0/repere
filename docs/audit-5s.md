@@ -66,3 +66,9 @@ Ce n'est pas un manque de coupes. **Trois règles du produit, toutes vérifiées
 - **Option A — une réponse en tête, les deux autres en dessous.** Aujourd'hui afficherait d'abord une seule réponse (le chiffre et sa comparaison, en grand), puis les deux autres au défilement. Gain estimé : 20 → 8 lignes de contenu. Il faut assouplir la règle 1.
 - **Option B — date en pied d'écran.** Gain : 1 à 2 lignes par écran, au prix de la fraîcheur « visible d'un coup d'œil » demandée en V13.
 - **Option C — tester avant de couper.** Faire lire Aujourd'hui à 5 testeurs pendant 5 secondes (question 4 du kit testeur) : le nombre de lignes ne mesure pas la compréhension. Recommandé avant A ou B.
+
+## Décision du CEO — option C (30/10/2026, V20)
+
+**Option C retenue par le CEO : le test 5 s sera mesuré sur 5 testeurs réels** (question 4 du kit : « qu'avez-vous retenu en 5 secondes ? »). **Aucune nouvelle coupe avant les retours.** Les 3 règles déjà vérifiées (3 réponses au premier écran, calcul signalé, date en haut) **ne sont pas remises en cause**. Si les retours montrent que c'est trop dense, on tranchera alors.
+
+Pour l'analyse : `docs/template-debrief.md` (thème « Compréhension ») et la colonne « Écran concerné » de `docs/tableau-debrief.csv`.
