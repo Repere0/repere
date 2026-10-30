@@ -270,3 +270,35 @@ Recherche faite sur le site officiel (melun.fr / ville-melun.fr) :
 - **Orange `#E69F00` (brief) : remplacé par `#B35900`.** 2,25:1 sur blanc, sous 4,5:1.
 - **Gris `#999999` (brief) : remplacé par `#6E7781`.** 2,85:1 sur blanc. Ce gris n'est pas une couleur Okabe-Ito.
 - Invariant 7 amendé (D56) et scellé. Le porteur doit valider ce texte, qui ne reprend pas les trois valeurs du brief.
+
+## 28. V30 bloc 2 — dates des élections (30/10/2026)
+
+- **Présidentielle 2027** : premier tour le dimanche 18 avril 2027, second tour le dimanche 2 mai 2027. Source : service-public.gouv.fr (page « Élection 2027 ») et LCP, consultés le 30/10/2026. Outre-mer : samedis 17 avril et 1er mai 2027.
+- **Législatives 2027 : aucune date fixée.** Le brief indiquait « juin 2027 » : ce n'est pas vérifié, donc rien n'est publié. L'écran dit « Date non fixée ».
+- **Municipales (mars 2026) et sénatoriales (2026)** : déjà passées à la date du jour. Elles ne sont pas listées.
+- **maprocuration.gouv.fr** : site non consultable depuis cet environnement. Aucun lien vers lui n'est écrit ; le guide renvoie à service-public.fr.
+- Dates écrites dans `mono/apps/mobile/src/lib/elections.ts`, pas dans `data/` : `mono/data/` n'est pas versionné (`mono/.gitignore`), donc un fichier de données n'arriverait pas à la publication. À reverifier avant chaque publication.
+
+## 29. V30 blocs 3 et 4 — contacter un élu, signaler une erreur (30/10/2026)
+
+- **Aucun courriel d'élu** n'est publié dans `mono/data/`. « Contacter » renvoie donc à la source officielle (Répertoire national des élus), ou affiche « Contact non publié ».
+- **Fiches personnelles de l'Assemblée et du Sénat** : non construites. Le dépôt ne contient aucune URL vérifiée pour une fiche de personne.
+- **`EXPO_PUBLIC_CONTACT_EMAIL` n'est pas définie.** Comme ailleurs dans l'application, le signalement et l'adresse de contact restent masqués tant qu'elle ne l'est pas. Le site (`mono/apps/web/src/routes/Sources.jsx`) publie `repere0@protonmail.com`. **Décision CEO** : définir la variable à la publication, avec cette adresse ou une autre.
+
+## 30. V30 bloc 5 — suivi de thèmes : non fait (30/10/2026)
+
+- Le brief demande les thèmes dans le profil (`repere.profil`), cochés à l'onboarding, et un fil filtré par thème.
+- **Conflit.** ADR 0006, point 1 : `repere.profil` « porte uniquement des réglages de lecture ». Invariant 2 : « Deux clés de stockage local, nommées, rien d'autre ». Un centre d'intérêt n'est pas un réglage de lecture.
+- Le filtre demande aussi de classer chaque publication par thème. Cette classification n'existe pas dans les données.
+- **Aucune ligne de code n'a été écrite pour ce bloc.** Il faut une décision formelle du CEO : amender l'ADR 0006 et l'invariant 2, ou stocker les thèmes ailleurs que dans le profil.
+
+## 31. V30 bloc 1 — limites de « Mes élus » (30/10/2026)
+
+- Sénateurs et conseillers régionaux : non publiés dans les données de Repère. L'écran le dit.
+- Photos des élus : non affichées sur cet écran.
+- Conseillers départementaux du canton : lignes non cliquables, parce que la fiche élu ne sait pas les ouvrir.
+
+## 32. Correction hors brief : commune gardée non restaurée (30/10/2026)
+
+- **Constat (antérieur à V30).** Une commune gardée sur le téléphone (`repere.departement`) s'affiche sur l'accueil, mais le choix en mémoire reste vide. « Qui décide », « Élus » et « Mes élus » répondaient « Aucune commune n'est choisie » après un redémarrage.
+- **Correction.** L'accueil remet la commune retenue dans le choix (`useEffect` dans `index.tsx`). Vérifié dans Chromium à 390 px. À vérifier sur iPhone.
