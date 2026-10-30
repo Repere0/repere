@@ -51,8 +51,9 @@ function Comparaison({ nom, valeur, index, dep, an }: { nom: string; valeur: num
   const p = phrasesMoyenne(nom, valeur, m);
   return (
     <View style={{ gap: 2 }}>
-      <Text style={[TYPO.corps, { fontWeight: "700" }]}>{p.ecart}</Text>
-      <Text style={TYPO.note}>{p.moyenne} {p.note}</Text>
+      <Text style={[TYPO.corps, { fontWeight: "700" }]}>{nom} : {valeur.toLocaleString("fr-FR")} € · {p.court}</Text>
+      <Text style={TYPO.corps}>{p.position}</Text>
+      <Text style={TYPO.note}>{p.note}</Text>
     </View>
   );
 }
@@ -98,7 +99,7 @@ export default function Argent() {
                 <Resume phrase={dep ? `${dep.texte} au total sur l'année.` : ""}
                   chiffre={hab && hab.depenses !== null ? `${hab.depenses.toLocaleString("fr-FR")} €` : null}
                   legende="par habitant" />
-                {/* D23 (ADR 0002) : la moyenne de la region, un calcul annonce comme tel. */}
+                {/* D23 (ADR 0002), A1 : la commune mediane de la region, un calcul annonce comme tel. */}
                 {hab && hab.depenses !== null ? <Comparaison nom={nom} valeur={hab.depenses} index={r.index} dep={d.dep} an={ex.an} /> : null}
                 {hab && hab.salaires !== null && hab.investissement !== null ? (
                   <Text style={TYPO.note}>Dont {hab.salaires.toLocaleString("fr-FR")} € par habitant pour vos agents (salaires) et {hab.investissement.toLocaleString("fr-FR")} € pour vos équipements (investissement).</Text>

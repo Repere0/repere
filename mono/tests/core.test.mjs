@@ -745,3 +745,18 @@ test("core — moyenneParHabitant : moyenne simple, nombre de communes, garde de
   assert.equal(moyenneParHabitant([creux], 1, "2025"), null);
   assert.equal(moyenneParHabitant([], 1, "2025"), null);
 });
+
+/* A1 : la mediane resiste aux extremes (la moyenne de [1, 2, 100] vaut 34). */
+test("core — mediane : [1, 2, 100] donne 2, pas 34 ; nombre pair : milieu des deux", async () => {
+  const { mediane, medianeParHabitant } = await import("../packages/core/src/index.js");
+  assert.equal(mediane([1, 2, 100]), 2);
+  assert.equal(mediane([100, 1, 2]), 2);
+  assert.equal(mediane([1, 2, 3, 100]), 2.5);
+  assert.equal(mediane([]), null);
+  const ex = hab => [1000, 1, 1, 1, hab];
+  const p = { communes: { a: { comptes: { "2025": ex(1) } }, b: { comptes: { "2025": ex(2) } }, c: { comptes: { "2025": ex(100) } } } };
+  const m = medianeParHabitant([p], 1, "2025");
+  assert.equal(m.mediane, 2);
+  assert.equal(m.moyenne, 34);
+  assert.equal(m.n, 3);
+});

@@ -43,7 +43,7 @@ type Index = { departements: { code: string; nom?: string }[]; agregats?: unknow
    du departement, jamais ecrit dans le code. */
 /* V13 bloc B : quatre couches. Le chiffre ; le contexte, DANS la commune (l'exercice
    precedent publie, seulement s'il suit et si le perimetre n'a pas change : core
-   evolution) — jamais une autre commune ni une moyenne (invariant 3) ; la consequence,
+   evolution) et la commune mediane de la region (D23, A1) ; la consequence,
    lue dans les memes comptes (salaires, investissement par habitant, publies par
    l'OFGL) ; la source. Une couche sans donnee n'est pas affichee. */
 type Argent = { nom: string; an: string; depenses: number; avant: { an: string; depenses: number } | null; salaires: number | null; investissement: number | null };
@@ -220,7 +220,7 @@ export default function Accueil() {
     return () => { vivant = false; };
   }, [index, cible.insee, cible.nom]);
   const exemple = cible === EXEMPLE;
-  /* D23 : la moyenne de la region, pour le meme exercice que le chiffre. */
+  /* D23, A1 : la commune mediane de la region, pour le meme exercice que le chiffre. */
   const moyenne = useMoyenneDepenses(index, departementDe(cible.insee), argent ? argent.an : null);
   const comparaison = argent && moyenne ? phrasesMoyenne(argent.nom, argent.depenses, moyenne) : null;
 
@@ -249,8 +249,9 @@ export default function Accueil() {
                     <Text style={s.legende}>dépensés par habitant en {argent.an}</Text>
                     {comparaison ? (
                       <View style={{ gap: 2 }}>
-                        <Text style={s.contexte}>{comparaison.ecart}</Text>
-                        <Text style={s.legende}>{comparaison.moyenne} {comparaison.note}</Text>
+                        <Text style={s.contexte}>{argent.nom} : {argent.depenses.toLocaleString("fr-FR")} € · {comparaison.court}</Text>
+                        <Text style={s.contexte}>{comparaison.position}</Text>
+                        <Text style={s.legende}>{comparaison.note}</Text>
                       </View>
                     ) : null}
                     {argent.avant ? <Text style={s.contexte}>En {argent.avant.an} : {argent.avant.depenses.toLocaleString("fr-FR")} € par habitant.</Text> : null}

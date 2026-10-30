@@ -126,3 +126,30 @@ export function moyenneParHabitant(paquets, agregat, an) {
   if (!total || !n || n / total < COUVERTURE_MIN) return null;
   return { moyenne: Math.round(somme / n), n, total, an, couverture: n / total };
 }
+
+/* MEDIANE PAR HABITANT (A1, 30/10/2026). La moyenne simple etait tiree par les nombreux
+ * petits villages : la mediane dit « la commune du milieu », la moitie des communes
+ * depense moins, l'autre moitie plus. Meme garde de couverture que la moyenne. Rend aussi
+ * la moyenne, pour les statistiques internes : l'interface n'affiche que la mediane. */
+export function mediane(valeurs) {
+  const v = (valeurs || []).filter(x => typeof x === "number" && Number.isFinite(x)).sort((a, b) => a - b);
+  if (!v.length) return null;
+  const m = Math.floor(v.length / 2);
+  return v.length % 2 ? v[m] : (v[m - 1] + v[m]) / 2;
+}
+export function medianeParHabitant(paquets, agregat, an) {
+  const vals = [];
+  let total = 0;
+  for (const p of paquets || []) {
+    if (!p || !p.communes) continue;
+    for (const c of Object.values(p.communes)) {
+      total++;
+      const ex = c && c.comptes ? c.comptes[an] : null;
+      const v = ex ? valeur(ex, agregat) : null;
+      if (v && typeof v.hab === "number") vals.push(v.hab);
+    }
+  }
+  if (!total || !vals.length || vals.length / total < COUVERTURE_MIN) return null;
+  const somme = vals.reduce((a, b) => a + b, 0);
+  return { mediane: Math.round(mediane(vals)), moyenne: Math.round(somme / vals.length), n: vals.length, total, an, couverture: vals.length / total };
+}

@@ -9,10 +9,10 @@
  * Les phrases disent « plus que », « moins que », « comme » : jamais un rang, jamais un
  * jugement (invariant 3 amende). */
 import { useEffect, useState } from "react";
-import { moyenneParHabitant } from "@repere/core";
+import { medianeParHabitant } from "@repere/core";
 import { chargerDepartement } from "./donnees";
 
-export type Moyenne = { moyenne: number; n: number; total: number; an: string; region: string };
+export type Moyenne = { mediane: number; n: number; total: number; an: string; region: string };
 type Dep = { code: string; region?: string; region_code?: string | null };
 const enCours = new Map<string, Promise<Moyenne | null>>();
 
@@ -20,8 +20,9 @@ function calculer(deps: Dep[], region: string, an: string): Promise<Moyenne | nu
   return Promise.all(deps.map(d => chargerDepartement(d.code))).then(rs => {
     /* Un departement qui n'arrive pas : pas de moyenne partielle presentee comme regionale. */
     if (rs.some(r => !r.donnees)) return null;
-    const m = moyenneParHabitant(rs.map(r => r.donnees), 1, an);
-    return m ? { moyenne: m.moyenne, n: m.n, total: m.total, an, region } : null;
+    /* A1 : la mediane, pas la moyenne (tiree par les petits villages). */
+    const m = medianeParHabitant(rs.map(r => r.donnees), 1, an);
+    return m ? { mediane: m.mediane, n: m.n, total: m.total, an, region } : null;
   }).catch(() => null);
 }
 
@@ -43,13 +44,19 @@ export function useMoyenneDepenses(index: { departements?: Dep[] } | null | unde
   return m;
 }
 
+/* « d'Île-de-France », « de la région Normandie » */
+const deRegion = (r: string) => (r === "Île-de-France" ? "d'Île-de-France" : `de la région ${r}`);
+export const fr1 = (x: number) => x.toLocaleString("fr-FR", { maximumFractionDigits: 1, minimumFractionDigits: x % 1 ? 1 : 0 });
+
+/* A1 / A3 : la comparaison a la commune mediane. « fois » arrondi au dixieme ; entre 0,95 et
+   1,05 on dit « comme ». Aucun mot de jugement (invariant 3 amende). */
 export function phrasesMoyenne(nom: string, valeur: number, m: Moyenne) {
-  const ecart = valeur - m.moyenne;
-  const e = Math.abs(ecart).toLocaleString("fr-FR");
+  const r = Math.round((valeur / m.mediane) * 10) / 10;
+  const dr = deRegion(m.region);
   return {
-    moyenne: `Moyenne des ${m.n.toLocaleString("fr-FR")} communes de la région ${m.region} en ${m.an} : ${m.moyenne.toLocaleString("fr-FR")} € par habitant.`,
-    /* La phrase d'ecart se lit seule (elle vient en premier, en gras). */
-    ecart: ecart === 0 ? `${nom} : comme la moyenne de la région ${m.region}.` : `${nom} : ${e} € ${ecart > 0 ? "de plus" : "de moins"} que la moyenne de la région ${m.region}.`,
-    note: "Calcul Repère : moyenne simple, chaque commune compte pour une, quelle que soit sa taille.",
+    court: `Médiane ${m.region} : ${m.mediane.toLocaleString("fr-FR")} €`,
+    position: r >= 1.05 ? `${nom} est au-dessus de la commune médiane ${dr}.` : r <= 0.95 ? `${nom} est en dessous de la commune médiane ${dr}.` : `${nom} est au niveau de la commune médiane ${dr}.`,
+    rapport: r >= 0.95 && r <= 1.05 ? `Comme la commune médiane ${dr}` : `${fr1(r)} fois la commune médiane ${dr}`,
+    note: `Calcul Repère : sur ${m.n.toLocaleString("fr-FR")} communes en ${m.an}, la moitié dépense moins de ${m.mediane.toLocaleString("fr-FR")} € par habitant, l'autre moitié plus.`,
   };
 }
