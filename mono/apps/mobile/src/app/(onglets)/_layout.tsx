@@ -49,6 +49,7 @@ export default function Onglets() {
         headerTintColor: couleurs.encre,
         headerShadowVisible: false,
         sceneStyle: { backgroundColor: couleurs.sol },
+        animation: "fade", /* changement d'onglet : fondu court, sans glissement */
         tabBarActiveTintColor: couleurs.encre,
         tabBarInactiveTintColor: couleurs.sourd,
         tabBarStyle: { backgroundColor: couleurs.carte, borderTopColor: couleurs.trait, minHeight: 72, paddingTop: 6 },

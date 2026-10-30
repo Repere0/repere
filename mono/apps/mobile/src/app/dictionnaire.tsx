@@ -84,7 +84,7 @@ export default function Dictionnaire() {
         {lettres.map(l => (
           <Pressable key={l} onPress={() => setLettre(lettre === l ? null : l)} accessibilityRole="tab"
             accessibilityState={{ selected: lettre === l }} accessibilityLabel={`Lettre ${l}`}
-            style={[chip(lettre === l), { width: 44, paddingHorizontal: 0 }]}>
+            style={({ pressed }) => [chip(lettre === l), { width: 44, paddingHorizontal: 0 }, pressed && { opacity: 0.7 }]}>
             <Text style={{ fontWeight: "800", fontSize: 16, color: lettre === l ? couleurs.sol : couleurs.encre }}>{l}</Text>
           </Pressable>
         ))}

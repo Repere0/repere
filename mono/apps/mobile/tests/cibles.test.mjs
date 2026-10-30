@@ -59,6 +59,6 @@ test("cibles — les lettres du dictionnaire sont des carres de 44 px au moins",
   assert.ok(chip, "definition de chip introuvable");
   const h = Number((chip[1].match(/minHeight:\s*(\d+)/) || [])[1]);
   assert.ok(h >= 44, `chip minHeight ${h} < 44`);
-  const lettre = src.match(/style=\{\[chip\(lettre === l\), \{ width: (\d+)/);
+  const lettre = src.match(/style=\{(?:\(\{ pressed \}\) => )?\[chip\(lettre === l\), \{ width: (\d+)/);
   assert.ok(lettre && Number(lettre[1]) >= 44, `lettre width ${lettre && lettre[1]} < 44`);
 });

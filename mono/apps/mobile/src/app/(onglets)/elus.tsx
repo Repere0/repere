@@ -11,6 +11,7 @@
  * les circonscriptions ne portent pas le nom des villes dans les donnees publiees. */
 import { useEffect, useMemo, useState } from "react";
 import { FlatList, Pressable, Text, TextInput, View } from "react-native";
+import { Entree } from "../../ui/entree";
 import { router, Stack } from "expo-router";
 import { correspondFlou, motsCible, motsRecherche } from "@repere/core";
 import { chargerComptesRegions, chargerDeputes, chargerElusRegion, chargerIndex, ETATS, PHRASES } from "../../lib/donnees";
@@ -139,18 +140,23 @@ export default function Elus() {
             </View>
           ) : undefined
         }
-        renderItem={({ item }) => (
-          <Pressable onPress={() => router.push({ pathname: "/annuaire-fiche", params: { ...item } })} accessibilityRole="button"
-            accessibilityLabel={`${item.nom}, ${item.fonction}, ${item.lieu}`}
-            style={({ pressed }) => ({ minHeight: CIBLE + 8, flexDirection: "row", alignItems: "center", gap: PAS * 3, padding: PAS * 3,
-              borderRadius: RAYON.bloc, backgroundColor: couleurs.carte, opacity: pressed ? 0.6 : 1 })}>
-            <Avatar nom={item.nom} taille={44} />
-            <View style={{ flex: 1, gap: 2 }}>
-              <Text style={[TYPO.corps, { fontWeight: "700" }]}>{item.nom}</Text>
-              <Text style={TYPO.note}>{item.fonction} · {item.lieu}</Text>
-            </View>
-          </Pressable>
-        )}
+        /* Les huit premieres fiches apparaissent en cascade (40 ms entre deux) ; les suivantes
+           s'affichent d'emblee, pour qu'une liste qui defile ne clignote pas. */
+        renderItem={({ item, index }) => {
+          const fiche = (
+            <Pressable onPress={() => router.push({ pathname: "/annuaire-fiche", params: { ...item } })} accessibilityRole="button"
+              accessibilityLabel={`${item.nom}, ${item.fonction}, ${item.lieu}`}
+              style={({ pressed }) => ({ minHeight: CIBLE + 8, flexDirection: "row", alignItems: "center", gap: PAS * 3, padding: PAS * 3,
+                borderRadius: RAYON.bloc, backgroundColor: couleurs.carte, opacity: pressed ? 0.7 : 1 })}>
+              <Avatar nom={item.nom} taille={44} />
+              <View style={{ flex: 1, gap: 2 }}>
+                <Text style={[TYPO.corps, { fontWeight: "700" }]}>{item.nom}</Text>
+                <Text style={TYPO.note}>{item.fonction} · {item.lieu}</Text>
+              </View>
+            </Pressable>
+          );
+          return index < 8 ? <Entree delai={index * 40}>{fiche}</Entree> : fiche;
+        }}
       />
     </View>
   );

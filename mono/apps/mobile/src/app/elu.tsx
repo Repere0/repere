@@ -57,7 +57,7 @@ function Onglets({ actif, choisir, votes }: { actif: Onglet; choisir: (o: Onglet
         return (
           <Pressable key={o.cle} onPress={() => choisir(o.cle)} accessibilityRole="tab" accessibilityState={{ selected: on }}
             accessibilityLabel={`${o.t}${o.cle === "votes" && !votes ? " (cette fonction ne vote pas)" : ""}`}
-            style={{ flex: 1, minHeight: 44, borderRadius: 999, backgroundColor: on ? couleurs.carte : "transparent", alignItems: "center", justifyContent: "center" }}>
+            style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1, flex: 1, minHeight: 44, borderRadius: 999, backgroundColor: on ? couleurs.carte : "transparent", alignItems: "center", justifyContent: "center" })}>
             <Text style={{ fontWeight: on ? "800" : "600", color: couleurs.encre }}>{o.t}</Text>
           </Pressable>
         );
