@@ -309,3 +309,9 @@ Recherche faite sur le site officiel (melun.fr / ville-melun.fr) :
 - Le rangement des publications par thème repose sur des mots-clés du titre. Il est approximatif : « sécurité sociale » est rangé en Sécurité (faux positif connu).
 - Une publication dont le titre ne contient aucun mot-clé n'apparaît que lorsque le filtre est vide (« Tout voir »).
 - Vérifié : onboarding question 4 enregistre les thèmes ; le fil ne montre que les thèmes choisis ; l'état vide propose « Voir tous les sujets ». Pas de test sur iPhone.
+
+## 34. Adresse de contact (D58, V31 bloc 2)
+
+- Adresse officielle : repere0@protonmail.com (déjà publiée sur le site).
+- À utiliser pour `EXPO_PUBLIC_CONTACT_EMAIL`. Le CEO définira la variable à minuit.
+- Aucune ligne de code modifiée : tant que la variable n'est pas définie, les signalements d'erreur et les boutons de contact restent masqués.
