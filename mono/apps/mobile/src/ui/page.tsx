@@ -67,7 +67,7 @@ export function AvecDonnees({ rendu }: { rendu: (r: Extract<EtatCommune, { pret:
     return (
       <View style={[s.page, { paddingTop: PAS * 6 }]}>
         <Vide titre={p.titre} corps={p.corps}
-          action={r.etat === ETATS.EN_COURS ? undefined : "Réessayer"} onAction={reessayer} />
+          action="Réessayer" onAction={reessayer} />
       </View>
     );
   }

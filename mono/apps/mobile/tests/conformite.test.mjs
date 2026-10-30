@@ -75,3 +75,12 @@ test("les documents de soumission ne contiennent pas de remplissage", () => {
     assert.doesNotMatch(t, /’/, nom);
   }
 });
+
+test("l'entrée d'écran dure entre 100 et 300 ms (règle des animations)", () => {
+  const t = fs.readFileSync(path.join(MOBILE, "src", "ui", "entree.tsx"), "utf8");
+  const m = /duration:\s*(\d+)/.exec(t);
+  assert.ok(m, "durée absente de src/ui/entree.tsx");
+  const ms = Number(m[1]);
+  assert.ok(ms <= 300, `durée ${ms} ms : plus de 300 ms`);
+  assert.ok(ms >= 100, `durée ${ms} ms : moins de 100 ms`);
+});

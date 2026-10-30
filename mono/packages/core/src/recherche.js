@@ -82,3 +82,9 @@ export function departementDe(insee) {
   if (!/^(\d{5}|2[AB]\d{3})$/.test(c)) return null;
   return /^9[78]/.test(c) ? c.slice(0, 3) : c.slice(0, 2);
 }
+
+/* Une recherche tapee ou collee n'a pas besoin de plus de huit mots : au-dela, chaque
+   mot de plus coute une comparaison de plus, sur chaque fiche, a chaque frappe. */
+export function motsRecherche(t) {
+  return mots(t).slice(0, 8);
+}

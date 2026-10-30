@@ -12,7 +12,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { FlatList, Pressable, Text, TextInput, View } from "react-native";
 import { router, Stack } from "expo-router";
-import { correspondFlou, motsCible, mots } from "@repere/core";
+import { correspondFlou, motsCible, motsRecherche } from "@repere/core";
 import { chargerComptesRegions, chargerDeputes, chargerElusRegion, chargerIndex, ETATS, PHRASES } from "../../lib/donnees";
 import { Vide } from "../../lib/composants";
 import { couleurs, CIBLE, PAS, RAYON, TYPO } from "../../lib/theme";
@@ -20,26 +20,24 @@ import { Avatar } from "../../ui/avatar";
 import { Loupe } from "../../ui/loupe";
 import { DatePublication } from "../../ui/fraicheur";
 import { SquelettesListe } from "../../ui/squelette";
+import type { Fiche } from "../../types/annuaire";
 
 /* Les 14 regions dont l'executif est publie : les fichiers de data/elus-regions/. */
 const REGIONS = ["01", "04", "11", "24", "27", "28", "32", "44", "52", "53", "75", "76", "84", "93"];
 
-export type Fiche = {
-  id: string; nom: string; fonction: string; lieu: string; depuis: string;
-  producteur: string; licence: string; maj: string; url: string;
-};
-
 type Depute = { prenom: string; nom: string; dateDebut?: string };
 type Source = { producteur?: string; licence?: string; releve_le?: string; maj?: string; url?: string };
 type Index = { departements: { code: string; nom?: string }[] };
+type FichierDeputes = { source?: Source; deputes?: Record<string, Depute> };
+type FichierRegion = { code: string; elus?: { nom: string; fonction: string; debut?: string }[]; source?: Source };
 
 const rang = (circo: string) => (Number(circo) === 1 ? "1re" : `${Number(circo)}e`);
 
 function construire(
-  deputes: { source?: Source; deputes?: Record<string, Depute> },
+  deputes: FichierDeputes,
   index: Index | null,
   noms: Record<string, string>,
-  regions: ({ code: string; elus?: { nom: string; fonction: string; debut?: string }[]; source?: Source } | null)[],
+  regions: (FichierRegion | null)[],
 ): Fiche[] {
   const nomDep = (code: string) => {
     const d = index && index.departements.find(x => x.code === code);
@@ -82,13 +80,13 @@ export default function Elus() {
       if (!vivant) return;
       const noms = ((comptes.donnees && (comptes.donnees as { noms_regions?: Record<string, string> }).noms_regions) || {}) as Record<string, string>;
       const reg = regs.map((r, i) => (r.donnees ? { code: REGIONS[i], ...(r.donnees as object) } : null));
-      setFiches(dep.donnees ? construire(dep.donnees as never, (idx.donnees as Index) || null, noms, reg as never) : []);
+      setFiches(dep.donnees ? construire(dep.donnees as FichierDeputes, (idx.donnees as Index) || null, noms, reg as (FichierRegion | null)[]) : []);
       setEtat(dep.donnees ? ETATS.SERVI : dep.etat);
     });
     return () => { vivant = false; };
   }, [essai]);
 
-  const cherches = mots(filtre);
+  const cherches = motsRecherche(filtre);
   const trouves = useMemo(
     () => (cherches.length ? fiches.filter(f => correspondFlou(cherches, motsCible(`${f.nom} ${f.fonction} ${f.lieu}`))) : fiches),
     [fiches, filtre],

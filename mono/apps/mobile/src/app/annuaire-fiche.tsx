@@ -13,15 +13,17 @@ import { PartagerCarte } from "../ui/partage/bouton-partage";
 import { Entree } from "../ui/entree";
 import { ElusStory } from "../ui/partage/variantes/elu.story";
 import { messageElu } from "../ui/partage/messages";
+import type { Fiche } from "../types/annuaire";
 
-type Params = { nom?: string; fonction?: string; lieu?: string; depuis?: string; producteur?: string; licence?: string; maj?: string; url?: string };
+type Params = Partial<Fiche>;
 
 export default function AnnuaireFiche() {
   const p = useLocalSearchParams<Params>();
   const nom = p.nom || "Élu";
   const fonction = p.fonction || "";
   const lieu = p.lieu || "";
-  const depuis = p.depuis ? `En fonction depuis le ${dateFr(p.depuis)}.` : "";
+  const dateDebut = p.depuis ? dateFr(p.depuis) : "";
+  const depuis = dateDebut ? `En fonction depuis le ${dateDebut}.` : "";
   const source = p.producteur ? `Source : ${p.producteur}${p.maj ? `, relevé le ${dateFr(p.maj)}` : ""}.` : "";
   return (
     <ScrollView style={{ flex: 1, backgroundColor: couleurs.sol }} contentContainerStyle={{ padding: PAS * 4, gap: PAS * 4 }}>
@@ -36,7 +38,7 @@ export default function AnnuaireFiche() {
         </View>
         <Carte titre="En fonction depuis">
           {p.depuis ? (
-            <Text style={TYPO.corps}>Le {dateFr(p.depuis)}.</Text>
+            <Text style={TYPO.corps}>Le {dateDebut}.</Text>
           ) : (
             <Text style={TYPO.note}>Date de début non publiée par la source. Repère ne la devine pas.</Text>
           )}

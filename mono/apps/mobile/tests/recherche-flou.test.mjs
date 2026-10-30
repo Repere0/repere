@@ -34,3 +34,10 @@ test("correspondFlou : un mot qui n'existe pas ne trouve rien, et tous les mots 
   assert.equal(core.correspondFlou(["firmin", "zzzzzzzz"], nom), false, "un mot sans correspondance écarte l'élu");
   assert.equal(core.correspondFlou(["firmin", "maritime"], nom), true);
 });
+
+test("motsRecherche : un collage de cinquante mots est ramené à ses huit premiers", () => {
+  const cinquante = Array.from({ length: 50 }, (_, i) => `mot${i}`).join(" ");
+  const huit = core.mots(cinquante).slice(0, 8).join(" ");
+  assert.equal(core.motsRecherche(cinquante).length, 8);
+  assert.equal(core.motsRecherche(cinquante).join(" "), huit);
+});

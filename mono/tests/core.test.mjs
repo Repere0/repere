@@ -692,3 +692,11 @@ test("mobile — argent : « encours de dette » est tapable et sa definition ex
   assert.ok(/<Definitions s=\{\[\{ t: "encours de dette", mot: "encours de dette" \}\]\}/.test(src),
     "argent.tsx ne rend pas « encours de dette » tapable (composant Definitions)");
 });
+
+/* ACTUALITES : trois dates identiques gardent leur ordre d'origine (tri stable). */
+test("actualites : la plus recente d'abord, et deux jours identiques gardent leur ordre", async () => {
+  const { plusRecentEnPremier } = await import("../packages/core/src/index.js");
+  const liste = [{ id: "a", d: "2026-07-21" }, { id: "b", d: "2026-07-21" }, { id: "c", d: "2026-08-14" }, { id: "d", d: "2026-07-21" }];
+  assert.deepEqual(plusRecentEnPremier(liste).map(x => x.id), ["c", "a", "b", "d"]);
+  assert.deepEqual(liste.map(x => x.id), ["a", "b", "c", "d"], "la liste d'origine ne doit pas être modifiée");
+});
