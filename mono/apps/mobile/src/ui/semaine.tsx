@@ -68,7 +68,7 @@ export function SemaineParlement({ sp, lu, nom }: { sp: Semaine | null | undefin
   if (!lu || !sp || !sp.institutions.length) {
     return (
       <View testID="semaine-parlement" style={s.carte}>
-        <Text style={TYPO.etiquette} accessibilityRole="header">Au Parlement cette semaine</Text>
+        <Text style={TYPO.etiquette} accessibilityRole="header">Cette semaine au Parlement</Text>
         <Text style={s.phrase}>{typo(AGENDA_PAS_ARRIVE.titre)}</Text>
         <Text style={TYPO.note}>{typo(AGENDA_PAS_ARRIVE.corps)}</Text>
         <Suite onPress={aller} />
@@ -100,7 +100,7 @@ export function SemaineParlement({ sp, lu, nom }: { sp: Semaine | null | undefin
 
   return (
     <View testID="semaine-parlement" style={s.carte}>
-      <Text style={TYPO.etiquette} accessibilityRole="header">Au Parlement cette semaine</Text>
+      <Text style={TYPO.etiquette} accessibilityRole="header">Cette semaine au Parlement</Text>
       <Text style={s.phrase}>{typo(phrase)}</Text>
 
       {/* Sept colonnes egales : a 360 px, 44 px chacune. Le nombre est ecrit pour

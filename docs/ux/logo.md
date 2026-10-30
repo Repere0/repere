@@ -25,12 +25,13 @@ Un repère, c'est une cible et un point d'ancrage : on voit où l'on est sur une
 
 | Où | Taille | Fichier |
 |---|---|---|
-| En-tête de l'accueil, à côté de « Repère. » | 48 px | `src/app/index.tsx` |
+| Première ouverture (aucune commune retenue), au-dessus de la phrase | 128 px, `sombre` | `src/app/index.tsx` |
+| En-tête de l'accueil quand une commune est retenue, à côté de « Repère. » | 48 px, `sombre` | `src/app/index.tsx` |
 | Cartes de partage (story), à la place du « R » | 34 px | `src/ui/partage/carte-story.tsx` |
 | Page « partager » (deux cartes de vote) | 34 px | `src/app/partager.tsx` |
 | Écran « À propos », en grand | 96 px | `src/app/a-propos.tsx` |
 
-Non fait : l'écran d'accueil (onboarding) n'existe pas dans l'application. Le logo n'y est donc pas placé.
+Correctif du 30/10/2026 (sprint v9) : l'accueil est toujours sombre, mais il utilisait la variante `mono`, qui suit l'encre du thème. En mode clair, cette encre est foncée : le logo était invisible sur le fond sombre. C'est l'explication la plus probable du logo absent des captures du parcours (navigateur en mode clair). L'accueil utilise maintenant `sombre`.
 
 ## Ce qui n'est pas fait
 

@@ -111,3 +111,9 @@ Pas de temps consacré au bonus, pour ne pas multiplier les changements non relu
 - **Bloc 10, SEO** : pas de canonique, pas de plan du site, pas de robots.txt. Il faut d'abord l'adresse publique définitive, et une décision sur des adresses par commune (voir `docs/seo.md`).
 - **Bloc 9, tests de rendu** : impossibles sans moteur de rendu React installé ; aucune dépendance ajoutée. `photoUrl` n'existe pas dans le code.
 - **Lecteur d'écran et appareil** : aucun contrôle VoiceOver, TalkBack, ni sur iPhone / Android dans cette session. Voir `docs/accessibilite.md` (checklist en 10 points).
+
+## 14. Sprint v9 (30/10/2026)
+
+- **D17 appliqué** : `mono/data/cette-semaine.json` supprimé (orphelin, ignoré par git, jamais commité). La structure reste décrite dans `docs/cette-semaine.md`. **Le processus éditorial d'un résumé hebdomadaire viendra après la bêta** : aucune source, aucune fréquence de publication n'est arrêtée.
+- **Brief v9 tronqué** : le message s'arrête au bloc A, au milieu du script `lancer-pour-testeurs.ps1`. Les chantiers annoncés dans le titre, « Pitch », « Fiche élu » et « Recherche », n'ont pas de consigne. Je ne les ai pas inventés. **À renvoyer** si ces blocs doivent être faits.
+- **« Le chiffre du jour » de l'accueil est figé** : 2 495 € par habitant à Melun (OFGL 2025) et le dernier vote du député 77-1, écrits en dur dans `src/app/index.tsx` (vérifiés dans `data/` le 30/10/2026). L'étiquette « du jour » laisse croire à une valeur qui change chaque jour. Ce n'est pas le cas : risque de lecture contraire à l'invariant 9 quand les testeurs reviendront dans une semaine. **À décider** : renommer (par exemple « Un chiffre de Melun ») ou brancher sur les données publiées. Non changé : la décision est de l'ordre du produit.

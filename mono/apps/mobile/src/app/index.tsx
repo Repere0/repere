@@ -95,33 +95,16 @@ export default function Accueil() {
 
   const phrase = PHRASES[etat as keyof typeof PHRASES] as { titre: string; corps: string; action?: string } | undefined;
 
-  return (
-    <KeyboardAvoidingView style={{ flex: 1, backgroundColor: D.sol }} behavior={Platform.OS === "ios" ? "padding" : undefined}>
-      <FlatList
-        data={trouvees}
-        keyExtractor={l => l[0]}
-        keyboardShouldPersistTaps="handled"
-        contentContainerStyle={[s.page, { paddingTop: marges.top + PAS * 6, paddingBottom: marges.bottom + PAS * 6 }]}
-        ListHeaderComponent={
-          <View style={s.tete}>
-            <DatePublication />
-            <View style={s.haut}>
-              {/* Le logo est une vue (ui/logo.tsx) : aucun fichier image dans assets/. */}
-              <View style={{ flexDirection: "row", alignItems: "center", gap: PAS * 3 }}>
-                <Logo size={48} variant="mono" />
-                <Text style={s.marque} accessibilityLabel="Repère">Repère<Text style={{ color: E.ville }}>.</Text></Text>
-              </View>
-              {!cherche && !filtre ? (
-                <Pressable onPress={() => setCherche(true)} accessibilityRole="button" accessibilityLabel="Chercher une commune"
-                  style={({ pressed }) => [s.chercher, pressed && { opacity: 0.7 }]}>
-                  <Text style={s.chercherTexte}>Chercher une commune</Text>
-                </Pressable>
-              ) : null}
-            </View>
-            {/* LE PITCH : une citation, en grand. Demande du CEO (30/10/2026) : elle remplace le paragraphe. */}
-            <Text style={s.citation} accessibilityRole="header">L'application qui vous raccroche à votre citoyenneté française.</Text>
+  /* PREMIERE OUVERTURE (D15, 30/10/2026) : aucune commune retenue sur ce telephone
+     (cle unique repere.departement, invariant 2 : aucune autre cle). L'ecran devient
+     l'accueil de bienvenue : grand logo, la phrase, et le champ deja ouvert. Pas
+     d'ecran supplementaire : c'est cet ecran qui accueille. */
+  const premiere = !retenue;
+  const champOuvert = cherche || !!filtre || premiere;
 
-            {/* Les cartes glissent horizontalement : le chiffre, puis le vote. */}
+  /* Les cartes glissent horizontalement : le chiffre, puis le vote. */
+  const cartes = (
+    <>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} decelerationRate="fast" snapToInterval={pas}
               accessibilityLabel="Cartes à faire défiler : le chiffre du jour, puis le dernier vote"
               contentContainerStyle={{ gap: PAS * 3 }}
@@ -149,6 +132,39 @@ export default function Accueil() {
             <View style={s.points} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
               {[0, 1].map(i => <View key={i} style={[s.point, page === i && s.pointActif]} />)}
             </View>
+    </>
+  );
+
+  return (
+    <KeyboardAvoidingView style={{ flex: 1, backgroundColor: D.sol }} behavior={Platform.OS === "ios" ? "padding" : undefined}>
+      <FlatList
+        data={trouvees}
+        keyExtractor={l => l[0]}
+        keyboardShouldPersistTaps="handled"
+        contentContainerStyle={[s.page, { paddingTop: marges.top + PAS * 6, paddingBottom: marges.bottom + PAS * 6 }]}
+        ListHeaderComponent={
+          <View style={s.tete}>
+            <DatePublication />
+            <View style={s.haut}>
+              {/* Le logo est une vue (ui/logo.tsx) : aucun fichier image dans assets/. */}
+              <View style={{ flexDirection: "row", alignItems: "center", gap: PAS * 3 }}>
+                {/* L'accueil est toujours sombre : la variante « sombre », pas l'encre du theme
+                    (en mode clair, l'encre du theme est foncee et le logo disparaissait). */}
+                {premiere ? null : <Logo size={48} variant="sombre" />}
+                <Text style={s.marque} accessibilityLabel="Repère">Repère<Text style={{ color: E.ville }}>.</Text></Text>
+              </View>
+              {!champOuvert ? (
+                <Pressable onPress={() => setCherche(true)} accessibilityRole="button" accessibilityLabel="Chercher une commune"
+                  style={({ pressed }) => [s.chercher, pressed && { opacity: 0.7 }]}>
+                  <Text style={s.chercherTexte}>Chercher une commune</Text>
+                </Pressable>
+              ) : null}
+            </View>
+            {/* LE PITCH : une citation, en grand. Demande du CEO (30/10/2026) : elle remplace le paragraphe. */}
+            {premiere ? <View style={s.grandLogo}><Logo size={128} variant="sombre" /></View> : null}
+            <Text style={[s.citation, premiere && { marginTop: PAS * 2 }]} accessibilityRole="header">L'application qui vous raccroche à votre citoyenneté française.</Text>
+
+            {premiere ? null : cartes}
 
             {retenue && nomRetenue ? (
               <Carte echelon="ville" titre="Votre commune, sur ce téléphone">
@@ -157,7 +173,7 @@ export default function Accueil() {
                 <Bouton texte={`Oublier ${nomRetenue}`} discret onPress={oublier} />
               </Carte>
             ) : null}
-            {cherche || filtre ? (
+            {champOuvert ? (
               <>
                 <Text style={s.question} nativeID="question">{retenue && nomRetenue ? "Une autre commune ?" : "Où habitez-vous ?"}</Text>
                 <View style={s.champLigne}>
@@ -172,7 +188,7 @@ export default function Accueil() {
                   placeholderTextColor={D.sourd}
                   autoCorrect={false}
                   autoCapitalize="none"
-                  autoFocus={cherche}
+                  autoFocus={cherche && !premiere}
                   returnKeyType="search"
                   accessibilityLabel="Où habitez-vous ? Tapez le nom de votre commune"
                   accessibilityLabelledBy="question"
@@ -198,6 +214,7 @@ export default function Accueil() {
                 </View>
               </>
             ) : null}
+            {premiere && !cherches.length ? cartes : null}
             {manquante ? (
               <Vide titre={`${manquante[1]} existe bien en Île-de-France : c'est nous qui n'avons pas encore sa fiche.`}
                 corps="Les données publiées que Repère lit ne contiennent pas de fiche pour cette commune. Ce n'est pas une erreur de votre part, et ce n'est pas la preuve que la commune n'existe pas."
@@ -239,6 +256,7 @@ const s = feuille(() => StyleSheet.create({
   marque: { fontFamily: POLICE.affiche, fontSize: 26, color: D.encre },
   chercher: { minHeight: CIBLE, borderRadius: 999, borderWidth: 1, borderColor: D.trait, paddingHorizontal: PAS * 4, justifyContent: "center" },
   chercherTexte: { fontSize: 15, fontWeight: "700", color: D.encre },
+  grandLogo: { alignItems: "flex-start", marginTop: PAS * 4 },
   citation: { fontFamily: POLICE.affiche, fontSize: 38, lineHeight: 43, letterSpacing: -0.6, color: D.encre, marginTop: PAS * 4 },
   carte: { gap: PAS * 2, padding: PAS * 4, borderRadius: RAYON.carte, backgroundColor: D.carte, borderWidth: 1, borderColor: D.trait },
   etiquette: { fontSize: 13, fontWeight: "700", color: D.sourd },
@@ -261,7 +279,7 @@ const s = feuille(() => StyleSheet.create({
   loupeRond: { position: "absolute", top: 0, left: 0, width: 13, height: 13, borderRadius: 7, borderWidth: 2, borderColor: D.sourd },
   loupeManche: { position: "absolute", right: 0, bottom: 1, width: 7, height: 2, borderRadius: 1, backgroundColor: D.sourd, transform: [{ rotate: "45deg" }] },
   champ: {
-    flex: 1, minHeight: CIBLE + 8, paddingHorizontal: PAS * 2, fontSize: 18, color: D.encre,
+    flex: 1, minHeight: CIBLE + 8, paddingHorizontal: PAS * 2, fontSize: 18, color: D.encre, borderRadius: 999,
     /* Sur l'export web, le contour de focus par defaut du navigateur est orange :
        une sixieme couleur (invariant 7). Le focus reste visible, dans la couleur
        de la commune. Sans effet sur iOS et Android. */
