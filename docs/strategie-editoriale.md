@@ -17,7 +17,17 @@ Date : 30/10/2026. Questions posées en V20, tranchées par le CEO en V21 (D29, 
 ### D29 — Qui publie : hybride
 - **Automatique**, déjà en place : votes de l'Assemblée, comptes OFGL, calendrier (chaîne quotidienne `collecte.yml`).
 - **Manuel** : une actualité locale par commune pilote, rédigée par le CEO **chaque dimanche soir**, dans `data/actus-hebdo.json`.
-- **Jamais** d'IA générative pour rédiger, ni d'aspiration d'articles de presse (droits d'auteur).
+- **Jamais** d'IA générative pour rédiger, ni d'aspiration d'articles de presse (droits d'auteur). *Précisé par D33 ci-dessous.*
+
+### D33 — Clarification de D29 (30/10/2026) : résumé assisté, oui ; invention, non
+
+L'IA générative peut aider à RÉSUMER une source officielle (le texte source reste de la mairie/AN). Elle ne peut PAS inventer une actu, ni scraper la presse (droits d'auteur). Le CEO reste responsable du contenu publié.
+
+En pratique :
+- **Permis** : coller le texte d'une page officielle (site de la mairie, Assemblée nationale, Sénat, préfecture) et demander un titre et deux phrases. Le CEO relit chaque fait contre la page, puis met l'adresse de cette page dans `source`.
+- **Interdit** : une actu sans page source, un fait absent de la page, une reprise d'article de presse, une collecte automatique de sites de presse.
+- **Ce que le résumé ne doit pas ajouter** : chiffre, date, nom ou jugement (« bonne nouvelle », « enfin ») absents de la source. Les invariants 3 (pas de classement) et 9 (pas de fausse fraîcheur) s'appliquent au résumé comme au reste.
+- `date_publication` reste la date où Repère publie, pas celle de la page source.
 
 ### D30 — Combien de communes
 - **Automatique** : toute l'Île-de-France (1 262 communes).
