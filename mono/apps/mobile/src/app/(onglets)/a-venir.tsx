@@ -165,7 +165,7 @@ export default function AVenir() {
                 sous="Les séances annoncées à l'Assemblée nationale et au Sénat. Elles concernent tout le pays, pas seulement votre commune." />
             </View>
           </View>
-          <DateDonnee quoi="Agenda relevé" date={releveAncien} testID="maj-agenda" />
+          <DateDonnee quoi="Relevé de l'agenda" date={releveAncien} testID="maj-agenda" />
           <Pressable onPress={() => setMois(m => !m)} accessibilityRole="button"
             accessibilityLabel={mois ? "Voir la semaine" : "Voir le mois"}
             style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", alignSelf: "flex-start", opacity: pressed ? 0.6 : 1 })}>

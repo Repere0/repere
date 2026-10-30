@@ -16,7 +16,7 @@ import { useEffect, useMemo, useState } from "react";
 import { FlatList, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View, useWindowDimensions } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { router } from "expo-router";
-import { mots, motsCible, correspond, trouverCommunes, departementDe, titreLisible, dernierExercice, evolution, parHabitant, dateFr, ordinal, positionSur, positionsFiables } from "@repere/core";
+import { mots, motsCible, correspond, trouverCommunes, departementDe, titreLisible, dernierExercice, evolution, parHabitant, dateFr, decompte, ordinal, positionSur, positionsFiables } from "@repere/core";
 import { chargerCatalogueScrutins, chargerCommunesBeta, chargerDepartement, chargerDeputes, chargerIndex, chargerVotes, ETATS, PHRASES } from "../lib/donnees";
 import { Bouton, Carte, Texte, Vide } from "../lib/composants";
 import { useSelection } from "../lib/selection";
@@ -45,7 +45,20 @@ type Index = { departements: { code: string; nom?: string }[]; agregats?: unknow
 type Argent = { nom: string; an: string; depenses: number; avant: { an: string; depenses: number } | null; salaires: number | null; investissement: number | null };
 /* D21 : le dernier vote publie du depute de la commune retenue. « partagee » : la commune
    est sur plusieurs circonscriptions, le depute depend de l'adresse (aucun n'est choisi). */
-type VoteVu = { depute: string; acteur: string; circo: number; position: string; d: string; t: string } | { partagee: number };
+type VoteVu = { depute: string; acteur: string; circo: number; position: string; d: string; t: string; dec?: Record<string, string> } | { partagee: number };
+
+/* V13 bloc C : une barre empilee, en vues (aucune bibliotheque). Trois gris de la palette
+   sombre, jamais une couleur d'echelon ni de groupe (invariant 7) ; la legende en toutes
+   lettres porte le sens, la barre ne fait que le montrer. Masquee au lecteur d'ecran :
+   la phrase qui suit dit la meme chose. */
+function Barre({ parts }: { parts: { cle: string; valeur: number; couleur: string }[] }) {
+  return (
+    <View style={s.barre} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
+      {parts.filter(p => p.valeur > 0).map(p => <View key={p.cle} style={{ flex: p.valeur, backgroundColor: p.couleur }} />)}
+    </View>
+  );
+}
+const nombre = (x: unknown) => { const n = Number(x); return Number.isFinite(n) && n >= 0 && x !== null && String(x).trim() !== "" ? n : null; };
 const POSITION_MOT: Record<string, string> = { p: "Pour", c: "Contre", a: "Abstention" };
 /* Sans commune retenue, la carte montre un exemple, dit comme tel : Melun. */
 const EXEMPLE = { insee: "77288", nom: "Melun" };
@@ -53,6 +66,18 @@ const EXEMPLE = { insee: "77288", nom: "Melun" };
    memoire, perdue a la fermeture de l'application. Rien n'est ecrit sur le telephone :
    la seule cle locale reste repere.departement (invariant 2). */
 const RECENTES: { insee: string; nom: string }[] = [];
+
+/* La repartition du scrutin entier (pas la position seule) : pour, contre, abstention. */
+function BarreVote({ dec }: { dec?: Record<string, string> | null }) {
+  const p = dec ? nombre(dec.pour) : null, c = dec ? nombre(dec.contre) : null, a = dec ? nombre(dec.abstentions) : null;
+  if (p === null || c === null || a === null || p + c + a === 0) return null;
+  return (
+    <View style={{ gap: PAS * 2 }}>
+      <Barre parts={[{ cle: "p", valeur: p, couleur: D.encre }, { cle: "c", valeur: c, couleur: D.sourd }, { cle: "a", valeur: a, couleur: D.trait }]} />
+      <Text style={s.legende}>L'Assemblée : {decompte(dec)}.</Text>
+    </View>
+  );
+}
 
 export default function Accueil() {
   const marges = useSafeAreaInsets();
@@ -67,6 +92,7 @@ export default function Accueil() {
   const [essai, setEssai] = useState(0);
   const [argent, setArgent] = useState<Argent | null>(null);
   const [voteVu, setVoteVu] = useState<VoteVu | null>(null);
+  const [decExemple, setDecExemple] = useState<Record<string, string> | null>(null);
   const [tout, setTout] = useState(false);
   const [recentes, setRecentes] = useState(() => [...RECENTES]);
   /* Une carte occupe toute la largeur de lecture ; la suivante commence apres un ecart. */
@@ -136,7 +162,7 @@ export default function Accueil() {
     const exempleIci = cible === EXEMPLE;
     Promise.all([
       chargerDepartement(dep),
-      exempleIci ? null : chargerDeputes(), exempleIci ? null : chargerCatalogueScrutins(), exempleIci ? null : chargerVotes(dep),
+      exempleIci ? null : chargerDeputes(), chargerCatalogueScrutins(), exempleIci ? null : chargerVotes(dep),
     ]).then(([r, de, ca, vo]) => {
       if (!vivant) return;
       /* LE VOTE (D21) : seulement pour la commune retenue, et seulement si les deux releves
@@ -154,11 +180,15 @@ export default function Accueil() {
           if (d && d.acteurRef) {
             const tries = [...cat.scrutins].sort((a: { d: string; n: string }, b: { d: string; n: string }) => (b.d + b.n.padStart(6, "0")).localeCompare(a.d + a.n.padStart(6, "0")));
             const sc = tries.find((x: { n: string }) => POSITION_MOT[positionSur(pos, d.acteurRef, x.n) as string]);
-            if (sc) vu = { depute: [d.prenom, d.nom].filter(Boolean).join(" ") || d.nom, acteur: d.acteurRef, circo: Number(circos[0]), position: positionSur(pos, d.acteurRef, sc.n), d: sc.d, t: sc.t };
+            if (sc) vu = { depute: [d.prenom, d.nom].filter(Boolean).join(" ") || d.nom, acteur: d.acteurRef, circo: Number(circos[0]), position: positionSur(pos, d.acteurRef, sc.n), d: sc.d, t: sc.t, dec: sc.dec };
           }
         }
       }
       setVoteVu(vu);
+      /* Le decompte de l'exemple vient du catalogue publie, pas du code. */
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const scEx = ca && ca.donnees ? ((ca.donnees as any).scrutins || []).find((x: { n: string }) => x.n === VOTE.n) : null;
+      setDecExemple(scEx && scEx.dec ? scEx.dec : null);
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const fiche = r.donnees ? (r.donnees as any).communes?.[cible.insee] : null;
       const ex = fiche ? dernierExercice(fiche, index.agregats) : null;
@@ -203,6 +233,17 @@ export default function Accueil() {
                     {argent.salaires !== null && argent.investissement !== null ? (
                       <Text style={s.contexte}>Dont {argent.salaires.toLocaleString("fr-FR")} € pour les salaires des agents de la commune, et {argent.investissement.toLocaleString("fr-FR")} € d'investissement (travaux, équipements).</Text>
                     ) : null}
+                    {argent.salaires !== null && argent.investissement !== null && argent.salaires + argent.investissement <= argent.depenses ? (() => {
+                      const sal = Math.round(argent.salaires / argent.depenses * 100);
+                      const inv = Math.round(argent.investissement / argent.depenses * 100);
+                      const aut = 100 - sal - inv;
+                      return (
+                        <View style={{ gap: PAS * 2 }}>
+                          <Barre parts={[{ cle: "s", valeur: sal, couleur: D.encre }, { cle: "i", valeur: inv, couleur: D.sourd }, { cle: "a", valeur: aut, couleur: D.trait }]} />
+                          <Text style={s.legende}>Sur 100 € : {sal} € de salaires · {inv} € d'investissement · {aut} € d'autres dépenses. Calcul Repère.</Text>
+                        </View>
+                      );
+                    })() : null}
                     <Text style={s.legende}>Source : OFGL, comptes des communes</Text>
                   </View>
                 </View>
@@ -216,6 +257,7 @@ export default function Accueil() {
                     <View style={s.badge}><Text style={s.badgeTexte}>Groupe : {groupeDe(voteVu.acteur)}</Text></View>
                     <Text style={s.legende}>Député de la {ordinal(voteVu.circo)} circonscription · {nomDep(departementDe(cible.insee) || "")}</Text>
                     <Text style={s.vote}>{POSITION_MOT[voteVu.position]}</Text>
+                    <BarreVote dec={voteVu.dec} />
                     <Text style={s.legende}>{dateFr(voteVu.d)} · {titreLisible(voteVu.t)} · source : Assemblée nationale</Text>
                   </View>
                 ) : voteVu && "partagee" in voteVu ? (
@@ -232,6 +274,7 @@ export default function Accueil() {
                     <View style={s.badge}><Text style={s.badgeTexte}>Groupe : {groupeDe(VOTE.acteur)}</Text></View>
                     <Text style={s.legende}>Député de la 1re circonscription de Seine-et-Marne</Text>
                     <Text style={s.vote}>S'est abstenu</Text>
+                    <BarreVote dec={decExemple} />
                     <Text style={s.legende}>{dateFr(VOTE.date)} · {titreLisible(VOTE.titre)}</Text>
                   </View>
                 )}
@@ -395,6 +438,7 @@ const s = feuille(() => StyleSheet.create({
   vote: { fontFamily: POLICE.titre, fontSize: 22, lineHeight: 28, color: D.encre },
   legende: { fontSize: 15, lineHeight: 21, color: D.sourd },
   contexte: { fontSize: 15, lineHeight: 21, color: D.encre },
+  barre: { flexDirection: "row", height: 12, borderRadius: 6, overflow: "hidden", backgroundColor: D.voile, gap: 2 },
   badge: { alignSelf: "flex-start", paddingHorizontal: PAS * 2, paddingVertical: PAS, borderRadius: RAYON.bloc, backgroundColor: D.voile },
   badgeTexte: { fontSize: 13, fontWeight: "600", color: D.sourd },
   points: { flexDirection: "row", justifyContent: "center", gap: PAS * 2 },

@@ -30,7 +30,8 @@ import { messageVote, VERBE } from "../ui/partage/messages";
 import { useEffect, useState } from "react";
 import { Animated, Linking, Modal, Pressable, ScrollView, Share, Text, View } from "react-native";
 import { router, Stack, useLocalSearchParams } from "expo-router";
-import { chaineDecision, copieVoteVide, dateFr, debutDeMandat, decompte, ETAT_VOTE, LIBELLES, lienScrutin, titreLisible } from "@repere/core";
+import { chaineDecision, copieVoteVide, dateFr, debutDeMandat, decompte, ETAT_VOTE, LIBELLES, lienScrutin, repartitionVote, titreLisible } from "@repere/core";
+import { Repartition } from "../ui/visuels";
 import { Carte, Vide } from "../lib/composants";
 import { chargerEvenements } from "../lib/donnees";
 import { srcElus, srcScrutins } from "../lib/sources";
@@ -72,6 +73,8 @@ function Lien({ texte, onPress, etiquette }: { texte: string; onPress: () => voi
 
 function CarteVote({ f, onComprendre }: { f: FaitElu; onComprendre: () => void }) {
   const pos = f.position as string;
+  const rep = repartitionVote(f.sc);
+  const qui = f.qui;
   return (
     <View style={{ gap: PAS * 2, padding: PAS * 4, borderRadius: RAYON.bloc, backgroundColor: couleurs.carte, borderWidth: 1, borderColor: couleurs.trait }}
       accessibilityLabel={`${dateFr(f.sc.d)} : ${POSITION[pos]} sur ${titreLisible(f.sc.t)}`}>
@@ -81,6 +84,13 @@ function CarteVote({ f, onComprendre }: { f: FaitElu; onComprendre: () => void }
         <Text style={[TYPO.micro, { marginLeft: "auto" }]}>{dateFr(f.sc.d)}</Text>
       </View>
       <Text style={TYPO.corps} numberOfLines={3}>{titreLisible(f.sc.t)}</Text>
+      {/* V13 bloc C : la micro-jauge du scrutin entier, et son decompte en toutes lettres. */}
+      {rep ? (
+        <View style={{ gap: PAS }}>
+          <Repartition compact segments={rep.segments} total={rep.total} position={pos} qui={qui} />
+          <Text style={TYPO.micro}>L'Assemblée : {decompte(f.sc.dec)}.</Text>
+        </View>
+      ) : null}
       <Lien texte="Comprendre ce vote" etiquette={`Comprendre ce vote : ${titreLisible(f.sc.t)}`} onPress={onComprendre} />
     </View>
   );
@@ -185,8 +195,8 @@ export default function Elu() {
             {/* V13 bloc A : la date de ce qu'affiche la fiche (les votes pour un depute,
                le repertoire des elus sinon), avec la source. */}
             {depute
-              ? <DateDonnee quoi="Votes relevés à l'Assemblée" date={r.index?.sources?.scrutins?.releve_le} url={r.index?.sources?.scrutins?.url} />
-              : <DateDonnee quoi="Répertoire national des élus" date={r.index?.sources?.elus?.maj} url={r.index?.sources?.elus?.url} />}
+              ? <DateDonnee quoi="Relevé des votes" date={r.index?.sources?.scrutins?.releve_le} url={r.index?.sources?.scrutins?.url} />
+              : <DateDonnee quoi="Répertoire des élus" date={r.index?.sources?.elus?.maj} url={r.index?.sources?.elus?.url} />}
 
             {/* LA SYNTHESE : ses trois votes publies les plus recents. */}
             {depute ? (
