@@ -63,3 +63,5 @@ __pycache__/
 # Tableau de retours rempli (noms de testeurs) : jamais commite. Le modele vierge est docs/tableau-retours.csv.
 docs/tableau-retours-rempli*.csv
 !docs/tableau-retours.csv
+!docs/tableau-debrief.csv
+docs/tableau-debrief-rempli*.csv
