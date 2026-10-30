@@ -74,6 +74,10 @@ export default function Coquille() {
                 <Stack.Screen name="sources" options={{ title: LIBELLES.sources, headerLeft: () => <Retour texte={LIBELLES.aujourdhui} etiquette={`Revenir à l'écran ${LIBELLES.aujourdhui}`} /> }} />
                 <Stack.Screen name="dictionnaire" options={{ title: "Dictionnaire citoyen", headerLeft: () => <Retour texte={LIBELLES.calendrier} etiquette={`Revenir à l'écran ${LIBELLES.calendrier}`} /> }} />
                 <Stack.Screen name="procedure" options={{ title: "La procédure", headerLeft: () => <Retour texte={LIBELLES.calendrier} etiquette={`Revenir à l'écran ${LIBELLES.calendrier}`} /> }} />
+                <Stack.Screen name="annuaire-fiche" options={{ title: "Élu", headerLeft: () => <Retour texte="Élus" etiquette="Revenir à l'écran Élus" /> }} />
+                <Stack.Screen name="actus" options={{ title: "Actualités", headerLeft: () => <Retour texte={LIBELLES.aujourdhui} etiquette={`Revenir à l'écran ${LIBELLES.aujourdhui}`} /> }} />
+                <Stack.Screen name="a-propos" options={{ title: "À propos" }} />
+                <Stack.Screen name="confidentialite" options={{ title: "Confidentialité" }} />
                 <Stack.Screen name="elu" options={{ title: "Fiche", headerLeft: () => <Retour texte={LIBELLES.qui} etiquette={`Revenir à l'écran ${LIBELLES.qui}`} /> }} />
                 <Stack.Screen name="partager" options={{ title: "Partager", headerLeft: () => <Retour texte="Votre député" etiquette="Revenir à l'écran du député" /> }} />
               </Stack>

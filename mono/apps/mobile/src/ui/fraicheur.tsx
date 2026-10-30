@@ -59,7 +59,7 @@ export function DatePublication({ flottant = false }: { flottant?: boolean }) {
   const jour = e.generation ? String(e.generation).slice(0, 10) : "";
   if (!/^\d{4}-\d{2}-\d{2}$/.test(jour)) return null;
   const style = flottant
-    ? { position: "absolute" as const, top: 0, left: PAS * 4, right: PAS * 4, fontSize: 12, lineHeight: 16, color: couleurs.sourd }
+    ? { position: "absolute" as const, top: 0, left: PAS * 5, right: PAS * 5, fontSize: 12, lineHeight: 16, color: couleurs.sourd }
     : [TYPO.micro, { marginBottom: PAS * 2 }];
   return <Text testID="date-publication" style={style}>Données Repère publiées le {dateFr(jour)}.</Text>;
 }
