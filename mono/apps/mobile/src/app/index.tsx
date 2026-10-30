@@ -13,7 +13,7 @@
  * 77-1, scrutin 8706, verifie le 30/10/2026), annonce lui aussi comme un exemple.
  * Le partage n'est plus sur l'accueil : il est sur les ecrans de contexte (src/ui/partage). */
 import { useEffect, useMemo, useState } from "react";
-import { FlatList, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View, useWindowDimensions } from "react-native";
+import { FlatList, KeyboardAvoidingView, Linking, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View, useWindowDimensions } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { router } from "expo-router";
 import { mots, motsCible, correspond, trouverCommunes, departementDe, titreLisible, dernierExercice, evolution, parHabitant, dateFr, decompte, ordinal, positionSur, positionsFiables } from "@repere/core";
@@ -223,6 +223,8 @@ export default function Accueil() {
   /* D23, A1 : la commune mediane de la region, pour le meme exercice que le chiffre. */
   const moyenne = useMoyenneDepenses(index, departementDe(cible.insee), argent ? argent.an : null);
   const comparaison = argent && moyenne ? phrasesMoyenne(argent.nom, argent.depenses, moyenne) : null;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const urlComptes: string | null = (index as any)?.sources?.comptes?.url ?? null;
 
   const phrase = PHRASES[etat as keyof typeof PHRASES] as { titre: string; corps: string; action?: string } | undefined;
 
@@ -244,20 +246,16 @@ export default function Accueil() {
                 <View style={{ width: larg }}>
                   <View style={s.carte}>
                     <AvecPicto picto="budget"><Text style={s.etiquette}>{exemple ? "Un exemple, en attendant votre commune" : "Votre commune"}</Text></AvecPicto>
+                    {/* A3 (30/10/2026) : quatre lignes. Titre ; chiffre ; comparaison ; repartition.
+                        Puis la source, en pied, cliquable. L'annee precedente et le detail des
+                        depenses vivent dans le budget de la commune (argent.tsx). */}
                     <Text style={s.carteTitre}>L'argent de {argent.nom}</Text>
-                    <Text style={s.chiffre}>{argent.depenses.toLocaleString("fr-FR")} €</Text>
-                    <Text style={s.legende}>dépensés par habitant en {argent.an}</Text>
-                    {comparaison ? (
-                      <View style={{ gap: 2 }}>
-                        <Text style={s.contexte}>{argent.nom} : {argent.depenses.toLocaleString("fr-FR")} € · {comparaison.court}</Text>
-                        <Text style={s.contexte}>{comparaison.position}</Text>
-                        <Text style={s.legende}>{comparaison.note}</Text>
-                      </View>
-                    ) : null}
-                    {argent.avant ? <Text style={s.contexte}>En {argent.avant.an} : {argent.avant.depenses.toLocaleString("fr-FR")} € par habitant.</Text> : null}
-                    {argent.salaires !== null && argent.investissement !== null ? (
-                      <Text style={s.contexte}>Dont {argent.salaires.toLocaleString("fr-FR")} € pour vos agents (salaires) et {argent.investissement.toLocaleString("fr-FR")} € pour vos équipements (investissement).</Text>
-                    ) : null}
+                    <View style={{ flexDirection: "row", alignItems: "baseline", flexWrap: "wrap", columnGap: PAS * 2 }}>
+                      <Text style={s.chiffre}>{argent.depenses.toLocaleString("fr-FR")} €</Text>
+                      <Text style={s.legende}>par habitant · {argent.an}</Text>
+                    </View>
+                    {comparaison ? <Text style={s.contexte}>{comparaison.rapport}</Text>
+                      : argent.avant ? <Text style={s.contexte}>En {argent.avant.an} : {argent.avant.depenses.toLocaleString("fr-FR")} € par habitant</Text> : null}
                     {argent.salaires !== null && argent.investissement !== null && argent.salaires + argent.investissement <= argent.depenses ? (() => {
                       const sal = Math.round(argent.salaires / argent.depenses * 100);
                       const inv = Math.round(argent.investissement / argent.depenses * 100);
@@ -265,11 +263,15 @@ export default function Accueil() {
                       return (
                         <View style={{ gap: PAS * 2 }}>
                           <Barre parts={[{ cle: "s", valeur: sal, couleur: D.encre }, { cle: "i", valeur: inv, couleur: D.sourd }, { cle: "a", valeur: aut, couleur: D.trait }]} />
-                          <Text style={s.legende}>Sur 100 € : {sal} € de salaires · {inv} € d'investissement · {aut} € d'autres dépenses. Calcul Repère.</Text>
+                          <Text style={s.legende}>{sal} % salaires · {inv} % invest. · {aut} % autres</Text>
                         </View>
                       );
                     })() : null}
-                    <Text style={s.legende}>Source : OFGL, comptes des communes</Text>
+                    <Pressable onPress={() => { if (urlComptes) Linking.openURL(urlComptes); }} accessibilityRole="link"
+                      accessibilityLabel="Source : comptes des communes publiés par l'OFGL, ouvre un site externe. Médiane et parts calculées par Repère."
+                      style={({ pressed }) => ({ minHeight: 44, justifyContent: "center", opacity: pressed ? 0.7 : 1 })}>
+                      <Text style={[s.legende, { fontSize: 13, textDecorationLine: urlComptes ? "underline" : "none" }]}>Source : OFGL · médiane et parts : calcul Repère</Text>
+                    </Pressable>
                   </View>
                 </View>
               ) : null}
