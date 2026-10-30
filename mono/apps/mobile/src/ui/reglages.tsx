@@ -6,6 +6,7 @@ import { Modal, Pressable, StyleSheet, Text, View } from "react-native";
 import { CIBLE, PAS, RAYON, TYPO, couleurs, feuille, type ChoixTheme } from "../lib/theme";
 import { NEUTRES_PAR_MODE, VOILE_MODAL } from "../lib/palette";
 import { useTheme } from "../lib/themeChoix";
+import { router } from "expo-router";
 
 const OPTIONS: { valeur: ChoixTheme; libelle: string }[] = [
   { valeur: "systeme", libelle: "Système" },
@@ -51,6 +52,13 @@ function ChoixAffichage({ visible, onFermer }: { visible: boolean; onFermer: () 
               </Pressable>
             );
           })}
+          <Pressable
+            onPress={() => { onFermer(); router.push("/confidentialite"); }}
+            accessibilityRole="link"
+            style={({ pressed }) => [s.option, pressed && { opacity: 0.7 }]}
+          >
+            <Text style={s.optionTexte}>Confidentialité</Text>
+          </Pressable>
         </View>
       </Pressable>
     </Modal>

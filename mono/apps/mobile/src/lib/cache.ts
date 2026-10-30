@@ -7,7 +7,7 @@
  *
  * CE FICHIER N'A PAS DE GARDE A LUI. Il est branche sous `magasin`
  * (packages/data-utils/src/store.js), dont `ecrire` refuse, AVANT d'appeler ce
- * support, toute cle qui n'est pas `dep|vote|reg|proj|socle:XXX` et toute
+ * support, toute cle qui n'est pas `dep|vote|reg|proj|socle:<code>` et toute
  * valeur qui porte une trace du lecteur. Un seul endroit decide de ce qui peut
  * etre garde sur un appareil ; ce fichier-ci ne fait que l'ecrire. Il revalide
  * quand meme le nom de chaque fichier : aucun chemin compose ici ne peut sortir

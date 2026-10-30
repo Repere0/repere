@@ -76,7 +76,7 @@ export function FeuilleSource({ source, visible, onFermer }: { source: InfoSourc
   const marges = useSafeAreaInsets();
   const date = dateDite(source);
   /* DEUX DATES, JAMAIS CONFONDUES (30/09/2026) : celle de la source (publiee
-     ou relevee) et celle ou Repere a traite les fichiers. */
+     ou relevee) et celle ou Repère a traité les fichiers. */
   const { r } = useCommuneChoisie();
   const traite = r.pret ? datePublication(r.index) : null;
   const detail = ligneSource(source.releve && !source.mention ? { ...source, mention: "relevé le " + dateFr(source.releve) } : source);

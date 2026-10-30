@@ -190,7 +190,7 @@ export function Chaine({ niveaux, compact, surNom }: { niveaux: Niveau[]; compac
           <View style={[{ flex: 1, paddingBottom: compact ? PAS * 3 : PAS * 6, gap: 2 },
             !compact ? { backgroundColor: TEINTES[n.echelon], borderRadius: RAYON.bloc, padding: PAS * 3, marginBottom: PAS * 3 } : null]}>
             {/* La couleur d'echelon est portee par le maillon, pas par le texte :
-                en 13 px, l'intercommunalite (#0891b2) faisait 3,21:1 sur le fond
+                en 13 px, l'intercommunalite (ancien cyan) faisait 3,21:1 sur le fond
                 et le departement 4,38:1 — sous le seuil AA de 4,5:1 (mesure du
                 30/09/2026, controle « contraste AA » du parcours). */}
             <Text style={TYPO.etiquette}>{n.niveau}{n.lieu && !compact ? " · " + n.lieu : ""}</Text>
