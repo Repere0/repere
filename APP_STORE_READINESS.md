@@ -46,7 +46,7 @@ Conséquence : le tableau `NSPrivacyAccessedAPITypes` est vide. Ne pas y mettre 
 ## Remarque sur les tests de conformité
 
 - `apps/mobile/tests/conformite.test.mjs` scanne `src/`. Il ne scanne pas le test lui-même.
-- Le test lui-même contient désormais une apostrophe typographique littérale (ligne « les documents de soumission ne contiennent pas de remplissage », `/\u2019/`). Modifié hors de cette session ; le test passe, mais la règle « zéro U+2019 dans le code » est écrite de cette façon. À remplacer par `\u2019` pour rester cohérent.
+- Le test contenait une apostrophe typographique littérale (U+2019), remplacée par l'échappement \u2019 (décision D8, 30/10/2026). Le test ne contient plus aucun caractère U+2019.
 
 ## expo-doctor
 

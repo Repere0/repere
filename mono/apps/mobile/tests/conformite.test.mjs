@@ -30,7 +30,7 @@ test("aucun texte de remplissage ni repere de travail dans le code", () => {
 });
 
 test("aucune apostrophe typographique (U+2019) dans le code", () => {
-  const trouves = toutes.filter(l => l.texte.includes("’"));
+  const trouves = toutes.filter(l => l.texte.includes("\u2019"));
   assert.deepEqual(trouves.map(l => `${l.f}:${l.n}`), []);
 });
 
@@ -72,7 +72,7 @@ test("les documents de soumission ne contiennent pas de remplissage", () => {
   for (const nom of ["privacy-policy.md", "app-store-metadata.md"]) {
     const t = fs.readFileSync(path.join(DOCS, nom), "utf8");
     assert.doesNotMatch(t, /lorem ipsum|\bTODO\b|\bXXX\b/i, nom);
-    assert.doesNotMatch(t, /’/, nom);
+    assert.doesNotMatch(t, /\u2019/, nom);
   }
 });
 

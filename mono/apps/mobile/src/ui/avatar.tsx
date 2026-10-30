@@ -1,10 +1,11 @@
-/* L'AVATAR D'UN ELU : ses initiales, sur la couleur de son groupe.
- * Aucune photo n'est publiee dans les donnees de Repere, et l'adresse des photos de
- * l'Assemblee n'a pas pu etre verifiee : l'avatar est donc la seule image. Sans groupe
- * connu (c'est le cas de tous les elus aujourd'hui), la couleur est le gris « Inconnu »
- * (ADR 0001). La photo viendra d'une donnee publiee, jamais d'une adresse devinee. */
+/* L'AVATAR D'UN ELU : ses initiales sur la couleur de son groupe, avec une bordure de la
+ * même teinte, plus sombre, et une ombre douce (clair comme sombre).
+ * Aucune photo : décision du porteur (30/10/2026, D1). Les photos de l'Assemblée ne sont
+ * pas chargées, pour ne pas révéler l'adresse du lecteur. Sans groupe connu (c'est le cas
+ * de tous les élus aujourd'hui), la couleur est le gris « Inconnu » (ADR 0001). */
 import { Text, View } from "react-native";
-import { couleurGroupe, groupeDe, texteSur } from "../lib/groupes";
+import { OMBRE } from "../lib/theme";
+import { bordureGroupe, couleurGroupe, groupeDe, texteSur } from "../lib/groupes";
 
 export function initiales(nom: string): string {
   const morceaux = nom.split(/\s+/).filter(Boolean);
@@ -14,12 +15,15 @@ export function initiales(nom: string): string {
   return (premiere + derniere).toUpperCase();
 }
 
-export function Avatar({ nom, taille = 56 }: { nom: string; taille?: number }) {
+/* 64 px par défaut : initiales à 24 px. Le texte est blanc sur le gris « Inconnu » ; sur une
+ * couleur de groupe claire, il passe en encre pour rester lisible (texteSur). */
+export function Avatar({ nom, taille = 64 }: { nom: string; taille?: number }) {
   const fond = couleurGroupe(groupeDe());
   return (
     <View accessible={false}
-      style={{ width: taille, height: taille, borderRadius: taille / 2, backgroundColor: fond, alignItems: "center", justifyContent: "center" }}>
-      <Text style={{ color: texteSur(fond), fontWeight: "800", fontSize: Math.round(taille * 0.36) }}>{initiales(nom)}</Text>
+      style={[{ width: taille, height: taille, borderRadius: taille / 2, backgroundColor: fond,
+        borderWidth: 2, borderColor: bordureGroupe(fond), alignItems: "center", justifyContent: "center" }, OMBRE]}>
+      <Text style={{ color: texteSur(fond), fontWeight: "800", fontSize: Math.round(taille * 0.375) }}>{initiales(nom)}</Text>
     </View>
   );
 }
