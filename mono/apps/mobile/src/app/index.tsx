@@ -23,6 +23,7 @@ import { Bouton, Carte, Texte, Vide } from "../lib/composants";
 import { useSelection } from "../lib/selection";
 import { feuille, CIBLE, PAS, POLICE, RAYON } from "../lib/theme";
 import { ECHELONS_PAR_MODE, NEUTRES_PAR_MODE, PALETTE_CLAIRE } from "../lib/palette";
+import { groupeDe } from "../lib/groupes";
 
 /* L'accueil est sombre : il lit la palette sombre, quel que soit le choix d'affichage. */
 const D = NEUTRES_PAR_MODE.sombre;
@@ -34,6 +35,7 @@ const cl: Record<string, string> = PALETTE_CLAIRE;
    scrutins.json (titre, date, n), deputes.json (entree 77-1). Figees ici. */
 const VOTE = {
   depute: "Arnaud Saint-Martin",
+  acteur: "PA841845",
   n: "8706",
   titre: "la proposition de loi organique visant à adapter l'autorité judiciaire à la lutte contre les violences sexuelles et intrafamiliales (première lecture).",
   date: "2026-10-13",
@@ -204,8 +206,8 @@ export default function Accueil() {
                 <View style={s.carte}>
                   <Text style={s.etiquette}>Dernier vote enregistré</Text>
                   <Text style={s.carteTitre}>Arnaud Saint-Martin</Text>
-                  {/* Pas de groupe dans les donnees de Repere : on le dit, sans couleur de parti. */}
-                  <View style={s.badge}><Text style={s.badgeTexte}>Groupe non disponible ici</Text></View>
+                  {/* Groupe inconnu ici : badge gris, aucune couleur de parti (ADR 0001). */}
+                  <View style={s.badge}><Text style={s.badgeTexte}>Groupe : {groupeDe(VOTE.acteur)}</Text></View>
                   <Text style={s.legende}>Député de la 1re circonscription de Seine-et-Marne</Text>
                   <Text style={s.vote}>S'est abstenu</Text>
                   <Text style={s.legende}>13 octobre 2026 · {titreLisible(VOTE.titre)}</Text>
