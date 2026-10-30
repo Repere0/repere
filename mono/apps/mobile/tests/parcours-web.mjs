@@ -106,14 +106,27 @@ setTimeout(() => {
   ecrire(process.env.GITHUB_ACTIONS ? `::error title=parcours mobile::${msg}` : "ECHEC " + msg);
   process.exit(3);
 }, LIMITE_MS).unref();
+/* Le champ « Où habitez-vous » n'apparait qu'après « Chercher une commune » (accueil).
+   On ouvre la recherche si le champ manque, puis on saisit. Aucune modification du
+   composant ni du défilement : seul le parcours de test change. */
+async function ouvrirRecherche(page) {
+  if (!(await page.getByLabel(/Où habitez-vous/).isVisible())) {
+    await page.getByRole("button", { name: "Chercher une commune" }).first().click();
+  }
+}
+
+async function chercher(page, texte) {
+  await ouvrirRecherche(page);
+  await page.getByLabel(/Où habitez-vous/).fill(texte);
+}
+
 for (const largeur of [360, 390, 430]) {
   const page = await navigateur.newPage({ viewport: { width: largeur, height: 800 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true });
   const demandees = [];
   page.on("request", r => demandees.push(r.url()));
   await page.goto(BASE + "/", { waitUntil: "networkidle" });
 
-  const champ = page.getByLabel(/Où habitez-vous/);
-  await champ.fill(COMMUNE.saisie);
+  await chercher(page, COMMUNE.saisie);
   const resultat = page.getByRole("button", { name: new RegExp("^" + COMMUNE.nom + ",") }).first();
   await resultat.waitFor({ timeout: 10000 });
   if (CAPTURES) await page.screenshot({ path: path.join(CAPTURES, `accueil-${largeur}.png`), fullPage: true });
@@ -315,7 +328,7 @@ for (const largeur of [360, 390, 430]) {
 {
   const page = await navigateur.newPage({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, reducedMotion: "reduce" });
   await page.goto(BASE + "/", { waitUntil: "networkidle" });
-  await page.getByLabel(/Où habitez-vous/).fill("bassevelle");
+  await chercher(page, "bassevelle");
   await page.getByRole("button", { name: /^Bassevelle,/ }).first().click();
   await page.getByText("Aller plus loin").first().waitFor({ timeout: 15000 });
   await page.getByRole("button", { name: "Où va cet argent ?", exact: true }).first().click();
@@ -330,7 +343,7 @@ for (const largeur of [360, 390, 430]) {
 {
   const page = await navigateur.newPage({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, reducedMotion: "reduce" });
   await page.goto(BASE + "/", { waitUntil: "networkidle" });
-  await page.getByLabel(/Où habitez-vous/).fill("bassevelle");
+  await chercher(page, "bassevelle");
   await page.getByRole("button", { name: /^Bassevelle,/ }).first().click();
   await page.getByText("Aller plus loin").first().waitFor({ timeout: 15000 });
   await page.getByRole("button", { name: "Dictionnaire citoyen", exact: true }).first().click();
@@ -344,7 +357,7 @@ for (const largeur of [360, 390, 430]) {
 {
   const page = await navigateur.newPage({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
   await page.goto(BASE + "/", { waitUntil: "networkidle" });
-  await page.getByLabel(/Où habitez-vous/).fill("Lyon");
+  await chercher(page, "Lyon");
   await page.waitForTimeout(800);
   const t = await page.evaluate(() => document.body.innerText);
   verifier(/Aucune commune d'Île-de-France ne correspond à «\s?Lyon\s?»/.test(t) && /pas encore disponibles ici/.test(t) && !/Rien ne correspond/.test(t),
@@ -358,7 +371,7 @@ async function ouvrirAvecPanne(motif) {
   const page = await navigateur.newPage({ viewport: { width: 390, height: 800 }, isMobile: true, hasTouch: true });
   await page.route(motif, r => r.abort());
   await page.goto(BASE + "/", { waitUntil: "networkidle" });
-  await page.getByLabel(/Où habitez-vous/).fill(COMMUNE.saisie);
+  await chercher(page, COMMUNE.saisie);
   await page.getByRole("button", { name: new RegExp("^" + COMMUNE.nom + ",") }).first().click();
   await page.waitForTimeout(1500);
   await page.waitForLoadState("networkidle");
@@ -391,7 +404,7 @@ async function montantA100ms(reduit) {
   const ctx = await navigateur.newContext({ viewport: { width: 390, height: 800 }, isMobile: true, hasTouch: true, reducedMotion: reduit ? "reduce" : "no-preference" });
   const page = await ctx.newPage();
   await page.goto(BASE + "/", { waitUntil: "networkidle" });
-  await page.getByLabel(/Où habitez-vous/).fill(COMMUNE.saisie);
+  await chercher(page, COMMUNE.saisie);
   await page.getByRole("button", { name: new RegExp("^" + COMMUNE.nom + ",") }).first().click();
   /* Depuis le spike du 30/09/2026, le compteur anime vit sur l'ecran « Où va l'argent ». */
   await page.getByRole("button", { name: "Où va cet argent ?" }).first().click();
@@ -426,7 +439,7 @@ async function montantA100ms(reduit) {
     ss: sessionStorage.length, cookies: document.cookie,
   }));
   await page.goto(BASE + "/", { waitUntil: "networkidle" });
-  await page.getByLabel(/Où habitez-vous/).fill(COMMUNE.saisie);
+  await chercher(page, COMMUNE.saisie);
   await page.getByRole("button", { name: new RegExp("^" + COMMUNE.nom + ",") }).first().click();
   await page.getByText("Aller plus loin").first().waitFor({ timeout: 15000 });
   let st = await stockage();
@@ -448,11 +461,13 @@ async function montantA100ms(reduit) {
   st = await stockage();
   verifier(Object.keys(st.ls).length === 0, "mémoire : « Oublier » efface tout " + JSON.stringify(st.ls));
   await page.goto(BASE + "/", { waitUntil: "networkidle" });
+  await ouvrirRecherche(page);
   await page.getByText("Où habitez-vous ?").waitFor({ timeout: 10000 });
   verifier(await page.getByText("Votre commune, sur ce téléphone").count() === 0, "mémoire : oubliée, elle n'est plus proposée");
   /* Une valeur trafiquee n'est jamais affichee : elle est effacee. */
   await page.evaluate(() => localStorage.setItem("repere.departement", '{"d":"77","c":"<script>"}'));
   await page.goto(BASE + "/", { waitUntil: "networkidle" });
+  await ouvrirRecherche(page);
   await page.getByText("Où habitez-vous ?").waitFor({ timeout: 10000 });
   st = await stockage();
   verifier(Object.keys(st.ls).length === 0 && await page.getByText("Votre commune, sur ce téléphone").count() === 0,
@@ -461,6 +476,7 @@ async function montantA100ms(reduit) {
      97101 passait, parce que seuls les deux premiers chiffres etaient compares. */
   await page.evaluate(() => localStorage.setItem("repere.departement", '{"d":"97","c":"97101"}'));
   await page.goto(BASE + "/", { waitUntil: "networkidle" });
+  await ouvrirRecherche(page);
   await page.getByText("Où habitez-vous ?").waitFor({ timeout: 10000 });
   st = await stockage();
   verifier(Object.keys(st.ls).length === 0 && await page.getByText("Votre commune, sur ce téléphone").count() === 0,
@@ -482,7 +498,7 @@ async function ouvrirSemaine({ agenda, senatCoupe, fuseau }) {
   if (senatCoupe) await ctx.route("**/data/calendrier-senat.json", r => r.abort());
   const page = await ctx.newPage();
   await page.goto(BASE + "/", { waitUntil: "networkidle" });
-  await page.getByLabel(/Où habitez-vous/).fill(COMMUNE.saisie);
+  await chercher(page, COMMUNE.saisie);
   await page.getByRole("button", { name: new RegExp("^" + COMMUNE.nom + ",") }).first().click();
   await page.getByText("Aller plus loin").first().waitFor({ timeout: 15000 });
   await page.waitForTimeout(600);
@@ -527,7 +543,7 @@ async function ouvrirSemaine({ agenda, senatCoupe, fuseau }) {
   const HAUTEUR = Number(process.env.REPERE_HAUTEUR_PLI || 844);
   const page = await navigateur.newPage({ viewport: { width: 390, height: HAUTEUR }, deviceScaleFactor: 2, isMobile: true, hasTouch: true, reducedMotion: "reduce" });
   await page.goto(BASE + "/", { waitUntil: "networkidle" });
-  await page.getByLabel(/Où habitez-vous/).fill(COMMUNE.saisie);
+  await chercher(page, COMMUNE.saisie);
   await page.getByRole("button", { name: new RegExp("^" + COMMUNE.nom + ",") }).first().click();
   await page.getByText("Aller plus loin").first().waitFor({ timeout: 15000 });
   await page.waitForTimeout(600);
@@ -544,7 +560,7 @@ async function ouvrirSemaine({ agenda, senatCoupe, fuseau }) {
   const page = await ctx.newPage();
   const ouvrir = async () => {
     await page.goto(BASE + "/", { waitUntil: "networkidle" });
-    await page.getByLabel(/Où habitez-vous/).fill(COMMUNE.saisie);
+    await chercher(page, COMMUNE.saisie);
     await page.getByRole("button", { name: new RegExp("^" + COMMUNE.nom + ",") }).first().click();
     await page.getByText("Aller plus loin").first().waitFor({ timeout: 15000 });
     await page.waitForTimeout(600);
