@@ -10,86 +10,26 @@
  * Les cartes du haut sont STATIQUES et glissent horizontalement : Melun (77288),
  * son chiffre par habitant 2025 (OFGL) et son dernier vote (député 77-1, scrutin
  * 8706). Valeurs verifiees dans data/ le 30/10/2026, figees dans le code.
- * Le partage d'image reprend la capture de partager.tsx (view-shot + partage natif). */
-import { useEffect, useMemo, useRef, useState, type ComponentRef, type ReactNode, type RefObject } from "react";
-import { FlatList, KeyboardAvoidingView, Platform, Pressable, ScrollView, Share, StyleSheet, Text, TextInput, View, useWindowDimensions } from "react-native";
-import { captureRef } from "react-native-view-shot";
-import * as Sharing from "expo-sharing";
+ * Le partage d'image : src/ui/partage (carte 9:16, feuille de partage native). */
+import { useEffect, useMemo, useState } from "react";
+import { FlatList, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View, useWindowDimensions } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { router } from "expo-router";
-import { mots, motsCible, correspond, trouverCommunes, departementDe, dateFr, lienScrutin, titreLisible } from "@repere/core";
+import { mots, motsCible, correspond, trouverCommunes, departementDe, titreLisible } from "@repere/core";
 import { chargerCommunesBeta, chargerIndex, ETATS, PHRASES } from "../lib/donnees";
 import { Bouton, Carte, Texte, Vide } from "../lib/composants";
 import { useSelection } from "../lib/selection";
 import { feuille, CIBLE, PAS, POLICE, RAYON } from "../lib/theme";
-import { ECHELONS_PAR_MODE, NEUTRES_PAR_MODE, PALETTE_CLAIRE } from "../lib/palette";
+import { ECHELONS_PAR_MODE, NEUTRES_PAR_MODE } from "../lib/palette";
 import { groupeDe } from "../lib/groupes";
+import { MSG_CHIFFRE, MSG_VOTE, VOTE } from "../ui/partage/donnees";
+import { usePartageStory } from "../ui/partage/use-partage-story";
+import { ChiffreStory } from "../ui/partage/variantes/chiffre.story";
+import { VoteStory } from "../ui/partage/variantes/vote.story";
 
 /* L'accueil est sombre : il lit la palette sombre, quel que soit le choix d'affichage. */
 const D = NEUTRES_PAR_MODE.sombre;
 const E = ECHELONS_PAR_MODE.sombre;
-/* L'image de partage reste en clair, comme les cartes de partager.tsx (palette.ts). */
-const cl: Record<string, string> = PALETTE_CLAIRE;
-
-/* Donnees publiees, verifiees le 30/10/2026 : scrutins/77.json (position « a »),
-   scrutins.json (titre, date, n), deputes.json (entree 77-1). Figees ici. */
-const VOTE = {
-  depute: "Arnaud Saint-Martin",
-  acteur: "PA841845",
-  n: "8706",
-  titre: "la proposition de loi organique visant à adapter l'autorité judiciaire à la lutte contre les violences sexuelles et intrafamiliales (première lecture).",
-  date: "2026-10-13",
-};
-const LIEN_VOTE = lienScrutin("https://www.assemblee-nationale.fr/dyn/17/scrutins/", { n: VOTE.n }).url;
-const MSG_VOTE = [
-  `${VOTE.depute} s'est abstenu.`,
-  titreLisible(VOTE.titre),
-  `Vote à l'Assemblée nationale, ${dateFr(VOTE.date)}.`,
-  "",
-  "Résumé Repère, à partir du scrutin publié. Le détail est dans l'application.",
-  LIEN_VOTE,
-].join("\n");
-const MSG_CHIFFRE = [
-  "Melun : 2 495 € dépensés par habitant en 2025, selon l'OFGL.",
-  "",
-  "Résumé Repère, à partir des comptes publiés.",
-].join("\n");
-
-/* Capture la carte en PNG, puis ouvre la feuille de partage du telephone.
-   Si la capture echoue, on partage le texte : le lecteur ne perd rien. */
-async function partagerImage(carte: RefObject<ComponentRef<typeof View> | null>, titre: string, repli: string) {
-  try {
-    const uri = await captureRef(carte, { format: "png", quality: 1, result: "tmpfile", width: 1080, height: 1920 });
-    if (!(await Sharing.isAvailableAsync())) {
-      await Share.share({ message: repli });
-      return;
-    }
-    await Sharing.shareAsync(uri, { mimeType: "image/png", UTI: "public.png", dialogTitle: titre });
-  } catch {
-    await Share.share({ message: repli });
-  }
-}
-
-/* La carte 9:16 envoyee dans la feuille de partage. Hors ecran : seule la capture la montre. */
-function ImagePartage({ refImage, titre, corps, source }: {
-  refImage: RefObject<ComponentRef<typeof View> | null>; titre: string; corps: ReactNode; source: string;
-}) {
-  return (
-    <View ref={refImage} collapsable={false} style={{ width: 360, height: 640, backgroundColor: cl.sol, padding: 28, justifyContent: "space-between" }}>
-      <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
-        <View style={{ width: 34, height: 34, borderRadius: 10, backgroundColor: cl.encre, alignItems: "center", justifyContent: "center" }}>
-          <Text style={{ color: cl.sol, fontWeight: "800", fontSize: 20 }}>R</Text>
-        </View>
-        <Text style={{ color: cl.encre, fontWeight: "800", fontSize: 20 }}>Repère</Text>
-      </View>
-      <View style={{ gap: 16 }}>
-        <Text style={{ color: cl.sourd, fontSize: 16 }}>{titre}</Text>
-        {corps}
-      </View>
-      <Text style={{ color: cl.sourd, fontSize: 12, lineHeight: 16 }}>{source}</Text>
-    </View>
-  );
-}
 
 function BoutonPartager({ etiquette, onPress }: { etiquette: string; onPress: () => void }) {
   return (
@@ -115,8 +55,8 @@ export default function Accueil() {
   const [cherche, setCherche] = useState(false);
   const [page, setPage] = useState(0);
   const [essai, setEssai] = useState(0);
-  const refChiffre = useRef<ComponentRef<typeof View>>(null);
-  const refVote = useRef<ComponentRef<typeof View>>(null);
+  const partageChiffre = usePartageStory(MSG_CHIFFRE);
+  const partageVote = usePartageStory(MSG_VOTE);
   /* Une carte occupe toute la largeur de lecture ; la suivante commence apres un ecart. */
   const larg = Math.min(width, 640) - PAS * 8;
   const pas = larg + PAS * 3;
@@ -199,7 +139,7 @@ export default function Accueil() {
                   <Text style={s.chiffre}>2 495 €</Text>
                   <Text style={s.legende}>dépensés par habitant en 2025 · source : OFGL</Text>
                   <BoutonPartager etiquette="Partager le chiffre de Melun"
-                    onPress={() => partagerImage(refChiffre, "Le chiffre de Melun", MSG_CHIFFRE)} />
+                    onPress={partageChiffre.partager} />
                 </View>
               </View>
               <View style={{ width: larg }}>
@@ -212,7 +152,7 @@ export default function Accueil() {
                   <Text style={s.vote}>S'est abstenu</Text>
                   <Text style={s.legende}>13 octobre 2026 · {titreLisible(VOTE.titre)}</Text>
                   <BoutonPartager etiquette="Partager le vote d'Arnaud Saint-Martin"
-                    onPress={() => partagerImage(refVote, "Dernier vote enregistré", MSG_VOTE)} />
+                    onPress={partageVote.partager} />
                 </View>
               </View>
             </ScrollView>
@@ -273,21 +213,10 @@ export default function Accueil() {
                 corps="Pendant la bêta, l'application ne couvre que l'Île-de-France : pour une commune d'ailleurs, les données ne sont pas encore disponibles ici. Sinon, vérifiez l'orthographe du début du nom." />
             ) : null}
 
-            {/* Hors ecran : les deux images de partage, capturees au moment du partage. */}
+            {/* Hors ecran : les cartes de partage, capturees au moment du partage. */}
             <View style={s.cache} pointerEvents="none" accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
-              <ImagePartage refImage={refChiffre} titre="Le chiffre du jour · Melun"
-                source="Source : OFGL, comptes 2025."
-                corps={<>
-                  <Text style={{ fontFamily: POLICE.affiche, fontSize: 72, lineHeight: 76, color: cl.encre }}>2 495 €</Text>
-                  <Text style={{ color: cl.sourd, fontSize: 18, lineHeight: 24 }}>dépensés par habitant en 2025</Text>
-                </>} />
-              <ImagePartage refImage={refVote} titre="Dernier vote enregistré"
-                source={`Source : Assemblée nationale, scrutin n° ${VOTE.n}, 13 octobre 2026. ${LIEN_VOTE}`}
-                corps={<>
-                  <Text style={{ fontFamily: POLICE.titre, fontSize: 30, lineHeight: 36, color: cl.encre }}>{VOTE.depute} s'est abstenu.</Text>
-                  <Text style={{ color: cl.sourd, fontSize: 16, lineHeight: 22 }}>{titreLisible(VOTE.titre)}</Text>
-                  <Text style={{ color: cl.sourd, fontSize: 14, lineHeight: 20 }}>Député de la 1re circonscription de Seine-et-Marne.</Text>
-                </>} />
+              <ChiffreStory refCarte={partageChiffre.carte} />
+              <VoteStory refCarte={partageVote.carte} />
             </View>
           </View>
         }
