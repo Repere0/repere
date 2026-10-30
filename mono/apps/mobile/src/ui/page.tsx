@@ -68,6 +68,8 @@ export function AvecDonnees({ rendu }: { rendu: (r: Extract<EtatCommune, { pret:
       <View style={[s.page, { paddingTop: PAS * 6 }]}>
         <Vide titre={p.titre} corps={p.corps}
           action="Réessayer" onAction={reessayer} />
+        {/* Un échec ne laisse jamais seul : on peut aller voir d'où viennent les données. */}
+        <Bouton texte="Voir les sources" onPress={() => router.push("/sources")} discret />
       </View>
     );
   }
