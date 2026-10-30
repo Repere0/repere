@@ -21,3 +21,21 @@ Date : 30/10/2026. Public visé : 20 à 30 testeurs en Île-de-France, via Expo 
 3. Un écran qu'il ne comprend pas : quel mot, quelle phrase.
 
 Ne rien demander de plus : pas de nom, pas de téléphone, pas d'adresse personnelle.
+
+## Lancer une session de test (porteur)
+
+1. Sur l'ordinateur (Windows) : `scripts/lancer-pour-testeurs.ps1`. Il ouvre Expo en mode tunnel depuis `mono/apps/mobile`.
+2. Expo affiche un QR code et une adresse `exp://…`. Les envoyer aux testeurs.
+3. L'ordinateur reste allumé et connecté pendant toute la session : si le script s'arrête, l'application ne se charge plus chez les testeurs.
+
+## Côté testeur
+
+1. Installer **Expo Go** (App Store ou Google Play).
+2. iPhone : scanner le QR code avec l'appareil photo. Android : le scanner depuis Expo Go.
+3. Choisir sa commune. Rien n'est retenu sur le téléphone sauf si le testeur appuie sur « Retenir … sur ce téléphone ».
+
+## Non vérifié dans cette session
+
+- Le script n'a pas été exécuté : pas de Windows ni de PowerShell ici. Le mode tunnel dépend d'`@expo/ngrok` et du réseau du porteur.
+- La compatibilité de la version d'Expo Go des magasins avec le SDK 58 du projet n'a pas été vérifiée sur appareil. Si Expo Go refuse le projet, c'est le premier point à contrôler.
+- Le guide testeur complet, la checklist et le message type d'invitation : le brief v9 a été coupé avant leur description (voir `BLOCAGES.md`, section 14).
