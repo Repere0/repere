@@ -129,3 +129,9 @@ Pas de temps consacré au bonus, pour ne pas multiplier les changements non relu
 ## 16. Sprint v11 (30/10/2026)
 
 - **Brief v11 tronqué** au point 3 du bloc 0 (« Crée `.env.example` avec : »). Le contenu prévu et les « 3 décisions CEO » du titre ne sont pas arrivés. Le `.env.example` contient les trois variables que le code lit réellement (`EXPO_PUBLIC_CONTACT_EMAIL`, `EXPO_PUBLIC_REPERE_DONNEES`, `EXPO_PUBLIC_REPERE_EMOJIS`), sans valeur. **À renvoyer** : la suite du bloc 0 et les 3 décisions.
+
+## 17. Sprint v12 (30/10/2026)
+
+- **« Ce qu'il défend en ce moment » (fiche élu) : REPORTÉ (D22).** Les scrutins publiés (`scrutins.json`) n'ont ni thème ni dossier législatif. Il n'y a donc rien à compter sans inventer. La section n'est pas affichée. Pour la débloquer, il faudrait publier pour chaque scrutin un champ thème ou dossier, tiré d'une source officielle (dossiers législatifs de l'Assemblée), puis compter les thèmes des votes de chaque député.
+- **D20** : « Actualités » n'a jamais figuré dans la barre d'onglets (Aujourd'hui, Qui décide, Calendrier, Élus). L'écran reste ouvert par le lien « Voir les actualités » en bas d'Aujourd'hui.
+- **D21 fait.** Une limite : la carte du vote ne devient dynamique que si le lecteur a demandé de retenir sa commune sur le téléphone, car l'accueil n'a pas d'autre commune choisie. Sans cela, l'exemple 8706 reste affiché, étiqueté « Un exemple ».
