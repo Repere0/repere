@@ -359,6 +359,11 @@ rm -rf site_engendre
   # la note du site) ; toute autre sortie non nulle arrete la chaine.
   node scripts/scrutins-solennels.mjs ./data \
     || { echo "::error::scrutins solennels : production en echec - publication bloquee"; exit 1; }
+  # AGREGATS REGIONAUX (30/10/2026, V15) - mediane des depenses par habitant par region,
+  # lue par l'application au lieu de telecharger tous les departements de la region.
+  # Non bloquant : sans ce fichier, l'application recalcule a partir des departements.
+  node scripts/agregats-regionaux.mjs ./data \
+    || echo "::warning::agregats regionaux non produits - l'application recalculera depuis les departements"
   # ETAT ANNONCE DANS LA CI (29/10/2026). Le banc ne montre sa sortie qu'en cas
   # d'echec : sans cette annotation, une CI verte ne disait pas si le teaser
   # etait present ou si sa note d'absence avait ete testee a sa place.

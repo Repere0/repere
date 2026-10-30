@@ -10,13 +10,26 @@
  * jugement (invariant 3 amende). */
 import { useEffect, useState } from "react";
 import { medianeParHabitant } from "@repere/core";
-import { chargerDepartement } from "./donnees";
+import { chargerAgregatsRegionaux, chargerDepartement } from "./donnees";
 
 export type Moyenne = { mediane: number; n: number; total: number; an: string; region: string };
 type Dep = { code: string; region?: string; region_code?: string | null };
 const enCours = new Map<string, Promise<Moyenne | null>>();
 
-function calculer(deps: Dep[], region: string, an: string): Promise<Moyenne | null> {
+/* V15 bloc 4 : d'abord le fichier pre-calcule par la chaine de publication
+   (agregats-regionaux.json, environ 1 Ko compresse). S'il manque (publication anterieure
+   a ce fichier), repli : le calcul sur les departements de la region, comme avant. */
+type Agregats = { regions?: Record<string, { nom?: string; exercices?: Record<string, { mediane: number; n: number; total: number }> }> };
+function calculer(deps: Dep[], region: string, an: string, code: string): Promise<Moyenne | null> {
+  if (__DEV__) console.time(`comparaison ${code} ${an}`);
+  const fin = <T,>(v: T) => { if (__DEV__) console.timeEnd(`comparaison ${code} ${an}`); return v; };
+  return chargerAgregatsRegionaux().then(r => {
+    const e = r.donnees ? (r.donnees as Agregats).regions?.[code]?.exercices?.[an] : undefined;
+    if (e && typeof e.mediane === "number") return fin({ mediane: e.mediane, n: e.n, total: e.total, an, region });
+    return recalculer(deps, region, an).then(fin);
+  }).catch(() => recalculer(deps, region, an).then(fin));
+}
+function recalculer(deps: Dep[], region: string, an: string): Promise<Moyenne | null> {
   return Promise.all(deps.map(d => chargerDepartement(d.code))).then(rs => {
     /* Un departement qui n'arrive pas : pas de moyenne partielle presentee comme regionale. */
     if (rs.some(r => !r.donnees)) return null;
@@ -36,7 +49,7 @@ export function useMoyenneDepenses(index: { departements?: Dep[] } | null | unde
     if (!moi || !moi.region_code || !moi.region || !an) return undefined;
     const deps = liste.filter(d => d.region_code === moi.region_code);
     const cle = moi.region_code + "|" + an;
-    if (!enCours.has(cle)) enCours.set(cle, calculer(deps, moi.region, an));
+    if (!enCours.has(cle)) enCours.set(cle, calculer(deps, moi.region, an, moi.region_code));
     let vivant = true;
     enCours.get(cle)!.then(v => { if (vivant) setM(v); });
     return () => { vivant = false; };

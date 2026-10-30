@@ -141,6 +141,8 @@ export function adresseScrutinLot(lot) {
    les evenements a l'echelle d'une commune portent leur "insee" comme CLE a
    l'interieur du fichier, jamais comme parametre de la requete. */
 export function adresseEvenements() { return `${BASE_DONNEES}/evenements.json`; }
+/* Agregats regionaux pre-calcules (30/10/2026) : un fichier pour toute la France, sans code de commune. */
+export function adresseAgregatsRegionaux() { return `${BASE_DONNEES}/agregats-regionaux.json`; }
 /* LES POSITIONS, PAR DEPARTEMENT — jamais par depute, jamais par commune. Une
    adresse par depute dirait au serveur quel elu on regarde, donc, a une
    circonscription pres, ou l'on habite. Deuxieme et derniere fabrique
@@ -511,6 +513,9 @@ export async function chargerScrutinLot(lot, { delaiMs = 8000 } = {}) {
 }
 export async function chargerEvenements({ delaiMs = 8000 } = {}) {
   return chargerSocle("socle:EVT", adresseEvenements(), delaiMs);
+}
+export async function chargerAgregatsRegionaux({ delaiMs = 8000 } = {}) {
+  return chargerSocle("socle:AGR", adresseAgregatsRegionaux(), delaiMs);
 }
 
 /* Le trajet commun des trois etages, ecrit UNE fois : memoire, magasin, reseau,

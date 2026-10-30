@@ -298,15 +298,26 @@ test("invariant 4 — aucune donnée n'est servie sans source déclarée", () =>
      le Senat et l'Assemblee a l'ouverture de l'onglet, quand le detail
      complet (~29,8 Ko) n'arrive qu'au clic. Meme fichier source, meme
      execution du script, meme releve_le : les deux niveaux ne peuvent pas
-     diverger en fraicheur l'un de l'autre. */
+     diverger en fraicheur l'un de l'autre.
+     La treizieme, /agregats-regionaux.json, est ajoutee le 30/10/2026 (V15, bloc 4) :
+     la mediane regionale des depenses par habitant, pre-calculee par
+     scripts/agregats-regionaux.mjs a partir des comptes OFGL deja publies. Un seul
+     petit fichier pour la France ; les codes de region sont des cles internes, jamais
+     dans l'adresse. Sa provenance vit DANS le fichier (source = la source « comptes »
+     de l'index, recopiee), exigee juste en dessous s'il est publie. */
   const client = lire("packages/data-utils/src/client.js");
   const composees = [...client.matchAll(/\$\{BASE_DONNEES\}(\/[A-Za-z0-9_${}./-]*)/g)].map(m => m[1]);
   assert.deepEqual([...new Set(composees)].sort(),
-    ["/agenda-an.json", "/calendrier-senat.json", "/communes-beta.json", "/comptes-regions.json", "/departments/${d}.json",
+    ["/agenda-an.json", "/agregats-regionaux.json", "/calendrier-senat.json", "/communes-beta.json", "/comptes-regions.json", "/departments/${d}.json",
      "/deputes.json", "/elus-regions/${c}.json", "/evenements.json", "/index.json",
      "/projets/${d}.json", "/questions-gouvernement-index.json", "/questions-gouvernement/${lotPadded}.json", "/scrutins-details/${lotPadded}.json", "/scrutins-index.json", "/scrutins-solennels-recents.json", "/scrutins-solennels.json", "/scrutins.json", "/scrutins/${d}.json"],
     "client.js compose une adresse de donnees inattendue : " + composees.join(", "));
   const sources = existe("data/index.json") ? (JSON.parse(lire("data/index.json")).sources || {}) : {};
+  if (existe("data/agregats-regionaux.json")) {
+    const agr = JSON.parse(lire("data/agregats-regionaux.json"));
+    assert.ok(agr.source && agr.source.producteur && agr.genere_le,
+      "agregats-regionaux.json publie sans source ni date de generation (invariant 4)");
+  }
   for (const attendue of ["elus", "comptes", "circonscriptions", "deputes", "scrutins", "questionsGouvernement", "communes"]) {
     assert.ok(sources[attendue] && sources[attendue].producteur,
       `index.json ne declare pas la source « ${attendue} »`);
