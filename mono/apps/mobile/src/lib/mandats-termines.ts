@@ -1,7 +1,7 @@
 /* MANDATS TERMINES QUE LES SOURCES D'ANNUAIRE NE DISENT PAS ENCORE — D32 (30/10/2026).
  *
  * Aucun fichier publie par Repere ne porte de date de fin de mandat : le Repertoire
- * national des elus, l'executif des regions et le fichier des deputes (construire_deputes.py
+ * national des elus, l'executif des regions et le fichier des deputes (outils/mono_donnees.py
  * ecarte les mandats qui ont une dateFin) ne listent que les mandats en cours. Un elu
  * decede reste donc liste jusqu'a la prochaine mise a jour de la source.
  *

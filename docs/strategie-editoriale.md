@@ -78,3 +78,13 @@ D35 (30/10/2026) : la promesse « chaque lundi » est retirée de l'application.
 1. Un relecteur de neutralité, différent de l'auteur, pour chaque fait.
 2. Le format existant (`docs/data/evenements-format.md`).
 3. Une date de première publication, pour que la carte « Dernières publications » apparaisse aux testeurs.
+
+## Députés au mandat terminé — D36 (30/10/2026)
+
+Le CEO veut garder les fiches des députés dont le mandat est terminé (bilan civique utile). Le format actuel `deputes.json` ne permet pas de gérer deux députés successifs sur la même circonscription. Post-bêta : ajouter un champ `date_fin_mandat` et un champ `successeur_de` pour conserver l'historique. En attendant : les fiches des députés sortants sont exclues du fichier généré (comportement actuel).
+
+Faits vérifiés dans le dépôt le 30/10/2026 :
+- **Le filtre est dans `outils/mono_donnees.py`** (fonction `deputes()` : un mandat avec `dateFin` est ignoré), et c'est ce script que la chaîne lance. `outils/construire_deputes.py` applique le même filtre, mais `pipeline.sh` ne l'appelle pas. BLOCAGES section 23 citait ce dernier par erreur.
+- **La clé est `dep-circo`** (« 77-1 ») : une seule personne par circonscription. Le changement post-bêta touchera la clé, ou ajoutera une liste « anciens » par circonscription. Il touchera aussi `extract-html.js` (le site), `client.js` et l'annuaire de l'application.
+- **Nommage** : les champs existants sont en camelCase (`dateDebut`, `acteurRef`). `date_fin_mandat` et `successeur_de` sont en snake_case. À aligner au moment du changement (`dateFin`, `successeurDe`), sinon le fichier mêlera deux conventions.
+- **AMO30 ne donne pas de motif de fin** dans les champs lus aujourd'hui (décès, démission, entrée au gouvernement). La fiche dira « Mandat terminé le … » sans motif, sauf si une source officielle le publie.

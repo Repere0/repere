@@ -205,7 +205,7 @@ Recherche faite sur le site officiel (melun.fr / ville-melun.fr) :
 
 ### Bloc 2 — mandats terminés (D32)
 - **Aucune donnée publiée ne porte de fin de mandat.** Vérifié fichier par fichier :
-  - `deputes.json` : `construire_deputes.py` écarte tout mandat qui a une `dateFin` ;
+  - `deputes.json` : `outils/mono_donnees.py` écarte tout mandat qui a une `dateFin` (corrigé le 30/10 : `construire_deputes.py` fait de même mais la chaîne ne l'appelle pas) ;
   - `elus-regions/*.json` : seulement `debut` ;
   - `departments/*.json` (RNE) : seulement `debut`, aucun motif.
   La détection automatique trouve donc **0 cas**. Aucune source ne dit « décès » : le RNE retire l'élu à sa mise à jour suivante, sans motif.
