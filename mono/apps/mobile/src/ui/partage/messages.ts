@@ -37,6 +37,16 @@ export function messageElu({ nom, fonction, lieu, depuis, producteur, lien }: {
   ].join("\n");
 }
 
+export function messageActu({ titre, source, lien }: { titre: string; source: string; lien: string }): string {
+  return [
+    titre,
+    ...(source ? [`Source : ${source}.`] : []),
+    "",
+    "Résumé Repère, à partir de la source officielle citée. Le site officiel fait foi.",
+    lien,
+  ].join("\n");
+}
+
 export function messageAgenda({ titre, quand, lien }: { titre: string; quand: string; lien: string | null }): string {
   return [
     `À venir au Parlement : ${titre}`,

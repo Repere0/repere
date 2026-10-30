@@ -18,6 +18,10 @@ export function ElusStory({ refCarte, mode = "clair", nom, fonction, lieu, depui
         {fonction ? <Text style={{ color: P.encre, fontSize: 18, lineHeight: 24 }}>{fonction}</Text> : null}
         {lieu ? <Text style={{ color: P.sourd, fontSize: 16, lineHeight: 22 }}>{lieu}</Text> : null}
         {depuis ? <Text style={{ color: P.sourd, fontSize: 16, lineHeight: 22 }}>{depuis}</Text> : null}
+        {/* Le groupe politique n'est publié nulle part dans les données : badge gris, sans couleur de parti. */}
+        <View style={{ alignSelf: "flex-start", borderWidth: 1, borderColor: P.sourd, borderRadius: 999, paddingHorizontal: 12, paddingVertical: 6 }}>
+          <Text style={{ color: P.sourd, fontSize: 14 }}>Groupe politique : non publié</Text>
+        </View>
       </>} />
   );
 }
