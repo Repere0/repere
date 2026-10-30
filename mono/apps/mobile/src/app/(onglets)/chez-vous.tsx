@@ -66,7 +66,7 @@ export default function ChezVous() {
       const hab = d.exercice ? parHabitant(d.exercice.ex) : null;
       const maire = d.fiche && d.fiche.maire && d.fiche.maire.nom ? d.fiche.maire.nom : null;
       return (
-        <Page>
+        <Page sansDate>
           <Stack.Screen options={{ title: nom }} />
           {/* OU JE SUIS, ET DE QUAND DATE CE QUE JE LIS */}
           {/* Pas d'etiquette « Chez vous » au-dessus du nom : 20 px gagnes, et la

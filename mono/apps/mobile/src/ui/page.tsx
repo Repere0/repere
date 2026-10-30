@@ -14,14 +14,16 @@ import { useTheme } from "../lib/themeChoix";
 import { Etiquette } from "./resume";
 import { BandeauFraicheur, DatePublication } from "./fraicheur";
 
-export function Page({ children }: { children: ReactNode }) {
+/* « sansDate » : l'écran affiche déjà la date de publication dans son propre contenu
+   (Aujourd'hui : « Publication Repère du … »). Sans ce drapeau, deux dates se suivraient. */
+export function Page({ children, sansDate = false }: { children: ReactNode; sansDate?: boolean }) {
   const marges = useSafeAreaInsets();
   /* S'abonne au choix d'affichage : quand il change, cet ecran se redessine et
      couleurs.sol (lu ci-dessous) donne la couleur du mode courant. */
   useTheme();
   return (
     <ScrollView style={{ backgroundColor: couleurs.sol }} contentContainerStyle={[s.page, { paddingTop: PAS * 4, paddingBottom: marges.bottom + PAS * 10 }]}>
-      <DatePublication />
+      {sansDate ? null : <DatePublication flottant />}
       <BandeauFraicheur />
       {children}
     </ScrollView>

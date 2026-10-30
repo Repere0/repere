@@ -47,7 +47,10 @@ export function BandeauFraicheur() {
 /* La date de publication des donnees, en tete de chaque ecran (chantier 6, 30/10/2026).
    C'est la date de construction de l'index (generation), pas celle d'un releve par
    source : l'ecran ne la presente pas comme une date de source. Rien s'il n'y en a pas. */
-export function DatePublication() {
+/* « flottant » : la ligne se pose dans la marge haute de Page (16 px), sans repousser
+   le contenu. Les réponses d'abord doivent tenir dans le premier écran à 390 x 844 :
+   une ligne en flux les faisait passer de 839 à 877 px (parcours navigateur). */
+export function DatePublication({ flottant = false }: { flottant?: boolean }) {
   const [e, setE] = useState(etatFraicheur());
   useEffect(() => {
     const desabonner = surFraicheur(setE);
@@ -55,7 +58,10 @@ export function DatePublication() {
   }, []);
   const jour = e.generation ? String(e.generation).slice(0, 10) : "";
   if (!/^\d{4}-\d{2}-\d{2}$/.test(jour)) return null;
-  return <Text testID="date-publication" style={[TYPO.micro, { marginBottom: PAS * 2 }]}>Données Repère publiées le {dateFr(jour)}.</Text>;
+  const style = flottant
+    ? { position: "absolute" as const, top: 0, left: PAS * 4, right: PAS * 4, fontSize: 12, lineHeight: 16, color: couleurs.sourd }
+    : [TYPO.micro, { marginBottom: PAS * 2 }];
+  return <Text testID="date-publication" style={style}>Données Repère publiées le {dateFr(jour)}.</Text>;
 }
 
 const s = feuille(() => StyleSheet.create({
