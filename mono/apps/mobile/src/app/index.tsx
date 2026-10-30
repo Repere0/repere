@@ -16,8 +16,8 @@ import { useEffect, useMemo, useState } from "react";
 import { FlatList, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View, useWindowDimensions } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { router } from "expo-router";
-import { mots, motsCible, correspond, trouverCommunes, departementDe, titreLisible, dernierExercice, parHabitant } from "@repere/core";
-import { chargerCommunesBeta, chargerDepartement, chargerIndex, ETATS, PHRASES } from "../lib/donnees";
+import { mots, motsCible, correspond, trouverCommunes, departementDe, titreLisible, dernierExercice, parHabitant, dateFr, ordinal, positionSur, positionsFiables } from "@repere/core";
+import { chargerCatalogueScrutins, chargerCommunesBeta, chargerDepartement, chargerDeputes, chargerIndex, chargerVotes, ETATS, PHRASES } from "../lib/donnees";
 import { Bouton, Carte, Texte, Vide } from "../lib/composants";
 import { useSelection } from "../lib/selection";
 import { feuille, CIBLE, PAS, POLICE, RAYON } from "../lib/theme";
@@ -38,6 +38,10 @@ type Index = { departements: { code: string; nom?: string }[]; agregats?: unknow
 /* Le chiffre de la carte « L'argent de … » (D18) : lu dans les comptes OFGL publies
    du departement, jamais ecrit dans le code. */
 type Argent = { nom: string; an: string; depenses: number };
+/* D21 : le dernier vote publie du depute de la commune retenue. « partagee » : la commune
+   est sur plusieurs circonscriptions, le depute depend de l'adresse (aucun n'est choisi). */
+type VoteVu = { depute: string; acteur: string; circo: number; position: string; d: string; t: string } | { partagee: number };
+const POSITION_MOT: Record<string, string> = { p: "Pour", c: "Contre", a: "Abstention" };
 /* Sans commune retenue, la carte montre un exemple, dit comme tel : Melun. */
 const EXEMPLE = { insee: "77288", nom: "Melun" };
 /* COMMUNES RECENTES, POUR LA SESSION SEULEMENT (bloc D, 30/10/2026) : une variable en
@@ -57,6 +61,7 @@ export default function Accueil() {
   const [page, setPage] = useState(0);
   const [essai, setEssai] = useState(0);
   const [argent, setArgent] = useState<Argent | null>(null);
+  const [voteVu, setVoteVu] = useState<VoteVu | null>(null);
   const [tout, setTout] = useState(false);
   const [recentes, setRecentes] = useState(() => [...RECENTES]);
   /* Une carte occupe toute la largeur de lecture ; la suivante commence apres un ecart. */
@@ -123,8 +128,32 @@ export default function Accueil() {
     let vivant = true;
     const dep = departementDe(cible.insee);
     if (!dep) return undefined;
-    chargerDepartement(dep).then(r => {
+    const exempleIci = cible === EXEMPLE;
+    Promise.all([
+      chargerDepartement(dep),
+      exempleIci ? null : chargerDeputes(), exempleIci ? null : chargerCatalogueScrutins(), exempleIci ? null : chargerVotes(dep),
+    ]).then(([r, de, ca, vo]) => {
       if (!vivant) return;
+      /* LE VOTE (D21) : seulement pour la commune retenue, et seulement si les deux releves
+         de l'Assemblee se correspondent (positionsFiables). Sinon, l'exemple, dit comme tel. */
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const fv = r.donnees ? (r.donnees as any).communes?.[cible.insee] : null;
+      let vu: VoteVu | null = null;
+      if (fv && de && ca && vo && de.donnees && ca.donnees && vo.donnees) {
+        const circos = Array.isArray(fv.circo) ? fv.circo : fv.circo === null || fv.circo === undefined ? [] : [fv.circo];
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const cat = ca.donnees as any, pos = vo.donnees as any, deps = de.donnees as any;
+        if (circos.length > 1) vu = { partagee: circos.length };
+        else if (circos.length === 1 && positionsFiables(cat, pos)) {
+          const d = deps.deputes && deps.deputes[dep + "-" + circos[0]];
+          if (d && d.acteurRef) {
+            const tries = [...cat.scrutins].sort((a: { d: string; n: string }, b: { d: string; n: string }) => (b.d + b.n.padStart(6, "0")).localeCompare(a.d + a.n.padStart(6, "0")));
+            const sc = tries.find((x: { n: string }) => POSITION_MOT[positionSur(pos, d.acteurRef, x.n) as string]);
+            if (sc) vu = { depute: [d.prenom, d.nom].filter(Boolean).join(" ") || d.nom, acteur: d.acteurRef, circo: Number(circos[0]), position: positionSur(pos, d.acteurRef, sc.n), d: sc.d, t: sc.t };
+          }
+        }
+      }
+      setVoteVu(vu);
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const fiche = r.donnees ? (r.donnees as any).communes?.[cible.insee] : null;
       const ex = fiche ? dernierExercice(fiche, index.agregats) : null;
@@ -162,15 +191,33 @@ export default function Accueil() {
                 </View>
               ) : null}
               <View style={{ width: larg }}>
-                <View style={s.carte}>
-                  <Text style={s.etiquette}>Un vote, à titre d'exemple</Text>
-                  <Text style={s.carteTitre}>Arnaud Saint-Martin</Text>
-                  {/* Groupe inconnu ici : badge gris, aucune couleur de parti (ADR 0001). */}
-                  <View style={s.badge}><Text style={s.badgeTexte}>Groupe : {groupeDe(VOTE.acteur)}</Text></View>
-                  <Text style={s.legende}>Député de la 1re circonscription de Seine-et-Marne</Text>
-                  <Text style={s.vote}>S'est abstenu</Text>
-                  <Text style={s.legende}>13 octobre 2026 · {titreLisible(VOTE.titre)}</Text>
-                </View>
+                {voteVu && "depute" in voteVu ? (
+                  <View style={s.carte}>
+                    <Text style={s.etiquette}>Le dernier vote publié de votre député</Text>
+                    <Text style={s.carteTitre}>{voteVu.depute}</Text>
+                    {/* Groupe inconnu ici : badge gris, aucune couleur de parti (ADR 0001). */}
+                    <View style={s.badge}><Text style={s.badgeTexte}>Groupe : {groupeDe(voteVu.acteur)}</Text></View>
+                    <Text style={s.legende}>Député de la {ordinal(voteVu.circo)} circonscription · {nomDep(departementDe(cible.insee) || "")}</Text>
+                    <Text style={s.vote}>{POSITION_MOT[voteVu.position]}</Text>
+                    <Text style={s.legende}>{dateFr(voteVu.d)} · {titreLisible(voteVu.t)} · source : Assemblée nationale</Text>
+                  </View>
+                ) : voteVu && "partagee" in voteVu ? (
+                  <View style={s.carte}>
+                    <Text style={s.etiquette}>Votre député</Text>
+                    <Text style={s.carteTitre}>Il dépend de votre adresse</Text>
+                    <Text style={s.legende}>{cible.nom} est partagée entre {voteVu.partagee} circonscriptions. Repère ne choisit pas un député à votre place : ses votes sont sur l'écran de la commune.</Text>
+                  </View>
+                ) : (
+                  <View style={s.carte}>
+                    <Text style={s.etiquette}>Un exemple</Text>
+                    <Text style={s.carteTitre}>{VOTE.depute}</Text>
+                    {/* Groupe inconnu ici : badge gris, aucune couleur de parti (ADR 0001). */}
+                    <View style={s.badge}><Text style={s.badgeTexte}>Groupe : {groupeDe(VOTE.acteur)}</Text></View>
+                    <Text style={s.legende}>Député de la 1re circonscription de Seine-et-Marne</Text>
+                    <Text style={s.vote}>S'est abstenu</Text>
+                    <Text style={s.legende}>{dateFr(VOTE.date)} · {titreLisible(VOTE.titre)}</Text>
+                  </View>
+                )}
               </View>
             </ScrollView>
             <View style={s.points} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
