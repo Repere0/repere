@@ -253,11 +253,6 @@ export default function Accueil() {
   /* D18 : la commune retenue si le lecteur l'a demande, sinon l'exemple. Si les comptes
      ne donnent pas de depense par habitant, la carte n'est pas affichee. */
   const cible = retenue && nomRetenue ? { insee: retenue.c, nom: nomRetenue } : EXEMPLE;
-  /* V30 : la commune gardée sur ce téléphone redevient la commune choisie. Sans cela, « Qui décide »,
-     « Élus » et « Mes élus » répondent « Aucune commune n'est choisie » après un redémarrage. */
-  useEffect(() => {
-    if (!choix && retenue && nomRetenue) choisir({ dep: retenue.d, insee: retenue.c, nom: nomRetenue });
-  }, [choix, retenue, nomRetenue, choisir]);
   useEffect(() => {
     if (!index || !index.agregats) return undefined;
     let vivant = true;
