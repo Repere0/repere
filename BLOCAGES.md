@@ -434,3 +434,14 @@ Diagnostic (31/10/2026), par étapes, ce qui est vérifié et ce qui ne l'est pa
 - **Libellé** : le brief demandait « Voir les actualités sur [site mairie] ». Non retenu : rien ne dit que la page d'accueil d'un site contient des actualités, et « Cette semaine » ou « actualités » promettrait un contenu absent (D31). Le libellé de l'ADR 0005 est conservé.
 - **Ce qui n'est pas vérifié** : le site de chaque mairie (annuaire DILA, non lu dans cette session), et l'absence de flux pour Melun et Meaux. Le flux de ces deux communes n'a pas été testé : le réseau refuse les sites des mairies. Ne pas écrire qu'elles n'en ont pas.
 - **Décision demandée au CEO** : garder ce lien tel quel, ou le retirer tant que la couverture n'est pas mesurée.
+
+## 47. V42 bloc 1 : fiches « impact concret » incomplètes et factuelles seulement
+
+- **Constat** : le brief vise 15 à 20 scrutins récents. Les données locales (`outils/scrutins_an.json`) n'en contiennent que 12 avec leur titre complet. Les 7 autres fiches du fichier sont des motions, amendements ou sous-amendements dont le titre est tronqué à la source (`data/auto/scrutin-*.md`) : `impact_citoyen: null` (règle d) du brief). Total : 19 fiches, 12 avec impact.
+- **Ce que l'impact dit, et ne dit pas** : chaque impact reprend l'objet du titre et son étape (première lecture, commission mixte paritaire, lecture définitive). Il ne dit pas « ce qui change pour moi ». Le titre décrit ce que le texte vise, pas son contenu. Répondre à « qu'est-ce que ça change ? » exigerait de lire le texte adopté, ce qui n'a pas été fait : le site de l'Assemblée n'est pas joignable depuis la session, et le brief interdit de déduire un effet non écrit dans le titre.
+- **Exemple du brief non repris** : « Elle s'applique à partir de 2027 » (PFAS) ne peut pas venir d'un titre. Aucune date d'application n'est écrite.
+- **Longueur** : 112 à 197 caractères, en deux phrases au plus. Le brief dit « deux lignes max » ; sur mobile, cela peut dépasser deux lignes affichées.
+- **Décision demandée au CEO** : (1) garder ce niveau factuel (objet + étape), ou (2) ouvrir la lecture des textes adoptés, ce qui suppose un accès au site de l'Assemblée et une relecture plus lourde ; (3) confirmer si les 7 entrées à `null` restent dans le fichier ou sont retirées.
+- **Ce qui n'est pas vérifié** : l'URL `https://www.assemblee-nationale.fr/dyn/17/scrutins/{n}` suit le motif des données, mais aucune page n'a été ouverte.
+- **Écran de prévisualisation** : `mono/apps/mobile/src/app/dev-impact.tsx`, hors `__DEV__` il ne rend rien. Vérifié par export web : la chaîne « Aperçu impacts » et les fiches sont absentes du bundle de production. Pour lire le fichier, `metro.config.js` surveille désormais `data/contenu/` (seul ajout de configuration).
+- **Pas testé sur appareil** : l'écran n'a été ni rendu dans un navigateur, ni ouvert sur un téléphone.
