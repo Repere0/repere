@@ -3,7 +3,8 @@
  * Affiché quand aucun profil n'est gardé sur ce telephone (repere.profil absent). La
  * question 1 (la commune) est répondue sur l'accueil avant d'arriver ici. « Terminer »
  * garde les réponses 2, 3 et 4 sur ce téléphone. La question 4 (les thèmes) peut rester vide. « Passer » garde les réglages par défaut
- * (D45, V27) : c'est un choix explicite. Aucune réponse ne part. */
+ * (D45, V27) : c'est un choix explicite. Chaque question 2 à 4 a son « Aucune préférence » (V34) :
+ * il remet la question à sa valeur par défaut, sans quitter l'écran. Aucune réponse ne part. */
 import { useState } from "react";
 import { Pressable, ScrollView, Text, View } from "react-native";
 import { router, Stack } from "expo-router";
@@ -18,6 +19,20 @@ const CHOIX_NIVEAU: { niveau: string; emoji: string; aide: string }[] = [
   { niveau: "region", emoji: "🏛️", aide: "Ce qui se décide dans votre commune et votre région" },
   { niveau: "france", emoji: "🇫🇷", aide: "Ce qui se décide au niveau national" },
 ];
+
+/* « Aucune préférence » : remet la question à sa valeur par défaut, sans quitter l'écran (V34, bloc 3). */
+function AucunePreference({ texte, onPress, actif }: { texte: string; onPress: () => void; actif: boolean }) {
+  return (
+    <Pressable onPress={onPress} accessibilityRole="button" accessibilityState={{ selected: actif }}
+      accessibilityLabel={texte}
+      style={({ pressed }) => ({
+        minHeight: CIBLE, paddingHorizontal: PAS * 3, justifyContent: "center", alignSelf: "flex-start", borderRadius: 999,
+        borderWidth: 1, borderStyle: "dashed", borderColor: couleurs.trait, opacity: pressed ? 0.7 : 1,
+      })}>
+      <Text style={[TYPO.note, { color: couleurs.sourd, fontWeight: actif ? "700" : "400" }]}>{texte}</Text>
+    </Pressable>
+  );
+}
 
 export default function Bienvenue() {
   const { choix } = useSelection();
@@ -63,6 +78,7 @@ export default function Bienvenue() {
             </Pressable>
           );
         })}
+        <AucunePreference texte="Aucune préférence : vue France" actif={niveau === "france"} onPress={() => setNiveau("france")} />
       </View>
 
       <View style={{ gap: PAS * 2 }}>
@@ -89,6 +105,8 @@ export default function Bienvenue() {
             Repère vous dit ce qui se décide près de chez vous, avec les sources.
           </Text>
         </View>
+        <AucunePreference texte={`Aucune préférence : texte de ${PROFIL_DEFAUT.tailleTexte} points`} actif={taille === PROFIL_DEFAUT.tailleTexte}
+          onPress={() => setTaille(PROFIL_DEFAUT.tailleTexte)} />
       </View>
 
       <View style={{ gap: PAS * 2 }}>
@@ -111,6 +129,7 @@ export default function Bienvenue() {
             );
           })}
         </View>
+        <AucunePreference texte="Aucune préférence : aucun sujet" actif={themes.length === 0} onPress={() => setThemes([])} />
       </View>
 
       <View style={{ gap: PAS * 3 }}>

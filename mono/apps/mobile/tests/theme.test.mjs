@@ -214,8 +214,10 @@ test("theme — userInterfaceStyle exige expo-system-ui, et la dépendance est d
 test("logo — icone iOS carree 1024 px sans transparence ; fonds du demarrage et Android = tuile du logo", () => {
   const app = JSON.parse(fs.readFileSync(path.join(import.meta.dirname, "..", "app.json"), "utf8")).expo;
   const tuile = "#F7F7F9";
-  assert.equal(app.splash.backgroundColor, tuile, "fond du demarrage : ancienne couleur");
-  assert.equal(app.android.adaptiveIcon.backgroundColor, tuile, "fond adaptatif Android : ancienne couleur");
+  /* V34 (ordre du CEO) : le démarrage passe en sombre, #161513, avec le repère en #F3F0EA
+     (BLOCAGES 36). La tuile de l'icône iOS et l'icône adaptative Android restent claires. */
+  assert.equal(app.splash.backgroundColor, "#161513", "fond du demarrage : sombre depuis V34");
+  assert.equal(app.android.adaptiveIcon.backgroundColor, tuile, "fond adaptatif Android : tuile du logo");
   const png = fs.readFileSync(path.join(import.meta.dirname, "..", "assets", "icon.png"));
   assert.equal(png.readUInt32BE(16), 1024, "largeur de l'icone");
   assert.equal(png.readUInt32BE(20), 1024, "hauteur de l'icone");
