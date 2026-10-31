@@ -37,7 +37,7 @@ export function Avatar({ nom, taille = 64, photo }: { nom: string; taille?: numb
     <View accessible={false}
       style={{ width: taille, height: taille, borderRadius: taille / 2, backgroundColor: fond,
         borderWidth: 2, borderColor: bordureGroupe(fond), alignItems: "center", justifyContent: "center", ...OMBRE }}>
-      <Text style={{ color: texteSur(fond), fontWeight: "800", fontSize: Math.round(taille * 0.375) }}>{initiales(nom)}</Text>
+      <Text style={{ color: texteSur(fond), fontWeight: "500", fontSize: Math.round(taille * 0.375) }}>{initiales(nom)}</Text>
     </View>
   );
 }

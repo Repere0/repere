@@ -24,7 +24,7 @@ export function ContacterElu({ nom, courriel, lienSource, sourceNom }: {
       <Pressable onPress={() => Linking.openURL(`mailto:${courriel}`)} accessibilityRole="link"
         accessibilityLabel={`Contacter ${nom} par courriel. Ouvre la messagerie.`}
         style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", opacity: pressed ? 0.7 : 1 })}>
-        <Text style={[TYPO.corps, { color: couleurs.lien, fontWeight: "700" }]}>Contacter {nom} ›</Text>
+        <Text style={[TYPO.corps, { color: couleurs.lien, fontWeight: "500" }]}>Contacter {nom} ›</Text>
       </Pressable>
     );
   }
@@ -43,7 +43,7 @@ export function SignalerErreur({ contexte, donnee }: { contexte: string; donnee:
       <Pressable onPress={() => Linking.openURL(`mailto:${CONTACT}?subject=${sujet}&body=${corps}`)} accessibilityRole="link"
         accessibilityLabel={`Signaler une erreur sur ${contexte}. Ouvre la messagerie.`}
         style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", alignSelf: "flex-start", opacity: pressed ? 0.7 : 1 })}>
-        <Text style={[TYPO.note, { color: couleurs.lien, textDecorationLine: "underline", fontWeight: "600" }]}>⚠ Signaler une erreur</Text>
+        <Text style={[TYPO.note, { color: couleurs.lien, textDecorationLine: "underline", fontWeight: "500" }]}>⚠ Signaler une erreur</Text>
       </Pressable>
       <View style={{ height: PAS }} />
     </View>

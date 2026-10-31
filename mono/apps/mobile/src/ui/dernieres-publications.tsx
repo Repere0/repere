@@ -51,13 +51,13 @@ export function DernieresPublications() {
   if (age0 === null || age0 < 0 || age0 >= RECENT_JOURS) return null;
   return (
     <View testID="dernieres-publications" style={{ gap: PAS * 3, padding: PAS * 4, borderRadius: RAYON.carte, backgroundColor: D.carte, borderWidth: 1, borderColor: D.trait }}>
-      <Text style={{ fontSize: 13, fontWeight: "700", color: D.sourd }} accessibilityRole="header">Dernières publications</Text>
+      <Text style={{ fontSize: 13, fontWeight: "600", color: D.sourd }} accessibilityRole="header">Dernières publications</Text>
       {liste.map(x => {
         const age = ageReleve(x.d);
         return (
           <View key={x.cle} style={{ gap: 2 }}>
             <Text style={{ fontSize: 13, color: D.sourd }}>{x.quoi} · {dateFr(x.d)}{age !== null && age >= 0 ? ` · ${ilYa(age)}` : ""}</Text>
-            <Text style={{ fontSize: 16, lineHeight: 22, color: D.encre, fontWeight: "600" }} numberOfLines={2}>{x.texte}</Text>
+            <Text style={{ fontSize: 16, lineHeight: 22, color: D.encre, fontWeight: "500" }} numberOfLines={2}>{x.texte}</Text>
           </View>
         );
       })}

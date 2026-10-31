@@ -67,7 +67,7 @@ export function RepartitionCent({ salaires, investissement }: { salaires: number
       <View style={{ flexDirection: "row", height: 56, borderRadius: RAYON.bloc, overflow: "hidden", gap: 2 }}>
         {parts.map(p => (
           <View key={p.libelle} style={{ flex: p.valeur, backgroundColor: p.couleur, justifyContent: "center", paddingHorizontal: PAS * 2 }}>
-            {p.valeur >= 15 ? <Text style={[TYPO.reponse, { color: couleurs.blanc, fontWeight: "800" }]}>{p.valeur} €</Text> : null}
+            {p.valeur >= 15 ? <Text style={[TYPO.reponse, { color: couleurs.blanc, fontWeight: "600" }]}>{p.valeur} €</Text> : null}
           </View>
         ))}
         {reste > 0 ? <View style={{ flex: reste, backgroundColor: couleurs.sourd }} /> : null}
@@ -77,7 +77,7 @@ export function RepartitionCent({ salaires, investissement }: { salaires: number
           <View key={p.libelle} style={s.ligneLegende}>
             <View style={[s.pastille, { backgroundColor: p.couleur }]} />
             <Text style={[TYPO.corps, { flex: 1 }]}>{p.libelle}</Text>
-            <Text style={[TYPO.corps, { fontWeight: "700" }]}>{p.valeur} €</Text>
+            <Text style={[TYPO.corps, { fontWeight: "600" }]}>{p.valeur} €</Text>
           </View>
         ))}
         <View style={s.ligneLegende}>
@@ -130,7 +130,7 @@ export function Repartition({ segments, total, position, qui, compact }: {
             <View style={[s.pastilleCouleur, { backgroundColor: COULEUR_VOTE[x.cle as keyof typeof COULEUR_VOTE] }]} />
             <Text style={[TYPO.corps, { flex: 1 }]}>{x.libelle}</Text>
             {position === x.cle && qui ? <Text style={s.marque} numberOfLines={1}>{qui}</Text> : null}
-            <Text style={[TYPO.corps, { fontWeight: "700", minWidth: 44, textAlign: "right" }]}>{x.nombre}</Text>
+            <Text style={[TYPO.corps, { fontWeight: "600", minWidth: 44, textAlign: "right" }]}>{x.nombre}</Text>
           </View>
         ))}
       </View>}
@@ -150,7 +150,7 @@ export function Financement({ subvention, cout, partPct, subventionTexte, resteT
         <Animated.View style={[s.rempli, { width: largeur(v, (subvention / cout) * 100), backgroundColor: couleurs.ville }]} />
       </View>
       <View style={s.ligneH}>
-        <Text style={TYPO.note}><Text style={{ color: couleurs.lien, fontWeight: "700" }}>État · {partPct} %</Text>  {subventionTexte}</Text>
+        <Text style={TYPO.note}><Text style={{ color: couleurs.lien, fontWeight: "500" }}>État · {partPct} %</Text>  {subventionTexte}</Text>
       </View>
       <Text style={TYPO.note}>Reste · {resteTexte}</Text>
     </View>
@@ -167,7 +167,7 @@ export function DeuxAnnees({ libelle, an1, an2, m1, m2, texte1, texte2, diffText
     <View accessible accessibilityLabel={`${libelle} : ${an1}, ${texte1} ; ${an2}, ${texte2}. ${diffTexte}.`} style={{ gap: 8 }}>
       <View style={s.ligneH}>
         <Text style={TYPO.note}>{libelle}</Text>
-        <Text style={[TYPO.corps, { fontWeight: "700" }]}>{diffTexte}</Text>
+        <Text style={[TYPO.corps, { fontWeight: "600" }]}>{diffTexte}</Text>
       </View>
       {[[an1, m1, texte1, couleurs.trait], [an2, m2, texte2, couleurs.ville]].map(([an, m, t, c]) => (
         <View key={an as string} style={s.annee}>
@@ -242,7 +242,7 @@ export function Chaine({ niveaux, compact, surNom }: { niveaux: Niveau[]; compac
                 <Text style={[TYPO.reponse, { color: couleurs.lien, textDecorationLine: "underline" }]}>{n.personne.nom}</Text>
               </Pressable>
             ) : n.personne ? (
-              <Text style={compact ? [TYPO.corps, { fontWeight: "700" }] : TYPO.reponse}>{n.personne.nom}</Text>
+              <Text style={compact ? [TYPO.corps, { fontWeight: "600" }] : TYPO.reponse}>{n.personne.nom}</Text>
             ) : (
               <Text style={compact ? TYPO.corps : TYPO.reponse}>{n.institution}</Text>
             )}
@@ -264,7 +264,7 @@ export function Depli({ titre, children }: { titre: string; children: ReactNode 
     <View>
       <Pressable onPress={() => setOuvert(o => !o)} accessibilityRole="button"
         accessibilityState={{ expanded: ouvert }} style={({ pressed }) => [s.depli, pressed && { opacity: 0.6 }]}>
-        <Text style={[TYPO.note, { color: couleurs.lien, fontWeight: "600", flex: 1 }]}>{titre.replace(/ ([?!:;])/g, "\u00a0$1")}</Text>
+        <Text style={[TYPO.note, { color: couleurs.lien, fontWeight: "500", flex: 1 }]}>{titre.replace(/ ([?!:;])/g, "\u00a0$1")}</Text>
         <Text style={[TYPO.note, { color: couleurs.lien }]} accessibilityElementsHidden importantForAccessibility="no">{ouvert ? "−" : "+"}</Text>
       </Pressable>
       {ouvert ? <View style={{ gap: PAS * 2, paddingBottom: PAS * 2 }}>{children}</View> : null}
@@ -284,7 +284,7 @@ const s = feuille(() => StyleSheet.create({
   barreVote: { flexDirection: "row", height: 22, borderRadius: 8, overflow: "hidden", backgroundColor: couleurs.voile },
   legende: { flexDirection: "row", alignItems: "center", gap: PAS * 2 },
   pastilleCouleur: { width: 14, height: 14, borderRadius: 4, borderWidth: StyleSheet.hairlineWidth, borderColor: couleurs.sourd },
-  marque: { fontSize: 13, fontWeight: "700", color: couleurs.blanc, backgroundColor: couleurs.ville, paddingHorizontal: 8, paddingVertical: 2, borderRadius: RAYON.pastille, overflow: "hidden", maxWidth: 170 },
+  marque: { fontSize: 13, fontWeight: "500", color: couleurs.blanc, backgroundColor: couleurs.ville, paddingHorizontal: 8, paddingVertical: 2, borderRadius: RAYON.pastille, overflow: "hidden", maxWidth: 170 },
   annee: { flexDirection: "row", alignItems: "center", gap: PAS * 2 },
   jalon: { flexDirection: "row", gap: PAS * 3 },
   jalonAxe: { width: 18, alignItems: "center" },

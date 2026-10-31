@@ -12,7 +12,7 @@ export function BadgeGroupe({ groupe }: { groupe: string }) {
   const fond = couleurGroupe(groupe);
   return (
     <View style={{ alignSelf: "flex-start", paddingHorizontal: 12, paddingVertical: 4, borderRadius: 999, backgroundColor: fond }}>
-      <Text style={{ color: texteSur(fond), fontSize: 13, fontWeight: "700" }}>{libelleGroupe(groupe)}</Text>
+      <Text style={{ color: texteSur(fond), fontSize: 13, fontWeight: "500" }}>{libelleGroupe(groupe)}</Text>
     </View>
   );
 }

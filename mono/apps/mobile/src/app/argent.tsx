@@ -51,7 +51,7 @@ function Comparaison({ nom, valeur, index, dep, an }: { nom: string; valeur: num
   const p = phrasesMoyenne(nom, valeur, m);
   return (
     <View style={{ gap: 2 }}>
-      <Text style={[TYPO.corps, { fontWeight: "700" }]}>{nom} : {valeur.toLocaleString("fr-FR")} € · {p.court}</Text>
+      <Text style={[TYPO.corps, { fontWeight: "600" }]}>{nom} : {valeur.toLocaleString("fr-FR")} € · {p.court}</Text>
       <Text style={TYPO.corps}>{p.position}</Text>
       {/* Audit 5 s : l'explication du calcul se deplie, elle ne s'impose pas. */}
       <Depli titre="Comment est calculée la médiane ?"><Text style={TYPO.corps}>{p.note}</Text></Depli>
@@ -212,7 +212,7 @@ export default function Argent() {
               <Depli titre="Détails du calcul">
                 <Text style={TYPO.note}>{sousTitreRapports(ex.an, ex.ex)}</Text>
                 <Text style={TYPO.note}>{introRapports({ detailPlusBas: false })}</Text>
-                <Text style={[TYPO.note, { fontWeight: "700" }]}>{CALCUL_REPERE}</Text>
+                <Text style={[TYPO.note, { fontWeight: "500" }]}>{CALCUL_REPERE}</Text>
                 {phraseEc ? <Text style={TYPO.note}>{phraseEc}</Text> : null}
               </Depli>
             </>

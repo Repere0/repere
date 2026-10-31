@@ -39,7 +39,7 @@ export const TAILLE_MAX_LIBELLE_ONGLET = 1.2;
 
 const etiquette = (texte: string) => ({ color }: { color: ColorValue }) => (
   <Text numberOfLines={2} allowFontScaling={Platform.OS !== "ios"} maxFontSizeMultiplier={TAILLE_MAX_LIBELLE_ONGLET}
-    style={{ color, fontSize: 13, fontWeight: "700", textAlign: "center" }}>{texte}</Text>
+    style={{ color, fontSize: 13, fontWeight: "500", textAlign: "center" }}>{texte}</Text>
 );
 
 export default function Onglets() {

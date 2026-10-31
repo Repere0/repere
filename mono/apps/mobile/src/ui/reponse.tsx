@@ -75,7 +75,7 @@ const s = feuille(() => StyleSheet.create({
   phrase: { ...TYPO.reponse, fontSize: 19, lineHeight: 25 },
   pied: { flexDirection: "row", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", columnGap: PAS * 2 },
   suite: { minHeight: CIBLE, justifyContent: "center", marginLeft: "auto" },
-  suiteTexte: { fontSize: 15, fontWeight: "700", color: couleurs.lien },
+  suiteTexte: { fontSize: 15, fontWeight: "500", color: couleurs.lien },
   partage: { minHeight: CIBLE, justifyContent: "center" },
   plus: { minHeight: CIBLE + 4, flexDirection: "row", alignItems: "center", paddingHorizontal: PAS * 4, backgroundColor: couleurs.carte,
     borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: couleurs.trait },

@@ -92,7 +92,7 @@ function construire(m: Mode) {
     corps: { fontSize: sz(16), lineHeight: lh(23), color: couleurs.encre },
     note: { fontSize: sz(15), lineHeight: lh(21), color: couleurs.sourd },
     /* l'étiquette au-dessus d'une réponse, en capitales de style */
-    etiquette: { fontSize: sz(13), lineHeight: lh(18), fontWeight: "700" as const, letterSpacing: 0.8, textTransform: "uppercase" as const, color: couleurs.sourd },
+    etiquette: { fontSize: sz(13), lineHeight: lh(18), fontWeight: "500" as const, letterSpacing: 0.8, textTransform: "uppercase" as const, color: couleurs.sourd },
     micro: { fontSize: sz(13), lineHeight: lh(18), color: couleurs.sourd },
   };
   /* Les trois gris d'une répartition de vote : ils se distinguent aussi par leur

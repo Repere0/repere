@@ -132,7 +132,7 @@ function CarteVote({ etiquette, nom, acteur, ligne, position, dec, date, titre, 
       <AvecPicto picto="vote"><Text style={s.etiquette}>{etiquette}</Text></AvecPicto>
       {/* V29 bloc 4 : le titre dit ce que le scrutin a donné, calculé sur son décompte ; le nom du député suit. */}
       <Text style={s.carteTitre}>{titreScrutin(dec) ?? (position ? `${nom} ${VERBE_VOTE[position] ?? "a voté"}.` : `${nom} : position non lue`)}</Text>
-      {titreScrutin(dec) && position ? <Text style={[s.legende, { fontWeight: "700" }]}>{nom} {VERBE_VOTE[position] ?? "a voté"}.</Text> : null}
+      {titreScrutin(dec) && position ? <Text style={[s.legende, { fontWeight: "600" }]}>{nom} {VERBE_VOTE[position] ?? "a voté"}.</Text> : null}
       {/* Groupe inconnu ici : badge gris, aucune couleur de parti (ADR 0001). */}
       <View style={s.badge}><Text style={s.badgeTexte}>{libelleGroupe(groupeDe(acteur))}</Text></View>
       <Text style={s.legende}>{ligne}</Text>
@@ -544,7 +544,7 @@ export default function Accueil() {
                 <Pressable onPress={() => router.push("/faq")} accessibilityRole="link"
                   accessibilityLabel="Pas de compte, pas d'e-mail. Pourquoi ? Ouvre les questions fréquentes"
                   style={({ pressed }) => [s.confiance, { minHeight: 48, justifyContent: "center" }, pressed && { opacity: 0.7 }]}>
-                  <Text style={[s.note, { color: D.encre, fontWeight: "600" }]}>Pas de compte, pas d'e-mail. <Text style={{ textDecorationLine: "underline", fontWeight: "400", color: D.sourd }}>Pourquoi ?</Text></Text>
+                  <Text style={[s.note, { color: D.encre, fontWeight: "500" }]}>Pas de compte, pas d'e-mail. <Text style={{ textDecorationLine: "underline", fontWeight: "400", color: D.sourd }}>Pourquoi ?</Text></Text>
                 </Pressable>
                 {/* V29 bloc 1 (audit D51) : phrase retirée de l'accueil en V20, réintégrée au niveau 2. */}
                 <Details titre="Repère ne sait pas qui vous êtes" couleur={D.encre} lien={D.encre}>
@@ -599,11 +599,11 @@ const s = feuille(() => StyleSheet.create({
   haut: { flexDirection: "row", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", gap: PAS * 3 },
   marque: { fontFamily: POLICE.affiche, fontSize: 26, color: D.encre },
   chercher: { minHeight: CIBLE, borderRadius: 999, borderWidth: 1, borderColor: D.trait, paddingHorizontal: PAS * 4, justifyContent: "center" },
-  chercherTexte: { fontSize: 15, fontWeight: "700", color: D.encre },
+  chercherTexte: { fontSize: 15, fontWeight: "500", color: D.encre },
   grandLogo: { alignItems: "flex-start", marginTop: PAS * 4 },
   citation: { fontFamily: POLICE.affiche, fontSize: 38, lineHeight: 43, letterSpacing: -0.6, color: D.encre, marginTop: PAS * 4 },
   carte: { gap: PAS * 2, padding: PAS * 4, borderRadius: RAYON.carte, backgroundColor: D.carte, borderWidth: 1, borderColor: D.trait },
-  etiquette: { fontSize: 13, fontWeight: "700", color: D.sourd },
+  etiquette: { fontSize: 13, fontWeight: "500", color: D.sourd },
   carteTitre: { fontFamily: POLICE.titre, fontSize: 24, lineHeight: 30, color: D.encre },
   chiffre: { fontFamily: POLICE.affiche, fontSize: 64, lineHeight: 68, color: D.encre },
   vote: { fontFamily: POLICE.titre, fontSize: 22, lineHeight: 28, color: D.encre },
@@ -611,7 +611,7 @@ const s = feuille(() => StyleSheet.create({
   contexte: { fontSize: 15, lineHeight: 21, color: D.encre },
   barre: { flexDirection: "row", height: 12, borderRadius: 6, overflow: "hidden", backgroundColor: D.voile, gap: 2 },
   badge: { alignSelf: "flex-start", paddingHorizontal: PAS * 2, paddingVertical: PAS, borderRadius: RAYON.bloc, backgroundColor: D.voile },
-  badgeTexte: { fontSize: 13, fontWeight: "600", color: D.sourd },
+  badgeTexte: { fontSize: 13, fontWeight: "500", color: D.sourd },
   points: { flexDirection: "row", justifyContent: "center", gap: PAS * 2 },
   point: { width: 8, height: 8, borderRadius: 4, backgroundColor: D.trait },
   pointActif: { backgroundColor: E.ville },
@@ -638,6 +638,6 @@ const s = feuille(() => StyleSheet.create({
     ...OMBRE_PAR_MODE.sombre, shadowOpacity: 0.25, shadowRadius: 8, shadowOffset: { width: 0, height: 2 },
   },
   pastille: { width: 10, height: 10, borderRadius: 5, backgroundColor: E.ville },
-  resultatNom: { flex: 1, fontSize: 17, color: D.encre, fontWeight: "600" },
+  resultatNom: { flex: 1, fontSize: 17, color: D.encre, fontWeight: "500" },
   resultatDep: { fontSize: 14, color: D.sourd, flexShrink: 1, textAlign: "right" },
 }));

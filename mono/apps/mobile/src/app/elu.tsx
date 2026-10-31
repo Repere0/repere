@@ -66,7 +66,7 @@ function Initiales({ nom }: { nom: string }) {
   return (
     <View accessible={false}
       style={{ width: 72, height: 72, borderRadius: 36, backgroundColor: couleurs.encre, alignItems: "center", justifyContent: "center" }}>
-      <Text style={{ color: couleurs.sol, fontWeight: "800", fontSize: 26 }}>{lettres}</Text>
+      <Text style={{ color: couleurs.sol, fontWeight: "600", fontSize: 26 }}>{lettres}</Text>
     </View>
   );
 }
@@ -75,7 +75,7 @@ function Lien({ texte, onPress, etiquette }: { texte: string; onPress: () => voi
   return (
     <Pressable onPress={onPress} accessibilityRole="button" accessibilityLabel={etiquette ?? texte}
       style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", alignSelf: "flex-start", opacity: pressed ? 0.7 : 1 })}>
-      <Text style={{ color: couleurs.lien, fontWeight: "700", fontSize: 15 }}>{texte}</Text>
+      <Text style={{ color: couleurs.lien, fontWeight: "500", fontSize: 15 }}>{texte}</Text>
     </Pressable>
   );
 }
@@ -89,8 +89,8 @@ function CarteVote({ f, onComprendre }: { f: FaitElu; onComprendre: () => void }
     <View style={{ gap: PAS * 2, padding: PAS * 4, borderRadius: RAYON.bloc, backgroundColor: couleurs.carte, borderWidth: 1, borderColor: couleurs.trait }}
       accessibilityLabel={`${dateFr(f.sc.d)} : ${POSITION[pos]} sur ${titreLisible(f.sc.t)}`}>
       <View style={{ flexDirection: "row", alignItems: "center", gap: PAS * 2 }}>
-        <Text accessibilityElementsHidden importantForAccessibility="no" style={{ fontSize: 18, fontWeight: "800", color: COULEUR_VOTE[pos as keyof typeof COULEUR_VOTE] ?? couleurs.encre, width: 20 }}>{SIGNE[pos]}</Text>
-        <Text style={[TYPO.corps, { fontWeight: "800" }]}>{POSITION[pos]}</Text>
+        <Text accessibilityElementsHidden importantForAccessibility="no" style={{ fontSize: 18, fontWeight: "600", color: COULEUR_VOTE[pos as keyof typeof COULEUR_VOTE] ?? couleurs.encre, width: 20 }}>{SIGNE[pos]}</Text>
+        <Text style={[TYPO.corps, { fontWeight: "600" }]}>{POSITION[pos]}</Text>
         <Text style={[TYPO.micro, { marginLeft: "auto" }]}>{dateFr(f.sc.d)}</Text>
       </View>
       <Text style={TYPO.corps} numberOfLines={3}>{titreLisible(f.sc.t)}</Text>
@@ -114,7 +114,7 @@ function FeuilleVote({ f, nom, resume, base, onFermer }: { f: FaitElu | null; no
         <ScrollView style={{ backgroundColor: couleurs.sol }} contentContainerStyle={{ padding: PAS * 5, gap: PAS * 3, maxWidth: 640, width: "100%", alignSelf: "center" }}>
           <Text style={TYPO.question} accessibilityRole="header">Comprendre ce vote</Text>
           <Text style={TYPO.micro}>Scrutin n° {f.sc.n}, {dateFr(f.sc.d)}</Text>
-          <Text style={[TYPO.corps, { fontWeight: "700" }]}>{titreLisible(f.sc.t)}</Text>
+          <Text style={[TYPO.corps, { fontWeight: "600" }]}>{titreLisible(f.sc.t)}</Text>
           <Text style={TYPO.corps}>{nom} : {POSITION[f.position as string].toLowerCase()}.</Text>
           {/* D24 : la repartition du scrutin, en couleurs de vote, avec sa legende chiffree. */}
           {/* Sur une carte, jamais sur le sol : le vert y fait 3,22:1 au lieu de 2,88:1 (ADR 0003). */}
@@ -126,7 +126,7 @@ function FeuilleVote({ f, nom, resume, base, onFermer }: { f: FaitElu | null; no
           {f.sc.sl ? <Text style={TYPO.corps}>{f.sc.sl.charAt(0).toUpperCase() + f.sc.sl.slice(1)}{f.sc.dec ? `, ${decompte(f.sc.dec)}` : ""}.</Text> : null}
           {resume && resume.axes ? (
             <View style={{ gap: PAS * 2, padding: PAS * 4, borderRadius: RAYON.bloc, backgroundColor: couleurs.carte }}>
-              <Text style={[TYPO.corps, { fontWeight: "700" }]} accessibilityRole="header">Ce que change ce texte</Text>
+              <Text style={[TYPO.corps, { fontWeight: "600" }]} accessibilityRole="header">Ce que change ce texte</Text>
               <Text style={TYPO.corps}>{resume.axes.replace(/\s*\n\s*/g, " ")}</Text>
               <Text style={TYPO.note}>Résumé de la rédaction Repère{resume.srcn ? `, d'après : ${resume.srcn}` : ""}.</Text>
               {resume.src ? <Lien texte="Lire la source officielle" etiquette="Lire la source officielle, ouvre un site externe" onPress={() => Linking.openURL(resume.src as string)} /> : null}
@@ -137,7 +137,7 @@ function FeuilleVote({ f, nom, resume, base, onFermer }: { f: FaitElu | null; no
           {lien ? <Lien texte="Voir le scrutin sur le site de l'Assemblée" etiquette={`${lien.texte}, ouvre un site externe`} onPress={() => Linking.openURL(lien.url)} /> : null}
           <Pressable onPress={onFermer} accessibilityRole="button"
             style={({ pressed }) => ({ minHeight: CIBLE, alignItems: "center", justifyContent: "center", borderRadius: 999, borderWidth: 1, borderColor: couleurs.trait, marginTop: PAS * 2, opacity: pressed ? 0.7 : 1 })}>
-            <Text style={[TYPO.corps, { fontWeight: "700" }]}>Fermer</Text>
+            <Text style={[TYPO.corps, { fontWeight: "500" }]}>Fermer</Text>
           </Pressable>
         </ScrollView>
       ) : null}
@@ -257,7 +257,7 @@ export default function Elu() {
               <View style={{ gap: PAS * 3 }}>
                 {accroche ? (
                   <View style={{ flexDirection: "row", alignItems: "center", gap: PAS }}>
-                    <Text style={[TYPO.corps, { fontWeight: "700", flex: 1 }]} accessibilityRole="header">{accroche}</Text>
+                    <Text style={[TYPO.corps, { fontWeight: "600", flex: 1 }]} accessibilityRole="header">{accroche}</Text>
                     <PourquoiJeVois etiquette={`la phrase sur les votes de ${nom}`}
                       p={{ source: { texte: `Assemblée nationale, ses ${recents.length} derniers votes publiés`, lien: null },
                         calcul: "Repère compte les positions (pour, contre, abstention) de ces votes, puis écrit la phrase à partir de ce compte. Il n'y a pas d'autre calcul.",

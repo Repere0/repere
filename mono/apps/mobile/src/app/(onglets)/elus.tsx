@@ -155,7 +155,7 @@ export default function Elus() {
                 borderRadius: RAYON.bloc, backgroundColor: couleurs.carte, opacity: pressed ? 0.7 : 1 })}>
               <Avatar nom={item.nom} taille={44} />
               <View style={{ flex: 1, gap: 2 }}>
-                <Text style={[TYPO.corps, { fontWeight: "700" }]}>{item.nom}</Text>
+                <Text style={[TYPO.corps, { fontWeight: "600" }]}>{item.nom}</Text>
                 <Text style={TYPO.note}>{item.fonction} · {item.lieu}</Text>
               </View>
             </Pressable>

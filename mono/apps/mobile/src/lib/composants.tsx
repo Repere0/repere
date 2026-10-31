@@ -80,7 +80,7 @@ export function Definitions({ s: seg }: { s: Segment[] }) {
           accessibilityHint="Ouvre la définition dans le dictionnaire"
           onPress={() => router.push({ pathname: "/dictionnaire", params: { mot: m.mot } })}
           style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", opacity: pressed ? 0.6 : 1 })}>
-          <Text style={{ fontSize: 16, fontWeight: "600", color: couleurs.lien, textDecorationLine: "underline" }}>
+          <Text style={{ fontSize: 16, fontWeight: "500", color: couleurs.lien, textDecorationLine: "underline" }}>
             Voir la définition : {m.titre}
           </Text>
         </Pressable>
@@ -163,9 +163,9 @@ const s = feuille(() => StyleSheet.create({
     minHeight: CIBLE, flexDirection: "row", alignItems: "center", justifyContent: "space-between",
     borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: couleurs.trait, marginTop: PAS,
   },
-  actionTexte: { fontSize: 17, fontWeight: "600", color: couleurs.lien },
+  actionTexte: { fontSize: 17, fontWeight: "500", color: couleurs.lien },
   texte: { fontSize: 17, lineHeight: 24, color: couleurs.encre },
-  fort: { fontWeight: "700" },
+  fort: { fontWeight: "600" },
   sourd: { color: couleurs.sourd, fontSize: 15, lineHeight: 21 },
   source: { gap: PAS, paddingTop: PAS * 2, borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: couleurs.trait },
   sourceTexte: { fontSize: 13, lineHeight: 18, color: couleurs.sourd },
@@ -179,5 +179,5 @@ const s = feuille(() => StyleSheet.create({
     backgroundColor: couleurs.ville,
   },
   boutonDiscret: { backgroundColor: couleurs.voile },
-  boutonTexte: { color: couleurs.blanc, fontSize: 17, fontWeight: "700" },
+  boutonTexte: { color: couleurs.blanc, fontSize: 17, fontWeight: "500" },
 }));

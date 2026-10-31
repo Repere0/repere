@@ -14,7 +14,7 @@ export function Retour({ texte, etiquette }: { texte: string; etiquette: string 
       accessibilityLabel={etiquette}
       style={({ pressed }) => ({ minHeight: CIBLE, minWidth: CIBLE, justifyContent: "center", paddingHorizontal: 8, opacity: pressed ? 0.6 : 1 })}
     >
-      <Text style={{ fontSize: 17, color: couleurs.lien, fontWeight: "600" }}>‹ {texte}</Text>
+      <Text style={{ fontSize: 17, color: couleurs.lien, fontWeight: "500" }}>‹ {texte}</Text>
     </Pressable>
   );
 }
@@ -32,7 +32,7 @@ export function ChangerCommune() {
       accessibilityLabel="Changer de commune : revenir à l'accueil"
       style={({ pressed }) => ({ minHeight: CIBLE, minWidth: CIBLE, justifyContent: "center", paddingHorizontal: 8, opacity: pressed ? 0.6 : 1 })}
     >
-      <Text style={{ fontSize: 17, color: couleurs.lien, fontWeight: "600" }}>‹ Communes</Text>
+      <Text style={{ fontSize: 17, color: couleurs.lien, fontWeight: "500" }}>‹ Communes</Text>
     </Pressable>
   );
 }

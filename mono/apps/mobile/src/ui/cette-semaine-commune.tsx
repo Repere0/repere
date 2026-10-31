@@ -46,13 +46,13 @@ export function CetteSemaineCommune({ insee, nom }: { insee: string; nom: string
   const recente = publiee && (age as number) < RECENTE_JOURS;
   const bloc = publiee ? (
     <View style={{ gap: PAS * 2 }}>
-      <Text style={[TYPO.corps, { fontWeight: "800" }]}>{e!.titre}</Text>
+      <Text style={[TYPO.corps, { fontWeight: "600" }]}>{e!.titre}</Text>
       <Text style={TYPO.corps}>{e!.resume}</Text>
       <Text style={TYPO.micro}>Publiée le {dateFr(date as string)} · {ilYa(age as number)}</Text>
       <Pressable onPress={() => Linking.openURL(e!.source as string)} accessibilityRole="link"
         accessibilityLabel={`Source : ${e!.source_nom || "page officielle"}, ouvre un site externe`}
         style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", alignSelf: "flex-start", opacity: pressed ? 0.7 : 1 })}>
-        <Text style={{ color: couleurs.lien, fontWeight: "700", textDecorationLine: "underline" }}>Source : {e!.source_nom || "page officielle"}</Text>
+        <Text style={{ color: couleurs.lien, fontWeight: "500", textDecorationLine: "underline" }}>Source : {e!.source_nom || "page officielle"}</Text>
       </Pressable>
       <PartagerCarte etiquette={`Partager l'actualité de ${nom}`}
         repli={`${nom} : ${e!.titre}. ${e!.resume} Source : ${e!.source}`}
@@ -68,13 +68,13 @@ export function CetteSemaineCommune({ insee, nom }: { insee: string; nom: string
           {publiee && !voir ? (
             <Pressable onPress={() => setVoir(true)} accessibilityRole="button"
               style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", alignSelf: "flex-start", opacity: pressed ? 0.7 : 1 })}>
-              <Text style={{ color: couleurs.lien, fontWeight: "700", textDecorationLine: "underline" }}>Voir la dernière actu de {nom}</Text>
+              <Text style={{ color: couleurs.lien, fontWeight: "500", textDecorationLine: "underline" }}>Voir la dernière actu de {nom}</Text>
             </Pressable>
           ) : null}
           {publiee && voir ? bloc : null}
           <Pressable onPress={() => router.push("/actus")} accessibilityRole="link"
             style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", alignSelf: "flex-start", opacity: pressed ? 0.7 : 1 })}>
-            <Text style={{ color: couleurs.lien, fontWeight: "700", textDecorationLine: "underline" }}>Voir les dernières publications</Text>
+            <Text style={{ color: couleurs.lien, fontWeight: "500", textDecorationLine: "underline" }}>Voir les dernières publications</Text>
           </Pressable>
         </View>
       )}

@@ -15,7 +15,7 @@ export function PourquoiJeVois({ p, etiquette, couleur, fond }: { p: Pourquoi; e
     <>
       <Pressable onPress={() => setOuvert(true)} accessibilityRole="button" accessibilityLabel={`Pourquoi je vois ça : ${etiquette}`}
         style={({ pressed }) => ({ minWidth: CIBLE, minHeight: CIBLE, alignItems: "center", justifyContent: "center", opacity: pressed ? 0.7 : 1 })}>
-        <Text aria-hidden style={{ width: 24, height: 24, borderRadius: 12, borderWidth: 1, borderColor: encre, color: encre, textAlign: "center", lineHeight: 22, fontWeight: "700", fontSize: 14, backgroundColor: fond }}>?</Text>
+        <Text aria-hidden style={{ width: 24, height: 24, borderRadius: 12, borderWidth: 1, borderColor: encre, color: encre, textAlign: "center", lineHeight: 22, fontWeight: "500", fontSize: 14, backgroundColor: fond }}>?</Text>
       </Pressable>
       <ModaleExhaustif titre="Pourquoi je vois ça" visible={ouvert} onFermer={() => setOuvert(false)} sections={[
         { titre: "Source", contenu: p.source.lien

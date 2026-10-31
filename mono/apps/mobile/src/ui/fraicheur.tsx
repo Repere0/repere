@@ -33,7 +33,7 @@ export function BandeauFraicheur() {
   if (!p) return null;
   return (
     <View style={s.bandeau} testID="fraicheur" accessibilityRole="summary">
-      <Text style={[TYPO.note, { color: couleurs.encre, fontWeight: "700" }]}>{p.titre}</Text>
+      <Text style={[TYPO.note, { color: couleurs.encre, fontWeight: "600" }]}>{p.titre}</Text>
       <Text style={TYPO.note}>{p.corps}</Text>
       {p.action ? (
         <Pressable accessibilityRole="button" onPress={() => { publicationPriseEnCompte(); reessayer(); }}
@@ -81,7 +81,7 @@ export function DateDonnee({ quoi, date, url, testID, avant }: { quoi: string; d
   if (age === null || age < 0) return null;
   const ancien = age > SEUIL_ANCIEN_JOURS;
   const ouvrir = () => (url ? Linking.openURL(url) : router.push("/sources"));
-  const lienSource = <Text style={{ fontSize: 14, lineHeight: 19, color: couleurs.lien, fontWeight: "700", textDecorationLine: "underline" }}>Source</Text>;
+  const lienSource = <Text style={{ fontSize: 14, lineHeight: 19, color: couleurs.lien, fontWeight: "500", textDecorationLine: "underline" }}>Source</Text>;
   return (
     <Pressable testID={testID} onPress={ouvrir} accessibilityRole="link"
       accessibilityLabel={`${quoi} du ${dateFr(jour)}, ${ilYa(age)}. ${url ? "Ouvrir la source, site externe" : "Voir les sources"}`}
@@ -111,5 +111,5 @@ const s = feuille(() => StyleSheet.create({
   bandeau: { borderLeftWidth: 3, borderLeftColor: couleurs.encre, backgroundColor: couleurs.voile,
     borderTopRightRadius: RAYON.bloc, borderBottomRightRadius: RAYON.bloc, paddingHorizontal: PAS * 3, paddingVertical: PAS * 2, gap: PAS },
   bouton: { minHeight: CIBLE, justifyContent: "center", alignSelf: "flex-start" },
-  boutonTexte: { fontSize: 15, fontWeight: "700", color: couleurs.lien },
+  boutonTexte: { fontSize: 15, fontWeight: "500", color: couleurs.lien },
 }));

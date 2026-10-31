@@ -23,8 +23,8 @@ export function Details({ titre, children, ouvertParDefaut = false, couleur, lie
       <Pressable onPress={() => setOuvert(o => !o)} accessibilityRole="button" accessibilityState={{ expanded: ouvert }}
         accessibilityLabel={`${titre}. ${ouvert ? "Voir moins" : "Voir plus"}`}
         style={({ pressed }) => ({ minHeight: CIBLE, flexDirection: "row", alignItems: "center", gap: PAS * 2, opacity: pressed ? 0.7 : 1 })}>
-        <Text style={[TYPO.corps, { flex: 1, fontWeight: "700" }, couleur ? { color: couleur } : null]}>{titre}</Text>
-        <Text style={{ color: lien ?? couleurs.lien, fontWeight: "700" }}>{ouvert ? "Voir moins" : "Voir plus"}</Text>
+        <Text style={[TYPO.corps, { flex: 1, fontWeight: "600" }, couleur ? { color: couleur } : null]}>{titre}</Text>
+        <Text style={{ color: lien ?? couleurs.lien, fontWeight: "500" }}>{ouvert ? "Voir moins" : "Voir plus"}</Text>
         <Text aria-hidden style={{ color: lien ?? couleurs.lien, fontSize: 22, transform: [{ rotate: ouvert ? "90deg" : "0deg" }] }}>›</Text>
       </Pressable>
       {ouvert ? (

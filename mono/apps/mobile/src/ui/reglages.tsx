@@ -87,6 +87,6 @@ const s = feuille(() => StyleSheet.create({
   carte: { backgroundColor: couleurs.carte, borderRadius: RAYON.carte, padding: PAS * 4, gap: PAS * 2 },
   option: { minHeight: CIBLE, borderRadius: RAYON.bloc, borderWidth: 1, borderColor: couleurs.trait, alignItems: "center", justifyContent: "center", paddingHorizontal: PAS * 4 },
   optionActive: { backgroundColor: couleurs.encre, borderColor: couleurs.encre },
-  optionTexte: { color: couleurs.encre, fontSize: 17, fontWeight: "700" },
+  optionTexte: { color: couleurs.encre, fontSize: 17, fontWeight: "500" },
   optionTexteActif: { color: couleurs.sol },
 }));

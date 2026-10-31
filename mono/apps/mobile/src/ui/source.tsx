@@ -85,7 +85,7 @@ export function FeuilleSource({ source, visible, onFermer }: { source: InfoSourc
       <ScrollView style={{ backgroundColor: couleurs.sol }} contentContainerStyle={[s.feuille, { paddingBottom: marges.bottom + PAS * 8 }]}>
         <Etiquette emoji="🔎" texte="D'où vient cette information ?" />
         <Text style={TYPO.question} accessibilityRole="header">{source.producteur}</Text>
-        {date ? <Text style={[TYPO.corps, { fontWeight: "600" }]}>{date}</Text> : null}
+        {date ? <Text style={[TYPO.corps, { fontWeight: "500" }]}>{date}</Text> : null}
         {traite ? <Text style={TYPO.note}>Traitées par Repère le {dateFr(traite)}</Text> : null}
 
         <View style={s.bloc}>
@@ -93,7 +93,7 @@ export function FeuilleSource({ source, visible, onFermer }: { source: InfoSourc
           {source.methode ? (
             <>
               <Text style={TYPO.corps}>{source.methode}</Text>
-              <Text style={[TYPO.note, { fontWeight: "700" }]}>{CALCUL_REPERE}</Text>
+              <Text style={[TYPO.note, { fontWeight: "500" }]}>{CALCUL_REPERE}</Text>
             </>
           ) : (
             <Text style={TYPO.corps}>{source.usage || "Repère affiche ce chiffre tel que la source le publie, sans le modifier."}</Text>
@@ -114,7 +114,7 @@ export function FeuilleSource({ source, visible, onFermer }: { source: InfoSourc
         </View>
 
         <Pressable onPress={onFermer} accessibilityRole="button" style={({ pressed }) => [s.fermer, pressed && { opacity: 0.6 }]}>
-          <Text style={[TYPO.corps, { fontWeight: "600" }]}>Fermer</Text>
+          <Text style={[TYPO.corps, { fontWeight: "500" }]}>Fermer</Text>
         </Pressable>
       </ScrollView>
     </Modal>
@@ -123,10 +123,10 @@ export function FeuilleSource({ source, visible, onFermer }: { source: InfoSourc
 
 const s = feuille(() => StyleSheet.create({
   zone: { alignSelf: "flex-start", minHeight: CIBLE, justifyContent: "center", paddingRight: PAS * 3 },
-  lien: { fontSize: 14, fontWeight: "600", color: couleurs.sourd },
+  lien: { fontSize: 14, fontWeight: "500", color: couleurs.sourd },
   feuille: { padding: PAS * 6, gap: PAS * 5 },
   bloc: { gap: PAS * 2, padding: PAS * 4, borderRadius: RAYON.bloc, backgroundColor: couleurs.carte },
   bouton: { minHeight: CIBLE + 4, borderRadius: RAYON.bloc, backgroundColor: couleurs.ville, alignItems: "center", justifyContent: "center", paddingHorizontal: PAS * 4 },
-  boutonTexte: { color: couleurs.blanc, fontSize: 17, fontWeight: "700", textAlign: "center" },
+  boutonTexte: { color: couleurs.blanc, fontSize: 17, fontWeight: "500", textAlign: "center" },
   fermer: { minHeight: CIBLE, alignItems: "center", justifyContent: "center" },
 }));

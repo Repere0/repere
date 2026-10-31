@@ -125,7 +125,7 @@ export function SemaineParlement({ sp, lu, nom }: { sp: Semaine | null | undefin
           (vu sur capture : « mardi 13 octobre 2026, 15 h » ecrit deux fois). */}
       {grouper(votes.slice(0, VOTES_MAX)).map(g => (
         <View key={g.cle} style={{ gap: PAS * 2 }}>
-          <Text style={[TYPO.corps, { fontWeight: "700" }]}>{typo(g.quand)}</Text>
+          <Text style={[TYPO.corps, { fontWeight: "600" }]}>{typo(g.quand)}</Text>
           {g.textes.map((t, i) => <Text key={i} testID="semaine-vote" style={TYPO.corps}>{typo(t)}</Text>)}
         </View>
       ))}
@@ -163,11 +163,11 @@ const s = feuille(() => StyleSheet.create({
   jour: { flex: 1, minWidth: 0, alignItems: "center", paddingVertical: PAS * 2, borderRadius: RAYON.bloc, backgroundColor: couleurs.sol, gap: 2 },
   jourAujourdhui: { borderWidth: 1.5, borderColor: couleurs.france },
   jourNom: { fontSize: 13, lineHeight: 18, color: couleurs.sourd },
-  encre: { color: couleurs.encre, fontWeight: "700" },
-  jourNum: { fontSize: 17, lineHeight: 22, fontWeight: "700", color: couleurs.encre },
+  encre: { color: couleurs.encre, fontWeight: "600" },
+  jourNum: { fontSize: 17, lineHeight: 22, fontWeight: "600", color: couleurs.encre },
   points: { flexDirection: "row", gap: 4, minHeight: 18, alignItems: "center" },
   point: { width: 6, height: 6, borderRadius: 3, backgroundColor: couleurs.france },
   pied: { flexDirection: "row", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", columnGap: PAS * 2 },
   suite: { minHeight: CIBLE, justifyContent: "center", marginLeft: "auto" },
-  suiteTexte: { fontSize: 15, fontWeight: "700", color: couleurs.lien },
+  suiteTexte: { fontSize: 15, fontWeight: "500", color: couleurs.lien },
 }));

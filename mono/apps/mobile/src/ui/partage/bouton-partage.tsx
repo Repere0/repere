@@ -14,7 +14,7 @@ export function PartagerCarte({ etiquette, repli, rendu }: {
       <Pressable onPress={partager} accessibilityRole="button" accessibilityLabel={etiquette}
         style={({ pressed }) => ({ minHeight: CIBLE, borderRadius: 14, borderWidth: 1, borderColor: couleurs.trait,
           backgroundColor: couleurs.carte, alignItems: "center", justifyContent: "center", paddingHorizontal: PAS * 4, opacity: pressed ? 0.7 : 1 })}>
-        <Text style={{ color: couleurs.encre, fontWeight: "700" }}>Partager</Text>
+        <Text style={{ color: couleurs.encre, fontWeight: "500" }}>Partager</Text>
       </Pressable>
       <View pointerEvents="none" accessibilityElementsHidden importantForAccessibility="no-hide-descendants"
         style={{ position: "absolute", left: -10000, top: 0 }}>
