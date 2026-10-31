@@ -45,13 +45,13 @@ Les composants maison (`Plus`, `Choix`, `Interrupteur`, `Lien`, `Resultat`, `Cas
 | `vote.tsx` | 3 | 0 | 0 | 0 | **PASS** |
 | `voter.tsx` | 1 | 0 | 0 | 0 | **PASS** |
 
-**Résultat : 24 écrans sur 24 passent la règle statique.** Ce résultat ne dit rien de :
+**Résultat : 24 écrans de `src/app` (81 fichiers audités au total, `_layout.tsx` et `dev-impact.tsx` exclus) sur 24 passent la règle statique.** Ce résultat ne dit rien de :
 
 - l'**ordre de lecture** (non mesurable sans lecteur d'écran) ;
 - la **qualité** des libellés (une étiquette peut être présente et mal formulée) ;
 - les écrans dont les éléments sont des composants partagés sans `Pressable` natif dans `src/app` : ils sont audités dans `src/ui`, qui passe aussi (0 échec).
 
-**À faire sur iPhone** : parcourir les 24 écrans avec VoiceOver, et noter pour chaque écran l'ordre de lecture et les libellés lus.
+**À faire sur iPhone** : parcourir les 24 écrans de `src/app` (81 fichiers audités au total, `_layout.tsx` et `dev-impact.tsx` exclus) avec VoiceOver, et noter pour chaque écran l'ordre de lecture et les libellés lus.
 
 ## B) TalkBack (Android) : analyse statique, non vérifiée
 
@@ -104,7 +104,7 @@ Conditions : viewport 390 × 844, thème clair, 22 écrans navigables sans param
 
 ## Ce qui reste à faire
 
-- Parcourir les 24 écrans avec VoiceOver et TalkBack sur appareil, et noter l'ordre de lecture et les libellés lus.
+- Parcourir les 24 écrans de `src/app` (81 fichiers audités au total, `_layout.tsx` et `dev-impact.tsx` exclus) avec VoiceOver et TalkBack sur appareil, et noter l'ordre de lecture et les libellés lus.
 - Mesurer la feuille « Source » et les écrans `annuaire-fiche` et `elu` avec paramètres.
 - Corriger le partage sur le web (`Share` non supporté) : sans effet sur le téléphone, à traiter avec la version web.
 - Mesurer le focus en thème sombre sur chaque type de contrôle, pas seulement sur le bouton « Partager ».

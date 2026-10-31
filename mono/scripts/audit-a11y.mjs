@@ -82,5 +82,6 @@ if (process.argv.includes("--json")) {
     console.log(`${r.verdict.padEnd(16)} ${r.fichier}  interactifs=${r.interactifs} sansNom=${r.sansNom.length} sansRole=${r.sansRole.length} images=${r.images} imagesSansEtiquette=${r.imagesSansEtiquette.length} champs=${r.champsSansEtiquette.length}`);
   }
   const compte = v => resultats.filter(r => r.verdict.startsWith(v)).length;
-  console.log(`\n${resultats.length} écrans : ${compte("PASS")} PASS (dont ${resultats.filter(r => r.verdict.includes("réserves")).length} avec réserves), ${compte("FAIL")} FAIL`);
+  const ecrans = resultats.filter(r => r.fichier.includes("src/app/")).length;
+  console.log(`\n${resultats.length} fichiers audités (dont ${ecrans} écrans de src/app) : ${compte("PASS")} PASS (dont ${resultats.filter(r => r.verdict.includes("réserves")).length} avec réserves), ${compte("FAIL")} FAIL`);
 }
