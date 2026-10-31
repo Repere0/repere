@@ -112,6 +112,7 @@ jobs:
           node apps/mobile/tests/parcours-web.mjs http://localhost:8811 apps/mobile/captures
           node apps/mobile/tests/commune-web.mjs http://localhost:8811
           node apps/mobile/tests/recherche-web.mjs http://localhost:8811
+          node apps/mobile/tests/elections-web.mjs http://localhost:8811
           node apps/mobile/tests/onboarding-web.mjs http://localhost:8811
           node apps/mobile/tests/zoom-web.mjs http://localhost:8811
           node apps/mobile/tests/mode-web.mjs http://localhost:8811

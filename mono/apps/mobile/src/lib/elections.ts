@@ -29,3 +29,20 @@ export const ELECTIONS: Election[] = [
     description: "Aucune date n'est fixée à ce jour. La dernière élection législative s'est tenue à l'été 2024.",
   },
 ];
+
+/* LA PROCHAINE ÉLECTION À RAPPELER SUR L'ACCUEIL (V37, bloc 6).
+ * Seulement si la date tombe dans les 180 prochains jours, jour J compris. Au-delà, ou sans date fixée,
+ * rien n'est affiché : pas de compte à rebours vers une date qui n'existe pas encore. */
+export const FENETRE_RAPPEL_JOURS = 180;
+export function prochaineElection(aujourdhui: Date): { election: Election; jours: number } | null {
+  const ce = Date.UTC(aujourdhui.getFullYear(), aujourdhui.getMonth(), aujourdhui.getDate());
+  let plusProche: { election: Election; jours: number } | null = null;
+  for (const election of ELECTIONS) {
+    if (!election.date) continue;
+    const [a, m, j] = election.date.split("-").map(Number);
+    const jours = Math.round((Date.UTC(a, m - 1, j) - ce) / 86_400_000);
+    if (jours < 0 || jours > FENETRE_RAPPEL_JOURS) continue;
+    if (!plusProche || jours < plusProche.jours) plusProche = { election, jours };
+  }
+  return plusProche;
+}

@@ -29,6 +29,7 @@ import { VOTE } from "../ui/partage/donnees";
 import { SquelettesListe } from "../ui/squelette";
 import { Logo } from "../ui/logo";
 import { Loupe } from "../ui/loupe";
+import { RappelElection } from "../ui/rappel-election";
 import { DatePublication } from "../ui/fraicheur";
 import { DernieresPublications } from "../ui/dernieres-publications";
 import { phrasesMoyenne, titreEcart, useMoyenneDepenses } from "../lib/moyenne";
@@ -491,6 +492,8 @@ export default function Accueil() {
             {premiere ? <View style={s.grandLogo}><Logo size={128} variant="sombre" /></View> : null}
             <Text style={[s.citation, premiere && { marginTop: PAS * 2 }]} accessibilityRole="header">L'application qui vous raccroche à votre citoyenneté française.</Text>
 
+            {/* V37 bloc 6 : le rappel de la prochaine élection, s'il tombe dans les 180 jours. */}
+            {premiere ? null : <View style={{ marginTop: PAS * 4 }}><RappelElection /></View>}
             {premiere ? null : <DernieresPublications />}
             {premiere ? null : cartes}
 
