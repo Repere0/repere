@@ -36,7 +36,7 @@ export const RECENTE_JOURS = 7;
 export const remplie = (e?: Entree | null): e is Required<Pick<Entree, "titre" | "resume" | "source">> & Entree =>
   !!e && !!e.titre && !!e.resume && typeof e.source === "string" && /^https:\/\//.test(e.source);
 
-function aujourdhui(): string {
+export function aujourdhui(): string {
   const d = new Date();
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 }

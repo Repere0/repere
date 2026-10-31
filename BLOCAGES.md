@@ -427,3 +427,10 @@ Diagnostic (31/10/2026), par étapes, ce qui est vérifié et ce qui ne l'est pa
 - **Décision demandée au CEO**, au choix :
   1. garder D33 : le résumé IA, s'il existe un jour, va dans un fichier brouillon que le CEO relit, jamais dans la publication ;
   2. amender D33 par écrit pour une publication automatique, après vérification des conditions de l'API et une garde sur les chiffres.
+
+## 46. V41 (D84) : lien externe pour les communes sans flux RSS publié
+
+- **Constat** : la ligne « Site officiel de la mairie » existait déjà dans « Aller plus loin » (`chez-vous.tsx`, `SiteMairie`), pour toute commune dont l'annuaire DILA donne un site https. Le lot la rend conditionnelle : elle disparaît quand la commune a des actualités de flux publiées (la carte les montre avec son propre lien).
+- **Libellé** : le brief demandait « Voir les actualités sur [site mairie] ». Non retenu : rien ne dit que la page d'accueil d'un site contient des actualités, et « Cette semaine » ou « actualités » promettrait un contenu absent (D31). Le libellé de l'ADR 0005 est conservé.
+- **Ce qui n'est pas vérifié** : le site de chaque mairie (annuaire DILA, non lu dans cette session), et l'absence de flux pour Melun et Meaux. Le flux de ces deux communes n'a pas été testé : le réseau refuse les sites des mairies. Ne pas écrire qu'elles n'en ont pas.
+- **Décision demandée au CEO** : garder ce lien tel quel, ou le retirer tant que la couverture n'est pas mesurée.

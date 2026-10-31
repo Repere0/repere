@@ -27,7 +27,7 @@
  * RIEN N'EST CALCULE ICI : @repere/core derive, lib/absences.ts dit les absences. */
 import { useEffect, useState } from "react";
 import { Linking, Text, View } from "react-native";
-import { chargerMairies } from "../../lib/donnees";
+import { actusFlux, chargerActuellesRss, chargerMairies } from "../../lib/donnees";
 import { router, Stack } from "expo-router";
 import {
   dateFr, datePublication, decompte, euros, financementProjet, montantCourt, ordinal, parHabitant, phrasePosition,
@@ -50,21 +50,28 @@ import { Plus, Reponse, typo } from "../../ui/reponse";
 import { BarrePart, Repartition } from "../../ui/visuels";
 import { SemaineParlement } from "../../ui/semaine";
 import { DateDonnee } from "../../ui/fraicheur";
-import { CetteSemaineCommune } from "../../ui/cette-semaine-commune";
+import { CetteSemaineCommune, aujourdhui } from "../../ui/cette-semaine-commune";
 
 /* LE SITE OFFICIEL DE LA MAIRIE (D28, ADR 0005) : un lien externe, lu dans l'annuaire DILA
-   (data/mairies-idf.json). Sans adresse declaree, pas de ligne : rien n'est devine. */
+   (data/mairies-idf.json). Sans adresse declaree, pas de ligne : rien n'est devine.
+   D84 : pas de ligne quand la commune a des actualites de flux publiees (la carte les
+   montre, avec son propre lien vers le site). Le libelle reste celui de l'ADR 0005 : ce
+   n'est pas une page d'actualites, rien ne dit qu'elle en a. */
 function SiteMairie({ insee }: { insee: string }) {
   const [site, setSite] = useState<string | null>(null);
+  const [avecFlux, setAvecFlux] = useState(false);
   useEffect(() => {
     let vivant = true;
     chargerMairies().then(r => {
       const c = r.donnees ? (r.donnees as { communes?: Record<string, { site?: string }> }).communes?.[insee] : undefined;
       if (vivant) setSite(c && typeof c.site === "string" && /^https?:\/\//.test(c.site) ? c.site : null);
     }).catch(() => {});
+    chargerActuellesRss().then(r => {
+      if (vivant) setAvecFlux(actusFlux(r.donnees, insee, aujourdhui()).length > 0);
+    }).catch(() => {});
     return () => { vivant = false; };
   }, [insee]);
-  if (!site) return null;
+  if (!site || avecFlux) return null;
   return <Plus texte="Site officiel de la mairie" onPress={() => Linking.openURL(site)} />;
 }
 
