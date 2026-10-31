@@ -50,10 +50,10 @@ Dates = celles enregistrées dans les fichiers. Les dates en ligne ne sont pas v
 | Fichier | Taille | Date (dans le fichier) | Entrées | Couverture | Écrans | Fraîcheur |
 |---|---|---|---|---|---|---|
 | `deputes.json` | 54 Ko | relevé 28/10/2026 | 574 députés | 574 / 577 | Élus, Qui décide, Mes élus, Fiche | 3 jours |
-| `departments/*.json` (104 fichiers) | 19,4 Mo | RNE 11/08/2026 ; OFGL 29/07/2026 | 34 637 communes | budget : 34 570 ; 2025 : 34 474 ; maires : 34 637 | Qui décide, Argent, Chez vous, Mes élus | RNE : 81 jours ; OFGL : 95 jours |
+| `departments/*.json` (104 fichiers) | 19,4 Mo | RNE 11/08/2026 ; OFGL 29/07/2026 | 34 637 communes | budget : 34 570 ; 2025 : 34 474 ; maires : 34 637 | Qui décide, Argent, Chez vous, Mes élus | RNE : 81 jours ; OFGL : 94 jours |
 | `communes-beta.json` | 30 Ko | Etalab (date non relevée) | 1 262 (IDF) | IDF seulement | Accueil (choix de commune) | — |
-| `comptes-regions.json` | 25 Ko | OFGL 29/07/2026 | 17 régions | régions | Argent (régional) | 95 jours |
-| `agregats-regionaux.json` | 4 Ko | OFGL 29/07/2026 | 17 régions | régions | Argent | 95 jours |
+| `comptes-regions.json` | 25 Ko | OFGL 29/07/2026 | 17 régions | régions | Argent (régional) | 94 jours |
+| `agregats-regionaux.json` | 4 Ko | OFGL 29/07/2026 | 17 régions | régions | Argent | 94 jours |
 | `elus-regions/*.json` | 150 Ko | non relevée | 14 régions | 14 / 18 | Élus régionaux | inconnue |
 | `evenements.json` | 15 Ko | 28/10/2026 | 8 événements | national | Actus | 3 jours |
 | `scrutins/*.json` (107 fichiers) | 107 Ko | 28/10/2026 | positions par département | — | Vote, Élus | 3 jours |
