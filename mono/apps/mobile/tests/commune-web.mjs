@@ -10,7 +10,8 @@ const BASE = process.argv[2] || "http://localhost:8811";
 const COMMUNE = { d: "77", c: "77288", nom: "Melun" };
 const PHRASE_VIDE = "Aucune commune n'est choisie";
 /* « nom » : l'écran affiche la commune. /elus est l'annuaire national : il n'utilise pas la commune,
-   on vérifie seulement qu'il ne dit pas « Aucune commune n'est choisie ». */
+   on vérifie seulement qu'il ne dit pas « Aucune commune n'est choisie ». (V37 : l'annuaire ne montre
+   pas la commune par conception ; un contrôle « affiche Melun » sur /elus serait un changement de produit.) */
 const ECRANS = [
   { chemin: "/qui-decide", nom: true },
   { chemin: "/elus", nom: false },
@@ -50,10 +51,31 @@ for (const { chemin, nom } of ECRANS) {
   verifier(erreurs.length === 0, `${chemin} : commune gardée → aucune erreur JavaScript${erreurs.length ? " (" + erreurs[0].slice(0, 120) + ")" : ""}`);
 }
 
-for (const chemin of ["/qui-decide", "/mes-elus"]) {
+for (const chemin of ["/qui-decide", "/mes-elus", "/chez-vous"]) {
   const { texte, erreurs } = await ouvrirAFroid(chemin, { gardee: false });
   verifier(texte.includes(PHRASE_VIDE), `${chemin} : sans commune → « ${PHRASE_VIDE} »`);
   verifier(erreurs.length === 0, `${chemin} : sans commune → aucune erreur JavaScript`);
+}
+
+/* Commune gardée après rechargement : la même page, rouverte dans le même contexte. */
+for (const chemin of ["/qui-decide", "/mes-elus"]) {
+  const contexte = await navigateur.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
+  await contexte.addInitScript(([profil, departement]) => {
+    if (!sessionStorage.getItem("amorce")) {
+      sessionStorage.setItem("amorce", "1");
+      localStorage.clear();
+      localStorage.setItem("repere.profil", JSON.stringify(profil));
+      localStorage.setItem("repere.departement", JSON.stringify(departement));
+    }
+  }, [PROFIL, { d: COMMUNE.d, c: COMMUNE.c }]);
+  const page = await contexte.newPage();
+  await page.goto(BASE + chemin, { waitUntil: "networkidle" });
+  await page.waitForTimeout(1500);
+  await page.reload({ waitUntil: "networkidle" });
+  await page.waitForTimeout(2500);
+  const texte = await page.locator("body").innerText();
+  verifier(texte.includes(COMMUNE.nom) && !texte.includes(PHRASE_VIDE), `${chemin} : commune gardée, après rechargement → « ${COMMUNE.nom} » affichée`);
+  await contexte.close();
 }
 
 await navigateur.close();
