@@ -21,6 +21,8 @@ export function initiales(nom: string): string {
 
 /* 64 px par défaut : initiales à 24 px. Le texte est blanc sur le gris « Inconnu » ; sur une
  * couleur de groupe claire, il passe en encre pour rester lisible (texteSur). */
+/* OMBRE est un Proxy de thème : on en copie les champs (…OMBRE), on ne le passe jamais en prop.
+ * Une prop de vue native est figée en développement, et le Proxy ne le supporte pas (crash de l'onglet Élus). */
 export function Avatar({ nom, taille = 64, photo }: { nom: string; taille?: number; photo?: PhotoElu | null }) {
   const fond = couleurGroupe(groupeDe());
   const { profil } = useProfil();
@@ -28,13 +30,13 @@ export function Avatar({ nom, taille = 64, photo }: { nom: string; taille?: numb
   if (photo && !profil?.masquerImages) {
     return (
       <Image source={{ uri: photo.data }} accessible={false} resizeMode="cover"
-        style={[{ width: taille, height: taille, borderRadius: taille / 2, borderWidth: 2, borderColor: bordureGroupe(fond) }, OMBRE]} />
+        style={{ width: taille, height: taille, borderRadius: taille / 2, borderWidth: 2, borderColor: bordureGroupe(fond), ...OMBRE }} />
     );
   }
   return (
     <View accessible={false}
-      style={[{ width: taille, height: taille, borderRadius: taille / 2, backgroundColor: fond,
-        borderWidth: 2, borderColor: bordureGroupe(fond), alignItems: "center", justifyContent: "center" }, OMBRE]}>
+      style={{ width: taille, height: taille, borderRadius: taille / 2, backgroundColor: fond,
+        borderWidth: 2, borderColor: bordureGroupe(fond), alignItems: "center", justifyContent: "center", ...OMBRE }}>
       <Text style={{ color: texteSur(fond), fontWeight: "800", fontSize: Math.round(taille * 0.375) }}>{initiales(nom)}</Text>
     </View>
   );
