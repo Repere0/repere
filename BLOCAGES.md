@@ -404,3 +404,26 @@ Diagnostic (31/10/2026), par étapes, ce qui est vérifié et ce qui ne l'est pa
   1. Aligner l'application sur la phrase du site (« 30 € de salaires », « 22 € pour investir ») dans la légende et le libellé d'accessibilité de `RepartitionCent`. Le test passe sans modification. Coût : un changement de libellé visible.
   2. Garder « Salaires des agents 30 € » et mettre le site à la même formulation (la phrase du site vient de `packages/core` et de `apps/web`). Coût : un changement sur le site.
 - **Conséquence pour la PR** : la PR de la branche ne peut pas être verte tant que ce point n'est pas tranché. Elle n'est pas fusionnée dans `main` de toute façon.
+
+## 44. V40 : ce qui n'a pas pu être fait ou vérifié dans cette session (flux RSS des mairies, D81)
+
+- **Constat** : l'amendement de l'ADR 0005 et de l'invariant 4 est fait et scellé (bloc 1, `0de2656`). Le collecteur RSS, sa chaîne et son affichage sont faits et testés en local (blocs 2, 4, 5). Les points ci-dessous ne le sont pas.
+- **Couverture non mesurée** : le réseau de la session refuse les sites des mairies (403 au tunnel CONNECT, testé sur versailles.fr). Impossible de dire combien de communes ont un flux. Aucun chiffre n'a été écrit.
+- **Fichier des mairies absent** : `mono/data/mairies-idf.json` n'existe pas dans cette copie, et l'API DILA est injoignable d'ici. L'état de la production n'a pas été vérifié.
+- **Adresses candidates** (`/feed/`, `/rss`, `/flux-rss`, `/955.htm`) : hypothèses, non vérifiées sur un site réel. `/955.htm` est donné par le brief pour Versailles ; rien ne confirme qu'il s'agit d'un flux.
+- **Base juridique** (ADR 0007) : non vérifiée. La recherche web n'a pas confirmé l'argument du CADA. Un avis juridique écrit est requis avant la première publication automatique.
+- **Bloc 4 déplacé** : pas de workflow séparé `actus-rss.yml`. Raisons : `mono/data/` est ignoré par git et produit par la chaîne ; un workflow isolé ne peut ni lire `mairies-idf.json` ni publier dans les données. Les GitHub Actions planifiées ne tournent que depuis la branche par défaut : rien ne tournera tant que la branche n'est pas fusionnée dans `main`, ce qui n'a pas été fait.
+- **Lien « site officiel de la mairie » pour les communes sans flux** : non implémenté. Une carte « Cette semaine » qui ne montrerait qu'un lien annoncerait une actualité qui n'existe pas (D31). Décision à prendre : (a) un lien sans carte, ailleurs ; (b) rien, comme aujourd'hui.
+- **Affichage non vu** : `tsc` passe, les tests de données passent, mais la carte n'a pas été rendue dans un navigateur ni sur un appareil.
+- **Test d'environnement** : `tests/runtime.test.mjs` échoue ici parce que le navigateur Playwright n'est pas installé dans la session (binaire absent). Ce test n'est pas touché par ce lot.
+- **Décision demandée au CEO** : valider la base juridique (ADR 0007), puis décider si le flux doit être fusionné dans `main` pour que la chaîne le lance.
+
+## 45. Résumé par IA des entrées de flux (Bloc 3 de V40) : conflit avec D33, non implémenté
+
+- **Constat** : le brief demande un résumé Gemini Flash, publié automatiquement chaque nuit. Or D33 (`docs/strategie-editoriale.md`) impose que « le CEO relit chaque fait contre la page » avant publication, et que le résumé par IA ne publie pas seul. Une publication quotidienne sans relecture contredit D33.
+- **Ce qui n'est pas vérifié** : les conditions de l'offre gratuite de l'API Gemini, notamment si Google peut utiliser les textes envoyés. Or ces textes sont ceux de mairies ; les envoyer à un tiers est une exposition à vérifier avant.
+- **Ce qui n'est pas testé** : aucune clé, aucun appel réel. La garde envisagée (chaque chiffre du résumé doit figurer dans la source) n'est pas écrite.
+- **Ce qui est fait à la place** : seul le texte du flux, tronqué à deux phrases, est repris. Aucune IA n'est appelée.
+- **Décision demandée au CEO**, au choix :
+  1. garder D33 : le résumé IA, s'il existe un jour, va dans un fichier brouillon que le CEO relit, jamais dans la publication ;
+  2. amender D33 par écrit pour une publication automatique, après vérification des conditions de l'API et une garde sur les chiffres.
