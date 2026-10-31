@@ -353,3 +353,24 @@ Diagnostic (31/10/2026), par étapes, ce qui est vérifié et ce qui ne l'est pa
 - Ce qui n'est PAS vérifié : la forme réelle de l'archive pour les groupes. Hypothèses : organes `codeType: "GP"` pour les groupes, `libelleAbrege` pour le sigle, `organes.organeRef` en texte. La forme des acteurs et des organes est reprise de `outils/agenda_an.py`, `outils/mono_donnees.py` et `docs/schema_acteurs.md`. Le seuil (90 % des députés rattachés à un groupe, sinon rien n'est écrit) protège le fichier de la veille si une hypothèse est fausse.
 - Ce qui reste bloqué : `mono/data/deputes-groupes.json` n'existe pas dans cette session. Il sera produit par la CI, à condition que le runner atteigne data.assemblee-nationale.fr (la collecte quotidienne le fait déjà, selon `outils/collecte.py`). À vérifier au premier run : le message `groupes : N deputes sur 574 rattaches...` dans le journal de `collecte.yml`.
 - Décision demandée au CEO : aucune. Si la CI ne peut pas non plus joindre la source, il faudra un autre moyen d'obtenir l'archive ; je ne le choisirai pas seul.
+
+## 39. Adresse de contact : le `.env` n'atteint pas la production (V36, bloc 1 B5)
+
+- Adresse officielle : repere0@protonmail.com. Le CEO définira `EXPO_PUBLIC_CONTACT_EMAIL` à minuit (brief V36).
+- **Point à corriger avant minuit, sinon la variable n'aura aucun effet sur l'application publiée** :
+  - `mono/apps/mobile/.env` est exclu du dépôt (`.gitignore`, ligne 58). Il ne sert qu'aux lancements et exports faits sur la machine qui le contient.
+  - Le seul build de publication web du dépôt (`.github/workflows/mobile.yml`, ligne 100) passe `EXPO_PUBLIC_REPERE_DONNEES` et aucune autre variable ; `outils/pipeline.sh` ne passe rien de tel.
+  - `mono/apps/mobile/eas.json` ne déclare aucune variable `EXPO_PUBLIC_*`. Un build de magasin ne la verra donc pas non plus, sauf si elle est définie côté EAS.
+- Ce qu'il faut pour que l'adresse arrive : la définir comme variable dans le build qui publie (dans `mobile.yml` ou `pipeline.sh` pour le web, dans `eas.json` ou les variables EAS pour les builds natifs), ou la vérifier sur le site publié après le prochain déploiement. Ce n'est pas un changement fait ici : le brief dit « aucun changement de code ». Décision à prendre par le CEO.
+- Le code n'a pas été modifié. Le repli reste en place : sans variable, les boutons de contact et les signalements sont masqués (`src/ui/contact.tsx`, `src/app/faq.tsx`, `src/ui/avatar.tsx`).
+
+## 40. Bleu-sarcelle #0e7490 : échec au test chroma, couleur figée (V36, bloc 2 M4)
+
+- Vérifié le 31/10/2026 : `validate_palette.js "#0e7490" --mode light` donne **[FAIL] Chroma floor**, valeur 0,094, « reads gray ». Les autres contrôles passent (luminosité, contraste 3:1 sur le fond clair).
+- Précision : le validateur juge une palette catégorielle. Une seule couleur y est testée comme un jeu de série ; l'écart ne dit donc pas que le bleu-sarcelle est illisible, seulement qu'il est sous le seuil de saturation de cet outil.
+- Invariant 7 : la palette d'échelon (`#0e7490` ville, `#0891b2` agglomération, `#b45309` département, `#6d28d9` région, `#1d1d1f` France) est figée.
+- **Décision CEO : conserver.** Aucun changement de code.
+
+## 41. Niveau « Ma rue » vide : comportement voulu, à revoir (V36, bloc 2 M5)
+
+- Le niveau rue rend le calendrier et les actualités vides parce que les données sont nationales. Comportement honnête. À revoir quand on aura des actus locales (voir `docs/strategie-editoriale.md`, état du 31/10/2026 : trois communes pilotes vides).
