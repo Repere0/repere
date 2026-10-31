@@ -10,6 +10,7 @@ import { chaineDecision } from "@repere/core";
 import { AvecDonnees, Page, Question } from "../ui/page";
 import { BadgeZoom } from "../ui/badge-zoom";
 import { SignalerErreur } from "../ui/contact";
+import { BoutonPartageTexte, ligneSource } from "../ui/partage/partager-texte";
 import { CIBLE, couleurs, PAS, TYPO } from "../lib/theme";
 
 type Personne = { nom: string; role?: string };
@@ -74,7 +75,7 @@ export default function MesElus() {
 
       return (
         <Page>
-          <Stack.Screen options={{ title: "Mes élus" }} />
+          <Stack.Screen options={{ title: "Mes élus", headerRight: () => <BoutonPartageTexte titre={`Mes élus à ${r.d.nomCommune}`} chemin="mes-elus" source={ligneSource(r.srcElus)} /> }} />
           <BadgeZoom />
           <Question etiquette="Vos élus" question={`Qui vous représente à ${r.d.nomCommune} ?`}
             sous="Les élus de votre commune, du plus proche au plus lointain. Touchez une ligne pour sa fiche." />

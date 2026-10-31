@@ -17,6 +17,7 @@ import { BadgeZoom, useNiveauZoom } from "../ui/badge-zoom";
 import { useProfil } from "../lib/profil";
 import { visibleAuNiveau } from "@repere/core";
 import { messageActu } from "../ui/partage/messages";
+import { BoutonPartageTexte, ligneSource } from "../ui/partage/partager-texte";
 
 type Evt = { id: string; t: string; d: string; axes?: string; e: string; src?: string; srcn?: string };
 
@@ -52,7 +53,7 @@ export default function Actus() {
     /* Audit 5 s (V15) : sansDate, la ligne DateDonnee de l'ecran dit deja la date et la source. */
     <Page sansDate>
       <BadgeZoom />
-      <Stack.Screen options={{ title: "Actualités" }} />
+      <Stack.Screen options={{ title: "Actualités", headerRight: () => <BoutonPartageTexte titre="Actualités" chemin="actus" source="Source : sources officielles, indiquée sous chaque information." /> }} />
       <Question etiquette="Au Parlement" question="Actualités"
         sous="Ce qu'ont publié les sources officielles." />
       {/* Invariant 9, D14 : jamais « mis à jour » ; la date du fil et son anciennete. */}

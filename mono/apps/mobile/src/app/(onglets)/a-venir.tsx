@@ -36,6 +36,7 @@ import { BadgeZoom, useNiveauZoom } from "../../ui/badge-zoom";
 import { visibleAuNiveau } from "@repere/core";
 import { AgendaStory } from "../../ui/partage/variantes/agenda.story";
 import { messageAgenda } from "../../ui/partage/messages";
+import { BoutonPartageTexte, ligneSource } from "../../ui/partage/partager-texte";
 
 type Ev = { titre: string; debut: string; institution: string; categorie?: string; lieu?: string; description?: string; source: Record<string, string> };
 type Groupe = { jour: string; institution: string; titre: string; debut: string; debuts: string[]; fins?: (string | null)[]; seances: number;
@@ -181,7 +182,8 @@ export default function AVenir() {
       return (
         /* Audit 5 s (V15) : sansDate, la ligne DateDonnee de l'ecran dit deja la date et la source. */
         <Page sansDate>
-          <Stack.Screen options={{ title: LIBELLES.calendrier }} />
+          <Stack.Screen options={{ title: LIBELLES.calendrier, headerRight: () => <BoutonPartageTexte titre={LIBELLES.calendrier} chemin="a-venir"
+            source={lues.map(x => ligneSource({ producteur: x.source.producteur_affiche || x.source.producteur, maj: x.source.releve_le })).filter(Boolean).join(" ")} /> }} />
           <BadgeZoom />
           <View style={{ flexDirection: "row", alignItems: "flex-start", justifyContent: "space-between", gap: PAS * 2 }}>
             <View style={{ flex: 1 }}>

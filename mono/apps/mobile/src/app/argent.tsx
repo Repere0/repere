@@ -27,6 +27,7 @@ import { AvecDonnees, Page, Question } from "../ui/page";
 import { DateDonnee } from "../ui/fraicheur";
 import { phrasesMoyenne, useMoyenneDepenses } from "../lib/moyenne";
 import { PastilleSource } from "../ui/source";
+import { BoutonPartageTexte, ligneSource } from "../ui/partage/partager-texte";
 import { Emoji, Resume } from "../ui/resume";
 import { BarrePart, Compteur, DeuxAnnees, Depli, Financement, Mois, RepartitionCent } from "../ui/visuels";
 import { PartagerCarte } from "../ui/partage/bouton-partage";
@@ -85,7 +86,7 @@ export default function Argent() {
       return (
         /* Audit 5 s (V15) : sansDate, la ligne DateDonnee de l'ecran dit deja la date et la source. */
         <Page sansDate>
-          <Stack.Screen options={{ title: LIBELLES.argent }} />
+          <Stack.Screen options={{ title: LIBELLES.argent, headerRight: () => <BoutonPartageTexte titre={`${LIBELLES.argent} de ${nom}`} chemin="argent" source={ligneSource(d.srcComptes)} /> }} />
           <Question emoji="💶" etiquette="L'argent de la commune" question={`Où va l'argent de ${nom} ?`} />
           {/* V13 bloc A : la date des comptes et leur anciennete, avec la source. */}
           <DateDonnee quoi="Comptes OFGL" date={r.index?.sources?.comptes?.maj} url={r.index?.sources?.comptes?.url} />
