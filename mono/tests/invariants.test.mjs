@@ -70,7 +70,10 @@ test("invariant 2 — une seule clé de stockage, nommée, et rien d'autre", () 
        ce projet qu'une garde trebuche sur ce qui la verifie. */
     if (f.includes("tests")) continue;
     const s = lire(f);
-    for (const m of s.matchAll(/localStorage\.(?:get|set|remove)Item\(\s*([^),]+)/g)) {
+    /* Un script d'audit injecte une cle par son parametre (([k, v]) => localStorage.setItem(k, v)) :
+       ce n'est pas une cle de l'application, on le retire avant de chercher les noms de cle. */
+    const sansInjection = s.replace(/\(\[k, v\]\) => localStorage\.setItem\(k, v\)/g, "");
+    for (const m of sansInjection.matchAll(/localStorage\.(?:get|set|remove)Item\(\s*([^),]+)/g)) {
       cles.add(m[1].trim());
     }
     assert.ok(!/sessionStorage\./.test(s), `${f} utilise sessionStorage`);
@@ -79,6 +82,8 @@ test("invariant 2 — une seule clé de stockage, nommée, et rien d'autre", () 
   const litteraux = [...cles].filter(c => /^["']/.test(c));
   assert.deepEqual(litteraux, ["CLE"].filter(() => false),
     "aucune cle ne doit etre ecrite en dur : " + litteraux.join(", "));
+  /* ADR 0006 : exactement deux identifiants de cle, nommes, jamais d'autre. */
+  for (const c of cles) assert.ok(["CLE", "CLE_PROFIL"].includes(c), `cle de stockage non autorisee : ${c} (ADR 0006)`);
 });
 
 test("invariant 2 — IndexedDB ne peut contenir que de la donnée publique", () => {
@@ -129,17 +134,41 @@ test("invariant 6 — rien ne gamifie le vote", () => {
   }
 });
 
-test("invariant 7 — palette gelée, et aucune couleur hors palette", () => {
+test("invariant 7 — palette gelée ; couleurs de groupes seulement dans palette.ts ; aucune autre couleur hors palette", () => {
+  /* Amendement du 30/10/2026 (CEO) : les couleurs de groupes politiques servent a
+     identifier un elu. Elles vivent dans palette.ts (table COULEURS_GROUPES), et
+     nulle part ailleurs. Toute autre couleur reste soumise au plafond d'amplitude. */
   const gelees = Object.values(ECHELONS);
   const css = lire("packages/ui/src/tokens.css");
   for (const [nom, hex] of Object.entries(ECHELONS)) {
     assert.ok(css.includes(hex), `la couleur d'echelon ${nom} (${hex}) a disparu des jetons`);
   }
+  const bloc = (lire("apps/mobile/src/lib/palette.ts").match(/COULEURS_GROUPES[\s\S]*?\}\);/) || [""])[0];
+  const groupes = [...bloc.matchAll(/#[0-9a-fA-F]{6}\b/g)].map(m => m[0].toLowerCase());
+  assert.equal(groupes.length, 12, "la table des groupes doit porter 12 couleurs (ADR 0001)");
+  /* Complement D24 (30/10/2026, ADR 0003) : trois couleurs de vote, dans palette.ts seulement. */
+  const blocVote = (lire("apps/mobile/src/lib/palette.ts").match(/export const COULEURS_VOTE[\s\S]*?\}\);/) || [""])[0];
+  const votes = [...blocVote.matchAll(/#[0-9a-fA-F]{6}\b/g)].map(m => m[0].toLowerCase());
+  /* Valeurs ecrites sans « # » : ce fichier est lui-meme balaye par le controle de palette. */
+  assert.deepEqual(votes, ["1f883d", "cf222e", "6e7781"].map(h => "#" + h), "les couleurs de vote sont celles de D24 (ADR 0003)");
+  /* Variante daltonienne (D56, V29 bloc 3) : trois couleurs, dans palette.ts seulement. */
+  const blocVoteD = (lire("apps/mobile/src/lib/palette.ts").match(/export const COULEURS_VOTE_DALTONIEN[\s\S]*?\}\);/) || [""])[0];
+  const votesD = [...blocVoteD.matchAll(/#[0-9a-fA-F]{6}\b/g)].map(m => m[0].toLowerCase());
+  assert.deepEqual(votesD, ["0072b2", "b35900", "6e7781"].map(h => "#" + h), "la variante daltonienne est celle de D56 (ADR 0003)");
+  const tousVotes = [...votes, ...votesD];
   let controlees = 0;
   for (const f of sourcesEcrites()) {
     for (const m of lire(f).matchAll(/#[0-9a-fA-F]{6}\b/g)) {
       const hex = m[0].toLowerCase();
       if (gelees.includes(hex)) continue;
+      if (tousVotes.includes(hex)) {
+        assert.equal(f, "apps/mobile/src/lib/palette.ts", `${f} : couleur de vote ${hex} hors palette.ts`);
+        continue;
+      }
+      if (groupes.includes(hex)) {
+        assert.equal(f, "apps/mobile/src/lib/palette.ts", `${f} : couleur de groupe ${hex} hors palette.ts`);
+        continue;
+      }
       controlees++;
       assert.ok(amplitude(hex) <= AMPLITUDE_MAX,
         `${f} : ${hex} a une amplitude de ${amplitude(hex)} (plafond ${AMPLITUDE_MAX}) — c'est une couleur, pas un neutre`);
@@ -279,15 +308,66 @@ test("invariant 4 — aucune donnée n'est servie sans source déclarée", () =>
      le Senat et l'Assemblee a l'ouverture de l'onglet, quand le detail
      complet (~29,8 Ko) n'arrive qu'au clic. Meme fichier source, meme
      execution du script, meme releve_le : les deux niveaux ne peuvent pas
-     diverger en fraicheur l'un de l'autre. */
+     diverger en fraicheur l'un de l'autre.
+     La treizieme, /agregats-regionaux.json, est ajoutee le 30/10/2026 (V15, bloc 4) :
+     la mediane regionale des depenses par habitant, pre-calculee par
+     scripts/agregats-regionaux.mjs a partir des comptes OFGL deja publies. Un seul
+     petit fichier pour la France ; les codes de region sont des cles internes, jamais
+     dans l'adresse. Sa provenance vit DANS le fichier (source = la source « comptes »
+     de l'index, recopiee), exigee juste en dessous s'il est publie. */
   const client = lire("packages/data-utils/src/client.js");
   const composees = [...client.matchAll(/\$\{BASE_DONNEES\}(\/[A-Za-z0-9_${}./-]*)/g)].map(m => m[1]);
   assert.deepEqual([...new Set(composees)].sort(),
-    ["/agenda-an.json", "/calendrier-senat.json", "/communes-beta.json", "/comptes-regions.json", "/departments/${d}.json",
-     "/deputes.json", "/elus-regions/${c}.json", "/evenements.json", "/index.json",
-     "/projets/${d}.json", "/questions-gouvernement-index.json", "/questions-gouvernement/${lotPadded}.json", "/scrutins-details/${lotPadded}.json", "/scrutins-index.json", "/scrutins-solennels-recents.json", "/scrutins-solennels.json", "/scrutins.json", "/scrutins/${d}.json"],
+    ["/actuelles-rss.json", "/actus-hebdo.json", "/agenda-an.json", "/agregats-regionaux.json", "/calendrier-senat.json", "/communes-beta.json", "/comptes-regions.json", "/departments/${d}.json",
+     "/deputes.json", "/elus-regions/${c}.json", "/evenements.json", "/index.json", "/mairies-idf.json",
+     "/photos-elus/${d}.json", "/projets/${d}.json", "/questions-gouvernement-index.json", "/questions-gouvernement/${lotPadded}.json", "/scrutins-details/${lotPadded}.json", "/scrutins-index.json", "/scrutins-solennels-recents.json", "/scrutins-solennels.json", "/scrutins.json", "/scrutins/${d}.json"],
     "client.js compose une adresse de donnees inattendue : " + composees.join(", "));
   const sources = existe("data/index.json") ? (JSON.parse(lire("data/index.json")).sources || {}) : {};
+  /* /photos-elus/{dep}.json (D27, ADR 0004) : chaque photo porte son auteur et sa licence,
+     et la licence est libre. Servi par departement, comme les comptes. */
+  if (existe("data/photos-elus")) {
+    for (const f of fs.readdirSync(path.join(RACINE, "data/photos-elus"))) {
+      const ph = JSON.parse(lire("data/photos-elus/" + f));
+      assert.ok(ph.source && ph.genere_le, `photos-elus/${f} sans source ni date`);
+      for (const [cle, x] of Object.entries(ph.photos || {})) {
+        assert.ok(x.auteur && x.licence && /^data:image\//.test(x.data), `photos-elus/${f} ${cle} : auteur, licence ou vignette manquant`);
+        assert.ok(!/nc|nd/i.test(x.licence.replace(/cc0/i, "")), `photos-elus/${f} ${cle} : licence non libre (${x.licence})`);
+      }
+    }
+  }
+  /* /actus-hebdo.json (D29-D31) : actu redigee par le CEO ; chaque entree remplie porte une
+     source officielle en https (invariant 4). Les entrees vides sont permises (rien n'est affiche). */
+  for (const f of ["data/actus-hebdo.json", "../data/actus-hebdo.json"]) {
+    if (!existe(f)) continue;
+    const h = JSON.parse(lire(f));
+    assert.ok(/^\d{4}-W\d{2}$/.test(h.semaine || "") && /^\d{4}-\d{2}-\d{2}$/.test(h.date_publication || ""), `${f} : semaine ou date_publication mal formee`);
+    for (const [insee, x] of Object.entries(h.communes || {})) {
+      if (!x.titre && !x.resume && !x.source) continue;
+      assert.ok(x.titre && x.resume && /^https:\/\//.test(x.source || ""), `${f} ${insee} : titre, resume et source https exiges`);
+    }
+  }
+  /* Mandats termines tenus a la main (D32) : chaque entree porte une date passee et une source https. */
+  {
+    const m = lire("apps/mobile/src/lib/mandats-termines.ts");
+    const entrees = m.split("{ insee:").slice(1);
+    assert.ok(entrees.length > 0, "mandats-termines.ts : aucune entree lue");
+    for (const e of entrees) {
+      const fin = (e.match(/fin: "([^"]*)"/) || [])[1] || "";
+      assert.ok(/^\d{4}-\d{2}-\d{2}$/.test(fin) && fin <= new Date().toISOString().slice(0, 10), `mandats-termines.ts : fin absente ou future (${fin})`);
+      assert.ok(/source: "https:\/\//.test(e) && /sourceNom: "[^"]+"/.test(e), "mandats-termines.ts : source https et nom de source exiges (invariant 4)");
+    }
+  }
+  /* /mairies-idf.json (D28, ADR 0005) : provenance dans le fichier (annuaire DILA). */
+  if (existe("data/mairies-idf.json")) {
+    const mai = JSON.parse(lire("data/mairies-idf.json"));
+    assert.ok(mai.source && mai.source.producteur && mai.source.licence && mai.genere_le,
+      "mairies-idf.json publie sans source, licence ni date (invariant 4)");
+  }
+  if (existe("data/agregats-regionaux.json")) {
+    const agr = JSON.parse(lire("data/agregats-regionaux.json"));
+    assert.ok(agr.source && agr.source.producteur && agr.genere_le,
+      "agregats-regionaux.json publie sans source ni date de generation (invariant 4)");
+  }
   for (const attendue of ["elus", "comptes", "circonscriptions", "deputes", "scrutins", "questionsGouvernement", "communes"]) {
     assert.ok(sources[attendue] && sources[attendue].producteur,
       `index.json ne declare pas la source « ${attendue} »`);

@@ -168,7 +168,7 @@ function Entree({ index, communesBeta, onBesoinCommunes, departement, onOuvrir, 
 
       {manquanteTrouvee ? (
         <Vide titre={`${manquanteTrouvee} existe bien en Île-de-France : c'est nous qui n'avons pas encore sa fiche.`}
-          corps="Le Répertoire national des élus ne porte aucune ligne pour cette commune. Ce n'est pas une erreur de votre part, et ce n'est pas la preuve que la commune n'existe pas." />
+          corps="Les données publiées que Repère lit ne contiennent pas de fiche pour cette commune. Ce n'est pas une erreur de votre part, et ce n'est pas la preuve que la commune n'existe pas." />
       ) : null}
 
       {rien ? (
@@ -398,7 +398,7 @@ function ChoixCommune({ paquet, nomDepartement, commune, onCommune, deplie, setD
       {trouvees.length === 0 ? (
         manquanteTrouvee ? (
           <Vide titre={`${manquanteTrouvee} existe bien dans ce département : c'est nous qui n'avons pas encore sa fiche.`}
-            corps="Le Répertoire national des élus ne porte aucune ligne pour cette commune. Ce n'est pas une erreur de votre part, et ce n'est pas la preuve que la commune n'existe pas." />
+            corps="Les données publiées que Repère lit ne contiennent pas de fiche pour cette commune. Ce n'est pas une erreur de votre part, et ce n'est pas la preuve que la commune n'existe pas." />
         ) : (
           <Vide titre={`Aucune commune du département ${paquet.d} ne porte ce nom.`}
             corps="Ce fichier ne contient que les communes de ce département. Si la vôtre est ailleurs, changez de département au-dessus." />

@@ -1,0 +1,121 @@
+/* LA PALETTE DE REPERE MOBILE, EN DONNEES PURES — 29/10/2026.
+ *
+ * Deux thèmes : clair (valeurs de l'application depuis le 30/09/2026, inchangées)
+ * et sombre (ajouté le 29/10/2026). Ce module ne dépend d'aucun composant : il
+ * est lu par theme.ts ET directement par les tests (tests/theme.test.mjs), qui
+ * vérifient les contrastes et l'amplitude sur les vraies valeurs.
+ *
+ * INVARIANTS RESPECTÉS :
+ * - les cinq couleurs d'échelon viennent de @repere/data-utils (invariant 7),
+ *   jamais recopiées ici ; seule la couleur « France » change de bord en
+ *   sombre (c'est l'encre du produit, voir ECHELONS_PAR_MODE) ;
+ * - tout le reste est neutre, amplitude RGB <= 24 (invariant 7) ;
+ * - couleurs de vote (D24, 30/10/2026, ADR 0003, invariant 7 complété) : vert pour,
+ *   rouge contre, gris abstention, dans COULEURS_VOTE et nulle part ailleurs. Elles
+ *   codent le sens du vote, un fait ; la position reste écrite en toutes lettres.
+ *
+ * LE THÈME SOMBRE N'EST PAS LA PALETTE 2026 DE LA BRANCHE ux/theme-sombre-20-10 :
+ * celle-ci change aussi le clair (fond bleu-gris, accents émeraude, corail pour
+ * « contre »). Elle n'est pas reprise ici : elle touche à l'invariant 7 et à la
+ * neutralité du vote, et relève d'une décision du fondateur (DECISIONS). */
+import { ECHELONS } from "@repere/data-utils";
+
+export type Mode = "clair" | "sombre";
+export type Echelon = keyof typeof ECHELONS;
+
+export type Neutres = {
+  sol: string; carte: string; encre: string; sourd: string;
+  trait: string; voile: string; blanc: string; lien: string;
+  /* « ancien » (V13, 30/10/2026) : la date d'une donnee de plus de 30 jours. Un gris
+     tire vers le rouge, au plafond d'amplitude 24 de l'invariant 7 : un vrai rouge
+     serait une couleur, que l'invariant reserve aux echelons et aux groupes. */
+  ancien: string;
+};
+
+/* Neutres du clair : valeurs de main, inchangées. */
+const NEUTRES_CLAIR: Neutres = {
+  sol: "#F5F2EC", carte: "#FFFFFF", encre: "#171614", sourd: "#625E57",
+  trait: "#DDD8D0", voile: "#ECE8E1", blanc: "#ffffff", lien: "#1a1917", ancien: "#745C5C",
+};
+
+/* Neutres du sombre : même famille chaude que le clair (pas de bleu), mesurés
+   dans tests/theme.test.mjs. Texte encre sur sol 16:1 ; sourd sur carte 7,6:1. */
+const NEUTRES_SOMBRE: Neutres = {
+  sol: "#161513", carte: "#1F1D1A", encre: "#F3F0EA", sourd: "#B5AEA3",
+  trait: "#3B3832", voile: "#2A2823", blanc: "#ffffff", lien: "#F3F0EA", ancien: "#CCB4B4",
+};
+
+/* Les échelons : identiques dans les deux thèmes, sauf « France ». */
+export const ECHELONS_PAR_MODE: Record<Mode, Record<Echelon, string>> = {
+  clair: { ...ECHELONS },
+  sombre: { ...ECHELONS, france: NEUTRES_SOMBRE.encre },
+};
+
+/* Teintes d'échelon : fond de carte + quelques pour cent de l'échelon. Chacune
+   reste sous l'amplitude 24 (invariant 7) et porte un texte encre à plus de
+   12:1. Clair : valeurs de main, inchangées. */
+export const TEINTES_PAR_MODE: Record<Mode, Record<Echelon, string>> = {
+  clair: { ville: "#dbeaee", agglo: "#e4f3f7", dept: "#f7ece4", region: "#efe7fb", france: "#ecebe8" },
+  sombre: { ville: "#1D2728", agglo: "#1C2B2C", dept: "#2E2218", region: "#281E31", france: "#1D1C1B" },
+};
+
+export const NEUTRES_PAR_MODE: Record<Mode, Neutres> = { clair: NEUTRES_CLAIR, sombre: NEUTRES_SOMBRE };
+
+/* Ombres : en sombre, l'ombre se voit par l'opacité du noir, pas par l'encre. */
+export const OMBRE_PAR_MODE = {
+  clair: { shadowColor: "#171614", shadowOpacity: 0.045, shadowRadius: 10, shadowOffset: { width: 0, height: 4 }, elevation: 1 },
+  sombre: { shadowColor: "#000000", shadowOpacity: 0.5, shadowRadius: 12, shadowOffset: { width: 0, height: 4 }, elevation: 2 },
+} as const;
+
+/* La palette des cartes de partage, figée et sombre (décision D5 du porteur, 30/10/2026).
+   La carte est une image qui part dans une messagerie : elle garde la même apparence quel
+   que soit le thème du téléphone. */
+export const PALETTE_CARTE = Object.freeze({
+  ...ECHELONS_PAR_MODE.sombre, ...NEUTRES_SOMBRE,
+});
+
+/* Contraste WCAG entre deux couleurs hexadécimales (D17). Sert à décider si un
+   point d'échelon doit recevoir un contour clair pour rester distinct de sa carte. */
+const canal = (h: string) => [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16));
+function luminance(h: string): number {
+  const c = canal(h).map(v => { const x = v / 255; return x <= 0.03928 ? x / 12.92 : ((x + 0.055) / 1.055) ** 2.4; });
+  return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2];
+}
+export function rapportContraste(a: string, b: string): number {
+  const [x, y] = [luminance(a), luminance(b)].sort((p, q) => q - p);
+  return (x + 0.05) / (y + 0.05);
+}
+
+/* Seuil des éléments non textuels (WCAG 1.4.11). En dessous, le point d'échelon
+   reçoit un contour de l'encre (un trait, pas une couleur nouvelle). */
+export const SEUIL_POINT = 3;
+
+/* Voile derriere la fenetre de reglage d'affichage (assombrit l'ecran dessous). */
+export const VOILE_MODAL = "rgba(0,0,0,0.4)";
+
+/* Couleurs de groupes politiques (invariant 7, amendé le 30/10/2026) : identification
+   des élus seulement (badges, cartes de partage). Jamais un vote ni un score. « Inconnu » sert de repli : aucun groupe n'est déduit ni estimé. */
+/* LES COULEURS DE VOTE (D24, puis A2 le 30/10/2026 : vert assombri, valeur D24 remplacee).
+   Sur la carte claire (#FFFFFF) : 4,52 / 5,36 / 4,55:1, au-dessus de 4,5:1 (WCAG AA texte),
+   verifie par tests/theme.test.mjs. Sur le sol clair, le vert et le gris restent sous 4,5:1 :
+   les barres sont toujours posees sur une carte. Detail : docs/adr/0003-couleurs-votes.md. */
+export const COULEURS_VOTE = Object.freeze({
+  votePour: "#1F883D",
+  voteContre: "#CF222E",
+  voteAbstention: "#6E7781",
+});
+
+/* VARIANTE DALTONIENNE (D56, 30/10/2026) : réglage « mode daltonien » du profil. Palette
+   Okabe-Ito : bleu #0072B2 (pour), vermillion assombri #B35900 (contre), même gris que le mode
+   normal (abstention). Le vermillion est assombri pour atteindre 4,5:1 sur carte blanche.
+   Vérifié par tests/theme.test.mjs et tests/daltonisme.test.mjs. */
+export const COULEURS_VOTE_DALTONIEN = Object.freeze({
+  votePour: "#0072B2",
+  voteContre: "#B35900",
+  voteAbstention: "#6E7781",
+});
+
+export const COULEURS_GROUPES: Readonly<Record<string, string>> = Object.freeze({
+  LFI: "#C9462C", RN: "#0D378A", EPR: "#FFA500", "LÉ": "#33A02C", LR: "#0066CC", SOC: "#FF8080",
+  HOR: "#00A0C6", DEM: "#F7B32B", LIOT: "#6B7280", GDR: "#B91C1C", NI: "#9CA3AF", Inconnu: "#6B7280",
+});

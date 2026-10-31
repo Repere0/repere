@@ -32,23 +32,31 @@ explicite du porteur les change ; la PR qui l'applique met alors à jour
 
 <!-- INVARIANTS:DEBUT -->
 1. **Autonomie.** L'application fonctionne hors ligne, sans serveur applicatif.
-2. **Une seule clé de stockage local** (`repere.departement` dans `mono/`, qui porte
-   `{d, v}` depuis le 23/09/2026). Aucun compte, email, traceur, cookie. Le
-   magasin de données (IndexedDB sur le site, dossier cache de l'application sur
-   le téléphone — décision du 30/09/2026) ne garde que les fichiers publics
-   publiés par Repère, sous une garde unique (`store.js`) : aucune adresse,
-   aucun identifiant, aucune trace du lecteur. La commune choisie reste la seule
-   donnée propre au lecteur. Aucune adresse réseau ne porte un code de commune :
-   données découpées **par département**.
-3. **Aucun classement**, score, ou tri numérique de personnes, de partis ou de
-   territoires.
+2. **Deux clés de stockage local, nommées, rien d'autre.** `repere.departement` (la commune,
+   `{d, v}` depuis le 23/09/2026) et `repere.profil` (réglages de lecture : taille, contraste,
+   espacement, police, animations, daltonisme, images, et depuis D57 `themes` : les thèmes d'intérêt choisis, parmi une liste fixe ; et depuis D67 `mode` : auto, clair ou sombre ; ADR 0006 amendé). Ni l'une ni l'autre n'est
+   transmise : aucun compte, email, traceur, cookie. Le magasin de données (IndexedDB sur le
+   site, cache de l'application sur le téléphone) ne garde que les fichiers publics publiés
+   par Repère, sous une garde unique (`store.js`). Aucune adresse réseau ne porte un code de
+   commune ni un réglage : données découpées **par département**.
+3. **Aucun classement**, score, ou tri numérique de personnes, de partis ou de territoires.
+   Amendé (D23, 30/10/2026, ADR 0002) : comparaisons FACTUELLES entre communes permises
+   (moyenne IDF ou régionale, « comme X communes sur Y », année N-1), annoncées comme calcul ;
+   « comme », « plus que », « moins que » oui ; « mieux », « pire », « top », « note », « score » non.
 4. **Chaque chiffre porte sa source officielle et sa date** (producteur, licence,
-   mise à jour, URL). Un calcul dérivé s'annonce comme un calcul.
+   mise à jour, URL). Un calcul dérivé s'annonce comme un calcul. D28 (ADR 0005) : site de mairie en lien externe, HTML jamais lu.
+   D81 (ADR 0007) : flux RSS officiel de mairie lisible (titre, deux phrases au plus, date, lien), jamais l'article entier.
 5. **Doctrine du vide.** Une absence de donnée produit une phrase vraie et un lien,
    jamais une forme vide, un zéro ou une barre minuscule.
 6. **Rien qui gamifie le vote ou l'opinion** : aucun score, aucune récompense, aucune série, aucun gain ni son de réussite lié à un vote, une position ou un partage. Les effets de mouvement sont permis pour lire, naviguer et suivre une heure ou une durée (assouplie par décision du porteur, 13/10/2026).
-7. **Cinq couleurs d'échelon gelées** ; aucune autre couleur ne dépasse une
-   amplitude de 24 sur les canaux RGB.
+7. **Invariant 7 (amendé le 30/10/2026)** : les couleurs de groupes politiques
+   sont autorisées pour l'identification des élus (badges, cartes de partage).
+   Elles ne codent JAMAIS un vote, une opinion, un score ou un classement.
+   Mapping dans palette.ts. Complément (D24, 30/10/2026, ADR 0003) : votes en vert `#1F883D`
+   (pour), rouge `#CF222E` (contre), gris `#6E7781` (abstention) ; ils codent un FAIT, jamais
+   un jugement, et la position reste écrite en toutes lettres. Variante daltonienne (D56, 30/10/2026, réglage
+   du profil, ADR 0003) : bleu `#0072B2` (pour), vermillion assombri `#B35900` (contre), gris `#6E7781` (abstention). D27 (ADR 0004) : photo d'élu sous licence
+   libre de Wikimedia Commons seulement, crédit affiché, servie par département ; jamais celles de l'AN.
 8. **Jamais le patrimoine d'un élu, jamais de donnée de présence ou d'absence.**
 9. **Fraîcheur** (décision du porteur, 30/09/2026). Une donnée gardée sur
    l'appareil peut être affichée pour préserver l'accès hors ligne, mais jamais

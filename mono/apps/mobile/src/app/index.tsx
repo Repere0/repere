@@ -4,29 +4,205 @@
  * arrive en un fichier ; la recherche et l'ordre des resultats sont ceux du
  * site, importes de @repere/core (trouverCommunes) : la meme saisie donne les
  * memes communes sur les deux supports. Les phrases de vide sont celles du
- * site, mot pour mot. */
+ * site, mot pour mot.
+ *
+ * 30/10/2026 — REFONTE VISUELLE A TITRE D'ESSAI (direction artistique, sombre).
+ * Les cartes glissent horizontalement. La premiere (D18, 30/10/2026) lit la depense
+ * par habitant dans les comptes OFGL publies : celle de la commune retenue, sinon
+ * celle de Melun, annoncee comme un exemple. La seconde est un vote fige (depute
+ * 77-1, scrutin 8706, verifie le 30/10/2026), annonce lui aussi comme un exemple.
+ * Le partage n'est plus sur l'accueil : il est sur les ecrans de contexte (src/ui/partage). */
 import { useEffect, useMemo, useState } from "react";
-import { FlatList, KeyboardAvoidingView, Platform, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import { FlatList, KeyboardAvoidingView, Linking, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View, useWindowDimensions } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { router } from "expo-router";
-import { mots, motsCible, correspond, trouverCommunes, departementDe } from "@repere/core";
-import { chargerCommunesBeta, chargerIndex, ETATS, PHRASES } from "../lib/donnees";
+import { router, useLocalSearchParams } from "expo-router";
+import { mots, motsCible, correspond, trouverCommunes, departementDe, titreLisible, dernierExercice, evolution, parHabitant, dateFr, decompte, ordinal, positionSur, positionsFiables, visibleAuNiveau } from "@repere/core";
+import { chargerCatalogueScrutins, chargerCommunesBeta, chargerDepartement, chargerDeputes, chargerIndex, chargerVotes, ETATS, PHRASES } from "../lib/donnees";
 import { Bouton, Carte, Texte, Vide } from "../lib/composants";
 import { useSelection } from "../lib/selection";
-import { couleurs, CIBLE, PAS, POLICE, RAYON, TYPO } from "../lib/theme";
+import { useProfil } from "../lib/profil";
+import { BadgeZoom, useNiveauZoom } from "../ui/badge-zoom";
+import { feuille, CIBLE, PAS, POLICE, RAYON, TYPO } from "../lib/theme";
+import { ECHELONS_PAR_MODE, NEUTRES_PAR_MODE, OMBRE_PAR_MODE } from "../lib/palette";
+import { groupeDe } from "../lib/groupes";
+import { VOTE } from "../ui/partage/donnees";
+import { SquelettesListe } from "../ui/squelette";
+import { Logo } from "../ui/logo";
+import { Loupe } from "../ui/loupe";
+import { RappelElection } from "../ui/rappel-election";
+import { DatePublication } from "../ui/fraicheur";
+import { DernieresPublications } from "../ui/dernieres-publications";
+import { phrasesMoyenne, titreEcart, useMoyenneDepenses } from "../lib/moyenne";
+import { useCouleurVote } from "../lib/couleur-vote";
+import { AvecPicto } from "../ui/picto";
+import { libelleGroupe } from "../ui/badge-groupe";
+import { Details } from "../ui/details";
+import { PourquoiJeVois } from "../ui/pourquoi";
+import { SignalerErreur } from "../ui/contact";
+import { ModaleExhaustif } from "../ui/modale-exhaustif";
+import { METHODE_COMPTES, USAGE_PAR_HABITANT, srcVote } from "../lib/sources";
+
+/* L'accueil est sombre : il lit la palette sombre, quel que soit le choix d'affichage. */
+const D = NEUTRES_PAR_MODE.sombre;
+const E = ECHELONS_PAR_MODE.sombre;
 
 type Ligne = [string, string, string[]];
 type Beta = { communes: Record<string, string>; manquantes?: Record<string, string>; source?: { producteur?: string } };
-type Index = { departements: { code: string; nom?: string }[] };
+type Index = { departements: { code: string; nom?: string }[]; agregats?: unknown[] };
+/* Le chiffre de la carte « L'argent de … » (D18) : lu dans les comptes OFGL publies
+   du departement, jamais ecrit dans le code. */
+/* V13 bloc B : quatre couches. Le chiffre ; le contexte, DANS la commune (l'exercice
+   precedent publie, seulement s'il suit et si le perimetre n'a pas change : core
+   evolution) et la commune mediane de la region (D23, A1) ; la consequence,
+   lue dans les memes comptes (salaires, investissement par habitant, publies par
+   l'OFGL) ; la source. Une couche sans donnee n'est pas affichee. */
+type Argent = { nom: string; an: string; depenses: number; avant: { an: string; depenses: number } | null; salaires: number | null; investissement: number | null };
+/* D21 : le dernier vote publie du depute de la commune retenue. « partagee » : la commune
+   est sur plusieurs circonscriptions, le depute depend de l'adresse (aucun n'est choisi). */
+type VoteVu = { depute: string; acteur: string; circo: number; position: string; d: string; t: string; dec?: Record<string, string>; lien?: string } | { partagee: number };
+
+/* V13 bloc C : une barre empilee, en vues (aucune bibliotheque). Trois gris de la palette
+   sombre, jamais une couleur d'echelon ni de groupe (invariant 7) ; la legende en toutes
+   lettres porte le sens, la barre ne fait que le montrer. Masquee au lecteur d'ecran :
+   la phrase qui suit dit la meme chose. */
+function Barre({ parts }: { parts: { cle: string; valeur: number; couleur: string }[] }) {
+  return (
+    <View style={s.barre} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
+      {parts.filter(p => p.valeur > 0).map(p => <View key={p.cle} style={{ flex: p.valeur, backgroundColor: p.couleur }} />)}
+    </View>
+  );
+}
+const nombre = (x: unknown) => { const n = Number(x); return Number.isFinite(n) && n >= 0 && x !== null && String(x).trim() !== "" ? n : null; };
+const POSITION_MOT: Record<string, string> = { p: "Pour", c: "Contre", a: "Abstention" };
+/* NIVEAU 1 DU BUDGET (V28, bloc 3) : la phrase-conclusion est un calcul sur les montants lus,
+   jamais un texte écrit à la main. Sans part des salaires, on garde le titre neutre. */
+const accroche = (a: Argent) => a.salaires !== null && a.depenses > 0
+  ? `Sur 100 € dépensés à ${a.nom}, ${Math.round(a.salaires / a.depenses * 100)} € vont aux salaires des agents.`
+  : `L'argent de ${a.nom}`;
+/* Sans commune retenue, la carte montre un exemple, dit comme tel : Melun. */
+const EXEMPLE = { insee: "77288", nom: "Melun" };
+/* COMMUNES RECENTES, POUR LA SESSION SEULEMENT (bloc D, 30/10/2026) : une variable en
+   memoire, perdue a la fermeture de l'application. Rien n'est ecrit sur le telephone :
+   la seule cle locale reste repere.departement (invariant 2). */
+const RECENTES: { insee: string; nom: string }[] = [];
+
+/* La repartition du scrutin entier (pas la position seule) : pour, contre, abstention. */
+function BarreVote({ dec }: { dec?: Record<string, string> | null }) {
+  const COULEUR_VOTE = useCouleurVote();
+  const p = dec ? nombre(dec.pour) : null, c = dec ? nombre(dec.contre) : null, a = dec ? nombre(dec.abstentions) : null;
+  if (p === null || c === null || a === null || p + c + a === 0) return null;
+  return (
+    <View style={{ gap: PAS * 2 }}>
+      <Barre parts={[{ cle: "p", valeur: p, couleur: COULEUR_VOTE.p }, { cle: "c", valeur: c, couleur: COULEUR_VOTE.c }, { cle: "a", valeur: a, couleur: COULEUR_VOTE.a }]} />
+      <Text style={s.legende}>L'Assemblée : {decompte(dec)}.</Text>
+    </View>
+  );
+}
+
+/* Le sens du vote : un rond de couleur (D24, un fait) et la position en toutes lettres. */
+function SensVote({ cle, texte }: { cle: string; texte: string }) {
+  const COULEUR_VOTE = useCouleurVote();
+  const couleur = COULEUR_VOTE[cle as keyof typeof COULEUR_VOTE];
+  return (
+    <View style={{ flexDirection: "row", alignItems: "center", gap: PAS * 2 }}>
+      {couleur ? <View accessibilityElementsHidden importantForAccessibility="no" style={{ width: 14, height: 14, borderRadius: 7, backgroundColor: couleur }} /> : null}
+      <Text style={s.vote}>{texte}</Text>
+    </View>
+  );
+}
+
+/* CARTE DU VOTE (V28, bloc 4) — trois niveaux, un seul composant pour le député et pour l'exemple.
+ * 1 : la phrase-conclusion, calculée à partir de la position lue ; le sens, en toutes lettres
+ *     et avec un rond de couleur (jamais la couleur seule) ; la date et le titre du scrutin.
+ * 2 (« Voir plus ») : le décompte du scrutin entier.
+ * 3 (« Tout voir ») : le scrutin, le décompte écrit, la façon dont Repère lit la position, le lien. */
+const VERBE_VOTE: Record<string, string> = { p: "a voté pour", c: "a voté contre", a: "s'est abstenu" };
+/* « 503 députés ont voté pour, aucun contre » : calculé sur le décompte publié ; sans décompte, rien. */
+function titreScrutin(dec?: Record<string, string> | null): string | null {
+  const p = nombre(dec?.pour), c = nombre(dec?.contre);
+  if (p === null || c === null) return null;
+  const pour = `${p.toLocaleString("fr-FR")} député${p > 1 ? "s" : ""} ${p > 1 ? "ont" : "a"} voté pour`;
+  return c === 0 ? `${pour}, aucun contre` : `${pour}, ${c.toLocaleString("fr-FR")} contre`;
+}
+function CarteVote({ etiquette, nom, acteur, ligne, position, dec, date, titre, lien, exemple = false }: {
+  etiquette: string; nom: string; acteur: string; ligne: string; position: string | null; dec?: Record<string, string> | null;
+  date: string; titre: string; lien?: string; exemple?: boolean;
+}) {
+  const [tout, setTout] = useState(false);
+  return (
+    <View style={s.carte}>
+      <AvecPicto picto="vote"><Text style={s.etiquette}>{etiquette}</Text></AvecPicto>
+      {/* V29 bloc 4 : le titre dit ce que le scrutin a donné, calculé sur son décompte ; le nom du député suit. */}
+      <Text style={s.carteTitre}>{titreScrutin(dec) ?? (position ? `${nom} ${VERBE_VOTE[position] ?? "a voté"}.` : `${nom} : position non lue`)}</Text>
+      {titreScrutin(dec) && position ? <Text style={[s.legende, { fontWeight: "600" }]}>{nom} {VERBE_VOTE[position] ?? "a voté"}.</Text> : null}
+      {/* Groupe inconnu ici : badge gris, aucune couleur de parti (ADR 0001). */}
+      <View style={s.badge}><Text style={s.badgeTexte}>{libelleGroupe(groupeDe(acteur))}</Text></View>
+      <Text style={s.legende}>{ligne}</Text>
+      {position ? <SensVote cle={position} texte={POSITION_MOT[position]} /> : <Text style={s.legende}>Le relevé de l'Assemblée ne donne pas de position vérifiable pour ce scrutin.</Text>}
+      <View style={{ flexDirection: "row", alignItems: "center", gap: PAS }}>
+        <Text style={[s.legende, { flex: 1 }]}>{date} · {titre}</Text>
+        <PourquoiJeVois etiquette={exemple ? "l'exemple de vote" : `le vote de ${nom}`} couleur={D.encre} fond={D.voile}
+          p={{ source: { texte: exemple ? `Assemblée nationale, scrutin n° ${VOTE.n} du ${date}` : `Assemblée nationale, scrutin du ${date}`, lien },
+            calcul: "Repère affiche la position du député et le décompte tels que l'Assemblée les publie pour ce scrutin. La position n'est retenue que si les deux relevés de l'Assemblée se correspondent ; sinon, aucune position n'est affichée.",
+            ici: exemple ? "Exemple : affiché tant que votre commune n'est pas choisie, pour montrer la carte." : "Affiché parce que c'est le dernier vote publié de votre député." }} />
+      </View>
+      <Details titre="Décompte du scrutin" couleur={D.encre} lien={D.encre}>
+        <BarreVote dec={dec} />
+      </Details>
+      <Pressable onPress={() => setTout(true)} accessibilityRole="button"
+        accessibilityLabel={`Tout voir sur le vote de ${nom} : scrutin, décompte, lecture, lien officiel`}
+        style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", alignSelf: "flex-start", opacity: pressed ? 0.7 : 1 })}>
+        <Text style={[s.legende, { fontSize: 14, textDecorationLine: "underline" }]}>Tout voir : scrutin et lecture</Text>
+      </Pressable>
+      <SignalerErreur contexte={`le vote de ${nom}`} donnee={`${date} · ${titre} · ${exemple ? "exemple" : nom}`} />
+      <ModaleExhaustif titre={`Vote de ${nom}`} visible={tout} onFermer={() => setTout(false)} sections={[
+        { titre: "Le scrutin", contenu: `${date} · ${titre}`, source: "Assemblée nationale" },
+        { titre: "Le décompte", contenu: dec ? decompte(dec) : "Le décompte n'est pas publié pour ce scrutin." },
+        { titre: "Comment Repère lit la position", contenu: exemple
+          ? "Cet exemple est figé : scrutin n° " + VOTE.n + ", vérifié le 30/10/2026. Repère ne l'affiche pas comme le vote d'un député de votre commune."
+          : "Repère n'affiche la position d'un député que si les deux relevés de l'Assemblée nationale se correspondent. Sinon, la carte ne montre aucune position." },
+        { titre: "Lien officiel", contenu: lien
+          ? <Pressable onPress={() => Linking.openURL(lien)} accessibilityRole="link" accessibilityLabel="Le scrutin sur le site de l'Assemblée nationale, ouvre un site externe"
+              style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", opacity: pressed ? 0.7 : 1 })}>
+              <Text style={[TYPO.corps, { textDecorationLine: "underline" }]}>Le scrutin sur le site de l'Assemblée nationale (site externe)</Text>
+            </Pressable>
+          : "Aucun lien officiel vérifié pour ce scrutin." },
+      ]} />
+    </View>
+  );
+}
 
 export default function Accueil() {
   const marges = useSafeAreaInsets();
-  const { choisir, retenue, oublier } = useSelection();
+  const { width } = useWindowDimensions();
+  const { choix, choisir, retenue, oublier } = useSelection();
+  const { absent } = useProfil();
+  const niveauZoom = useNiveauZoom();
+  /* V26 bloc 2 : le vote d'un député est une information nationale (échelon France). */
+  const voteAffiche = visibleAuNiveau(niveauZoom, "france");
   const [etat, setEtat] = useState<string>(ETATS.EN_COURS);
   const [beta, setBeta] = useState<Beta | null>(null);
   const [index, setIndex] = useState<Index | null>(null);
   const [filtre, setFiltre] = useState("");
+  const [cherche, setCherche] = useState(false);
+  const [page, setPage] = useState(0);
   const [essai, setEssai] = useState(0);
+  const [argent, setArgent] = useState<Argent | null>(null);
+  const [voteVu, setVoteVu] = useState<VoteVu | null>(null);
+  const [decExemple, setDecExemple] = useState<Record<string, string> | null>(null);
+  /* V29 bloc 2a : la position de l'exemple, lue du relevé de l'Assemblée (null si non lisible). */
+  const [positionExemple, setPositionExemple] = useState<string | null>(null);
+  const [tout, setTout] = useState(false);
+  /* V37 bloc 3 : « Voir toutes les communes » (recherche globale) ouvre la liste complète.
+     Le paramètre porte un horodatage : une nouvelle demande est toujours prise en compte. */
+  const params = useLocalSearchParams<{ toutes?: string }>();
+  useEffect(() => {
+    if (params.toutes) { setFiltre(""); setTout(true); }
+  }, [params.toutes]);
+  const [recentes, setRecentes] = useState(() => [...RECENTES]);
+  /* Une carte occupe toute la largeur de lecture ; la suivante commence apres un ecart. */
+  const larg = Math.min(width, 640) - PAS * 8;
+  const pas = larg + PAS * 3;
 
   useEffect(() => {
     let vivant = true;
@@ -49,6 +225,8 @@ export default function Accueil() {
     [beta],
   );
   const cherches = mots(filtre);
+  /* Toutes les communes de la beta, de A a Z : l'issue d'une recherche sans resultat. */
+  const toutes = useMemo(() => (tout ? [...communes].sort((a, b) => a[1].localeCompare(b[1], "fr")) : []), [tout, communes]);
   const trouvees = trouverCommunes(communes, cherches) as Ligne[];
   const manquante = cherches.length ? manquantes.find(([, , c]) => correspond(cherches, c)) : undefined;
   const rien = cherches.length > 0 && trouvees.length === 0 && !manquante;
@@ -63,7 +241,16 @@ export default function Accueil() {
     const dep = departementDe(insee);
     if (!dep) return;
     choisir({ dep, insee, nom });
-    router.push("/chez-vous");
+    const i = RECENTES.findIndex(x => x.insee === insee);
+    if (i >= 0) RECENTES.splice(i, 1);
+    RECENTES.unshift({ insee, nom });
+    RECENTES.length = Math.min(RECENTES.length, 3);
+    setRecentes([...RECENTES]);
+    /* La recherche se referme une fois la commune choisie : au retour, l'accueil est propre. */
+    setFiltre(""); setCherche(false); setTout(false);
+    /* V26 bloc 1 : premiere ouverture sans profil -> trois questions, une seule fois. */
+    if (absent) router.replace("/bienvenue");
+    else router.push("/chez-vous");
   };
 
   /* La commune retenue sur ce telephone, si le lecteur l'a demande
@@ -71,21 +258,245 @@ export default function Accueil() {
      plus, on ne propose rien plutot qu'un code nu. */
   const nomRetenue = retenue && beta ? beta.communes[retenue.c] : undefined;
 
+  /* D18 : la commune retenue si le lecteur l'a demande, sinon l'exemple. Si les comptes
+     ne donnent pas de depense par habitant, la carte n'est pas affichee. */
+  const cible = retenue && nomRetenue ? { insee: retenue.c, nom: nomRetenue } : EXEMPLE;
+  useEffect(() => {
+    if (!index || !index.agregats) return undefined;
+    let vivant = true;
+    const dep = departementDe(cible.insee);
+    if (!dep) return undefined;
+    const exempleIci = cible === EXEMPLE;
+    Promise.all([
+      chargerDepartement(dep),
+      exempleIci ? null : chargerDeputes(), chargerCatalogueScrutins(), chargerVotes(dep),
+    ]).then(([r, de, ca, vo]) => {
+      if (!vivant) return;
+      /* LE VOTE (D21) : seulement pour la commune retenue, et seulement si les deux releves
+         de l'Assemblee se correspondent (positionsFiables). Sinon, l'exemple, dit comme tel. */
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const fv = r.donnees ? (r.donnees as any).communes?.[cible.insee] : null;
+      let vu: VoteVu | null = null;
+      if (fv && de && ca && vo && de.donnees && ca.donnees && vo.donnees) {
+        const circos = Array.isArray(fv.circo) ? fv.circo : fv.circo === null || fv.circo === undefined ? [] : [fv.circo];
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const cat = ca.donnees as any, pos = vo.donnees as any, deps = de.donnees as any;
+        if (circos.length > 1) vu = { partagee: circos.length };
+        else if (circos.length === 1 && positionsFiables(cat, pos)) {
+          const d = deps.deputes && deps.deputes[dep + "-" + circos[0]];
+          if (d && d.acteurRef) {
+            const tries = [...cat.scrutins].sort((a: { d: string; n: string }, b: { d: string; n: string }) => (b.d + b.n.padStart(6, "0")).localeCompare(a.d + a.n.padStart(6, "0")));
+            const sc = tries.find((x: { n: string }) => POSITION_MOT[positionSur(pos, d.acteurRef, x.n) as string]);
+            if (sc) vu = { depute: [d.prenom, d.nom].filter(Boolean).join(" ") || d.nom, acteur: d.acteurRef, circo: Number(circos[0]), position: positionSur(pos, d.acteurRef, sc.n), d: sc.d, t: sc.t, dec: sc.dec, lien: srcVote(r.donnees as any, sc)?.url ?? undefined };
+          }
+        }
+      }
+      setVoteVu(vu);
+      /* Le decompte de l'exemple vient du catalogue publie, pas du code. */
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const scEx = ca && ca.donnees ? ((ca.donnees as any).scrutins || []).find((x: { n: string }) => x.n === VOTE.n) : null;
+      setDecExemple(scEx && scEx.dec ? scEx.dec : null);
+      /* V29 bloc 2a : la position de l'exemple vient du relevé, comme pour un vrai député. Si les deux relevés
+         ne se correspondent pas, pas de position : la carte le dit. */
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const posEx: any = ca && ca.donnees && vo && vo.donnees && positionsFiables(ca.donnees as any, vo.donnees as any)
+        ? positionSur(vo.donnees as any, VOTE.acteur, VOTE.n) : undefined;
+      setPositionExemple(posEx === "p" || posEx === "c" || posEx === "a" ? posEx : null);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const fiche = r.donnees ? (r.donnees as any).communes?.[cible.insee] : null;
+      const ex = fiche ? dernierExercice(fiche, index.agregats) : null;
+      const hab = ex ? parHabitant(ex.ex) : null;
+      const evo = fiche ? evolution(fiche, index.agregats) : null;
+      const habAvant = evo && ex && !evo.perimetreChange && evo.an2 === ex.an ? parHabitant(fiche.comptes[evo.an1]) : null;
+      setArgent(ex && hab && typeof hab.depenses === "number" ? {
+        nom: cible.nom, an: ex.an, depenses: hab.depenses,
+        avant: habAvant && typeof habAvant.depenses === "number" && evo ? { an: evo.an1, depenses: habAvant.depenses } : null,
+        salaires: typeof hab.salaires === "number" ? hab.salaires : null,
+        investissement: typeof hab.investissement === "number" ? hab.investissement : null,
+      } : null);
+    }).catch(() => { if (vivant) setArgent(null); });
+    return () => { vivant = false; };
+  }, [index, cible.insee, cible.nom]);
+  const exemple = cible === EXEMPLE;
+  /* D23, A1 : la commune mediane de la region, pour le meme exercice que le chiffre. */
+  const moyenne = useMoyenneDepenses(index, departementDe(cible.insee), argent ? argent.an : null);
+  const comparaison = argent && moyenne ? phrasesMoyenne(argent.nom, argent.depenses, moyenne) : null;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const urlComptes: string | null = (index as any)?.sources?.comptes?.url ?? null;
+  /* La répartition des montants par habitant (salaires, investissement, autres) : seulement si elle s'additionne. */
+  const repartition = argent && argent.salaires !== null && argent.investissement !== null && argent.salaires + argent.investissement <= argent.depenses
+    ? { sal: Math.round(argent.salaires / argent.depenses * 100), inv: Math.round(argent.investissement / argent.depenses * 100), aut: 0 }
+    : null;
+  if (repartition) repartition.aut = 100 - repartition.sal - repartition.inv;
+  const [budgetTout, setBudgetTout] = useState(false);
+
   const phrase = PHRASES[etat as keyof typeof PHRASES] as { titre: string; corps: string; action?: string } | undefined;
 
+  /* PREMIERE OUVERTURE (D15, 30/10/2026) : aucune commune retenue sur ce telephone
+     (cle unique repere.departement, invariant 2 : aucune autre cle). L'ecran devient
+     l'accueil de bienvenue : grand logo, la phrase, et le champ deja ouvert. Pas
+     d'ecran supplementaire : c'est cet ecran qui accueille. */
+  const premiere = !retenue;
+  const champOuvert = cherche || !!filtre || premiere;
+
+  /* Les cartes glissent horizontalement : le chiffre, puis le vote. */
+  const cartes = (
+    <>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} decelerationRate="fast" snapToInterval={pas}
+              accessibilityLabel={argent ? "Cartes à faire défiler : l'argent de la commune, puis un vote" : "Un vote, à titre d'exemple"}
+              contentContainerStyle={{ gap: PAS * 3 }}
+              onMomentumScrollEnd={e => setPage(Math.round(e.nativeEvent.contentOffset.x / pas))}>
+              {argent ? (
+                <View style={{ width: larg }}>
+                  <View style={s.carte}>
+                    <AvecPicto picto="budget"><Text style={s.etiquette}>{exemple ? "Un exemple, en attendant votre commune" : "Votre commune"}</Text></AvecPicto>
+                    {/* A3 (30/10/2026) : quatre lignes. Titre ; chiffre ; comparaison ; repartition.
+                        Puis la source, en pied, cliquable. L'annee precedente et le detail des
+                        depenses vivent dans le budget de la commune (argent.tsx). */}
+                    {/* NIVEAU 1 (V28, bloc 3) : l'accroche calculée, le chiffre, la source.
+                        NIVEAU 2 (« Voir plus ») : comparaison à la médiane régionale, année précédente,
+                        répartition. NIVEAU 3 (« Tout voir ») : méthode, source, lien officiel.
+                        Rien n'est retiré : ce qui était affiché reste à un geste. */}
+                    <Text style={s.carteTitre}>{accroche(argent)}</Text>
+                    <View style={{ flexDirection: "row", alignItems: "baseline", flexWrap: "wrap", columnGap: PAS * 2 }}>
+                      <Text style={s.chiffre}>{argent.depenses.toLocaleString("fr-FR")} €</Text>
+                      <Text style={s.legende}>par habitant · {argent.an}</Text>
+                      <PourquoiJeVois etiquette={`le montant de ${argent.nom}`} couleur={D.encre} fond={D.voile}
+                        p={{ source: { texte: `Observatoire des finances et de la gestion publique locales (OFGL), comptes ${argent.an}${(index as any)?.sources?.comptes?.maj ? `, publiés le ${dateFr((index as any).sources.comptes.maj)}` : ""}`, lien: urlComptes },
+                          calcul: USAGE_PAR_HABITANT,
+                          ici: `Affiché parce que ce sont les comptes publiés les plus récents pour ${argent.nom} (${argent.an}).` }} />
+                    </View>
+                    {comparaison || argent.avant || repartition ? (
+                      <Details titre={moyenne ? titreEcart(argent.depenses, moyenne) : "Le détail des dépenses"} couleur={D.encre} lien={D.encre}>
+                        {moyenne ? (
+                          <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
+                            <Text style={s.contexte}>{comparaison ? comparaison.rapport : ""}</Text>
+                            <PourquoiJeVois etiquette={`la comparaison à la commune médiane`} couleur={D.encre} fond={D.voile}
+                              p={{ source: { texte: `Observatoire des finances et de la gestion publique locales (OFGL), comptes ${moyenne.an}`, lien: urlComptes },
+                                calcul: `Repère classe les ${moyenne.n.toLocaleString("fr-FR")} communes de la région pour ${moyenne.an} selon leur dépense par habitant. La médiane est celle de la commune du milieu : la moitié dépense moins, l'autre moitié plus. Repère calcule cette médiane ; l'OFGL ne la publie pas.`,
+                                ici: `Affiché parce que ${argent.nom} est la commune retenue et que ses comptes ${moyenne.an} sont publiés, comme ceux des communes de sa région.` }} />
+                          </View>
+                        ) : null}
+                        {argent.avant ? <Text style={s.contexte}>En {argent.avant.an} : {argent.avant.depenses.toLocaleString("fr-FR")} € par habitant</Text> : null}
+                        {repartition ? (
+                          <View style={{ gap: PAS * 2 }}>
+                            <Barre parts={[{ cle: "s", valeur: repartition.sal, couleur: D.encre }, { cle: "i", valeur: repartition.inv, couleur: D.sourd }, { cle: "a", valeur: repartition.aut, couleur: D.trait }]} />
+                            <Text style={s.legende}>{repartition.sal} % salaires · {repartition.inv} % invest. · {repartition.aut} % autres</Text>
+                          </View>
+                        ) : null}
+                      </Details>
+                    ) : null}
+                    <Pressable onPress={() => setBudgetTout(true)} accessibilityRole="button"
+                      accessibilityLabel={`Tout voir sur le budget de ${argent.nom} : méthode, sources, lien officiel`}
+                      style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", alignSelf: "flex-start", opacity: pressed ? 0.7 : 1 })}>
+                      <Text style={[s.legende, { fontSize: 14, textDecorationLine: "underline" }]}>Tout voir : méthode et sources</Text>
+                    </Pressable>
+                    <SignalerErreur contexte={`le budget de ${argent.nom}`} donnee={`${argent.depenses.toLocaleString("fr-FR")} € par habitant en ${argent.an}`} />
+                    <ModaleExhaustif titre={`Budget de ${argent.nom}`} visible={budgetTout} onFermer={() => setBudgetTout(false)} sections={[
+                      { titre: "Le montant", contenu: `${argent.depenses.toLocaleString("fr-FR")} € par habitant en ${argent.an}. ${USAGE_PAR_HABITANT}`, source: "Observatoire des finances et de la gestion publique locales (OFGL)" },
+                      { titre: "La répartition", contenu: repartition ? `Sur 100 € dépensés : ${repartition.sal} € vont aux salaires des agents, ${repartition.inv} € aux investissements, ${repartition.aut} € aux autres dépenses.` : "Les comptes publiés ne permettent pas de calculer cette répartition.", source: "Observatoire des finances et de la gestion publique locales (OFGL)" },
+                      { titre: "Comment Repère calcule", contenu: METHODE_COMPTES },
+                      { titre: "La comparaison", contenu: comparaison ? comparaison.note : "Pas de commune médiane calculable pour ce budget." },
+                      { titre: "Source officielle", contenu: urlComptes
+                        ? <Pressable onPress={() => Linking.openURL(urlComptes)} accessibilityRole="link" accessibilityLabel="Les comptes publiés, sur le site de l'OFGL, ouvre un site externe"
+                            style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", opacity: pressed ? 0.7 : 1 })}>
+                            <Text style={[TYPO.corps, { textDecorationLine: "underline" }]}>Les comptes publiés, sur le site de l'OFGL (site externe)</Text>
+                          </Pressable>
+                        : "Aucun lien officiel publié." },
+                    ]} />
+                    <Pressable onPress={() => { if (urlComptes) Linking.openURL(urlComptes); }} accessibilityRole="link"
+                      accessibilityLabel="Source : comptes des communes publiés par l'OFGL, ouvre un site externe. Médiane et parts calculées par Repère."
+                      style={({ pressed }) => ({ minHeight: 44, justifyContent: "center", opacity: pressed ? 0.7 : 1 })}>
+                      <Text style={[s.legende, { fontSize: 13, textDecorationLine: urlComptes ? "underline" : "none" }]}>Source : OFGL · médiane et parts : calcul Repère</Text>
+                    </Pressable>
+                  </View>
+                </View>
+              ) : null}
+              {voteAffiche ? <View style={{ width: larg }}>
+                {voteVu && "depute" in voteVu ? (
+                  <CarteVote etiquette="Le dernier vote publié de votre député" nom={voteVu.depute} acteur={voteVu.acteur}
+                    ligne={`Député de la ${ordinal(voteVu.circo)} circonscription · ${nomDep(departementDe(cible.insee) || "")}`}
+                    position={voteVu.position} dec={voteVu.dec} date={dateFr(voteVu.d)} titre={titreLisible(voteVu.t)} lien={voteVu.lien} />
+                ) : voteVu && "partagee" in voteVu ? (
+                  <View style={s.carte}>
+                    <Text style={s.etiquette}>Votre député</Text>
+                    <Text style={s.carteTitre}>Il dépend de votre adresse</Text>
+                    <Text style={s.legende}>{cible.nom} est partagée entre {voteVu.partagee} circonscriptions. Repère ne choisit pas un député à votre place : ses votes sont sur l'écran de la commune.</Text>
+                  </View>
+                ) : (
+                  <CarteVote etiquette="Un exemple" nom={VOTE.depute} acteur={VOTE.acteur}
+                    ligne="Député de la 1re circonscription de Seine-et-Marne" position={positionExemple} dec={decExemple}
+                    date={dateFr(VOTE.date)} titre={titreLisible(VOTE.titre)} exemple />
+                )}
+              </View> : null}
+            </ScrollView>
+            <View style={s.points} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
+              {(argent && voteAffiche ? [0, 1] : [0]).map(i => <View key={i} style={[s.point, page === i && s.pointActif]} />)}
+            </View>
+    </>
+  );
+
   return (
-    <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === "ios" ? "padding" : undefined}>
+    <KeyboardAvoidingView style={{ flex: 1, backgroundColor: D.sol }} behavior={Platform.OS === "ios" ? "padding" : undefined}>
       <FlatList
-        data={trouvees}
+        data={tout && !cherches.length ? toutes : trouvees}
         keyExtractor={l => l[0]}
         keyboardShouldPersistTaps="handled"
         contentContainerStyle={[s.page, { paddingTop: marges.top + PAS * 6, paddingBottom: marges.bottom + PAS * 6 }]}
         ListHeaderComponent={
           <View style={s.tete}>
-            <Text style={s.marque}>Repère</Text>
-            {/* CE QU'EST REPERE, EN UNE PHRASE ; POURQUOI C'EST UTILE, EN UNE LIGNE */}
-            <Text style={TYPO.affiche} accessibilityRole="header">Ce qui se passe chez vous, expliqué simplement.</Text>
-            <Text style={s.promesse}>Qui décide, où va l'argent, ce qu'a voté votre député, ce qui arrive. Chaque chiffre avec sa source officielle.</Text>
+            <DatePublication />
+      <BadgeZoom sombre />
+      <Pressable onPress={() => router.push("/confort-lecture")} accessibilityRole="link"
+        style={({ pressed }) => ({ minHeight: 44, justifyContent: "center", alignSelf: "flex-start", opacity: pressed ? 0.7 : 1 })}>
+        <Text style={[s.legende, { textDecorationLine: "underline" }]}>Confort de lecture ›</Text>
+      </Pressable>
+      <View style={{ flexDirection: "row", flexWrap: "wrap", columnGap: PAS * 4 }}>
+        <Pressable onPress={() => router.push("/mes-elus")} accessibilityRole="link" accessibilityLabel="Mes élus : qui vous représente"
+          style={({ pressed }) => ({ minHeight: 48, justifyContent: "center", opacity: pressed ? 0.7 : 1 })}>
+          <Text style={[s.legende, { textDecorationLine: "underline" }]}>Mes élus ›</Text>
+        </Pressable>
+        <Pressable onPress={() => router.push("/voter")} accessibilityRole="link" accessibilityLabel="Voter : prochaines élections et guide du vote"
+          style={({ pressed }) => ({ minHeight: 48, justifyContent: "center", opacity: pressed ? 0.7 : 1 })}>
+          <Text style={[s.legende, { textDecorationLine: "underline" }]}>Voter ›</Text>
+        </Pressable>
+        <Pressable onPress={() => router.push("/pour-vous")} accessibilityRole="link" accessibilityLabel="Pour vous : ce qui a été publié selon votre vue"
+          style={({ pressed }) => ({ minHeight: 48, justifyContent: "center", opacity: pressed ? 0.7 : 1 })}>
+          <Text style={[s.legende, { textDecorationLine: "underline" }]}>Pour vous ›</Text>
+        </Pressable>
+      </View>
+            <View style={s.haut}>
+              {/* Le logo est une vue (ui/logo.tsx) : aucun fichier image dans assets/. */}
+              <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
+                <View style={{ flexDirection: "row", alignItems: "center", gap: PAS * 3 }}>
+                  {/* L'accueil est toujours sombre : la variante « sombre », pas l'encre du theme
+                      (en mode clair, l'encre du theme est foncee et le logo disparaissait). */}
+                  {premiere ? null : <Logo size={48} variant="sombre" />}
+                  <Text style={s.marque} accessibilityLabel="Repère">Repère<Text style={{ color: E.ville }}>.</Text></Text>
+                </View>
+                {/* V37 bloc 3 : la recherche globale (communes, élus, scrutins). */}
+                <Pressable onPress={() => router.push("/recherche")} accessibilityRole="button"
+                  accessibilityLabel="Ouvrir la recherche : communes, élus, scrutins"
+                  style={({ pressed }) => ({ minWidth: 48, minHeight: 48, alignItems: "center", justifyContent: "center", opacity: pressed ? 0.7 : 1 })}>
+                  <Loupe couleur={D.encre} />
+                </Pressable>
+              </View>
+              {!champOuvert ? (
+                <Pressable onPress={() => setCherche(true)} accessibilityRole="button" accessibilityLabel="Chercher une commune"
+                  style={({ pressed }) => [s.chercher, pressed && { opacity: 0.7 }]}>
+                  <Text style={s.chercherTexte}>Chercher une commune</Text>
+                </Pressable>
+              ) : null}
+            </View>
+            {/* LE PITCH : une citation, en grand. Demande du CEO (30/10/2026) : elle remplace le paragraphe. */}
+            {premiere ? <View style={s.grandLogo}><Logo size={128} variant="sombre" /></View> : null}
+            <Text style={[s.citation, premiere && { marginTop: PAS * 2 }]} accessibilityRole="header">L'application qui vous raccroche à votre citoyenneté française.</Text>
+
+            {/* V37 bloc 6 : le rappel de la prochaine élection, s'il tombe dans les 180 jours. */}
+            {premiere ? null : <View style={{ marginTop: PAS * 4 }}><RappelElection /></View>}
+            {premiere ? null : <DernieresPublications />}
+            {premiere ? null : cartes}
+
             {retenue && nomRetenue ? (
               <Carte echelon="ville" titre="Votre commune, sur ce téléphone">
                 <Texte fort>{nomRetenue}</Texte>
@@ -93,46 +504,92 @@ export default function Accueil() {
                 <Bouton texte={`Oublier ${nomRetenue}`} discret onPress={oublier} />
               </Carte>
             ) : null}
-            <Text style={s.question} nativeID="question">{retenue && nomRetenue ? "Une autre commune ?" : "Où habitez-vous ?"}</Text>
-            <TextInput
-              value={filtre}
-              onChangeText={setFiltre}
-              placeholder="Bagnolet, Créteil, Meaux…"
-              placeholderTextColor={couleurs.sourd}
-              autoCorrect={false}
-              autoCapitalize="none"
-              returnKeyType="search"
-              accessibilityLabel="Où habitez-vous ? Tapez le nom de votre commune"
-              accessibilityLabelledBy="question"
-              style={s.champ}
-            />
-            {etat !== ETATS.SERVI && phrase ? (
-              <Vide titre={phrase.titre} corps={phrase.corps}
-                action={etat === ETATS.EN_COURS ? undefined : "Réessayer"} onAction={() => setEssai(n => n + 1)} />
+            {champOuvert ? (
+              <>
+                <Text style={s.question} nativeID="question">{retenue && nomRetenue ? "Une autre commune ?" : "Où habitez-vous ?"}</Text>
+                <View style={s.champLigne}>
+                  <View accessibilityElementsHidden importantForAccessibility="no-hide-descendants" style={s.loupe}>
+                    <View style={s.loupeRond} />
+                    <View style={s.loupeManche} />
+                  </View>
+                <TextInput
+                  value={filtre}
+                  onChangeText={setFiltre}
+                  placeholder="Tapez votre ville (ex: Melun...)"
+                  placeholderTextColor={D.sourd}
+                  autoCorrect={false}
+                  autoCapitalize="none"
+                  autoFocus={cherche && !premiere}
+                  returnKeyType="search"
+                  accessibilityLabel="Où habitez-vous ? Tapez le nom de votre commune"
+                  accessibilityLabelledBy="question"
+                  style={s.champ}
+                />
+                </View>
+              </>
             ) : null}
-            {etat === ETATS.SERVI && !cherches.length ? (
+            {etat === ETATS.EN_COURS ? <SquelettesListe n={3} hauteur={72} /> : null}
+            {etat !== ETATS.SERVI && etat !== ETATS.EN_COURS && phrase ? (
+              <Vide titre={phrase.titre} corps={phrase.corps}
+                action="Réessayer" onAction={() => setEssai(n => n + 1)} />
+            ) : null}
+            {champOuvert && !cherches.length && !tout && recentes.length ? (
+              <View style={{ gap: PAS * 2 }}>
+                <Text style={s.note}>Ouvertes pendant cette session</Text>
+                {recentes.map(c => (
+                  <Pressable key={c.insee} onPress={() => ouvrir(c.insee, c.nom)} accessibilityRole="button"
+                    accessibilityLabel={`${c.nom}, ouverte pendant cette session`}
+                    style={({ pressed }) => [s.resultat, pressed && { opacity: 0.7 }]}>
+                    <View style={s.pastille} />
+                    <Text style={s.resultatNom}>{c.nom}</Text>
+                  </Pressable>
+                ))}
+              </View>
+            ) : null}
+            {tout && !cherches.length ? (
+              <View style={{ gap: PAS * 2 }}>
+                <Text style={s.question} accessibilityRole="header">Les {communes.length} communes de la bêta, de A à Z</Text>
+                <Bouton texte="Fermer la liste" discret onPress={() => setTout(false)} />
+              </View>
+            ) : null}
+            {etat === ETATS.SERVI && !cherches.length && !tout ? (
               <>
                 <Text style={s.note}>La bêta couvre les {communes.length} communes d'Île-de-France qui ont une fiche.</Text>
                 {/* CE QUE REPERE SAIT DE VOUS : rien. Phrase vraie a la lettre :
                     les adresses se composent par departement (client.js), et la
                     commune n'est gardee que sur demande (lib/memoire.ts). */}
-                <View style={s.confiance}>
-                  <Text style={[s.note, { color: couleurs.encre, fontWeight: "600" }]}>Pas de compte, pas d'e-mail.</Text>
-                  <Text style={s.note}>Repère ne sait pas qui vous êtes. Pour afficher votre commune, il télécharge le fichier public de tout votre département, et ne garde votre commune sur ce téléphone que si vous le lui demandez.</Text>
-                </View>
+                {/* Audit 5 s (V19) : une ligne ; l'explication complete est dans la FAQ. */}
+                <Pressable onPress={() => router.push("/faq")} accessibilityRole="link"
+                  accessibilityLabel="Pas de compte, pas d'e-mail. Pourquoi ? Ouvre les questions fréquentes"
+                  style={({ pressed }) => [s.confiance, { minHeight: 48, justifyContent: "center" }, pressed && { opacity: 0.7 }]}>
+                  <Text style={[s.note, { color: D.encre, fontWeight: "500" }]}>Pas de compte, pas d'e-mail. <Text style={{ textDecorationLine: "underline", fontWeight: "400", color: D.sourd }}>Pourquoi ?</Text></Text>
+                </Pressable>
+                {/* V29 bloc 1 (audit D51) : phrase retirée de l'accueil en V20, réintégrée au niveau 2. */}
+                <Details titre="Repère ne sait pas qui vous êtes" couleur={D.encre} lien={D.encre}>
+                  <Text style={[s.note, { color: D.sourd }]}>Pour afficher votre commune, il télécharge le fichier public de tout votre département, et ne garde votre commune sur ce téléphone que si vous le lui demandez.</Text>
+                </Details>
               </>
             ) : null}
+            {/* V13 bloc D : sous le pitch et la recherche, au-dessus des cartes. Masquee sans fait de moins de 7 jours. */}
+            {premiere && !cherches.length && !tout ? <DernieresPublications /> : null}
+            {premiere && !cherches.length && !tout ? cartes : null}
             {manquante ? (
               <Vide titre={`${manquante[1]} existe bien en Île-de-France : c'est nous qui n'avons pas encore sa fiche.`}
-                corps="Le Répertoire national des élus ne porte aucune ligne pour cette commune. Ce n'est pas une erreur de votre part, et ce n'est pas la preuve que la commune n'existe pas." />
+                corps="Les données publiées que Repère lit ne contiennent pas de fiche pour cette commune. Ce n'est pas une erreur de votre part, et ce n'est pas la preuve que la commune n'existe pas."
+                action="Chercher une autre commune" onAction={() => setFiltre("")} />
             ) : null}
             {rien ? (
               /* 08/10/2026 : « Rien ne correspond » laissait croire que la commune
                  n'existe pas. L'application ne couvre que l'Ile-de-France pendant la
                  beta : c'est une limite de couverture, pas une absence de donnees. */
               <Vide titre={`Aucune commune d'Île-de-France ne correspond à « ${filtre.trim()} ».`}
-                corps="Pendant la bêta, l'application ne couvre que l'Île-de-France : pour une commune d'ailleurs, les données ne sont pas encore disponibles ici. Sinon, vérifiez l'orthographe du début du nom." />
+                corps="Pendant la bêta, l'application ne couvre que l'Île-de-France : pour une commune d'ailleurs, les données ne sont pas encore disponibles ici. Sinon, vérifiez l'orthographe du début du nom."
+                action="Effacer la recherche" onAction={() => setFiltre("")} />
             ) : null}
+            {rien ? (
+              <Bouton texte="Voir toutes les communes d'Île-de-France" discret onPress={() => { setFiltre(""); setTout(true); }} />
+            ) : null}
+
           </View>
         }
         renderItem={({ item: [insee, nom] }) => (
@@ -141,7 +598,7 @@ export default function Accueil() {
             accessibilityRole="button"
             accessibilityLabel={`${nom}, ${nomDep(departementDe(insee) || "")}`}
             accessibilityHint="Ouvre ce qui se passe dans cette commune"
-            style={({ pressed }) => [s.resultat, pressed && { backgroundColor: couleurs.voile }]}
+            style={({ pressed }) => [s.resultat, pressed && { backgroundColor: D.voile }]}
           >
             <View style={s.pastille} />
             <Text style={s.resultatNom}>{nom}</Text>
@@ -153,27 +610,52 @@ export default function Accueil() {
   );
 }
 
-const s = StyleSheet.create({
+const s = feuille(() => StyleSheet.create({
   page: { paddingHorizontal: PAS * 4, gap: PAS * 2, maxWidth: 640, width: "100%", alignSelf: "center" },
   tete: { gap: PAS * 3, marginBottom: PAS * 2 },
-  marque: { fontFamily: POLICE.affiche, fontSize: 22, color: couleurs.ville, marginBottom: PAS * 4 },
-  confiance: { gap: PAS, padding: PAS * 4, borderRadius: RAYON.bloc, backgroundColor: couleurs.voile, marginTop: PAS * 2 },
-  promesse: { fontSize: 17, lineHeight: 24, color: couleurs.encre },
-  question: { fontFamily: POLICE.titre, fontSize: 24, lineHeight: 30, color: couleurs.encre, marginTop: PAS * 6 },
+  /* Taille 26 : la pastille « Chercher » passe sous le logo au lieu de sortir de la marge. */
+  haut: { flexDirection: "row", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", gap: PAS * 3 },
+  marque: { fontFamily: POLICE.affiche, fontSize: 26, color: D.encre },
+  chercher: { minHeight: CIBLE, borderRadius: 999, borderWidth: 1, borderColor: D.trait, paddingHorizontal: PAS * 4, justifyContent: "center" },
+  chercherTexte: { fontSize: 15, fontWeight: "500", color: D.encre },
+  grandLogo: { alignItems: "flex-start", marginTop: PAS * 4 },
+  citation: { fontFamily: POLICE.affiche, fontSize: 38, lineHeight: 43, letterSpacing: -0.6, color: D.encre, marginTop: PAS * 4 },
+  carte: { gap: PAS * 2, padding: PAS * 4, borderRadius: RAYON.carte, backgroundColor: D.carte, borderWidth: 1, borderColor: D.trait },
+  etiquette: { fontSize: 13, fontWeight: "500", color: D.sourd },
+  carteTitre: { fontFamily: POLICE.titre, fontSize: 24, lineHeight: 30, color: D.encre },
+  chiffre: { fontFamily: POLICE.affiche, fontSize: 64, lineHeight: 68, color: D.encre },
+  vote: { fontFamily: POLICE.titre, fontSize: 22, lineHeight: 28, color: D.encre },
+  legende: { fontSize: 15, lineHeight: 21, color: D.sourd },
+  contexte: { fontSize: 15, lineHeight: 21, color: D.encre },
+  barre: { flexDirection: "row", height: 12, borderRadius: 6, overflow: "hidden", backgroundColor: D.voile, gap: 2 },
+  badge: { alignSelf: "flex-start", paddingHorizontal: PAS * 2, paddingVertical: PAS, borderRadius: RAYON.bloc, backgroundColor: D.voile },
+  badgeTexte: { fontSize: 13, fontWeight: "500", color: D.sourd },
+  points: { flexDirection: "row", justifyContent: "center", gap: PAS * 2 },
+  point: { width: 8, height: 8, borderRadius: 4, backgroundColor: D.trait },
+  pointActif: { backgroundColor: E.ville },
+  confiance: { gap: PAS, padding: PAS * 4, borderRadius: RAYON.bloc, backgroundColor: D.voile, marginTop: PAS * 2 },
+  question: { fontFamily: POLICE.titre, fontSize: 24, lineHeight: 30, color: D.encre, marginTop: PAS * 6 },
+  champLigne: {
+    flexDirection: "row", alignItems: "center", minHeight: CIBLE + 8, borderRadius: 999, borderWidth: 1.5, borderColor: D.trait,
+    backgroundColor: D.carte, paddingLeft: PAS * 4, ...OMBRE_PAR_MODE.sombre, shadowOpacity: 0.3,
+  },
+  loupe: { width: 18, height: 18, marginRight: PAS * 2 },
+  loupeRond: { position: "absolute", top: 0, left: 0, width: 13, height: 13, borderRadius: 7, borderWidth: 2, borderColor: D.sourd },
+  loupeManche: { position: "absolute", right: 0, bottom: 1, width: 7, height: 2, borderRadius: 1, backgroundColor: D.sourd, transform: [{ rotate: "45deg" }] },
   champ: {
-    minHeight: CIBLE + 8, borderRadius: RAYON.bloc, borderWidth: 1.5, borderColor: couleurs.trait,
-    backgroundColor: couleurs.carte, paddingHorizontal: PAS * 4, fontSize: 18, color: couleurs.encre,
+    flex: 1, minHeight: CIBLE + 8, paddingHorizontal: PAS * 2, fontSize: 18, color: D.encre, borderRadius: 999,
     /* Sur l'export web, le contour de focus par defaut du navigateur est orange :
        une sixieme couleur (invariant 7). Le focus reste visible, dans la couleur
        de la commune. Sans effet sur iOS et Android. */
-    ...(Platform.OS === "web" ? { outlineColor: couleurs.ville, outlineWidth: 2, outlineStyle: "solid" } : {}),
+    ...(Platform.OS === "web" ? { outlineColor: E.ville, outlineWidth: 2, outlineStyle: "solid" } : {}),
   },
-  note: { fontSize: 15, color: couleurs.sourd },
+  note: { fontSize: 15, color: D.sourd },
   resultat: {
     minHeight: CIBLE + 8, flexDirection: "row", alignItems: "center", gap: PAS * 3,
-    paddingHorizontal: PAS * 4, borderRadius: RAYON.bloc, backgroundColor: couleurs.carte,
+    paddingHorizontal: PAS * 4, borderRadius: RAYON.bloc, backgroundColor: D.carte,
+    ...OMBRE_PAR_MODE.sombre, shadowOpacity: 0.25, shadowRadius: 8, shadowOffset: { width: 0, height: 2 },
   },
-  pastille: { width: 10, height: 10, borderRadius: 5, backgroundColor: couleurs.ville },
-  resultatNom: { flex: 1, fontSize: 17, color: couleurs.encre, fontWeight: "600" },
-  resultatDep: { fontSize: 14, color: couleurs.sourd, flexShrink: 1, textAlign: "right" },
-});
+  pastille: { width: 10, height: 10, borderRadius: 5, backgroundColor: E.ville },
+  resultatNom: { flex: 1, fontSize: 17, color: D.encre, fontWeight: "500" },
+  resultatDep: { fontSize: 14, color: D.sourd, flexShrink: 1, textAlign: "right" },
+}));

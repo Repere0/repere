@@ -338,6 +338,11 @@ rm -rf site_engendre
   # l'ecran le dit. L'ancien message « le releve d'hier reste » etait faux ici.
   node scripts/calendrier-senat.mjs ./data \
     || echo "::warning::calendrier du Senat absent ou non rafraichi - voir la cause et l'etat du releve precedent juste au-dessus"
+  # GROUPES POLITIQUES DES DEPUTES (V36, B2). Lit l'AMO30 deja depile et ecrit
+  # mono/data/deputes-groupes.json. Non bloquant : sans lui, l'application ne montre pas
+  # le groupe. Refuse d'ecrire si moins de 90 % des deputes ont un groupe lu.
+  node scripts/collecte-groupes.mjs ../data/brut_AMO30/json ./data \
+    || echo "::warning::groupes politiques non collectes (AMO30) - voir docs/data/groupes-politiques.md"
   # AGENDA ASSEMBLEE NATIONALE (23/09/2026) - pas de reseau ici, contrairement
   # au Senat : lit outils/agenda_an.json, deja produit par l'etape 2 de ce
   # meme script (agenda_an.py). Si ce fichier manque ou est mal forme, le
@@ -353,9 +358,44 @@ rm -rf site_engendre
   # complete le 23/09/2026 : 95 scrutins sur 8434 (72 solennels + 23
   # motions de censure), 29,8 Ko - pas les ~843 qu'un echantillon de 80
   # scrutins recents avait suggere a tort avant cette mesure.
+  # ECHEC BLOQUANT (29/10/2026). Avant, un echec ne faisait qu'un avertissement :
+  # la publication sortait avec une note « indisponible » qui masquait le defaut.
+  # Le generateur sort en 0 quand l'archive est absente (cas honnete, traite par
+  # la note du site) ; toute autre sortie non nulle arrete la chaine.
   node scripts/scrutins-solennels.mjs ./data \
-    || echo "::warning::scrutins solennels non rafraichis - le reste de l'application continue"
+    || { echo "::error::scrutins solennels : production en echec - publication bloquee"; exit 1; }
+  # AGREGATS REGIONAUX (30/10/2026, V15) - mediane des depenses par habitant par region,
+  # lue par l'application au lieu de telecharger tous les departements de la region.
+  # Non bloquant : sans ce fichier, l'application recalcule a partir des departements.
+  node scripts/agregats-regionaux.mjs ./data \
+    || echo "::warning::agregats regionaux non produits - l'application recalculera depuis les departements"
+  # ACTU LOCALE HEBDOMADAIRE (30/10/2026, D29-D31) - redigee par le CEO dans
+  # data/actus-hebdo.json (versionne, a la racine), recopiee telle quelle dans les donnees
+  # publiees. Aucune transformation, aucune generation. Absent : l'application n'affiche rien.
+  cp ../data/actus-hebdo.json ./data/actus-hebdo.json 2>/dev/null \
+    || echo "::warning::data/actus-hebdo.json absent - aucune actu locale publiee"
+  # SITES DES MAIRIES (30/10/2026, D28) - annuaire DILA, Licence Ouverte 2.0. Reseau
+  # requis. Non bloquant : sans ce fichier, l'application n'affiche simplement pas le lien.
+  node scripts/collecte-sites-mairies.mjs ./data \
+    || echo "::warning::sites des mairies non collectes (annuaire DILA) - aucun lien affiche"
+  # PHOTOS D'ELUS (30/10/2026, D27) - Wikidata + Wikimedia Commons, licences libres
+  # seulement, vignettes integrees par departement. Reseau requis. Non bloquant : sans
+  # ce fichier, l'application affiche les initiales.
+  node scripts/collecte-photos-elus.mjs ./data \
+    || echo "::warning::photos d'elus non collectees - initiales affichees"
+  # ETAT ANNONCE DANS LA CI (29/10/2026). Le banc ne montre sa sortie qu'en cas
+  # d'echec : sans cette annotation, une CI verte ne disait pas si le teaser
+  # etait present ou si sa note d'absence avait ete testee a sa place.
+  bash ../outils/teaser_scrutins_etat.sh ./data ../data/brut_Scrutins
   pnpm install --frozen-lockfile
+  # FLUX RSS DES MAIRIES (31/10/2026, D81, ADR 0007) - seulement les flux publies par la
+  # mairie, jamais son HTML. Apres l'install (rss-parser). Reseau requis. Non bloquant :
+  # sans ce fichier, l'application n'affiche pas d'actualite de flux.
+  # D82 : publication desactivee par defaut (brouillon dans data/auto/, relu par le CEO).
+  # Seul le texte exact « true » active la publication. collecte.yml ne le fixe pas.
+  REPERE_PUBLICATION_ACTUS="${REPERE_PUBLICATION_ACTUS:-false}" \
+    node scripts/collecte-rss-mairies.mjs ./data ../data/auto/actus-brouillon.md \
+    || echo "::warning::flux RSS des mairies non collectes - aucune actu de flux publiee"
   # RISQUE CONFIRME PAR AUDIT LE 22/09/2026, PAS SUPPOSE : ce bloc n'installait
   # aucun Chromium pour mono/. Le premier essai reel sur le runner GitHub
   # (workflow_dispatch de test, run 35796632331) a echoue exactement ici -
@@ -398,6 +438,8 @@ banc "collecte" python3 outils/test_collecte.py
 # Heure de fin des seances (13/10/2026) : l'agenda normalise recopie la fin publiee
 # par la source, et ne la devine jamais. Le controle tourne sur un agenda factice.
 banc "agenda : heure de fin" python3 outils/test_agenda_an.py
+banc "teaser des scrutins : etat annonce" bash outils/test_teaser_scrutins_etat.sh
+banc "scrutins solennels : erreurs bloquantes" bash outils/test_scrutins_solennels_erreurs.sh
 
 echo "== banc : le fichier autonome =="
 banc "fichier autonome" node test_repere.mjs "$APP"

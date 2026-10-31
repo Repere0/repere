@@ -16,6 +16,7 @@
  * pas non plus du DOM et sert aussi a l'application mobile. */
 export * from "./format.js";
 export * from "./votes.js";
+export * from "./votesVides.js";
 export * from "./faits.js";
 export * from "./comptes.js";
 export * from "./aujourdhui.js";
@@ -27,3 +28,6 @@ export * from "./visuels.js";
 export * from "./libelles.js";
 export * from "./calendrier.js";
 export * from "./mots.js";
+export * from "./actualites.js";
+export * from "./profil.js";
+export * from "./themes.js";

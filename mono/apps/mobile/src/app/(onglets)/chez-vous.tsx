@@ -25,21 +25,23 @@
  * cette information ? » ; celle du traitement par Repere en en-tete.
  *
  * RIEN N'EST CALCULE ICI : @repere/core derive, lib/absences.ts dit les absences. */
-import { Text, View } from "react-native";
+import { useEffect, useState } from "react";
+import { Linking, Text, View } from "react-native";
+import { actusFlux, chargerActuellesRss, chargerMairies } from "../../lib/donnees";
 import { router, Stack } from "expo-router";
 import {
   dateFr, datePublication, decompte, euros, financementProjet, montantCourt, ordinal, parHabitant, phrasePosition,
   repartitionVote, texteDe,
-  titreLisible, REFUS_APPARIEMENT, LIBELLES,
+  titreLisible, LIBELLES, copieVoteVide, ETAT_VOTE,
 } from "@repere/core";
 import { Vide } from "../../lib/composants";
 import { CarteMemoire } from "../../cartes/CarteMemoire";
 import { useSelection } from "../../lib/selection";
 import { useCommuneChoisie } from "../../lib/useCommune";
 import {
-  PROJETS_PAS_ARRIVES, projetsAucun, VOTES_PAS_ARRIVES, circoInconnue, VOTE_AUCUN,
+  PROJETS_PAS_ARRIVES, projetsAucun,
 } from "../../lib/absences";
-import { srcComptesPublies, srcElus, srcProjets, srcVote } from "../../lib/sources";
+import { srcComptesPublies, srcElus, srcProjets, srcScrutins, srcVote } from "../../lib/sources";
 import { PAS, TYPO } from "../../lib/theme";
 import { AvecDonnees, Page } from "../../ui/page";
 import { PastilleSource } from "../../ui/source";
@@ -47,6 +49,31 @@ import { Etiquette } from "../../ui/resume";
 import { Plus, Reponse, typo } from "../../ui/reponse";
 import { BarrePart, Repartition } from "../../ui/visuels";
 import { SemaineParlement } from "../../ui/semaine";
+import { DateDonnee } from "../../ui/fraicheur";
+import { CetteSemaineCommune, aujourdhui } from "../../ui/cette-semaine-commune";
+
+/* LE SITE OFFICIEL DE LA MAIRIE (D28, ADR 0005) : un lien externe, lu dans l'annuaire DILA
+   (data/mairies-idf.json). Sans adresse declaree, pas de ligne : rien n'est devine.
+   D84 : pas de ligne quand la commune a des actualites de flux publiees (la carte les
+   montre, avec son propre lien vers le site). Le libelle reste celui de l'ADR 0005 : ce
+   n'est pas une page d'actualites, rien ne dit qu'elle en a. */
+function SiteMairie({ insee }: { insee: string }) {
+  const [site, setSite] = useState<string | null>(null);
+  const [avecFlux, setAvecFlux] = useState(false);
+  useEffect(() => {
+    let vivant = true;
+    chargerMairies().then(r => {
+      const c = r.donnees ? (r.donnees as { communes?: Record<string, { site?: string }> }).communes?.[insee] : undefined;
+      if (vivant) setSite(c && typeof c.site === "string" && /^https?:\/\//.test(c.site) ? c.site : null);
+    }).catch(() => {});
+    chargerActuellesRss().then(r => {
+      if (vivant) setAvecFlux(actusFlux(r.donnees, insee, aujourdhui()).length > 0);
+    }).catch(() => {});
+    return () => { vivant = false; };
+  }, [insee]);
+  if (!site || avecFlux) return null;
+  return <Plus texte="Site officiel de la mairie" onPress={() => Linking.openURL(site)} />;
+}
 
 export default function ChezVous() {
   const { choix } = useSelection();
@@ -66,19 +93,19 @@ export default function ChezVous() {
       const hab = d.exercice ? parHabitant(d.exercice.ex) : null;
       const maire = d.fiche && d.fiche.maire && d.fiche.maire.nom ? d.fiche.maire.nom : null;
       return (
-        <Page>
+        <Page sansDate>
           <Stack.Screen options={{ title: nom }} />
           {/* OU JE SUIS, ET DE QUAND DATE CE QUE JE LIS */}
           {/* Pas d'etiquette « Chez vous » au-dessus du nom : 20 px gagnes, et la
              troisieme reponse de Paris revient dans le premier ecran (mesure).
              Le grand nom de commune n'est plus repete ici (13/10/2026) : la barre
              haute le porte deja, et la 3e reponse doit tenir au-dessus de la barre basse. */}
-          <View style={{ gap: 2 }}>
-            <Text style={TYPO.note}>{[depIndex && depIndex.nom, depIndex && depIndex.region].filter(Boolean).join(" · ")}</Text>
+          <View>
             {/* « Publication » et non « mis a jour » : la date est celle de la
                publication affichee, vraie dans les trois etats de l'invariant 9
                — y compris hors ligne, ou rien n'est « a jour » (BandeauFraicheur). */}
-            {publie ? <Text style={TYPO.micro}>Publication Repère du {dateFr(publie)}</Text> : null}
+            <DateDonnee quoi="Publication Repère" date={publie} testID="date-donnee"
+              avant={[depIndex && depIndex.nom, depIndex && depIndex.region].filter(Boolean).join(" · ")} />
           </View>
 
           <View style={{ gap: PAS * 2 }}>
@@ -104,7 +131,7 @@ export default function ChezVous() {
               }}
               suite={{ texte: nbProjets > 1 ? `${nbProjets} projets aidés` : "Le projet", onPress: () => router.push("/argent") }} />
           ) : (
-            <Reponse echelon="ville" phrase={projetsAucun(nom).titre} note={projetsAucun(nom).corps}
+            <Reponse echelon="ville" phrase={projetsAucun(nom, d.srcProjets && d.srcProjets.exercices, d.srcProjets && d.srcProjets.mis_a_jour_le).titre} note={projetsAucun(nom, d.srcProjets && d.srcProjets.exercices, d.srcProjets && d.srcProjets.mis_a_jour_le).corps}
               sources={<PastilleSource court source={srcProjets(d)} />} />
           )}
 
@@ -116,7 +143,7 @@ export default function ChezVous() {
               phrase={`En ${d.exercice.an}, ${nom} a dépensé ${hab.depenses.toLocaleString("fr-FR")} € par habitant.`}
               note={maire ? `Le maire, ${maire}, prépare ce budget ; le conseil municipal le vote.` : "Le maire prépare ce budget ; le conseil municipal le vote."}
               sources={<>
-                <PastilleSource court nom="Comptes" source={srcComptesPublies(d)} />
+                <PastilleSource court nom="Budget" source={srcComptesPublies(d)} />
                 {maire ? <PastilleSource court nom="Élus" source={srcElus(r.srcElus)} /> : null}
               </>}
               partage={{
@@ -134,15 +161,15 @@ export default function ChezVous() {
           {/* 3. A L'ASSEMBLEE NATIONALE — une position, jamais une presence ; une
              date, jamais « dernier » ; plusieurs circonscriptions, jamais UN depute. */}
           {!r.votesLus ? (
-            <Vide {...VOTES_PAS_ARRIVES} action="Réessayer" onAction={reessayer} />
+            <Vide {...copieVoteVide(ETAT_VOTE.RELEVE_NON_LU)} action="Réessayer" onAction={reessayer} />
           ) : !r.votesFiables ? (
-            <Vide titre={REFUS_APPARIEMENT.titre} corps={REFUS_APPARIEMENT.corps} />
-          ) : vote && rep ? (
+            <Vide {...copieVoteVide(ETAT_VOTE.RELEVE_INCOHERENT)} />
+          ) : vote ? (
             <Reponse echelon="france"
               phrase={d.nbCircos > 1
                 ? `${nom} est partagée entre ${d.nbCircos} circonscriptions. Votre député dépend de votre adresse.`
                 : `Votre commune est dans la ${ordinal(vote.circo)} circonscription. Le ${dateFr(vote.sc.d)}, ${texteDe(phrasePosition(vote.position, vote.qui))}`}
-              preuve={<Repartition compact segments={rep.segments} total={rep.total} position={vote.position} qui={vote.qui} />}
+              preuve={rep ? <Repartition compact segments={rep.segments} total={rep.total} position={vote.position} qui={vote.qui} /> : null}
               note={d.nbCircos > 1
                 ? `Une circonscription est une partie du territoire dont les électeurs élisent un député. Par exemple, dans la ${ordinal(vote.circo)}, le ${dateFr(vote.sc.d)}, ${texteDe(phrasePosition(vote.position, vote.qui)).replace(/\.$/, "")} (texte ${vote.sc.s}).`
                 /* DEUX LIGNES AU PLUS SUR L'ACCUEIL — 07/10/2026. Le vote affiche est
@@ -161,23 +188,30 @@ export default function ChezVous() {
                 sourceUrl: srcVote(d, vote.sc)?.url,
               }}
               suite={{ texte: "Comprendre ce vote", onPress: () => router.push("/vote") }} />
-          ) : d.nbCircos === 0 ? (
-            <Vide {...circoInconnue(nom)} />
           ) : (
-            <Vide {...VOTE_AUCUN} />
+            <Vide {...copieVoteVide(d.etatVote, { nom, releve: srcScrutins(d)?.releve, portee: d.srcScrutins && d.srcScrutins.portee })} />
           )}
           </View>
 
           {/* AU PARLEMENT CETTE SEMAINE — sous les trois reponses, jamais parmi
              elles : c'est national, et la carte le dit (ui/semaine.tsx). */}
+          {/* D31 : l'actu locale de la semaine (communes pilotes), sous les trois reponses. */}
+          {choix ? <CetteSemaineCommune insee={choix.insee} nom={nom} /> : null}
+
           <SemaineParlement sp={d.semaineParlement} lu={r.agendaLu} nom={nom} />
 
-          {/* ALLER PLUS LOIN */}
-          <View style={{ gap: PAS * 2 }}>
+          {/* ALLER PLUS LOIN — liens simples. « Actualités » reste : c'est le seul acces a son
+             ecran (tests/parcours.test.mjs, aucune impasse), meme vide. Le retirer est une
+             decision produit (BLOCAGES.md, section 15). */}
+          <View style={{ gap: PAS }}>
             <Etiquette texte="Aller plus loin" />
             <View>
               <Plus premier texte={LIBELLES.qui} onPress={() => router.push("/qui-decide")} />
               <Plus texte={LIBELLES.calendrier} onPress={() => router.push("/a-venir")} />
+              <Plus texte="Élus" onPress={() => router.push("/elus")} />
+              <Plus texte="Voir les actualités" onPress={() => router.push("/actus")} />
+              {choix ? <SiteMairie insee={choix.insee} /> : null}
+              <Plus texte="Dictionnaire citoyen" onPress={() => router.push("/dictionnaire")} />
               <Plus dernier texte={LIBELLES.sources} onPress={() => router.push("/sources")} />
             </View>
           </View>

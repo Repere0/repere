@@ -7,8 +7,9 @@
  *
  * `retenue` est la commune que le lecteur a demande de garder sur ce
  * telephone (lib/memoire.ts) ; elle n'existe que s'il l'a demande. */
-import { createContext, useCallback, useContext, useState, type ReactNode } from "react";
+import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from "react";
 import { lire, oublier as oublierMemoire, retenir as retenirMemoire, type Retenue } from "./memoire";
+import { chargerCommunesBeta } from "./donnees";
 
 export type Choix = { dep: string; insee: string; nom: string } | null;
 
@@ -33,6 +34,17 @@ export function FournisseurSelection({ children }: { children: ReactNode }) {
     return ok;
   }, []);
   const oublier = useCallback(() => { oublierMemoire(); setRetenue(lire()); }, []);
+  /* V31 : la commune gardée redevient la commune choisie dès le démarrage, quel que soit
+     l'écran d'entrée (lien direct compris). Son nom vient de la liste publiée. */
+  useEffect(() => {
+    if (choix || !retenue) return undefined;
+    let annule = false;
+    chargerCommunesBeta().then(r => {
+      const nom = (r.donnees as { communes: Record<string, string> } | undefined)?.communes[retenue.c];
+      if (!annule && nom) choisir({ dep: retenue.d, insee: retenue.c, nom });
+    }).catch(() => {});
+    return () => { annule = true; };
+  }, [choix, retenue]);
   return <Contexte.Provider value={{ choix, choisir, retenue, retenir, oublier }}>{children}</Contexte.Provider>;
 }
 

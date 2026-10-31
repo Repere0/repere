@@ -52,3 +52,16 @@ mono/scripts/questions-gouvernement/
 # du 06/10 au 08/10/2026. Jamais une sortie : jamais suivi.
 __pycache__/
 *.pyc
+
+# Fichiers d'environnement : jamais suivis, partout dans le dépôt (V11, 30/10/2026).
+# Seul le modèle .env.example est commité.
+.env
+.env.local
+.env.*
+!.env.example
+
+# Tableau de retours rempli (noms de testeurs) : jamais commite. Le modele vierge est docs/tableau-retours.csv.
+docs/tableau-retours-rempli*.csv
+!docs/tableau-retours.csv
+!docs/tableau-debrief.csv
+docs/tableau-debrief-rempli*.csv

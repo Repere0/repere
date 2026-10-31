@@ -23,6 +23,9 @@ on:
     # 05h47 UTC — heure creuse, et volontairement pas ronde : les runners GitHub
     # sont satures a :00, et les serveurs de l'Assemblee aussi.
     - cron: "47 5 * * *"
+  # workflow_dispatch : aussi depuis une autre branche que main (V17, 30/10/2026), pour
+  # mesurer la couverture des collectes (photos, sites des mairies) avant fusion. Hors
+  # de main, la chaine tourne mais RIEN n'est enregistre ni publie : voir HORS_MAIN.
   workflow_dispatch:
   # Rejouer automatiquement la collecte quand la chaine de publication elle-même
   # change sur main. Cela évite d'attendre le lendemain pour mettre en ligne une
@@ -58,6 +61,12 @@ jobs:
       # autorisee a contourner la protection de main. Au niveau du job pour la meme
       # raison que les deux lignes au-dessus : le if: d'une etape ne lit pas son env.
       COLLECTE_APP_ID: ${{ secrets.COLLECTE_APP_ID }}
+      # HORS_MAIN (V17) : vrai pour un declenchement manuel depuis une branche d'essai.
+      # Garde les quatre etapes qui ecrivent dehors : jeton du bot, commit (qui fait
+      # « git pull --rebase origin main » puis « git push »), publication Netlify en
+      # production, issues de sante. Sans cette garde, une branche d'essai se serait
+      # publiee en production.
+      HORS_MAIN: ${{ github.ref != 'refs/heads/main' }}
 
     steps:
       - name: Recuperer le depot
@@ -93,6 +102,41 @@ jobs:
         # Tout est dans outils/pipeline.sh — c'est la qu'on modifie, pas ici.
         run: bash outils/pipeline.sh
 
+      # BILAN DE COUVERTURE (V17). Sur toutes les branches : ce que les collectes ont
+      # trouve. Hors de main, c'est la seule sortie du job, avec l'artefact ci-dessous.
+      - name: Bilan de couverture des collectes
+        if: always()
+        run: |
+          cd mono
+          node -e '
+            const fs = require("fs");
+            const lire = f => { try { return JSON.parse(fs.readFileSync(f, "utf8")); } catch { return null; } };
+            const m = lire("data/mairies-idf.json");
+            console.log("sites des mairies : " + (m ? JSON.stringify(m.couverture) : "fichier absent"));
+            const dir = "data/photos-elus";
+            let dep = 0, mai = 0;
+            if (fs.existsSync(dir)) for (const f of fs.readdirSync(dir)) { const ph = lire(dir + "/" + f); for (const k of Object.keys((ph && ph.photos) || {})) (k.startsWith("PA") ? dep++ : mai++); }
+            const nbDep = Object.keys((lire("data/deputes.json") || {}).deputes || {}).length;
+            console.log("photos : " + dep + " deputes sur " + nbDep + ", " + mai + " maires");
+            const a = lire("data/agregats-regionaux.json");
+            console.log("agregats regionaux : " + (a ? Object.keys(a.regions || {}).length + " regions" : "fichier absent"));
+          ' | tee bilan-collectes.txt
+          echo "### Bilan des collectes" >> "$GITHUB_STEP_SUMMARY"
+          sed 's/^/- /' bilan-collectes.txt >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Garder les sorties d'essai (hors main)
+        if: always() && env.HORS_MAIN == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: collectes-essai
+          path: |
+            mono/bilan-collectes.txt
+            mono/data/mairies-idf.json
+            mono/data/photos-elus/
+            mono/data/agregats-regionaux.json
+          if-no-files-found: warn
+          retention-days: 7
+
       # UNE IDENTITE DEDIEE POUR ECRIRE SUR MAIN — 29/09/2026.
       # main est protegee (PR obligatoire, epreuve obligatoire). Seule l'App
       # « repere-collecte » (permission Contents : lecture et ecriture, installee sur
@@ -102,7 +146,7 @@ jobs:
       # jeton du workflow, comme avant — l'etape suivante le dit.
       - name: Obtenir le jeton du bot de collecte
         id: jeton
-        if: env.COLLECTE_APP_ID != ''
+        if: env.COLLECTE_APP_ID != '' && env.HORS_MAIN != 'true'
         continue-on-error: true
         uses: actions/create-github-app-token@v2
         with:
@@ -111,6 +155,7 @@ jobs:
 
       - name: Committer ce qui a change
         id: commit
+        if: env.HORS_MAIN != 'true'
         env:
           JETON_BOT: ${{ steps.jeton.outputs.token }}
         # continue-on-error, et c'est le correctif du 20/08/2026. Sans lui, un push
@@ -177,7 +222,7 @@ jobs:
 
       - name: Publier sur Netlify
         id: deploy
-        if: env.NETLIFY_AUTH_TOKEN != '' && env.NETLIFY_SITE_ID != ''
+        if: env.NETLIFY_AUTH_TOKEN != '' && env.NETLIFY_SITE_ID != '' && env.HORS_MAIN != 'true'
         # continue-on-error : on veut que l'etape suivante puisse LIRE le resultat et
         # le dire. Le job est quand meme mis au rouge, plus bas, si la publication a
         # echoue — mais apres avoir explique pourquoi.
@@ -285,7 +330,7 @@ jobs:
         # telephone. Toute la logique vit dans outils/ (voir ce fichier),
         # pas ici : cette etape ne fait que declencher, comme le reste de la
         # chaine.
-        if: always()
+        if: always() && env.HORS_MAIN != 'true'
         # Best-effort : un incident reseau sur gh/curl ici ne doit pas, lui,
         # mettre le job au rouge - ce serait le comble pour une etape dont le
         # seul but est de signaler l'etat, pas de le decider.
@@ -307,7 +352,7 @@ jobs:
         run: exit 1
 
       - name: Signaler les echecs de collecte
-        if: steps.collecte.outcome == 'failure'
+        if: steps.collecte.outcome == 'failure' && env.HORS_MAIN != 'true'
         run: |
           echo "::warning::Au moins une source n'a pas pu etre telechargee."
           cat data/journal_collecte.json

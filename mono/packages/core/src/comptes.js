@@ -26,29 +26,31 @@ export function rapports(ex, niveau = "commune") {
   const v = i => valeur(ex, i);
   const [rec, dep, det, inv, sal, imp] = [0, 1, 2, 3, 4, 5].map(v);
   const nn = x => x && typeof x.m === "number" && x.m > 0;
+  /* numerateur : un montant publie a zero reste zero (le site l'affiche « 0 € ») */
+  const nnNum = x => !!(x && typeof x.m === "number" && Number.isFinite(x.m) && x.m >= 0);
   const out = [];
-  if (nn(det) && nn(rec)) out.push({
+  if (nnNum(det) && nn(rec)) out.push({
     l: "Son encours de dette", mot: "encours de dette",
     v: (det.m / (rec.m / 12)).toLocaleString("fr-FR", { minimumFractionDigits: 1, maximumFractionDigits: 1 }) + " mois de recettes",
     d: "Si tout ce qui est encaissé allait au remboursement, il faudrait ce temps-là. Ce n'est pas ce qui se passe : une dette se rembourse sur des années, et un emprunt sert le plus souvent à payer un équipement qui durera plus longtemps que lui.",
   });
-  if (nn(sal) && nn(dep)) out.push({
+  if (nnNum(sal) && nn(dep)) out.push({
     l: "Sur 100 € dépensés", v: pourCent(sal.m, dep.m) + " € de salaires",
     d: (niveau === "commune" ? "Ce sont les agents qui tiennent l'école, la cantine, l'état civil, les espaces verts." : "Ce sont les agents de la collectivité.")
       + " Une part élevée n'est pas un gaspillage : c'est souvent le signe d'une collectivité qui rend ses services elle-même plutôt que de les acheter à l'extérieur.",
   });
-  if (nn(inv) && nn(dep)) out.push({
+  if (nnNum(inv) && nn(dep)) out.push({
     l: "Sur 100 € dépensés", v: pourCent(inv.m, dep.m) + " € pour investir",
     d: "Investir, c'est payer ce qui durera : des travaux, des bâtiments, des équipements, et parfois une aide versée au projet d'un autre. Cette part bouge beaucoup d'une année à l'autre — haute l'année d'un chantier, basse ensuite. Une seule année ne dit rien d'une tendance.",
   });
-  if (nn(imp) && nn(rec)) {
+  if (nnNum(imp) && nn(rec)) {
     const p = pourCent(imp.m, rec.m);
     out.push({
       l: "Sur 100 € encaissés", v: p + " € d'impôts et taxes",
       d: `Les ${100 - p} € restants viennent d'ailleurs : dotations versées par l'État, subventions d'autres collectivités, sommes payées par les usagers de certains services. Repère ne détaille pas cette composition — le fichier ne la porte pas.`,
     });
   }
-  if (nn(dep)) out.push({
+  if (nnNum(dep)) out.push({
     l: "Ses dépenses", v: Math.round(dep.m / 365).toLocaleString("fr-FR") + " € par jour",
     d: "Moyenne sur l'année, pas un rythme réel : les dépenses d'une collectivité sont très irrégulières. C'est une façon de rendre un total annuel imaginable, rien de plus.",
   });
@@ -100,4 +102,54 @@ export function evolution(c, agregats) {
     return { libelle: a[1], m1, m2, diff: m1 !== null && m2 !== null ? m2 - m1 : null };
   });
   return { an1, an2, p1, p2, perimetreChange, lignes };
+}
+
+/* MOYENNE PAR HABITANT D'UN AGREGAT SUR UN ENSEMBLE DE COMMUNES — 30/10/2026 (D23, ADR 0002).
+ * Comparaison FACTUELLE permise par l'invariant 3 amende : une moyenne SIMPLE (chaque
+ * commune compte pour un, quelle que soit sa taille) des montants par habitant PUBLIES
+ * par l'OFGL, pour un meme exercice. Aucun rang, aucun tri : une moyenne, son nombre de
+ * communes, et le nombre de communes lues. `couverture` : la part des communes lues qui
+ * publient ce montant ; sous `COUVERTURE_MIN`, la moyenne n'est pas rendue (elle
+ * decrirait une partie de la region, pas la region). */
+export const COUVERTURE_MIN = 0.8;
+export function moyenneParHabitant(paquets, agregat, an) {
+  let somme = 0, n = 0, total = 0;
+  for (const p of paquets || []) {
+    if (!p || !p.communes) continue;
+    for (const c of Object.values(p.communes)) {
+      total++;
+      const ex = c && c.comptes ? c.comptes[an] : null;
+      const v = ex ? valeur(ex, agregat) : null;
+      if (v && typeof v.hab === "number") { somme += v.hab; n++; }
+    }
+  }
+  if (!total || !n || n / total < COUVERTURE_MIN) return null;
+  return { moyenne: Math.round(somme / n), n, total, an, couverture: n / total };
+}
+
+/* MEDIANE PAR HABITANT (A1, 30/10/2026). La moyenne simple etait tiree par les nombreux
+ * petits villages : la mediane dit « la commune du milieu », la moitie des communes
+ * depense moins, l'autre moitie plus. Meme garde de couverture que la moyenne. Rend aussi
+ * la moyenne, pour les statistiques internes : l'interface n'affiche que la mediane. */
+export function mediane(valeurs) {
+  const v = (valeurs || []).filter(x => typeof x === "number" && Number.isFinite(x)).sort((a, b) => a - b);
+  if (!v.length) return null;
+  const m = Math.floor(v.length / 2);
+  return v.length % 2 ? v[m] : (v[m - 1] + v[m]) / 2;
+}
+export function medianeParHabitant(paquets, agregat, an) {
+  const vals = [];
+  let total = 0;
+  for (const p of paquets || []) {
+    if (!p || !p.communes) continue;
+    for (const c of Object.values(p.communes)) {
+      total++;
+      const ex = c && c.comptes ? c.comptes[an] : null;
+      const v = ex ? valeur(ex, agregat) : null;
+      if (v && typeof v.hab === "number") vals.push(v.hab);
+    }
+  }
+  if (!total || !vals.length || vals.length / total < COUVERTURE_MIN) return null;
+  const somme = vals.reduce((a, b) => a + b, 0);
+  return { mediane: Math.round(mediane(vals)), moyenne: Math.round(somme / vals.length), n: vals.length, total, an, couverture: vals.length / total };
 }

@@ -18,7 +18,7 @@ import { Linking, Modal, Pressable, ScrollView, StyleSheet, Text, View } from "r
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { CALCUL_REPERE, dateFr, datePublication, ligneSource } from "@repere/core";
 import { useCommuneChoisie } from "../lib/useCommune";
-import { couleurs, CIBLE, PAS, RAYON, TYPO } from "../lib/theme";
+import { feuille, couleurs, CIBLE, PAS, RAYON, TYPO } from "../lib/theme";
 import { Etiquette } from "./resume";
 
 export type InfoSource = {
@@ -76,7 +76,7 @@ export function FeuilleSource({ source, visible, onFermer }: { source: InfoSourc
   const marges = useSafeAreaInsets();
   const date = dateDite(source);
   /* DEUX DATES, JAMAIS CONFONDUES (30/09/2026) : celle de la source (publiee
-     ou relevee) et celle ou Repere a traite les fichiers. */
+     ou relevee) et celle ou Repère a traité les fichiers. */
   const { r } = useCommuneChoisie();
   const traite = r.pret ? datePublication(r.index) : null;
   const detail = ligneSource(source.releve && !source.mention ? { ...source, mention: "relevé le " + dateFr(source.releve) } : source);
@@ -85,7 +85,7 @@ export function FeuilleSource({ source, visible, onFermer }: { source: InfoSourc
       <ScrollView style={{ backgroundColor: couleurs.sol }} contentContainerStyle={[s.feuille, { paddingBottom: marges.bottom + PAS * 8 }]}>
         <Etiquette emoji="🔎" texte="D'où vient cette information ?" />
         <Text style={TYPO.question} accessibilityRole="header">{source.producteur}</Text>
-        {date ? <Text style={[TYPO.corps, { fontWeight: "600" }]}>{date}</Text> : null}
+        {date ? <Text style={[TYPO.corps, { fontWeight: "500" }]}>{date}</Text> : null}
         {traite ? <Text style={TYPO.note}>Traitées par Repère le {dateFr(traite)}</Text> : null}
 
         <View style={s.bloc}>
@@ -93,7 +93,7 @@ export function FeuilleSource({ source, visible, onFermer }: { source: InfoSourc
           {source.methode ? (
             <>
               <Text style={TYPO.corps}>{source.methode}</Text>
-              <Text style={[TYPO.note, { fontWeight: "700" }]}>{CALCUL_REPERE}</Text>
+              <Text style={[TYPO.note, { fontWeight: "500" }]}>{CALCUL_REPERE}</Text>
             </>
           ) : (
             <Text style={TYPO.corps}>{source.usage || "Repère affiche ce chiffre tel que la source le publie, sans le modifier."}</Text>
@@ -114,19 +114,19 @@ export function FeuilleSource({ source, visible, onFermer }: { source: InfoSourc
         </View>
 
         <Pressable onPress={onFermer} accessibilityRole="button" style={({ pressed }) => [s.fermer, pressed && { opacity: 0.6 }]}>
-          <Text style={[TYPO.corps, { fontWeight: "600" }]}>Fermer</Text>
+          <Text style={[TYPO.corps, { fontWeight: "500" }]}>Fermer</Text>
         </Pressable>
       </ScrollView>
     </Modal>
   );
 }
 
-const s = StyleSheet.create({
+const s = feuille(() => StyleSheet.create({
   zone: { alignSelf: "flex-start", minHeight: CIBLE, justifyContent: "center", paddingRight: PAS * 3 },
-  lien: { fontSize: 14, fontWeight: "600", color: couleurs.sourd },
+  lien: { fontSize: 14, fontWeight: "500", color: couleurs.sourd },
   feuille: { padding: PAS * 6, gap: PAS * 5 },
   bloc: { gap: PAS * 2, padding: PAS * 4, borderRadius: RAYON.bloc, backgroundColor: couleurs.carte },
   bouton: { minHeight: CIBLE + 4, borderRadius: RAYON.bloc, backgroundColor: couleurs.ville, alignItems: "center", justifyContent: "center", paddingHorizontal: PAS * 4 },
-  boutonTexte: { color: couleurs.blanc, fontSize: 17, fontWeight: "700", textAlign: "center" },
+  boutonTexte: { color: couleurs.blanc, fontSize: 17, fontWeight: "500", textAlign: "center" },
   fermer: { minHeight: CIBLE, alignItems: "center", justifyContent: "center" },
-});
+}));

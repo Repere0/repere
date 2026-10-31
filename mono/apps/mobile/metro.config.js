@@ -6,7 +6,8 @@ const path = require("path");
 const { getDefaultConfig } = require("expo/metro-config");
 
 const config = getDefaultConfig(__dirname);
-config.watchFolders = [path.resolve(__dirname, "../../packages")];
+// data/contenu : fiches de l'écran de prévisualisation dev (dev-impact.tsx), à la racine du dépôt.
+config.watchFolders = [path.resolve(__dirname, "../../packages"), path.resolve(__dirname, "../../../data/contenu")];
 config.resolver.nodeModulesPaths = [path.resolve(__dirname, "node_modules")];
 config.resolver.unstable_enableSymlinks = true;
 module.exports = config;

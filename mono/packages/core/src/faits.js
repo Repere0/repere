@@ -111,6 +111,13 @@ export function calculerFaits({ dep, fiche, projets, commune, cat, pos, deputes,
    de scrutin decroissant - l'Assemblee nationale numerote ses scrutins dans
    l'ordre ou ils ont lieu, c'est la seule donnee qui demontre l'ordre dans la
    journee. Numero illisible : l'ordre de la source est garde, rien n'est devine. */
+/* Numero de scrutin lisible, ou null. Un numero absent n'est jamais un zero. */
+function numeroScrutin(x) {
+  if (typeof x === "number") return Number.isFinite(x) ? x : null;
+  if (typeof x === "string" && /^\d+$/.test(x.trim())) return Number(x.trim());
+  return null;
+}
+
 export function ordreDesFaits(a, b) {
   /* Le JOUR d'abord ; l'heure seulement si les deux faits en portent une
      (« 2026-07-21T15:00 » contre « 2026-07-21 » : une heure absente n'est pas
@@ -121,8 +128,15 @@ export function ordreDesFaits(a, b) {
   if (ha && hb && ha !== hb) return ha < hb ? 1 : -1;
   if (a.rang !== b.rang) return a.rang - b.rang;
   if (a.type === "vote" && b.type === "vote") {
-    const na = Number(a.sc && a.sc.n), nb = Number(b.sc && b.sc.n);
-    if (Number.isFinite(na) && Number.isFinite(nb) && na !== nb) return nb - na;
+    /* Ordre total : deux numeros, le plus grand d'abord ; un numero absent
+       (null, vide, non numerique) n'est pas un zero, il vient APRES tous les
+       votes numerotes du jour. Entre deux absents, 0 : l'ordre de la source est
+       garde (tri stable). Sans cet ordre total, le resultat dependait de l'ordre
+       d'entree (audit du 29/10/2026). */
+    const na = numeroScrutin(a.sc && a.sc.n), nb = numeroScrutin(b.sc && b.sc.n);
+    if (na !== null && nb !== null) return na === nb ? 0 : nb - na;
+    if (na !== null) return -1;
+    if (nb !== null) return 1;
   }
   return 0;
 }

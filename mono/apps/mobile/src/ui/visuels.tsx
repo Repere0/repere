@@ -11,8 +11,10 @@
  * Construites avec des View : aucune bibliotheque de graphiques. */
 import { useState, type ReactNode } from "react";
 import { Animated, Pressable, StyleSheet, Text, View } from "react-native";
-import { couleurs, GRIS_VOTE, PAS, RAYON, TEINTES, TYPO, CIBLE, type Echelon } from "../lib/theme";
+import { feuille, couleurs, PAS, RAYON, TEINTES, TYPO, CIBLE, type Echelon } from "../lib/theme";
+import { useCouleurVote } from "../lib/couleur-vote";
 import { useApparition, useCompteur } from "./mouvement";
+import { pointEchelon } from "../lib/niveaux";
 
 const largeur = (v: Animated.Value, pct: number) =>
   v.interpolate({ inputRange: [0, 1], outputRange: ["0%", `${Math.max(0, Math.min(100, pct))}%`] });
@@ -36,13 +38,52 @@ export function BarrePart({ part, libelle, valeur, echelon = "ville", delai = 0,
 }) {
   const v = useApparition(delai);
   return (
-    <View accessible accessibilityLabel={`${libelle} : ${valeur}`} style={{ gap: 6 }}>
+    <View accessible accessibilityLabel={`${libelle} : ${valeur}`} style={{ gap: 8 }}>
       {sansLibelle ? null : <View style={s.ligneH}>
         <Text style={TYPO.note}>{libelle}</Text>
         <Text style={[TYPO.corps, { fontWeight: "700" }]}>{valeur}</Text>
       </View>}
       <View style={s.piste}>
         <Animated.View style={[s.rempli, { width: largeur(v, part), backgroundColor: couleurs[echelon] }]} />
+      </View>
+    </View>
+  );
+}
+
+/* ── « Sur 100 € dépensés » en blocs empilés (V34, bloc 5) ───────────────
+   Remplace les barres fondues : chaque part a un bloc plein, son chiffre dedans quand il tient,
+   et son libelle a cote. Le reste est dessine, jamais chiffre : la source ne le detaille pas.
+   Couleurs : l'echelon de la commune (ville) pour les salaires, dept pour les investissements, gris
+   pour le reste. Aucune couleur nouvelle (invariant 7). */
+export function RepartitionCent({ salaires, investissement }: { salaires: number | null; investissement: number | null }) {
+  const reste = Math.max(0, 100 - (salaires ?? 0) - (investissement ?? 0));
+  const parts = [
+    salaires !== null ? { libelle: "Salaires des agents", valeur: salaires, couleur: couleurs.ville } : null,
+    investissement !== null ? { libelle: "Investissements", valeur: investissement, couleur: couleurs.dept } : null,
+  ].filter(Boolean) as { libelle: string; valeur: number; couleur: string }[];
+  const dit = parts.map(p => `${p.libelle} ${p.valeur} €`).join(", ");
+  return (
+    <View accessible accessibilityLabel={`Sur 100 € dépensés : ${dit}. Le reste n'est pas détaillé par la source.`} style={{ gap: PAS * 2 }}>
+      <View style={{ flexDirection: "row", height: 56, borderRadius: RAYON.bloc, overflow: "hidden", gap: 2 }}>
+        {parts.map(p => (
+          <View key={p.libelle} style={{ flex: p.valeur, backgroundColor: p.couleur, justifyContent: "center", paddingHorizontal: PAS * 2 }}>
+            {p.valeur >= 15 ? <Text style={[TYPO.reponse, { color: couleurs.blanc, fontWeight: "600" }]}>{p.valeur} €</Text> : null}
+          </View>
+        ))}
+        {reste > 0 ? <View style={{ flex: reste, backgroundColor: couleurs.sourd }} /> : null}
+      </View>
+      <View style={{ gap: PAS }}>
+        {parts.map(p => (
+          <View key={p.libelle} style={s.ligneLegende}>
+            <View style={[s.pastille, { backgroundColor: p.couleur }]} />
+            <Text style={[TYPO.corps, { flex: 1 }]}>{p.libelle}</Text>
+            <Text style={[TYPO.corps, { fontWeight: "600" }]}>{p.valeur} €</Text>
+          </View>
+        ))}
+        <View style={s.ligneLegende}>
+          <View style={[s.pastille, { backgroundColor: couleurs.sourd }]} />
+          <Text style={[TYPO.note, { flex: 1 }]}>Reste, non détaillé par la source</Text>
+        </View>
       </View>
     </View>
   );
@@ -73,22 +114,23 @@ export function Repartition({ segments, total, position, qui, compact }: {
   compact?: boolean;
 }) {
   const v = useApparition(80);
+  const COULEUR_VOTE = useCouleurVote();
   const phrase = segments.map(x => `${x.libelle} : ${x.nombre}`).join(", ")
     + `, sur ${total} députés ayant pris part au vote.` + (qui && position ? ` ${qui} : ${segments.find(x => x.cle === position)?.libelle.toLowerCase() || "position non portée"}.` : "");
   return (
     <View accessible accessibilityLabel={phrase} style={{ gap: PAS * 3 }}>
       <View style={s.barreVote}>
         {segments.map(x => (
-          <Animated.View key={x.cle} style={{ width: largeur(v, x.part * 100), backgroundColor: GRIS_VOTE[x.cle as keyof typeof GRIS_VOTE] }} />
+          <Animated.View key={x.cle} style={{ width: largeur(v, x.part * 100), backgroundColor: COULEUR_VOTE[x.cle as keyof typeof COULEUR_VOTE] }} />
         ))}
       </View>
       {compact ? null : <View style={{ gap: PAS * 2 }}>
         {segments.map(x => (
           <View key={x.cle} style={s.legende}>
-            <View style={[s.pastilleCouleur, { backgroundColor: GRIS_VOTE[x.cle as keyof typeof GRIS_VOTE] }]} />
+            <View style={[s.pastilleCouleur, { backgroundColor: COULEUR_VOTE[x.cle as keyof typeof COULEUR_VOTE] }]} />
             <Text style={[TYPO.corps, { flex: 1 }]}>{x.libelle}</Text>
             {position === x.cle && qui ? <Text style={s.marque} numberOfLines={1}>{qui}</Text> : null}
-            <Text style={[TYPO.corps, { fontWeight: "700", minWidth: 44, textAlign: "right" }]}>{x.nombre}</Text>
+            <Text style={[TYPO.corps, { fontWeight: "600", minWidth: 44, textAlign: "right" }]}>{x.nombre}</Text>
           </View>
         ))}
       </View>}
@@ -108,7 +150,7 @@ export function Financement({ subvention, cout, partPct, subventionTexte, resteT
         <Animated.View style={[s.rempli, { width: largeur(v, (subvention / cout) * 100), backgroundColor: couleurs.ville }]} />
       </View>
       <View style={s.ligneH}>
-        <Text style={TYPO.note}><Text style={{ color: couleurs.lien, fontWeight: "700" }}>État · {partPct} %</Text>  {subventionTexte}</Text>
+        <Text style={TYPO.note}><Text style={{ color: couleurs.lien, fontWeight: "500" }}>État · {partPct} %</Text>  {subventionTexte}</Text>
       </View>
       <Text style={TYPO.note}>Reste · {resteTexte}</Text>
     </View>
@@ -122,10 +164,10 @@ export function DeuxAnnees({ libelle, an1, an2, m1, m2, texte1, texte2, diffText
   const max = Math.max(m1, m2) || 1;
   const v = useApparition(60);
   return (
-    <View accessible accessibilityLabel={`${libelle} : ${an1}, ${texte1} ; ${an2}, ${texte2}. ${diffTexte}.`} style={{ gap: 6 }}>
+    <View accessible accessibilityLabel={`${libelle} : ${an1}, ${texte1} ; ${an2}, ${texte2}. ${diffTexte}.`} style={{ gap: 8 }}>
       <View style={s.ligneH}>
         <Text style={TYPO.note}>{libelle}</Text>
-        <Text style={[TYPO.corps, { fontWeight: "700" }]}>{diffTexte}</Text>
+        <Text style={[TYPO.corps, { fontWeight: "600" }]}>{diffTexte}</Text>
       </View>
       {[[an1, m1, texte1, couleurs.trait], [an2, m2, texte2, couleurs.ville]].map(([an, m, t, c]) => (
         <View key={an as string} style={s.annee}>
@@ -179,7 +221,9 @@ export function Chaine({ niveaux, compact, surNom }: { niveaux: Niveau[]; compac
           accessible={compact}
           accessibilityLabel={compact ? `${n.niveau} : ${n.personne ? n.personne.nom + ", " + n.personne.role : n.institution}` : undefined}>
           <View style={s.jalonAxe}>
-            <View style={[s.maillon, { backgroundColor: couleurs[n.echelon] }]} />
+            {/* Le niveau est ecrit en texte, au-dessus (etiquette) ; le maillon garde son
+                contour s'il est sous 3:1 sur la carte (D17, region en sombre). */}
+            <View style={[s.maillon, pointEchelon(n.echelon)]} />
             {i < niveaux.length - 1 ? <View style={[s.jalonTrait, { backgroundColor: couleurs.trait }]} /> : null}
           </View>
           {/* Palette B : chaque echelon dans sa teinte — c'est ici que la palette
@@ -187,7 +231,7 @@ export function Chaine({ niveaux, compact, surNom }: { niveaux: Niveau[]; compac
           <View style={[{ flex: 1, paddingBottom: compact ? PAS * 3 : PAS * 6, gap: 2 },
             !compact ? { backgroundColor: TEINTES[n.echelon], borderRadius: RAYON.bloc, padding: PAS * 3, marginBottom: PAS * 3 } : null]}>
             {/* La couleur d'echelon est portee par le maillon, pas par le texte :
-                en 13 px, l'intercommunalite (#0891b2) faisait 3,21:1 sur le fond
+                en 13 px, l'intercommunalite (ancien cyan) faisait 3,21:1 sur le fond
                 et le departement 4,38:1 — sous le seuil AA de 4,5:1 (mesure du
                 30/09/2026, controle « contraste AA » du parcours). */}
             <Text style={TYPO.etiquette}>{n.niveau}{n.lieu && !compact ? " · " + n.lieu : ""}</Text>
@@ -198,7 +242,7 @@ export function Chaine({ niveaux, compact, surNom }: { niveaux: Niveau[]; compac
                 <Text style={[TYPO.reponse, { color: couleurs.lien, textDecorationLine: "underline" }]}>{n.personne.nom}</Text>
               </Pressable>
             ) : n.personne ? (
-              <Text style={compact ? [TYPO.corps, { fontWeight: "700" }] : TYPO.reponse}>{n.personne.nom}</Text>
+              <Text style={compact ? [TYPO.corps, { fontWeight: "600" }] : TYPO.reponse}>{n.personne.nom}</Text>
             ) : (
               <Text style={compact ? TYPO.corps : TYPO.reponse}>{n.institution}</Text>
             )}
@@ -220,7 +264,7 @@ export function Depli({ titre, children }: { titre: string; children: ReactNode 
     <View>
       <Pressable onPress={() => setOuvert(o => !o)} accessibilityRole="button"
         accessibilityState={{ expanded: ouvert }} style={({ pressed }) => [s.depli, pressed && { opacity: 0.6 }]}>
-        <Text style={[TYPO.note, { color: couleurs.lien, fontWeight: "600", flex: 1 }]}>{titre.replace(/ ([?!:;])/g, "\u00a0$1")}</Text>
+        <Text style={[TYPO.note, { color: couleurs.lien, fontWeight: "500", flex: 1 }]}>{titre.replace(/ ([?!:;])/g, "\u00a0$1")}</Text>
         <Text style={[TYPO.note, { color: couleurs.lien }]} accessibilityElementsHidden importantForAccessibility="no">{ouvert ? "−" : "+"}</Text>
       </Pressable>
       {ouvert ? <View style={{ gap: PAS * 2, paddingBottom: PAS * 2 }}>{children}</View> : null}
@@ -228,23 +272,25 @@ export function Depli({ titre, children }: { titre: string; children: ReactNode 
   );
 }
 
-const s = StyleSheet.create({
+const s = feuille(() => StyleSheet.create({
   ligneH: { flexDirection: "row", justifyContent: "space-between", alignItems: "baseline", gap: PAS * 2, flexWrap: "wrap" },
   piste: { height: 12, borderRadius: 6, backgroundColor: couleurs.voile, overflow: "hidden" },
   rempli: { height: "100%", borderRadius: 6 },
+  ligneLegende: { flexDirection: "row", alignItems: "center", gap: PAS * 2 },
+  pastille: { width: 12, height: 12, borderRadius: 3 },
   mois: { flexDirection: "row", flexWrap: "wrap", gap: 4 },
   moisCase: { width: 22, height: 22, borderRadius: 6, backgroundColor: couleurs.voile, overflow: "hidden" },
   moisRempli: { height: "100%" },
   barreVote: { flexDirection: "row", height: 22, borderRadius: 8, overflow: "hidden", backgroundColor: couleurs.voile },
   legende: { flexDirection: "row", alignItems: "center", gap: PAS * 2 },
   pastilleCouleur: { width: 14, height: 14, borderRadius: 4, borderWidth: StyleSheet.hairlineWidth, borderColor: couleurs.sourd },
-  marque: { fontSize: 13, fontWeight: "700", color: couleurs.blanc, backgroundColor: couleurs.ville, paddingHorizontal: 8, paddingVertical: 2, borderRadius: RAYON.pastille, overflow: "hidden", maxWidth: 170 },
+  marque: { fontSize: 13, fontWeight: "500", color: couleurs.blanc, backgroundColor: couleurs.ville, paddingHorizontal: 8, paddingVertical: 2, borderRadius: RAYON.pastille, overflow: "hidden", maxWidth: 170 },
   annee: { flexDirection: "row", alignItems: "center", gap: PAS * 2 },
   jalon: { flexDirection: "row", gap: PAS * 3 },
   jalonAxe: { width: 18, alignItems: "center" },
   jalonPoint: { width: 14, height: 14, borderRadius: 7, borderWidth: 2, backgroundColor: couleurs.sol, marginTop: 4 },
   jalonActif: { width: 18, height: 18, borderRadius: 9, marginTop: 2 },
   jalonTrait: { flex: 1, width: 2, backgroundColor: couleurs.trait, marginTop: 2 },
-  maillon: { width: 14, height: 14, borderRadius: 7, marginTop: 3 },
+  maillon: { width: 14, height: 14, borderRadius: 7, marginTop: 4 },
   depli: { minHeight: CIBLE, flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
-});
+}));

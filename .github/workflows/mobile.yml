@@ -88,13 +88,16 @@ jobs:
           pnpm build
 
       - name: Socle partage et invariants
-        run: node --test --test-concurrency=1 tests/core.test.mjs tests/invariants.test.mjs tests/sante.test.mjs tests/donnees.test.mjs
+        run: node --test --test-concurrency=1 tests/core.test.mjs tests/invariants.test.mjs tests/sante.test.mjs tests/donnees.test.mjs tests/votes-vides.test.mjs tests/profil.test.mjs tests/vote-vide-site.test.mjs tests/collecte-groupes.test.mjs tests/photos-licences.test.mjs apps/mobile/tests/cibles.test.mjs apps/mobile/tests/recherche-flou.test.mjs apps/mobile/tests/conformite.test.mjs apps/mobile/tests/onglets.test.mjs apps/mobile/tests/theme.test.mjs apps/mobile/tests/daltonisme.test.mjs apps/mobile/tests/parcours.test.mjs apps/mobile/tests/absences.test.mjs apps/mobile/tests/chaine.test.mjs apps/mobile/tests/dictionnaire.test.mjs apps/mobile/tests/niveaux.test.mjs apps/mobile/tests/vides-dates.test.mjs apps/mobile/tests/theme-proxy.test.mjs
 
       - name: Construire l'application (iOS, Android, web)
         working-directory: mono/apps/mobile
         env:
           CI: "1"
           EXPO_OFFLINE: "1"
+          # D71 (CEO, 31/10/2026) : adresse publique, pas un secret. Sans elle, le signalement
+          # d'erreur est masque (ui/contact.tsx).
+          EXPO_PUBLIC_CONTACT_EMAIL: "repere0@protonmail.com"
         run: |
           npx expo export --platform ios --platform android --output-dir dist
           EXPO_PUBLIC_REPERE_DONNEES=/data npx expo export --platform web --output-dir dist-web
@@ -107,6 +110,16 @@ jobs:
           node scripts/serveur-statique.mjs apps/mobile/dist-web 8811 &
           for i in $(seq 1 20); do curl -sf http://localhost:8811/ >/dev/null && break; sleep 0.5; done
           node apps/mobile/tests/parcours-web.mjs http://localhost:8811 apps/mobile/captures
+          node apps/mobile/tests/commune-web.mjs http://localhost:8811
+          node apps/mobile/tests/recherche-web.mjs http://localhost:8811
+          node apps/mobile/tests/elections-web.mjs http://localhost:8811
+          node apps/mobile/tests/partage-texte-web.mjs http://localhost:8811
+          node apps/mobile/tests/onboarding-web.mjs http://localhost:8811
+          node apps/mobile/tests/zoom-web.mjs http://localhost:8811
+          node apps/mobile/tests/mode-web.mjs http://localhost:8811
+
+      - name: Cartes de partage (story 1080 x 1920, logo, contraste, source)
+        run: node apps/mobile/tests/partage-story-web.mjs http://localhost:8811 apps/mobile/captures
 
       - name: Meme verite sur le site et dans l'application
         # Pour cinq communes representatives, le maire, les adjoints, la
