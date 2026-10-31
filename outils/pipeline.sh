@@ -391,7 +391,10 @@ rm -rf site_engendre
   # FLUX RSS DES MAIRIES (31/10/2026, D81, ADR 0007) - seulement les flux publies par la
   # mairie, jamais son HTML. Apres l'install (rss-parser). Reseau requis. Non bloquant :
   # sans ce fichier, l'application n'affiche pas d'actualite de flux.
-  node scripts/collecte-rss-mairies.mjs ./data \
+  # D82 : publication desactivee par defaut (brouillon dans data/auto/, relu par le CEO).
+  # Seul le texte exact « true » active la publication. collecte.yml ne le fixe pas.
+  REPERE_PUBLICATION_ACTUS="${REPERE_PUBLICATION_ACTUS:-false}" \
+    node scripts/collecte-rss-mairies.mjs ./data ../data/auto/actus-brouillon.md \
     || echo "::warning::flux RSS des mairies non collectes - aucune actu de flux publiee"
   # RISQUE CONFIRME PAR AUDIT LE 22/09/2026, PAS SUPPOSE : ce bloc n'installait
   # aucun Chromium pour mono/. Le premier essai reel sur le runner GitHub

@@ -7,7 +7,8 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { CANDIDATS, collecter, collecterCommune, deuxPhrases, lienDuDomaine } from "../scripts/collecte-rss-mairies.mjs";
+import { CANDIDATS, collecter, collecterCommune, deuxPhrases, lienDuDomaine, preparer, publicationActive, versBrouillon } from "../scripts/collecte-rss-mairies.mjs";
+import { actusFlux } from "../packages/data-utils/src/actus-rss.js";
 
 const AUJOURDHUI = "2026-10-31";
 const SITE = "https://www.mairie-test.fr/";
@@ -110,9 +111,8 @@ test("sans le fichier des mairies, le script s'arrête et n'écrit rien", () => 
 });
 
 // Affichage (data-utils) : ne garder que ce qui peut être montré honnêtement.
-import { actusFlux } from "../packages/data-utils/src/actus-rss.js";
 test("actusFlux : https, date passée, titre présent, trois au plus", () => {
-  const fichier = { communes: { "77288": { items: [
+  const fichier = { publication: true, communes: { "77288": { items: [
     { titre: "Ok 1", lien: "https://www.mairie-test.fr/1", date: "2026-10-30", resume: "" },
     { titre: "Future", lien: "https://www.mairie-test.fr/2", date: "2026-11-02", resume: "" },
     { titre: "", lien: "https://www.mairie-test.fr/3", date: "2026-10-29", resume: "" },
@@ -124,4 +124,59 @@ test("actusFlux : https, date passée, titre présent, trois au plus", () => {
   assert.deepEqual(actusFlux(fichier, "77288", "2026-10-31").map(x => x.titre), ["Ok 1", "Ok 2", "Ok 3"]);
   assert.deepEqual(actusFlux(fichier, "00000", "2026-10-31"), []);
   assert.deepEqual(actusFlux(null, "77288", "2026-10-31"), []);
+});
+
+// D82 : publication désactivée par défaut. Rien n'est affiché sans « publication: true ».
+test("D82 : actusFlux ne montre rien sans le drapeau de publication", () => {
+  const items = { communes: { "77288": { items: [{ titre: "X", lien: "https://www.mairie-test.fr/x", date: "2026-10-30", resume: "" }] } } };
+  assert.deepEqual(actusFlux(items, "77288", AUJOURDHUI), [], "drapeau absent");
+  assert.deepEqual(actusFlux({ ...items, publication: false }, "77288", AUJOURDHUI), [], "drapeau à false");
+  assert.equal(actusFlux({ ...items, publication: true }, "77288", AUJOURDHUI).length, 1);
+});
+
+test("D82 : seul « true » active la publication ; le brouillon porte les entrées, les données publiées n'en ont aucune", () => {
+  assert.equal(publicationActive({}), false, "variable absente");
+  assert.equal(publicationActive({ REPERE_PUBLICATION_ACTUS: "1" }), false, "seul « true » active");
+  assert.equal(publicationActive({ REPERE_PUBLICATION_ACTUS: "true" }), true);
+  const complet = { v: 1, genere_le: "2026-10-31T05:00:00Z", source: "s", licence: "l", bilan: {}, communes: { "77288": {
+    nom: "Melun", flux: "https://www.mairie-test.fr/feed/",
+    items: [{ titre: "Titre X", resume: "Deux. Phrases.", date: "2026-10-27", lien: "https://www.mairie-test.fr/x" }] } } };
+  const off = preparer(complet, false);
+  assert.deepEqual(off.publie.communes, {}, "rien publié");
+  assert.equal(off.publie.publication, false);
+  assert.match(off.brouillon, /Titre X/);
+  assert.match(off.brouillon, /https:\/\/www\.mairie-test\.fr\/x/);
+  assert.match(off.brouillon, /Non publié/);
+  const on = preparer(complet, true);
+  assert.equal(on.publie.communes["77288"].items.length, 1);
+  assert.equal(on.brouillon, null);
+  assert.match(versBrouillon({ ...complet, communes: {} }), /Aucune entrée aujourd'hui/);
+});
+
+test("D82 : le script, sans la variable, publie des données sans entrée et écrit le brouillon", () => {
+  const dossier = fs.mkdtempSync(path.join(os.tmpdir(), "rss-"));
+  fs.writeFileSync(path.join(dossier, "mairies-idf.json"), JSON.stringify({ communes: {} }));
+  const brouillon = path.join(dossier, "brouillon.md");
+  const script = path.join(path.dirname(fileURLToPath(import.meta.url)), "..", "scripts", "collecte-rss-mairies.mjs");
+  const env = { ...process.env };
+  delete env.REPERE_PUBLICATION_ACTUS;
+  const r = spawnSync(process.execPath, [script, dossier, brouillon], { encoding: "utf8", env });
+  assert.equal(r.status, 0, r.stderr);
+  const publie = JSON.parse(fs.readFileSync(path.join(dossier, "actuelles-rss.json"), "utf8"));
+  assert.equal(publie.publication, false);
+  assert.deepEqual(publie.communes, {});
+  assert.match(fs.readFileSync(brouillon, "utf8"), /Aucune entrée aujourd'hui/);
+  assert.match(r.stdout, /publication désactivée/);
+});
+
+test("D82 : avec REPERE_PUBLICATION_ACTUS=true, le script l'annonce et n'écrit pas de brouillon", () => {
+  const dossier = fs.mkdtempSync(path.join(os.tmpdir(), "rss-"));
+  fs.writeFileSync(path.join(dossier, "mairies-idf.json"), JSON.stringify({ communes: {} }));
+  const brouillon = path.join(dossier, "brouillon.md");
+  const script = path.join(path.dirname(fileURLToPath(import.meta.url)), "..", "scripts", "collecte-rss-mairies.mjs");
+  const r = spawnSync(process.execPath, [script, dossier, brouillon], { encoding: "utf8", env: { ...process.env, REPERE_PUBLICATION_ACTUS: "true" } });
+  assert.equal(r.status, 0, r.stderr);
+  assert.equal(JSON.parse(fs.readFileSync(path.join(dossier, "actuelles-rss.json"), "utf8")).publication, true);
+  assert.equal(fs.existsSync(brouillon), false);
+  assert.match(r.stdout, /publication ACTIVE/);
 });

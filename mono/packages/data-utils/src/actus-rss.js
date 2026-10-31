@@ -6,8 +6,10 @@
  * (invariant 9 : jamais une date future, jamais une fraîcheur inventée). Trois au plus. */
 export const ACTUS_FLUX_MAX = 3;
 
+/* D82 : sans « publication: true » (publication désactivée par défaut), rien n'est affiché. */
 export function actusFlux(fichier, insee, aujourdhui) {
-  const c = fichier && fichier.communes && fichier.communes[insee];
+  if (!fichier || fichier.publication !== true) return [];
+  const c = fichier.communes && fichier.communes[insee];
   if (!c || !Array.isArray(c.items)) return [];
   return c.items
     .filter(x => x && typeof x.titre === "string" && x.titre.trim() !== ""

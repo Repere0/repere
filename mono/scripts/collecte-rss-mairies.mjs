@@ -123,6 +123,37 @@ export async function collecter(communes, { fetchImpl = fetch, aujourdhui = new 
   return sortie;
 }
 
+/* D82 : publication des actus de flux désactivée par défaut. Seul le texte exact « true » l'active. */
+export function publicationActive(env = process.env) {
+  return env.REPERE_PUBLICATION_ACTUS === "true";
+}
+
+/* Brouillon relu par le CEO (D82) : Markdown, lisible sur GitHub, une entrée par lien. */
+export function versBrouillon(complet) {
+  const l = [
+    "# Actus brouillon : flux RSS des mairies",
+    "",
+    `Généré le ${complet.genere_le}. **Non publié** : la publication automatique est désactivée (D82).`,
+    "",
+    "Procédure : le CEO relit chaque entrée contre sa page (D33), puis copie au plus une entrée par commune dans `data/actus-hebdo.json` (titre, resume, source, source_nom).",
+    "",
+  ];
+  const communes = Object.entries(complet.communes);
+  if (!communes.length) l.push("Aucune entrée aujourd'hui.", "");
+  for (const [insee, c] of communes) {
+    l.push(`## ${c.nom || insee} (${insee})`, "");
+    for (const x of c.items) l.push(`- **${x.titre}**`, `  - Date : ${x.date}`, `  - Lien : ${x.lien}`, `  - Résumé : ${x.resume}`, "");
+  }
+  return l.join("\n");
+}
+
+/* Ce qui part dans les données publiées, et ce qui part dans le brouillon. Sans publication,
+   les données publiées n'ont aucune entrée : l'application n'affiche rien de ce flux. */
+export function preparer(complet, publie) {
+  if (publie) return { publie: { ...complet, publication: true }, brouillon: null };
+  return { publie: { ...complet, publication: false, communes: {} }, brouillon: versBrouillon(complet) };
+}
+
 async function main() {
   const dossier = process.argv[2] || "./data";
   const fichier = path.join(dossier, "mairies-idf.json");
@@ -131,10 +162,13 @@ async function main() {
     process.exit(1);
   }
   const mai = JSON.parse(fs.readFileSync(fichier, "utf8"));
-  const sortie = await collecter(mai.communes, {});
-  fs.writeFileSync(path.join(dossier, "actuelles-rss.json"), JSON.stringify(sortie, null, 2) + "\n");
-  const b = sortie.bilan;
-  console.log(`actuelles-rss.json : ${b.communes_testees} sites testés, ${b.avec_flux} avec flux, ${b.avec_actu} avec au moins une entrée`);
+  const complet = await collecter(mai.communes, {});
+  const actif = publicationActive();
+  const { publie, brouillon } = preparer(complet, actif);
+  fs.writeFileSync(path.join(dossier, "actuelles-rss.json"), JSON.stringify(publie, null, 2) + "\n");
+  if (brouillon !== null) fs.writeFileSync(process.argv[3] || "../data/auto/actus-brouillon.md", brouillon);
+  const b = complet.bilan;
+  console.log(`actuelles-rss.json : ${b.communes_testees} sites testés, ${b.avec_flux} avec flux, ${b.avec_actu} avec au moins une entrée · ${actif ? "publication ACTIVE" : "publication désactivée, brouillon écrit"}`);
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
