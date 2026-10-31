@@ -111,6 +111,7 @@ jobs:
           for i in $(seq 1 20); do curl -sf http://localhost:8811/ >/dev/null && break; sleep 0.5; done
           node apps/mobile/tests/parcours-web.mjs http://localhost:8811 apps/mobile/captures
           node apps/mobile/tests/commune-web.mjs http://localhost:8811
+          node apps/mobile/tests/recherche-web.mjs http://localhost:8811
           node apps/mobile/tests/onboarding-web.mjs http://localhost:8811
           node apps/mobile/tests/zoom-web.mjs http://localhost:8811
           node apps/mobile/tests/mode-web.mjs http://localhost:8811

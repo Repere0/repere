@@ -155,7 +155,7 @@ function Onglets({ mode, setMode }: { mode: "votes" | "qag"; setMode: (m: "votes
 }
 
 export default function Scrutins() {
-  const params = useLocalSearchParams<{ mode?: string }>();
+  const params = useLocalSearchParams<{ mode?: string; n?: string }>();
   const [mode, setMode] = useState<"votes" | "qag">(params.mode === "qag" ? "qag" : "votes");
   const [etat, setEtat] = useState(ETATS.EN_COURS);
   const [qagIndex, setQagIndex] = useState<QagIndex | null>(null);
@@ -164,7 +164,8 @@ export default function Scrutins() {
   const [qagRecherche, setQagRecherche] = useState("");
   const [index, setIndex] = useState<Index | null>(null);
   const [detail, setDetail] = useState<Detail | null>(null);
-  const [selection, setSelection] = useState<string | null>(null);
+  /* V37 bloc 3 : la recherche globale ouvre un scrutin précis (paramètre n). */
+  const [selection, setSelection] = useState<string | null>(params.n ?? null);
   const [recherche, setRecherche] = useState("");
   const [ouverts, setOuverts] = useState<Set<string>>(new Set());
   const [chargementDetail, setChargementDetail] = useState(false);
@@ -175,7 +176,7 @@ export default function Scrutins() {
       setEtat(r.etat);
       const d = r.donnees as Index | null;
       setIndex(d);
-      if (d?.scrutins?.length) setSelection(d.scrutins[d.scrutins.length - 1].n);
+      if (d?.scrutins?.length) setSelection(prev => prev ?? d.scrutins[d.scrutins.length - 1].n);
     });
   }, []);
 

@@ -100,6 +100,7 @@ export default function Coquille() {
                 <Stack.Screen name="confidentialite" options={{ title: "Confidentialité" }} />
                 <Stack.Screen name="faq" options={{ title: "Questions fréquentes", headerLeft: () => <Retour texte="Retour" etiquette="Revenir à l'écran précédent" /> }} />
                 <Stack.Screen name="elu" options={{ title: "Fiche", headerLeft: () => <Retour texte={LIBELLES.qui} etiquette={`Revenir à l'écran ${LIBELLES.qui}`} /> }} />
+                <Stack.Screen name="recherche" options={{ title: "Rechercher", animation: "slide_from_bottom", headerLeft: () => <Retour texte="Fermer" etiquette="Fermer la recherche" /> }} />
                 <Stack.Screen name="partager" options={{ title: "Partager", animation: "slide_from_bottom", headerLeft: () => <Retour texte="Votre député" etiquette="Revenir à l'écran du député" /> }} />
               </Stack>
             </ThemeProvider>

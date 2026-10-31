@@ -15,7 +15,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { FlatList, KeyboardAvoidingView, Linking, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View, useWindowDimensions } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { router } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import { mots, motsCible, correspond, trouverCommunes, departementDe, titreLisible, dernierExercice, evolution, parHabitant, dateFr, decompte, ordinal, positionSur, positionsFiables, visibleAuNiveau } from "@repere/core";
 import { chargerCatalogueScrutins, chargerCommunesBeta, chargerDepartement, chargerDeputes, chargerIndex, chargerVotes, ETATS, PHRASES } from "../lib/donnees";
 import { Bouton, Carte, Texte, Vide } from "../lib/composants";
@@ -28,6 +28,7 @@ import { groupeDe } from "../lib/groupes";
 import { VOTE } from "../ui/partage/donnees";
 import { SquelettesListe } from "../ui/squelette";
 import { Logo } from "../ui/logo";
+import { Loupe } from "../ui/loupe";
 import { DatePublication } from "../ui/fraicheur";
 import { DernieresPublications } from "../ui/dernieres-publications";
 import { phrasesMoyenne, titreEcart, useMoyenneDepenses } from "../lib/moyenne";
@@ -191,6 +192,12 @@ export default function Accueil() {
   /* V29 bloc 2a : la position de l'exemple, lue du relevé de l'Assemblée (null si non lisible). */
   const [positionExemple, setPositionExemple] = useState<string | null>(null);
   const [tout, setTout] = useState(false);
+  /* V37 bloc 3 : « Voir toutes les communes » (recherche globale) ouvre la liste complète.
+     Le paramètre porte un horodatage : une nouvelle demande est toujours prise en compte. */
+  const params = useLocalSearchParams<{ toutes?: string }>();
+  useEffect(() => {
+    if (params.toutes) { setFiltre(""); setTout(true); }
+  }, [params.toutes]);
   const [recentes, setRecentes] = useState(() => [...RECENTES]);
   /* Une carte occupe toute la largeur de lecture ; la suivante commence apres un ecart. */
   const larg = Math.min(width, 640) - PAS * 8;
@@ -459,11 +466,19 @@ export default function Accueil() {
       </View>
             <View style={s.haut}>
               {/* Le logo est une vue (ui/logo.tsx) : aucun fichier image dans assets/. */}
-              <View style={{ flexDirection: "row", alignItems: "center", gap: PAS * 3 }}>
-                {/* L'accueil est toujours sombre : la variante « sombre », pas l'encre du theme
-                    (en mode clair, l'encre du theme est foncee et le logo disparaissait). */}
-                {premiere ? null : <Logo size={48} variant="sombre" />}
-                <Text style={s.marque} accessibilityLabel="Repère">Repère<Text style={{ color: E.ville }}>.</Text></Text>
+              <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
+                <View style={{ flexDirection: "row", alignItems: "center", gap: PAS * 3 }}>
+                  {/* L'accueil est toujours sombre : la variante « sombre », pas l'encre du theme
+                      (en mode clair, l'encre du theme est foncee et le logo disparaissait). */}
+                  {premiere ? null : <Logo size={48} variant="sombre" />}
+                  <Text style={s.marque} accessibilityLabel="Repère">Repère<Text style={{ color: E.ville }}>.</Text></Text>
+                </View>
+                {/* V37 bloc 3 : la recherche globale (communes, élus, scrutins). */}
+                <Pressable onPress={() => router.push("/recherche")} accessibilityRole="button"
+                  accessibilityLabel="Ouvrir la recherche : communes, élus, scrutins"
+                  style={({ pressed }) => ({ minWidth: 48, minHeight: 48, alignItems: "center", justifyContent: "center", opacity: pressed ? 0.7 : 1 })}>
+                  <Loupe couleur={D.encre} />
+                </Pressable>
               </View>
               {!champOuvert ? (
                 <Pressable onPress={() => setCherche(true)} accessibilityRole="button" accessibilityLabel="Chercher une commune"

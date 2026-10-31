@@ -14,7 +14,8 @@ import { FlatList, Pressable, Text, TextInput, View } from "react-native";
 import { Entree } from "../../ui/entree";
 import { router, Stack } from "expo-router";
 import { correspondFlou, motsCible, motsRecherche } from "@repere/core";
-import { chargerComptesRegions, chargerDeputes, chargerElusRegion, chargerIndex, ETATS, PHRASES } from "../../lib/donnees";
+import { ETATS, PHRASES } from "../../lib/donnees";
+import { chargerFiches } from "../../lib/annuaire";
 import { Vide } from "../../lib/composants";
 import { couleurs, CIBLE, PAS, RAYON, TYPO } from "../../lib/theme";
 import { Avatar } from "../../ui/avatar";
@@ -22,48 +23,6 @@ import { Loupe } from "../../ui/loupe";
 import { DatePublication } from "../../ui/fraicheur";
 import { SquelettesListe } from "../../ui/squelette";
 import type { Fiche } from "../../types/annuaire";
-
-/* Les 14 regions dont l'executif est publie : les fichiers de data/elus-regions/. */
-const REGIONS = ["01", "04", "11", "24", "27", "28", "32", "44", "52", "53", "75", "76", "84", "93"];
-
-type Depute = { prenom: string; nom: string; dateDebut?: string };
-type Source = { producteur?: string; licence?: string; releve_le?: string; maj?: string; url?: string };
-type Index = { departements: { code: string; nom?: string }[] };
-type FichierDeputes = { source?: Source; deputes?: Record<string, Depute> };
-type FichierRegion = { code: string; elus?: { nom: string; fonction: string; debut?: string }[]; source?: Source };
-
-const rang = (circo: string) => (Number(circo) === 1 ? "1re" : `${Number(circo)}e`);
-
-function construire(
-  deputes: FichierDeputes,
-  index: Index | null,
-  noms: Record<string, string>,
-  regions: (FichierRegion | null)[],
-): Fiche[] {
-  const nomDep = (code: string) => {
-    const d = index && index.departements.find(x => x.code === code);
-    return d && d.nom ? d.nom : "département " + code;
-  };
-  const sourceDeputes = deputes.source || {};
-  const liste: Fiche[] = [];
-  for (const [cle, d] of Object.entries(deputes.deputes || {})) {
-    const [code, circo] = cle.split("-");
-    liste.push({
-      id: "dep-" + cle, nom: `${d.prenom} ${d.nom}`, fonction: "Député", lieu: `${nomDep(code)}, ${rang(circo)} circonscription`,
-      depuis: d.dateDebut || "", producteur: sourceDeputes.producteur || "", licence: sourceDeputes.licence || "",
-      maj: sourceDeputes.releve_le || "", url: sourceDeputes.url || "",
-    });
-  }
-  for (const r of regions) {
-    if (!r || !r.elus) continue;
-    const src = r.source || {};
-    r.elus.forEach((e, i) => liste.push({
-      id: `reg-${r.code}-${i}`, nom: e.nom, fonction: e.fonction, lieu: `Région ${noms[r.code] || r.code}`,
-      depuis: e.debut || "", producteur: src.producteur || "", licence: src.licence || "", maj: src.maj || "", url: src.url || "",
-    }));
-  }
-  return liste.sort((a, b) => a.nom.localeCompare(b.nom, "fr"));
-}
 
 export default function Elus() {
   const [etat, setEtat] = useState<string>(ETATS.EN_COURS);
@@ -75,16 +34,11 @@ export default function Elus() {
     let vivant = true;
     setEtat(ETATS.EN_COURS);
     if (__DEV__) console.time("annuaire : chargement");
-    Promise.all([
-      chargerDeputes(), chargerIndex(), chargerComptesRegions(),
-      ...REGIONS.map(c => chargerElusRegion(c)),
-    ]).then(([dep, idx, comptes, ...regs]) => {
+    chargerFiches().then(({ etat: e, fiches: f }) => {
       if (__DEV__) console.timeEnd("annuaire : chargement");
       if (!vivant) return;
-      const noms = ((comptes.donnees && (comptes.donnees as { noms_regions?: Record<string, string> }).noms_regions) || {}) as Record<string, string>;
-      const reg = regs.map((r, i) => (r.donnees ? { code: REGIONS[i], ...(r.donnees as object) } : null));
-      setFiches(dep.donnees ? construire(dep.donnees as FichierDeputes, (idx.donnees as Index) || null, noms, reg as (FichierRegion | null)[]) : []);
-      setEtat(dep.donnees ? ETATS.SERVI : dep.etat);
+      setFiches(f);
+      setEtat(e);
     });
     return () => { vivant = false; };
   }, [essai]);
