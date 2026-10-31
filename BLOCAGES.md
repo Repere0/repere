@@ -315,3 +315,17 @@ Recherche faite sur le site officiel (melun.fr / ville-melun.fr) :
 - Adresse officielle : repere0@protonmail.com (déjà publiée sur le site).
 - À utiliser pour `EXPO_PUBLIC_CONTACT_EMAIL`. Le CEO définira la variable à minuit.
 - Aucune ligne de code modifiée : tant que la variable n'est pas définie, les signalements d'erreur et les boutons de contact restent masqués.
+
+## 35. Crash de l'onglet Élus (V34, bloc 1) — cause corrigée, à confirmer sur iPhone
+
+- Cause : l'avatar, affiché sur chaque ligne de l'onglet Élus, passait `OMBRE` (Proxy de thème de `lib/theme.ts`) dans un tableau de styles. React Native fige en développement les props des vues natives ; sur ce Proxy, le gel écrit sur la cible, et la lecture suivante plante.
+- Ce n'était pas un `.sort()` en place : le brief supposait une mutation de tableau. Le tri de `elus.tsx` opère sur un tableau local, et ne crée pas le crash.
+- Correctif : l'avatar copie les champs (`...OMBRE`). Garde : `apps/mobile/tests/theme-proxy.test.mjs`, citée dans `mobile.yml`.
+- Reproduction : la mécanique est reproduite avec une copie du code de gel de React Native (Node). Le message exact sur appareil (« trap result is configurable… ») n'est pas reproduit ici : pas d'iPhone dans cette session. À confirmer sur iPhone.
+
+## 36. Splash sombre, règle « tuile du logo » levée par ordre du CEO (V34, bloc 2) — à confirmer
+
+- Ordre du CEO : fond du démarrage `#161513`, repère en `#F3F0EA`. Le démarrage n'a pas de texte : le repère est une image. Une version sombre `assets/splash-icon-sombre.png` est ajoutée.
+- Règle produit touchée : depuis le 29/10, le fond du démarrage et l'icône adaptative Android suivent la tuile du logo (`#F7F7F9`), test `theme.test.mjs`. Le démarrage n'est plus sur la tuile ; l'icône iOS et l'icône adaptative Android le restent.
+- Question au CEO : garder le démarrage sombre et la tuile claire (état actuel), ou passer aussi la tuile de l'icône en sombre pour retrouver la règle ? La deuxième option change l'icône de l'application.
+- Non vérifié sur appareil.
