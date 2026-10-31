@@ -329,3 +329,17 @@ Recherche faite sur le site officiel (melun.fr / ville-melun.fr) :
 - Règle produit touchée : depuis le 29/10, le fond du démarrage et l'icône adaptative Android suivent la tuile du logo (`#F7F7F9`), test `theme.test.mjs`. Le démarrage n'est plus sur la tuile ; l'icône iOS et l'icône adaptative Android le restent.
 - Question au CEO : garder le démarrage sombre et la tuile claire (état actuel), ou passer aussi la tuile de l'icône en sombre pour retrouver la règle ? La deuxième option change l'icône de l'application.
 - Non vérifié sur appareil.
+
+## 37. Calendrier « Rien de publié dans les deux prochaines semaines » (V34, bloc 6) — cause : publication bloquée
+
+Diagnostic (31/10/2026), par étapes, ce qui est vérifié et ce qui ne l'est pas :
+
+- Source de l'agenda : OK. `outils/agenda_an.json` (relevé du 28/10) passé dans le vrai normaliseur (`scripts/agenda-an.mjs`) : 48 séances à partir du 28/10, dont 24 dans les 14 jours après aujourd'hui. Pas de décalage de fuseau : les dates sont en heure de Paris, comparées à l'heure de Paris partout.
+- Collecte : en échec chaque jour sur `main` depuis le 25/10 (exécutions `collecte.yml`, déclenchement planifié). L'étape qui échoue est « Publier sur Netlify » : HTTP 401, « Jeton NETLIFY_AUTH_TOKEN refusé : révoqué, expiré ou mal recopié ». La collecte et le commit du relevé réussissent (dernier commit 28/10), mais le site n'est plus republié.
+- Conséquence : le site en ligne garde sa dernière publication réussie. Son contenu n'a pas pu être vérifié d'ici : `repereapp.netlify.app` est injoignable depuis l'environnement de travail (HTTP 000). Le message « Rien de publié… » n'apparaît que lorsque l'agenda a bien été lu mais qu'aucune séance ne tombe dans les 14 jours : c'est donc une publication dont les séances sont passées, ou absentes. Pas d'autre cause trouvée dans le code.
+- Ce que l'application montre désormais : quand rien ne vient, elle dit « Pas d'événement à venir. Dernier événement : [date] » et affiche ce dernier rendez-vous, avec sa source et la date du relevé. Si l'agenda n'est pas arrivé, elle le dit (inchangé). Le bloc « Aucune séance n'est annoncée » ne s'affiche plus quand un dernier événement existe, car il se contredisait.
+- Vérifié : tests core (46 réussis, dont un cas « dernier rendez-vous passé ») ; écran vérifié dans Chromium 390 px avec les vraies séances du normaliseur, filtrées sur celles déjà passées.
+
+À trancher par le CEO (je ne peux pas le faire d'ici) :
+1. Remplacer le secret `NETLIFY_AUTH_TOKEN` dans les réglages GitHub (le jeton est refusé en 401). Puis relancer `collecte.yml` sur `main`, et vérifier que `repereapp.netlify.app/data/agenda-an.json` contient des séances à venir.
+2. Décider si l'écran doit aussi afficher la date du relevé quand il est ancien (il l'affiche déjà : « Relevé de l'agenda du 28 octobre 2026 »).

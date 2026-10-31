@@ -53,6 +53,28 @@ test("core — un scrutin se lit sans rien reformuler", () => {
   assert.equal(decompte({ pour: 378, contre: 7, abstentions: 173 }), "378 pour, 7 contre, 173 abstentions");
 });
 
+test("core — calendrier vide dans deux semaines : le dernier rendez-vous passe est donne, pas inventé (V34 bloc 6)", () => {
+  const agendaAN = { source: { producteur: "Assemblée nationale", url: "https://exemple.test/agenda", releve_le: "2026-10-28" },
+    evenements: [
+      { titre: "Séance ancienne", debut: "2026-10-28T14:00", fin: null, categorie: "Séance publique", lieu: null, description: null, url: null },
+      { titre: "Séance la plus récente", debut: "2026-10-30T15:00", fin: null, categorie: "Séance publique", lieu: null, description: null, url: null },
+    ] };
+  const deriver = (cal, maintenant) => deriverAujourdhui({ fiche: { nom: "Essai", circo: 1 }, commune: "00000", dep: "93", index: { agregats: [], sources: {} },
+    projets: null, cat: null, pos: null, deputes: null, cal, agendaAN, evenements: null, maintenant });
+  const le31 = new Date("2026-10-31T10:00:00+01:00");
+  const a = deriver(null, le31);
+  assert.equal(a.aVenir.length, 0, "rien à venir");
+  assert.equal(a.dernierPasse.titre, "Séance la plus récente", "le plus récent des passés, pas le premier du relevé");
+  assert.equal(a.dernierPasse.institution, "Assemblée nationale");
+  /* un rendez-vous à venir : il passe devant, le passé n'est plus le dernier affiché */
+  const avec = deriver({ evenements: [{ titre: "À venir", debut: "2026-11-03T15:00", fin: null, categorie: "Séance publique", lieu: null, description: null, url: null }], source: { producteur: "Sénat", url: "u" } }, le31);
+  assert.equal(avec.aVenir[0].titre, "À venir");
+  assert.equal(avec.dernierPasse.titre, "Séance la plus récente");
+  /* aucune source : pas de dernier rendez-vous, rien d'inventé */
+  assert.equal(deriverAujourdhui({ fiche: { nom: "Essai", circo: 1 }, commune: "00000", dep: "93", index: { agregats: [], sources: {} },
+    projets: null, cat: null, pos: null, deputes: null, cal: null, agendaAN: null, evenements: null, maintenant: le31 }).dernierPasse, null);
+});
+
 test("core — la garde d'appariement refuse deux releves qui ne se correspondent pas", () => {
   const cat = { scrutins: [{ n: "1" }, { n: "2" }], source: { releve_le: "2026-09-28" } };
   assert.equal(positionsFiables(cat, { positions: { 1: {} }, releve_le: "2026-09-28" }), true);

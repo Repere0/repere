@@ -132,6 +132,9 @@ export default function AVenir() {
       /* Deux semaines a partir d'aujourd'hui, comme le socle les compte (calendrier.js). */
       const limite = jourParis(new Date(Date.now() + 14 * 864e5));
       const deuxSemaines = groupes.filter(g => g.jour < limite);
+      /* V34 bloc 6 : rien dans les deux semaines → le dernier rendez-vous deja passe, du meme filtre. */
+      const dernierBrut = (d.dernierPasse || null) as Ev | null;
+      const dernierPasse = dernierBrut && (!institution || dernierBrut.institution === institution) ? dernierBrut : null;
       const affiches = choisi ? duJour : deuxSemaines;
       const debutSemaine = decaler(jour, -rangLundi(jour));
       const semaine = Array.from({ length: 7 }, (_, i) => decaler(debutSemaine, i));
@@ -149,7 +152,9 @@ export default function AVenir() {
           : "Rien de publié pour ce jour et ce filtre. Repère n'affiche que ce qui est annoncé ou publié.")
         : (deuxSemaines.length
           ? `${deuxSemaines.length} rendez-vous publiés dans les deux prochaines semaines.`
-          : "Rien de publié dans les deux prochaines semaines pour ce filtre. Repère n'affiche que ce qui est annoncé ou publié.");
+          : dernierPasse
+            ? `Pas d'événement à venir. Dernier événement : ${dateFr(dernierPasse.debut.slice(0, 10))}.`
+            : "Rien de publié dans les deux prochaines semaines pour ce filtre. Repère n'affiche que ce qui est annoncé ou publié.");
       const manquantes = lues.length ? INSTITUTIONS.filter(i => !lues.some(x => x.institution === i)) : [];
       /* Un seul repere de fraicheur, pour l'ecran : le plus ancien des agendas lus. */
       const ages = lues.map(x => ageReleve(x.source && x.source.releve_le)).filter((a): a is number => a !== null);
@@ -159,6 +164,8 @@ export default function AVenir() {
         : (lues.find(x => ageReleve(x.source && x.source.releve_le) === plusAncien)?.source?.releve_le ?? null);
       /* Carte de partage : le premier point affiche, avec la source de son institution. */
       const suivant = affiches[0];
+      /* Ce qui est montre dans la carte : les rendez-vous a venir, sinon le dernier passe (jamais en carte de partage). */
+      const montres = affiches.length ? affiches : !choisi && dernierPasse ? (regrouperParJour([dernierPasse]) as Groupe[]) : [];
       const lue = suivant ? lues.find(x => x.institution === suivant.institution) : undefined;
       const quand = suivant ? [jourFr(suivant.jour), suivant.institution].filter(Boolean).join(", ") : "";
       return (
@@ -231,9 +238,9 @@ export default function AVenir() {
               <Text style={TYPO.note}>Sous réserve de modification : l'agenda peut changer, le site officiel fait foi.</Text>
               <Text style={TYPO.note}>Les alertes « me prévenir une heure avant » ne sont pas encore disponibles dans l'application.</Text>
 
-              {affiches.length ? (
+              {montres.length ? (
                 <Carte echelon="france">
-                  {affiches.map((g, i) => <Ligne key={g.debut + i} g={g} />)}
+                  {montres.map((g, i) => <Ligne key={g.debut + i} g={g} />)}
                   <View style={{ flexDirection: "row", flexWrap: "wrap" }}>
                     {lues.map(x => <PastilleSource key={x.institution} nom={x.institution === "Sénat" ? "Sénat" : "Assemblée"} source={srcAgenda(x.source)} />)}
                   </View>
@@ -252,7 +259,7 @@ export default function AVenir() {
                   <Text style={{ color: couleurs.lien, fontWeight: "700", textDecorationLine: "underline" }}>Rien de publié pour ce filtre. Afficher toutes les institutions</Text>
                 </Pressable>
               ) : null}
-              {!toutes.length ? <Vide {...AGENDA_VIDE} /> : null}
+              {!toutes.length && !dernierBrut ? <Vide {...AGENDA_VIDE} /> : null}
             </>
           )}
 
