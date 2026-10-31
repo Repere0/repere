@@ -29,13 +29,14 @@ Décisions CEO reprises telles quelles : D64 (splash sombre), D65 (carte de vote
 
 ## 3. CI (bloc 5)
 
-Lecture à 01:20 (Paris), via `gh api` :
+Lecture à 01:21 (UTC), via `gh api` (runs `mobile.yml`) :
 
-- `0a3005e` (HEAD, bloc 3) : **en attente**.
-- `dd743ff` (bloc 2) : **en cours**.
-- `3e5c81d` (bloc 1) : annulée, remplacée par les pushes suivants. Ce n'est pas un échec.
+- `c30f623` (HEAD, ce rapport) : **en file d'attente**.
+- `b6fa4c3` (bloc 4, personas) : **en cours**.
+- `0a3005e` (bloc 3) et `dd743ff` (bloc 2) : **annulées** par la concurrence (un push plus récent a remplacé le run). Ce ne sont pas des échecs.
+- `3e5c81d` (bloc 1) : annulée, même raison.
 
-Ce n'est pas rouge. Je n'ai pas de résultat final : à relire avant toute fusion. Les blocs 4 (`b6fa4c3`, documentation) ne déclenchent pas la chaîne mobile.
+Aucun run terminé et rouge. Résultat final de `c30f623` : à relire avant toute fusion.
 
 **Chaîne de données (collecte, sur `main`) : rouge.** Le dernier run (`6bc4f41`, 31/10 à 00:55) a échoué à l'étape « Publier sur Netlify ». Le message dit « le site en ligne est inchangé ». Les journaux ne sont pas lisibles depuis cette session, donc je ne peux pas relire le code HTTP de la sonde. Le diagnostic précédent (BLOCAGES 37) était **HTTP 401** : le jeton Netlify est refusé. Je n'ai pas corrigé : c'est un secret du dépôt, à remplacer par le CEO.
 
