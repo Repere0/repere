@@ -338,6 +338,11 @@ rm -rf site_engendre
   # l'ecran le dit. L'ancien message « le releve d'hier reste » etait faux ici.
   node scripts/calendrier-senat.mjs ./data \
     || echo "::warning::calendrier du Senat absent ou non rafraichi - voir la cause et l'etat du releve precedent juste au-dessus"
+  # GROUPES POLITIQUES DES DEPUTES (V36, B2). Lit l'AMO30 deja depile et ecrit
+  # mono/data/deputes-groupes.json. Non bloquant : sans lui, l'application ne montre pas
+  # le groupe. Refuse d'ecrire si moins de 90 % des deputes ont un groupe lu.
+  node scripts/collecte-groupes.mjs ../data/brut_AMO30/json ./data \
+    || echo "::warning::groupes politiques non collectes (AMO30) - voir docs/data/groupes-politiques.md"
   # AGENDA ASSEMBLEE NATIONALE (23/09/2026) - pas de reseau ici, contrairement
   # au Senat : lit outils/agenda_an.json, deja produit par l'etape 2 de ce
   # meme script (agenda_an.py). Si ce fichier manque ou est mal forme, le

@@ -343,3 +343,13 @@ Diagnostic (31/10/2026), par étapes, ce qui est vérifié et ce qui ne l'est pa
 À trancher par le CEO (je ne peux pas le faire d'ici) :
 1. Remplacer le secret `NETLIFY_AUTH_TOKEN` dans les réglages GitHub (le jeton est refusé en 401). Puis relancer `collecte.yml` sur `main`, et vérifier que `repereapp.netlify.app/data/agenda-an.json` contient des séances à venir.
 2. Décider si l'écran doit aussi afficher la date du relevé quand il est ancien (il l'affiche déjà : « Relevé de l'agenda du 28 octobre 2026 »).
+
+## 38. AMO30 : téléchargement refusé par le proxy, groupes non produits ici (V36, bloc 1 B2)
+
+- Ce qui a été tenté (31/10/2026) : `curl` vers `data.assemblee-nationale.fr` (archive AMO30, `outils/collecte.py`). Réponse : `CONNECT tunnel failed, response 403`. Le statut du proxy (`/__agentproxy/status`) donne `connect_rejected 403` pour `data.assemblee-nationale.fr:443`, à 11:59:48 UTC.
+- Lecture : un 403 du proxy est un refus de politique, pas une panne. Rien n'a été retenté ni contourné (miroir, autre hôte) : c'est une décision à prendre, pas une erreur à réparer en silence.
+- Correction d'une indication du brief V36 : « URL dans BLOCAGES.md §23 » est inexacte. La §23 traite des mandats terminés (Henri Mellier). L'URL de l'archive est dans `outils/collecte.py`, ligne 59.
+- Ce qui est produit : `mono/scripts/collecte-groupes.mjs`, branché dans `outils/pipeline.sh` (après le relevé du Sénat, dans le sous-shell `cd mono`), et testé (`mono/tests/collecte-groupes.test.mjs`, 8 cas) avec une archive fictive de même forme.
+- Ce qui n'est PAS vérifié : la forme réelle de l'archive pour les groupes. Hypothèses : organes `codeType: "GP"` pour les groupes, `libelleAbrege` pour le sigle, `organes.organeRef` en texte. La forme des acteurs et des organes est reprise de `outils/agenda_an.py`, `outils/mono_donnees.py` et `docs/schema_acteurs.md`. Le seuil (90 % des députés rattachés à un groupe, sinon rien n'est écrit) protège le fichier de la veille si une hypothèse est fausse.
+- Ce qui reste bloqué : `mono/data/deputes-groupes.json` n'existe pas dans cette session. Il sera produit par la CI, à condition que le runner atteigne data.assemblee-nationale.fr (la collecte quotidienne le fait déjà, selon `outils/collecte.py`). À vérifier au premier run : le message `groupes : N deputes sur 574 rattaches...` dans le journal de `collecte.yml`.
+- Décision demandée au CEO : aucune. Si la CI ne peut pas non plus joindre la source, il faudra un autre moyen d'obtenir l'archive ; je ne le choisirai pas seul.
