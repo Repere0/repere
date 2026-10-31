@@ -88,3 +88,9 @@ Faits vérifiés dans le dépôt le 30/10/2026 :
 - **La clé est `dep-circo`** (« 77-1 ») : une seule personne par circonscription. Le changement post-bêta touchera la clé, ou ajoutera une liste « anciens » par circonscription. Il touchera aussi `extract-html.js` (le site), `client.js` et l'annuaire de l'application.
 - **Nommage** : les champs existants sont en camelCase (`dateDebut`, `acteurRef`). `date_fin_mandat` et `successeur_de` sont en snake_case. À aligner au moment du changement (`dateFin`, `successeurDe`), sinon le fichier mêlera deux conventions.
 - **AMO30 ne donne pas de motif de fin** dans les champs lus aujourd'hui (décès, démission, entrée au gouvernement). La fiche dira « Mandat terminé le … » sans motif, sauf si une source officielle le publie.
+
+## État au 31/10/2026 (V36, bloc 1, B4)
+
+- `data/actus-hebdo.json` existe, au format décrit plus haut (commit `b454166`), avec les trois communes pilotes **toutes vides** : 77288 (Melun), 77284 et 78646. Aucune actualité n'a été rédigée ni importée : ce sont des faits à établir par le CEO avec une source officielle.
+- Conséquence visible : l'application n'affiche aucune actualité locale. C'est le comportement voulu (« doctrine du vide », invariant 5), pas un défaut de chaîne.
+- La procédure du dimanche soir ci-dessus est la seule à suivre. Elle n'a pas été exécutée dans la session.
