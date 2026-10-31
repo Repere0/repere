@@ -50,6 +50,45 @@ export function BarrePart({ part, libelle, valeur, echelon = "ville", delai = 0,
   );
 }
 
+/* ── « Sur 100 € dépensés » en blocs empilés (V34, bloc 5) ───────────────
+   Remplace les barres fondues : chaque part a un bloc plein, son chiffre dedans quand il tient,
+   et son libelle a cote. Le reste est dessine, jamais chiffre : la source ne le detaille pas.
+   Couleurs : l'echelon de la commune (ville) pour les salaires, dept pour les investissements, gris
+   pour le reste. Aucune couleur nouvelle (invariant 7). */
+export function RepartitionCent({ salaires, investissement }: { salaires: number | null; investissement: number | null }) {
+  const reste = Math.max(0, 100 - (salaires ?? 0) - (investissement ?? 0));
+  const parts = [
+    salaires !== null ? { libelle: "Salaires des agents", valeur: salaires, couleur: couleurs.ville } : null,
+    investissement !== null ? { libelle: "Investissements", valeur: investissement, couleur: couleurs.dept } : null,
+  ].filter(Boolean) as { libelle: string; valeur: number; couleur: string }[];
+  const dit = parts.map(p => `${p.libelle} ${p.valeur} €`).join(", ");
+  return (
+    <View accessible accessibilityLabel={`Sur 100 € dépensés : ${dit}. Le reste n'est pas détaillé par la source.`} style={{ gap: PAS * 2 }}>
+      <View style={{ flexDirection: "row", height: 56, borderRadius: RAYON.bloc, overflow: "hidden", gap: 2 }}>
+        {parts.map(p => (
+          <View key={p.libelle} style={{ flex: p.valeur, backgroundColor: p.couleur, justifyContent: "center", paddingHorizontal: PAS * 2 }}>
+            {p.valeur >= 15 ? <Text style={[TYPO.reponse, { color: couleurs.blanc, fontWeight: "800" }]}>{p.valeur} €</Text> : null}
+          </View>
+        ))}
+        {reste > 0 ? <View style={{ flex: reste, backgroundColor: couleurs.sourd }} /> : null}
+      </View>
+      <View style={{ gap: PAS }}>
+        {parts.map(p => (
+          <View key={p.libelle} style={s.ligneLegende}>
+            <View style={[s.pastille, { backgroundColor: p.couleur }]} />
+            <Text style={[TYPO.corps, { flex: 1 }]}>{p.libelle}</Text>
+            <Text style={[TYPO.corps, { fontWeight: "700" }]}>{p.valeur} €</Text>
+          </View>
+        ))}
+        <View style={s.ligneLegende}>
+          <View style={[s.pastille, { backgroundColor: couleurs.sourd }]} />
+          <Text style={[TYPO.note, { flex: 1 }]}>Reste, non détaillé par la source</Text>
+        </View>
+      </View>
+    </View>
+  );
+}
+
 /* ── Des mois de recettes (encours de dette) ───────────────────────────── */
 export function Mois({ mois, echelon = "ville" }: { mois: number; echelon?: Echelon }) {
   const n = Math.max(12, Math.ceil(mois));
@@ -237,6 +276,8 @@ const s = feuille(() => StyleSheet.create({
   ligneH: { flexDirection: "row", justifyContent: "space-between", alignItems: "baseline", gap: PAS * 2, flexWrap: "wrap" },
   piste: { height: 12, borderRadius: 6, backgroundColor: couleurs.voile, overflow: "hidden" },
   rempli: { height: "100%", borderRadius: 6 },
+  ligneLegende: { flexDirection: "row", alignItems: "center", gap: PAS * 2 },
+  pastille: { width: 12, height: 12, borderRadius: 3 },
   mois: { flexDirection: "row", flexWrap: "wrap", gap: 4 },
   moisCase: { width: 22, height: 22, borderRadius: 6, backgroundColor: couleurs.voile, overflow: "hidden" },
   moisRempli: { height: "100%" },

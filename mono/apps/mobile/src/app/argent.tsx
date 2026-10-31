@@ -28,7 +28,7 @@ import { DateDonnee } from "../ui/fraicheur";
 import { phrasesMoyenne, useMoyenneDepenses } from "../lib/moyenne";
 import { PastilleSource } from "../ui/source";
 import { Emoji, Resume } from "../ui/resume";
-import { BarrePart, Compteur, DeuxAnnees, Depli, Financement, Mois } from "../ui/visuels";
+import { BarrePart, Compteur, DeuxAnnees, Depli, Financement, Mois, RepartitionCent } from "../ui/visuels";
 import { PartagerCarte } from "../ui/partage/bouton-partage";
 import { ChiffreStory } from "../ui/partage/variantes/chiffre.story";
 import { messageChiffre } from "../ui/partage/messages";
@@ -128,8 +128,7 @@ export default function Argent() {
                      (part des salaires absente) ; l'annee des comptes manquait au titre. */}
                   <Resume phrase={ch.partSalaires !== null ? `Sur 100 € dépensés, ${ch.partSalaires} € vont aux salaires des agents.` : `Sur 100 € dépensés, ${ch.partInvestissement} € vont aux investissements.`}
                     enClair="Le reste des dépenses n'est pas détaillé par la source.">
-                    {ch.partSalaires !== null ? <BarrePart part={ch.partSalaires} libelle="Salaires des agents" valeur={rap(/salaires/)?.v || ""} /> : null}
-                    {ch.partInvestissement !== null ? <BarrePart part={ch.partInvestissement} libelle="Investissements : travaux, équipements…" valeur={rap(/investir/)?.v || ""} delai={120} /> : null}
+                    <RepartitionCent salaires={ch.partSalaires} investissement={ch.partInvestissement} />
                   </Resume>
                   <PasCeQueCaDit r={rap(/salaires/)} sujet="salaires" />
                   <PasCeQueCaDit r={rap(/investir/)} sujet="investissements" />
