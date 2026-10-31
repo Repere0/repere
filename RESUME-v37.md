@@ -28,7 +28,7 @@ Date : 31/10/2026. Branche `test/sdk58-expo-go` (jamais fusionnée dans `main`, 
   - `elections-web` : 8 contrôles, horloge du navigateur fixée (169 jours au 31/10/2026 ; masquée au 01/10/2026 ; « aujourd'hui » au 18/04/2027) (nouveau).
   - `partage-texte-web` : 4 écrans, titre, lien, pas de code de commune, source (nouveau). Le partage du navigateur est simulé.
   - `onboarding-web`, `zoom-web`, `mode-web`, `parcours-web` (360/390/430 px, pannes), `partage-story-web` : verts.
-- CI sur `09f8718` : toutes les étapes jusqu'à « Même vérité » passent, parcours et cartes de partage compris.
+- CI sur `baf2242` (code identique à `a818578`, run 41204271325) : **toutes les étapes sont vertes sauf « Même vérité »**, y compris « Parcours dans un navigateur » (qui lance désormais `recherche-web`, `elections-web` et `partage-texte-web`) et « Cartes de partage ». L'étape « Même vérité » échoue pour la raison de BLOCAGES §43, déjà présente en V36.
 
 **Non faites, et pourquoi :**
 - **Aucun essai sur iPhone ni Android**, aucun build EAS. Le lien `repere://` n'a pas été ouvert sur un appareil.
