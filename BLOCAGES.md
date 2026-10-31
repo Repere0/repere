@@ -374,3 +374,33 @@ Diagnostic (31/10/2026), par étapes, ce qui est vérifié et ce qui ne l'est pa
 ## 41. Niveau « Ma rue » vide : comportement voulu, à revoir (V36, bloc 2 M5)
 
 - Le niveau rue rend le calendrier et les actualités vides parce que les données sont nationales. Comportement honnête. À revoir quand on aura des actus locales (voir `docs/strategie-editoriale.md`, état du 31/10/2026 : trois communes pilotes vides).
+
+## 42. Features 2 et 3 (« Mes suivis », « Nouveau ») : stockage interdit par l'invariant 2 en l'état (V37, blocs 4 et 5)
+
+- **Ce que le brief demande** : ajouter à `repere.profil` deux champs, `suivis: string[]` (identifiants d'élus ou codes INSEE de communes) et `derniereVisite: string` (date ISO).
+- **Ce que la règle dit** : l'invariant 2 (`CLAUDE.md` et `AGENTS.md`, bloc sous `INVARIANTS:DEBUT`) ne permet que deux clés, `repere.departement` et `repere.profil`, et liste les réglages admis dans `repere.profil`. L'ADR 0006 va plus loin : `repere.profil` porte des réglages de lecture, « aucune identité, aucune commune, aucun historique ». `.claude/invariants.sha256` scelle ce texte ; le changer exige un accord explicite du CEO, puis une mise à jour du sceau.
+- **Pourquoi je n'ai pas écrit ces champs** :
+  - `suivis` range dans le téléphone une liste d'élus et de communes choisis par le lecteur. C'est une identité et une commune, ce que l'ADR exclut de `repere.profil`. Ce n'est pas un réglage de lecture.
+  - `derniereVisite` est une date d'usage : un historique, au sens de l'ADR.
+  - `repere.departement` ne peut pas porter ces données non plus : il ne contient que la commune retenue (`{d, c}`), et ajouter des champs y violerait la même règle.
+  - Une version « en mémoire seulement » (perdue à la fermeture) serait une demi-fonction livrée sans le dire. Je ne l'ai pas faite.
+- **Ce qui est livré quand même** : rien pour ces deux blocs. Les blocs 6 (rappel des élections) et 7 (partage) ne touchent pas au stockage et sont faits.
+- **Décision demandée au CEO**, par écrit et avec un numéro de décision :
+  1. Amender l'invariant 2 et l'ADR 0006 pour `derniereVisite` seul (une date ISO, aucune identité) ? C'est le cas le moins risqué ; sa conséquence est que la règle « aucun historique » est levée pour une seule date, locale, jamais transmise.
+  2. Pour `suivis` : accepter une liste locale d'élus et de communes suivis (identité d'intérêt, sur le téléphone seulement, jamais transmise), en amendant « aucune identité, aucune commune » pour ce seul champ ? Ou renoncer à la fonction ?
+  3. Si l'amendement est refusé : les blocs 4 et 5 restent non livrés, et l'accueil ne montre pas de section « Mes suivis » ni de badge « Nouveau ».
+- **Quand c'est tranché** : la PR qui applique l'amendement met à jour `CLAUDE.md`, `AGENTS.md`, l'ADR 0006 (section amendement, comme D57 et D67) et `.claude/invariants.sha256` dans le même commit. Le test `invariants.test.mjs` doit passer sans modification de ses listes.
+- **Le profil reste sous la limite** : 279 octets avec tous les réglages et les sept thèmes (limite 500).
+
+## 43. CI rouge à l'étape « Même vérité » : la répartition « Sur 100 € » ne dit pas la même phrase sur le site et dans l'application (V37, bloc 8)
+
+- **Constat** : sur la branche de test, la CI échoue à la dernière étape de vérification (« Meme verite sur le site et dans l'application », `tests/meme-verite.mjs`) depuis au moins le commit V36 `30bc63b` (run 41200351315). Sur les commits V37 `d5af156` et `09f8718`, toutes les étapes précédentes passent (socle, construction, parcours, commune, recherche, onboarding, zoom, mode, cartes de partage) ; seule celle-ci échoue.
+- **Reproduit en local** (site construit avec `pnpm build`, données copiées comme la CI, serveurs 8821 et 8811) : 107 faits comparés, 8 échecs, tous sur la même ligne, pour Paris, Boulogne-Billancourt, Meaux et Amponville :
+  - site : « 30 € de salaires », « 22 € pour investir » (le test attend cette phrase) ;
+  - application : « Salaires des agents 30 € » et « Investissements 22 € » (`src/ui/visuels.tsx`, `RepartitionCent`, libellé d'accessibilité et légende).
+- **Cause** : la refonte « budget plus visuel » (commit `a4c1964`, V34, bloc 5) a changé la formulation côté application. Le test n'a pas été mis à jour ; il est donc rouge depuis. Ce n'est pas une donnée fausse : les montants sont les mêmes, seule la phrase diffère.
+- **Ce que je n'ai pas fait** : ni changé la formulation de l'application, ni affaibli le test. Les deux sont des décisions : la formulation de l'infographie est un choix de design, et le test est la garde de la « même vérité ».
+- **Décision demandée au CEO**, au choix :
+  1. Aligner l'application sur la phrase du site (« 30 € de salaires », « 22 € pour investir ») dans la légende et le libellé d'accessibilité de `RepartitionCent`. Le test passe sans modification. Coût : un changement de libellé visible.
+  2. Garder « Salaires des agents 30 € » et mettre le site à la même formulation (la phrase du site vient de `packages/core` et de `apps/web`). Coût : un changement sur le site.
+- **Conséquence pour la PR** : la PR de la branche ne peut pas être verte tant que ce point n'est pas tranché. Elle n'est pas fusionnée dans `main` de toute façon.
