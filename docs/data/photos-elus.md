@@ -52,3 +52,12 @@ Un élu, ou toute personne photographiée, peut demander le retrait de sa photo 
 **Délai proposé : 48 h**, à confirmer par le porteur. C'est un engagement humain : rien dans le code ne le garantit. Il dépend de la personne qui lit l'adresse de contact.
 
 Vérifié dans le navigateur, avec une image d'essai construite et une adresse de test (`essai@exemple.test`), retirées ensuite : crédit en lien, mention de retrait affichée, aucune requête vers un tiers.
+
+## Vérification V36 (bloc 1, B3) — état au 31/10/2026
+
+- **Le script existe** (`mono/scripts/collecte-photos-elus.mjs`) et **il tourne déjà dans la chaîne** : `outils/pipeline.sh` l'appelle à chaque publication, non bloquant. Il n'a pas été ajouté à `collecte.yml` : ce fichier n'appelle que `pipeline.sh`, et sa propre consigne est de ne rien modifier hors de `pipeline.sh`.
+- **Nom du fichier de sortie** : le brief V36 disait `data/photos-elus.json`. Le format réel est un fichier par département, `data/photos-elus/{département}.json` (voir plus haut : le navigateur ne charge jamais une image Wikimedia, et les fichiers par département évitent d'en charger un national). Non modifié.
+- **Licences** : le filtre (`LICENCE_OK`) et le rapprochement par nom sont testés hors réseau : `mono/tests/photos-licences.test.mjs` (4 cas, cités dans `package.json` et `mobile.yml`).
+- **Couverture** : non mesurée. Wikidata (`query.wikidata.org`) et Commons (`commons.wikimedia.org`) ne répondent pas depuis la session (aucune connexion, code 000, le 31/10/2026). La fourchette « 30 à 50 % des députés » du brief n'est donc pas vérifiée et n'est pas reprise ici. Le premier run CI dira le nombre réel (ligne « photos : N deputes sur M » dans le journal).
+- **Propriété P4123** : toujours non confirmée (point ci-dessus). Si elle est fausse, aucun député n'est rapproché, et le compte le montrera.
+- **Recréation** : non nécessaire, le script existe. Le registre des retraits (`mono/scripts/photos-retirees.json`) est vide.
