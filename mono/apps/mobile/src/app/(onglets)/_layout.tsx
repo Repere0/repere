@@ -13,6 +13,7 @@ import { Platform, Text, type ColorValue } from "react-native";
 import { Tabs } from "expo-router";
 import { LIBELLES } from "@repere/core";
 import { couleurs } from "../../lib/theme";
+import { useTheme } from "../../lib/themeChoix";
 import { ChangerCommune } from "../../ui/retour";
 import { BoutonReglages } from "../../ui/reglages";
 
@@ -42,6 +43,9 @@ const etiquette = (texte: string) => ({ color }: { color: ColorValue }) => (
 );
 
 export default function Onglets() {
+  /* V35 : s'abonner au thème fait relire les couleurs de l'en-tête à chaque changement de mode
+     (sans cela, passer de sombre à clair laissait l'en-tête sombre jusqu'au rechargement). */
+  useTheme();
   return (
     <Tabs
       screenOptions={{

@@ -11,6 +11,8 @@ export const NIVEAUX_ZOOM = ["rue", "region", "france"];
 export const TAILLES_TEXTE = [16, 18, 22, 26];
 export const ESPACEMENTS = [1.5, 1.8, 2.1];
 export const CONTRASTES = ["normal", "eleve", "tres-eleve"];
+/* D67 (V35) : auto = suit le système ; clair et sombre fixent le thème. */
+export const MODES = ["auto", "clair", "sombre"];
 
 export const PROFIL_DEFAUT = {
   niveauZoom: "france",
@@ -21,6 +23,7 @@ export const PROFIL_DEFAUT = {
   animationsReduites: false,
   modeDaltonien: false,
   masquerImages: false,
+  mode: "auto",
   themes: [],
 };
 
@@ -41,6 +44,7 @@ export function valideProfil(v) {
     animationsReduites: bool(src.animationsReduites),
     modeDaltonien: bool(src.modeDaltonien),
     masquerImages: bool(src.masquerImages),
+    mode: pris(src.mode, MODES),
     /* D57 (V31) : thèmes d'intérêt, parmi THEMES, sans doublon. */
     themes: Array.isArray(src.themes) ? [...new Set(src.themes)].filter(t => THEMES.includes(t)) : [],
   };

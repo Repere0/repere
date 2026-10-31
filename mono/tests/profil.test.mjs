@@ -51,6 +51,16 @@ test("D45 : le profil par défaut est exactement celui du « Passer »", () => {
   assert.deepEqual(valideProfil({}), PROFIL_DEFAUT);
 });
 
+/* V35, bloc 1 (D67) : le mode d'affichage est gardé dans le même profil, sans nouvelle clé. */
+import { MODES } from "../packages/core/src/profil.js";
+test("D67 : le mode vaut auto, clair ou sombre ; une autre valeur revient à auto", () => {
+  assert.deepEqual(MODES, ["auto", "clair", "sombre"]);
+  for (const m of MODES) assert.equal(valideProfil({ mode: m }).mode, m);
+  assert.equal(valideProfil({ mode: "noir" }).mode, "auto");
+  assert.equal(valideProfil({}).mode, "auto");
+  assert.equal(valideProfil({ mode: "sombre", tailleTexte: 22 }).tailleTexte, 22, "un champ voisin reste gardé");
+});
+
 /* V31, bloc 1 (D57) : thèmes d'intérêt. */
 import { THEMES, themesDuTexte } from "../packages/core/src/themes.js";
 test("thèmes : seules les valeurs de THEMES sont gardées, sans doublon", () => {

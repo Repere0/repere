@@ -25,3 +25,10 @@ Les réglages d'accessibilité (taille du texte, contraste, daltonisme, réducti
 - **Ce que cela change** : le champ ne règle plus seulement la lecture. Il dit ce que le lecteur veut suivre. Il reste sur l'appareil, n'est jamais transmis, et ne contient ni identité, ni commune, ni historique.
 - **Ce qui ne change pas** : la clé reste la même (`repere.profil`), aucune autre clé n'est ajoutée, et la règle « aucune transmission » s'applique.
 - **Limite connue** : le rangement des publications par thème se fait par mots-clés dans le titre. Il peut se tromper (exemple : « sécurité sociale » est rangé dans Sécurité). L'écran « Pour vous » le dit au lecteur.
+
+## Amendement D67 (V35, bloc 1) — mode d'affichage
+
+- **Décision CEO D67** : `repere.profil` porte aussi un champ `mode` : `auto` (suit le système), `clair` ou `sombre`. Défaut : `auto`. Le choix fait avec la roue des réglages est gardé sur l'appareil, comme les autres réglages de lecture.
+- **Ce qui ne change pas** : aucune nouvelle clé (`repere.profil` reste la seconde et dernière clé), aucune transmission, aucune identité.
+- **Sans profil** (accueil pas encore répondu) : le choix reste en mémoire pour la session, et n'écrit aucun profil. Écrire un profil à ce moment sauterait l'accueil (le profil absent déclenche l'accueil).
+- **Sceau** : l'empreinte des invariants est régénérée (`node outils/derive_contexte.mjs --sceller`) sur décision du porteur, dans la même PR.

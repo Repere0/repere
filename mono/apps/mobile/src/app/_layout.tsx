@@ -45,13 +45,21 @@ export default function Coquille() {
      instant de plus sur l'ecran de demarrage. En cas d'echec, la police du
      systeme. */
   const systeme = useModeSysteme();
-  const [choix, setChoix] = useState<ChoixTheme>("systeme");
-  const mode = appliquerChoix(choix, systeme);
   /* Le profil de lecture (V26, bloc 3) : appliqué avant le dessin, comme le mode. */
   const etatProfil = useEtatProfil();
   const lu = etatProfil.profil ?? PROFIL_DEFAUT;
+  /* D67 (V35) : le mode vit dans repere.profil. Sans profil (accueil pas encore répondu),
+     le choix reste en mémoire : écrire un profil à ce moment sauterait l'accueil. */
+  const [choixSession, setChoixSession] = useState<ChoixTheme>("systeme");
+  const choix: ChoixTheme = etatProfil.profil ? (lu.mode === "clair" || lu.mode === "sombre" ? lu.mode : "systeme") : choixSession;
+  const setChoix = (c: ChoixTheme) => {
+    if (etatProfil.profil) etatProfil.modifier({ mode: c === "systeme" ? "auto" : c });
+    else setChoixSession(c);
+  };
+  const mode = appliquerChoix(choix, systeme);
   appliquerLecture({ taille: lu.tailleTexte, espacement: lu.espacement, contraste: lu.contraste });
-  const valeur = useMemo(() => ({ choix, setChoix, mode }), [choix, mode]);
+  /* setChoix change à chaque rendu (il lit le profil courant) : pas de mémoïsation qui le figerait. */
+  const valeur = { choix, setChoix, mode };
   const tema = useMemo(() => themeDe(mode), [mode]);
   const fonds = NEUTRES_PAR_MODE[mode];
   const [polices, erreur] = useFonts({ BricolageGrotesque_800ExtraBold, BricolageGrotesque_600SemiBold });
