@@ -388,6 +388,11 @@ rm -rf site_engendre
   # etait present ou si sa note d'absence avait ete testee a sa place.
   bash ../outils/teaser_scrutins_etat.sh ./data ../data/brut_Scrutins
   pnpm install --frozen-lockfile
+  # FLUX RSS DES MAIRIES (31/10/2026, D81, ADR 0007) - seulement les flux publies par la
+  # mairie, jamais son HTML. Apres l'install (rss-parser). Reseau requis. Non bloquant :
+  # sans ce fichier, l'application n'affiche pas d'actualite de flux.
+  node scripts/collecte-rss-mairies.mjs ./data \
+    || echo "::warning::flux RSS des mairies non collectes - aucune actu de flux publiee"
   # RISQUE CONFIRME PAR AUDIT LE 22/09/2026, PAS SUPPOSE : ce bloc n'installait
   # aucun Chromium pour mono/. Le premier essai reel sur le runner GitHub
   # (workflow_dispatch de test, run 35796632331) a echoue exactement ici -
