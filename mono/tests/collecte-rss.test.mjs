@@ -108,3 +108,20 @@ test("sans le fichier des mairies, le script s'arrête et n'écrit rien", () => 
   assert.match(r.stderr, /absent/);
   assert.equal(fs.existsSync(path.join(dossier, "actuelles-rss.json")), false);
 });
+
+// Affichage (data-utils) : ne garder que ce qui peut être montré honnêtement.
+import { actusFlux } from "../packages/data-utils/src/actus-rss.js";
+test("actusFlux : https, date passée, titre présent, trois au plus", () => {
+  const fichier = { communes: { "77288": { items: [
+    { titre: "Ok 1", lien: "https://www.mairie-test.fr/1", date: "2026-10-30", resume: "" },
+    { titre: "Future", lien: "https://www.mairie-test.fr/2", date: "2026-11-02", resume: "" },
+    { titre: "", lien: "https://www.mairie-test.fr/3", date: "2026-10-29", resume: "" },
+    { titre: "Http", lien: "http://www.mairie-test.fr/4", date: "2026-10-28", resume: "" },
+    { titre: "Ok 2", lien: "https://www.mairie-test.fr/5", date: "2026-10-27", resume: "" },
+    { titre: "Ok 3", lien: "https://www.mairie-test.fr/6", date: "2026-10-26", resume: "" },
+    { titre: "Ok 4", lien: "https://www.mairie-test.fr/7", date: "2026-10-25", resume: "" },
+  ] } } };
+  assert.deepEqual(actusFlux(fichier, "77288", "2026-10-31").map(x => x.titre), ["Ok 1", "Ok 2", "Ok 3"]);
+  assert.deepEqual(actusFlux(fichier, "00000", "2026-10-31"), []);
+  assert.deepEqual(actusFlux(null, "77288", "2026-10-31"), []);
+});
