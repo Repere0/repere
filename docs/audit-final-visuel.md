@@ -57,3 +57,8 @@ Lecture de ces chiffres :
 - Sur l'accueil, la sonde tombe à 0 % : la hiérarchie repose maintenant sur la taille et la police de titre, plus sur le poids des libellés. C'est voulu, mais c'est la limite à regarder sur iPhone.
 - Les chiffres V34 n'ont pas été re-mesurés sous la colonne « + polices » : cette colonne n'existe que pour V35.
 - Mesures faites sur Chromium 390 px, pas sur iPhone réel.
+
+## Vérifications V36 (bloc 2, M1 et M6)
+
+- **M1 — densité du calendrier** (`a-venir.tsx`, commit `dd743ff`) : séances regroupées par jour ; hiérarchie jour > heure > titre > institution > source. **Objectif de 15 cibles non atteint : 18** au premier écran (mesure « foreground » : éléments visibles, hors éléments masqués `aria-hidden` d'écrans empilés). Le chiffre 33 de V34 comptait ces éléments masqués : il n'est pas la base de comparaison. Mesure avant/après sur le même fixture : 19 → 18. Atteindre 15 suppose un choix de produit (retirer le lien « Source », déplacer le menu des filtres, ou une bande de sept jours) : non fait sans accord du CEO.
+- **M6 — splash** (mesure des pixels de `assets/splash-icon-sombre.png`, 31/10/2026) : fond `#161513` sur 917 849 pixels opaques ; repère `#F3F0EA` sur 116 021 pixels. `app.json` : `splash.backgroundColor` = `#161513`, `splash.image` = `splash-icon-sombre.png`. **Conforme** au brief. Non vérifié sur appareil.
