@@ -10,7 +10,7 @@ Date : 31/10/2026. Branche `test/sdk58-expo-go`. Chaque point renvoie à sa sour
 - La publication automatique est **en panne** : la collecte échoue depuis le 25/10, à l'étape Netlify (HTTP 401, jeton refusé). Le site publié n'est plus mis à jour. C'est le point le plus urgent, et il ne se règle pas dans le dépôt (BLOCAGES §37).
 - L'adresse de contact n'arrivera pas en production avec la configuration actuelle : `.env` n'est pas publié (BLOCAGES §39).
 - Les groupes politiques, les sénateurs, les textes de loi et les amendements ne sont pas affichés.
-- Le contrôle WCAG par écran passe sur le contraste et les cibles tactiles, avec deux échecs sur l'accueil (BLOCAGES n/a, `docs/audit-wcag.md`).
+- Le contrôle WCAG par écran passe sur le contraste et les cibles tactiles, avec deux échecs sur l'accueil (`docs/audit-wcag.md`).
 - Rien n'a été inventé : l'actualité locale est vide, les photos sont filtrées par licence, les sources et leurs dates sont affichées.
 
 ## 2. Score par dimension
