@@ -454,3 +454,27 @@ Diagnostic (31/10/2026), par étapes, ce qui est vérifié et ce qui ne l'est pa
 - **Longueur** : estimée, pas mesurée sur téléphone. Le texte fait environ 1 000 mots, soit une dizaine d'écrans de défilement.
 - **Expo Go et SDK 58** : non vérifiés sur appareil (déjà signalé dans `docs/kit-testeur.md`). Le guide demande aux testeurs de signaler un refus.
 - **Décision demandée au CEO** : valider l'adresse de contact dans le guide, et le texte de la section « Ce qu'on fera avec vos retours », qui fait des promesses de process.
+
+## 49. V43 (D88) : fichier LICENSE non créé
+
+- **Constat** : D88 demande un fichier `LICENSE` (AGPL-3.0) à la racine. Il n'est **pas créé**.
+- **Pourquoi** : le texte officiel n'est pas accessible depuis la session. gnu.org refuse la connexion (403 au tunnel du proxy) et l'outil de lecture de pages refuse la lecture (robots). Aucune copie du texte n'est sur la machine. Le texte n'a pas été reconstitué de mémoire : une licence reconstituée peut être fausse, et une fausse licence vaut pire qu'une licence absente.
+- **Ce qui manque** : copier le texte officiel, sans modification, de https://www.gnu.org/licenses/agpl-3.0.txt vers `LICENSE` à la racine. Vérifier que le fichier commence par « GNU AFFERO GENERAL PUBLIC LICENSE, Version 3, 19 November 2007 ».
+- **Ce qui est fait** : le README et le CONTRIBUTING disent que le fichier n'est pas encore présent, et ne renvoient pas à un `LICENSE` absent. Aucun champ `license` n'est ajouté : il n'y a pas de `package.json` à la racine (vérifié).
+- **Risque** : sans fichier de licence, aucune licence n'est accordée explicitement à qui utilise le code. La candidature AIC ne doit pas citer l'AGPL avant l'ajout du fichier (`docs/candidature-aic/brouillon.md`).
+- **Décision demandée au CEO** : confirmer l'AGPL-3.0 (choix du porteur, non tranché par la session), puis ajouter le fichier.
+
+## 50. V43 (D91) : contraste du focus clavier en mode sombre, chiffre corrigé
+
+- **Correction de D91** : D91 annonçait un contraste de focus de **1,04:1** en mode sombre et demandait de le noter comme bloquant. **Ce chiffre est retiré.** Il venait de la valeur calculée du contour (`rgb(16,16,16)`), qui n'est pas la couleur réellement peinte à l'écran.
+- **Mesure** : sur un élément, dans Chromium, l'anneau peint est blanc, `#FFFFFF`, sur un fond `#161513` : **18,25:1**, au-dessus du seuil de 3:1 du critère 1.4.11. Mesure faite sur les pixels (`scratchpad/focus-dark.png`), pas sur le style calculé. En mode clair, le même type de mesure donne `#101010` sur fond clair, 17,03:1.
+- **Ce qui n'est pas mesuré** : les autres types d'éléments en mode sombre (boutons, onglets, champs). Un seul élément a été mesuré.
+- **Conséquence** : ce n'est pas un blocage pour la bêta. À vérifier sur iPhone en mode sombre (test prioritaire du résumé V43). Si un élément ne contraste pas, le corriger après la bêta.
+
+## 51. V42 bloc 4 / V43 bloc 1 : performance au-dessus de 500 ms, non optimisée
+
+- **Constat** : mesures dans `docs/audit-performance.md`. En 4G simulée, le premier texte arrive entre 3,7 et 4,1 s sur tous les écrans. En local, environ 700 ms sur la plupart des écrans, 415 à 437 ms sur les onglets.
+- **Cause identifiée** : le paquet JavaScript principal, 1,07 Mo (287 Ko compressé). Le texte n'apparaît qu'après son téléchargement et son exécution.
+- **Non fait** : aucun découpage du build (chargement des écrans à la demande). Ce changement demande une mesure avant et après sur le même réseau simulé, et il touche la chaîne de build partagée.
+- **Non vérifié** : la cible de 400 ms citée pour Apple (aucune source lue dans la session). La compression appliquée par Netlify (en-têtes de réponse non lus). Le comportement sur iPhone en Expo Go (non mesuré).
+- **Décision à prendre** : si les testeurs signalent la lenteur, faire la mesure avant et après, puis découper le build.
