@@ -95,6 +95,9 @@ jobs:
         env:
           CI: "1"
           EXPO_OFFLINE: "1"
+          # D71 (CEO, 31/10/2026) : adresse publique, pas un secret. Sans elle, le signalement
+          # d'erreur est masque (ui/contact.tsx).
+          EXPO_PUBLIC_CONTACT_EMAIL: "repere0@protonmail.com"
         run: |
           npx expo export --platform ios --platform android --output-dir dist
           EXPO_PUBLIC_REPERE_DONNEES=/data npx expo export --platform web --output-dir dist-web
