@@ -44,8 +44,8 @@ explicite du porteur les change ; la PR qui l'applique met alors à jour
    (moyenne IDF ou régionale, « comme X communes sur Y », année N-1), annoncées comme calcul ;
    « comme », « plus que », « moins que » oui ; « mieux », « pire », « top », « note », « score » non.
 4. **Chaque chiffre porte sa source officielle et sa date** (producteur, licence,
-   mise à jour, URL). Un calcul dérivé s'annonce comme un calcul. D28 (ADR 0005) : site d'une
-   mairie (annuaire DILA, Licence Ouverte 2.0) en simple lien externe, jamais aspiré.
+   mise à jour, URL). Un calcul dérivé s'annonce comme un calcul. D28 (ADR 0005) : site de mairie en lien externe, HTML jamais lu.
+   D81 (ADR 0007) : flux RSS officiel de mairie lisible (titre, deux phrases au plus, date, lien), jamais l'article entier.
 5. **Doctrine du vide.** Une absence de donnée produit une phrase vraie et un lien,
    jamais une forme vide, un zéro ou une barre minuscule.
 6. **Rien qui gamifie le vote ou l'opinion** : aucun score, aucune récompense, aucune série, aucun gain ni son de réussite lié à un vote, une position ou un partage. Les effets de mouvement sont permis pour lire, naviguer et suivre une heure ou une durée (assouplie par décision du porteur, 13/10/2026).

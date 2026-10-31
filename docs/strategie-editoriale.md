@@ -38,6 +38,13 @@ En pratique :
 - L'application affiche « Cette semaine à [Commune] » avec l'actualité si elle existe. Sinon, un état vide honnête : « Repère publie quand il y a du nouveau. Aucune actu cette semaine pour [Commune]. [Voir les dernières publications] » (formulation D35, 30/10/2026 ; la brief D31 disait « Repère publie chaque lundi »).
 - La carte n'apparaît que pour les communes pilotes : pour les autres, elle annoncerait une actualité qui ne viendra pas.
 
+## D81 — Flux RSS officiels des mairies (31/10/2026)
+
+- **Ce qui change** : les actualités publiées par le flux RSS d'une mairie s'affichent automatiquement, étiquetées « Automatique · flux RSS officiel ». C'est une catégorie nouvelle, distincte de D29 (manuel) : elle ne remplace pas `data/actus-hebdo.json`.
+- **Ce qui ne change pas** : D33 s'applique à tout résumé écrit par une IA. Le résumé automatique par IA n'est pas implémenté (voir BLOCAGES §45) : tant que D33 n'est pas amendé, seul le texte du flux, tronqué à deux phrases, est repris.
+- **Ce qui change pour D31** : la carte « Cette semaine » apparaît pour une commune qui a un flux, même si elle n'est pas pilote. Le texte de D31 (« la carte n'apparaît que pour les communes pilotes ») est donc superseded pour les flux.
+- **Limites** : base juridique non vérifiée (ADR 0007). Aucune couverture mesurée à ce jour.
+
 ## Format de `data/actus-hebdo.json`
 
 ```json
