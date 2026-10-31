@@ -445,3 +445,12 @@ Diagnostic (31/10/2026), par étapes, ce qui est vérifié et ce qui ne l'est pa
 - **Ce qui n'est pas vérifié** : l'URL `https://www.assemblee-nationale.fr/dyn/17/scrutins/{n}` suit le motif des données, mais aucune page n'a été ouverte.
 - **Écran de prévisualisation** : `mono/apps/mobile/src/app/dev-impact.tsx`, hors `__DEV__` il ne rend rien. Vérifié par export web : la chaîne « Aperçu impacts » et les fiches sont absentes du bundle de production. Pour lire le fichier, `metro.config.js` surveille désormais `data/contenu/` (seul ajout de configuration).
 - **Pas testé sur appareil** : l'écran n'a été ni rendu dans un navigateur, ni ouvert sur un téléphone.
+
+## 48. V42 bloc 2 : guide testeurs, écarts avec le brief
+
+- **Étape 4 reformulée** : le brief demande « Suis un élu ou une commune (en attendant Mes suivis) ». « Mes suivis » est bloqué (§42, invariant 2). Le guide propose d'ouvrir la fiche d'un élu, et écrit noir sur blanc que le suivi n'est pas possible.
+- **Adresse de contact** : `repere0@protonmail.com`, reprise de D71 (`docs/contact-email.md`). `docs/testeurs.md` demandait de ne pas l'écrire avant validation du porteur : ancienne consigne, à confirmer.
+- **Noms d'onglets non vérifiés** : le guide décrit les fonctions (chercher une commune, le budget, les votes), pas les libellés exacts des onglets, qui n'ont pas été lus sur un appareil.
+- **Longueur** : estimée, pas mesurée sur téléphone. Le texte fait environ 1 000 mots, soit une dizaine d'écrans de défilement.
+- **Expo Go et SDK 58** : non vérifiés sur appareil (déjà signalé dans `docs/kit-testeur.md`). Le guide demande aux testeurs de signaler un refus.
+- **Décision demandée au CEO** : valider l'adresse de contact dans le guide, et le texte de la section « Ce qu'on fera avec vos retours », qui fait des promesses de process.
