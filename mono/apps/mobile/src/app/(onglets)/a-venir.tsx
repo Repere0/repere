@@ -235,8 +235,6 @@ export default function AVenir() {
                   <Text style={{ color: couleurs.lien, fontWeight: "700", textDecorationLine: "underline" }}>Voir les deux prochaines semaines</Text>
                 </Pressable>
               ) : null}
-              <Text style={TYPO.note}>Sous réserve de modification : l'agenda peut changer, le site officiel fait foi.</Text>
-              <Text style={TYPO.note}>Les alertes « me prévenir une heure avant » ne sont pas encore disponibles dans l'application.</Text>
 
               {montres.length ? (
                 <Carte echelon="france">
@@ -246,6 +244,8 @@ export default function AVenir() {
                   </View>
                 </Carte>
               ) : null}
+              {/* V34 bloc 7 (audit) : la mention passe sous la liste, pour que le premier rendez-vous ne soit pas repousse sous la barre d'onglets. */}
+              <Text style={TYPO.note}>Sous réserve de modification : l'agenda peut changer, le site officiel fait foi.</Text>
               {suivant && lue && lue.source.releve_le ? (
                 <PartagerCarte etiquette="Partager le premier point affiché"
                   repli={messageAgenda({ titre: suivant.titre, quand, lien: lue.source.url || null })}
