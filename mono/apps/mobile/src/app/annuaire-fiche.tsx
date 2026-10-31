@@ -51,7 +51,7 @@ export default function AnnuaireFiche() {
       {p.producteur ? (
         <PartagerCarte etiquette="Partager cette fiche"
           repli={messageElu({ nom, fonction, lieu, depuis, producteur: p.producteur, lien: p.url || null })}
-          rendu={ref => <ElusStory refCarte={ref} nom={nom} fonction={fonction} lieu={lieu} depuis={depuis} source={source} />} />
+          rendu={ref => <ElusStory refCarte={ref} nom={nom} fonction={fonction} lieu={lieu} source={source} />} />
       ) : null}
     </ScrollView>
   );

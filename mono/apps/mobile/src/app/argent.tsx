@@ -116,6 +116,7 @@ export default function Argent() {
                   <PartagerCarte etiquette={`Partager le chiffre de ${nom}`}
                     repli={messageChiffre({ ville: nom, euros: partage.euros, an: partage.an, producteur: partage.producteur })}
                     rendu={ref => <ChiffreStory refCarte={ref} ville={nom} euros={partage.euros} an={partage.an}
+                      parts={{ salaires: ch?.partSalaires ?? null, investissement: ch?.partInvestissement ?? null }}
                       source={`Source : ${partage.producteur}, comptes ${partage.an}.`} />} />
                 ) : null}
               </Carte>

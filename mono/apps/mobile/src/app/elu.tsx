@@ -201,9 +201,8 @@ export default function Elu() {
       /* Carte de partage : seulement le dernier vote publie de cet elu, avec sa source. Sans
          vote ou sans source publiee, pas de carte : le partage reste textuel. */
       const carteVote = vote && vote.position && r.d.srcScrutins ? {
-        phrase: `${nom} ${VERBE[vote.position]}`,
-        titre: titreLisible(vote.sc.t),
-        sous: `Vote à l'Assemblée nationale, ${dateFr(vote.sc.d)}.`,
+        position: vote.position as "p" | "c" | "a",
+        date: dateFr(vote.sc.d),
         source: `Source : ${r.d.srcScrutins.producteur}, scrutin n° ${vote.sc.n}, ${dateFr(vote.sc.d)}.`,
         repli: messageVote({
           phrase: `${nom} ${VERBE[vote.position]}`, titre: titreLisible(vote.sc.t), date: dateFr(vote.sc.d),
@@ -335,8 +334,7 @@ export default function Elu() {
               <Text style={TYPO.micro}>Repère n'affiche que les faits de mandat publiés. Le patrimoine des élus, et leur présence ou absence aux séances, ne figurent jamais.</Text>
               {carteVote ? (
                 <PartagerCarte etiquette={`Partager le dernier vote de ${nom}`} repli={carteVote.repli}
-                  rendu={ref => <VoteStory refCarte={ref} groupe={groupe} etiquette="Dernier vote" phrase={carteVote.phrase}
-                    titre={carteVote.titre} sous={carteVote.sous} source={carteVote.source} />} />
+                  rendu={ref => <VoteStory refCarte={ref} position={carteVote.position} nom={nom} date={carteVote.date} source={carteVote.source} />} />
               ) : (
                 <Lien texte="Partager la fiche" onPress={partager} />
               )}

@@ -85,10 +85,13 @@ async function controler(nom) {
     const faibles = textes.map(t => ({ t: t.textContent.trim().slice(0, 30), r: ratio(getComputedStyle(t).color) })).filter(x => x.r < 4.5)
       /* le badge de groupe porte son propre fond : son texte se mesure sur ce fond (BadgeGroupe, ADR 0001) */
       .filter(x => !/^Groupe/.test(x.t));
-    return { logo, faibles, derniere: textes.length ? textes[textes.length - 1].textContent.trim() : "" };
+    const mots = textes.map(t => t.textContent.trim()).join(" ").split(/\s+/).filter(Boolean).length;
+    return { logo, faibles, mots, derniere: textes.length ? textes[textes.length - 1].textContent.trim() : "" };
   });
   await p.evaluate(() => { const s = window.__story; document.getElementById("__story_style")?.remove(); s.c.removeAttribute("id"); s.c.setAttribute("style", s.style || ""); s.parent.insertBefore(s.c, s.suivant); });
   verifier(m.logo, `${nom} : logo present`);
+  /* V34 bloc 4 : une carte story ne porte que le titre, une phrase, un visuel et la source. Plafond : 45 mots. */
+  verifier(m.mots <= 45, `${nom} : ${m.mots} mots (au plus 45)`);
   verifier(!m.faibles.length, `${nom} : textes a 4,5:1 au moins${m.faibles.length ? " — faibles : " + JSON.stringify(m.faibles) : ""}`);
   verifier(/source/i.test(m.derniere), `${nom} : source en pied (« ${m.derniere.slice(0, 60)} »)`);
 }
