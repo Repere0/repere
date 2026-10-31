@@ -51,6 +51,14 @@ function decaler(iso: string, n: number): string {
   const [y, m, d] = iso.split("-").map(Number);
   return new Date(Date.UTC(y, m - 1, d + n)).toISOString().slice(0, 10);
 }
+/* V35 bloc 2 (D68) : les séances d'un même jour dans un seul bloc, dans l'ordre publié. */
+function parJour(gs: Groupe[]): [string, Groupe[]][] {
+  const m = new Map<string, Groupe[]>();
+  for (const g of gs) m.set(g.jour, [...(m.get(g.jour) || []), g]);
+  return [...m.entries()];
+}
+const majuscule = (t: string) => t.charAt(0).toUpperCase() + t.slice(1);
+
 /* Rang du jour dans la semaine, lundi = 0. */
 function rangLundi(iso: string): number {
   const [y, m, d] = iso.split("-").map(Number);
@@ -68,10 +76,12 @@ function Ligne({ g }: { g: Groupe }) {
     return (fin ? `${debut} à ${fin}` : debut).replace(/ /g, " ");
   }).filter(Boolean).join(", ");
   return (
-    <View testID="cal-ligne" style={{ gap: PAS, paddingTop: PAS * 3, borderTopWidth: 1, borderTopColor: couleurs.trait }}>
-      <Text style={[TYPO.corps, { fontWeight: "600" }]}>{`${heures || "Heure non publiée"} : ${g.titre} (${g.institution})`}</Text>
+    /* V35 bloc 2 (D68) : une séance se lit heure > titre > institution ; le jour est porté par le bloc. */
+    <View testID="cal-ligne" style={{ gap: 2, paddingTop: PAS * 2, borderTopWidth: 1, borderTopColor: couleurs.trait }}>
+      <Text style={[TYPO.corps, { fontWeight: "600" }]}>{heures || "Heure non publiée"}</Text>
+      <Text style={TYPO.corps}>{g.titre}</Text>
       <Text style={TYPO.note}>
-        {[g.categorie, g.lieu, g.seances > 1 ? `${g.seances} séances ce jour-là` : null].filter(Boolean).join(" · ")}
+        {[g.institution, g.categorie, g.lieu, g.seances > 1 ? `${g.seances} séances ce jour-là` : null].filter(Boolean).join(" · ")}
       </Text>
       {g.points && g.points.length ? (
         <Depli titre={`+ ${g.points.length} ${g.points.length > 1 ? "autres points" : "autre point"} à l'ordre du jour`}>
@@ -180,11 +190,6 @@ export default function AVenir() {
             </View>
           </View>
           <DateDonnee quoi="Relevé de l'agenda" date={releveAncien} testID="maj-agenda" />
-          <Pressable onPress={() => setMois(m => !m)} accessibilityRole="button"
-            accessibilityLabel={mois ? "Voir la semaine" : "Voir le mois"}
-            style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", alignSelf: "flex-start", opacity: pressed ? 0.6 : 1 })}>
-            <Text style={{ color: couleurs.encre, fontWeight: "700", textDecorationLine: "underline" }}>{mois ? "Voir la semaine" : "Voir le mois"}</Text>
-          </Pressable>
 
           {!r.agendaLu ? (
             <Vide {...AGENDA_PAS_ARRIVE} action="Réessayer" onAction={reessayer} />
@@ -236,14 +241,24 @@ export default function AVenir() {
                 </Pressable>
               ) : null}
 
-              {montres.length ? (
-                <Carte echelon="france">
-                  {montres.map((g, i) => <Ligne key={g.debut + i} g={g} />)}
-                  <View style={{ flexDirection: "row", flexWrap: "wrap" }}>
-                    {lues.map(x => <PastilleSource key={x.institution} nom={x.institution === "Sénat" ? "Sénat" : "Assemblée"} source={srcAgenda(x.source)} />)}
-                  </View>
+              {/* V35 bloc 2 (D68) : un bloc par jour (« Mardi 3 novembre »), puis la source. */}
+              {parJour(montres).map(([iso, items]) => (
+                <Carte key={iso} echelon="france">
+                  <Text accessibilityRole="header" style={[TYPO.corps, { fontWeight: "600" }]}>{majuscule(jourFr(iso))}</Text>
+                  {items.map((g, i) => <Ligne key={g.debut + i} g={g} />)}
                 </Carte>
+              ))}
+              {montres.length ? (
+                <View style={{ flexDirection: "row", flexWrap: "wrap" }}>
+                  {lues.map(x => <PastilleSource key={x.institution} nom={x.institution === "Sénat" ? "Sénat" : "Assemblée"} source={srcAgenda(x.source)} />)}
+                </View>
               ) : null}
+              {/* V35 bloc 2 (D68) : « Voir le mois » passe sous la liste, hors du premier écran. */}
+              <Pressable onPress={() => setMois(m => !m)} accessibilityRole="button"
+                accessibilityLabel={mois ? "Voir la semaine" : "Voir le mois"}
+                style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", alignSelf: "flex-start", opacity: pressed ? 0.6 : 1 })}>
+                <Text style={{ color: couleurs.encre, fontWeight: "700", textDecorationLine: "underline" }}>{mois ? "Voir la semaine" : "Voir le mois"}</Text>
+              </Pressable>
               {/* V34 bloc 7 (audit) : la mention passe sous la liste, pour que le premier rendez-vous ne soit pas repousse sous la barre d'onglets. */}
               <Text style={TYPO.note}>Sous réserve de modification : l'agenda peut changer, le site officiel fait foi.</Text>
               {suivant && lue && lue.source.releve_le ? (
