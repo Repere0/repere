@@ -417,8 +417,8 @@ une seconde. La limite : au-delà de 24 mois, les cases débordent. Il faudra un
 
 ## 15. Votes
 
-- **Sens du vote en couleur (D24, 30/10/2026, ADR 0003).** Vert `#1F883D` pour (A2, assombri depuis `#2DA44E`), rouge
-  `#CF222E` contre, gris `#6E7781` abstention (palette.ts, `COULEURS_VOTE`). Elles codent
+- **Sens du vote en couleur (D24, 30/10/2026, ADR 0003).** Vert sauge `#4A7C59` pour (D99, 01/11/2026 ; avant : `#1F883D`, assombri depuis `#2DA44E`), rouge brique `#8B3A2F` contre (D99 ajusté, voir BLOCAGES §52 ; avant `#CF222E`)
+  gris perle `#6B7280` abstention (palette.ts, `COULEURS_VOTE`). Elles codent
   un fait, jamais un jugement ; la position reste écrite en toutes lettres. Aucune couleur
   de groupe sur un vote. (Avant D24 : trois gris.)
 - **Comparaisons entre communes (D23, ADR 0002).** Permises si elles sont factuelles et

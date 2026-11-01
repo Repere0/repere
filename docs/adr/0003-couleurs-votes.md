@@ -63,3 +63,12 @@ Réglage « mode daltonien » du profil (`repere.profil`, ADR 0006). Les écrans
 - le rouge du mode normal reste `#CF222E` : A2 le garde (5,36:1 sur blanc). Le brief le voulait en `#A40E26`, mais cette valeur tombe à 2,14:1 sur carte sombre, sous le seuil de 3:1 du test (7,87:1 sur blanc, donc inutile pour l'AA) ;
 - l'orange Okabe-Ito `#E69F00` fait 2,25:1 sur blanc : il échoue le seuil de 4,5:1 des cartes claires. Remplacé par `#B35900`, même famille ;
 - le gris `#999999` du brief fait 2,85:1 sur blanc : il est remplacé par le gris du mode normal `#6E7781`, déjà mesuré.
+
+## Amendement du 01/11/2026 (D99)
+
+- **Décision du porteur** : adoucir les couleurs de vote. Pour : vert sauge `#4A7C59`. Abstention : gris perle `#6B7280`.
+- **Écart avec D99** : le rouge brique n'est pas `#A64B4B` mais `#8B3A2F`. Avec `#A64B4B`, le validateur de palette (skill dataviz) relève un ΔE de 2,4 entre le rouge et le vert en vision déuteranope (seuil de 8 visé) et un ΔE de 13,5 entre le gris et le rouge en vision normale (plancher de 15). Avec `#8B3A2F` : ΔE 8,3 et 15,9. Le CEO doit confirmer ce choix.
+- **Contrôle restant** : le gris est neutre par conception, donc le contrôle « chroma » le signale. Accepté : la position reste écrite en toutes lettres.
+- **Variante daltonienne** (D56) : inchangée.
+- **Test** : `mono/tests/invariants.test.mjs` (invariant 7) attend les nouvelles valeurs.
+- **Invariant 7 de CLAUDE.md** : mis à jour et empreinte rescellée (`outils/derive_contexte.mjs --sceller`), sur décision explicite du porteur.

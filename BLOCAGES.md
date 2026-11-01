@@ -478,3 +478,13 @@ Diagnostic (31/10/2026), par étapes, ce qui est vérifié et ce qui ne l'est pa
 - **Non fait** : aucun découpage du build (chargement des écrans à la demande). Ce changement demande une mesure avant et après sur le même réseau simulé, et il touche la chaîne de build partagée.
 - **Non vérifié** : la cible de 400 ms citée pour Apple (aucune source lue dans la session). La compression appliquée par Netlify (en-têtes de réponse non lus). Le comportement sur iPhone en Expo Go (non mesuré).
 - **Décision à prendre** : si les testeurs signalent la lenteur, faire la mesure avant et après, puis découper le build.
+
+## 52. V47 (D99) : couleurs de vote adoucies, règle 7 amendée, points à trancher
+
+- **Constat** : D99 demande vert sauge, rouge brique et gris perle. Le porteur a autorisé à outrepasser les invariants pour ce changement. La règle 7 de `CLAUDE.md` (et sa copie `AGENTS.md`) est donc amendée, et l'empreinte `.claude/invariants.sha256` rescellée avec `outils/derive_contexte.mjs --sceller`. Les valeurs sont dans `palette.ts`.
+- **Écart avec D99 (à confirmer)** : rouge brique `#8B3A2F` au lieu de `#A64B4B`. Avec `#A64B4B`, le validateur (skill dataviz, `validate_palette.js`) échoue deux contrôles : ΔE 2,4 entre le rouge et le vert en vision déuteranope (seuil visé 8, plancher 6), et ΔE 13,5 entre le gris et le rouge en vision normale (plancher dur 15). Le brief (bloc 3c) demande que les trois couleurs restent distinguables. Avec `#8B3A2F` : ΔE 8,3 et 15,9.
+- **Collision à trancher** : le gris perle `#6B7280` de l'abstention est aussi la couleur du groupe **LIOT** (`palette.ts`, `COULEURS_GROUPES`). Sur un écran qui montre des élus LIOT et des votes, un badge de groupe et une abstention auront la même couleur. Le porteur doit choisir : changer la couleur LIOT, ou changer le gris de l'abstention.
+- **Contrôle du validateur non résolu** : le contrôle « chroma » signale le gris (`#6B7280`, chroma 0,023). C'est voulu : l'abstention n'est pas une prise de position. Le contrôle reste en échec pour ce gris.
+- **Non modifié** : la variante daltonienne (D56 : bleu `#0072B2`, vermillion `#B35900`, gris `#6E7781`). Le gris de l'abstention daltonienne reste `#6E7781` ; le gris normal ne l'est plus. À aligner si le porteur le demande.
+- **Décision demandée au CEO** : (1) confirmer `#8B3A2F` ou fixer une autre valeur de rouge ; (2) trancher la collision LIOT ; (3) confirmer l'amendement de la règle 7.
+- **Non vérifié** : le rendu sur iPhone (clair et sombre) et la distinction réelle en vision déficiente. Seul le calcul de ΔE a été fait.

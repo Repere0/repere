@@ -49,11 +49,11 @@ explicite du porteur les change ; la PR qui l'applique met alors à jour
 5. **Doctrine du vide.** Une absence de donnée produit une phrase vraie et un lien,
    jamais une forme vide, un zéro ou une barre minuscule.
 6. **Rien qui gamifie le vote ou l'opinion** : aucun score, aucune récompense, aucune série, aucun gain ni son de réussite lié à un vote, une position ou un partage. Les effets de mouvement sont permis pour lire, naviguer et suivre une heure ou une durée (assouplie par décision du porteur, 13/10/2026).
-7. **Invariant 7 (amendé le 30/10/2026)** : les couleurs de groupes politiques
+7. **Invariant 7 (amendé le 30/10/2026, puis le 01/11/2026 par décision D99)** : les couleurs de groupes politiques
    sont autorisées pour l'identification des élus (badges, cartes de partage).
    Elles ne codent JAMAIS un vote, une opinion, un score ou un classement.
-   Mapping dans palette.ts. Complément (D24, 30/10/2026, ADR 0003) : votes en vert `#1F883D`
-   (pour), rouge `#CF222E` (contre), gris `#6E7781` (abstention) ; ils codent un FAIT, jamais
+   Mapping dans palette.ts. Complément (D24, 30/10/2026, ADR 0003) : votes en vert sauge `#4A7C59`
+   (pour), rouge brique `#8B3A2F` (contre), gris perle `#6B7280` (abstention) ; ils codent un FAIT, jamais
    un jugement, et la position reste écrite en toutes lettres. Variante daltonienne (D56, 30/10/2026, réglage
    du profil, ADR 0003) : bleu `#0072B2` (pour), vermillion assombri `#B35900` (contre), gris `#6E7781` (abstention). D27 (ADR 0004) : photo d'élu sous licence
    libre de Wikimedia Commons seulement, crédit affiché, servie par département ; jamais celles de l'AN.

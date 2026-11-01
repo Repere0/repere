@@ -100,9 +100,9 @@ export const VOILE_MODAL = "rgba(0,0,0,0.4)";
    verifie par tests/theme.test.mjs. Sur le sol clair, le vert et le gris restent sous 4,5:1 :
    les barres sont toujours posees sur une carte. Detail : docs/adr/0003-couleurs-votes.md. */
 export const COULEURS_VOTE = Object.freeze({
-  votePour: "#1F883D",
-  voteContre: "#CF222E",
-  voteAbstention: "#6E7781",
+  votePour: "#4A7C59",
+  voteContre: "#8B3A2F",
+  voteAbstention: "#6B7280",
 });
 
 /* VARIANTE DALTONIENNE (D56, 30/10/2026) : réglage « mode daltonien » du profil. Palette
