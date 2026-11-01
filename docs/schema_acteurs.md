@@ -56,24 +56,24 @@ une seule fois sont reprises a part, plus bas.
 | `acteur.adresses.adresse[].ville` | texte/vide | 2805 | Paris 07 SP · Cenon |
 | `acteur.adresses.adresse[].valElec` | texte/vide | 6206 | 01 40 63 75 53 · 01 40 63 79 37 |
 | `acteur.mandats.mandat[]` | liste | 2995 | de 2 a 814 entrees |
-| `acteur.mandats.mandat[].@xmlns:xsi` | texte | 98070 | http://www.w3.org/2001/XMLSchema-instance |
-| `acteur.mandats.mandat[].@xsi:type` | texte | 98070 | MandatSimple_Type · MandatMission_Type |
-| `acteur.mandats.mandat[].uid` | texte | 98070 | PM391145 · PM15423365 |
-| `acteur.mandats.mandat[].acteurRef` | texte | 98070 | PA1001 · PA1002 |
-| `acteur.mandats.mandat[].legislature` | texte/vide | 98070 | 13 · 14 |
-| `acteur.mandats.mandat[].typeOrgane` | texte | 98070 | DELEGBUREAU · GOUVERNEMENT |
-| `acteur.mandats.mandat[].dateDebut` | texte | 98070 | 2007-06-28 · 2010-03-22 |
-| `acteur.mandats.mandat[].datePublication` | texte/vide | 98070 | 2010-03-23 · 2012-06-27 |
-| `acteur.mandats.mandat[].dateFin` | texte/vide | 98070 | 2008-10-08 · 2010-11-13 |
-| `acteur.mandats.mandat[].preseance` | texte/vide | 98070 | 24 · 50 |
-| `acteur.mandats.mandat[].nominPrincipale` | texte | 98070 | 0 · 1 |
-| `acteur.mandats.mandat[].infosQualite.codeQualite` | texte/vide | 98070 | Membre · membre |
-| `acteur.mandats.mandat[].infosQualite.libQualite` | texte | 98070 | Membre · membre |
-| `acteur.mandats.mandat[].infosQualite.libQualiteSex` | texte/vide | 98070 | Membre · membre |
-| `acteur.mandats.mandat[].organes.organeRef` | texte | 97950 | PO391141 · PO384206 |
-| `acteur.mandats.mandat[].libelle` | texte/vide | 6028 | Mise en place du plan de relance · L'avenir des trains d'équilibre du territoire |
-| `acteur.mandats.mandat[].missionSuivanteRef` | texte/vide | 6028 | PM773756 · PM789978 |
-| `acteur.mandats.mandat[].missionPrecedenteRef` | texte/vide | 6028 | PM769451 · PM786854 |
+| `acteur.mandats.mandat[].@xmlns:xsi` | texte | 98072 | http://www.w3.org/2001/XMLSchema-instance |
+| `acteur.mandats.mandat[].@xsi:type` | texte | 98072 | MandatSimple_Type · MandatMission_Type |
+| `acteur.mandats.mandat[].uid` | texte | 98072 | PM391145 · PM15423365 |
+| `acteur.mandats.mandat[].acteurRef` | texte | 98072 | PA1001 · PA1002 |
+| `acteur.mandats.mandat[].legislature` | texte/vide | 98072 | 13 · 14 |
+| `acteur.mandats.mandat[].typeOrgane` | texte | 98072 | DELEGBUREAU · GOUVERNEMENT |
+| `acteur.mandats.mandat[].dateDebut` | texte | 98072 | 2007-06-28 · 2010-03-22 |
+| `acteur.mandats.mandat[].datePublication` | texte/vide | 98072 | 2010-03-23 · 2012-06-27 |
+| `acteur.mandats.mandat[].dateFin` | texte/vide | 98072 | 2008-10-08 · 2010-11-13 |
+| `acteur.mandats.mandat[].preseance` | texte/vide | 98072 | 24 · 50 |
+| `acteur.mandats.mandat[].nominPrincipale` | texte | 98072 | 0 · 1 |
+| `acteur.mandats.mandat[].infosQualite.codeQualite` | texte/vide | 98072 | Membre · membre |
+| `acteur.mandats.mandat[].infosQualite.libQualite` | texte | 98072 | Membre · membre |
+| `acteur.mandats.mandat[].infosQualite.libQualiteSex` | texte/vide | 98072 | Membre · membre |
+| `acteur.mandats.mandat[].organes.organeRef` | texte | 97952 | PO391141 · PO384206 |
+| `acteur.mandats.mandat[].libelle` | texte/vide | 6027 | Mise en place du plan de relance · L'avenir des trains d'équilibre du territoire |
+| `acteur.mandats.mandat[].missionSuivanteRef` | texte/vide | 6027 | PM773756 · PM789978 |
+| `acteur.mandats.mandat[].missionPrecedenteRef` | texte/vide | 6027 | PM769451 · PM786854 |
 | `acteur.mandats.mandat[].suppleants` | vide | 4894 |  |
 | `acteur.mandats.mandat[].chambre` | vide | 3208 |  |
 | `acteur.mandats.mandat[].election.lieu.region` | texte/vide | 3378 | Auvergne-Rhône-Alpes · Hauts-de-France |
@@ -123,11 +123,11 @@ une seule fois sont reprises a part, plus bas.
 | `acteur.adresses.adresse.ville` | texte | 31 | Paris 07 SP |
 | `acteur.mandats.mandat[].organes.organeRef[]` | liste/texte | 407 | de 2 a 7 entrees · PO702890 · PO702892 |
 | `acteur.mandats.mandat[].collaborateurs.collaborateur[]` | liste | 136 | de 2 a 6 entrees |
-| `acteur.mandats.mandat[].collaborateurs.collaborateur[].qualite` | texte | 483 | M. · Mme |
-| `acteur.mandats.mandat[].collaborateurs.collaborateur[].prenom` | texte | 483 | Thomas · Bernard |
-| `acteur.mandats.mandat[].collaborateurs.collaborateur[].nom` | texte | 483 | Jacquelin · Combes |
-| `acteur.mandats.mandat[].collaborateurs.collaborateur[].dateDebut` | vide | 483 |  |
-| `acteur.mandats.mandat[].collaborateurs.collaborateur[].dateFin` | vide | 483 |  |
+| `acteur.mandats.mandat[].collaborateurs.collaborateur[].qualite` | texte | 482 | M. · Mme |
+| `acteur.mandats.mandat[].collaborateurs.collaborateur[].prenom` | texte | 482 | Thomas · Bernard |
+| `acteur.mandats.mandat[].collaborateurs.collaborateur[].nom` | texte | 482 | Jacquelin · Combes |
+| `acteur.mandats.mandat[].collaborateurs.collaborateur[].dateDebut` | vide | 482 |  |
+| `acteur.mandats.mandat[].collaborateurs.collaborateur[].dateFin` | vide | 482 |  |
 | `acteur.adresses.@xmlns:xsi` | texte | 77 | http://www.w3.org/2001/XMLSchema-instance |
 | `acteur.adresses.@xsi:nil` | texte | 77 | true |
 | `acteur.mandats.mandat.@xmlns:xsi` | texte | 5 | http://www.w3.org/2001/XMLSchema-instance |
