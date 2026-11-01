@@ -66,9 +66,9 @@ Réglage « mode daltonien » du profil (`repere.profil`, ADR 0006). Les écrans
 
 ## Amendement du 01/11/2026 (D99)
 
-- **Décision du porteur** : adoucir les couleurs de vote. Pour : vert sauge `#4A7C59`. Abstention : gris perle `#6B7280`.
-- **Écart avec D99** : le rouge brique n'est pas `#A64B4B` mais `#8B3A2F`. Avec `#A64B4B`, le validateur de palette (skill dataviz) relève un ΔE de 2,4 entre le rouge et le vert en vision déuteranope (seuil de 8 visé) et un ΔE de 13,5 entre le gris et le rouge en vision normale (plancher de 15). Avec `#8B3A2F` : ΔE 8,3 et 15,9. Le CEO doit confirmer ce choix.
-- **Contrôle restant** : le gris est neutre par conception, donc le contrôle « chroma » le signale. Accepté : la position reste écrite en toutes lettres.
+- **Décision du porteur** : adoucir les couleurs de vote. Pour : vert sauge `#4A7C59` (inchangé). Abstention : gris perle `#5F6B7A`. Contre : rouge brique `#AA4A4A`.
+- **Écart avec D99** : le rouge brique n'est pas `#A64B4B`. Avec `#A64B4B`, le contraste sur carte sombre est de 2,99:1, sous le seuil de 3:1 du test A2 (WCAG 1.4.11). `#AA4A4A` passe : 5,54:1 sur carte claire, 3,03:1 sur carte sombre. Le gris est `#5F6B7A` (et non `#6B7280`) : `#6B7280` est la couleur du groupe LIOT.
+- **Ce que le validateur de palette (skill dataviz) signale encore** : ΔE 2,8 entre le rouge et le vert en vision déuteranope (plancher 6), ΔE 14,6 entre le gris et le rouge en vision normale (plancher dur 15). Ces écarts viennent de la bande de luminosité imposée par le contraste sur les deux fonds : aucun des trois couleurs ne peut être plus claire ou plus sombre sans échouer l'autre fond. La distinction repose donc sur le libellé écrit du vote (« Pour », « Contre », « Abstention »), qui porte déjà le sens. Voir BLOCAGES §52.
 - **Variante daltonienne** (D56) : inchangée.
-- **Test** : `mono/tests/invariants.test.mjs` (invariant 7) attend les nouvelles valeurs.
+- **Tests** : `mono/tests/invariants.test.mjs` (invariant 7) et `mono/apps/mobile/tests/theme.test.mjs` (A2) attendent ces valeurs.
 - **Invariant 7 de CLAUDE.md** : mis à jour et empreinte rescellée (`outils/derive_contexte.mjs --sceller`), sur décision explicite du porteur.

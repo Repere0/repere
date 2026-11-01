@@ -10,6 +10,7 @@
  * Les ecrans de detail (argent, vote, fiche, partage, dictionnaire...) restent
  * dans la pile, au-dessus de la barre. */
 import { Platform, Text, type ColorValue } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import { Tabs } from "expo-router";
 import { LIBELLES } from "@repere/core";
 import { couleurs } from "../../lib/theme";
@@ -17,10 +18,12 @@ import { useTheme } from "../../lib/themeChoix";
 import { ChangerCommune } from "../../ui/retour";
 import { BoutonReglages } from "../../ui/reglages";
 
-/* Une icone sobre par onglet : un caractere, sans bibliotheque d'icones de plus.
- * Le glyphe est decoratif : il ne suit pas l'agrandissement du texte. */
-const icone = (glyphe: string) => ({ color }: { color: ColorValue }) => (
-  <Text accessibilityElementsHidden importantForAccessibility="no" allowFontScaling={false} style={{ color, fontSize: 20, lineHeight: 24 }}>{glyphe}</Text>
+/* Une icone par onglet (@expo/vector-icons, Ionicons, brief V47 bloc 1) : pleine quand l'onglet
+ * est actif, contour sinon. L'icone est decorative : le nom de l'onglet la porte. Ionicons n'a pas
+ * « landmark » ni « users » en contour : « business » (un batiment) et « calendar » font l'affaire. */
+type NomIcone = "newspaper" | "business" | "calendar" | "person-circle";
+const icone = (nom: NomIcone) => ({ color, focused }: { color: ColorValue; focused: boolean }) => (
+  <Ionicons name={focused ? nom : (`${nom}-outline` as const)} size={24} color={typeof color === "string" ? color : undefined} allowFontScaling={false} accessible={false} importantForAccessibility="no" />
 );
 
 /* L'intitule de l'onglet, sur deux lignes au plus (D22, 200 %). Le libelle par
@@ -66,12 +69,12 @@ export default function Onglets() {
         options={{
           title: LIBELLES.aujourdhui,
           tabBarLabel: etiquette(LIBELLES.aujourdhui),
-          tabBarIcon: icone("◷"),
+          tabBarIcon: icone("newspaper"),
         }}
       />
-      <Tabs.Screen name="qui-decide" options={{ title: LIBELLES.qui, tabBarLabel: etiquette(LIBELLES.qui), tabBarIcon: icone("⌂") }} />
-      <Tabs.Screen name="a-venir" options={{ title: LIBELLES.calendrier, tabBarLabel: etiquette(LIBELLES.calendrier), tabBarIcon: icone("▦") }} />
-      <Tabs.Screen name="elus" options={{ title: "Élus", tabBarLabel: etiquette("Élus"), tabBarIcon: icone("◎") }} />
+      <Tabs.Screen name="qui-decide" options={{ title: LIBELLES.qui, tabBarLabel: etiquette(LIBELLES.qui), tabBarIcon: icone("business") }} />
+      <Tabs.Screen name="a-venir" options={{ title: LIBELLES.calendrier, tabBarLabel: etiquette(LIBELLES.calendrier), tabBarIcon: icone("calendar") }} />
+      <Tabs.Screen name="elus" options={{ title: "Élus", tabBarLabel: etiquette("Élus"), tabBarIcon: icone("person-circle") }} />
     </Tabs>
   );
 }

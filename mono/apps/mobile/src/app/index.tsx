@@ -471,7 +471,6 @@ export default function Accueil() {
                 <View style={{ flexDirection: "row", alignItems: "center", gap: PAS * 3 }}>
                   {/* L'accueil est toujours sombre : la variante « sombre », pas l'encre du theme
                       (en mode clair, l'encre du theme est foncee et le logo disparaissait). */}
-                  {premiere ? null : <Logo size={48} variant="sombre" />}
                   <Text style={s.marque} accessibilityLabel="Repère">Repère<Text style={{ color: E.ville }}>.</Text></Text>
                 </View>
                 {/* V37 bloc 3 : la recherche globale (communes, élus, scrutins). */}
@@ -489,7 +488,8 @@ export default function Accueil() {
               ) : null}
             </View>
             {/* LE PITCH : une citation, en grand. Demande du CEO (30/10/2026) : elle remplace le paragraphe. */}
-            {premiere ? <View style={s.grandLogo}><Logo size={128} variant="sombre" /></View> : null}
+            {/* Le logo vit dans le hero, une seule fois : grand à la première ouverture, moyen ensuite (brief V47). */}
+            <View style={s.grandLogo}><Logo size={premiere ? 128 : 96} variant="sombre" /></View>
             <Text style={[s.citation, premiere && { marginTop: PAS * 2 }]} accessibilityRole="header">L'application qui vous raccroche à votre citoyenneté française.</Text>
 
             {/* V37 bloc 6 : le rappel de la prochaine élection, s'il tombe dans les 180 jours. */}

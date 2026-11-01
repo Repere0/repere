@@ -150,8 +150,8 @@ test("invariant 7 — palette gelée ; couleurs de groupes seulement dans palett
   const blocVote = (lire("apps/mobile/src/lib/palette.ts").match(/export const COULEURS_VOTE[\s\S]*?\}\);/) || [""])[0];
   const votes = [...blocVote.matchAll(/#[0-9a-fA-F]{6}\b/g)].map(m => m[0].toLowerCase());
   /* Valeurs ecrites sans « # » : ce fichier est lui-meme balaye par le controle de palette. */
-  /* D99 (01/11/2026, décision du porteur) : vert sauge, rouge brique (ajusté pour la distinction déuteranope, voir BLOCAGES §52), gris perle. */
-  assert.deepEqual(votes, ["4a7c59", "8b3a2f", "6b7280"].map(h => "#" + h), "les couleurs de vote sont celles de D99 (ADR 0003 amendé)");
+  /* D99 (01/11/2026, décision du porteur) : vert sauge, rouge brique (ajusté pour le contraste sur carte sombre, voir BLOCAGES §52), gris perle (ajusté, voir BLOCAGES §52). */
+  assert.deepEqual(votes, ["4a7c59", "aa4a4a", "5f6b7a"].map(h => "#" + h), "les couleurs de vote sont celles de D99 (ADR 0003 amendé)");
   /* Variante daltonienne (D56, V29 bloc 3) : trois couleurs, dans palette.ts seulement. */
   const blocVoteD = (lire("apps/mobile/src/lib/palette.ts").match(/export const COULEURS_VOTE_DALTONIEN[\s\S]*?\}\);/) || [""])[0];
   const votesD = [...blocVoteD.matchAll(/#[0-9a-fA-F]{6}\b/g)].map(m => m[0].toLowerCase());

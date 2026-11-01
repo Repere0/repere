@@ -101,8 +101,8 @@ export const VOILE_MODAL = "rgba(0,0,0,0.4)";
    les barres sont toujours posees sur une carte. Detail : docs/adr/0003-couleurs-votes.md. */
 export const COULEURS_VOTE = Object.freeze({
   votePour: "#4A7C59",
-  voteContre: "#8B3A2F",
-  voteAbstention: "#6B7280",
+  voteContre: "#AA4A4A",
+  voteAbstention: "#5F6B7A",
 });
 
 /* VARIANTE DALTONIENNE (D56, 30/10/2026) : réglage « mode daltonien » du profil. Palette
