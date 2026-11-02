@@ -56,3 +56,6 @@ Les données affichées sont publiques. Chaque information indique son producteu
 Pour une erreur, une question ou un retour de test : **repere0@protonmail.com** (décision D71, voir `docs/contact-email.md`).
 
 Pour contribuer, lire [CONTRIBUTING.md](CONTRIBUTING.md).
+
+## Licence
+Ce projet est distribué sous licence AGPL-3.0. Voir le fichier `LICENSE`.
