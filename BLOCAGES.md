@@ -489,3 +489,10 @@ Diagnostic (31/10/2026), par étapes, ce qui est vérifié et ce qui ne l'est pa
 - **Décision demandée au CEO** : (1) accepter ce compromis, ou (2) assouplir le test A2 (seuil sur carte sombre) pour retenir `#8B3A2F`, ou (3) changer le fond de la carte sombre. Le porteur tranche : c'est une décision de contraste, pas de code.
 - **Non modifié** : la variante daltonienne (D56 : bleu `#0072B2`, vermillion `#B35900`, gris `#6E7781`).
 - **Non vérifié** : le rendu sur iPhone (clair et sombre) et la distinction réelle en vision déficiente. Seuls les contrastes et les ΔE ont été calculés.
+## Mises à jour 2026-11-02
+
+- Netlify token régénéré, publication reprend.
+- AMO30 non encore déposé. Groupes politiques resteront "Inconnu".
+- LICENSE AGPL-3.0 créé.
+- Test dev-impact : à exclure du parcours (Claude Code mardi).
+- 5 testeurs pilotes : prêts (docs/kit-testeur.md).
