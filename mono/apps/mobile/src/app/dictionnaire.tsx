@@ -15,7 +15,7 @@ import { useMemo, useState } from "react";
 import { Pressable, Text, TextInput, View } from "react-native";
 import { Stack } from "expo-router";
 import { GLOSSAIRE } from "@repere/core";
-import { couleurs, PAS, TYPO } from "../lib/theme";
+import { couleurs, CIBLE, PAS, TYPO } from "../lib/theme";
 import { Page, Question } from "../ui/page";
 
 const normaliser = (s: string) => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
@@ -40,7 +40,7 @@ export default function Dictionnaire() {
     : (lettre ? toutes.filter(e => e.lettre === lettre) : toutes);
 
   const chip = (actif: boolean) => ({
-    minHeight: 40, paddingHorizontal: 14, borderRadius: 999, borderWidth: 1,
+    minHeight: CIBLE, paddingHorizontal: 14, borderRadius: 999, borderWidth: 1,
     borderColor: actif ? couleurs.encre : couleurs.trait, backgroundColor: actif ? couleurs.encre : couleurs.carte,
     alignItems: "center" as const, justifyContent: "center" as const,
   });
@@ -63,7 +63,7 @@ export default function Dictionnaire() {
         />
         {recherche.length > 0 ? (
           <Pressable onPress={() => setRecherche("")} accessibilityRole="button" accessibilityLabel="Effacer la recherche"
-            style={({ pressed }) => ({ position: "absolute", right: 4, minHeight: 40, paddingHorizontal: 14, borderRadius: 999,
+            style={({ pressed }) => ({ position: "absolute", right: 4, top: 0, bottom: 0, paddingHorizontal: 14, borderRadius: 999,
               backgroundColor: couleurs.voile, justifyContent: "center", opacity: pressed ? 0.6 : 1 })}>
             <Text style={{ fontWeight: "700", color: couleurs.encre, fontSize: 14 }}>Effacer</Text>
           </Pressable>
@@ -79,7 +79,7 @@ export default function Dictionnaire() {
         {lettres.map(l => (
           <Pressable key={l} onPress={() => setLettre(lettre === l ? null : l)} accessibilityRole="tab"
             accessibilityState={{ selected: lettre === l }} accessibilityLabel={`Lettre ${l}`}
-            style={[chip(lettre === l), { width: 40, paddingHorizontal: 0 }]}>
+            style={[chip(lettre === l), { width: CIBLE, paddingHorizontal: 0 }]}>
             <Text style={{ fontWeight: "800", fontSize: 16, color: lettre === l ? couleurs.sol : couleurs.encre }}>{l}</Text>
           </Pressable>
         ))}
