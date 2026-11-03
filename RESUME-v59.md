@@ -53,4 +53,6 @@ Branche : `test/sdk58-expo-go`. Ne pas fusionner `main`.
 
 ## CI
 
-Voir la section « CI » ajoutée après le dernier push (VERDICT-v59.md).
+- `2b68454` (dernier commit de code et de docs) : **Mobile succès**. Épreuve en attente à la rédaction.
+- `1ddfa0f` : Mobile annulé, remplacé par le push suivant (pas un échec de code).
+- `ff85fe2`, précédent : rouge (invariant 3), corrigé en V55.
