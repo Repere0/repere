@@ -26,7 +26,9 @@ function fichiersEcrans(dir) {
 }
 const FICHIERS = fichiersEcrans(APP);
 const nomDe = f => path.basename(f, ".tsx");
-const TOUS = FICHIERS.map(nomDe);
+/* Les écrans « dev-* » ne sont montés qu'en __DEV__ (D115) : ils ne font pas
+   partie du parcours citoyen, donc pas de geste d'accès à exiger. */
+const TOUS = FICHIERS.map(nomDe).filter(n => !n.startsWith("dev-"));
 
 /* Ce que chaque écran peut ouvrir, lu dans son source. */
 function ouvre(f) { return ouvreTexte(lire(f)); }
