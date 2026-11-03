@@ -588,3 +588,56 @@ Rien n'a été produit. Pas de `data/deputes-groupes.json`, pas de couleur appli
 1. Déposer `data/am30.json` (ou confirmer que le run CI `collecte-groupes` est la source retenue) pour débloquer les groupes.
 2. Confirmer le nouveau libellé « Sur 100 € dépensés : X € de salaires, Y € pour investir » sur l'écran « Où va cet argent », ou demander un autre texte (à écrire dans `@repere/core`, pas dans l'application).
 3. Dire si « Repère du jour » (V49-BIS §53.5) est autorisé, et si D116 est levée pour ce cas. Tant que ce n'est pas tranché, le bloc 8 n'existe pas.
+
+## 55. V51 (03/11/2026) : Repère du jour livré (version partielle), téléchargements refusés
+
+### 55.1 Téléchargements (D136, D137) : refusés, passés sans insister
+
+- `curl -L https://nosparlementaires.fr/data/deputes.json` : code 000 (connexion refusée par le proxy).
+- `curl -L https://nosparlementaires.fr/data/senateurs.json` : code 000.
+- `curl -L https://www.senat.fr/open-data/senateurs.zip` : code 000.
+- AMO30 (`data.assemblee-nationale.fr`) : déjà refusé (403, voir §38 et §54).
+- **Aucun fichier téléchargé.** Rien n'a été écrit dans `data/`.
+- **Point de source à trancher** : même s'ils étaient joignables, `nosparlementaires.fr` n'est pas une source officielle. L'invariant 4 exige « sa source officielle et sa date ». Le fichier sénateurs officiel est celui du Sénat (open data), non joint. Et la licence de NosParlementaires n'a pas été vérifiée : rien ne doit être utilisé sans cela.
+
+### 55.2 Repère du jour (D138) : version partielle livrée
+
+Décision prise : D138 est une décision explicite du porteur, postérieure à D116 ; je la traite comme la levée de D116 pour cette fonctionnalité. À confirmer.
+
+Livré :
+- `mono/packages/core/src/repere-du-jour.js` (logique partagée site/mobile, dans `@repere/core`).
+- `faitsDuJour({ nom, insee, date, exercice, rapportsComptes, fiche, vote, nbCircos })` : jusqu'à trois faits, un budget et un élu quand ils existent, ordre tiré de (commune, date) par empreinte FNV-1a.
+- Chaque fait porte sa source (`comptes`, `comptes-calcul`, `scrutin`, `elus`) ; un calcul est annoncé comme tel (`calcul: true`).
+- `mono/apps/mobile/src/ui/carte-repere-du-jour.tsx` : carte « Le Repère du jour », un fait sans source affichable n'est pas montré, pas de carte vide.
+- Intégrée EN PREMIER dans `mono/apps/mobile/src/app/(onglets)/chez-vous.tsx` (l'écran « Aujourd'hui » vers lequel l'accueil redirige une fois la commune choisie).
+- Tests : `mono/tests/repere-du-jour.test.mjs`, 12 contrôles (stabilité du jour, changement de jour en jour, aucune donnée inventée, sources, repli, signe du solde, nom du député). Ajoutés à `npm test` et à la liste « socle partagé » de la CI.
+
+Écarts par rapport à la mission, à signaler :
+- **19 modèles, pas 30** : 12 budget, 7 élus. Aucun fait n'a été écrit pour atteindre un nombre.
+- **Pas de `data/faits-templates.json`** : les modèles sont dans `@repere/core`, où le site et le mobile les lisent ensemble. Un JSON sous `data/` ne serait pas lu par le mobile sans nouveau chargeur.
+- **Pas de `comptes-communes.json`** : il n'existe pas. Le budget vient de `dernierExercice` / `parHabitant`, la même lecture que l'écran « Aujourd'hui ».
+- **Pas de `src/lib/faits-journaliers.ts`** : la rotation est dans `@repere/core`, pour la même raison.
+- **Pas d'anti-répétition sur 30 jours** : elle exigerait de stocker l'historique, donc une clé locale de plus. L'invariant 2 en autorise deux seulement (`repere.departement`, `repere.profil`). Sans cette mémoire, un même fait peut revenir après quelques jours.
+- **Pas de faits « histoire »** : Mérimée et Wikidata ne répondent pas depuis le proxy. Aucune donnée historique n'est affichée.
+- **Pas de bouton « Voir plus »** : hors périmètre livré. Le bouton Partager est présent sur chaque fait.
+- **Recouvrement avec l'écran** : les trois réponses de « Aujourd'hui » affichent déjà le budget par habitant et le vote du député, avec les mêmes phrases. Le Repère du jour reprend donc des faits déjà visibles juste en dessous. Intérêt produit à trancher.
+
+### 55.3 Vérifications faites
+
+- `npx tsc --noEmit` (mono/apps/mobile) : 0 erreur.
+- Liste « socle partagé » de la CI, exacte : 291/291.
+- `npm test` (mono) : 241 pass, 1 échec = `runtime.test.mjs` (Chromium absent, §53.2), 1 ignoré. `invariants.test.mjs` : 61/61.
+- Un premier essai de l'invariant 3 a échoué : mon commentaire contenait le mot « classement ». Reformulé, pas de changement de logique.
+
+### 55.4 Non vérifié
+
+- Rendu de la carte sur iPhone (clair, sombre, taille de police élevée).
+- Partage : le message contient le texte du fait, le lien `repere://chez-vous` et la source. Testé par lecture du code, pas sur appareil.
+- CI sur le commit qui suit : à confirmer après push.
+
+### 55.5 Décisions demandées au porteur
+
+1. Confirmer que D138 lève D116 pour le Repère du jour.
+2. Trancher le recouvrement avec les trois réponses de « Aujourd'hui » : garder les deux, ou remplacer par des faits qui n'y figurent pas.
+3. Accepter l'absence d'anti-répétition sur 30 jours (ou autoriser une clé locale supplémentaire, ce qui exige une décision explicite sur l'invariant 2).
+4. Fournir la source officielle des sénateurs (Sénat open data) et confirmer la licence avant tout import.
