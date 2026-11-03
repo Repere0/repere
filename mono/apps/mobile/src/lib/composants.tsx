@@ -6,8 +6,10 @@
  * reecrite : elle vient de @repere/core. */
 import type { ReactNode } from "react";
 import { Linking, Pressable, StyleSheet, Text, View } from "react-native";
-import { ligneSource, CALCUL_REPERE } from "@repere/core";
-import { couleurs, CIBLE, PAS, RAYON, OMBRE, TYPO, type Echelon } from "./theme";
+import { ligneSource, motsDuTexte, CALCUL_REPERE } from "@repere/core";
+import { router } from "expo-router";
+import { feuille, couleurs, CIBLE, PAS, RAYON, OMBRE, TYPO, type Echelon } from "./theme";
+import { NIVEAU_NOM, pointEchelon } from "./niveaux";
 import { AVEC_EMOJIS, Emoji } from "../ui/resume";
 
 /* Refonte du 30/09/2026 : plus de filet de couleur a gauche ; l'echelon se
@@ -17,8 +19,9 @@ export function Carte({ echelon, children, titre }: { echelon?: Echelon; childre
     <View style={[s.carte, { backgroundColor: couleurs.carte }]}>
       {titre ? (
         <View style={s.carteTete}>
-          {echelon ? <View style={[s.point, { backgroundColor: couleurs[echelon] }]} /> : null}
+          {echelon ? <View style={[s.point, pointEchelon(echelon)]} /> : null}
           <Text style={s.carteTitre} accessibilityRole="header">{titre}</Text>
+          {echelon ? <Text style={s.niveau}>{NIVEAU_NOM[echelon]}</Text> : null}
         </View>
       ) : null}
       {children}
@@ -36,8 +39,9 @@ export function CarteQuestion({ echelon, question, reponse, children, pied, acti
   return (
     <View style={[s.carte, { backgroundColor: couleurs.carte }]}>
       <View style={s.carteTete}>
-        {emoji && AVEC_EMOJIS ? <Emoji c={emoji} /> : <View style={[s.point, { backgroundColor: couleurs[echelon] }]} />}
+        {emoji && AVEC_EMOJIS ? <Emoji c={emoji} /> : <View style={[s.point, pointEchelon(echelon)]} />}
         <Text style={s.carteTitre} accessibilityRole="header">{question}</Text>
+        <Text style={s.niveau}>{NIVEAU_NOM[echelon]}</Text>
       </View>
       {!reponse ? null : typeof reponse === "string" ? <Text style={TYPO.reponse}>{reponse}</Text> : reponse}
       {children}
@@ -54,10 +58,35 @@ export function CarteQuestion({ echelon, question, reponse, children, pied, acti
 }
 
 /* Une phrase de @repere/core (phrases.js) : texte, gras, mot du dictionnaire.
-   Le dictionnaire n'existe pas encore sur mobile : le mot s'affiche en texte. */
+   Le mot du dictionnaire s'affiche dans la phrase ; sa definition s'ouvre par
+   le bouton de <Definitions>, sous la phrase, dans une zone de 44 px. Un mot
+   tapable DANS la phrase ne fait que ~21 px : le parcours navigateur de la CI
+   l'a refuse (29/10/2026). */
 export type Segment = { t: string; fort?: boolean; mot?: string };
 export function Segments({ s: seg }: { s: Segment[] }) {
   return <>{seg.map((x, i) => (x.fort ? <Text key={i} style={s.fort}>{x.t}</Text> : <Text key={i}>{x.t}</Text>))}</>;
+}
+
+/* Un bouton par mot defini de la phrase, sous elle : « Voir la definition : … ».
+   Zone tactile d'au moins 44 px (CIBLE). Ouvre le dictionnaire, mot deja cherche. */
+export function Definitions({ s: seg }: { s: Segment[] }) {
+  const mots = motsDuTexte(seg);
+  if (mots.length === 0) return null;
+  return (
+    <View style={{ gap: PAS }}>
+      {mots.map(m => (
+        <Pressable key={m.mot} accessibilityRole="button"
+          accessibilityLabel={`Voir la définition : ${m.titre}`}
+          accessibilityHint="Ouvre la définition dans le dictionnaire"
+          onPress={() => router.push({ pathname: "/dictionnaire", params: { mot: m.mot } })}
+          style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", opacity: pressed ? 0.6 : 1 })}>
+          <Text style={{ fontSize: 16, fontWeight: "500", color: couleurs.lien, textDecorationLine: "underline" }}>
+            Voir la définition : {m.titre}
+          </Text>
+        </Pressable>
+      ))}
+    </View>
+  );
 }
 
 export function Texte({ children, fort, sourd }: { children: ReactNode; fort?: boolean; sourd?: boolean }) {
@@ -124,18 +153,19 @@ export function Bouton({ texte, onPress, discret }: { texte: string; onPress: ()
   );
 }
 
-const s = StyleSheet.create({
+const s = feuille(() => StyleSheet.create({
   carte: { backgroundColor: couleurs.carte, borderRadius: RAYON.carte, padding: PAS * 5, gap: PAS * 3, borderWidth: 1, borderColor: couleurs.trait, ...OMBRE },
   carteTete: { flexDirection: "row", alignItems: "center", gap: PAS * 2 },
   point: { width: 10, height: 10, borderRadius: 5 },
   carteTitre: { ...TYPO.etiquette, flex: 1 },
+  niveau: { ...TYPO.micro, flexShrink: 0, textAlign: "right", maxWidth: "45%" },
   action: {
     minHeight: CIBLE, flexDirection: "row", alignItems: "center", justifyContent: "space-between",
     borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: couleurs.trait, marginTop: PAS,
   },
-  actionTexte: { fontSize: 17, fontWeight: "600", color: couleurs.lien },
+  actionTexte: { fontSize: 17, fontWeight: "500", color: couleurs.lien },
   texte: { fontSize: 17, lineHeight: 24, color: couleurs.encre },
-  fort: { fontWeight: "700" },
+  fort: { fontWeight: "600" },
   sourd: { color: couleurs.sourd, fontSize: 15, lineHeight: 21 },
   source: { gap: PAS, paddingTop: PAS * 2, borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: couleurs.trait },
   sourceTexte: { fontSize: 13, lineHeight: 18, color: couleurs.sourd },
@@ -149,5 +179,5 @@ const s = StyleSheet.create({
     backgroundColor: couleurs.ville,
   },
   boutonDiscret: { backgroundColor: couleurs.voile },
-  boutonTexte: { color: couleurs.blanc, fontSize: 17, fontWeight: "700" },
-});
+  boutonTexte: { color: couleurs.blanc, fontSize: 17, fontWeight: "500" },
+}));

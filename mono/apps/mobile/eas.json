@@ -1,0 +1,16 @@
+{
+  "build": {
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal",
+      "env": { "EXPO_PUBLIC_CONTACT_EMAIL": "repere0@protonmail.com" }
+    },
+    "preview": {
+      "distribution": "internal",
+      "env": { "EXPO_PUBLIC_CONTACT_EMAIL": "repere0@protonmail.com" }
+    },
+    "production": {
+      "env": { "EXPO_PUBLIC_CONTACT_EMAIL": "repere0@protonmail.com" }
+    }
+  }
+}

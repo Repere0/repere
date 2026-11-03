@@ -46,6 +46,33 @@ function licenceSource(s) {
  * ERREUR GRACIEUSE : chaque ligne du teaser porte DEJA son lien source
  * direct. Si le detail complet echoue au clic, la liste reste entierement
  * visible et utilisable — seule la zone de detail dit l'echec. */
+/* Deux absences differentes, deux phrases : le fichier n'est pas encore arrive
+   sur cet appareil, ou il n'est pas disponible (cause de notre cote ou du
+   reseau), ou le releve est arrive sans aucun scrutin solennel a lister. */
+function NoteScrutinsAbsents({ etat, donnees }) {
+  let phrase;
+  if (etat === ETATS.SERVI && donnees && Array.isArray(donnees.recents)) {
+    const releve = (donnees.source || {}).releve_le;
+    phrase = "Aucun scrutin solennel ni motion de censure n'est listé dans le relevé de l'Assemblée nationale"
+      + (releve ? ` du ${dateFr(releve)}` : "") + ". Ce n'est pas un retard de Repère.";
+  } else if (etat === ETATS.HORS_LIGNE) {
+    phrase = "Les scrutins solennels n'ont pas encore été téléchargés sur cet appareil.";
+  } else {
+    phrase = "Les scrutins solennels ne sont pas disponibles dans Repère en ce moment : ils ne sont pas affichés, et rien n'est inventé à leur place.";
+  }
+  return (
+    <Carte echelon="france" titre="Les derniers scrutins importants"
+      sousTitre="Assemblée nationale — votes solennels et motions de censure">
+      <p>{phrase}</p>
+      <div className="source">
+        <a href="https://www.assemblee-nationale.fr/dyn/17/scrutins/" target="_blank" rel="noreferrer">
+          Voir les votes sur le site de l'Assemblée nationale
+        </a>
+      </div>
+    </Carte>
+  );
+}
+
 function ScrutinsRecents() {
   const idPanneau = useId();
   const [teaser, setTeaser] = useState(null);
@@ -69,9 +96,12 @@ function ScrutinsRecents() {
   }
 
   if (!teaser || teaser.etat === ETATS.EN_COURS) return null;
+  /* UNE ABSENCE EST NOMMEE, JAMAIS OMISE — 29/10/2026. Avant, un fichier manquant
+     faisait disparaitre le teaser sans un mot : le lecteur ne pouvait pas savoir
+     si les scrutins existaient. Meme regle que le calendrier (noteAbsence). */
   if (teaser.etat !== ETATS.SERVI || !teaser.donnees || !Array.isArray(teaser.donnees.recents)
       || !teaser.donnees.recents.length) {
-    return null; /* doctrine du vide : rien plutot qu'une carte vide sans contenu */
+    return <NoteScrutinsAbsents etat={teaser.etat} donnees={teaser.donnees} />;
   }
 
   const s = teaser.donnees.source || {};

@@ -22,7 +22,7 @@ export function sousTitreRapports(an, ex) {
    l'application pas encore — la phrase ne promet pas ce que l'ecran ne montre pas. */
 export function introRapports({ detailPlusBas } = {}) {
   return "Aucun de ces rapports n'est publié : Repère les calcule à partir de six montants"
-    + " publiés par l'Observatoire des finances locales"
+    + " publiés par l'Observatoire des finances et de la gestion publique locales (OFGL)"
     + (detailPlusBas ? ", visibles plus bas sur cette page," : ",")
     + " et explique sous chacun ce qu'il ne veut pas dire.";
 }
@@ -56,7 +56,7 @@ export const comptesIncoherents = (nom, phrase) => ({
 /* --- d'un exercice a l'autre (deplace de OuVaArgent.jsx, Evolution) --------- */
 const eurosRonds = n => Math.round(n).toLocaleString("fr-FR") + " €";
 export const eurosArrondis = eurosRonds;
-export const INTRO_EVOLUTION = "Les deux montants sont publiés par l'Observatoire des finances locales ; la différence est une soustraction faite par Repère.";
+export const INTRO_EVOLUTION = "Les deux montants sont publiés par l'Observatoire des finances et de la gestion publique locales (OFGL) ; la différence est une soustraction faite par Repère.";
 export const NOTE_EVOLUTION = "Une différence d'une année sur l'autre ne dit pas si la commune est bien ou mal gérée : un chantier qui commence ou s'achève, un emprunt, une compétence transférée à l'intercommunalité suffisent à la faire varier.";
 export function diffEuros(diff) {
   if (diff === null || diff === undefined) return "—";

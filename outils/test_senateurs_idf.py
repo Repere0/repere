@@ -69,6 +69,32 @@ class SenateursIdf(unittest.TestCase):
         self.assertIn("circonscription", pr.stderr)
         self.assertFalse(os.path.exists(sortie), "aucun fichier partiel ne doit etre ecrit")
 
+    def test_requete_d_export_en_tete_est_sautee(self):
+        # Premiere ligne reelle du fichier (runner, 02/11/2026) : la requete, avec ses virgules.
+        requete = ('% Requête :select senmat as "Matricule", quacod as "Qualité", '
+                   'sennomuse as "Nom usuel", senprenomuse as "Prénom usuel", etasencod as "État"')
+        dossier = tempfile.mkdtemp(prefix="repere-senat-")
+        chemin = os.path.join(dossier, "ODSEN_GENERAL.csv")
+        with open(chemin, "w", encoding="cp1252", newline="") as f:
+            f.write(requete + "\n" + ENTETE + "\n" + "\n".join(LIGNES) + "\n")
+        sortie = os.path.join(dossier, "senateurs.json")
+        pr = lancer(chemin, sortie)
+        self.assertEqual(pr.returncode, 0, pr.stderr)
+        with open(sortie, encoding="utf-8") as f:
+            noms = [s["nom"] for s in json.load(f)["senateurs"]]
+        self.assertEqual(noms, ["Dupont", "Petit"])
+
+    def test_requete_sans_en_tete_refuse_sans_ecrire(self):
+        requete = '% Requête :select senmat as "Matricule", quacod as "Qualité"'
+        dossier = tempfile.mkdtemp(prefix="repere-senat-")
+        chemin = os.path.join(dossier, "ODSEN_GENERAL.csv")
+        with open(chemin, "w", encoding="cp1252", newline="") as f:
+            f.write(requete + "\n" + "\n".join(LIGNES) + "\n")
+        sortie = os.path.join(dossier, "senateurs.json")
+        pr = lancer(chemin, sortie)
+        self.assertNotEqual(pr.returncode, 0)
+        self.assertFalse(os.path.exists(sortie))
+
     def test_sous_le_minimum_rien_n_est_ecrit(self):
         dossier, chemin = ecrire_csv(LIGNES)
         sortie = os.path.join(dossier, "senateurs.json")

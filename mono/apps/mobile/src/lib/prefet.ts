@@ -10,6 +10,10 @@
 export const PREFET_IDF = {
   nom: "Georges-François Leclerc",
   titre: "Préfet de la région d'Île-de-France et préfet de Paris",
+  /* Date du dernier contrôle consigné du TITRE de la page (saisie du 13/10/2026).
+     Une nouvelle tentative de contrôle, le 29/10/2026, a échoué (erreur côté site) :
+     la date affichée est donc celle du dernier contrôle réussi, pas une date du jour. */
+  titreControleLe: "13/10/2026",
   url: "https://www.prefectures-regions.gouv.fr/ile-de-france/Region-et-institutions/La-prefecture-de-Paris-et-d-Ile-de-France/Organisation-et-organigramme/Prise-de-fonction-de-Georges-Francois-Leclerc-prefet-de-la-region-d-Ile-de-France-prefet-de-Paris",
   departements: ["75", "77", "78", "91", "92", "93", "94", "95"],
 };

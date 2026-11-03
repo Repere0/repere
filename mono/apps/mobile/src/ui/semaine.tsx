@@ -22,9 +22,10 @@ import { AGE_RELEVE_NORMAL, ageReleve, dateFr, heureFr, jourCourt, jourFr, LIBEL
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { AGENDA_PAS_ARRIVE } from "../lib/absences";
 import { srcAgenda } from "../lib/sources";
-import { couleurs, CIBLE, OMBRE, PAS, RAYON, TYPO } from "../lib/theme";
+import { feuille, couleurs, CIBLE, OMBRE, PAS, RAYON, TYPO } from "../lib/theme";
 import { typo } from "./reponse";
 import { PastilleSource } from "./source";
+import { AvecPicto } from "./picto";
 
 type Jour = { date: string; seances: number; annonce: boolean };
 type Vote = { debut: string; institution: string; texte: string };
@@ -68,7 +69,7 @@ export function SemaineParlement({ sp, lu, nom }: { sp: Semaine | null | undefin
   if (!lu || !sp || !sp.institutions.length) {
     return (
       <View testID="semaine-parlement" style={s.carte}>
-        <Text style={TYPO.etiquette} accessibilityRole="header">Au Parlement cette semaine</Text>
+        <AvecPicto picto="parlement"><Text style={TYPO.etiquette} accessibilityRole="header">Cette semaine au Parlement</Text></AvecPicto>
         <Text style={s.phrase}>{typo(AGENDA_PAS_ARRIVE.titre)}</Text>
         <Text style={TYPO.note}>{typo(AGENDA_PAS_ARRIVE.corps)}</Text>
         <Suite onPress={aller} />
@@ -100,7 +101,7 @@ export function SemaineParlement({ sp, lu, nom }: { sp: Semaine | null | undefin
 
   return (
     <View testID="semaine-parlement" style={s.carte}>
-      <Text style={TYPO.etiquette} accessibilityRole="header">Au Parlement cette semaine</Text>
+      <AvecPicto picto="parlement"><Text style={TYPO.etiquette} accessibilityRole="header">Cette semaine au Parlement</Text></AvecPicto>
       <Text style={s.phrase}>{typo(phrase)}</Text>
 
       {/* Sept colonnes egales : a 360 px, 44 px chacune. Le nombre est ecrit pour
@@ -124,7 +125,7 @@ export function SemaineParlement({ sp, lu, nom }: { sp: Semaine | null | undefin
           (vu sur capture : « mardi 13 octobre 2026, 15 h » ecrit deux fois). */}
       {grouper(votes.slice(0, VOTES_MAX)).map(g => (
         <View key={g.cle} style={{ gap: PAS * 2 }}>
-          <Text style={[TYPO.corps, { fontWeight: "700" }]}>{typo(g.quand)}</Text>
+          <Text style={[TYPO.corps, { fontWeight: "600" }]}>{typo(g.quand)}</Text>
           {g.textes.map((t, i) => <Text key={i} testID="semaine-vote" style={TYPO.corps}>{typo(t)}</Text>)}
         </View>
       ))}
@@ -155,18 +156,18 @@ function Suite({ onPress }: { onPress: () => void }) {
   );
 }
 
-const s = StyleSheet.create({
+const s = feuille(() => StyleSheet.create({
   carte: { backgroundColor: couleurs.carte, borderRadius: RAYON.carte, paddingHorizontal: PAS * 4, paddingTop: PAS * 3, gap: PAS * 2, ...OMBRE },
   phrase: { ...TYPO.reponse, fontSize: 19, lineHeight: 25 },
   bande: { flexDirection: "row", gap: PAS },
   jour: { flex: 1, minWidth: 0, alignItems: "center", paddingVertical: PAS * 2, borderRadius: RAYON.bloc, backgroundColor: couleurs.sol, gap: 2 },
   jourAujourdhui: { borderWidth: 1.5, borderColor: couleurs.france },
   jourNom: { fontSize: 13, lineHeight: 18, color: couleurs.sourd },
-  encre: { color: couleurs.encre, fontWeight: "700" },
-  jourNum: { fontSize: 17, lineHeight: 22, fontWeight: "700", color: couleurs.encre },
-  points: { flexDirection: "row", gap: 3, minHeight: 18, alignItems: "center" },
+  encre: { color: couleurs.encre, fontWeight: "600" },
+  jourNum: { fontSize: 17, lineHeight: 22, fontWeight: "600", color: couleurs.encre },
+  points: { flexDirection: "row", gap: 4, minHeight: 18, alignItems: "center" },
   point: { width: 6, height: 6, borderRadius: 3, backgroundColor: couleurs.france },
   pied: { flexDirection: "row", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", columnGap: PAS * 2 },
   suite: { minHeight: CIBLE, justifyContent: "center", marginLeft: "auto" },
-  suiteTexte: { fontSize: 15, fontWeight: "700", color: couleurs.lien },
-});
+  suiteTexte: { fontSize: 15, fontWeight: "500", color: couleurs.lien },
+}));

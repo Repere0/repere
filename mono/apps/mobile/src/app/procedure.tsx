@@ -57,7 +57,7 @@ export default function Procedure() {
         {ETAPES_LOI.map((e, i) => (
           <Pressable key={e.cle} onPress={() => aller(i)} accessibilityRole="tab"
             accessibilityState={{ selected: i === etape }} accessibilityLabel={`Étape ${i + 1} : ${e.titre}`}
-            style={{ flex: 1, minHeight: CIBLE, justifyContent: "center" }}>
+            style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1, flex: 1, minHeight: CIBLE, justifyContent: "center" })}>
             <View style={{ height: 6, borderRadius: 3, backgroundColor: i <= etape ? couleurs.encre : couleurs.trait }} />
             <Text style={[TYPO.note, { marginTop: 4, textAlign: "center", fontWeight: i === etape ? "700" : "400" }]}>{i + 1}</Text>
           </Pressable>

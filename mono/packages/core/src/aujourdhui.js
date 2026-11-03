@@ -11,6 +11,7 @@
  * remplace par sa version habillee. */
 import { calculerFaits } from "./faits.js";
 import { rapports, dernierExercice } from "./comptes.js";
+import { etatVoteVide, etatVotePersonne } from "./votesVides.js";
 
 /* LA SEMAINE AU PARLEMENT, JOUR PAR JOUR — 07/10/2026 (refonte « Aujourd'hui »).
    Sept jours a partir d'aujourd'hui (heure de Paris, comme l'agenda), et pour
@@ -88,6 +89,10 @@ export function deriverAujourdhui({ fiche, commune, dep, index, projets, cat, po
   const faits = calculerFaits({ dep, fiche, projets, commune, cat, pos, deputes, evenements });
   const base = (cat && cat.url_scrutin) || "";
   const dernierVote = faits.find(f => f.type === "vote" && f.position);
+  /* Pas de vote affiché : la cause du vide (relevé non lu, circonscription, position absente). */
+  const etatVote = dernierVote ? null : etatVoteVide({ fiche, dep, cat, pos, deputes });
+  /* La fiche d'un élu lit SON vote, jamais celui de la commune. */
+  const etatVotePour = nom => etatVotePersonne({ fiche, dep, cat, pos, deputes, faits, nom });
   const dernierFait = faits[0];
 
   const agregats = (index && index.agregats) || [];
@@ -120,13 +125,19 @@ export function deriverAujourdhui({ fiche, commune, dep, index, projets, cat, po
   const maintenant = minuteParis(now);
   const dansSeptJours = minuteParis(new Date(now.getTime() + 7 * 864e5));
   const aVenir = [];
+  /* V34 bloc 6 : les rendez-vous deja passes de la meme source, pour dire « Dernier événement : … »
+     quand rien ne vient dans les deux semaines. Jamais une date inventee : seulement celles du releve. */
+  const passes = [];
   for (const [inst, donnees] of [["Sénat", cal], ["Assemblée nationale", agendaAN]]) {
     if (!donnees || !Array.isArray(donnees.evenements)) continue;
     for (const e of donnees.evenements) {
-      if (e.debut + ":00" >= maintenant + ":00") aVenir.push({ ...e, institution: inst, source: donnees.source || {} });
+      const ev = { ...e, institution: inst, source: donnees.source || {} };
+      if (e.debut + ":00" >= maintenant + ":00") aVenir.push(ev); else passes.push(ev);
     }
   }
   aVenir.sort((a, b) => (a.debut < b.debut ? -1 : a.debut > b.debut ? 1 : 0));
+  passes.sort((a, b) => (a.debut < b.debut ? 1 : a.debut > b.debut ? -1 : 0));
+  const dernierPasse = passes[0] || null;
   /* LES SEANCES PUBLIQUES D'ABORD — 28/09/2026. Mesure : la semaine du 28/09
      affichait trois auditions de commission du Senat, et l'ouverture de la
      session de l'Assemblee (jeudi) etait coupee par la limite de trois. La
@@ -156,12 +167,12 @@ export function deriverAujourdhui({ fiche, commune, dep, index, projets, cat, po
   const dernierProjet = faits.find(f => f.type === "projet");
 
   return {
-    pret: true, fiche, nomCommune, dep, base, faits, nbCircos, nomDep, dernierProjet,
+    pret: true, fiche, nomCommune, dep, base, faits, nbCircos, nomDep, dernierProjet, etatVote, etatVotePour,
     dernierVote, dernierFait, exercice, rapportsComptes: rr, rapportDette,
     semaineParlement: semaineParlement({ cal, agendaAN, maintenant: now }),
     /* tous les rendez-vous a venir, fusionnes et tries : le calendrier mobile les
        regroupe par journee (regrouperParJour), comme celui du site. 07/10/2026. */
-    aVenir,
+    aVenir, dernierPasse,
     prochain, prochains, prochainsDansLaSemaine: cetteSemaine.length > 0,
     semaineSelectionnee: semaine.length > cetteSemaine.length, semaineTotal: semaine.length,
     srcComptes, srcProjets, srcScrutins, srcCal,

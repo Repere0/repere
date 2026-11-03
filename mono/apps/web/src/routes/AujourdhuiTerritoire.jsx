@@ -4,6 +4,7 @@ import { useAujourdhui } from "../lib/useAujourdhui.js";
 import { LigneVote } from "../lib/votes.jsx";
 import { COMPETENCES } from "../lib/competences.js";
 import { noteRattachement } from "../lib/faits.js";
+import { copieVoteVide, ETAT_VOTE } from "@repere/core";
 
 /* DIRECTION B — « LE TERRITOIRE » (19/09/2026), NON RETENUE — voir
  * Aujourdhui.jsx (direction C, « la question ») pour celle qui l'est, et
@@ -45,8 +46,13 @@ export default function AujourdhuiTerritoire({ paquet, index, commune, aller }) 
   if (!a.pret) {
     return <Chargement titre="Ouverture du territoire." corps="Les mêmes fichiers que les autres écrans, une seule fois." />;
   }
-  const { nomCommune, fiche, dernierVote, dernierFait, rapportDette, srcComptes,
+  const { nomCommune, fiche, dernierVote, dernierFait, rapportDette, srcComptes, etatVote,
           srcProjets, srcScrutins, prochain, srcCal, base } = a;
+  /* Le vide du vote : une seule règle (@repere/core, votesVides.js), partagée avec l'application. */
+  const voteVide = etatVote ? {
+    ...copieVoteVide(etatVote, { nom: nomCommune, releve: srcScrutins && srcScrutins.releve_le, portee: srcScrutins && srcScrutins.portee }),
+    echec: etatVote === ETAT_VOTE.RELEVE_NON_LU || etatVote === ETAT_VOTE.RELEVE_INCOHERENT,
+  } : null;
 
   return (
     <div className="terr">
@@ -96,7 +102,7 @@ export default function AujourdhuiTerritoire({ paquet, index, commune, aller }) 
                   mention={srcScrutins.releve_le ? "relevé le " + dateFr(srcScrutins.releve_le) : undefined} /> : null}
               </>
             ) : (
-              <p className="ligne-note">Aucun vote solennel de votre député sur la période relevée.</p>
+              <p className="ligne-note"><b>{voteVide.titre}</b> {voteVide.corps}</p>
             )}
             {prochain ? (
               <>

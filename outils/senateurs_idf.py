@@ -67,8 +67,19 @@ def colonnes(entetes):
     return trouvees
 
 
+def sans_requete(texte):
+    """Le fichier du Senat commence par la requete qui l'a produit (« % Requête :select ... »),
+    avant l'en-tete. Elle contient des virgules : lue comme un en-tete, elle ferait croire que
+    la colonne « matricule » manque. On la saute, et on lit l'en-tete juste en dessous.
+    (Constat du 02/11/2026 sur le runner : l'en-tete lu etait cette requete.)"""
+    lignes = texte.read().splitlines(keepends=True)
+    while lignes and lignes[0].lstrip("\ufeff").startswith("%"):
+        lignes.pop(0)
+    return io.StringIO("".join(lignes))
+
+
 def principal(entree, sortie, minimum=10):
-    lecteur = csv.reader(lire(entree), delimiter=",")
+    lecteur = csv.reader(sans_requete(lire(entree)), delimiter=",")
     entetes = next(lecteur)
     c = colonnes(entetes)
 

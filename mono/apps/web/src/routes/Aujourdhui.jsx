@@ -5,7 +5,7 @@ import { Vide, Source, Chargement, dateFr, jourFr } from "@repere/ui";
 import { useAujourdhui } from "../lib/useAujourdhui.js";
 import { LigneVote } from "../lib/votes.jsx";
 import { noteRattachement } from "../lib/faits.js";
-import { phraseCirconscription, phraseProjet, phraseProjetLocal, DGCL_URL, LIBELLES } from "@repere/core";
+import { phraseCirconscription, phraseProjet, phraseProjetLocal, DGCL_URL, LIBELLES, copieVoteVide, ETAT_VOTE } from "@repere/core";
 import { regrouperParJour, ageReleve, AGE_RELEVE_NORMAL, heureFr } from "@repere/core";
 
 /* « AUJOURD'HUI », DIRECTION RETENUE LE 19/09/2026 — « LA QUESTION ».
@@ -41,9 +41,14 @@ export default function Aujourdhui({ paquet, index, commune, aller, derniereVisi
     return <Chargement titre="Ouverture de la question du jour."
       corps="Les mêmes fichiers que les autres écrans, une seule fois." />;
   }
-  const { nomCommune, dernierVote, dernierFait, faits, rapportDette, srcComptes,
+  const { nomCommune, dernierVote, dernierFait, faits, rapportDette, srcComptes, etatVote,
           srcProjets, srcScrutins, prochains, prochainsDansLaSemaine, semaineSelectionnee, semaineTotal, base,
           nbCircos, nomDep, dernierProjet, semaineParlement: sp, projetsLus } = a;
+  /* Le vide du vote : une seule règle (@repere/core, votesVides.js), partagée avec l'application. */
+  const voteVide = etatVote ? {
+    ...copieVoteVide(etatVote, { nom: nomCommune, releve: srcScrutins && srcScrutins.releve_le, portee: srcScrutins && srcScrutins.portee }),
+    echec: etatVote === ETAT_VOTE.RELEVE_NON_LU || etatVote === ETAT_VOTE.RELEVE_INCOHERENT,
+  } : null;
   /* 08/10/2026 (audit beta) : deux seances du meme texte le meme jour s'affichaient
      sur deux lignes identiques ; meme regle que le calendrier (regrouperParJour). */
   const prochainsGroupes = regrouperParJour(prochains || []);
@@ -142,11 +147,13 @@ export default function Aujourdhui({ paquet, index, commune, aller, derniereVisi
             </>
           ) : null}
         </div>
-      ) : (
-        <Vide titre={`Aucune décision datée n'est publiée pour ${nomCommune}.`}
-          corps="Ni projet financé par l'État, ni vote solennel du député sur la période relevée."
-          lien={{ texte: "Projets financés par l'État — données publiques", url: DGCL_URL }} />
-      )}
+      ) : voteVide && voteVide.echec ? (
+          <Vide titre={voteVide.titre} corps={voteVide.corps} lien={voteVide.lien} />
+        ) : (
+          <Vide titre={`Aucune décision datée n'est publiée pour ${nomCommune}.`}
+            corps="Ni projet financé par l'État, ni vote solennel du député dans les données disponibles."
+            lien={{ texte: "Projets financés par l'État — données publiques", url: DGCL_URL }} />
+        )}
 
       {/* LES QUESTIONS SUIVANTES SONT PLUS DISCRETES — meme structure que la
           premiere aurait repete trois fois le meme motif (chasse au

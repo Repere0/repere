@@ -1129,6 +1129,23 @@ async function extraire() {
     });
   }
 
+  /* V59 (bloc 1.1) : le découpage des huit départements d'Île-de-France. Relevé versionné dans
+     scripts/decoupage-idf.json (produit par scripts/construire-decoupage-idf.mjs à partir du paquet npm
+     officiel @etalab/decoupage-administratif), recopié tel quel : pas de réseau au build. Sa source et sa
+     date vivent dans le fichier ; sans elles, le build échoue plutôt que de publier un code sans provenance. */
+  {
+    const fDecoupage = path.join(ICI, "decoupage-idf.json");
+    if (fs.existsSync(fDecoupage)) {
+      let dec;
+      try { dec = JSON.parse(fs.readFileSync(fDecoupage, "utf8")); }
+      catch (e) { console.error("decoupage-idf.json illisible : " + e.message); process.exit(7); }
+      if (!dec.source || !dec.source.producteur || !dec.source.licence || !dec.genere_le || !Array.isArray(dec.communes) || !dec.communes.length) {
+        console.error("decoupage-idf.json sans source, licence, date ou commune"); process.exit(7);
+      }
+      fs.copyFileSync(fDecoupage, path.join(SORTIE, "decoupage-idf.json"));
+    } else console.warn("decoupage-idf.json absent : le découpage IDF ne sera pas publié");
+  }
+
   if (questionsGouvernement) {
     ecrire(path.join(SORTIE, "questions-gouvernement-index.json"), questionsGouvernement);
     const sourceDir = path.join(ICI, "questions-gouvernement");

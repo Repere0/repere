@@ -159,8 +159,14 @@ async function texteApp(nav, { nom }) {
   const c = await nav.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, reducedMotion: "reduce" });
   const p = await c.newPage();
   await p.goto(APP, { waitUntil: "networkidle" });
+  /* L'accueil ne montre le champ qu'apres « Chercher une commune » (c7ee4d0), comme parcours-web. */
+  if (!(await p.getByLabel(/Où habitez-vous/).isVisible())) await p.getByRole("button", { name: "Chercher une commune" }).first().click();
   await p.getByLabel(/Où habitez-vous/).fill(nom);
   await p.getByRole("button", { name: new RegExp("^" + nom.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + ",") }).first().click();
+  /* Premiere visite sans profil : l'onboarding s'ouvre (V26, V31). On garde les reglages par defaut
+     (« Passer », D45) : ce controle compare ce que le lecteur lit, pas les reglages. */
+  const passer = p.getByRole("button", { name: /^Passer \(garde les réglages par défaut\)$/ });
+  await passer.waitFor({ timeout: 5000 }).then(() => passer.click()).catch(() => {});
   await p.getByText("Aller plus loin").first().waitFor({ timeout: 15000 });
   await p.waitForLoadState("networkidle");
   let { t, n: feuilles } = await toutLire(p);

@@ -47,7 +47,7 @@ export function Resume({ phrase, chiffre, legende, enClair, children }: {
       {children}
       {enClair ? (
         <View style={{ flexDirection: "row", gap: PAS * 2, paddingTop: PAS }}>
-          <Text style={[TYPO.corps, { fontWeight: "800", color: couleurs.lien }]}>En clair</Text>
+          <Text style={[TYPO.corps, { fontWeight: "600", color: couleurs.lien }]}>En clair</Text>
           <Text style={[TYPO.corps, { flex: 1 }]}>{enClair}</Text>
         </View>
       ) : null}

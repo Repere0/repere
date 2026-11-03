@@ -28,8 +28,9 @@ test("core — le vote mis en avant est vraiment le plus recent, meme le meme jo
   assert.equal(deriver({}).dernierVote, undefined);
   // la date passe avant le numero
   assert.equal(ordreDesFaits({ quand: "2026-07-21", rang: 1, type: "vote", sc: { n: "1" } }, { quand: "2026-07-20", rang: 1, type: "vote", sc: { n: "9999" } }) < 0, true);
-  // numero illisible : on ne devine pas, l'ordre de la source est garde
-  assert.equal(ordreDesFaits({ quand: "2026-07-21", rang: 1, type: "vote", sc: { n: "?" } }, { quand: "2026-07-21", rang: 1, type: "vote", sc: { n: "8434" } }), 0);
+  // numero illisible : on ne le devine pas ; il vient APRES les numerotes du meme jour
+  // (ordre total : le resultat ne depend pas de l'ordre d'entree, audit du 29/10/2026)
+  assert.equal(ordreDesFaits({ quand: "2026-07-21", rang: 1, type: "vote", sc: { n: "?" } }, { quand: "2026-07-21", rang: 1, type: "vote", sc: { n: "8434" } }), 1);
 });
 
 test("core — sur les donnees reelles : le vote mis en avant est le dernier numero du dernier jour", (t) => {

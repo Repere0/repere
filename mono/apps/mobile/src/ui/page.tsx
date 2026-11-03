@@ -9,16 +9,25 @@ import { ETATS, PHRASES } from "../lib/donnees";
 import { Bouton, Vide } from "../lib/composants";
 import { useSelection } from "../lib/selection";
 import { useCommuneChoisie, type EtatCommune } from "../lib/useCommune";
-import { PAS, TYPO } from "../lib/theme";
+import { couleurs, feuille, PAS, TYPO } from "../lib/theme";
+import { useTheme } from "../lib/themeChoix";
+import { Entree } from "./entree";
+import { SquelettesListe } from "./squelette";
 import { Etiquette } from "./resume";
-import { BandeauFraicheur } from "./fraicheur";
+import { BandeauFraicheur, DatePublication } from "./fraicheur";
 
-export function Page({ children }: { children: ReactNode }) {
+/* « sansDate » : l'écran affiche déjà la date de publication dans son propre contenu
+   (Aujourd'hui : « Publication Repère du … »). Sans ce drapeau, deux dates se suivraient. */
+export function Page({ children, sansDate = false }: { children: ReactNode; sansDate?: boolean }) {
   const marges = useSafeAreaInsets();
+  /* S'abonne au choix d'affichage : quand il change, cet ecran se redessine et
+     couleurs.sol (lu ci-dessous) donne la couleur du mode courant. */
+  useTheme();
   return (
-    <ScrollView contentContainerStyle={[s.page, { paddingBottom: marges.bottom + PAS * 10 }]}>
+    <ScrollView style={{ backgroundColor: couleurs.sol }} contentContainerStyle={[s.page, { paddingTop: PAS * 4, paddingBottom: marges.bottom + PAS * 10 }]}>
+      {sansDate ? null : <DatePublication flottant />}
       <BandeauFraicheur />
-      {children}
+      <Entree style={{ gap: PAS * 3, width: "100%" }}>{children}</Entree>
     </ScrollView>
   );
 }
@@ -51,16 +60,22 @@ export function AvecDonnees({ rendu }: { rendu: (r: Extract<EtatCommune, { pret:
   }
   if (!r.pret) {
     const p = (PHRASES as Record<string, { titre: string; corps: string }>)[r.etat] || PHRASES[ETATS.ECHEC];
+    /* Pendant le chargement, des blocs qui battent ; le texte d'attente reste lu. */
+    if (r.etat === ETATS.EN_COURS) {
+      return <View style={[s.page, { paddingTop: PAS * 6 }]}><SquelettesListe n={3} hauteur={88} /></View>;
+    }
     return (
       <View style={[s.page, { paddingTop: PAS * 6 }]}>
         <Vide titre={p.titre} corps={p.corps}
-          action={r.etat === ETATS.EN_COURS ? undefined : "Réessayer"} onAction={reessayer} />
+          action="Réessayer" onAction={reessayer} />
+        {/* Un échec ne laisse jamais seul : on peut aller voir d'où viennent les données. */}
+        <Bouton texte="Voir les sources" onPress={() => router.push("/sources")} discret />
       </View>
     );
   }
   return <>{rendu(r)}</>;
 }
 
-const s = StyleSheet.create({
+const s = feuille(() => StyleSheet.create({
   page: { paddingHorizontal: PAS * 5, paddingTop: PAS * 1, gap: PAS * 3, maxWidth: 640, width: "100%", alignSelf: "center" },
-});
+}));

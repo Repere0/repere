@@ -29,7 +29,10 @@ export function jourFr(iso) {
 
 
 /* Un montant en euros, a la francaise : « 533 466 € ». */
+/* Un montant absent (null, undefined, vide, non numerique) n'est jamais 0 € :
+   Number(null) vaut 0, et Intl formate « NaN » pour undefined (invariant 5). */
 export function euros(n) {
+  if (n === null || n === undefined || n === "" || !Number.isFinite(Number(n))) return "montant non publié";
   return new Intl.NumberFormat("fr-FR").format(n) + " €";
 }
 

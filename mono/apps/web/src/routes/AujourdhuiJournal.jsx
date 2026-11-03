@@ -3,7 +3,7 @@ import { Vide, Source, Chargement, dateFr } from "@repere/ui";
 import { useAujourdhui } from "../lib/useAujourdhui.js";
 import { LigneVote } from "../lib/votes.jsx";
 import { noteRattachement } from "../lib/faits.js";
-import { phraseProjet } from "@repere/core";
+import { phraseProjet, copieVoteVide, ETAT_VOTE } from "@repere/core";
 
 /* DIRECTION A — « LE JOURNAL » (19/09/2026), NON RETENUE POUR LA VERSION
  * BRANCHEE — voir Aujourdhui.jsx (direction C, « la question ») pour celle
@@ -47,8 +47,13 @@ export default function AujourdhuiJournal({ paquet, index, commune, aller }) {
     return <Chargement titre="Ouverture d'aujourd'hui chez vous."
       corps="Les mêmes fichiers que les autres écrans, une seule fois." />;
   }
-  const { nomCommune, dernierVote, dernierFait, rapportDette, srcComptes,
+  const { nomCommune, dernierVote, dernierFait, rapportDette, srcComptes, etatVote,
           srcProjets, srcScrutins, prochain, srcCal, base } = a;
+  /* Le vide du vote : une seule règle (@repere/core, votesVides.js), partagée avec l'application. */
+  const voteVide = etatVote ? {
+    ...copieVoteVide(etatVote, { nom: nomCommune, releve: srcScrutins && srcScrutins.releve_le, portee: srcScrutins && srcScrutins.portee }),
+    echec: etatVote === ETAT_VOTE.RELEVE_NON_LU || etatVote === ETAT_VOTE.RELEVE_INCOHERENT,
+  } : null;
 
   return (
     <div className="jour">
@@ -68,11 +73,13 @@ export default function AujourdhuiJournal({ paquet, index, commune, aller }) {
         <Fait echelon="ville" titre={dernierFait.p.intitule}
           enfants={<p className="ligne-note">{phraseProjet(dernierFait.p)}{noteRattachement(dernierFait.p) ? " " + noteRattachement(dernierFait.p) : ""}</p>}
           source={srcProjets ? <Source producteur={srcProjets.producteur} licence={srcProjets.licence} maj={srcProjets.mis_a_jour_le} /> : null} />
-      ) : (
-        <Vide titre={`Aucune décision datée n'est publiée pour ${nomCommune}.`}
-          corps="Ni projet financé par l'État, ni vote solennel du député sur la période relevée."
-          lien={{ texte: "Projets financés par l'État — données publiques", url: DGCL_URL }} />
-      )}
+      ) : voteVide && voteVide.echec ? (
+          <Vide titre={voteVide.titre} corps={voteVide.corps} lien={voteVide.lien} />
+        ) : (
+          <Vide titre={`Aucune décision datée n'est publiée pour ${nomCommune}.`}
+            corps="Ni projet financé par l'État, ni vote solennel du député dans les données disponibles."
+            lien={{ texte: "Projets financés par l'État — données publiques", url: DGCL_URL }} />
+        )}
 
       {rapportDette ? (
         <Fait echelon="ville" titre={`Votre argent : ${rapportDette.v}`}

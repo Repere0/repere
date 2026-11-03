@@ -8,7 +8,7 @@ import type { Ouvert } from "./useCommune";
 
 export const METHODE_COMPTES = "Repère part des six montants du budget principal de la commune, publiés pour une année, et fait une division. Exemple : la part des salaires, c'est la ligne « frais de personnel » divisée par le total des dépenses. Aucun autre territoire n'entre dans le calcul. Les montants par habitant, eux, sont publiés tels quels par l'Observatoire.";
 export const METHODE_FINANCEMENT = "La part de l'État, c'est l'aide de l'État divisée par le coût annoncé du projet. Les deux montants sont publiés par la Direction générale des collectivités locales.";
-export const USAGE_PAR_HABITANT = "Les montants par habitant sont publiés tels quels par l'Observatoire des finances locales ; Repère ne les recalcule pas.";
+export const USAGE_PAR_HABITANT = "Les montants par habitant sont publiés tels quels par l'Observatoire des finances et de la gestion publique locales (OFGL) ; Repère ne les recalcule pas.";
 
 export const srcProjets = (d: Ouvert, calcul = false): InfoSource | null => d.srcProjets ? {
   producteur: d.srcProjets.producteur, licence: d.srcProjets.licence, maj: d.srcProjets.mis_a_jour_le,

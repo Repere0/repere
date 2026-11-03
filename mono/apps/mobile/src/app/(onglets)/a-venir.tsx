@@ -9,8 +9,8 @@
  *     une seance publiee ont un point. Le mois se deplie d'un geste.
  *   - Filtre segmente : Tout, Assemblée, Sénat. Les filtres « Décisions » et
  *     « Commune » du canevas ne sont pas branches : aucune donnee publiee.
- *   - Une ligne par texte et par jour, avec l'heure de debut et la fin quand la
- *     source la donne (« fin non publiée » sinon). Le detail se deplie.
+ *   - Une ligne par texte et par jour : « HHh : titre (institution) », la fin de
+ *     seance seulement quand la source la donne. Sans fin publiee, l'heure seule.
  *   - L'alerte « me prévenir une heure avant » du canevas n'est pas branchee :
  *     l'application le dit, au lieu de promettre un rappel qui ne vient pas.
  *   - La procedure : une entree vers son ecran, comme avant.
@@ -20,16 +20,23 @@ import { useState } from "react";
 import { Pressable, Text, View } from "react-native";
 import { router, Stack } from "expo-router";
 import {
-  AGE_RELEVE_NORMAL, ageReleve, dateFr, ETAPES_LOI, heureFr, jourFr, jourParis, LIBELLES, regrouperParJour,
+  ageReleve, dateFr, ETAPES_LOI, heureFr, jourFr, jourParis, LIBELLES, regrouperParJour,
 } from "@repere/core";
 import { Carte, Vide } from "../../lib/composants";
 import { AGENDA_PAS_ARRIVE, AGENDA_VIDE } from "../../lib/absences";
 import { srcAgenda } from "../../lib/sources";
 import { useCommuneChoisie } from "../../lib/useCommune";
 import { couleurs, CIBLE, PAS, TYPO } from "../../lib/theme";
+import { DateDonnee } from "../../ui/fraicheur";
 import { AvecDonnees, Page, Question } from "../../ui/page";
 import { PastilleSource } from "../../ui/source";
 import { Depli } from "../../ui/visuels";
+import { PartagerCarte } from "../../ui/partage/bouton-partage";
+import { BadgeZoom, useNiveauZoom } from "../../ui/badge-zoom";
+import { visibleAuNiveau } from "@repere/core";
+import { AgendaStory } from "../../ui/partage/variantes/agenda.story";
+import { messageAgenda } from "../../ui/partage/messages";
+import { BoutonPartageTexte, ligneSource } from "../../ui/partage/partager-texte";
 
 type Ev = { titre: string; debut: string; institution: string; categorie?: string; lieu?: string; description?: string; source: Record<string, string> };
 type Groupe = { jour: string; institution: string; titre: string; debut: string; debuts: string[]; fins?: (string | null)[]; seances: number;
@@ -45,6 +52,14 @@ function decaler(iso: string, n: number): string {
   const [y, m, d] = iso.split("-").map(Number);
   return new Date(Date.UTC(y, m - 1, d + n)).toISOString().slice(0, 10);
 }
+/* V35 bloc 2 (D68) : les séances d'un même jour dans un seul bloc, dans l'ordre publié. */
+function parJour(gs: Groupe[]): [string, Groupe[]][] {
+  const m = new Map<string, Groupe[]>();
+  for (const g of gs) m.set(g.jour, [...(m.get(g.jour) || []), g]);
+  return [...m.entries()];
+}
+const majuscule = (t: string) => t.charAt(0).toUpperCase() + t.slice(1);
+
 /* Rang du jour dans la semaine, lundi = 0. */
 function rangLundi(iso: string): number {
   const [y, m, d] = iso.split("-").map(Number);
@@ -59,15 +74,15 @@ function Ligne({ g }: { g: Groupe }) {
     const debut = heureFr(x);
     if (!debut) return "";
     const fin = g.fins && g.fins[i] ? heureFr(g.fins[i]) : "";
-    return (fin ? `${debut} à ${fin}` : `${debut} (fin non publiée)`).replace(/ /g, " ");
+    return (fin ? `${debut} à ${fin}` : debut).replace(/ /g, " ");
   }).filter(Boolean).join(", ");
   return (
-    <View testID="cal-ligne" style={{ gap: PAS, paddingTop: PAS * 3, borderTopWidth: 1, borderTopColor: couleurs.trait }}>
-      <Text style={[TYPO.corps, { fontWeight: "700" }]}>{heures || "Heure non publiée"}</Text>
-      <Text style={TYPO.etiquette}>{g.institution}</Text>
-      <Text style={[TYPO.corps, { fontWeight: "600" }]}>{g.titre}</Text>
+    /* V35 bloc 2 (D68) : une séance se lit heure > titre > institution ; le jour est porté par le bloc. */
+    <View testID="cal-ligne" style={{ gap: 2, paddingTop: PAS * 2, borderTopWidth: 1, borderTopColor: couleurs.trait }}>
+      <Text style={[TYPO.corps, { fontWeight: "500" }]}>{heures || "Heure non publiée"}</Text>
+      <Text style={TYPO.corps}>{g.titre}</Text>
       <Text style={TYPO.note}>
-        {[g.categorie, g.lieu, g.seances > 1 ? `${g.seances} séances ce jour-là` : null].filter(Boolean).join(" · ")}
+        {[g.institution, g.categorie, g.lieu, g.seances > 1 ? `${g.seances} séances ce jour-là` : null].filter(Boolean).join(" · ")}
       </Text>
       {g.points && g.points.length ? (
         <Depli titre={`+ ${g.points.length} ${g.points.length > 1 ? "autres points" : "autre point"} à l'ordre du jour`}>
@@ -92,7 +107,7 @@ function Case({ iso, jour, nb, onPress, taille }: { iso: string; jour: string; n
     <Pressable onPress={onPress} accessibilityRole="button" accessibilityState={{ selected: choisi }}
       accessibilityLabel={`${numero} octobre, ${nb} élément${nb > 1 ? "s" : ""}`}
       style={({ pressed }) => ({ flex: 1, minHeight: grand ? 58 : 42, alignItems: "center", justifyContent: "center", gap: 4, opacity: pressed ? 0.6 : 1 })}>
-      {grand ? <Text style={{ fontSize: 13, color: couleurs.sourd, fontWeight: "600" }}>{LETTRES[rangLundi(iso)]}</Text> : null}
+      {grand ? <Text style={{ fontSize: 13, color: couleurs.sourd, fontWeight: "500" }}>{LETTRES[rangLundi(iso)]}</Text> : null}
       <View style={{ width: grand ? 40 : 34, height: grand ? 40 : 34, borderRadius: 999, alignItems: "center", justifyContent: "center",
         backgroundColor: choisi ? couleurs.encre : "transparent" }}>
         <Text style={{ fontWeight: choisi ? "800" : "600", fontSize: grand ? 20 : 16, color: choisi ? couleurs.sol : couleurs.encre }}>{numero}</Text>
@@ -104,6 +119,7 @@ function Case({ iso, jour, nb, onPress, taille }: { iso: string; jour: string; n
 
 export default function AVenir() {
   const { reessayer } = useCommuneChoisie();
+  const niveauZoom = useNiveauZoom();
   /* Filtre par institution : null = les deux. */
   const [institution, setInstitution] = useState<string | null>(null);
   const [jour, setJour] = useState<string>(() => jourParis(new Date()));
@@ -116,7 +132,9 @@ export default function AVenir() {
     <AvecDonnees rendu={r => {
       const { d } = r;
       const toutes = (d.aVenir || []) as Ev[];
-      const aVenir = institution ? toutes.filter(e => e.institution === institution) : toutes;
+      /* V26 bloc 2 : le calendrier est national ; en vue « Ma rue » ou « Ma région », il ne s'affiche pas. */
+      const nationalVisible = visibleAuNiveau(niveauZoom, "france");
+      const aVenir = !nationalVisible ? [] : institution ? toutes.filter(e => e.institution === institution) : toutes;
       const lues = ((d.semaineParlement && d.semaineParlement.institutions) || []) as { institution: string; source: Record<string, string> }[];
       const groupes = regrouperParJour(aVenir) as Groupe[];
       const compte: Record<string, number> = {};
@@ -125,6 +143,9 @@ export default function AVenir() {
       /* Deux semaines a partir d'aujourd'hui, comme le socle les compte (calendrier.js). */
       const limite = jourParis(new Date(Date.now() + 14 * 864e5));
       const deuxSemaines = groupes.filter(g => g.jour < limite);
+      /* V34 bloc 6 : rien dans les deux semaines → le dernier rendez-vous deja passe, du meme filtre. */
+      const dernierBrut = (d.dernierPasse || null) as Ev | null;
+      const dernierPasse = dernierBrut && (!institution || dernierBrut.institution === institution) ? dernierBrut : null;
       const affiches = choisi ? duJour : deuxSemaines;
       const debutSemaine = decaler(jour, -rangLundi(jour));
       const semaine = Array.from({ length: 7 }, (_, i) => decaler(debutSemaine, i));
@@ -142,24 +163,35 @@ export default function AVenir() {
           : "Rien de publié pour ce jour et ce filtre. Repère n'affiche que ce qui est annoncé ou publié.")
         : (deuxSemaines.length
           ? `${deuxSemaines.length} rendez-vous publiés dans les deux prochaines semaines.`
-          : "Rien de publié dans les deux prochaines semaines pour ce filtre. Repère n'affiche que ce qui est annoncé ou publié.");
+          : dernierPasse
+            ? `Pas d'événement à venir. Dernier événement : ${dateFr(dernierPasse.debut.slice(0, 10))}.`
+            : "Rien de publié dans les deux prochaines semaines pour ce filtre. Repère n'affiche que ce qui est annoncé ou publié.");
       const manquantes = lues.length ? INSTITUTIONS.filter(i => !lues.some(x => x.institution === i)) : [];
-      const vieillis = lues.map(x => ({ ...x, age: ageReleve(x.source && x.source.releve_le) }))
-        .filter(x => x.age !== null && x.age > AGE_RELEVE_NORMAL);
+      /* Un seul repere de fraicheur, pour l'ecran : le plus ancien des agendas lus. */
+      const ages = lues.map(x => ageReleve(x.source && x.source.releve_le)).filter((a): a is number => a !== null);
+      const plusAncien = ages.length ? Math.max(...ages) : null;
+      /* V13 bloc A : la date du releve le plus ancien, jamais « mis à jour ». */
+      const releveAncien = plusAncien === null ? null
+        : (lues.find(x => ageReleve(x.source && x.source.releve_le) === plusAncien)?.source?.releve_le ?? null);
+      /* Carte de partage : le premier point affiche, avec la source de son institution. */
+      const suivant = affiches[0];
+      /* Ce qui est montre dans la carte : les rendez-vous a venir, sinon le dernier passe (jamais en carte de partage). */
+      const montres = affiches.length ? affiches : !choisi && dernierPasse ? (regrouperParJour([dernierPasse]) as Groupe[]) : [];
+      const lue = suivant ? lues.find(x => x.institution === suivant.institution) : undefined;
+      const quand = suivant ? [jourFr(suivant.jour), suivant.institution].filter(Boolean).join(", ") : "";
       return (
-        <Page>
-          <Stack.Screen options={{ title: LIBELLES.calendrier }} />
-          <View style={{ flexDirection: "row", alignItems: "flex-end", justifyContent: "space-between", gap: PAS * 2 }}>
+        /* Audit 5 s (V15) : sansDate, la ligne DateDonnee de l'ecran dit deja la date et la source. */
+        <Page sansDate>
+          <Stack.Screen options={{ title: LIBELLES.calendrier, headerRight: () => <BoutonPartageTexte titre={LIBELLES.calendrier} chemin="a-venir"
+            source={lues.map(x => ligneSource({ producteur: x.source.producteur_affiche || x.source.producteur, maj: x.source.releve_le })).filter(Boolean).join(" ")} /> }} />
+          <BadgeZoom />
+          <View style={{ flexDirection: "row", alignItems: "flex-start", justifyContent: "space-between", gap: PAS * 2 }}>
             <View style={{ flex: 1 }}>
               <Question etiquette="Au Parlement" question="Calendrier"
                 sous="Les séances annoncées à l'Assemblée nationale et au Sénat. Elles concernent tout le pays, pas seulement votre commune." />
             </View>
           </View>
-          <Pressable onPress={() => setMois(m => !m)} accessibilityRole="button"
-            accessibilityLabel={mois ? "Voir la semaine" : "Voir le mois"}
-            style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", alignSelf: "flex-start", opacity: pressed ? 0.6 : 1 })}>
-            <Text style={{ color: couleurs.encre, fontWeight: "700", textDecorationLine: "underline" }}>{mois ? "Voir la semaine" : "Voir le mois"}</Text>
-          </Pressable>
+          <DateDonnee quoi="Relevé de l'agenda" date={releveAncien} testID="maj-agenda" />
 
           {!r.agendaLu ? (
             <Vide {...AGENDA_PAS_ARRIVE} action="Réessayer" onAction={reessayer} />
@@ -168,17 +200,12 @@ export default function AVenir() {
               {manquantes.map(i => (
                 <Text key={i} style={TYPO.note}>{nbsp(`Le calendrier ${de(i)} n'est pas arrivé jusqu'ici : il n'est pas affiché, et rien n'est inventé à sa place.`)}</Text>
               ))}
-              {vieillis.map(x => (
-                <Text key={"age-" + x.institution} testID="releve-ancien" style={TYPO.note}>
-                  {nbsp(`Agenda ${de(x.institution)} relevé le ${dateFr(x.source.releve_le)}, il y a ${x.age} jours : il a pu changer depuis. Le site officiel fait foi.`)}
-                </Text>
-              ))}
 
               {/* Semaine ou mois : un seul choix de jour, en haut de l'ecran. */}
               {mois ? (
                 <View accessibilityRole="none" accessibilityLabel="Calendrier du mois" style={{ gap: 2 }}>
                   <View style={{ flexDirection: "row" }}>
-                    {LETTRES.map((l, i) => <Text key={i} style={{ flex: 1, textAlign: "center", color: couleurs.sourd, fontWeight: "600", fontSize: 13 }}>{l}</Text>)}
+                    {LETTRES.map((l, i) => <Text key={i} style={{ flex: 1, textAlign: "center", color: couleurs.sourd, fontWeight: "500", fontSize: 13 }}>{l}</Text>)}
                   </View>
                   {Array.from({ length: cases.length / 7 }, (_, ligne) => (
                     <View key={ligne} style={{ flexDirection: "row" }}>
@@ -201,35 +228,55 @@ export default function AVenir() {
                   return (
                     <Pressable key={o.t} onPress={() => setInstitution(o.c)} accessibilityRole="tab"
                       accessibilityState={{ selected: actif }} accessibilityLabel={`Afficher : ${o.c ? o.c : "toutes les institutions"}`}
-                      style={{ flex: 1, minHeight: 40, borderRadius: 999, backgroundColor: actif ? couleurs.carte : "transparent", alignItems: "center", justifyContent: "center" }}>
+                      style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1, flex: 1, minHeight: 44, borderRadius: 999, backgroundColor: actif ? couleurs.carte : "transparent", alignItems: "center", justifyContent: "center" })}>
                       <Text style={{ fontWeight: actif ? "800" : "600", color: couleurs.encre }}>{o.t}</Text>
                     </Pressable>
                   );
                 })}
               </View>
 
-              <Text style={[TYPO.corps, { fontWeight: "700" }]}>{choisi && etiquetteJour ? `${etiquetteJour}. ` : ""}{phrase}</Text>
+              <Text style={[TYPO.corps, { fontWeight: "600" }]}>{choisi && etiquetteJour ? `${etiquetteJour}. ` : ""}{phrase}</Text>
               {choisi ? (
                 <Pressable onPress={() => setChoisi(false)} accessibilityRole="button" accessibilityLabel="Revenir à la liste des deux prochaines semaines"
                   style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", opacity: pressed ? 0.6 : 1 })}>
-                  <Text style={{ color: couleurs.lien, fontWeight: "700", textDecorationLine: "underline" }}>Voir les deux prochaines semaines</Text>
+                  <Text style={{ color: couleurs.lien, fontWeight: "500", textDecorationLine: "underline" }}>Voir les deux prochaines semaines</Text>
                 </Pressable>
               ) : null}
-              <Text style={TYPO.note}>Les alertes « me prévenir une heure avant » ne sont pas encore disponibles dans l'application.</Text>
 
-              {affiches.length ? (
-                <Carte echelon="france">
-                  {affiches.map((g, i) => <Ligne key={g.debut + i} g={g} />)}
-                  <View style={{ flexDirection: "row", flexWrap: "wrap" }}>
-                    {lues.map(x => <PastilleSource key={x.institution} nom={x.institution === "Sénat" ? "Sénat" : "Assemblée"} source={srcAgenda(x.source)} />)}
-                  </View>
+              {/* V35 bloc 2 (D68) : un bloc par jour (« Mardi 3 novembre »), puis la source. */}
+              {parJour(montres).map(([iso, items]) => (
+                <Carte key={iso} echelon="france">
+                  <Text accessibilityRole="header" style={[TYPO.corps, { fontWeight: "600" }]}>{majuscule(jourFr(iso))}</Text>
+                  {items.map((g, i) => <Ligne key={g.debut + i} g={g} />)}
                 </Carte>
+              ))}
+              {montres.length ? (
+                <View style={{ flexDirection: "row", flexWrap: "wrap" }}>
+                  {lues.map(x => <PastilleSource key={x.institution} nom={x.institution === "Sénat" ? "Sénat" : "Assemblée"} source={srcAgenda(x.source)} />)}
+                </View>
+              ) : null}
+              {/* V35 bloc 2 (D68) : « Voir le mois » passe sous la liste, hors du premier écran. */}
+              <Pressable onPress={() => setMois(m => !m)} accessibilityRole="button"
+                accessibilityLabel={mois ? "Voir la semaine" : "Voir le mois"}
+                style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", alignSelf: "flex-start", opacity: pressed ? 0.6 : 1 })}>
+                <Text style={{ color: couleurs.encre, fontWeight: "500", textDecorationLine: "underline" }}>{mois ? "Voir la semaine" : "Voir le mois"}</Text>
+              </Pressable>
+              {/* V34 bloc 7 (audit) : la mention passe sous la liste, pour que le premier rendez-vous ne soit pas repousse sous la barre d'onglets. */}
+              <Text style={TYPO.note}>Sous réserve de modification : l'agenda peut changer, le site officiel fait foi.</Text>
+              {suivant && lue && lue.source.releve_le ? (
+                <PartagerCarte etiquette="Partager le premier point affiché"
+                  repli={messageAgenda({ titre: suivant.titre, quand, lien: lue.source.url || null })}
+                  rendu={ref => <AgendaStory refCarte={ref} titre={suivant.titre} date={quand}
+                    source={`Source : ${lue.source.producteur_affiche || lue.source.producteur}, relevé le ${dateFr(lue.source.releve_le)}.`} />} />
               ) : null}
 
               {!aVenir.length && toutes.length ? (
-                <Text style={TYPO.note}>Rien de publié pour ce filtre. Le filtre « Tout » montre le reste.</Text>
+                <Pressable onPress={() => setInstitution(null)} accessibilityRole="button" accessibilityLabel="Afficher toutes les institutions"
+                  style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", opacity: pressed ? 0.6 : 1 })}>
+                  <Text style={{ color: couleurs.lien, fontWeight: "500", textDecorationLine: "underline" }}>Rien de publié pour ce filtre. Afficher toutes les institutions</Text>
+                </Pressable>
               ) : null}
-              {!toutes.length ? <Vide {...AGENDA_VIDE} /> : null}
+              {!toutes.length && !dernierBrut ? <Vide {...AGENDA_VIDE} /> : null}
             </>
           )}
 
@@ -239,7 +286,7 @@ export default function AVenir() {
             accessibilityLabel="Ouvrir : comment une loi devient loi"
             style={({ pressed }) => ({ minHeight: 52, padding: 16, borderRadius: 14, borderWidth: 1, borderColor: couleurs.trait, backgroundColor: couleurs.carte, opacity: pressed ? 0.6 : 1 })}
           >
-            <Text style={{ fontWeight: "700", color: couleurs.encre }}>Comment une loi devient loi</Text>
+            <Text style={{ fontWeight: "500", color: couleurs.encre }}>Comment une loi devient loi</Text>
             <Text style={{ marginTop: 4, color: couleurs.sourd }}>{ETAPES_LOI.length} étapes, du dépôt à la publication, avec la navette.</Text>
           </Pressable>
           <Pressable
@@ -248,7 +295,7 @@ export default function AVenir() {
             accessibilityLabel="Ouvrir les Questions au Gouvernement"
             style={({ pressed }) => ({ minHeight: 52, padding: 16, borderRadius: 14, borderWidth: 1, borderColor: couleurs.trait, backgroundColor: couleurs.carte, opacity: pressed ? 0.6 : 1 })}
           >
-            <Text style={{ fontWeight: "700", color: couleurs.encre }}>Questions au Gouvernement</Text>
+            <Text style={{ fontWeight: "500", color: couleurs.encre }}>Questions au Gouvernement</Text>
             <Text style={{ marginTop: 4, color: couleurs.sourd }}>Voir les questions posées et les réponses publiées.</Text>
           </Pressable>
           <Pressable
@@ -257,7 +304,7 @@ export default function AVenir() {
             accessibilityLabel="Ouvrir le dictionnaire citoyen"
             style={({ pressed }) => ({ minHeight: 52, padding: 16, borderRadius: 14, borderWidth: 1, borderColor: couleurs.trait, backgroundColor: couleurs.carte, opacity: pressed ? 0.6 : 1 })}
           >
-            <Text style={{ fontWeight: "700", color: couleurs.encre }}>Dictionnaire citoyen</Text>
+            <Text style={{ fontWeight: "500", color: couleurs.encre }}>Dictionnaire citoyen</Text>
             <Text style={{ marginTop: 4, color: couleurs.sourd }}>Ce que veulent dire les mots du Parlement et des collectivités.</Text>
           </Pressable>
         </Page>
