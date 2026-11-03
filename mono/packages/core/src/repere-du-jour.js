@@ -238,7 +238,7 @@ export function avecHistoire(faits, histoire, date) {
 
 /* Raccourcit un fait sans couper un mot ni un chiffre (V55, bloc 3).
    - max : longueur maximale du texte, avant le signe « … » ;
-   - visible : nombre de caractères que l'écran montre avant de couper, au pire ;
+   - visible : nombre de caractères que l'écran montre au plus avant de couper ;
      si le premier chiffre tombe au-delà, la fenêtre se décale pour le garder visible.
    Un chiffre et son unité (« 10 % », « 2 123 € ») ne sont jamais séparés. */
 export function raccourcirFait(texte, { max = 60, visible = max } = {}) {
