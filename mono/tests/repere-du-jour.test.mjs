@@ -7,6 +7,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { faitsDuJour, empreinte, cleDuJour, MODELES, rapports } from "../packages/core/src/index.js";
+import { avecHistoire, raccourcirFait } from "../packages/core/src/index.js";
 
 /* Comptes fictifs mais de forme réelle : une commune « Testville » de 10 000 habitants. */
 const EX = [10000,
@@ -180,4 +181,50 @@ test("repere du jour — au plus trois faits, et chaque modèle a un identifiant
   const ids = MODELES.map(m => m.id);
   assert.equal(new Set(ids).size, ids.length, "identifiants uniques");
   assert.ok(MODELES.length >= 15, `au moins 15 modèles (obtenu ${MODELES.length})`);
+});
+
+/* V55 — histoire et troncature du bandeau. */
+
+test("repere du jour — troncature : 60 caractères au plus, jamais au milieu d'un mot, chiffre et unité gardés", () => {
+  const cas = [
+    "Les dépenses par habitant de Testville ont augmenté de 10 % entre 2024 et 2025.",
+    "En 2025, Meaux a dépensé 2 123 € par habitant.",
+    "Votre commune est dans la 6e circonscription, et le vote du 13 octobre 2026 est lisible.",
+    "En 1418, le village, sous occupation anglo-bourguignonne, est mis à sac et laissé en ruines.",
+    "La commune prend le nom de Boulogne-Billancourt en 1926.",
+  ];
+  for (const c of cas) {
+    const r = raccourcirFait(c, { max: 60, visible: 24 });
+    assert.ok(r.length <= 61, `trop long (${r.length}) : ${r}`);
+    const base = r.replace(/^… /, "").replace(/…$/, "");
+    assert.ok(c.includes(base), `coupure hors du texte d'origine : ${r}`);
+    /* pas de coupure au milieu d'un mot : la lettre juste après la fin, et celle juste avant le début,
+       sont une frontière de mot (espace, ponctuation, ou bord du texte) */
+    const k = c.indexOf(base);
+    if (r.endsWith("…")) assert.ok(k + base.length === c.length || /[\s,;:.!?)]/.test(c.charAt(k + base.length)), `coupure en fin de mot : ${r}`);
+    if (r.startsWith("… ")) assert.ok(k === 0 || /\s/.test(c.charAt(k - 1)), `coupure en début de mot : ${r}`);
+    /* le premier chiffre reste visible dans le texte raccourci */
+    const premier = (c.match(/\d[\d\s  .,]*\d(?:\s?[%€])?|\d/) || [])[0];
+    if (premier) assert.ok(r.includes(premier.trim()) || r.includes(premier), `chiffre « ${premier} » absent : ${r}`);
+  }
+  assert.equal(raccourcirFait("Court."), "Court.");
+});
+
+test("repere du jour — histoire : un jour sur trois, troisième place ; sans entrée, rien ne change", () => {
+  const histoire = { annee: 1359, fait: "En 1359, le dauphin Charles décide de délivrer Melun.", source: "Wikipédia (fr), article « Melun »", lien: "https://fr.wikipedia.org/wiki/Melun", verifie: "2026-11-03" };
+  let jours = 0;
+  for (let j = 1; j <= 30; j++) {
+    const base = faitsDuJour(CONTEXTE(jour(2026, 11, j)));
+    const avec = avecHistoire(base, histoire, jour(2026, 11, j));
+    assert.equal(avec.length, base.length, "le nombre de faits ne change pas");
+    if (avec !== base) {
+      jours++;
+      assert.equal(avec[2].categorie, "histoire");
+      assert.equal(avec[0], base[0]);
+      assert.equal(avec[1], base[1]);
+    }
+  }
+  assert.equal(jours, 10, `un jour sur trois attendu sur 30 jours (obtenu ${jours})`);
+  const base = faitsDuJour(CONTEXTE(jour(2026, 11, 3)));
+  assert.equal(avecHistoire(base, null, jour(2026, 11, 3)), base, "sans entrée d'histoire, rien ne change");
 });

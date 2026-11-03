@@ -219,3 +219,61 @@ export function faitsDuJour({ nom, insee, date, exercice, rapportsComptes, fiche
   }
   return choisis.slice(0, 3);
 }
+
+/* ── HISTOIRE DE LA COMMUNE (V55, D158) ───────────────────────────────────────────────
+   Un fait historique daté, tiré d'une source citée (Wikipédia, article de la commune),
+   donné un jour sur trois, en troisième place. Les données (une liste par commune) vivent
+   dans l'application ; ce module ne fait que choisir le jour et écrire le fait. Sans entrée
+   pour la commune : rien ne change. */
+export function avecHistoire(faits, histoire, date) {
+  if (!histoire || !histoire.fait || !histoire.lien) return faits;
+  if (jourEntier(date) % 3 !== 0) return faits;
+  const fait = {
+    id: `histoire-${histoire.annee}`, categorie: "histoire", source: "histoire", calcul: false,
+    texte: histoire.fait, titre: histoire.source, lien: histoire.lien, verifie: histoire.verifie,
+    echelon: "ville",
+  };
+  return [...faits.slice(0, 2), fait];
+}
+
+/* Raccourcit un fait sans couper un mot ni un chiffre (V55, bloc 3).
+   - max : longueur maximale du texte, avant le signe « … » ;
+   - visible : nombre de caractères que l'écran montre avant de couper, au pire ;
+     si le premier chiffre tombe au-delà, la fenêtre se décale pour le garder visible.
+   Un chiffre et son unité (« 10 % », « 2 123 € ») ne sont jamais séparés. */
+export function raccourcirFait(texte, { max = 60, visible = max } = {}) {
+  if (!texte || texte.length <= max) return texte || "";
+  const NOMBRE = /\d(?:[\d\s  .,]*\d)?(?:\s?[%€])?|\d/g;
+  const nombres = [...texte.matchAll(NOMBRE)].map(m => [m.index, m.index + m[0].length]);
+  const dansUnNombre = i => nombres.some(([a, b]) => i > a && i < b);
+  /* fin de mot sûre : un espace qui ne coupe ni un nombre ni une unité */
+  const coupeSure = (fin) => {
+    for (let i = fin; i > 0; i--) if (texte[i] === " " && !dansUnNombre(i)) return i;
+    return -1;
+  };
+  const debutSur = (debut) => {
+    for (let i = debut; i < texte.length; i++) if (texte[i] === " " && !dansUnNombre(i)) return i + 1;
+    return texte.length;
+  };
+  const sansFin = s => s.replace(/[\s,;:.(—-]+$/, "");
+  const premier = nombres[0];
+  /* 1. le premier chiffre tient dans la partie visible : on coupe la fin */
+  if (!premier || premier[1] <= visible) {
+    const sp = coupeSure(max - 1);
+    return sp > 0 ? `${sansFin(texte.slice(0, sp))}…` : `${texte.slice(0, max - 1)}…`;
+  }
+  /* 2. le chiffre est plus loin : on démarre la fenêtre juste avant lui */
+  const debut = Math.max(0, premier[0] - 12);
+  let depart = 0;
+  if (debut > 0) {
+    const s = debutSur(debut);
+    depart = s < texte.length ? s : 0;
+  }
+  const reste = texte.slice(depart);
+  const prefixe = depart > 0 ? "… " : "";
+  const budget = max - prefixe.length - 1;
+  if (reste.length <= budget) return `${prefixe}${reste}`;
+  const sp = coupeSure(depart + budget) - depart;
+  const coupe = sp > 0 ? reste.slice(0, sp) : reste.slice(0, budget);
+  return `${prefixe}${sansFin(coupe)}…`;
+}
