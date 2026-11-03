@@ -49,6 +49,41 @@ test("repere du jour — le fait change de jour en jour", () => {
   assert.ok(textes.size >= 3, `sur dix jours, au moins trois sélections différentes (obtenu ${textes.size})`);
 });
 
+test("repere du jour — rotation sans mémoire : deux jours de suite, aucun fait repris à son emplacement ; un même fait revient après 6 jours au moins", () => {
+  /* Fixture : 12 modèles budget (2 par jour) et 6 modèles élus (1 par jour) ; intervalle
+     mesuré sur 30 jours = 6 jours pour chaque emplacement (voir repere-du-jour.js). */
+  const seq = [];
+  for (let j = 1; j <= 30; j++) seq.push(faitsDuJour(CONTEXTE(jour(2026, 11, j))).map(f => f.id));
+  for (let j = 0; j < 29; j++) {
+    for (const rang of [0, 1, 2]) {
+      assert.notEqual(seq[j][rang], seq[j + 1][rang], `emplacement ${rang} identique les jours ${j + 1} et ${j + 2}`);
+    }
+  }
+  for (const rang of [0, 1, 2]) {
+    const dernier = {};
+    let mini = Infinity;
+    seq.forEach((s, i) => {
+      const id = s[rang];
+      if (id === undefined) return;
+      if (dernier[id] !== undefined) mini = Math.min(mini, i - dernier[id]);
+      dernier[id] = i;
+    });
+    assert.ok(mini >= 6, `emplacement ${rang} : un fait revient après ${mini} jour(s), au moins 6 attendus`);
+  }
+});
+
+test("repere du jour — « Ma rue » : aucun fait national (vote, circonscription) ; trois faits tant qu'il y a des modèles locaux", () => {
+  for (let j = 1; j <= 30; j++) {
+    const faits = faitsDuJour({ ...CONTEXTE(jour(2026, 11, j)), niveau: "rue" });
+    assert.ok(faits.every(f => f.echelon !== "france"), `le ${j} novembre, un fait national sort en « Ma rue » : ${faits.map(f => f.id).join(", ")}`);
+    assert.equal(faits.length, 3, `le ${j} novembre : trois faits attendus en « Ma rue » (obtenu ${faits.length})`);
+  }
+  /* Sans réglage (undefined), tout est proposé : le national reste dans le choix. */
+  const tous = [];
+  for (let j = 1; j <= 30; j++) tous.push(...faitsDuJour(CONTEXTE(jour(2026, 11, j))).map(f => f.echelon));
+  assert.ok(tous.includes("france"), "sans réglage, le national doit pouvoir apparaître");
+});
+
 test("repere du jour — la clé du jour est locale et ne dépend que de la date", () => {
   assert.equal(cleDuJour(jour(2026, 11, 3)), "2026-11-03");
   assert.equal(cleDuJour(new Date(2026, 0, 9, 23, 59)), "2026-01-09");
@@ -103,8 +138,17 @@ test("repere du jour — le vote garde le nom du député en capitales telles qu
 test("repere du jour — solde budgétaire : les deux sens sont écrits, avec le bon signe", () => {
   const surplus = [10000, 12000000, 1200, 11000000, 1100];
   const deficit = [10000, 11000000, 1100, 12000000, 1200];
-  const pour = ex => faitsDuJour({ nom: "T", insee: "1", date: jour(2026, 11, 3), exercice: { an: 2025, ex }, rapportsComptes: [], fiche: {}, vote: null, nbCircos: 0 })
-    .map(f => f.texte).find(t => /de plus qu/.test(t));
+  /* La rotation (V51, correction) montre deux budgets par jour sur quatre disponibles : le
+     solde n'est pas forcément le 3 novembre. On le cherche sur dix jours ; le signe, lui,
+     reste contrôlé à chaque occurrence. */
+  const pour = ex => {
+    for (let j = 1; j <= 10; j++) {
+      const t = faitsDuJour({ nom: "T", insee: "1", date: jour(2026, 11, j), exercice: { an: 2025, ex }, rapportsComptes: [], fiche: {}, vote: null, nbCircos: 0 })
+        .map(f => f.texte).find(x => /de plus qu/.test(x));
+      if (t) return t;
+    }
+    return undefined;
+  };
   assert.match(pour(surplus), /a encaissé 100 € par habitant de plus qu'elle n'a dépensé/);
   assert.match(pour(deficit), /a dépensé 100 € par habitant de plus qu'elle n'a encaissé/);
 });

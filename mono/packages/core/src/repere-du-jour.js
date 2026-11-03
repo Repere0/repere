@@ -14,7 +14,10 @@
  *     série (invariants 3 et 6).
  *
  * Ce qui N'EST PAS fait ici, et pourquoi (voir BLOCAGES.md §55) :
- *   - pas d'anti-répétition sur 30 jours : elle exigerait de stocker l'historique,
+ *   - pas de non-répétition sur 30 jours : elle exigerait 30 modèles par catégorie.
+ *     La rotation sans mémoire (voir `tirages`) ne répète un fait qu'après un cycle
+ *     complet : 6 jours pour le budget (12 modèles, 2 faits par jour), 7 pour les élus.
+ *     Une mémoire exigerait une clé locale de plus, interdite par l'invariant 2 ;
  *     donc une clé locale de plus, interdite par l'invariant 2 ;
  *   - pas de faits « histoire » : aucune source historique n'est joignable ;
  *   - 19 modèles, pas 30 : on n'écrit pas de fait pour atteindre un nombre. */
@@ -23,6 +26,12 @@ import { dateFr } from "./format.js";
 import { ordinal, decompte } from "./votes.js";
 import { phrasePosition } from "./phrases.js";
 import { parHabitant } from "./visuels.js";
+import { visibleAuNiveau } from "./profil.js";
+
+/* Échelon de chaque modèle : le vote et la circonscription sont nationaux (Assemblée) ;
+   le budget et le maire sont locaux. Le réglage « Ma rue » écarte le national (profil.js). */
+const NATIONAL = new Set(["e-circonscription", "e-partagee"]);
+export const echelonDe = m => m.source === "scrutin" || NATIONAL.has(m.id) ? "france" : "ville";
 
 /* Empreinte FNV-1a 32 bits : stable d'une exécution à l'autre, même moteur ou non. */
 export function empreinte(texte) {
@@ -95,9 +104,50 @@ const ELUS = [
 
 export const MODELES = [...BUDGET, ...ELUS];
 
-/* Trois faits, au plus : un budget et un élu quand ils existent, puis le reste,
-   dans un ordre tiré de (commune, jour). Rien n'est produit sans donnée. */
-export function faitsDuJour({ nom, insee, date, exercice, rapportsComptes, fiche, vote, nbCircos }) {
+/* ── ROTATION SANS MÉMOIRE (V51, correction) ──────────────────────────────
+   Pourquoi pas un tirage au hasard par jour : mesuré sur 30 jours, 72 faits sur 90
+   revenaient dans le mois et 14 étaient identiques à la veille. Pourquoi pas une
+   liste des faits déjà montrés : elle exigerait une clé locale (invariant 2).
+
+   Ici, pour une commune, les modèles disponibles de chaque catégorie forment une
+   liste ordonnée (ordre fixe de MODELES). Un pas premier avec la longueur de la liste
+   la parcourt sans répéter avant d'avoir tout vu. Le jour fixe la position : aucune
+   donnée n'est stockée, et deux jours de suite donnent deux faits différents dès que
+   la liste compte au moins trois modèles. Budget : deux faits par jour ; élus : un. */
+export function pgcd(a, b) { while (b) [a, b] = [b, a % b]; return a; }
+
+/* Pas multiplicatif premier avec n, tiré de la commune : 1 si n <= 2. */
+export function pas(graine, n) {
+  if (n <= 2) return 1;
+  let s = 1 + (empreinte(graine) % (n - 1));
+  while (pgcd(s, n) !== 1) s = (s % n) + 1;
+  return s;
+}
+
+/* Nombre de jours depuis 1970, en calendrier local (pas d'effet de fuseau). */
+export function jourEntier(date) {
+  const [a, m, j] = cleDuJour(date).split("-").map(Number);
+  return Math.round(Date.UTC(a, m - 1, j) / 86400000);
+}
+
+/* Les `k` modèles tirés de la liste pour ce jour : pas `k` positions consécutives de la
+   marche, sans doublon. */
+export function tirages(liste, graine, jour, k) {
+  const n = liste.length;
+  if (n === 0) return [];
+  const off = empreinte(graine + "|off") % n;
+  const s = pas(graine + "|pas", n);
+  const choisis = [];
+  for (let j = 0; j < k && choisis.length < n; j++) {
+    const i = (off + (k * jour + j) * s) % n;
+    if (!choisis.includes(liste[i])) choisis.push(liste[i]);
+  }
+  return choisis;
+}
+
+/* Trois faits, au plus : deux budgets et un élu quand ils existent, sinon ce qui reste.
+   Rien n'est produit sans donnée. */
+export function faitsDuJour({ nom, insee, date, exercice, rapportsComptes, fiche, vote, nbCircos, niveau }) {
   /* exercice : { an, ex } tel que produit par dernierExercice() ; le budget par habitant
      se lit ici, dans la même fonction que le site. */
   const an = exercice && exercice.an ? exercice.an : null;
@@ -115,20 +165,29 @@ export function faitsDuJour({ nom, insee, date, exercice, rapportsComptes, fiche
     vote: vote || null,
     nbCircos: typeof nbCircos === "number" ? nbCircos : 0,
   };
-  const graine = cleDuJour(date) + "|" + (insee || "");
-  const produits = MODELES
+  /* Ordre fixe de MODELES : la rotation ne dépend que de cet ordre, de la commune et du jour. */
+  /* Le réglage d'échelon filtre AVANT la sélection : les trois faits viennent des modèles visibles. */
+  const disponibles = MODELES
+    .filter(m => niveau === undefined || visibleAuNiveau(niveau, echelonDe(m)))
     .map(m => ({ m, texte: m.texte(c) }))
     .filter(x => x.texte)
-    .map(x => ({ id: x.m.id, categorie: x.m.source === "comptes" || x.m.source === "comptes-calcul" ? "budget" : "elus", source: x.m.source, calcul: x.m.source === "comptes-calcul", texte: x.texte, rang: empreinte(graine + "|" + x.m.id) }))
-    .sort((a, b) => a.rang - b.rang);
-  const choisis = [];
-  for (const cat of ["budget", "elus"]) {
-    const premier = produits.find(p => p.categorie === cat && !choisis.includes(p));
-    if (premier) choisis.push(premier);
-  }
-  for (const p of produits) {
+    .map(x => ({
+      id: x.m.id,
+      categorie: x.m.source === "comptes" || x.m.source === "comptes-calcul" ? "budget" : "elus",
+      source: x.m.source, calcul: x.m.source === "comptes-calcul", echelon: echelonDe(x.m), texte: x.texte,
+    }));
+  const budget = disponibles.filter(p => p.categorie === "budget");
+  const elus = disponibles.filter(p => p.categorie === "elus");
+  const jour = jourEntier(date);
+  const commune = insee || nom || "";
+  const [b1, b2] = tirages(budget, commune + "|budget", jour, 2);
+  const [e1] = tirages(elus, commune + "|elus", jour, 1);
+  /* Ordre d'affichage : budget, élu, budget. Repli : si une catégorie manque, le reste
+     vient de l'autre, dans l'ordre fixe, sans doublon. */
+  const choisis = [b1, e1, b2].filter(Boolean);
+  for (const p of disponibles) {
     if (choisis.length >= 3) break;
     if (!choisis.includes(p)) choisis.push(p);
   }
-  return choisis.slice(0, 3).map(({ rang, ...f }) => f);
+  return choisis.slice(0, 3);
 }

@@ -647,3 +647,54 @@ Livré :
 - **Cause** : `parcours-web.mjs` attendait l'ancienne phrase « Sur 100 € dépensés, N € vont aux salaires ». Depuis `679d4a9`, l'écran « Où va cet argent ? » affiche la phrase issue de `rapports()` : « Sur 100 € dépensés : N € de salaires, M € pour investir ». L'échec (`360px/390px/430px · Où va cet argent ?`) était attendu : la phrase avait changé volontairement.
 - **Correction** : l'attendu devient `/Sur 100 € dépensés : \d+ € de salaires/`. Vérifié hors navigateur : l'expression accepte la nouvelle phrase et refuse l'ancienne. Le test de navigateur lui-même n'a pas pu être lancé ici (pas de Chromium) ; le verdict réel viendra de la CI.
 - **Non traité, volontairement** : `mono/apps/mobile/src/app/index.tsx` (lignes 80 et 397) recompose encore « vont aux salaires des agents » sur l'accueil. Ce n'est pas une contradiction de chiffres (même montant, autre formulation), mais la phrase de l'accueil et celle de l'écran « Où va cet argent ? » diffèrent. Aligner l'accueil sur le socle est une décision de wording à valider par le porteur ; le contrôle « même vérité » ne le couvre pas.
+
+## 56. V51 (03/11/2026, seconde passe) : Repère du jour placé sous les réponses, rotation corrigée, « Ma rue » respectée
+
+### 56.1 CI rouge sur 3718d06 : la carte repoussait les réponses sous le pli
+
+- Étape « Parcours dans un navigateur » : `390 x 844 : les trois réponses tiennent dans le premier écran [905,1113,1349]`.
+- **Cause** : `CarteReperDuJour` était placée en tête de « Chez vous », avant les trois réponses.
+- **Mesure locale** (même build, même commune, Meaux, 390 x 844) :
+  - sans la carte : réponses à **363, 571 et 807 px** (tiennent) ;
+  - avec la carte en tête : **940, 1148 et 1384 px** (ne tiennent pas).
+  Une carte en tête ne peut donc pas tenir sur 844 px, quelle que soit sa taille : « en premier » et « Réponses d'abord » (docs/ux/systeme-visuel-2026.md, point 10) sont incompatibles.
+- **Décision prise (à confirmer par le CEO)** : la carte est placée **sous les trois réponses**, au même endroit que « Au Parlement cette semaine » (le code le prévoyait déjà : « sous les trois réponses, jamais parmi elles »). Le CEO avait demandé « EN PREMIER » (V51, bloc 1.4) : ce point est écarté, à sa demande de confirmation. Pour revenir en tête, il faut assouplir le test de parcours, pas seulement déplacer la ligne.
+
+### 56.2 La rotation était mauvaise : corrigée
+
+- **Mesure avant correction** (30 jours, fixture de test) : 90 faits affichés, **72 revenaient dans le mois**, **14 étaient identiques à la veille**. Le tirage par empreinte ne tenait pas « jour suivant : une autre sélection ».
+- **Correction** : rotation sans mémoire (`tirages`, `pas`) dans `repere-du-jour.js`. Deux faits budget et un élu par jour ; un pas premier avec la longueur de la liste.
+- **Mesure après** : **0** identique à la veille, intervalle minimal de **6 jours** pour chaque emplacement.
+- **Ce qui ne passe pas** : la non-répétition sur **30 jours**. Elle exige 30 modèles par catégorie ; avec 12 budget et 6 élus, un fait revient au plus tôt après 6 jours. Une mémoire locale résoudrait ce point, mais l'invariant 2 l'interdit (deux clés seulement). **Décision du porteur** si l'invariant doit changer.
+- **Test adapté** : « solde budgétaire » cherchait le fait le 3 novembre ; la rotation ne le montre pas forcément ce jour-là. Le test le cherche désormais sur dix jours, et contrôle le signe à chaque occurrence. Le comportement testé n'a pas été relâché.
+
+### 56.3 Bug réel trouvé par le test zoom : « Ma rue » affichait le national
+
+- `zoom-web.mjs` a échoué : « Qui décide ne montre ni l'échelon national ni la région » (texte : « Scrutin n° 8706 de l'Assemblée nationale »).
+- **Cause réelle** : la carte ignorait le réglage de niveau. En mode « Ma rue », le vote et la circonscription (nationaux) pouvaient apparaître. L'écran « Chez vous » reste monté sous « Qui décide » : son texte entrait donc dans la lecture de la page.
+- **Correction** : chaque modèle porte un échelon (`echelonDe`) ; `faitsDuJour` reçoit le réglage (`niveau`) et filtre **avant** la sélection (`visibleAuNiveau`). Le contrôle `Ma rue` (30 jours) est ajouté à `repere-du-jour.test.mjs`.
+- **Ce n'est pas un assouplissement du test** : le national n'apparaît plus en « Ma rue », comme le demande le réglage.
+
+### 56.4 Vérifications faites (commandes lancées)
+
+- `npx tsc --noEmit` (mono/apps/mobile) : 0 erreur, après chaque correction.
+- `tests/repere-du-jour.test.mjs` : **14/14**.
+- Invariants `tests/invariants.test.mjs` : **61/61** (après `pnpm build` reproduit comme la CI). `node outils/derive_contexte.mjs` : 0 erreur, 3 avertissements (inchangés).
+- Navigateur, build web reproduit comme la CI (`expo export` + `pnpm build`), serveurs statiques 8811 et 8821 :
+  - `parcours-web.mjs` : 225 contrôles OK, 0 échec, réponses à **363, 571, 807 px** ;
+  - `zoom-web.mjs` : 0 échec ;
+  - `commune-web`, `recherche-web`, `elections-web`, `partage-texte-web`, `onboarding-web`, `mode-web` : 0 échec ;
+  - `meme-verite.mjs` : voir §56.6.
+
+### 56.5 Ce qui n'est pas fait, et pourquoi
+
+- **19 modèles, pas 30** (12 budget, 7 élus). Les élus sont limités à ce que le dépôt publie par commune. Pistes non écrites, à sourcer avant usage : nombre d'adjoints (RNE, champ `adjoints` des fiches), population (exercice). Aucun modèle n'a été écrit pour atteindre un nombre.
+- **Téléchargements D136** : `nosparlementaires.fr/data/deputes.json` et `senateurs.json` : code 000 (connexion refusée par le proxy) ; `data.assemblee-nationale.fr` (AMO30) : 403 ; `senat.fr` : 000. Rien écrit dans `data/`. NosParlementaires n'est pas une source officielle au sens de l'invariant 4, et sa licence n'est pas vérifiée : à ne pas utiliser sans cela.
+- **Groupes politiques** : toujours « Inconnu » ; aucune donnée AMO30 dans le dépôt.
+- **Sénateurs** : skip (D135).
+- **Histoire** : skip (sources injoignables).
+
+### 56.6 Dernier contrôle
+
+- « Même vérité » (`meme-verite.mjs`) : lancé en fin de passe, résultat à reporter dans RESUME-v51.md / VERDICT-v51.md.
+- `runtime.test.mjs` : à relancer avec le Chromium disponible dans cette session (le chemin Playwright a été contourné par un lien local, sans modifier le dépôt).

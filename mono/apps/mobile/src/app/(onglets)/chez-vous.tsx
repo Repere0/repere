@@ -46,6 +46,7 @@ import { PAS, TYPO } from "../../lib/theme";
 import { AvecDonnees, Page } from "../../ui/page";
 import { PastilleSource } from "../../ui/source";
 import { CarteReperDuJour } from "../../ui/carte-repere-du-jour";
+import { useNiveauZoom } from "../../ui/badge-zoom";
 import { Etiquette } from "../../ui/resume";
 import { Plus, Reponse, typo } from "../../ui/reponse";
 import { BarrePart, Repartition } from "../../ui/visuels";
@@ -79,6 +80,7 @@ function SiteMairie({ insee }: { insee: string }) {
 export default function ChezVous() {
   const { choix } = useSelection();
   const { reessayer } = useCommuneChoisie();
+  const niveauZoom = useNiveauZoom();
   return (
     <AvecDonnees rendu={r => {
       const { d } = r;
@@ -96,6 +98,7 @@ export default function ChezVous() {
       const repereDuJour = faitsDuJour({
         nom, insee: choix ? choix.insee : "", date: new Date(), exercice: d.exercice,
         rapportsComptes: d.rapportsComptes, fiche: d.fiche, vote: d.dernierVote, nbCircos: d.nbCircos,
+        niveau: niveauZoom,
       });
       const sourcesRepere = {
         comptes: srcComptesPublies(d), "comptes-calcul": srcComptes(d),
@@ -120,8 +123,6 @@ export default function ChezVous() {
           </View>
 
           <View style={{ gap: PAS * 2 }}>
-          {/* 0. LE REPÈRE DU JOUR — en premier, trois faits qui tournent chaque jour. */}
-          <CarteReperDuJour faits={repereDuJour} sources={sourcesRepere} chemin="chez-vous" />
           {/* 1. CE QUE L'ETAT FINANCE ICI — la part se dit en mots pres d'un repere
              vrai, sinon en euros ; le cout est arrondi dans la phrase et exact
              dans la note. */}
@@ -205,6 +206,12 @@ export default function ChezVous() {
             <Vide {...copieVoteVide(d.etatVote, { nom, releve: srcScrutins(d)?.releve, portee: d.srcScrutins && d.srcScrutins.portee })} />
           )}
           </View>
+
+          {/* LE REPÈRE DU JOUR — SOUS les trois réponses, jamais avant elles : « Réponses d'abord »
+             (docs/ux/systeme-visuel-2026.md, point 10 ; parcours-web, 390 x 844). Mesuré : sans la
+             carte, les réponses finissent à 363, 571 et 807 px ; en tête, à 940, 1148 et 1384 px.
+             Le CEO avait demandé « en premier » : c'est incompatible avec le premier écran. */}
+          <CarteReperDuJour faits={repereDuJour} sources={sourcesRepere} chemin="chez-vous" />
 
           {/* AU PARLEMENT CETTE SEMAINE — sous les trois reponses, jamais parmi
              elles : c'est national, et la carte le dit (ui/semaine.tsx). */}
