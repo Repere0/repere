@@ -698,3 +698,41 @@ Livré :
 
 - « Même vérité » (`meme-verite.mjs`) : lancé en fin de passe, résultat à reporter dans RESUME-v51.md / VERDICT-v51.md.
 - `runtime.test.mjs` : à relancer avec le Chromium disponible dans cette session (le chemin Playwright a été contourné par un lien local, sans modifier le dépôt).
+
+## 57. V52 (03/11/2026) : bandeau « Repère du jour » non livré (contrainte de 844 px et cible de 44 px), 22 modèles sur 30
+
+### 57.1 Bandeau en tête : mesuré, non poussé
+
+- Décision CEO D139 : bandeau compact (environ 40 px) au-dessus des trois réponses, un geste ouvre la page complète.
+- Code écrit (non commité, hors dépôt) : `/tmp/claude-0/-home-claude/c1806ef1-5d90-52c1-b8b7-3a388e8d0191/scratchpad/bloc1-banniere/` (`chez-vous.patch`, `repere-jour.ts`, `bandeau-repere.tsx`, `repere-du-jour.tsx`).
+- Mesure au build web (390 x 844), `parcours-web.mjs` :
+  - sans bandeau (état commité) : réponses à **363, 571, 807 px** ;
+  - avec bandeau en tête : réponses à **415, 623, 859 px** : la troisième dépasse 844 px de **15 px** ;
+  - le bandeau mesure **42 px** : le contrôle « cibles tactiles >= 44 px » échoue sur Aujourd'hui, Qui décide et Le calendrier (360, 390, 430 px).
+- Donc deux contrôles de parcours échouent : la règle « Réponses d'abord » (844 px) et la cible de 44 px. La CI serait rouge. Rien n'est poussé dans cet état.
+- Pour tenir les 844 px, il faut libérer environ **17 px** dans l'en-tête (15 px pour la troisième réponse, 2 px pour une cible de 44 px), ou assouplir la règle. Les deux sont des décisions produit.
+- Options pour le CEO :
+  1. Bandeau en tête, la règle « 844 px » ne porte plus que sur la première réponse (changement de règle, à valider).
+  2. Bandeau en tête et ligne « Publication Repère » déplacée (dans « D'où vient cette information ? » ou sous le titre) : à mesurer ensuite.
+  3. Garder l'état actuel (carte sous les réponses, V51) : la page complète n'a pas de porte d'entrée, donc rien de V52 n'est visible.
+
+### 57.2 Templates : 22 sur 30 (D142)
+
+- Ajouté : trois évolutions entre deux exercices (`b-evolution-depenses`, `b-evolution-recettes`, `b-evolution-dette`). Source `comptes-calcul`, annoncées comme calcul. Sans exercice précédent publié : rien n'est écrit (pas de zéro, pas de pourcentage inventé).
+- Total : **22 modèles** (15 budget, 7 élus). Cible : 30. Écart : **8**.
+- Candidats refusés, faute de donnée sourcée et exacte dans le dépôt :
+  - dotations, CAF, fonctionnement, personnel par catégorie : non publiés par commune dans les données du dépôt ;
+  - profession du maire, sexe des conseillers : non publiés ;
+  - commission du député : non publiée dans `deputes.json` ;
+  - participation d'un député aux scrutins : donnée de présence, interdite (invariant 8) ;
+  - nombre de communes par circonscription : les « manquantes » de Seine-et-Marne rendent le compte inexact (505 communes publiées, liste incomplète) ;
+  - histoire (Mérimée, Wikidata) : sources injoignables (skip) ; sénateurs : skip (D135).
+- Aucun modèle n'a été écrit pour atteindre le nombre.
+
+### 57.3 Vérifications
+
+- `tsc --noEmit` (apps/mobile) : 0 erreur.
+- `pnpm build` : OK. Suite de la CI (liste de `mobile.yml`) : **294 / 294**.
+- `parcours-web.mjs` (build web avec le nouvel appel) : **225 OK**, réponses à 363 / 571 / 807 px.
+- `zoom-web.mjs` : 0 échec.
+- Non relancés cette passe : `commune`, `recherche`, `elections`, `partage-texte`, `onboarding`, `mode`, `meme-verite`. Le changement touche uniquement la carte « Repère du jour » ; à relancer en CI.
