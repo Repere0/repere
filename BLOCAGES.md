@@ -867,3 +867,37 @@ Les étapes P0 (sauf découpage) et P1, P2 ne peuvent pas être livrées depuis 
 - **Squelettes (5.2)** : déjà en place sur `AvecDonnees` (`ui/page.tsx`) et les listes (`actus`, `elus`, `pour-vous`, `index`). Non audité écran par écran.
 - **Timeline vote (5.3)** : non faite. Il faut le parcours de chaque scrutin (dates d'étapes), absent du dépôt.
 - **Scrutin détaillé (4.2), Élections (4.3), Marchés (4.4)** : non faits. Données absentes (voir 60.1).
+
+## 61. V60 (03/11/2026) : collecte massive via GitHub Actions, workflow non créé, décision attendue
+
+### 61.0 Constat de départ
+
+- Le dépôt contient déjà `.github/workflows/collecte.yml` (collecte quotidienne, cron `47 5 * * *`, déclenchable à la main depuis n'importe quelle branche). Il télécharge les sources via `outils/pipeline.sh` et `outils/collecte.py`, et contrôle les publications avec une garde `HORS_MAIN` : seule `main` publie.
+- Le run du 02/11 (41456656950) confirme que les runners atteignent les sources : 7 sources téléchargées, 0 échec de téléchargement. Trois échecs réels, tous sur le même jour :
+  1. Parser sénateurs : le CSV du Sénat commence par la ligne de requête `% Requête :select senmat as "Matricule", ...`, lue comme en-tête. Corrigé sur la branche (commit `920cfc8`) ; format réel de la suite **non vérifié** (seule la première ligne a été constatée).
+  2. Étape « Publier sur Netlify » : apostrophe droite dans `${RAISON:-(... d'erreur ...)}`, erreur de syntaxe bash après un déploiement réussi (« Deploy is live »). Corrigé (commit `5ac973b`), vérifié par `bash -n` sur toutes les étapes `run:`.
+  3. Déploiement : aucune autre cause constatée dans le journal.
+
+### 61.1 Défauts du BLOC 1 proposé (`collecte-massive.yml`)
+
+Le YAML du BLOC 1 n'a pas été créé. Motifs :
+
+- **Doublon** avec `collecte.yml`, qui fait déjà la collecte et l'a déjà sur une cadence quotidienne.
+- **Placeholders** non remplacés : `[ID-RESULTATS]`, `[ID-DECP]` (identifiants data.gouv.fr non fournis, non vérifiables depuis cette session).
+- **URLs non vérifiées** : `nosparlementaires.fr/data/{deputes,senateurs,scrutins}.json`, `data.culture.gouv.fr/.../exports/json`. Aucune n'a pu être testée (hôtes hors allowlist de la session) ; le mode `|| echo "ECHEC"` masquerait l'échec.
+- **Mauvais chemins** : `cd mono && npm install` (le dépôt est un workspace pnpm) ; `mono/scripts/collecte-photos.mjs` n'existe pas (le script réel est `collecte-photos-elus.mjs`, à vérifier).
+- **Mauvais dossier** : `data/` à la racine, alors que l'application lit `mono/data/`, et `mono/.gitignore` ignore `data/`. Le `git add data/` ne commiterait rien.
+- **Permissions** : `contents: write` absent ; `git push` direct depuis le job contourne la garde `HORS_MAIN` et la chaîne de contrôle.
+- **Typo D188** : le paquet vérifié et utilisé est `@etalab/decoupage-administratif` (et non `@etalatab`).
+
+### 61.2 Décision demandée au porteur
+
+1. Utiliser `collecte.yml` existant via `workflow_dispatch` sur la branche (artefacts seulement, aucune publication hors `main`), ou créer un workflow séparé avec des URLs fournies et vérifiées ?
+2. Comment le découpage (`scripts/decoupage-idf.json`) atteint-il la production, sachant que la publication passe par `main` et que la consigne est « ne pas fusionner main » ?
+3. Confirmer `@etalab/decoupage-administratif` comme nom de paquet (D188).
+
+### 61.3 Ce qui n'est pas fait
+
+- Aucun workflow de collecte massive créé.
+- Aucune donnée téléchargée ni inventée pour cette version.
+- Parser sénateurs : correction faite, format réel de la suite à confirmer par un run.
