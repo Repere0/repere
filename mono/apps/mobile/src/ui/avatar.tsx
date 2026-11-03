@@ -9,7 +9,7 @@ import { useProfil } from "../lib/profil";
 import { Image, Linking, Pressable, Text, View } from "react-native";
 import type { PhotoElu } from "../lib/photos";
 import { couleurs, OMBRE } from "../lib/theme";
-import { bordureGroupe, couleurGroupe, groupeDe, texteSur } from "../lib/groupes";
+import { bordureGroupe, couleurGroupe, GROUPE_INCONNU, texteSur } from "../lib/groupes";
 
 export function initiales(nom: string): string {
   const morceaux = nom.split(/\s+/).filter(Boolean);
@@ -23,8 +23,9 @@ export function initiales(nom: string): string {
  * couleur de groupe claire, il passe en encre pour rester lisible (texteSur). */
 /* OMBRE est un Proxy de thème : on en copie les champs (…OMBRE), on ne le passe jamais en prop.
  * Une prop de vue native est figée en développement, et le Proxy ne le supporte pas (crash de l'onglet Élus). */
-export function Avatar({ nom, taille = 64, photo }: { nom: string; taille?: number; photo?: PhotoElu | null }) {
-  const fond = couleurGroupe(groupeDe());
+/* V62 : le groupe vient de l'appelant (un depute seulement) ; sans lui, le gris « Inconnu ». */
+export function Avatar({ nom, taille = 64, photo, groupe }: { nom: string; taille?: number; photo?: PhotoElu | null; groupe?: string | null }) {
+  const fond = couleurGroupe(groupe || GROUPE_INCONNU);
   const { profil } = useProfil();
   /* V26 bloc 3 : « Masquer les images » du confort de lecture garde les initiales. */
   if (photo && !profil?.masquerImages) {

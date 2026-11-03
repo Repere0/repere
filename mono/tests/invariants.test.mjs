@@ -319,12 +319,15 @@ test("invariant 4 — aucune donnée n'est servie sans source déclarée", () =>
      La quatorzieme, /decoupage-idf.json, est ajoutee le 03/11/2026 (V59, bloc 1.1) : le
      découpage des huit départements d'Île-de-France, produit par scripts/construire-decoupage-idf.mjs
      depuis le paquet npm officiel @etalab/decoupage-administratif. Fichier entier, sans code de commune
-     dans l'adresse. */
+     dans l'adresse.
+     La quinzieme, /deputes-groupes.json, est ajoutee le 03/11/2026 (V62, bloc 3) : le groupe de
+     chaque depute, produit par scripts/collecte-groupes.mjs depuis AMO30. Fichier entier, sa source
+     et sa date dedans (controle ci-dessus). */
   const client = lire("packages/data-utils/src/client.js");
   const composees = [...client.matchAll(/\$\{BASE_DONNEES\}(\/[A-Za-z0-9_${}./-]*)/g)].map(m => m[1]);
   assert.deepEqual([...new Set(composees)].sort(),
     ["/actuelles-rss.json", "/actus-hebdo.json", "/agenda-an.json", "/agregats-regionaux.json", "/calendrier-senat.json", "/communes-beta.json", "/comptes-regions.json", "/decoupage-idf.json", "/departments/${d}.json",
-     "/deputes.json", "/elus-regions/${c}.json", "/evenements.json", "/index.json", "/mairies-idf.json",
+     "/deputes-groupes.json", "/deputes.json", "/elus-regions/${c}.json", "/evenements.json", "/index.json", "/mairies-idf.json",
      "/photos-elus/${d}.json", "/projets/${d}.json", "/questions-gouvernement-index.json", "/questions-gouvernement/${lotPadded}.json", "/scrutins-details/${lotPadded}.json", "/scrutins-index.json", "/scrutins-solennels-recents.json", "/scrutins-solennels.json", "/scrutins.json", "/scrutins/${d}.json"],
     "client.js compose une adresse de donnees inattendue : " + composees.join(", "));
   const sources = existe("data/index.json") ? (JSON.parse(lire("data/index.json")).sources || {}) : {};

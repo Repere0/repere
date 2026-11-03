@@ -95,6 +95,9 @@ export function adresseCommunesBeta() { return `${BASE_DONNEES}/communes-beta.js
    un seul fichier, communes actuelles, avec EPCI, EPT et population. Il porte des codes INSEE,
    comme communes-beta.json, mais il est demandé ENTIER, jamais composé avec un code de commune. */
 export function adresseDecoupageIdf() { return `${BASE_DONNEES}/decoupage-idf.json`; }
+/* LES GROUPES POLITIQUES DES DEPUTES (V62) : un seul fichier pour toute la France, comme les
+   deputes. Sa source et sa date vivent dedans (invariant 4). */
+export function adresseDeputesGroupes() { return `${BASE_DONNEES}/deputes-groupes.json`; }
 /* LES COMPTES REGIONAUX : un seul petit fichier, commun a toute la France —
    comme scrutins.json. Les comptes DEPARTEMENTAUX, eux, vivent directement
    dans chaque paquet departemental (`adresseDepartement`) : un departement ne
@@ -494,6 +497,9 @@ export async function chargerCommunesBeta({ delaiMs = 8000 } = {}) {
 /* Le découpage IDF (V59) : mémoire, magasin, réseau, comme les autres fichiers partagés. */
 export async function chargerDecoupageIdf({ delaiMs = 8000 } = {}) {
   return chargerSocle("socle:DIDF", adresseDecoupageIdf(), delaiMs);
+}
+export async function chargerDeputesGroupes({ delaiMs = 8000 } = {}) {
+  return chargerSocle("socle:DGRP", adresseDeputesGroupes(), delaiMs);
 }
 export async function chargerComptesRegions({ delaiMs = 8000 } = {}) {
   return chargerSocle("socle:CTR", adresseComptesRegions(), delaiMs);

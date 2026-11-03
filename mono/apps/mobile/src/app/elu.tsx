@@ -23,7 +23,7 @@
  *     dossier : rien a compter sans inventer (BLOCAGES.md, section 15).
  *   - Patrimoine, presence ou absence aux seances : jamais (invariant 8). */
 import { BadgeGroupe } from "../ui/badge-groupe";
-import { GROUPE_INCONNU, groupeDe } from "../lib/groupes";
+import { GROUPE_INCONNU, groupeDe, useGroupes } from "../lib/groupes";
 import { PartagerCarte } from "../ui/partage/bouton-partage";
 import { VoteStory } from "../ui/partage/variantes/vote.story";
 import { messageVote, VERBE } from "../ui/partage/messages";
@@ -146,9 +146,9 @@ function FeuilleVote({ f, nom, resume, base, onFermer }: { f: FaitElu | null; no
 }
 
 /* La photo libre si elle existe (D27), sinon les initiales ; et son credit, dessous. */
-function PhotoOuInitiales({ nom, dep, cle }: { nom: string; dep: string; cle: string | null }) {
+function PhotoOuInitiales({ nom, dep, cle, groupe }: { nom: string; dep: string; cle: string | null; groupe: string }) {
   const photo = usePhotoElu(dep, cle);
-  return photo ? <Avatar nom={nom} taille={72} photo={photo} /> : <Initiales nom={nom} />;
+  return photo ? <Avatar nom={nom} taille={72} photo={photo} groupe={groupe} /> : <Initiales nom={nom} />;
 }
 function CreditDe({ dep, cle }: { dep: string; cle: string | null }) {
   const photo = usePhotoElu(dep, cle);
@@ -164,6 +164,8 @@ export default function Elu() {
   const { choix } = useSelection();
   const [resumes, setResumes] = useState<Resume[]>([]);
   const [tout, setTout] = useState(false);
+  /* V62 : la table des groupes, lue une fois ; le rendu ci-dessous la reçoit par fermeture. */
+  const groupes = useGroupes();
   /* Les resumes de la redaction : un fichier public ; s'il n'arrive pas, la feuille dit qu'il n'y a pas de resume. */
   useEffect(() => {
     let vivant = true;
@@ -190,13 +192,14 @@ export default function Elu() {
         : (r.d as unknown as { etatVotePour: (n: string) => string | null }).etatVotePour(nom);
       const videVote = etatVote ? copieVoteVide(etatVote, { nom, elu: true, releve: srcScrutins(r.d)?.releve, portee: r.d.srcScrutins && r.d.srcScrutins.portee }) : null;
       const libelleRole = [p.role, p.lieu].filter(Boolean).join(" · ");
-      const groupe = groupeDe();
       /* La cle de la photo (D27) : l'identifiant de l'Assemblee pour un depute (nom complet
          identique dans deputes.json), « M » + INSEE pour le maire de la commune choisie. */
       const deps = ((r.deputes && r.deputes.deputes) || {}) as Record<string, { prenom?: string; nom?: string; acteurRef?: string }>;
       const refDepute = depute ? Object.values(deps).find(x => [x.prenom, x.nom].filter(Boolean).join(" ") === nom)?.acteurRef : undefined;
       const estMaire = echelon === "ville" && !!r.d.fiche && !!r.d.fiche.maire && r.d.fiche.maire.nom === nom;
       const clePhoto = refDepute || (estMaire && choix ? "M" + choix.insee : null);
+      /* Le groupe du depute, par son identifiant ; « Inconnu » pour un maire ou sans entree dans la table. */
+      const groupe = groupeDe(refDepute, groupes);
       const resume = ouvert ? resumes.find(x => x.id === `scrutin-${ouvert.sc.d}-${ouvert.sc.n}`) || null : null;
       /* Carte de partage : seulement le dernier vote publie de cet elu, avec sa source. Sans
          vote ou sans source publiee, pas de carte : le partage reste textuel. */
@@ -232,7 +235,7 @@ export default function Elu() {
           <Animated.View style={{ opacity: apparition, gap: PAS * 4 }}>
             {/* Identite */}
             <View style={{ flexDirection: "row", gap: PAS * 4, alignItems: "center" }}>
-              <PhotoOuInitiales nom={nom} dep={r.d.dep} cle={clePhoto} />
+              <PhotoOuInitiales nom={nom} dep={r.d.dep} cle={clePhoto} groupe={groupe} />
               <View style={{ flex: 1, gap: 8 }}>
                 {/* Audit 5 s (V19) : pas d'etiquette quand le role la dit deja (« Assemblée nationale »
                     au-dessus de « À l'Assemblée nationale pour votre circonscription »). */}

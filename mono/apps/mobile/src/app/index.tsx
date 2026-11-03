@@ -24,7 +24,7 @@ import { useProfil } from "../lib/profil";
 import { BadgeZoom, useNiveauZoom } from "../ui/badge-zoom";
 import { feuille, CIBLE, PAS, POLICE, RAYON, TYPO } from "../lib/theme";
 import { ECHELONS_PAR_MODE, NEUTRES_PAR_MODE, OMBRE_PAR_MODE } from "../lib/palette";
-import { groupeDe } from "../lib/groupes";
+import { groupeDe, useGroupes } from "../lib/groupes";
 import { VOTE } from "../ui/partage/donnees";
 import { SquelettesListe } from "../ui/squelette";
 import { Logo } from "../ui/logo";
@@ -129,6 +129,7 @@ function CarteVote({ etiquette, nom, acteur, ligne, position, dec, date, titre, 
   date: string; titre: string; lien?: string; exemple?: boolean;
 }) {
   const [tout, setTout] = useState(false);
+  const groupes = useGroupes();
   return (
     <View style={s.carte}>
       <AvecPicto picto="vote"><Text style={s.etiquette}>{etiquette}</Text></AvecPicto>
@@ -136,7 +137,7 @@ function CarteVote({ etiquette, nom, acteur, ligne, position, dec, date, titre, 
       <Text style={s.carteTitre}>{titreScrutin(dec) ?? (position ? `${nom} ${VERBE_VOTE[position] ?? "a voté"}.` : `${nom} : position non lue`)}</Text>
       {titreScrutin(dec) && position ? <Text style={[s.legende, { fontWeight: "600" }]}>{nom} {VERBE_VOTE[position] ?? "a voté"}.</Text> : null}
       {/* Groupe inconnu ici : badge gris, aucune couleur de parti (ADR 0001). */}
-      <View style={s.badge}><Text style={s.badgeTexte}>{libelleGroupe(groupeDe(acteur))}</Text></View>
+      <View style={s.badge}><Text style={s.badgeTexte}>{libelleGroupe(groupeDe(acteur, groupes))}</Text></View>
       <Text style={s.legende}>{ligne}</Text>
       {position ? <SensVote cle={position} texte={POSITION_MOT[position]} /> : <Text style={s.legende}>Le relevé de l'Assemblée ne donne pas de position vérifiable pour ce scrutin.</Text>}
       <View style={{ flexDirection: "row", alignItems: "center", gap: PAS }}>
