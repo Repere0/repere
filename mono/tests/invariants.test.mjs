@@ -315,11 +315,15 @@ test("invariant 4 — aucune donnée n'est servie sans source déclarée", () =>
      scripts/agregats-regionaux.mjs a partir des comptes OFGL deja publies. Un seul
      petit fichier pour la France ; les codes de region sont des cles internes, jamais
      dans l'adresse. Sa provenance vit DANS le fichier (source = la source « comptes »
-     de l'index, recopiee), exigee juste en dessous s'il est publie. */
+     de l'index, recopiee), exigee juste en dessous s'il est publie.
+     La quatorzieme, /decoupage-idf.json, est ajoutee le 03/11/2026 (V59, bloc 1.1) : le
+     découpage des huit départements d'Île-de-France, produit par scripts/construire-decoupage-idf.mjs
+     depuis le paquet npm officiel @etalab/decoupage-administratif. Fichier entier, sans code de commune
+     dans l'adresse. */
   const client = lire("packages/data-utils/src/client.js");
   const composees = [...client.matchAll(/\$\{BASE_DONNEES\}(\/[A-Za-z0-9_${}./-]*)/g)].map(m => m[1]);
   assert.deepEqual([...new Set(composees)].sort(),
-    ["/actuelles-rss.json", "/actus-hebdo.json", "/agenda-an.json", "/agregats-regionaux.json", "/calendrier-senat.json", "/communes-beta.json", "/comptes-regions.json", "/departments/${d}.json",
+    ["/actuelles-rss.json", "/actus-hebdo.json", "/agenda-an.json", "/agregats-regionaux.json", "/calendrier-senat.json", "/communes-beta.json", "/comptes-regions.json", "/decoupage-idf.json", "/departments/${d}.json",
      "/deputes.json", "/elus-regions/${c}.json", "/evenements.json", "/index.json", "/mairies-idf.json",
      "/photos-elus/${d}.json", "/projets/${d}.json", "/questions-gouvernement-index.json", "/questions-gouvernement/${lotPadded}.json", "/scrutins-details/${lotPadded}.json", "/scrutins-index.json", "/scrutins-solennels-recents.json", "/scrutins-solennels.json", "/scrutins.json", "/scrutins/${d}.json"],
     "client.js compose une adresse de donnees inattendue : " + composees.join(", "));
@@ -363,6 +367,12 @@ test("invariant 4 — aucune donnée n'est servie sans source déclarée", () =>
     const mai = JSON.parse(lire("data/mairies-idf.json"));
     assert.ok(mai.source && mai.source.producteur && mai.source.licence && mai.genere_le,
       "mairies-idf.json publie sans source, licence ni date (invariant 4)");
+  }
+  /* /decoupage-idf.json (V59, bloc 1.1) : provenance et date de generation dans le fichier. */
+  if (existe("data/decoupage-idf.json")) {
+    const dec = JSON.parse(lire("data/decoupage-idf.json"));
+    assert.ok(dec.source && dec.source.producteur && dec.source.licence && dec.genere_le,
+      "decoupage-idf.json publie sans source, licence ni date de generation (invariant 4)");
   }
   if (existe("data/agregats-regionaux.json")) {
     const agr = JSON.parse(lire("data/agregats-regionaux.json"));

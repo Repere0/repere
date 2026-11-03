@@ -91,6 +91,10 @@ export function adresseScrutins() { return `${BASE_DONNEES}/scrutins.json`; }
    sort jamais de la memoire du navigateur, et aucune adresse n'est composee avec
    lui. C'est ce que garde `adresseFautive`. */
 export function adresseCommunesBeta() { return `${BASE_DONNEES}/communes-beta.json`; }
+/* LE DÉCOUPAGE ADMINISTRATIF DES HUIT DÉPARTEMENTS D'ÎLE-DE-FRANCE (V59, bloc 1.1) :
+   un seul fichier, communes actuelles, avec EPCI, EPT et population. Il porte des codes INSEE,
+   comme communes-beta.json, mais il est demandé ENTIER, jamais composé avec un code de commune. */
+export function adresseDecoupageIdf() { return `${BASE_DONNEES}/decoupage-idf.json`; }
 /* LES COMPTES REGIONAUX : un seul petit fichier, commun a toute la France —
    comme scrutins.json. Les comptes DEPARTEMENTAUX, eux, vivent directement
    dans chaque paquet departemental (`adresseDepartement`) : un departement ne
@@ -486,6 +490,10 @@ export async function chargerDeputes({ delaiMs = 8000 } = {}) {
    mesure des dix etapes en tete de scripts/extract-html.js. */
 export async function chargerCommunesBeta({ delaiMs = 8000 } = {}) {
   return chargerSocle("socle:CMB", adresseCommunesBeta(), delaiMs);
+}
+/* Le découpage IDF (V59) : mémoire, magasin, réseau, comme les autres fichiers partagés. */
+export async function chargerDecoupageIdf({ delaiMs = 8000 } = {}) {
+  return chargerSocle("socle:DIDF", adresseDecoupageIdf(), delaiMs);
 }
 export async function chargerComptesRegions({ delaiMs = 8000 } = {}) {
   return chargerSocle("socle:CTR", adresseComptesRegions(), delaiMs);
