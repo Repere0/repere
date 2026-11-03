@@ -97,32 +97,6 @@ jobs:
         continue-on-error: true
         run: python3 outils/collecte.py
 
-      # NOSPARLEMENTAIRES, OPTIONNEL (V62, D204). Lancement MANUEL seulement, et sortie
-      # d'essai en artefact : rien n'est commite, rien n'est publie, rien ne bloque le job.
-      # Sert a voir le format reel des fichiers avant d'ecrire un lecteur. Les URLs n'ont
-      # pas ete verifiees depuis la session de travail : un 404 se lit ici, dans le journal.
-      - name: Collecte NosParlementaires (optionnel, essai)
-        if: github.event_name == 'workflow_dispatch'
-        continue-on-error: true
-        run: |
-          mkdir -p "$RUNNER_TEMP/nosparlementaires"
-          for f in senateurs scrutins; do
-            if curl -sS -L --fail --retry 2 -o "$RUNNER_TEMP/nosparlementaires/$f.json" "https://nosparlementaires.fr/data/$f.json"; then
-              echo "ok   | $f $(wc -c < "$RUNNER_TEMP/nosparlementaires/$f.json") octets"
-            else
-              echo "::notice::ECHEC NosParlementaires ($f) : optionnel, le job continue"
-            fi
-          done
-
-      - name: Garder la collecte NosParlementaires (essai)
-        if: github.event_name == 'workflow_dispatch' && always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: nosparlementaires-essai
-          path: ${{ runner.temp }}/nosparlementaires
-          if-no-files-found: ignore
-          retention-days: 7
-
       - name: Executer la chaine
         # Depiler, normaliser, decrire, verifier, reconstruire, eprouver.
         # Tout est dans outils/pipeline.sh — c'est la qu'on modifie, pas ici.
