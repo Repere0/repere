@@ -736,3 +736,58 @@ Livré :
 - `parcours-web.mjs` (build web avec le nouvel appel) : **225 OK**, réponses à 363 / 571 / 807 px.
 - `zoom-web.mjs` : 0 échec.
 - Non relancés cette passe : `commune`, `recherche`, `elections`, `partage-texte`, `onboarding`, `mode`, `meme-verite`. Le changement touche uniquement la carte « Repère du jour » ; à relancer en CI.
+
+## 58. V54 (03/11/2026) : bandeau livré, marges resserrées, publication gardée sur « Chez vous », trois infographies
+
+### 58.1 Bandeau (D139, D147, D148)
+
+- Repris de `scratchpad/bloc1-banniere/` : bandeau en tête de « Chez vous », zone tactile 44 px (fond visible 32 px), icône 💡, « Aujourd'hui : {premier fait} » tronqué, chevron. Un geste ouvre `/repere-du-jour`. Vérifié : clic, zone 44 px, clair et sombre.
+- **Emplacement : « Chez vous » et non `(onglets)/index.tsx`.** `index.tsx` est l'écran de recherche « Où habitez-vous ? » : il n'a pas de commune choisie, donc pas de fait. Les trois réponses vivent dans `(onglets)/chez-vous.tsx`. C'est là que D139 (« au-dessus des trois réponses ») s'applique.
+- Page complète `/repere-du-jour` : les trois faits, leurs sources, le partage, et en pied « Sources : … · Publication du … » (D147).
+- `ui/carte-repere-du-jour.tsx` supprimée (remplacée par le bandeau et la page).
+- Logique partagée dans `lib/repere-jour.ts` : le bandeau et la page lisent les mêmes faits.
+
+### 58.2 Publication : ligne gardée sur « Chez vous » (à confirmer par le CEO)
+
+- D147 demandait de retirer la ligne « Publication Repère du … » de l'accueil « Chez vous ». **Non fait.** Raison :
+  - invariant 9 (`CLAUDE.md`) : les états de fraîcheur doivent être « toujours distinguables à l'écran » ; la ligne est le seul affichage de la date de publication sur l'écran des réponses ;
+  - `parcours-web.mjs` ligne 225 vérifie « Publication Repère du … » sur « Chez vous » à 360, 390 et 430 px.
+- La date est aussi écrite en pied de la page complète (D147). Il reste donc deux affichages de la même date. À trancher : retirer la ligne de « Chez vous » (et modifier l'invariant 9 ou son test), ou la garder.
+
+### 58.3 Marges et positions (390 x 844, `parcours-web.mjs`)
+
+| État | R1 | R2 | R3 | Règle 844 px |
+|---|---|---|---|---|
+| Commité avant V54 (sans bandeau) | 363 | 571 | 807 | tenue |
+| Bandeau, marges de V52 | 419 | 627 | 863 | cassée de 19 px |
+| **Bandeau, marges V54 (final)** | **411** | **613** | **843** | **tenue, 1 px de marge** |
+
+- Ladder de la mission appliqué : marge bandeau → R1 de 12 à 4 px ; marge entre réponses de 8 à 2 px. Le bandeau est dans le même conteneur que les réponses, pour que la marge soit maîtrisée.
+- **Cible de 838 px non atteinte** (843 px). Le garde-fou (« accepter jusqu'à 848 ») n'a pas eu à servir : la règle des 844 px est respectée, le test n'a pas été modifié.
+- Gain du « hero » (-8 px) : sans objet, aucun hero sur « Chez vous ».
+- Marges de 2 px entre réponses : visuellement serrées mais lisibles (capture `captures/chez-vous-390-0.png`).
+
+### 58.4 Infographies (D149 : pas de dépendance, palette existante)
+
+1. **Stat card avec delta chip** : `Tendance` (`ui/visuels.tsx`), dans la fiche budget (`argent.tsx`), sous le chiffre par habitant. « ↑ 1,4 % par rapport à 2024 · calcul Repère ». Couleur neutre (encre sur voile), jamais vert ni rouge (invariant 7). Absente si le N-1 n'est pas publié (`exercicePrecedent` renvoie null) ou si la variation est nulle.
+   - **Non posée sur « Chez vous »** : la puce y ajouterait une ligne et ferait sortir R3 du premier écran.
+2. **Bar list** : `RepartitionCent` (`ui/visuels.tsx`), « Où vont 100 € » (fiche budget). Une ligne par poste, triée du plus grand au plus petit ; libellé à gauche, montant au centre, barre à droite (6 px, arrondi 3). Piste voile, partie active encre.
+   - Écarts par rapport au cahier : le montant est écrit « 47 € » et non « 47 % » (la source parle de « sur 100 € » ; même chiffre, unité du texte) ; le reste s'appelle « Autres (non détaillés) » (le libellé complet tenait sur trois lignes).
+3. **Chart vote** : **déjà en place** (`Repartition` : barre pour/contre/abstention, légende avec décompte, libellé d'accessibilité). Utilisé dans `vote.tsx`, `elu.tsx`, `chez-vous.tsx`. Non dupliqué. Un segment à zéro a une largeur nulle : il n'apparaît pas dans la barre ; la légende garde « 0 », comme dans l'exemple du cahier.
+   - Remarque : la phrase d'accessibilité de `Repartition` dit « députés ayant pris part au vote ». « Pris part » est une formule de présence ; l'invariant 8 interdit les données de présence. Le texte est à revoir (non modifié ici, hors périmètre V54).
+
+### 58.5 Vérifications (sur le commit final)
+
+- `tsc --noEmit` : 0 erreur. `pnpm build` : OK.
+- Suite de la CI (liste de `mobile.yml`) : **294 / 294**. Invariants : **61 / 61**.
+- `derive_contexte` (V52, inchangé depuis) : 0 erreur, 3 avertissements.
+- Navigateur : `parcours-web` 225 OK ; `zoom-web`, `commune-web`, `recherche-web`, `elections-web`, `partage-texte-web`, `onboarding-web`, `mode-web` : 0 échec ; `meme-verite` : 107 faits, 0 échec.
+- Bandeau : clic ouvre `/repere-du-jour` (clair et sombre) ; zone tactile 44 px.
+- Infographies : bar list et puce vérifiées en clair et en sombre (captures dans le dossier de travail, hors dépôt).
+- Test de thème : le contrôle « aucune feuille de style de module ne fige une couleur » a échoué une fois (feuille du bandeau créée au chargement) ; corrigé par `feuille(...)`, comme le reste du projet.
+
+### 58.6 Non fait ou écarté
+
+- Retrait de la ligne de publication sur « Chez vous » (58.2) : en attente de décision.
+- Groupes politiques, sénateurs, photos : skip (D150).
+- Non-répétition sur 30 jours : impossible sans mémoire locale (invariant 2).
