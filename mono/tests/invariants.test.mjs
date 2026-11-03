@@ -374,6 +374,12 @@ test("invariant 4 — aucune donnée n'est servie sans source déclarée", () =>
     assert.ok(dec.source && dec.source.producteur && dec.source.licence && dec.genere_le,
       "decoupage-idf.json publie sans source, licence ni date de generation (invariant 4)");
   }
+  /* /deputes-groupes.json (V62, bloc 2) : groupe de chaque depute, avec la source AMO30 et la date. */
+  if (existe("data/deputes-groupes.json")) {
+    const gr = JSON.parse(lire("data/deputes-groupes.json"));
+    assert.ok(gr.source && gr.source.producteur && gr.source.licence && gr.genere_le && gr.groupes,
+      "deputes-groupes.json publie sans source, licence, date ni groupes (invariant 4)");
+  }
   if (existe("data/agregats-regionaux.json")) {
     const agr = JSON.parse(lire("data/agregats-regionaux.json"));
     assert.ok(agr.source && agr.source.producteur && agr.genere_le,

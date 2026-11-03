@@ -93,5 +93,21 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
     process.exit(1);
   }
   fs.mkdirSync(sortie, { recursive: true });
-  fs.writeFileSync(path.join(sortie, "deputes-groupes.json"), JSON.stringify(table, null, 1) + "\n");
+  /* V62 : le fichier emporte sa source et sa date (invariant 4). La source est celle de
+   * scripts/deputes.json, meme archive AMO30 : deux fichiers, une seule provenance. */
+  const source = JSON.parse(fs.readFileSync(path.join(path.dirname(fileURLToPath(import.meta.url)), "deputes.json"), "utf8")).source;
+  const fichier = {
+    v: 1,
+    genere_le: new Date().toISOString().slice(0, 10),
+    source: {
+      producteur: source.producteur,
+      producteur_affiche: source.producteur_affiche,
+      licence: source.licence,
+      url: source.url,
+      legislature: source.legislature,
+      portee: "groupe politique de chaque depute en exercice (organe de type GP, mandat ouvert)",
+    },
+    groupes: table,
+  };
+  fs.writeFileSync(path.join(sortie, "deputes-groupes.json"), JSON.stringify(fichier, null, 1) + "\n");
 }
