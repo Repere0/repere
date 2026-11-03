@@ -950,3 +950,41 @@ Pourquoi je n'applique pas la modification proposée (remplacer AMO30 par NosPar
 
 1. Valider la proposition minimale du §62.2, ou dire si NosParlementaires doit être ajouté, et sous quelle forme.
 2. Confirmer le mode de publication des groupes : via `main` (chaîne normale), sans fusion de `test/sdk58-expo-go`.
+
+## 63. V62 (03/11/2026) : groupes politiques branchés, format NosParlementaires toujours inconnu
+
+### 63.0 Ce qui est fait (branche test/sdk58-expo-go, rien sur main)
+
+- **Visibilité** (`7dfd023`) : la ligne « Groupes : X … » ou « ECHEC collecte-groupes … » part dans le résumé du job. Le constat du bloc 0 était juste : l'appel n'existe pas sur `main`, donc le run du 02/11 ne le lançait pas.
+- **Publication** (`f544583`) : `deputes-groupes.json` porte désormais sa source, sa licence et sa date (invariant 4). Il part sur le site avec le reste de `mono/data` (`copier-donnees.mjs`), sans étape ajoutée. **Uniquement une fois la chaîne sur `main`.**
+- **Lecture et affichage** (`81ce97b`) : `groupeDe(acteurRef, table)` renvoie le groupe, ou « Inconnu » sans entrée, sans table ou sans identifiant. Fiche élu, avatar et carte de vote câblés. Les maires et les listes gardent le gris.
+- **Essai NosParlementaires** (`5d5db07`) : étape manuelle seulement, en artefact `nosparlementaires-essai`, `continue-on-error`. Rien n'est commité.
+- **Artefact d'essai** (`fb0b032`) : `deputes-groupes.json` y est ajouté, pour le voir sans attendre `main`.
+- **Mode d'emploi** : `docs/COMMENT-VERIFIER-GROUPES.md`.
+
+### 63.1 Ce qui n'est pas vérifié
+
+- **Le format réel de l'archive AMO30 pour les groupes** : jamais lu. Le premier run depuis la branche le montrera (ligne « Groupes : … » et artefact).
+- **Le format de NosParlementaires** (`senateurs.json`, `scrutins.json`) : inconnu, URLs non testées depuis la session. Les loaders sénateurs et scrutins, et les écrans qui les liraient, ne sont **pas** écrits : écrire un lecteur sans le format serait inventer une structure. Le prochain pas est un run d'essai, puis la lecture de l'artefact.
+- **Les identifiants PA des députés** : l'exemple `PA722432` de la mission n'existe pas dans `scripts/deputes.json`. Il n'a donc pas servi de preuve.
+- **Le rendu réel sur téléphone** : non fait (pas de données de groupe dans ce bac à sable).
+
+### 63.2 Points de décision
+
+1. **Libellé `LFI-NFP`** : l'ADR 0001 le liste, mais `palette.ts` n'a que `LFI`. Ajouter `LFI-NFP` à la palette fait passer l'invariant 7 à 13 couleurs, alors que l'ADR en fixe 12. Non tranché : tant que ce n'est pas réglé, un député LFI-NFP s'affiche en texte avec le gris « Inconnu ». Il faut une décision du porteur (même couleur sous les deux libellés, ou un autre libellé dans l'ADR).
+2. **Passage par `main`** (D205) : les groupes n'atteignent le site qu'après une proposition de fusion limitée aux commits « groupes », qui passe la protection de `main`. Ce n'est pas la fusion de la branche entière.
+3. **Garde « Le fichier de la veille reste en place »** (`collecte-groupes.mjs`) : le message est faux sur un runner neuf, où il n'y a pas de fichier de la veille. Non corrigé (hors périmètre).
+
+### 63.3 Tests et environnement
+
+- `tsc` (apps/mobile) : OK.
+- Invariants : 61/61.
+- `collecte-groupes.test.mjs` : 8/8. `groupeDe` : six cas OK sur la fonction extraite du fichier réel (le test ne charge pas le module entier : il dépend de React et de l'environnement mobile).
+- `tests/runtime.test.mjs` (navigateur) : le navigateur est présent à `scratchpad/pw` (`PLAYWRIGHT_BROWSERS_PATH`). Le site a été reconstruit. **147 contrôles OK, 8 échecs**, tous sur le calendrier et l'agenda (`calendrier-senat.json` et `agenda-an.json` absents de `mono/data` dans ce bac à sable : ils viennent de collectes réseau). Le test s'arrête ensuite sur `ENOENT agenda-an.json` : il n'est **pas allé au bout**. Aucun contrôle ne touche aux groupes.
+- Aucun test n'a été lancé contre les URLs des sources (règle de la mission).
+
+### 63.4 Décisions attendues
+
+1. Trancher le libellé `LFI-NFP` (point 63.2.1).
+2. Décider comment les commits « groupes » rejoignent `main` (point 63.2.2).
+3. Lancer le run d'essai depuis la branche (mode d'emploi §1 à §3) et renvoyer la ligne « Groupes : … » et, si elle existe, le fichier de l'artefact. C'est la seule façon de voir le format réel sans rien publier.
