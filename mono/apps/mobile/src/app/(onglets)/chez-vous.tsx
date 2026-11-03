@@ -31,7 +31,7 @@ import { actusFlux, chargerActuellesRss, chargerMairies } from "../../lib/donnee
 import { router, Stack } from "expo-router";
 import {
   dateFr, datePublication, decompte, euros, financementProjet, montantCourt, ordinal, parHabitant, phrasePosition,
-  repartitionVote, texteDe,
+  repartitionVote, texteDe, faitsDuJour,
   titreLisible, LIBELLES, copieVoteVide, ETAT_VOTE,
 } from "@repere/core";
 import { Vide } from "../../lib/composants";
@@ -41,10 +41,11 @@ import { useCommuneChoisie } from "../../lib/useCommune";
 import {
   PROJETS_PAS_ARRIVES, projetsAucun,
 } from "../../lib/absences";
-import { srcComptesPublies, srcElus, srcProjets, srcScrutins, srcVote } from "../../lib/sources";
+import { srcComptes, srcComptesPublies, srcElus, srcProjets, srcScrutins, srcVote } from "../../lib/sources";
 import { PAS, TYPO } from "../../lib/theme";
 import { AvecDonnees, Page } from "../../ui/page";
 import { PastilleSource } from "../../ui/source";
+import { CarteReperDuJour } from "../../ui/carte-repere-du-jour";
 import { Etiquette } from "../../ui/resume";
 import { Plus, Reponse, typo } from "../../ui/reponse";
 import { BarrePart, Repartition } from "../../ui/visuels";
@@ -91,6 +92,16 @@ export default function ChezVous() {
       const vote = d.dernierVote;
       const rep = vote ? repartitionVote(vote.sc) : null;
       const hab = d.exercice ? parHabitant(d.exercice.ex) : null;
+      /* LE REPÈRE DU JOUR (V51) : trois faits tirés des données déjà lues ici. */
+      const repereDuJour = faitsDuJour({
+        nom, insee: choix ? choix.insee : "", date: new Date(), exercice: d.exercice,
+        rapportsComptes: d.rapportsComptes, fiche: d.fiche, vote: d.dernierVote, nbCircos: d.nbCircos,
+      });
+      const sourcesRepere = {
+        comptes: srcComptesPublies(d), "comptes-calcul": srcComptes(d),
+        scrutin: d.dernierVote && d.dernierVote.sc ? srcVote(d, d.dernierVote.sc) : null,
+        elus: srcElus(r.srcElus),
+      };
       const maire = d.fiche && d.fiche.maire && d.fiche.maire.nom ? d.fiche.maire.nom : null;
       return (
         <Page sansDate>
@@ -109,6 +120,8 @@ export default function ChezVous() {
           </View>
 
           <View style={{ gap: PAS * 2 }}>
+          {/* 0. LE REPÈRE DU JOUR — en premier, trois faits qui tournent chaque jour. */}
+          <CarteReperDuJour faits={repereDuJour} sources={sourcesRepere} chemin="chez-vous" />
           {/* 1. CE QUE L'ETAT FINANCE ICI — la part se dit en mots pres d'un repere
              vrai, sinon en euros ; le cout est arrondi dans la phrase et exact
              dans la note. */}
