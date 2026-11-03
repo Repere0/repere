@@ -641,3 +641,9 @@ Livré :
 2. Trancher le recouvrement avec les trois réponses de « Aujourd'hui » : garder les deux, ou remplacer par des faits qui n'y figurent pas.
 3. Accepter l'absence d'anti-répétition sur 30 jours (ou autoriser une clé locale supplémentaire, ce qui exige une décision explicite sur l'invariant 2).
 4. Fournir la source officielle des sénateurs (Sénat open data) et confirmer la licence avant tout import.
+
+### 55.6 CI : attendu du parcours navigateur aligné sur la phrase du socle (03/11/2026)
+
+- **Cause** : `parcours-web.mjs` attendait l'ancienne phrase « Sur 100 € dépensés, N € vont aux salaires ». Depuis `679d4a9`, l'écran « Où va cet argent ? » affiche la phrase issue de `rapports()` : « Sur 100 € dépensés : N € de salaires, M € pour investir ». L'échec (`360px/390px/430px · Où va cet argent ?`) était attendu : la phrase avait changé volontairement.
+- **Correction** : l'attendu devient `/Sur 100 € dépensés : \d+ € de salaires/`. Vérifié hors navigateur : l'expression accepte la nouvelle phrase et refuse l'ancienne. Le test de navigateur lui-même n'a pas pu être lancé ici (pas de Chromium) ; le verdict réel viendra de la CI.
+- **Non traité, volontairement** : `mono/apps/mobile/src/app/index.tsx` (lignes 80 et 397) recompose encore « vont aux salaires des agents » sur l'accueil. Ce n'est pas une contradiction de chiffres (même montant, autre formulation), mais la phrase de l'accueil et celle de l'écran « Où va cet argent ? » diffèrent. Aligner l'accueil sur le socle est une décision de wording à valider par le porteur ; le contrôle « même vérité » ne le couvre pas.
