@@ -496,3 +496,57 @@ Diagnostic (31/10/2026), par étapes, ce qui est vérifié et ce qui ne l'est pa
 - LICENSE AGPL-3.0 créé.
 - Test dev-impact : à exclure du parcours (Claude Code mardi).
 - 5 testeurs pilotes : prêts (docs/kit-testeur.md).
+
+## 53. V49-BIS (03/11/2026) : vérifications P0, groupes et « Repère du jour »
+
+### 53.1 Ce qui est vérifié (commandes lancées, résultats relus)
+
+- **Test de parcours (BLOC 1.1)** : `node --test apps/mobile/tests/parcours.test.mjs` échouait avec « écrans sans geste d'accès : dev-impact ». Cause : le test liste les écrans à partir des noms de fichiers, sans distinguer les écrans `__DEV__`. Correction : les écrans `dev-*` sont exclus du contrôle (D115). Aucun bouton ajouté. Résultat : 5/5. Commit `1599d45`.
+- **Invariants (BLOC 1.3)** : `node outils/derive_contexte.mjs` : 0 erreur, 3 avertissements (A1 `build-publish.yml` introuvable ; A2 date d'en-tête de `CONTEXTE_PROJET.md` en retard de 69 jours ; A3 une mesure de plus de 45 jours). Le script n'a pas été lancé avec `--sceller`. `tests/invariants.test.mjs` : **61/61**, après `extract-html` et `pnpm build` (étapes de la CI reproduites localement).
+- **CLAUDE.md et AGENTS.md** : identiques.
+- **TypeScript** : `npx tsc --noEmit` dans `mono/apps/mobile` : 0 erreur.
+- **Socle partagé** (liste exacte de la CI, job « Socle partagé et invariants ») : **279/279**.
+- **Cleanup (BLOC 1.4)** : 0 `console.log` et 0 `TODO`/`FIXME` dans `mono/apps/mobile/src`. `docs/audit-cleanup.md` n'existe pas dans le dépôt. Rien à corriger.
+
+### 53.2 Ce qui n'est PAS vérifié
+
+- **`tests/runtime.test.mjs`** (tests dans un navigateur) : échoue faute de Chromium Playwright. Le téléchargement est refusé par le proxy (`Download failure`). Le test n'a donc pas été exécuté.
+- **`npm test` complet de `mono/`** : 229/231 en local, dont 1 échec = `runtime.test.mjs` (point ci-dessus) et 1 test ignoré. La CI ne lance pas ce test dans son job socle.
+- **CI GitHub (état vert/rouge)** : inconnu. L'accès à l'API GitHub n'est pas activé pour cette session (« use add_repo »). Ne pas la déclarer verte.
+- **Rendu sur iPhone, contact sur la fiche élu** : non vérifié (vérification statique seulement, comme le constat précédent).
+
+### 53.3 BLOC 2 — groupes politiques : BLOQUÉ, aucune donnée inventée
+
+- **Hypothèse de D125 contredite par le fichier** : `mono/scripts/deputes.json` (et le `mono/data/deputes.json` généré par `extract-html.js`) contient 574 députés, mais **aucun champ groupe**. Chaque entrée n'a que `prenom`, `nom`, `acteurRef`, `dateDebut`. Recherche de « groupe », « Renaissance », « Rassemblement national », « La France insoumise » dans les données générées : aucun résultat.
+- **Source officielle inaccessible** : l'archive AMO30 (`data.assemblee-nationale.fr`) répond toujours `CONNECT tunnel failed, response 403` (tentative du 03/11/2026, une seule fois).
+- **Conséquence** : `groupeDe()` continue de renvoyer « Inconnu » (`src/lib/groupes.ts`). Aucun fichier `data/deputes-groupes.json` n'est créé, et aucune couleur n'est appliquée à un élu. Une table de groupes écrite de mémoire serait une donnée inventée (règle 1).
+- **Pour débloquer** : soit la collecte CI `mono/scripts/collecte-groupes.mjs` produit le fichier au premier run réussi (à vérifier dans le journal de `collecte.yml`, message « groupes : N deputes sur 574 rattaches »), soit un fichier AMO30 est déposé à la main (procédure en §1 ci-dessus).
+- **Décision du porteur demandée** : confirmer que D125 est remplacée par « groupes restent Inconnu jusqu'au premier run AMO30 réussi ».
+
+### 53.4 BLOC 3 (sénateurs) : SKIP, comme prévu par D126
+
+Aucun fichier `senateurs.json` dans le dépôt. `outils/senateurs_idf.py` existe mais n'a produit aucune donnée. Rien n'est ajouté.
+
+### 53.5 BLOC 8 — « Repère du jour » (D127, prioritaire) : NON COMMENCÉ, décision requise
+
+Trois problèmes, tous signalés avant exécution (demande du porteur : dire ce qui ne va pas avant d'exécuter) :
+
+1. **Conflit avec D116** : « ZÉRO nouvelle feature, ZÉRO nouvel écran ». Le bloc 8 crée une fonctionnalité complète (rituel quotidien, moteur de rotation, nouveau composant, nouveau bloc sur l'accueil). D127 le met en priorité, sans lever D116 explicitement. **Le porteur doit trancher lequel des deux prévaut.**
+2. **Source budget absente** : le bloc 8.1 lit `mono/scripts/comptes-communes.json` (OFGL). Ce fichier n'existe pas. Seuls `comptes-regions.json` et `departments/` sont présents. Sans cette source, la catégorie BUDGET (20 modèles) n'a pas de données publiques vérifiées dans le dépôt.
+3. **Sources historiques injoignables** : `api.pop.culture.gouv.fr` (Mérimée) et `query.wikidata.org` répondent « 000 » (refus du proxy) depuis cette session. La catégorie HISTOIRE (10 modèles) ne peut pas être alimentée, ni sourcée. Le fallback du bloc 8.2 (désactiver la catégorie) est la seule option honnête pour l'instant.
+
+Ce qui reste faisable sans nouvelle source : la catégorie ÉLUS/VOTES, à partir de `mono/scripts/deputes.json` et des 12 scrutins solennels (`mono/scripts/scrutins.json`). Même là, D116 doit être levée avant de créer un écran ou un composant.
+
+### 53.6 Ce qui n'a pas été fait, et pourquoi
+
+- Phase 2 (groupes) : bloquée, voir 53.3.
+- Phase 3 (sénateurs) : skip, voir 53.4.
+- Phase 8 (Repère du jour) : non commencée, voir 53.5.
+- Phase 4 (photos), 5 (scrutins complets), 6 (Ponytail), 7 (UX) : non lancées dans cette session. Elles dépendent des décisions ci-dessus.
+- Phase 9 (RESUME-v49 / VERDICT-v49) : non produite. Elle sera écrite une fois les décisions du porteur reçues.
+
+### 53.7 Décisions demandées au porteur
+
+1. D116 ou D127 : lequel prévaut pour « Repère du jour » (nouvelle fonctionnalité ou non) ?
+2. Groupes : accepter « Inconnu » jusqu'au premier run AMO30 réussi (CI ou dépôt manuel) ?
+3. Source budget : fournir `comptes-communes.json` (OFGL), ou abandonner la catégorie BUDGET du bloc 8 ?
