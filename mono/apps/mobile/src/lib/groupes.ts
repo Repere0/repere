@@ -36,10 +36,17 @@ export function useGroupes(): TableGroupes | null {
 
 /* Le groupe d'un depute, par son identifiant de l'Assemblee (PAxxxx). Sans table, sans identifiant,
    ou sans entree : « Inconnu ». */
+/* Libellés qui désignent un même groupe (décision CEO D207, 03/11/2026) : la France insoumise, dans
+   l'Assemblée, porte le libellé « LFI-NFP ». Ramenés à « LFI » : même couleur, même nom affiché.
+   La palette reste à 12 couleurs (invariant 7) ; aucune couleur n'est ajoutée ici. */
+const ALIAS_GROUPE: Readonly<Record<string, string>> = Object.freeze({ "LFI-NFP": "LFI", NFP: "LFI" });
+
 export function groupeDe(acteurRef?: string | null, table?: TableGroupes | null): string {
   if (!acteurRef || !table) return GROUPE_INCONNU;
   const g = table[acteurRef]?.groupe;
-  return typeof g === "string" && g.trim() ? g.trim() : GROUPE_INCONNU;
+  if (typeof g !== "string" || !g.trim()) return GROUPE_INCONNU;
+  const libelle = g.trim();
+  return ALIAS_GROUPE[libelle] ?? libelle;
 }
 
 /* Couleur du badge : celle du groupe, ou le gris « Inconnu » (jamais une couleur inventee). */
