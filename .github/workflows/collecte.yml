@@ -160,6 +160,7 @@ jobs:
             mono/data/mairies-idf.json
             mono/data/photos-elus/
             mono/data/agregats-regionaux.json
+            mono/data/deputes-groupes.json
           if-no-files-found: warn
           retention-days: 7
 
