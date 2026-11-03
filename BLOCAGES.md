@@ -901,3 +901,52 @@ Le YAML du BLOC 1 n'a pas été créé. Motifs :
 - Aucun workflow de collecte massive créé.
 - Aucune donnée téléchargée ni inventée pour cette version.
 - Parser sénateurs : correction faite, format réel de la suite à confirmer par un run.
+
+## 62. V61bis (03/11/2026) : bloc 0, la prémisse « AMO30 ne donne pas les groupes » ne tient pas ; collecte.yml non modifié
+
+### 62.0 Constat (bloc 0, rien modifié)
+
+- `.github/workflows/collecte.yml` ne télécharge aucune source lui-même. L'étape « Telecharger les sources » appelle `outils/collecte.py`. Les URLs parlementaires y figurent :
+  - `agenda_an` : `data.assemblee-nationale.fr/.../vp/reunions/Agenda.json.zip`
+  - `senateurs` : `data.senat.fr/data/senateurs/ODSEN_GENERAL.csv`
+  - `organes_an` (AMO30) : `data.assemblee-nationale.fr/.../amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_..._historique.json.zip`
+  - `questions_gouvernement`, `scrutins_an`
+- Les archives sont dépliées dans `data/brut_*` (racine, ignoré par git). Les données lues par l'application sont dans `mono/data/` (ignoré par git, jamais commité). La publication copie `mono/data` dans `site_engendre` puis part sur Netlify.
+- **NosParlementaires n'apparaît nulle part dans le dépôt.** Format inconnu. Les trois URLs de la mission n'ont pas été testées (règle de la mission : proxy cloud bloqué).
+- `mono/scripts/deputes.json` : format `{ "v", "source", "deputes": { "01-1": { prenom, nom, acteurRef: "PA…", dateDebut } } }`. **Aucun champ « groupe ».** Ce fichier vient d'AMO30 mais ne porte pas le groupe.
+- **Le groupe vient déjà d'AMO30** : `mono/scripts/collecte-groupes.mjs` lit `brut_AMO30/organe` (type `GP`) et écrit `mono/data/deputes-groupes.json` (`{ PA…: { groupe, nom } }`). Appelé par `outils/pipeline.sh` (ligne 344), non bloquant. Testé sur fixtures inventées ; **non vérifié sur l'archive réelle** (voir BLOCAGES §38).
+
+### 62.1 Ce que le run du 02/11 (41456656950) montre
+
+- AMO30 téléchargé **sans erreur** sur le runner : `ok organes_an 13720224 octets`. Donc AMO30 n'est **pas** bloqué sur le runner, contrairement à l'hypothèse de D199.
+- Les 7 sources sont téléchargées, 0 échec de téléchargement. Le seul échec de la collecte est le parser sénateurs (voir §60 et `920cfc8`).
+- **Aucune ligne « groupes : … » dans le journal** du run, entre `calendrier-senat` et `agenda-an`. Soit l'étape n'a pas tourné, soit elle n'a rien écrit à l'affichage. Je ne peux pas trancher sur ce seul journal, et ce run venait peut-être d'une version antérieure du pipeline. À vérifier au prochain run.
+- Aucun consommateur de `deputes-groupes.json` : ni `extract-html.js`, ni la publication, ni l'application. `mono/apps/mobile/src/lib/groupes.ts` renvoie toujours « Inconnu » (retour fixe). **Les groupes ne sont donc pas publiés aujourd'hui, même si l'étape tourne.**
+
+### 62.2 Bloc 1 : cas retenu = C (documenter, proposer, ne pas appliquer)
+
+Les cas A et B ne s'appliquent pas : AMO30 n'est pas bloqué, et `collecte.yml` ne télécharge rien.
+
+Pourquoi je n'applique pas la modification proposée (remplacer AMO30 par NosParlementaires) :
+- Elle retirerait la seule source de groupes qui se télécharge déjà. Le format NosParlementaires est inconnu et ses URLs non vérifiées : risque de régression silencieuse.
+- L'ajouter comme source supplémentaire ne serait pas neutre. `collecte.py` sort en erreur si une source échoue, et l'étape « Signaler les échecs » passe alors le job au rouge **tous les jours**, tant que l'URL est refusée.
+- Le fallback D200 (« garder AMO30 ») est déjà le comportement actuel.
+
+**Proposition minimale, non appliquée (décision du porteur) :**
+1. Garder AMO30 comme source des groupes.
+2. Rendre visible le résultat de `collecte-groupes` (ligne « groupes : … » dans le bilan du job, avec son code de sortie).
+3. Publier `deputes-groupes.json` avec les autres données (`extract-html.js` ou copie dans `site_engendre`), puis faire lire ce fichier par `groupes.ts`.
+4. Si NosParlementaires reste voulu : l'ajouter en source **optionnelle**, hors du décompte d'échec, après que le porteur a confirmé l'URL et le format.
+
+### 62.3 Ce qui n'est pas fait
+
+- Bloc 1 : `collecte.yml` non modifié (cas C).
+- Bloc 2 : le parser existe (`collecte-groupes.mjs`). Non modifié.
+- Bloc 3 : loaders non écrits. `groupes.ts` reste un retour fixe « Inconnu ». Les loaders sénateurs et scrutins attendent des fichiers qui ne sont pas produits.
+- Bloc 4 : UI conditionnelle non faite (dépend du bloc 3).
+- Bloc 5 : guide non écrit. **Point à corriger avant :** son étape 4 propose « merger test/sdk58-expo-go sur main » ou « copier les fichiers dans main via l'interface GitHub ». Le premier contredit D201 (ne pas fusionner main). Le second contourne la protection de `main` et le banc de contrôle. Je ne les écrirai pas tels quels.
+
+### 62.4 Décisions attendues
+
+1. Valider la proposition minimale du §62.2, ou dire si NosParlementaires doit être ajouté, et sous quelle forme.
+2. Confirmer le mode de publication des groupes : via `main` (chaîne normale), sans fusion de `test/sdk58-expo-go`.
