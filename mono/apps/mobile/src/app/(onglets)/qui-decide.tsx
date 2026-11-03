@@ -22,10 +22,13 @@ import { BadgeZoom, useNiveauZoom } from "../../ui/badge-zoom";
 import { visibleAuNiveau } from "@repere/core";
 import { useSelection } from "../../lib/selection";
 import { mandatsTerminesListes } from "../../lib/mandats-termines";
+import { useDecoupage } from "../../lib/decoupage";
 
 export default function QuiDecide() {
   const { choix } = useSelection();
   const niveauZoom = useNiveauZoom();
+  /* V59 (bloc 1.1) : le nom de l'intercommunalité vient du découpage officiel quand la fiche ne le porte pas. */
+  const decoupage = useDecoupage(choix ? choix.insee : null);
   return (
     <AvecDonnees rendu={r => {
       const { d } = r;
@@ -39,6 +42,17 @@ export default function QuiDecide() {
                 <Definitions s={phraseAdjoints(f.adjoints, f.maire.nom)} />
               </View>
             : <Text style={TYPO.note}>{MAIRE_ABSENT.titre} {MAIRE_ABSENT.corps}</Text> };
+        }
+        if (n.echelon === "agglo" && !(f.agglo && f.agglo.nom) && decoupage && decoupage.epci) {
+          /* V59 : la fiche ne porte pas de nom d'intercommunalité. Le nom vient du découpage officiel, avec sa
+             source et sa date. Le RNE n'a pas listé de délégué : la note existante le dit déjà. */
+          return { ...n, institution: decoupage.epci.nom, pied: (
+            <View style={{ gap: PAS }}>
+              <Text style={TYPO.note}>Nom : découpage administratif officiel (Etalab, paquet 6.0.0, publié le 09/03/2026).</Text>
+              <LienSortant url="https://github.com/etalab/decoupage-administratif" texte="Source : Etalab, découpage administratif" />
+              <Definitions s={[{ t: "intercommunalité", mot: "intercommunalité" }]} />
+            </View>
+          ), note: "La source ne liste pas l'intercommunalité de cette commune. C'est la source qui est incomplète, pas la commune qui n'en a pas." };
         }
         if (n.echelon === "agglo") {
           /* 07/10/2026 : les precisions propres au territoire (Ile-de-France,

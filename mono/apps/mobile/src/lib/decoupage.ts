@@ -5,6 +5,7 @@
  * 6.0.0 (publié le 09/03/2026). Chaque entrée porte son code INSEE ; le fichier porte sa source et
  * sa date de publication. Une commune absente du fichier, ou un champ null, reste « non disponible » :
  * jamais une valeur devinée. */
+import { useEffect, useState } from "react";
 import { chargerDecoupageIdf } from "./donnees";
 
 export type LienEpci = { code: string; nom: string; type: string };
@@ -51,4 +52,15 @@ export function decoupageDe(d: DecoupageIdf | null, codeInsee: string | null | u
     index.set(d, carte);
   }
   return carte.get(codeInsee) ?? null;
+}
+
+/* La commune choisie, depuis le fichier du découpage. null tant qu'il n'est pas lu, ou hors d'Île-de-France. */
+export function useDecoupage(codeInsee: string | null | undefined): CommuneDecoupage | null {
+  const [d, setD] = useState<DecoupageIdf | null>(null);
+  useEffect(() => {
+    let vivant = true;
+    if (codeInsee) lireDecoupage().then(x => { if (vivant) setD(x); });
+    return () => { vivant = false; };
+  }, [codeInsee]);
+  return decoupageDe(d, codeInsee);
 }
