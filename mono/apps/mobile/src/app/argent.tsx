@@ -127,7 +127,11 @@ export default function Argent() {
                 <Carte echelon="ville" titre={`Où vont 100 € dépensés, comptes ${ex.an}`}>
                   {/* 08/10/2026 (audit) : « Deux postes… » s'affichait avec une seule barre
                      (part des salaires absente) ; l'annee des comptes manquait au titre. */}
-                  <Resume phrase={ch.partSalaires !== null ? `Sur 100 € dépensés, ${ch.partSalaires} € vont aux salaires des agents.` : `Sur 100 € dépensés, ${ch.partInvestissement} € vont aux investissements.`}
+                  {/* Même vérité que le site (meme-verite.mjs) : la phrase vient de rapports() dans
+                     @repere/core, jamais recomposée ici. */}
+                  <Resume phrase={[rap(/salaires/)?.v, rap(/investir/)?.v].filter(Boolean).length
+                      ? `Sur 100 € dépensés : ${[rap(/salaires/)?.v, rap(/investir/)?.v].filter(Boolean).join(", ")}.`
+                      : ""}
                     enClair="Le reste des dépenses n'est pas détaillé par la source.">
                     <RepartitionCent salaires={ch.partSalaires} investissement={ch.partInvestissement} />
                   </Resume>
