@@ -814,3 +814,47 @@ Livré :
 - QR code : à générer par le porteur (`scripts/lancer-pour-testeurs.ps1`).
 - Google Play : lien non rouvert ce jour.
 - Test sur téléphone réel : non fait ici. C'est le seul point qui fait passer le verdict de PRESQUE à OUI.
+
+## 60. V59 (03/11/2026) : données P0, P1, P2 bloquées par la politique réseau de la session
+
+### 60.0 Constat (phase 0)
+
+- Hôtes refusés par l'egress (403 au CONNECT, relevés dans `/__agentproxy/status`) : `unpkg.com`, `www.data.gouv.fr`, `static.data.gouv.fr`, `tabular-api.data.gouv.fr`, `www.nosdeputes.fr`, `www.senat.fr`, `data.assemblee-nationale.fr`, `www.assemblee-nationale.fr`, `geo.api.gouv.fr`, `data.economy.gouv.fr`, `data.culture.gouv.fr`, `elections.interieur.gouv.fr`, `www.wikidata.org`, `commons.wikimedia.org`.
+- Hôtes accessibles : `github.com`, `api.github.com`, `registry.npmjs.org`.
+- Règle suivie : on ne contourne pas un refus. Pas de miroir tiers recherché pour remplacer un hôte officiel refusé.
+- Exception assumée : le découpage administratif vient du paquet npm officiel `@etalab/decoupage-administratif` 6.0.0 (voir commit `0adf0d0`). C'est le même jeu que sur unpkg, par un registre autorisé. **À confirmer par le porteur.**
+
+### 60.1 Bloc par bloc
+
+| Bloc | Donnée | Statut | Raison |
+|---|---|---|---|
+| 1.1 | Découpage IDF | **fait** (`0adf0d0`) | npm officiel ; 1 266 communes ; EPCI et population présents |
+| 1.2 | Groupes politiques | **non fait** | Lien AMO30 (data.assemblee-nationale.fr) refusé. `groupeDe()` reste « Inconnu » (voir `docs/data/groupes-politiques.md`) |
+| 1.3 | Sénateurs | **non fait** | senat.fr et nosdeputes.fr refusés ; aucune source déposée dans le dépôt |
+| 1.4 | Scrutins complets (8 434 + 909) | **non fait** | Catalogue complet hors session. Le dépôt ne porte que 12 scrutins solennels et les positions par département |
+| 1.5 | Conseillers départementaux et régionaux | **non fait** | data.gouv.fr / RNE refusés ; fichiers absents du dépôt |
+| 1.6 | Photos élus (Wikidata, Commons, NosDéputés) | **non fait** | Wikidata, Commons et NosDéputés refusés. `photos-elus/` n'est pas produit |
+| 2.1 | Résultats électoraux | **non fait** | elections.interieur.gouv.fr refusé |
+| 2.2 | Marchés publics (DECP) | **non fait** | data.economy.gouv.fr refusé |
+| 2.3 | Subventions (Data.Subvention) | **non fait** | data.gouv.fr refusé |
+| 2.4 | Patrimoine (Mérimée) | **non fait** | data.culture.gouv.fr refusé. La catégorie histoire garde ses 20 faits sourcés |
+| 2.5 | Logement social (SRU) | **non fait** | data.gouv.fr refusé |
+| 2.6 | Sécurité (SSMSI) | **non fait** | data.gouv.fr refusé |
+| 2.7 | Transports (GTFS IDFM) | **non fait** | data.iledefrance-mobilites.fr non testé ; hors de l'allowlist de cette session |
+| 2.8 | Écoles | **non fait** | data.education.gouv.fr non testé ; même cause |
+| 2.9 | Santé (API FHIR ANS) | **non fait** | non testé ; même cause |
+| 2.10 | Services publics (DILA) | **non fait** | non testé ; même cause |
+| 3.1 | Délibérations | **non fait** | Hôtes municipaux et data.gouv.fr refusés |
+| 3.2 | Associations (RNA) | **non fait** | data.gouv.fr refusé |
+| 3.3 | Lobbying (HATVP) | **non fait** | non testé ; même cause |
+| 3.4 | Financement des partis | **non fait** | non testé ; même cause |
+| 3.5 | Urbanisme (PLU) | **non fait** | Géoportail de l'urbanisme non testé ; même cause |
+
+### 60.2 Ce qui est dans l'application
+
+- Découpage IDF : `apps/mobile/src/lib/decoupage.ts`, chargé via `chargerDecoupageIdf` (`packages/data-utils`). Affichage : voir RESUME-v59.md.
+- Fichier publié par `extract-html.js` depuis `scripts/decoupage-idf.json`. **Il n'est pas encore sur le site public** : la publication passe par la chaîne quotidienne du porteur.
+
+### 60.3 Conséquence
+
+Les étapes P0 (sauf découpage) et P1, P2 ne peuvent pas être livrées depuis cette session. Il faut relancer V59 depuis une session dont le réseau atteint `data.gouv.fr`, `data.assemblee-nationale.fr`, `senat.fr`, `elections.interieur.gouv.fr`, `data.culture.gouv.fr`, `unpkg.com`, `wikidata.org`, `commons.wikimedia.org`.
