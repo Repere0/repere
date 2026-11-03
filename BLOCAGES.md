@@ -791,3 +791,26 @@ Livré :
 - Retrait de la ligne de publication sur « Chez vous » (58.2) : en attente de décision.
 - Groupes politiques, sénateurs, photos : skip (D150).
 - Non-répétition sur 30 jours : impossible sans mémoire locale (invariant 2).
+
+## 59. V55 (03/11/2026) : histoire des communes, story, kit testeur, verdict PRESQUE
+
+### 59.1 Histoire (D158)
+
+- 20 villes, un fait chacune, tiré de l'article Wikipédia (fr) cité. Source unique : Base Mérimée et Cassini non utilisées.
+- Écarté : praxinoscope de Montreuil (1876 contre 1877 selon les sources, pas tranché).
+- **À relire par une personne** avant l'envoi aux testeurs : chaque phrase est dans `apps/mobile/src/lib/histoire-communes.ts`, avec son lien.
+
+### 59.2 Bandeau (bloc 3)
+
+- Écart avec le cahier : 22 caractères de fait et non 60. À 390 px, une ligne de 44 px tient environ 36 caractères, préfixe compris.
+- La coupure peut tomber au milieu d'une phrase (« En 2025, Meaux a… »). Solution complète non retenue : le bandeau doit rester une ligne (R3 à 843 px).
+
+### 59.3 Story (bloc 2)
+
+- Vérifiée dans le navigateur uniquement (1080 x 1920). La capture `react-native-view-shot` sur téléphone reste à vérifier.
+
+### 59.4 Distribution (bloc 5)
+
+- QR code : à générer par le porteur (`scripts/lancer-pour-testeurs.ps1`).
+- Google Play : lien non rouvert ce jour.
+- Test sur téléphone réel : non fait ici. C'est le seul point qui fait passer le verdict de PRESQUE à OUI.
