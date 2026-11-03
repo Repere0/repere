@@ -858,3 +858,12 @@ Livré :
 ### 60.3 Conséquence
 
 Les étapes P0 (sauf découpage) et P1, P2 ne peuvent pas être livrées depuis cette session. Il faut relancer V59 depuis une session dont le réseau atteint `data.gouv.fr`, `data.assemblee-nationale.fr`, `senat.fr`, `elections.interieur.gouv.fr`, `data.culture.gouv.fr`, `unpkg.com`, `wikidata.org`, `commons.wikimedia.org`.
+
+### 60.4 Compléments (V59, après 1.1)
+
+- **Intercommunalité (Qui décide)** : le nom vient du découpage officiel quand la fiche n'en porte pas (401 communes sur 1 262 dans les fiches départementales). Le nom du RNE reste prioritaire. Comparaison : 770 libellés concordent après normalisation ; **91 diffèrent** (graphie, ou sigle : « CC Les Portes Briardes Entre Villes et Forêts » contre « Cc Portes Briardes Entre Villes Et Foret »). Non tranché : pas de SIREN dans les fiches pour recouper. À vérifier par le porteur.
+- **Ma commune (4.1)** : écran nouveau non construit. Les blocs qui existent déjà (maire, budget, député, département, région) restent sur leurs écrans. Le découpage ajoute l'intercommunalité ; pas le président d'intercommunalité (aucune source accessible).
+- **Contact élu (5.1)** : déjà en place (`ui/contact.tsx`, `elu.tsx`). Non refait.
+- **Squelettes (5.2)** : déjà en place sur `AvecDonnees` (`ui/page.tsx`) et les listes (`actus`, `elus`, `pour-vous`, `index`). Non audité écran par écran.
+- **Timeline vote (5.3)** : non faite. Il faut le parcours de chaque scrutin (dates d'étapes), absent du dépôt.
+- **Scrutin détaillé (4.2), Élections (4.3), Marchés (4.4)** : non faits. Données absentes (voir 60.1).
