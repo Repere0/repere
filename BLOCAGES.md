@@ -550,3 +550,41 @@ Ce qui reste faisable sans nouvelle source : la catégorie ÉLUS/VOTES, à parti
 1. D116 ou D127 : lequel prévaut pour « Repère du jour » (nouvelle fonctionnalité ou non) ?
 2. Groupes : accepter « Inconnu » jusqu'au premier run AMO30 réussi (CI ou dépôt manuel) ?
 3. Source budget : fournir `comptes-communes.json` (OFGL), ou abandonner la catégorie BUDGET du bloc 8 ?
+
+## 54. V50-A (03/11/2026) : groupes absents, Repère du jour non livré, CI rouge puis corrigée
+
+### 54.1 Prémisses de la mission contredites par le dépôt
+
+- **`data/am30.json` n'est pas déposé** sur `test/sdk58-expo-go`. Vérifié : absent de l'arbre (`git ls-tree origin/test/sdk58-expo-go data/`) et jamais présent dans l'historique (`git log --all -- '*am30*'`). D133 ne peut donc pas être exécutée.
+- **Le « Repère du jour » n'est pas livré.** Aucun fichier `faits-templates`, `faits-journaliers`, `carte-repere-du-jour` ni `faitDuJour` dans la branche. Le seul écran « Aujourd'hui » existant (`mono/packages/core/src/aujourdhui.js`, web) est une fonctionnalité antérieure, distincte du bloc 8 décrit en V49-BIS. BLOCAGES §53.5 indique toujours « non commencé ». Aucune vérification de ce bloc n'a donc été faite (BLOC 2 de V50-A) : il n'y a rien à vérifier en l'état.
+
+### 54.2 BLOC 1 — groupes politiques : BLOQUÉ
+
+Rien n'a été produit. Pas de `data/deputes-groupes.json`, pas de couleur appliquée. `groupeDe()` renvoie toujours « Inconnu ». Aucun groupe n'a été écrit de mémoire (règle 1). Le déblocage dépend du dépôt de `data/am30.json` (ou d'un run CI réussi de `collecte-groupes.mjs`, à confirmer dans le journal de `collecte.yml`).
+
+### 54.3 CI : rouge sur `0eb7482`, cause identifiée et corrigée
+
+- Run `41607858675` (job « Mobile »), étape **« Même vérité sur le site et dans l'application »** (`mono/tests/meme-verite.mjs`) : 8 échecs sur 4 communes (Paris, Boulogne-Billancourt, Meaux, Amponville), tous sur la phrase « Sur 100 € dépensés » (salaires et investissement). Les 279 tests du socle passaient.
+- **Cause** : le site écrit « X € de salaires » et « X € pour investir » depuis `rapports()` de `@repere/core` (source unique). L'application recomposait ses propres phrases dans `mono/apps/mobile/src/app/argent.tsx` (« Sur 100 € dépensés, X € vont aux salaires des agents »). Deux textes pour un même fait : c'est exactement ce que le contrôle « même vérité » interdit.
+- **Correction** (commit `679d4a9`) : la phrase d'en-tête de la carte « Où vont 100 € dépensés » reprend les valeurs de `rapports()`. Aucun texte nouveau n'a été écrit. Le test n'a pas été assoupli.
+- **Effet visible** : le libellé change sur l'écran « Où va cet argent ». Ancien : « Sur 100 € dépensés, 30 € vont aux salaires des agents. » Nouveau : « Sur 100 € dépensés : 30 € de salaires, 22 € pour investir. » À relire par le porteur.
+- **Non traité** : `mono/apps/mobile/src/app/index.tsx` lignes 80 et 397 recomposent encore la même phrase (« vont aux salaires des agents »). Le contrôle ne les a pas signalées (il lit un autre texte), mais elles relèvent du même principe. À aligner dans une prochaine passe.
+
+### 54.4 Vérifications réellement faites (commandes lancées)
+
+- `npx tsc --noEmit` (mono/apps/mobile) : 0 erreur, après la correction.
+- Socle partagé (liste exacte de la CI, depuis `mono/`) : 279/279, après la correction.
+- `derive_contexte.mjs` et invariants 61/61 : vérifiés en V49-BIS, non relancés depuis (aucun changement d'invariant).
+
+### 54.5 Ce qui n'est PAS vérifié
+
+- **`meme-verite.mjs` lui-même** : il exige Chromium (Playwright), impossible à télécharger ici. La correction n'est confirmée que par le run CI qui suit le push de `679d4a9`.
+- **`runtime.test.mjs`** : même limite, non exécuté.
+- **Rendu iPhone** du nouveau libellé : non vérifié.
+- **CI sur `679d4a9`** : en cours au moment de la rédaction. Ne pas la déclarer verte avant le résultat.
+
+### 54.6 Décisions demandées au porteur
+
+1. Déposer `data/am30.json` (ou confirmer que le run CI `collecte-groupes` est la source retenue) pour débloquer les groupes.
+2. Confirmer le nouveau libellé « Sur 100 € dépensés : X € de salaires, Y € pour investir » sur l'écran « Où va cet argent », ou demander un autre texte (à écrire dans `@repere/core`, pas dans l'application).
+3. Dire si « Repère du jour » (V49-BIS §53.5) est autorisé, et si D116 est levée pour ce cas. Tant que ce n'est pas tranché, le bloc 8 n'existe pas.
