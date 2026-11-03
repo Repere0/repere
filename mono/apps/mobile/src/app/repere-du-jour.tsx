@@ -15,6 +15,8 @@ import { AvecDonnees, Page, Question } from "../ui/page";
 import { PastilleSource } from "../ui/source";
 import { BoutonPartageTexte, ligneSource } from "../ui/partage/partager-texte";
 import { Plus } from "../ui/reponse";
+import { PartagerCarte } from "../ui/partage/bouton-partage";
+import { RepereDuJourStory } from "../ui/partage-repere-du-jour";
 import { useNiveauZoom } from "../ui/badge-zoom";
 
 export default function RepereDuJourEcran() {
@@ -27,6 +29,7 @@ export default function RepereDuJourEcran() {
       const affichables = faitsAffichables(faits, sources);
       const producteurs = [...new Set(affichables.map(x => x.src.producteur).filter(Boolean))];
       const publie = datePublication(r.index);
+      const dateDuJour = new Date().toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" });
       return (
         <Page>
           <Stack.Screen options={{ title: "Repère du jour" }} />
@@ -49,6 +52,11 @@ export default function RepereDuJourEcran() {
               ))}
             </View>
           )}
+          {affichables.length > 0 ? (
+            <PartagerCarte etiquette="Partager ma story, Le Repère du jour" libelle="Partager ma story"
+              repli={`Le Repère du jour à ${nom}, ${dateDuJour} :\n${affichables.map(({ f, src }) => `• ${f.texte} (${src.producteur})`).join("\n")}`}
+              rendu={ref => <RepereDuJourStory refCarte={ref} ville={nom} date={dateDuJour} faits={affichables.map(x => x.f)} sources={sources} />} />
+          ) : null}
           <Plus dernier texte="Retour à Chez vous" onPress={() => router.back()} />
           {producteurs.length > 0 ? (
             <Text style={TYPO.note} accessibilityLabel={`Sources : ${producteurs.join(", ")}${publie ? `. Publication du ${dateFr(publie)}` : ""}`}>
