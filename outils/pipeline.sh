@@ -351,7 +351,7 @@ rm -rf site_engendre
   cat "$groupes_log"
   if [ "$groupes_rc" -eq 0 ]; then
     groupes_bilan=$(node -e '
-      const t = JSON.parse(require("fs").readFileSync("data/deputes-groupes.json", "utf8"));
+      const t = JSON.parse(require("fs").readFileSync("data/deputes-groupes.json", "utf8")).groupes;
       const v = Object.values(t), ok = v.filter(x => x.groupe && x.groupe !== "Inconnu").length;
       console.log("Groupes : " + ok + " deputes avec groupe identifie, " + (v.length - ok) + " sans groupe");
     ' 2>/dev/null || echo "Groupes : fichier illisible apres ecriture")
