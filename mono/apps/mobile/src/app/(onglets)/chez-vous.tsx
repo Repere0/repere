@@ -31,7 +31,7 @@ import { actusFlux, chargerActuellesRss, chargerMairies } from "../../lib/donnee
 import { router, Stack } from "expo-router";
 import {
   dateFr, datePublication, decompte, euros, financementProjet, montantCourt, ordinal, parHabitant, phrasePosition,
-  repartitionVote, texteDe, faitsDuJour,
+  repartitionVote, texteDe,
   titreLisible, LIBELLES, copieVoteVide, ETAT_VOTE,
 } from "@repere/core";
 import { Vide } from "../../lib/composants";
@@ -41,11 +41,12 @@ import { useCommuneChoisie } from "../../lib/useCommune";
 import {
   PROJETS_PAS_ARRIVES, projetsAucun,
 } from "../../lib/absences";
-import { srcComptes, srcComptesPublies, srcElus, srcProjets, srcScrutins, srcVote } from "../../lib/sources";
+import { srcComptesPublies, srcElus, srcProjets, srcScrutins, srcVote } from "../../lib/sources";
 import { PAS, TYPO } from "../../lib/theme";
 import { AvecDonnees, Page } from "../../ui/page";
 import { PastilleSource } from "../../ui/source";
-import { CarteReperDuJour } from "../../ui/carte-repere-du-jour";
+import { BandeauRepere } from "../../ui/bandeau-repere";
+import { repereDuJourPour } from "../../lib/repere-jour";
 import { useNiveauZoom } from "../../ui/badge-zoom";
 import { Etiquette } from "../../ui/resume";
 import { Plus, Reponse, typo } from "../../ui/reponse";
@@ -94,18 +95,8 @@ export default function ChezVous() {
       const vote = d.dernierVote;
       const rep = vote ? repartitionVote(vote.sc) : null;
       const hab = d.exercice ? parHabitant(d.exercice.ex) : null;
-      /* LE REPÈRE DU JOUR (V51) : trois faits tirés des données déjà lues ici. */
-      const repereDuJour = faitsDuJour({
-        nom, insee: choix ? choix.insee : "", date: new Date(), exercice: d.exercice,
-        rapportsComptes: d.rapportsComptes, fiche: d.fiche, vote: d.dernierVote, nbCircos: d.nbCircos,
-        niveau: niveauZoom,
-        comptes: d.fiche && d.fiche.comptes,
-      });
-      const sourcesRepere = {
-        comptes: srcComptesPublies(d), "comptes-calcul": srcComptes(d),
-        scrutin: d.dernierVote && d.dernierVote.sc ? srcVote(d, d.dernierVote.sc) : null,
-        elus: srcElus(r.srcElus),
-      };
+      /* LE REPÈRE DU JOUR (V51, V52) : le bandeau et sa page lisent les mêmes faits (lib/repere-jour). */
+      const { faits: repereDuJour, sources: sourcesRepere } = repereDuJourPour(r, nom, choix ? choix.insee : "", niveauZoom);
       const maire = d.fiche && d.fiche.maire && d.fiche.maire.nom ? d.fiche.maire.nom : null;
       return (
         <Page sansDate>
@@ -123,7 +114,14 @@ export default function ChezVous() {
               avant={[depIndex && depIndex.nom, depIndex && depIndex.region].filter(Boolean).join(" · ")} />
           </View>
 
-          <View style={{ gap: PAS * 2 }}>
+          <View style={{ gap: PAS / 2 }}>
+          {/* LE REPÈRE DU JOUR (V52, D139, V54 / D147) — UNE LIGNE, AU-DESSUS des trois réponses.
+             Le bandeau ne montre que le premier fait, tronqué ; un geste ouvre la page complète.
+             V54 : zone tactile 44 px ; marges réduites (bandeau -> R1 : 4 px ; entre réponses : 2 px)
+             pour que la troisième réponse reste à 843 px à 390 x 844 (BLOCAGES §58). */}
+          <View style={{ paddingBottom: PAS / 2 }}>
+            <BandeauRepere faits={repereDuJour} sources={sourcesRepere} onOuvrir={() => router.push("/repere-du-jour")} />
+          </View>
           {/* 1. CE QUE L'ETAT FINANCE ICI — la part se dit en mots pres d'un repere
              vrai, sinon en euros ; le cout est arrondi dans la phrase et exact
              dans la note. */}
@@ -207,12 +205,6 @@ export default function ChezVous() {
             <Vide {...copieVoteVide(d.etatVote, { nom, releve: srcScrutins(d)?.releve, portee: d.srcScrutins && d.srcScrutins.portee })} />
           )}
           </View>
-
-          {/* LE REPÈRE DU JOUR — SOUS les trois réponses, jamais avant elles : « Réponses d'abord »
-             (docs/ux/systeme-visuel-2026.md, point 10 ; parcours-web, 390 x 844). Mesuré : sans la
-             carte, les réponses finissent à 363, 571 et 807 px ; en tête, à 940, 1148 et 1384 px.
-             Le CEO avait demandé « en premier » : c'est incompatible avec le premier écran. */}
-          <CarteReperDuJour faits={repereDuJour} sources={sourcesRepere} chemin="chez-vous" />
 
           {/* AU PARLEMENT CETTE SEMAINE — sous les trois reponses, jamais parmi
              elles : c'est national, et la carte le dit (ui/semaine.tsx). */}
