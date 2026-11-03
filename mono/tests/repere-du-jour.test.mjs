@@ -84,6 +84,28 @@ test("repere du jour — « Ma rue » : aucun fait national (vote, circonscripti
   assert.ok(tous.includes("france"), "sans réglage, le national doit pouvoir apparaître");
 });
 
+test("repere du jour — évolution entre deux exercices : sens écrit, calcul annoncé, rien sans exercice précédent", () => {
+  /* Même disposition que EX : [population, recettes, /hab, dépenses, /hab, dette, /hab, ...].
+     2024 : recettes 1080 /hab, dépenses 1000 /hab, dette 550 /hab. 2025 (EX) : 1200, 1100, 500. */
+  const EX24 = [10000, 10800000, 1080, 10000000, 1000, 5500000, 550, 2000000, 200, 4000000, 400, 6000000, 600];
+  const comptes = { "2024": EX24, "2025": EX };
+  const textes = [];
+  for (let j = 1; j <= 30; j++) {
+    textes.push(...faitsDuJour({ ...CONTEXTE(jour(2026, 11, j)), comptes }).map(f => f));
+  }
+  const tous = textes.map(f => f.texte);
+  assert.ok(tous.includes("Les dépenses par habitant de Testville ont augmenté de 10 % entre 2024 et 2025."), "hausse des dépenses absente sur 30 jours");
+  assert.ok(tous.includes("Les recettes par habitant de Testville ont augmenté de 11 % entre 2024 et 2025."), "hausse des recettes absente sur 30 jours");
+  assert.ok(tous.includes("La dette par habitant de Testville a diminué de 9 % entre 2024 et 2025."), "baisse de la dette absente sur 30 jours");
+  const calcules = textes.filter(f => /entre 2024 et 2025/.test(f.texte));
+  assert.ok(calcules.every(f => f.calcul === true && f.source === "comptes-calcul"), "une évolution doit s'annoncer comme calcul");
+  /* Sans exercice précédent : aucune évolution, jamais un zéro ni un pourcentage inventé. */
+  for (let j = 1; j <= 30; j++) {
+    const sans = faitsDuJour(CONTEXTE(jour(2026, 11, j))).map(f => f.texte);
+    assert.ok(sans.every(t => !/entre \d{4} et/.test(t)), "une évolution apparaît sans exercice précédent");
+  }
+});
+
 test("repere du jour — la clé du jour est locale et ne dépend que de la date", () => {
   assert.equal(cleDuJour(jour(2026, 11, 3)), "2026-11-03");
   assert.equal(cleDuJour(new Date(2026, 0, 9, 23, 59)), "2026-01-09");

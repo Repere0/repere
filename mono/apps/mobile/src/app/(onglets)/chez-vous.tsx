@@ -99,6 +99,7 @@ export default function ChezVous() {
         nom, insee: choix ? choix.insee : "", date: new Date(), exercice: d.exercice,
         rapportsComptes: d.rapportsComptes, fiche: d.fiche, vote: d.dernierVote, nbCircos: d.nbCircos,
         niveau: niveauZoom,
+        comptes: d.fiche && d.fiche.comptes,
       });
       const sourcesRepere = {
         comptes: srcComptesPublies(d), "comptes-calcul": srcComptes(d),

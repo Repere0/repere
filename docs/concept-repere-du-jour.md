@@ -6,7 +6,7 @@ commune choisie, tirés des données déjà publiées dans le dépôt. Code : `m
 
 ## Ce que la carte montre
 
-- **Deux faits de budget** (chiffres par habitant publiés, ou calculs annoncés comme tels) et **un fait élu ou vote**
+- **Deux faits de budget** (chiffres par habitant publiés, ou calculs annoncés comme tels ; à partir de deux exercices publiés, l'évolution d'un exercice à l'autre, écrite comme un calcul : « entre 2024 et 2025 ») et **un fait élu ou vote**
   (circonscription, maire, dernier scrutin du député). Ordre affiché : budget, élu, budget.
 - Chaque fait porte **sa source** (producteur, date). Un calcul s'annonce comme calcul (`calcul: true`).
 - Un fait sans source affichable n'est pas montré. Sans aucun fait, la carte ne s'affiche pas.
@@ -26,14 +26,14 @@ commune choisie, tirés des données déjà publiées dans le dépôt. Code : `m
 
 Pour une commune, les modèles disponibles d'une catégorie forment une liste ordonnée (ordre fixe).
 Un pas premier avec la longueur de la liste la parcourt sans répéter avant d'avoir tout vu.
-Le jour fixe la position. Mesure sur la fixture de test (12 modèles budget, 2 par jour ; 6 modèles élus, 1 par jour) :
+Le jour fixe la position. Mesure sur la fixture de test, sans deux exercices publiés (12 modèles budget, 2 par jour ; 6 modèles élus, 1 par jour) :
 un même fait revient au plus tôt **6 jours** plus tard, à chaque emplacement.
 
 ## Limites, dites telles quelles
 
 - **Pas de non-répétition sur 30 jours.** Elle demanderait 30 modèles par catégorie, ou une mémoire locale (interdite).
   Le cycle réel dépend du nombre de modèles disponibles pour la commune : `floor(n / 2)` jours pour le budget, `n` jours pour les élus.
-- **19 modèles, pas 30.** Douze budget, sept élus. Les élus sont limités à ce que le dépôt publie par commune
+- **22 modèles, pas 30 (décision D142).** Quinze budget, dont trois évolutions entre deux exercices (V52), et sept élus. Les élus sont limités à ce que le dépôt publie par commune
   (maire, circonscription, vote du député, nombre de circonscriptions). Aucun modèle n'est écrit pour atteindre un nombre.
 - **Pas de faits « histoire ».** Mérimée et Wikidata ne répondent pas depuis la session de build : aucune donnée historique n'est affichée.
 - **Pas de groupes politiques** dans les faits : la donnée n'est pas publiée dans le dépôt (voir BLOCAGES).

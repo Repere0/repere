@@ -77,7 +77,34 @@ const BUDGET = [
   { id: "b-part-impots", source: "comptes-calcul", texte: c => { const r = trouve(c.rapports, /impôts/); return r ? `Sur 100 € encaissés à ${c.nom} : ${r.v}.` : null; } },
   { id: "b-dette-recettes", source: "comptes-calcul", texte: c => { const r = trouve(c.rapports, /mois de recettes/); return r ? `L'encours de dette de ${c.nom} représente ${r.v}.` : null; } },
   { id: "b-annee", source: "comptes", texte: c => c.an ? `Les comptes les plus récents de ${c.nom} sont ceux de ${c.an}.` : null },
+  /* Évolutions entre deux exercices de la MÊME commune (V52) : un calcul, annoncé comme tel.
+     Refusé faute de donnée : dotations de l'État, capacité d'autofinancement, dépenses de
+     fonctionnement, charges de personnel au sens du compte (la ligne « comptes » ne les porte pas). */
+  { id: "b-evolution-depenses", source: "comptes-calcul", texte: c => evolution(c, "depenses", "Les dépenses par habitant", "ont", "augmenté", "diminué") },
+  { id: "b-evolution-recettes", source: "comptes-calcul", texte: c => evolution(c, "recettes", "Les recettes par habitant", "ont", "augmenté", "diminué") },
+  { id: "b-evolution-dette", source: "comptes-calcul", texte: c => evolution(c, "dette", "La dette par habitant", "a", "augmenté", "diminué") },
 ];
+
+/* Évolution en pourcentage d'un montant par habitant, entre l'exercice précédent et le dernier. */
+function evolution(c, cle, sujet, verbe, haut, bas) {
+  const p = c.precedent;
+  if (!p || c.hab[cle] === null || p.hab[cle] === null || p.hab[cle] <= 0) return null;
+  const pct = Math.round((c.hab[cle] - p.hab[cle]) / p.hab[cle] * 100);
+  if (pct === 0) return null;
+  const sens = pct > 0 ? `${verbe === "a" ? "a" : "ont"} ${haut}` : `${verbe === "a" ? "a" : "ont"} ${bas}`;
+  return `${sujet} de ${c.nom} ${sens} de ${Math.abs(pct)} % entre ${p.an} et ${c.an}.`;
+}
+
+/* L'exercice qui précède le dernier, avec ses montants par habitant, s'il existe. */
+export function exercicePrecedent(comptes, an) {
+  if (!comptes || !an) return null;
+  const ans = Object.keys(comptes).filter(a => /^\d{4}$/.test(a) && a < an).sort();
+  for (let i = ans.length - 1; i >= 0; i--) {
+    const hab = parHabitant(comptes[ans[i]]);
+    if (hab && hab.depenses !== null) return { an: ans[i], hab: { recettes: nombre(hab.recettes), depenses: nombre(hab.depenses), dette: nombre(hab.dette) } };
+  }
+  return null;
+}
 
 /* ── ÉLUS ET VOTES — source « scrutin » (Assemblée nationale) ou « elus » (RNE). ── */
 const ELUS = [
@@ -147,7 +174,7 @@ export function tirages(liste, graine, jour, k) {
 
 /* Trois faits, au plus : deux budgets et un élu quand ils existent, sinon ce qui reste.
    Rien n'est produit sans donnée. */
-export function faitsDuJour({ nom, insee, date, exercice, rapportsComptes, fiche, vote, nbCircos, niveau }) {
+export function faitsDuJour({ nom, insee, date, exercice, rapportsComptes, fiche, vote, nbCircos, niveau, comptes }) {
   /* exercice : { an, ex } tel que produit par dernierExercice() ; le budget par habitant
      se lit ici, dans la même fonction que le site. */
   const an = exercice && exercice.an ? exercice.an : null;
@@ -164,6 +191,7 @@ export function faitsDuJour({ nom, insee, date, exercice, rapportsComptes, fiche
     maire: fiche && fiche.maire && fiche.maire.nom ? fiche.maire.nom : null,
     vote: vote || null,
     nbCircos: typeof nbCircos === "number" ? nbCircos : 0,
+    precedent: exercicePrecedent(comptes, an),
   };
   /* Ordre fixe de MODELES : la rotation ne dépend que de cet ordre, de la commune et du jour. */
   /* Le réglage d'échelon filtre AVANT la sélection : les trois faits viennent des modèles visibles. */
