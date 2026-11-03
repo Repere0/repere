@@ -341,8 +341,28 @@ rm -rf site_engendre
   # GROUPES POLITIQUES DES DEPUTES (V36, B2). Lit l'AMO30 deja depile et ecrit
   # mono/data/deputes-groupes.json. Non bloquant : sans lui, l'application ne montre pas
   # le groupe. Refuse d'ecrire si moins de 90 % des deputes ont un groupe lu.
-  node scripts/collecte-groupes.mjs ../data/brut_AMO30/json ./data \
-    || echo "::warning::groupes politiques non collectes (AMO30) - voir docs/data/groupes-politiques.md"
+  # VISIBLE (V62). Sortie gardee dans un fichier temporaire, hors du depot : la garde de
+  # commit refuse tout fichier qui n'est pas une sortie listee dans collecte.yml.
+  # Le bilan du job recoit une ligne « Groupes : … » ; un echec donne sa raison.
+  # Ne fait JAMAIS echouer le job : l'etape est optionnelle.
+  groupes_log=$(mktemp)
+  groupes_rc=0
+  node scripts/collecte-groupes.mjs ../data/brut_AMO30/json ./data >"$groupes_log" 2>&1 || groupes_rc=$?
+  cat "$groupes_log"
+  if [ "$groupes_rc" -eq 0 ]; then
+    groupes_bilan=$(node -e '
+      const t = JSON.parse(require("fs").readFileSync("data/deputes-groupes.json", "utf8"));
+      const v = Object.values(t), ok = v.filter(x => x.groupe && x.groupe !== "Inconnu").length;
+      console.log("Groupes : " + ok + " deputes avec groupe identifie, " + (v.length - ok) + " sans groupe");
+    ' 2>/dev/null || echo "Groupes : fichier illisible apres ecriture")
+  else
+    raison=$(tail -n 1 "$groupes_log")
+    groupes_bilan="ECHEC collecte-groupes (code $groupes_rc) : ${raison:-aucune sortie}"
+    echo "::warning::${groupes_bilan}"
+  fi
+  echo "$groupes_bilan"
+  echo "- $groupes_bilan" >> "${GITHUB_STEP_SUMMARY:-/dev/null}"
+  rm -f "$groupes_log"
   # AGENDA ASSEMBLEE NATIONALE (23/09/2026) - pas de reseau ici, contrairement
   # au Senat : lit outils/agenda_an.json, deja produit par l'etape 2 de ce
   # meme script (agenda_an.py). Si ce fichier manque ou est mal forme, le
