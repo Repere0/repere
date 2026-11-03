@@ -16,7 +16,7 @@ import {
   chiffresComptes, etatDette, comptesAbsents, comptesIncoherents, comptesInsuffisants, diffEuros, eurosArrondis,
   evolution, exercicesEcartes, financementProjet, INTRO_EVOLUTION, introRapports, montantCourt, noteRattachement,
   NOTE_EVOLUTION, NOTE_FINANCEMENT, nomDispositif, parHabitant, partReperee, perimetreChange, phraseEcartes,
-  phraseProjetLocal, rapports, sousTitreRapports, euros, CALCUL_REPERE, LIBELLES,
+  phraseProjetLocal, rapports, sousTitreRapports, euros, CALCUL_REPERE, LIBELLES, exercicePrecedent,
 } from "@repere/core";
 import { Carte, Definitions, Vide } from "../lib/composants";
 import { PROJETS_PAS_ARRIVES, projetsAucun } from "../lib/absences";
@@ -29,7 +29,7 @@ import { phrasesMoyenne, useMoyenneDepenses } from "../lib/moyenne";
 import { PastilleSource } from "../ui/source";
 import { BoutonPartageTexte, ligneSource } from "../ui/partage/partager-texte";
 import { Emoji, Resume } from "../ui/resume";
-import { BarrePart, Compteur, DeuxAnnees, Depli, Financement, Mois, RepartitionCent } from "../ui/visuels";
+import { BarrePart, Compteur, DeuxAnnees, Depli, Financement, Mois, RepartitionCent, Tendance } from "../ui/visuels";
 import { PartagerCarte } from "../ui/partage/bouton-partage";
 import { ChiffreStory } from "../ui/partage/variantes/chiffre.story";
 import { messageChiffre } from "../ui/partage/messages";
@@ -70,6 +70,11 @@ export default function Argent() {
       const rr: Rapport[] = ex ? rapports(ex.ex) : [];
       const ch = ex ? chiffresComptes(ex.ex) : null;
       const hab = ex ? parHabitant(ex.ex) : null;
+      /* V54 : tendance par habitant d'un exercice a l'autre (calcul Repere, annonce comme tel).
+         Absente si l'exercice precedent n'est pas publie (exercicePrecedent renvoie null). */
+      const precedent = ex && d.fiche && d.fiche.comptes ? exercicePrecedent(d.fiche.comptes, ex.an) : null;
+      const tendancePct = hab && hab.depenses !== null && precedent && precedent.hab.depenses !== null && precedent.hab.depenses > 0
+        ? Math.round(((hab.depenses - precedent.hab.depenses) / precedent.hab.depenses) * 1000) / 10 : null;
       const rap = (re: RegExp) => rr.find(o => re.test(o.v));
       const ecartes = exercicesEcartes(d.fiche, ex);
       const phraseEc = phraseEcartes(ecartes, nom);
@@ -102,6 +107,7 @@ export default function Argent() {
                 <Resume phrase={dep ? `${dep.texte} au total sur l'année.` : ""}
                   chiffre={hab && hab.depenses !== null ? `${hab.depenses.toLocaleString("fr-FR")} €` : null}
                   legende="par habitant" />
+                {precedent && ex ? <Tendance pct={tendancePct} an1={precedent.an} an2={ex.an} /> : null}
                 {/* D23 (ADR 0002), A1 : la commune mediane de la region, un calcul annonce comme tel. */}
                 {hab && hab.depenses !== null ? <Comparaison nom={nom} valeur={hab.depenses} index={r.index} dep={d.dep} an={ex.an} /> : null}
                 {hab && hab.salaires !== null && hab.investissement !== null ? (

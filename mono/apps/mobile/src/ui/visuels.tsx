@@ -55,36 +55,47 @@ export function BarrePart({ part, libelle, valeur, echelon = "ville", delai = 0,
    et son libelle a cote. Le reste est dessine, jamais chiffre : la source ne le detaille pas.
    Couleurs : l'echelon de la commune (ville) pour les salaires, dept pour les investissements, gris
    pour le reste. Aucune couleur nouvelle (invariant 7). */
+/* V54 — LISTE DE BARRES (inspirée d'AniUI « Bar List », recodée sans dépendance) : une ligne par
+   poste, triée du plus grand au plus petit. Libellé à gauche, montant au centre (« sur 100 € »),
+   barre à droite. Couleurs de la palette seulement : piste voile, partie active encre (invariant 7).
+   Le reste n'est jamais donné comme un poste détaillé : il est écrit « non détaillé par la source ». */
 export function RepartitionCent({ salaires, investissement }: { salaires: number | null; investissement: number | null }) {
   const reste = Math.max(0, 100 - (salaires ?? 0) - (investissement ?? 0));
-  const parts = [
-    salaires !== null ? { libelle: "Salaires des agents", valeur: salaires, couleur: couleurs.ville } : null,
-    investissement !== null ? { libelle: "Investissements", valeur: investissement, couleur: couleurs.dept } : null,
-  ].filter(Boolean) as { libelle: string; valeur: number; couleur: string }[];
-  const dit = parts.map(p => `${p.libelle} ${p.valeur} €`).join(", ");
+  const lignes = [
+    salaires !== null ? { libelle: "Salaires des agents", valeur: salaires } : null,
+    investissement !== null ? { libelle: "Investissements", valeur: investissement } : null,
+    reste > 0 ? { libelle: "Autres (non détaillés)", valeur: reste } : null,
+  ].filter(Boolean) as { libelle: string; valeur: number }[];
+  lignes.sort((a, b) => b.valeur - a.valeur);
+  const dit = lignes.map(p => `${p.libelle} ${p.valeur} €`).join(", ");
   return (
-    <View accessible accessibilityLabel={`Sur 100 € dépensés : ${dit}. Le reste n'est pas détaillé par la source.`} style={{ gap: PAS * 2 }}>
-      <View style={{ flexDirection: "row", height: 56, borderRadius: RAYON.bloc, overflow: "hidden", gap: 2 }}>
-        {parts.map(p => (
-          <View key={p.libelle} style={{ flex: p.valeur, backgroundColor: p.couleur, justifyContent: "center", paddingHorizontal: PAS * 2 }}>
-            {p.valeur >= 15 ? <Text style={[TYPO.reponse, { color: couleurs.blanc, fontWeight: "600" }]}>{p.valeur} €</Text> : null}
+    <View accessible accessibilityLabel={`Sur 100 € dépensés : ${dit}.`} style={{ gap: PAS * 3 }}>
+      {lignes.map(p => (
+        <View key={p.libelle} style={s.ligneBarre}>
+          <Text style={[TYPO.note, { flex: 1.4 }]}>{p.libelle}</Text>
+          <Text style={[TYPO.corps, { fontWeight: "700", minWidth: 52, textAlign: "center" }]}>{`${p.valeur} €`}</Text>
+          <View style={s.pisteBarre} importantForAccessibility="no">
+            <View style={[s.remplissageBarre, { width: `${Math.max(0, Math.min(100, p.valeur))}%` }]} />
           </View>
-        ))}
-        {reste > 0 ? <View style={{ flex: reste, backgroundColor: couleurs.sourd }} /> : null}
-      </View>
-      <View style={{ gap: PAS }}>
-        {parts.map(p => (
-          <View key={p.libelle} style={s.ligneLegende}>
-            <View style={[s.pastille, { backgroundColor: p.couleur }]} />
-            <Text style={[TYPO.corps, { flex: 1 }]}>{p.libelle}</Text>
-            <Text style={[TYPO.corps, { fontWeight: "600" }]}>{p.valeur} €</Text>
-          </View>
-        ))}
-        <View style={s.ligneLegende}>
-          <View style={[s.pastille, { backgroundColor: couleurs.sourd }]} />
-          <Text style={[TYPO.note, { flex: 1 }]}>Reste, non détaillé par la source</Text>
         </View>
-      </View>
+      ))}
+    </View>
+  );
+}
+
+/* V54 — TENDANCE (inspirée d'AniUI « Stat card avec delta chip »). Un chiffre et sa variation
+   par rapport à l'exercice précédent. Calcul de Repère, annoncé comme tel. Couleur neutre
+   (encre sur voile) : ni vert ni rouge, la hausse n'est ni bonne ni mauvaise (invariant 7).
+   Absente quand l'exercice précédent n'est pas publié, ou quand la variation est nulle. */
+export function Tendance({ pct, an1, an2 }: { pct: number | null; an1: string; an2: string }) {
+  if (pct === null || pct === 0 || !Number.isFinite(pct)) return null;
+  const texte = `${Math.abs(pct).toLocaleString("fr-FR", { maximumFractionDigits: 1 })} %`;
+  const sens = pct > 0 ? "en hausse" : "en baisse";
+  return (
+    <View accessible accessibilityLabel={`${sens.charAt(0).toUpperCase()}${sens.slice(1)} de ${texte} par habitant entre ${an1} et ${an2}. Calcul Repère.`}
+      style={s.tendance}>
+      <Text style={[TYPO.note, { color: couleurs.encre, fontWeight: "700" }]}>{`${pct > 0 ? "↑" : "↓"} ${texte}`}</Text>
+      <Text style={TYPO.note}>{`par rapport à ${an1} · calcul Repère`}</Text>
     </View>
   );
 }
@@ -278,6 +289,10 @@ const s = feuille(() => StyleSheet.create({
   rempli: { height: "100%", borderRadius: 6 },
   ligneLegende: { flexDirection: "row", alignItems: "center", gap: PAS * 2 },
   pastille: { width: 12, height: 12, borderRadius: 3 },
+  ligneBarre: { flexDirection: "row", alignItems: "center", gap: PAS * 2 },
+  pisteBarre: { flex: 1.2, height: 6, borderRadius: 3, backgroundColor: couleurs.voile, overflow: "hidden" },
+  remplissageBarre: { height: 6, borderRadius: 3, backgroundColor: couleurs.encre },
+  tendance: { alignSelf: "flex-start", flexDirection: "row", flexWrap: "wrap", alignItems: "center", gap: PAS * 2, backgroundColor: couleurs.voile, borderRadius: RAYON.pastille, paddingHorizontal: PAS * 2, paddingVertical: PAS },
   mois: { flexDirection: "row", flexWrap: "wrap", gap: 4 },
   moisCase: { width: 22, height: 22, borderRadius: 6, backgroundColor: couleurs.voile, overflow: "hidden" },
   moisRempli: { height: "100%" },
