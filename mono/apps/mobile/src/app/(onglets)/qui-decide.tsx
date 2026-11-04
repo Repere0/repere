@@ -16,12 +16,11 @@ import { srcElus } from "../../lib/sources";
 import { CIBLE, couleurs, PAS, TYPO } from "../../lib/theme";
 import { AvecDonnees, Page, Question } from "../../ui/page";
 import { PastilleSource } from "../../ui/source";
-import { Chaine, type Niveau } from "../../ui/visuels";
+import { Chaine, Depli, type Niveau } from "../../ui/visuels";
 import { prefetDeRegion } from "../../lib/prefet";
 import { BadgeZoom, useNiveauZoom } from "../../ui/badge-zoom";
 import { visibleAuNiveau } from "@repere/core";
 import { useSelection } from "../../lib/selection";
-import { mandatsTerminesListes } from "../../lib/mandats-termines";
 import { useDecoupage } from "../../lib/decoupage";
 
 export default function QuiDecide() {
@@ -58,24 +57,23 @@ export default function QuiDecide() {
           /* 07/10/2026 : les precisions propres au territoire (Ile-de-France,
              Metropole du Grand Paris) viennent de @repere/core, comme sur le site. */
           const precisions = (n as { precisions?: string[] }).precisions || [];
-          /* D20, lot L2 : le mot « intercommunalité » se definit sous la carte (bouton, cible 44 px). */
-          /* D32 : un mandat termine que le RNE porte encore est dit, date et source a l'appui. */
-          const termines = choix ? mandatsTerminesListes(choix.insee, (f as { agglo?: { delegues?: { nom?: string }[] } }).agglo?.delegues) : [];
-          return { ...n, pied: (
-            <View style={{ gap: PAS }}>
-              {termines.map(m => (
-                <View key={m.nom} style={{ gap: PAS }}>
-                  <Text style={TYPO.note}>Mandat terminé le {dateFr(m.fin)}{m.motif ? ` (${m.motif})` : ""} : {m.nomAffiche}, {m.fonction.toLowerCase()}. Le Répertoire national des élus le compte encore dans ce nombre.</Text>
-                  <LienSortant url={m.source} texte={`Source : ${m.sourceNom}`} />
-                </View>
-              ))}
-              <Definitions s={[{ t: "intercommunalité", mot: "intercommunalité" }]} />
-            </View>
-          ), note: [n.delegues === null
+          /* V55 bloc 4A : la carte s'arrete a l'institution et a « Décide : … » (3 lignes
+             au plus) ; le detail (qui y siege, la definition) passe derriere « Voir plus ».
+             Bloc 4C : le mandat termine (Henri Mellier, D32) ne s'affiche plus ici, retire
+             pour l'instant — la liste elle-meme (lib/mandats-termines.ts) reste intacte
+             pour une future page « elus du territoire ». */
+          const noteTexte = [n.delegues === null
             ? "La source ne liste pas l'intercommunalité de cette commune. C'est la source qui est incomplète, pas la commune qui n'en a pas."
             : n.delegues
             ? `Le Répertoire national des élus y liste ${n.delegues} élu${n.delegues > 1 ? "s" : ""} de ${d.nomCommune}. Vous ne l'élisez pas directement : ce sont des conseillers municipaux qui y siègent.`
-            : "Le Répertoire national des élus ne porte pas de délégué pour cette commune à son intercommunalité.", ...precisions].join(" ") };
+            : "Le Répertoire national des élus ne porte pas de délégué pour cette commune à son intercommunalité.", ...precisions].join(" ");
+          /* D20, lot L2 : le mot « intercommunalité » se definit sous la carte (bouton, cible 44 px). */
+          return { ...n, pied: (
+            <Depli titre="Voir plus">
+              <Text style={TYPO.note}>{noteTexte}</Text>
+              <Definitions s={[{ t: "intercommunalité", mot: "intercommunalité" }]} />
+            </Depli>
+          ) };
         }
         if (n.echelon === "region" && !n.personne) {
           return { ...n, note: r.regionLue ? "Le Répertoire national des élus ne porte pas de président pour cette région." : REGION_PAS_ARRIVEE };

@@ -29,6 +29,7 @@ import { VOTE } from "../ui/partage/donnees";
 import { SquelettesListe } from "../ui/squelette";
 import { Logo } from "../ui/logo";
 import { Loupe } from "../ui/loupe";
+import { BoutonReglages } from "../ui/reglages";
 import { RappelElection } from "../ui/rappel-election";
 import { DatePublication } from "../ui/fraicheur";
 import { DernieresPublications } from "../ui/dernieres-publications";
@@ -446,57 +447,39 @@ export default function Accueil() {
         contentContainerStyle={[s.page, { paddingTop: marges.top + PAS * 6, paddingBottom: marges.bottom + PAS * 6 }]}
         ListHeaderComponent={
           <View style={s.tete}>
-            <DatePublication />
-      <BadgeZoom sombre />
-      <Pressable onPress={() => router.push("/confort-lecture")} accessibilityRole="link"
-        style={({ pressed }) => ({ minHeight: 44, justifyContent: "center", alignSelf: "flex-start", opacity: pressed ? 0.7 : 1 })}>
-        <Text style={[s.legende, { textDecorationLine: "underline" }]}>Confort de lecture ›</Text>
-      </Pressable>
-      <View style={{ flexDirection: "row", flexWrap: "wrap", columnGap: PAS * 4 }}>
-        <Pressable onPress={() => router.push("/mes-elus")} accessibilityRole="link" accessibilityLabel="Mes élus : qui vous représente"
-          style={({ pressed }) => ({ minHeight: 48, justifyContent: "center", opacity: pressed ? 0.7 : 1 })}>
-          <Text style={[s.legende, { textDecorationLine: "underline" }]}>Mes élus ›</Text>
-        </Pressable>
-        <Pressable onPress={() => router.push("/voter")} accessibilityRole="link" accessibilityLabel="Voter : prochaines élections et guide du vote"
-          style={({ pressed }) => ({ minHeight: 48, justifyContent: "center", opacity: pressed ? 0.7 : 1 })}>
-          <Text style={[s.legende, { textDecorationLine: "underline" }]}>Voter ›</Text>
-        </Pressable>
-        <Pressable onPress={() => router.push("/pour-vous")} accessibilityRole="link" accessibilityLabel="Pour vous : ce qui a été publié selon votre vue"
-          style={({ pressed }) => ({ minHeight: 48, justifyContent: "center", opacity: pressed ? 0.7 : 1 })}>
-          <Text style={[s.legende, { textDecorationLine: "underline" }]}>Pour vous ›</Text>
-        </Pressable>
-      </View>
-            <View style={s.haut}>
-              {/* Le logo est une vue (ui/logo.tsx) : aucun fichier image dans assets/. */}
-              <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
-                <View style={{ flexDirection: "row", alignItems: "center", gap: PAS * 3 }}>
-                  {/* L'accueil est toujours sombre : la variante « sombre », pas l'encre du theme
-                      (en mode clair, l'encre du theme est foncee et le logo disparaissait). */}
-                  <Text style={s.marque} accessibilityLabel="Repère">Repère<Text style={{ color: E.ville }}>.</Text></Text>
-                </View>
+            {/* 1. EN-TETE : petite marque + petit logo a gauche, recherche globale et
+               reglages a droite (V55 bloc 2 : plus de logo geant au milieu de l'ecran,
+               le logo ne vit plus qu'ici, en petit). */}
+            <View style={s.enteteHaut}>
+              <View style={{ flexDirection: "row", alignItems: "center", gap: PAS * 2 }}>
+                {/* L'accueil est toujours sombre : la variante « sombre », pas l'encre du theme
+                    (en mode clair, l'encre du theme est foncee et le logo disparaissait). */}
+                <Logo size={22} variant="sombre" />
+                <Text style={s.marque} accessibilityLabel="Repère">Repère<Text style={{ color: E.ville }}>.</Text></Text>
+              </View>
+              <View style={{ flexDirection: "row", alignItems: "center" }}>
                 {/* V37 bloc 3 : la recherche globale (communes, élus, scrutins). */}
                 <Pressable onPress={() => router.push("/recherche")} accessibilityRole="button"
                   accessibilityLabel="Ouvrir la recherche : communes, élus, scrutins"
                   style={({ pressed }) => ({ minWidth: 48, minHeight: 48, alignItems: "center", justifyContent: "center", opacity: pressed ? 0.7 : 1 })}>
                   <Loupe couleur={D.encre} />
                 </Pressable>
+                <BoutonReglages couleur={D.encre} bordure={D.sourd} />
               </View>
-              {!champOuvert ? (
-                <Pressable onPress={() => setCherche(true)} accessibilityRole="button" accessibilityLabel="Chercher une commune"
-                  style={({ pressed }) => [s.chercher, pressed && { opacity: 0.7 }]}>
-                  <Text style={s.chercherTexte}>Chercher une commune</Text>
-                </Pressable>
-              ) : null}
             </View>
-            {/* LE PITCH : une citation, en grand. Demande du CEO (30/10/2026) : elle remplace le paragraphe. */}
-            {/* Le logo vit dans le hero, une seule fois : grand à la première ouverture, moyen ensuite (brief V47). */}
-            <View style={s.grandLogo}><Logo size={premiere ? 128 : 96} variant="sombre" /></View>
-            <Text style={[s.citation, premiere && { marginTop: PAS * 2 }]} accessibilityRole="header">L'application qui vous raccroche à votre citoyenneté française.</Text>
+            <DatePublication />
+            <BadgeZoom sombre />
 
-            {/* V37 bloc 6 : le rappel de la prochaine élection, s'il tombe dans les 180 jours. */}
-            {premiere ? null : <View style={{ marginTop: PAS * 4 }}><RappelElection /></View>}
-            {premiere ? null : <DernieresPublications />}
-            {premiere ? null : cartes}
+            {/* 2. LE TITRE : deux lignes au plus (V55 bloc 2), la citation du CEO (30/10/2026). */}
+            <Text style={s.citation} numberOfLines={2} accessibilityRole="header">L'application qui vous raccroche à votre citoyenneté française.</Text>
+
+            {/* 3. LA RECHERCHE DE COMMUNE, visible immediatement sous le titre. */}
+            {!champOuvert ? (
+              <Pressable onPress={() => setCherche(true)} accessibilityRole="button" accessibilityLabel="Chercher une commune"
+                style={({ pressed }) => [s.chercher, pressed && { opacity: 0.7 }]}>
+                <Text style={s.chercherTexte}>Chercher une commune</Text>
+              </Pressable>
+            ) : null}
 
             {retenue && nomRetenue ? (
               <Carte echelon="ville" titre="Votre commune, sur ce téléphone">
@@ -529,6 +512,32 @@ export default function Accueil() {
                 </View>
               </>
             ) : null}
+
+            {/* 4. LIENS SECONDAIRES, apres la recherche. */}
+            <View style={s.liensSecondaires}>
+              <Pressable onPress={() => router.push("/confort-lecture")} accessibilityRole="link" accessibilityLabel="Confort de lecture : réglages de confort visuel"
+                style={({ pressed }) => ({ minHeight: 48, justifyContent: "center", opacity: pressed ? 0.7 : 1 })}>
+                <Text style={[s.legende, { textDecorationLine: "underline" }]}>Confort ›</Text>
+              </Pressable>
+              <Pressable onPress={() => router.push("/mes-elus")} accessibilityRole="link" accessibilityLabel="Mes élus : qui vous représente"
+                style={({ pressed }) => ({ minHeight: 48, justifyContent: "center", opacity: pressed ? 0.7 : 1 })}>
+                <Text style={[s.legende, { textDecorationLine: "underline" }]}>Mes élus ›</Text>
+              </Pressable>
+              <Pressable onPress={() => router.push("/voter")} accessibilityRole="link" accessibilityLabel="Voter : prochaines élections et guide du vote"
+                style={({ pressed }) => ({ minHeight: 48, justifyContent: "center", opacity: pressed ? 0.7 : 1 })}>
+                <Text style={[s.legende, { textDecorationLine: "underline" }]}>Voter ›</Text>
+              </Pressable>
+              <Pressable onPress={() => router.push("/pour-vous")} accessibilityRole="link" accessibilityLabel="Pour vous : ce qui a été publié selon votre vue"
+                style={({ pressed }) => ({ minHeight: 48, justifyContent: "center", opacity: pressed ? 0.7 : 1 })}>
+                <Text style={[s.legende, { textDecorationLine: "underline" }]}>Pour vous ›</Text>
+              </Pressable>
+            </View>
+
+            {/* 5. SI COMMUNE CHOISIE : repere du jour, puis les chiffres (V37 bloc 6). */}
+            {premiere ? null : <View style={{ marginTop: PAS * 4 }}><RappelElection /></View>}
+            {premiere ? null : <DernieresPublications />}
+            {premiere ? null : cartes}
+
             {etat === ETATS.EN_COURS ? <SquelettesListe n={3} hauteur={72} /> : null}
             {etat !== ETATS.SERVI && etat !== ETATS.EN_COURS && phrase ? (
               <Vide titre={phrase.titre} corps={phrase.corps}
@@ -614,13 +623,15 @@ export default function Accueil() {
 const s = feuille(() => StyleSheet.create({
   page: { paddingHorizontal: PAS * 4, gap: PAS * 2, maxWidth: 640, width: "100%", alignSelf: "center" },
   tete: { gap: PAS * 3, marginBottom: PAS * 2 },
-  /* Taille 26 : la pastille « Chercher » passe sous le logo au lieu de sortir de la marge. */
-  haut: { flexDirection: "row", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", gap: PAS * 3 },
-  marque: { fontFamily: POLICE.affiche, fontSize: 26, color: D.encre },
+  /* V55 bloc 2 : en-tete minimal (petite marque + petit logo, recherche et reglages),
+     le logo geant du milieu de l'ecran a disparu. */
+  enteteHaut: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
+  marque: { fontFamily: POLICE.affiche, fontSize: 16, color: D.encre },
   chercher: { minHeight: CIBLE, borderRadius: 999, borderWidth: 1, borderColor: D.trait, paddingHorizontal: PAS * 4, justifyContent: "center" },
   chercherTexte: { fontSize: 15, fontWeight: "500", color: D.encre },
-  grandLogo: { alignItems: "flex-start", marginTop: PAS * 4 },
-  citation: { fontFamily: POLICE.affiche, fontSize: 38, lineHeight: 43, letterSpacing: -0.6, color: D.encre, marginTop: PAS * 4 },
+  /* Titre reduit a deux lignes au plus (V55 bloc 2) : fontSize et lineHeight d'un h2, pas d'un h1. */
+  citation: { fontFamily: POLICE.affiche, fontSize: 26, lineHeight: 31, letterSpacing: -0.4, color: D.encre, marginTop: PAS },
+  liensSecondaires: { flexDirection: "row", flexWrap: "wrap", columnGap: PAS * 4, rowGap: PAS, marginTop: PAS },
   carte: { gap: PAS * 2, padding: PAS * 4, borderRadius: RAYON.carte, backgroundColor: D.carte, borderWidth: 1, borderColor: D.trait },
   etiquette: { fontSize: 13, fontWeight: "500", color: D.sourd },
   carteTitre: { fontFamily: POLICE.titre, fontSize: 24, lineHeight: 30, color: D.encre },

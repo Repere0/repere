@@ -43,10 +43,11 @@ export default function AnnuaireFiche() {
             <Text style={TYPO.note}>Date de début non publiée par la source. Repère ne la devine pas.</Text>
           )}
         </Carte>
-        <Carte titre="Ce que Repère n'affiche pas">
-          <Text style={TYPO.note}>Ni photo, ni parti : les données publiées ne les contiennent pas.</Text>
-        </Carte>
         {p.producteur ? <PastilleSource source={{ producteur: p.producteur, licence: p.licence, maj: p.maj, url: p.url }} /> : null}
+        {/* V55 bloc 3 : plus de carte négative pleine largeur. La fiche d'annuaire ne porte
+            jamais le parti (type Fiche, aucun champ groupe) : une ligne discrète en pied,
+            comme sur la fiche d'un député (elu.tsx, PARTI_NON_PUBLIE), pas un titre à part. */}
+        <Text style={TYPO.micro}>Parti et photo : non publiés par cette source. Repère ne les déduit pas.</Text>
       </Entree>
       {p.producteur ? (
         <PartagerCarte etiquette="Partager cette fiche"

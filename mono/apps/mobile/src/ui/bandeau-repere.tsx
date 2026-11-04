@@ -6,19 +6,16 @@
  * complète, qui porte les trois faits, leurs sources et le partage.
  * Sans fait affichable, le bandeau ne s'affiche pas. */
 import { Pressable, StyleSheet, Text, View } from "react-native";
-import { raccourcirFait } from "@repere/core";
 import { couleurs, feuille, PAS, RAYON, TYPO } from "../lib/theme";
 import { faitsAffichables, type FaitDuJour, type SourcesDuJour } from "../lib/repere-jour";
 
 const ZONE_TACTILE = 44;
 const HAUTEUR_VISIBLE = 32;
 
-/* V55 (bloc 3) : sur une ligne, à 390 px, le bandeau montre environ 36 caractères (mesuré, V54).
-   Le préfixe en prend 14 ; le fait est raccourci à 22 caractères, à un mot près, et garde son
-   premier chiffre quand il y en a un. La phrase entière reste à un geste, sur la page complète. */
-const PREFIXE = "Aujourd'hui : ";
-const FAIT_MAX = 22;
-
+/* V55 bloc 4D : un bouton franc, pas un fait tronqué (le resume a 22 caracteres,
+   livre en V54, lisait mal sur l'iPhone). Le premier fait reste la condition
+   d'affichage (sans fait affichable, le bandeau ne s'affiche pas) ; sa phrase
+   complete vit sur l'ecran dedie, a un geste. */
 export function BandeauRepere({ faits, sources, onOuvrir }: {
   faits: FaitDuJour[];
   sources: SourcesDuJour;
@@ -28,11 +25,11 @@ export function BandeauRepere({ faits, sources, onOuvrir }: {
   if (!premier) return null;
   return (
     <Pressable onPress={onOuvrir} accessibilityRole="button"
-      accessibilityLabel="Ouvrir le Repère du jour"
+      accessibilityLabel="Voir le Repère du jour"
       style={({ pressed }) => [s.zone, { opacity: pressed ? 0.7 : 1 }]}>
       <View style={[s.visible, { backgroundColor: couleurs.voile }]}>
         <Text style={s.icone} importantForAccessibility="no">💡</Text>
-        <Text numberOfLines={1} style={s.texte}>{`${PREFIXE}${raccourcirFait(premier.f.texte, { max: FAIT_MAX, visible: FAIT_MAX })}`}</Text>
+        <Text numberOfLines={1} style={s.texte}>Voir le Repère du jour</Text>
         <Text style={s.chevron} importantForAccessibility="no">›</Text>
       </View>
     </Pressable>

@@ -14,7 +14,10 @@ const OPTIONS: { valeur: ChoixTheme; libelle: string }[] = [
   { valeur: "sombre", libelle: "Sombre" },
 ];
 
-export function BoutonReglages() {
+/* couleur/bordure : surcharge explicite pour un fond qui ne suit pas le theme
+   courant (l'accueil est toujours sombre, cf. index.tsx). Sans surcharge, la
+   roue suit couleurs.encre/sourd comme avant (en-tete des onglets). */
+export function BoutonReglages({ couleur, bordure }: { couleur?: string; bordure?: string } = {}) {
   const [ouvert, setOuvert] = useState(false);
   return (
     <>
@@ -22,9 +25,9 @@ export function BoutonReglages() {
         onPress={() => setOuvert(true)}
         accessibilityRole="button"
         accessibilityLabel="Réglages de l'affichage"
-        style={({ pressed }) => [s.roue, pressed && { opacity: 0.7 }]}
+        style={({ pressed }) => [s.roue, bordure ? { borderColor: bordure } : null, pressed && { opacity: 0.7 }]}
       >
-        <Text accessibilityElementsHidden importantForAccessibility="no" allowFontScaling={false} style={s.glyphe}>{"⚙︎"}</Text>
+        <Text accessibilityElementsHidden importantForAccessibility="no" allowFontScaling={false} style={[s.glyphe, couleur ? { color: couleur } : null]}>{"⚙︎"}</Text>
       </Pressable>
       <ChoixAffichage visible={ouvert} onFermer={() => setOuvert(false)} />
     </>

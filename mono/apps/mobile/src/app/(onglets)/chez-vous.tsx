@@ -129,8 +129,11 @@ export default function ChezVous() {
             <Vide {...PROJETS_PAS_ARRIVES} action="Réessayer" onAction={reessayer} />
           ) : projet && f ? (
             <Reponse echelon="ville"
+              /* V55 bloc 4B : le titre nomme le projet (donnée publiée), plutôt que
+                 d'empiler deux montants et un pourcentage ; le pourcentage reste visible
+                 juste dessous (BarrePart), le détail des deux montants dans la note. */
               phrase={f.partPct !== null && cout
-                ? `L'État finance ${euros(f.subvention)} d'un projet de ${cout.texte} à ${nom}. Cela représente ${f.partPct} % du coût annoncé.`
+                ? `L'État a financé ${euros(f.subvention)} pour « ${projet.p.intitule} » à ${nom}.`
                 : `L'État apporte ${euros(f.subvention)} à un projet à ${nom}.`}
               preuve={f.partPct !== null ? <BarrePart sansLibelle part={f.partPct} libelle="Part de l'État dans le coût annoncé" valeur={`${f.partPct} € sur 100 €`} /> : undefined}
               note={`« ${projet.p.intitule} » : ${euros(f.subvention)} engagés par l'État en ${projet.p.annee}${f.cout ? ` sur ${euros(f.cout)} annoncés` : ""}.`}
@@ -138,7 +141,7 @@ export default function ChezVous() {
               partage={{
                 titre: `Une information sur ${nom}`,
                 texte: f.partPct !== null && cout
-                  ? `À ${nom} : l'État finance ${euros(f.subvention)} d'un projet de ${cout.texte}. Cela représente ${f.partPct} % du coût annoncé.`
+                  ? `À ${nom} : l'État a financé ${euros(f.subvention)} pour « ${projet.p.intitule} », sur ${cout.texte} annoncés (${f.partPct} %).`
                   : `À ${nom} : l'État apporte ${euros(f.subvention)} à un projet.`,
                 sourceUrl: srcProjets(d, f.partPct !== null)?.url,
               }}
