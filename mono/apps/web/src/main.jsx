@@ -18,3 +18,5 @@ if ("serviceWorker" in navigator && import.meta.env.PROD) {
     });
   });
 }
+
+// Test de déclenchement de verification (PR site) : ne pas fusionner.
