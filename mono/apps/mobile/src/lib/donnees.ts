@@ -20,3 +20,5 @@ configurerBase(process.env.EXPO_PUBLIC_REPERE_DONNEES || PRODUCTION);
 brancherCacheDisque();
 
 export * from "@repere/data-utils";
+
+// Test de déclenchement de verification (PR mobile) : ne pas fusionner.
