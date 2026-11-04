@@ -55,22 +55,25 @@ export default function QuiDecide() {
         }
         if (n.echelon === "agglo") {
           /* 07/10/2026 : les precisions propres au territoire (Ile-de-France,
-             Metropole du Grand Paris) viennent de @repere/core, comme sur le site. */
+             Metropole du Grand Paris) viennent de @repere/core, comme sur le site.
+             Elles corrigent une idee fausse (ex. « ce n'est pas l'intercommunalite qui
+             decide des transports ») : elles restent visibles par defaut (note), jamais
+             derriere « Voir plus » (parcours-web.mjs le verifie). */
           const precisions = (n as { precisions?: string[] }).precisions || [];
-          /* V55 bloc 4A : la carte s'arrete a l'institution et a « Décide : … » (3 lignes
-             au plus) ; le detail (qui y siege, la definition) passe derriere « Voir plus ».
-             Bloc 4C : le mandat termine (Henri Mellier, D32) ne s'affiche plus ici, retire
-             pour l'instant — la liste elle-meme (lib/mandats-termines.ts) reste intacte
-             pour une future page « elus du territoire ». */
-          const noteTexte = [n.delegues === null
+          /* V55 bloc 4A : la carte s'arrete a l'institution, « Décide : … » et la precision
+             eventuelle (3-4 lignes) ; le detail (qui y siege, la definition) passe derriere
+             « Voir plus ». Bloc 4C : le mandat termine (Henri Mellier, D32) ne s'affiche plus
+             ici, retire pour l'instant — la liste elle-meme (lib/mandats-termines.ts) reste
+             intacte pour une future page « elus du territoire ». */
+          const detailTexte = n.delegues === null
             ? "La source ne liste pas l'intercommunalité de cette commune. C'est la source qui est incomplète, pas la commune qui n'en a pas."
             : n.delegues
             ? `Le Répertoire national des élus y liste ${n.delegues} élu${n.delegues > 1 ? "s" : ""} de ${d.nomCommune}. Vous ne l'élisez pas directement : ce sont des conseillers municipaux qui y siègent.`
-            : "Le Répertoire national des élus ne porte pas de délégué pour cette commune à son intercommunalité.", ...precisions].join(" ");
+            : "Le Répertoire national des élus ne porte pas de délégué pour cette commune à son intercommunalité.";
           /* D20, lot L2 : le mot « intercommunalité » se definit sous la carte (bouton, cible 44 px). */
-          return { ...n, pied: (
+          return { ...n, note: precisions.length ? precisions.join(" ") : undefined, pied: (
             <Depli titre="Voir plus">
-              <Text style={TYPO.note}>{noteTexte}</Text>
+              <Text style={TYPO.note}>{detailTexte}</Text>
               <Definitions s={[{ t: "intercommunalité", mot: "intercommunalité" }]} />
             </Depli>
           ) };
