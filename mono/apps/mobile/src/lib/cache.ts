@@ -23,13 +23,13 @@
  * branche : le magasin partage utilise IndexedDB, sous la meme garde. */
 import { Platform } from "react-native";
 import { Directory, File, Paths } from "expo-file-system";
-import { configurerStockage } from "@repere/data-utils";
+import { CLE_PUBLIQUE, configurerStockage } from "@repere/data-utils";
 
-const CLE = /^(dep|vote|reg|proj|socle):[0-9A-Z]{1,3}$/;
+const CLE = CLE_PUBLIQUE;
 const dossier = () => new Directory(Paths.cache, "repere-donnees");
 const nomDe = (cle: string) => {
   if (!CLE.test(cle)) throw new Error("cle refusee : " + cle);
-  return cle.replace(":", "-") + ".json";
+  return cle.replaceAll(":", "-") + ".json";
 };
 const fichier = (cle: string) => new File(dossier(), nomDe(cle));
 
@@ -50,7 +50,7 @@ export const stockageDisque = {
     const d = dossier();
     if (!d.exists) return [];
     return d.list()
-      .map(x => x.name.replace(/\.json$/, "").replace("-", ":"))
+      .map(x => x.name.replace(/\.json$/, "").replaceAll("-", ":"))
       .filter(c => CLE.test(c));
   },
   async vider(): Promise<void> {

@@ -11,6 +11,7 @@ import fs from "node:fs";
 import path from "node:path";
 import http from "node:http";
 import { adresseFautive, MOTS_A_ACCENTS } from "../packages/data-utils/src/invariants.js";
+import { CLE_PUBLIQUE } from "../packages/data-utils/src/store.js";
 import { dernierExercice } from "../packages/core/src/comptes.js";
 
 /* COPIE VOLONTAIRE DE dateFr (packages/ui/src/composants.jsx) — ce fichier de
@@ -679,7 +680,7 @@ verif("invariant 2 — un seul magasin, et il ne porte que des paquets departeme
   && (magasins.magasins || []).every(m => m === "departements")
   /* "reg" rejoint dep/vote/socle le 22/09/2026 : le conseil regional, range
      par region (deux chiffres), meme garde que store.js. */
-  && (magasins.cles || []).every(c => /^(dep|vote|reg|proj|socle):[0-9A-Z]{1,3}$/.test(c)),
+  && (magasins.cles || []).every(c => CLE_PUBLIQUE.test(c)),
   JSON.stringify(magasins));
 
 console.log("\n--- l'argent -------------------------------------------------");
