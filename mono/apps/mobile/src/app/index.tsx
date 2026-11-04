@@ -483,8 +483,10 @@ export default function Accueil() {
             <DatePublication />
             <BadgeZoom sombre />
 
-            {/* 2. LE TITRE : deux lignes au plus (V55 bloc 2), la citation du CEO (30/10/2026). */}
-            <Text style={s.citation} numberOfLines={2} accessibilityRole="header">L'application qui vous raccroche à votre citoyenneté française.</Text>
+            {/* 2. LE TITRE : deux lignes au plus (V55 bloc 2). La citation complete du CEO
+               (30/10/2026, « L'application qui vous raccroche... ») coupait au milieu d'un mot
+               a numberOfLines={2} : l'alternative courte proposee dans le brief la remplace. */}
+            <Text style={s.citation} numberOfLines={2} accessibilityRole="header">Votre citoyenneté, expliquée.</Text>
 
             {/* 3. LA RECHERCHE DE COMMUNE, visible immediatement sous le titre. */}
             {!champOuvert ? (
