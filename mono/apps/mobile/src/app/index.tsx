@@ -383,7 +383,20 @@ export default function Accueil() {
                         {repartition ? (
                           <View style={{ gap: PAS * 2 }}>
                             <Barre parts={[{ cle: "s", valeur: repartition.sal, couleur: D.encre }, { cle: "i", valeur: repartition.inv, couleur: D.sourd }, { cle: "a", valeur: repartition.aut, couleur: D.trait }]} />
-                            <Text style={s.legende}>{repartition.sal} % salaires · {repartition.inv} % invest. · {repartition.aut} % autres</Text>
+                            {/* V55 bloc 5B : un label direct par segment (plus une legende separee
+                                en une phrase) ; memes trois gris neutres que la barre (invariant 7). */}
+                            <View style={{ gap: PAS }}>
+                              {[
+                                { cle: "s", libelle: "Salaires", valeur: repartition.sal, couleur: D.encre },
+                                { cle: "i", libelle: "Investissement", valeur: repartition.inv, couleur: D.sourd },
+                                { cle: "a", libelle: "Autres", valeur: repartition.aut, couleur: D.trait },
+                              ].filter(x => x.valeur > 0).map(x => (
+                                <View key={x.cle} style={{ flexDirection: "row", alignItems: "center", gap: PAS * 2 }}>
+                                  <View accessibilityElementsHidden importantForAccessibility="no" style={{ width: 12, height: 12, borderRadius: 3, backgroundColor: x.couleur }} />
+                                  <Text style={s.legende}>{x.libelle} {x.valeur} %</Text>
+                                </View>
+                              ))}
+                            </View>
                           </View>
                         ) : null}
                       </Details>
