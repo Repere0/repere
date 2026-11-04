@@ -21,6 +21,11 @@ description: Toute modification du code ou des données de Repère (mono/, outil
 - Dans le fichier autonome : patch Python à assertions, `assert src.count(ancre) == 1`
   sur chaque ancre **avant** d'écrire ; ancre introuvable = re-dériver par `grep`,
   jamais deviner. Apostrophes ASCII seulement dans les ancres.
+- Commentaires (convention Ponytail, 17/10/2026) : une ligne, le pourquoi que le code ne
+  montre pas. Le récit daté (« mesuré le …, cause …, preuve … ») va dans le message de
+  commit, où `git blame` le retrouve. Un raccourci à limite connue :
+  `// shortcut: <la limite>, <quand le revoir>`. Un commentaire long existant ne se
+  réécrit que si l'on touche déjà ce code.
 - Texte affiché : accents obligatoires, dates écrites en toutes lettres comme
   ailleurs dans l'app (« jeudi 1er octobre 2026 »).
 
