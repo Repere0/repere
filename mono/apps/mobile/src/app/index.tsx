@@ -457,9 +457,9 @@ export default function Accueil() {
           style={({ pressed }) => ({ minHeight: 48, justifyContent: "center", opacity: pressed ? 0.7 : 1 })}>
           <Text style={[s.legende, { textDecorationLine: "underline" }]}>Mes élus ›</Text>
         </Pressable>
-        <Pressable onPress={() => router.push("/voter")} accessibilityRole="link" accessibilityLabel="Voter : prochaines élections et guide du vote"
+        <Pressable onPress={() => router.push("/voter")} accessibilityRole="link" accessibilityLabel="Ma voix : prochaines élections, guide du vote et du conseil municipal"
           style={({ pressed }) => ({ minHeight: 48, justifyContent: "center", opacity: pressed ? 0.7 : 1 })}>
-          <Text style={[s.legende, { textDecorationLine: "underline" }]}>Voter ›</Text>
+          <Text style={[s.legende, { textDecorationLine: "underline" }]}>Ma voix ›</Text>
         </Pressable>
         <Pressable onPress={() => router.push("/pour-vous")} accessibilityRole="link" accessibilityLabel="Pour vous : ce qui a été publié selon votre vue"
           style={({ pressed }) => ({ minHeight: 48, justifyContent: "center", opacity: pressed ? 0.7 : 1 })}>

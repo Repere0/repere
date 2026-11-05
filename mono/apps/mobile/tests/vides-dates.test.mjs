@@ -156,3 +156,16 @@ test("D — l'écran affiche les démarches avec leur date de vérification, et 
   assert.match(voter, /DEMARCHES_VERIFIEES_LE/, "la date de vérification des liens doit être affichée");
   assert.doesNotMatch(voter, /TextInput|geocod|geopf/i, "aucune saisie d'adresse ni géocodage (invariants 1 et 2)");
 });
+
+/* ── E. « Ma voix » : accordéons et réponses sourcées (05/11/2026) ───────── */
+
+test("E — chaque réponse sur le conseil municipal porte sa source officielle", () => {
+  const v = lire("src", "app", "voter.tsx");
+  for (const titre of ["Comment assister au conseil municipal ?", "Où trouver ce qu'a décidé le conseil ?"]) {
+    const i = v.indexOf(titre);
+    assert.ok(i > 0, `question absente : ${titre}`);
+    const fin = v.indexOf("\n  {", i + 1);
+    assert.match(v.slice(i, fin < 0 ? undefined : fin), /source:\s*\{[^}]*url:\s*SOURCE_/, `source manquante : ${titre}`);
+  }
+  assert.match(v, /accessibilityState=\{\{ expanded: ouvert \}\}/, "l'accordéon annonce son état au lecteur d'écran");
+});
