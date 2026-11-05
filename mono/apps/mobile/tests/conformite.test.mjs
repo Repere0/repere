@@ -93,3 +93,14 @@ test("aucun emoji dans le code de l'application", () => {
     fs.readFileSync(f, "utf8").split("\n").map((l, i) => (EMOJI.test(l) ? `${path.relative(MOBILE, f)}:${i + 1}` : null)).filter(Boolean));
   assert.deepEqual(fautifs, [], "emoji(s) trouvé(s) : " + fautifs.join(", "));
 });
+
+/* PAS DE PLAFOND DE TAILLE DE TEXTE (05/11/2026, D-5) : le Dynamic Type d'iOS et le reglage
+   « Confort de lecture » doivent agrandir tout le texte. Seule exception : le libelle des onglets,
+   borne pour que la barre basse reste utilisable (onglets/_layout.tsx). */
+test("aucun plafond de taille de texte hors des libelles d'onglets", () => {
+  const fautifs = fichiers(path.join(MOBILE, "src"), [".tsx"])
+    .filter(f => !f.endsWith(path.join("(onglets)", "_layout.tsx")))
+    .filter(f => /maxFontSizeMultiplier|adjustsFontSizeToFit/.test(fs.readFileSync(f, "utf8")))
+    .map(f => path.relative(MOBILE, f));
+  assert.deepEqual(fautifs, [], "plafond trouvé : " + fautifs.join(", "));
+});
