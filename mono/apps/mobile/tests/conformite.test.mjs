@@ -84,3 +84,12 @@ test("l'entrée d'écran dure entre 100 et 300 ms (règle des animations)", () =
   assert.ok(ms <= 300, `durée ${ms} ms : plus de 300 ms`);
   assert.ok(ms >= 100, `durée ${ms} ms : moins de 100 ms`);
 });
+
+/* ZERO EMOJI (05/11/2026) : les icones sont des Ionicons (@expo/vector-icons). Les signes de
+   texte (coche, croix, fleche) restent permis : ils n'ont pas de presentation emoji par defaut. */
+test("aucun emoji dans le code de l'application", () => {
+  const EMOJI = /[\u{1F000}-\u{1FAFF}\u{2600}-\u{26FF}\u{1F1E6}-\u{1F1FF}]/u;
+  const fautifs = fichiers(path.join(MOBILE, "src"), [".ts", ".tsx"]).flatMap(f =>
+    fs.readFileSync(f, "utf8").split("\n").map((l, i) => (EMOJI.test(l) ? `${path.relative(MOBILE, f)}:${i + 1}` : null)).filter(Boolean));
+  assert.deepEqual(fautifs, [], "emoji(s) trouvé(s) : " + fautifs.join(", "));
+});

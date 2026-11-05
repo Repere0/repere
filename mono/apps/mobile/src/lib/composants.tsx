@@ -10,7 +10,6 @@ import { ligneSource, motsDuTexte, CALCUL_REPERE } from "@repere/core";
 import { router } from "expo-router";
 import { feuille, couleurs, CIBLE, PAS, RAYON, OMBRE, TYPO, type Echelon } from "./theme";
 import { NIVEAU_NOM, pointEchelon } from "./niveaux";
-import { AVEC_EMOJIS, Emoji } from "../ui/resume";
 
 /* Refonte du 30/09/2026 : plus de filet de couleur a gauche ; l'echelon se
    dit par un point de couleur devant l'etiquette, et la carte prend de l'air. */
@@ -32,14 +31,14 @@ export function Carte({ echelon, children, titre }: { echelon?: Echelon; childre
 /* UNE QUESTION, UNE REPONSE — la carte de l'ecran d'accueil (niveau 1).
    Question en etiquette, reponse lisible en trois secondes, un visuel, la
    pastille de source, et un seul geste pour approfondir. */
-export function CarteQuestion({ echelon, question, reponse, children, pied, action, emoji }: {
+export function CarteQuestion({ echelon, question, reponse, children, pied, action }: {
   echelon: Echelon; question: string; reponse: ReactNode; children?: ReactNode; pied?: ReactNode;
-  action?: { texte: string; onPress: () => void }; emoji?: string;
+  action?: { texte: string; onPress: () => void };
 }) {
   return (
     <View style={[s.carte, { backgroundColor: couleurs.carte }]}>
       <View style={s.carteTete}>
-        {emoji && AVEC_EMOJIS ? <Emoji c={emoji} /> : <View style={[s.point, pointEchelon(echelon)]} />}
+        <View style={[s.point, pointEchelon(echelon)]} />
         <Text style={s.carteTitre} accessibilityRole="header">{question}</Text>
         <Text style={s.niveau}>{NIVEAU_NOM[echelon]}</Text>
       </View>

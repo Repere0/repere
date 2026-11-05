@@ -111,7 +111,7 @@ export default function QuiDecide() {
         <Page>
           <Stack.Screen options={{ title: LIBELLES.qui }} />
           <BadgeZoom />
-          <Question emoji="🏛️" etiquette="Qui décide" question={`Qui décide pour ${d.nomCommune} ?`}
+          <Question etiquette="Qui décide" question={`Qui décide pour ${d.nomCommune} ?`}
             sous="Du plus proche de chez vous au plus lointain. Ce n'est pas un ordre d'importance : c'est un ordre de distance." />
           <Chaine niveaux={visibles} surNom={n => router.push({ pathname: "/elu", params: {
             nom: n.personne ? n.personne.nom : "", role: n.personne ? n.personne.role : "", echelon: n.echelon,

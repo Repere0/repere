@@ -35,7 +35,7 @@ export default function Vote() {
       const vote: FaitVote | undefined = d.dernierVote;
       /* Commune partagée : le vote affiché est celui d'un exemple, pas « votre » député (invariant 3). */
       const partagee = d.nbCircos > 1;
-      const entete = <Question emoji="🗳️" etiquette={partagee ? "Un député de votre commune" : "Votre député"} question={partagee ? "Qu'a voté un député de votre commune ?" : "Qu'a voté votre député ?"} />;
+      const entete = <Question etiquette={partagee ? "Un député de votre commune" : "Votre député"} question={partagee ? "Qu'a voté un député de votre commune ?" : "Qu'a voté votre député ?"} />;
       if (!r.votesLus) return <Page>{entete}<Vide {...copieVoteVide(ETAT_VOTE.RELEVE_NON_LU)} action="Réessayer" onAction={reessayer} /></Page>;
       if (!r.votesFiables) return <Page>{entete}<Vide {...copieVoteVide(ETAT_VOTE.RELEVE_INCOHERENT)} /></Page>;
       /* Un seul endroit décide du texte du vide : @repere/core (votesVides.js). */
