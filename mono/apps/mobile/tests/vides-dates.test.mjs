@@ -139,3 +139,20 @@ test("vides — partager.tsx : le repli passe par la règle partagée ; le vote 
   assert.doesNotMatch(src, /d\.dernierVote/, "le vote partagé ne doit pas être le dernier vote de la commune");
   assert.match(src, /copieVoteVide\(/, "le repli vient de la règle partagée");
 });
+
+/* ── D. Démarches en ligne de l'écran « Voter » (05/11/2026) ─────────────── */
+
+const elections = lire("src", "lib", "elections.ts");
+const voter = lire("src", "app", "voter.tsx");
+
+test("D — les trois démarches pointent vers service-public.gouv.fr, et nulle part ailleurs", () => {
+  const urls = [...elections.matchAll(/url:\s*"([^"]+)"/g)].map(m => m[1]).filter(u => /\/R\d+$/.test(u));
+  assert.equal(urls.length, 3, "trois liens de démarche attendus (vérifier, s'inscrire, procuration)");
+  for (const u of urls) assert.match(u, /^https:\/\/www\.service-public\.gouv\.fr\/particuliers\/vosdroits\/R\d+$/, u);
+});
+
+test("D — l'écran affiche les démarches avec leur date de vérification, et ne demande aucune adresse", () => {
+  assert.match(voter, /DEMARCHES\.map/, "les démarches doivent être rendues");
+  assert.match(voter, /DEMARCHES_VERIFIEES_LE/, "la date de vérification des liens doit être affichée");
+  assert.doesNotMatch(voter, /TextInput|geocod|geopf/i, "aucune saisie d'adresse ni géocodage (invariants 1 et 2)");
+});
