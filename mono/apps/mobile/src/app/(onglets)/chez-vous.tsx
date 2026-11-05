@@ -54,6 +54,7 @@ import { BarrePart, Repartition } from "../../ui/visuels";
 import { SemaineParlement } from "../../ui/semaine";
 import { DateDonnee } from "../../ui/fraicheur";
 import { CetteSemaineCommune, aujourdhui } from "../../ui/cette-semaine-commune";
+import { SignalerErreur } from "../../ui/contact";
 
 /* LE SITE OFFICIEL DE LA MAIRIE (D28, ADR 0005) : un lien externe, lu dans l'annuaire DILA
    (data/mairies-idf.json). Sans adresse declaree, pas de ligne : rien n'est devine.
@@ -231,6 +232,7 @@ export default function ChezVous() {
 
           {choix ? <CarteMemoire choix={choix} /> : null}
           <Text style={TYPO.note}>Repère ne classe ni ne note personne, et ne compare jamais deux communes.</Text>
+          <SignalerErreur contexte={`la fiche de ${nom}`} donnee={`Fiche commune : ${nom}`} />
         </Page>
       );
     }} />

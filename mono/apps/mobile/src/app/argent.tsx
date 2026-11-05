@@ -33,6 +33,7 @@ import { BarrePart, Compteur, DeuxAnnees, Depli, Financement, Mois, RepartitionC
 import { PartagerCarte } from "../ui/partage/bouton-partage";
 import { ChiffreStory } from "../ui/partage/variantes/chiffre.story";
 import { messageChiffre } from "../ui/partage/messages";
+import { SignalerErreur } from "../ui/contact";
 
 type Rapport = { l: string; v: string; d: string };
 type Projet = { annee: number; dispositif: string; intitule: string; subvention: number; cout?: number; ancien_code?: string };
@@ -290,6 +291,7 @@ export default function Argent() {
             )}
           </View>
           <Text style={[TYPO.micro, { color: couleurs.sourd }]}>Repère ne compare jamais deux communes : chaque chiffre ne parle que de {nom}.</Text>
+          <SignalerErreur contexte={`l'argent de ${nom}`} donnee={`Argent de la commune : ${nom}`} />
         </Page>
       );
     }} />

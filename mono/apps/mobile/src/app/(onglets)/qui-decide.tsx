@@ -23,6 +23,7 @@ import { visibleAuNiveau } from "@repere/core";
 import { useSelection } from "../../lib/selection";
 import { mandatsTerminesListes } from "../../lib/mandats-termines";
 import { useDecoupage } from "../../lib/decoupage";
+import { SignalerErreur } from "../../ui/contact";
 
 export default function QuiDecide() {
   const { choix } = useSelection();
@@ -136,6 +137,7 @@ export default function QuiDecide() {
               </Pressable>
             </View>
           ) : null}
+          <SignalerErreur contexte={`qui décide pour ${d.nomCommune}`} donnee={`Qui décide : ${d.nomCommune}`} />
         </Page>
       );
     }} />

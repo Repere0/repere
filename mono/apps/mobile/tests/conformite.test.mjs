@@ -104,3 +104,10 @@ test("aucun plafond de taille de texte hors des libelles d'onglets", () => {
     .map(f => path.relative(MOBILE, f));
   assert.deepEqual(fautifs, [], "plafond trouvé : " + fautifs.join(", "));
 });
+
+/* SIGNALER UNE ERREUR (05/11/2026) : chaque fiche porte le lien en bas de page. */
+test("chaque fiche porte « Signaler une erreur »", () => {
+  const FICHES = ["(onglets)/chez-vous.tsx", "(onglets)/qui-decide.tsx", "argent.tsx", "vote.tsx", "elu.tsx"];
+  const manquantes = FICHES.filter(f => !/<SignalerErreur\b/.test(fs.readFileSync(path.join(MOBILE, "src", "app", f), "utf8")));
+  assert.deepEqual(manquantes, [], "fiche(s) sans signalement : " + manquantes.join(", "));
+});
