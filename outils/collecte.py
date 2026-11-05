@@ -83,6 +83,21 @@ SOURCES = [
         "cadence": "quotidienne",
         "licence": "Licence ouverte",
     },
+    {
+        # DOSSIERS LEGISLATIFS (05/11/2026). Le scrutin donne la reference du dossier
+        # (objet.dossierLegislatif.dossierRef, docs/schema_scrutins.md) ; ce fichier
+        # donne le reste : documents, actes de procedure, etapes. Collecte d'abord
+        # DOCUMENTAIRE : le schema est decrit sur l'archive reelle (docs/schema_dossiers.md)
+        # avant qu'une ligne de l'application n'en depende.
+        "cle": "dossiers_an",
+        "titre": "Assemblee nationale — dossiers legislatifs",
+        "url": "https://data.assemblee-nationale.fr/static/openData/repository/17/loi/dossiers_legislatifs/Dossiers_Legislatifs.json.zip",
+        "fichier": "Dossiers_Legislatifs.json.zip",
+        "poids": "à mesurer",
+        "cadence": "quotidienne",
+        "licence": "Licence ouverte",
+        "note": "URL relevee sur data.assemblee-nationale.fr le 05/11/2026 ; schema decrit par outils/echantillon_scrutins.py.",
+    },
     # -----------------------------------------------------------------------
     # COMMUNE -> CIRCONSCRIPTION. Sans cette table, un scrutin ne peut etre
     # affiche que nationalement — « l'Assemblee a vote ceci » — et jamais « votre

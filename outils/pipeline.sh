@@ -102,6 +102,12 @@ python3 outils/agenda_an.py data/brut_Agenda/json data/brut_AMO30/json outils/ag
 python3 outils/echantillon_scrutins.py data/brut_Questions_gouvernement/json docs/schema_questions_gouvernement.md \
   || echo "::warning::le schema des Questions au Gouvernement n'a pas pu etre decrit"
 
+# ------------------------- 2 ter. decrire le schema des dossiers legislatifs (documentaire)
+# Source nouvelle (05/11/2026) : avant d'en tirer le contenu d'un texte pour l'ecran
+# du vote, on decrit le schema REEL de l'archive. Ne fait jamais tomber la chaine.
+python3 outils/echantillon_scrutins.py data/brut_Dossiers_Legislatifs docs/schema_dossiers.md \
+  || echo "::warning::le schema des dossiers legislatifs n'a pas pu etre decrit"
+
 # ------------------------------- 3. decrire le schema des scrutins (documentaire)
 # Ne doit jamais faire tomber la chaine : c'est de la documentation.
 python3 outils/echantillon_scrutins.py data/brut_Scrutins docs/schema_scrutins.md \
