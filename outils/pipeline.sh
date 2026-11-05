@@ -107,6 +107,8 @@ python3 outils/echantillon_scrutins.py data/brut_Questions_gouvernement/json doc
 # du vote, on decrit le schema REEL de l'archive. Ne fait jamais tomber la chaine.
 python3 outils/echantillon_scrutins.py data/brut_Dossiers_Legislatifs docs/schema_dossiers.md \
   || echo "::warning::le schema des dossiers legislatifs n'a pas pu etre decrit"
+# Recopie dans le journal : seul moyen de le lire avant fusion depuis le conteneur de travail.
+[ -f docs/schema_dossiers.md ] && { echo "=== DEBUT docs/schema_dossiers.md ==="; head -n 400 docs/schema_dossiers.md; echo "=== FIN docs/schema_dossiers.md ==="; }
 
 # ------------------------------- 3. decrire le schema des scrutins (documentaire)
 # Ne doit jamais faire tomber la chaine : c'est de la documentation.
