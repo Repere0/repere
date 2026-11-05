@@ -65,3 +65,8 @@ docs/tableau-retours-rempli*.csv
 !docs/tableau-retours.csv
 !docs/tableau-debrief.csv
 docs/tableau-debrief-rempli*.csv
+
+# Bilan des collectes ecrit par collecte.yml pour le resume du job (05/11/2026) :
+# jamais une sortie de la chaine. Non ignore, `git add -A` le proposait au bot, qui
+# refusait tout l enregistrement (collectes des 03/11, run 41666929491).
+mono/bilan-collectes.txt
