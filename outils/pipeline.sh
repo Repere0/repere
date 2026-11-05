@@ -465,8 +465,15 @@ banc "collecte" python3 outils/test_collecte.py
 # par la source, et ne la devine jamais. Le controle tourne sur un agenda factice.
 banc "agenda : heure de fin" python3 outils/test_agenda_an.py
 banc "scrutins : de quoi parle le texte" python3 outils/test_scrutins_an_dossier.py
+banc "liens sortants : robot, reseau simule" python3 outils/test_verifier_liens.py
 banc "teaser des scrutins : etat annonce" bash outils/test_teaser_scrutins_etat.sh
 banc "scrutins solennels : erreurs bloquantes" bash outils/test_scrutins_solennels_erreurs.sh
+
+# LIENS SORTANTS (05/11/2026) : verifie qu'ils repondent. N'arrete JAMAIS la chaine :
+# un site officiel en panne une matinee n'est pas une erreur de Repere. Les sites des
+# mairies ne sont verifies que pendant la collecte planifiee (voir le script).
+python3 outils/verifier_liens.py --mairies mono/data/mairies-idf.json \
+  || echo "::warning::la verification des liens sortants n'a pas pu tourner"
 
 echo "== banc : le fichier autonome =="
 banc "fichier autonome" node test_repere.mjs "$APP"
