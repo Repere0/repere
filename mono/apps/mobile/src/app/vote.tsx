@@ -9,6 +9,7 @@
  *
  * Neutralite : trois gris, jamais de vert ni de rouge ; aucune position n'est
  * dite bonne ou mauvaise ; « ses autres votes » sont dans l'ordre du temps. */
+import { useState } from "react";
 import { Text, View } from "react-native";
 import { router, Stack } from "expo-router";
 import { Pressable } from "react-native";
@@ -29,8 +30,11 @@ import { Timeline } from "../ui/timeline";
 
 type FaitVote = { cle: string; type: string; sc: { t: string; d: string; n: string; s: string; dec?: Record<string, string>; dl?: string; dr?: string; dm?: string; dq?: number; et?: { d: string; f?: string; l: string }[] }; position?: string; qui: string; circo: number };
 
+const ETAPES_VISIBLES = 6;
+
 export default function Vote() {
   const { reessayer } = useCommuneChoisie();
+  const [toutesEtapes, setToutesEtapes] = useState(false);
   return (
     <AvecDonnees rendu={r => {
       const { d } = r;
@@ -128,7 +132,17 @@ export default function Vote() {
               parcours général ci-dessous reste le repère. */}
           {etapes.length ? (
             <Carte echelon="france" titre="Les étapes de ce texte">
-              <Timeline etapes={etapes} etiquette="Les étapes de ce texte, de la plus ancienne à la plus récente" />
+              {/* Mesure (05/11/2026, 12 textes) : de 5 à 39 étapes. Les 6 plus récentes d'abord, le reste sur demande. */}
+              {!toutesEtapes && etapes.length > ETAPES_VISIBLES ? (
+                <Text style={TYPO.note}>{etapes.length - ETAPES_VISIBLES} étapes plus anciennes ne sont pas affichées.</Text>
+              ) : null}
+              <Timeline etapes={toutesEtapes ? etapes : etapes.slice(-ETAPES_VISIBLES)} etiquette="Les étapes de ce texte, de la plus ancienne à la plus récente" />
+              {etapes.length > ETAPES_VISIBLES ? (
+                <Pressable onPress={() => setToutesEtapes(v => !v)} accessibilityRole="button" accessibilityState={{ expanded: toutesEtapes }}
+                  style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", opacity: pressed ? 0.6 : 1 })}>
+                  <Text style={[TYPO.corps, { color: couleurs.lien, fontWeight: "600" }]}>{toutesEtapes ? "Afficher seulement les plus récentes" : `Voir les ${etapes.length} étapes`}</Text>
+                </Pressable>
+              ) : null}
               <PastilleSource source={{ producteur: "Assemblée nationale — dossiers législatifs", court: "Assemblée nationale", url: dossier && dossier.url ? dossier.url : "https://data.assemblee-nationale.fr/travaux-parlementaires/dossiers-legislatifs" }} />
             </Carte>
           ) : null}
