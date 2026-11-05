@@ -7,9 +7,10 @@
  * - ContacterElu : un courriel publié par la source ouvre la messagerie. Sinon, le lien va à la source
  *   officielle ; sans source, le texte dit « Contact non publié ». Les données de Repère ne portent
  *   aucun courriel d'élu à ce jour.
- * - SignalerErreur : une ligne « ⚠ Signaler une erreur » qui ouvre la messagerie, avec le sujet et le
+ * - SignalerErreur : une ligne « Signaler une erreur » (icone d'alerte) qui ouvre la messagerie, avec le sujet et le
  *   texte de la donnée déjà remplis. */
 import { Linking, Pressable, Text, View } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import { CIBLE, couleurs, PAS, TYPO } from "../lib/theme";
 import { LienSortant } from "../lib/composants";
 
@@ -43,7 +44,10 @@ export function SignalerErreur({ contexte, donnee }: { contexte: string; donnee:
       <Pressable onPress={() => Linking.openURL(`mailto:${CONTACT}?subject=${sujet}&body=${corps}`)} accessibilityRole="link"
         accessibilityLabel={`Signaler une erreur sur ${contexte}. Ouvre la messagerie.`}
         style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", alignSelf: "flex-start", opacity: pressed ? 0.7 : 1 })}>
-        <Text style={[TYPO.note, { color: couleurs.lien, textDecorationLine: "underline", fontWeight: "500" }]}>⚠ Signaler une erreur</Text>
+        <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+          <Ionicons name="alert-circle-outline" size={16} color={couleurs.lien} accessible={false} importantForAccessibility="no" />
+          <Text style={[TYPO.note, { color: couleurs.lien, textDecorationLine: "underline", fontWeight: "500" }]}>Signaler une erreur</Text>
+        </View>
       </Pressable>
       <View style={{ height: PAS }} />
     </View>

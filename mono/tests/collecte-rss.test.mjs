@@ -180,3 +180,27 @@ test("D82 : avec REPERE_PUBLICATION_ACTUS=true, le script l'annonce et n'écrit 
   assert.equal(fs.existsSync(brouillon), false);
   assert.match(r.stdout, /publication ACTIVE/);
 });
+
+/* FILE CONTINUE (05/11/2026) : une commune lente n'immobilise pas les autres, et jamais
+   plus de `simultanes` requetes ne sont en vol. Une lente (4 adresses x 200 ms = 800 ms)
+   et 8 rapides (4 x 25 ms = 100 ms chacune), 2 ouvriers. File continue : la lente occupe
+   un ouvrier, l'autre passe les 8 rapides : ~800 ms. Lots synchrones de 2 : 800 ms pour
+   le premier lot, puis 4 lots de 100 ms : ~1 200 ms. */
+test("collecter : file continue, au plus N requêtes en vol, la lente ne bloque pas les autres", async () => {
+  let enVol = 0, maxEnVol = 0;
+  const lent = "https://lente.example/";
+  const fetchImpl = async (url) => {
+    enVol++; maxEnVol = Math.max(maxEnVol, enVol);
+    await new Promise(r => setTimeout(r, url.startsWith(lent) ? 200 : 25));
+    enVol--;
+    return { ok: false, status: 404, headers: { get: () => "text/html" }, text: async () => "" };
+  };
+  const communes = { "1": { nom: "L", site: lent } };
+  for (let i = 2; i <= 9; i++) communes[String(i)] = { nom: "C" + i, site: `https://c${i}.example/` };
+  const debut = Date.now();
+  const sortie = await collecter(communes, { fetchImpl, aujourdhui: AUJOURDHUI, generation: "g", simultanes: 2 });
+  const duree = Date.now() - debut;
+  assert.equal(sortie.bilan.communes_testees, 9);
+  assert.ok(maxEnVol <= 2, `au plus 2 requêtes en vol (vu ${maxEnVol})`);
+  assert.ok(duree < 1050, `une commune lente a immobilisé les autres : ${duree} ms`);
+});

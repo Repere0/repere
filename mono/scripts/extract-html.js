@@ -1221,8 +1221,12 @@ async function extraire() {
   const depsAvecVotes = [];
   if (scrutins && deputes) {
     const solennels = scrutins.r.filter(e => /solennel/i.test(e.tv || ""));
+    /* dl, dr, dm (05/11/2026) : intitule officiel du dossier, sa reference AN, et qui a
+       demande le scrutin public. Recopies seulement s'ils existent : jamais de cle vide. */
     const catalogue = solennels.map(e => ({
       u: e.u, n: e.n, d: e.d, t: e.t, s: e.s, sl: e.sl, tv: e.tv, dec: e.dec, nv: e.nv,
+      ...(e.dq === 1 ? { dq: 1 } : {}), ...(e.dl ? { dl: e.dl } : {}), ...(/^DLR/.test(e.dr || "") ? { dr: e.dr } : {}), ...(e.dm ? { dm: e.dm } : {}),
+      ...(e.eq === 1 ? { eq: 1 } : {}), ...(Array.isArray(e.et) && e.et.length ? { et: e.et } : {}),
     }));
     octetsScrutins = ecrire(path.join(SORTIE, "scrutins.json"), {
       v: 1,

@@ -20,7 +20,7 @@ import Parser from "rss-parser";
 export const CANDIDATS = ["/feed/", "/rss", "/flux-rss", "/955.htm"];
 export const MAX_PAR_COMMUNE = 3;
 const DELAI_MS = 8000;
-const SIMULTANES = 12;
+const SIMULTANES = 24;
 const TAILLE_MAX = 2_000_000;
 const SOURCE = "Flux RSS publiés par les mairies (ADR 0007, D81) ; sites : annuaire DILA, Licence Ouverte 2.0";
 
@@ -102,14 +102,23 @@ export async function collecterCommune(insee, { nom, site }, { fetchImpl, aujour
   return { insee, flux: null, items: [], raisons };
 }
 
-/* Toutes les communes, par lots de SIMULTANES. */
-export async function collecter(communes, { fetchImpl = fetch, aujourdhui = new Date().toISOString().slice(0, 10), generation = new Date().toISOString() } = {}) {
+/* Toutes les communes, SIMULTANES a la fois, en file continue (05/11/2026).
+   MESURE : par lots de 12, chaque lot attendait sa commune la plus lente (jusqu'a
+   4 adresses x 8 s) : 17 min 36 s sur le runner le 05/11/2026 (765 sites), ce qui
+   faisait depasser les 30 min de l'epreuve et de la collecte quotidienne (annulees
+   les 04 et 05/11). Une file continue garde au plus SIMULTANES requetes en vol, mais
+   une commune lente n'immobilise plus les autres. */
+export async function collecter(communes, { fetchImpl = fetch, aujourdhui = new Date().toISOString().slice(0, 10), generation = new Date().toISOString(), simultanes = SIMULTANES } = {}) {
   const cibles = Object.entries(communes || {}).filter(([, c]) => c && /^https:\/\//.test(c.site || ""));
   const resultats = [];
-  for (let i = 0; i < cibles.length; i += SIMULTANES) {
-    const lot = cibles.slice(i, i + SIMULTANES);
-    resultats.push(...await Promise.all(lot.map(([insee, c]) => collecterCommune(insee, c, { fetchImpl, aujourdhui }))));
-  }
+  let prochain = 0;
+  const ouvrier = async () => {
+    while (prochain < cibles.length) {
+      const [insee, c] = cibles[prochain++];
+      resultats.push(await collecterCommune(insee, c, { fetchImpl, aujourdhui }));
+    }
+  };
+  await Promise.all(Array.from({ length: Math.min(simultanes, cibles.length) }, ouvrier));
   const sortie = { v: 1, genere_le: generation, source: SOURCE, licence: "non vérifiée par commune (ADR 0007)", communes: {} };
   let avecFlux = 0, avecActu = 0;
   for (const r of resultats) {

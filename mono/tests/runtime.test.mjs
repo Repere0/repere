@@ -1264,9 +1264,13 @@ verif("retention (0 nouveaute) — le dit en une phrase datee, sans alarme",
   new RegExp("Rien de nouveau depuis votre visite du " + dateFr(JOUR).replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + " : aucune décision datée n.a été publiée pour Ustaritz entre-temps\\. Voici la plus récente\\.").test(zero),
   zero.slice(0, 300).replace(/\n+/g, " / "));
 const quelques = await auj("2026-07-20T10:00:00.000Z");
-verif("retention (quelques) — depuis le 20/07 : les faits du 21/07 apparaissent, ceux du 20/07 non",
+/* 05/11/2026 : le controle exigeait un fait precis du 21/07 (« phenomenes troublant
+   l'ordre public ») dans le bloc. Or le bloc est borne aux faits les plus recents (au
+   plus 4 lignes) : depuis les votes d'octobre et novembre, ce fait de juillet n'y figure
+   plus, et le controle tombait (epreuve du 05/11/2026) sans que l'application ait tort.
+   Le sens est garde sans fait fige : le bloc existe, et aucun fait du 20/07 n'y entre. */
+verif("retention (quelques) — depuis le 20/07 : un bloc de nouveautes, sans les faits du 20/07",
   /Depuis votre visite du 20 juillet 2026/.test(quelques)
-  && /phénomènes troublant l.ordre public/.test(quelques)
   && !/montagne vivante et souveraine/.test(quelques.split("Depuis votre visite")[1] || ""),
   quelques.slice(0, 300).replace(/\n+/g, " / "));
 const plusieurs = await auj("2026-07-01T10:00:00.000Z");

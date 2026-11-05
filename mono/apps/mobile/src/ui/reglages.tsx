@@ -3,6 +3,7 @@
  * pastille noire : elle ne rivalise plus avec le titre de l'écran, et la cible reste de 48 px. */
 import { useState } from "react";
 import { Modal, Pressable, StyleSheet, Text, View } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import { CIBLE, PAS, RAYON, TYPO, couleurs, feuille, type ChoixTheme } from "../lib/theme";
 import { VOILE_MODAL } from "../lib/palette";
 import { useTheme } from "../lib/themeChoix";
@@ -24,7 +25,7 @@ export function BoutonReglages() {
         accessibilityLabel="Réglages de l'affichage"
         style={({ pressed }) => [s.roue, pressed && { opacity: 0.7 }]}
       >
-        <Text accessibilityElementsHidden importantForAccessibility="no" allowFontScaling={false} style={s.glyphe}>{"⚙︎"}</Text>
+        <Ionicons name="settings-outline" size={22} color={couleurs.encre} accessible={false} importantForAccessibility="no" />
       </Pressable>
       <ChoixAffichage visible={ouvert} onFermer={() => setOuvert(false)} />
     </>
@@ -82,7 +83,6 @@ function ChoixAffichage({ visible, onFermer }: { visible: boolean; onFermer: () 
 
 const s = feuille(() => StyleSheet.create({
   roue: { minWidth: CIBLE, minHeight: CIBLE, borderRadius: CIBLE / 2, borderWidth: 1.5, borderColor: couleurs.sourd, alignItems: "center", justifyContent: "center", marginRight: PAS * 2 },
-  glyphe: { color: couleurs.encre, fontSize: 22, lineHeight: 26 },
   voile: { flex: 1, backgroundColor: VOILE_MODAL, justifyContent: "center", padding: PAS * 5 },
   carte: { backgroundColor: couleurs.carte, borderRadius: RAYON.carte, padding: PAS * 4, gap: PAS * 2 },
   option: { minHeight: CIBLE, borderRadius: RAYON.bloc, borderWidth: 1, borderColor: couleurs.trait, alignItems: "center", justifyContent: "center", paddingHorizontal: PAS * 4 },
