@@ -135,6 +135,17 @@ const REF_DOSSIER = /^DLR5L17N\d+$/;
    est une absence dans la source. Faux : le releve ne lisait pas encore ce champ, et
    l'ecran ne doit rien affirmer. */
 export const dossierReleve = sc => !!sc && sc.dq === 1;
+
+/* LES ETAPES DU TEXTE (05/11/2026) : les actes dates du dossier legislatif, tels que
+   l'Assemblee les publie (libelles recopies, aucune reformulation). [] quand le releve
+   n'en porte pas : l'ecran n'affiche alors pas la section. Une etape sans date ISO ou
+   sans libelle est ecartee, jamais completee. */
+export function etapesDuScrutin(sc) {
+  if (!sc || !Array.isArray(sc.et)) return [];
+  return sc.et
+    .filter(e => e && typeof e.d === "string" && /^\d{4}-\d{2}-\d{2}$/.test(e.d) && typeof e.l === "string" && e.l.trim())
+    .map(e => ({ date: e.d, libelle: e.l.trim(), lien: null }));
+}
 export function dossierDuScrutin(sc) {
   if (!sc || typeof sc.dl !== "string" || !sc.dl.trim()) return null;
   const ref = typeof sc.dr === "string" && REF_DOSSIER.test(sc.dr) ? sc.dr : null;

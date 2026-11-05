@@ -177,3 +177,21 @@ test("F — la carte n'affirme une absence de dossier que si le relevé a lu le 
   assert.match(v, /\{dossier \|\| dossierReleve\(vote\.sc\) \? <Carte echelon="france" titre="De quoi parle ce texte \?">/, "la carte doit être conditionnée par dossierReleve");
   assert.match(v, /dossierDuScrutin\(vote\.sc\)/, "l'intitulé vient de la règle partagée de @repere/core");
 });
+
+/* ── G. Timeline et « Les étapes de ce texte » (05/11/2026) ──────────────── */
+/* Contrôles statiques : l'application n'a pas de moteur de rendu de test (pas de jest).
+   La logique (quelles étapes) est testée dans tests/votes-vides.test.mjs (etapesDuScrutin). */
+
+test("G — Timeline ne rend rien pour une liste vide, sans plafond de taille ni emoji", () => {
+  const t = lire("src", "ui", "timeline.tsx");
+  assert.match(t, /if \(!etapes\.length\) return null;/, "liste vide : rien n'est rendu");
+  assert.doesNotMatch(t, /maxFontSizeMultiplier|adjustsFontSizeToFit|allowFontScaling=\{false\}/, "aucun plafond de taille");
+  assert.match(t, /POINT_ETAPE/, "le point vient de la palette");
+});
+
+test("G — la section n'existe que si le relevé porte des étapes ; sinon le parcours général reste", () => {
+  const v = lire("src", "app", "vote.tsx");
+  assert.match(v, /const etapes = etapesDuScrutin\(vote\.sc\);/, "les étapes viennent de la règle partagée de @repere/core");
+  assert.match(v, /\{etapes\.length \? \(\s*<Carte echelon="france" titre="Les étapes de ce texte">/, "section conditionnée par etapes.length");
+  assert.match(v, /\{!etapes\.length \? <Carte echelon="france" titre="Où en est ce texte \?">/, "parcours général seulement sans étapes");
+});

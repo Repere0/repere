@@ -32,6 +32,12 @@ import sys, io, os, json, glob, datetime, collections
 SOURCE = sys.argv[1] if len(sys.argv) > 1 else "data/brut_Scrutins"
 SORTIE = sys.argv[2] if len(sys.argv) > 2 else "outils/scrutins_an.json"
 GARDES = int(sys.argv[3]) if len(sys.argv) > 3 else 80
+# ETAPES DU TEXTE (05/11/2026). L'archive des dossiers legislatifs est depilee a cote de
+# celle des scrutins (data/brut_Dossiers_Legislatifs). Schema mesure sur l'archive reelle
+# (docs/schema_dossiers.md, epreuve du 05/11/2026) : dossierParlementaire.actesLegislatifs
+# est un arbre d'actes ; les actes de tete (1ere lecture...) n'ont pas de date, leurs
+# descendants en ont une. Absente : aucun champ ecrit, l'ecran garde le parcours general.
+DOSSIERS = os.path.join(os.path.dirname(os.path.abspath(SOURCE)), "brut_Dossiers_Legislatifs")
 
 def liste(x):
     """Un champ qui vaut tantot une liste, tantot un objet, tantot rien."""
@@ -84,6 +90,40 @@ eligibles = [x for x in brut_tous if txt(x[1], "typeVote", "libelleTypeVote") in
 retenus = eligibles[-GARDES:]
 
 acteurs, idx = [], {}
+_fichiers_dossiers = None
+def fichier_dossier(uid):
+    global _fichiers_dossiers
+    if _fichiers_dossiers is None:
+        _fichiers_dossiers = {os.path.basename(f)[:-5]: f for f in glob.glob(
+            os.path.join(DOSSIERS, "**", "dossierParlementaire", "*.json"), recursive=True)}
+    return _fichiers_dossiers.get(uid)
+
+def etapes_du_dossier(uid):
+    """Actes dates du dossier, dans l'ordre du temps : [{d, l, c}] ; None si le dossier manque."""
+    f = fichier_dossier(uid)
+    if not f:
+        return None
+    try:
+        dp = json.load(io.open(f, encoding="utf-8")).get("dossierParlementaire") or {}
+    except (OSError, ValueError):
+        return None
+    vus, out = set(), []
+    def parcourir(noeud, tete):
+        for a in liste(txt(noeud, "actesLegislatifs", "acteLegislatif", defaut=None)):
+            court = txt(a, "libelleActe", "libelleCourt") or txt(a, "libelleActe", "nomCanonique")
+            t = tete or court
+            date = txt(a, "dateActe")
+            if isinstance(date, str) and len(date) >= 10 and court:
+                libelle = court if not tete or tete == court else "%s · %s" % (tete, court)
+                cle = (date[:10], libelle)
+                if cle not in vus:
+                    vus.add(cle)
+                    out.append({"d": date[:10], "l": libelle, "c": txt(a, "codeActe")})
+            parcourir(a, t)
+    parcourir(dp, "")
+    out.sort(key=lambda e: e["d"])
+    return out
+
 def ref(a):
     if a not in idx:
         idx[a] = len(acteurs)
@@ -148,6 +188,14 @@ for date, d in retenus:
         sortie[-1]["dr"] = dr.strip()
     if isinstance(dm, str) and dm.strip():
         sortie[-1]["dm"] = dm.strip()
+    if "dr" in sortie[-1]:
+        et = etapes_du_dossier(sortie[-1]["dr"])
+        if et is not None:
+            sortie[-1]["eq"] = 1           # dossier lu (meme si aucun acte n'est date)
+            if et:
+                sortie[-1]["et"] = et
+            stats["dossiers lus"] += 1
+            stats["etapes datees"] += len(et)
     # LE GARDE-FOU, ici et pas ailleurs : aucune reference relevee parmi les non-votants
     # ne doit se retrouver dans les positions enregistrees. La premiere version de ce
     # controle cherchait la chaine « nonVotant » dans la sortie — elle n'y figure jamais,
@@ -197,3 +245,8 @@ print("deputes distincts        : %d" % len(acteurs))
 for k, v in stats.most_common():
     print("  %-24s %d" % (k, v))
 print("poids                    : %.0f Ko" % (len(brut.encode("utf-8")) / 1024))
+avec = [e for e in sortie if e.get("et")]
+if avec:
+    print("etapes, exemple (scrutin %s, %s) :" % (avec[-1]["n"], avec[-1].get("dl", "")))
+    for e in avec[-1]["et"]:
+        print("  %s  %s" % (e["d"], e["l"]))

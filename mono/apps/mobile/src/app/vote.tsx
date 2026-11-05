@@ -15,7 +15,7 @@ import { Pressable } from "react-native";
 import {
   CONSTITUTION_45_URL, dateFr, ETAPES_LOI, etapeDuScrutin, ligneScrutin, motPosition,
   phraseCirconscription, phraseDenominateurVote, phrasePosition, POSITION_NON_PORTEE, procedure,
-  repartitionVote, titreLisible, MOTS, chaineDecision, copieVoteVide, ETAT_VOTE, dossierDuScrutin, dossierReleve,
+  repartitionVote, titreLisible, MOTS, chaineDecision, copieVoteVide, ETAT_VOTE, dossierDuScrutin, dossierReleve, etapesDuScrutin,
 } from "@repere/core";
 import { Carte, LienSortant, Segments, Vide } from "../lib/composants";
 import { srcScrutins, srcVote } from "../lib/sources";
@@ -25,8 +25,9 @@ import { AvecDonnees, Page, Question } from "../ui/page";
 import { PastilleSource } from "../ui/source";
 import { Frise, Repartition } from "../ui/visuels";
 import { SignalerErreur } from "../ui/contact";
+import { Timeline } from "../ui/timeline";
 
-type FaitVote = { cle: string; type: string; sc: { t: string; d: string; n: string; s: string; dec?: Record<string, string>; dl?: string; dr?: string; dm?: string; dq?: number }; position?: string; qui: string; circo: number };
+type FaitVote = { cle: string; type: string; sc: { t: string; d: string; n: string; s: string; dec?: Record<string, string>; dl?: string; dr?: string; dm?: string; dq?: number; et?: { d: string; l: string }[] }; position?: string; qui: string; circo: number };
 
 export default function Vote() {
   const { reessayer } = useCommuneChoisie();
@@ -44,6 +45,7 @@ export default function Vote() {
 
       const rep = repartitionVote(vote.sc);
       const dossier = dossierDuScrutin(vote.sc);
+      const etapes = etapesDuScrutin(vote.sc);
       const mot = (MOTS as Record<string, string>)[vote.position || ""];
       const etape = etapeDuScrutin(procedure(vote.sc.t));
       const autres = (d.faits as FaitVote[]).filter(x => x.type === "vote" && x.cle !== vote.cle && x.circo === vote.circo).slice(0, 4);
@@ -121,8 +123,18 @@ export default function Vote() {
             <PastilleSource source={{ producteur: "Constitution du 4 octobre 1958, article 24", court: "Constitution, art. 24", url: CONSTITUTION_45_URL }} />
           </Carte>
 
+          {/* LES ETAPES DE CE TEXTE (05/11/2026) : les actes datés du dossier législatif, tels que
+              l'Assemblée les publie. Sans étape dans le relevé, la section n'existe pas et le
+              parcours général ci-dessous reste le repère. */}
+          {etapes.length ? (
+            <Carte echelon="france" titre="Les étapes de ce texte">
+              <Timeline etapes={etapes} etiquette="Les étapes de ce texte, de la plus ancienne à la plus récente" />
+              <PastilleSource source={{ producteur: "Assemblée nationale — dossiers législatifs", court: "Assemblée nationale", url: dossier && dossier.url ? dossier.url : "https://data.assemblee-nationale.fr/travaux-parlementaires/dossiers-legislatifs" }} />
+            </Carte>
+          ) : null}
+
           {/* NIVEAU 3 : ou en est le texte */}
-          <Carte echelon="france" titre="Où en est ce texte ?">
+          {!etapes.length ? <Carte echelon="france" titre="Où en est ce texte ?">
             {etape ? (
               <Text style={TYPO.note}>Ce vote porte sur l'étape surlignée ; les autres étapes expliquent le parcours général d'une loi.</Text>
             ) : (
@@ -132,7 +144,7 @@ export default function Vote() {
               cle: e.cle, titre: e.titre, texte: e.texte, echelon: "france", actif: e.cle === etape,
             }))} />
             <PastilleSource source={{ producteur: "Constitution du 4 octobre 1958 (articles 10, 39 et 45)", court: "Constitution, art. 39 et 45", url: CONSTITUTION_45_URL }} />
-          </Carte>
+          </Carte> : null}
 
           {/* SES AUTRES VOTES, dans l'ordre du temps */}
           {autres.length ? (

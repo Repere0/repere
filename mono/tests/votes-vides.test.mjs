@@ -259,3 +259,12 @@ test("dossier — sans marqueur de lecture, l'absence d'intitulé n'est pas affi
   assert.equal(dossierReleve({ t: "x" }), false);
   assert.equal(dossierReleve({ dq: 1 }), true);
 });
+
+import { etapesDuScrutin } from "../packages/core/src/index.js";
+test("étapes — liste vide sans relevé ; étape sans date ou sans libellé écartée, jamais complétée", () => {
+  assert.deepEqual(etapesDuScrutin({ t: "x" }), []);
+  assert.deepEqual(etapesDuScrutin({ et: [] }), []);
+  assert.deepEqual(etapesDuScrutin({ et: [
+    { d: "2026-03-02", l: " 1ère lecture · Dépôt " }, { d: "", l: "Sans date" }, { d: "2026-04-01", l: "" }, { d: "02/03/2026", l: "Mauvais format" },
+  ] }), [{ date: "2026-03-02", libelle: "1ère lecture · Dépôt", lien: null }]);
+});

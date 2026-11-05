@@ -42,6 +42,25 @@ def main():
         for nom, d in (("a.json", avec), ("b.json", sans)):
             with open(os.path.join(src, nom), "w", encoding="utf-8") as f:
                 json.dump(d, f, ensure_ascii=False)
+        # Le dossier du scrutin 101, de la forme mesuree (docs/schema_dossiers.md) :
+        # acte de tete sans date, descendants dates, un doublon, un acte sans date.
+        dd = os.path.join(t, "brut_Dossiers_Legislatifs", "json", "dossierParlementaire")
+        os.makedirs(dd)
+        def acte(code, court, date, enfants=None):
+            a = {"codeActe": code, "libelleActe": {"nomCanonique": court + " (long)", "libelleCourt": court}, "dateActe": date}
+            if enfants is not None:
+                a["actesLegislatifs"] = {"acteLegislatif": enfants}
+            return a
+        dossier = {"dossierParlementaire": {"uid": "DLR5L17N51329", "actesLegislatifs": {"acteLegislatif": [
+            acte("AN1", "1ère lecture", None, [
+                acte("AN1-DEPOT", "Dépôt", "2026-03-02T00:00:00.000+01:00"),
+                acte("AN1-COM", "Commission", None, acte("AN1-COM-FOND", "Rapport", "2026-04-01T00:00:00.000+02:00")),
+                acte("AN1-DEPOT", "Dépôt", "2026-03-02T00:00:00.000+01:00"),
+            ]),
+            acte("SN1", "1ère lecture", None, [acte("SN1-DEPOT", "Transmission", "2026-05-10T00:00:00.000+02:00")]),
+        ]}}}
+        with open(os.path.join(dd, "DLR5L17N51329.json"), "w", encoding="utf-8") as f:
+            json.dump(dossier, f, ensure_ascii=False)
         sortie = os.path.join(t, "sortie.json")
         r = subprocess.run([sys.executable, os.path.join(ICI, "scrutins_an.py"), src, sortie, "12"],
                            capture_output=True, text=True)
@@ -53,9 +72,16 @@ def main():
         assert a.get("dr") == "DLR5L17N51329", a
         assert a.get("dm") == 'Président du groupe "Les Démocrates"', a
         assert a.get("dq") == 1 and b.get("dq") == 1, "le marqueur de lecture dq manque"
+        assert a.get("eq") == 1, "dossier lu : marqueur eq attendu"
+        assert a.get("et") == [
+            {"d": "2026-03-02", "l": "1ère lecture · Dépôt", "c": "AN1-DEPOT"},
+            {"d": "2026-04-01", "l": "1ère lecture · Rapport", "c": "AN1-COM-FOND"},
+            {"d": "2026-05-10", "l": "1ère lecture · Transmission", "c": "SN1-DEPOT"},
+        ], a.get("et")
+        assert "eq" not in b and "et" not in b, "sans dossier : aucune etape ecrite"
         for cle in ("dl", "dr", "dm"):
             assert cle not in b, "le scrutin sans dossier porte %s : %r" % (cle, b.get(cle))
-    print("ok    de quoi parle le texte : intitule, reference et demandeur releves ; absents non ecrits")
+    print("ok    de quoi parle le texte : intitule, reference, demandeur et etapes datees releves ; absents non ecrits")
 
 
 if __name__ == "__main__":
