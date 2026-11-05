@@ -266,5 +266,7 @@ test("étapes — liste vide sans relevé ; étape sans date ou sans libellé é
   assert.deepEqual(etapesDuScrutin({ et: [] }), []);
   assert.deepEqual(etapesDuScrutin({ et: [
     { d: "2026-03-02", l: " 1ère lecture · Dépôt " }, { d: "", l: "Sans date" }, { d: "2026-04-01", l: "" }, { d: "02/03/2026", l: "Mauvais format" },
-  ] }), [{ date: "2026-03-02", libelle: "1ère lecture · Dépôt", lien: null }]);
+  ] }), [{ date: "2026-03-02", fin: null, libelle: "1ère lecture · Dépôt", lien: null }]);
+  assert.equal(etapesDuScrutin({ et: [{ d: "2026-10-13", f: "2026-10-30", l: "Séance" }] })[0].fin, "2026-10-30");
+  assert.equal(etapesDuScrutin({ et: [{ d: "2026-10-13", f: "2026-10-01", l: "Séance" }] })[0].fin, null, "fin antérieure ignorée");
 });

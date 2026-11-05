@@ -27,7 +27,7 @@ import { Frise, Repartition } from "../ui/visuels";
 import { SignalerErreur } from "../ui/contact";
 import { Timeline } from "../ui/timeline";
 
-type FaitVote = { cle: string; type: string; sc: { t: string; d: string; n: string; s: string; dec?: Record<string, string>; dl?: string; dr?: string; dm?: string; dq?: number; et?: { d: string; l: string }[] }; position?: string; qui: string; circo: number };
+type FaitVote = { cle: string; type: string; sc: { t: string; d: string; n: string; s: string; dec?: Record<string, string>; dl?: string; dr?: string; dm?: string; dq?: number; et?: { d: string; f?: string; l: string }[] }; position?: string; qui: string; circo: number };
 
 export default function Vote() {
   const { reessayer } = useCommuneChoisie();

@@ -144,7 +144,7 @@ export function etapesDuScrutin(sc) {
   if (!sc || !Array.isArray(sc.et)) return [];
   return sc.et
     .filter(e => e && typeof e.d === "string" && /^\d{4}-\d{2}-\d{2}$/.test(e.d) && typeof e.l === "string" && e.l.trim())
-    .map(e => ({ date: e.d, libelle: e.l.trim(), lien: null }));
+    .map(e => ({ date: e.d, fin: typeof e.f === "string" && /^\d{4}-\d{2}-\d{2}$/.test(e.f) && e.f > e.d ? e.f : null, libelle: e.l.trim(), lien: null }));
 }
 export function dossierDuScrutin(sc) {
   if (!sc || typeof sc.dl !== "string" || !sc.dl.trim()) return null;

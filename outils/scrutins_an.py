@@ -128,7 +128,21 @@ def etapes_du_dossier(uid):
             parcourir(a, t)
     parcourir(dp, "")
     out.sort(key=lambda e: e["d"])
-    return out
+    # UNE LIGNE PAR ACTE, PAS PAR JOUR (05/11/2026). Mesure : le budget 2027 comptait 9
+    # « Discussion en seance publique » et 5 « Depot de rapport » (de 14 a 60 lignes par
+    # texte). Les actes de meme code sont reunis : premiere date d, derniere date f (si elle
+    # differe). Ce sont les dates publiees, rien n'est calcule d'autre.
+    reunis, index = [], {}
+    for e in out:
+        cle = e["c"] or e["l"]
+        if cle in index:
+            r = reunis[index[cle]]
+            if e["d"] != r["d"]:
+                r["f"] = e["d"]
+        else:
+            index[cle] = len(reunis)
+            reunis.append(dict(e))
+    return reunis
 
 def ref(a):
     if a not in idx:

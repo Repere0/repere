@@ -8,7 +8,9 @@ import { dateFr } from "@repere/core";
 import { CIBLE, couleurs, PAS, TYPO } from "../lib/theme";
 import { POINT_ETAPE } from "../lib/palette";
 
-export type Etape = { date: string; libelle: string; lien: string | null };
+export type Etape = { date: string; fin?: string | null; libelle: string; lien: string | null };
+
+const quand = (e: Etape) => (e.fin ? `du ${dateFr(e.date)} au ${dateFr(e.fin)}` : dateFr(e.date));
 
 export function Timeline({ etapes, etiquette }: { etapes: Etape[]; etiquette?: string }) {
   if (!etapes.length) return null;
@@ -21,12 +23,12 @@ export function Timeline({ etapes, etiquette }: { etapes: Etape[]; etiquette?: s
             {i < etapes.length - 1 ? <View style={{ flex: 1, width: 1, backgroundColor: couleurs.trait, marginTop: 4 }} /> : null}
           </View>
           <View style={{ flex: 1, gap: 2, paddingBottom: PAS * 4 }} accessible={!e.lien}
-            accessibilityLabel={e.lien ? undefined : `${dateFr(e.date)} : ${e.libelle}`}>
-            <Text style={TYPO.micro}>{dateFr(e.date)}</Text>
+            accessibilityLabel={e.lien ? undefined : `${quand(e)} : ${e.libelle}`}>
+            <Text style={TYPO.micro}>{quand(e)}</Text>
             <Text style={[TYPO.corps, { color: couleurs.encre }]}>{e.libelle}</Text>
             {e.lien ? (
               <Pressable onPress={() => Linking.openURL(e.lien as string)} accessibilityRole="link"
-                accessibilityLabel={`${dateFr(e.date)} : ${e.libelle}. Ouvrir le document officiel, site externe`}
+                accessibilityLabel={`${quand(e)} : ${e.libelle}. Ouvrir le document officiel, site externe`}
                 style={({ pressed }) => ({ minHeight: CIBLE, flexDirection: "row", alignItems: "center", gap: 6, opacity: pressed ? 0.7 : 1 })}>
                 <Ionicons name="document-text-outline" size={16} color={couleurs.lien} accessible={false} importantForAccessibility="no" />
                 <Text style={[TYPO.note, { color: couleurs.lien, textDecorationLine: "underline" }]}>Document officiel</Text>

@@ -59,6 +59,10 @@ def main():
                 acte("AN1-COM-NOM", "Nomination de rapporteur budgétaire", "2026-03-05T00:00:00.000+01:00"),
                 acte("AN1-COM-REU", "Réunion de commission", "2026-03-10T00:00:00.000+01:00"),
             ]),
+            acte("AN1S", "1ère lecture", None, [
+                acte("AN1-DEBATS-SEANCE", "Discussion en séance publique", "2026-04-20T00:00:00.000+02:00"),
+                acte("AN1-DEBATS-SEANCE", "Discussion en séance publique", "2026-04-22T00:00:00.000+02:00"),
+            ]),
             acte("SN1", "1ère lecture", None, [acte("SN1-DEPOT", "Transmission", "2026-05-10T00:00:00.000+02:00")]),
         ]}}}
         with open(os.path.join(dd, "DLR5L17N51329.json"), "w", encoding="utf-8") as f:
@@ -78,6 +82,7 @@ def main():
         assert a.get("et") == [
             {"d": "2026-03-02", "l": "1ère lecture · Dépôt", "c": "AN1-DEPOT"},
             {"d": "2026-04-01", "l": "1ère lecture · Rapport", "c": "AN1-COM-FOND"},
+            {"d": "2026-04-20", "l": "1ère lecture · Discussion en séance publique", "c": "AN1-DEBATS-SEANCE", "f": "2026-04-22"},
             {"d": "2026-05-10", "l": "1ère lecture · Transmission", "c": "SN1-DEPOT"},
         ], a.get("et")
         assert "eq" not in b and "et" not in b, "sans dossier : aucune etape ecrite"
