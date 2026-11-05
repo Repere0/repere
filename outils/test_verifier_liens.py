@@ -42,9 +42,12 @@ def main():
     panne = ouvreur({("https://d.fr", "HEAD"): TimeoutError()})
     assert v.verifier("https://d.fr", ouvrir=panne) == ("https://d.fr", 0, "TimeoutError")
 
-    morts, lignes = v.bilan([("https://a.fr", 200, None), ("https://c.fr", 404, None), ("https://d.fr", 0, "TimeoutError")])
-    assert [m[0] for m in morts] == ["https://c.fr", "https://d.fr"], morts
-    assert lignes[0].startswith("3 lien(s) verifie(s), 2 sans reponse"), lignes[0]
+    morts, douteux, lignes = v.bilan([("https://a.fr", 200, None), ("https://c.fr", 404, None),
+                                      ("https://d.fr", 0, "TimeoutError"), ("https://e.fr", 403, None)])
+    assert [m[0] for m in morts] == ["https://c.fr"], morts
+    assert [d[0] for d in douteux] == ["https://d.fr", "https://e.fr"], douteux
+    assert lignes[0].startswith("4 lien(s) verifie(s) : 1 mort(s), 2 a verifier"), lignes[0]
+    assert "Mozilla" not in v.AGENT and "Chrome" not in v.AGENT, "le robot ne se deguise pas en navigateur"
 
     # les adresses construites (${...}) ne sont jamais prises pour des liens
     with tempfile.TemporaryDirectory() as t:

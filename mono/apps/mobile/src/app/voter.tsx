@@ -24,11 +24,11 @@ function joursAvant(iso: string): number {
 }
 
 /* Chaque réponse générale porte sa source. Conseil municipal : séances publiques (CGCT L. 2121-18,
- * fiche de la préfecture de l'Aude, 26/05/2021) ; procès-verbal publié en ligne dans la semaine et
+ * Légifrance, en vigueur au 05/11/2026 ; la fiche de la préfecture de l'Aude répond 404 depuis) ; procès-verbal publié en ligne dans la semaine et
  * liste des délibérations affichée et mise en ligne (CGCT L. 2121-15 et L. 2121-25, rappel de la
  * préfecture de Haute-Corse, août 2022). Lues le 05/11/2026. */
-const SOURCE_AUDE = "https://www.aude.gouv.fr/contenu/telechargement/24167/166460/file/fiche_02_les_seances_du_conseil_municipal.pdf";
-const SOURCE_HAUTE_CORSE = "https://haute-corse.gouv.fr/contenu/telechargement/6633/54809/file/2022-08_reforme_pub_des_actes_rappel.pdf";
+const SOURCE_L2121_18 = "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000006389876";
+const SOURCE_HAUTE_CORSE = "https://www.haute-corse.gouv.fr/contenu/telechargement/6633/54809/file/2022-08_reforme_pub_des_actes_rappel.pdf";
 
 type Entree = { titre: string; texte: string; source?: { texte: string; url: string } };
 const GUIDE: Entree[] = [
@@ -36,8 +36,8 @@ const GUIDE: Entree[] = [
   { titre: "Comment voter ?", texte: "Présentez-vous au bureau de vote indiqué sur votre carte électorale, avec une pièce d'identité en cours de validité." },
   { titre: "Faire une procuration", texte: "Si vous ne pouvez pas vous déplacer, vous pouvez donner procuration à une personne inscrite sur les listes électorales, qui votera à votre place. La démarche est détaillée sur service-public.fr." },
   { titre: "Trouver mon bureau de vote", texte: "Votre bureau de vote figure sur votre carte électorale. Le service officiel « Vérifier mon inscription et mon bureau de vote », plus bas, l'indique aussi." },
-  { titre: "Comment assister au conseil municipal ?", texte: "Les séances du conseil municipal sont publiques (article L. 2121-18 du code général des collectivités territoriales) : chacun peut y assister, et les enregistrer ou les filmer. Le conseil peut exceptionnellement se réunir à huis clos, par un vote. Pour connaître la date des prochaines séances, renseignez-vous auprès de votre mairie.",
-    source: { texte: "Fiche de la préfecture de l'Aude", url: SOURCE_AUDE } },
+  { titre: "Comment assister au conseil municipal ?", texte: "Les séances du conseil municipal sont publiques (article L. 2121-18 du code général des collectivités territoriales) : chacun peut y assister. À la demande de trois conseillers ou du maire, le conseil peut décider par un vote de se réunir à huis clos. Les séances peuvent être retransmises. Pour connaître la date des prochaines séances, renseignez-vous auprès de votre mairie.",
+    source: { texte: "Article L. 2121-18, sur Légifrance", url: SOURCE_L2121_18 } },
   { titre: "Où trouver ce qu'a décidé le conseil ?", texte: "Depuis le 1er juillet 2022, la liste des délibérations est affichée en mairie et mise en ligne sur le site de la commune, s'il existe, dans la semaine. Le procès-verbal de chaque séance est publié sur ce site dans la semaine qui suit son adoption ; un exemplaire papier reste consultable en mairie (articles L. 2121-25 et L. 2121-15).",
     source: { texte: "Rappel de la préfecture de Haute-Corse", url: SOURCE_HAUTE_CORSE } },
 ];

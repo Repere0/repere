@@ -65,12 +65,23 @@ def verifier(url, ouvrir=urllib.request.urlopen, delai=8):
     return (url, 0, "aucune methode acceptee")
 
 
+# MORT : la page n'existe plus (404, 410). Le reste des echecs (403, 429, connexion coupee)
+# vient souvent d'un site qui refuse les robots alors qu'il repond a un lecteur : verifie le
+# 05/11/2026 dans un navigateur pour prefectures-regions.gouv.fr (403) et haute-corse.gouv.fr
+# (connexion coupee). Le robot ne se fait JAMAIS passer pour un navigateur : il le dit.
+MORTS = (404, 410)
+
+
 def bilan(resultats):
-    morts = [r for r in resultats if r[1] == 0 or r[1] >= 400]
-    lignes = ["%d lien(s) verifie(s), %d sans reponse correcte" % (len(resultats), len(morts))]
+    morts = [r for r in resultats if r[1] in MORTS]
+    douteux = [r for r in resultats if (r[1] == 0 or r[1] >= 400) and r[1] not in MORTS]
+    lignes = ["%d lien(s) verifie(s) : %d mort(s), %d a verifier dans un navigateur (robot refuse ou panne)"
+              % (len(resultats), len(morts), len(douteux))]
     for url, code, err in morts:
-        lignes.append("  %s  %s" % (code or err, url))
-    return morts, lignes
+        lignes.append("  MORT %s  %s" % (code, url))
+    for url, code, err in douteux:
+        lignes.append("  A VERIFIER %s  %s" % (code or err, url))
+    return morts, douteux, lignes
 
 
 def main(argv):
@@ -81,10 +92,12 @@ def main(argv):
             liens += liens_des_mairies(chemin)
     with concurrent.futures.ThreadPoolExecutor(16) as ex:
         resultats = list(ex.map(verifier, liens))
-    morts, lignes = bilan(resultats)
+    morts, douteux, lignes = bilan(resultats)
     print("\n".join(lignes))
     for url, code, err in morts:
-        print("::warning::lien sortant sans reponse correcte (%s) : %s" % (code or err, url))
+        print("::warning::lien sortant MORT (%s) : %s" % (code, url))
+    for url, code, err in douteux:
+        print("::notice::lien sortant a verifier dans un navigateur (%s) : %s" % (code or err, url))
     resume = os.environ.get("GITHUB_STEP_SUMMARY")
     if resume:
         with open(resume, "a", encoding="utf-8") as f:
