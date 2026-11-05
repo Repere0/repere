@@ -1,0 +1,62 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""DE QUOI PARLE LE TEXTE — controle sans reseau de scrutins_an.py (05/11/2026).
+
+Deux scrutins solennels factices, de la forme mesuree sur l'archive reelle
+(docs/schema_scrutins.md) : l'un porte objet.dossierLegislatif {libelle, dossierRef}
+et un demandeur, l'autre porte dossierLegislatif null et un demandeur vide. La sortie
+doit garder les trois champs du premier, et n'en ecrire aucun pour le second.
+
+Usage : python3 outils/test_scrutins_an_dossier.py
+"""
+import json, os, subprocess, sys, tempfile
+
+ICI = os.path.dirname(os.path.abspath(__file__))
+
+
+def scrutin(numero, date, dossier, demandeur):
+    return {"scrutin": {
+        "uid": "VTANR5L17V" + numero, "numero": numero, "dateScrutin": date,
+        "titre": "l'ensemble du projet de loi visant a essayer (premiere lecture).",
+        "objet": {"libelle": "l'ensemble du projet de loi visant a essayer (premiere lecture).",
+                  "dossierLegislatif": dossier, "referenceLegislative": None},
+        "demandeur": {"texte": demandeur, "referenceLegislative": None},
+        "sort": {"code": "adopté", "libelle": "l'Assemblée nationale a adopté"},
+        "typeVote": {"libelleTypeVote": "scrutin public solennel"},
+        "syntheseVote": {"nombreVotants": "3", "decompte": {"pour": "2", "contre": "1", "abstentions": "0"}},
+        "ventilationVotes": {"organe": {"groupes": {"groupe": [{"vote": {"decompteNominatif": {
+            "pours": {"votant": [{"acteurRef": "PA1"}, {"acteurRef": "PA2"}]},
+            "contres": {"votant": {"acteurRef": "PA3"}},
+            "abstentions": None, "nonVotants": None}}}]}}},
+    }}
+
+
+def main():
+    with tempfile.TemporaryDirectory() as t:
+        src = os.path.join(t, "brut")
+        os.makedirs(src)
+        avec = scrutin("101", "2026-10-01",
+                       {"libelle": "Simplifier la sortie de l'indivision successorale", "dossierRef": "DLR5L17N51329"},
+                       'Président du groupe "Les Démocrates"')
+        sans = scrutin("102", "2026-10-02", None, "")
+        for nom, d in (("a.json", avec), ("b.json", sans)):
+            with open(os.path.join(src, nom), "w", encoding="utf-8") as f:
+                json.dump(d, f, ensure_ascii=False)
+        sortie = os.path.join(t, "sortie.json")
+        r = subprocess.run([sys.executable, os.path.join(ICI, "scrutins_an.py"), src, sortie, "12"],
+                           capture_output=True, text=True)
+        assert r.returncode == 0, "scrutins_an.py a echoue : " + r.stderr[-500:]
+        relu = json.load(open(sortie, encoding="utf-8"))
+        par_n = {e["n"]: e for e in relu["r"]}
+        a, b = par_n["101"], par_n["102"]
+        assert a.get("dl") == "Simplifier la sortie de l'indivision successorale", a
+        assert a.get("dr") == "DLR5L17N51329", a
+        assert a.get("dm") == 'Président du groupe "Les Démocrates"', a
+        assert a.get("dq") == 1 and b.get("dq") == 1, "le marqueur de lecture dq manque"
+        for cle in ("dl", "dr", "dm"):
+            assert cle not in b, "le scrutin sans dossier porte %s : %r" % (cle, b.get(cle))
+    print("ok    de quoi parle le texte : intitule, reference et demandeur releves ; absents non ecrits")
+
+
+if __name__ == "__main__":
+    main()

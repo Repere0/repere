@@ -15,9 +15,9 @@ import { Pressable } from "react-native";
 import {
   CONSTITUTION_45_URL, dateFr, ETAPES_LOI, etapeDuScrutin, ligneScrutin, motPosition,
   phraseCirconscription, phraseDenominateurVote, phrasePosition, POSITION_NON_PORTEE, procedure,
-  repartitionVote, titreLisible, MOTS, chaineDecision, copieVoteVide, ETAT_VOTE,
+  repartitionVote, titreLisible, MOTS, chaineDecision, copieVoteVide, ETAT_VOTE, dossierDuScrutin, dossierReleve,
 } from "@repere/core";
-import { Carte, Segments, Vide } from "../lib/composants";
+import { Carte, LienSortant, Segments, Vide } from "../lib/composants";
 import { srcScrutins, srcVote } from "../lib/sources";
 import { useCommuneChoisie } from "../lib/useCommune";
 import { couleurs, PAS, TYPO, CIBLE } from "../lib/theme";
@@ -26,7 +26,7 @@ import { PastilleSource } from "../ui/source";
 import { Frise, Repartition } from "../ui/visuels";
 import { SignalerErreur } from "../ui/contact";
 
-type FaitVote = { cle: string; type: string; sc: { t: string; d: string; n: string; s: string; dec?: Record<string, string> }; position?: string; qui: string; circo: number };
+type FaitVote = { cle: string; type: string; sc: { t: string; d: string; n: string; s: string; dec?: Record<string, string>; dl?: string; dr?: string; dm?: string; dq?: number }; position?: string; qui: string; circo: number };
 
 export default function Vote() {
   const { reessayer } = useCommuneChoisie();
@@ -43,6 +43,7 @@ export default function Vote() {
       if (!vote) return <Page>{entete}<Vide {...copieVoteVide(d.etatVote, { nom: d.nomCommune, releve: srcScrutins(d)?.releve, portee: d.srcScrutins && d.srcScrutins.portee })} /></Page>;
 
       const rep = repartitionVote(vote.sc);
+      const dossier = dossierDuScrutin(vote.sc);
       const mot = (MOTS as Record<string, string>)[vote.position || ""];
       const etape = etapeDuScrutin(procedure(vote.sc.t));
       const autres = (d.faits as FaitVote[]).filter(x => x.type === "vote" && x.cle !== vote.cle && x.circo === vote.circo).slice(0, 4);
@@ -82,6 +83,23 @@ export default function Vote() {
             style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", opacity: pressed ? 0.6 : 1 })}>
             <Text style={[TYPO.corps, { color: couleurs.lien, fontWeight: "600" }]}>Partager ce vote ›</Text>
           </Pressable>
+
+          {/* DE QUOI PARLE CE TEXTE (05/11/2026) : l'intitulé officiel du dossier et qui a demandé
+              le scrutin public, tels que l'Assemblée les publie dans le scrutin. Aucun résumé écrit
+              par Repère. Dossier lu et absent : une phrase vraie. Champ pas encore relevé : rien. */}
+          {dossier || dossierReleve(vote.sc) ? <Carte echelon="france" titre="De quoi parle ce texte ?">
+            {dossier ? (
+              <>
+                <Text style={TYPO.note}>Intitulé du dossier à l'Assemblée nationale</Text>
+                <Text style={[TYPO.reponse, { fontSize: 19, lineHeight: 25 }]}>{dossier.intitule}</Text>
+                {dossier.demandeur ? <Text style={TYPO.note}>Vote public demandé par : {dossier.demandeur}.</Text> : null}
+                {dossier.url ? <LienSortant url={dossier.url} texte="Le dossier complet : texte, rapports, étapes" /> : null}
+              </>
+            ) : (
+              <Text style={TYPO.note}>L'Assemblée ne rattache ce scrutin à aucun dossier législatif dans ses données. Le détail est sur la page officielle du scrutin.</Text>
+            )}
+            <PastilleSource source={srcVote(d, vote.sc)} />
+          </Carte> : null}
 
           {/* NIVEAU 2 : le scrutin, visuellement */}
           {rep ? (

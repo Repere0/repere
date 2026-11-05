@@ -169,3 +169,11 @@ test("E — chaque réponse sur le conseil municipal porte sa source officielle"
   }
   assert.match(v, /accessibilityState=\{\{ expanded: ouvert \}\}/, "l'accordéon annonce son état au lecteur d'écran");
 });
+
+/* ── F. « De quoi parle ce texte ? » (05/11/2026) ────────────────────────── */
+
+test("F — la carte n'affirme une absence de dossier que si le relevé a lu le champ", () => {
+  const v = lire("src", "app", "vote.tsx");
+  assert.match(v, /\{dossier \|\| dossierReleve\(vote\.sc\) \? <Carte echelon="france" titre="De quoi parle ce texte \?">/, "la carte doit être conditionnée par dossierReleve");
+  assert.match(v, /dossierDuScrutin\(vote\.sc\)/, "l'intitulé vient de la règle partagée de @repere/core");
+});

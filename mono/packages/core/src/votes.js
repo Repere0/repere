@@ -122,3 +122,25 @@ export function resultatDecompteCourt(dec) {
     decompteAbsent(dec.abstentions) ? null : `${nombreDecompte(dec.abstentions)} abstention${Number(dec.abstentions) > 1 ? "s" : ""}`,
   ].filter(Boolean).join(" · ");
 }
+
+/* DE QUOI PARLE LE TEXTE (05/11/2026). Le dossier legislatif d'un scrutin, tel que
+   l'Assemblee le publie (objet.dossierLegislatif : intitule et reference), et qui a
+   demande le scrutin public (demandeur.texte). Le lien est construit sur le format
+   verifie le 05/11/2026 (www.assemblee-nationale.fr/dyn/17/dossiers/<reference>) et
+   seulement pour une reference de la forme publiee : jamais un lien devine.
+   Retourne null quand le scrutin ne porte aucun dossier (doctrine du vide : l'ecran
+   dit alors une phrase vraie et renvoie au scrutin officiel). */
+const REF_DOSSIER = /^DLR5L17N\d+$/;
+/* Vrai si le releve a LU le dossier de ce scrutin (marqueur dq) : alors l'absence d'intitule
+   est une absence dans la source. Faux : le releve ne lisait pas encore ce champ, et
+   l'ecran ne doit rien affirmer. */
+export const dossierReleve = sc => !!sc && sc.dq === 1;
+export function dossierDuScrutin(sc) {
+  if (!sc || typeof sc.dl !== "string" || !sc.dl.trim()) return null;
+  const ref = typeof sc.dr === "string" && REF_DOSSIER.test(sc.dr) ? sc.dr : null;
+  return {
+    intitule: sc.dl.trim(),
+    url: ref ? `https://www.assemblee-nationale.fr/dyn/17/dossiers/${ref}` : null,
+    demandeur: typeof sc.dm === "string" && sc.dm.trim() ? sc.dm.trim() : null,
+  };
+}

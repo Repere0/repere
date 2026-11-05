@@ -132,6 +132,22 @@ for date, d in retenus:
         "nv": txt(d, "syntheseVote", "nombreVotants"),
         "p": positions["p"], "c": positions["c"], "a": positions["a"],
     })
+    # DE QUOI PARLE LE TEXTE (05/11/2026). Champs mesures sur l'archive reelle
+    # (docs/schema_scrutins.md) : objet.dossierLegislatif vaut null pour une partie des
+    # scrutins, sinon {libelle, dossierRef} ; demandeur.texte nomme qui a demande le
+    # scrutin public. Absents ou vides : on n'ecrit pas la cle (jamais une chaine vide).
+    dl = txt(d, "objet", "dossierLegislatif", "libelle")
+    dr = txt(d, "objet", "dossierLegislatif", "dossierRef")
+    dm = txt(d, "demandeur", "texte")
+    # dq = 1 : ces champs ONT ETE LUS pour ce scrutin. Sans lui, l'ecran ne peut pas
+    # distinguer « la source n'a pas de dossier » de « le releve ne lisait pas encore ce champ ».
+    sortie[-1]["dq"] = 1
+    if isinstance(dl, str) and dl.strip():
+        sortie[-1]["dl"] = dl.strip()
+    if isinstance(dr, str) and dr.strip().startswith("DLR"):
+        sortie[-1]["dr"] = dr.strip()
+    if isinstance(dm, str) and dm.strip():
+        sortie[-1]["dm"] = dm.strip()
     # LE GARDE-FOU, ici et pas ailleurs : aucune reference relevee parmi les non-votants
     # ne doit se retrouver dans les positions enregistrees. La premiere version de ce
     # controle cherchait la chaine « nonVotant » dans la sortie — elle n'y figure jamais,
@@ -166,6 +182,10 @@ for e in relu["r"]:
     doublons = [x for x in (e["p"] + e["c"] + e["a"])
                 if (e["p"] + e["c"] + e["a"]).count(x) > 1]
     assert not doublons, "le scrutin %s compte un depute deux fois" % e["n"]
+    for cle in ("dl", "dr", "dm"):
+        assert cle not in e or (isinstance(e[cle], str) and e[cle].strip()), \
+            "le scrutin %s porte un champ %s vide" % (e["n"], cle)
+    assert "dr" not in e or e["dr"].startswith("DLR"), "reference de dossier inattendue : %s" % e.get("dr")
 
 os.makedirs(os.path.dirname(SORTIE) or ".", exist_ok=True)
 io.open(SORTIE, "w", encoding="utf-8").write(brut)

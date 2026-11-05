@@ -236,3 +236,26 @@ test("vote illisible : un vote réel dont la position n'a pas de libellé ne dev
   assert.doesNotMatch(c.titre, /Aucune position|Aucun vote/, "un vote existe : ni « aucune position » ni « aucun vote »");
   assert.match(c.corps, /Ce n'est pas une absence de vote/);
 });
+
+/* DE QUOI PARLE LE TEXTE (05/11/2026) : dossierDuScrutin ne fabrique jamais un lien. */
+import { dossierDuScrutin } from "../packages/core/src/index.js";
+
+test("dossier — intitulé, lien officiel et demandeur quand le scrutin les porte", () => {
+  const d = dossierDuScrutin({ dl: " Simplifier la sortie de l'indivision successorale ", dr: "DLR5L17N51329", dm: "Président du groupe X" });
+  assert.equal(d.intitule, "Simplifier la sortie de l'indivision successorale");
+  assert.equal(d.url, "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N51329");
+  assert.equal(d.demandeur, "Président du groupe X");
+});
+
+test("dossier — aucun dossier : null ; référence mal formée : pas de lien ; demandeur vide : null", () => {
+  assert.equal(dossierDuScrutin({ t: "x" }), null);
+  assert.equal(dossierDuScrutin({ dl: "   " }), null);
+  assert.equal(dossierDuScrutin({ dl: "Titre", dr: "../../autre-site" }).url, null);
+  assert.equal(dossierDuScrutin({ dl: "Titre", dm: " " }).demandeur, null);
+});
+
+import { dossierReleve } from "../packages/core/src/index.js";
+test("dossier — sans marqueur de lecture, l'absence d'intitulé n'est pas affirmée", () => {
+  assert.equal(dossierReleve({ t: "x" }), false);
+  assert.equal(dossierReleve({ dq: 1 }), true);
+});

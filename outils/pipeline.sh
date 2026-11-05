@@ -458,6 +458,7 @@ banc "collecte" python3 outils/test_collecte.py
 # Heure de fin des seances (13/10/2026) : l'agenda normalise recopie la fin publiee
 # par la source, et ne la devine jamais. Le controle tourne sur un agenda factice.
 banc "agenda : heure de fin" python3 outils/test_agenda_an.py
+banc "scrutins : de quoi parle le texte" python3 outils/test_scrutins_an_dossier.py
 banc "teaser des scrutins : etat annonce" bash outils/test_teaser_scrutins_etat.sh
 banc "scrutins solennels : erreurs bloquantes" bash outils/test_scrutins_solennels_erreurs.sh
 
