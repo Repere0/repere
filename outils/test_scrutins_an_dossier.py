@@ -56,6 +56,8 @@ def main():
                 acte("AN1-DEPOT", "Dépôt", "2026-03-02T00:00:00.000+01:00"),
                 acte("AN1-COM", "Commission", None, acte("AN1-COM-FOND", "Rapport", "2026-04-01T00:00:00.000+02:00")),
                 acte("AN1-DEPOT", "Dépôt", "2026-03-02T00:00:00.000+01:00"),
+                acte("AN1-COM-NOM", "Nomination de rapporteur budgétaire", "2026-03-05T00:00:00.000+01:00"),
+                acte("AN1-COM-REU", "Réunion de commission", "2026-03-10T00:00:00.000+01:00"),
             ]),
             acte("SN1", "1ère lecture", None, [acte("SN1-DEPOT", "Transmission", "2026-05-10T00:00:00.000+02:00")]),
         ]}}}

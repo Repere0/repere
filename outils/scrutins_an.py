@@ -98,6 +98,12 @@ def fichier_dossier(uid):
             os.path.join(DOSSIERS, "**", "dossierParlementaire", "*.json"), recursive=True)}
     return _fichiers_dossiers.get(uid)
 
+# Actes de travail interne des commissions, ecartes de la frise. MESURE (epreuve du 05/11/2026,
+# 12 dossiers, 387 actes dates) : ils faisaient l'essentiel des ~32 lignes par texte
+# (« Nomination de rapporteur budgetaire » six fois pour le budget 2027). Liste tiree des
+# libelles observes, pas devinee ; un acte inconnu reste affiche.
+INTERNES = ("Nomination de rapporteur", "Réunion de commission", "Saisine pour avis")
+
 def etapes_du_dossier(uid):
     """Actes dates du dossier, dans l'ordre du temps : [{d, l, c}] ; None si le dossier manque."""
     f = fichier_dossier(uid)
@@ -113,7 +119,7 @@ def etapes_du_dossier(uid):
             court = txt(a, "libelleActe", "libelleCourt") or txt(a, "libelleActe", "nomCanonique")
             t = tete or court
             date = txt(a, "dateActe")
-            if isinstance(date, str) and len(date) >= 10 and court:
+            if isinstance(date, str) and len(date) >= 10 and court and not court.startswith(INTERNES):
                 libelle = court if not tete or tete == court else "%s · %s" % (tete, court)
                 cle = (date[:10], libelle)
                 if cle not in vus:
@@ -249,4 +255,5 @@ avec = [e for e in sortie if e.get("et")]
 if avec:
     print("etapes, exemple (scrutin %s, %s) :" % (avec[-1]["n"], avec[-1].get("dl", "")))
     for e in avec[-1]["et"]:
-        print("  %s  %s" % (e["d"], e["l"]))
+        print("  %s  %-22s %s" % (e["d"], e["c"], e["l"]))
+    print("etapes par texte          : " + ", ".join(str(len(e.get("et", []))) for e in sortie if "eq" in e))
