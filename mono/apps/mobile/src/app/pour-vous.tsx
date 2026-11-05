@@ -15,6 +15,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { router } from "expo-router";
 import { Linking, Pressable, Text, View } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import { ageReleve, dateFr, dernierExercice, parHabitant, THEMES, themesDuTexte, titreLisible, visibleAuNiveau } from "@repere/core";
 import { chargerCatalogueScrutins, chargerCommunesBeta, chargerDepartement, chargerEvenements, chargerIndex } from "../lib/donnees";
 import { srcComptesPublies, srcVote } from "../lib/sources";
@@ -32,7 +33,7 @@ const PAR_TRANCHE = 10;
 
 type Entree = {
   cle: string; echelon: string; d: string | null; an: string | null;
-  quoi: string; icone: string; titre: string; lien: string | null; source: string;
+  quoi: string; icone: "checkbox-outline" | "document-text-outline" | "cash-outline"; titre: string; lien: string | null; source: string;
   /* V31 (D57) : thèmes rangés par mots-clés du titre ; le budget est un sujet « Budget ». */
   themes: string[];
 };
@@ -74,14 +75,14 @@ export default function PourVous() {
       const scrutins: Entree[] = ((cat?.scrutins as { n: string; d: string; t: string }[]) || [])
         .filter(x => DATE_ISO.test(x.d))
         .map(x => ({
-          cle: "s" + x.n, echelon: "france", d: x.d, an: null, quoi: "Vote à l'Assemblée", icone: "⚖",
+          cle: "s" + x.n, echelon: "france", d: x.d, an: null, quoi: "Vote à l'Assemblée", icone: "checkbox-outline",
           titre: titreLisible(x.t), lien: srcVote(cat, x)?.url ?? null, source: "Assemblée nationale", themes: themesDuTexte(x.t),
         }));
       const faits: Entree[] = ((ev?.r as { id: string; d: string; t: string; e: string; src?: string; srcn?: string }[]) || [])
         /* Les faits qui sont aussi des scrutins ne sont pas comptés deux fois. */
         .filter(x => DATE_ISO.test(x.d) && !x.id.startsWith("scrutin-"))
         .map(x => ({
-          cle: "e" + x.id, echelon: x.e, d: x.d, an: null, quoi: "Fait publié", icone: "✎",
+          cle: "e" + x.id, echelon: x.e, d: x.d, an: null, quoi: "Fait publié", icone: "document-text-outline",
           titre: x.t, lien: x.src ?? null, source: x.srcn ?? "Repère (rédaction)", themes: themesDuTexte(x.t),
         }));
       setNationales([...scrutins, ...faits]);
@@ -107,7 +108,7 @@ export default function PourVous() {
       const hab = ex ? parHabitant(ex.ex) : null;
       if (!nom || !ex || !hab || typeof hab.depenses !== "number") { setBudget(null); return; }
       setBudget({
-        cle: "budget", echelon: "ville", d: null, an: ex.an, quoi: "Comptes de la commune", icone: "€",
+        cle: "budget", echelon: "ville", d: null, an: ex.an, quoi: "Comptes de la commune", icone: "cash-outline",
         titre: `${nom} : ${Math.round(hab.depenses).toLocaleString("fr-FR")} € de dépenses par habitant en ${ex.an}`,
         lien: srcComptesPublies(pq.donnees)?.url ?? null, source: "OFGL", themes: ["Budget"],
       });
@@ -205,7 +206,10 @@ function Ligne({ e }: { e: Entree }) {
     : `Comptes publiés pour ${e.an}`;
   const contenu = (
     <View style={{ gap: PAS }}>
-      <Text style={[TYPO.note, { color: couleurs.sourd }]}>{e.icone} {e.quoi} · {quand}</Text>
+      <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+        <Ionicons name={e.icone} size={14} color={couleurs.sourd} accessible={false} importantForAccessibility="no" />
+        <Text style={[TYPO.note, { color: couleurs.sourd, flex: 1 }]}>{e.quoi} · {quand}</Text>
+      </View>
       <Text style={[TYPO.corps, { fontWeight: "700", color: couleurs.encre }]}>{e.titre}</Text>
       <Text style={[TYPO.note, { color: couleurs.sourd }]}>Source : {e.source}</Text>
     </View>

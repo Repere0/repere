@@ -24,6 +24,7 @@ import { couleurs, PAS, TYPO, CIBLE } from "../lib/theme";
 import { AvecDonnees, Page, Question } from "../ui/page";
 import { PastilleSource } from "../ui/source";
 import { Frise, Repartition } from "../ui/visuels";
+import { SignalerErreur } from "../ui/contact";
 
 type FaitVote = { cle: string; type: string; sc: { t: string; d: string; n: string; s: string; dec?: Record<string, string> }; position?: string; qui: string; circo: number };
 
@@ -35,7 +36,7 @@ export default function Vote() {
       const vote: FaitVote | undefined = d.dernierVote;
       /* Commune partagée : le vote affiché est celui d'un exemple, pas « votre » député (invariant 3). */
       const partagee = d.nbCircos > 1;
-      const entete = <Question emoji="🗳️" etiquette={partagee ? "Un député de votre commune" : "Votre député"} question={partagee ? "Qu'a voté un député de votre commune ?" : "Qu'a voté votre député ?"} />;
+      const entete = <Question etiquette={partagee ? "Un député de votre commune" : "Votre député"} question={partagee ? "Qu'a voté un député de votre commune ?" : "Qu'a voté votre député ?"} />;
       if (!r.votesLus) return <Page>{entete}<Vide {...copieVoteVide(ETAT_VOTE.RELEVE_NON_LU)} action="Réessayer" onAction={reessayer} /></Page>;
       if (!r.votesFiables) return <Page>{entete}<Vide {...copieVoteVide(ETAT_VOTE.RELEVE_INCOHERENT)} /></Page>;
       /* Un seul endroit décide du texte du vide : @repere/core (votesVides.js). */
@@ -132,6 +133,7 @@ export default function Vote() {
 
           <Pressable accessibilityRole="button" accessibilityLabel="Voir les scrutins publics et les votes détaillés" onPress={() => router.push("/scrutins")} style={{ minHeight: CIBLE, justifyContent: "center", marginTop: PAS * 2 }}><Text style={{ color: couleurs.lien, fontWeight: "600" }}>Voir les scrutins publics et les votes détaillés ›</Text></Pressable>
           <PastilleSource source={srcScrutins(d)} />
+          <SignalerErreur contexte={`le vote de ${vote.qui}`} donnee={`${dateFr(vote.sc.d)} · ${titreLisible(vote.sc.t)} · ${vote.qui}`} />
         </Page>
       );
     }} />

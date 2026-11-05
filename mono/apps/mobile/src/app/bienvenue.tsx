@@ -7,6 +7,7 @@
  * il remet la question à sa valeur par défaut, sans quitter l'écran. Aucune réponse ne part. */
 import { useState } from "react";
 import { Pressable, ScrollView, Text, View } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import { router, Stack } from "expo-router";
 import { LIBELLE_NIVEAU, PROFIL_DEFAUT, TAILLES_TEXTE, THEMES } from "@repere/core";
 import { useSelection } from "../lib/selection";
@@ -14,10 +15,10 @@ import { useProfil } from "../lib/profil";
 import { CIBLE, couleurs, PAS, TYPO } from "../lib/theme";
 import { Bouton, Texte } from "../lib/composants";
 
-const CHOIX_NIVEAU: { niveau: string; emoji: string; aide: string }[] = [
-  { niveau: "rue", emoji: "🏘️", aide: "Votre commune et votre intercommunalité" },
-  { niveau: "region", emoji: "🏛️", aide: "Ce qui se décide dans votre commune et votre région" },
-  { niveau: "france", emoji: "🇫🇷", aide: "Ce qui se décide au niveau national" },
+const CHOIX_NIVEAU: { niveau: string; icone: "home-outline" | "business-outline" | "flag-outline"; aide: string }[] = [
+  { niveau: "rue", icone: "home-outline", aide: "Votre commune et votre intercommunalité" },
+  { niveau: "region", icone: "business-outline", aide: "Ce qui se décide dans votre commune et votre région" },
+  { niveau: "france", icone: "flag-outline", aide: "Ce qui se décide au niveau national" },
 ];
 
 /* « Aucune préférence » : remet la question à sa valeur par défaut, sans quitter l'écran (V34, bloc 3). */
@@ -73,7 +74,10 @@ export default function Bienvenue() {
                 borderWidth: actif ? 2 : 1, borderColor: actif ? couleurs.encre : couleurs.trait,
                 backgroundColor: couleurs.carte, opacity: pressed ? 0.7 : 1,
               })}>
-              <Text style={TYPO.corps}>{c.emoji}  {LIBELLE_NIVEAU[c.niveau as keyof typeof LIBELLE_NIVEAU]}{actif ? "  (choisi)" : ""}</Text>
+              <View style={{ flexDirection: "row", alignItems: "center", gap: PAS * 2 }}>
+                <Ionicons name={c.icone} size={20} color={couleurs.encre} accessible={false} importantForAccessibility="no" />
+                <Text style={[TYPO.corps, { flex: 1 }]}>{LIBELLE_NIVEAU[c.niveau as keyof typeof LIBELLE_NIVEAU]}{actif ? "  (choisi)" : ""}</Text>
+              </View>
               <Text style={TYPO.note}>{c.aide}</Text>
             </Pressable>
           );

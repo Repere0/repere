@@ -13,6 +13,17 @@ export const ELECTIONS_SOURCE = {
   url: "https://www.service-public.gouv.fr/particuliers/actualites/A15053?lang=fr",
 };
 
+/* LES TROIS DÉMARCHES EN LIGNE (05/11/2026). Liens vers les services officiels : l'application n'envoie
+ * rien, c'est le lecteur qui ouvre le site de l'État (invariants 1 et 2 : pas d'adresse saisie ici).
+ * URL relevées sur les fiches service-public F34852 (vérifiée le 08/10/2025), F1367 (03/03/2026) et
+ * F1604 (02/02/2026), consultées le 05/11/2026. */
+export const DEMARCHES_VERIFIEES_LE = "2026-11-05";
+export const DEMARCHES = [
+  { texte: "Vérifier mon inscription et mon bureau de vote", url: "https://www.service-public.gouv.fr/particuliers/vosdroits/R51788" },
+  { texte: "M'inscrire sur les listes électorales en ligne", url: "https://www.service-public.gouv.fr/particuliers/vosdroits/R16396" },
+  { texte: "Faire une procuration en ligne", url: "https://www.service-public.gouv.fr/particuliers/vosdroits/R58939" },
+];
+
 export type Election = { date: string | null; type: "presidentielle" | "legislatives"; titre: string; description: string };
 
 export const ELECTIONS: Election[] = [
