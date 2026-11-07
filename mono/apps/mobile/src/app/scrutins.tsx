@@ -20,6 +20,7 @@ import {
   ETATS,
 } from "../lib/donnees";
 import { Page } from "../ui/page";
+import { Hemicycle } from "../ui/hemicycle";
 import { Vide } from "../lib/composants";
 import { PastilleSource } from "../ui/source";
 import { feuille, PAS, TYPO, couleurs, CIBLE, RAYON, OMBRE, POLICE } from "../lib/theme";
@@ -250,6 +251,8 @@ export default function Scrutins() {
             : "Les scrutins publics de la XVIIe législature."}
         </Text>
       </View>
+
+      <Hemicycle />
 
       <Onglets mode={mode} setMode={setMode} />
 

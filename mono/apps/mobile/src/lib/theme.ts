@@ -95,6 +95,8 @@ function construire(m: Mode) {
     /* le nom de la commune, les grands nombres */
     affiche: { fontFamily: POLICE.affiche, fontSize: sz(36), lineHeight: lh(40), color: couleurs.encre, letterSpacing: -0.5 },
     chiffre: { fontFamily: POLICE.donneeForte, fontSize: sz(36), lineHeight: lh(44), color: couleurs.encre, letterSpacing: -0.5 },
+    /* 07/11/2026 : les nombres du décompte, en grand (StatCard). */
+    stat: { fontFamily: POLICE.donneeForte, fontSize: sz(40), lineHeight: lh(46), color: couleurs.encre, letterSpacing: -1 },
     /* la question d'un écran */
     question: { fontFamily: POLICE.affiche, fontSize: sz(28), lineHeight: lh(33), color: couleurs.encre, letterSpacing: -0.3 },
     /* la réponse d'une carte : lisible en trois secondes */

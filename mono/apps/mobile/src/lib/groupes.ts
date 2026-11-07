@@ -12,15 +12,32 @@ export type GroupeDepute = { groupe: string; nom?: string };
 export type TableGroupes = Record<string, GroupeDepute>;
 
 /* La table des groupes, ou null si le fichier n'est pas lisible ou n'emporte pas sa source. */
-export async function lireGroupes(): Promise<TableGroupes | null> {
+export type FichierGroupes = { source: { producteur: string; licence: string; url?: string }; genere_le: string; groupes: TableGroupes };
+
+export async function lireFichierGroupes(): Promise<FichierGroupes | null> {
   try {
     const r = await chargerDeputesGroupes();
     const d = r.donnees as { source?: { producteur?: string; licence?: string }; genere_le?: string; groupes?: TableGroupes } | null;
     if (!d || !d.source || !d.source.producteur || !d.source.licence || !d.genere_le || !d.groupes) return null;
-    return d.groupes;
+    return d as FichierGroupes;
   } catch {
     return null;
   }
+}
+
+export async function lireGroupes(): Promise<TableGroupes | null> {
+  return (await lireFichierGroupes())?.groupes ?? null;
+}
+
+/* Le fichier entier (avec sa source et sa date), pour l'hémicycle ; null tant qu'il n'est pas lu. */
+export function useFichierGroupes(): FichierGroupes | null {
+  const [t, setT] = useState<FichierGroupes | null>(null);
+  useEffect(() => {
+    let vivant = true;
+    lireFichierGroupes().then(x => { if (vivant) setT(x); });
+    return () => { vivant = false; };
+  }, []);
+  return t;
 }
 
 /* La table, une fois lue ; null tant qu'elle ne l'est pas. */
