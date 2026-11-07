@@ -7,7 +7,10 @@ import { router, Stack } from "expo-router";
 import { dateFr, plusRecentEnPremier } from "@repere/core";
 import { chargerEvenements, ETATS, PHRASES } from "../lib/donnees";
 import { Carte, LienSortant, Vide } from "../lib/composants";
-import { PAS, TYPO } from "../lib/theme";
+import { CIBLE, couleurs, PAS, POLICE, TYPO } from "../lib/theme";
+import { Ionicons } from "@expo/vector-icons";
+import { TexteLong } from "../ui/donnees";
+import { Pression } from "../ui/pression";
 import { DateDonnee } from "../ui/fraicheur";
 import { Page, Question } from "../ui/page";
 import { SquelettesListe } from "../ui/squelette";
@@ -76,6 +79,8 @@ export default function Actus() {
   );
 }
 
+const numeroScrutin = (id: string) => /^scrutin-\d{4}-\d{2}-\d{2}-(\d+)$/.exec(id)?.[1] ?? null;
+
 function ActuCarte({ x }: { x: Evt }) {
   /* Les sauts de ligne du fichier coupent des phrases : le texte est un seul paragraphe. */
   const texte = (x.axes || "").replace(/\s*\n\s*/g, " ").trim();
@@ -83,9 +88,21 @@ function ActuCarte({ x }: { x: Evt }) {
   return (
     <Carte>
       <View style={{ gap: PAS * 2 }}>
-        <Text style={TYPO.note}>{dateFr(x.d)}</Text>
-        <Text style={[TYPO.corps, { fontWeight: "700" }]} accessibilityRole="header">{x.t}</Text>
-        {texte ? <Text style={TYPO.corps}>{texte}</Text> : null}
+        <View style={{ flexDirection: "row", alignItems: "center", gap: PAS * 2 }}>
+          <Ionicons name="newspaper-outline" size={16} color={couleurs.sourd} accessible={false} importantForAccessibility="no" />
+          <Text style={TYPO.donnee}>{dateFr(x.d)}</Text>
+        </View>
+        <Text style={TYPO.reponse} accessibilityRole="header">{x.t}</Text>
+        {texte ? <TexteLong texte={texte} icone="chevron-forward-outline" /> : null}
+        {/* Maillage (07/11/2026) : un fait tiré d'un scrutin (id « scrutin-AAAA-MM-JJ-N ») ouvre ce scrutin. */}
+        {numeroScrutin(x.id) ? (
+          <Pression onPress={() => router.push({ pathname: "/scrutins", params: { n: numeroScrutin(x.id) as string } })} role="link"
+            etiquette={`Voir le scrutin n° ${numeroScrutin(x.id)} et son décompte`}
+            style={{ minHeight: CIBLE, flexDirection: "row", alignItems: "center", gap: PAS * 2 }}>
+            <Ionicons name="stats-chart-outline" size={18} color={couleurs.encre} accessible={false} importantForAccessibility="no" />
+            <Text style={[TYPO.corps, { fontFamily: POLICE.titre, textDecorationLine: "underline" }]}>Voir le scrutin n° {numeroScrutin(x.id)}</Text>
+          </Pression>
+        ) : null}
         {x.src ? <LienSortant url={x.src} texte={x.srcn || "Source officielle"} /> : null}
         {x.src ? (
           <PartagerCarte etiquette={`Partager : ${x.t}`}

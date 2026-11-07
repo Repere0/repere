@@ -12,6 +12,7 @@
  * celle de Melun, annoncee comme un exemple. La seconde est un vote fige (depute
  * 77-1, scrutin 8706, verifie le 30/10/2026), annonce lui aussi comme un exemple.
  * Le partage n'est plus sur l'accueil : il est sur les ecrans de contexte (src/ui/partage). */
+import { espacesFines } from "../ui/donnees";
 import { useEffect, useMemo, useState } from "react";
 import { FlatList, KeyboardAvoidingView, Linking, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View, useWindowDimensions } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -23,12 +24,12 @@ import { useSelection } from "../lib/selection";
 import { useProfil } from "../lib/profil";
 import { BadgeZoom, useNiveauZoom } from "../ui/badge-zoom";
 import { feuille, CIBLE, PAS, POLICE, RAYON, TYPO } from "../lib/theme";
-import { ECHELONS_PAR_MODE, NEUTRES_PAR_MODE, OMBRE_PAR_MODE } from "../lib/palette";
+import { ECHELONS_PAR_MODE, JAUGE_BUDGET, NEUTRES_PAR_MODE, OMBRE_PAR_MODE } from "../lib/palette";
 import { groupeDe, useGroupes } from "../lib/groupes";
 import { VOTE } from "../ui/partage/donnees";
 import { SquelettesListe } from "../ui/squelette";
 import { Logo } from "../ui/logo";
-import { Loupe } from "../ui/loupe";
+import { Ionicons } from "@expo/vector-icons";
 import { RappelElection } from "../ui/rappel-election";
 import { DatePublication } from "../ui/fraicheur";
 import { DernieresPublications } from "../ui/dernieres-publications";
@@ -172,6 +173,16 @@ function CarteVote({ etiquette, nom, acteur, ligne, position, dec, date, titre, 
     </View>
   );
 }
+
+/* Les trois accès rapides de l'accueil (07/11/2026) : mêmes écrans, mêmes noms qu'avant. */
+/* router.push écrit en toutes lettres : le contrôle de parcours (tests/parcours.test.mjs) le lit. */
+/* Couleur de chaque tuile : celle d'un échelon (une section), jamais d'un parti (invariant 7). */
+const ACCES: { ouvrir: () => void; texte: string; etiquette: string; icone: keyof typeof Ionicons.glyphMap; couleur: string }[] = [
+  { ouvrir: () => router.push("/mes-elus"), texte: "Mes élus", etiquette: "Mes élus : qui vous représente", icone: "people", couleur: ECHELONS_PAR_MODE.sombre.ville },
+  { ouvrir: () => router.push("/voter"), texte: "Ma voix", etiquette: "Ma voix : prochaines élections, guide du vote et du conseil municipal", icone: "checkbox", couleur: ECHELONS_PAR_MODE.sombre.dept },
+  { ouvrir: () => router.push("/pour-vous"), texte: "Pour vous", etiquette: "Pour vous : ce qui a été publié selon votre vue", icone: "bookmark", couleur: ECHELONS_PAR_MODE.sombre.region },
+  { ouvrir: () => router.push("/scrutins"), texte: "L'Assemblée", etiquette: "L'Assemblée : sa composition et ses votes publics", icone: "business", couleur: ECHELONS_PAR_MODE.sombre.france },
+];
 
 export default function Accueil() {
   const marges = useSafeAreaInsets();
@@ -360,13 +371,28 @@ export default function Accueil() {
                         Rien n'est retiré : ce qui était affiché reste à un geste. */}
                     <Text style={s.carteTitre}>{accroche(argent)}</Text>
                     <View style={{ flexDirection: "row", alignItems: "baseline", flexWrap: "wrap", columnGap: PAS * 2 }}>
-                      <Text style={s.chiffre}>{argent.depenses.toLocaleString("fr-FR")} €</Text>
+                      <Text style={s.chiffre}>{espacesFines(`${argent.depenses.toLocaleString("fr-FR")} €`)}</Text>
                       <Text style={s.legende}>par habitant · {argent.an}</Text>
                       <PourquoiJeVois etiquette={`le montant de ${argent.nom}`} couleur={D.encre} fond={D.voile}
                         p={{ source: { texte: `Observatoire des finances et de la gestion publique locales (OFGL), comptes ${argent.an}${(index as any)?.sources?.comptes?.maj ? `, publiés le ${dateFr((index as any).sources.comptes.maj)}` : ""}`, lien: urlComptes },
                           calcul: USAGE_PAR_HABITANT,
                           ici: `Affiché parce que ce sont les comptes publiés les plus récents pour ${argent.nom} (${argent.an}).` }} />
                     </View>
+                    {/* 07/11/2026 (maquette Stitch) : la jauge segmentée sort du « Voir plus » ; sa légende
+                        écrit chaque part (la couleur ne porte jamais seule le sens). */}
+                    {repartition ? (
+                      <View style={{ gap: PAS * 2 }}>
+                        <Barre parts={[{ cle: "s", valeur: repartition.sal, couleur: JAUGE_BUDGET.salaires }, { cle: "i", valeur: repartition.inv, couleur: JAUGE_BUDGET.investissement }, { cle: "a", valeur: repartition.aut, couleur: JAUGE_BUDGET.autres }]} />
+                        <View style={{ flexDirection: "row", flexWrap: "wrap", columnGap: PAS * 4, rowGap: PAS }}>
+                          {[[JAUGE_BUDGET.salaires, `${repartition.sal} % salaires`], [JAUGE_BUDGET.investissement, `${repartition.inv} % invest.`], [JAUGE_BUDGET.autres, `${repartition.aut} % autres`]].map(([c, l]) => (
+                            <View key={l} style={{ flexDirection: "row", alignItems: "center", gap: PAS }}>
+                              <View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: c, borderWidth: 1, borderColor: D.trait }} />
+                              <Text style={s.legende}>{l}</Text>
+                            </View>
+                          ))}
+                        </View>
+                      </View>
+                    ) : null}
                     {comparaison || argent.avant || repartition ? (
                       <Details titre={moyenne ? titreEcart(argent.depenses, moyenne) : "Le détail des dépenses"} couleur={D.encre} lien={D.encre}>
                         {moyenne ? (
@@ -379,12 +405,6 @@ export default function Accueil() {
                           </View>
                         ) : null}
                         {argent.avant ? <Text style={s.contexte}>En {argent.avant.an} : {argent.avant.depenses.toLocaleString("fr-FR")} € par habitant</Text> : null}
-                        {repartition ? (
-                          <View style={{ gap: PAS * 2 }}>
-                            <Barre parts={[{ cle: "s", valeur: repartition.sal, couleur: D.encre }, { cle: "i", valeur: repartition.inv, couleur: D.sourd }, { cle: "a", valeur: repartition.aut, couleur: D.trait }]} />
-                            <Text style={s.legende}>{repartition.sal} % salaires · {repartition.inv} % invest. · {repartition.aut} % autres</Text>
-                          </View>
-                        ) : null}
                       </Details>
                     ) : null}
                     <Pressable onPress={() => setBudgetTout(true)} accessibilityRole="button"
@@ -446,52 +466,57 @@ export default function Accueil() {
         contentContainerStyle={[s.page, { paddingTop: marges.top + PAS * 6, paddingBottom: marges.bottom + PAS * 6 }]}
         ListHeaderComponent={
           <View style={s.tete}>
-            <DatePublication />
-      <BadgeZoom sombre />
-      <Pressable onPress={() => router.push("/confort-lecture")} accessibilityRole="link"
-        style={({ pressed }) => ({ minHeight: 44, justifyContent: "center", alignSelf: "flex-start", opacity: pressed ? 0.7 : 1 })}>
-        <Text style={[s.legende, { textDecorationLine: "underline" }]}>Confort de lecture ›</Text>
-      </Pressable>
-      <View style={{ flexDirection: "row", flexWrap: "wrap", columnGap: PAS * 4 }}>
-        <Pressable onPress={() => router.push("/mes-elus")} accessibilityRole="link" accessibilityLabel="Mes élus : qui vous représente"
-          style={({ pressed }) => ({ minHeight: 48, justifyContent: "center", opacity: pressed ? 0.7 : 1 })}>
-          <Text style={[s.legende, { textDecorationLine: "underline" }]}>Mes élus ›</Text>
-        </Pressable>
-        <Pressable onPress={() => router.push("/voter")} accessibilityRole="link" accessibilityLabel="Ma voix : prochaines élections, guide du vote et du conseil municipal"
-          style={({ pressed }) => ({ minHeight: 48, justifyContent: "center", opacity: pressed ? 0.7 : 1 })}>
-          <Text style={[s.legende, { textDecorationLine: "underline" }]}>Ma voix ›</Text>
-        </Pressable>
-        <Pressable onPress={() => router.push("/pour-vous")} accessibilityRole="link" accessibilityLabel="Pour vous : ce qui a été publié selon votre vue"
-          style={({ pressed }) => ({ minHeight: 48, justifyContent: "center", opacity: pressed ? 0.7 : 1 })}>
-          <Text style={[s.legende, { textDecorationLine: "underline" }]}>Pour vous ›</Text>
-        </Pressable>
-      </View>
-            <View style={s.haut}>
-              {/* Le logo est une vue (ui/logo.tsx) : aucun fichier image dans assets/. */}
-              <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
-                <View style={{ flexDirection: "row", alignItems: "center", gap: PAS * 3 }}>
-                  {/* L'accueil est toujours sombre : la variante « sombre », pas l'encre du theme
-                      (en mode clair, l'encre du theme est foncee et le logo disparaissait). */}
-                  <Text style={s.marque} accessibilityLabel="Repère">Repère<Text style={{ color: E.ville }}>.</Text></Text>
-                </View>
+            {/* L'EN-TÊTE (07/11/2026, refonte de la zone haute) : une barre (marque à gauche, deux
+                outils à droite), une ligne d'état discrète (date des données, vue), puis le pitch,
+                UNE action principale (chercher une commune) et trois accès rapides en tuiles.
+                Avant : sept éléments empilés, quatre styles de lien, le logo seul au milieu. */}
+            <View style={s.barreHaut}>
+              <View style={{ flexDirection: "row", alignItems: "center", gap: PAS * 2 }}>
+                {/* Le logo vit dans la marque, une seule fois (brief V47) ; il ne flotte plus au milieu du hero. */}
+                <Logo size={26} variant="sombre" />
+                <Text style={s.marque} accessibilityLabel="Repère">Repère<Text style={{ color: E.ville }}>.</Text></Text>
+              </View>
+              <View style={{ flexDirection: "row", alignItems: "center" }}>
+                <Pressable onPress={() => router.push("/confort-lecture")} accessibilityRole="link" accessibilityLabel="Confort de lecture"
+                  style={({ pressed }) => [s.outil, pressed && { opacity: 0.7 }]}>
+                  <Ionicons name="text-outline" size={22} color={D.encre} />
+                </Pressable>
                 {/* V37 bloc 3 : la recherche globale (communes, élus, scrutins). */}
                 <Pressable onPress={() => router.push("/recherche")} accessibilityRole="button"
                   accessibilityLabel="Ouvrir la recherche : communes, élus, scrutins"
-                  style={({ pressed }) => ({ minWidth: 48, minHeight: 48, alignItems: "center", justifyContent: "center", opacity: pressed ? 0.7 : 1 })}>
-                  <Loupe couleur={D.encre} />
+                  style={({ pressed }) => [s.outil, pressed && { opacity: 0.7 }]}>
+                  <Ionicons name="search-outline" size={22} color={D.encre} />
                 </Pressable>
               </View>
-              {!champOuvert ? (
-                <Pressable onPress={() => setCherche(true)} accessibilityRole="button" accessibilityLabel="Chercher une commune"
-                  style={({ pressed }) => [s.chercher, pressed && { opacity: 0.7 }]}>
-                  <Text style={s.chercherTexte}>Chercher une commune</Text>
-                </Pressable>
-              ) : null}
             </View>
-            {/* LE PITCH : une citation, en grand. Demande du CEO (30/10/2026) : elle remplace le paragraphe. */}
-            {/* Le logo vit dans le hero, une seule fois : grand à la première ouverture, moyen ensuite (brief V47). */}
-            <View style={s.grandLogo}><Logo size={premiere ? 128 : 96} variant="sombre" /></View>
-            <Text style={[s.citation, premiere && { marginTop: PAS * 2 }]} accessibilityRole="header">L'application qui vous raccroche à votre citoyenneté française.</Text>
+            {/* Invariant 9 : la date des données reste visible, en tête, sans prendre la place du contenu. */}
+            <View style={{ flexDirection: "row", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", columnGap: PAS * 3 }}>
+              <DatePublication />
+              <BadgeZoom sombre />
+            </View>
+            {/* LE PITCH : une citation, en grand. Demande du CEO (30/10/2026) : elle remplace le paragraphe.
+                07/11/2026 (porteur) : titre court, les deux questions du produit, mot pour mot. */}
+            {/* 07/11/2026 (porteur, refonte globale) : plus de slogan ; la recherche devient le héros.
+                Le titre reste pour le lecteur d'écran (un écran sans titre est une impasse). */}
+            <Text style={s.titreCache} accessibilityRole="header">Repère, accueil</Text>
+            {!champOuvert ? (
+              <Pressable onPress={() => setCherche(true)} accessibilityRole="button" accessibilityLabel="Chercher une commune"
+                style={({ pressed }) => [s.chercher, pressed && { opacity: 0.7 }]}>
+                <Ionicons name="search" size={24} color={D.encre} accessible={false} importantForAccessibility="no" />
+                <Text style={s.chercherTexte}>Chercher une commune</Text>
+              </Pressable>
+            ) : null}
+            <View style={s.tuiles}>
+              {ACCES.map(a => (
+                <Pressable key={a.texte} onPress={a.ouvrir} accessibilityRole="link" accessibilityLabel={a.etiquette}
+                  style={({ pressed }) => [s.tuile, pressed && { opacity: 0.7 }]}>
+                  <View style={[s.tuileIcone, { backgroundColor: a.couleur }]}>
+                    <Ionicons name={a.icone} size={20} color={D.sol} accessible={false} importantForAccessibility="no" />
+                  </View>
+                  <Text style={s.tuileTexte}>{a.texte}</Text>
+                </Pressable>
+              ))}
+            </View>
 
             {/* V37 bloc 6 : le rappel de la prochaine élection, s'il tombe dans les 180 jours. */}
             {premiere ? null : <View style={{ marginTop: PAS * 4 }}><RappelElection /></View>}
@@ -615,16 +640,22 @@ const s = feuille(() => StyleSheet.create({
   page: { paddingHorizontal: PAS * 4, gap: PAS * 2, maxWidth: 640, width: "100%", alignSelf: "center" },
   tete: { gap: PAS * 3, marginBottom: PAS * 2 },
   /* Taille 26 : la pastille « Chercher » passe sous le logo au lieu de sortir de la marge. */
-  haut: { flexDirection: "row", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", gap: PAS * 3 },
+  barreHaut: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
+  outil: { width: CIBLE, height: CIBLE, alignItems: "center", justifyContent: "center" },
+  tuiles: { flexDirection: "row", flexWrap: "wrap", gap: PAS * 2 },
+  /* Fond D.voile : la teinte demandée par le porteur à 3 unités près, sans couleur hors palette. */
+  tuile: { width: "48%", flexGrow: 1, minHeight: 76, gap: PAS * 2, padding: PAS * 3, borderRadius: RAYON.bloc, backgroundColor: D.voile, justifyContent: "space-between" },
+  tuileTexte: { fontFamily: POLICE.titre, fontSize: 15, lineHeight: 20, color: D.encre },
   marque: { fontFamily: POLICE.affiche, fontSize: 26, color: D.encre },
-  chercher: { minHeight: CIBLE, borderRadius: 999, borderWidth: 1, borderColor: D.trait, paddingHorizontal: PAS * 4, justifyContent: "center" },
-  chercherTexte: { fontSize: 15, fontWeight: "500", color: D.encre },
-  grandLogo: { alignItems: "flex-start", marginTop: PAS * 4 },
-  citation: { fontFamily: POLICE.affiche, fontSize: 38, lineHeight: 43, letterSpacing: -0.6, color: D.encre, marginTop: PAS * 4 },
+  chercher: { minHeight: 72, borderRadius: RAYON.carte, backgroundColor: D.carte, borderWidth: 1, borderColor: D.trait, paddingHorizontal: PAS * 5, flexDirection: "row", alignItems: "center", gap: PAS * 3, marginTop: PAS * 4, ...OMBRE_PAR_MODE.sombre },
+  titreCache: { position: "absolute", width: 1, height: 1, overflow: "hidden", opacity: 0 },
+  tuileIcone: { width: 36, height: 36, borderRadius: 12, alignItems: "center", justifyContent: "center" },
+  chercherTexte: { fontFamily: POLICE.titre, fontSize: 20, color: D.encre },
+  citation: { fontFamily: POLICE.affiche, fontSize: 40, lineHeight: 44, letterSpacing: -0.8, color: D.encre, marginTop: PAS * 6 },
   carte: { gap: PAS * 2, padding: PAS * 4, borderRadius: RAYON.carte, backgroundColor: D.carte, borderWidth: 1, borderColor: D.trait },
   etiquette: { fontSize: 13, fontWeight: "500", color: D.sourd },
   carteTitre: { fontFamily: POLICE.titre, fontSize: 24, lineHeight: 30, color: D.encre },
-  chiffre: { fontFamily: POLICE.affiche, fontSize: 64, lineHeight: 68, color: D.encre },
+  chiffre: { fontFamily: POLICE.donneeForte, fontSize: 52, lineHeight: 58, letterSpacing: -1.5, color: D.encre },
   vote: { fontFamily: POLICE.titre, fontSize: 22, lineHeight: 28, color: D.encre },
   legende: { fontSize: 15, lineHeight: 21, color: D.sourd },
   contexte: { fontSize: 15, lineHeight: 21, color: D.encre },

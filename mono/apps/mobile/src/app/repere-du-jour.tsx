@@ -8,6 +8,7 @@ import { Text, View } from "react-native";
 import { router, Stack } from "expo-router";
 import { dateFr, datePublication } from "@repere/core";
 import { Carte } from "../lib/composants";
+import { Details } from "../ui/details";
 import { useSelection } from "../lib/selection";
 import { PAS, TYPO } from "../lib/theme";
 import { faitsAffichables, repereDuJourPour } from "../lib/repere-jour";
@@ -33,18 +34,23 @@ export default function RepereDuJourEcran() {
       return (
         <Page>
           <Stack.Screen options={{ title: "Repère du jour" }} />
-          <Question etiquette="Repère du jour" question={`Aujourd'hui à ${nom}`}
-            sous="Trois faits tirés des données publiées. Ils changent chaque jour : le même jour, la même commune donnent les mêmes faits." />
+          <Question etiquette="Repère du jour" question={`Aujourd'hui à ${nom}`} />
+          {/* 07/11/2026 : l'explication passe dans un accordéon (règle des 2 lignes). */}
+          <Details titre="Comment ces faits sont choisis">
+            <Text style={TYPO.note}>Trois faits tirés des données publiées. Ils changent chaque jour : le même jour, la même commune donnent les mêmes faits.</Text>
+          </Details>
           {affichables.length === 0 ? (
             <Text style={TYPO.corps}>
               Les données publiées ne permettent pas, aujourd'hui, de tirer un fait pour cette commune. Rien n'est inventé à la place.
             </Text>
           ) : (
             <View style={{ gap: PAS * 2 }}>
-              {affichables.map(({ f, src }) => (
-                <Carte key={f.id}>
-                  <View style={{ gap: PAS }}>
-                    <Text style={TYPO.corps}>{f.texte}</Text>
+              {/* 07/11/2026 : le premier fait en grand (hero), les suivants en cartes compactes.
+                  L'ordre est celui du tirage du jour (@repere/core), jamais une mesure. */}
+              {affichables.map(({ f, src }, i) => (
+                <Carte key={f.id} echelon="ville">
+                  <View style={{ gap: PAS * (i === 0 ? 3 : 1) }}>
+                    <Text style={i === 0 ? [TYPO.affiche, { fontSize: 28, lineHeight: 34 }] : TYPO.corps}>{f.texte}</Text>
                     <PastilleSource court source={src} />
                     <BoutonPartageTexte titre={f.texte} chemin="repere-du-jour" source={ligneSource(src)} />
                   </View>

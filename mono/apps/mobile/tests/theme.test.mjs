@@ -70,7 +70,9 @@ for (const m of ["clair", "sombre"]) {
    (#6d28d9, fixe par l'invariant 7) tombe a 2,37:1 sur la carte. Les cinq
    couleurs d'echelon sont gelees ; la changer est une decision du fondateur. Le
    test fige la valeur : si elle bouge, il echoue et oblige a relire. */
-const EXCEPTIONS_NON_TEXTE = { "sombre:region": 2.37 };
+/* 2,35 depuis la carte sombre #1F1E1B (DA premium, 07/11/2026 ; 2,37 sur #1F1D1A) : le point
+   reçoit toujours le contour de l'encre (SEUIL_POINT). */
+const EXCEPTIONS_NON_TEXTE = { "sombre:region": 2.35 };
 for (const m of ["clair", "sombre"]) {
   test(`theme ${m} — chaque echelon atteint 3:1 sur la carte, exception documentee exceptee`, () => {
     const carte = NEUTRES_PAR_MODE[m].carte;
@@ -216,7 +218,7 @@ test("logo — icone iOS carree 1024 px sans transparence ; fonds du demarrage e
   const tuile = "#F7F7F9";
   /* V34 (ordre du CEO) : le démarrage passe en sombre, #161513, avec le repère en #F3F0EA
      (BLOCAGES 36). La tuile de l'icône iOS et l'icône adaptative Android restent claires. */
-  assert.equal(app.splash.backgroundColor, "#161513", "fond du demarrage : sombre depuis V34");
+  assert.equal(app.splash.backgroundColor, "#141311", "fond du demarrage : sol sombre minéral (07/11/2026)");
   assert.equal(app.android.adaptiveIcon.backgroundColor, tuile, "fond adaptatif Android : tuile du logo");
   const png = fs.readFileSync(path.join(import.meta.dirname, "..", "assets", "icon.png"));
   assert.equal(png.readUInt32BE(16), 1024, "largeur de l'icone");

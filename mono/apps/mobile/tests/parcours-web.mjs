@@ -277,7 +277,8 @@ for (const largeur of [360, 390, 430]) {
   for (const [action, question, preuve] of [
     /* Phrase issue de rapports() de @repere/core (V50-A, 03/11/2026) : « X € de salaires ». */
     ["Où va cet argent ?", /Où va l'argent de Meaux/, /Sur 100 € dépensés : \d+ € de salaires/],
-    ["Comprendre ce vote", /Qu'a voté votre député/, /Le parcours d'une loi|Où en est ce texte/],
+    /* 07/11/2026 : quand l'Assemblée publie le dossier, la frise « Les étapes de ce texte » répond à la place. */
+    ["Comprendre ce vote", /Qu'a voté votre député/, /Le parcours d'une loi|Où en est ce texte|Les étapes de ce texte/],
     ["Qui décide", /Qui décide pour Meaux/, /Décide : /],
     /* L'écran du calendrier porte, depuis le canevas du 13/10/2026, le titre « Calendrier »
        et la phrase « Les séances annoncées… » : c'est elle qui répond à la question. */

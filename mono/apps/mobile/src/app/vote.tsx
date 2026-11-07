@@ -7,8 +7,8 @@
  * generale sourcee a la Constitution ; l'etape surlignee vient de l'intitule
  * officiel du scrutin et de rien d'autre. Niveau 4 : le scrutin officiel.
  *
- * Neutralite : trois gris, jamais de vert ni de rouge ; aucune position n'est
- * dite bonne ou mauvaise ; « ses autres votes » sont dans l'ordre du temps. */
+ * Neutralite : les couleurs de vote codent un FAIT (D24), le mot reste ecrit ; aucune
+ * position n'est dite bonne ou mauvaise ; « ses autres votes » sont dans l'ordre du temps. */
 import { useState } from "react";
 import { Text, View } from "react-native";
 import { router, Stack } from "expo-router";
@@ -17,24 +17,34 @@ import {
   CONSTITUTION_45_URL, dateFr, ETAPES_LOI, etapeDuScrutin, ligneScrutin, motPosition,
   phraseCirconscription, phraseDenominateurVote, phrasePosition, POSITION_NON_PORTEE, procedure,
   repartitionVote, titreLisible, MOTS, chaineDecision, copieVoteVide, ETAT_VOTE, dossierDuScrutin, dossierReleve, etapesDuScrutin,
+  metaScrutin, resultatScrutin, dateCourte, ordinal,
 } from "@repere/core";
 import { Carte, LienSortant, Segments, Vide } from "../lib/composants";
 import { srcScrutins, srcVote } from "../lib/sources";
 import { useCommuneChoisie } from "../lib/useCommune";
-import { couleurs, PAS, TYPO, CIBLE } from "../lib/theme";
+import { couleurs, PAS, POLICE, RAYON, TYPO, CIBLE } from "../lib/theme";
+import { Ionicons } from "@expo/vector-icons";
 import { AvecDonnees, Page, Question } from "../ui/page";
 import { PastilleSource } from "../ui/source";
 import { Frise, Repartition } from "../ui/visuels";
 import { SignalerErreur } from "../ui/contact";
 import { Timeline } from "../ui/timeline";
+import { DataBadge, StatCard } from "../ui/donnees";
+import { Avatar } from "../ui/avatar";
+import { libelleGroupe } from "../ui/badge-groupe";
+import { groupeDe, useGroupes } from "../lib/groupes";
+import { useCouleurVote } from "../lib/couleur-vote";
 
-type FaitVote = { cle: string; type: string; sc: { t: string; d: string; n: string; s: string; dec?: Record<string, string>; dl?: string; dr?: string; dm?: string; dq?: number; et?: { d: string; f?: string; l: string }[] }; position?: string; qui: string; circo: number };
+type FaitVote = { cle: string; type: string; sc: { t: string; d: string; n: string; s: string; dec?: Record<string, string>; dl?: string; dr?: string; dm?: string; dq?: number; et?: { d: string; f?: string; l: string }[] }; position?: string; qui: string; circo: number; ref?: string };
 
 const ETAPES_VISIBLES = 6;
 
 export default function Vote() {
   const { reessayer } = useCommuneChoisie();
   const [toutesEtapes, setToutesEtapes] = useState(false);
+  const [titreEntier, setTitreEntier] = useState(false);
+  const COULEUR = useCouleurVote();
+  const groupes = useGroupes();
   return (
     <AvecDonnees rendu={r => {
       const { d } = r;
@@ -48,9 +58,12 @@ export default function Vote() {
       if (!vote) return <Page>{entete}<Vide {...copieVoteVide(d.etatVote, { nom: d.nomCommune, releve: srcScrutins(d)?.releve, portee: d.srcScrutins && d.srcScrutins.portee })} /></Page>;
 
       const rep = repartitionVote(vote.sc);
+      const statut = resultatScrutin(vote.sc) as "p" | "c" | null;
+      const groupe = groupeDe(vote.ref, groupes);
       const dossier = dossierDuScrutin(vote.sc);
       const etapes = etapesDuScrutin(vote.sc);
-      const mot = (MOTS as Record<string, string>)[vote.position || ""];
+      const MOTS_POS = MOTS as Record<string, string>;
+      const mot = MOTS_POS[vote.position || ""];
       const etape = etapeDuScrutin(procedure(vote.sc.t));
       const autres = (d.faits as FaitVote[]).filter(x => x.type === "vote" && x.cle !== vote.cle && x.circo === vote.circo).slice(0, 4);
       const depIndex = r.index.departements.find((x: { code: string }) => x.code === d.dep);
@@ -67,15 +80,60 @@ export default function Vote() {
         <Page>
           <Stack.Screen options={{ title: partagee ? "Un député de votre commune" : "Votre député" }} />
           {entete}
-          <Text style={TYPO.note}>{phraseCirconscription(d, vote.circo)}</Text>
+          {/* L'en-tête compact (07/11/2026) : initiales sur la couleur du groupe (pas de photo ici :
+              une photo exige son crédit, D27), nom, groupe, circonscription, date du scrutin.
+              Commune partagée : la phrase qui dit que c'est UN EXEMPLE reste, elle ne se résume pas. */}
+          {partagee ? <Text style={TYPO.note}>{phraseCirconscription(d, vote.circo)}</Text> : null}
+          <View style={{ flexDirection: "row", alignItems: "center", gap: PAS * 3 }}>
+            <Avatar nom={vote.qui} taille={48} groupe={groupe} doux />
+            <View style={{ flex: 1, gap: 2 }}>
+              <View style={{ flexDirection: "row", alignItems: "center", gap: PAS * 2 }}>
+                {/* Maillage (07/11/2026) : le nom ouvre la fiche, partout où la fiche sait la retrouver. */}
+                <Pressable style={{ flex: 1, minHeight: CIBLE, justifyContent: "center" }} disabled={!parametresFiche} accessibilityRole={parametresFiche ? "link" : "text"}
+                  onPress={() => { if (parametresFiche) router.push({ pathname: "/elu", params: parametresFiche }); }}>
+                  <Text style={[TYPO.corps, { fontFamily: POLICE.titre }, parametresFiche ? { textDecorationLine: "underline" } : null]}>{vote.qui}</Text>
+                </Pressable>
+                <DataBadge texte={dateCourte(vote.sc.d)} />
+              </View>
+              <Text style={TYPO.micro}>{libelleGroupe(groupe)}</Text>
+              <Text style={TYPO.micro}>{ordinal(vote.circo)} circonscription{d.nomDep ? " · " + d.nomDep : ""}</Text>
+            </View>
+          </View>
 
-          {/* NIVEAU 1 : la position */}
-          <Carte echelon="france" titre={`Le ${dateFr(vote.sc.d)}`}>
+          {/* NIVEAU 1 : la position, puis le scrutin en grands nombres (07/11/2026, DA « storytelling »).
+              Le titre est l'intitulé OFFICIEL du dossier quand l'Assemblée le publie (souvent plus court),
+              sinon celui du scrutin : Repère ne réécrit aucun titre. L'encart « Ce qu'il faut
+              retenir » a été retiré le 07/11/2026 : il répétait les grands nombres. */}
+          <Carte echelon="france" titre="Le vote">
+            <DataBadge texte={mot || "Position non portée"} couleur={mot ? COULEUR[vote.position as keyof typeof COULEUR] : undefined} />
             <Text style={TYPO.question}><Segments s={phrasePosition(vote.position, vote.qui)} /></Text>
-            <Text style={[TYPO.reponse, { fontSize: 19, lineHeight: 25 }]}>{titreLisible(vote.sc.t)}</Text>
-            <Text style={TYPO.note}>{ligneScrutin(vote.sc)}</Text>
+            <View style={{ gap: PAS }}>
+              {/* Deux lignes au plus ; le titre officiel entier reste lisible d'un geste (jamais réécrit). */}
+              <Pressable onPress={() => setTitreEntier(v => !v)} style={{ minHeight: CIBLE, justifyContent: "center" }} accessibilityRole="button" accessibilityState={{ expanded: titreEntier }}
+                accessibilityLabel={`${dossier ? dossier.intitule : titreLisible(vote.sc.t)}. ${titreEntier ? "Réduire le titre" : "Afficher le titre entier"}`}>
+                <Text style={[TYPO.corps, { fontFamily: POLICE.titre, fontSize: 17, lineHeight: 23 }]} numberOfLines={titreEntier ? undefined : 2}>
+                  {dossier ? dossier.intitule : titreLisible(vote.sc.t)}
+                </Text>
+              </Pressable>
+              {dossier ? <Text style={TYPO.note}>Objet du scrutin : {titreLisible(vote.sc.t)}</Text> : null}
+              <Text style={TYPO.donnee}>{metaScrutin(vote.sc)}</Text>
+            </View>
+            {rep ? (
+              <View style={{ gap: PAS * 3 }}>
+                <View style={{ flexDirection: "row", gap: PAS * 3 }}>
+                  {rep.segments.map(x => <StatCard key={x.cle} valeur={x.nombre.toLocaleString("fr-FR")} libelle={x.libelle} couleur={COULEUR[x.cle as keyof typeof COULEUR]} />)}
+                </View>
+                <Repartition compact segments={rep.segments} total={rep.total} position={vote.position} qui={vote.qui} />
+                <Text style={TYPO.micro}>{phraseDenominateurVote(rep.total)}</Text>
+              </View>
+            ) : <Text style={TYPO.note}>{ligneScrutin(vote.sc)}</Text>}
             {!mot ? <Text style={TYPO.note}>{POSITION_NON_PORTEE}</Text> : null}
-            <PastilleSource source={srcVote(d, vote.sc)} />
+            {/* Le statut du scrutin, écrit en toutes lettres : la couleur du « pour » quand le pour l'a
+                emporté (adopté), celle du « contre » quand il a été rejeté (D24 : un fait). */}
+            <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: PAS * 3 }}>
+              {statut ? <DataBadge texte={statut === "p" ? "ADOPTÉ" : "REJETÉ"} couleur={COULEUR[statut]} teinte /> : <View />}
+              <PastilleSource source={srcVote(d, vote.sc)} />
+            </View>
           </Carte>
           {parametresFiche ? (
             <Pressable onPress={() => router.push({ pathname: "/elu", params: parametresFiche })}
@@ -96,8 +154,7 @@ export default function Vote() {
           {dossier || dossierReleve(vote.sc) ? <Carte echelon="france" titre="De quoi parle ce texte ?">
             {dossier ? (
               <>
-                <Text style={TYPO.note}>Intitulé du dossier à l'Assemblée nationale</Text>
-                <Text style={[TYPO.reponse, { fontSize: 19, lineHeight: 25 }]}>{dossier.intitule}</Text>
+                <Text style={TYPO.note}>Le titre du vote, plus haut, est l'intitulé de ce dossier à l'Assemblée nationale.</Text>
                 {dossier.demandeur ? <Text style={TYPO.note}>Vote public demandé par : {dossier.demandeur}.</Text> : null}
                 {dossier.url ? <LienSortant url={dossier.url} texte="Le dossier complet : texte, rapports, étapes" /> : null}
               </>
@@ -106,15 +163,6 @@ export default function Vote() {
             )}
             <PastilleSource source={srcVote(d, vote.sc)} />
           </Carte> : null}
-
-          {/* NIVEAU 2 : le scrutin, visuellement */}
-          {rep ? (
-            <Carte echelon="france" titre="Comment l'Assemblée a voté">
-              <Repartition segments={rep.segments} total={rep.total} position={vote.position} qui={vote.qui} />
-              <Text style={TYPO.micro}>{phraseDenominateurVote(rep.total)}</Text>
-              <PastilleSource source={srcVote(d, vote.sc)} />
-            </Carte>
-          ) : null}
 
           {/* POURQUOI C'EST « VOTRE » DEPUTE */}
           <Carte echelon="france" titre={d.nbCircos > 1 ? "Pourquoi ce député est pris en exemple" : "Pourquoi c'est votre député"}>
@@ -163,14 +211,20 @@ export default function Vote() {
           {/* SES AUTRES VOTES, dans l'ordre du temps */}
           {autres.length ? (
             <Carte echelon="france" titre="Ses votes précédents">
+              <View style={{ gap: PAS * 3 }}>
               {autres.map(a => (
-                <View key={a.cle} style={{ gap: 2, paddingBottom: PAS * 2 }}
+                <View key={a.cle} style={{ flexDirection: "row", gap: PAS * 3, padding: PAS * 4, borderRadius: RAYON.bloc, backgroundColor: couleurs.voile }}
                   accessible accessibilityLabel={`${dateFr(a.sc.d)} : ${titreLisible(a.sc.t)}. ${motPosition(a.position) ? "A voté " + motPosition(a.position) : "Position non portée par le relevé"}.`}>
-                  <Text style={TYPO.micro}>{dateFr(a.sc.d)} · texte {a.sc.s}</Text>
-                  <Text style={TYPO.corps}>{titreLisible(a.sc.t)}</Text>
-                  <Text style={[TYPO.note, { fontWeight: "700" }]}>{motPosition(a.position) ? "A voté " + motPosition(a.position) : "Position non portée par le relevé"}</Text>
+                  <Ionicons name="document-text-outline" size={22} color={couleurs.sourd} accessible={false} importantForAccessibility="no" />
+                  <View style={{ flex: 1, gap: PAS * 2 }}>
+                    <Text style={TYPO.donnee}>{dateFr(a.sc.d)} · texte {a.sc.s}</Text>
+                    <Text style={TYPO.corps}>{titreLisible(a.sc.t)}</Text>
+                    <DataBadge texte={MOTS_POS[a.position || ""] ? "A voté " + motPosition(a.position) : "Position non portée par le relevé"}
+                      couleur={MOTS_POS[a.position || ""] ? COULEUR[a.position as keyof typeof COULEUR] : undefined} />
+                  </View>
                 </View>
               ))}
+              </View>
               <Text style={TYPO.micro}>Derniers votes solennels récupérés par Repère : des scrutins publics, généralement sur le vote d'ensemble d'un texte majeur, c'est-à-dire le vote sur le texte entier. Du plus récent au plus ancien.</Text>
             </Carte>
           ) : null}

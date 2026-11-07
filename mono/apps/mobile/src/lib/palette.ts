@@ -39,10 +39,13 @@ const NEUTRES_CLAIR: Neutres = {
 };
 
 /* Neutres du sombre : même famille chaude que le clair (pas de bleu), mesurés
-   dans tests/theme.test.mjs. Texte encre sur sol 16:1 ; sourd sur carte 7,6:1. */
+   dans tests/theme.test.mjs. DA premium (07/11/2026) : encre sur sol 15,9:1 ; sourd sur carte 6,9:1. */
+/* 07/11/2026 : « sombre minéral » des maquettes Stitch (surface, surface-container, on-surface,
+   on-surface-variant, outline), validé par le porteur. « sourd » : #8E8B82 demandé, mais 4,32:1
+   sur le voile, sous le seuil AA ; #928F86 est la nuance la plus proche qui le tient (4,55:1). */
 const NEUTRES_SOMBRE: Neutres = {
-  sol: "#161513", carte: "#1F1D1A", encre: "#F3F0EA", sourd: "#B5AEA3",
-  trait: "#3B3832", voile: "#2A2823", blanc: "#ffffff", lien: "#F3F0EA", ancien: "#CCB4B4",
+  sol: "#141311", carte: "#1F1E1B", encre: "#F3F0E8", sourd: "#928F86",
+  trait: "#2C2A26", voile: "#2A2823", blanc: "#ffffff", lien: "#F3F0E8", ancien: "#CCB4B4",
 };
 
 /* Les échelons : identiques dans les deux thèmes, sauf « France ». */
@@ -64,7 +67,9 @@ export const NEUTRES_PAR_MODE: Record<Mode, Neutres> = { clair: NEUTRES_CLAIR, s
 /* Ombres : en sombre, l'ombre se voit par l'opacité du noir, pas par l'encre. */
 export const OMBRE_PAR_MODE = {
   clair: { shadowColor: "#171614", shadowOpacity: 0.045, shadowRadius: 10, shadowOffset: { width: 0, height: 4 }, elevation: 1 },
-  sombre: { shadowColor: "#000000", shadowOpacity: 0.5, shadowRadius: 12, shadowOffset: { width: 0, height: 4 }, elevation: 2 },
+  /* DA premium (07/11/2026) : noir à 20 %, flou 20, décalage 5. Le clair, gardé par le banc
+     de non-régression, n'est pas touché. */
+  sombre: { shadowColor: "#000000", shadowOpacity: 0.2, shadowRadius: 20, shadowOffset: { width: 0, height: 5 }, elevation: 3 },
 } as const;
 
 /* La palette des cartes de partage, figée et sombre (décision D5 du porteur, 30/10/2026).
@@ -124,3 +129,12 @@ export const COULEURS_GROUPES: Readonly<Record<string, string>> = Object.freeze(
    ni un vote ni une opinion. Contraste mesuré (objet graphique, WCAG 1.4.11, 3:1) : 5,43:1 sur
    la carte claire, 3,1:1 sur la carte sombre. */
 export const POINT_ETAPE = "#5F6B7A";
+
+/* Le reflet et l'ombre d'un avatar (07/11/2026) : blanc et noir translucides, posés sur la
+   couleur du groupe pour un dégradé ; ils ne changent pas la teinte qui identifie le groupe. */
+export const REFLET_AVATAR = { clair: "rgba(255,255,255,0.22)", ombre: "rgba(0,0,0,0.18)" };
+
+/* LA JAUGE DU BUDGET (maquettes Stitch). Amendement de l'invariant 7 par le porteur, 08/11/2026 :
+   bleu (salaires) et vert (investissements) sont des couleurs de données financières, pour cette
+   jauge seulement, jamais politiques ; « autres » reste un neutre. La légende écrite porte le sens. */
+export const JAUGE_BUDGET = Object.freeze({ salaires: "#2B6CB0", investissement: "#9DD3AA", autres: "#34322F" });

@@ -9,7 +9,10 @@ import { Pressable, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { Stack } from "expo-router";
 import { dateFr } from "@repere/core";
-import { LienSortant } from "../lib/composants";
+import { Carte, LienSortant } from "../lib/composants";
+import { StatCard } from "../ui/donnees";
+import { Details } from "../ui/details";
+import { Timeline } from "../ui/timeline";
 import { DEMARCHES, DEMARCHES_VERIFIEES_LE, ELECTIONS, ELECTIONS_SOURCE, ELECTIONS_VERIFIEES_LE } from "../lib/elections";
 import { CIBLE, couleurs, PAS, TYPO } from "../lib/theme";
 import { Page, Question } from "../ui/page";
@@ -75,35 +78,32 @@ export default function Voter() {
       <Question etiquette="Guide civique" question="Ma voix" sous="Les prochaines élections, comment voter, et comment suivre votre conseil municipal." />
 
       <View style={{ gap: PAS * 4 }}>
-        <View style={{ gap: PAS * 2 }}>
-          <Text style={[TYPO.corps, { fontWeight: "700", color: couleurs.encre }]} accessibilityRole="header">Prochaine élection</Text>
+        {/* 07/11/2026 : la prochaine élection en carte, le nombre de jours en grand (invariant 6 :
+            suivre une durée est permis) ; les élections à venir sur une frise verticale. */}
+        <Carte titre="Prochaine élection" accent={couleurs.encre}>
           {prochaine ? (
-            <View style={{ gap: PAS }}>
-              <Text style={[TYPO.corps, { fontWeight: "700", color: couleurs.encre }]}>{prochaine.titre}</Text>
-              <Text style={[TYPO.corps, { color: couleurs.encre }]}>
-                {dateFr(prochaine.date as string)}{dans === 0 ? " : c'est aujourd'hui." : dans !== null ? ` : dans ${dans} jour${dans > 1 ? "s" : ""}.` : "."}
-              </Text>
-              <Text style={[TYPO.note, { color: couleurs.sourd }]}>{prochaine.description}</Text>
-            </View>
-          ) : (
-            <Text style={[TYPO.note, { color: couleurs.sourd }]}>Aucune élection datée n'est à venir dans l'application.</Text>
-          )}
-        </View>
+            <>
+              <Text style={TYPO.reponse}>{prochaine.titre}</Text>
+              {dans !== null && dans > 0 ? (
+                <View style={{ flexDirection: "row" }}>
+                  <StatCard valeur={String(dans)} libelle={`jour${dans > 1 ? "s" : ""} · ${dateFr(prochaine.date as string)}`} />
+                </View>
+              ) : <Text style={TYPO.corps}>{dateFr(prochaine.date as string)}{dans === 0 ? " : c'est aujourd'hui." : "."}</Text>}
+              <Details titre="En savoir plus"><Text style={TYPO.note}>{prochaine.description}</Text></Details>
+            </>
+          ) : <Text style={TYPO.note}>Aucune élection datée n'est à venir dans l'application.</Text>}
+        </Carte>
 
-        <View style={{ gap: PAS * 3 }}>
-          <Text style={[TYPO.corps, { fontWeight: "700", color: couleurs.encre }]} accessibilityRole="header">Les élections à venir</Text>
-          {ELECTIONS.map(e => (
-            <View key={e.type} style={{ gap: PAS }}>
-              <Text style={[TYPO.corps, { fontWeight: "700", color: couleurs.encre }]}>{e.titre}</Text>
-              <Text style={[TYPO.note, { color: couleurs.sourd }]}>{e.date ? dateFr(e.date) : "Date non fixée"}</Text>
-              <Text style={[TYPO.note, { color: couleurs.sourd }]}>{e.description}</Text>
-            </View>
+        <Carte titre="Les élections à venir">
+          <Timeline etapes={datees.filter(e => joursAvant(e.date as string) >= 0).map(e => ({ date: e.date as string, libelle: e.titre, lien: null }))} />
+          {ELECTIONS.filter(e => !e.date).map(e => (
+            <Text key={e.type} style={TYPO.note}>{e.titre} : date non fixée.</Text>
           ))}
-        </View>
+        </Carte>
 
         <View style={{ gap: PAS * 3 }}>
           <Text style={[TYPO.corps, { fontWeight: "700", color: couleurs.encre }]} accessibilityRole="header">Vos questions</Text>
-          <View>{GUIDE.map(g => <Accordeon key={g.titre} e={g} />)}</View>
+          <Carte>{GUIDE.map(g => <Accordeon key={g.titre} e={g} />)}</Carte>
         </View>
 
         <View style={{ gap: PAS * 2 }}>

@@ -1,6 +1,9 @@
 /* Le badge d'identification d'un groupe politique : sa couleur (ou le gris « Inconnu »),
    et un texte lisible dessus. Il identifie l'élu ; il ne code aucun vote (invariant 7). */
-import { Text, View } from "react-native";
+import { Pressable, Text, View } from "react-native";
+import { router } from "expo-router";
+import { Ionicons } from "@expo/vector-icons";
+import { CIBLE, POLICE } from "../lib/theme";
 import { couleurGroupe, GROUPE_INCONNU, texteSur } from "../lib/groupes";
 
 /* Le libelle unique quand le groupe n'est pas connu (V21) : « non publie » dit que Repère
@@ -8,11 +11,18 @@ import { couleurGroupe, GROUPE_INCONNU, texteSur } from "../lib/groupes";
    « (source AN) » : l'Assemblee publie bien les groupes, c'est Repère qui ne les lit pas. */
 export const libelleGroupe = (g: string) => (g === GROUPE_INCONNU ? "Groupe politique : non publié" : `Groupe : ${g}`);
 
+/* 07/11/2026 (maillage) : le badge s'ouvre sur la liste des députés du groupe (écran /groupe).
+   Zone tactile de 44 px autour d'une pastille plus petite. */
 export function BadgeGroupe({ groupe }: { groupe: string }) {
   const fond = couleurGroupe(groupe);
   return (
-    <View style={{ alignSelf: "flex-start", paddingHorizontal: 12, paddingVertical: 4, borderRadius: 999, backgroundColor: fond }}>
-      <Text style={{ color: texteSur(fond), fontSize: 13, fontWeight: "500" }}>{libelleGroupe(groupe)}</Text>
-    </View>
+    <Pressable onPress={() => router.push({ pathname: "/groupe", params: { g: groupe } })} accessibilityRole="link"
+      accessibilityLabel={`${libelleGroupe(groupe)}. Voir les députés de ce groupe`}
+      style={({ pressed }) => ({ alignSelf: "flex-start", minHeight: CIBLE, justifyContent: "center", opacity: pressed ? 0.7 : 1 })}>
+      <View style={{ flexDirection: "row", alignItems: "center", gap: 6, paddingHorizontal: 12, paddingVertical: 6, borderRadius: 999, backgroundColor: fond }}>
+        <Text style={{ color: texteSur(fond), fontSize: 14, fontFamily: POLICE.texteGras }}>{libelleGroupe(groupe)}</Text>
+        <Ionicons name="chevron-forward" size={14} color={texteSur(fond)} accessible={false} importantForAccessibility="no" />
+      </View>
+    </Pressable>
   );
 }

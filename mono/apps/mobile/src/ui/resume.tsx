@@ -7,6 +7,7 @@
  * jamais d'une formule emotionnelle : pas de « bonne nouvelle », pas de
  * « refuse ». Les icones sont des reperes de categorie, masques au lecteur
  * d'ecran : ce sont des Ionicons, jamais des emojis (05/11/2026). */
+import { espacesFines } from "./donnees";
 import type { ReactNode } from "react";
 import { Text, View } from "react-native";
 import { couleurs, PAS, TYPO } from "../lib/theme";
@@ -28,7 +29,7 @@ export function Resume({ phrase, chiffre, legende, enClair, children }: {
       <Text style={TYPO.reponse}>{phrase}</Text>
       {chiffre ? (
         <View accessible accessibilityLabel={`${chiffre}${legende ? ", " + legende : ""}`}>
-          <Text style={TYPO.chiffre}>{chiffre}</Text>
+          <Text style={TYPO.chiffre}>{typeof chiffre === "string" ? espacesFines(chiffre) : chiffre}</Text>
           {legende ? <Text style={TYPO.note}>{legende}</Text> : null}
         </View>
       ) : null}

@@ -3,4 +3,5 @@
 export type Fiche = {
   id: string; nom: string; fonction: string; lieu: string; depuis: string;
   producteur: string; licence: string; maj: string; url: string;
+  ref?: string; dep?: string;
 };

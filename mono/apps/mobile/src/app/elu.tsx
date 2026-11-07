@@ -30,12 +30,13 @@ import { messageVote, VERBE } from "../ui/partage/messages";
 import { useEffect, useState } from "react";
 import { Animated, Linking, Modal, Pressable, ScrollView, Share, Text, View } from "react-native";
 import { router, Stack, useLocalSearchParams } from "expo-router";
-import { chaineDecision, copieVoteVide, dateFr, debutDeMandat, decompte, ETAT_VOTE, LIBELLES, lienScrutin, repartitionVote, titreLisible } from "@repere/core";
+import { chaineDecision, copieVoteVide, dateCourte, dateFr, debutDeMandat, decompte, ETAT_VOTE, LIBELLES, lienScrutin, repartitionVote, titreLisible } from "@repere/core";
 import { Repartition } from "../ui/visuels";
 import { Carte, Vide } from "../lib/composants";
 import { chargerEvenements } from "../lib/donnees";
 import { srcElus, srcScrutins } from "../lib/sources";
-import { couleurs, CIBLE, PAS, RAYON, TYPO, type Echelon } from "../lib/theme";
+import { couleurs, CIBLE, OMBRE, PAS, POLICE, RAYON, TYPO, type Echelon } from "../lib/theme";
+import { DataBadge } from "../ui/donnees";
 import { useCouleurVote } from "../lib/couleur-vote";
 import { PourquoiJeVois } from "../ui/pourquoi";
 import { AvecPicto } from "../ui/picto";
@@ -58,18 +59,8 @@ type Resume = { id: string; axes?: string; src?: string; srcn?: string };
 const PARTI_NON_PUBLIE = "Parti : non publié par la source. Repère ne le déduit pas.";
 const POSITION: Record<string, string> = { p: "Pour", c: "Contre", a: "Abstention" };
 /* Signes de texte (variante texte forcee, pas d'emoji), colores selon le sens du vote (D24). */
-const SIGNE: Record<string, string> = { p: "✓︎", c: "✕︎", a: "○︎" };
 const SYNTHESE = 3;
 
-function Initiales({ nom }: { nom: string }) {
-  const lettres = nom.split(/\s+/).filter(Boolean).map(m => m[0]).slice(0, 2).join("").toUpperCase();
-  return (
-    <View accessible={false}
-      style={{ width: 72, height: 72, borderRadius: 36, backgroundColor: couleurs.encre, alignItems: "center", justifyContent: "center" }}>
-      <Text style={{ color: couleurs.sol, fontWeight: "600", fontSize: 26 }}>{lettres}</Text>
-    </View>
-  );
-}
 
 function Lien({ texte, onPress, etiquette }: { texte: string; onPress: () => void; etiquette?: string }) {
   return (
@@ -86,14 +77,14 @@ function CarteVote({ f, onComprendre }: { f: FaitElu; onComprendre: () => void }
   const rep = repartitionVote(f.sc);
   const qui = f.qui;
   return (
-    <View style={{ gap: PAS * 2, padding: PAS * 4, borderRadius: RAYON.bloc, backgroundColor: couleurs.carte, borderWidth: 1, borderColor: couleurs.trait }}
+    <View style={{ gap: PAS * 3, padding: PAS * 4, borderRadius: RAYON.bloc, backgroundColor: couleurs.carte, borderWidth: 1, borderColor: couleurs.trait, ...OMBRE }}
       accessibilityLabel={`${dateFr(f.sc.d)} : ${POSITION[pos]} sur ${titreLisible(f.sc.t)}`}>
+      {/* 07/11/2026 : la position dans un badge écrit, la date en chiffres (forme commune des listes). */}
       <View style={{ flexDirection: "row", alignItems: "center", gap: PAS * 2 }}>
-        <Text accessibilityElementsHidden importantForAccessibility="no" style={{ fontSize: 18, fontWeight: "600", color: COULEUR_VOTE[pos as keyof typeof COULEUR_VOTE] ?? couleurs.encre, width: 20 }}>{SIGNE[pos]}</Text>
-        <Text style={[TYPO.corps, { fontWeight: "600" }]}>{POSITION[pos]}</Text>
-        <Text style={[TYPO.micro, { marginLeft: "auto" }]}>{dateFr(f.sc.d)}</Text>
+        <DataBadge texte={POSITION[pos]} couleur={COULEUR_VOTE[pos as keyof typeof COULEUR_VOTE]} />
+        <Text style={[TYPO.donnee, { marginLeft: "auto" }]}>{dateCourte(f.sc.d)}</Text>
       </View>
-      <Text style={TYPO.corps} numberOfLines={3}>{titreLisible(f.sc.t)}</Text>
+      <Text style={[TYPO.corps, { fontFamily: POLICE.titre }]} numberOfLines={3}>{titreLisible(f.sc.t)}</Text>
       {/* V13 bloc C : la micro-jauge du scrutin entier, et son decompte en toutes lettres. */}
       {rep ? (
         <View style={{ gap: PAS }}>
@@ -148,7 +139,8 @@ function FeuilleVote({ f, nom, resume, base, onFermer }: { f: FaitElu | null; no
 /* La photo libre si elle existe (D27), sinon les initiales ; et son credit, dessous. */
 function PhotoOuInitiales({ nom, dep, cle, groupe }: { nom: string; dep: string; cle: string | null; groupe: string }) {
   const photo = usePhotoElu(dep, cle);
-  return photo ? <Avatar nom={nom} taille={72} photo={photo} groupe={groupe} /> : <Initiales nom={nom} />;
+  /* 07/11/2026 : sans photo, l'avatar en dégradé de la couleur du groupe (plus de rond uni). */
+  return <Avatar nom={nom} taille={88} photo={photo} groupe={groupe} />;
 }
 function CreditDe({ dep, cle }: { dep: string; cle: string | null }) {
   const photo = usePhotoElu(dep, cle);
@@ -166,6 +158,7 @@ export default function Elu() {
   const [tout, setTout] = useState(false);
   /* V62 : la table des groupes, lue une fois ; le rendu ci-dessous la reçoit par fermeture. */
   const groupes = useGroupes();
+  const COULEURS_VOTE = useCouleurVote();
   /* Les resumes de la redaction : un fichier public ; s'il n'arrive pas, la feuille dit qu'il n'y a pas de resume. */
   useEffect(() => {
     let vivant = true;
@@ -195,7 +188,11 @@ export default function Elu() {
       /* La cle de la photo (D27) : l'identifiant de l'Assemblee pour un depute (nom complet
          identique dans deputes.json), « M » + INSEE pour le maire de la commune choisie. */
       const deps = ((r.deputes && r.deputes.deputes) || {}) as Record<string, { prenom?: string; nom?: string; acteurRef?: string }>;
-      const refDepute = depute ? Object.values(deps).find(x => [x.prenom, x.nom].filter(Boolean).join(" ") === nom)?.acteurRef : undefined;
+      const entreeDepute = depute ? Object.entries(deps).find(([, x]) => [x.prenom, x.nom].filter(Boolean).join(" ") === nom) : undefined;
+      const refDepute = entreeDepute?.[1].acteurRef;
+      /* 07/11/2026 : la photo d'un député est rangée par SON département (clé « 94-10 »), pas par
+         celui de la commune choisie : une fiche ouverte depuis un groupe la cherchait au mauvais endroit. */
+      const depPhoto = entreeDepute ? entreeDepute[0].split("-")[0] : r.d.dep;
       const estMaire = echelon === "ville" && !!r.d.fiche && !!r.d.fiche.maire && r.d.fiche.maire.nom === nom;
       const clePhoto = refDepute || (estMaire && choix ? "M" + choix.insee : null);
       /* Le groupe du depute, par son identifiant ; « Inconnu » pour un maire ou sans entree dans la table. */
@@ -216,12 +213,6 @@ export default function Elu() {
       const recents = votes.slice(0, SYNTHESE);
       const comptes: Record<string, number> = { p: 0, c: 0, a: 0 };
       recents.forEach(f => { if (f.position) comptes[f.position] = (comptes[f.position] || 0) + 1; });
-      /* V29 bloc 4 : la phrase dit ce que le député a fait ; le décompte détaillé reste juste dessous. */
-      const accroche = recents.length === 0 ? null
-        : recents.length === 1 ? `Sur son dernier vote publié, ${nom} ${VERBE[recents[0].position as string]}`
-        : comptes.p === 0 ? `Sur ses ${recents.length} derniers votes publiés, il n'a voté pour aucun.`
-        : `Sur ses ${recents.length} derniers votes publiés, il a voté pour ${comptes.p} fois.`;
-      const decompteElu = recents.length > 1 ? `${comptes.p} pour, ${comptes.c} contre, ${comptes.a} abstention${comptes.a > 1 ? "s" : ""}.` : null;
       const releveVotes = r.index?.sources?.scrutins?.releve_le;
       const lienElus = srcElus(r.srcElus ?? null)?.url ?? null;
       const partager = () => Share.share({
@@ -235,7 +226,7 @@ export default function Elu() {
           <Animated.View style={{ opacity: apparition, gap: PAS * 4 }}>
             {/* Identite */}
             <View style={{ flexDirection: "row", gap: PAS * 4, alignItems: "center" }}>
-              <PhotoOuInitiales nom={nom} dep={r.d.dep} cle={clePhoto} groupe={groupe} />
+              <PhotoOuInitiales nom={nom} dep={depPhoto} cle={clePhoto} groupe={groupe} />
               <View style={{ flex: 1, gap: 8 }}>
                 {/* Audit 5 s (V19) : pas d'etiquette quand le role la dit deja (« Assemblée nationale »
                     au-dessus de « À l'Assemblée nationale pour votre circonscription »). */}
@@ -243,10 +234,6 @@ export default function Elu() {
                   question={nom} sous={libelleRole || undefined} />
               </View>
             </View>
-            <CreditDe dep={r.d.dep} cle={clePhoto} />
-            {/* V30 bloc 3 : contacter l'élu. Les données ne portent pas de courriel : le lien va à la source officielle. */}
-            <ContacterElu nom={nom} courriel={(p as { courriel?: string | null }).courriel ?? null} lienSource={lienElus}
-              sourceNom="Répertoire national des élus" />
             {/* Groupe : identifie l'élu. Gris « Inconnu » tant que le lien n'est pas publié. */}
             {depute ? <BadgeGroupe groupe={groupe} /> : null}
             {/* V13 bloc A : la date de ce qu'affiche la fiche (les votes pour un depute,
@@ -258,16 +245,29 @@ export default function Elu() {
             {/* LA SYNTHESE : ses trois votes publies les plus recents. */}
             {depute ? (
               <View style={{ gap: PAS * 3 }}>
-                {accroche ? (
+                {/* 07/11/2026 : une ligne de compte au lieu de la phrase et du décompte (même calcul). */}
+                {recents.length ? (
                   <View style={{ flexDirection: "row", alignItems: "center", gap: PAS }}>
-                    <Text style={[TYPO.corps, { fontWeight: "600", flex: 1 }]} accessibilityRole="header">{accroche}</Text>
-                    <PourquoiJeVois etiquette={`la phrase sur les votes de ${nom}`}
+                    <View style={{ flex: 1, gap: 2 }}>
+                      <Text style={TYPO.etiquette}>{recents.length > 1 ? `Ses ${recents.length} derniers votes publiés` : "Son dernier vote publié"}</Text>
+                      {/* 07/11/2026 (maquette Stitch) : une pastille de la couleur de vote (D24, un fait)
+                          devant chaque compte ; le mot reste écrit. */}
+                      <View style={{ flexDirection: "row", flexWrap: "wrap", columnGap: PAS * 4, rowGap: PAS }} accessible
+                        accessibilityRole="header" accessibilityLabel={`${comptes.p} pour, ${comptes.c} contre, ${comptes.a} abstention${comptes.a > 1 ? "s" : ""}`}>
+                        {([["p", "pour"], ["c", "contre"], ["a", comptes.a > 1 ? "abstentions" : "abstention"]] as const).map(([k, mot]) => (
+                          <View key={k} style={{ flexDirection: "row", alignItems: "center", gap: PAS }}>
+                            <View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: COULEURS_VOTE[k] }} />
+                            <Text style={[TYPO.donnee, { fontSize: 15, lineHeight: 21, color: couleurs.encre }]}>{comptes[k]} {mot}</Text>
+                          </View>
+                        ))}
+                      </View>
+                    </View>
+                    <PourquoiJeVois etiquette={`le compte des votes de ${nom}`}
                       p={{ source: { texte: `Assemblée nationale, ses ${recents.length} derniers votes publiés`, lien: null },
-                        calcul: "Repère compte les positions (pour, contre, abstention) de ces votes, puis écrit la phrase à partir de ce compte. Il n'y a pas d'autre calcul.",
+                        calcul: "Repère compte les positions (pour, contre, abstention) de ces votes. Il n'y a pas d'autre calcul.",
                         ici: "Affiché parce que ce sont les votes publiés les plus récents de cet élu, dans sa fiche." }} />
                   </View>
                 ) : null}
-                {decompteElu ? <Text style={TYPO.note}>Décompte : {decompteElu}</Text> : null}
                 <AvecPicto picto="vote"><Text style={TYPO.etiquette} accessibilityRole="header">Ses derniers votes</Text></AvecPicto>
                 {votes.length ? votes.slice(0, SYNTHESE).map(f => (
                   <CarteVote key={f.sc.n} f={f} onComprendre={() => setOuvert(f)} />
@@ -325,6 +325,14 @@ export default function Elu() {
             ]} />
 
             {/* V30 bloc 4 : signaler une erreur, avec la fiche et son texte pré-remplis. */}
+            {/* 07/11/2026 : le contact et le crédit de la photo, en bas. Le crédit reste VISIBLE
+                (D27 et licence CC BY-SA : auteur, licence et source affichés) ; le contact passe
+                dans l'accordéon. */}
+            <CreditDe dep={depPhoto} cle={clePhoto} />
+            <Details titre="Informations sur les données">
+              <ContacterElu nom={nom} courriel={(p as { courriel?: string | null }).courriel ?? null} lienSource={lienElus}
+                sourceNom="Répertoire national des élus" />
+            </Details>
             <SignalerErreur contexte={`la fiche de ${nom}`} donnee={[nom, libelleRole, p.institution].filter(Boolean).join(" · ")} />
 
             <Carte titre="D'où viennent ces informations">

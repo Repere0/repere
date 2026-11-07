@@ -56,7 +56,7 @@ explicite du porteur les change ; la PR qui l'applique met alors à jour
    (pour), rouge brique `#AA4A4A` (contre), gris perle `#5F6B7A` (abstention) ; ils codent un FAIT, jamais
    un jugement, et la position reste écrite en toutes lettres. Variante daltonienne (D56, 30/10/2026, réglage
    du profil, ADR 0003) : bleu `#0072B2` (pour), vermillion assombri `#B35900` (contre), gris `#6E7781` (abstention). D27 (ADR 0004) : photo d'élu sous licence
-   libre de Wikimedia Commons seulement, crédit affiché, servie par département ; jamais celles de l'AN.
+   libre de Wikimedia Commons seulement, crédit affiché, servie par département ; jamais celles de l'AN. Amendé (porteur, 08/11/2026) : jauge du budget seulement, bleu `#2B6CB0` (salaires) et vert `#9DD3AA` (investissements), couleurs de données financières, jamais politiques.
 8. **Jamais le patrimoine d'un élu, jamais de donnée de présence ou d'absence.**
 9. **Fraîcheur** (décision du porteur, 30/09/2026). Une donnée gardée sur
    l'appareil peut être affichée pour préserver l'accès hors ligne, mais jamais

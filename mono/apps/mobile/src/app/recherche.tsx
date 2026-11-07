@@ -7,6 +7,9 @@
  * Chaque résultat ouvre sa fiche. Aucune donnée nouvelle : chaque lecture est celle d'un écran existant,
  * mise en mémoire pour la session (lib/donnees). Ce qui n'est pas cherché ici : les maires et les
  * conseillers, rangés par département (l'onglet « Élus » le dit). */
+import { CarteListe, Puces } from "../ui/donnees";
+import { SquelettesListe } from "../ui/squelette";
+import { Ionicons } from "@expo/vector-icons";
 import { useEffect, useMemo, useState } from "react";
 import { Pressable, ScrollView, Text, TextInput, View } from "react-native";
 import { router } from "expo-router";
@@ -31,14 +34,12 @@ type Departement = { code: string; nom?: string };
 
 const EN_COURS = ETATS.EN_COURS as string;
 
-function Resultat({ etiquette, titre, detail, onPress }: { etiquette: string; titre: string; detail: string; onPress: () => void }) {
+/* 07/11/2026 : un résultat est une carte de liste (icône de sa catégorie, pression, chevron). */
+function Resultat({ etiquette, titre, detail, onPress, icone }: { etiquette: string; titre: string; detail: string; onPress: () => void; icone: keyof typeof Ionicons.glyphMap }) {
   return (
-    <Pressable onPress={onPress} accessibilityRole="button" accessibilityLabel={etiquette}
-      style={({ pressed }) => ({ minHeight: CIBLE + 8, justifyContent: "center", gap: 2, padding: PAS * 3,
-        borderRadius: RAYON.bloc, backgroundColor: couleurs.carte, opacity: pressed ? 0.7 : 1 })}>
-      <Text style={[TYPO.corps, { fontWeight: "600" }]}>{titre}</Text>
+    <CarteListe onPress={onPress} etiquette={etiquette} titre={titre} icone={icone}>
       <Text style={TYPO.note}>{detail}</Text>
-    </Pressable>
+    </CarteListe>
   );
 }
 
@@ -48,7 +49,7 @@ function Section({ titre, source, total, children }: { titre: string; source: st
   return (
     <View style={{ gap: PAS * 2 }}>
       <Text style={TYPO.etiquette} accessibilityRole="header">{titre}{source === ETATS.SERVI && total ? ` · ${total}` : ""}</Text>
-      {source === EN_COURS ? <Text style={TYPO.note}>Chargement…</Text> : null}
+      {source === EN_COURS ? <SquelettesListe n={2} hauteur={64} /> : null}
       {source !== EN_COURS && source !== ETATS.SERVI && phrase ? <Text style={TYPO.note}>{phrase.titre}</Text> : null}
       {source === ETATS.SERVI ? children : null}
       {source === ETATS.SERVI && total > PAR_SECTION ? (
@@ -147,10 +148,11 @@ export default function Recherche() {
       {resultats === null ? (
         <View style={{ gap: PAS * 2 }}>
           <Text style={TYPO.corps}>Tapez le nom d'une commune, d'un élu ou d'un scrutin.</Text>
-          <Text style={TYPO.note}>
-            Les communes publiées sont celles de la bêta (Île-de-France). Les élus publiés sont les députés et les exécutifs régionaux :
-            l'onglet « Élus » dit ce qui n'y figure pas.
-          </Text>
+          <Puces items={[
+            { icone: "location-outline", texte: "Les communes publiées sont celles de la bêta (Île-de-France)." },
+            { icone: "people-outline", texte: "Les élus publiés sont les députés et les exécutifs régionaux : l'onglet « Élus » dit ce qui n'y figure pas." },
+            { icone: "stats-chart-outline", texte: "Les scrutins sont ceux de l'Assemblée nationale publiés par Repère." },
+          ]} />
         </View>
       ) : null}
 
@@ -164,7 +166,7 @@ export default function Recherche() {
       {resultats !== null && (resultats.communes.length > 0 || communes.etat !== ETATS.SERVI) ? (
         <Section titre="Communes" source={communes.etat} total={resultats.communes.length}>
           {resultats.communes.slice(0, PAR_SECTION).map(([insee, nom]: Ligne) => (
-            <Resultat key={insee} etiquette={`Commune : ${nom}, ${nomDep(insee)}. Choisir cette commune.`}
+            <Resultat key={insee} icone="location-outline" etiquette={`Commune : ${nom}, ${nomDep(insee)}. Choisir cette commune.`}
               titre={nom} detail={nomDep(insee)} onPress={() => ouvrirCommune(insee, nom)} />
           ))}
         </Section>
@@ -173,7 +175,7 @@ export default function Recherche() {
       {resultats !== null && (resultats.elus.length > 0 || elus.etat !== ETATS.SERVI) ? (
         <Section titre="Élus" source={elus.etat} total={resultats.elus.length}>
           {resultats.elus.slice(0, PAR_SECTION).map(f => (
-            <Resultat key={f.id} etiquette={`${f.nom}, ${f.fonction}, ${f.lieu}. Ouvrir la fiche.`}
+            <Resultat key={f.id} icone="person-outline" etiquette={`${f.nom}, ${f.fonction}, ${f.lieu}. Ouvrir la fiche.`}
               titre={f.nom} detail={`${f.fonction} · ${f.lieu}`} onPress={() => ouvrirElu(f)} />
           ))}
         </Section>
@@ -182,7 +184,7 @@ export default function Recherche() {
       {resultats !== null && (resultats.scrutins.length > 0 || scrutins.etat !== ETATS.SERVI) ? (
         <Section titre="Scrutins" source={scrutins.etat} total={resultats.scrutins.length}>
           {resultats.scrutins.slice(0, PAR_SECTION).map(x => (
-            <Resultat key={x.n} etiquette={`Scrutin n°${x.n}, ${x.d ? dateFr(x.d) : "date non fournie"}. Ouvrir le scrutin.`}
+            <Resultat key={x.n} icone="stats-chart-outline" etiquette={`Scrutin n°${x.n}, ${x.d ? dateFr(x.d) : "date non fournie"}. Ouvrir le scrutin.`}
               titre={titreLisible(x.t)} detail={`${x.d ? dateFr(x.d) : "Date non fournie"} · n° ${x.n}`} onPress={() => ouvrirScrutin(x.n)} />
           ))}
         </Section>

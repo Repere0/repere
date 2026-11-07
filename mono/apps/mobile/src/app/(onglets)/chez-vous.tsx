@@ -25,6 +25,8 @@
  * cette information ? » ; celle du traitement par Repere en en-tete.
  *
  * RIEN N'EST CALCULE ICI : @repere/core derive, lib/absences.ts dit les absences. */
+import { Ionicons } from "@expo/vector-icons";
+import { Pression } from "../../ui/pression";
 import { useEffect, useState } from "react";
 import { Linking, Text, View } from "react-native";
 import { actusFlux, chargerActuellesRss, chargerMairies } from "../../lib/donnees";
@@ -42,7 +44,7 @@ import {
   PROJETS_PAS_ARRIVES, projetsAucun,
 } from "../../lib/absences";
 import { srcComptesPublies, srcElus, srcProjets, srcScrutins, srcVote } from "../../lib/sources";
-import { PAS, TYPO } from "../../lib/theme";
+import { couleurs, PAS, POLICE, RAYON, TYPO } from "../../lib/theme";
 import { AvecDonnees, Page } from "../../ui/page";
 import { PastilleSource } from "../../ui/source";
 import { BandeauRepere } from "../../ui/bandeau-repere";
@@ -217,17 +219,26 @@ export default function ChezVous() {
           {/* ALLER PLUS LOIN — liens simples. « Actualités » reste : c'est le seul acces a son
              ecran (tests/parcours.test.mjs, aucune impasse), meme vide. Le retirer est une
              decision produit (BLOCAGES.md, section 15). */}
-          <View style={{ gap: PAS }}>
+          <View style={{ gap: PAS * 3, marginTop: PAS * 4, marginBottom: PAS * 4 }}>
             <Etiquette texte="Aller plus loin" />
-            <View>
-              <Plus premier texte={LIBELLES.qui} onPress={() => router.push("/qui-decide")} />
-              <Plus texte={LIBELLES.calendrier} onPress={() => router.push("/a-venir")} />
-              <Plus texte="Élus" onPress={() => router.push("/elus")} />
-              <Plus texte="Voir les actualités" onPress={() => router.push("/actus")} />
-              {choix ? <SiteMairie insee={choix.insee} /> : null}
-              <Plus texte="Dictionnaire citoyen" onPress={() => router.push("/dictionnaire")} />
-              <Plus dernier texte={LIBELLES.sources} onPress={() => router.push("/sources")} />
+            {/* 07/11/2026 : des tuiles à icône, deux par ligne, au lieu d'une liste de liens. */}
+            <View style={{ flexDirection: "row", flexWrap: "wrap", gap: PAS * 3 }}>
+              {([
+                { t: LIBELLES.qui, i: "git-network-outline", o: () => router.push("/qui-decide") },
+                { t: LIBELLES.calendrier, i: "calendar-outline", o: () => router.push("/a-venir") },
+                { t: "Élus", i: "people-outline", o: () => router.push("/elus") },
+                { t: "Voir les actualités", i: "newspaper-outline", o: () => router.push("/actus") },
+                { t: "Dictionnaire citoyen", i: "book-outline", o: () => router.push("/dictionnaire") },
+                { t: LIBELLES.sources, i: "link-outline", o: () => router.push("/sources") },
+              ] as { t: string; i: keyof typeof Ionicons.glyphMap; o: () => void }[]).map(x => (
+                <Pression key={x.t} onPress={x.o} etiquette={x.t}
+                  style={{ width: "47%", minWidth: 140, flexGrow: 1, minHeight: 92, gap: PAS * 2, padding: PAS * 4, borderRadius: RAYON.bloc, backgroundColor: couleurs.carte, borderWidth: 1, borderColor: couleurs.trait, justifyContent: "space-between" }}>
+                  <Ionicons name={x.i} size={22} color={couleurs.encre} accessible={false} importantForAccessibility="no" />
+                  <Text style={[TYPO.corps, { fontFamily: POLICE.titre }]}>{x.t}</Text>
+                </Pression>
+              ))}
             </View>
+            {choix ? <SiteMairie insee={choix.insee} /> : null}
           </View>
 
           {choix ? <CarteMemoire choix={choix} /> : null}

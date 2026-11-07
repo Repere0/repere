@@ -3,12 +3,13 @@
  * COULEURS. Les valeurs sont dans palette.ts (données pures, testées). Les cinq
  * couleurs d'échelon viennent de @repere/data-utils (invariant 7), jamais
  * recopiées ; le reste est neutre, sous l'amplitude de 24 sur les canaux RGB.
- * Un vote n'a jamais de vert ni de rouge : pas de « bon » ni de « mauvais ».
+ * Un vote porte un vert sauge, un rouge brique ou un gris (palette.ts, D24) : ils codent un
+ * fait, jamais un jugement, et la position reste écrite en toutes lettres.
  *
- * TYPOGRAPHIE. Bricolage Grotesque (OFL, embarquée, jamais chargée depuis un hôte
- * tiers) pour les questions, les noms de lieu et les grands nombres. Le texte
- * courant reste dans la police du système, qui suit la taille choisie par le
- * lecteur (Dynamic Type, taille de police Android).
+ * TYPOGRAPHIE (DA premium, 07/11/2026). Manrope pour les questions et les noms de lieu,
+ * DM Sans pour le texte, IBM Plex Mono pour les dates et les grands nombres. Toutes OFL,
+ * embarquées, jamais chargées depuis un hôte tiers. Elles suivent la taille choisie par
+ * le lecteur (Dynamic Type, taille de police Android) : aucune taille n'est plafonnée.
  *
  * DEUX THÈMES, UN SEUL POINT D'ENTRÉE. `couleurs`, `TYPO`, `TEINTES`, `GRIS_VOTE`
  * et `OMBRE` sont des vues sur le thème courant : on les importe comme des objets
@@ -34,11 +35,20 @@ export const COULEUR_VOTE_DALTONIEN = { p: COULEURS_VOTE_DALTONIEN.votePour, c: 
 
 export const CIBLE = 48;
 export const PAS = 4;
-export const RAYON = { carte: 18, bloc: 14, pastille: 999 } as const;
+export const RAYON = { carte: 22, bloc: 14, pastille: 999 } as const;
 
+/* DA premium (07/11/2026, décision du porteur) : Manrope pour les titres, DM Sans pour le
+   texte, IBM Plex Mono pour les dates et les chiffres. Toutes sous licence SIL OFL,
+   embarquées dans l'application (aucun hôte de polices, aucune requête réseau).
+   Une famille par graisse : sous Android, fontWeight ne choisit pas une autre famille. */
 export const POLICE = {
-  affiche: "BricolageGrotesque_800ExtraBold",
-  titre: "BricolageGrotesque_600SemiBold",
+  affiche: "Manrope_800ExtraBold",
+  titre: "Manrope_700Bold",
+  texte: "DMSans_400Regular",
+  texteMoyen: "DMSans_500Medium",
+  texteGras: "DMSans_700Bold",
+  donnee: "IBMPlexMono_400Regular",
+  donneeForte: "IBMPlexMono_600SemiBold",
 } as const;
 
 /* Durée des apparitions : courte, pour ne jamais retarder la lecture. */
@@ -84,16 +94,20 @@ function construire(m: Mode) {
   const TYPO = {
     /* le nom de la commune, les grands nombres */
     affiche: { fontFamily: POLICE.affiche, fontSize: sz(36), lineHeight: lh(40), color: couleurs.encre, letterSpacing: -0.5 },
-    chiffre: { fontFamily: POLICE.affiche, fontSize: sz(38), lineHeight: lh(44), color: couleurs.encre, letterSpacing: -0.5 },
+    chiffre: { fontFamily: POLICE.donneeForte, fontSize: sz(36), lineHeight: lh(44), color: couleurs.encre, letterSpacing: -0.5 },
+    /* 07/11/2026 : les nombres du décompte, en grand (StatCard). */
+    stat: { fontFamily: POLICE.donneeForte, fontSize: sz(40), lineHeight: lh(46), color: couleurs.encre, letterSpacing: -1 },
     /* la question d'un écran */
     question: { fontFamily: POLICE.affiche, fontSize: sz(28), lineHeight: lh(33), color: couleurs.encre, letterSpacing: -0.3 },
     /* la réponse d'une carte : lisible en trois secondes */
     reponse: { fontFamily: POLICE.titre, fontSize: sz(20), lineHeight: lh(26), color: couleurs.encre },
-    corps: { fontSize: sz(16), lineHeight: lh(23), color: couleurs.encre },
-    note: { fontSize: sz(15), lineHeight: lh(21), color: couleurs.sourd },
+    corps: { fontFamily: POLICE.texte, fontSize: sz(16), lineHeight: lh(23), color: couleurs.encre },
+    note: { fontFamily: POLICE.texte, fontSize: sz(15), lineHeight: lh(21), color: couleurs.sourd },
     /* l'étiquette au-dessus d'une réponse, en capitales de style */
-    etiquette: { fontSize: sz(13), lineHeight: lh(18), fontWeight: "500" as const, letterSpacing: 0.8, textTransform: "uppercase" as const, color: couleurs.sourd },
-    micro: { fontSize: sz(13), lineHeight: lh(18), color: couleurs.sourd },
+    etiquette: { fontFamily: POLICE.texteMoyen, fontSize: sz(13), lineHeight: lh(18), letterSpacing: 0.8, textTransform: "uppercase" as const, color: couleurs.sourd },
+    micro: { fontFamily: POLICE.texte, fontSize: sz(13), lineHeight: lh(18), color: couleurs.sourd },
+    /* une date ou une donnée chiffrée en ligne (frise, pastilles) */
+    donnee: { fontFamily: POLICE.donnee, fontSize: sz(13), lineHeight: lh(18), color: couleurs.sourd },
   };
   /* Les trois gris d'une répartition de vote : ils se distinguent aussi par leur
      libellé et leur nombre, jamais par la couleur seule (accessibilité). */

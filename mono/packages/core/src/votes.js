@@ -24,6 +24,8 @@
  * dans extract-html.js — pas ici, parce que ce fichier de build ne peut pas
  * importer du JSX (React) sans transpilateur. */
 
+import { dateFr } from "./format.js";
+
 export const MOTS = { p: "Pour", c: "Contre", a: "Abstention" };
 /* Deplace de QuiDecide.jsx le 28/09/2026 pour servir aussi a Aujourdhui.jsx : une seule regle d'ecriture des rangs. */
 export function ordinal(n) { return n === 1 ? "1re" : n + "e"; }
@@ -155,3 +157,14 @@ export function dossierDuScrutin(sc) {
     demandeur: typeof sc.dm === "string" && sc.dm.trim() ? sc.dm.trim() : null,
   };
 }
+
+/* La ligne de metadonnees sous le titre, sans le decompte (il est affiche en grand). */
+export function metaScrutin(sc) {
+  const proc = procedure(sc.t);
+  const sort = sc.s === "adopté" ? "Texte adopté" : sc.s === "rejeté" ? "Texte rejeté" : "Scrutin";
+  return `${sort} le ${dateFr(sc.d)}${proc ? " · " + proc.charAt(0).toUpperCase() + proc.slice(1) : ""}`;
+}
+
+/* Le statut du scrutin pour le badge : « p » si adopte (le pour l'a emporte), « c » si rejete,
+   null sinon (aucun badge : on n'interprete pas un autre resultat). */
+export const resultatScrutin = sc => (sc && sc.s === "adopté" ? "p" : sc && sc.s === "rejeté" ? "c" : null);

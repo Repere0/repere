@@ -46,7 +46,8 @@ try {
   const n = jours(2026, 10, 31);
   verifier(n === 169, `calcul attendu : ${n} jours entre le 31/10/2026 et le 18/04/2027`);
   verifier(a.texte.includes("Élections présidentielles"), "31/10/2026 : la carte « Élections présidentielles » s'affiche");
-  verifier(a.texte.includes(`dans ${n} jours (18 avril 2027)`), `31/10/2026 : « dans ${n} jours (18 avril 2027) »`);
+  /* 07/11/2026 : la durée s'affiche en grand, la date à côté (« 169 » puis « jours · 18 avril 2027 »). */
+  verifier(a.texte.replace(/\s+/g, " ").includes(`${n} jours · 18 avril 2027`), `31/10/2026 : « ${n} jours · 18 avril 2027 »`);
   verifier(a.texte.includes("Comment voter ?"), "31/10/2026 : le lien « Comment voter ? » est présent");
   verifier(a.erreurs.length === 0, "31/10/2026 : aucune erreur JavaScript");
   await a.contexte.close();

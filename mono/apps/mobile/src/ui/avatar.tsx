@@ -8,8 +8,9 @@
 import { useProfil } from "../lib/profil";
 import { Image, Linking, Pressable, Text, View } from "react-native";
 import type { PhotoElu } from "../lib/photos";
-import { couleurs, OMBRE } from "../lib/theme";
+import { couleurs, OMBRE, POLICE } from "../lib/theme";
 import { bordureGroupe, couleurGroupe, GROUPE_INCONNU, texteSur } from "../lib/groupes";
+import { REFLET_AVATAR } from "../lib/palette";
 
 export function initiales(nom: string): string {
   const morceaux = nom.split(/\s+/).filter(Boolean);
@@ -24,8 +25,10 @@ export function initiales(nom: string): string {
 /* OMBRE est un Proxy de thème : on en copie les champs (…OMBRE), on ne le passe jamais en prop.
  * Une prop de vue native est figée en développement, et le Proxy ne le supporte pas (crash de l'onglet Élus). */
 /* V62 : le groupe vient de l'appelant (un depute seulement) ; sans lui, le gris « Inconnu ». */
-export function Avatar({ nom, taille = 64, photo, groupe }: { nom: string; taille?: number; photo?: PhotoElu | null; groupe?: string | null }) {
-  const fond = couleurGroupe(groupe || GROUPE_INCONNU);
+/* `doux` (07/11/2026) : fond neutre, initiales en encre, contour de la couleur du groupe. */
+/* `fond` : une autre couleur que celle du groupe (l'échelon, dans « Qui décide »). */
+export function Avatar({ nom, taille = 64, photo, groupe, doux, fond: autreFond }: { nom: string; taille?: number; photo?: PhotoElu | null; groupe?: string | null; doux?: boolean; fond?: string }) {
+  const fond = autreFond || couleurGroupe(groupe || GROUPE_INCONNU);
   const { profil } = useProfil();
   /* V26 bloc 3 : « Masquer les images » du confort de lecture garde les initiales. */
   if (photo && !profil?.masquerImages) {
@@ -34,11 +37,25 @@ export function Avatar({ nom, taille = 64, photo, groupe }: { nom: string; taill
         style={{ width: taille, height: taille, borderRadius: taille / 2, borderWidth: 2, borderColor: bordureGroupe(fond), ...OMBRE }} />
     );
   }
+  if (doux) {
+    return (
+      <View accessible={false}
+        style={{ width: taille, height: taille, borderRadius: taille / 2, backgroundColor: couleurs.voile,
+          borderWidth: 2, borderColor: fond, alignItems: "center", justifyContent: "center" }}>
+        <Text style={{ color: couleurs.encre, fontFamily: POLICE.titre, fontSize: Math.round(taille * 0.36) }}>{initiales(nom)}</Text>
+      </View>
+    );
+  }
+  /* 07/11/2026 : un dégradé de la couleur du groupe (reflet clair en haut à gauche, ombre en bas
+     à droite), sans bibliothèque. La couleur identifie le groupe, rien d'autre (invariant 7). */
   return (
-    <View accessible={false}
-      style={{ width: taille, height: taille, borderRadius: taille / 2, backgroundColor: fond,
-        borderWidth: 2, borderColor: bordureGroupe(fond), alignItems: "center", justifyContent: "center", ...OMBRE }}>
-      <Text style={{ color: texteSur(fond), fontWeight: "500", fontSize: Math.round(taille * 0.375) }}>{initiales(nom)}</Text>
+    <View accessible={false} style={{ width: taille, height: taille, borderRadius: taille / 2, ...OMBRE }}>
+      <View style={{ flex: 1, borderRadius: taille / 2, backgroundColor: fond, overflow: "hidden",
+        borderWidth: 2, borderColor: bordureGroupe(fond), alignItems: "center", justifyContent: "center" }}>
+        <View style={{ position: "absolute", width: taille * 1.3, height: taille * 1.3, borderRadius: taille, backgroundColor: REFLET_AVATAR.clair, top: -taille * 0.75, left: -taille * 0.55 }} />
+        <View style={{ position: "absolute", width: taille * 1.3, height: taille * 1.3, borderRadius: taille, backgroundColor: REFLET_AVATAR.ombre, bottom: -taille * 0.8, right: -taille * 0.6 }} />
+        <Text style={{ color: texteSur(fond), fontFamily: POLICE.titre, fontSize: Math.round(taille * 0.375) }}>{initiales(nom)}</Text>
+      </View>
     </View>
   );
 }

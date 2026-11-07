@@ -12,15 +12,32 @@ export type GroupeDepute = { groupe: string; nom?: string };
 export type TableGroupes = Record<string, GroupeDepute>;
 
 /* La table des groupes, ou null si le fichier n'est pas lisible ou n'emporte pas sa source. */
-export async function lireGroupes(): Promise<TableGroupes | null> {
+export type FichierGroupes = { source: { producteur: string; licence: string; url?: string }; genere_le: string; groupes: TableGroupes };
+
+export async function lireFichierGroupes(): Promise<FichierGroupes | null> {
   try {
     const r = await chargerDeputesGroupes();
     const d = r.donnees as { source?: { producteur?: string; licence?: string }; genere_le?: string; groupes?: TableGroupes } | null;
     if (!d || !d.source || !d.source.producteur || !d.source.licence || !d.genere_le || !d.groupes) return null;
-    return d.groupes;
+    return d as FichierGroupes;
   } catch {
     return null;
   }
+}
+
+export async function lireGroupes(): Promise<TableGroupes | null> {
+  return (await lireFichierGroupes())?.groupes ?? null;
+}
+
+/* Le fichier entier (avec sa source et sa date) : undefined pendant la lecture, null s'il n'est pas publié. */
+export function useFichierGroupes(): FichierGroupes | null | undefined {
+  const [t, setT] = useState<FichierGroupes | null | undefined>(undefined);
+  useEffect(() => {
+    let vivant = true;
+    lireFichierGroupes().then(x => { if (vivant) setT(x); });
+    return () => { vivant = false; };
+  }, []);
+  return t;
 }
 
 /* La table, une fois lue ; null tant qu'elle ne l'est pas. */
@@ -65,3 +82,21 @@ export function bordureGroupe(fond: string): string {
   const canaux = [1, 3, 5].map(i => Math.round(parseInt(fond.slice(i, i + 2), 16) * 0.7));
   return "#" + canaux.map(v => v.toString(16).padStart(2, "0")).join("");
 }
+
+/* Le libellé long d'un groupe (fichiers de scrutins, organes AMO) vers son sigle de palette.ts
+   (07/11/2026). Les fichiers de scrutins portent encore des gris d'avant D99 : l'application
+   prend la couleur d'identification de palette.ts. Groupe absent de la table : gris « Inconnu ». */
+const SIGLE_DU_NOM: Record<string, string> = {
+  "Rassemblement National": "RN",
+  "Ensemble pour la République": "EPR",
+  "La France insoumise - Nouveau Front Populaire": "LFI",
+  "Socialistes et apparentés": "SOC",
+  "Droite Républicaine": "LR",
+  "Écologiste et Social": "LÉ",
+  "Les Démocrates": "DEM",
+  "Horizons & Indépendants": "HOR",
+  "Libertés, Indépendants, Outre-mer et Territoires": "LIOT",
+  "Gauche Démocrate et Républicaine": "GDR",
+  "Députés non inscrits": "NI",
+};
+export const sigleDuNom = (nom: string): string => SIGLE_DU_NOM[nom] || GROUPE_INCONNU;

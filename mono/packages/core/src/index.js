@@ -25,6 +25,7 @@ export * from "./phrases.js";
 export * from "./phrases-comptes.js";
 export * from "./source.js";
 export * from "./visuels.js";
+export * from "./hemicycle.js";
 export * from "./libelles.js";
 export * from "./calendrier.js";
 export * from "./mots.js";

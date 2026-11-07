@@ -12,6 +12,8 @@
  *   - un exercice de comptes n'est pas daté au jour : il n'est jamais « cette semaine » ;
  *   - le filtre de vue est visibleAuNiveau, la même règle que le reste de l'application ;
  *   - rien n'est supprimé : « Voir plus » déroule les anciennes entrées par tranches. */
+import { Pression } from "../ui/pression";
+import { Details } from "../ui/details";
 import { useEffect, useMemo, useState } from "react";
 import { router } from "expo-router";
 import { Linking, Pressable, Text, View } from "react-native";
@@ -22,7 +24,7 @@ import { srcComptesPublies, srcVote } from "../lib/sources";
 import { useSelection } from "../lib/selection";
 import { useProfil } from "../lib/profil";
 import { Vide } from "../lib/composants";
-import { CIBLE, couleurs, PAS, TYPO } from "../lib/theme";
+import { CIBLE, couleurs, OMBRE, PAS, POLICE, RAYON, TYPO } from "../lib/theme";
 import { Page, Question } from "../ui/page";
 import { BadgeZoom, useNiveauZoom } from "../ui/badge-zoom";
 import { ilYa } from "../ui/fraicheur";
@@ -147,10 +149,12 @@ export default function PourVous() {
                 onPress={() => basculer(th)}
                 style={({ pressed }) => ({
                   minHeight: CIBLE, paddingHorizontal: PAS * 3, justifyContent: "center", borderRadius: 999,
-                  borderWidth: coche ? 2 : 1, borderColor: coche ? couleurs.encre : couleurs.trait,
-                  backgroundColor: couleurs.carte, opacity: pressed ? 0.7 : 1,
+                  flexDirection: "row", alignItems: "center", gap: PAS,
+                  borderWidth: 1, borderColor: coche ? couleurs.encre : couleurs.trait,
+                  backgroundColor: coche ? couleurs.encre : couleurs.carte, opacity: pressed ? 0.7 : 1,
                 })}>
-                <Text style={[TYPO.note, { color: couleurs.encre, fontWeight: coche ? "700" : "400" }]}>{coche ? "✓ " : ""}{th}</Text>
+                {coche ? <Ionicons name="checkmark" size={16} color={couleurs.sol} accessible={false} importantForAccessibility="no" /> : null}
+                <Text style={[TYPO.note, { color: coche ? couleurs.sol : couleurs.encre, fontFamily: POLICE.texteMoyen }]}>{th}</Text>
               </Pressable>
             );
           })}
@@ -158,7 +162,9 @@ export default function PourVous() {
         <Text style={TYPO.note}>
           {choisis.length ? `Le fil ne montre que : ${choisis.join(", ")}.` : "Aucun sujet choisi : le fil montre tout."}
         </Text>
-        <Text style={TYPO.note}>Les publications sont rangées d'après les mots de leur titre. Ce rangement peut se tromper.</Text>
+        <Details titre="Comment le fil est rangé">
+          <Text style={TYPO.note}>Les publications sont rangées d'après les mots de leur titre. Ce rangement peut se tromper.</Text>
+        </Details>
       </View>
       {echec ? <Vide titre="Les publications ne sont pas disponibles pour le moment." /> : null}
       {!echec && nationales === null ? <SquelettesListe n={3} hauteur={96} /> : null}
@@ -199,27 +205,34 @@ export default function PourVous() {
   );
 }
 
+/* 07/11/2026 : chaque publication est une carte (filet, ombre, pression) ; titre en Manrope,
+   date en chiffres, source en petit avec son icône. */
 function Ligne({ e }: { e: Entree }) {
   const g = ageDe(e);
   const quand = e.d
     ? `${dateFr(e.d)}${g !== null && g >= 0 ? ` · ${ilYa(g)}` : ""}`
     : `Comptes publiés pour ${e.an}`;
   const contenu = (
-    <View style={{ gap: PAS }}>
-      <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
-        <Ionicons name={e.icone} size={14} color={couleurs.sourd} accessible={false} importantForAccessibility="no" />
-        <Text style={[TYPO.note, { color: couleurs.sourd, flex: 1 }]}>{e.quoi} · {quand}</Text>
+    <View style={{ gap: PAS * 2 }}>
+      <View style={{ flexDirection: "row", alignItems: "center", gap: PAS * 2 }}>
+        <View style={{ width: 28, height: 28, borderRadius: 14, backgroundColor: couleurs.voile, alignItems: "center", justifyContent: "center" }}>
+          <Ionicons name={e.icone} size={14} color={couleurs.encre} accessible={false} importantForAccessibility="no" />
+        </View>
+        <Text style={[TYPO.donnee, { flex: 1 }]}>{e.quoi} · {quand}</Text>
       </View>
-      <Text style={[TYPO.corps, { fontWeight: "700", color: couleurs.encre }]}>{e.titre}</Text>
-      <Text style={[TYPO.note, { color: couleurs.sourd }]}>Source : {e.source}</Text>
+      <Text style={[TYPO.corps, { fontFamily: POLICE.titre, color: couleurs.encre }]}>{e.titre}</Text>
+      <View style={{ flexDirection: "row", alignItems: "center", gap: PAS }}>
+        <Ionicons name="link-outline" size={14} color={couleurs.sourd} accessible={false} importantForAccessibility="no" />
+        <Text style={TYPO.micro}>Source : {e.source}</Text>
+      </View>
     </View>
   );
-  if (!e.lien) return <View style={{ paddingVertical: PAS * 2 }}>{contenu}</View>;
+  const style = { padding: PAS * 4, borderRadius: RAYON.bloc, backgroundColor: couleurs.carte, borderWidth: 1, borderColor: couleurs.trait, ...OMBRE };
+  if (!e.lien) return <View style={style}>{contenu}</View>;
   return (
-    <Pressable onPress={() => Linking.openURL(e.lien as string)} accessibilityRole="link"
-      accessibilityLabel={`${e.quoi} : ${e.titre}. Source : ${e.source}. Ouvre un site externe.`}
-      style={({ pressed }) => ({ minHeight: CIBLE, paddingVertical: PAS * 2, opacity: pressed ? 0.7 : 1 })}>
+    <Pression onPress={() => Linking.openURL(e.lien as string)} role="link"
+      etiquette={`${e.quoi} : ${e.titre}. Source : ${e.source}. Ouvre un site externe.`} style={[style, { minHeight: CIBLE }]}>
       {contenu}
-    </Pressable>
+    </Pression>
   );
 }

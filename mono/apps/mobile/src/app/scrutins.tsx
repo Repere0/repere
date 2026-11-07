@@ -20,9 +20,13 @@ import {
   ETATS,
 } from "../lib/donnees";
 import { Page } from "../ui/page";
+import { Hemicycle } from "../ui/hemicycle";
+import { couleurGroupe, sigleDuNom } from "../lib/groupes";
+import { StatCard } from "../ui/donnees";
+import { useCouleurVote } from "../lib/couleur-vote";
 import { Vide } from "../lib/composants";
 import { PastilleSource } from "../ui/source";
-import { feuille, PAS, TYPO, couleurs, CIBLE, RAYON, OMBRE } from "../lib/theme";
+import { feuille, PAS, TYPO, couleurs, CIBLE, RAYON, OMBRE, POLICE } from "../lib/theme";
 import { dateFr, titreLisible, nombreDecompte, resultatDecompteCourt } from "@repere/core";
 
 type Resume = {
@@ -88,14 +92,14 @@ function textePropre(value: string | null | undefined) {
     .trim();
 }
 
+/* 07/11/2026 : les trois nombres en grand, comme sur l'écran du vote (StatCard, couleurs de vote D24). */
 function StatutVote({ detail }: { detail: Detail }) {
+  const COULEUR = useCouleurVote();
   return (
-    <View style={s.resultat} accessible accessibilityLabel={resultatDecompteCourt(detail.dec)}>
-      <View style={s.stat}><Text style={s.statNombre}>{nombreDecompte(detail.dec.pour)}</Text><Text style={s.statLibelle}>pour</Text></View>
-      <View style={s.statSep} />
-      <View style={s.stat}><Text style={s.statNombre}>{nombreDecompte(detail.dec.contre)}</Text><Text style={s.statLibelle}>contre</Text></View>
-      <View style={s.statSep} />
-      <View style={s.stat}><Text style={s.statNombre}>{nombreDecompte(detail.dec.abstentions)}</Text><Text style={s.statLibelle}>abstention</Text></View>
+    <View style={{ flexDirection: "row", gap: PAS * 3 }} accessible accessibilityLabel={resultatDecompteCourt(detail.dec)}>
+      <StatCard valeur={nombreDecompte(detail.dec.pour)} libelle="Pour" couleur={COULEUR.p} />
+      <StatCard valeur={nombreDecompte(detail.dec.contre)} libelle="Contre" couleur={COULEUR.c} />
+      <StatCard valeur={nombreDecompte(detail.dec.abstentions)} libelle="Abstention" couleur={COULEUR.a} />
     </View>
   );
 }
@@ -117,7 +121,7 @@ function GroupeRow({ groupe, ouvert, onPress }: { groupe: Groupe; ouvert: boolea
         accessibilityLabel={`${groupe.nom}, ${texteAccessible}`}
         style={({ pressed }) => [s.groupeTete, pressed && { opacity: 0.65 }]}
       >
-        <View style={[s.groupePoint, { backgroundColor: groupe.couleur }]} />
+        <View style={[s.groupePoint, { backgroundColor: couleurGroupe(sigleDuNom(groupe.nom)) }]} />
         <View style={s.groupeTexte}>
           <Text style={s.groupeNom}>{groupe.nom}</Text>
           <Text style={s.groupeStats}>
@@ -141,15 +145,21 @@ function GroupeRow({ groupe, ouvert, onPress }: { groupe: Groupe; ouvert: boolea
   );
 }
 
+/* SEGMENTED CONTROL (07/11/2026, style iOS) : une pilule grise, l'onglet actif en blanc cassé.
+   Libellés courts à l'écran (une ligne), nom complet pour le lecteur d'écran. */
 function Onglets({ mode, setMode }: { mode: "votes" | "qag"; setMode: (m: "votes" | "qag") => void }) {
+  const ONGLETS = [
+    { cle: "votes" as const, texte: "Votes publics", etiquette: "Votes publics" },
+    { cle: "qag" as const, texte: "Questions", etiquette: "Questions au Gouvernement" },
+  ];
   return (
-    <View style={s.onglets}>
-      <Pressable onPress={() => setMode("votes")} accessibilityRole="tab" accessibilityState={{ selected: mode === "votes" }} style={[s.onglet, mode === "votes" && s.ongletActif]}>
-        <Text style={[s.ongletTexte, mode === "votes" && s.ongletTexteActif]}>Votes publics</Text>
-      </Pressable>
-      <Pressable onPress={() => setMode("qag")} accessibilityRole="tab" accessibilityState={{ selected: mode === "qag" }} style={[s.onglet, mode === "qag" && s.ongletActif]}>
-        <Text style={[s.ongletTexte, mode === "qag" && s.ongletTexteActif]}>Questions au Gouvernement</Text>
-      </Pressable>
+    <View style={s.onglets} accessibilityRole="tablist">
+      {ONGLETS.map(o => (
+        <Pressable key={o.cle} onPress={() => setMode(o.cle)} accessibilityRole="tab" accessibilityLabel={o.etiquette}
+          accessibilityState={{ selected: mode === o.cle }} style={[s.onglet, mode === o.cle && s.ongletActif]}>
+          <Text style={[s.ongletTexte, mode === o.cle && s.ongletTexteActif]} numberOfLines={1}>{o.texte}</Text>
+        </Pressable>
+      ))}
     </View>
   );
 }
@@ -251,6 +261,8 @@ export default function Scrutins() {
         </Text>
       </View>
 
+      <Hemicycle />
+
       <Onglets mode={mode} setMode={setMode} />
 
       {mode === "qag" ? (
@@ -322,9 +334,10 @@ export default function Scrutins() {
         )
       ) : (
         !index ? (
-          <Vide
-            titre={etat === ETATS.EN_COURS ? "Chargement des scrutins." : "On n'a pas encore les scrutins."}
-            corps="Repère n'affiche pas une position quand le relevé détaillé n'est pas disponible."
+          <Vide icone={etat === ETATS.EN_COURS ? "hourglass-outline" : "file-tray-outline"}
+            titre={etat === ETATS.EN_COURS ? "Chargement des scrutins." : "Les scrutins ne sont pas encore sur ce téléphone."}
+            corps="Sans le relevé détaillé de l'Assemblée, Repère n'affiche aucune position. Les scrutins restent consultables sur le site officiel."
+            lien={etat === ETATS.EN_COURS ? undefined : { texte: "Voir les scrutins sur le site de l'Assemblée", url: "https://www.assemblee-nationale.fr/dyn/17/scrutins" }}
           />
         ) : (
           <>
@@ -402,20 +415,15 @@ export default function Scrutins() {
 
 const s = feuille(() => StyleSheet.create({
   intro: { gap: PAS, paddingTop: PAS * 2 },
-  onglets: {
-    flexDirection: "row", backgroundColor: couleurs.voile, borderRadius: RAYON.bloc,
-    padding: 4, gap: 4,
-  },
-  onglet: {
-    minHeight: CIBLE, flex: 1, borderRadius: 11, alignItems: "center", justifyContent: "center", paddingHorizontal: PAS * 2,
-  },
-  ongletActif: { backgroundColor: couleurs.carte, ...OMBRE },
-  ongletTexte: { fontSize: 14, lineHeight: 18, color: couleurs.sourd, fontWeight: "600", textAlign: "center" },
-  ongletTexteActif: { color: couleurs.encre },
+  onglets: { flexDirection: "row", backgroundColor: couleurs.voile, borderRadius: RAYON.pastille, padding: 3 },
+  onglet: { minHeight: CIBLE, flex: 1, borderRadius: RAYON.pastille, alignItems: "center", justifyContent: "center", paddingHorizontal: PAS * 2 },
+  ongletActif: { backgroundColor: couleurs.encre, ...OMBRE },
+  ongletTexte: { fontFamily: POLICE.texteMoyen, fontSize: 14, lineHeight: 18, color: couleurs.sourd, textAlign: "center" },
+  ongletTexteActif: { color: couleurs.sol },
   resumeEntete: {
     backgroundColor: couleurs.carte, borderRadius: RAYON.carte, padding: PAS * 5, gap: 2, ...OMBRE,
   },
-  resumeNombre: { fontFamily: "BricolageGrotesque_800ExtraBold", fontSize: 34, lineHeight: 38, color: couleurs.encre, marginTop: PAS },
+  resumeNombre: { ...TYPO.stat, marginTop: PAS },
   resumePhrase: { fontSize: 16, lineHeight: 22, color: couleurs.sourd },
   recherche: {
     minHeight: CIBLE, backgroundColor: couleurs.carte, borderWidth: 1, borderColor: couleurs.trait,
@@ -427,21 +435,13 @@ const s = feuille(() => StyleSheet.create({
     backgroundColor: couleurs.carte, borderWidth: 1, borderColor: couleurs.trait, justifyContent: "space-between",
   },
   selectionCardActive: { borderColor: couleurs.encre, borderWidth: 1.5 },
-  selectionTitre: { fontFamily: "BricolageGrotesque_600SemiBold", fontSize: 17, lineHeight: 21, color: couleurs.encre, marginTop: PAS * 2 },
+  selectionTitre: { fontFamily: POLICE.titre, fontSize: 17, lineHeight: 21, color: couleurs.encre, marginTop: PAS * 2 },
   detail: { gap: PAS * 4 },
-  detailTitre: { fontFamily: "BricolageGrotesque_800ExtraBold", fontSize: 28, lineHeight: 32, color: couleurs.encre, letterSpacing: -0.4 },
+  detailTitre: { fontFamily: POLICE.affiche, fontSize: 28, lineHeight: 32, color: couleurs.encre, letterSpacing: -0.4 },
   blocLecture: {
     backgroundColor: couleurs.carte, borderRadius: RAYON.carte, padding: PAS * 5, gap: PAS * 3, ...OMBRE,
   },
-  phraseResultat: { fontFamily: "BricolageGrotesque_600SemiBold", fontSize: 20, lineHeight: 26, color: couleurs.encre },
-  resultat: {
-    flexDirection: "row", alignItems: "center", justifyContent: "space-around",
-    paddingTop: PAS * 2,
-  },
-  stat: { alignItems: "center", minWidth: 72, flex: 1 },
-  statNombre: { fontFamily: "BricolageGrotesque_800ExtraBold", fontSize: 30, lineHeight: 34, color: couleurs.encre },
-  statLibelle: { fontSize: 14, lineHeight: 19, color: couleurs.sourd, marginTop: 2 },
-  statSep: { width: 1, height: 42, backgroundColor: couleurs.trait },
+  phraseResultat: { fontFamily: POLICE.titre, fontSize: 20, lineHeight: 26, color: couleurs.encre },
   groupes: {
     backgroundColor: couleurs.carte, borderRadius: RAYON.carte, overflow: "hidden",
     borderWidth: 1, borderColor: couleurs.trait,

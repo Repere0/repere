@@ -12,6 +12,14 @@ export function dateFr(v) {
   return Number(m[3]) + (m[3] === "01" ? "er" : "") + " " + mois[Number(m[2]) - 1] + " " + m[1];
 }
 
+/* « 13 oct. 2026 » : la date d'un badge (07/11/2026). */
+export function dateCourte(v) {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(v || ""));
+  if (!m) return v;
+  const mois = ["janv.", "févr.", "mars", "avr.", "mai", "juin", "juil.", "août", "sept.", "oct.", "nov.", "déc."];
+  return Number(m[3]) + (m[3] === "01" ? "er" : "") + " " + mois[Number(m[2]) - 1] + " " + m[1];
+}
+
 /* Deplace de Calendrier.jsx le 28/09/2026 pour servir aussi a Aujourdhui.jsx : « jeudi 1er octobre 2026 »,
    jamais « jeudi 1 octobre » comme le produisait toLocaleDateString. */
 export function jourFr(iso) {
@@ -50,4 +58,20 @@ export function jourCourt(iso) {
   const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(iso || "");
   if (!m) return "";
   return ["dim.", "lun.", "mar.", "mer.", "jeu.", "ven.", "sam."][new Date(Date.UTC(Number(m[1]), Number(m[2]) - 1, Number(m[3]))).getUTCDay()];
+}
+
+/* LES PHRASES D'UN TEXTE (07/11/2026, règle des 3 lignes) : on coupe aux fins de phrase,
+   sans changer un mot. Pas de coupe après une initiale ou une abréviation courte (« M. »,
+   « art. », « n° 3. » suivi d'une minuscule) : mieux vaut un paragraphe qu'une phrase coupée. */
+export function phrasesDe(texte) {
+  const t = String(texte || "").replace(/\s+/g, " ").trim();
+  if (!t) return [];
+  const morceaux = t.split(/(?<=[.!?…])\s+(?=[A-ZÀÂÉÈÊÎÔÙÛÇ«"(])/);
+  const out = [];
+  for (const m of morceaux) {
+    const prec = out[out.length - 1];
+    if (prec && /(?:^|[\s'\u2019])(?:[A-Z]|M|Mme|MM|art|n°|cf|av|St|Ste|Dr)\.$/.test(prec)) out[out.length - 1] = prec + " " + m;
+    else out.push(m);
+  }
+  return out;
 }

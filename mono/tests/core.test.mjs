@@ -18,7 +18,9 @@ const RACINE = path.resolve(import.meta.dirname, "..");
 const data = f => { const p = path.join(RACINE, "data", f); return fs.existsSync(p) ? JSON.parse(fs.readFileSync(p, "utf8")) : null; };
 
 test("core — aucune dependance d'interface, de reseau ou de stockage", () => {
-  for (const f of fs.readdirSync(path.join(RACINE, "packages/core/src"))) {
+  /* 07/11/2026 : récursif (packages/core/src/types/ existe) ; un dossier n'est pas lu comme un fichier. */
+  for (const f of fs.readdirSync(path.join(RACINE, "packages/core/src"), { recursive: true })) {
+    if (fs.statSync(path.join(RACINE, "packages/core/src", f)).isDirectory()) continue;
     const s = fs.readFileSync(path.join(RACINE, "packages/core/src", f), "utf8");
     for (const interdit of [/from ["']react/, /document\./, /window\./, /\bfetch\(/, /indexedDB/, /localStorage/, /<[A-Z][A-Za-z]*[ >]/]) {
       assert.ok(!interdit.test(s.replace(/\/\*[\s\S]*?\*\//g, "")), `${f} utilise ${interdit.source}`);

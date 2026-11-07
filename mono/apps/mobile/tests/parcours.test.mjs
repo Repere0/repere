@@ -31,7 +31,17 @@ const nomDe = f => path.basename(f, ".tsx");
 const TOUS = FICHIERS.map(nomDe).filter(n => !n.startsWith("dev-"));
 
 /* Ce que chaque écran peut ouvrir, lu dans son source. */
-function ouvre(f) { return ouvreTexte(lire(f)); }
+/* 07/11/2026 : un composant de src/ui importé par l'écran compte comme l'écran (le badge de
+   groupe et l'hémicycle ouvrent /groupe) ; un seul niveau d'import, lu dans le source. */
+function ouvre(f) {
+  const brut = lire(f);
+  const out = new Set(ouvreTexte(brut));
+  for (const m of brut.matchAll(/from\s+"\.\.\/(?:\.\.\/)?ui\/([\w-]+)"/g)) {
+    const c = path.join(RACINE, "src", "ui", m[1] + ".tsx");
+    if (fs.existsSync(c)) for (const x of ouvreTexte(lire(c))) out.add(x);
+  }
+  return [...out];
+}
 function ouvreTexte(brut) {
   const s = sansCommentaires(brut);
   const out = new Set();
