@@ -271,18 +271,24 @@ test("étapes — liste vide sans relevé ; étape sans date ou sans libellé é
   assert.equal(etapesDuScrutin({ et: [{ d: "2026-10-13", f: "2026-10-01", l: "Séance" }] })[0].fin, null, "fin antérieure ignorée");
 });
 
-/* CE QU'IL FAUT RETENIR (07/11/2026) : un gabarit, jamais « unanimité » s'il y a des abstentions. */
-import { retenirDuScrutin, metaScrutin } from "../packages/core/src/index.js";
-test("ce qu'il faut retenir : gabarit fidèle au décompte, rien sans décompte complet", () => {
-  const r = (p, c, a, s = "adopté") => retenirDuScrutin({ s, dec: { pour: p, contre: c, abstentions: a } });
-  assert.deepEqual(r("503", "0", "67"), { phrase: "Adopté sans aucune voix contre. 67 députés se sont abstenus.", calcul: false });
-  assert.ok(!r("503", "0", "67").phrase.includes("unanimité"), "des abstentions : pas d'unanimité");
-  assert.equal(r("120", "0", "0").phrase, "Adopté à l'unanimité des 120 députés ayant pris part au vote.");
-  assert.equal(r("0", "40", "1", "rejeté").phrase, "Rejeté sans aucune voix pour. 1 député s'est abstenu.");
-  assert.deepEqual(r("300", "197", "10"), { phrase: "Adopté avec 103 voix pour de plus que contre.", calcul: true });
-  assert.equal(r("200", "200", "3").phrase, "Autant de voix pour que de voix contre : 200 de chaque côté.");
-  assert.equal(r(null, "0", "67"), null);
-  assert.equal(r("0", "0", "0"), null);
-  assert.equal(retenirDuScrutin({ s: "adopté" }), null);
+/* METADONNEES DU SCRUTIN (07/11/2026) : sans le decompte, affiche en grand a cote. */
+import { metaScrutin, dateCourte, resultatScrutin } from "../packages/core/src/index.js";
+test("métadonnées, date courte et statut du scrutin", () => {
   assert.equal(metaScrutin({ s: "adopté", d: "2026-10-13", t: "l'ensemble du projet de loi X (première lecture)." }), "Texte adopté le 13 octobre 2026 · Première lecture");
+  assert.equal(dateCourte("2026-10-13"), "13 oct. 2026");
+  assert.equal(dateCourte("2026-05-01"), "1er mai 2026");
+  assert.equal(dateCourte("pas une date"), "pas une date");
+  assert.equal(resultatScrutin({ s: "adopté" }), "p");
+  assert.equal(resultatScrutin({ s: "rejeté" }), "c");
+  assert.equal(resultatScrutin({ s: "irrecevable" }), null, "un résultat qui n'est ni adopté ni rejeté n'a pas de badge");
+});
+
+import { phrasesDe } from "../packages/core/src/index.js";
+test("phrasesDe : coupe aux fins de phrase, jamais après une abréviation, sans changer un mot", () => {
+  const t = "Le Sénat a adopté le texte. M. Dupont en est le rapporteur. Il revient à l'Assemblée !";
+  const p = phrasesDe(t);
+  assert.deepEqual(p, ["Le Sénat a adopté le texte.", "M. Dupont en est le rapporteur.", "Il revient à l'Assemblée !"]);
+  assert.equal(p.join(" "), t, "aucun mot ajouté ni retiré");
+  assert.deepEqual(phrasesDe("Voir l'art. L2121-18. Puis le décret."), ["Voir l'art. L2121-18.", "Puis le décret."]);
+  assert.deepEqual(phrasesDe(""), []);
 });

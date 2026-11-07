@@ -7,7 +7,9 @@ import { router, Stack } from "expo-router";
 import { dateFr, plusRecentEnPremier } from "@repere/core";
 import { chargerEvenements, ETATS, PHRASES } from "../lib/donnees";
 import { Carte, LienSortant, Vide } from "../lib/composants";
-import { PAS, TYPO } from "../lib/theme";
+import { couleurs, PAS, TYPO } from "../lib/theme";
+import { Ionicons } from "@expo/vector-icons";
+import { TexteLong } from "../ui/donnees";
 import { DateDonnee } from "../ui/fraicheur";
 import { Page, Question } from "../ui/page";
 import { SquelettesListe } from "../ui/squelette";
@@ -83,9 +85,12 @@ function ActuCarte({ x }: { x: Evt }) {
   return (
     <Carte>
       <View style={{ gap: PAS * 2 }}>
-        <Text style={TYPO.note}>{dateFr(x.d)}</Text>
-        <Text style={[TYPO.corps, { fontWeight: "700" }]} accessibilityRole="header">{x.t}</Text>
-        {texte ? <Text style={TYPO.corps}>{texte}</Text> : null}
+        <View style={{ flexDirection: "row", alignItems: "center", gap: PAS * 2 }}>
+          <Ionicons name="newspaper-outline" size={16} color={couleurs.sourd} accessible={false} importantForAccessibility="no" />
+          <Text style={TYPO.donnee}>{dateFr(x.d)}</Text>
+        </View>
+        <Text style={TYPO.reponse} accessibilityRole="header">{x.t}</Text>
+        {texte ? <TexteLong texte={texte} icone="chevron-forward-outline" /> : null}
         {x.src ? <LienSortant url={x.src} texte={x.srcn || "Source officielle"} /> : null}
         {x.src ? (
           <PartagerCarte etiquette={`Partager : ${x.t}`}

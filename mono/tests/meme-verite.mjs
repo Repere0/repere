@@ -21,7 +21,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { createRequire } from "node:module";
 import {
-  deriverAujourdhui, titreLisible, texteDe, phraseAdjoints, phraseCirconscription, phrasePosition,
+  deriverAujourdhui, titreLisible, texteDe, phraseAdjoints, phraseCirconscription, phrasePosition, ordinal,
   ligneScrutin, lienScrutin, metaScrutin, repartitionVote, ligneSource, phraseProjetLocal, euros, dateFr, rapports, sousTitreRapports, CALCUL_REPERE,
 } from "../packages/core/src/index.js";
 
@@ -68,7 +68,8 @@ function attendus({ dep, insee, attendu }) {
   f("source des élus (producteur, licence, date)", ligneSource(index.sources.elus));
   if (d.dernierVote) {
     const v = d.dernierVote;
-    f("circonscription", phraseCirconscription(d, v.circo));
+    /* 07/11/2026 : hors commune partagée, l'application écrit la circonscription dans l'en-tête compact. */
+    f("circonscription", phraseCirconscription(d, v.circo), d.nbCircos > 1 ? undefined : `${ordinal(v.circo)} circonscription${d.nomDep ? " · " + d.nomDep : ""}`);
     f("député", v.qui);
     f("vote (titre)", titreLisible(v.sc.t));
     f("vote (position)", texteDe(phrasePosition(v.position, v.qui)));

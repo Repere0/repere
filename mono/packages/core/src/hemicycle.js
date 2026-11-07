@@ -33,3 +33,17 @@ export function siegesHemicycle(n, rangs = 8, creux = 0.4) {
   });
   return s.sort((p, q) => q.a - p.a || Math.hypot(p.x, p.y) - Math.hypot(q.x, q.y)).map(({ x, y }) => ({ x, y }));
 }
+
+/* LES GROUPES A CERNER (07/11/2026) : deux couleurs de groupe trop proches (distance RVB sous
+ * `seuil`) se confondent sur l'hemicycle. Le second de chaque paire, dans l'ordre affiche, recoit
+ * un contour : la palette (invariant 7) n'est pas modifiee. Mesure sur palette.ts le 07/11/2026 :
+ * DEM/EPR 46, GDR/LFI 48, HOR/LR 58, LIOT/Inconnu 0 (meme gris). */
+export function groupesACerner(groupes, couleurDe, seuil = 60) {
+  const rvb = h => [1, 3, 5].map(i => parseInt(String(h).slice(i, i + 2), 16));
+  const d = (a, b) => Math.hypot(...rvb(a).map((v, i) => v - rvb(b)[i]));
+  const cernes = new Set();
+  groupes.forEach((g, i) => {
+    if (groupes.slice(0, i).some(p => !cernes.has(p) && d(couleurDe(p), couleurDe(g)) < seuil)) cernes.add(g);
+  });
+  return cernes;
+}

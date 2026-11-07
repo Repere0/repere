@@ -22,3 +22,12 @@ test("sièges : un par député, dans le demi-disque, de gauche à droite", () =
   assert.ok(s[0].x < 0 && s.at(-1).x > 0, "le premier siège à gauche, le dernier à droite");
   assert.deepEqual(siegesHemicycle(0), []);
 });
+
+import { groupesACerner } from "../packages/core/src/index.js";
+test("contours : le second de deux couleurs proches est cerné ; les couleurs éloignées non", () => {
+  /* Des gris fictifs : aucune couleur hors de palette.ts (garde de l invariant 7). */
+  const c = { A: "#202020", B: "#303030", D: "#F0F0F0", E: "#808080", Inconnu: "#808080" };
+  const r = groupesACerner(["A", "B", "E", "D", "Inconnu"], g => c[g]);
+  assert.deepEqual([...r], ["B", "Inconnu"]);
+  assert.equal(groupesACerner([], g => c[g]).size, 0);
+});

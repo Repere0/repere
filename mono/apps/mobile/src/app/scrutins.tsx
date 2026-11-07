@@ -21,6 +21,8 @@ import {
 } from "../lib/donnees";
 import { Page } from "../ui/page";
 import { Hemicycle } from "../ui/hemicycle";
+import { StatCard } from "../ui/donnees";
+import { useCouleurVote } from "../lib/couleur-vote";
 import { Vide } from "../lib/composants";
 import { PastilleSource } from "../ui/source";
 import { feuille, PAS, TYPO, couleurs, CIBLE, RAYON, OMBRE, POLICE } from "../lib/theme";
@@ -89,14 +91,14 @@ function textePropre(value: string | null | undefined) {
     .trim();
 }
 
+/* 07/11/2026 : les trois nombres en grand, comme sur l'écran du vote (StatCard, couleurs de vote D24). */
 function StatutVote({ detail }: { detail: Detail }) {
+  const COULEUR = useCouleurVote();
   return (
-    <View style={s.resultat} accessible accessibilityLabel={resultatDecompteCourt(detail.dec)}>
-      <View style={s.stat}><Text style={s.statNombre}>{nombreDecompte(detail.dec.pour)}</Text><Text style={s.statLibelle}>pour</Text></View>
-      <View style={s.statSep} />
-      <View style={s.stat}><Text style={s.statNombre}>{nombreDecompte(detail.dec.contre)}</Text><Text style={s.statLibelle}>contre</Text></View>
-      <View style={s.statSep} />
-      <View style={s.stat}><Text style={s.statNombre}>{nombreDecompte(detail.dec.abstentions)}</Text><Text style={s.statLibelle}>abstention</Text></View>
+    <View style={{ flexDirection: "row", gap: PAS * 3 }} accessible accessibilityLabel={resultatDecompteCourt(detail.dec)}>
+      <StatCard valeur={nombreDecompte(detail.dec.pour)} libelle="Pour" couleur={COULEUR.p} />
+      <StatCard valeur={nombreDecompte(detail.dec.contre)} libelle="Contre" couleur={COULEUR.c} />
+      <StatCard valeur={nombreDecompte(detail.dec.abstentions)} libelle="Abstention" couleur={COULEUR.a} />
     </View>
   );
 }
@@ -418,7 +420,7 @@ const s = feuille(() => StyleSheet.create({
   resumeEntete: {
     backgroundColor: couleurs.carte, borderRadius: RAYON.carte, padding: PAS * 5, gap: 2, ...OMBRE,
   },
-  resumeNombre: { fontFamily: POLICE.affiche, fontSize: 34, lineHeight: 38, color: couleurs.encre, marginTop: PAS },
+  resumeNombre: { ...TYPO.stat, marginTop: PAS },
   resumePhrase: { fontSize: 16, lineHeight: 22, color: couleurs.sourd },
   recherche: {
     minHeight: CIBLE, backgroundColor: couleurs.carte, borderWidth: 1, borderColor: couleurs.trait,
@@ -437,14 +439,6 @@ const s = feuille(() => StyleSheet.create({
     backgroundColor: couleurs.carte, borderRadius: RAYON.carte, padding: PAS * 5, gap: PAS * 3, ...OMBRE,
   },
   phraseResultat: { fontFamily: POLICE.titre, fontSize: 20, lineHeight: 26, color: couleurs.encre },
-  resultat: {
-    flexDirection: "row", alignItems: "center", justifyContent: "space-around",
-    paddingTop: PAS * 2,
-  },
-  stat: { alignItems: "center", minWidth: 72, flex: 1 },
-  statNombre: { fontFamily: POLICE.affiche, fontSize: 30, lineHeight: 34, color: couleurs.encre },
-  statLibelle: { fontSize: 14, lineHeight: 19, color: couleurs.sourd, marginTop: 2 },
-  statSep: { width: 1, height: 42, backgroundColor: couleurs.trait },
   groupes: {
     backgroundColor: couleurs.carte, borderRadius: RAYON.carte, overflow: "hidden",
     borderWidth: 1, borderColor: couleurs.trait,

@@ -158,35 +158,13 @@ export function dossierDuScrutin(sc) {
   };
 }
 
-/* CE QU'IL FAUT RETENIR (07/11/2026) : une phrase ECRITE PAR UN GABARIT a partir du seul
- * decompte officiel, jamais d'un avis. Quatre cas, dans cet ordre :
- *  - aucune voix contre ni abstention : unanimite des deputes ayant pris part au vote ;
- *  - aucune voix contre, des abstentions : « sans aucune voix contre » (PAS « unanimite ») ;
- *  - aucune voix pour : « sans aucune voix pour » ;
- *  - sinon : l'ecart pour/contre, annonce comme un calcul de Repere (invariant 4).
- * Decompte incomplet : null, et l'encart n'existe pas (invariant 5). */
-export function retenirDuScrutin(sc) {
-  const dec = sc && sc.dec;
-  if (!dec || decompteAbsent(dec.pour) || decompteAbsent(dec.contre) || decompteAbsent(dec.abstentions)) return null;
-  const p = Number(dec.pour), c = Number(dec.contre), a = Number(dec.abstentions);
-  if (p + c + a <= 0) return null;
-  const n = v => v.toLocaleString("fr-FR");
-  const sort = sc.s === "adopté" ? "Adopté" : sc.s === "rejeté" ? "Rejeté" : "Scrutin";
-  const abst = `${n(a)} député${a > 1 ? "s se sont abstenus" : " s'est abstenu"}`;
-  if (c === 0 && a === 0 && p > 0) return { phrase: `${sort} à l'unanimité des ${n(p)} députés ayant pris part au vote.`, calcul: false };
-  if (c === 0 && p > 0) return { phrase: `${sort} sans aucune voix contre. ${abst}.`, calcul: false };
-  if (p === 0 && c > 0) return { phrase: `${sort} sans aucune voix pour.${a ? " " + abst + "." : ""}`, calcul: false };
-  const e = Math.abs(p - c);
-  if (e === 0) return { phrase: `Autant de voix pour que de voix contre : ${n(p)} de chaque côté.`, calcul: false };
-  return {
-    phrase: `${sort} avec ${n(e)} voix ${p > c ? "pour" : "contre"} de plus que ${p > c ? "contre" : "pour"}.`,
-    calcul: true,
-  };
-}
-
 /* La ligne de metadonnees sous le titre, sans le decompte (il est affiche en grand). */
 export function metaScrutin(sc) {
   const proc = procedure(sc.t);
   const sort = sc.s === "adopté" ? "Texte adopté" : sc.s === "rejeté" ? "Texte rejeté" : "Scrutin";
   return `${sort} le ${dateFr(sc.d)}${proc ? " · " + proc.charAt(0).toUpperCase() + proc.slice(1) : ""}`;
 }
+
+/* Le statut du scrutin pour le badge : « p » si adopte (le pour l'a emporte), « c » si rejete,
+   null sinon (aucun badge : on n'interprete pas un autre resultat). */
+export const resultatScrutin = sc => (sc && sc.s === "adopté" ? "p" : sc && sc.s === "rejeté" ? "c" : null);

@@ -30,12 +30,13 @@ import { messageVote, VERBE } from "../ui/partage/messages";
 import { useEffect, useState } from "react";
 import { Animated, Linking, Modal, Pressable, ScrollView, Share, Text, View } from "react-native";
 import { router, Stack, useLocalSearchParams } from "expo-router";
-import { chaineDecision, copieVoteVide, dateFr, debutDeMandat, decompte, ETAT_VOTE, LIBELLES, lienScrutin, repartitionVote, titreLisible } from "@repere/core";
+import { chaineDecision, copieVoteVide, dateCourte, dateFr, debutDeMandat, decompte, ETAT_VOTE, LIBELLES, lienScrutin, repartitionVote, titreLisible } from "@repere/core";
 import { Repartition } from "../ui/visuels";
 import { Carte, Vide } from "../lib/composants";
 import { chargerEvenements } from "../lib/donnees";
 import { srcElus, srcScrutins } from "../lib/sources";
-import { couleurs, CIBLE, PAS, RAYON, TYPO, type Echelon } from "../lib/theme";
+import { couleurs, CIBLE, OMBRE, PAS, POLICE, RAYON, TYPO, type Echelon } from "../lib/theme";
+import { DataBadge } from "../ui/donnees";
 import { useCouleurVote } from "../lib/couleur-vote";
 import { PourquoiJeVois } from "../ui/pourquoi";
 import { AvecPicto } from "../ui/picto";
@@ -58,7 +59,6 @@ type Resume = { id: string; axes?: string; src?: string; srcn?: string };
 const PARTI_NON_PUBLIE = "Parti : non publié par la source. Repère ne le déduit pas.";
 const POSITION: Record<string, string> = { p: "Pour", c: "Contre", a: "Abstention" };
 /* Signes de texte (variante texte forcee, pas d'emoji), colores selon le sens du vote (D24). */
-const SIGNE: Record<string, string> = { p: "✓︎", c: "✕︎", a: "○︎" };
 const SYNTHESE = 3;
 
 function Initiales({ nom }: { nom: string }) {
@@ -86,14 +86,14 @@ function CarteVote({ f, onComprendre }: { f: FaitElu; onComprendre: () => void }
   const rep = repartitionVote(f.sc);
   const qui = f.qui;
   return (
-    <View style={{ gap: PAS * 2, padding: PAS * 4, borderRadius: RAYON.bloc, backgroundColor: couleurs.carte, borderWidth: 1, borderColor: couleurs.trait }}
+    <View style={{ gap: PAS * 3, padding: PAS * 4, borderRadius: RAYON.bloc, backgroundColor: couleurs.carte, borderWidth: 1, borderColor: couleurs.trait, ...OMBRE }}
       accessibilityLabel={`${dateFr(f.sc.d)} : ${POSITION[pos]} sur ${titreLisible(f.sc.t)}`}>
+      {/* 07/11/2026 : la position dans un badge écrit, la date en chiffres (forme commune des listes). */}
       <View style={{ flexDirection: "row", alignItems: "center", gap: PAS * 2 }}>
-        <Text accessibilityElementsHidden importantForAccessibility="no" style={{ fontSize: 18, fontWeight: "600", color: COULEUR_VOTE[pos as keyof typeof COULEUR_VOTE] ?? couleurs.encre, width: 20 }}>{SIGNE[pos]}</Text>
-        <Text style={[TYPO.corps, { fontWeight: "600" }]}>{POSITION[pos]}</Text>
-        <Text style={[TYPO.micro, { marginLeft: "auto" }]}>{dateFr(f.sc.d)}</Text>
+        <DataBadge texte={POSITION[pos]} couleur={COULEUR_VOTE[pos as keyof typeof COULEUR_VOTE]} />
+        <Text style={[TYPO.donnee, { marginLeft: "auto" }]}>{dateCourte(f.sc.d)}</Text>
       </View>
-      <Text style={TYPO.corps} numberOfLines={3}>{titreLisible(f.sc.t)}</Text>
+      <Text style={[TYPO.corps, { fontFamily: POLICE.titre }]} numberOfLines={3}>{titreLisible(f.sc.t)}</Text>
       {/* V13 bloc C : la micro-jauge du scrutin entier, et son decompte en toutes lettres. */}
       {rep ? (
         <View style={{ gap: PAS }}>

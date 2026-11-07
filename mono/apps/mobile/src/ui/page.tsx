@@ -40,7 +40,7 @@ export function Question({ etiquette, question, sous }: { etiquette?: string; qu
   return (
     <View style={{ gap: PAS * 2, marginBottom: PAS * 1 }}>
       {etiquette ? <Etiquette texte={etiquette} /> : null}
-      <Text style={TYPO.question} accessibilityRole="header">{insecable(question)}</Text>
+      <Text style={TYPO.affiche} accessibilityRole="header">{insecable(question)}</Text>
       {sous ? <Text style={TYPO.note}>{sous}</Text> : null}
     </View>
   );

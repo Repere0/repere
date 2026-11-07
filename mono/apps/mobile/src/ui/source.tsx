@@ -18,8 +18,9 @@ import { Linking, Modal, Pressable, ScrollView, StyleSheet, Text, View } from "r
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { CALCUL_REPERE, dateFr, datePublication, ligneSource } from "@repere/core";
 import { useCommuneChoisie } from "../lib/useCommune";
-import { feuille, couleurs, CIBLE, PAS, RAYON, TYPO } from "../lib/theme";
+import { feuille, couleurs, CIBLE, PAS, POLICE, RAYON, TYPO } from "../lib/theme";
 import { Etiquette } from "./resume";
+import { Ionicons } from "@expo/vector-icons";
 
 export type InfoSource = {
   producteur?: string; licence?: string; maj?: string; mention?: string; url?: string;
@@ -65,7 +66,11 @@ export function PastilleSource({ source, quoi, court, nom }: { source: InfoSourc
       >
         {/* Invariant 4 : un calcul se dit calcul, a l'oeil aussi, pas seulement
             au lecteur d'ecran ni derriere un geste. */}
-        <Text style={s.lien}>{source.methode ? (court ? "ⓘ Calcul Repère" : "ⓘ Calculé par Repère · source") : `ⓘ ${nom || "Source"}`}{quoi ? " " + quoi : ""}</Text>
+        {/* 07/11/2026 : une forme pour toutes les sources, petit texte gris et icône de lien. */}
+        <View style={{ flexDirection: "row", alignItems: "center", gap: PAS }}>
+          <Ionicons name={source.methode ? "calculator-outline" : "link-outline"} size={14} color={couleurs.sourd} accessible={false} importantForAccessibility="no" />
+          <Text style={s.lien}>{source.methode ? (court ? "Calcul Repère" : "Calculé par Repère · source") : (nom || "Source")}{quoi ? " " + quoi : ""}</Text>
+        </View>
       </Pressable>
       <FeuilleSource source={source} visible={ouverte} onFermer={() => setOuverte(false)} />
     </>
@@ -123,7 +128,7 @@ export function FeuilleSource({ source, visible, onFermer }: { source: InfoSourc
 
 const s = feuille(() => StyleSheet.create({
   zone: { alignSelf: "flex-start", minHeight: CIBLE, justifyContent: "center", paddingRight: PAS * 3 },
-  lien: { fontSize: 14, fontWeight: "500", color: couleurs.sourd },
+  lien: { ...TYPO.micro, fontFamily: POLICE.texteMoyen },
   feuille: { padding: PAS * 6, gap: PAS * 5 },
   bloc: { gap: PAS * 2, padding: PAS * 4, borderRadius: RAYON.bloc, backgroundColor: couleurs.carte },
   bouton: { minHeight: CIBLE + 4, borderRadius: RAYON.bloc, backgroundColor: couleurs.ville, alignItems: "center", justifyContent: "center", paddingHorizontal: PAS * 4 },

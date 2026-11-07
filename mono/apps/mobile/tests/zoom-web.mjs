@@ -85,13 +85,13 @@ async function ouvrir(niveau, chemin) {
     if (!localStorage.getItem("repere.profil")) localStorage.setItem("repere.profil", JSON.stringify({ niveauZoom: "tout", tailleTexte: 16, espacement: 1.5, contraste: "normal", policeDyslexie: false, animationsReduites: false, modeDaltonien: false, masquerImages: false }));
   });
   await p.goto(BASE + "/", { waitUntil: "networkidle" });
-  await p.getByRole("link", { name: "Confort de lecture ›" }).click();
+  await p.getByRole("link", { name: "Confort de lecture" }).click();
   await p.getByRole("radio", { name: /Texte de 22 points/ }).click();
   await p.waitForTimeout(600);
   const gardé = await p.evaluate(() => JSON.parse(localStorage.getItem("repere.profil") || "{}").tailleTexte);
   verifier(gardé === 22, "confort : la taille 22 est gardée dans repere.profil");
   await p.goto(BASE + "/", { waitUntil: "networkidle" });
-  await p.getByRole("link", { name: "Confort de lecture ›" }).click();
+  await p.getByRole("link", { name: "Confort de lecture" }).click();
   await p.getByRole("radio", { name: /Texte de 22 points, choisi/ }).first().waitFor({ timeout: 10000 });
   verifier(true, "confort : la taille choisie est retrouvée après rechargement");
   await p.close();
