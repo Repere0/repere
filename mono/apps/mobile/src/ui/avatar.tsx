@@ -26,8 +26,9 @@ export function initiales(nom: string): string {
  * Une prop de vue native est figée en développement, et le Proxy ne le supporte pas (crash de l'onglet Élus). */
 /* V62 : le groupe vient de l'appelant (un depute seulement) ; sans lui, le gris « Inconnu ». */
 /* `doux` (07/11/2026) : fond neutre, initiales en encre, contour de la couleur du groupe. */
-export function Avatar({ nom, taille = 64, photo, groupe, doux }: { nom: string; taille?: number; photo?: PhotoElu | null; groupe?: string | null; doux?: boolean }) {
-  const fond = couleurGroupe(groupe || GROUPE_INCONNU);
+/* `fond` : une autre couleur que celle du groupe (l'échelon, dans « Qui décide »). */
+export function Avatar({ nom, taille = 64, photo, groupe, doux, fond: autreFond }: { nom: string; taille?: number; photo?: PhotoElu | null; groupe?: string | null; doux?: boolean; fond?: string }) {
+  const fond = autreFond || couleurGroupe(groupe || GROUPE_INCONNU);
   const { profil } = useProfil();
   /* V26 bloc 3 : « Masquer les images » du confort de lecture garde les initiales. */
   if (photo && !profil?.masquerImages) {

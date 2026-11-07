@@ -19,6 +19,7 @@ import { chargerFiches } from "../../lib/annuaire";
 import { Vide } from "../../lib/composants";
 import { couleurs, CIBLE, PAS, RAYON, TYPO } from "../../lib/theme";
 import { Avatar } from "../../ui/avatar";
+import { CarteListe, Puces, StatCard } from "../../ui/donnees";
 import { Loupe } from "../../ui/loupe";
 import { DatePublication } from "../../ui/fraicheur";
 import { SquelettesListe } from "../../ui/squelette";
@@ -64,7 +65,7 @@ export default function Elus() {
         ListHeaderComponent={
           <View style={{ gap: PAS * 3 }}>
             <DatePublication />
-            <Text style={TYPO.question} accessibilityRole="header">Élus</Text>
+            <Text style={TYPO.affiche} accessibilityRole="header">Élus</Text>
             <Text style={TYPO.corps}>Les députés et les exécutifs régionaux publiés par Repère. Chaque nom porte sa source.</Text>
             <View style={{ flexDirection: "row", alignItems: "center", gap: PAS * 2, minHeight: CIBLE + 8, borderRadius: 999, borderWidth: 1.5,
               borderColor: couleurs.trait, backgroundColor: couleurs.carte, paddingLeft: PAS * 4 }}>
@@ -75,7 +76,9 @@ export default function Elus() {
                 style={{ flex: 1, minHeight: CIBLE + 8, paddingHorizontal: PAS * 2, fontSize: 17, color: couleurs.encre }} />
             </View>
             {etat === ETATS.SERVI ? (
-              <Text style={TYPO.note}>{trouves.length} élu{trouves.length > 1 ? "s" : ""} affiché{trouves.length > 1 ? "s" : ""}.</Text>
+              <View style={{ flexDirection: "row" }}>
+                <StatCard valeur={trouves.length.toLocaleString("fr-FR")} libelle={`élu${trouves.length > 1 ? "s" : ""} affiché${trouves.length > 1 ? "s" : ""}`} />
+              </View>
             ) : null}
             {etat === ETATS.EN_COURS ? <SquelettesListe n={5} hauteur={68} /> : null}
             {etat !== ETATS.SERVI && etat !== ETATS.EN_COURS && phrase ? (
@@ -92,10 +95,12 @@ export default function Elus() {
         ListFooterComponent={
           etat === ETATS.SERVI ? (
             <View style={{ gap: PAS * 2, marginTop: PAS * 4 }}>
-              <Text style={TYPO.note}>Ce qui n'est pas dans cet annuaire, et pourquoi :</Text>
-              <Text style={TYPO.note}>• Les maires, adjoints et conseillers municipaux, et les conseillers départementaux et régionaux : leurs données sont rangées par département et ne sont pas encore dans l'annuaire.</Text>
-              <Text style={TYPO.note}>• Le parti : les groupes politiques ne sont pas publiés dans les données de Repère.</Text>
-              <Text style={TYPO.note}>• Les photos : les données publiées n'en portent pas. Les initiales tiennent lieu d'image.</Text>
+              <Text style={TYPO.etiquette}>Ce qui n'est pas dans cet annuaire, et pourquoi</Text>
+              <Puces items={[
+                { icone: "home-outline", texte: "Les maires, adjoints et conseillers municipaux, et les conseillers départementaux et régionaux : leurs données sont rangées par département et ne sont pas encore dans l'annuaire." },
+                { icone: "flag-outline", texte: "Le parti : les groupes politiques ne sont pas publiés dans les données de Repère." },
+                { icone: "image-outline", texte: "Les photos : les données publiées n'en portent pas. Les initiales tiennent lieu d'image." },
+              ]} />
             </View>
           ) : undefined
         }
@@ -103,16 +108,10 @@ export default function Elus() {
            s'affichent d'emblee, pour qu'une liste qui defile ne clignote pas. */
         renderItem={({ item, index }) => {
           const fiche = (
-            <Pressable onPress={() => router.push({ pathname: "/annuaire-fiche", params: { ...item } })} accessibilityRole="button"
-              accessibilityLabel={`${item.nom}, ${item.fonction}, ${item.lieu}`}
-              style={({ pressed }) => ({ minHeight: CIBLE + 8, flexDirection: "row", alignItems: "center", gap: PAS * 3, padding: PAS * 3,
-                borderRadius: RAYON.bloc, backgroundColor: couleurs.carte, opacity: pressed ? 0.7 : 1 })}>
-              <Avatar nom={item.nom} taille={44} />
-              <View style={{ flex: 1, gap: 2 }}>
-                <Text style={[TYPO.corps, { fontWeight: "600" }]}>{item.nom}</Text>
-                <Text style={TYPO.note}>{item.fonction} · {item.lieu}</Text>
-              </View>
-            </Pressable>
+            <CarteListe onPress={() => router.push({ pathname: "/annuaire-fiche", params: { ...item } })}
+              etiquette={`${item.nom}, ${item.fonction}, ${item.lieu}`} titre={item.nom} gauche={<Avatar nom={item.nom} taille={44} />}>
+              <Text style={TYPO.note}>{item.fonction} · {item.lieu}</Text>
+            </CarteListe>
           );
           return index < 8 ? <Entree delai={index * 40}>{fiche}</Entree> : fiche;
         }}

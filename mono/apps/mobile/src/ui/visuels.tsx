@@ -9,6 +9,7 @@
  *     d'echelon seulement) ;
  *   - les nombres viennent de @repere/core (visuels.js), jamais d'ici.
  * Construites avec des View : aucune bibliotheque de graphiques. */
+import { Avatar } from "./avatar";
 import { useState, type ReactNode } from "react";
 import { Animated, Pressable, StyleSheet, Text, View } from "react-native";
 import { feuille, couleurs, PAS, RAYON, TEINTES, TYPO, CIBLE, type Echelon } from "../lib/theme";
@@ -247,10 +248,12 @@ export function Chaine({ niveaux, compact, surNom }: { niveaux: Niveau[]; compac
                 30/09/2026, controle « contraste AA » du parcours). */}
             <Text style={TYPO.etiquette}>{n.niveau}{n.lieu && !compact ? " · " + n.lieu : ""}</Text>
             {n.personne && surNom && !compact ? (
+              /* 07/11/2026 : l'avatar (initiales sur la couleur de l'ÉCHELON, jamais d'un parti) à côté du nom. */
               <Pressable onPress={() => surNom(n)} accessibilityRole="link"
                 accessibilityLabel={`Voir la fiche de ${n.personne.nom}, ${n.personne.role}`}
-                style={({ pressed }) => ({ minHeight: 48, justifyContent: "center", opacity: pressed ? 0.6 : 1 })}>
-                <Text style={[TYPO.reponse, { color: couleurs.lien, textDecorationLine: "underline" }]}>{n.personne.nom}</Text>
+                style={({ pressed }) => ({ minHeight: 48, flexDirection: "row", alignItems: "center", gap: PAS * 3, opacity: pressed ? 0.6 : 1 })}>
+                <Avatar nom={n.personne.nom} taille={44} fond={(pointEchelon(n.echelon) as { backgroundColor: string }).backgroundColor} />
+                <Text style={[TYPO.reponse, { flex: 1, color: couleurs.lien, textDecorationLine: "underline" }]}>{n.personne.nom}</Text>
               </Pressable>
             ) : n.personne ? (
               <Text style={compact ? [TYPO.corps, { fontWeight: "600" }] : TYPO.reponse}>{n.personne.nom}</Text>
