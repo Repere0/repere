@@ -27,7 +27,6 @@
  * RIEN N'EST CALCULE ICI : @repere/core derive, lib/absences.ts dit les absences. */
 import { Ionicons } from "@expo/vector-icons";
 import { Pression } from "../../ui/pression";
-import { StatCard } from "../../ui/donnees";
 import { useEffect, useState } from "react";
 import { Linking, Text, View } from "react-native";
 import { actusFlux, chargerActuellesRss, chargerMairies } from "../../lib/donnees";
@@ -158,7 +157,6 @@ export default function ChezVous() {
           {d.exercice && hab && hab.depenses !== null ? (
             <Reponse echelon="ville"
               phrase={`En ${d.exercice.an}, ${nom} a dépensé ${hab.depenses.toLocaleString("fr-FR")} € par habitant.`}
-              preuve={<View style={{ flexDirection: "row" }}><StatCard valeur={`${hab.depenses.toLocaleString("fr-FR")} €`} libelle={`par habitant · ${d.exercice.an}`} /></View>}
               note={maire ? `Le maire, ${maire}, prépare ce budget ; le conseil municipal le vote.` : "Le maire prépare ce budget ; le conseil municipal le vote."}
               sources={<>
                 <PastilleSource court nom="Budget" source={srcComptesPublies(d)} />
@@ -233,7 +231,7 @@ export default function ChezVous() {
                 { t: "Dictionnaire citoyen", i: "book-outline", o: () => router.push("/dictionnaire") },
                 { t: LIBELLES.sources, i: "link-outline", o: () => router.push("/sources") },
               ] as { t: string; i: keyof typeof Ionicons.glyphMap; o: () => void }[]).map(x => (
-                <Pression key={x.t} onPress={x.o} role="link" etiquette={x.t}
+                <Pression key={x.t} onPress={x.o} etiquette={x.t}
                   style={{ width: "48%", flexGrow: 1, minHeight: 84, gap: PAS * 2, padding: PAS * 4, borderRadius: RAYON.bloc, backgroundColor: couleurs.carte, borderWidth: 1, borderColor: couleurs.trait, justifyContent: "space-between" }}>
                   <Ionicons name={x.i} size={22} color={couleurs.encre} accessible={false} importantForAccessibility="no" />
                   <Text style={[TYPO.corps, { fontFamily: POLICE.titre }]}>{x.t}</Text>

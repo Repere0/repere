@@ -20,9 +20,10 @@ function useCompte(cible: number): number {
   const [n, setN] = useState(reduit ? cible : 0);
   useEffect(() => {
     if (reduit || cible <= 0) { setN(cible); return; }
-    const debut = Date.now();
+    /* Compté en pas (50 x 16 ms), pas en heure : une horloge figée (tests, veille) ne bloque pas le compte. */
+    let pas = 0;
     const id = setInterval(() => {
-      const t = Math.min(1, (Date.now() - debut) / 800);
+      const t = Math.min(1, ++pas / 50);
       setN(Math.round(cible * (1 - Math.pow(1 - t, 3))));
       if (t >= 1) clearInterval(id);
     }, 16);
