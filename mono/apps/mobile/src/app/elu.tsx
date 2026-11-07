@@ -187,7 +187,11 @@ export default function Elu() {
       /* La cle de la photo (D27) : l'identifiant de l'Assemblee pour un depute (nom complet
          identique dans deputes.json), « M » + INSEE pour le maire de la commune choisie. */
       const deps = ((r.deputes && r.deputes.deputes) || {}) as Record<string, { prenom?: string; nom?: string; acteurRef?: string }>;
-      const refDepute = depute ? Object.values(deps).find(x => [x.prenom, x.nom].filter(Boolean).join(" ") === nom)?.acteurRef : undefined;
+      const entreeDepute = depute ? Object.entries(deps).find(([, x]) => [x.prenom, x.nom].filter(Boolean).join(" ") === nom) : undefined;
+      const refDepute = entreeDepute?.[1].acteurRef;
+      /* 07/11/2026 : la photo d'un député est rangée par SON département (clé « 94-10 »), pas par
+         celui de la commune choisie : une fiche ouverte depuis un groupe la cherchait au mauvais endroit. */
+      const depPhoto = entreeDepute ? entreeDepute[0].split("-")[0] : r.d.dep;
       const estMaire = echelon === "ville" && !!r.d.fiche && !!r.d.fiche.maire && r.d.fiche.maire.nom === nom;
       const clePhoto = refDepute || (estMaire && choix ? "M" + choix.insee : null);
       /* Le groupe du depute, par son identifiant ; « Inconnu » pour un maire ou sans entree dans la table. */
@@ -208,12 +212,6 @@ export default function Elu() {
       const recents = votes.slice(0, SYNTHESE);
       const comptes: Record<string, number> = { p: 0, c: 0, a: 0 };
       recents.forEach(f => { if (f.position) comptes[f.position] = (comptes[f.position] || 0) + 1; });
-      /* V29 bloc 4 : la phrase dit ce que le député a fait ; le décompte détaillé reste juste dessous. */
-      const accroche = recents.length === 0 ? null
-        : recents.length === 1 ? `Sur son dernier vote publié, ${nom} ${VERBE[recents[0].position as string]}`
-        : comptes.p === 0 ? `Sur ses ${recents.length} derniers votes publiés, il n'a voté pour aucun.`
-        : `Sur ses ${recents.length} derniers votes publiés, il a voté pour ${comptes.p} fois.`;
-      const decompteElu = recents.length > 1 ? `${comptes.p} pour, ${comptes.c} contre, ${comptes.a} abstention${comptes.a > 1 ? "s" : ""}.` : null;
       const releveVotes = r.index?.sources?.scrutins?.releve_le;
       const lienElus = srcElus(r.srcElus ?? null)?.url ?? null;
       const partager = () => Share.share({
@@ -227,7 +225,7 @@ export default function Elu() {
           <Animated.View style={{ opacity: apparition, gap: PAS * 4 }}>
             {/* Identite */}
             <View style={{ flexDirection: "row", gap: PAS * 4, alignItems: "center" }}>
-              <PhotoOuInitiales nom={nom} dep={r.d.dep} cle={clePhoto} groupe={groupe} />
+              <PhotoOuInitiales nom={nom} dep={depPhoto} cle={clePhoto} groupe={groupe} />
               <View style={{ flex: 1, gap: 8 }}>
                 {/* Audit 5 s (V19) : pas d'etiquette quand le role la dit deja (« Assemblée nationale »
                     au-dessus de « À l'Assemblée nationale pour votre circonscription »). */}
@@ -235,10 +233,6 @@ export default function Elu() {
                   question={nom} sous={libelleRole || undefined} />
               </View>
             </View>
-            <CreditDe dep={r.d.dep} cle={clePhoto} />
-            {/* V30 bloc 3 : contacter l'élu. Les données ne portent pas de courriel : le lien va à la source officielle. */}
-            <ContacterElu nom={nom} courriel={(p as { courriel?: string | null }).courriel ?? null} lienSource={lienElus}
-              sourceNom="Répertoire national des élus" />
             {/* Groupe : identifie l'élu. Gris « Inconnu » tant que le lien n'est pas publié. */}
             {depute ? <BadgeGroupe groupe={groupe} /> : null}
             {/* V13 bloc A : la date de ce qu'affiche la fiche (les votes pour un depute,
@@ -250,16 +244,21 @@ export default function Elu() {
             {/* LA SYNTHESE : ses trois votes publies les plus recents. */}
             {depute ? (
               <View style={{ gap: PAS * 3 }}>
-                {accroche ? (
+                {/* 07/11/2026 : une ligne de compte au lieu de la phrase et du décompte (même calcul). */}
+                {recents.length ? (
                   <View style={{ flexDirection: "row", alignItems: "center", gap: PAS }}>
-                    <Text style={[TYPO.corps, { fontWeight: "600", flex: 1 }]} accessibilityRole="header">{accroche}</Text>
-                    <PourquoiJeVois etiquette={`la phrase sur les votes de ${nom}`}
+                    <View style={{ flex: 1, gap: 2 }}>
+                      <Text style={TYPO.etiquette}>{recents.length > 1 ? `Ses ${recents.length} derniers votes publiés` : "Son dernier vote publié"}</Text>
+                      <Text style={[TYPO.donnee, { fontSize: 14, lineHeight: 20, color: couleurs.encre }]} accessibilityRole="header">
+                        {comptes.p} pour · {comptes.c} contre · {comptes.a} abstention{comptes.a > 1 ? "s" : ""}
+                      </Text>
+                    </View>
+                    <PourquoiJeVois etiquette={`le compte des votes de ${nom}`}
                       p={{ source: { texte: `Assemblée nationale, ses ${recents.length} derniers votes publiés`, lien: null },
-                        calcul: "Repère compte les positions (pour, contre, abstention) de ces votes, puis écrit la phrase à partir de ce compte. Il n'y a pas d'autre calcul.",
+                        calcul: "Repère compte les positions (pour, contre, abstention) de ces votes. Il n'y a pas d'autre calcul.",
                         ici: "Affiché parce que ce sont les votes publiés les plus récents de cet élu, dans sa fiche." }} />
                   </View>
                 ) : null}
-                {decompteElu ? <Text style={TYPO.note}>Décompte : {decompteElu}</Text> : null}
                 <AvecPicto picto="vote"><Text style={TYPO.etiquette} accessibilityRole="header">Ses derniers votes</Text></AvecPicto>
                 {votes.length ? votes.slice(0, SYNTHESE).map(f => (
                   <CarteVote key={f.sc.n} f={f} onComprendre={() => setOuvert(f)} />
@@ -317,6 +316,14 @@ export default function Elu() {
             ]} />
 
             {/* V30 bloc 4 : signaler une erreur, avec la fiche et son texte pré-remplis. */}
+            {/* 07/11/2026 : le contact et le crédit de la photo, en bas. Le crédit reste VISIBLE
+                (D27 et licence CC BY-SA : auteur, licence et source affichés) ; le contact passe
+                dans l'accordéon. */}
+            <CreditDe dep={depPhoto} cle={clePhoto} />
+            <Details titre="Informations sur les données">
+              <ContacterElu nom={nom} courriel={(p as { courriel?: string | null }).courriel ?? null} lienSource={lienElus}
+                sourceNom="Répertoire national des élus" />
+            </Details>
             <SignalerErreur contexte={`la fiche de ${nom}`} donnee={[nom, libelleRole, p.institution].filter(Boolean).join(" · ")} />
 
             <Carte titre="D'où viennent ces informations">

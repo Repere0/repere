@@ -12,6 +12,7 @@
  * celle de Melun, annoncee comme un exemple. La seconde est un vote fige (depute
  * 77-1, scrutin 8706, verifie le 30/10/2026), annonce lui aussi comme un exemple.
  * Le partage n'est plus sur l'accueil : il est sur les ecrans de contexte (src/ui/partage). */
+import { espacesFines } from "../ui/donnees";
 import { useEffect, useMemo, useState } from "react";
 import { FlatList, KeyboardAvoidingView, Linking, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View, useWindowDimensions } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -180,6 +181,7 @@ const ACCES: { ouvrir: () => void; texte: string; etiquette: string; icone: keyo
   { ouvrir: () => router.push("/mes-elus"), texte: "Mes élus", etiquette: "Mes élus : qui vous représente", icone: "people", couleur: ECHELONS_PAR_MODE.sombre.ville },
   { ouvrir: () => router.push("/voter"), texte: "Ma voix", etiquette: "Ma voix : prochaines élections, guide du vote et du conseil municipal", icone: "checkbox", couleur: ECHELONS_PAR_MODE.sombre.dept },
   { ouvrir: () => router.push("/pour-vous"), texte: "Pour vous", etiquette: "Pour vous : ce qui a été publié selon votre vue", icone: "bookmark", couleur: ECHELONS_PAR_MODE.sombre.region },
+  { ouvrir: () => router.push("/scrutins"), texte: "L'Assemblée", etiquette: "L'Assemblée : sa composition et ses votes publics", icone: "business", couleur: ECHELONS_PAR_MODE.sombre.france },
 ];
 
 export default function Accueil() {
@@ -369,7 +371,7 @@ export default function Accueil() {
                         Rien n'est retiré : ce qui était affiché reste à un geste. */}
                     <Text style={s.carteTitre}>{accroche(argent)}</Text>
                     <View style={{ flexDirection: "row", alignItems: "baseline", flexWrap: "wrap", columnGap: PAS * 2 }}>
-                      <Text style={s.chiffre}>{argent.depenses.toLocaleString("fr-FR")} €</Text>
+                      <Text style={s.chiffre}>{espacesFines(`${argent.depenses.toLocaleString("fr-FR")} €`)}</Text>
                       <Text style={s.legende}>par habitant · {argent.an}</Text>
                       <PourquoiJeVois etiquette={`le montant de ${argent.nom}`} couleur={D.encre} fond={D.voile}
                         p={{ source: { texte: `Observatoire des finances et de la gestion publique locales (OFGL), comptes ${argent.an}${(index as any)?.sources?.comptes?.maj ? `, publiés le ${dateFr((index as any).sources.comptes.maj)}` : ""}`, lien: urlComptes },
@@ -631,9 +633,9 @@ const s = feuille(() => StyleSheet.create({
   /* Taille 26 : la pastille « Chercher » passe sous le logo au lieu de sortir de la marge. */
   barreHaut: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
   outil: { width: CIBLE, height: CIBLE, alignItems: "center", justifyContent: "center" },
-  tuiles: { flexDirection: "row", gap: PAS * 2 },
+  tuiles: { flexDirection: "row", flexWrap: "wrap", gap: PAS * 2 },
   /* Fond D.voile : la teinte demandée par le porteur à 3 unités près, sans couleur hors palette. */
-  tuile: { flex: 1, minHeight: 76, gap: PAS * 2, padding: PAS * 3, borderRadius: RAYON.bloc, backgroundColor: D.voile, justifyContent: "space-between" },
+  tuile: { width: "48%", flexGrow: 1, minHeight: 76, gap: PAS * 2, padding: PAS * 3, borderRadius: RAYON.bloc, backgroundColor: D.voile, justifyContent: "space-between" },
   tuileTexte: { fontFamily: POLICE.titre, fontSize: 15, lineHeight: 20, color: D.encre },
   marque: { fontFamily: POLICE.affiche, fontSize: 26, color: D.encre },
   chercher: { minHeight: 72, borderRadius: RAYON.carte, backgroundColor: D.carte, borderWidth: 1, borderColor: D.trait, paddingHorizontal: PAS * 5, flexDirection: "row", alignItems: "center", gap: PAS * 3, marginTop: PAS * 4, ...OMBRE_PAR_MODE.sombre },

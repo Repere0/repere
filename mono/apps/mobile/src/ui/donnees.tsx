@@ -10,14 +10,14 @@ import { StyleSheet, Text, View } from "react-native";
 import { Pression } from "./pression";
 import { Ionicons } from "@expo/vector-icons";
 import { feuille, couleurs, OMBRE, PAS, POLICE, RAYON, TYPO } from "../lib/theme";
-import { texteSur } from "../lib/groupes";
+import { bordureGroupe, texteSur } from "../lib/groupes";
 import { phrasesDe } from "@repere/core";
 
 /* Grand texte (40 px) : le seuil WCAG est 3:1 ; les couleurs de vote sont mesurées à 3,0 et plus sur la carte sombre. */
 export function StatCard({ valeur, libelle, couleur }: { valeur: string; libelle: string; couleur?: string }) {
   return (
     <View style={s.stat} accessible accessibilityLabel={`${libelle} : ${valeur}`}>
-      <Text style={[TYPO.stat, couleur ? { color: couleur } : null]}>{valeur}</Text>
+      <Text style={[TYPO.stat, couleur ? { color: couleur } : null]}>{espacesFines(valeur)}</Text>
       <Text style={TYPO.etiquette}>{libelle}</Text>
     </View>
   );
@@ -34,8 +34,10 @@ export function DataBadge({ texte, couleur, teinte }: { texte: string; couleur?:
       </View>
     );
   }
+  /* 07/11/2026 : un filet plus sombre de la même teinte (bordureGroupe) détache le badge de la
+     carte. La teinte elle-même ne change pas : c'est une couleur de vote fixée (invariant 7, D24). */
   return (
-    <View style={[s.badge, { backgroundColor: fond }]}>
+    <View style={[s.badge, { backgroundColor: fond }, couleur ? { borderWidth: 1.5, borderColor: bordureGroupe(fond) } : null]}>
       <Text style={[s.badgeTexte, { color: couleur ? texteSur(fond) : couleurs.encre }]}>{texte}</Text>
     </View>
   );
@@ -90,4 +92,13 @@ export function TexteLong({ texte, icone = "ellipse-outline" }: { texte: string;
   const phrases = phrasesDe(texte);
   if (texte.length <= 180 || phrases.length < 2) return <Text style={TYPO.corps}>{texte}</Text>;
   return <Puces items={phrases.map(p => ({ icone, texte: p }))} />;
+}
+
+/* LES ESPACES D'UN GRAND NOMBRE (07/11/2026) : en IBM Plex Mono, l'espace insécable de
+   « 2 495 € » prend la largeur d'un chiffre (« 2  495  € » sur iPhone). Chaque espace est
+   rendu à 40 % de la taille : le nombre reste un seul texte, lu d'un seul tenant. */
+export function espacesFines(texte: string): ReactNode {
+  const morceaux = texte.split(/[   ]/);
+  if (morceaux.length < 2) return texte;
+  return morceaux.flatMap((m, i) => (i ? [<Text key={i} style={{ fontSize: 16, letterSpacing: 0 }}>{" "}</Text>, m] : [m]));
 }

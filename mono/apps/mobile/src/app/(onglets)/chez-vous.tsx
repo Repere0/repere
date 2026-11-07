@@ -219,10 +219,10 @@ export default function ChezVous() {
           {/* ALLER PLUS LOIN — liens simples. « Actualités » reste : c'est le seul acces a son
              ecran (tests/parcours.test.mjs, aucune impasse), meme vide. Le retirer est une
              decision produit (BLOCAGES.md, section 15). */}
-          <View style={{ gap: PAS }}>
+          <View style={{ gap: PAS * 3, marginTop: PAS * 4, marginBottom: PAS * 4 }}>
             <Etiquette texte="Aller plus loin" />
             {/* 07/11/2026 : des tuiles à icône, deux par ligne, au lieu d'une liste de liens. */}
-            <View style={{ flexDirection: "row", flexWrap: "wrap", gap: PAS * 2 }}>
+            <View style={{ flexDirection: "row", flexWrap: "wrap", gap: PAS * 3 }}>
               {([
                 { t: LIBELLES.qui, i: "git-network-outline", o: () => router.push("/qui-decide") },
                 { t: LIBELLES.calendrier, i: "calendar-outline", o: () => router.push("/a-venir") },
@@ -232,7 +232,7 @@ export default function ChezVous() {
                 { t: LIBELLES.sources, i: "link-outline", o: () => router.push("/sources") },
               ] as { t: string; i: keyof typeof Ionicons.glyphMap; o: () => void }[]).map(x => (
                 <Pression key={x.t} onPress={x.o} etiquette={x.t}
-                  style={{ width: "48%", flexGrow: 1, minHeight: 84, gap: PAS * 2, padding: PAS * 4, borderRadius: RAYON.bloc, backgroundColor: couleurs.carte, borderWidth: 1, borderColor: couleurs.trait, justifyContent: "space-between" }}>
+                  style={{ width: "47%", minWidth: 140, flexGrow: 1, minHeight: 92, gap: PAS * 2, padding: PAS * 4, borderRadius: RAYON.bloc, backgroundColor: couleurs.carte, borderWidth: 1, borderColor: couleurs.trait, justifyContent: "space-between" }}>
                   <Ionicons name={x.i} size={22} color={couleurs.encre} accessible={false} importantForAccessibility="no" />
                   <Text style={[TYPO.corps, { fontFamily: POLICE.titre }]}>{x.t}</Text>
                 </Pression>

@@ -239,8 +239,10 @@ export default function Argent() {
                 <Text style={TYPO.note}>{INTRO_EVOLUTION}</Text>
                 {[1, 0, 2].map(i => evo.lignes[i]).filter(l => l && l.m1 !== null && l.m2 !== null).map((l: { libelle: string; m1: number; m2: number; diff: number }) => (
                   <DeuxAnnees key={l.libelle} libelle={l.libelle} an1={evo.an1} an2={evo.an2} m1={l.m1} m2={l.m2}
-                    texte1={eurosArrondis(l.m1)} texte2={eurosArrondis(l.m2)} diffTexte={diffEuros(l.diff)} />
+                    texte1={montantCourt(l.m1)?.texte ?? eurosArrondis(l.m1)} texte2={montantCourt(l.m2)?.texte ?? eurosArrondis(l.m2)} diffTexte={diffEuros(l.diff)} />
                 ))}
+                {/* 07/11/2026 : montants courts (« 101,1 M€ ») pour comparer d'un coup d'œil ; l'arrondi est dit. */}
+                <Text style={TYPO.micro}>Montants arrondis : M€ = millions d'euros, au dixième près.</Text>
                 <Text style={TYPO.micro}>Chaque paire de barres a sa propre échelle : on compare une ligne à elle-même, jamais deux lignes entre elles.</Text>
                 <Depli titre="Ce que ça ne veut pas dire (évolution)"><Text style={TYPO.corps}>{NOTE_EVOLUTION}</Text></Depli>
                 <PastilleSource source={srcComptes(d)} />

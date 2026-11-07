@@ -21,6 +21,7 @@ import {
 } from "../lib/donnees";
 import { Page } from "../ui/page";
 import { Hemicycle } from "../ui/hemicycle";
+import { couleurGroupe, sigleDuNom } from "../lib/groupes";
 import { StatCard } from "../ui/donnees";
 import { useCouleurVote } from "../lib/couleur-vote";
 import { Vide } from "../lib/composants";
@@ -120,7 +121,7 @@ function GroupeRow({ groupe, ouvert, onPress }: { groupe: Groupe; ouvert: boolea
         accessibilityLabel={`${groupe.nom}, ${texteAccessible}`}
         style={({ pressed }) => [s.groupeTete, pressed && { opacity: 0.65 }]}
       >
-        <View style={[s.groupePoint, { backgroundColor: groupe.couleur }]} />
+        <View style={[s.groupePoint, { backgroundColor: couleurGroupe(sigleDuNom(groupe.nom)) }]} />
         <View style={s.groupeTexte}>
           <Text style={s.groupeNom}>{groupe.nom}</Text>
           <Text style={s.groupeStats}>

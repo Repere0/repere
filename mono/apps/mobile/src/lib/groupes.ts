@@ -82,3 +82,21 @@ export function bordureGroupe(fond: string): string {
   const canaux = [1, 3, 5].map(i => Math.round(parseInt(fond.slice(i, i + 2), 16) * 0.7));
   return "#" + canaux.map(v => v.toString(16).padStart(2, "0")).join("");
 }
+
+/* Le libellé long d'un groupe (fichiers de scrutins, organes AMO) vers son sigle de palette.ts
+   (07/11/2026). Les fichiers de scrutins portent encore des gris d'avant D99 : l'application
+   prend la couleur d'identification de palette.ts. Groupe absent de la table : gris « Inconnu ». */
+const SIGLE_DU_NOM: Record<string, string> = {
+  "Rassemblement National": "RN",
+  "Ensemble pour la République": "EPR",
+  "La France insoumise - Nouveau Front Populaire": "LFI",
+  "Socialistes et apparentés": "SOC",
+  "Droite Républicaine": "LR",
+  "Écologiste et Social": "LÉ",
+  "Les Démocrates": "DEM",
+  "Horizons & Indépendants": "HOR",
+  "Libertés, Indépendants, Outre-mer et Territoires": "LIOT",
+  "Gauche Démocrate et Républicaine": "GDR",
+  "Députés non inscrits": "NI",
+};
+export const sigleDuNom = (nom: string): string => SIGLE_DU_NOM[nom] || GROUPE_INCONNU;

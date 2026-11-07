@@ -9,6 +9,7 @@
  *     d'echelon seulement) ;
  *   - les nombres viennent de @repere/core (visuels.js), jamais d'ici.
  * Construites avec des View : aucune bibliotheque de graphiques. */
+import { espacesFines } from "./donnees";
 import { Avatar } from "./avatar";
 import { useState, type ReactNode } from "react";
 import { Animated, Pressable, StyleSheet, Text, View } from "react-native";
@@ -25,7 +26,7 @@ export function Compteur({ valeur, suffixe }: { valeur: number; suffixe: string 
   const n = useCompteur(valeur);
   return (
     <View accessible accessibilityLabel={`${valeur.toLocaleString("fr-FR")} ${suffixe}`}>
-      <Text style={TYPO.chiffre}>{n.toLocaleString("fr-FR")}<Text style={[TYPO.reponse, { color: couleurs.sourd }]}> €</Text></Text>
+      <Text style={TYPO.chiffre}>{espacesFines(n.toLocaleString("fr-FR"))}<Text style={[TYPO.reponse, { color: couleurs.sourd }]}> €</Text></Text>
       <Text style={[TYPO.reponse, { color: couleurs.sourd }]}>{suffixe.replace(/^€\s*/, "")}</Text>
     </View>
   );

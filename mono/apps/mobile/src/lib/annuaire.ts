@@ -10,7 +10,7 @@ import type { Fiche } from "../types/annuaire";
 /* Les 14 régions dont l'exécutif est publié : les fichiers de data/elus-regions/. */
 export const REGIONS = ["01", "04", "11", "24", "27", "28", "32", "44", "52", "53", "75", "76", "84", "93"];
 
-type Depute = { prenom: string; nom: string; dateDebut?: string };
+type Depute = { prenom: string; nom: string; dateDebut?: string; acteurRef?: string };
 type Source = { producteur?: string; licence?: string; releve_le?: string; maj?: string; url?: string };
 type Index = { departements: { code: string; nom?: string }[] };
 type FichierDeputes = { source?: Source; deputes?: Record<string, Depute> };
@@ -36,6 +36,9 @@ export function construire(
       id: "dep-" + cle, nom: `${d.prenom} ${d.nom}`, fonction: "Député", lieu: `${nomDep(code)}, ${rang(circo)} circonscription`,
       depuis: d.dateDebut || "", producteur: sourceDeputes.producteur || "", licence: sourceDeputes.licence || "",
       maj: sourceDeputes.releve_le || "", url: sourceDeputes.url || "",
+      /* 07/11/2026 : l'identifiant de l'Assemblée et le département du député, pour joindre
+         son groupe (deputes-groupes.json) et sa photo (rangée par SON département). */
+      ref: d.acteurRef || "", dep: code,
     });
   }
   for (const r of regions) {
