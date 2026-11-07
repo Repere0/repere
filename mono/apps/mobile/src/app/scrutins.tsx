@@ -22,7 +22,7 @@ import {
 import { Page } from "../ui/page";
 import { Vide } from "../lib/composants";
 import { PastilleSource } from "../ui/source";
-import { feuille, PAS, TYPO, couleurs, CIBLE, RAYON, OMBRE } from "../lib/theme";
+import { feuille, PAS, TYPO, couleurs, CIBLE, RAYON, OMBRE, POLICE } from "../lib/theme";
 import { dateFr, titreLisible, nombreDecompte, resultatDecompteCourt } from "@repere/core";
 
 type Resume = {
@@ -415,7 +415,7 @@ const s = feuille(() => StyleSheet.create({
   resumeEntete: {
     backgroundColor: couleurs.carte, borderRadius: RAYON.carte, padding: PAS * 5, gap: 2, ...OMBRE,
   },
-  resumeNombre: { fontFamily: "BricolageGrotesque_800ExtraBold", fontSize: 34, lineHeight: 38, color: couleurs.encre, marginTop: PAS },
+  resumeNombre: { fontFamily: POLICE.affiche, fontSize: 34, lineHeight: 38, color: couleurs.encre, marginTop: PAS },
   resumePhrase: { fontSize: 16, lineHeight: 22, color: couleurs.sourd },
   recherche: {
     minHeight: CIBLE, backgroundColor: couleurs.carte, borderWidth: 1, borderColor: couleurs.trait,
@@ -427,19 +427,19 @@ const s = feuille(() => StyleSheet.create({
     backgroundColor: couleurs.carte, borderWidth: 1, borderColor: couleurs.trait, justifyContent: "space-between",
   },
   selectionCardActive: { borderColor: couleurs.encre, borderWidth: 1.5 },
-  selectionTitre: { fontFamily: "BricolageGrotesque_600SemiBold", fontSize: 17, lineHeight: 21, color: couleurs.encre, marginTop: PAS * 2 },
+  selectionTitre: { fontFamily: POLICE.titre, fontSize: 17, lineHeight: 21, color: couleurs.encre, marginTop: PAS * 2 },
   detail: { gap: PAS * 4 },
-  detailTitre: { fontFamily: "BricolageGrotesque_800ExtraBold", fontSize: 28, lineHeight: 32, color: couleurs.encre, letterSpacing: -0.4 },
+  detailTitre: { fontFamily: POLICE.affiche, fontSize: 28, lineHeight: 32, color: couleurs.encre, letterSpacing: -0.4 },
   blocLecture: {
     backgroundColor: couleurs.carte, borderRadius: RAYON.carte, padding: PAS * 5, gap: PAS * 3, ...OMBRE,
   },
-  phraseResultat: { fontFamily: "BricolageGrotesque_600SemiBold", fontSize: 20, lineHeight: 26, color: couleurs.encre },
+  phraseResultat: { fontFamily: POLICE.titre, fontSize: 20, lineHeight: 26, color: couleurs.encre },
   resultat: {
     flexDirection: "row", alignItems: "center", justifyContent: "space-around",
     paddingTop: PAS * 2,
   },
   stat: { alignItems: "center", minWidth: 72, flex: 1 },
-  statNombre: { fontFamily: "BricolageGrotesque_800ExtraBold", fontSize: 30, lineHeight: 34, color: couleurs.encre },
+  statNombre: { fontFamily: POLICE.affiche, fontSize: 30, lineHeight: 34, color: couleurs.encre },
   statLibelle: { fontSize: 14, lineHeight: 19, color: couleurs.sourd, marginTop: 2 },
   statSep: { width: 1, height: 42, backgroundColor: couleurs.trait },
   groupes: {

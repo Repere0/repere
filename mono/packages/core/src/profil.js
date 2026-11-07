@@ -23,7 +23,8 @@ export const PROFIL_DEFAUT = {
   animationsReduites: false,
   modeDaltonien: false,
   masquerImages: false,
-  mode: "auto",
+  /* Sombre par défaut (DA premium, décision du porteur du 07/11/2026, remplace « auto » de D67). */
+  mode: "sombre",
   themes: [],
 };
 

@@ -10,7 +10,7 @@ let echecs = 0;
 const verifier = (ok, texte) => { console.log((ok ? "ok    " : "ECHEC ") + texte); if (!ok) echecs++; };
 
 /* Le fond nuit de la palette (sol sombre) : une couleur présente dans l'arbre = thème sombre. */
-const FOND_NUIT = "rgb(22, 21, 19)";
+const FOND_NUIT = "rgb(23, 22, 20)"; /* #171614, DA premium du 07/11/2026 */
 const fondNuitPresent = page => page.evaluate(nuit => [...document.querySelectorAll("*")]
   .some(e => getComputedStyle(e).backgroundColor === nuit), FOND_NUIT);
 
@@ -21,7 +21,7 @@ await contexte.addInitScript(() => {
   if (!localStorage.getItem("repere.departement")) localStorage.setItem("repere.departement", JSON.stringify({ d: "77", c: "77284" }));
   if (!localStorage.getItem("repere.profil")) localStorage.setItem("repere.profil", JSON.stringify({
     niveauZoom: "france", tailleTexte: 22, espacement: 1.5, contraste: "normal", policeDyslexie: false,
-    animationsReduites: false, modeDaltonien: false, masquerImages: false, themes: [],
+    animationsReduites: false, modeDaltonien: false, masquerImages: false, themes: [], mode: "auto",
   }));
 });
 const page = await contexte.newPage();

@@ -24,7 +24,7 @@ export function Timeline({ etapes, etiquette }: { etapes: Etape[]; etiquette?: s
           </View>
           <View style={{ flex: 1, gap: 2, paddingBottom: PAS * 4 }} accessible={!e.lien}
             accessibilityLabel={e.lien ? undefined : `${quand(e)} : ${e.libelle}`}>
-            <Text style={TYPO.micro}>{quand(e)}</Text>
+            <Text style={TYPO.donnee}>{quand(e)}</Text>
             <Text style={[TYPO.corps, { color: couleurs.encre }]}>{e.libelle}</Text>
             {e.lien ? (
               <Pressable onPress={() => Linking.openURL(e.lien as string)} accessibilityRole="link"

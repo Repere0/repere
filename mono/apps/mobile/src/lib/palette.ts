@@ -39,10 +39,10 @@ const NEUTRES_CLAIR: Neutres = {
 };
 
 /* Neutres du sombre : même famille chaude que le clair (pas de bleu), mesurés
-   dans tests/theme.test.mjs. Texte encre sur sol 16:1 ; sourd sur carte 7,6:1. */
+   dans tests/theme.test.mjs. DA premium (07/11/2026) : encre sur sol 15,9:1 ; sourd sur carte 6,9:1. */
 const NEUTRES_SOMBRE: Neutres = {
-  sol: "#161513", carte: "#1F1D1A", encre: "#F3F0EA", sourd: "#B5AEA3",
-  trait: "#3B3832", voile: "#2A2823", blanc: "#ffffff", lien: "#F3F0EA", ancien: "#CCB4B4",
+  sol: "#171614", carte: "#1F1E1B", encre: "#F3F0E8", sourd: "#AAA69C",
+  trait: "#3B3832", voile: "#2A2823", blanc: "#ffffff", lien: "#F3F0E8", ancien: "#CCB4B4",
 };
 
 /* Les échelons : identiques dans les deux thèmes, sauf « France ». */
@@ -64,7 +64,9 @@ export const NEUTRES_PAR_MODE: Record<Mode, Neutres> = { clair: NEUTRES_CLAIR, s
 /* Ombres : en sombre, l'ombre se voit par l'opacité du noir, pas par l'encre. */
 export const OMBRE_PAR_MODE = {
   clair: { shadowColor: "#171614", shadowOpacity: 0.045, shadowRadius: 10, shadowOffset: { width: 0, height: 4 }, elevation: 1 },
-  sombre: { shadowColor: "#000000", shadowOpacity: 0.5, shadowRadius: 12, shadowOffset: { width: 0, height: 4 }, elevation: 2 },
+  /* DA premium (07/11/2026) : noir à 20 %, flou 20, décalage 5. Le clair, gardé par le banc
+     de non-régression, n'est pas touché. */
+  sombre: { shadowColor: "#000000", shadowOpacity: 0.2, shadowRadius: 20, shadowOffset: { width: 0, height: 5 }, elevation: 3 },
 } as const;
 
 /* La palette des cartes de partage, figée et sombre (décision D5 du porteur, 30/10/2026).
