@@ -7,10 +7,11 @@
  * Couleurs trop proches : contour sur le second groupe (groupesACerner).
  * Aucun libellé majorité / opposition. Dessiné avec des View : aucune bibliothèque ajoutée. */
 import { useMemo, useState } from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { Pressable, StyleSheet, Text, View } from "react-native";
+import { router } from "expo-router";
 import { compositionGroupes, groupesACerner, siegesHemicycle } from "@repere/core";
 import { couleurGroupe, groupeDe, GROUPE_INCONNU, useFichierGroupes } from "../lib/groupes";
-import { feuille, couleurs, PAS, RAYON, TYPO } from "../lib/theme";
+import { CIBLE, feuille, couleurs, PAS, RAYON, TYPO } from "../lib/theme";
 import { PastilleSource } from "./source";
 
 type Part = { groupe: string; sieges: number };
@@ -49,13 +50,15 @@ export function Hemicycle() {
           }} />
         )) : null}
       </View>
-      <View style={s.legende} importantForAccessibility="no-hide-descendants" accessibilityElementsHidden>
+      <View style={s.legende}>
         {parts.map(p => (
-          <View key={p.groupe} style={s.item}>
+          <Pressable key={p.groupe} onPress={() => router.push({ pathname: "/groupe", params: { g: p.groupe } })} accessibilityRole="link"
+            accessibilityLabel={`${p.groupe === GROUPE_INCONNU ? "Groupe non publié" : p.groupe}, ${p.sieges} députés. Voir la liste`}
+            style={({ pressed }) => [s.item, pressed && { opacity: 0.7 }]}>
             <View style={[s.pastille, { backgroundColor: couleurGroupe(p.groupe) }, cernes.has(p.groupe) ? { borderWidth: 2, borderColor: couleurs.encre } : null]} />
             <Text style={TYPO.corps}>{p.groupe === GROUPE_INCONNU ? "Non publié" : p.groupe}</Text>
             <Text style={TYPO.donnee}>{p.sieges}</Text>
-          </View>
+          </Pressable>
         ))}
       </View>
       {/* 07/11/2026 : raccourci. La place sur l'arc vient de l'ordre alphabétique (invariant 3). */}
@@ -68,6 +71,6 @@ export function Hemicycle() {
 const s = feuille(() => StyleSheet.create({
   carte: { backgroundColor: couleurs.carte, borderRadius: RAYON.carte, padding: PAS * 5, gap: PAS * 4 },
   legende: { flexDirection: "row", flexWrap: "wrap", columnGap: PAS * 5, rowGap: PAS * 2 },
-  item: { flexDirection: "row", alignItems: "center", gap: PAS * 2 },
+  item: { flexDirection: "row", alignItems: "center", gap: PAS * 2, minHeight: CIBLE },
   pastille: { width: 12, height: 12, borderRadius: 6 },
 }));

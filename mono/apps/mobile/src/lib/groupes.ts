@@ -29,9 +29,9 @@ export async function lireGroupes(): Promise<TableGroupes | null> {
   return (await lireFichierGroupes())?.groupes ?? null;
 }
 
-/* Le fichier entier (avec sa source et sa date), pour l'hémicycle ; null tant qu'il n'est pas lu. */
-export function useFichierGroupes(): FichierGroupes | null {
-  const [t, setT] = useState<FichierGroupes | null>(null);
+/* Le fichier entier (avec sa source et sa date) : undefined pendant la lecture, null s'il n'est pas publié. */
+export function useFichierGroupes(): FichierGroupes | null | undefined {
+  const [t, setT] = useState<FichierGroupes | null | undefined>(undefined);
   useEffect(() => {
     let vivant = true;
     lireFichierGroupes().then(x => { if (vivant) setT(x); });

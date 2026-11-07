@@ -126,3 +126,7 @@ export const COULEURS_GROUPES: Readonly<Record<string, string>> = Object.freeze(
    ni un vote ni une opinion. Contraste mesuré (objet graphique, WCAG 1.4.11, 3:1) : 5,43:1 sur
    la carte claire, 3,1:1 sur la carte sombre. */
 export const POINT_ETAPE = "#5F6B7A";
+
+/* Le reflet et l'ombre d'un avatar (07/11/2026) : blanc et noir translucides, posés sur la
+   couleur du groupe pour un dégradé ; ils ne changent pas la teinte qui identifie le groupe. */
+export const REFLET_AVATAR = { clair: "rgba(255,255,255,0.22)", ombre: "rgba(0,0,0,0.18)" };

@@ -6,7 +6,8 @@
  * Une couleur de vote y code un FAIT (invariant 7, D24) ; le mot reste toujours écrit,
  * la couleur n'est jamais seule à porter le sens. Les nombres viennent de @repere/core. */
 import type { ReactNode } from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
+import { Pression } from "./pression";
 import { Ionicons } from "@expo/vector-icons";
 import { feuille, couleurs, OMBRE, PAS, POLICE, RAYON, TYPO } from "../lib/theme";
 import { texteSur } from "../lib/groupes";
@@ -42,14 +43,14 @@ export function DataBadge({ texte, couleur, teinte }: { texte: string; couleur?:
 
 /* UNE CARTE DE LISTE (07/11/2026) : une ligne d'une liste (votes, actus, élus), en carte.
  * Icône à gauche, titre en Manrope Bold, sous-titre en DM Sans gris, ombre douce, 16 px. */
-export function CarteListe({ icone, titre, sous, children, onPress, etiquette }: {
-  icone?: keyof typeof Ionicons.glyphMap; titre: string; sous?: string | null; children?: ReactNode;
+export function CarteListe({ icone, gauche, titre, sous, children, onPress, etiquette }: {
+  icone?: keyof typeof Ionicons.glyphMap; gauche?: ReactNode; titre: string; sous?: string | null; children?: ReactNode;
   onPress?: () => void; etiquette?: string;
 }) {
   const corps = (
     <>
-      {icone ? <Ionicons name={icone} size={22} color={couleurs.sourd} accessible={false} importantForAccessibility="no" /> : null}
-      <View style={{ flex: 1, gap: PAS * 2 }}>
+      {gauche ?? (icone ? <Ionicons name={icone} size={22} color={couleurs.sourd} accessible={false} importantForAccessibility="no" /> : null)}
+      <View style={{ flex: 1, gap: PAS * 2, alignSelf: "center" }}>
         {sous ? <Text style={TYPO.donnee}>{sous}</Text> : null}
         <Text style={[TYPO.corps, { fontFamily: POLICE.titre }]}>{titre}</Text>
         {children}
@@ -58,8 +59,7 @@ export function CarteListe({ icone, titre, sous, children, onPress, etiquette }:
     </>
   );
   return onPress ? (
-    <Pressable onPress={onPress} accessibilityRole="button" accessibilityLabel={etiquette}
-      style={({ pressed }) => [s.ligne, { ...OMBRE }, pressed && { opacity: 0.7 }]}>{corps}</Pressable>
+    <Pression onPress={onPress} etiquette={etiquette} style={[s.ligne, { ...OMBRE }]}>{corps}</Pression>
   ) : <View style={[s.ligne, { ...OMBRE }]} accessible={!!etiquette} accessibilityLabel={etiquette}>{corps}</View>;
 }
 

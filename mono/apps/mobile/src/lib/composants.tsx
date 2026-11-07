@@ -11,12 +11,18 @@ import { ligneSource, motsDuTexte, CALCUL_REPERE } from "@repere/core";
 import { router } from "expo-router";
 import { feuille, couleurs, CIBLE, PAS, RAYON, OMBRE, TYPO, type Echelon } from "./theme";
 import { NIVEAU_NOM, pointEchelon } from "./niveaux";
+import { Pression } from "../ui/pression";
 
-/* Refonte du 30/09/2026 : plus de filet de couleur a gauche ; l'echelon se
-   dit par un point de couleur devant l'etiquette, et la carte prend de l'air. */
-export function Carte({ echelon, children, titre }: { echelon?: Echelon; children: ReactNode; titre?: string }) {
-  return (
-    <View style={[s.carte, { backgroundColor: couleurs.carte }]}>
+/* Refonte du 30/09/2026 : l'echelon se dit par un point de couleur devant l'etiquette.
+   07/11/2026 (refonte globale, demande du porteur) : le filet de 4 px a gauche revient,
+   couleur de l'echelon (ou `accent`) ; `onPress` rend toute la carte touchable (Pression). */
+export function Carte({ echelon, children, titre, accent, onPress, etiquette }: {
+  echelon?: Echelon; children: ReactNode; titre?: string; accent?: string; onPress?: () => void; etiquette?: string;
+}) {
+  const filet = accent || (echelon ? (pointEchelon(echelon) as { backgroundColor?: string }).backgroundColor : undefined);
+  const style = [s.carte, { backgroundColor: couleurs.carte }, filet ? { borderLeftWidth: 4, borderLeftColor: filet } : null];
+  const corps = (
+    <>
       {titre ? (
         <View style={s.carteTete}>
           {echelon ? <View style={[s.point, pointEchelon(echelon)]} /> : null}
@@ -25,8 +31,11 @@ export function Carte({ echelon, children, titre }: { echelon?: Echelon; childre
         </View>
       ) : null}
       {children}
-    </View>
+    </>
   );
+  return onPress
+    ? <Pression onPress={onPress} etiquette={etiquette} style={style}>{corps}</Pression>
+    : <View style={style}>{corps}</View>;
 }
 
 /* UNE QUESTION, UNE REPONSE — la carte de l'ecran d'accueil (niveau 1).
@@ -36,8 +45,9 @@ export function CarteQuestion({ echelon, question, reponse, children, pied, acti
   echelon: Echelon; question: string; reponse: ReactNode; children?: ReactNode; pied?: ReactNode;
   action?: { texte: string; onPress: () => void };
 }) {
+  const filet = (pointEchelon(echelon) as { backgroundColor?: string }).backgroundColor;
   return (
-    <View style={[s.carte, { backgroundColor: couleurs.carte }]}>
+    <View style={[s.carte, { backgroundColor: couleurs.carte }, filet ? { borderLeftWidth: 4, borderLeftColor: filet } : null]}>
       <View style={s.carteTete}>
         <View style={[s.point, pointEchelon(echelon)]} />
         <Text style={s.carteTitre} accessibilityRole="header">{question}</Text>

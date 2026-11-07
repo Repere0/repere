@@ -10,6 +10,7 @@ import { Image, Linking, Pressable, Text, View } from "react-native";
 import type { PhotoElu } from "../lib/photos";
 import { couleurs, OMBRE, POLICE } from "../lib/theme";
 import { bordureGroupe, couleurGroupe, GROUPE_INCONNU, texteSur } from "../lib/groupes";
+import { REFLET_AVATAR } from "../lib/palette";
 
 export function initiales(nom: string): string {
   const morceaux = nom.split(/\s+/).filter(Boolean);
@@ -44,11 +45,16 @@ export function Avatar({ nom, taille = 64, photo, groupe, doux }: { nom: string;
       </View>
     );
   }
+  /* 07/11/2026 : un dégradé de la couleur du groupe (reflet clair en haut à gauche, ombre en bas
+     à droite), sans bibliothèque. La couleur identifie le groupe, rien d'autre (invariant 7). */
   return (
-    <View accessible={false}
-      style={{ width: taille, height: taille, borderRadius: taille / 2, backgroundColor: fond,
-        borderWidth: 2, borderColor: bordureGroupe(fond), alignItems: "center", justifyContent: "center", ...OMBRE }}>
-      <Text style={{ color: texteSur(fond), fontWeight: "500", fontSize: Math.round(taille * 0.375) }}>{initiales(nom)}</Text>
+    <View accessible={false} style={{ width: taille, height: taille, borderRadius: taille / 2, ...OMBRE }}>
+      <View style={{ flex: 1, borderRadius: taille / 2, backgroundColor: fond, overflow: "hidden",
+        borderWidth: 2, borderColor: bordureGroupe(fond), alignItems: "center", justifyContent: "center" }}>
+        <View style={{ position: "absolute", width: taille * 1.3, height: taille * 1.3, borderRadius: taille, backgroundColor: REFLET_AVATAR.clair, top: -taille * 0.75, left: -taille * 0.55 }} />
+        <View style={{ position: "absolute", width: taille * 1.3, height: taille * 1.3, borderRadius: taille, backgroundColor: REFLET_AVATAR.ombre, bottom: -taille * 0.8, right: -taille * 0.6 }} />
+        <Text style={{ color: texteSur(fond), fontFamily: POLICE.titre, fontSize: Math.round(taille * 0.375) }}>{initiales(nom)}</Text>
+      </View>
     </View>
   );
 }
