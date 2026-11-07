@@ -30,3 +30,11 @@ test("les exemples ne sont importés par aucune application", () => {
   const trouves = spawnSync("grep", ["-rl", "--include=*.ts", "--include=*.tsx", "--include=*.js", "--include=*.jsx", "--exclude-dir=node_modules", "local-fictif", apps], { encoding: "utf8" });
   assert.equal(trouves.stdout.trim(), "", "un écran importe des données fictives : " + trouves.stdout);
 });
+
+/* 07/11/2026 : le schéma de référence des maquettes Stitch compile en strict, et aucune application ne l'importe. */
+test("le schéma Stitch compile en strict et n'est importé par aucune application", { skip: !fs.existsSync(TSC) && "typescript absent" }, () => {
+  const r = tsc(path.join(MONO, "packages", "core", "src", "types", "schema.ts"));
+  assert.equal(r.status, 0, r.stdout + r.stderr);
+  const trouves = spawnSync("grep", ["-rl", "--include=*.ts", "--include=*.tsx", "--exclude-dir=node_modules", "types/schema", path.join(MONO, "apps")], { encoding: "utf8" });
+  assert.equal(trouves.stdout.trim(), "", "un écran importe le schéma de référence : " + trouves.stdout);
+});

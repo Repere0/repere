@@ -158,6 +158,7 @@ export default function Elu() {
   const [tout, setTout] = useState(false);
   /* V62 : la table des groupes, lue une fois ; le rendu ci-dessous la reçoit par fermeture. */
   const groupes = useGroupes();
+  const COULEURS_VOTE = useCouleurVote();
   /* Les resumes de la redaction : un fichier public ; s'il n'arrive pas, la feuille dit qu'il n'y a pas de resume. */
   useEffect(() => {
     let vivant = true;
@@ -249,9 +250,17 @@ export default function Elu() {
                   <View style={{ flexDirection: "row", alignItems: "center", gap: PAS }}>
                     <View style={{ flex: 1, gap: 2 }}>
                       <Text style={TYPO.etiquette}>{recents.length > 1 ? `Ses ${recents.length} derniers votes publiés` : "Son dernier vote publié"}</Text>
-                      <Text style={[TYPO.donnee, { fontSize: 14, lineHeight: 20, color: couleurs.encre }]} accessibilityRole="header">
-                        {comptes.p} pour · {comptes.c} contre · {comptes.a} abstention{comptes.a > 1 ? "s" : ""}
-                      </Text>
+                      {/* 07/11/2026 (maquette Stitch) : une pastille de la couleur de vote (D24, un fait)
+                          devant chaque compte ; le mot reste écrit. */}
+                      <View style={{ flexDirection: "row", flexWrap: "wrap", columnGap: PAS * 4, rowGap: PAS }} accessible
+                        accessibilityRole="header" accessibilityLabel={`${comptes.p} pour, ${comptes.c} contre, ${comptes.a} abstention${comptes.a > 1 ? "s" : ""}`}>
+                        {([["p", "pour"], ["c", "contre"], ["a", comptes.a > 1 ? "abstentions" : "abstention"]] as const).map(([k, mot]) => (
+                          <View key={k} style={{ flexDirection: "row", alignItems: "center", gap: PAS }}>
+                            <View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: COULEURS_VOTE[k] }} />
+                            <Text style={[TYPO.donnee, { fontSize: 15, lineHeight: 21, color: couleurs.encre }]}>{comptes[k]} {mot}</Text>
+                          </View>
+                        ))}
+                      </View>
                     </View>
                     <PourquoiJeVois etiquette={`le compte des votes de ${nom}`}
                       p={{ source: { texte: `Assemblée nationale, ses ${recents.length} derniers votes publiés`, lien: null },

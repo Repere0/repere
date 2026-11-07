@@ -10,7 +10,7 @@ let echecs = 0;
 const verifier = (ok, texte) => { console.log((ok ? "ok    " : "ECHEC ") + texte); if (!ok) echecs++; };
 
 /* Le fond nuit de la palette (sol sombre) : une couleur présente dans l'arbre = thème sombre. */
-const FOND_NUIT = "rgb(23, 22, 20)"; /* #171614, DA premium du 07/11/2026 */
+const FOND_NUIT = "rgb(20, 19, 17)"; /* #141311, sombre minéral du 07/11/2026 */
 const fondNuitPresent = page => page.evaluate(nuit => [...document.querySelectorAll("*")]
   .some(e => getComputedStyle(e).backgroundColor === nuit), FOND_NUIT);
 

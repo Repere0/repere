@@ -40,9 +40,12 @@ const NEUTRES_CLAIR: Neutres = {
 
 /* Neutres du sombre : même famille chaude que le clair (pas de bleu), mesurés
    dans tests/theme.test.mjs. DA premium (07/11/2026) : encre sur sol 15,9:1 ; sourd sur carte 6,9:1. */
+/* 07/11/2026 : « sombre minéral » des maquettes Stitch (surface, surface-container, on-surface,
+   on-surface-variant, outline), validé par le porteur. « sourd » : #8E8B82 demandé, mais 4,32:1
+   sur le voile, sous le seuil AA ; #928F86 est la nuance la plus proche qui le tient (4,55:1). */
 const NEUTRES_SOMBRE: Neutres = {
-  sol: "#171614", carte: "#1F1E1B", encre: "#F3F0E8", sourd: "#AAA69C",
-  trait: "#3B3832", voile: "#2A2823", blanc: "#ffffff", lien: "#F3F0E8", ancien: "#CCB4B4",
+  sol: "#141311", carte: "#1F1E1B", encre: "#F3F0E8", sourd: "#928F86",
+  trait: "#2C2A26", voile: "#2A2823", blanc: "#ffffff", lien: "#F3F0E8", ancien: "#CCB4B4",
 };
 
 /* Les échelons : identiques dans les deux thèmes, sauf « France ». */
@@ -130,3 +133,10 @@ export const POINT_ETAPE = "#5F6B7A";
 /* Le reflet et l'ombre d'un avatar (07/11/2026) : blanc et noir translucides, posés sur la
    couleur du groupe pour un dégradé ; ils ne changent pas la teinte qui identifie le groupe. */
 export const REFLET_AVATAR = { clair: "rgba(255,255,255,0.22)", ombre: "rgba(0,0,0,0.18)" };
+
+/* LA JAUGE DU BUDGET (07/11/2026). Les maquettes Stitch demandent un bleu et un vert
+   (primary-container, secondary) : ce sont des couleurs hors des trois familles permises
+   (échelons, groupes, votes), que la garde de l'invariant 7 refuse. En attendant une décision
+   du porteur (amendement + .claude/invariants.sha256), la jauge reste en neutres : encre, gris
+   chaud, et outline-variant de Stitch (un neutre). La légende écrite porte le sens. */
+export const JAUGE_BUDGET = { salaires: "#F3F0E8", investissement: "#928F86", autres: "#34322F" };

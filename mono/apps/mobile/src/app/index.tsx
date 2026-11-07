@@ -24,7 +24,7 @@ import { useSelection } from "../lib/selection";
 import { useProfil } from "../lib/profil";
 import { BadgeZoom, useNiveauZoom } from "../ui/badge-zoom";
 import { feuille, CIBLE, PAS, POLICE, RAYON, TYPO } from "../lib/theme";
-import { ECHELONS_PAR_MODE, NEUTRES_PAR_MODE, OMBRE_PAR_MODE } from "../lib/palette";
+import { ECHELONS_PAR_MODE, JAUGE_BUDGET, NEUTRES_PAR_MODE, OMBRE_PAR_MODE } from "../lib/palette";
 import { groupeDe, useGroupes } from "../lib/groupes";
 import { VOTE } from "../ui/partage/donnees";
 import { SquelettesListe } from "../ui/squelette";
@@ -378,6 +378,21 @@ export default function Accueil() {
                           calcul: USAGE_PAR_HABITANT,
                           ici: `Affiché parce que ce sont les comptes publiés les plus récents pour ${argent.nom} (${argent.an}).` }} />
                     </View>
+                    {/* 07/11/2026 (maquette Stitch) : la jauge segmentée sort du « Voir plus » ; sa légende
+                        écrit chaque part (la couleur ne porte jamais seule le sens). */}
+                    {repartition ? (
+                      <View style={{ gap: PAS * 2 }}>
+                        <Barre parts={[{ cle: "s", valeur: repartition.sal, couleur: JAUGE_BUDGET.salaires }, { cle: "i", valeur: repartition.inv, couleur: JAUGE_BUDGET.investissement }, { cle: "a", valeur: repartition.aut, couleur: JAUGE_BUDGET.autres }]} />
+                        <View style={{ flexDirection: "row", flexWrap: "wrap", columnGap: PAS * 4, rowGap: PAS }}>
+                          {[[JAUGE_BUDGET.salaires, `${repartition.sal} % salaires`], [JAUGE_BUDGET.investissement, `${repartition.inv} % invest.`], [JAUGE_BUDGET.autres, `${repartition.aut} % autres`]].map(([c, l]) => (
+                            <View key={l} style={{ flexDirection: "row", alignItems: "center", gap: PAS }}>
+                              <View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: c, borderWidth: 1, borderColor: D.trait }} />
+                              <Text style={s.legende}>{l}</Text>
+                            </View>
+                          ))}
+                        </View>
+                      </View>
+                    ) : null}
                     {comparaison || argent.avant || repartition ? (
                       <Details titre={moyenne ? titreEcart(argent.depenses, moyenne) : "Le détail des dépenses"} couleur={D.encre} lien={D.encre}>
                         {moyenne ? (
@@ -390,12 +405,6 @@ export default function Accueil() {
                           </View>
                         ) : null}
                         {argent.avant ? <Text style={s.contexte}>En {argent.avant.an} : {argent.avant.depenses.toLocaleString("fr-FR")} € par habitant</Text> : null}
-                        {repartition ? (
-                          <View style={{ gap: PAS * 2 }}>
-                            <Barre parts={[{ cle: "s", valeur: repartition.sal, couleur: D.encre }, { cle: "i", valeur: repartition.inv, couleur: D.sourd }, { cle: "a", valeur: repartition.aut, couleur: D.trait }]} />
-                            <Text style={s.legende}>{repartition.sal} % salaires · {repartition.inv} % invest. · {repartition.aut} % autres</Text>
-                          </View>
-                        ) : null}
                       </Details>
                     ) : null}
                     <Pressable onPress={() => setBudgetTout(true)} accessibilityRole="button"

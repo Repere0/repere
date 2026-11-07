@@ -218,7 +218,7 @@ test("logo — icone iOS carree 1024 px sans transparence ; fonds du demarrage e
   const tuile = "#F7F7F9";
   /* V34 (ordre du CEO) : le démarrage passe en sombre, #161513, avec le repère en #F3F0EA
      (BLOCAGES 36). La tuile de l'icône iOS et l'icône adaptative Android restent claires. */
-  assert.equal(app.splash.backgroundColor, "#171614", "fond du demarrage : sol sombre de la DA premium (07/11/2026)");
+  assert.equal(app.splash.backgroundColor, "#141311", "fond du demarrage : sol sombre minéral (07/11/2026)");
   assert.equal(app.android.adaptiveIcon.backgroundColor, tuile, "fond adaptatif Android : tuile du logo");
   const png = fs.readFileSync(path.join(import.meta.dirname, "..", "assets", "icon.png"));
   assert.equal(png.readUInt32BE(16), 1024, "largeur de l'icone");
