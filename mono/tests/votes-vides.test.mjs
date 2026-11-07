@@ -236,3 +236,37 @@ test("vote illisible : un vote réel dont la position n'a pas de libellé ne dev
   assert.doesNotMatch(c.titre, /Aucune position|Aucun vote/, "un vote existe : ni « aucune position » ni « aucun vote »");
   assert.match(c.corps, /Ce n'est pas une absence de vote/);
 });
+
+/* DE QUOI PARLE LE TEXTE (05/11/2026) : dossierDuScrutin ne fabrique jamais un lien. */
+import { dossierDuScrutin } from "../packages/core/src/index.js";
+
+test("dossier — intitulé, lien officiel et demandeur quand le scrutin les porte", () => {
+  const d = dossierDuScrutin({ dl: " Simplifier la sortie de l'indivision successorale ", dr: "DLR5L17N51329", dm: "Président du groupe X" });
+  assert.equal(d.intitule, "Simplifier la sortie de l'indivision successorale");
+  assert.equal(d.url, "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N51329");
+  assert.equal(d.demandeur, "Président du groupe X");
+});
+
+test("dossier — aucun dossier : null ; référence mal formée : pas de lien ; demandeur vide : null", () => {
+  assert.equal(dossierDuScrutin({ t: "x" }), null);
+  assert.equal(dossierDuScrutin({ dl: "   " }), null);
+  assert.equal(dossierDuScrutin({ dl: "Titre", dr: "../../autre-site" }).url, null);
+  assert.equal(dossierDuScrutin({ dl: "Titre", dm: " " }).demandeur, null);
+});
+
+import { dossierReleve } from "../packages/core/src/index.js";
+test("dossier — sans marqueur de lecture, l'absence d'intitulé n'est pas affirmée", () => {
+  assert.equal(dossierReleve({ t: "x" }), false);
+  assert.equal(dossierReleve({ dq: 1 }), true);
+});
+
+import { etapesDuScrutin } from "../packages/core/src/index.js";
+test("étapes — liste vide sans relevé ; étape sans date ou sans libellé écartée, jamais complétée", () => {
+  assert.deepEqual(etapesDuScrutin({ t: "x" }), []);
+  assert.deepEqual(etapesDuScrutin({ et: [] }), []);
+  assert.deepEqual(etapesDuScrutin({ et: [
+    { d: "2026-03-02", l: " 1ère lecture · Dépôt " }, { d: "", l: "Sans date" }, { d: "2026-04-01", l: "" }, { d: "02/03/2026", l: "Mauvais format" },
+  ] }), [{ date: "2026-03-02", fin: null, libelle: "1ère lecture · Dépôt", lien: null }]);
+  assert.equal(etapesDuScrutin({ et: [{ d: "2026-10-13", f: "2026-10-30", l: "Séance" }] })[0].fin, "2026-10-30");
+  assert.equal(etapesDuScrutin({ et: [{ d: "2026-10-13", f: "2026-10-01", l: "Séance" }] })[0].fin, null, "fin antérieure ignorée");
+});

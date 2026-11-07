@@ -6,6 +6,7 @@
  * complète, qui porte les trois faits, leurs sources et le partage.
  * Sans fait affichable, le bandeau ne s'affiche pas. */
 import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import { raccourcirFait } from "@repere/core";
 import { couleurs, feuille, PAS, RAYON, TYPO } from "../lib/theme";
 import { faitsAffichables, type FaitDuJour, type SourcesDuJour } from "../lib/repere-jour";
@@ -31,7 +32,7 @@ export function BandeauRepere({ faits, sources, onOuvrir }: {
       accessibilityLabel="Ouvrir le Repère du jour"
       style={({ pressed }) => [s.zone, { opacity: pressed ? 0.7 : 1 }]}>
       <View style={[s.visible, { backgroundColor: couleurs.voile }]}>
-        <Text style={s.icone} importantForAccessibility="no">💡</Text>
+        <Ionicons name="bulb-outline" size={16} color={couleurs.sourd} accessible={false} importantForAccessibility="no" />
         <Text numberOfLines={1} style={s.texte}>{`${PREFIXE}${raccourcirFait(premier.f.texte, { max: FAIT_MAX, visible: FAIT_MAX })}`}</Text>
         <Text style={s.chevron} importantForAccessibility="no">›</Text>
       </View>
@@ -53,7 +54,6 @@ const s = feuille(() => StyleSheet.create({
     paddingHorizontal: PAS * 3,
     borderRadius: RAYON.bloc,
   },
-  icone: { ...TYPO.note },
   texte: { ...TYPO.note, flex: 1, color: couleurs.encre },
   chevron: { ...TYPO.corps, fontWeight: "700", color: couleurs.encre },
 }));

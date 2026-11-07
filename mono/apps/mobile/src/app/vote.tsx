@@ -9,39 +9,47 @@
  *
  * Neutralite : trois gris, jamais de vert ni de rouge ; aucune position n'est
  * dite bonne ou mauvaise ; « ses autres votes » sont dans l'ordre du temps. */
+import { useState } from "react";
 import { Text, View } from "react-native";
 import { router, Stack } from "expo-router";
 import { Pressable } from "react-native";
 import {
   CONSTITUTION_45_URL, dateFr, ETAPES_LOI, etapeDuScrutin, ligneScrutin, motPosition,
   phraseCirconscription, phraseDenominateurVote, phrasePosition, POSITION_NON_PORTEE, procedure,
-  repartitionVote, titreLisible, MOTS, chaineDecision, copieVoteVide, ETAT_VOTE,
+  repartitionVote, titreLisible, MOTS, chaineDecision, copieVoteVide, ETAT_VOTE, dossierDuScrutin, dossierReleve, etapesDuScrutin,
 } from "@repere/core";
-import { Carte, Segments, Vide } from "../lib/composants";
+import { Carte, LienSortant, Segments, Vide } from "../lib/composants";
 import { srcScrutins, srcVote } from "../lib/sources";
 import { useCommuneChoisie } from "../lib/useCommune";
 import { couleurs, PAS, TYPO, CIBLE } from "../lib/theme";
 import { AvecDonnees, Page, Question } from "../ui/page";
 import { PastilleSource } from "../ui/source";
 import { Frise, Repartition } from "../ui/visuels";
+import { SignalerErreur } from "../ui/contact";
+import { Timeline } from "../ui/timeline";
 
-type FaitVote = { cle: string; type: string; sc: { t: string; d: string; n: string; s: string; dec?: Record<string, string> }; position?: string; qui: string; circo: number };
+type FaitVote = { cle: string; type: string; sc: { t: string; d: string; n: string; s: string; dec?: Record<string, string>; dl?: string; dr?: string; dm?: string; dq?: number; et?: { d: string; f?: string; l: string }[] }; position?: string; qui: string; circo: number };
+
+const ETAPES_VISIBLES = 6;
 
 export default function Vote() {
   const { reessayer } = useCommuneChoisie();
+  const [toutesEtapes, setToutesEtapes] = useState(false);
   return (
     <AvecDonnees rendu={r => {
       const { d } = r;
       const vote: FaitVote | undefined = d.dernierVote;
       /* Commune partagée : le vote affiché est celui d'un exemple, pas « votre » député (invariant 3). */
       const partagee = d.nbCircos > 1;
-      const entete = <Question emoji="🗳️" etiquette={partagee ? "Un député de votre commune" : "Votre député"} question={partagee ? "Qu'a voté un député de votre commune ?" : "Qu'a voté votre député ?"} />;
+      const entete = <Question etiquette={partagee ? "Un député de votre commune" : "Votre député"} question={partagee ? "Qu'a voté un député de votre commune ?" : "Qu'a voté votre député ?"} />;
       if (!r.votesLus) return <Page>{entete}<Vide {...copieVoteVide(ETAT_VOTE.RELEVE_NON_LU)} action="Réessayer" onAction={reessayer} /></Page>;
       if (!r.votesFiables) return <Page>{entete}<Vide {...copieVoteVide(ETAT_VOTE.RELEVE_INCOHERENT)} /></Page>;
       /* Un seul endroit décide du texte du vide : @repere/core (votesVides.js). */
       if (!vote) return <Page>{entete}<Vide {...copieVoteVide(d.etatVote, { nom: d.nomCommune, releve: srcScrutins(d)?.releve, portee: d.srcScrutins && d.srcScrutins.portee })} /></Page>;
 
       const rep = repartitionVote(vote.sc);
+      const dossier = dossierDuScrutin(vote.sc);
+      const etapes = etapesDuScrutin(vote.sc);
       const mot = (MOTS as Record<string, string>)[vote.position || ""];
       const etape = etapeDuScrutin(procedure(vote.sc.t));
       const autres = (d.faits as FaitVote[]).filter(x => x.type === "vote" && x.cle !== vote.cle && x.circo === vote.circo).slice(0, 4);
@@ -82,6 +90,23 @@ export default function Vote() {
             <Text style={[TYPO.corps, { color: couleurs.lien, fontWeight: "600" }]}>Partager ce vote ›</Text>
           </Pressable>
 
+          {/* DE QUOI PARLE CE TEXTE (05/11/2026) : l'intitulé officiel du dossier et qui a demandé
+              le scrutin public, tels que l'Assemblée les publie dans le scrutin. Aucun résumé écrit
+              par Repère. Dossier lu et absent : une phrase vraie. Champ pas encore relevé : rien. */}
+          {dossier || dossierReleve(vote.sc) ? <Carte echelon="france" titre="De quoi parle ce texte ?">
+            {dossier ? (
+              <>
+                <Text style={TYPO.note}>Intitulé du dossier à l'Assemblée nationale</Text>
+                <Text style={[TYPO.reponse, { fontSize: 19, lineHeight: 25 }]}>{dossier.intitule}</Text>
+                {dossier.demandeur ? <Text style={TYPO.note}>Vote public demandé par : {dossier.demandeur}.</Text> : null}
+                {dossier.url ? <LienSortant url={dossier.url} texte="Le dossier complet : texte, rapports, étapes" /> : null}
+              </>
+            ) : (
+              <Text style={TYPO.note}>L'Assemblée ne rattache ce scrutin à aucun dossier législatif dans ses données. Le détail est sur la page officielle du scrutin.</Text>
+            )}
+            <PastilleSource source={srcVote(d, vote.sc)} />
+          </Carte> : null}
+
           {/* NIVEAU 2 : le scrutin, visuellement */}
           {rep ? (
             <Carte echelon="france" titre="Comment l'Assemblée a voté">
@@ -102,8 +127,28 @@ export default function Vote() {
             <PastilleSource source={{ producteur: "Constitution du 4 octobre 1958, article 24", court: "Constitution, art. 24", url: CONSTITUTION_45_URL }} />
           </Carte>
 
+          {/* LES ETAPES DE CE TEXTE (05/11/2026) : les actes datés du dossier législatif, tels que
+              l'Assemblée les publie. Sans étape dans le relevé, la section n'existe pas et le
+              parcours général ci-dessous reste le repère. */}
+          {etapes.length ? (
+            <Carte echelon="france" titre="Les étapes de ce texte">
+              {/* Mesure (05/11/2026, 12 textes) : de 5 à 39 étapes. Les 6 plus récentes d'abord, le reste sur demande. */}
+              {!toutesEtapes && etapes.length > ETAPES_VISIBLES ? (
+                <Text style={TYPO.note}>{etapes.length - ETAPES_VISIBLES} étapes plus anciennes ne sont pas affichées.</Text>
+              ) : null}
+              <Timeline etapes={toutesEtapes ? etapes : etapes.slice(-ETAPES_VISIBLES)} etiquette="Les étapes de ce texte, de la plus ancienne à la plus récente" />
+              {etapes.length > ETAPES_VISIBLES ? (
+                <Pressable onPress={() => setToutesEtapes(v => !v)} accessibilityRole="button" accessibilityState={{ expanded: toutesEtapes }}
+                  style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", opacity: pressed ? 0.6 : 1 })}>
+                  <Text style={[TYPO.corps, { color: couleurs.lien, fontWeight: "600" }]}>{toutesEtapes ? "Afficher seulement les plus récentes" : `Voir les ${etapes.length} étapes`}</Text>
+                </Pressable>
+              ) : null}
+              <PastilleSource source={{ producteur: "Assemblée nationale — dossiers législatifs", court: "Assemblée nationale", url: dossier && dossier.url ? dossier.url : "https://data.assemblee-nationale.fr/travaux-parlementaires/dossiers-legislatifs" }} />
+            </Carte>
+          ) : null}
+
           {/* NIVEAU 3 : ou en est le texte */}
-          <Carte echelon="france" titre="Où en est ce texte ?">
+          {!etapes.length ? <Carte echelon="france" titre="Où en est ce texte ?">
             {etape ? (
               <Text style={TYPO.note}>Ce vote porte sur l'étape surlignée ; les autres étapes expliquent le parcours général d'une loi.</Text>
             ) : (
@@ -113,7 +158,7 @@ export default function Vote() {
               cle: e.cle, titre: e.titre, texte: e.texte, echelon: "france", actif: e.cle === etape,
             }))} />
             <PastilleSource source={{ producteur: "Constitution du 4 octobre 1958 (articles 10, 39 et 45)", court: "Constitution, art. 39 et 45", url: CONSTITUTION_45_URL }} />
-          </Carte>
+          </Carte> : null}
 
           {/* SES AUTRES VOTES, dans l'ordre du temps */}
           {autres.length ? (
@@ -132,6 +177,7 @@ export default function Vote() {
 
           <Pressable accessibilityRole="button" accessibilityLabel="Voir les scrutins publics et les votes détaillés" onPress={() => router.push("/scrutins")} style={{ minHeight: CIBLE, justifyContent: "center", marginTop: PAS * 2 }}><Text style={{ color: couleurs.lien, fontWeight: "600" }}>Voir les scrutins publics et les votes détaillés ›</Text></Pressable>
           <PastilleSource source={srcScrutins(d)} />
+          <SignalerErreur contexte={`le vote de ${vote.qui}`} donnee={`${dateFr(vote.sc.d)} · ${titreLisible(vote.sc.t)} · ${vote.qui}`} />
         </Page>
       );
     }} />

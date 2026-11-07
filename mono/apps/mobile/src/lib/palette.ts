@@ -119,3 +119,8 @@ export const COULEURS_GROUPES: Readonly<Record<string, string>> = Object.freeze(
   LFI: "#C9462C", RN: "#0D378A", EPR: "#FFA500", "LÉ": "#33A02C", LR: "#0066CC", SOC: "#FF8080",
   HOR: "#00A0C6", DEM: "#F7B32B", LIOT: "#6B7280", GDR: "#B91C1C", NI: "#9CA3AF", Inconnu: "#6B7280",
 });
+
+/* Point d'une étape de la Timeline (05/11/2026, demande du porteur). Gris neutre : il ne code
+   ni un vote ni une opinion. Contraste mesuré (objet graphique, WCAG 1.4.11, 3:1) : 5,43:1 sur
+   la carte claire, 3,1:1 sur la carte sombre. */
+export const POINT_ETAPE = "#5F6B7A";

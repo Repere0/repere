@@ -139,3 +139,59 @@ test("vides — partager.tsx : le repli passe par la règle partagée ; le vote 
   assert.doesNotMatch(src, /d\.dernierVote/, "le vote partagé ne doit pas être le dernier vote de la commune");
   assert.match(src, /copieVoteVide\(/, "le repli vient de la règle partagée");
 });
+
+/* ── D. Démarches en ligne de l'écran « Voter » (05/11/2026) ─────────────── */
+
+const elections = lire("src", "lib", "elections.ts");
+const voter = lire("src", "app", "voter.tsx");
+
+test("D — les trois démarches pointent vers service-public.gouv.fr, et nulle part ailleurs", () => {
+  const urls = [...elections.matchAll(/url:\s*"([^"]+)"/g)].map(m => m[1]).filter(u => /\/R\d+$/.test(u));
+  assert.equal(urls.length, 3, "trois liens de démarche attendus (vérifier, s'inscrire, procuration)");
+  for (const u of urls) assert.match(u, /^https:\/\/www\.service-public\.gouv\.fr\/particuliers\/vosdroits\/R\d+$/, u);
+});
+
+test("D — l'écran affiche les démarches avec leur date de vérification, et ne demande aucune adresse", () => {
+  assert.match(voter, /DEMARCHES\.map/, "les démarches doivent être rendues");
+  assert.match(voter, /DEMARCHES_VERIFIEES_LE/, "la date de vérification des liens doit être affichée");
+  assert.doesNotMatch(voter, /TextInput|geocod|geopf/i, "aucune saisie d'adresse ni géocodage (invariants 1 et 2)");
+});
+
+/* ── E. « Ma voix » : accordéons et réponses sourcées (05/11/2026) ───────── */
+
+test("E — chaque réponse sur le conseil municipal porte sa source officielle", () => {
+  const v = lire("src", "app", "voter.tsx");
+  for (const titre of ["Comment assister au conseil municipal ?", "Où trouver ce qu'a décidé le conseil ?"]) {
+    const i = v.indexOf(titre);
+    assert.ok(i > 0, `question absente : ${titre}`);
+    const fin = v.indexOf("\n  {", i + 1);
+    assert.match(v.slice(i, fin < 0 ? undefined : fin), /source:\s*\{[^}]*url:\s*SOURCE_/, `source manquante : ${titre}`);
+  }
+  assert.match(v, /accessibilityState=\{\{ expanded: ouvert \}\}/, "l'accordéon annonce son état au lecteur d'écran");
+});
+
+/* ── F. « De quoi parle ce texte ? » (05/11/2026) ────────────────────────── */
+
+test("F — la carte n'affirme une absence de dossier que si le relevé a lu le champ", () => {
+  const v = lire("src", "app", "vote.tsx");
+  assert.match(v, /\{dossier \|\| dossierReleve\(vote\.sc\) \? <Carte echelon="france" titre="De quoi parle ce texte \?">/, "la carte doit être conditionnée par dossierReleve");
+  assert.match(v, /dossierDuScrutin\(vote\.sc\)/, "l'intitulé vient de la règle partagée de @repere/core");
+});
+
+/* ── G. Timeline et « Les étapes de ce texte » (05/11/2026) ──────────────── */
+/* Contrôles statiques : l'application n'a pas de moteur de rendu de test (pas de jest).
+   La logique (quelles étapes) est testée dans tests/votes-vides.test.mjs (etapesDuScrutin). */
+
+test("G — Timeline ne rend rien pour une liste vide, sans plafond de taille ni emoji", () => {
+  const t = lire("src", "ui", "timeline.tsx");
+  assert.match(t, /if \(!etapes\.length\) return null;/, "liste vide : rien n'est rendu");
+  assert.doesNotMatch(t, /maxFontSizeMultiplier|adjustsFontSizeToFit|allowFontScaling=\{false\}/, "aucun plafond de taille");
+  assert.match(t, /POINT_ETAPE/, "le point vient de la palette");
+});
+
+test("G — la section n'existe que si le relevé porte des étapes ; sinon le parcours général reste", () => {
+  const v = lire("src", "app", "vote.tsx");
+  assert.match(v, /const etapes = etapesDuScrutin\(vote\.sc\);/, "les étapes viennent de la règle partagée de @repere/core");
+  assert.match(v, /\{etapes\.length \? \(\s*<Carte echelon="france" titre="Les étapes de ce texte">/, "section conditionnée par etapes.length");
+  assert.match(v, /\{!etapes\.length \? <Carte echelon="france" titre="Où en est ce texte \?">/, "parcours général seulement sans étapes");
+});

@@ -28,11 +28,12 @@ import { DateDonnee } from "../ui/fraicheur";
 import { phrasesMoyenne, useMoyenneDepenses } from "../lib/moyenne";
 import { PastilleSource } from "../ui/source";
 import { BoutonPartageTexte, ligneSource } from "../ui/partage/partager-texte";
-import { Emoji, Resume } from "../ui/resume";
+import { Resume } from "../ui/resume";
 import { BarrePart, Compteur, DeuxAnnees, Depli, Financement, Mois, RepartitionCent, Tendance } from "../ui/visuels";
 import { PartagerCarte } from "../ui/partage/bouton-partage";
 import { ChiffreStory } from "../ui/partage/variantes/chiffre.story";
 import { messageChiffre } from "../ui/partage/messages";
+import { SignalerErreur } from "../ui/contact";
 
 type Rapport = { l: string; v: string; d: string };
 type Projet = { annee: number; dispositif: string; intitule: string; subvention: number; cout?: number; ancien_code?: string };
@@ -92,7 +93,7 @@ export default function Argent() {
         /* Audit 5 s (V15) : sansDate, la ligne DateDonnee de l'ecran dit deja la date et la source. */
         <Page sansDate>
           <Stack.Screen options={{ title: LIBELLES.argent, headerRight: () => <BoutonPartageTexte titre={`${LIBELLES.argent} de ${nom}`} chemin="argent" source={ligneSource(d.srcComptes)} /> }} />
-          <Question emoji="💶" etiquette="L'argent de la commune" question={`Où va l'argent de ${nom} ?`} />
+          <Question etiquette="L'argent de la commune" question={`Où va l'argent de ${nom} ?`} />
           {/* V13 bloc A : la date des comptes et leur anciennete, avec la source. */}
           <DateDonnee quoi="Comptes OFGL" date={r.index?.sources?.comptes?.maj} url={r.index?.sources?.comptes?.url} />
 
@@ -250,7 +251,6 @@ export default function Argent() {
           {/* LES PROJETS AIDES PAR L'ETAT */}
           <View style={{ gap: PAS * 3 }}>
             <View style={{ flexDirection: "row", gap: PAS * 2, alignItems: "center" }}>
-              <Emoji c="🏗️" taille={24} />
               <Text style={[TYPO.question, { flex: 1 }]} accessibilityRole="header">Les projets aidés par l'État</Text>
             </View>
             {!r.projetsLus ? (
@@ -291,6 +291,7 @@ export default function Argent() {
             )}
           </View>
           <Text style={[TYPO.micro, { color: couleurs.sourd }]}>Repère ne compare jamais deux communes : chaque chiffre ne parle que de {nom}.</Text>
+          <SignalerErreur contexte={`l'argent de ${nom}`} donnee={`Argent de la commune : ${nom}`} />
         </Page>
       );
     }} />

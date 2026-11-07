@@ -84,3 +84,15 @@ jobs:
           path: site_engendre
           retention-days: 7
           if-no-files-found: warn
+
+      # SCHEMAS DECRITS SUR LES ARCHIVES REELLES (05/11/2026) : le conteneur de travail ne
+      # joint pas l'Assemblee ; sans cet artefact, un schema decrit pendant une epreuve
+      # n'etait lisible qu'apres fusion et collecte du lendemain.
+      - name: Garder les schemas des sources en artefact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: schemas-sources
+          path: docs/schema_*.md
+          retention-days: 7
+          if-no-files-found: warn
