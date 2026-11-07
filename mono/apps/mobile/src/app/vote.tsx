@@ -42,6 +42,7 @@ const ETAPES_VISIBLES = 6;
 export default function Vote() {
   const { reessayer } = useCommuneChoisie();
   const [toutesEtapes, setToutesEtapes] = useState(false);
+  const [titreEntier, setTitreEntier] = useState(false);
   const COULEUR = useCouleurVote();
   const groupes = useGroupes();
   return (
@@ -84,7 +85,7 @@ export default function Vote() {
               Commune partagée : la phrase qui dit que c'est UN EXEMPLE reste, elle ne se résume pas. */}
           {partagee ? <Text style={TYPO.note}>{phraseCirconscription(d, vote.circo)}</Text> : null}
           <View style={{ flexDirection: "row", alignItems: "center", gap: PAS * 3 }}>
-            <Avatar nom={vote.qui} taille={48} groupe={groupe} />
+            <Avatar nom={vote.qui} taille={48} groupe={groupe} doux />
             <View style={{ flex: 1, gap: 2 }}>
               <View style={{ flexDirection: "row", alignItems: "center", gap: PAS * 2 }}>
                 <Text style={[TYPO.corps, { fontFamily: POLICE.titre, flex: 1 }]}>{vote.qui}</Text>
@@ -103,7 +104,13 @@ export default function Vote() {
             <DataBadge texte={mot || "Position non portée"} couleur={mot ? COULEUR[vote.position as keyof typeof COULEUR] : undefined} />
             <Text style={TYPO.question}><Segments s={phrasePosition(vote.position, vote.qui)} /></Text>
             <View style={{ gap: PAS }}>
-              <Text style={[TYPO.reponse, { fontSize: 19, lineHeight: 25 }]}>{dossier ? dossier.intitule : titreLisible(vote.sc.t)}</Text>
+              {/* Deux lignes au plus ; le titre officiel entier reste lisible d'un geste (jamais réécrit). */}
+              <Pressable onPress={() => setTitreEntier(v => !v)} accessibilityRole="button" accessibilityState={{ expanded: titreEntier }}
+                accessibilityLabel={`${dossier ? dossier.intitule : titreLisible(vote.sc.t)}. ${titreEntier ? "Réduire le titre" : "Afficher le titre entier"}`}>
+                <Text style={[TYPO.corps, { fontFamily: POLICE.titre, fontSize: 17, lineHeight: 23 }]} numberOfLines={titreEntier ? undefined : 2}>
+                  {dossier ? dossier.intitule : titreLisible(vote.sc.t)}
+                </Text>
+              </Pressable>
               {dossier ? <Text style={TYPO.note}>Objet du scrutin : {titreLisible(vote.sc.t)}</Text> : null}
               <Text style={TYPO.donnee}>{metaScrutin(vote.sc)}</Text>
             </View>
@@ -120,7 +127,7 @@ export default function Vote() {
             {/* Le statut du scrutin, écrit en toutes lettres : la couleur du « pour » quand le pour l'a
                 emporté (adopté), celle du « contre » quand il a été rejeté (D24 : un fait). */}
             <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: PAS * 3 }}>
-              {statut ? <DataBadge texte={statut === "p" ? "ADOPTÉ" : "REJETÉ"} couleur={COULEUR[statut]} /> : <View />}
+              {statut ? <DataBadge texte={statut === "p" ? "ADOPTÉ" : "REJETÉ"} couleur={COULEUR[statut]} teinte /> : <View />}
               <PastilleSource source={srcVote(d, vote.sc)} />
             </View>
           </Carte>

@@ -58,10 +58,8 @@ export function Hemicycle() {
           </View>
         ))}
       </View>
-      <Text style={TYPO.micro}>
-        {total} députés dont la table de l'Assemblée donne le mandat en cours. Groupes rangés par ordre alphabétique :
-        leur place sur ce dessin n'est ni leur place dans la salle, ni une position politique.
-      </Text>
+      {/* 07/11/2026 : raccourci. La place sur l'arc vient de l'ordre alphabétique (invariant 3). */}
+      <Text style={TYPO.micro}>{total} députés. Ordre alphabétique : ne reflète pas la position politique.</Text>
       <PastilleSource source={{ producteur: fichier.source.producteur, licence: fichier.source.licence, url: fichier.source.url, releve: fichier.genere_le }} />
     </View>
   );

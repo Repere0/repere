@@ -482,8 +482,9 @@ export default function Accueil() {
               <DatePublication />
               <BadgeZoom sombre />
             </View>
-            {/* LE PITCH : une citation, en grand. Demande du CEO (30/10/2026) : elle remplace le paragraphe. */}
-            <Text style={[s.citation, premiere && { marginTop: PAS * 2 }]} accessibilityRole="header">L'application qui vous raccroche à votre citoyenneté française.</Text>
+            {/* LE PITCH : une citation, en grand. Demande du CEO (30/10/2026) : elle remplace le paragraphe.
+                07/11/2026 (porteur) : titre court, les deux questions du produit, mot pour mot. */}
+            <Text style={[s.citation, premiere && { marginTop: PAS * 2 }]} accessibilityRole="header">Qui décide. Où va l'argent.</Text>
             {!champOuvert ? (
               <Pressable onPress={() => setCherche(true)} accessibilityRole="button" accessibilityLabel="Chercher une commune"
                 style={({ pressed }) => [s.chercher, pressed && { opacity: 0.7 }]}>
@@ -626,12 +627,13 @@ const s = feuille(() => StyleSheet.create({
   barreHaut: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
   outil: { width: CIBLE, height: CIBLE, alignItems: "center", justifyContent: "center" },
   tuiles: { flexDirection: "row", gap: PAS * 2 },
-  tuile: { flex: 1, minHeight: 76, gap: PAS * 2, padding: PAS * 3, borderRadius: RAYON.bloc, backgroundColor: D.carte, borderWidth: 1, borderColor: D.trait, justifyContent: "space-between" },
+  /* Fond D.voile : la teinte demandée par le porteur à 3 unités près, sans couleur hors palette. */
+  tuile: { flex: 1, minHeight: 76, gap: PAS * 2, padding: PAS * 3, borderRadius: RAYON.bloc, backgroundColor: D.voile, justifyContent: "space-between" },
   tuileTexte: { fontFamily: POLICE.titre, fontSize: 15, lineHeight: 20, color: D.encre },
   marque: { fontFamily: POLICE.affiche, fontSize: 26, color: D.encre },
-  chercher: { minHeight: 56, borderRadius: RAYON.bloc, backgroundColor: D.carte, borderWidth: 1, borderColor: D.trait, paddingHorizontal: PAS * 4, flexDirection: "row", alignItems: "center", gap: PAS * 3, marginTop: PAS * 2 },
+  chercher: { minHeight: 56, borderRadius: RAYON.bloc, backgroundColor: D.carte, borderWidth: 1, borderColor: D.trait, paddingHorizontal: PAS * 4, flexDirection: "row", alignItems: "center", gap: PAS * 3 },
   chercherTexte: { fontFamily: POLICE.texteMoyen, fontSize: 16, color: D.encre },
-  citation: { fontFamily: POLICE.affiche, fontSize: 38, lineHeight: 43, letterSpacing: -0.6, color: D.encre, marginTop: PAS * 6 },
+  citation: { fontFamily: POLICE.affiche, fontSize: 40, lineHeight: 44, letterSpacing: -0.8, color: D.encre, marginTop: PAS * 6 },
   carte: { gap: PAS * 2, padding: PAS * 4, borderRadius: RAYON.carte, backgroundColor: D.carte, borderWidth: 1, borderColor: D.trait },
   etiquette: { fontSize: 13, fontWeight: "500", color: D.sourd },
   carteTitre: { fontFamily: POLICE.titre, fontSize: 24, lineHeight: 30, color: D.encre },

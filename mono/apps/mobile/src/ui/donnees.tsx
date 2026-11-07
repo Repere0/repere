@@ -22,8 +22,17 @@ export function StatCard({ valeur, libelle, couleur }: { valeur: string; libelle
   );
 }
 
-export function DataBadge({ texte, couleur }: { texte: string; couleur?: string }) {
+/* `teinte` : la même couleur de vote (D24, inchangée), posée en voile à 22 % avec un filet plein,
+   texte en encre : un badge plus doux, sans nouvelle couleur hors palette (invariant 7). */
+export function DataBadge({ texte, couleur, teinte }: { texte: string; couleur?: string; teinte?: boolean }) {
   const fond = couleur || couleurs.voile;
+  if (couleur && teinte) {
+    return (
+      <View style={[s.badge, { backgroundColor: couleur + "38", borderWidth: 1, borderColor: couleur }]}>
+        <Text style={[s.badgeTexte, { color: couleurs.encre }]}>{texte}</Text>
+      </View>
+    );
+  }
   return (
     <View style={[s.badge, { backgroundColor: fond }]}>
       <Text style={[s.badgeTexte, { color: couleur ? texteSur(fond) : couleurs.encre }]}>{texte}</Text>

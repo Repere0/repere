@@ -4,6 +4,7 @@
  * Chargement), reecrits en composants React Native : le DOM n'existe pas sur
  * un telephone. La logique (dates, montants, lecture d'un scrutin) n'est PAS
  * reecrite : elle vient de @repere/core. */
+import { Ionicons } from "@expo/vector-icons";
 import type { ReactNode } from "react";
 import { Linking, Pressable, StyleSheet, Text, View } from "react-native";
 import { ligneSource, motsDuTexte, CALCUL_REPERE } from "@repere/core";
@@ -127,13 +128,19 @@ export function Source({ producteur, licence, maj, mention, url, calcul }: Sourc
 /* Doctrine du vide (invariant 5) : une absence produit une phrase, jamais une
    forme vide. `accessibilityLiveRegion` fait lire la phrase par TalkBack quand
    elle apparait ; VoiceOver la lit au passage du focus. */
-export function Vide({ titre, corps, lien, action, onAction }: {
+/* L'ÉTAT VIDE (07/11/2026) : une icône, une phrase vraie, son explication, et un geste
+   (lien ou bouton) quand il en existe un vrai (invariant 5). L'icône est décorative. */
+export function Vide({ titre, corps, lien, action, onAction, icone = "file-tray-outline" }: {
   titre: string; corps?: string; lien?: { texte: string; url: string }; action?: string; onAction?: () => void;
+  icone?: keyof typeof Ionicons.glyphMap;
 }) {
   return (
     <View style={s.vide} accessibilityRole="summary" accessibilityLiveRegion="polite">
-      <Text style={[s.texte, s.fort]}>{titre}</Text>
-      {corps ? <Text style={s.texte}>{corps}</Text> : null}
+      <View style={s.videIcone}>
+        <Ionicons name={icone} size={26} color={couleurs.sourd} accessible={false} importantForAccessibility="no" />
+      </View>
+      <Text style={[TYPO.reponse, { fontSize: 18, lineHeight: 24 }]}>{titre}</Text>
+      {corps ? <Text style={TYPO.note}>{corps}</Text> : null}
       {lien ? <LienSortant url={lien.url} texte={lien.texte} /> : null}
       {action && onAction ? <Bouton texte={action} onPress={onAction} /> : null}
     </View>
@@ -172,7 +179,8 @@ const s = feuille(() => StyleSheet.create({
   /* En encre, souligne : la couleur de ville sur le gris d'une phrase d'absence
      faisait 4,38:1 (mesure du 30/09/2026), sous le seuil AA. */
   lienTexte: { fontSize: 15, color: couleurs.encre, textDecorationLine: "underline" },
-  vide: { gap: PAS * 2, padding: PAS * 4, backgroundColor: couleurs.voile, borderRadius: RAYON.bloc, borderWidth: 1, borderColor: couleurs.trait },
+  vide: { gap: PAS * 3, padding: PAS * 5, backgroundColor: couleurs.carte, borderRadius: RAYON.carte, borderWidth: 1, borderColor: couleurs.trait },
+  videIcone: { width: 48, height: 48, borderRadius: 24, backgroundColor: couleurs.voile, alignItems: "center", justifyContent: "center" },
   bouton: {
     minHeight: CIBLE + 4, borderRadius: RAYON.bloc, paddingHorizontal: PAS * 4, alignItems: "center", justifyContent: "center",
     backgroundColor: couleurs.ville,

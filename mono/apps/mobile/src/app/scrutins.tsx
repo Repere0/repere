@@ -144,15 +144,21 @@ function GroupeRow({ groupe, ouvert, onPress }: { groupe: Groupe; ouvert: boolea
   );
 }
 
+/* SEGMENTED CONTROL (07/11/2026, style iOS) : une pilule grise, l'onglet actif en blanc cassé.
+   Libellés courts à l'écran (une ligne), nom complet pour le lecteur d'écran. */
 function Onglets({ mode, setMode }: { mode: "votes" | "qag"; setMode: (m: "votes" | "qag") => void }) {
+  const ONGLETS = [
+    { cle: "votes" as const, texte: "Votes publics", etiquette: "Votes publics" },
+    { cle: "qag" as const, texte: "Questions", etiquette: "Questions au Gouvernement" },
+  ];
   return (
-    <View style={s.onglets}>
-      <Pressable onPress={() => setMode("votes")} accessibilityRole="tab" accessibilityState={{ selected: mode === "votes" }} style={[s.onglet, mode === "votes" && s.ongletActif]}>
-        <Text style={[s.ongletTexte, mode === "votes" && s.ongletTexteActif]}>Votes publics</Text>
-      </Pressable>
-      <Pressable onPress={() => setMode("qag")} accessibilityRole="tab" accessibilityState={{ selected: mode === "qag" }} style={[s.onglet, mode === "qag" && s.ongletActif]}>
-        <Text style={[s.ongletTexte, mode === "qag" && s.ongletTexteActif]}>Questions au Gouvernement</Text>
-      </Pressable>
+    <View style={s.onglets} accessibilityRole="tablist">
+      {ONGLETS.map(o => (
+        <Pressable key={o.cle} onPress={() => setMode(o.cle)} accessibilityRole="tab" accessibilityLabel={o.etiquette}
+          accessibilityState={{ selected: mode === o.cle }} style={[s.onglet, mode === o.cle && s.ongletActif]}>
+          <Text style={[s.ongletTexte, mode === o.cle && s.ongletTexteActif]} numberOfLines={1}>{o.texte}</Text>
+        </Pressable>
+      ))}
     </View>
   );
 }
@@ -327,9 +333,10 @@ export default function Scrutins() {
         )
       ) : (
         !index ? (
-          <Vide
-            titre={etat === ETATS.EN_COURS ? "Chargement des scrutins." : "On n'a pas encore les scrutins."}
-            corps="Repère n'affiche pas une position quand le relevé détaillé n'est pas disponible."
+          <Vide icone={etat === ETATS.EN_COURS ? "hourglass-outline" : "file-tray-outline"}
+            titre={etat === ETATS.EN_COURS ? "Chargement des scrutins." : "Les scrutins ne sont pas encore sur ce téléphone."}
+            corps="Sans le relevé détaillé de l'Assemblée, Repère n'affiche aucune position. Les scrutins restent consultables sur le site officiel."
+            lien={etat === ETATS.EN_COURS ? undefined : { texte: "Voir les scrutins sur le site de l'Assemblée", url: "https://www.assemblee-nationale.fr/dyn/17/scrutins" }}
           />
         ) : (
           <>
@@ -407,16 +414,11 @@ export default function Scrutins() {
 
 const s = feuille(() => StyleSheet.create({
   intro: { gap: PAS, paddingTop: PAS * 2 },
-  onglets: {
-    flexDirection: "row", backgroundColor: couleurs.voile, borderRadius: RAYON.bloc,
-    padding: 4, gap: 4,
-  },
-  onglet: {
-    minHeight: CIBLE, flex: 1, borderRadius: 11, alignItems: "center", justifyContent: "center", paddingHorizontal: PAS * 2,
-  },
-  ongletActif: { backgroundColor: couleurs.carte, ...OMBRE },
-  ongletTexte: { fontSize: 14, lineHeight: 18, color: couleurs.sourd, fontWeight: "600", textAlign: "center" },
-  ongletTexteActif: { color: couleurs.encre },
+  onglets: { flexDirection: "row", backgroundColor: couleurs.voile, borderRadius: RAYON.pastille, padding: 3 },
+  onglet: { minHeight: CIBLE, flex: 1, borderRadius: RAYON.pastille, alignItems: "center", justifyContent: "center", paddingHorizontal: PAS * 2 },
+  ongletActif: { backgroundColor: couleurs.encre, ...OMBRE },
+  ongletTexte: { fontFamily: POLICE.texteMoyen, fontSize: 14, lineHeight: 18, color: couleurs.sourd, textAlign: "center" },
+  ongletTexteActif: { color: couleurs.sol },
   resumeEntete: {
     backgroundColor: couleurs.carte, borderRadius: RAYON.carte, padding: PAS * 5, gap: 2, ...OMBRE,
   },
