@@ -134,9 +134,7 @@ export const POINT_ETAPE = "#5F6B7A";
    couleur du groupe pour un dégradé ; ils ne changent pas la teinte qui identifie le groupe. */
 export const REFLET_AVATAR = { clair: "rgba(255,255,255,0.22)", ombre: "rgba(0,0,0,0.18)" };
 
-/* LA JAUGE DU BUDGET (07/11/2026). Les maquettes Stitch demandent un bleu et un vert
-   (primary-container, secondary) : ce sont des couleurs hors des trois familles permises
-   (échelons, groupes, votes), que la garde de l'invariant 7 refuse. En attendant une décision
-   du porteur (amendement + .claude/invariants.sha256), la jauge reste en neutres : encre, gris
-   chaud, et outline-variant de Stitch (un neutre). La légende écrite porte le sens. */
-export const JAUGE_BUDGET = { salaires: "#F3F0E8", investissement: "#928F86", autres: "#34322F" };
+/* LA JAUGE DU BUDGET (maquettes Stitch). Amendement de l'invariant 7 par le porteur, 08/11/2026 :
+   bleu (salaires) et vert (investissements) sont des couleurs de données financières, pour cette
+   jauge seulement, jamais politiques ; « autres » reste un neutre. La légende écrite porte le sens. */
+export const JAUGE_BUDGET = Object.freeze({ salaires: "#2B6CB0", investissement: "#9DD3AA", autres: "#34322F" });

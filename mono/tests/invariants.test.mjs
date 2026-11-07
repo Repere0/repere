@@ -156,6 +156,11 @@ test("invariant 7 — palette gelée ; couleurs de groupes seulement dans palett
   const blocVoteD = (lire("apps/mobile/src/lib/palette.ts").match(/export const COULEURS_VOTE_DALTONIEN[\s\S]*?\}\);/) || [""])[0];
   const votesD = [...blocVoteD.matchAll(/#[0-9a-fA-F]{6}\b/g)].map(m => m[0].toLowerCase());
   assert.deepEqual(votesD, ["0072b2", "b35900", "6e7781"].map(h => "#" + h), "la variante daltonienne est celle de D56 (ADR 0003)");
+  /* Amendement du porteur (08/11/2026) : la jauge du budget, deux couleurs de données financières,
+     dans palette.ts seulement (le troisième segment est un neutre). */
+  const blocJauge = (lire("apps/mobile/src/lib/palette.ts").match(/export const JAUGE_BUDGET[\s\S]*?\}\);/) || [""])[0];
+  const jauge = [...blocJauge.matchAll(/#[0-9a-fA-F]{6}\b/g)].map(m => m[0].toLowerCase()).filter(h => amplitude(h) > AMPLITUDE_MAX);
+  assert.deepEqual(jauge, ["2b6cb0", "9dd3aa"].map(h => "#" + h), "la jauge du budget porte les deux couleurs de l'amendement du 08/11/2026");
   const tousVotes = [...votes, ...votesD];
   let controlees = 0;
   for (const f of sourcesEcrites()) {
@@ -164,6 +169,10 @@ test("invariant 7 — palette gelée ; couleurs de groupes seulement dans palett
       if (gelees.includes(hex)) continue;
       if (tousVotes.includes(hex)) {
         assert.equal(f, "apps/mobile/src/lib/palette.ts", `${f} : couleur de vote ${hex} hors palette.ts`);
+        continue;
+      }
+      if (jauge.includes(hex)) {
+        assert.equal(f, "apps/mobile/src/lib/palette.ts", `${f} : couleur de la jauge du budget ${hex} hors palette.ts`);
         continue;
       }
       if (groupes.includes(hex)) {
