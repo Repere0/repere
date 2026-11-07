@@ -175,10 +175,11 @@ function CarteVote({ etiquette, nom, acteur, ligne, position, dec, date, titre, 
 
 /* Les trois accès rapides de l'accueil (07/11/2026) : mêmes écrans, mêmes noms qu'avant. */
 /* router.push écrit en toutes lettres : le contrôle de parcours (tests/parcours.test.mjs) le lit. */
-const ACCES: { ouvrir: () => void; texte: string; etiquette: string; icone: keyof typeof Ionicons.glyphMap }[] = [
-  { ouvrir: () => router.push("/mes-elus"), texte: "Mes élus", etiquette: "Mes élus : qui vous représente", icone: "people-outline" },
-  { ouvrir: () => router.push("/voter"), texte: "Ma voix", etiquette: "Ma voix : prochaines élections, guide du vote et du conseil municipal", icone: "checkbox-outline" },
-  { ouvrir: () => router.push("/pour-vous"), texte: "Pour vous", etiquette: "Pour vous : ce qui a été publié selon votre vue", icone: "bookmark-outline" },
+/* Couleur de chaque tuile : celle d'un échelon (une section), jamais d'un parti (invariant 7). */
+const ACCES: { ouvrir: () => void; texte: string; etiquette: string; icone: keyof typeof Ionicons.glyphMap; couleur: string }[] = [
+  { ouvrir: () => router.push("/mes-elus"), texte: "Mes élus", etiquette: "Mes élus : qui vous représente", icone: "people", couleur: ECHELONS_PAR_MODE.sombre.ville },
+  { ouvrir: () => router.push("/voter"), texte: "Ma voix", etiquette: "Ma voix : prochaines élections, guide du vote et du conseil municipal", icone: "checkbox", couleur: ECHELONS_PAR_MODE.sombre.dept },
+  { ouvrir: () => router.push("/pour-vous"), texte: "Pour vous", etiquette: "Pour vous : ce qui a été publié selon votre vue", icone: "bookmark", couleur: ECHELONS_PAR_MODE.sombre.region },
 ];
 
 export default function Accueil() {
@@ -484,11 +485,13 @@ export default function Accueil() {
             </View>
             {/* LE PITCH : une citation, en grand. Demande du CEO (30/10/2026) : elle remplace le paragraphe.
                 07/11/2026 (porteur) : titre court, les deux questions du produit, mot pour mot. */}
-            <Text style={[s.citation, premiere && { marginTop: PAS * 2 }]} accessibilityRole="header">Qui décide. Où va l'argent.</Text>
+            {/* 07/11/2026 (porteur, refonte globale) : plus de slogan ; la recherche devient le héros.
+                Le titre reste pour le lecteur d'écran (un écran sans titre est une impasse). */}
+            <Text style={s.titreCache} accessibilityRole="header">Repère, accueil</Text>
             {!champOuvert ? (
               <Pressable onPress={() => setCherche(true)} accessibilityRole="button" accessibilityLabel="Chercher une commune"
                 style={({ pressed }) => [s.chercher, pressed && { opacity: 0.7 }]}>
-                <Ionicons name="location-outline" size={20} color={D.sourd} accessible={false} importantForAccessibility="no" />
+                <Ionicons name="search" size={24} color={D.encre} accessible={false} importantForAccessibility="no" />
                 <Text style={s.chercherTexte}>Chercher une commune</Text>
               </Pressable>
             ) : null}
@@ -496,7 +499,9 @@ export default function Accueil() {
               {ACCES.map(a => (
                 <Pressable key={a.texte} onPress={a.ouvrir} accessibilityRole="link" accessibilityLabel={a.etiquette}
                   style={({ pressed }) => [s.tuile, pressed && { opacity: 0.7 }]}>
-                  <Ionicons name={a.icone} size={22} color={D.encre} accessible={false} importantForAccessibility="no" />
+                  <View style={[s.tuileIcone, { backgroundColor: a.couleur }]}>
+                    <Ionicons name={a.icone} size={20} color={D.sol} accessible={false} importantForAccessibility="no" />
+                  </View>
                   <Text style={s.tuileTexte}>{a.texte}</Text>
                 </Pressable>
               ))}
@@ -631,8 +636,10 @@ const s = feuille(() => StyleSheet.create({
   tuile: { flex: 1, minHeight: 76, gap: PAS * 2, padding: PAS * 3, borderRadius: RAYON.bloc, backgroundColor: D.voile, justifyContent: "space-between" },
   tuileTexte: { fontFamily: POLICE.titre, fontSize: 15, lineHeight: 20, color: D.encre },
   marque: { fontFamily: POLICE.affiche, fontSize: 26, color: D.encre },
-  chercher: { minHeight: 56, borderRadius: RAYON.bloc, backgroundColor: D.carte, borderWidth: 1, borderColor: D.trait, paddingHorizontal: PAS * 4, flexDirection: "row", alignItems: "center", gap: PAS * 3 },
-  chercherTexte: { fontFamily: POLICE.texteMoyen, fontSize: 16, color: D.encre },
+  chercher: { minHeight: 72, borderRadius: RAYON.carte, backgroundColor: D.carte, borderWidth: 1, borderColor: D.trait, paddingHorizontal: PAS * 5, flexDirection: "row", alignItems: "center", gap: PAS * 3, marginTop: PAS * 4, ...OMBRE_PAR_MODE.sombre },
+  titreCache: { position: "absolute", width: 1, height: 1, overflow: "hidden", opacity: 0 },
+  tuileIcone: { width: 36, height: 36, borderRadius: 12, alignItems: "center", justifyContent: "center" },
+  chercherTexte: { fontFamily: POLICE.titre, fontSize: 20, color: D.encre },
   citation: { fontFamily: POLICE.affiche, fontSize: 40, lineHeight: 44, letterSpacing: -0.8, color: D.encre, marginTop: PAS * 6 },
   carte: { gap: PAS * 2, padding: PAS * 4, borderRadius: RAYON.carte, backgroundColor: D.carte, borderWidth: 1, borderColor: D.trait },
   etiquette: { fontSize: 13, fontWeight: "500", color: D.sourd },

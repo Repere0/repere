@@ -23,10 +23,11 @@ import {
   ageReleve, dateFr, ETAPES_LOI, heureFr, jourFr, jourParis, LIBELLES, regrouperParJour,
 } from "@repere/core";
 import { Carte, Vide } from "../../lib/composants";
+import { Ionicons } from "@expo/vector-icons";
 import { AGENDA_PAS_ARRIVE, AGENDA_VIDE } from "../../lib/absences";
 import { srcAgenda } from "../../lib/sources";
 import { useCommuneChoisie } from "../../lib/useCommune";
-import { couleurs, CIBLE, PAS, TYPO } from "../../lib/theme";
+import { couleurs, CIBLE, PAS, POLICE, TYPO } from "../../lib/theme";
 import { DateDonnee } from "../../ui/fraicheur";
 import { AvecDonnees, Page, Question } from "../../ui/page";
 import { PastilleSource } from "../../ui/source";
@@ -78,9 +79,17 @@ function Ligne({ g }: { g: Groupe }) {
   }).filter(Boolean).join(", ");
   return (
     /* V35 bloc 2 (D68) : une séance se lit heure > titre > institution ; le jour est porté par le bloc. */
-    <View testID="cal-ligne" style={{ gap: 2, paddingTop: PAS * 2, borderTopWidth: 1, borderTopColor: couleurs.trait }}>
-      <Text style={[TYPO.corps, { fontWeight: "500" }]}>{heures || "Heure non publiée"}</Text>
-      <Text style={TYPO.corps}>{g.titre}</Text>
+    /* 07/11/2026 : une frise verticale ; à gauche l'icône de l'institution sur un fil, à droite l'heure en chiffres. */
+    <View testID="cal-ligne" style={{ flexDirection: "row", gap: PAS * 3 }}>
+      <View style={{ alignItems: "center", width: 32 }}>
+        <View style={{ width: 32, height: 32, borderRadius: 16, backgroundColor: couleurs.voile, alignItems: "center", justifyContent: "center" }}>
+          <Ionicons name={g.institution === "Sénat" ? "library-outline" : "business-outline"} size={16} color={couleurs.encre} accessible={false} importantForAccessibility="no" />
+        </View>
+        <View style={{ flex: 1, width: 2, backgroundColor: couleurs.trait, marginTop: PAS }} />
+      </View>
+      <View style={{ flex: 1, gap: 2, paddingBottom: PAS * 3 }}>
+      <Text style={TYPO.donnee}>{heures || "Heure non publiée"}</Text>
+      <Text style={[TYPO.corps, { fontFamily: POLICE.titre }]}>{g.titre}</Text>
       <Text style={TYPO.note}>
         {[g.institution, g.categorie, g.lieu, g.seances > 1 ? `${g.seances} séances ce jour-là` : null].filter(Boolean).join(" · ")}
       </Text>
@@ -94,6 +103,7 @@ function Ligne({ g }: { g: Groupe }) {
           {g.textesLibres.map((t, k) => <Text key={k} style={TYPO.note}>{t}</Text>)}
         </Depli>
       ) : null}
+      </View>
     </View>
   );
 }

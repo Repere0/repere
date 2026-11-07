@@ -1,7 +1,9 @@
 /* LE RAPPEL DE LA PROCHAINE ÉLECTION, sur l'accueil (V37, bloc 6, 31/10/2026).
  * Une carte, une question : quand vote-t-on, et comment. Dates de lib/elections.ts (vérifiées et sourcées).
  * Rien n'est affiché si aucune élection ne tombe dans les 180 jours. */
+import { useEffect, useState } from "react";
 import { Pressable, Text, View } from "react-native";
+import { useMouvementReduit } from "./mouvement";
 import { router } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { dateFr } from "@repere/core";
@@ -11,8 +13,27 @@ import { CIBLE, PAS, POLICE, RAYON } from "../lib/theme";
 
 const D = NEUTRES_PAR_MODE.sombre; /* l'accueil est toujours sombre */
 
+/* Le compte à rebours monte de 0 à sa valeur en 0,8 s à l'apparition (invariant 6 : suivre
+   une durée). Mouvement réduit : la valeur tout de suite. Le lecteur d'écran lit la valeur finale. */
+function useCompte(cible: number): number {
+  const reduit = useMouvementReduit();
+  const [n, setN] = useState(reduit ? cible : 0);
+  useEffect(() => {
+    if (reduit || cible <= 0) { setN(cible); return; }
+    const debut = Date.now();
+    const id = setInterval(() => {
+      const t = Math.min(1, (Date.now() - debut) / 800);
+      setN(Math.round(cible * (1 - Math.pow(1 - t, 3))));
+      if (t >= 1) clearInterval(id);
+    }, 16);
+    return () => clearInterval(id);
+  }, [cible, reduit]);
+  return n;
+}
+
 export function RappelElection({ aujourdhui = new Date() }: { aujourdhui?: Date }) {
   const trouve = prochaineElection(aujourdhui);
+  const compte = useCompte(trouve ? trouve.jours : 0);
   if (!trouve) return null;
   const { election, jours } = trouve;
   const titre = election.type === "presidentielle" ? "Élections présidentielles" : "Élections législatives";
@@ -28,7 +49,8 @@ export function RappelElection({ aujourdhui = new Date() }: { aujourdhui?: Date 
       {/* 07/11/2026 : la durée en grand (invariant 6 : suivre une durée est permis), la date à côté. */}
       {jours > 0 ? (
         <View style={{ flexDirection: "row", alignItems: "baseline", gap: PAS * 2 }}>
-          <Text style={{ fontFamily: POLICE.donneeForte, fontSize: 40, lineHeight: 46, color: D.encre, letterSpacing: -1 }}>{jours}</Text>
+          <Text style={{ fontFamily: POLICE.donneeForte, fontSize: 48, lineHeight: 54, color: D.encre, letterSpacing: -1 }}
+            accessibilityLabel={String(jours)}>{compte}</Text>
           <Text style={{ fontFamily: POLICE.texte, fontSize: 15, lineHeight: 21, color: D.sourd }}>{jours === 1 ? "jour" : "jours"} · {date}</Text>
         </View>
       ) : <Text style={{ fontSize: 15, lineHeight: 21, color: D.encre }}>{quand} ({date})</Text>}

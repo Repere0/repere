@@ -88,7 +88,11 @@ export default function Vote() {
             <Avatar nom={vote.qui} taille={48} groupe={groupe} doux />
             <View style={{ flex: 1, gap: 2 }}>
               <View style={{ flexDirection: "row", alignItems: "center", gap: PAS * 2 }}>
-                <Text style={[TYPO.corps, { fontFamily: POLICE.titre, flex: 1 }]}>{vote.qui}</Text>
+                {/* Maillage (07/11/2026) : le nom ouvre la fiche, partout où la fiche sait la retrouver. */}
+                <Pressable style={{ flex: 1, minHeight: CIBLE, justifyContent: "center" }} disabled={!parametresFiche} accessibilityRole={parametresFiche ? "link" : "text"}
+                  onPress={() => { if (parametresFiche) router.push({ pathname: "/elu", params: parametresFiche }); }}>
+                  <Text style={[TYPO.corps, { fontFamily: POLICE.titre }, parametresFiche ? { textDecorationLine: "underline" } : null]}>{vote.qui}</Text>
+                </Pressable>
                 <DataBadge texte={dateCourte(vote.sc.d)} />
               </View>
               <Text style={TYPO.micro}>{libelleGroupe(groupe)}</Text>

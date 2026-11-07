@@ -61,15 +61,6 @@ const POSITION: Record<string, string> = { p: "Pour", c: "Contre", a: "Abstentio
 /* Signes de texte (variante texte forcee, pas d'emoji), colores selon le sens du vote (D24). */
 const SYNTHESE = 3;
 
-function Initiales({ nom }: { nom: string }) {
-  const lettres = nom.split(/\s+/).filter(Boolean).map(m => m[0]).slice(0, 2).join("").toUpperCase();
-  return (
-    <View accessible={false}
-      style={{ width: 72, height: 72, borderRadius: 36, backgroundColor: couleurs.encre, alignItems: "center", justifyContent: "center" }}>
-      <Text style={{ color: couleurs.sol, fontWeight: "600", fontSize: 26 }}>{lettres}</Text>
-    </View>
-  );
-}
 
 function Lien({ texte, onPress, etiquette }: { texte: string; onPress: () => void; etiquette?: string }) {
   return (
@@ -148,7 +139,8 @@ function FeuilleVote({ f, nom, resume, base, onFermer }: { f: FaitElu | null; no
 /* La photo libre si elle existe (D27), sinon les initiales ; et son credit, dessous. */
 function PhotoOuInitiales({ nom, dep, cle, groupe }: { nom: string; dep: string; cle: string | null; groupe: string }) {
   const photo = usePhotoElu(dep, cle);
-  return photo ? <Avatar nom={nom} taille={72} photo={photo} groupe={groupe} /> : <Initiales nom={nom} />;
+  /* 07/11/2026 : sans photo, l'avatar en dégradé de la couleur du groupe (plus de rond uni). */
+  return <Avatar nom={nom} taille={88} photo={photo} groupe={groupe} />;
 }
 function CreditDe({ dep, cle }: { dep: string; cle: string | null }) {
   const photo = usePhotoElu(dep, cle);

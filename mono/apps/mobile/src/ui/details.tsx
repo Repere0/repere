@@ -4,7 +4,8 @@
  * Le fondu dure 200 ms ; si le téléphone demande moins d'animations, il est immédiat. */
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Animated, Pressable, Text, View } from "react-native";
-import { CIBLE, couleurs, PAS, TYPO } from "../lib/theme";
+import { Ionicons } from "@expo/vector-icons";
+import { CIBLE, couleurs, PAS, POLICE, TYPO } from "../lib/theme";
 import { useMouvementReduit } from "./mouvement";
 
 /* Sur un fond sombre (carte de l'accueil), la couleur du texte et du lien se passe ici :
@@ -23,9 +24,10 @@ export function Details({ titre, children, ouvertParDefaut = false, couleur, lie
       <Pressable onPress={() => setOuvert(o => !o)} accessibilityRole="button" accessibilityState={{ expanded: ouvert }}
         accessibilityLabel={`${titre}. ${ouvert ? "Voir moins" : "Voir plus"}`}
         style={({ pressed }) => ({ minHeight: CIBLE, flexDirection: "row", alignItems: "center", gap: PAS * 2, opacity: pressed ? 0.7 : 1 })}>
-        <Text style={[TYPO.corps, { flex: 1, fontWeight: "600" }, couleur ? { color: couleur } : null]}>{titre}</Text>
+        <Text style={[TYPO.corps, { flex: 1, fontFamily: POLICE.titre }, couleur ? { color: couleur } : null]}>{titre}</Text>
         <Text style={{ color: lien ?? couleurs.lien, fontWeight: "500" }}>{ouvert ? "Voir moins" : "Voir plus"}</Text>
-        <Text aria-hidden style={{ color: lien ?? couleurs.lien, fontSize: 22, transform: [{ rotate: ouvert ? "90deg" : "0deg" }] }}>›</Text>
+        <Ionicons name="chevron-forward" size={18} color={lien ?? couleurs.lien} accessible={false} importantForAccessibility="no"
+          style={{ transform: [{ rotate: ouvert ? "90deg" : "0deg" }] }} />
       </Pressable>
       {ouvert ? (
         <Animated.View style={{ opacity: fondu, gap: PAS * 2 }}>{children}</Animated.View>
