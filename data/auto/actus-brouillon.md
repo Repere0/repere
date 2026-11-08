@@ -1,6 +1,6 @@
 # Actus brouillon : flux RSS des mairies
 
-Généré le 2026-11-07T16:21:35.257Z. **Non publié** : la publication automatique est désactivée (D82).
+Généré le 2026-11-08T12:19:37.443Z. **Non publié** : la publication automatique est désactivée (D82).
 
 Procédure : le CEO relit chaque entrée contre sa page (D33), puis copie au plus une entrée par commune dans `data/actus-hebdo.json` (titre, resume, source, source_nom).
 
@@ -916,6 +916,11 @@ Procédure : le CEO relit chaque entrée contre sa page (D33), puis copie au plu
 
 ## Grandpuits-Bailly-Carrois (77211)
 
+- **Evi’dance**
+  - Date : 2026-11-08
+  - Lien : https://mairie-grandpuits-bailly-carrois.fr/2026/11/08/5876/
+  - Résumé : 
+
 - **Réunion d’information le 03 décembre 2026**
   - Date : 2026-11-07
   - Lien : https://mairie-grandpuits-bailly-carrois.fr/2026/11/07/reunion-dinformation-le-03-decembre-2026/
@@ -925,11 +930,6 @@ Procédure : le CEO relit chaque entrée contre sa page (D33), puis copie au plu
   - Date : 2026-11-07
   - Lien : https://mairie-grandpuits-bailly-carrois.fr/2026/11/07/application-gratuite-pour-alerter-des-chasses-en-cours/
   - Résumé : 
-
-- **Projets soutenus par la Région**
-  - Date : 2026-11-05
-  - Lien : https://mairie-grandpuits-bailly-carrois.fr/2026/11/05/projets-soutenus-par-la-region/
-  - Résumé : Lien pour connaître tous les projets de la commune soutenus par la région IDF: https://www.iledefrance.fr/tous-les-services/ma-region-pres-de-chez-moi/grandpuits-bailly-carrois
 
 ## Gretz-Armainvilliers (77215)
 
@@ -1592,15 +1592,15 @@ Procédure : le CEO relit chaque entrée contre sa page (D33), puis copie au plu
   - Lien : https://www.seine-port.fr/actualites/sensibilisation-des-jeunes-a-la-preservation-de-leau/
   - Résumé : Le Syndicat des Eaux d’Île-de-France (SEDIF) met à disposition des écoles, des collectivités et des structures éducatives des ressources pédagogiques afin de sensibiliser les jeunes générations à la préservation de l’eau. À travers différents supports (contenus pédagogiques, jeux et activités…
 
-- **Avis de Conseil Municipal**
-  - Date : 2026-11-03
-  - Lien : https://www.seine-port.fr/actualites/26056-2/
-  - Résumé : Le prochain Conseil Municipal aura lieu le samedi 7 novembre 2026 à 9h00 à la Mairie Place Trainard
-
 - **Passage à l’heure d’hiver : adaptez votre conduite, vos déplacements et votre équipement à la baisse de luminosité**
   - Date : 2026-11-03
   - Lien : https://www.seine-port.fr/actualites/passage-a-lheure-dhiver-adaptez-votre-conduite-vos-deplacements-et-votre-equipement-a-la-baisse-de-luminosite/
   - Résumé : Le passage à l’heure d’hiver ayant eu lieu dans la nuit du samedi 24 au dimanche 25 octobre 2026, les journées sont désormais plus courtes et la nuit tombe plus tôt. Les déplacements se font donc davantage dans l’obscurité, ce qui réduit la visibilité et augmente les risques d’accidents,…
+
+- **Communiqué du maire**
+  - Date : 2026-10-19
+  - Lien : https://www.seine-port.fr/actualites/communique-du-maire/
+  - Résumé : Vincent Paul Petit, Maire de Seine-Port : lettre aux Seine-Portais
 
 ## Sept-Sorts (77448)
 
@@ -2649,6 +2649,11 @@ Procédure : le CEO relit chaque entrée contre sa page (D33), puis copie au plu
 
 ## Rochefort-en-Yvelines (78522)
 
+- **Menus des cantines des écoles de Rochefort-en-Yvelines et de Longvilliers – semaines du 9 au 13 novembre et du 16 au 20 novembre 2026**
+  - Date : 2026-11-08
+  - Lien : https://www.rey78.fr/actualites/menus-des-cantines-des-ecoles-de-rochefort-et-de-longvilliers-semaine-du-9-au-13-novembre-et-du-16-au-20-novembre-2026/
+  - Résumé : 
+
 - **Concerts à La Chapelle, Clairefontaine-en-Yvelines, le 27 novembre et le 12 décembre 2026**
   - Date : 2026-11-07
   - Lien : https://www.rey78.fr/actualites/concerts-a-la-chapelle-clairefontaine-en-yvelines-le-27-novembre-et-le-12-decembre-2026/
@@ -2658,11 +2663,6 @@ Procédure : le CEO relit chaque entrée contre sa page (D33), puis copie au plu
   - Date : 2026-11-06
   - Lien : https://www.rey78.fr/actualites/les-amis-des-ecoles-organisent-une-vente-de-sapins-au-profit-des-ecoles-le-28-novembre-2026/
   - Résumé : 
-
-- **DDT 78_NOTIFICATION_AP_N°78-2026-10-29-00003 et AP_N°78-2026-10-27-00001**
-  - Date : 2026-11-06
-  - Lien : https://www.rey78.fr/urbanisme/ddt-78_notification_ap_n78-2026-10-29-00003-et-ap_n78-2026-10-27-00001/
-  - Résumé : Dans le cadre de la mise en oeuvre du régime unique des haies, je vous prie de trouver ci-après, deux arrêtés préfectoraux visant à l’adaptation des listes locales 1 et 2 fixant les documents de planification, programmes, projets, manifestations et interventions soumis à évaluation d’incidences…
 
 ## Saint-Cyr-l'École (78545)
 
@@ -3008,18 +3008,6 @@ Procédure : le CEO relit chaque entrée contre sa page (D33), puis copie au plu
   - Lien : https://www.ville-bondoufle.fr/budget-participatif-2026/
   - Résumé : Retrouvez la plateforme du Budget Participatif 2026 par ici : projetcitoyen.ville-bondoufle.fr
 
-## Boutervilliers (91098)
-
-- **Soutenez les Vétérans de l’Entente Chalo St Mars Boutervilliers en D4 : Ensemble pour la Victoire !**
-  - Date : 2024-02-01
-  - Lien : https://mairie-boutervilliers.fr/actualite/
-  - Résumé : La fièvre du football ne s’éteint pas, et c’est avec une détermination inébranlable que les vétérans de l’Entente Chalo St Mars Boutervilliers s’affrontent en D4. Actuellement classés à une solide 5e place ex æquo avec les 4e, nos vétérans ont besoin du soutien passionné de la ville pour…
-
-- **Explorez le Nouveau Site Web de Boutervilliers : Votre Communauté à Portée de Clic !**
-  - Date : 2024-02-01
-  - Lien : https://mairie-boutervilliers.fr/actualite/
-  - Résumé : Bienvenue sur le tout nouveau site web de la mairie de Boutervilliers, votre portail numérique vers la vie locale ! Nous sommes ravis de vous présenter une plateforme repensée pour simplifier votre accès à l’information et renforcer votre connexion avec notre communauté.
-
 ## Briis-sous-Forges (91111)
 
 - **Sorties théâtre de novembre**
@@ -3224,39 +3212,22 @@ Procédure : le CEO relit chaque entrée contre sa page (D33), puis copie au plu
   - Lien : https://www.etiolles.fr/evenement/ceremonie-des-diplomes-2026/
   - Résumé : Cérémonie des diplômés 2026 La ville d’Etiolles est heureuse d’inviter tous les Etiollais diplômés en 2026 à la Cérémonie des diplômés, qui se déroulera le vendredi 20 novembre 2026 à 19h à la Maison des Associations. Sont concernés les jeunes ayant obtenu en 2026 : Brevet, CAP, BEP,…
 
-## Fontenay-lès-Briis (91243)
-
-- **Enquête publique concernant le Plan de Prévention du Risque inondation**
-  - Date : 2026-10-21
-  - Lien : https://www.fontenay-les-briis.fr/actualites/vie-locale/enquete-publique-concernant-le-plan-de-prevention-du-risque-inondation/
-  - Résumé : L’enquête publique concernant le Plan de Prévention du Risque inondation (PPRi) aura lieu du 9 novembre au 11 décembre 2026 inclus 2026 ; vous pouvez vous rendre en Mairie pour plus d’explications selon les jours et horaires d’ouverture : Lundi : 15h à 17h30.
-
-- **Conseil municipal du 21 septembre 2026**
-  - Date : 2026-09-23
-  - Lien : https://www.fontenay-les-briis.fr/non-classe/conseil-municipal-du-21-septembre-2026/
-  - Résumé : La liste des délibérations et décisions : Les décisions : Les délibérations :
-
-- **Séance du Conseil municipal le lundi 21 septembre à 19h**
-  - Date : 2026-09-16
-  - Lien : https://www.fontenay-les-briis.fr/actualites/vie-locale/seance-du-conseil-municipal-le-lundi-21-septembre-a-19h/
-  - Résumé : Une séance du Conseil municipal se tiendra e lundi 21 septembre à 19h en mairie salle Georges Blanc.
-
 ## La Forêt-le-Roi (91247)
+
+- **Restrictions de circulation sur RD836 entre les Granges le Roi et la Forêt le Roi en novembre et décembre 2026**
+  - Date : 2026-11-08
+  - Lien : https://www.laforetleroi.fr/restrictions-de-circulation-sur-rd836-entre-les-granges-le-roi-et-la-foret-le-roi-en-novembre-et-decembre-2026/
+  - Résumé : Ces restrictions pourront être prolongées de deux semaines en cas de difficultés dans … L’article Restrictions de circulation sur RD836 entre les Granges le Roi et la Forêt le Roi en novembre et décembre 2026 est apparu en premier sur La Forêt Le Roi.
+
+- **Calendriers des pompiers 2027**
+  - Date : 2026-11-08
+  - Lien : https://www.laforetleroi.fr/calendriers-des-pompiers-2027/
+  - Résumé : Message du Chef de Centre d’Incendie et de Secours de Dourdan :Je me permet ce message pour vous prévenir du lancement de la campagne des calendriers 2027 des Sapeurs-Pompiers de Dourdan (photo de couverture en PJ)Message de prévention car certains de vos administrés pourraient faire face à de…
 
 - **Marché de Noël à la Forêt le Roi le dimanche 22 novembre 2026**
   - Date : 2026-11-05
   - Lien : https://www.laforetleroi.fr/marche-de-noel-a-la-foret-le-roi-le-dimanche-22-novembre-2026/
   - Résumé : L’article Marché de Noël à la Forêt le Roi le dimanche 22 novembre 2026 est apparu en premier sur La Forêt Le Roi.
-
-- **Guide de la demande de logement social**
-  - Date : 2026-11-04
-  - Lien : https://www.laforetleroi.fr/guide-de-la-demande-de-logement-social/
-  - Résumé : L’article Guide de la demande de logement social est apparu en premier sur La Forêt Le Roi.
-
-- **Arrêtés de circulation 036, 039 et 040 pour travaux à la Forêt le Roi**
-  - Date : 2026-10-30
-  - Lien : https://www.laforetleroi.fr/arretes-de-circulation-036-039-et-040-pour-travaux-a-la-foret-le-roi/
-  - Résumé : L’article Arrêtés de circulation 036, 039 et 040 pour travaux à la Forêt le Roi est apparu en premier sur La Forêt Le Roi.
 
 ## Forges-les-Bains (91249)
 
@@ -3629,20 +3600,20 @@ Procédure : le CEO relit chaque entrée contre sa page (D33), puis copie au plu
 
 ## Souzy-la-Briche (91602)
 
-- **Point sur le remplacement des containers poubelles par la CCEJR**
-  - Date : 2026-09-14
-  - Lien : https://souzylabriche.fr/2026/09/14/point-sur-le-remplacement-des-containers-poubelles-par-la-ccejr/
-  - Résumé : Début 2026, la Communauté de Communes Entre Juine et Renarde (CCEJR) a procédé au remplacement de nos conteneurs individuels.
+- **Spectacle à Villeconin**
+  - Date : 2026-11-07
+  - Lien : https://souzylabriche.fr/2026/11/07/spectacle-a-villeconin/
+  - Résumé : 
 
-- **Problème de transport**
-  - Date : 2026-09-14
-  - Lien : https://souzylabriche.fr/2026/09/14/probleme-de-transport/
-  - Résumé : Depuis la rentrée des classes, les Souzéens, notamment les collégiens et lycéens rencontrent des difficultés avec les lignes de bus : en retard, pas de … Continuer la lecture de « Problème de transport »
+- **Commémoration du 11 novembre**
+  - Date : 2026-11-07
+  - Lien : https://souzylabriche.fr/2026/11/07/commemoration-du-11-novembre/
+  - Résumé : Le conseil municipal et le conseil municipal des enfants vous convie à la commémoration de l'armistice du 11 novembre, à 11h au cimetière de Souzy-la-Briche.
 
-- **Restrictions utilisation de l’eau**
-  - Date : 2026-07-19
-  - Lien : https://souzylabriche.fr/2026/07/19/restrictions-utilisation-de-leau/
-  - Résumé : Par arrêté préfectoral en date du 17 juillet 2026, l’usage de l’eau est restreint.
+- **Calendrier des pompiers**
+  - Date : 2026-11-07
+  - Lien : https://souzylabriche.fr/2026/11/07/calendrier-des-pompiers/
+  - Résumé : Jusqu’au début du mois de janvier 2027, les sapeurs-pompiers d’Etréchy viennent à votre rencontre, directement à votre domicile, pour vous proposer leur traditionnel calendrier.
 
 ## Le Val-Saint-Germain (91630)
 
@@ -4136,23 +4107,6 @@ Procédure : le CEO relit chaque entrée contre sa page (D33), puis copie au plu
   - Lien : https://www.mandreslesroses.fr/collecte-des-dechets-de-nouveaux-jours-de-ramassage-rue-du-general-leclerc-et-dans-les-cours
   - Résumé : De nouveaux jours de collecte des déchets seront mis en place à compter du 16 novembre 2026 rue du Général Leclerc et dans les cours. L’article Collecte des déchets : de nouveaux jours de ramassage rue du Général Leclerc et dans les cours est apparu en premier sur Ville de Mandres les Roses.
 
-## Nogent-sur-Marne (94052)
-
-- **L’Histoire s’affiche > l’exposition à voir absolument au Musée**
-  - Date : 2026-11-06
-  - Lien : https://ville-nogentsurmarne.com/lhistoire-saffiche-lexposition-a-voir-absolument-au-musee/?utm_source=rss&utm_medium=rss&utm_campaign=lhistoire-saffiche-lexposition-a-voir-absolument-au-musee
-  - Résumé : Le Musée intercommunal vous invite à découvrir sa nouvelle exposition temporaire, L’Histoire s’affiche – 400 ans d’histoire par l’affiche. Une […] The post L’Histoire s’affiche > l’exposition à voir absolument au Musée appeared first on Ville de Nogent-sur-Marne.
-
-- **La dame de la mer > vendredi 6 novembre au Théâtre Antoine Watteau**
-  - Date : 2026-11-06
-  - Lien : https://ville-nogentsurmarne.com/la-dame-de-la-mer-vendredi-6-novembre-au-theatre-antoine-watteau/?utm_source=rss&utm_medium=rss&utm_campaign=la-dame-de-la-mer-vendredi-6-novembre-au-theatre-antoine-watteau
-  - Résumé : La dame de la mer est une création de la compagnie La Mandarine Blanche, librement adapté de la pièce de […] The post La dame de la mer > vendredi 6 novembre au Théâtre Antoine Watteau appeared first on Ville de Nogent-sur-Marne.
-
-- **Nogent se marre > réservez vite pour Booder !**
-  - Date : 2026-11-02
-  - Lien : https://ville-nogentsurmarne.com/nogent-se-marre-reservez-vite-pour-booder/?utm_source=rss&utm_medium=rss&utm_campaign=nogent-se-marre-reservez-vite-pour-booder
-  - Résumé : Pour sa neuvième édition, le festival d’humour Nogent se marre, organisé par l’association La Compagnie d’Edgar et soutenu par la […] The post Nogent se marre > réservez vite pour Booder ! appeared first on Ville de Nogent-sur-Marne.
-
 ## Noiseau (94053)
 
 - **VigiEau : vérfiez les restrictions d’eau à votre adresse**
@@ -4390,20 +4344,20 @@ Procédure : le CEO relit chaque entrée contre sa page (D33), puis copie au plu
 
 ## Chaumontel (95149)
 
+- **AAC Val & O du 15 novembre 2026**
+  - Date : 2026-11-07
+  - Lien : https://ville-chaumontel.fr/2026/11/07/aac-val-o-du-15-novembre-2026/
+  - Résumé : ✨[ASSOCIATION] ACC Val & O✨ 🏎️L’Association Automobile Chaumontel Val et O vous donne rendez-vous pour une exposition de véhicules de collection et de prestige. Venez admirer des modèles d’exception et échanger avec des passionnés dans une ambiance conviviale.
+
+- **Marché de Noel 2026 – S-4**
+  - Date : 2026-11-06
+  - Lien : https://ville-chaumontel.fr/2026/11/06/marche-de-noel-2026-s-4/
+  - Résumé : [MARCHÉ DE NOËL 2026] S-4 ! Plus que 4 semaines avant l’ouverture officielle de notre marché de Noël !
+
 - **Beaujolais Nouveau 2026**
   - Date : 2026-11-05
   - Lien : https://ville-chaumontel.fr/2026/11/05/beaujolais-nouveau-2026/
   - Résumé : 🍷 [ÉVÉNEMENT] Le beaujolais nouveau arrive à Chaumontel ! 🍇 👉 L’association Chaumontel en Fête vous donne rendez-vous jeudi 19 novembre à 19h salle Eugène Coudre pour fêter l’arrivée du beaujolais nouveau dans la bonne humeur !
-
-- **Fermeture exceptionnelle Saur 05/11/2026**
-  - Date : 2026-11-04
-  - Lien : https://ville-chaumontel.fr/2026/11/04/fermeture-exceptionnelle-saur-05-11-2026/
-  - Résumé : ℹ️[INFORMATION SAUR] Fermeture exceptionnelle du point d’accueil de Chaumontel 📆La Saur vous informe que son point d’accueil de Chaumontel sera exceptionnellement fermé le jeudi 5 novembre 2026. 🔐 📞Leurs services restent joignables au : 03 60 56 40 01 🙂Merci pour votre compréhension.
-
-- **11 novembre 2026 – Armistice de 1918**
-  - Date : 2026-11-04
-  - Lien : https://ville-chaumontel.fr/2026/11/04/11-novembre-2026-armistice-de-1918/
-  - Résumé : 🕊️[COMMÉMORATION] Armistice du 11 novembre 1918 🫡 Le 11 novembre 1918, l’Armistice mettait fin aux combats de la Première Guerre mondiale. 108 ans plus tard, Chaumontel se rassemble pour honorer la mémoire de ses enfants morts pour la France et rendre hommage à tous les combattants d’hier et…
 
 ## Chauvry (95151)
 
@@ -4664,6 +4618,11 @@ Procédure : le CEO relit chaque entrée contre sa page (D33), puis copie au plu
 
 ## Haravilliers (95298)
 
+- **Bulletin Municipal 2026**
+  - Date : 2026-11-08
+  - Lien : https://haravilliers.com/bulletin-municipal-2026/
+  - Résumé : Retrouvez notre bulletin municipal
+
 - **Monsieur le Maire et son équipe sont heureux de vous convier à la réunion publique mercredi 11 novembre 2026 à 11h00 au gymnase. Venez nombreux !**
   - Date : 2026-11-05
   - Lien : https://haravilliers.com/reunion-publique-11-11-2026-11h00/
@@ -4673,11 +4632,6 @@ Procédure : le CEO relit chaque entrée contre sa page (D33), puis copie au plu
   - Date : 2026-11-05
   - Lien : https://haravilliers.com/reunion-publique-mercredi-11-novembre-2026-a-11h00-au-gymnase/
   - Résumé : 
-
-- **FEUX TRICOLORES DU CHRIST ET SÉCURITÉ ROUTIÈRE HARAVILLIERS**
-  - Date : 2026-11-02
-  - Lien : https://haravilliers.com/securite-routiere-haravilliers/
-  - Résumé : À la suite d’une étude de circulation réalisée au carrefour du Christ, la programmation du feu tricolore a été modifiée afin d’améliorer la sécurité des usagers et de favoriser une meilleure fluidité du trafic.
 
 ## Herblay-sur-Seine (95306)
 
@@ -5110,6 +5064,11 @@ Procédure : le CEO relit chaque entrée contre sa page (D33), puis copie au plu
 
 ## Villers-en-Arthies (95676)
 
+- **Réunion publique demain à 19h à la salle municipale**
+  - Date : 2026-11-08
+  - Lien : https://villersenarthies.fr/reunion-publique-demain-a-19h-a-la-salle-municipale/
+  - Résumé : Rendez-vous demain, lundi 9 novembre, pour la réunion publique. Nous ferons le point sur les projets réalisés, ceux en cours et ceux à venir.
+
 - **Compteurs d’eau : passage d’un agent Veolia**
   - Date : 2026-11-06
   - Lien : https://villersenarthies.fr/compteurs-deau-passage-dun-agent-veolia/
@@ -5119,8 +5078,3 @@ Procédure : le CEO relit chaque entrée contre sa page (D33), puis copie au plu
   - Date : 2026-11-04
   - Lien : https://villersenarthies.fr/conseil-municipal-du-jeudi-5-novembre-2026/
   - Résumé : Le prochain Conseil municipal se tiendra demain, jeudi 5 novembre 2026 à 19h, à la Mairie de Villers-en-Arthies. Voici l’ordre du jour: 1) Approbation du procès-verbal de la séance du 17 septembre 2026 2) Décision modificative n°1 Nous vous rappelons que les séances du Conseil municipal sont…
-
-- **🇫🇷 Commémoration de l’Armistice le 11 novembre**
-  - Date : 2026-11-03
-  - Lien : https://villersenarthies.fr/%f0%9f%87%ab%f0%9f%87%b7-commemoration-de-larmistice-le-11-novembre/
-  - Résumé : Le conseil municipal vous invite à la cérémonie du 108ᵉ anniversaire de la signature de l’armistice qui a mis fin à la Première Guerre mondiale.

@@ -108,10 +108,10 @@ une seule fois sont reprises a part, plus bas.
 | `document.indexation.themes.theme.libelleTheme` | texte | 19 | LOIS DE FINANCES RECTIFICATIVES · SANTE PUBLIQUE |
 | `document.organesReferents` | vide | 310 |  |
 | `document.coSignataires.coSignataire[]` | liste | 595 | de 2 a 271 entrees |
-| `document.coSignataires.coSignataire[].acteur.acteurRef` | texte | 19858 | PA305 · PA885 |
-| `document.coSignataires.coSignataire[].dateCosignature` | texte | 19860 | 1999-12-23+01:00 · 2010-05-03+02:00 |
-| `document.coSignataires.coSignataire[].dateRetraitCosignature` | texte/vide | 19860 | 2025-02-17+01:00 · 2025-03-13+01:00 |
-| `document.coSignataires.coSignataire[].edite` | texte | 19860 | false · true |
+| `document.coSignataires.coSignataire[].acteur.acteurRef` | texte | 19859 | PA305 · PA885 |
+| `document.coSignataires.coSignataire[].dateCosignature` | texte | 19861 | 1999-12-23+01:00 · 2010-05-03+02:00 |
+| `document.coSignataires.coSignataire[].dateRetraitCosignature` | texte/vide | 19861 | 2025-02-17+01:00 · 2025-03-13+01:00 |
+| `document.coSignataires.coSignataire[].edite` | texte | 19861 | false · true |
 | `document.depotAmendements.amendementsSeance.amendable` | texte | 2010 | false · true |
 | `document.depotAmendements.amendementsSeance.dateLimiteDepot` | vide | 2010 |  |
 | `document.depotAmendements.amendementsCommission.commission.organeRef` | texte | 1152 | PO59051 · PO59048 |
