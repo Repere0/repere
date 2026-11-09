@@ -27,8 +27,9 @@ import { Ionicons } from "@expo/vector-icons";
 import { AGENDA_PAS_ARRIVE, AGENDA_VIDE } from "../../lib/absences";
 import { srcAgenda } from "../../lib/sources";
 import { useCommuneChoisie } from "../../lib/useCommune";
-import { couleurs, CIBLE, PAS, POLICE, TYPO } from "../../lib/theme";
+import { ACCENTS, couleurs, CIBLE, PAS, POLICE, TYPO } from "../../lib/theme";
 import { DateDonnee } from "../../ui/fraicheur";
+import { Onglets } from "../../ui/stitch";
 import { AvecDonnees, Page, Question } from "../../ui/page";
 import { PastilleSource } from "../../ui/source";
 import { Depli } from "../../ui/visuels";
@@ -115,14 +116,15 @@ function Case({ iso, jour, nb, onPress, taille }: { iso: string; jour: string; n
   const grand = taille === "semaine";
   return (
     <Pressable onPress={onPress} accessibilityRole="button" accessibilityState={{ selected: choisi }}
-      accessibilityLabel={`${numero} octobre, ${nb} élément${nb > 1 ? "s" : ""}`}
+      accessibilityLabel={`${jourFr(iso) || numero}, ${nb} élément${nb > 1 ? "s" : ""}`}
       style={({ pressed }) => ({ flex: 1, minHeight: grand ? 58 : 42, alignItems: "center", justifyContent: "center", gap: 4, opacity: pressed ? 0.6 : 1 })}>
       {grand ? <Text style={{ fontSize: 13, color: couleurs.sourd, fontWeight: "500" }}>{LETTRES[rangLundi(iso)]}</Text> : null}
       <View style={{ width: grand ? 40 : 34, height: grand ? 40 : 34, borderRadius: 999, alignItems: "center", justifyContent: "center",
-        backgroundColor: choisi ? couleurs.encre : "transparent" }}>
-        <Text style={{ fontWeight: choisi ? "800" : "600", fontSize: grand ? 20 : 16, color: choisi ? couleurs.sol : couleurs.encre }}>{numero}</Text>
+        backgroundColor: choisi ? ACCENTS.autorite : "transparent" }}>
+        <Text style={{ fontFamily: POLICE.donneeForte, fontSize: grand ? 18 : 15, color: choisi ? ACCENTS.surAutorite : couleurs.encre }}>{numero}</Text>
       </View>
-      <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: nb > 0 ? (choisi ? couleurs.encre : couleurs.sourd) : "transparent" }} />
+      {/* Maquette Stitch : un point émeraude sous les jours de séance. */}
+      <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: nb > 0 ? ACCENTS.civique : "transparent" }} />
     </Pressable>
   );
 }
@@ -231,19 +233,17 @@ export default function AVenir() {
                 </View>
               )}
 
-              {/* Filtre segmente : une seule pastille, trois choix. */}
-              <View accessibilityRole="tablist" style={{ flexDirection: "row", gap: 4, padding: 4, borderRadius: 999, backgroundColor: couleurs.trait }}>
-                {[{ c: null, t: "Tout" }, { c: "Assemblée nationale", t: "Assemblée" }, { c: "Sénat", t: "Sénat" }].map(o => {
-                  const actif = institution === o.c;
-                  return (
-                    <Pressable key={o.t} onPress={() => setInstitution(o.c)} accessibilityRole="tab"
-                      accessibilityState={{ selected: actif }} accessibilityLabel={`Afficher : ${o.c ? o.c : "toutes les institutions"}`}
-                      style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1, flex: 1, minHeight: 44, borderRadius: 999, backgroundColor: actif ? couleurs.carte : "transparent", alignItems: "center", justifyContent: "center" })}>
-                      <Text style={{ fontWeight: actif ? "800" : "600", color: couleurs.encre }}>{o.t}</Text>
-                    </Pressable>
-                  );
-                })}
-              </View>
+              {/* Filtre segmenté (maquette Stitch, 09/11/2026) : trois choix, chacun avec le nombre de
+                  rendez-vous publiés sur la même période (le jour choisi, sinon deux semaines). */}
+              {(() => {
+                const nb = (i: string | null) => (regrouperParJour(nationalVisible ? (i ? toutes.filter(e => e.institution === i) : toutes) : []) as Groupe[])
+                  .filter(g => (choisi ? g.jour === jour : g.jour < limite)).length;
+                const vals = [{ c: null, t: "Tout" }, { c: "Assemblée nationale", t: "Assemblée" }, { c: "Sénat", t: "Sénat" }];
+                return (
+                  <Onglets etiquette="Afficher une institution" actif={institution ?? "tout"} choisir={c => setInstitution(c === "tout" ? null : c)}
+                    valeurs={vals.map(o => ({ cle: o.c ?? "tout", texte: `${o.t} ${nb(o.c)}` }))} />
+                );
+              })()}
 
               <Text style={[TYPO.corps, { fontWeight: "600" }]}>{choisi && etiquetteJour ? `${etiquetteJour}. ` : ""}{phrase}</Text>
               {choisi ? (

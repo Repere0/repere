@@ -17,11 +17,11 @@ import { useEffect, useState } from "react";
 import { Text, View } from "react-native";
 import { ageReleve, dateFr, titreLisible } from "@repere/core";
 import { chargerCatalogueScrutins, chargerEvenements } from "../lib/donnees";
-import { NEUTRES_PAR_MODE } from "../lib/palette";
-import { PAS, RAYON } from "../lib/theme";
+import { PAS, RAYON, couleurs } from "../lib/theme";
 import { ilYa } from "./fraicheur";
 
-const D = NEUTRES_PAR_MODE.sombre;
+/* 09/11/2026 : l'accueil suit le thème (maquettes Stitch) ; la carte aussi. */
+const D = couleurs;
 export const RECENT_JOURS = 7;
 
 type Entree = { cle: string; d: string; quoi: string; texte: string };

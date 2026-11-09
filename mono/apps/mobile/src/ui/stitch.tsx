@@ -179,8 +179,9 @@ const s = feuille(() => StyleSheet.create({
   bulleBadge: { paddingHorizontal: PAS * 2, paddingVertical: 3, borderRadius: 10, backgroundColor: couleurs.carte },
   piste: { flexDirection: "row", height: 9, borderRadius: 5, overflow: "hidden", backgroundColor: couleurs.voile, gap: 2 },
   segments: { flexDirection: "row", padding: 4, gap: 4, borderRadius: RAYON.pastille, backgroundColor: couleurs.voile },
-  segment: { flex: 1, minHeight: CIBLE - 4, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: PAS * 1.5, paddingHorizontal: PAS * 2, borderRadius: RAYON.pastille },
+  segment: { flex: 1, minHeight: CIBLE - 4, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: PAS, paddingHorizontal: PAS, borderRadius: RAYON.pastille },
   segmentActif: { backgroundColor: couleurs.carte },
-  segmentTexte: { ...TYPO.micro, fontFamily: POLICE.texteGras, color: couleurs.sourd, textAlign: "center", textTransform: "uppercase", letterSpacing: 0.4 },
+  /* Pas de capitales : à 360 px, « PLAFONDS » se coupait au milieu du mot (capture du 09/11/2026). */
+  segmentTexte: { ...TYPO.micro, fontFamily: POLICE.texteGras, color: couleurs.sourd, textAlign: "center" },
   badgeRepere: { flexDirection: "row", alignItems: "center", gap: PAS * 1.5, alignSelf: "flex-start" },
 }));

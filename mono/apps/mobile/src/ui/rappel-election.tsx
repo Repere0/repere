@@ -8,10 +8,10 @@ import { router } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { dateFr } from "@repere/core";
 import { ELECTIONS_SOURCE, ELECTIONS_VERIFIEES_LE, prochaineElection } from "../lib/elections";
-import { NEUTRES_PAR_MODE } from "../lib/palette";
-import { CIBLE, PAS, POLICE, RAYON } from "../lib/theme";
+import { CIBLE, PAS, POLICE, RAYON, couleurs } from "../lib/theme";
 
-const D = NEUTRES_PAR_MODE.sombre; /* l'accueil est toujours sombre */
+/* 09/11/2026 : l'accueil suit le thème (maquettes Stitch) ; la carte aussi. */
+const D = couleurs;
 
 /* Le compte à rebours monte de 0 à sa valeur en 0,8 s à l'apparition (invariant 6 : suivre
    une durée). Mouvement réduit : la valeur tout de suite. Le lecteur d'écran lit la valeur finale. */

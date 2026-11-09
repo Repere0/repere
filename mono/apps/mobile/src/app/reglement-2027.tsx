@@ -28,10 +28,10 @@ const ARCOM = "https://www.arcom.fr/";
 
 type Fiche = "parrainages" | "tours" | "plafonds" | "medias";
 const FICHES: { cle: Fiche; texte: string }[] = [
-  { cle: "parrainages", texte: "1. 500 élus" },
-  { cle: "tours", texte: "2. Deux tours" },
-  { cle: "plafonds", texte: "3. Plafonds" },
-  { cle: "medias", texte: "4. Médias" },
+  { cle: "parrainages", texte: "500 élus" },
+  { cle: "tours", texte: "2 tours" },
+  { cle: "plafonds", texte: "Plafonds" },
+  { cle: "medias", texte: "Médias" },
 ];
 
 function Grand({ valeur, legende }: { valeur: string; legende: string }) {

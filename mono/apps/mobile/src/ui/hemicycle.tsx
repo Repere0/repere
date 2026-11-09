@@ -83,7 +83,7 @@ export function Hemicycle() {
 }
 
 const s = feuille(() => StyleSheet.create({
-  carte: { backgroundColor: couleurs.carte, borderRadius: RAYON.carte, padding: PAS * 5, gap: PAS * 4 },
+  carte: { backgroundColor: couleurs.carte, borderRadius: RAYON.carte, padding: PAS * 5, gap: PAS * 4, borderWidth: 1, borderColor: couleurs.trait },
   legende: { flexDirection: "row", flexWrap: "wrap", columnGap: PAS * 5, rowGap: PAS * 2 },
   item: { flexDirection: "row", alignItems: "center", gap: PAS * 2, minHeight: CIBLE },
   pastille: { width: 12, height: 12, borderRadius: 6 },

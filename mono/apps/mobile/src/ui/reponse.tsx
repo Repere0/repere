@@ -71,7 +71,8 @@ export function Plus({ texte, onPress, premier, dernier }: { texte: string; onPr
 }
 
 const s = feuille(() => StyleSheet.create({
-  carte: { borderRadius: RAYON.carte, paddingHorizontal: PAS * 4, paddingTop: PAS, paddingBottom: 0, gap: PAS, ...OMBRE },
+  /* Stitch (09/11/2026) : carte bordée d'un filet, rayon 20. */
+  carte: { borderRadius: RAYON.carte, paddingHorizontal: PAS * 4, paddingTop: PAS, paddingBottom: 0, gap: PAS, borderWidth: 1, borderColor: couleurs.trait, ...OMBRE },
   phrase: { ...TYPO.reponse, fontSize: 19, lineHeight: 25 },
   pied: { flexDirection: "row", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", columnGap: PAS * 2 },
   suite: { minHeight: CIBLE, justifyContent: "center", marginLeft: "auto" },
