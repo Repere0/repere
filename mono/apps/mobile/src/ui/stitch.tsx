@@ -114,9 +114,9 @@ export function JaugeCofinancement({ partEtat, montantEtat, montantTotal, lieu }
 /* ── La jauge tripartite du budget ─────────────────────────────────────── */
 export function MicroJauge({ salaires, investissement, autres }: { salaires: number; investissement: number; autres: number }) {
   const parts = [
-    { cle: "s", v: salaires, c: JAUGE.salaires, l: "Salaires" },
-    { cle: "i", v: investissement, c: JAUGE.investissement, l: "Investissements" },
-    { cle: "a", v: autres, c: JAUGE.autres, l: "Fonctionnement" },
+    { cle: "s", v: salaires, c: JAUGE.salaires, l: "Salaires", i: "people-outline" as const },
+    { cle: "i", v: investissement, c: JAUGE.investissement, l: "Investissements", i: "construct-outline" as const },
+    { cle: "a", v: autres, c: JAUGE.autres, l: "Fonctionnement", i: "settings-outline" as const },
   ];
   return (
     <View style={{ gap: PAS * 2 }}>
@@ -125,9 +125,10 @@ export function MicroJauge({ salaires, investissement, autres }: { salaires: num
       </View>
       <View style={[s.ligne, { columnGap: PAS * 3 }]}>
         {parts.map(x => (
-          <View key={x.cle} style={{ flexDirection: "row", alignItems: "center", gap: PAS }}>
+          <View key={x.cle} style={{ flexDirection: "row", alignItems: "center", gap: PAS * 1.5 }}>
             <View style={[s.point, { backgroundColor: x.c, borderWidth: 1, borderColor: couleurs.trait }]} />
-            <Text style={TYPO.micro}>{x.l} {x.v} %</Text>
+            <Ionicons name={x.i} size={14} color={couleurs.sourd} accessible={false} importantForAccessibility="no" />
+            <Text style={TYPO.micro}>{x.l} <Text style={{ color: couleurs.encre, fontFamily: POLICE.texteGras }}>{x.v}{"\u00a0"}%</Text></Text>
           </View>
         ))}
       </View>
@@ -179,7 +180,8 @@ const s = feuille(() => StyleSheet.create({
   badgeDepute: { alignSelf: "flex-start", backgroundColor: couleurs.voile, paddingHorizontal: PAS * 2, paddingVertical: PAS, borderRadius: 6 },
   bulle: { flex: 1, minWidth: 96, alignItems: "center", gap: PAS, paddingVertical: PAS * 2.5, paddingHorizontal: PAS * 1.5, borderRadius: 16, backgroundColor: couleurs.voile },
   bulleBadge: { paddingHorizontal: PAS * 2, paddingVertical: 3, borderRadius: 10, backgroundColor: couleurs.carte },
-  piste: { flexDirection: "row", height: 9, borderRadius: 5, overflow: "hidden", backgroundColor: couleurs.voile, gap: 2 },
+  /* Refonte « légère » : une jauge fine. */
+  piste: { flexDirection: "row", height: 6, borderRadius: 3, overflow: "hidden", backgroundColor: couleurs.voile, gap: 2 },
   segments: { flexDirection: "row", padding: 4, gap: 4, borderRadius: RAYON.pastille, backgroundColor: couleurs.voile },
   segment: { flex: 1, minHeight: CIBLE - 4, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: PAS, paddingHorizontal: PAS, borderRadius: RAYON.pastille },
   segmentActif: { backgroundColor: couleurs.carte },

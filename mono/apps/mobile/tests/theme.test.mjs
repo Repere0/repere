@@ -36,7 +36,7 @@ test("theme — le clair garde les valeurs de l'application (aucune régression 
   assert.deepEqual(
     { sol: n.sol, carte: n.carte, encre: n.encre, sourd: n.sourd, trait: n.trait, voile: n.voile, lien: n.lien },
     /* Néo-Civique des maquettes Stitch (09/11/2026, invariant 7 amendé par le porteur, « tout Stitch »). */
-    { sol: "#F7FAFD", carte: "#FFFFFF", encre: "#" + "0F172A", sourd: "#" + "475569", trait: "#E8EEF3", voile: "#EDF4F7", lien: "#" + "0F172A" },
+    { sol: "#F8FAFC", carte: "#FFFFFF", encre: "#" + "0F172A", sourd: "#" + "475569", trait: "#E8EEF3", voile: "#EDF4F7", lien: "#" + "0F172A" },
   );
   assert.deepEqual(TEINTES_PAR_MODE.clair, {
     ville: "#dbeaee", agglo: "#e4f3f7", dept: "#f7ece4", region: "#efe7fb", france: "#ecebe8",

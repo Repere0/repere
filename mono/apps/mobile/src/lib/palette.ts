@@ -38,7 +38,7 @@ export type Neutres = {
    #475569 de Stitch, pas son #64748B : celui-ci tombe à 3,86:1 sur les teintes d'échelon et
    à 4,28:1 sur les pastilles (mesuré dans le navigateur, parcours-web), sous le seuil AA. */
 const NEUTRES_CLAIR: Neutres = {
-  sol: "#F7FAFD", carte: "#FFFFFF", encre: "#0F172A", sourd: "#475569",
+  sol: "#F8FAFC", carte: "#FFFFFF", encre: "#0F172A", sourd: "#475569",
   trait: "#E8EEF3", voile: "#EDF4F7", blanc: "#ffffff", lien: "#0F172A", ancien: "#745C5C",
 };
 
@@ -86,7 +86,8 @@ export const NEUTRES_PAR_MODE: Record<Mode, Neutres> = { clair: NEUTRES_CLAIR, s
 
 /* Ombres : en sombre, l'ombre se voit par l'opacité du noir, pas par l'encre. */
 export const OMBRE_PAR_MODE = {
-  clair: { shadowColor: "#171614", shadowOpacity: 0.045, shadowRadius: 10, shadowOffset: { width: 0, height: 4 }, elevation: 1 },
+  /* Refonte « légère » (09/11/2026) : une ombre à peine visible. */
+  clair: { shadowColor: "#171614", shadowOpacity: 0.03, shadowRadius: 8, shadowOffset: { width: 0, height: 2 }, elevation: 1 },
   /* DA premium (07/11/2026) : noir à 20 %, flou 20, décalage 5. Le clair, gardé par le banc
      de non-régression, n'est pas touché. */
   sombre: { shadowColor: "#000000", shadowOpacity: 0.2, shadowRadius: 20, shadowOffset: { width: 0, height: 5 }, elevation: 3 },

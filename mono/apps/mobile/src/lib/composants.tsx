@@ -20,7 +20,7 @@ export function Carte({ echelon, children, titre, accent, onPress, etiquette }: 
   echelon?: Echelon; children: ReactNode; titre?: string; accent?: string; onPress?: () => void; etiquette?: string;
 }) {
   const filet = accent || (echelon ? (pointEchelon(echelon) as { backgroundColor?: string }).backgroundColor : undefined);
-  const style = [s.carte, { backgroundColor: couleurs.carte }, filet ? { borderLeftWidth: 4, borderLeftColor: filet } : null];
+  const style = [s.carte, { backgroundColor: couleurs.carte }, filet ? { borderLeftWidth: 2, borderLeftColor: filet } : null];
   const corps = (
     <>
       {titre ? (
@@ -47,7 +47,7 @@ export function CarteQuestion({ echelon, question, reponse, children, pied, acti
 }) {
   const filet = (pointEchelon(echelon) as { backgroundColor?: string }).backgroundColor;
   return (
-    <View style={[s.carte, { backgroundColor: couleurs.carte }, filet ? { borderLeftWidth: 4, borderLeftColor: filet } : null]}>
+    <View style={[s.carte, { backgroundColor: couleurs.carte }, filet ? { borderLeftWidth: 2, borderLeftColor: filet } : null]}>
       <View style={s.carteTete}>
         <View style={[s.point, pointEchelon(echelon)]} />
         <Text style={s.carteTitre} accessibilityRole="header">{question}</Text>

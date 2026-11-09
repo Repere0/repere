@@ -6,9 +6,8 @@
  * et Dark Luxury (sombre), accents d'interface (ACCENTS), votes émeraude / corail / ardoise
  * (COULEURS_VOTE) : ils codent un fait, jamais un jugement, et la position reste écrite.
  *
- * TYPOGRAPHIE (maquettes Stitch, 09/11/2026). Clair : Plus Jakarta Sans pour les titres et
- * les chiffres, Inter pour le texte. Sombre : Manrope pour les titres, DM Sans pour le texte,
- * IBM Plex Mono pour les dates et les grands nombres. Toutes OFL, embarquées, jamais chargées
+ * TYPOGRAPHIE (refonte « légère », porteur, 09/11/2026). Dans les deux thèmes : Manrope SemiBold
+ * pour les titres (24 px au plus), DM Sans pour le texte (15 px), IBM Plex Mono pour les données. Toutes OFL, embarquées, jamais chargées
  * depuis un hôte tiers. Elles suivent la taille choisie par le lecteur : aucune taille n'est
  * plafonnée.
  *
@@ -47,18 +46,20 @@ export const RAYON = { carte: 20, bloc: 14, pastille: 999 } as const;
 type Polices = { affiche: string; titre: string; texte: string; texteMoyen: string; texteGras: string; donnee: string; donneeForte: string };
 /* Stitch (09/11/2026) : une famille par thème. Le sombre garde celles du 07/11. */
 export const POLICES_PAR_MODE: Readonly<Record<Mode, Polices>> = {
+  /* Refonte « légère » (porteur, 09/11/2026) : les mêmes familles dans les deux thèmes. Titres en
+     Manrope SemiBold (plus d'ExtraBold), texte en DM Sans, données en IBM Plex Mono. */
   clair: {
-    affiche: "PlusJakartaSans_800ExtraBold",
-    titre: "PlusJakartaSans_700Bold",
-    texte: "Inter_400Regular",
-    texteMoyen: "Inter_500Medium",
-    texteGras: "Inter_700Bold",
-    donnee: "Inter_500Medium",
-    donneeForte: "PlusJakartaSans_800ExtraBold",
+    affiche: "Manrope_600SemiBold",
+    titre: "Manrope_600SemiBold",
+    texte: "DMSans_400Regular",
+    texteMoyen: "DMSans_500Medium",
+    texteGras: "DMSans_700Bold",
+    donnee: "IBMPlexMono_400Regular",
+    donneeForte: "IBMPlexMono_600SemiBold",
   },
   sombre: {
-    affiche: "Manrope_800ExtraBold",
-    titre: "Manrope_700Bold",
+    affiche: "Manrope_600SemiBold",
+    titre: "Manrope_600SemiBold",
     texte: "DMSans_400Regular",
     texteMoyen: "DMSans_500Medium",
     texteGras: "DMSans_700Bold",
@@ -111,16 +112,18 @@ function construire(m: Mode) {
   const lh = (x: number) => Math.round(x * ech * esp);
   const TYPO = {
     /* le nom de la commune, les grands nombres */
-    affiche: { fontFamily: POLICE.affiche, fontSize: sz(36), lineHeight: lh(40), color: couleurs.encre, letterSpacing: -0.5 },
-    chiffre: { fontFamily: POLICE.donneeForte, fontSize: sz(36), lineHeight: lh(44), color: couleurs.encre, letterSpacing: -0.5 },
-    /* 07/11/2026 : les nombres du décompte, en grand (StatCard). */
-    stat: { fontFamily: POLICE.donneeForte, fontSize: sz(40), lineHeight: lh(46), color: couleurs.encre, letterSpacing: -1 },
+    /* Refonte « légère » (porteur, 09/11/2026) : titres de 24 px au plus, texte de 15 px à interligne
+       généreux, chiffres sans exagération. Les tailles suivent toujours le réglage du lecteur. */
+    affiche: { fontFamily: POLICE.affiche, fontSize: sz(24), lineHeight: lh(30), color: couleurs.encre, letterSpacing: -0.3 },
+    chiffre: { fontFamily: POLICE.donneeForte, fontSize: sz(28), lineHeight: lh(34), color: couleurs.encre, letterSpacing: -0.5 },
+    /* 07/11/2026 : les nombres du décompte (StatCard). */
+    stat: { fontFamily: POLICE.donneeForte, fontSize: sz(26), lineHeight: lh(32), color: couleurs.encre, letterSpacing: -0.5 },
     /* la question d'un écran */
-    question: { fontFamily: POLICE.affiche, fontSize: sz(28), lineHeight: lh(33), color: couleurs.encre, letterSpacing: -0.3 },
-    /* la réponse d'une carte : lisible en trois secondes */
-    reponse: { fontFamily: POLICE.titre, fontSize: sz(20), lineHeight: lh(26), color: couleurs.encre },
-    corps: { fontFamily: POLICE.texte, fontSize: sz(16), lineHeight: lh(23), color: couleurs.encre },
-    note: { fontFamily: POLICE.texte, fontSize: sz(15), lineHeight: lh(21), color: couleurs.sourd },
+    question: { fontFamily: POLICE.affiche, fontSize: sz(22), lineHeight: lh(28), color: couleurs.encre, letterSpacing: -0.2 },
+    /* la réponse d'une carte */
+    reponse: { fontFamily: POLICE.titre, fontSize: sz(17), lineHeight: lh(24), color: couleurs.encre },
+    corps: { fontFamily: POLICE.texte, fontSize: sz(15), lineHeight: lh(24), color: couleurs.encre },
+    note: { fontFamily: POLICE.texte, fontSize: sz(14), lineHeight: lh(22), color: couleurs.sourd },
     /* l'étiquette au-dessus d'une réponse, en capitales de style */
     etiquette: { fontFamily: POLICE.texteMoyen, fontSize: sz(13), lineHeight: lh(18), letterSpacing: 0.8, textTransform: "uppercase" as const, color: couleurs.sourd },
     micro: { fontFamily: POLICE.texte, fontSize: sz(13), lineHeight: lh(18), color: couleurs.sourd },

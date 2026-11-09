@@ -57,37 +57,9 @@ import { SemaineParlement } from "../../ui/semaine";
 import { DateDonnee } from "../../ui/fraicheur";
 import { CetteSemaineCommune, aujourdhui } from "../../ui/cette-semaine-commune";
 import { SignalerErreur } from "../../ui/contact";
-import { Avatar } from "../../ui/avatar";
-import { pointEchelon } from "../../lib/niveaux";
 
-/* VOS DÉCIDEURS EN BANDEAU (maquette Stitch, 09/11/2026) : le maire (Répertoire national des élus)
-   et, si la commune n'est que sur une circonscription, le député (fichier des députés). Initiales
-   sur la couleur de l'ÉCHELON, jamais d'un parti (invariant 7). Chaque nom ouvre sa fiche. */
-function Decideurs({ maire, depute, circo }: { maire: string | null; depute: string | null; circo: number | null }) {
-  const gens = [
-    maire ? { nom: maire, role: "Maire", echelon: "ville" as const, niveau: "Votre commune", institution: "Conseil municipal" } : null,
-    depute && circo ? { nom: depute, role: `Député de la ${ordinal(circo)} circonscription`, echelon: "france" as const, niveau: "L'Assemblée nationale", institution: "Assemblée nationale" } : null,
-  ].filter(Boolean) as { nom: string; role: string; echelon: "ville" | "france"; niveau: string; institution: string }[];
-  if (!gens.length) return null;
-  return (
-    <View style={{ gap: PAS * 2 }}>
-      <Etiquette texte="Vos décideurs" />
-      <View style={{ flexDirection: "row", flexWrap: "wrap", gap: PAS * 2 }}>
-        {gens.map(g => (
-          <Pression key={g.nom} etiquette={`${g.nom}, ${g.role} : ouvrir sa fiche`}
-            onPress={() => router.push({ pathname: "/elu", params: { nom: g.nom, role: g.role, echelon: g.echelon, niveau: g.niveau, institution: g.institution, lieu: "" } })}
-            style={{ flexGrow: 1, minWidth: 150, flexDirection: "row", alignItems: "center", gap: PAS * 2, padding: PAS * 2, borderRadius: RAYON.bloc, backgroundColor: couleurs.carte, borderWidth: 1, borderColor: couleurs.trait }}>
-            <Avatar nom={g.nom} taille={32} fond={(pointEchelon(g.echelon) as { backgroundColor: string }).backgroundColor} />
-            <View style={{ flex: 1 }}>
-              <Text style={[TYPO.corps, { fontFamily: POLICE.titre }]} numberOfLines={2}>{g.nom}</Text>
-              <Text style={TYPO.micro}>{g.role}</Text>
-            </View>
-          </Pression>
-        ))}
-      </View>
-    </View>
-  );
-}
+/* VOS DÉCIDEURS (maquette Stitch, 09/11/2026) : composant partagé avec l'accueil (ui/decideurs). */
+import { Decideurs } from "../../ui/decideurs";
 
 /* LE SITE OFFICIEL DE LA MAIRIE (D28, ADR 0005) : un lien externe, lu dans l'annuaire DILA
    (data/mairies-idf.json). Sans adresse declaree, pas de ligne : rien n'est devine.

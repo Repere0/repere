@@ -25,6 +25,8 @@ import { useProfil } from "../lib/profil";
 import { BadgeZoom, useNiveauZoom } from "../ui/badge-zoom";
 import { feuille, ACCENTS, CIBLE, couleurs, JAUGE, OMBRE, PAS, POLICE, RAYON, TYPO } from "../lib/theme";
 import { useTheme } from "../lib/themeChoix";
+import { Decideurs } from "../ui/decideurs";
+import { ActuMairie } from "../ui/actu-mairie";
 import { groupeDe, useGroupes } from "../lib/groupes";
 import { VOTE } from "../ui/partage/donnees";
 import { SquelettesListe } from "../ui/squelette";
@@ -202,6 +204,8 @@ export default function Accueil() {
   const [page, setPage] = useState(0);
   const [essai, setEssai] = useState(0);
   const [argent, setArgent] = useState<Argent | null>(null);
+  /* Le maire de la commune affichée, lu dans la même fiche que les comptes (RNE). */
+  const [maire, setMaire] = useState<string | null>(null);
   const [voteVu, setVoteVu] = useState<VoteVu | null>(null);
   const [decExemple, setDecExemple] = useState<Record<string, string> | null>(null);
   /* V29 bloc 2a : la position de l'exemple, lue du relevé de l'Assemblée (null si non lisible). */
@@ -290,6 +294,7 @@ export default function Accueil() {
          de l'Assemblee se correspondent (positionsFiables). Sinon, l'exemple, dit comme tel. */
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const fv = r.donnees ? (r.donnees as any).communes?.[cible.insee] : null;
+      setMaire(fv && fv.maire && typeof fv.maire.nom === "string" ? fv.maire.nom : null);
       let vu: VoteVu | null = null;
       if (fv && de && ca && vo && de.donnees && ca.donnees && vo.donnees) {
         const circos = Array.isArray(fv.circo) ? fv.circo : fv.circo === null || fv.circo === undefined ? [] : [fv.circo];
@@ -353,9 +358,15 @@ export default function Accueil() {
   const premiere = !retenue;
   const champOuvert = cherche || !!filtre || premiere;
 
-  /* Les cartes glissent horizontalement : le chiffre, puis le vote. */
+  /* Le député montré : celui de la commune retenue, sinon celui de l'exemple (dit comme tel). */
+  const deputeVu = voteVu && "depute" in voteVu ? { nom: voteVu.depute, circo: voteVu.circo } : exemple && !voteVu ? { nom: VOTE.depute, circo: 1 } : null;
+  /* Les cartes glissent horizontalement : le chiffre, puis le vote. Au-dessus (refonte « légère »,
+     09/11/2026) : les décideurs du quotidien et la dernière publication de la mairie. */
   const cartes = (
     <>
+            <Decideurs titre={exemple ? `Décideurs du quotidien · exemple : ${cible.nom}` : "Décideurs de votre quotidien"}
+              maire={maire} depute={deputeVu ? deputeVu.nom : null} circo={deputeVu ? deputeVu.circo : null} />
+            {!exemple ? <ActuMairie insee={cible.insee} nom={cible.nom} /> : null}
             <ScrollView horizontal showsHorizontalScrollIndicator={false} decelerationRate="fast" snapToInterval={pas}
               accessibilityLabel={argent ? "Cartes à faire défiler : l'argent de la commune, puis un vote" : "Un vote, à titre d'exemple"}
               contentContainerStyle={{ gap: PAS * 3 }}
@@ -671,28 +682,29 @@ const s = feuille(() => StyleSheet.create({
   tuiles: { flexDirection: "row", flexWrap: "wrap", gap: PAS * 2 },
   /* Fond D.voile : la teinte demandée par le porteur à 3 unités près, sans couleur hors palette. */
   tuile: { width: "48%", flexGrow: 1, minHeight: 76, gap: PAS * 2, padding: PAS * 3, borderRadius: RAYON.bloc, backgroundColor: D.voile, justifyContent: "space-between" },
-  tuileTexte: { fontFamily: POLICE.titre, fontSize: 15, lineHeight: 20, color: D.encre },
-  marque: { fontFamily: POLICE.affiche, fontSize: 26, color: D.encre },
-  chercher: { minHeight: 64, borderRadius: 16, backgroundColor: D.carte, borderWidth: 1, borderColor: D.trait, paddingHorizontal: PAS * 5, flexDirection: "row", alignItems: "center", gap: PAS * 3, marginTop: PAS * 4, ...OMBRE },
+  tuileTexte: { fontFamily: POLICE.titre, fontSize: 14, lineHeight: 20, color: D.encre },
+  marque: { fontFamily: POLICE.affiche, fontSize: 20, color: D.encre },
+  chercher: { minHeight: 56, borderRadius: 16, backgroundColor: D.carte, borderWidth: 1, borderColor: D.trait, paddingHorizontal: PAS * 5, flexDirection: "row", alignItems: "center", gap: PAS * 3, marginTop: PAS * 4, ...OMBRE },
   titreCache: { position: "absolute", width: 1, height: 1, overflow: "hidden", opacity: 0 },
   tuileIcone: { width: 36, height: 36, borderRadius: 12, alignItems: "center", justifyContent: "center" },
-  chercherTexte: { fontFamily: POLICE.titre, fontSize: 20, color: D.encre },
+  chercherTexte: { fontFamily: POLICE.texteMoyen, fontSize: 16, color: D.sourd },
   citation: { fontFamily: POLICE.affiche, fontSize: 40, lineHeight: 44, letterSpacing: -0.8, color: D.encre, marginTop: PAS * 6 },
-  carte: { gap: PAS * 2, padding: PAS * 4, borderRadius: RAYON.carte, backgroundColor: D.carte, borderWidth: 1, borderColor: D.trait },
+  carte: { gap: PAS * 3, padding: PAS * 5, borderRadius: RAYON.carte, backgroundColor: D.carte, borderWidth: 1, borderColor: D.trait, ...OMBRE },
   etiquette: { fontSize: 13, fontWeight: "500", color: D.sourd },
-  carteTitre: { fontFamily: POLICE.titre, fontSize: 24, lineHeight: 30, color: D.encre },
-  chiffre: { fontFamily: POLICE.donneeForte, fontSize: 52, lineHeight: 58, letterSpacing: -1.5, color: D.encre },
-  vote: { fontFamily: POLICE.titre, fontSize: 22, lineHeight: 28, color: D.encre },
-  legende: { fontSize: 15, lineHeight: 21, color: D.sourd },
+  carteTitre: { fontFamily: POLICE.titre, fontSize: 17, lineHeight: 24, color: D.encre },
+  chiffre: { fontFamily: POLICE.donneeForte, fontSize: 28, lineHeight: 34, letterSpacing: -0.5, color: D.encre },
+  vote: { fontFamily: POLICE.titre, fontSize: 17, lineHeight: 24, color: D.encre },
+  legende: { fontFamily: POLICE.texte, fontSize: 14, lineHeight: 22, color: D.sourd },
   contexte: { fontSize: 15, lineHeight: 21, color: D.encre },
-  barre: { flexDirection: "row", height: 12, borderRadius: 6, overflow: "hidden", backgroundColor: D.voile, gap: 2 },
+  /* Refonte « légère » : une jauge fine. */
+  barre: { flexDirection: "row", height: 6, borderRadius: 3, overflow: "hidden", backgroundColor: D.voile, gap: 2 },
   badge: { alignSelf: "flex-start", paddingHorizontal: PAS * 2, paddingVertical: PAS, borderRadius: RAYON.bloc, backgroundColor: D.voile },
   badgeTexte: { fontSize: 13, fontWeight: "500", color: D.sourd },
   points: { flexDirection: "row", justifyContent: "center", gap: PAS * 2 },
   point: { width: 8, height: 8, borderRadius: 4, backgroundColor: D.trait },
   pointActif: { backgroundColor: E.ville },
   confiance: { gap: PAS, padding: PAS * 4, borderRadius: RAYON.bloc, backgroundColor: D.voile, marginTop: PAS * 2 },
-  question: { fontFamily: POLICE.titre, fontSize: 24, lineHeight: 30, color: D.encre, marginTop: PAS * 6 },
+  question: { fontFamily: POLICE.titre, fontSize: 20, lineHeight: 26, color: D.encre, marginTop: PAS * 6 },
   champLigne: {
     flexDirection: "row", alignItems: "center", minHeight: CIBLE + 8, borderRadius: 999, borderWidth: 1.5, borderColor: D.trait,
     backgroundColor: D.carte, paddingLeft: PAS * 4, ...OMBRE,
@@ -707,8 +719,8 @@ const s = feuille(() => StyleSheet.create({
        de la commune. Sans effet sur iOS et Android. */
     ...(Platform.OS === "web" ? { outlineColor: E.ville, outlineWidth: 2, outlineStyle: "solid" } : {}),
   },
-  note: { fontSize: 15, color: D.sourd },
-  accroche: { fontFamily: POLICE.affiche, fontSize: 30, lineHeight: 36, letterSpacing: -0.5, color: D.encre, marginTop: PAS * 4 },
+  note: { fontFamily: POLICE.texte, fontSize: 14, lineHeight: 22, color: D.sourd },
+  accroche: { fontFamily: POLICE.affiche, fontSize: 22, lineHeight: 30, letterSpacing: -0.2, color: D.encre, marginTop: PAS * 4 },
   jeunes: { minHeight: CIBLE + 16, flexDirection: "row", alignItems: "center", gap: PAS * 3, padding: PAS * 4, borderRadius: RAYON.carte, backgroundColor: ACCENTS.fondCivique, borderWidth: 1, borderColor: D.trait },
   reassurances: { gap: PAS * 2 },
   reassurance: { flexDirection: "row", alignItems: "center", gap: PAS * 2 },

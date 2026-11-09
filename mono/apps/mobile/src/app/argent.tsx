@@ -68,7 +68,7 @@ function Comparaison({ nom, valeur, index, dep, an }: { nom: string; valeur: num
    vue : rien n'est retiré, et le site dit la même chose (meme-verite.mjs). */
 type Vue = "cent" | "evolution" | "recettes";
 const VUES: { cle: Vue; texte: string }[] = [
-  { cle: "cent", texte: "Répartition 100 €" },
+  { cle: "cent", texte: "100 € citoyen" },
   { cle: "evolution", texte: "Évolution" },
   { cle: "recettes", texte: "Recettes" },
 ];
@@ -116,6 +116,9 @@ export default function Argent() {
           {/* V13 bloc A : la date des comptes et leur anciennete, avec la source. */}
           <DateDonnee quoi="Comptes OFGL" date={r.index?.sources?.comptes?.maj} url={r.index?.sources?.comptes?.url} />
 
+          {/* Refonte « légère » (porteur, 09/11/2026) : les onglets en haut de l'écran. */}
+          {ex && rr.length >= 2 && ch ? <Onglets etiquette="Vue du budget" valeurs={VUES} actif={vue} choisir={setVue} /> : null}
+
           {!ex ? (
             <Vide {...(phraseEc ? comptesIncoherents(nom, phraseEc) : comptesAbsents(nom))} />
           ) : rr.length < 2 || !ch ? (
@@ -154,8 +157,6 @@ export default function Argent() {
                       source={`Source : ${partage.producteur}, comptes ${partage.an}.`} />} />
                 ) : null}
               </Carte>
-
-              <Onglets etiquette="Vue du budget" valeurs={VUES} actif={vue} choisir={setVue} />
 
               {/* OU VA CHAQUE 100 € */}
               {vue === "cent" && (ch.partSalaires !== null || ch.partInvestissement !== null) ? (

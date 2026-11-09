@@ -45,12 +45,12 @@ export function RappelElection({ aujourdhui = new Date() }: { aujourdhui?: Date 
       style={{ gap: PAS * 2, padding: PAS * 4, borderRadius: RAYON.carte, backgroundColor: D.carte, borderWidth: 1, borderColor: D.trait }}>
       <View style={{ flexDirection: "row", alignItems: "center", gap: PAS * 3 }}>
         <Ionicons name="calendar-outline" size={22} color={D.encre} accessible={false} importantForAccessibility="no" />
-        <Text style={{ flex: 1, fontFamily: POLICE.titre, fontSize: 20, lineHeight: 26, color: D.encre }}>{titre}</Text>
+        <Text style={{ flex: 1, fontFamily: POLICE.titre, fontSize: 17, lineHeight: 24, color: D.encre }}>{titre}</Text>
       </View>
       {/* 07/11/2026 : la durée en grand (invariant 6 : suivre une durée est permis), la date à côté. */}
       {jours > 0 ? (
         <View style={{ flexDirection: "row", alignItems: "baseline", gap: PAS * 2 }}>
-          <Text style={{ fontFamily: POLICE.donneeForte, fontSize: 48, lineHeight: 54, color: D.encre, letterSpacing: -1 }}
+          <Text style={{ fontFamily: POLICE.donneeForte, fontSize: 28, lineHeight: 34, color: D.encre, letterSpacing: -0.5 }}
             accessibilityLabel={String(jours)}>{compte}</Text>
           <Text style={{ fontFamily: POLICE.texte, fontSize: 15, lineHeight: 21, color: D.sourd }}>{jours === 1 ? "jour" : "jours"} · {date}</Text>
         </View>

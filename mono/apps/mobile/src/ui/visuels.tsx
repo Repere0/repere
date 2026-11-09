@@ -221,6 +221,10 @@ export function Frise({ jalons, etiquette }: { jalons: Jalon[]; etiquette?: stri
 }
 
 /* ── La chaine des echelons, de chez vous a l'Assemblee ────────────────── */
+/* L'icône de chaque niveau : ce qu'il gère au quotidien (école, déchets, routes, transports, lois). */
+const ICONE_NIVEAU: Record<Echelon, keyof typeof Ionicons.glyphMap> = {
+  ville: "school-outline", agglo: "trash-outline", dept: "map-outline", region: "bus-outline", france: "library-outline",
+};
 export type Niveau = {
   echelon: Echelon; niveau: string; institution: string; lieu?: string | null;
   personne?: { nom: string; role: string } | null; decide?: string; note?: string; pied?: ReactNode;
@@ -241,16 +245,19 @@ export function Chaine({ niveaux, compact, surNom, ouverts, basculer }: {
         <View key={n.echelon} style={s.jalon}
           accessible={compact}
           accessibilityLabel={compact ? `${n.niveau} : ${n.personne ? n.personne.nom + ", " + n.personne.role : n.institution}` : undefined}>
-          <View style={s.jalonAxe}>
-            {/* Le niveau est ecrit en texte, au-dessus (etiquette) ; le maillon garde son
-                contour s'il est sous 3:1 sur la carte (D17, region en sombre). */}
-            <View style={[s.maillon, pointEchelon(n.echelon)]} />
-            {i < niveaux.length - 1 ? <View style={[s.jalonTrait, { backgroundColor: couleurs.trait }]} /> : null}
+          <View style={compact ? s.jalonAxe : s.timelineAxe}>
+            {/* Refonte « légère » (porteur, 09/11/2026) : une vraie frise verticale. Une pastille ronde,
+                l'icône de ce que le niveau gère, sur la teinte de l'échelon ; un trait gris fin relie
+                les niveaux. En mode compact, le petit maillon d'avant. */}
+            {compact ? <View style={[s.maillon, pointEchelon(n.echelon)]} /> : (
+              <View style={[s.pastilleNiveau, { backgroundColor: TEINTES[n.echelon], borderColor: couleurs[n.echelon] }]}
+                accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
+                <Ionicons name={ICONE_NIVEAU[n.echelon]} size={16} color={couleurs.encre} />
+              </View>
+            )}
+            {i < niveaux.length - 1 ? <View style={[compact ? s.jalonTrait : s.timelineTrait, { backgroundColor: couleurs.trait }]} /> : null}
           </View>
-          {/* Palette B : chaque echelon dans sa teinte — c'est ici que la palette
-              « territoriale » dit quelque chose (qui decide, a quel niveau). */}
-          <View style={[{ flex: 1, paddingBottom: compact ? PAS * 3 : PAS * 6, gap: 2 },
-            !compact ? { backgroundColor: TEINTES[n.echelon], borderRadius: RAYON.bloc, padding: PAS * 3, marginBottom: PAS * 3 } : null]}>
+          <View style={{ flex: 1, paddingBottom: compact ? PAS * 3 : PAS * 7, gap: compact ? 2 : PAS }}>
             {/* La couleur d'echelon est portee par le maillon, pas par le texte :
                 en 13 px, l'intercommunalite (ancien cyan) faisait 3,21:1 sur le fond
                 et le departement 4,38:1 — sous le seuil AA de 4,5:1 (mesure du
@@ -331,5 +338,8 @@ const s = feuille(() => StyleSheet.create({
   jalonActif: { width: 18, height: 18, borderRadius: 9, marginTop: 2 },
   jalonTrait: { flex: 1, width: 2, backgroundColor: couleurs.trait, marginTop: 2 },
   maillon: { width: 14, height: 14, borderRadius: 7, marginTop: 4 },
+  timelineAxe: { width: 36, alignItems: "center" },
+  pastilleNiveau: { width: 36, height: 36, borderRadius: 18, borderWidth: 1.5, alignItems: "center", justifyContent: "center" },
+  timelineTrait: { flex: 1, width: 1, marginTop: 4 },
   depli: { minHeight: CIBLE, flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
 }));
