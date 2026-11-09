@@ -86,7 +86,7 @@ export default function Vote() {
               Commune partagée : la phrase qui dit que c'est UN EXEMPLE reste, elle ne se résume pas. */}
           {partagee ? <Text style={TYPO.note}>{phraseCirconscription(d, vote.circo)}</Text> : null}
           <View style={{ flexDirection: "row", alignItems: "center", gap: PAS * 3 }}>
-            <Avatar nom={vote.qui} taille={48} groupe={groupe} doux />
+            <Avatar nom={vote.qui} taille={48} groupe={groupe} echelon="france" />
             <View style={{ flex: 1, gap: 2 }}>
               <View style={{ flexDirection: "row", alignItems: "center", gap: PAS * 2 }}>
                 {/* Maillage (07/11/2026) : le nom ouvre la fiche, partout où la fiche sait la retrouver. */}

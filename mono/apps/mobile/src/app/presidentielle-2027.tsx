@@ -88,7 +88,7 @@ export default function Presidentielle2027() {
           <View style={{ gap: PAS * 2 }}>
             {d.candidats.map(c => (
               <View key={c.id} style={{ flexDirection: "row", alignItems: "center", gap: PAS * 3, padding: PAS * 3, borderRadius: RAYON.bloc, backgroundColor: couleurs.carte, borderWidth: 1, borderColor: couleurs.trait }}>
-                <Avatar nom={`${c.prenom} ${c.nom}`} taille={40} doux />
+                <Avatar nom={`${c.prenom} ${c.nom}`} taille={40} />
                 <View style={{ flex: 1 }}>
                   <Text style={[TYPO.corps, { fontFamily: POLICE.titre }]}>{c.prenom} {c.nom}</Text>
                   {c.parti ? <Text style={TYPO.note}>{c.parti}</Text> : null}

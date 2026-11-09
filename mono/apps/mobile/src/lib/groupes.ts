@@ -100,3 +100,12 @@ const SIGLE_DU_NOM: Record<string, string> = {
   "Députés non inscrits": "NI",
 };
 export const sigleDuNom = (nom: string): string => SIGLE_DU_NOM[nom] || GROUPE_INCONNU;
+
+/* Un député retrouvé par son nom complet dans deputes.json : son identifiant de l'Assemblée et SON
+   département (clé « 94-10 »). Une seule fonction pour la fiche et pour « Qui décide » : le même
+   député y a le même groupe, donc le même avatar. Introuvable : null, rien n'est deviné. */
+export function deputeParNom(deputes: unknown, nom: string): { ref: string | undefined; dep: string } | null {
+  const table = ((deputes as { deputes?: Record<string, { prenom?: string; nom?: string; acteurRef?: string }> } | null)?.deputes) || {};
+  const e = Object.entries(table).find(([, x]) => [x.prenom, x.nom].filter(Boolean).join(" ") === nom);
+  return e ? { ref: e[1].acteurRef, dep: e[0].split("-")[0] } : null;
+}

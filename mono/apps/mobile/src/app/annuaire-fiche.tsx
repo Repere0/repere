@@ -43,7 +43,7 @@ export default function AnnuaireFiche() {
       <DatePublication />
       <Entree style={{ gap: PAS * 4 }}>
         <View style={{ alignItems: "center", gap: PAS * 3 }}>
-          <Avatar nom={nom} taille={88} photo={photo} groupe={groupe} />
+          <Avatar nom={nom} taille={88} photo={photo} groupe={groupe} echelon={p.ref ? "france" : "region"} />
           <Text style={[TYPO.question, { textAlign: "center" }]} accessibilityRole="header">{nom}</Text>
           {p.fonction ? <Text style={[TYPO.corps, { textAlign: "center" }]}>{p.fonction}</Text> : null}
           {p.lieu ? <Text style={[TYPO.note, { textAlign: "center" }]}>{p.lieu}</Text> : null}

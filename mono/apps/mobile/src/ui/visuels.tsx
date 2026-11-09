@@ -270,6 +270,8 @@ const ICONE_NIVEAU: Record<Echelon, keyof typeof Ionicons.glyphMap> = {
 export type Niveau = {
   echelon: Echelon; niveau: string; institution: string; lieu?: string | null;
   personne?: { nom: string; role: string } | null; decide?: string; note?: string; pied?: ReactNode;
+  /* le groupe politique de la personne (un député), pour que son avatar soit celui de sa fiche */
+  groupe?: string | null;
 };
 /* `surNom` : quand il est donne, le nom de chaque personne ouvre sa fiche. Le nom
    est alors une cible de 48 px, lue comme un lien. */
@@ -320,7 +322,7 @@ export function Chaine({ niveaux, compact, surNom, ouverts, basculer }: {
               <Pressable onPress={() => surNom(n)} accessibilityRole="link"
                 accessibilityLabel={`Voir la fiche de ${n.personne.nom}, ${n.personne.role}`}
                 style={({ pressed }) => [s.carteElu, pressed && { opacity: 0.7 }]}>
-                <Avatar nom={n.personne.nom} taille={40} fond={(pointEchelon(n.echelon) as { backgroundColor: string }).backgroundColor} />
+                <Avatar nom={n.personne.nom} taille={40} echelon={n.echelon} groupe={n.groupe} />
                 <View style={{ flex: 1 }}>
                   <Text style={TYPO.reponse}>{n.personne.nom}</Text>
                   <Text style={TYPO.note}>{n.personne.role}</Text>

@@ -18,6 +18,7 @@ import { srcElus } from "../../lib/sources";
 import { ACCENTS, CIBLE, couleurs, PAS, POLICE, RAYON, TYPO, type Echelon } from "../../lib/theme";
 import { SOURCE_EPT, SOURCE_TRANSPORTS_IDF, estMetropoleGrandParis } from "@repere/core";
 import { EnClair } from "../../ui/stitch";
+import { deputeParNom, groupeDe, useGroupes } from "../../lib/groupes";
 import { AvecDonnees, Page, Question } from "../../ui/page";
 import { PastilleSource } from "../../ui/source";
 import { Chaine, type Niveau } from "../../ui/visuels";
@@ -51,6 +52,7 @@ const SUJETS: Sujet[] = [
 
 export default function QuiDecide() {
   const { choix } = useSelection();
+  const groupes = useGroupes();
   /* Accordéon : seul l'échelon le plus proche est ouvert au départ (maquette Stitch). */
   const [ouverts, setOuverts] = useState<Set<Echelon>>(() => new Set<Echelon>(["ville"]));
   const [sujet, setSujet] = useState<string | null>(null);
@@ -119,7 +121,9 @@ export default function QuiDecide() {
           /* Commune partagée : aucun député n'est désigné (invariant 3). On liste ceux
              que le fichier des députés porte, sans en choisir un. */
           const liste = n.personnes || [];
-          return { ...n, note: n.autresCircos ? `${d.nomCommune} est partagée entre plusieurs circonscriptions. Repère ne peut pas dire lequel de ces députés est le vôtre sans votre adresse, que Repère ne demande pas. Dans le fichier des députés : ${listeFr(liste.map(p => `${p.nom} (${ordinal(p.circo)} circonscription)`))}.` : undefined,
+          /* Le groupe du député, pour que son avatar soit celui de sa fiche (ui/avatar). */
+          const dp = n.personne ? deputeParNom(r.deputes, n.personne.nom) : null;
+          return { ...n, groupe: dp ? groupeDe(dp.ref, groupes) : null, note: n.autresCircos ? `${d.nomCommune} est partagée entre plusieurs circonscriptions. Repère ne peut pas dire lequel de ces députés est le vôtre sans votre adresse, que Repère ne demande pas. Dans le fichier des députés : ${listeFr(liste.map(p => `${p.nom} (${ordinal(p.circo)} circonscription)`))}.` : undefined,
             pied: n.personne && r.votesLus ? (
               /* Le vote affiche est le plus recent depuis le 07/10/2026 (ordreDesFaits,
                  @repere/core : date, puis numero de scrutin). On dit quand meme sa

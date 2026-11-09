@@ -304,3 +304,15 @@ test("fixtures — aucune donnée fictive dans les données publiées", () => {
   marche(DATA);
   assert.deepEqual(fautes, [], `données fictives publiées : ${fautes.join(", ")}`);
 });
+
+/* ---- UN SEUL AVATAR (porteur, 09/11/2026) : tout avatar passe par ui/avatar.tsx, et aucun écran ne
+   lui impose une couleur (« fond ») ni une variante (« doux ») : la règle est dans teinteAvatar. */
+test("avatar — un seul composant, aucune couleur ni variante imposée par un écran", () => {
+  const fautes = [];
+  for (const f of fichiers(SRC)) {
+    const s = fs.readFileSync(f, "utf8");
+    for (const m of s.matchAll(/<Avatar(?:Elu)?\b[^>]*>/g)) if (/\b(fond|doux|couleur)=/.test(m[0]) || /\bdoux\b/.test(m[0])) fautes.push(`${path.relative(RACINE, f)} : ${m[0].slice(0, 60)}`);
+    if (!/ui[\\/]avatar\.tsx$/.test(f) && /borderRadius:\s*taille\s*\/\s*2/.test(s)) fautes.push(`${path.relative(RACINE, f)} : un rond d'avatar hors de ui/avatar.tsx`);
+  }
+  assert.deepEqual(fautes, [], fautes.join(" | "));
+});

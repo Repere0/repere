@@ -6,7 +6,6 @@ import { Text, View } from "react-native";
 import { router } from "expo-router";
 import { ordinal } from "@repere/core";
 import { couleurs, PAS, POLICE, TYPO } from "../lib/theme";
-import { pointEchelon } from "../lib/niveaux";
 import { Avatar } from "./avatar";
 import { Pression } from "./pression";
 
@@ -18,8 +17,9 @@ export function nomCourt(nom: string): string {
   return `${prenom} ${mots.slice(1).join(" ")}`;
 }
 
-export function Decideurs({ maire, depute, circo, titre = "Vos décideurs" }: {
-  maire: string | null; depute: string | null; circo: number | null; titre?: string;
+/* `groupeDepute` : le groupe du député, quand l'écran le connaît ; l'avatar est alors le même que sur sa fiche. */
+export function Decideurs({ maire, depute, circo, titre = "Vos décideurs", groupeDepute = null }: {
+  maire: string | null; depute: string | null; circo: number | null; titre?: string; groupeDepute?: string | null;
 }) {
   const gens = [
     maire ? { nom: maire, role: "Maire", echelon: "ville" as const, niveau: "Votre commune", institution: "Conseil municipal" } : null,
@@ -34,7 +34,7 @@ export function Decideurs({ maire, depute, circo, titre = "Vos décideurs" }: {
           <Pression key={g.nom} etiquette={`${g.nom}, ${g.role} : ouvrir sa fiche`}
             onPress={() => router.push({ pathname: "/elu", params: { nom: g.nom, role: g.role, echelon: g.echelon, niveau: g.niveau, institution: g.institution, lieu: "" } })}
             style={{ flexDirection: "row", alignItems: "center", gap: PAS * 2, minHeight: 48 }}>
-            <Avatar nom={g.nom} taille={36} fond={(pointEchelon(g.echelon) as { backgroundColor: string }).backgroundColor} />
+            <Avatar nom={g.nom} taille={36} echelon={g.echelon} groupe={g.echelon === "france" ? groupeDepute : null} />
             <View>
               <Text style={[TYPO.corps, { fontFamily: POLICE.titre }]}>{nomCourt(g.nom)}</Text>
               <Text style={[TYPO.micro, { color: couleurs.sourd }]}>{g.role}</Text>

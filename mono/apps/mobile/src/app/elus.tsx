@@ -19,14 +19,13 @@ import { ETATS, PHRASES } from "../lib/donnees";
 import { chargerFiches } from "../lib/annuaire";
 import { Vide } from "../lib/composants";
 import { couleurs, CIBLE, PAS, RAYON, TYPO } from "../lib/theme";
-import { Avatar } from "../ui/avatar";
+import { AvatarElu } from "../ui/avatar";
 import { CarteListe, Puces, StatCard } from "../ui/donnees";
 import { Loupe } from "../ui/loupe";
 import { DatePublication } from "../ui/fraicheur";
 import { SquelettesListe } from "../ui/squelette";
 import type { Fiche } from "../types/annuaire";
 import { ScrollView } from "react-native";
-import { usePhotoElu } from "../lib/photos";
 import { groupeDe, useGroupes, type TableGroupes } from "../lib/groupes";
 import { BadgeGroupe } from "../ui/badge-groupe";
 
@@ -46,12 +45,11 @@ const deFiltre = (f: Filtre, x: Fiche) => f === "tous" || (f === "deputes" && x.
 /* Une ligne : la photo libre (D27) si elle existe, sinon les initiales ; le groupe politique du
    député en badge (couleur et sigle, invariant 7 : identification seulement). */
 function LigneElu({ item, groupes }: { item: Fiche; groupes: TableGroupes | null }) {
-  const photo = usePhotoElu(item.dep, item.ref);
   const groupe = item.ref ? groupeDe(item.ref, groupes) : null;
   return (
     <CarteListe onPress={() => router.push({ pathname: "/annuaire-fiche", params: { ...item } })}
       etiquette={`${item.nom}, ${item.fonction}, ${item.lieu}`} titre={item.nom}
-      gauche={<Avatar nom={item.nom} taille={44} photo={photo} groupe={groupe} />}>
+      gauche={<AvatarElu nom={item.nom} taille={44} groupe={groupe} echelon={item.ref ? "france" : "region"} dep={item.dep} cle={item.ref} />}>
       <Text style={TYPO.note}>{item.fonction} · {item.lieu}</Text>
       {groupe ? <View style={{ flexDirection: "row" }}><BadgeGroupe groupe={groupe} /></View> : null}
     </CarteListe>
@@ -150,7 +148,7 @@ export default function Elus() {
               <Puces items={[
                 { icone: "home-outline", texte: "Les maires, adjoints et conseillers municipaux, et les conseillers départementaux et régionaux : leurs données sont rangées par département et ne sont pas encore dans l'annuaire." },
                 { icone: "flag-outline", texte: "Le groupe politique est publié pour les députés (table de l'Assemblée nationale), pas pour les exécutifs régionaux." },
-                { icone: "image-outline", texte: "Les photos : seulement les images sous licence libre de Wikimedia Commons, crédit sur la fiche. Sinon, les initiales." },
+                { icone: "image-outline", texte: "Photos : Wikimedia Commons, sous licence libre. L'auteur et la licence de chaque photo sont sur la fiche de l'élu. Sans photo libre, les initiales." },
               ]} />
             </View>
           ) : undefined
