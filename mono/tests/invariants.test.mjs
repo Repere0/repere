@@ -162,7 +162,7 @@ test("invariant 7 — palette gelée ; couleurs de groupes seulement dans palett
   /* 09/11/2026 (porteur, « tout Stitch ») : une jauge par thème. */
   const blocJauge = (lire("apps/mobile/src/lib/palette.ts").match(/export const JAUGE_BUDGET_PAR_MODE[\s\S]*?\}\);/) || [""])[0];
   const jauge = [...blocJauge.matchAll(/#[0-9a-fA-F]{6}\b/g)].map(m => m[0].toLowerCase()).filter(h => amplitude(h) > AMPLITUDE_MAX);
-  assert.deepEqual(jauge, ["0d3b43", "475569", "d4af37", "818cf8", "475569"].map(h => "#" + h), "la jauge du budget porte les couleurs de l'amendement du 09/11/2026");
+  assert.deepEqual(jauge, ["8b9dc3", "a3c9a8", "d4af37", "818cf8", "475569"].map(h => "#" + h), "la jauge du budget porte les couleurs de l'amendement du 09/11/2026 (pastels en clair)");
   /* Accents d'interface et neutres Stitch (09/11/2026) : ces valeurs, dans palette.ts seulement. */
   const blocAccents = (lire("apps/mobile/src/lib/palette.ts").match(/export const ACCENTS_PAR_MODE[\s\S]*?\}\);/) || [""])[0];
   const accents = [...blocAccents.matchAll(/#[0-9a-fA-F]{6}\b/g)].map(m => m[0].toLowerCase()).filter(h => amplitude(h) > AMPLITUDE_MAX);

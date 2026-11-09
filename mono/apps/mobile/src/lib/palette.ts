@@ -163,9 +163,11 @@ export const REFLET_AVATAR = { clair: "rgba(255,255,255,0.22)", ombre: "rgba(0,0
 /* LA JAUGE DU BUDGET (maquettes Stitch). Amendements de l'invariant 7 par le porteur, 08/11 puis
    09/11/2026 (« tout Stitch ») : une palette par thème, couleurs de données financières, pour cette
    jauge seulement, jamais politiques. La légende écrite porte le sens.
-   Clair : pétrole (salaires), ardoise (investissements), gris bleuté (fonctionnement). L'émeraude
-   n'y est plus (porteur, 09/11/2026 : elle est réservée aux votes). Sombre : or mat, indigo, ardoise. */
+   Clair (porteur, 09/11/2026, refonte « légère ») : tons pastel, bleu (salaires), vert sauge
+   (investissements), gris clair (autres). Sous 3:1 sur la carte blanche (1,5 à 2,6:1) : la légende
+   écrit chaque part, la couleur ne porte jamais seule le sens. L'émeraude reste réservée aux votes.
+   Sombre : or mat, indigo, ardoise (inchangé). */
 export const JAUGE_BUDGET_PAR_MODE = Object.freeze({
-  clair: { salaires: "#0D3B43", investissement: "#475569", autres: "#CBD5E1" },
+  clair: { salaires: "#8B9DC3", investissement: "#A3C9A8", autres: "#D3D3D3" },
   sombre: { salaires: "#D4AF37", investissement: "#818CF8", autres: "#475569" },
 });

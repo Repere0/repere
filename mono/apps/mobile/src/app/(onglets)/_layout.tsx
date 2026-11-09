@@ -44,7 +44,9 @@ export const TAILLE_MAX_LIBELLE_ONGLET = 1.2;
 
 const etiquette = (texte: string) => ({ color }: { color: ColorValue }) => (
   <Text numberOfLines={2} allowFontScaling={Platform.OS !== "ios"} maxFontSizeMultiplier={TAILLE_MAX_LIBELLE_ONGLET}
-    style={{ color, fontSize: 11, fontWeight: "500", textAlign: "center", letterSpacing: 0.2 }}>{texte}</Text>
+    /* 12 px au moins (porteur, 09/11/2026). Deux lignes au plus : rien n'est tronqué, même sur iOS
+       où la taille reste fixe ; la largeur suit la colonne de l'onglet. */
+    style={{ color, fontSize: 12, lineHeight: 15, fontWeight: "500", textAlign: "center" }}>{texte}</Text>
 );
 
 export default function Onglets() {
