@@ -6,14 +6,18 @@
  * du lecteur (COMPETENCES, @repere/core — les memes phrases que le site).
  * Un niveau sans personne nommee par la source garde sa place et le dit.
  * L'ordre est un ordre de distance, pas d'importance : c'est ecrit. */
-import { Linking, Pressable, Text, View } from "react-native";
+import { useState } from "react";
+import { Linking, Pressable, ScrollView, Text, View } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import { router, Stack } from "expo-router";
 import { chaineDecision, dateFr, listeFr, MAIRE_ABSENT, ordinal, phraseAdjoints, RNE_URL, LIBELLES } from "@repere/core";
 import { sansConseilDepartemental } from "@repere/core";
 import { Definitions, LienSortant, Segments } from "../../lib/composants";
 import { REGION_PAS_ARRIVEE } from "../../lib/absences";
 import { srcElus } from "../../lib/sources";
-import { CIBLE, couleurs, PAS, TYPO } from "../../lib/theme";
+import { ACCENTS, CIBLE, couleurs, PAS, POLICE, RAYON, TYPO, type Echelon } from "../../lib/theme";
+import { SOURCE_EPT, SOURCE_TRANSPORTS_IDF, estMetropoleGrandParis } from "@repere/core";
+import { EnClair } from "../../ui/stitch";
 import { AvecDonnees, Page, Question } from "../../ui/page";
 import { PastilleSource } from "../../ui/source";
 import { Chaine, type Niveau } from "../../ui/visuels";
@@ -25,8 +29,32 @@ import { mandatsTerminesListes } from "../../lib/mandats-termines";
 import { useDecoupage } from "../../lib/decoupage";
 import { SignalerErreur } from "../../ui/contact";
 
+/* L'AIGUILLEUR EN UN GESTE (maquette Stitch, 09/11/2026) : un sujet de la vie courante ouvre le
+   niveau qui en décide. Les phrases reprennent celles de la chaîne (COMPETENCES, @repere/core) et
+   les précisions franciliennes déjà sourcées (SOURCE_TRANSPORTS_IDF, SOURCE_EPT) : rien de neuf
+   n'est affirmé ici. La bêta couvre l'Île-de-France. */
+type Sujet = { cle: string; texte: string; icone: keyof typeof Ionicons.glyphMap; echelon: Echelon; reponse: (mgp: boolean, dep: string) => string; source?: (mgp: boolean, dep: string) => { producteur: string; url: string } | null };
+const SUJETS: Sujet[] = [
+  { cle: "ecoles", texte: "Écoles", icone: "school-outline", echelon: "ville",
+    reponse: () => "L'école primaire et la cantine : la commune. Le collège : le département. Le lycée : la région." },
+  { cle: "dechets", texte: "Déchets", icone: "trash-outline", echelon: "agglo",
+    reponse: (mgp, dep) => mgp && dep !== "75"
+      ? "Les déchets ménagers : l'établissement public territorial dont fait partie votre commune (Repère n'a pas encore son nom)."
+      : "Les déchets : l'intercommunalité.",
+    source: (mgp, dep) => (mgp && dep !== "75" ? SOURCE_EPT : null) },
+  { cle: "transports", texte: "Transports", icone: "bus-outline", echelon: "region",
+    reponse: () => "En Île-de-France, les transports en commun sont organisés par Île-de-France Mobilités. Les lycées et les trains du quotidien relèvent de la région.",
+    source: () => SOURCE_TRANSPORTS_IDF },
+  { cle: "lois", texte: "Lois", icone: "document-text-outline", echelon: "france",
+    reponse: () => "Les lois et le budget de l'État : le Parlement, l'Assemblée nationale avec le Sénat. Votre député en est membre." },
+];
+
 export default function QuiDecide() {
   const { choix } = useSelection();
+  /* Accordéon : seul l'échelon le plus proche est ouvert au départ (maquette Stitch). */
+  const [ouverts, setOuverts] = useState<Set<Echelon>>(() => new Set<Echelon>(["ville"]));
+  const [sujet, setSujet] = useState<string | null>(null);
+  const basculer = (e: Echelon) => setOuverts(o => { const n = new Set(o); if (n.has(e)) n.delete(e); else n.add(e); return n; });
   const niveauZoom = useNiveauZoom();
   /* V59 (bloc 1.1) : le nom de l'intercommunalité vient du découpage officiel quand la fiche ne le porte pas. */
   const decoupage = useDecoupage(choix ? choix.insee : null);
@@ -114,7 +142,36 @@ export default function QuiDecide() {
           <BadgeZoom />
           <Question etiquette="Qui décide" question={`Qui décide pour ${d.nomCommune} ?`}
             sous="Du plus proche de chez vous au plus lointain. Ce n'est pas un ordre d'importance : c'est un ordre de distance." />
-          <Chaine niveaux={visibles} surNom={n => router.push({ pathname: "/elu", params: {
+          {/* L'aiguilleur : quatre sujets, un geste chacun. */}
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: PAS * 2 }}
+            accessibilityLabel="Qui s'occupe de quoi : choisissez un sujet">
+            {SUJETS.map(x => {
+              const on = sujet === x.cle;
+              return (
+                <Pressable key={x.cle} onPress={() => { setSujet(on ? null : x.cle); if (!on) setOuverts(o => new Set(o).add(x.echelon)); }}
+                  accessibilityRole="button" accessibilityState={{ selected: on }} accessibilityLabel={`${x.texte} : qui s'en occupe ?`}
+                  style={({ pressed }) => ({ minHeight: CIBLE, flexDirection: "row", alignItems: "center", gap: PAS * 2, paddingHorizontal: PAS * 4,
+                    borderRadius: RAYON.pastille, borderWidth: 1, borderColor: on ? ACCENTS.autorite : couleurs.trait,
+                    backgroundColor: on ? ACCENTS.autorite : couleurs.carte, opacity: pressed ? 0.7 : 1 })}>
+                  <Ionicons name={x.icone} size={18} color={on ? ACCENTS.surAutorite : ACCENTS.autorite} accessible={false} importantForAccessibility="no" />
+                  <Text style={[TYPO.corps, { fontFamily: POLICE.texteGras, color: on ? ACCENTS.surAutorite : couleurs.encre }]}>{x.texte}</Text>
+                </Pressable>
+              );
+            })}
+          </ScrollView>
+          {(() => {
+            const x = SUJETS.find(y => y.cle === sujet);
+            if (!x) return null;
+            const mgp = estMetropoleGrandParis(f && f.agglo);
+            const src = x.source ? x.source(mgp, d.dep) : null;
+            return (
+              <View style={{ gap: PAS }}>
+                <EnClair texte={x.reponse(mgp, d.dep)} />
+                {src ? <LienSortant url={src.url} texte={`Source : ${src.producteur}`} /> : null}
+              </View>
+            );
+          })()}
+          <Chaine niveaux={visibles} ouverts={ouverts} basculer={basculer} surNom={n => router.push({ pathname: "/elu", params: {
             nom: n.personne ? n.personne.nom : "", role: n.personne ? n.personne.role : "", echelon: n.echelon,
             niveau: n.niveau, institution: n.institution, lieu: n.lieu || "" } })} />
           <PastilleSource source={srcElus(r.srcElus ? { ...r.srcElus, url: r.srcElus.url || RNE_URL } : null)} />

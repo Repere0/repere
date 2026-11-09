@@ -13,6 +13,7 @@ import { espacesFines } from "./donnees";
 import { Avatar } from "./avatar";
 import { useState, type ReactNode } from "react";
 import { Animated, Pressable, StyleSheet, Text, View } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import { feuille, couleurs, PAS, RAYON, TEINTES, TYPO, CIBLE, type Echelon } from "../lib/theme";
 import { useCouleurVote } from "../lib/couleur-vote";
 import { useApparition, useCompteur } from "./mouvement";
@@ -226,10 +227,17 @@ export type Niveau = {
 };
 /* `surNom` : quand il est donne, le nom de chaque personne ouvre sa fiche. Le nom
    est alors une cible de 48 px, lue comme un lien. */
-export function Chaine({ niveaux, compact, surNom }: { niveaux: Niveau[]; compact?: boolean; surNom?: (n: Niveau) => void }) {
+/* `ouverts` et `basculer` (maquette Stitch, 09/11/2026) : la chaîne devient un accordéon. Chaque
+   niveau garde son nom et sa personne visibles ; ce qu'il décide, la note et le pied se déplient. */
+export function Chaine({ niveaux, compact, surNom, ouverts, basculer }: {
+  niveaux: Niveau[]; compact?: boolean; surNom?: (n: Niveau) => void;
+  ouverts?: ReadonlySet<Echelon>; basculer?: (e: Echelon) => void;
+}) {
   return (
     <View>
-      {niveaux.map((n, i) => (
+      {niveaux.map((n, i) => {
+        const deplie = !ouverts || ouverts.has(n.echelon);
+        return (
         <View key={n.echelon} style={s.jalon}
           accessible={compact}
           accessibilityLabel={compact ? `${n.niveau} : ${n.personne ? n.personne.nom + ", " + n.personne.role : n.institution}` : undefined}>
@@ -247,7 +255,16 @@ export function Chaine({ niveaux, compact, surNom }: { niveaux: Niveau[]; compac
                 en 13 px, l'intercommunalite (ancien cyan) faisait 3,21:1 sur le fond
                 et le departement 4,38:1 — sous le seuil AA de 4,5:1 (mesure du
                 30/09/2026, controle « contraste AA » du parcours). */}
-            <Text style={TYPO.etiquette}>{n.niveau}{n.lieu && !compact ? " · " + n.lieu : ""}</Text>
+            {ouverts && basculer && !compact ? (
+              <Pressable onPress={() => basculer(n.echelon)} accessibilityRole="button" accessibilityState={{ expanded: deplie }}
+                accessibilityLabel={`${n.niveau}${n.lieu ? ", " + n.lieu : ""} : ${deplie ? "replier" : "déplier"} ce que ce niveau décide`}
+                style={({ pressed }) => ({ minHeight: 44, flexDirection: "row", alignItems: "center", gap: PAS * 2, opacity: pressed ? 0.6 : 1 })}>
+                <Text style={[TYPO.etiquette, { flex: 1 }]}>{n.niveau}{n.lieu ? " · " + n.lieu : ""}</Text>
+                <Ionicons name={deplie ? "chevron-up" : "chevron-down"} size={18} color={couleurs.sourd} accessible={false} importantForAccessibility="no" />
+              </Pressable>
+            ) : (
+              <Text style={TYPO.etiquette}>{n.niveau}{n.lieu && !compact ? " · " + n.lieu : ""}</Text>
+            )}
             {n.personne && surNom && !compact ? (
               /* 07/11/2026 : l'avatar (initiales sur la couleur de l'ÉCHELON, jamais d'un parti) à côté du nom. */
               <Pressable onPress={() => surNom(n)} accessibilityRole="link"
@@ -262,12 +279,13 @@ export function Chaine({ niveaux, compact, surNom }: { niveaux: Niveau[]; compac
               <Text style={compact ? TYPO.corps : TYPO.reponse}>{n.institution}</Text>
             )}
             {!compact && n.personne ? <Text style={TYPO.note}>{n.personne.role}</Text> : null}
-            {!compact && n.decide ? <Text style={TYPO.corps}>Décide : {n.decide}.</Text> : null}
-            {!compact && n.note ? <Text style={TYPO.note}>{n.note}</Text> : null}
-            {!compact && n.pied ? n.pied : null}
+            {!compact && deplie && n.decide ? <Text style={TYPO.corps}>Décide : {n.decide}.</Text> : null}
+            {!compact && deplie && n.note ? <Text style={TYPO.note}>{n.note}</Text> : null}
+            {!compact && deplie && n.pied ? n.pied : null}
           </View>
         </View>
-      ))}
+        );
+      })}
     </View>
   );
 }
