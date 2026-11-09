@@ -362,13 +362,16 @@ export default function Accueil() {
 
   /* Le député montré : celui de la commune retenue, sinon celui de l'exemple (dit comme tel). */
   const deputeVu = voteVu && "depute" in voteVu ? { nom: voteVu.depute, circo: voteVu.circo, ref: voteVu.acteur } : exemple && !voteVu ? { nom: VOTE.depute, circo: 1, ref: VOTE.acteur as string } : null;
+  const depCible = departementDe(cible.insee);
   /* Les cartes glissent horizontalement : le chiffre, puis le vote. Au-dessus (refonte « légère »,
      09/11/2026) : les décideurs du quotidien et la dernière publication de la mairie. */
   const cartes = (
     <>
             <Decideurs titre={exemple ? `Décideurs du quotidien · exemple : ${cible.nom}` : "Décideurs de votre quotidien"}
               maire={maire} depute={deputeVu ? deputeVu.nom : null} circo={deputeVu ? deputeVu.circo : null}
-              groupeDepute={deputeVu ? groupeDe(deputeVu.ref, groupesAccueil) : null} />
+              groupeDepute={deputeVu ? groupeDe(deputeVu.ref, groupesAccueil) : null}
+              photos={{ maire: maire && depCible ? { dep: depCible, cle: "M" + cible.insee } : null,
+                depute: deputeVu && depCible ? { dep: depCible, cle: deputeVu.ref } : null }} />
             {!exemple ? <ActuMairie insee={cible.insee} nom={cible.nom} /> : null}
             <ScrollView horizontal showsHorizontalScrollIndicator={false} decelerationRate="fast" snapToInterval={pas}
               accessibilityLabel={argent ? "Cartes à faire défiler : l'argent de la commune, puis un vote" : "Un vote, à titre d'exemple"}

@@ -60,7 +60,7 @@ import { SignalerErreur } from "../../ui/contact";
 
 /* VOS DÉCIDEURS (maquette Stitch, 09/11/2026) : composant partagé avec l'accueil (ui/decideurs). */
 import { Decideurs } from "../../ui/decideurs";
-import { groupeDe, useGroupes } from "../../lib/groupes";
+import { deputeParNom, groupeDe, useGroupes } from "../../lib/groupes";
 import { DataBadge } from "../../ui/donnees";
 import { useCouleurVote } from "../../lib/couleur-vote";
 const MOTS_VOTE: Record<string, string> = { p: "Pour", c: "Contre", a: "Abstention" };
@@ -238,7 +238,9 @@ export default function ChezVous() {
           </View>
 
           <Decideurs maire={maire} depute={vote && d.nbCircos <= 1 ? vote.qui : null} circo={vote && d.nbCircos <= 1 ? vote.circo : null}
-            groupeDepute={vote ? groupeDe(vote.ref, groupes) : null} />
+            groupeDepute={vote ? groupeDe(vote.ref, groupes) : null}
+            photos={{ maire: maire && choix ? { dep: d.dep, cle: "M" + choix.insee } : null,
+              depute: vote && vote.ref ? { dep: deputeParNom(r.deputes, vote.qui)?.dep ?? d.dep, cle: vote.ref } : null }} />
 
           {/* AU PARLEMENT CETTE SEMAINE — sous les trois reponses, jamais parmi
              elles : c'est national, et la carte le dit (ui/semaine.tsx). */}

@@ -67,7 +67,7 @@ export default function QuiDecide() {
       const brut = chaineDecision({ fiche: f, paquet: r.paquet, index: r.index, deputes: r.deputes, elusRegion: r.elusRegion, dep: d.dep }) as (Niveau & { delegues?: number; autresCircos?: number; personnes?: { nom: string; circo: number }[] })[];
       const niveaux: Niveau[] = brut.map(n => {
         if (n.echelon === "ville") {
-          return { ...n, pied: n.personne
+          return { ...n, photo: n.personne && choix ? { dep: d.dep, cle: "M" + choix.insee } : null, pied: n.personne
             ? <View style={{ gap: PAS }}>
                 <Text style={TYPO.note}><Segments s={phraseAdjoints(f.adjoints, f.maire.nom)} /></Text>
                 <Definitions s={phraseAdjoints(f.adjoints, f.maire.nom)} />
@@ -123,7 +123,7 @@ export default function QuiDecide() {
           const liste = n.personnes || [];
           /* Le groupe du député, pour que son avatar soit celui de sa fiche (ui/avatar). */
           const dp = n.personne ? deputeParNom(r.deputes, n.personne.nom) : null;
-          return { ...n, groupe: dp ? groupeDe(dp.ref, groupes) : null, note: n.autresCircos ? `${d.nomCommune} est partagée entre plusieurs circonscriptions. Repère ne peut pas dire lequel de ces députés est le vôtre sans votre adresse, que Repère ne demande pas. Dans le fichier des députés : ${listeFr(liste.map(p => `${p.nom} (${ordinal(p.circo)} circonscription)`))}.` : undefined,
+          return { ...n, groupe: dp ? groupeDe(dp.ref, groupes) : null, photo: dp && dp.ref ? { dep: dp.dep, cle: dp.ref } : null, note: n.autresCircos ? `${d.nomCommune} est partagée entre plusieurs circonscriptions. Repère ne peut pas dire lequel de ces députés est le vôtre sans votre adresse, que Repère ne demande pas. Dans le fichier des députés : ${listeFr(liste.map(p => `${p.nom} (${ordinal(p.circo)} circonscription)`))}.` : undefined,
             pied: n.personne && r.votesLus ? (
               /* Le vote affiche est le plus recent depuis le 07/10/2026 (ordreDesFaits,
                  @repere/core : date, puis numero de scrutin). On dit quand meme sa

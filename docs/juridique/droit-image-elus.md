@@ -21,7 +21,7 @@ Date : 30/10/2026. **Ce document n'est pas un avis juridique.** Il a été rédi
 
 ## c) Ce que Repère fait déjà
 
-- **Contexte informatif** : la photo n'apparaît que sur la fiche d'un élu, à côté de faits de mandat sourcés. Jamais dans une publicité ni une carte de partage promotionnelle.
+- **Contexte informatif** : la photo n'apparaît qu'à côté de faits de mandat sourcés. Jamais dans une publicité ni une carte de partage promotionnelle. *Depuis le 09/11/2026 (décision du porteur)* : elle apparaît aussi sur « Qui décide », « Aujourd'hui », l'accueil et l'écran du vote, chaque fois avec son crédit sur le même écran (« Photo de [nom] : [auteur] · [licence] · Wikimedia Commons (recadrée) », lien vers la page Commons), et dans la liste « Élus », qui annonce en pied que l'auteur et la licence sont sur la fiche de chaque élu. Un contrôle du banc refuse un écran qui montre une photo sans crédit. **À faire valider par le juriste** : le renvoi à la fiche suffit-il pour la liste, et l'élargissement des écrans change-t-il l'analyse du droit à l'image (point b) ?
 - **Crédit visible** : « Photo : [auteur] · [licence] · Wikimedia Commons (recadrée) », sous la photo.
 - **Lien vers la page Commons** : le crédit est cliquable (bloc 2 de V18).
 - **Seulement des licences libres**, jamais les photos de l'Assemblée (D1, D27).

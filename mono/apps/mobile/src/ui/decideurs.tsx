@@ -6,7 +6,7 @@ import { Text, View } from "react-native";
 import { router } from "expo-router";
 import { ordinal } from "@repere/core";
 import { couleurs, PAS, POLICE, TYPO } from "../lib/theme";
-import { Avatar } from "./avatar";
+import { AvatarElu, CreditPhotoElu } from "./avatar";
 import { Pression } from "./pression";
 
 /* « J.-F. Copé » : l'initiale du prénom (composé ou non), puis le nom. Le nom entier reste dans le nom accessible. */
@@ -17,14 +17,17 @@ export function nomCourt(nom: string): string {
   return `${prenom} ${mots.slice(1).join(" ")}`;
 }
 
-/* `groupeDepute` : le groupe du député, quand l'écran le connaît ; l'avatar est alors le même que sur sa fiche. */
-export function Decideurs({ maire, depute, circo, titre = "Vos décideurs", groupeDepute = null }: {
+/* `groupeDepute` : le groupe du député, quand l'écran le connaît ; l'avatar est alors le même que sur sa fiche.
+   `photos` : où lire la photo de chacun (maire : « M » + INSEE dans le département de la commune ;
+   député : son identifiant, dans SON département). Une photo affichée a son crédit juste dessous. */
+export function Decideurs({ maire, depute, circo, titre = "Vos décideurs", groupeDepute = null, photos }: {
   maire: string | null; depute: string | null; circo: number | null; titre?: string; groupeDepute?: string | null;
+  photos?: { maire?: { dep: string; cle: string } | null; depute?: { dep: string; cle: string } | null };
 }) {
   const gens = [
-    maire ? { nom: maire, role: "Maire", echelon: "ville" as const, niveau: "Votre commune", institution: "Conseil municipal" } : null,
-    depute && circo ? { nom: depute, role: `Député, ${ordinal(circo)} circ.`, echelon: "france" as const, niveau: "L'Assemblée nationale", institution: "Assemblée nationale" } : null,
-  ].filter(Boolean) as { nom: string; role: string; echelon: "ville" | "france"; niveau: string; institution: string }[];
+    maire ? { nom: maire, role: "Maire", echelon: "ville" as const, niveau: "Votre commune", institution: "Conseil municipal", dep: photos?.maire?.dep, cle: photos?.maire?.cle } : null,
+    depute && circo ? { nom: depute, role: `Député, ${ordinal(circo)} circ.`, echelon: "france" as const, niveau: "L'Assemblée nationale", institution: "Assemblée nationale", dep: photos?.depute?.dep, cle: photos?.depute?.cle } : null,
+  ].filter(Boolean) as { nom: string; role: string; echelon: "ville" | "france"; niveau: string; institution: string; dep?: string; cle?: string }[];
   if (!gens.length) return null;
   return (
     <View style={{ gap: PAS * 2 }}>
@@ -34,7 +37,7 @@ export function Decideurs({ maire, depute, circo, titre = "Vos décideurs", grou
           <Pression key={g.nom} etiquette={`${g.nom}, ${g.role} : ouvrir sa fiche`}
             onPress={() => router.push({ pathname: "/elu", params: { nom: g.nom, role: g.role, echelon: g.echelon, niveau: g.niveau, institution: g.institution, lieu: "" } })}
             style={{ flexDirection: "row", alignItems: "center", gap: PAS * 2, minHeight: 48 }}>
-            <Avatar nom={g.nom} taille={36} echelon={g.echelon} groupe={g.echelon === "france" ? groupeDepute : null} />
+            <AvatarElu nom={g.nom} taille={36} echelon={g.echelon} groupe={g.echelon === "france" ? groupeDepute : null} dep={g.dep} cle={g.cle} />
             <View>
               <Text style={[TYPO.corps, { fontFamily: POLICE.titre }]}>{nomCourt(g.nom)}</Text>
               <Text style={[TYPO.micro, { color: couleurs.sourd }]}>{g.role}</Text>
@@ -42,6 +45,7 @@ export function Decideurs({ maire, depute, circo, titre = "Vos décideurs", grou
           </Pression>
         ))}
       </View>
+      {gens.map(g => <CreditPhotoElu key={g.nom} nom={g.nom} dep={g.dep} cle={g.cle} />)}
     </View>
   );
 }

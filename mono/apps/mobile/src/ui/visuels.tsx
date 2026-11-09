@@ -10,7 +10,7 @@
  *   - les nombres viennent de @repere/core (visuels.js), jamais d'ici.
  * Construites avec des View : aucune bibliotheque de graphiques. */
 import { espacesFines } from "./donnees";
-import { Avatar } from "./avatar";
+import { AvatarElu, CreditPhotoElu } from "./avatar";
 import { useState, type ReactNode } from "react";
 import { Animated, Pressable, StyleSheet, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
@@ -272,6 +272,8 @@ export type Niveau = {
   personne?: { nom: string; role: string } | null; decide?: string; note?: string; pied?: ReactNode;
   /* le groupe politique de la personne (un député), pour que son avatar soit celui de sa fiche */
   groupe?: string | null;
+  /* où lire sa photo publiée (département et clé), quand il peut en avoir une : maire, député */
+  photo?: { dep: string; cle: string } | null;
 };
 /* `surNom` : quand il est donne, le nom de chaque personne ouvre sa fiche. Le nom
    est alors une cible de 48 px, lue comme un lien. */
@@ -322,7 +324,7 @@ export function Chaine({ niveaux, compact, surNom, ouverts, basculer }: {
               <Pressable onPress={() => surNom(n)} accessibilityRole="link"
                 accessibilityLabel={`Voir la fiche de ${n.personne.nom}, ${n.personne.role}`}
                 style={({ pressed }) => [s.carteElu, pressed && { opacity: 0.7 }]}>
-                <Avatar nom={n.personne.nom} taille={40} echelon={n.echelon} groupe={n.groupe} />
+                <AvatarElu nom={n.personne.nom} taille={40} echelon={n.echelon} groupe={n.groupe} dep={n.photo?.dep} cle={n.photo?.cle} />
                 <View style={{ flex: 1 }}>
                   <Text style={TYPO.reponse}>{n.personne.nom}</Text>
                   <Text style={TYPO.note}>{n.personne.role}</Text>
@@ -334,6 +336,7 @@ export function Chaine({ niveaux, compact, surNom, ouverts, basculer }: {
             ) : (
               <Text style={compact ? TYPO.corps : TYPO.reponse}>{n.institution}</Text>
             )}
+            {!compact && n.personne && surNom ? <CreditPhotoElu nom={n.personne.nom} dep={n.photo?.dep} cle={n.photo?.cle} /> : null}
             {!compact && n.personne && !surNom ? <Text style={TYPO.note}>{n.personne.role}</Text> : null}
             {!compact && deplie && n.decide ? <GrilleDecide decide={n.decide} /> : null}
             {/* La note reste visible, repliée ou non : elle porte les précisions qui empêchent une

@@ -61,13 +61,34 @@ export function Avatar({ nom, taille = 64, photo, groupe, echelon }: {
   );
 }
 
-/* L'AVATAR D'UN ÉLU, PHOTO COMPRISE : il lit lui-même la photo publiée (par département). À employer
-   là où le crédit de la photo est affiché ou annoncé (la liste « Élus » et les fiches). */
+/* L'AVATAR D'UN ÉLU, PHOTO COMPRISE : il lit lui-même la photo publiée (par département).
+   RÈGLE (porteur, 09/11/2026) : la photo partout, et son crédit sur le même écran. Tout écran qui
+   pose un AvatarElu pose un CreditPhotoElu à côté (ou, dans la longue liste « Élus », l'annonce en
+   pied et le crédit sur la fiche, à un geste). Garde : tests/theme.test.mjs. */
 export function AvatarElu({ nom, taille, groupe, echelon, dep, cle }: {
   nom: string; taille?: number; groupe?: string | null; echelon?: Echelon | null; dep?: string | null; cle?: string | null;
 }) {
   const photo = usePhotoElu(dep, cle);
   return <Avatar nom={nom} taille={taille} photo={photo} groupe={groupe} echelon={echelon} />;
+}
+
+/* LE CRÉDIT D'UNE PHOTO, SUR UNE LIGNE, là où l'avatar est petit (« Qui décide », décideurs, vote) :
+   auteur, licence, Wikimedia Commons, recadrage ; la ligne ouvre la page de la photo. Il lit la même
+   photo que l'avatar (même département, même clé) : sans photo, rien. */
+export function CreditPhotoElu({ nom, dep, cle }: { nom: string; dep?: string | null; cle?: string | null }) {
+  const photo = usePhotoElu(dep, cle);
+  const { profil } = useProfil();
+  if (!photo || profil?.masquerImages) return null;
+  const page = photo.page && /^https:\/\//.test(photo.page) ? photo.page : null;
+  return (
+    <Pressable disabled={!page} onPress={() => { if (page) Linking.openURL(page); }} accessibilityRole={page ? "link" : "text"}
+      accessibilityLabel={`Photo de ${nom} : ${photo.auteur}, licence ${photo.licence}, Wikimedia Commons, recadrée${page ? ". Ouvre la page de la photo, site externe" : ""}`}
+      style={({ pressed }) => ({ minHeight: 45, justifyContent: "center", opacity: pressed ? 0.7 : 1 })}>
+      <Text style={{ fontSize: 12, lineHeight: 16, color: couleurs.sourd }} numberOfLines={2}>
+        Photo de {nom} : {photo.auteur} · {photo.licence} · Wikimedia Commons (recadrée)
+      </Text>
+    </Pressable>
+  );
 }
 
 /* LE CREDIT D'UNE PHOTO (CC BY-SA exige auteur, licence, source, et l'indication d'une

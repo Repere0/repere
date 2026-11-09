@@ -31,9 +31,9 @@ import { SignalerErreur } from "../ui/contact";
 import { Timeline } from "../ui/timeline";
 import { DataBadge, StatCard } from "../ui/donnees";
 import { VoteBarTricolor } from "../ui/stitch";
-import { Avatar } from "../ui/avatar";
+import { AvatarElu, CreditPhotoElu } from "../ui/avatar";
 import { libelleGroupe } from "../ui/badge-groupe";
-import { groupeDe, useGroupes } from "../lib/groupes";
+import { deputeParNom, groupeDe, useGroupes } from "../lib/groupes";
 import { useCouleurVote } from "../lib/couleur-vote";
 
 type FaitVote = { cle: string; type: string; sc: { t: string; d: string; n: string; s: string; dec?: Record<string, string>; dl?: string; dr?: string; dm?: string; dq?: number; et?: { d: string; f?: string; l: string }[] }; position?: string; qui: string; circo: number; ref?: string };
@@ -61,6 +61,8 @@ export default function Vote() {
       const rep = repartitionVote(vote.sc);
       const statut = resultatScrutin(vote.sc) as "p" | "c" | null;
       const groupe = groupeDe(vote.ref, groupes);
+      /* La photo d'un député est rangée par SON département. */
+      const depDepute = deputeParNom(r.deputes, vote.qui)?.dep ?? d.dep;
       const dossier = dossierDuScrutin(vote.sc);
       const etapes = etapesDuScrutin(vote.sc);
       const MOTS_POS = MOTS as Record<string, string>;
@@ -81,12 +83,12 @@ export default function Vote() {
         <Page>
           <Stack.Screen options={{ title: partagee ? "Un député de votre commune" : "Votre député" }} />
           {entete}
-          {/* L'en-tête compact (07/11/2026) : initiales sur la couleur du groupe (pas de photo ici :
-              une photo exige son crédit, D27), nom, groupe, circonscription, date du scrutin.
+          {/* L'en-tête compact : le même avatar que sur la fiche (ui/avatar) ; une photo affichée a son
+              crédit juste sous l'en-tête (D27). Nom, groupe, circonscription, date du scrutin.
               Commune partagée : la phrase qui dit que c'est UN EXEMPLE reste, elle ne se résume pas. */}
           {partagee ? <Text style={TYPO.note}>{phraseCirconscription(d, vote.circo)}</Text> : null}
           <View style={{ flexDirection: "row", alignItems: "center", gap: PAS * 3 }}>
-            <Avatar nom={vote.qui} taille={48} groupe={groupe} echelon="france" />
+            <AvatarElu nom={vote.qui} taille={48} groupe={groupe} echelon="france" dep={depDepute} cle={vote.ref} />
             <View style={{ flex: 1, gap: 2 }}>
               <View style={{ flexDirection: "row", alignItems: "center", gap: PAS * 2 }}>
                 {/* Maillage (07/11/2026) : le nom ouvre la fiche, partout où la fiche sait la retrouver. */}
@@ -100,6 +102,8 @@ export default function Vote() {
               <Text style={TYPO.micro}>{ordinal(vote.circo)} circonscription{d.nomDep ? " · " + d.nomDep : ""}</Text>
             </View>
           </View>
+
+          <CreditPhotoElu nom={vote.qui} dep={depDepute} cle={vote.ref} />
 
           {/* NIVEAU 1 : la position, puis le scrutin en grands nombres (07/11/2026, DA « storytelling »).
               Le titre est l'intitulé OFFICIEL du dossier quand l'Assemblée le publie (souvent plus court),

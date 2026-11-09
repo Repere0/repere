@@ -316,3 +316,23 @@ test("avatar — un seul composant, aucune couleur ni variante imposée par un �
   }
   assert.deepEqual(fautes, [], fautes.join(" | "));
 });
+
+/* ---- UNE PHOTO, SON CRÉDIT SUR LE MÊME ÉCRAN (porteur, 09/11/2026 ; D27, CC BY-SA). Tout fichier qui
+   affiche une photo d'élu (AvatarElu, ou Avatar avec « photo= ») affiche aussi son crédit
+   (CreditPhotoElu ou CreditPhoto). Seule exception écrite : la longue liste « Élus », qui annonce
+   en pied que l'auteur et la licence sont sur la fiche de chaque élu, à un geste. */
+test("photos — tout écran qui montre une photo d'élu en montre le crédit", () => {
+  const fautes = [];
+  for (const f of fichiers(SRC)) {
+    const rel = path.relative(RACINE, f).split(path.sep).join("/");
+    if (rel === "src/ui/avatar.tsx") continue;
+    const s = fs.readFileSync(f, "utf8");
+    if (!/<AvatarElu\b|<Avatar\b[^>]*\bphoto=/.test(s)) continue;
+    if (rel === "src/app/elus.tsx") {
+      if (!/L'auteur et la licence de chaque photo sont sur la fiche/.test(s)) fautes.push(rel + " : la liste n'annonce plus où est le crédit");
+      continue;
+    }
+    if (!/<CreditPhotoElu\b|<CreditPhoto\b|<CreditDe\b/.test(s)) fautes.push(rel + " : photo sans crédit");
+  }
+  assert.deepEqual(fautes, [], fautes.join(" | "));
+});
