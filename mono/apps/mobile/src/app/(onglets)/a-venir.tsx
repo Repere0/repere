@@ -197,14 +197,13 @@ export default function AVenir() {
         <Page sansDate>
           <Stack.Screen options={{ title: LIBELLES.calendrier, headerRight: () => <BoutonPartageTexte titre={LIBELLES.calendrier} chemin="a-venir"
             source={lues.map(x => ligneSource({ producteur: x.source.producteur_affiche || x.source.producteur, maj: x.source.releve_le })).filter(Boolean).join(" ")} /> }} />
-          <BadgeZoom />
-          <View style={{ flexDirection: "row", alignItems: "flex-start", justifyContent: "space-between", gap: PAS * 2 }}>
-            <View style={{ flex: 1 }}>
-              <Question etiquette="Au Parlement" question="Calendrier"
-                sous="Les séances annoncées à l'Assemblée nationale et au Sénat. Elles concernent tout le pays, pas seulement votre commune." />
-            </View>
+          {/* En-tête compact (porteur, 09/11/2026) : le titre, une ligne qui dit que l'agenda est national,
+              puis directement la frise des jours. Le badge de vue n'apparaît que s'il masque le calendrier. */}
+          {!nationalVisible ? <BadgeZoom /> : null}
+          <View style={{ gap: PAS }}>
+            <Text style={TYPO.question} accessibilityRole="header">Calendrier</Text>
+            <Text style={TYPO.note}>Les séances annoncées à l'Assemblée nationale et au Sénat concernent tout le pays.</Text>
           </View>
-          <DateDonnee quoi="Relevé de l'agenda" date={releveAncien} testID="maj-agenda" />
 
           {!r.agendaLu ? (
             <Vide {...AGENDA_PAS_ARRIVE} action="Réessayer" onAction={reessayer} />
@@ -233,6 +232,8 @@ export default function AVenir() {
                   {semaine.map(c => <Case key={c} iso={c} jour={jour} nb={compte[c] || 0} taille="semaine" onPress={() => choisirJour(c)} />)}
                 </View>
               )}
+
+              <DateDonnee quoi="Relevé de l'agenda" date={releveAncien} testID="maj-agenda" />
 
               {/* Filtre segmenté (maquette Stitch, 09/11/2026) : trois choix, chacun avec le nombre de
                   rendez-vous publiés sur la même période (le jour choisi, sinon deux semaines). */}

@@ -163,6 +163,9 @@ export function adresseAgregatsRegionaux() { return `${BASE_DONNEES}/agregats-re
 export function adresseMairies() { return `${BASE_DONNEES}/mairies-idf.json`; }
 /* L'actu locale hebdomadaire des communes pilotes (D29-D31, 30/10/2026) : un seul fichier, les codes INSEE sont des cles internes. */
 export function adresseActusHebdo() { return `${BASE_DONNEES}/actus-hebdo.json`; }
+/* La présidentielle 2027 (09/11/2026) : candidats officiels, débats et réunions publiques, quand une
+   source vérifiée les publie. Un seul fichier national ; tant qu'il n'est pas publié, l'écran le dit. */
+export function adressePresidentielle() { return `${BASE_DONNEES}/presidentielle-2027.json`; }
 /* Flux RSS officiels des mairies (D81, ADR 0007) : seuls les flux publies, jamais le HTML d'un site. */
 export function adresseActuellesRss() { return `${BASE_DONNEES}/actuelles-rss.json`; }
 /* LES POSITIONS, PAR DEPARTEMENT — jamais par depute, jamais par commune. Une
@@ -548,6 +551,9 @@ export async function chargerPhotosElus(dep, { delaiMs = 8000 } = {}) {
 }
 export async function chargerActusHebdo({ delaiMs = 8000 } = {}) {
   return chargerSocle("socle:HEB", adresseActusHebdo(), delaiMs);
+}
+export async function chargerPresidentielle({ delaiMs = 8000 } = {}) {
+  return chargerSocle("socle:PRE", adressePresidentielle(), delaiMs);
 }
 export async function chargerActuellesRss({ delaiMs = 8000 } = {}) {
   return chargerSocle("socle:RSS", adresseActuellesRss(), delaiMs);

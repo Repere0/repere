@@ -18,8 +18,22 @@ import { useMemo, useState } from "react";
 import { Pressable, Text, TextInput, View } from "react-native";
 import { Stack, useLocalSearchParams } from "expo-router";
 import { GLOSSAIRE, titreDuMot } from "@repere/core";
-import { couleurs, PAS, TYPO } from "../lib/theme";
+import { couleurs, PAS, POLICE, RAYON, TYPO } from "../lib/theme";
 import { Page, Question } from "../ui/page";
+
+/* LES CATÉGORIES (porteur, 09/11/2026) : les MOTS regroupés par thème, pour filtrer la liste.
+   Rien n'y concerne une personne ni un parti. Un mot sans catégorie listée ici va dans « Institutions ». */
+type Categorie = "Institutions" | "Budget" | "Élections" | "Élus";
+const CATEGORIES: Categorie[] = ["Institutions", "Budget", "Élections", "Élus"];
+const CATEGORIE_DE: Record<string, Categorie> = {
+  exercice: "Budget", "encours de dette": "Budget", subvention: "Budget", investissement: "Budget", fonctionnement: "Budget",
+  plf: "Budget", plfr: "Budget", plfss: "Budget", lolf: "Budget", bp: "Budget", ca: "Budget", dgf: "Budget", crc: "Budget",
+  ofgl: "Budget", tva: "Budget", csg: "Budget", crds: "Budget", detr: "Budget", fctva: "Budget",
+  circonscription: "Élections", referendum: "Élections", scrutin: "Élections", "scrutin solennel": "Élections",
+  mandat: "Élus", "adjoint au maire": "Élus", maire: "Élus", "conseiller municipal": "Élus", "conseiller départemental": "Élus",
+  "groupe parlementaire": "Élus", rapporteur: "Élus", ps: "Élus", lr: "Élus", rn: "Élus", lfi: "Élus", eelv: "Élus", epr: "Élus",
+  pcf: "Élus", modem: "Élus", hor: "Élus", dem: "Élus", gdr: "Élus", liot: "Élus", udi: "Élus",
+};
 
 const normaliser = (s: string) => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
 
@@ -30,6 +44,7 @@ export default function Dictionnaire() {
   const cleMot = Array.isArray(parametres.mot) ? parametres.mot[0] : parametres.mot;
   const [recherche, setRecherche] = useState(() => titreDuMot(cleMot) || "");
   const [lettre, setLettre] = useState<string | null>(null);
+  const [categorie, setCategorie] = useState<Categorie | null>(null);
   const toutes = useMemo<Entree[]>(
     () => Object.entries(GLOSSAIRE as Record<string, { titre: string; corps: string }>)
       .map(([cle, m]) => ({ cle, titre: m.titre, corps: m.corps, lettre: normaliser(m.titre).charAt(0).toUpperCase() }))
@@ -40,9 +55,10 @@ export default function Dictionnaire() {
   const lettres = useMemo(() => [...new Set(toutes.map(e => e.lettre))], [toutes]);
   const q = normaliser(recherche.trim());
   /* Une recherche porte sur tous les mots : elle ignore la lettre choisie. */
+  const parCategorie = categorie ? toutes.filter(e => (CATEGORIE_DE[e.cle] || "Institutions") === categorie) : toutes;
   const liste = q
-    ? toutes.filter(e => normaliser(e.titre + " " + e.corps).includes(q))
-    : (lettre ? toutes.filter(e => e.lettre === lettre) : toutes);
+    ? parCategorie.filter(e => normaliser(e.titre + " " + e.corps).includes(q))
+    : (lettre ? parCategorie.filter(e => e.lettre === lettre) : parCategorie);
 
   const chip = (actif: boolean) => ({
     minHeight: 44, paddingHorizontal: 16, borderRadius: 999, borderWidth: 1,
@@ -60,7 +76,8 @@ export default function Dictionnaire() {
         <TextInput
           value={recherche}
           onChangeText={setRecherche}
-          placeholder="Chercher un mot"
+          placeholder="Rechercher un terme..."
+          placeholderTextColor={couleurs.sourd}
           accessibilityLabel="Rechercher un mot du dictionnaire"
           autoCorrect={false}
           style={{ flex: 1, minHeight: 48, borderWidth: 1, borderColor: couleurs.trait, borderRadius: 999,
@@ -73,6 +90,17 @@ export default function Dictionnaire() {
             <Text style={{ fontWeight: "700", color: couleurs.encre, fontSize: 14 }}>Effacer</Text>
           </Pressable>
         ) : null}
+      </View>
+
+      {/* Catégories (porteur, 09/11/2026) : des pastilles, une seule active à la fois. */}
+      <View accessibilityRole="tablist" style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
+        {[null, ...CATEGORIES].map(c => (
+          <Pressable key={c ?? "toutes"} onPress={() => setCategorie(c)} accessibilityRole="tab"
+            accessibilityState={{ selected: categorie === c }} accessibilityLabel={c ? `Catégorie ${c}` : "Toutes les catégories"}
+            style={({ pressed }) => [chip(categorie === c), pressed && { opacity: 0.7 }]}>
+            <Text style={{ fontFamily: POLICE.texteMoyen, color: categorie === c ? couleurs.sol : couleurs.encre }}>{c ?? "Toutes"}</Text>
+          </Pressable>
+        ))}
       </View>
 
       {/* Lettres : une seule rangee, seules les lettres presentes. */}
@@ -91,9 +119,13 @@ export default function Dictionnaire() {
       </View>
 
       {liste.length ? liste.map(e => (
+        /* Une carte par mot (porteur, 09/11/2026) : titre en Manrope, catégorie en petite étiquette. */
         <View key={e.cle} testID="dico-entree"
-          style={{ gap: PAS, paddingTop: PAS * 3, borderTopWidth: 1, borderTopColor: couleurs.trait }}>
-          <Text style={[TYPO.corps, { fontWeight: "700" }]}>{e.titre}</Text>
+          style={{ gap: PAS * 2, padding: PAS * 4, borderRadius: RAYON.carte, backgroundColor: couleurs.carte, borderWidth: 1, borderColor: couleurs.trait }}>
+          <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: PAS * 2 }}>
+            <Text style={[TYPO.reponse, { flex: 1 }]}>{e.titre}</Text>
+            <Text style={TYPO.etiquette}>{CATEGORIE_DE[e.cle] || "Institutions"}</Text>
+          </View>
           <Text style={TYPO.corps}>{e.corps}</Text>
         </View>
       )) : (

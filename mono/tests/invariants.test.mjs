@@ -350,7 +350,7 @@ test("invariant 4 — aucune donnée n'est servie sans source déclarée", () =>
   assert.deepEqual([...new Set(composees)].sort(),
     ["/actuelles-rss.json", "/actus-hebdo.json", "/agenda-an.json", "/agregats-regionaux.json", "/calendrier-senat.json", "/communes-beta.json", "/comptes-regions.json", "/decoupage-idf.json", "/departments/${d}.json",
      "/deputes-groupes.json", "/deputes.json", "/elus-regions/${c}.json", "/evenements.json", "/index.json", "/mairies-idf.json",
-     "/photos-elus/${d}.json", "/projets/${d}.json", "/questions-gouvernement-index.json", "/questions-gouvernement/${lotPadded}.json", "/scrutins-details/${lotPadded}.json", "/scrutins-index.json", "/scrutins-solennels-recents.json", "/scrutins-solennels.json", "/scrutins.json", "/scrutins/${d}.json"],
+     "/photos-elus/${d}.json", "/presidentielle-2027.json", "/projets/${d}.json", "/questions-gouvernement-index.json", "/questions-gouvernement/${lotPadded}.json", "/scrutins-details/${lotPadded}.json", "/scrutins-index.json", "/scrutins-solennels-recents.json", "/scrutins-solennels.json", "/scrutins.json", "/scrutins/${d}.json"],
     "client.js compose une adresse de donnees inattendue : " + composees.join(", "));
   const sources = existe("data/index.json") ? (JSON.parse(lire("data/index.json")).sources || {}) : {};
   /* /photos-elus/{dep}.json (D27, ADR 0004) : chaque photo porte son auteur et sa licence,
@@ -364,6 +364,13 @@ test("invariant 4 — aucune donnée n'est servie sans source déclarée", () =>
         assert.ok(!/nc|nd/i.test(x.licence.replace(/cc0/i, "")), `photos-elus/${f} ${cle} : licence non libre (${x.licence})`);
       }
     }
+  }
+  /* /presidentielle-2027.json (09/11/2026) : quand il est publie, il porte sa source et n'est
+     jamais une fixture fictive (celles-ci vivent dans tests/fixtures). */
+  if (existe("data/presidentielle-2027.json")) {
+    const pr = JSON.parse(lire("data/presidentielle-2027.json"));
+    assert.ok(pr.source && pr.source.producteur && pr.source.maj, "presidentielle-2027.json sans source ni date");
+    assert.ok(pr.fictif !== true, "presidentielle-2027.json est une fixture fictive : elle ne doit jamais etre publiee");
   }
   /* /actus-hebdo.json (D29-D31) : actu redigee par le CEO ; chaque entree remplie porte une
      source officielle en https (invariant 4). Les entrees vides sont permises (rien n'est affiche). */

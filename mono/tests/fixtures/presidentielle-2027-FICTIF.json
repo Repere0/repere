@@ -1,0 +1,17 @@
+{
+  "fictif": true,
+  "avertissement": "DONNÉES FICTIVES DE TEST. Aucun nom, parti, date ou lieu n'est réel. Ce fichier sert à voir l'interface ; il n'est jamais publié (il n'est pas dans mono/data).",
+  "source": { "producteur": "Fixture de test Repère (fictive)", "licence": "aucune", "maj": "2026-11-09", "url": "" },
+  "candidats": [
+    { "nom": "Camille Exemple", "parti": "Parti fictif A", "programme": "https://example.org/programme-fictif-a" },
+    { "nom": "Dominique Essai", "parti": "Parti fictif B", "programme": null },
+    { "nom": "Sacha Modèle", "parti": "Parti fictif C", "programme": "https://example.org/programme-fictif-c" }
+  ],
+  "debats": [
+    { "titre": "Entretien télévisé (fictif)", "chaine": "Chaîne fictive 1", "debut": "2027-03-02T20:30:00+01:00", "avec": "Camille Exemple" },
+    { "titre": "Débat à trois (fictif)", "chaine": "Chaîne fictive 2", "debut": "2027-03-09T21:00:00+01:00", "avec": "Camille Exemple, Dominique Essai, Sacha Modèle" }
+  ],
+  "meetings": [
+    { "titre": "Réunion publique (fictive)", "lieu": "Ville fictive", "debut": "2027-03-14T18:00:00+01:00", "avec": "Dominique Essai" }
+  ]
+}

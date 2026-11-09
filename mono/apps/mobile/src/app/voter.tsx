@@ -16,6 +16,7 @@ import { Timeline } from "../ui/timeline";
 import { DEMARCHES, DEMARCHES_VERIFIEES_LE, ELECTIONS, ELECTIONS_SOURCE, ELECTIONS_VERIFIEES_LE } from "../lib/elections";
 import { CIBLE, couleurs, PAS, TYPO } from "../lib/theme";
 import { Page, Question } from "../ui/page";
+import { Presidentielle } from "../ui/presidentielle";
 
 const JOUR = 86400000;
 
@@ -75,7 +76,9 @@ export default function Voter() {
   return (
     <Page>
       <Stack.Screen options={{ title: "Ma voix" }} />
-      <Question etiquette="Guide civique" question="Ma voix" sous="Les prochaines élections, comment voter, et comment suivre votre conseil municipal." />
+      <Question etiquette="Ma voix" question="Ma voix" sous="Les prochaines élections, comment voter, et comment suivre votre conseil municipal." />
+      {/* 09/11/2026 (porteur) : la présidentielle d'abord, en page temporaire (ui/presidentielle). */}
+      <Presidentielle />
 
       <View style={{ gap: PAS * 4 }}>
         {/* 07/11/2026 : la prochaine élection en carte, le nombre de jours en grand (invariant 6 :

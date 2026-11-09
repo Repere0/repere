@@ -291,3 +291,17 @@ test("liens — aucun soulignement dans l'application", () => {
   }
   assert.deepEqual(fautes, [], `texte souligné : ${fautes.join(", ")}`);
 });
+
+/* ---- Fixtures fictives (09/11/2026) : elles vivent dans mono/tests/fixtures, jamais dans mono/data
+   (ce que l'application publie). Aucun fichier publié ne porte « fictif: true ». */
+test("fixtures — aucune donnée fictive dans les données publiées", () => {
+  const DATA = path.resolve(RACINE, "../../data");
+  const fautes = [];
+  const marche = d => { if (!fs.existsSync(d)) return; for (const e of fs.readdirSync(d, { withFileTypes: true })) {
+    const p = path.join(d, e.name);
+    if (e.isDirectory()) marche(p); else if (e.name.endsWith(".json") && /"fictif"\s*:\s*true/.test(fs.readFileSync(p, "utf8"))) fautes.push(path.relative(DATA, p));
+  } };
+  marche(DATA);
+  assert.deepEqual(fautes, [], `données fictives publiées : ${fautes.join(", ")}`);
+  assert.ok(fs.existsSync(path.resolve(RACINE, "../../tests/fixtures/presidentielle-2027-FICTIF.json")), "la fixture fictive de la présidentielle est à sa place");
+});

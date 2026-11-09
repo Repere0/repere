@@ -60,6 +60,9 @@ import { SignalerErreur } from "../../ui/contact";
 
 /* VOS DÉCIDEURS (maquette Stitch, 09/11/2026) : composant partagé avec l'accueil (ui/decideurs). */
 import { Decideurs } from "../../ui/decideurs";
+import { DataBadge } from "../../ui/donnees";
+import { useCouleurVote } from "../../lib/couleur-vote";
+const MOTS_VOTE: Record<string, string> = { p: "Pour", c: "Contre", a: "Abstention" };
 
 /* LE SITE OFFICIEL DE LA MAIRIE (D28, ADR 0005) : un lien externe, lu dans l'annuaire DILA
    (data/mairies-idf.json). Sans adresse declaree, pas de ligne : rien n'est devine.
@@ -88,6 +91,7 @@ export default function ChezVous() {
   const { choix } = useSelection();
   const { reessayer } = useCommuneChoisie();
   const niveauZoom = useNiveauZoom();
+  const COULEUR = useCouleurVote();
   return (
     <AvecDonnees rendu={r => {
       const { d } = r;
@@ -104,6 +108,14 @@ export default function ChezVous() {
       /* LE REPÈRE DU JOUR (V51, V52) : le bandeau et sa page lisent les mêmes faits (lib/repere-jour). */
       const { faits: repereDuJour, sources: sourcesRepere } = repereDuJourPour(r, nom, choix ? choix.insee : "", niveauZoom);
       const maire = d.fiche && d.fiche.maire && d.fiche.maire.nom ? d.fiche.maire.nom : null;
+      /* Refonte (porteur, 09/11/2026) : le texte voté, en clair, sous la phrase ; la position dans une
+         pastille aux couleurs du vote (le mot reste écrit). Commune partagée : pas de député désigné. */
+      const contexteVote = vote && d.nbCircos <= 1 ? (
+        <View style={{ flexDirection: "row", alignItems: "center", flexWrap: "wrap", gap: PAS * 2 }}>
+          {MOTS_VOTE[vote.position] ? <DataBadge texte={MOTS_VOTE[vote.position]} couleur={COULEUR[vote.position as keyof typeof COULEUR]} /> : null}
+          <Text style={[TYPO.corps, { fontFamily: POLICE.titre, flex: 1 }]} numberOfLines={2}>{titreLisible(vote.sc.t)}</Text>
+        </View>
+      ) : null;
       return (
         <Page sansDate>
           <Stack.Screen options={{ title: nom }} />
@@ -134,12 +146,23 @@ export default function ChezVous() {
           {!r.projetsLus ? (
             <Vide {...PROJETS_PAS_ARRIVES} action="Réessayer" onAction={reessayer} />
           ) : projet && f ? (
+            /* Refonte (porteur, 09/11/2026) : la carte la plus visuelle possible. Le montant de l'aide en grand
+               (IBM Plex Mono), la barre de la part de l'État, une ligne de description. Le montant est celui
+               de l'AIDE de l'État, jamais présenté comme le coût du projet. */
             <Reponse echelon="ville"
               phrase={f.partPct !== null && cout
-                ? `L'État finance ${euros(f.subvention)} d'un projet de ${cout.texte} à ${nom}. Cela représente ${f.partPct} % du coût annoncé.`
-                : `L'État apporte ${euros(f.subvention)} à un projet à ${nom}.`}
-              preuve={f.partPct !== null ? <BarrePart sansLibelle part={f.partPct} libelle="Part de l'État dans le coût annoncé" valeur={`${f.partPct} € sur 100 €`} /> : undefined}
-              note={`« ${projet.p.intitule} » : ${euros(f.subvention)} engagés par l'État en ${projet.p.annee}${f.cout ? ` sur ${euros(f.cout)} annoncés` : ""}.`}
+                ? `L'État finance ${f.partPct} % du coût annoncé d'un projet à ${nom}.`
+                : `L'État apporte une aide à un projet à ${nom}.`}
+              preuve={
+                <View style={{ gap: PAS }}>
+                  <View style={{ flexDirection: "row", alignItems: "baseline", flexWrap: "wrap", columnGap: PAS * 2 }}>
+                    {/* 26 / 30 px : la 3e réponse de Meaux reste dans le premier écran de 844 px (mesuré). */}
+                    <Text style={[TYPO.chiffre, { fontSize: TYPO.chiffre.fontSize - 2, lineHeight: TYPO.chiffre.lineHeight - 4 }]}>{euros(f.subvention)}</Text>
+                    <Text style={TYPO.note}>{cout ? `d'aide, sur ${cout.texte} annoncés` : "d'aide de l'État"}</Text>
+                  </View>
+                  {f.partPct !== null ? <BarrePart sansLibelle part={f.partPct} libelle="Part de l'État dans le coût annoncé" valeur={`${f.partPct} € sur 100 €`} /> : null}
+                </View>}
+              note={<Text style={TYPO.note} numberOfLines={1}>{typo(`« ${projet.p.intitule} » : ${euros(f.subvention)} engagés par l'État en ${projet.p.annee}${f.cout ? ` sur ${euros(f.cout)} annoncés` : ""}.`)}</Text>}
               sources={<PastilleSource court source={srcProjets(d, f.partPct !== null)} />}
               partage={{
                 titre: `Une information sur ${nom}`,
@@ -187,8 +210,8 @@ export default function ChezVous() {
             <Reponse echelon="france"
               phrase={d.nbCircos > 1
                 ? `${nom} est partagée entre ${d.nbCircos} circonscriptions. Votre député dépend de votre adresse.`
-                : `Votre commune est dans la ${ordinal(vote.circo)} circonscription. Le ${dateFr(vote.sc.d)}, ${texteDe(phrasePosition(vote.position, vote.qui))}`}
-              preuve={rep ? <Repartition compact segments={rep.segments} total={rep.total} position={vote.position} qui={vote.qui} /> : null}
+                : `Le ${dateFr(vote.sc.d)}, ${texteDe(phrasePosition(vote.position, vote.qui))}`}
+              preuve={rep ? <View style={{ gap: PAS }}>{contexteVote}<Repartition compact segments={rep.segments} total={rep.total} position={vote.position} qui={vote.qui} /></View> : contexteVote}
               note={d.nbCircos > 1
                 ? `Une circonscription est une partie du territoire dont les électeurs élisent un député. Par exemple, dans la ${ordinal(vote.circo)}, le ${dateFr(vote.sc.d)}, ${texteDe(phrasePosition(vote.position, vote.qui)).replace(/\.$/, "")} (texte ${vote.sc.s}).`
                 /* DEUX LIGNES AU PLUS SUR L'ACCUEIL — 07/10/2026. Le vote affiche est
@@ -197,7 +220,7 @@ export default function ChezVous() {
                    pour 844). Le resultat et le decompte viennent EN TETE, jamais coupes ;
                    l'intitule suit, non reecrit, et peut etre coupe : le texte entier est
                    sur « Comprendre ce vote », a un geste. */
-                : <Text style={TYPO.note} numberOfLines={2}>{typo(`${vote.sc.s.charAt(0).toUpperCase()}${vote.sc.s.slice(1)}, ${decompte(vote.sc.dec)} : ${titreLisible(vote.sc.t)}`)}</Text>}
+                : <Text style={TYPO.note} numberOfLines={2}>{typo(`${ordinal(vote.circo)} circonscription · ${vote.sc.s.charAt(0).toUpperCase()}${vote.sc.s.slice(1)}, ${decompte(vote.sc.dec)}`)}</Text>}
               sources={<PastilleSource court source={srcVote(d, vote.sc)} />}
               partage={{
                 titre: `Un vote concernant ${nom}`,
