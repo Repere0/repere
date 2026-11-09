@@ -33,7 +33,7 @@ export function ActuMairie({ insee, nom }: { insee: string; nom: string }) {
       <Pressable onPress={() => Linking.openURL(x.lien)} accessibilityRole="link"
         accessibilityLabel={`Lire sur le site de la mairie de ${nom}, ouvre un site externe`}
         style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", alignSelf: "flex-start", opacity: pressed ? 0.7 : 1 })}>
-        <Text style={[TYPO.corps, { fontFamily: POLICE.texteMoyen, color: couleurs.lien, textDecorationLine: "underline" }]}>Lire sur le site de la mairie ↗</Text>
+        <Text style={[TYPO.corps, { fontFamily: POLICE.texteMoyen, color: couleurs.lien }]}>Lire sur le site de la mairie ↗</Text>
       </Pressable>
       <Text style={TYPO.micro}>Flux RSS officiel de la mairie, lu automatiquement.</Text>
     </View>

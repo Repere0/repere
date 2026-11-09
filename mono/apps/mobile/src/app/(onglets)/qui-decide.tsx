@@ -171,7 +171,16 @@ export default function QuiDecide() {
               </View>
             );
           })()}
-          <Chaine niveaux={visibles} ouverts={ouverts} basculer={basculer} surNom={n => router.push({ pathname: "/elu", params: {
+          {/* Refonte (porteur, 09/11/2026) : un sujet choisi filtre la frise sur son niveau ; le toucher
+              à nouveau montre de nouveau tous les niveaux. */}
+          {sujet ? (
+            <Pressable onPress={() => setSujet(null)} accessibilityRole="button" accessibilityLabel="Montrer tous les niveaux"
+              style={({ pressed }) => ({ minHeight: CIBLE, alignSelf: "flex-start", flexDirection: "row", alignItems: "center", gap: PAS * 1.5, opacity: pressed ? 0.6 : 1 })}>
+              <Ionicons name="close-circle-outline" size={16} color={couleurs.sourd} accessible={false} importantForAccessibility="no" />
+              <Text style={[TYPO.note, { color: couleurs.encre }]}>Montrer tous les niveaux</Text>
+            </Pressable>
+          ) : null}
+          <Chaine niveaux={sujet ? visibles.filter(n => n.echelon === (SUJETS.find(y => y.cle === sujet) as Sujet).echelon) : visibles} ouverts={ouverts} basculer={basculer} surNom={n => router.push({ pathname: "/elu", params: {
             nom: n.personne ? n.personne.nom : "", role: n.personne ? n.personne.role : "", echelon: n.echelon,
             niveau: n.niveau, institution: n.institution, lieu: n.lieu || "" } })} />
           <PastilleSource source={srcElus(r.srcElus ? { ...r.srcElus, url: r.srcElus.url || RNE_URL } : null)} />
@@ -180,7 +189,7 @@ export default function QuiDecide() {
               accessibilityRole="link" accessibilityLabel={`Voir la fiche de ${prefet.nom}, préfet de la région`}
               style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", opacity: pressed ? 0.6 : 1, gap: PAS })}>
               <Text style={TYPO.etiquette}>L'État · préfet de la région</Text>
-              <Text style={[TYPO.reponse, { color: couleurs.lien, textDecorationLine: "underline" }]}>{prefet.nom}</Text>
+              <Text style={[TYPO.reponse, { color: couleurs.lien }]}>{prefet.nom}</Text>
             </Pressable>
           ) : null}
           {prefet && visibleAuNiveau(niveauZoom, "region") ? (

@@ -220,6 +220,48 @@ export function Frise({ jalons, etiquette }: { jalons: Jalon[]; etiquette?: stri
   );
 }
 
+/* ── Ce que décide un niveau, en grille (refonte du 09/11/2026) ─────────── */
+/* La phrase de COMPETENCES (@repere/core, la même que sur le site) est découpée en éléments, chacun
+   avec une icône. Le texte n'est pas réécrit : la phrase entière reste dite au lecteur d'écran. */
+const ICONES_COMPETENCE: [RegExp, keyof typeof Ionicons.glyphMap][] = [
+  [/école|collège|lycée/, "school-outline"], [/cantine/, "restaurant-outline"], [/permis/, "document-text-outline"],
+  [/voirie|route/, "construct-outline"], [/état civil/, "people-outline"], [/transport/, "bus-outline"],
+  [/train/, "train-outline"], [/déchet/, "trash-outline"], [/eau|piscine/, "water-outline"],
+  [/médiathèque/, "library-outline"], [/aides sociales/, "heart-outline"], [/enfance/, "happy-outline"],
+  [/formation/, "briefcase-outline"], [/économique/, "business-outline"], [/loi/, "document-outline"],
+  [/budget/, "cash-outline"],
+];
+export function elementsDecide(decide: string): string[] {
+  const out: string[] = [];
+  for (const brut of decide.split(/,\s+/)) {
+    const x = brut.replace(/^et\s+/, "").trim();
+    if (!x) continue;
+    /* « votées avec le Sénat » précise l'élément d'avant : on ne le sépare pas. */
+    if (/^vot(é|ée|ées|és)\b/.test(x) && out.length) { out[out.length - 1] += ", " + x; continue; }
+    out.push(...x.split(/\s+et\s+(?=(?:l'|la |le |les |des ))/));
+  }
+  return out.map(x => x.trim()).filter(Boolean);
+}
+function GrilleDecide({ decide }: { decide: string }) {
+  const items = elementsDecide(decide);
+  return (
+    <View accessible accessibilityLabel={`Décide : ${decide}.`} style={{ gap: PAS * 2, marginTop: PAS }}>
+      <Text style={TYPO.etiquette}>Décide</Text>
+      <View style={{ flexDirection: "row", flexWrap: "wrap", rowGap: PAS * 2 }}>
+        {items.map(x => {
+          const icone = (ICONES_COMPETENCE.find(([re]) => re.test(x)) || [null, "ellipse-outline"])[1] as keyof typeof Ionicons.glyphMap;
+          return (
+            <View key={x} style={{ width: "50%", flexDirection: "row", alignItems: "flex-start", gap: PAS * 2, paddingRight: PAS * 2 }}>
+              <Ionicons name={icone} size={16} color={couleurs.sourd} style={{ marginTop: 3 }} />
+              <Text style={[TYPO.note, { color: couleurs.encre, flex: 1 }]}>{x.charAt(0).toUpperCase() + x.slice(1)}</Text>
+            </View>
+          );
+        })}
+      </View>
+    </View>
+  );
+}
+
 /* ── La chaine des echelons, de chez vous a l'Assemblee ────────────────── */
 /* L'icône de chaque niveau : ce qu'il gère au quotidien (école, déchets, routes, transports, lois). */
 const ICONE_NIVEAU: Record<Echelon, keyof typeof Ionicons.glyphMap> = {
@@ -274,19 +316,24 @@ export function Chaine({ niveaux, compact, surNom, ouverts, basculer }: {
             )}
             {n.personne && surNom && !compact ? (
               /* 07/11/2026 : l'avatar (initiales sur la couleur de l'ÉCHELON, jamais d'un parti) à côté du nom. */
+              /* Refonte (porteur, 09/11/2026) : une carte cliquable, sans soulignement ; le rôle dedans. */
               <Pressable onPress={() => surNom(n)} accessibilityRole="link"
                 accessibilityLabel={`Voir la fiche de ${n.personne.nom}, ${n.personne.role}`}
-                style={({ pressed }) => ({ minHeight: 48, flexDirection: "row", alignItems: "center", gap: PAS * 3, opacity: pressed ? 0.6 : 1 })}>
-                <Avatar nom={n.personne.nom} taille={44} fond={(pointEchelon(n.echelon) as { backgroundColor: string }).backgroundColor} />
-                <Text style={[TYPO.reponse, { flex: 1, color: couleurs.lien, textDecorationLine: "underline" }]}>{n.personne.nom}</Text>
+                style={({ pressed }) => [s.carteElu, pressed && { opacity: 0.7 }]}>
+                <Avatar nom={n.personne.nom} taille={40} fond={(pointEchelon(n.echelon) as { backgroundColor: string }).backgroundColor} />
+                <View style={{ flex: 1 }}>
+                  <Text style={TYPO.reponse}>{n.personne.nom}</Text>
+                  <Text style={TYPO.note}>{n.personne.role}</Text>
+                </View>
+                <Ionicons name="chevron-forward" size={18} color={couleurs.sourd} accessible={false} importantForAccessibility="no" />
               </Pressable>
             ) : n.personne ? (
               <Text style={compact ? [TYPO.corps, { fontWeight: "600" }] : TYPO.reponse}>{n.personne.nom}</Text>
             ) : (
               <Text style={compact ? TYPO.corps : TYPO.reponse}>{n.institution}</Text>
             )}
-            {!compact && n.personne ? <Text style={TYPO.note}>{n.personne.role}</Text> : null}
-            {!compact && deplie && n.decide ? <Text style={TYPO.corps}>Décide : {n.decide}.</Text> : null}
+            {!compact && n.personne && !surNom ? <Text style={TYPO.note}>{n.personne.role}</Text> : null}
+            {!compact && deplie && n.decide ? <GrilleDecide decide={n.decide} /> : null}
             {/* La note reste visible, repliée ou non : elle porte les précisions qui empêchent une
                 lecture fausse (en Île-de-France, les transports relèvent d'Île-de-France Mobilités). */}
             {!compact && n.note ? <Text style={TYPO.note}>{n.note}</Text> : null}
@@ -339,6 +386,8 @@ const s = feuille(() => StyleSheet.create({
   jalonTrait: { flex: 1, width: 2, backgroundColor: couleurs.trait, marginTop: 2 },
   maillon: { width: 14, height: 14, borderRadius: 7, marginTop: 4 },
   timelineAxe: { width: 36, alignItems: "center" },
+  carteElu: { minHeight: 56, flexDirection: "row", alignItems: "center", gap: PAS * 3, padding: PAS * 3, marginTop: PAS,
+    borderRadius: RAYON.bloc, backgroundColor: couleurs.carte, borderWidth: 1, borderColor: couleurs.trait },
   pastilleNiveau: { width: 36, height: 36, borderRadius: 18, borderWidth: 1.5, alignItems: "center", justifyContent: "center" },
   timelineTrait: { flex: 1, width: 1, marginTop: 4 },
   depli: { minHeight: CIBLE, flexDirection: "row", alignItems: "center", justifyContent: "space-between" },

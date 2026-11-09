@@ -31,7 +31,7 @@ export function Timeline({ etapes, etiquette }: { etapes: Etape[]; etiquette?: s
                 accessibilityLabel={`${quand(e)} : ${e.libelle}. Ouvrir le document officiel, site externe`}
                 style={({ pressed }) => ({ minHeight: CIBLE, flexDirection: "row", alignItems: "center", gap: 6, opacity: pressed ? 0.7 : 1 })}>
                 <Ionicons name="document-text-outline" size={16} color={couleurs.lien} accessible={false} importantForAccessibility="no" />
-                <Text style={[TYPO.note, { color: couleurs.lien, textDecorationLine: "underline" }]}>Document officiel</Text>
+                <Text style={[TYPO.note, { color: couleurs.lien }]}>Document officiel</Text>
               </Pressable>
             ) : null}
           </View>

@@ -12,6 +12,7 @@
 import { useEffect, useState } from "react";
 import { AppState, Linking, Pressable, StyleSheet, Text, View } from "react-native";
 import { router } from "expo-router";
+import { Ionicons } from "@expo/vector-icons";
 import { ageReleve, dateFr } from "@repere/core";
 import {
   etatFraicheur, surFraicheur, verifierPublication, publicationPriseEnCompte, phraseFraicheur, FRAICHEUR,
@@ -81,7 +82,9 @@ export function DateDonnee({ quoi, date, url, testID, avant }: { quoi: string; d
   if (age === null || age < 0) return null;
   const ancien = age > SEUIL_ANCIEN_JOURS;
   const ouvrir = () => (url ? Linking.openURL(url) : router.push("/sources"));
-  const lienSource = <Text style={{ fontSize: 14, lineHeight: 19, color: couleurs.lien, fontWeight: "500", textDecorationLine: "underline" }}>Source</Text>;
+  /* Refonte (porteur, 09/11/2026) : la source en tête d'écran est une icône d'information discrète ;
+     le nom accessible dit toujours « Ouvrir la source ». */
+  const lienSource = <Ionicons name="information-circle-outline" size={18} color={couleurs.sourd} accessible={false} importantForAccessibility="no" />;
   return (
     <Pressable testID={testID} onPress={ouvrir} accessibilityRole="link"
       accessibilityLabel={`${quoi} du ${dateFr(jour)}, ${ilYa(age)}. ${url ? "Ouvrir la source, site externe" : "Voir les sources"}`}

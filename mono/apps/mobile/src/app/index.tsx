@@ -157,7 +157,7 @@ function CarteVote({ etiquette, nom, acteur, ligne, position, dec, date, titre, 
       <Pressable onPress={() => setTout(true)} accessibilityRole="button"
         accessibilityLabel={`Tout voir sur le vote de ${nom} : scrutin, décompte, lecture, lien officiel`}
         style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", alignSelf: "flex-start", opacity: pressed ? 0.7 : 1 })}>
-        <Text style={[s.legende, { fontSize: 14, textDecorationLine: "underline" }]}>Tout voir : scrutin et lecture</Text>
+        <Text style={[s.legende, { fontSize: 14 }]}>Tout voir : scrutin et lecture</Text>
       </Pressable>
       <SignalerErreur contexte={`le vote de ${nom}`} donnee={`${date} · ${titre} · ${exemple ? "exemple" : nom}`} />
       <ModaleExhaustif titre={`Vote de ${nom}`} visible={tout} onFermer={() => setTout(false)} sections={[
@@ -169,7 +169,7 @@ function CarteVote({ etiquette, nom, acteur, ligne, position, dec, date, titre, 
         { titre: "Lien officiel", contenu: lien
           ? <Pressable onPress={() => Linking.openURL(lien)} accessibilityRole="link" accessibilityLabel="Le scrutin sur le site de l'Assemblée nationale, ouvre un site externe"
               style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", opacity: pressed ? 0.7 : 1 })}>
-              <Text style={[TYPO.corps, { textDecorationLine: "underline" }]}>Le scrutin sur le site de l'Assemblée nationale (site externe)</Text>
+              <Text style={TYPO.corps}>Le scrutin sur le site de l'Assemblée nationale (site externe)</Text>
             </Pressable>
           : "Aucun lien officiel vérifié pour ce scrutin." },
       ]} />
@@ -188,7 +188,7 @@ const ACCES: { ouvrir: () => void; texte: string; etiquette: string; icone: keyo
 ];
 
 export default function Accueil() {
-  useTheme(); /* l'accueil suit le thème : il se redessine quand le lecteur en change */
+  const { mode: modeTheme } = useTheme(); /* l'accueil suit le thème : il se redessine quand le lecteur en change */
   const marges = useSafeAreaInsets();
   const { width } = useWindowDimensions();
   const { choix, choisir, retenue, oublier } = useSelection();
@@ -423,7 +423,7 @@ export default function Accueil() {
                     <Pressable onPress={() => setBudgetTout(true)} accessibilityRole="button"
                       accessibilityLabel={`Tout voir sur le budget de ${argent.nom} : méthode, sources, lien officiel`}
                       style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", alignSelf: "flex-start", opacity: pressed ? 0.7 : 1 })}>
-                      <Text style={[s.legende, { fontSize: 14, textDecorationLine: "underline" }]}>Tout voir : méthode et sources</Text>
+                      <Text style={[s.legende, { fontSize: 14 }]}>Tout voir : méthode et sources</Text>
                     </Pressable>
                     <SignalerErreur contexte={`le budget de ${argent.nom}`} donnee={`${argent.depenses.toLocaleString("fr-FR")} € par habitant en ${argent.an}`} />
                     <ModaleExhaustif titre={`Budget de ${argent.nom}`} visible={budgetTout} onFermer={() => setBudgetTout(false)} sections={[
@@ -434,14 +434,14 @@ export default function Accueil() {
                       { titre: "Source officielle", contenu: urlComptes
                         ? <Pressable onPress={() => Linking.openURL(urlComptes)} accessibilityRole="link" accessibilityLabel="Les comptes publiés, sur le site de l'OFGL, ouvre un site externe"
                             style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", opacity: pressed ? 0.7 : 1 })}>
-                            <Text style={[TYPO.corps, { textDecorationLine: "underline" }]}>Les comptes publiés, sur le site de l'OFGL (site externe)</Text>
+                            <Text style={TYPO.corps}>Les comptes publiés, sur le site de l'OFGL (site externe)</Text>
                           </Pressable>
                         : "Aucun lien officiel publié." },
                     ]} />
                     <Pressable onPress={() => { if (urlComptes) Linking.openURL(urlComptes); }} accessibilityRole="link"
                       accessibilityLabel="Source : comptes des communes publiés par l'OFGL, ouvre un site externe. Médiane et parts calculées par Repère."
                       style={({ pressed }) => ({ minHeight: 44, justifyContent: "center", opacity: pressed ? 0.7 : 1 })}>
-                      <Text style={[s.legende, { fontSize: 13, textDecorationLine: urlComptes ? "underline" : "none" }]}>Source : OFGL · médiane et parts : calcul Repère</Text>
+                      <Text style={[s.legende, { fontSize: 13 }]}>Source : OFGL · médiane et parts : calcul Repère</Text>
                     </Pressable>
                   </View>
                 </View>
@@ -486,7 +486,9 @@ export default function Accueil() {
             <View style={s.barreHaut}>
               <View style={{ flexDirection: "row", alignItems: "center", gap: PAS * 2 }}>
                 {/* Le logo vit dans la marque, une seule fois (brief V47) ; il ne flotte plus au milieu du hero. */}
-                <Logo size={26} />
+                {/* Le logo de Repère tel quel (ui/logo.tsx) : anneau, anneau intermédiaire gris, point.
+                    La variante « mono » (sans anneau gris) avait été posée ici par erreur le 09/11/2026. */}
+                <Logo size={26} variant={modeTheme} />
                 <Text style={s.marque} accessibilityLabel="Repère">Repère<Text style={{ color: E.ville }}>.</Text></Text>
               </View>
               <View style={{ flexDirection: "row", alignItems: "center" }}>
@@ -525,9 +527,8 @@ export default function Accueil() {
               {ACCES.map(a => (
                 <Pressable key={a.texte} onPress={a.ouvrir} accessibilityRole="link" accessibilityLabel={a.etiquette}
                   style={({ pressed }) => [s.tuile, pressed && { opacity: 0.7 }]}>
-                  <View style={[s.tuileIcone, { backgroundColor: a.couleur }]}>
-                    <Ionicons name={a.icone} size={20} color={D.sol} accessible={false} importantForAccessibility="no" />
-                  </View>
+                  {/* Refonte (porteur, 09/11/2026) : plus de fond coloré ; l'icône au contour, dans l'encre. */}
+                  <Ionicons name={`${a.icone}-outline` as keyof typeof Ionicons.glyphMap} size={22} color={D.encre} accessible={false} importantForAccessibility="no" />
                   <Text style={s.tuileTexte}>{a.texte}</Text>
                 </Pressable>
               ))}
@@ -625,7 +626,7 @@ export default function Accueil() {
                 <Pressable onPress={() => router.push("/faq")} accessibilityRole="link"
                   accessibilityLabel="Pas de compte, pas d'e-mail. Pourquoi ? Ouvre les questions fréquentes"
                   style={({ pressed }) => [s.confiance, { minHeight: 48, justifyContent: "center" }, pressed && { opacity: 0.7 }]}>
-                  <Text style={[s.note, { color: D.encre, fontWeight: "500" }]}>Pas de compte, pas d'e-mail. <Text style={{ textDecorationLine: "underline", fontWeight: "400", color: D.sourd }}>Pourquoi ?</Text></Text>
+                  <Text style={[s.note, { color: D.encre, fontWeight: "500" }]}>Pas de compte, pas d'e-mail. <Text style={{ fontWeight: "400", color: D.sourd }}>Pourquoi ?</Text></Text>
                 </Pressable>
                 {/* V29 bloc 1 (audit D51) : phrase retirée de l'accueil en V20, réintégrée au niveau 2. */}
                 <Details titre="Repère ne sait pas qui vous êtes" couleur={D.encre} lien={D.encre}>
@@ -681,13 +682,14 @@ const s = feuille(() => StyleSheet.create({
   outil: { width: CIBLE, height: CIBLE, alignItems: "center", justifyContent: "center" },
   tuiles: { flexDirection: "row", flexWrap: "wrap", gap: PAS * 2 },
   /* Fond D.voile : la teinte demandée par le porteur à 3 unités près, sans couleur hors palette. */
-  tuile: { width: "48%", flexGrow: 1, minHeight: 76, gap: PAS * 2, padding: PAS * 3, borderRadius: RAYON.bloc, backgroundColor: D.voile, justifyContent: "space-between" },
+  tuile: { width: "48%", flexGrow: 1, minHeight: 76, gap: PAS * 2, padding: PAS * 3, borderRadius: RAYON.bloc, backgroundColor: D.carte, borderWidth: 1, borderColor: D.trait, justifyContent: "space-between" },
   tuileTexte: { fontFamily: POLICE.titre, fontSize: 14, lineHeight: 20, color: D.encre },
   marque: { fontFamily: POLICE.affiche, fontSize: 20, color: D.encre },
-  chercher: { minHeight: 56, borderRadius: RAYON.bloc, backgroundColor: D.carte, borderWidth: 1, borderColor: D.trait, paddingHorizontal: PAS * 5, flexDirection: "row", alignItems: "center", gap: PAS * 3, marginTop: PAS * 4, ...OMBRE },
+  /* L'action principale : plus haute, filet plus marqué (refonte du 09/11/2026). */
+  chercher: { minHeight: 60, borderRadius: RAYON.bloc, backgroundColor: D.carte, borderWidth: 1.5, borderColor: D.sourd, paddingHorizontal: PAS * 5, flexDirection: "row", alignItems: "center", gap: PAS * 3, marginTop: PAS * 4, ...OMBRE },
   titreCache: { position: "absolute", width: 1, height: 1, overflow: "hidden", opacity: 0 },
   tuileIcone: { width: 36, height: 36, borderRadius: 12, alignItems: "center", justifyContent: "center" },
-  chercherTexte: { fontFamily: POLICE.texteMoyen, fontSize: 16, color: D.sourd },
+  chercherTexte: { fontFamily: POLICE.titre, fontSize: 17, color: D.encre },
   citation: { fontFamily: POLICE.affiche, fontSize: 40, lineHeight: 44, letterSpacing: -0.8, color: D.encre, marginTop: PAS * 6 },
   carte: { gap: PAS * 3, padding: PAS * 5, borderRadius: RAYON.carte, backgroundColor: D.carte, borderWidth: 1, borderColor: D.trait, ...OMBRE },
   etiquette: { fontSize: 13, fontWeight: "500", color: D.sourd },

@@ -92,7 +92,7 @@ export default function Vote() {
                 {/* Maillage (07/11/2026) : le nom ouvre la fiche, partout où la fiche sait la retrouver. */}
                 <Pressable style={{ flex: 1, minHeight: CIBLE, justifyContent: "center" }} disabled={!parametresFiche} accessibilityRole={parametresFiche ? "link" : "text"}
                   onPress={() => { if (parametresFiche) router.push({ pathname: "/elu", params: parametresFiche }); }}>
-                  <Text style={[TYPO.corps, { fontFamily: POLICE.titre }, parametresFiche ? { textDecorationLine: "underline" } : null]}>{vote.qui}</Text>
+                  <Text style={[TYPO.corps, { fontFamily: POLICE.titre }, null]}>{vote.qui}</Text>
                 </Pressable>
                 <DataBadge texte={dateCourte(vote.sc.d)} />
               </View>

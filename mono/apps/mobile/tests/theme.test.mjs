@@ -281,3 +281,13 @@ test("votes — aucune couleur de vote n'est employée comme couleur de texte", 
   }
   assert.deepEqual(fautes, [], `couleur de vote en texte : ${fautes.join(", ")}`);
 });
+
+/* ---- Décision du porteur (09/11/2026) : aucun texte souligné dans l'application. Un lien se
+   reconnaît à sa forme (carte, pastille, chevron, icône), pas au soulignement. */
+test("liens — aucun soulignement dans l'application", () => {
+  const fautes = [];
+  for (const f of fichiers(SRC)) {
+    fs.readFileSync(f, "utf8").split("\n").forEach((l, i) => { if (/textDecorationLine\s*:/.test(l) && /underline/.test(l)) fautes.push(`${path.relative(RACINE, f)}:${i + 1}`); });
+  }
+  assert.deepEqual(fautes, [], `texte souligné : ${fautes.join(", ")}`);
+});

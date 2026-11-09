@@ -21,7 +21,7 @@ export function PourquoiJeVois({ p, etiquette, couleur, fond }: { p: Pourquoi; e
         { titre: "Source", contenu: p.source.lien
           ? <Pressable onPress={() => Linking.openURL(p.source.lien as string)} accessibilityRole="link" accessibilityLabel={`${p.source.texte}, ouvre un site externe`}
               style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", opacity: pressed ? 0.7 : 1 })}>
-              <Text style={[TYPO.corps, { textDecorationLine: "underline" }]}>{p.source.texte} (site externe)</Text>
+              <Text style={TYPO.corps}>{p.source.texte} (site externe)</Text>
             </Pressable>
           : p.source.texte },
         { titre: "Calcul", contenu: p.calcul },

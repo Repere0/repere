@@ -89,10 +89,12 @@ export function Definitions({ s: seg }: { s: Segment[] }) {
           accessibilityLabel={`Voir la définition : ${m.titre}`}
           accessibilityHint="Ouvre la définition dans le dictionnaire"
           onPress={() => router.push({ pathname: "/dictionnaire", params: { mot: m.mot } })}
-          style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", opacity: pressed ? 0.6 : 1 })}>
-          <Text style={{ fontSize: 16, fontWeight: "500", color: couleurs.lien, textDecorationLine: "underline" }}>
-            Voir la définition : {m.titre}
-          </Text>
+          /* Refonte (porteur, 09/11/2026) : plus de lien souligné ; un bouton discret, en pastille. */
+          style={({ pressed }) => ({ minHeight: CIBLE, alignSelf: "flex-start", flexDirection: "row", alignItems: "center", gap: PAS * 1.5,
+            paddingHorizontal: PAS * 3, borderRadius: RAYON.pastille, borderWidth: 1, borderColor: couleurs.trait, opacity: pressed ? 0.6 : 1 })}>
+          <Ionicons name="book-outline" size={15} color={couleurs.sourd} accessible={false} importantForAccessibility="no" />
+          <Text style={[TYPO.note, { color: couleurs.encre }]}>Définition : {m.titre}</Text>
+          <Ionicons name="chevron-forward" size={14} color={couleurs.sourd} accessible={false} importantForAccessibility="no" />
         </Pressable>
       ))}
     </View>
@@ -188,7 +190,7 @@ const s = feuille(() => StyleSheet.create({
   lien: { minHeight: CIBLE, justifyContent: "center" },
   /* En encre, souligne : la couleur de ville sur le gris d'une phrase d'absence
      faisait 4,38:1 (mesure du 30/09/2026), sous le seuil AA. */
-  lienTexte: { fontSize: 15, color: couleurs.encre, textDecorationLine: "underline" },
+  lienTexte: { fontSize: 15, color: couleurs.encre },
   vide: { gap: PAS * 3, padding: PAS * 5, backgroundColor: couleurs.carte, borderRadius: RAYON.carte, borderWidth: 1, borderColor: couleurs.trait },
   videIcone: { width: 48, height: 48, borderRadius: 24, backgroundColor: couleurs.voile, alignItems: "center", justifyContent: "center" },
   bouton: {

@@ -72,7 +72,7 @@ export function CreditPhoto({ photo }: { photo: PhotoElu }) {
     <Pressable disabled={!page} onPress={() => { if (page) Linking.openURL(page); }} accessibilityRole={page ? "link" : "text"}
       accessibilityLabel={`Photo : ${photo.auteur}, licence ${photo.licence}, Wikimedia Commons, recadrée${page ? ". Ouvre la page de la photo, site externe" : ""}`}
       style={({ pressed }) => ({ minHeight: 45, justifyContent: "center", opacity: pressed ? 0.7 : 1 })}>
-      <Text style={{ fontSize: 12, lineHeight: 16, color: couleurs.sourd, textDecorationLine: page ? "underline" : "none" }} numberOfLines={2}>
+      <Text style={{ fontSize: 12, lineHeight: 16, color: couleurs.sourd }} numberOfLines={2}>
         Photo : {photo.auteur} · {photo.licence} · Wikimedia Commons (recadrée)
       </Text>
     </Pressable>
@@ -80,7 +80,7 @@ export function CreditPhoto({ photo }: { photo: PhotoElu }) {
       <Pressable onPress={() => Linking.openURL(`mailto:${CONTACT}?subject=${encodeURIComponent("Retrait d'une photo d'élu")}`)} accessibilityRole="link"
         accessibilityLabel={`Photo sous licence libre, but informatif. Demander le retrait par courriel à ${CONTACT}`}
         style={({ pressed }) => ({ minHeight: 45, justifyContent: "center", opacity: pressed ? 0.7 : 1 })}>
-        <Text style={{ fontSize: 12, lineHeight: 16, color: couleurs.sourd }}>Photo sous licence libre, but informatif. Retrait sur demande : <Text style={{ textDecorationLine: "underline" }}>{CONTACT}</Text></Text>
+        <Text style={{ fontSize: 12, lineHeight: 16, color: couleurs.sourd }}>Photo sous licence libre, but informatif. Retrait sur demande : <Text>{CONTACT}</Text></Text>
       </Pressable>
     ) : null}
     </View>

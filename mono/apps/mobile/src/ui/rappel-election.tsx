@@ -57,7 +57,7 @@ export function RappelElection({ aujourdhui = new Date() }: { aujourdhui?: Date 
       ) : <Text style={{ fontSize: 15, lineHeight: 21, color: D.encre }}>{quand} ({date})</Text>}
       <Pressable onPress={() => router.push("/voter")} accessibilityRole="link" accessibilityLabel="Comment voter"
         style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", alignSelf: "flex-start", opacity: pressed ? 0.7 : 1 })}>
-        <Text style={{ fontSize: 15, fontWeight: "600", color: D.encre, textDecorationLine: "underline" }}>Comment voter ?</Text>
+        <Text style={{ fontSize: 15, fontWeight: "600", color: D.encre }}>Comment voter ?</Text>
       </Pressable>
       <View style={{ flexDirection: "row", alignItems: "center", gap: PAS }}>
         <Ionicons name="link-outline" size={14} color={D.sourd} accessible={false} importantForAccessibility="no" />

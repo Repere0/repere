@@ -25,7 +25,7 @@ export function BadgeZoom({ sombre = false }: { sombre?: boolean }) {
       <Pressable onPress={() => setOuvert(o => !o)} accessibilityRole="button" accessibilityState={{ expanded: ouvert }}
         accessibilityLabel={`Vue : ${libelle}. ${ouvert ? "Fermer le choix" : "Changer la vue"}`}
         style={({ pressed }) => ({ minHeight: CIBLE, alignSelf: "flex-start", justifyContent: "center", paddingHorizontal: PAS * 3, borderRadius: 999, borderWidth: 1, borderColor: c.trait, opacity: pressed ? 0.7 : 1 })}>
-        <Text style={[TYPO.micro, { color: c.sourd }]}>Vue : {libelle} · <Text style={{ color: c.encre, textDecorationLine: "underline" }}>Changer</Text></Text>
+        <Text style={[TYPO.micro, { color: c.sourd }]}>Vue : {libelle} · <Text style={{ color: c.encre }}>Changer</Text></Text>
       </Pressable>
       {ouvert ? (
         <View style={{ flexDirection: "row", flexWrap: "wrap", gap: PAS * 2 }}>

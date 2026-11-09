@@ -307,7 +307,7 @@ export default function Elu() {
             {/* NIVEAU 3 (« Tout voir ») : méthode, dates de relevé, source officielle. */}
             <Pressable onPress={() => setTout(true)} accessibilityRole="button" accessibilityLabel={`Tout voir sur ${nom} : méthode, sources, lien officiel`}
               style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", alignSelf: "flex-start", opacity: pressed ? 0.7 : 1 })}>
-              <Text style={[TYPO.note, { textDecorationLine: "underline" }]}>Tout voir : méthode et sources</Text>
+              <Text style={TYPO.note}>Tout voir : méthode et sources</Text>
             </Pressable>
             <ModaleExhaustif titre={`Fiche de ${nom}`} visible={tout} onFermer={() => setTout(false)} sections={[
               { titre: "Comment Repère compte les votes", contenu: depute
@@ -319,7 +319,7 @@ export default function Elu() {
               { titre: "Lien officiel", contenu: lienElus
                   ? <Pressable onPress={() => Linking.openURL(lienElus)} accessibilityRole="link" accessibilityLabel="Le répertoire des élus, sur le site officiel, ouvre un site externe"
                       style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", opacity: pressed ? 0.7 : 1 })}>
-                      <Text style={[TYPO.corps, { textDecorationLine: "underline" }]}>Le répertoire des élus, sur le site officiel (site externe)</Text>
+                      <Text style={TYPO.corps}>Le répertoire des élus, sur le site officiel (site externe)</Text>
                     </Pressable>
                   : "Aucun lien officiel publié." },
             ]} />

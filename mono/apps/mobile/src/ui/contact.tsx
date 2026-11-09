@@ -46,7 +46,7 @@ export function SignalerErreur({ contexte, donnee }: { contexte: string; donnee:
         style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", alignSelf: "flex-start", opacity: pressed ? 0.7 : 1 })}>
         <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
           <Ionicons name="alert-circle-outline" size={16} color={couleurs.lien} accessible={false} importantForAccessibility="no" />
-          <Text style={[TYPO.note, { color: couleurs.lien, textDecorationLine: "underline", fontWeight: "500" }]}>Signaler une erreur</Text>
+          <Text style={[TYPO.note, { color: couleurs.lien, fontWeight: "500" }]}>Signaler une erreur</Text>
         </View>
       </Pressable>
       <View style={{ height: PAS }} />
