@@ -167,7 +167,7 @@ test("invariant 7 — palette gelée ; couleurs de groupes seulement dans palett
   const blocAccents = (lire("apps/mobile/src/lib/palette.ts").match(/export const ACCENTS_PAR_MODE[\s\S]*?\}\);/) || [""])[0];
   const accents = [...blocAccents.matchAll(/#[0-9a-fA-F]{6}\b/g)].map(m => m[0].toLowerCase()).filter(h => amplitude(h) > AMPLITUDE_MAX);
   /* Porteur, 09/11/2026 : l'interface reste neutre (encre, ardoises). */
-  assert.deepEqual([...new Set(accents)].sort(), ["0f172a", "475569", "94a3b8"].map(h => "#" + h).sort(), "les accents d'interface sont des neutres (décision du 09/11/2026)");
+  assert.deepEqual([...new Set(accents)].sort(), ["0f172a", "475569"].map(h => "#" + h).sort(), "les accents d'interface sont des neutres (décision du 09/11/2026)");
   /* L'émeraude du « pour » est réservée aux données de vote : hors du bloc COULEURS_VOTE, elle
      n'apparaît nulle part dans palette.ts (ni accent, ni jauge, ni neutre). */
   const horsVote = lire("apps/mobile/src/lib/palette.ts").replace(blocVote, "").replace(/\/\*[\s\S]*?\*\//g, "");

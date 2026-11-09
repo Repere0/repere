@@ -49,9 +49,11 @@ const NEUTRES_CLAIR: Neutres = {
    sur le voile, sous le seuil AA ; #928F86 est la nuance la plus proche qui le tient (4,55:1). */
 /* 09/11/2026 : « Dark Luxury » des maquettes Stitch (invariant 7 amendé, « tout Stitch ») : textes
    #F8FAFC et #94A3B8, liens en or mat. Sol, carte et trait inchangés (déjà ceux de Stitch). */
+/* 09/11/2026 (DESIGN.md « Dark Luxury », complément du porteur) : texte en ivoire lin #F5F4F0,
+   métadonnées en gris minéral #9C9A92, filets #2B2A26. Sol et carte inchangés. */
 const NEUTRES_SOMBRE: Neutres = {
-  sol: "#141311", carte: "#1F1E1B", encre: "#F8FAFC", sourd: "#94A3B8",
-  trait: "#2C2A26", voile: "#2A2823", blanc: "#ffffff", lien: "#F8FAFC", ancien: "#CCB4B4",
+  sol: "#141311", carte: "#1F1E1B", encre: "#F5F4F0", sourd: "#9C9A92",
+  trait: "#2B2A26", voile: "#2A2823", blanc: "#ffffff", lien: "#F5F4F0", ancien: "#CCB4B4",
 };
 
 /* L'INTERFACE RESTE NEUTRE (décision du porteur, 09/11/2026, après la PR #181) : noir, ivoire,
@@ -65,7 +67,7 @@ const NEUTRES_SOMBRE: Neutres = {
 export type Accents = { autorite: string; texteAccent: string; civique: string; fondCivique: string; surAutorite: string };
 export const ACCENTS_PAR_MODE: Readonly<Record<Mode, Accents>> = Object.freeze({
   clair: { autorite: "#0F172A", texteAccent: "#0F172A", civique: "#475569", fondCivique: "#EDF4F7", surAutorite: "#FFFFFF" },
-  sombre: { autorite: "#F8FAFC", texteAccent: "#F8FAFC", civique: "#94A3B8", fondCivique: "#2A2823", surAutorite: "#141311" },
+  sombre: { autorite: "#F5F4F0", texteAccent: "#F5F4F0", civique: "#9C9A92", fondCivique: "#2A2823", surAutorite: "#141311" },
 });
 
 /* Les échelons : identiques dans les deux thèmes, sauf « France ». */
@@ -90,7 +92,9 @@ export const OMBRE_PAR_MODE = {
   clair: { shadowColor: "#171614", shadowOpacity: 0.03, shadowRadius: 8, shadowOffset: { width: 0, height: 2 }, elevation: 1 },
   /* DA premium (07/11/2026) : noir à 20 %, flou 20, décalage 5. Le clair, gardé par le banc
      de non-régression, n'est pas touché. */
-  sombre: { shadowColor: "#000000", shadowOpacity: 0.2, shadowRadius: 20, shadowOffset: { width: 0, height: 5 }, elevation: 3 },
+  /* DESIGN.md (09/11/2026) : en sombre, la profondeur vient des surfaces et des filets, pas d'une ombre
+     sous les cartes. */
+  sombre: { shadowColor: "#000000", shadowOpacity: 0, shadowRadius: 0, shadowOffset: { width: 0, height: 0 }, elevation: 0 },
 } as const;
 
 /* La palette des cartes de partage, figée et sombre (décision D5 du porteur, 30/10/2026).

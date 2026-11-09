@@ -104,7 +104,7 @@ for (const m of ["clair", "sombre"]) {
    et l'or mat (sombre) sont admis, ces valeurs exactement et rien d'autre. */
 const NEUTRES_STITCH = {
   clair: { encre: "#" + "0F172A", sourd: "#" + "475569", lien: "#" + "0F172A" },
-  sombre: { sourd: "#" + "94A3B8" },
+  sombre: {},
 };
 for (const m of ["clair", "sombre"]) {
   test(`theme ${m} — neutres et teintes restent sous l'amplitude RGB 24 (invariant 7)`, () => {

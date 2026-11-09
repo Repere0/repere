@@ -36,8 +36,8 @@ export const COULEUR_VOTE_DALTONIEN = { p: COULEURS_VOTE_DALTONIEN.votePour, c: 
 
 export const CIBLE = 48;
 export const PAS = 4;
-/* Stitch (09/11/2026) : cartes au rayon 20, cartouches au rayon 14. */
-export const RAYON = { carte: 20, bloc: 14, pastille: 999 } as const;
+/* DESIGN.md (09/11/2026) : cartes au rayon 16, blocs et champs au rayon 12. */
+export const RAYON = { carte: 16, bloc: 12, pastille: 999 } as const;
 
 /* DA premium (07/11/2026, décision du porteur) : Manrope pour les titres, DM Sans pour le
    texte, IBM Plex Mono pour les dates et les chiffres. Toutes sous licence SIL OFL,
