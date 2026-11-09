@@ -303,5 +303,4 @@ test("fixtures — aucune donnée fictive dans les données publiées", () => {
   } };
   marche(DATA);
   assert.deepEqual(fautes, [], `données fictives publiées : ${fautes.join(", ")}`);
-  assert.ok(fs.existsSync(path.resolve(RACINE, "../../tests/fixtures/presidentielle-2027-FICTIF.json")), "la fixture fictive de la présidentielle est à sa place");
 });

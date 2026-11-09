@@ -182,7 +182,8 @@ function CarteVote({ etiquette, nom, acteur, ligne, position, dec, date, titre, 
 /* Couleur de chaque tuile : celle d'un échelon (une section), jamais d'un parti (invariant 7). */
 const ACCES: { ouvrir: () => void; texte: string; etiquette: string; icone: keyof typeof Ionicons.glyphMap; couleur: string }[] = [
   { ouvrir: () => router.push("/mes-elus"), texte: "Mes élus", etiquette: "Mes élus : qui vous représente", icone: "people", couleur: couleurs.ville },
-  { ouvrir: () => router.push("/voter"), texte: "Ma voix", etiquette: "Ma voix : prochaines élections, guide du vote et du conseil municipal", icone: "checkbox", couleur: couleurs.dept },
+  /* 09/11/2026 (porteur) : la tuile ouvre la page de la présidentielle ; le guide « Ma voix » y est à un geste. */
+  { ouvrir: () => router.push("/presidentielle-2027"), texte: "Présidentielle 2027", etiquette: "Présidentielle 2027 : candidats, débats, réunions publiques, comment voter", icone: "flag", couleur: couleurs.dept },
   { ouvrir: () => router.push("/pour-vous"), texte: "Pour vous", etiquette: "Pour vous : ce qui a été publié selon votre vue", icone: "bookmark", couleur: couleurs.region },
   { ouvrir: () => router.push("/scrutins"), texte: "L'Assemblée", etiquette: "L'Assemblée : sa composition et ses votes publics", icone: "business", couleur: couleurs.france },
 ];

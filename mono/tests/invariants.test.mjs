@@ -17,6 +17,8 @@ import {
   CHAMPS_INTERDITS, MOTS_CLASSEMENT, MOTS_GAMIFICATION, MOTS_A_ACCENTS,
 } from "../packages/data-utils/src/invariants.js";
 import { estDonneePublique, MAGASIN } from "../packages/data-utils/src/store.js";
+import { controler as controlerPresidentielle } from "../scripts/collecte-presidentielle.mjs";
+import { lirePresidentielle } from "../packages/core/src/presidentielle.js";
 import { adresseDepartement, PHRASES, ETATS } from "../packages/data-utils/src/client.js";
 
 const RACINE = path.resolve(import.meta.dirname, "..");
@@ -350,7 +352,7 @@ test("invariant 4 — aucune donnée n'est servie sans source déclarée", () =>
   assert.deepEqual([...new Set(composees)].sort(),
     ["/actuelles-rss.json", "/actus-hebdo.json", "/agenda-an.json", "/agregats-regionaux.json", "/calendrier-senat.json", "/communes-beta.json", "/comptes-regions.json", "/decoupage-idf.json", "/departments/${d}.json",
      "/deputes-groupes.json", "/deputes.json", "/elus-regions/${c}.json", "/evenements.json", "/index.json", "/mairies-idf.json",
-     "/photos-elus/${d}.json", "/presidentielle-2027.json", "/projets/${d}.json", "/questions-gouvernement-index.json", "/questions-gouvernement/${lotPadded}.json", "/scrutins-details/${lotPadded}.json", "/scrutins-index.json", "/scrutins-solennels-recents.json", "/scrutins-solennels.json", "/scrutins.json", "/scrutins/${d}.json"],
+     "/photos-elus/${d}.json", "/presidentielle-2027/${fichier}.json", "/projets/${d}.json", "/questions-gouvernement-index.json", "/questions-gouvernement/${lotPadded}.json", "/scrutins-details/${lotPadded}.json", "/scrutins-index.json", "/scrutins-solennels-recents.json", "/scrutins-solennels.json", "/scrutins.json", "/scrutins/${d}.json"],
     "client.js compose une adresse de donnees inattendue : " + composees.join(", "));
   const sources = existe("data/index.json") ? (JSON.parse(lire("data/index.json")).sources || {}) : {};
   /* /photos-elus/{dep}.json (D27, ADR 0004) : chaque photo porte son auteur et sa licence,
@@ -367,11 +369,10 @@ test("invariant 4 — aucune donnée n'est servie sans source déclarée", () =>
   }
   /* /presidentielle-2027.json (09/11/2026) : quand il est publie, il porte sa source et n'est
      jamais une fixture fictive (celles-ci vivent dans tests/fixtures). */
-  if (existe("data/presidentielle-2027.json")) {
-    const pr = JSON.parse(lire("data/presidentielle-2027.json"));
-    assert.ok(pr.source && pr.source.producteur && pr.source.maj, "presidentielle-2027.json sans source ni date");
-    assert.ok(pr.fictif !== true, "presidentielle-2027.json est une fixture fictive : elle ne doit jamais etre publiee");
-  }
+  /* Les fichiers versionnes (data/presidentielle-2027, racine du depot) passent le controle du script de
+     collecte : meta avec source et date, aucune entree mal formee ni sans l'adresse de sa source. */
+  const pres = controlerPresidentielle(path.join(RACINE, "..", "data", "presidentielle-2027"));
+  assert.ok(pres.lu.meta && pres.lu.meta.source.producteur, "presidentielle-2027/meta.json sans source");
   /* /actus-hebdo.json (D29-D31) : actu redigee par le CEO ; chaque entree remplie porte une
      source officielle en https (invariant 4). Les entrees vides sont permises (rien n'est affiche). */
   for (const f of ["data/actus-hebdo.json", "../data/actus-hebdo.json"]) {
@@ -1731,4 +1732,22 @@ test("fraîcheur — SCHEMA_ATTENDU (client.js) et le v émis par extract-html.j
     "index.json ne porte pas la provenance du build (build.commit_court)");
   assert.ok(index.build.sante && typeof index.build.sante.elus === "boolean",
     "index.json ne porte pas l'etat de sante des sources critiques (build.sante)");
+});
+
+/* LA PRESIDENTIELLE 2027 (09/11/2026) : la regle de lecture, partagee par la collecte et l'application.
+   Un fichier vide est lu et vide ; un fichier absent n'est pas « lu » ; une entree sans source est ecartee. */
+test("presidentielle 2027 — vide, absent et mal forme ne sont jamais confondus", () => {
+  const vide = lirePresidentielle({ candidats: { candidats: [] }, debats: { debats: [] }, meetings: { meetings: [] }, meta: null });
+  assert.deepEqual([vide.lus, vide.candidats.length, vide.ecartes], [{ candidats: true, debats: true, meetings: true }, 0, 0]);
+  const absent = lirePresidentielle({ candidats: null, debats: null, meetings: null, meta: null });
+  assert.deepEqual(absent.lus, { candidats: false, debats: false, meetings: false });
+  const c = { id: "a", nom: "N", prenom: "P", parti: null };
+  const d = { id: "d1", date: "2027-03-02T20:30:00+01:00", chaine: "X", titre: "T", participants: ["a"] };
+  const m = { id: "m1", date: "2027-03-02T18:00:00+01:00", ville: "V", candidatId: "inconnu", lieu: "L", sourceUrl: "https://exemple.fr/a" };
+  const lu = lirePresidentielle({ candidats: { candidats: [c, { id: "b" }] }, debats: { debats: [d, { ...d, id: "d2", sourceUrl: "https://exemple.fr/d" }] }, meetings: { meetings: [m] }, meta: { lastUpdate: "hier", source: {} } });
+  assert.equal(lu.candidats.length, 1, "un candidat sans nom est ecarte");
+  assert.deepEqual(lu.debats.map(x => x.id), ["d2"], "un debat sans l'adresse de sa source est ecarte");
+  assert.equal(lu.meetings.length, 0, "une reunion pour un candidat hors liste est ecartee");
+  assert.equal(lu.meta, null, "une meta sans date ni source n'est pas retenue");
+  assert.equal(lu.ecartes, 3);
 });

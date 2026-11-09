@@ -16,7 +16,6 @@ import { Timeline } from "../ui/timeline";
 import { DEMARCHES, DEMARCHES_VERIFIEES_LE, ELECTIONS, ELECTIONS_SOURCE, ELECTIONS_VERIFIEES_LE } from "../lib/elections";
 import { CIBLE, couleurs, PAS, TYPO } from "../lib/theme";
 import { Page, Question } from "../ui/page";
-import { Presidentielle } from "../ui/presidentielle";
 
 const JOUR = 86400000;
 
@@ -77,8 +76,17 @@ export default function Voter() {
     <Page>
       <Stack.Screen options={{ title: "Ma voix" }} />
       <Question etiquette="Ma voix" question="Ma voix" sous="Les prochaines élections, comment voter, et comment suivre votre conseil municipal." />
-      {/* 09/11/2026 (porteur) : la présidentielle d'abord, en page temporaire (ui/presidentielle). */}
-      <Presidentielle />
+      {/* 09/11/2026 (porteur) : la présidentielle a son écran (presidentielle-2027), branché sur les données publiées. */}
+      <Pressable onPress={() => router.push("/presidentielle-2027")} accessibilityRole="button"
+        accessibilityLabel="Présidentielle 2027 : candidats, débats, réunions publiques"
+        style={({ pressed }) => ({ minHeight: CIBLE + 8, flexDirection: "row", alignItems: "center", gap: PAS * 3, padding: PAS * 4, borderRadius: 16, backgroundColor: couleurs.carte, borderWidth: 1.5, borderColor: couleurs.encre, opacity: pressed ? 0.7 : 1 })}>
+        <Ionicons name="flag-outline" size={20} color={couleurs.encre} accessible={false} importantForAccessibility="no" />
+        <View style={{ flex: 1 }}>
+          <Text style={TYPO.reponse}>Présidentielle 2027</Text>
+          <Text style={TYPO.note}>Candidats, débats, réunions publiques</Text>
+        </View>
+        <Ionicons name="chevron-forward" size={18} color={couleurs.sourd} accessible={false} importantForAccessibility="no" />
+      </Pressable>
 
       <View style={{ gap: PAS * 4 }}>
         {/* 07/11/2026 : la prochaine élection en carte, le nombre de jours en grand (invariant 6 :
