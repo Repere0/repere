@@ -15,6 +15,7 @@
 import { useEffect, useState } from "react";
 import { Linking, Pressable, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { router } from "expo-router";
 import { dateFr, heureFr } from "@repere/core";
 import { chargerPresidentielle } from "../lib/donnees";
 import { ELECTIONS } from "../lib/elections";
@@ -82,6 +83,13 @@ export function Presidentielle() {
         {dans !== null && dans > 0 ? (
           <Text style={[TYPO.chiffre]} accessibilityLabel={`Dans ${dans} jours`}>J-{dans}</Text>
         ) : null}
+        <Pressable onPress={() => router.push("/reglement-2027")} accessibilityRole="button"
+          accessibilityLabel="Les règles de la présidentielle 2027, en quatre fiches"
+          style={({ pressed }) => ({ minHeight: CIBLE, alignSelf: "flex-start", flexDirection: "row", alignItems: "center", gap: PAS * 1.5, opacity: pressed ? 0.7 : 1 })}>
+          <Ionicons name="reader-outline" size={16} color={couleurs.encre} accessible={false} importantForAccessibility="no" />
+          <Text style={[TYPO.corps, { fontFamily: POLICE.texteGras }]}>Les règles du scrutin, en quatre fiches</Text>
+          <Ionicons name="chevron-forward" size={14} color={couleurs.sourd} accessible={false} importantForAccessibility="no" />
+        </Pressable>
       </View>
 
       {f?.fictif ? (

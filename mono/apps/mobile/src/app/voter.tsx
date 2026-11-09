@@ -83,6 +83,8 @@ export default function Voter() {
       <View style={{ gap: PAS * 4 }}>
         {/* 07/11/2026 : la prochaine élection en carte, le nombre de jours en grand (invariant 6 :
             suivre une durée est permis) ; les élections à venir sur une frise verticale. */}
+        {/* La présidentielle a sa bannière plus haut (ui/presidentielle) : la carte ne la répète pas. */}
+        {prochaine && prochaine.type === "presidentielle" ? null : (
         <Carte titre="Prochaine élection" accent={couleurs.encre}>
           {prochaine ? (
             <>
@@ -104,6 +106,7 @@ export default function Voter() {
             </>
           ) : <Text style={TYPO.note}>Aucune élection datée n'est à venir dans l'application.</Text>}
         </Carte>
+        )}
 
         <Carte titre="Les élections à venir">
           <Timeline etapes={datees.filter(e => joursAvant(e.date as string) >= 0).map(e => ({ date: e.date as string, libelle: e.titre, lien: null }))} />
