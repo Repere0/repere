@@ -34,9 +34,11 @@ export type Neutres = {
 
 /* Neutres du clair : « Néo-Civique » des maquettes Stitch (09/11/2026, invariant 7 amendé par le
    porteur, « tout Stitch »). Lin bleuté, cartes blanches bordées, ardoise pour le texte, pétrole
-   pour les liens. Contrastes mesurés dans tests/theme.test.mjs. */
+   pour les liens. Contrastes mesurés dans tests/theme.test.mjs. Le gris secondaire est l'ardoise
+   #475569 de Stitch, pas son #64748B : celui-ci tombe à 3,86:1 sur les teintes d'échelon et
+   à 4,28:1 sur les pastilles (mesuré dans le navigateur, parcours-web), sous le seuil AA. */
 const NEUTRES_CLAIR: Neutres = {
-  sol: "#F7FAFD", carte: "#FFFFFF", encre: "#0F172A", sourd: "#64748B",
+  sol: "#F7FAFD", carte: "#FFFFFF", encre: "#0F172A", sourd: "#475569",
   trait: "#E8EEF3", voile: "#EDF4F7", blanc: "#ffffff", lien: "#0D3B43", ancien: "#745C5C",
 };
 

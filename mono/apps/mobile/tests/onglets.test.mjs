@@ -16,7 +16,7 @@ const lire = p => fs.readFileSync(path.join(RACINE, p), "utf8");
 
 test("onglets — chaque onglet porte l'intitule officiel de son ecran", () => {
   const src = lire("src/app/(onglets)/_layout.tsx");
-  const attendu = { "chez-vous": LIBELLES.aujourdhui, "qui-decide": LIBELLES.qui, "a-venir": LIBELLES.calendrier };
+  const attendu = { "chez-vous": LIBELLES.aujourdhui, "qui-decide": LIBELLES.qui, finances: LIBELLES.finances, "a-venir": LIBELLES.calendrier };
   for (const [ecran, libelle] of Object.entries(attendu)) {
     const bloc = src.match(new RegExp(`name="${ecran}"[\\s\\S]*?\\/>|name="${ecran}"[\\s\\S]*?\\}\\)`));
     assert.ok(bloc, `onglet ${ecran} introuvable`);
@@ -47,7 +47,8 @@ test("onglets a 200 % — intitulés sur deux lignes au plus, hauteur non figée
 test("onglets a 200 % — chaque onglet passe par l'etiquette a deux lignes", () => {
   const src = lire("src/app/(onglets)/_layout.tsx");
   const n = (src.match(/tabBarLabel: etiquette\(LIBELLES\.\w+\)/g) || []).length;
-  assert.equal(n, 3, `trois onglets attendus avec etiquette(), trouve ${n}`);
+  /* Quatre onglets depuis les maquettes Stitch (09/11/2026). */
+  assert.equal(n, 4, `quatre onglets attendus avec etiquette(), trouve ${n}`);
 });
 
 /* D22, arbitrage : plafond de 1,2 sur les seuls libelles d'onglet (Android). Le test

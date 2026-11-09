@@ -167,7 +167,7 @@ test("invariant 7 — palette gelée ; couleurs de groupes seulement dans palett
   const blocAccents = (lire("apps/mobile/src/lib/palette.ts").match(/export const ACCENTS_PAR_MODE[\s\S]*?\}\);/) || [""])[0];
   const accents = [...blocAccents.matchAll(/#[0-9a-fA-F]{6}\b/g)].map(m => m[0].toLowerCase()).filter(h => amplitude(h) > AMPLITUDE_MAX);
   assert.deepEqual([...new Set(accents)].sort(), ["0d3b43", "00a896", "f59e0b", "d4af37"].map(h => "#" + h).sort(), "les accents d'interface sont ceux de l'amendement du 09/11/2026");
-  const neutresStitch = ["0f172a", "64748b", "94a3b8"].map(h => "#" + h);
+  const neutresStitch = ["0f172a", "64748b", "94a3b8", "475569"].map(h => "#" + h);
   for (const h of [...accents, ...neutresStitch]) jauge.push(h);
   const tousVotes = [...votes, ...votesD];
   let controlees = 0;

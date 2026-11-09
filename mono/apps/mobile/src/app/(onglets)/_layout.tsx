@@ -1,9 +1,10 @@
-/* LA BARRE BASSE A TROIS ONGLETS DU CANEVAS « ACCUEIL » (13/10/2026).
+/* LA BARRE BASSE (13/10/2026 ; quatre onglets des maquettes Stitch, 09/11/2026).
  *
  * Aujourd'hui  -> chez-vous   (les trois reponses du jour)
- * Chez vous    -> qui-decide  (la chaine de decision de la commune)
+ * Qui décide   -> qui-decide  (la chaine de decision de la commune)
+ * Finances     -> finances    (l'ecran « Où va l'argent », en onglet)
  * Calendrier   -> a-venir     (le Parlement, semaine et mois)
- * Élus         -> elus        (annuaire des élus publiés, recherche)
+ * L'annuaire des élus (elus) reste une route, sans onglet : « Mes élus » et « Aller plus loin » y mènent.
  *
  * Le canevas dessine « Aujourd'hui » et « Calendrier » ; « Chez vous » n'a pas
  * d'ecran dessine : il ouvre « Qui decide », a confirmer par le porteur.
@@ -13,7 +14,7 @@ import { Platform, Text, type ColorValue } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { Tabs } from "expo-router";
 import { LIBELLES } from "@repere/core";
-import { couleurs } from "../../lib/theme";
+import { ACCENTS, couleurs } from "../../lib/theme";
 import { useTheme } from "../../lib/themeChoix";
 import { ChangerCommune } from "../../ui/retour";
 import { BoutonReglages } from "../../ui/reglages";
@@ -21,7 +22,7 @@ import { BoutonReglages } from "../../ui/reglages";
 /* Une icone par onglet (@expo/vector-icons, Ionicons, brief V47 bloc 1) : pleine quand l'onglet
  * est actif, contour sinon. L'icone est decorative : le nom de l'onglet la porte. Ionicons n'a pas
  * « landmark » ni « users » en contour : « business » (un batiment) et « calendar » font l'affaire. */
-type NomIcone = "newspaper" | "business" | "calendar" | "person-circle";
+type NomIcone = "newspaper" | "business" | "calendar" | "person-circle" | "wallet";
 const icone = (nom: NomIcone) => ({ color, focused }: { color: ColorValue; focused: boolean }) => (
   <Ionicons name={focused ? nom : (`${nom}-outline` as const)} size={24} color={typeof color === "string" ? color : undefined} allowFontScaling={false} accessible={false} importantForAccessibility="no" />
 );
@@ -57,7 +58,7 @@ export default function Onglets() {
         headerShadowVisible: false,
         sceneStyle: { backgroundColor: couleurs.sol },
         animation: "fade", /* changement d'onglet : fondu court, sans glissement */
-        tabBarActiveTintColor: couleurs.encre,
+        tabBarActiveTintColor: ACCENTS.texteAccent,
         tabBarInactiveTintColor: couleurs.sourd,
         tabBarStyle: { backgroundColor: couleurs.carte, borderTopColor: couleurs.trait, minHeight: 72, paddingTop: 6 },
         headerLeft: () => <ChangerCommune />,
@@ -73,8 +74,9 @@ export default function Onglets() {
         }}
       />
       <Tabs.Screen name="qui-decide" options={{ title: LIBELLES.qui, tabBarLabel: etiquette(LIBELLES.qui), tabBarIcon: icone("business") }} />
+      <Tabs.Screen name="finances" options={{ title: LIBELLES.argent, tabBarLabel: etiquette(LIBELLES.finances), tabBarIcon: icone("wallet") }} />
       <Tabs.Screen name="a-venir" options={{ title: LIBELLES.calendrier, tabBarLabel: etiquette(LIBELLES.calendrier), tabBarIcon: icone("calendar") }} />
-      <Tabs.Screen name="elus" options={{ title: "Élus", tabBarLabel: etiquette("Élus"), tabBarIcon: icone("person-circle") }} />
+      <Tabs.Screen name="elus" options={{ title: "Élus", href: null }} />
     </Tabs>
   );
 }

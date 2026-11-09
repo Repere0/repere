@@ -36,7 +36,7 @@ test("theme — le clair garde les valeurs de l'application (aucune régression 
   assert.deepEqual(
     { sol: n.sol, carte: n.carte, encre: n.encre, sourd: n.sourd, trait: n.trait, voile: n.voile, lien: n.lien },
     /* Néo-Civique des maquettes Stitch (09/11/2026, invariant 7 amendé par le porteur, « tout Stitch »). */
-    { sol: "#F7FAFD", carte: "#FFFFFF", encre: "#" + "0F172A", sourd: "#" + "64748B", trait: "#E8EEF3", voile: "#EDF4F7", lien: "#" + "0D3B43" },
+    { sol: "#F7FAFD", carte: "#FFFFFF", encre: "#" + "0F172A", sourd: "#" + "475569", trait: "#E8EEF3", voile: "#EDF4F7", lien: "#" + "0D3B43" },
   );
   assert.deepEqual(TEINTES_PAR_MODE.clair, {
     ville: "#dbeaee", agglo: "#e4f3f7", dept: "#f7ece4", region: "#efe7fb", france: "#ecebe8",
@@ -47,10 +47,9 @@ test("theme — le clair garde les valeurs de l'application (aucune régression 
 
 /* ---- 2. contrastes du texte, dans les deux modes -------------------- */
 const PAIRES_TEXTE = [["encre", "sol"], ["encre", "carte"], ["encre", "voile"], ["sourd", "sol"], ["sourd", "carte"], ["sourd", "voile"], ["lien", "carte"]];
-/* Exception MESURÉE et décidée (porteur, 09/11/2026, « tout Stitch ») : le gris des métadonnées
-   de Stitch (64748B) tombe à 4,28:1 sur le gris des pastilles (#EDF4F7). Le réglage « contraste
-   élevé » du profil remplace ce gris par l'encre. Si la valeur bouge, le test échoue et oblige à relire. */
-const EXCEPTIONS_TEXTE = { "clair:sourd sur voile": 4.28 };
+/* Aucune exception de texte : une valeur exceptionnelle se déclare ici, mesurée, et le test
+   oblige à la relire si elle bouge. */
+const EXCEPTIONS_TEXTE = {};
 for (const m of ["clair", "sombre"]) {
   test(`theme ${m} — tout texte tient 4,5:1 WCAG AA sur son fond`, () => {
     const n = NEUTRES_PAR_MODE[m];
@@ -104,7 +103,7 @@ for (const m of ["clair", "sombre"]) {
 /* Amendement du porteur (09/11/2026, « tout Stitch ») : l'ardoise et le pétrole (clair), l'ardoise
    et l'or mat (sombre) sont admis, ces valeurs exactement et rien d'autre. */
 const NEUTRES_STITCH = {
-  clair: { encre: "#" + "0F172A", sourd: "#" + "64748B", lien: "#" + "0D3B43" },
+  clair: { encre: "#" + "0F172A", sourd: "#" + "475569", lien: "#" + "0D3B43" },
   sombre: { sourd: "#" + "94A3B8", lien: "#" + "D4AF37" },
 };
 for (const m of ["clair", "sombre"]) {

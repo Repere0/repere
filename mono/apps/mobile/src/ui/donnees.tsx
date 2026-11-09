@@ -13,11 +13,13 @@ import { feuille, couleurs, OMBRE, PAS, POLICE, RAYON, TYPO } from "../lib/theme
 import { bordureGroupe, texteSur } from "../lib/groupes";
 import { phrasesDe } from "@repere/core";
 
-/* Grand texte (40 px) : le seuil WCAG est 3:1 ; les couleurs de vote sont mesurées à 3,0 et plus sur la carte sombre. */
+/* 09/11/2026 (Stitch) : le nombre reste dans l'encre ; la couleur du vote est un filet au-dessus.
+   Les couleurs de vote Stitch descendent à 2,56:1 sur la carte claire : jamais en texte. */
 export function StatCard({ valeur, libelle, couleur }: { valeur: string; libelle: string; couleur?: string }) {
   return (
     <View style={s.stat} accessible accessibilityLabel={`${libelle} : ${valeur}`}>
-      <Text style={[TYPO.stat, couleur ? { color: couleur } : null]}>{espacesFines(valeur)}</Text>
+      {couleur ? <View style={{ height: 4, width: 28, borderRadius: 2, backgroundColor: couleur }} accessibilityElementsHidden importantForAccessibility="no" /> : null}
+      <Text style={TYPO.stat}>{espacesFines(valeur)}</Text>
       <Text style={TYPO.etiquette}>{libelle}</Text>
     </View>
   );
