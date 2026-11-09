@@ -36,7 +36,7 @@ test("theme — le clair garde les valeurs de l'application (aucune régression 
   assert.deepEqual(
     { sol: n.sol, carte: n.carte, encre: n.encre, sourd: n.sourd, trait: n.trait, voile: n.voile, lien: n.lien },
     /* Néo-Civique des maquettes Stitch (09/11/2026, invariant 7 amendé par le porteur, « tout Stitch »). */
-    { sol: "#F7FAFD", carte: "#FFFFFF", encre: "#" + "0F172A", sourd: "#" + "475569", trait: "#E8EEF3", voile: "#EDF4F7", lien: "#" + "0D3B43" },
+    { sol: "#F7FAFD", carte: "#FFFFFF", encre: "#" + "0F172A", sourd: "#" + "475569", trait: "#E8EEF3", voile: "#EDF4F7", lien: "#" + "0F172A" },
   );
   assert.deepEqual(TEINTES_PAR_MODE.clair, {
     ville: "#dbeaee", agglo: "#e4f3f7", dept: "#f7ece4", region: "#efe7fb", france: "#ecebe8",
@@ -103,8 +103,8 @@ for (const m of ["clair", "sombre"]) {
 /* Amendement du porteur (09/11/2026, « tout Stitch ») : l'ardoise et le pétrole (clair), l'ardoise
    et l'or mat (sombre) sont admis, ces valeurs exactement et rien d'autre. */
 const NEUTRES_STITCH = {
-  clair: { encre: "#" + "0F172A", sourd: "#" + "475569", lien: "#" + "0D3B43" },
-  sombre: { sourd: "#" + "94A3B8", lien: "#" + "D4AF37" },
+  clair: { encre: "#" + "0F172A", sourd: "#" + "475569", lien: "#" + "0F172A" },
+  sombre: { sourd: "#" + "94A3B8" },
 };
 for (const m of ["clair", "sombre"]) {
   test(`theme ${m} — neutres et teintes restent sous l'amplitude RGB 24 (invariant 7)`, () => {
@@ -265,4 +265,19 @@ test("theme — couleurs de vote : 4,5:1 sur la carte claire, 3:1 sur la carte s
     if (sombre < 3) fautes.push(`${nom} ${c} sur carte sombre : ${sombre.toFixed(2)}:1`);
   }
   assert.deepEqual(fautes, [], fautes.join(" | "));
+});
+
+/* ---- Décision du porteur (09/11/2026, PR #181) : les couleurs de vote ne portent JAMAIS de
+   texte. Elles remplissent des barres, des pastilles et des fonds de badge ; le mot et le nombre
+   restent dans l'encre ou le gris (texteSur sur un fond de vote). Garde statique : aucune
+   propriété `color:` ne lit une couleur de vote. Vue rouge le 09/11/2026 en posant
+   `color: COULEUR[x]` dans un écran. */
+test("votes — aucune couleur de vote n'est employée comme couleur de texte", () => {
+  const VOTE = /\bcolor:\s*(?:COULEUR_VOTE|COULEURS_VOTE|COULEUR|C)\s*[.[]/;
+  const fautes = [];
+  for (const f of fichiers(SRC)) {
+    const lignes = fs.readFileSync(f, "utf8").split("\n");
+    lignes.forEach((l, i) => { if (VOTE.test(l)) fautes.push(`${path.relative(RACINE, f)}:${i + 1}`); });
+  }
+  assert.deepEqual(fautes, [], `couleur de vote en texte : ${fautes.join(", ")}`);
 });

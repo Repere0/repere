@@ -162,11 +162,16 @@ test("invariant 7 — palette gelée ; couleurs de groupes seulement dans palett
   /* 09/11/2026 (porteur, « tout Stitch ») : une jauge par thème. */
   const blocJauge = (lire("apps/mobile/src/lib/palette.ts").match(/export const JAUGE_BUDGET_PAR_MODE[\s\S]*?\}\);/) || [""])[0];
   const jauge = [...blocJauge.matchAll(/#[0-9a-fA-F]{6}\b/g)].map(m => m[0].toLowerCase()).filter(h => amplitude(h) > AMPLITUDE_MAX);
-  assert.deepEqual(jauge, ["00a896", "0d3b43", "d4af37", "818cf8", "475569"].map(h => "#" + h), "la jauge du budget porte les couleurs de l'amendement du 09/11/2026");
+  assert.deepEqual(jauge, ["0d3b43", "475569", "d4af37", "818cf8", "475569"].map(h => "#" + h), "la jauge du budget porte les couleurs de l'amendement du 09/11/2026");
   /* Accents d'interface et neutres Stitch (09/11/2026) : ces valeurs, dans palette.ts seulement. */
   const blocAccents = (lire("apps/mobile/src/lib/palette.ts").match(/export const ACCENTS_PAR_MODE[\s\S]*?\}\);/) || [""])[0];
   const accents = [...blocAccents.matchAll(/#[0-9a-fA-F]{6}\b/g)].map(m => m[0].toLowerCase()).filter(h => amplitude(h) > AMPLITUDE_MAX);
-  assert.deepEqual([...new Set(accents)].sort(), ["0d3b43", "00a896", "f59e0b", "d4af37"].map(h => "#" + h).sort(), "les accents d'interface sont ceux de l'amendement du 09/11/2026");
+  /* Porteur, 09/11/2026 : l'interface reste neutre (encre, ardoises). */
+  assert.deepEqual([...new Set(accents)].sort(), ["0f172a", "475569", "94a3b8"].map(h => "#" + h).sort(), "les accents d'interface sont des neutres (décision du 09/11/2026)");
+  /* L'émeraude du « pour » est réservée aux données de vote : hors du bloc COULEURS_VOTE, elle
+     n'apparaît nulle part dans palette.ts (ni accent, ni jauge, ni neutre). */
+  const horsVote = lire("apps/mobile/src/lib/palette.ts").replace(blocVote, "").replace(/\/\*[\s\S]*?\*\//g, "");
+  assert.ok(!new RegExp("#" + "00a896", "i").test(horsVote), "l'émeraude du « pour » sert ailleurs qu'aux votes (décision du 09/11/2026)");
   const neutresStitch = ["0f172a", "64748b", "94a3b8", "475569"].map(h => "#" + h);
   for (const h of [...accents, ...neutresStitch]) jauge.push(h);
   const tousVotes = [...votes, ...votesD];

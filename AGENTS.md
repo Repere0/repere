@@ -53,9 +53,9 @@ explicite du porteur les change ; la PR qui l'applique met alors à jour
    couleurs de groupes politiques pour l'identification des élus seulement (badges, cartes de partage) ; elles ne codent
    JAMAIS un vote, une opinion, un score ou un classement. Votes (Stitch) : émeraude `#00A896` (pour), corail `#BE123C`
    (contre), ardoise `#94A3B8` (abstention) ; ils codent un FAIT, jamais un jugement, la position reste écrite en toutes
-   lettres ; variante daltonienne (D56) : `#0072B2`, `#B35900`, `#6E7781`. Jauge du budget : clair `#00A896` / `#0D3B43` /
+   lettres ; variante daltonienne (D56) : `#0072B2`, `#B35900`, `#6E7781`. Jauge du budget : clair `#0D3B43` / `#475569` /
    `#CBD5E1`, sombre `#D4AF37` / `#818CF8` / `#475569` (salaires / investissements / fonctionnement), jamais politiques.
-   Accents d'interface Néo-Civique (clair) et Dark Luxury (sombre) permis, jamais pour un vote ou un jugement. Tout dans
+   Émeraude réservée aux données de vote, jamais en texte ; l'interface reste neutre (noir, ivoire, gris). Tout dans
    palette.ts. D27 (ADR 0004) : photo d'élu sous licence libre Wikimedia Commons, crédit affiché ; jamais celles de l'AN.
 8. **Jamais le patrimoine d'un élu, jamais de donnée de présence ou d'absence.**
 9. **Fraîcheur** (décision du porteur, 30/09/2026). Une donnée gardée sur

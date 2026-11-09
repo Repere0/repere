@@ -85,3 +85,12 @@ Le porteur adopte les maquettes Stitch en entier (réponse écrite du 09/11/2026
   jamais pour un vote ou un jugement.
 - Risque signalé au porteur : l'émeraude du « pour » est aussi l'émeraude civique de l'interface (cartouche
   « En clair »). L'interface ne l'emploie jamais pour dire qu'une chose est bonne.
+
+## Précision du 09/11/2026 (porteur, revue de la PR #181)
+
+- L'émeraude est **réservée aux données de vote** (barres, pastilles, badges). L'interface (boutons, titres, onglets,
+  liens, cartouche « En clair ») reste neutre : noir, ivoire, gris. La jauge du budget clair passe en pétrole / ardoise /
+  gris bleuté. Garde : `invariants.test.mjs` (aucune émeraude hors `COULEURS_VOTE` dans `palette.ts`).
+- Les couleurs de vote ne portent **jamais de texte** : garde statique dans `apps/mobile/tests/theme.test.mjs`.
+- Mesure honnête : en graphique, le « pour » (2,98:1) et l'abstention (2,56:1) restent sous 3:1 sur la carte claire.
+  Le nombre et le mot étant toujours écrits, la barre n'est pas seule à porter l'information.

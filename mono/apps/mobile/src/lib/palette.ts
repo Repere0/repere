@@ -39,7 +39,7 @@ export type Neutres = {
    à 4,28:1 sur les pastilles (mesuré dans le navigateur, parcours-web), sous le seuil AA. */
 const NEUTRES_CLAIR: Neutres = {
   sol: "#F7FAFD", carte: "#FFFFFF", encre: "#0F172A", sourd: "#475569",
-  trait: "#E8EEF3", voile: "#EDF4F7", blanc: "#ffffff", lien: "#0D3B43", ancien: "#745C5C",
+  trait: "#E8EEF3", voile: "#EDF4F7", blanc: "#ffffff", lien: "#0F172A", ancien: "#745C5C",
 };
 
 /* Neutres du sombre : même famille chaude que le clair (pas de bleu), mesurés
@@ -51,22 +51,21 @@ const NEUTRES_CLAIR: Neutres = {
    #F8FAFC et #94A3B8, liens en or mat. Sol, carte et trait inchangés (déjà ceux de Stitch). */
 const NEUTRES_SOMBRE: Neutres = {
   sol: "#141311", carte: "#1F1E1B", encre: "#F8FAFC", sourd: "#94A3B8",
-  trait: "#2C2A26", voile: "#2A2823", blanc: "#ffffff", lien: "#D4AF37", ancien: "#CCB4B4",
+  trait: "#2C2A26", voile: "#2A2823", blanc: "#ffffff", lien: "#F8FAFC", ancien: "#CCB4B4",
 };
 
-/* LES ACCENTS D'INTERFACE (09/11/2026, invariant 7 amendé par le porteur : « tout Stitch »).
-   Ils habillent l'interface (titres d'autorité, onglet actif, badges, boutons, cartouche
-   « En clair »). Ils ne codent JAMAIS un vote, une opinion ni un jugement : les votes ont
-   leurs couleurs à part (COULEURS_VOTE), la jauge du budget aussi (JAUGE_BUDGET_PAR_MODE).
-   - autorite : pétrole (clair) / or mat (sombre), titres d'autorité, onglet actif, bouton ;
-   - texteAccent : la même intention, lisible en petit texte (4,5:1 au moins sur la carte) ;
-   - civique : émeraude, icônes et filets du cartouche « En clair » ;
-   - fondCivique : le fond du cartouche « En clair » ;
-   - ambre : projets et investissements à venir (jamais un vote). */
-export type Accents = { autorite: string; texteAccent: string; civique: string; fondCivique: string; ambre: string; surAutorite: string };
+/* L'INTERFACE RESTE NEUTRE (décision du porteur, 09/11/2026, après la PR #181) : noir, ivoire,
+   gris. L'émeraude est réservée aux DONNÉES DE VOTE (barres, pastilles, badges) : sur un bouton
+   ou un titre, elle se lirait « pour = bien ». Ces rôles gardent leurs noms pour les écrans,
+   mais tous pointent vers des neutres de la palette.
+   - autorite, texteAccent : l'encre (titres d'autorité, onglet actif, bouton plein) ;
+   - civique : le gris secondaire (filet du cartouche « En clair », point d'onglet actif) ;
+   - fondCivique : le gris des pastilles (fond du cartouche « En clair ») ;
+   - surAutorite : le texte posé sur un bouton plein. */
+export type Accents = { autorite: string; texteAccent: string; civique: string; fondCivique: string; surAutorite: string };
 export const ACCENTS_PAR_MODE: Readonly<Record<Mode, Accents>> = Object.freeze({
-  clair: { autorite: "#0D3B43", texteAccent: "#0D3B43", civique: "#00A896", fondCivique: "#EBF7F5", ambre: "#F59E0B", surAutorite: "#FFFFFF" },
-  sombre: { autorite: "#D4AF37", texteAccent: "#D4AF37", civique: "#00A896", fondCivique: "#162524", ambre: "#F59E0B", surAutorite: "#141311" },
+  clair: { autorite: "#0F172A", texteAccent: "#0F172A", civique: "#475569", fondCivique: "#EDF4F7", surAutorite: "#FFFFFF" },
+  sombre: { autorite: "#F8FAFC", texteAccent: "#F8FAFC", civique: "#94A3B8", fondCivique: "#2A2823", surAutorite: "#141311" },
 });
 
 /* Les échelons : identiques dans les deux thèmes, sauf « France ». */
@@ -163,9 +162,9 @@ export const REFLET_AVATAR = { clair: "rgba(255,255,255,0.22)", ombre: "rgba(0,0
 /* LA JAUGE DU BUDGET (maquettes Stitch). Amendements de l'invariant 7 par le porteur, 08/11 puis
    09/11/2026 (« tout Stitch ») : une palette par thème, couleurs de données financières, pour cette
    jauge seulement, jamais politiques. La légende écrite porte le sens.
-   Clair : émeraude (salaires), pétrole (investissements), gris bleuté (fonctionnement).
-   Sombre : or mat, indigo, ardoise. */
+   Clair : pétrole (salaires), ardoise (investissements), gris bleuté (fonctionnement). L'émeraude
+   n'y est plus (porteur, 09/11/2026 : elle est réservée aux votes). Sombre : or mat, indigo, ardoise. */
 export const JAUGE_BUDGET_PAR_MODE = Object.freeze({
-  clair: { salaires: "#00A896", investissement: "#0D3B43", autres: "#CBD5E1" },
+  clair: { salaires: "#0D3B43", investissement: "#475569", autres: "#CBD5E1" },
   sombre: { salaires: "#D4AF37", investissement: "#818CF8", autres: "#475569" },
 });
