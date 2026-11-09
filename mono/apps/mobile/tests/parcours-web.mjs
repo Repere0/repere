@@ -346,6 +346,8 @@ for (const largeur of [360, 390, 430]) {
   await page.getByText("Aller plus loin").first().waitFor({ timeout: 15000 });
   await page.getByRole("button", { name: "Où va cet argent ?", exact: true }).first().click();
   await page.getByText(/Où va l'argent de Bassevelle/).first().waitFor({ timeout: 10000 });
+  /* 09/11/2026 (maquette Stitch) : la dette vit dans la vue « Recettes » du budget. */
+  await page.getByRole("tab", { name: /^Recettes/ }).first().click();
   await page.waitForTimeout(800);
   const t = await page.evaluate(() => document.body.innerText);
   verifier(/publie un encours de dette nul pour Bassevelle en \d{4}, sur le budget principal : aucun emprunt n'y reste à rembourser/.test(t), "argent : une dette nulle publiée se dit, la carte ne disparaît pas");

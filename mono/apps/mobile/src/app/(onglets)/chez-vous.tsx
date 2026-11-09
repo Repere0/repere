@@ -74,7 +74,7 @@ function Decideurs({ maire, depute, circo }: { maire: string | null; depute: str
       <Etiquette texte="Vos décideurs" />
       <View style={{ flexDirection: "row", flexWrap: "wrap", gap: PAS * 2 }}>
         {gens.map(g => (
-          <Pression key={g.nom} etiquette={`Voir la fiche de ${g.nom}, ${g.role}`}
+          <Pression key={g.nom} etiquette={`${g.nom}, ${g.role} : ouvrir sa fiche`}
             onPress={() => router.push({ pathname: "/elu", params: { nom: g.nom, role: g.role, echelon: g.echelon, niveau: g.niveau, institution: g.institution, lieu: "" } })}
             style={{ flexGrow: 1, minWidth: 150, flexDirection: "row", alignItems: "center", gap: PAS * 2, padding: PAS * 2, borderRadius: RAYON.bloc, backgroundColor: couleurs.carte, borderWidth: 1, borderColor: couleurs.trait }}>
             <Avatar nom={g.nom} taille={32} fond={(pointEchelon(g.echelon) as { backgroundColor: string }).backgroundColor} />

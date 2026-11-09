@@ -30,7 +30,9 @@ export function EnClair({ texte, enfants }: { texte?: string | null; enfants?: R
   return (
     <View style={s.enClair} accessible accessibilityLabel={`En clair : ${texte ?? ""}`}>
       <View style={s.enClairTete}>
-        <Ionicons name="flash" size={14} color={ACCENTS.civique} accessible={false} importantForAccessibility="no" />
+        {/* L'éclair dans la couleur du texte d'accent : en émeraude, il tombait à 2,72:1 sur le fond du
+            cartouche (mesuré par parcours-web). L'émeraude reste au filet de gauche. */}
+        <Ionicons name="flash" size={14} color={ACCENTS.texteAccent} accessible={false} importantForAccessibility="no" />
         <Text style={s.enClairBadge}>EN CLAIR</Text>
       </View>
       {texte ? <Text style={[TYPO.corps, { fontFamily: POLICE.texteMoyen }]}>{texte}</Text> : null}

@@ -76,7 +76,6 @@ export default function Onglets() {
       <Tabs.Screen name="qui-decide" options={{ title: LIBELLES.qui, tabBarLabel: etiquette(LIBELLES.qui), tabBarIcon: icone("business") }} />
       <Tabs.Screen name="finances" options={{ title: LIBELLES.argent, tabBarLabel: etiquette(LIBELLES.finances), tabBarIcon: icone("wallet") }} />
       <Tabs.Screen name="a-venir" options={{ title: LIBELLES.calendrier, tabBarLabel: etiquette(LIBELLES.calendrier), tabBarIcon: icone("calendar") }} />
-      <Tabs.Screen name="elus" options={{ title: "Élus", href: null }} />
     </Tabs>
   );
 }

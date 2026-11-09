@@ -107,6 +107,7 @@ export default function Coquille() {
                 <Stack.Screen name="pour-vous" options={{ title: "Pour vous", headerLeft: () => <Retour texte="Retour" etiquette="Revenir à l'écran précédent" /> }} />
                 <Stack.Screen name="mes-elus" options={{ title: "Mes élus", headerLeft: () => <Retour texte="Retour" etiquette="Revenir à l'écran précédent" /> }} />
                 <Stack.Screen name="voter" options={{ title: "Ma voix", headerLeft: () => <Retour texte="Retour" etiquette="Revenir à l'écran précédent" /> }} />
+                <Stack.Screen name="elus" options={{ title: "Élus", headerLeft: () => <Retour texte="Retour" etiquette="Revenir à l'écran précédent" /> }} />
                 <Stack.Screen name="reglement-2027" options={{ title: "Présidentielle 2027", headerLeft: () => <Retour texte="Retour" etiquette="Revenir à l'écran précédent" /> }} />
                 <Stack.Screen name="a-propos" options={{ title: "À propos" }} />
                 <Stack.Screen name="confidentialite" options={{ title: "Confidentialité" }} />

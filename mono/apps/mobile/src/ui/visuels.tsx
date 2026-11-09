@@ -280,7 +280,9 @@ export function Chaine({ niveaux, compact, surNom, ouverts, basculer }: {
             )}
             {!compact && n.personne ? <Text style={TYPO.note}>{n.personne.role}</Text> : null}
             {!compact && deplie && n.decide ? <Text style={TYPO.corps}>Décide : {n.decide}.</Text> : null}
-            {!compact && deplie && n.note ? <Text style={TYPO.note}>{n.note}</Text> : null}
+            {/* La note reste visible, repliée ou non : elle porte les précisions qui empêchent une
+                lecture fausse (en Île-de-France, les transports relèvent d'Île-de-France Mobilités). */}
+            {!compact && n.note ? <Text style={TYPO.note}>{n.note}</Text> : null}
             {!compact && deplie && n.pied ? n.pied : null}
           </View>
         </View>
