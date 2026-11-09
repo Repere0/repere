@@ -151,16 +151,24 @@ test("invariant 7 — palette gelée ; couleurs de groupes seulement dans palett
   const votes = [...blocVote.matchAll(/#[0-9a-fA-F]{6}\b/g)].map(m => m[0].toLowerCase());
   /* Valeurs ecrites sans « # » : ce fichier est lui-meme balaye par le controle de palette. */
   /* D99 (01/11/2026, décision du porteur) : vert sauge, rouge brique (ajusté pour le contraste sur carte sombre, voir BLOCAGES §52), gris perle (ajusté, voir BLOCAGES §52). */
-  assert.deepEqual(votes, ["4a7c59", "aa4a4a", "5f6b7a"].map(h => "#" + h), "les couleurs de vote sont celles de D99 (ADR 0003 amendé)");
+  /* 09/11/2026 (porteur, « tout Stitch ») : émeraude, corail, ardoise. */
+  assert.deepEqual(votes, ["00a896", "be123c", "94a3b8"].map(h => "#" + h), "les couleurs de vote sont celles de Stitch (invariant 7 amendé le 09/11/2026)");
   /* Variante daltonienne (D56, V29 bloc 3) : trois couleurs, dans palette.ts seulement. */
   const blocVoteD = (lire("apps/mobile/src/lib/palette.ts").match(/export const COULEURS_VOTE_DALTONIEN[\s\S]*?\}\);/) || [""])[0];
   const votesD = [...blocVoteD.matchAll(/#[0-9a-fA-F]{6}\b/g)].map(m => m[0].toLowerCase());
   assert.deepEqual(votesD, ["0072b2", "b35900", "6e7781"].map(h => "#" + h), "la variante daltonienne est celle de D56 (ADR 0003)");
   /* Amendement du porteur (08/11/2026) : la jauge du budget, deux couleurs de données financières,
      dans palette.ts seulement (le troisième segment est un neutre). */
-  const blocJauge = (lire("apps/mobile/src/lib/palette.ts").match(/export const JAUGE_BUDGET[\s\S]*?\}\);/) || [""])[0];
+  /* 09/11/2026 (porteur, « tout Stitch ») : une jauge par thème. */
+  const blocJauge = (lire("apps/mobile/src/lib/palette.ts").match(/export const JAUGE_BUDGET_PAR_MODE[\s\S]*?\}\);/) || [""])[0];
   const jauge = [...blocJauge.matchAll(/#[0-9a-fA-F]{6}\b/g)].map(m => m[0].toLowerCase()).filter(h => amplitude(h) > AMPLITUDE_MAX);
-  assert.deepEqual(jauge, ["2b6cb0", "9dd3aa"].map(h => "#" + h), "la jauge du budget porte les deux couleurs de l'amendement du 08/11/2026");
+  assert.deepEqual(jauge, ["00a896", "0d3b43", "d4af37", "818cf8", "475569"].map(h => "#" + h), "la jauge du budget porte les couleurs de l'amendement du 09/11/2026");
+  /* Accents d'interface et neutres Stitch (09/11/2026) : ces valeurs, dans palette.ts seulement. */
+  const blocAccents = (lire("apps/mobile/src/lib/palette.ts").match(/export const ACCENTS_PAR_MODE[\s\S]*?\}\);/) || [""])[0];
+  const accents = [...blocAccents.matchAll(/#[0-9a-fA-F]{6}\b/g)].map(m => m[0].toLowerCase()).filter(h => amplitude(h) > AMPLITUDE_MAX);
+  assert.deepEqual([...new Set(accents)].sort(), ["0d3b43", "00a896", "f59e0b", "d4af37"].map(h => "#" + h).sort(), "les accents d'interface sont ceux de l'amendement du 09/11/2026");
+  const neutresStitch = ["0f172a", "64748b", "94a3b8"].map(h => "#" + h);
+  for (const h of [...accents, ...neutresStitch]) jauge.push(h);
   const tousVotes = [...votes, ...votesD];
   let controlees = 0;
   for (const f of sourcesEcrites()) {

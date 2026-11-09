@@ -72,3 +72,16 @@ Réglage « mode daltonien » du profil (`repere.profil`, ADR 0006). Les écrans
 - **Variante daltonienne** (D56) : inchangée.
 - **Tests** : `mono/tests/invariants.test.mjs` (invariant 7) et `mono/apps/mobile/tests/theme.test.mjs` (A2) attendent ces valeurs.
 - **Invariant 7 de CLAUDE.md** : mis à jour et empreinte rescellée (`outils/derive_contexte.mjs --sceller`), sur décision explicite du porteur.
+
+## Amendement du 09/11/2026 — « tout Stitch » (décision du porteur)
+
+Le porteur adopte les maquettes Stitch en entier (réponse écrite du 09/11/2026 : « Tout Stitch »).
+- Votes : émeraude `#00A896` (pour), corail `#BE123C` (contre), ardoise `#94A3B8` (abstention), dans les deux thèmes.
+  Mesuré : 2,98 / 6,29 / 2,56:1 sur la carte claire, 5,59 / 2,65 / 6,50:1 sur la carte sombre. Ces valeurs sont
+  sous les seuils A2 : elles remplissent des barres et des pastilles, et le vote reste écrit en toutes lettres
+  dans l'encre. `tests/theme.test.mjs` fige ces mesures.
+- Variante daltonienne D56 inchangée, seuils A2 inchangés.
+- Jauge du budget : une palette par thème (`JAUGE_BUDGET_PAR_MODE`). Accents d'interface (`ACCENTS_PAR_MODE`),
+  jamais pour un vote ou un jugement.
+- Risque signalé au porteur : l'émeraude du « pour » est aussi l'émeraude civique de l'interface (cartouche
+  « En clair »). L'interface ne l'emploie jamais pour dire qu'une chose est bonne.

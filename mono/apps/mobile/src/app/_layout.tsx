@@ -22,6 +22,12 @@ import { DMSans_500Medium } from "@expo-google-fonts/dm-sans/500Medium";
 import { DMSans_700Bold } from "@expo-google-fonts/dm-sans/700Bold";
 import { IBMPlexMono_400Regular } from "@expo-google-fonts/ibm-plex-mono/400Regular";
 import { IBMPlexMono_600SemiBold } from "@expo-google-fonts/ibm-plex-mono/600SemiBold";
+/* Maquettes Stitch (09/11/2026) : Plus Jakarta Sans et Inter pour le thème clair (OFL, embarquées). */
+import { PlusJakartaSans_700Bold } from "@expo-google-fonts/plus-jakarta-sans/700Bold";
+import { PlusJakartaSans_800ExtraBold } from "@expo-google-fonts/plus-jakarta-sans/800ExtraBold";
+import { Inter_400Regular } from "@expo-google-fonts/inter/400Regular";
+import { Inter_500Medium } from "@expo-google-fonts/inter/500Medium";
+import { Inter_700Bold } from "@expo-google-fonts/inter/700Bold";
 import { FournisseurSelection, useSelection } from "../lib/selection";
 import { FournisseurCommune } from "../lib/useCommune";
 import { appliquerChoix, appliquerLecture, couleurs, useModeSysteme, type ChoixTheme } from "../lib/theme";
@@ -55,7 +61,7 @@ export default function Coquille() {
   const lu = etatProfil.profil ?? PROFIL_DEFAUT;
   /* D67 (V35) : le mode vit dans repere.profil. Sans profil (accueil pas encore répondu),
      le choix reste en mémoire : écrire un profil à ce moment sauterait l'accueil. */
-  const [choixSession, setChoixSession] = useState<ChoixTheme>("systeme");
+  const [choixSession, setChoixSession] = useState<ChoixTheme>("clair"); /* Stitch : clair par défaut (09/11/2026) */
   const choix: ChoixTheme = etatProfil.profil ? (lu.mode === "clair" || lu.mode === "sombre" ? lu.mode : "systeme") : choixSession;
   const setChoix = (c: ChoixTheme) => {
     if (etatProfil.profil) etatProfil.modifier({ mode: c === "systeme" ? "auto" : c });
@@ -67,7 +73,7 @@ export default function Coquille() {
   const valeur = { choix, setChoix, mode };
   const tema = useMemo(() => themeDe(mode), [mode]);
   const fonds = NEUTRES_PAR_MODE[mode];
-  const [polices, erreur] = useFonts({ Manrope_800ExtraBold, Manrope_700Bold, DMSans_400Regular, DMSans_500Medium, DMSans_700Bold, IBMPlexMono_400Regular, IBMPlexMono_600SemiBold });
+  const [polices, erreur] = useFonts({ Manrope_800ExtraBold, Manrope_700Bold, DMSans_400Regular, DMSans_500Medium, DMSans_700Bold, IBMPlexMono_400Regular, IBMPlexMono_600SemiBold, PlusJakartaSans_700Bold, PlusJakartaSans_800ExtraBold, Inter_400Regular, Inter_500Medium, Inter_700Bold });
   if (!polices && !erreur) return null;
   return (
     <FournisseurTheme value={valeur}>

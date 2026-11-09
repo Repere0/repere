@@ -49,14 +49,14 @@ explicite du porteur les change ; la PR qui l'applique met alors à jour
 5. **Doctrine du vide.** Une absence de donnée produit une phrase vraie et un lien,
    jamais une forme vide, un zéro ou une barre minuscule.
 6. **Rien qui gamifie le vote ou l'opinion** : aucun score, aucune récompense, aucune série, aucun gain ni son de réussite lié à un vote, une position ou un partage. Les effets de mouvement sont permis pour lire, naviguer et suivre une heure ou une durée (assouplie par décision du porteur, 13/10/2026).
-7. **Invariant 7 (amendé le 30/10/2026, puis le 01/11/2026 par décision D99)** : les couleurs de groupes politiques
-   sont autorisées pour l'identification des élus (badges, cartes de partage).
-   Elles ne codent JAMAIS un vote, une opinion, un score ou un classement.
-   Mapping dans palette.ts. Complément (D24, 30/10/2026, ADR 0003) : votes en vert sauge `#4A7C59`
-   (pour), rouge brique `#AA4A4A` (contre), gris perle `#5F6B7A` (abstention) ; ils codent un FAIT, jamais
-   un jugement, et la position reste écrite en toutes lettres. Variante daltonienne (D56, 30/10/2026, réglage
-   du profil, ADR 0003) : bleu `#0072B2` (pour), vermillion assombri `#B35900` (contre), gris `#6E7781` (abstention). D27 (ADR 0004) : photo d'élu sous licence
-   libre de Wikimedia Commons seulement, crédit affiché, servie par département ; jamais celles de l'AN. Amendé (porteur, 08/11/2026) : jauge du budget seulement, bleu `#2B6CB0` (salaires) et vert `#9DD3AA` (investissements), couleurs de données financières, jamais politiques.
+7. **Invariant 7 (amendé les 30/10, 01/11 (D99), 08/11, puis 09/11/2026 par le porteur : « tout Stitch »)** :
+   couleurs de groupes politiques pour l'identification des élus seulement (badges, cartes de partage) ; elles ne codent
+   JAMAIS un vote, une opinion, un score ou un classement. Votes (Stitch) : émeraude `#00A896` (pour), corail `#BE123C`
+   (contre), ardoise `#94A3B8` (abstention) ; ils codent un FAIT, jamais un jugement, la position reste écrite en toutes
+   lettres ; variante daltonienne (D56) : `#0072B2`, `#B35900`, `#6E7781`. Jauge du budget : clair `#00A896` / `#0D3B43` /
+   `#CBD5E1`, sombre `#D4AF37` / `#818CF8` / `#475569` (salaires / investissements / fonctionnement), jamais politiques.
+   Accents d'interface Néo-Civique (clair) et Dark Luxury (sombre) permis, jamais pour un vote ou un jugement. Tout dans
+   palette.ts. D27 (ADR 0004) : photo d'élu sous licence libre Wikimedia Commons, crédit affiché ; jamais celles de l'AN.
 8. **Jamais le patrimoine d'un élu, jamais de donnée de présence ou d'absence.**
 9. **Fraîcheur** (décision du porteur, 30/09/2026). Une donnée gardée sur
    l'appareil peut être affichée pour préserver l'accès hors ligne, mais jamais

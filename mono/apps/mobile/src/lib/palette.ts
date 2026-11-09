@@ -32,10 +32,12 @@ export type Neutres = {
   ancien: string;
 };
 
-/* Neutres du clair : valeurs de main, inchangées. */
+/* Neutres du clair : « Néo-Civique » des maquettes Stitch (09/11/2026, invariant 7 amendé par le
+   porteur, « tout Stitch »). Lin bleuté, cartes blanches bordées, ardoise pour le texte, pétrole
+   pour les liens. Contrastes mesurés dans tests/theme.test.mjs. */
 const NEUTRES_CLAIR: Neutres = {
-  sol: "#F5F2EC", carte: "#FFFFFF", encre: "#171614", sourd: "#625E57",
-  trait: "#DDD8D0", voile: "#ECE8E1", blanc: "#ffffff", lien: "#1a1917", ancien: "#745C5C",
+  sol: "#F7FAFD", carte: "#FFFFFF", encre: "#0F172A", sourd: "#64748B",
+  trait: "#E8EEF3", voile: "#EDF4F7", blanc: "#ffffff", lien: "#0D3B43", ancien: "#745C5C",
 };
 
 /* Neutres du sombre : même famille chaude que le clair (pas de bleu), mesurés
@@ -43,10 +45,27 @@ const NEUTRES_CLAIR: Neutres = {
 /* 07/11/2026 : « sombre minéral » des maquettes Stitch (surface, surface-container, on-surface,
    on-surface-variant, outline), validé par le porteur. « sourd » : #8E8B82 demandé, mais 4,32:1
    sur le voile, sous le seuil AA ; #928F86 est la nuance la plus proche qui le tient (4,55:1). */
+/* 09/11/2026 : « Dark Luxury » des maquettes Stitch (invariant 7 amendé, « tout Stitch ») : textes
+   #F8FAFC et #94A3B8, liens en or mat. Sol, carte et trait inchangés (déjà ceux de Stitch). */
 const NEUTRES_SOMBRE: Neutres = {
-  sol: "#141311", carte: "#1F1E1B", encre: "#F3F0E8", sourd: "#928F86",
-  trait: "#2C2A26", voile: "#2A2823", blanc: "#ffffff", lien: "#F3F0E8", ancien: "#CCB4B4",
+  sol: "#141311", carte: "#1F1E1B", encre: "#F8FAFC", sourd: "#94A3B8",
+  trait: "#2C2A26", voile: "#2A2823", blanc: "#ffffff", lien: "#D4AF37", ancien: "#CCB4B4",
 };
+
+/* LES ACCENTS D'INTERFACE (09/11/2026, invariant 7 amendé par le porteur : « tout Stitch »).
+   Ils habillent l'interface (titres d'autorité, onglet actif, badges, boutons, cartouche
+   « En clair »). Ils ne codent JAMAIS un vote, une opinion ni un jugement : les votes ont
+   leurs couleurs à part (COULEURS_VOTE), la jauge du budget aussi (JAUGE_BUDGET_PAR_MODE).
+   - autorite : pétrole (clair) / or mat (sombre), titres d'autorité, onglet actif, bouton ;
+   - texteAccent : la même intention, lisible en petit texte (4,5:1 au moins sur la carte) ;
+   - civique : émeraude, icônes et filets du cartouche « En clair » ;
+   - fondCivique : le fond du cartouche « En clair » ;
+   - ambre : projets et investissements à venir (jamais un vote). */
+export type Accents = { autorite: string; texteAccent: string; civique: string; fondCivique: string; ambre: string; surAutorite: string };
+export const ACCENTS_PAR_MODE: Readonly<Record<Mode, Accents>> = Object.freeze({
+  clair: { autorite: "#0D3B43", texteAccent: "#0D3B43", civique: "#00A896", fondCivique: "#EBF7F5", ambre: "#F59E0B", surAutorite: "#FFFFFF" },
+  sombre: { autorite: "#D4AF37", texteAccent: "#D4AF37", civique: "#00A896", fondCivique: "#162524", ambre: "#F59E0B", surAutorite: "#141311" },
+});
 
 /* Les échelons : identiques dans les deux thèmes, sauf « France ». */
 export const ECHELONS_PAR_MODE: Record<Mode, Record<Echelon, string>> = {
@@ -104,10 +123,14 @@ export const VOILE_MODAL = "rgba(0,0,0,0.4)";
    Sur la carte claire (#FFFFFF) : 4,52 / 5,36 / 4,55:1, au-dessus de 4,5:1 (WCAG AA texte),
    verifie par tests/theme.test.mjs. Sur le sol clair, le vert et le gris restent sous 4,5:1 :
    les barres sont toujours posees sur une carte. Detail : docs/adr/0003-couleurs-votes.md. */
+/* 09/11/2026 : couleurs Stitch (invariant 7 amendé par le porteur, « tout Stitch ») : émeraude,
+   corail, ardoise. Mesuré : sur la carte claire 2,98 / 6,29 / 2,56:1 ; sur la carte sombre
+   5,59 / 2,65 / 6,50:1. Sous le seuil du texte : ces couleurs remplissent des barres et des
+   pastilles, le libellé du vote est toujours écrit en toutes lettres, dans l'encre. */
 export const COULEURS_VOTE = Object.freeze({
-  votePour: "#4A7C59",
-  voteContre: "#AA4A4A",
-  voteAbstention: "#5F6B7A",
+  votePour: "#00A896",
+  voteContre: "#BE123C",
+  voteAbstention: "#94A3B8",
 });
 
 /* VARIANTE DALTONIENNE (D56, 30/10/2026) : réglage « mode daltonien » du profil. Palette
@@ -126,15 +149,21 @@ export const COULEURS_GROUPES: Readonly<Record<string, string>> = Object.freeze(
 });
 
 /* Point d'une étape de la Timeline (05/11/2026, demande du porteur). Gris neutre : il ne code
-   ni un vote ni une opinion. Contraste mesuré (objet graphique, WCAG 1.4.11, 3:1) : 5,43:1 sur
-   la carte claire, 3,1:1 sur la carte sombre. */
-export const POINT_ETAPE = "#5F6B7A";
+   ni un vote ni une opinion. 09/11/2026 : l'ardoise des métadonnées de Stitch (l'ancien gris était
+   celui de l'abstention D24). Contraste mesuré (objet graphique, 3:1) : 4,76:1 sur la carte claire,
+   3,50:1 sur la carte sombre. */
+export const POINT_ETAPE = "#64748B";
 
 /* Le reflet et l'ombre d'un avatar (07/11/2026) : blanc et noir translucides, posés sur la
    couleur du groupe pour un dégradé ; ils ne changent pas la teinte qui identifie le groupe. */
 export const REFLET_AVATAR = { clair: "rgba(255,255,255,0.22)", ombre: "rgba(0,0,0,0.18)" };
 
-/* LA JAUGE DU BUDGET (maquettes Stitch). Amendement de l'invariant 7 par le porteur, 08/11/2026 :
-   bleu (salaires) et vert (investissements) sont des couleurs de données financières, pour cette
-   jauge seulement, jamais politiques ; « autres » reste un neutre. La légende écrite porte le sens. */
-export const JAUGE_BUDGET = Object.freeze({ salaires: "#2B6CB0", investissement: "#9DD3AA", autres: "#34322F" });
+/* LA JAUGE DU BUDGET (maquettes Stitch). Amendements de l'invariant 7 par le porteur, 08/11 puis
+   09/11/2026 (« tout Stitch ») : une palette par thème, couleurs de données financières, pour cette
+   jauge seulement, jamais politiques. La légende écrite porte le sens.
+   Clair : émeraude (salaires), pétrole (investissements), gris bleuté (fonctionnement).
+   Sombre : or mat, indigo, ardoise. */
+export const JAUGE_BUDGET_PAR_MODE = Object.freeze({
+  clair: { salaires: "#00A896", investissement: "#0D3B43", autres: "#CBD5E1" },
+  sombre: { salaires: "#D4AF37", investissement: "#818CF8", autres: "#475569" },
+});

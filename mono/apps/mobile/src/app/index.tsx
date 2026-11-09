@@ -23,8 +23,8 @@ import { Bouton, Carte, Texte, Vide } from "../lib/composants";
 import { useSelection } from "../lib/selection";
 import { useProfil } from "../lib/profil";
 import { BadgeZoom, useNiveauZoom } from "../ui/badge-zoom";
-import { feuille, CIBLE, PAS, POLICE, RAYON, TYPO } from "../lib/theme";
-import { ECHELONS_PAR_MODE, JAUGE_BUDGET, NEUTRES_PAR_MODE, OMBRE_PAR_MODE } from "../lib/palette";
+import { feuille, CIBLE, JAUGE, PAS, POLICE, RAYON, TYPO } from "../lib/theme";
+import { ECHELONS_PAR_MODE, NEUTRES_PAR_MODE, OMBRE_PAR_MODE } from "../lib/palette";
 import { groupeDe, useGroupes } from "../lib/groupes";
 import { VOTE } from "../ui/partage/donnees";
 import { SquelettesListe } from "../ui/squelette";
@@ -382,9 +382,9 @@ export default function Accueil() {
                         écrit chaque part (la couleur ne porte jamais seule le sens). */}
                     {repartition ? (
                       <View style={{ gap: PAS * 2 }}>
-                        <Barre parts={[{ cle: "s", valeur: repartition.sal, couleur: JAUGE_BUDGET.salaires }, { cle: "i", valeur: repartition.inv, couleur: JAUGE_BUDGET.investissement }, { cle: "a", valeur: repartition.aut, couleur: JAUGE_BUDGET.autres }]} />
+                        <Barre parts={[{ cle: "s", valeur: repartition.sal, couleur: JAUGE.salaires }, { cle: "i", valeur: repartition.inv, couleur: JAUGE.investissement }, { cle: "a", valeur: repartition.aut, couleur: JAUGE.autres }]} />
                         <View style={{ flexDirection: "row", flexWrap: "wrap", columnGap: PAS * 4, rowGap: PAS }}>
-                          {[[JAUGE_BUDGET.salaires, `${repartition.sal} % salaires`], [JAUGE_BUDGET.investissement, `${repartition.inv} % invest.`], [JAUGE_BUDGET.autres, `${repartition.aut} % autres`]].map(([c, l]) => (
+                          {[[JAUGE.salaires, `${repartition.sal} % salaires`], [JAUGE.investissement, `${repartition.inv} % invest.`], [JAUGE.autres, `${repartition.aut} % autres`]].map(([c, l]) => (
                             <View key={l} style={{ flexDirection: "row", alignItems: "center", gap: PAS }}>
                               <View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: c, borderWidth: 1, borderColor: D.trait }} />
                               <Text style={s.legende}>{l}</Text>

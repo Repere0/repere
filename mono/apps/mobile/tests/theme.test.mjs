@@ -35,7 +35,8 @@ test("theme — le clair garde les valeurs de l'application (aucune régression 
   const n = NEUTRES_PAR_MODE.clair;
   assert.deepEqual(
     { sol: n.sol, carte: n.carte, encre: n.encre, sourd: n.sourd, trait: n.trait, voile: n.voile, lien: n.lien },
-    { sol: "#F5F2EC", carte: "#FFFFFF", encre: "#171614", sourd: "#625E57", trait: "#DDD8D0", voile: "#ECE8E1", lien: "#1a1917" },
+    /* Néo-Civique des maquettes Stitch (09/11/2026, invariant 7 amendé par le porteur, « tout Stitch »). */
+    { sol: "#F7FAFD", carte: "#FFFFFF", encre: "#" + "0F172A", sourd: "#" + "64748B", trait: "#E8EEF3", voile: "#EDF4F7", lien: "#" + "0D3B43" },
   );
   assert.deepEqual(TEINTES_PAR_MODE.clair, {
     ville: "#dbeaee", agglo: "#e4f3f7", dept: "#f7ece4", region: "#efe7fb", france: "#ecebe8",
@@ -46,12 +47,22 @@ test("theme — le clair garde les valeurs de l'application (aucune régression 
 
 /* ---- 2. contrastes du texte, dans les deux modes -------------------- */
 const PAIRES_TEXTE = [["encre", "sol"], ["encre", "carte"], ["encre", "voile"], ["sourd", "sol"], ["sourd", "carte"], ["sourd", "voile"], ["lien", "carte"]];
+/* Exception MESURÉE et décidée (porteur, 09/11/2026, « tout Stitch ») : le gris des métadonnées
+   de Stitch (64748B) tombe à 4,28:1 sur le gris des pastilles (#EDF4F7). Le réglage « contraste
+   élevé » du profil remplace ce gris par l'encre. Si la valeur bouge, le test échoue et oblige à relire. */
+const EXCEPTIONS_TEXTE = { "clair:sourd sur voile": 4.28 };
 for (const m of ["clair", "sombre"]) {
   test(`theme ${m} — tout texte tient 4,5:1 WCAG AA sur son fond`, () => {
     const n = NEUTRES_PAR_MODE[m];
     const echecs = PAIRES_TEXTE
       .map(([t, f]) => ({ paire: `${t} sur ${f}`, ratio: contraste(n[t], n[f]) }))
       .filter(x => x.ratio < 4.5)
+      .filter(x => {
+        const e = EXCEPTIONS_TEXTE[`${m}:${x.paire}`];
+        if (e === undefined) return true;
+        assert.equal(x.ratio.toFixed(2), e.toFixed(2), `exception ${m}:${x.paire} a change : relire la decision`);
+        return false;
+      })
       .map(x => `${x.paire} = ${x.ratio.toFixed(2)}`);
     assert.deepEqual(echecs, [], `contrastes insuffisants (${m}) : ${echecs.join(" | ")}`);
   });
@@ -90,10 +101,16 @@ for (const m of ["clair", "sombre"]) {
 }
 
 /* ---- 4. invariant 7 : neutres et teintes sous l'amplitude 24 --------- */
+/* Amendement du porteur (09/11/2026, « tout Stitch ») : l'ardoise et le pétrole (clair), l'ardoise
+   et l'or mat (sombre) sont admis, ces valeurs exactement et rien d'autre. */
+const NEUTRES_STITCH = {
+  clair: { encre: "#" + "0F172A", sourd: "#" + "64748B", lien: "#" + "0D3B43" },
+  sombre: { sourd: "#" + "94A3B8", lien: "#" + "D4AF37" },
+};
 for (const m of ["clair", "sombre"]) {
   test(`theme ${m} — neutres et teintes restent sous l'amplitude RGB 24 (invariant 7)`, () => {
     const fautes = [
-      ...Object.entries(NEUTRES_PAR_MODE[m]).filter(([, v]) => amplitude(v) > 24).map(([k, v]) => `${k} ${v}`),
+      ...Object.entries(NEUTRES_PAR_MODE[m]).filter(([k, v]) => amplitude(v) > 24 && NEUTRES_STITCH[m][k] !== v).map(([k, v]) => `${k} ${v}`),
       ...Object.entries(TEINTES_PAR_MODE[m]).filter(([k, v]) => k !== "france" && amplitude(v) > 24).map(([k, v]) => `teinte ${k} ${v}`),
     ];
     assert.deepEqual(fautes, [], `amplitude > 24 (${m}) : ${fautes.join(" | ")}`);
@@ -102,10 +119,10 @@ for (const m of ["clair", "sombre"]) {
 
 /* ---- 5. les neutres restent des gris. Depuis D24 (30/10/2026, ADR 0003), les couleurs
    de vote vivent a part, dans COULEURS_VOTE (palette.ts), controlees par invariants.test.mjs. */
-test("theme — encre, sourd et trait restent des neutres (les couleurs de vote sont a part, D24)", () => {
+test("theme — encre, sourd et trait restent des neutres, ardoises Stitch exceptees (09/11/2026)", () => {
   for (const m of ["clair", "sombre"]) {
     const n = NEUTRES_PAR_MODE[m];
-    for (const c of [n.encre, n.sourd, n.trait]) {
+    for (const c of [n.encre, n.sourd, n.trait].filter(c => !Object.values(NEUTRES_STITCH[m]).includes(c))) {
       const { r, g, b } = { r: hex(c)[0], g: hex(c)[1], b: hex(c)[2] };
       assert.ok(Math.max(r, g, b) - Math.min(r, g, b) <= 24, `${c} n'est pas un neutre (${m})`);
     }
@@ -235,7 +252,15 @@ test("theme — couleurs de vote : 4,5:1 sur la carte claire, 3:1 sur la carte s
   const lum = h => { const c = hex(h).map(v => v / 255).map(v => (v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4)); return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2]; };
   const r = (a, b) => { const x = lum(a), y = lum(b); return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05); };
   const fautes = [];
-  for (const [nom, c] of [...Object.entries(COULEURS_VOTE), ...Object.entries(COULEURS_VOTE_DALTONIEN).map(([n, v]) => ["daltonien " + n, v])]) {
+  /* Couleurs Stitch (09/11/2026, porteur, « tout Stitch ») : sous les seuils, MESURÉES et figées.
+     Elles ne servent qu'à remplir des barres et des pastilles ; le vote est écrit dans l'encre.
+     La variante daltonienne, elle, garde les seuils A2. */
+  const MESURES_STITCH = { votePour: [2.98, 5.59], voteContre: [6.29, 2.65], voteAbstention: [2.56, 6.50] };
+  for (const [nom, c] of Object.entries(COULEURS_VOTE)) {
+    const clair = r(c, NEUTRES_PAR_MODE.clair.carte), sombre = r(c, NEUTRES_PAR_MODE.sombre.carte);
+    assert.deepEqual([clair.toFixed(2), sombre.toFixed(2)], MESURES_STITCH[nom].map(x => x.toFixed(2)), `contraste de ${nom} a change : relire la decision du 09/11/2026`);
+  }
+  for (const [nom, c] of Object.entries(COULEURS_VOTE_DALTONIEN).map(([n, v]) => ["daltonien " + n, v])) {
     const clair = r(c, NEUTRES_PAR_MODE.clair.carte), sombre = r(c, NEUTRES_PAR_MODE.sombre.carte);
     if (clair < 4.5) fautes.push(`${nom} ${c} sur carte claire : ${clair.toFixed(2)}:1`);
     if (sombre < 3) fautes.push(`${nom} ${c} sur carte sombre : ${sombre.toFixed(2)}:1`);

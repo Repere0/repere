@@ -53,11 +53,11 @@ test("D45 : le profil par défaut est exactement celui du « Passer »", () => {
 
 /* V35, bloc 1 (D67) : le mode d'affichage est gardé dans le même profil, sans nouvelle clé. */
 import { MODES } from "../packages/core/src/profil.js";
-test("D67 : le mode vaut auto, clair ou sombre ; une autre valeur revient au défaut, sombre (DA du 07/11/2026)", () => {
+test("D67 : le mode vaut auto, clair ou sombre ; une autre valeur revient au défaut, clair (Stitch, 09/11/2026)", () => {
   assert.deepEqual(MODES, ["auto", "clair", "sombre"]);
   for (const m of MODES) assert.equal(valideProfil({ mode: m }).mode, m);
-  assert.equal(valideProfil({ mode: "noir" }).mode, "sombre");
-  assert.equal(valideProfil({}).mode, "sombre");
+  assert.equal(valideProfil({ mode: "noir" }).mode, "clair");
+  assert.equal(valideProfil({}).mode, "clair");
   assert.equal(valideProfil({ mode: "sombre", tailleTexte: 22 }).tailleTexte, 22, "un champ voisin reste gardé");
 });
 
