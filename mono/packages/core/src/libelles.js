@@ -22,6 +22,8 @@ export const LIBELLES = Object.freeze({
   decide: "Ce qui a été décidé",
   qui: "Qui décide",
   argent: "Où va l'argent",
+  /* Maquettes Stitch (09/11/2026) : l'onglet du budget, sur le téléphone. L'écran garde son titre. */
+  finances: "Finances",
   calendrier: "Le calendrier",
   sources: "Sources",
 });

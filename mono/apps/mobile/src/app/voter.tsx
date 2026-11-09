@@ -7,7 +7,7 @@
 import { useState } from "react";
 import { Pressable, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { Stack } from "expo-router";
+import { router, Stack } from "expo-router";
 import { dateFr } from "@repere/core";
 import { Carte, LienSortant } from "../lib/composants";
 import { StatCard } from "../ui/donnees";
@@ -90,6 +90,14 @@ export default function Voter() {
                 </View>
               ) : <Text style={TYPO.corps}>{dateFr(prochaine.date as string)}{dans === 0 ? " : c'est aujourd'hui." : "."}</Text>}
               <Details titre="En savoir plus"><Text style={TYPO.note}>{prochaine.description}</Text></Details>
+              {prochaine.type === "presidentielle" ? (
+                /* Maquette Stitch (09/11/2026) : les règles du scrutin en quatre fiches. */
+                <Pressable onPress={() => router.push("/reglement-2027")} accessibilityRole="button"
+                  accessibilityLabel="Les règles de la présidentielle 2027, en quatre fiches"
+                  style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", opacity: pressed ? 0.7 : 1 })}>
+                  <Text style={[TYPO.corps, { color: couleurs.lien, fontWeight: "700" }]}>Les règles du scrutin, en quatre fiches ›</Text>
+                </Pressable>
+              ) : null}
             </>
           ) : <Text style={TYPO.note}>Aucune élection datée n'est à venir dans l'application.</Text>}
         </Carte>

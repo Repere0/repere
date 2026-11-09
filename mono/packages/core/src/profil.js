@@ -23,8 +23,9 @@ export const PROFIL_DEFAUT = {
   animationsReduites: false,
   modeDaltonien: false,
   masquerImages: false,
-  /* Sombre par défaut (DA premium, décision du porteur du 07/11/2026, remplace « auto » de D67). */
-  mode: "sombre",
+  /* Clair par défaut (« Néo-Civique » des maquettes Stitch, décision du porteur du 09/11/2026 ; remplace
+     le sombre par défaut du 07/11/2026). Système, Clair, Sombre restent au choix. */
+  mode: "clair",
   themes: [],
 };
 

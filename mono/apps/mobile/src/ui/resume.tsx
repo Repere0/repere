@@ -10,7 +10,8 @@
 import { espacesFines } from "./donnees";
 import type { ReactNode } from "react";
 import { Text, View } from "react-native";
-import { couleurs, PAS, TYPO } from "../lib/theme";
+import { PAS, TYPO } from "../lib/theme";
+import { EnClair } from "./stitch";
 
 /* Une etiquette de categorie : libelle en capitales de style. */
 export function Etiquette({ texte, couleur }: { texte: string; couleur?: string }) {
@@ -34,12 +35,8 @@ export function Resume({ phrase, chiffre, legende, enClair, children }: {
         </View>
       ) : null}
       {children}
-      {enClair ? (
-        <View style={{ flexDirection: "row", gap: PAS * 2, paddingTop: PAS }}>
-          <Text style={[TYPO.corps, { fontWeight: "600", color: couleurs.lien }]}>En clair</Text>
-          <Text style={[TYPO.corps, { flex: 1 }]}>{enClair}</Text>
-        </View>
-      ) : null}
+      {/* 09/11/2026 : le cartouche « En clair » des maquettes Stitch (ui/stitch.tsx). */}
+      <EnClair texte={enClair} />
     </View>
   );
 }

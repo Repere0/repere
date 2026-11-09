@@ -5,6 +5,7 @@ import type { ComponentRef, RefObject } from "react";
 import { Text, View } from "react-native";
 import { POLICE } from "../../../lib/theme";
 import { COULEURS_VOTE, NEUTRES_PAR_MODE, type Mode } from "../../../lib/palette";
+import { texteSur } from "../../../lib/groupes";
 import { CarteStory } from "../carte-story";
 
 type Position = "p" | "c" | "a";
@@ -22,7 +23,7 @@ export function VoteStory({ refCarte, mode = "sombre", position, nom, date, sour
     <CarteStory refCarte={refCarte} mode={mode} source={source} pied="Dernier vote publié"
       corps={<>
         <View style={{ width: 88, height: 88, borderRadius: 44, backgroundColor: COULEUR[position], alignItems: "center", justifyContent: "center" }}>
-          <Text style={{ color: P.blanc, fontSize: 48, lineHeight: 56, fontWeight: "800" }}>{SYMBOLE[position]}</Text>
+          <Text style={{ color: texteSur(COULEUR[position]), fontSize: 48, lineHeight: 56, fontWeight: "800" }}>{SYMBOLE[position]}</Text>
         </View>
         <Text style={{ fontFamily: POLICE.affiche, fontSize: TAILLE[position], lineHeight: TAILLE[position] * 1.02, color: P.encre }}>{LIBELLE[position]}</Text>
         <Text style={{ color: P.sourd, fontSize: 18, lineHeight: 25 }}>{nom} a voté à l'Assemblée nationale, le {date}.</Text>

@@ -54,6 +54,11 @@ function atteignables() {
   const parNom = new Map(FICHIERS.map(f => [nomDe(f), f]));
   const vus = new Set(["index"]);
   const file = ["index"];
+  /* La barre basse (09/11/2026, quatre onglets Stitch) : un onglet visible est un geste d'accès.
+     Un onglet masqué (href: null) ne compte pas. */
+  for (const m of lire(path.join(APP, "(onglets)", "_layout.tsx")).matchAll(/<Tabs\.Screen\s+name="([\w-]+)"([^>]*)>/g)) {
+    if (!/href:\s*null/.test(m[2]) && !vus.has(m[1])) { vus.add(m[1]); file.push(m[1]); }
+  }
   /* Le bouton Réglages est dans l'en-tête des onglets (onglets/_layout.tsx) : ce qu'il ouvre est atteignable. */
   for (const c of ouvreTexte(lire(path.join(RACINE, "src", "ui", "reglages.tsx")))) {
     if (!vus.has(c)) { vus.add(c); file.push(c); }

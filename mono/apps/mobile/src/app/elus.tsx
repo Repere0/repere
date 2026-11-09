@@ -11,19 +11,19 @@
  * les circonscriptions ne portent pas le nom des villes dans les donnees publiees. */
 import { useEffect, useMemo, useState } from "react";
 import { FlatList, Pressable, Text, TextInput, View } from "react-native";
-import { Entree } from "../../ui/entree";
+import { Entree } from "../ui/entree";
 import { router, Stack } from "expo-router";
 import { correspondFlou, motsCible, motsRecherche } from "@repere/core";
-import { ETATS, PHRASES } from "../../lib/donnees";
-import { chargerFiches } from "../../lib/annuaire";
-import { Vide } from "../../lib/composants";
-import { couleurs, CIBLE, PAS, RAYON, TYPO } from "../../lib/theme";
-import { Avatar } from "../../ui/avatar";
-import { CarteListe, Puces, StatCard } from "../../ui/donnees";
-import { Loupe } from "../../ui/loupe";
-import { DatePublication } from "../../ui/fraicheur";
-import { SquelettesListe } from "../../ui/squelette";
-import type { Fiche } from "../../types/annuaire";
+import { ETATS, PHRASES } from "../lib/donnees";
+import { chargerFiches } from "../lib/annuaire";
+import { Vide } from "../lib/composants";
+import { couleurs, CIBLE, PAS, RAYON, TYPO } from "../lib/theme";
+import { Avatar } from "../ui/avatar";
+import { CarteListe, Puces, StatCard } from "../ui/donnees";
+import { Loupe } from "../ui/loupe";
+import { DatePublication } from "../ui/fraicheur";
+import { SquelettesListe } from "../ui/squelette";
+import type { Fiche } from "../types/annuaire";
 
 export default function Elus() {
   const [etat, setEtat] = useState<string>(ETATS.EN_COURS);

@@ -23,8 +23,8 @@ import { Bouton, Carte, Texte, Vide } from "../lib/composants";
 import { useSelection } from "../lib/selection";
 import { useProfil } from "../lib/profil";
 import { BadgeZoom, useNiveauZoom } from "../ui/badge-zoom";
-import { feuille, CIBLE, PAS, POLICE, RAYON, TYPO } from "../lib/theme";
-import { ECHELONS_PAR_MODE, JAUGE_BUDGET, NEUTRES_PAR_MODE, OMBRE_PAR_MODE } from "../lib/palette";
+import { feuille, ACCENTS, CIBLE, couleurs, JAUGE, OMBRE, PAS, POLICE, RAYON, TYPO } from "../lib/theme";
+import { useTheme } from "../lib/themeChoix";
 import { groupeDe, useGroupes } from "../lib/groupes";
 import { VOTE } from "../ui/partage/donnees";
 import { SquelettesListe } from "../ui/squelette";
@@ -43,9 +43,10 @@ import { SignalerErreur } from "../ui/contact";
 import { ModaleExhaustif } from "../ui/modale-exhaustif";
 import { METHODE_COMPTES, USAGE_PAR_HABITANT, srcVote } from "../lib/sources";
 
-/* L'accueil est sombre : il lit la palette sombre, quel que soit le choix d'affichage. */
-const D = NEUTRES_PAR_MODE.sombre;
-const E = ECHELONS_PAR_MODE.sombre;
+/* 09/11/2026 (maquettes Stitch) : l'accueil suit le thème choisi (Néo-Civique clair par défaut,
+   Dark Luxury en sombre). Il était sombre en toutes circonstances depuis le 30/10/2026. */
+const D = couleurs;
+const E = couleurs;
 
 type Ligne = [string, string, string[]];
 type Beta = { communes: Record<string, string>; manquantes?: Record<string, string>; source?: { producteur?: string } };
@@ -178,13 +179,14 @@ function CarteVote({ etiquette, nom, acteur, ligne, position, dec, date, titre, 
 /* router.push écrit en toutes lettres : le contrôle de parcours (tests/parcours.test.mjs) le lit. */
 /* Couleur de chaque tuile : celle d'un échelon (une section), jamais d'un parti (invariant 7). */
 const ACCES: { ouvrir: () => void; texte: string; etiquette: string; icone: keyof typeof Ionicons.glyphMap; couleur: string }[] = [
-  { ouvrir: () => router.push("/mes-elus"), texte: "Mes élus", etiquette: "Mes élus : qui vous représente", icone: "people", couleur: ECHELONS_PAR_MODE.sombre.ville },
-  { ouvrir: () => router.push("/voter"), texte: "Ma voix", etiquette: "Ma voix : prochaines élections, guide du vote et du conseil municipal", icone: "checkbox", couleur: ECHELONS_PAR_MODE.sombre.dept },
-  { ouvrir: () => router.push("/pour-vous"), texte: "Pour vous", etiquette: "Pour vous : ce qui a été publié selon votre vue", icone: "bookmark", couleur: ECHELONS_PAR_MODE.sombre.region },
-  { ouvrir: () => router.push("/scrutins"), texte: "L'Assemblée", etiquette: "L'Assemblée : sa composition et ses votes publics", icone: "business", couleur: ECHELONS_PAR_MODE.sombre.france },
+  { ouvrir: () => router.push("/mes-elus"), texte: "Mes élus", etiquette: "Mes élus : qui vous représente", icone: "people", couleur: couleurs.ville },
+  { ouvrir: () => router.push("/voter"), texte: "Ma voix", etiquette: "Ma voix : prochaines élections, guide du vote et du conseil municipal", icone: "checkbox", couleur: couleurs.dept },
+  { ouvrir: () => router.push("/pour-vous"), texte: "Pour vous", etiquette: "Pour vous : ce qui a été publié selon votre vue", icone: "bookmark", couleur: couleurs.region },
+  { ouvrir: () => router.push("/scrutins"), texte: "L'Assemblée", etiquette: "L'Assemblée : sa composition et ses votes publics", icone: "business", couleur: couleurs.france },
 ];
 
 export default function Accueil() {
+  useTheme(); /* l'accueil suit le thème : il se redessine quand le lecteur en change */
   const marges = useSafeAreaInsets();
   const { width } = useWindowDimensions();
   const { choix, choisir, retenue, oublier } = useSelection();
@@ -382,9 +384,9 @@ export default function Accueil() {
                         écrit chaque part (la couleur ne porte jamais seule le sens). */}
                     {repartition ? (
                       <View style={{ gap: PAS * 2 }}>
-                        <Barre parts={[{ cle: "s", valeur: repartition.sal, couleur: JAUGE_BUDGET.salaires }, { cle: "i", valeur: repartition.inv, couleur: JAUGE_BUDGET.investissement }, { cle: "a", valeur: repartition.aut, couleur: JAUGE_BUDGET.autres }]} />
+                        <Barre parts={[{ cle: "s", valeur: repartition.sal, couleur: JAUGE.salaires }, { cle: "i", valeur: repartition.inv, couleur: JAUGE.investissement }, { cle: "a", valeur: repartition.aut, couleur: JAUGE.autres }]} />
                         <View style={{ flexDirection: "row", flexWrap: "wrap", columnGap: PAS * 4, rowGap: PAS }}>
-                          {[[JAUGE_BUDGET.salaires, `${repartition.sal} % salaires`], [JAUGE_BUDGET.investissement, `${repartition.inv} % invest.`], [JAUGE_BUDGET.autres, `${repartition.aut} % autres`]].map(([c, l]) => (
+                          {[[JAUGE.salaires, `${repartition.sal} % salaires`], [JAUGE.investissement, `${repartition.inv} % invest.`], [JAUGE.autres, `${repartition.aut} % autres`]].map(([c, l]) => (
                             <View key={l} style={{ flexDirection: "row", alignItems: "center", gap: PAS }}>
                               <View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: c, borderWidth: 1, borderColor: D.trait }} />
                               <Text style={s.legende}>{l}</Text>
@@ -473,7 +475,7 @@ export default function Accueil() {
             <View style={s.barreHaut}>
               <View style={{ flexDirection: "row", alignItems: "center", gap: PAS * 2 }}>
                 {/* Le logo vit dans la marque, une seule fois (brief V47) ; il ne flotte plus au milieu du hero. */}
-                <Logo size={26} variant="sombre" />
+                <Logo size={26} />
                 <Text style={s.marque} accessibilityLabel="Repère">Repère<Text style={{ color: E.ville }}>.</Text></Text>
               </View>
               <View style={{ flexDirection: "row", alignItems: "center" }}>
@@ -492,13 +494,15 @@ export default function Accueil() {
             {/* Invariant 9 : la date des données reste visible, en tête, sans prendre la place du contenu. */}
             <View style={{ flexDirection: "row", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", columnGap: PAS * 3 }}>
               <DatePublication />
-              <BadgeZoom sombre />
+              <BadgeZoom />
             </View>
             {/* LE PITCH : une citation, en grand. Demande du CEO (30/10/2026) : elle remplace le paragraphe.
                 07/11/2026 (porteur) : titre court, les deux questions du produit, mot pour mot. */}
             {/* 07/11/2026 (porteur, refonte globale) : plus de slogan ; la recherche devient le héros.
                 Le titre reste pour le lecteur d'écran (un écran sans titre est une impasse). */}
             <Text style={s.titreCache} accessibilityRole="header">Repère, accueil</Text>
+            {/* Maquette Stitch « Recherche » (09/11/2026) : l'accroche, au-dessus de la recherche. */}
+            <Text style={s.accroche}>Ce qui se passe chez vous, expliqué simplement.</Text>
             {!champOuvert ? (
               <Pressable onPress={() => setCherche(true)} accessibilityRole="button" accessibilityLabel="Chercher une commune"
                 style={({ pressed }) => [s.chercher, pressed && { opacity: 0.7 }]}>
@@ -517,6 +521,18 @@ export default function Accueil() {
                 </Pressable>
               ))}
             </View>
+
+            {/* Maquette Stitch : la bannière des moins de 18 ans mène au guide « Ma voix ». */}
+            <Pressable onPress={() => router.push("/voter")} accessibilityRole="link"
+              accessibilityLabel="Vous avez moins de 18 ans ? Comment on vote, et quand : ouvre Ma voix"
+              style={({ pressed }) => [s.jeunes, pressed && { opacity: 0.7 }]}>
+              <Ionicons name="sparkles-outline" size={20} color={ACCENTS.autorite} accessible={false} importantForAccessibility="no" />
+              <View style={{ flex: 1 }}>
+                <Text style={s.tuileTexte}>Vous avez moins de 18 ans ?</Text>
+                <Text style={s.note}>Comment on vote, et quand.</Text>
+              </View>
+              <Ionicons name="chevron-forward" size={18} color={D.sourd} accessible={false} importantForAccessibility="no" />
+            </Pressable>
 
             {/* V37 bloc 6 : le rappel de la prochaine élection, s'il tombe dans les 180 jours. */}
             {premiere ? null : <View style={{ marginTop: PAS * 4 }}><RappelElection /></View>}
@@ -581,6 +597,16 @@ export default function Accueil() {
             {etat === ETATS.SERVI && !cherches.length && !tout ? (
               <>
                 <Text style={s.note}>La bêta couvre les {communes.length} communes d'Île-de-France qui ont une fiche.</Text>
+                {/* Maquette Stitch : les réassurances en pied. « Compris en 4 secondes » n'est pas
+                    repris : ce n'est pas mesuré. « Données certifiées » devient « publiques et sourcées ». */}
+                <View style={s.reassurances}>
+                  {([["person-remove-outline", "Aucun compte"], ["document-text-outline", "Données publiques, chacune avec sa source"]] as [keyof typeof Ionicons.glyphMap, string][]).map(([i, t]) => (
+                    <View key={t} style={s.reassurance}>
+                      <Ionicons name={i} size={18} color={ACCENTS.autorite} accessible={false} importantForAccessibility="no" />
+                      <Text style={[s.note, { color: D.encre, flex: 1 }]}>{t}</Text>
+                    </View>
+                  ))}
+                </View>
                 {/* CE QUE REPERE SAIT DE VOUS : rien. Phrase vraie a la lettre :
                     les adresses se composent par departement (client.js), et la
                     commune n'est gardee que sur demande (lib/memoire.ts). */}
@@ -647,7 +673,7 @@ const s = feuille(() => StyleSheet.create({
   tuile: { width: "48%", flexGrow: 1, minHeight: 76, gap: PAS * 2, padding: PAS * 3, borderRadius: RAYON.bloc, backgroundColor: D.voile, justifyContent: "space-between" },
   tuileTexte: { fontFamily: POLICE.titre, fontSize: 15, lineHeight: 20, color: D.encre },
   marque: { fontFamily: POLICE.affiche, fontSize: 26, color: D.encre },
-  chercher: { minHeight: 72, borderRadius: RAYON.carte, backgroundColor: D.carte, borderWidth: 1, borderColor: D.trait, paddingHorizontal: PAS * 5, flexDirection: "row", alignItems: "center", gap: PAS * 3, marginTop: PAS * 4, ...OMBRE_PAR_MODE.sombre },
+  chercher: { minHeight: 64, borderRadius: 16, backgroundColor: D.carte, borderWidth: 1, borderColor: D.trait, paddingHorizontal: PAS * 5, flexDirection: "row", alignItems: "center", gap: PAS * 3, marginTop: PAS * 4, ...OMBRE },
   titreCache: { position: "absolute", width: 1, height: 1, overflow: "hidden", opacity: 0 },
   tuileIcone: { width: 36, height: 36, borderRadius: 12, alignItems: "center", justifyContent: "center" },
   chercherTexte: { fontFamily: POLICE.titre, fontSize: 20, color: D.encre },
@@ -669,7 +695,7 @@ const s = feuille(() => StyleSheet.create({
   question: { fontFamily: POLICE.titre, fontSize: 24, lineHeight: 30, color: D.encre, marginTop: PAS * 6 },
   champLigne: {
     flexDirection: "row", alignItems: "center", minHeight: CIBLE + 8, borderRadius: 999, borderWidth: 1.5, borderColor: D.trait,
-    backgroundColor: D.carte, paddingLeft: PAS * 4, ...OMBRE_PAR_MODE.sombre, shadowOpacity: 0.3,
+    backgroundColor: D.carte, paddingLeft: PAS * 4, ...OMBRE,
   },
   loupe: { width: 18, height: 18, marginRight: PAS * 2 },
   loupeRond: { position: "absolute", top: 0, left: 0, width: 13, height: 13, borderRadius: 7, borderWidth: 2, borderColor: D.sourd },
@@ -682,10 +708,14 @@ const s = feuille(() => StyleSheet.create({
     ...(Platform.OS === "web" ? { outlineColor: E.ville, outlineWidth: 2, outlineStyle: "solid" } : {}),
   },
   note: { fontSize: 15, color: D.sourd },
+  accroche: { fontFamily: POLICE.affiche, fontSize: 30, lineHeight: 36, letterSpacing: -0.5, color: D.encre, marginTop: PAS * 4 },
+  jeunes: { minHeight: CIBLE + 16, flexDirection: "row", alignItems: "center", gap: PAS * 3, padding: PAS * 4, borderRadius: RAYON.carte, backgroundColor: ACCENTS.fondCivique, borderWidth: 1, borderColor: D.trait },
+  reassurances: { gap: PAS * 2 },
+  reassurance: { flexDirection: "row", alignItems: "center", gap: PAS * 2 },
   resultat: {
     minHeight: CIBLE + 8, flexDirection: "row", alignItems: "center", gap: PAS * 3,
     paddingHorizontal: PAS * 4, borderRadius: RAYON.bloc, backgroundColor: D.carte,
-    ...OMBRE_PAR_MODE.sombre, shadowOpacity: 0.25, shadowRadius: 8, shadowOffset: { width: 0, height: 2 },
+    ...OMBRE,
   },
   pastille: { width: 10, height: 10, borderRadius: 5, backgroundColor: E.ville },
   resultatNom: { flex: 1, fontSize: 17, color: D.encre, fontWeight: "500" },

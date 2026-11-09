@@ -30,6 +30,7 @@ import { Frise, Repartition } from "../ui/visuels";
 import { SignalerErreur } from "../ui/contact";
 import { Timeline } from "../ui/timeline";
 import { DataBadge, StatCard } from "../ui/donnees";
+import { VoteBarTricolor } from "../ui/stitch";
 import { Avatar } from "../ui/avatar";
 import { libelleGroupe } from "../ui/badge-groupe";
 import { groupeDe, useGroupes } from "../lib/groupes";
@@ -123,7 +124,10 @@ export default function Vote() {
                 <View style={{ flexDirection: "row", gap: PAS * 3 }}>
                   {rep.segments.map(x => <StatCard key={x.cle} valeur={x.nombre.toLocaleString("fr-FR")} libelle={x.libelle} couleur={COULEUR[x.cle as keyof typeof COULEUR]} />)}
                 </View>
-                <Repartition compact segments={rep.segments} total={rep.total} position={vote.position} qui={vote.qui} />
+                {/* Maquette Stitch (09/11/2026) : la jauge tricolore, nombres et pourcentages écrits,
+                    et la position du député dans une pastille. */}
+                <VoteBarTricolor pour={vote.sc.dec?.pour} contre={vote.sc.dec?.contre} abstention={vote.sc.dec?.abstentions}
+                  position={mot ? vote.position : null} qui={vote.qui} />
                 <Text style={TYPO.micro}>{phraseDenominateurVote(rep.total)}</Text>
               </View>
             ) : <Text style={TYPO.note}>{ligneScrutin(vote.sc)}</Text>}

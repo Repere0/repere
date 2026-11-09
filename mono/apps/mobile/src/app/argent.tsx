@@ -10,7 +10,8 @@
  * (et non « exercice 2025 »). Les phrases partagees avec le site (rapports,
  * sous-titre, calcul) restent intactes au niveau 3, pour que les deux supports
  * disent la meme chose. */
-import { Text, View } from "react-native";
+import { useState } from "react";
+import { Linking, Pressable, Text, View } from "react-native";
 import { Stack } from "expo-router";
 import {
   chiffresComptes, etatDette, comptesAbsents, comptesIncoherents, comptesInsuffisants, diffEuros, eurosArrondis,
@@ -22,7 +23,8 @@ import { Carte, Definitions, Vide } from "../lib/composants";
 import { PROJETS_PAS_ARRIVES, projetsAucun } from "../lib/absences";
 import { srcComptes, srcComptesPublies, srcProjets } from "../lib/sources";
 import { useCommuneChoisie } from "../lib/useCommune";
-import { couleurs, PAS, TYPO } from "../lib/theme";
+import { ACCENTS, CIBLE, couleurs, PAS, POLICE, TYPO } from "../lib/theme";
+import { JaugeCofinancement, MicroJauge, Onglets, StatBubbleTile } from "../ui/stitch";
 import { AvecDonnees, Page, Question } from "../ui/page";
 import { DateDonnee } from "../ui/fraicheur";
 import { phrasesMoyenne, useMoyenneDepenses } from "../lib/moyenne";
@@ -61,8 +63,25 @@ function Comparaison({ nom, valeur, index, dep, an }: { nom: string; valeur: num
   );
 }
 
+/* Les trois vues du budget (maquette Stitch « Finances », 09/11/2026). Le contrôle segmenté
+   choisit la vue ; le niveau 3 (« Détails du calcul ») garde TOUS les rapports, quelle que soit la
+   vue : rien n'est retiré, et le site dit la même chose (meme-verite.mjs). */
+type Vue = "cent" | "evolution" | "recettes";
+const VUES: { cle: Vue; texte: string }[] = [
+  { cle: "cent", texte: "Répartition 100 €" },
+  { cle: "evolution", texte: "Évolution" },
+  { cle: "recettes", texte: "Recettes" },
+];
+/* Une variation en pourcentage, arrondie au dixième : un calcul de Repère, annoncé comme tel. */
+const variation = (m1: number, m2: number) => {
+  if (!(m1 > 0)) return null;
+  const v = Math.round((m2 - m1) / m1 * 1000) / 10;
+  return `${v > 0 ? "+" : v < 0 ? "−" : ""}${Math.abs(v).toLocaleString("fr-FR", { maximumFractionDigits: 1 })} %`;
+};
+
 export default function Argent() {
   const { reessayer } = useCommuneChoisie();
+  const [vue, setVue] = useState<Vue>("cent");
   return (
     <AvecDonnees rendu={r => {
       const { d } = r;
@@ -103,11 +122,18 @@ export default function Argent() {
             <Vide {...comptesInsuffisants(ex.an)} />
           ) : (
             <>
-              {/* COMBIEN */}
+              {/* COMBIEN (maquette Stitch : le chiffre par habitant, et son équivalent par mois,
+                  annoncé comme un calcul). Ce n'est pas ce que paie un foyer : c'est ce que la
+                  commune dépense, divisé par le nombre d'habitants (la phrase le dit). */}
               <Carte echelon="ville" titre={`Ce que ${nom} a dépensé en ${ex.an}`}>
                 <Resume phrase={dep ? `${dep.texte} au total sur l'année.` : ""}
                   chiffre={hab && hab.depenses !== null ? `${hab.depenses.toLocaleString("fr-FR")} €` : null}
-                  legende="par habitant" />
+                  legende="par habitant et par an" />
+                {hab && hab.depenses !== null ? (
+                  <Text style={TYPO.note}>
+                    Soit <Text style={{ color: ACCENTS.texteAccent, fontFamily: POLICE.texteGras }}>{Math.round(hab.depenses / 12).toLocaleString("fr-FR")} € par mois</Text> et par habitant (calcul Repère : le montant annuel divisé par 12). C'est la dépense de la commune, pas ce que paie votre foyer.
+                  </Text>
+                ) : null}
                 {precedent && ex ? <Tendance pct={tendancePct} an1={precedent.an} an2={ex.an} /> : null}
                 {/* D23 (ADR 0002), A1 : la commune mediane de la region, un calcul annonce comme tel. */}
                 {hab && hab.depenses !== null ? <Comparaison nom={nom} valeur={hab.depenses} index={r.index} dep={d.dep} an={ex.an} /> : null}
@@ -129,8 +155,10 @@ export default function Argent() {
                 ) : null}
               </Carte>
 
+              <Onglets etiquette="Vue du budget" valeurs={VUES} actif={vue} choisir={setVue} />
+
               {/* OU VA CHAQUE 100 € */}
-              {ch.partSalaires !== null || ch.partInvestissement !== null ? (
+              {vue === "cent" && (ch.partSalaires !== null || ch.partInvestissement !== null) ? (
                 <Carte echelon="ville" titre={`Où vont 100 € dépensés, comptes ${ex.an}`}>
                   {/* 08/10/2026 (audit) : « Deux postes… » s'affichait avec une seule barre
                      (part des salaires absente) ; l'annee des comptes manquait au titre. */}
@@ -140,6 +168,9 @@ export default function Argent() {
                       ? `Sur 100 € dépensés : ${[rap(/salaires/)?.v, rap(/investir/)?.v].filter(Boolean).join(", ")}.`
                       : ""}
                     enClair="Le reste des dépenses n'est pas détaillé par la source.">
+                    {ch.partSalaires !== null && ch.partInvestissement !== null && ch.partSalaires + ch.partInvestissement <= 100 ? (
+                      <MicroJauge salaires={ch.partSalaires} investissement={ch.partInvestissement} autres={100 - ch.partSalaires - ch.partInvestissement} />
+                    ) : null}
                     <RepartitionCent salaires={ch.partSalaires} investissement={ch.partInvestissement} />
                   </Resume>
                   <PasCeQueCaDit r={rap(/salaires/)} sujet="salaires" />
@@ -148,8 +179,24 @@ export default function Argent() {
                 </Carte>
               ) : null}
 
+              {/* ZOOM SUR UN PROJET COFINANCÉ (maquette Stitch) : le plus récent des projets aidés dont le
+                  coût est publié. Sans projet de ce genre, rien : la liste complète est plus bas. */}
+              {vue === "cent" ? (() => {
+                const zoom = listeProjets.map(p => ({ p, f: financementProjet(p) })).find(x => x.f && x.f.partPct !== null && x.f.cout);
+                if (!zoom || !zoom.f) return null;
+                const total = montantCourt(zoom.f.cout as number);
+                return (
+                  <Carte echelon="ville" titre={`Zoom : un projet cofinancé, ${zoom.p.annee}`}>
+                    <Text style={TYPO.reponse}>{zoom.p.intitule}</Text>
+                    <JaugeCofinancement partEtat={zoom.f.partPct as number} montantEtat={euros(zoom.f.subvention)} montantTotal={total ? total.texte : euros(zoom.f.cout as number)} lieu={nom} />
+                    <Text style={TYPO.micro}>Aide {zoom.p.dispositif}. Le reste n'est pas détaillé par la source (commune et autres financeurs).</Text>
+                    <PastilleSource source={srcProjets(d, zoom.f.partPct !== null)} />
+                  </Carte>
+                );
+              })() : null}
+
               {/* D'OU VIENT L'ARGENT */}
-              {ch.partImpots !== null ? (
+              {vue === "recettes" && ch.partImpots !== null ? (
                 <Carte echelon="ville" titre={`D'où vient l'argent, comptes ${ex.an}`}>
                   <Resume phrase={partReperee(ch.partImpots)
                       ? `${String(partReperee(ch.partImpots)).replace(/^./, (c: string) => c.toUpperCase())} de ce que ${nom} encaisse vient des impôts et taxes.`
@@ -168,7 +215,7 @@ export default function Argent() {
                   @repere/core, comme sur le site : inconnue -> une phrase « non renseignee »
                   (jamais une carte absente) ; nulle -> « aucun emprunt » ; montant sans
                   ratio -> le montant seul ; mois -> la carte complete. */}
-              {ex && etatDette(ex.ex) === "inconnue" ? (
+              {vue === "recettes" && ex && etatDette(ex.ex) === "inconnue" ? (
                 <Carte echelon="ville" titre={`Sa dette, fin ${ex.an}`}>
                   <Resume phrase={`Non renseignée dans les comptes ${ex.an}.`} />
                   <Text style={TYPO.micro}>Le fichier ne porte pas cette ligne : ce n'est pas un montant nul.</Text>
@@ -176,7 +223,7 @@ export default function Argent() {
                 </Carte>
               ) : null}
 
-              {ex && etatDette(ex.ex) === "montant_sans_ratio" && dette ? (
+              {vue === "recettes" && ex && etatDette(ex.ex) === "montant_sans_ratio" && dette ? (
                 <Carte echelon="ville" titre={`Sa dette, fin ${ex.an}`}>
                   <Resume phrase={`${nom} doit encore rembourser ${dette}.`} />
                   <Text style={TYPO.micro}>Le ratio en mois de recettes n'est pas calculable : les recettes ne sont pas publiées pour cet exercice.</Text>
@@ -184,7 +231,7 @@ export default function Argent() {
                 </Carte>
               ) : null}
 
-              {ch.detteMois !== null && ch.dette !== 0 && dette ? (
+              {vue !== "recettes" ? null : ch.detteMois !== null && ch.dette !== 0 && dette ? (
                 <Carte echelon="ville" titre={`Sa dette, fin ${ex.an}`}>
                   <Resume phrase={`${nom} doit encore rembourser ${dette.texte}.`}
                     /* « 7,6 mois de recettes » en corps d'affiche tenait sur deux lignes :
@@ -212,7 +259,7 @@ export default function Argent() {
               ) : null}
 
               {/* LE JOUR LE JOUR, POUR QUI VEUT LE VOIR COMPTER */}
-              {ch.parJour !== null ? (
+              {vue === "cent" && ch.parJour !== null ? (
                 <Carte echelon="ville" titre={`Chaque jour, en moyenne, en ${ex.an}`}>
                   <Compteur valeur={ch.parJour} suffixe="€ par jour" />
                   <PasCeQueCaDit r={rap(/par jour/)} sujet="dépense par jour" />
@@ -226,12 +273,32 @@ export default function Argent() {
                 <Text style={TYPO.note}>{introRapports({ detailPlusBas: false })}</Text>
                 <Text style={[TYPO.note, { fontWeight: "500" }]}>{CALCUL_REPERE}</Text>
                 {phraseEc ? <Text style={TYPO.note}>{phraseEc}</Text> : null}
+                {/* Toutes les lignes, quelle que soit la vue choisie : le niveau 3 ne cache rien. */}
+                {rr.map(o => (
+                  <View key={o.l} style={{ gap: 2 }}>
+                    <Text style={[TYPO.note, { color: couleurs.encre, fontWeight: "600" }]}>{o.v}</Text>
+                    <Text style={TYPO.note}>{o.d}</Text>
+                  </View>
+                ))}
               </Depli>
             </>
           )}
 
           {/* CE QUI A CHANGE EN UN AN : jamais deux territoires, jamais un jugement */}
-          {evo ? (
+          {ex && vue === "evolution" && !evo ? (
+            <Vide titre={`Pas d'évolution calculable pour ${nom}.`} corps="Il faut deux exercices publiés qui se suivent, sur le même périmètre. Les comptes publiés ne le permettent pas ici." />
+          ) : null}
+          {ex && vue === "evolution" && evo && !evo.perimetreChange ? (
+            <View style={{ flexDirection: "row", flexWrap: "wrap", gap: PAS * 2 }}>
+              {[1, 0, 2].map(i => evo.lignes[i]).filter(l => l && l.m1 !== null && l.m2 !== null && variation(l.m1, l.m2)).map((l: { libelle: string; m1: number; m2: number }) => (
+                <StatBubbleTile key={l.libelle} libelle={l.libelle} variation={variation(l.m1, l.m2) as string} />
+              ))}
+            </View>
+          ) : null}
+          {ex && vue === "evolution" && evo && !evo.perimetreChange ? (
+            <Text style={TYPO.micro}>Variations entre {evo.an1} et {evo.an2} : calcul Repère, sur les montants publiés ci-dessous.</Text>
+          ) : null}
+          {(!ex || vue === "evolution") && evo ? (
             evo.perimetreChange ? (
               <Vide {...perimetreChange(evo, nom)} />
             ) : (
@@ -248,6 +315,15 @@ export default function Argent() {
                 <PastilleSource source={srcComptes(d)} />
               </Carte>
             )
+          ) : null}
+
+          {/* LE DOCUMENT OFFICIEL (maquette Stitch) : les comptes publiés, en lien externe. */}
+          {r.index?.sources?.comptes?.url ? (
+            <Pressable onPress={() => Linking.openURL(r.index.sources.comptes.url)} accessibilityRole="link"
+              accessibilityLabel="Les comptes publiés par l'OFGL, ouvre un site externe"
+              style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", opacity: pressed ? 0.6 : 1 })}>
+              <Text style={[TYPO.corps, { color: couleurs.lien, fontFamily: POLICE.texteGras }]}>Les comptes publiés, sur le site de l'OFGL ↗</Text>
+            </Pressable>
           ) : null}
 
           {/* LES PROJETS AIDES PAR L'ETAT */}
