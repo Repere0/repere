@@ -51,4 +51,4 @@ Pour l'équipe, quelques points de procédure :
 
 ## Licence des contributions
 
-Le code est prévu sous AGPL-3.0. Le fichier `LICENSE` n'est pas encore dans le dépôt (voir `BLOCAGES.md` §49) : en contribuant, vous acceptez que votre contribution soit publiée sous la licence retenue par le porteur, une fois celle-ci fixée.
+Le code est sous AGPL-3.0 (fichier `LICENSE` à la racine depuis le 02/11/2026) : en contribuant, vous acceptez que votre contribution soit publiée sous cette licence.

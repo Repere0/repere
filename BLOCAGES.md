@@ -455,7 +455,9 @@ Diagnostic (31/10/2026), par étapes, ce qui est vérifié et ce qui ne l'est pa
 - **Expo Go et SDK 58** : non vérifiés sur appareil (déjà signalé dans `docs/kit-testeur.md`). Le guide demande aux testeurs de signaler un refus.
 - **Décision demandée au CEO** : valider l'adresse de contact dans le guide, et le texte de la section « Ce qu'on fera avec vos retours », qui fait des promesses de process.
 
-## 49. V43 (D88) : fichier LICENSE non créé
+## 49. V43 (D88) : fichier LICENSE non créé — **levé le 02/11/2026**
+
+- **Levée** : `LICENSE` ajouté à la racine par le porteur (commit du porteur `cc6a8d4`, entré dans `main` avec #174). Relu le 09/11 : 661 lignes, commence par « GNU AFFERO GENERAL PUBLIC LICENSE, Version 3, 19 November 2007 ». Non comparé octet à octet au texte de gnu.org (injoignable depuis le conteneur). README et CONTRIBUTING mis à jour le 09/11 ; `docs/candidature-aic/brouillon.md` dit encore « absente du dépôt » (non modifié : brouillon de candidature, au porteur de le reprendre).
 
 - **Constat** : D88 demande un fichier `LICENSE` (AGPL-3.0) à la racine. Il n'est **pas créé**.
 - **Pourquoi** : le texte officiel n'est pas accessible depuis la session. gnu.org refuse la connexion (403 au tunnel du proxy) et l'outil de lecture de pages refuse la lecture (robots). Aucune copie du texte n'est sur la machine. Le texte n'a pas été reconstitué de mémoire : une licence reconstituée peut être fausse, et une fausse licence vaut pire qu'une licence absente.

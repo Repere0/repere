@@ -47,7 +47,7 @@ Les décisions d'architecture et de contenu sont dans `docs/adr/` et `docs/strat
 
 ## Licence
 
-Le code est prévu sous licence **AGPL-3.0**. Ce choix est une décision du porteur du projet, et **le fichier `LICENSE` n'est pas encore dans le dépôt** : tant qu'il n'y est pas, aucune licence n'est accordée explicitement. Voir `BLOCAGES.md` §49.
+Le code est sous licence **AGPL-3.0** (décision du porteur, D88). Le fichier `LICENSE` est à la racine depuis le 02/11/2026 (`cc6a8d4`).
 
 Les données affichées sont publiques. Chaque information indique son producteur, sa licence et sa date.
 
@@ -56,6 +56,3 @@ Les données affichées sont publiques. Chaque information indique son producteu
 Pour une erreur, une question ou un retour de test : **repere0@protonmail.com** (décision D71, voir `docs/contact-email.md`).
 
 Pour contribuer, lire [CONTRIBUTING.md](CONTRIBUTING.md).
-
-## Licence
-Ce projet est distribué sous licence AGPL-3.0. Voir le fichier `LICENSE`.
