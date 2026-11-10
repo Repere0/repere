@@ -94,7 +94,9 @@ test("collecte présidentielle — sans source déclarée, rien ne bouge ; et le
 test("collecte présidentielle — décisions du 10/11/2026 : par défaut rien n'est publié, et les candidats ne sont pas collectés", async () => {
   const d = dossierNeuf();
   const avant = octets(d);
-  const r = await collecter({ dossier: d, sources: SOURCES, fetchImpl });
+  /* une source de débats qui DEMANDE la publication : sans permission, elle reste au brouillon */
+  const debatsPublies = { ...source("debats-a-relire"), id: "debats-publier-true", publier: true };
+  const r = await collecter({ dossier: d, sources: [...SOURCES, debatsPublies], fetchImpl });
   assert.equal(octets(d), avant, "la collecte par défaut a écrit un fichier publié");
   assert.deepEqual(r.ecrits, {});
   assert.match(r.journal.map(j => j.message).join(" "), /pas de collecte automatique des candidats/);
