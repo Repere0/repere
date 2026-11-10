@@ -121,7 +121,7 @@ export default function Vote() {
                 </Text>
               </Pressable>
               {dossier ? <Text style={TYPO.note}>Objet du scrutin : {titreLisible(vote.sc.t)}</Text> : null}
-              <Text style={TYPO.donnee}>{metaScrutin(vote.sc)}</Text>
+              <Text style={TYPO.note}>{metaScrutin(vote.sc)}</Text>
             </View>
             {rep ? (
               <View style={{ gap: PAS * 3 }}>

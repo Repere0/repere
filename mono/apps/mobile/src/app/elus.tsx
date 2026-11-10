@@ -26,7 +26,7 @@ import { DatePublication } from "../ui/fraicheur";
 import { SquelettesListe } from "../ui/squelette";
 import type { Fiche } from "../types/annuaire";
 import { ScrollView } from "react-native";
-import { groupeDe, useGroupes, type TableGroupes } from "../lib/groupes";
+import { groupeDe, useGroupes, type TableGroupes, GROUPE_INCONNU } from "../lib/groupes";
 import { BadgeGroupe } from "../ui/badge-groupe";
 
 /* LES FILTRES PAR FONCTION (porteur, 09/11/2026). L'annuaire porte les députés et les exécutifs
@@ -51,7 +51,7 @@ function LigneElu({ item, groupes }: { item: Fiche; groupes: TableGroupes | null
       etiquette={`${item.nom}, ${item.fonction}, ${item.lieu}`} titre={item.nom}
       gauche={<AvatarElu nom={item.nom} taille={44} groupe={groupe} echelon={item.ref ? "france" : "region"} dep={item.dep} cle={item.ref} />}>
       <Text style={TYPO.note}>{item.fonction} · {item.lieu}</Text>
-      {groupe ? <View style={{ flexDirection: "row" }}><BadgeGroupe groupe={groupe} /></View> : null}
+      {groupe && groupe !== GROUPE_INCONNU ? <View style={{ flexDirection: "row" }}><BadgeGroupe groupe={groupe} /></View> : null}
     </CarteListe>
   );
 }

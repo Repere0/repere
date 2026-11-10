@@ -55,7 +55,7 @@ export default function ConfortLecture() {
         <View style={{ flexDirection: "row", flexWrap: "wrap", gap: PAS * 2 }}>
           {CONTRASTES.map(c => <Choix key={c} texte={ETIQUETTE_CONTRASTE[c]} etiquette={`Contraste ${ETIQUETTE_CONTRASTE[c]}`} actif={p.contraste === c} onPress={() => modifier({ contraste: c })} />)}
         </View>
-        <Text style={TYPO.note}>Le contraste « Très élevé » n'atteint pas encore le ratio de 10:1 : il ne fait pas davantage que « Élevé ». Voir BLOCAGES 25.</Text>
+        <Text style={TYPO.note}>Le contraste « Très élevé » n'atteint pas encore le ratio de 10:1 : il ne fait pas davantage que « Élevé ».</Text>
       </Carte>
       <Carte titre="Couleurs">
         <Interrupteur texte="Mode daltonien : votes en bleu et orange" actif={p.modeDaltonien} onPress={() => modifier({ modeDaltonien: !p.modeDaltonien })} />

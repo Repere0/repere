@@ -63,6 +63,8 @@ export default function Recherche() {
   const { choisir } = useSelection();
   const { absent } = useProfil();
   const [filtre, setFiltre] = useState("");
+  /* Le focus se lit sur la pastille entière (filet en encre), pas sur un rectangle dans la pastille. */
+  const [focus, setFocus] = useState(false);
   const [communes, setCommunes] = useState<Charge<Ligne>>({ etat: EN_COURS, liste: [] });
   const [elus, setElus] = useState<Charge<Elu>>({ etat: EN_COURS, liste: [] });
   const [scrutins, setScrutins] = useState<Charge<Scrutin>>({ etat: EN_COURS, liste: [] });
@@ -137,12 +139,13 @@ export default function Recherche() {
     <ScrollView style={{ flex: 1, backgroundColor: couleurs.sol }} keyboardShouldPersistTaps="handled"
       contentContainerStyle={{ padding: PAS * 4, gap: PAS * 4 }}>
       <View style={{ flexDirection: "row", alignItems: "center", gap: PAS * 2, minHeight: CIBLE + 8, borderRadius: 999, borderWidth: 1.5,
-        borderColor: couleurs.trait, backgroundColor: couleurs.carte, paddingLeft: PAS * 4 }}>
+        borderColor: focus ? couleurs.encre : couleurs.trait, backgroundColor: couleurs.carte, paddingLeft: PAS * 4 }}>
         <Loupe couleur={couleurs.sourd} />
         <TextInput value={filtre} onChangeText={setFiltre} placeholder="Commune, élu ou scrutin"
           placeholderTextColor={couleurs.sourd} autoCorrect={false} autoCapitalize="none" autoFocus returnKeyType="search"
           accessibilityLabel="Rechercher une commune, un élu ou un scrutin"
-          style={{ flex: 1, minHeight: CIBLE + 8, paddingHorizontal: PAS * 2, fontSize: 17, color: couleurs.encre }} />
+          onFocus={() => setFocus(true)} onBlur={() => setFocus(false)}
+          style={{ flex: 1, minHeight: CIBLE + 8, paddingHorizontal: PAS * 2, fontSize: 17, color: couleurs.encre, outlineStyle: "none" } as object} />
       </View>
 
       {resultats === null ? (
