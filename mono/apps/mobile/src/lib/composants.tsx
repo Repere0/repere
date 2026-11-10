@@ -9,7 +9,7 @@ import type { ReactNode } from "react";
 import { Linking, Pressable, StyleSheet, Text, View } from "react-native";
 import { ligneSource, motsDuTexte, CALCUL_REPERE } from "@repere/core";
 import { router } from "expo-router";
-import { feuille, couleurs, CIBLE, PAS, RAYON, OMBRE, TYPO, type Echelon } from "./theme";
+import { ACCENTS, feuille, couleurs, CIBLE, PAS, RAYON, OMBRE, TYPO, type Echelon } from "./theme";
 import { NIVEAU_NOM, pointEchelon } from "./niveaux";
 import { Pression } from "../ui/pression";
 
@@ -195,8 +195,8 @@ const s = feuille(() => StyleSheet.create({
   videIcone: { width: 48, height: 48, borderRadius: 24, backgroundColor: couleurs.voile, alignItems: "center", justifyContent: "center" },
   bouton: {
     minHeight: CIBLE + 4, borderRadius: RAYON.bloc, paddingHorizontal: PAS * 4, alignItems: "center", justifyContent: "center",
-    backgroundColor: couleurs.ville,
+    backgroundColor: ACCENTS.autorite,
   },
   boutonDiscret: { backgroundColor: couleurs.voile },
-  boutonTexte: { color: couleurs.blanc, fontSize: 17, fontWeight: "500" },
+  boutonTexte: { color: ACCENTS.surAutorite, fontSize: 17, fontWeight: "500" },
 }));
