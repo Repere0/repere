@@ -5,8 +5,9 @@
  * CE QUI N'Y EST PAS, ET L'ECRAN LE DIT :
  *   - les maires, adjoints et conseillers municipaux, et les conseillers departementaux
  *     et regionaux : leurs donnees sont rangees par departement, pas encore indexees ;
- *   - le parti : les groupes politiques ne sont pas publies dans le depot ;
- *   - les photos : le fichier publie n'en porte pas.
+ *   - le groupe politique des exécutifs régionaux (celui des députés vient de la table de l'Assemblée) ;
+ *   - une photo, quand Wikimedia Commons n'en a pas sous licence libre (D27) : les initiales.
+ * 09/11/2026 : filtres par fonction ; photo libre et badge de groupe dans chaque ligne.
  * Recherche par nom, departement ou fonction. La recherche par ville n'est pas offerte :
  * les circonscriptions ne portent pas le nom des villes dans les donnees publiees. */
 import { useEffect, useMemo, useState } from "react";
@@ -18,17 +19,49 @@ import { ETATS, PHRASES } from "../lib/donnees";
 import { chargerFiches } from "../lib/annuaire";
 import { Vide } from "../lib/composants";
 import { couleurs, CIBLE, PAS, RAYON, TYPO } from "../lib/theme";
-import { Avatar } from "../ui/avatar";
+import { AvatarElu } from "../ui/avatar";
 import { CarteListe, Puces, StatCard } from "../ui/donnees";
 import { Loupe } from "../ui/loupe";
 import { DatePublication } from "../ui/fraicheur";
 import { SquelettesListe } from "../ui/squelette";
 import type { Fiche } from "../types/annuaire";
+import { ScrollView } from "react-native";
+import { groupeDe, useGroupes, type TableGroupes } from "../lib/groupes";
+import { BadgeGroupe } from "../ui/badge-groupe";
+
+/* LES FILTRES PAR FONCTION (porteur, 09/11/2026). L'annuaire porte les députés et les exécutifs
+   régionaux ; sénateurs et conseillers départementaux n'y sont pas encore : le filtre le dit. */
+type Filtre = "tous" | "deputes" | "senateurs" | "regionaux" | "departementaux";
+const FILTRES: { cle: Filtre; texte: string }[] = [
+  { cle: "tous", texte: "Tous" }, { cle: "deputes", texte: "Députés" }, { cle: "senateurs", texte: "Sénateurs" },
+  { cle: "regionaux", texte: "Régionaux" }, { cle: "departementaux", texte: "Départementaux" },
+];
+const ABSENTS: Partial<Record<Filtre, string>> = {
+  senateurs: "Les sénateurs ne sont pas encore dans l'annuaire de Repère : leurs données ne sont pas publiées dans l'application.",
+  departementaux: "Les conseillers départementaux ne sont pas encore dans l'annuaire : leurs données sont rangées par département. Ils sont nommés sur l'écran « Qui décide » de chaque commune.",
+};
+const deFiltre = (f: Filtre, x: Fiche) => f === "tous" || (f === "deputes" && x.id.startsWith("dep-")) || (f === "regionaux" && x.id.startsWith("reg-"));
+
+/* Une ligne : la photo libre (D27) si elle existe, sinon les initiales ; le groupe politique du
+   député en badge (couleur et sigle, invariant 7 : identification seulement). */
+function LigneElu({ item, groupes }: { item: Fiche; groupes: TableGroupes | null }) {
+  const groupe = item.ref ? groupeDe(item.ref, groupes) : null;
+  return (
+    <CarteListe onPress={() => router.push({ pathname: "/annuaire-fiche", params: { ...item } })}
+      etiquette={`${item.nom}, ${item.fonction}, ${item.lieu}`} titre={item.nom}
+      gauche={<AvatarElu nom={item.nom} taille={44} groupe={groupe} echelon={item.ref ? "france" : "region"} dep={item.dep} cle={item.ref} />}>
+      <Text style={TYPO.note}>{item.fonction} · {item.lieu}</Text>
+      {groupe ? <View style={{ flexDirection: "row" }}><BadgeGroupe groupe={groupe} /></View> : null}
+    </CarteListe>
+  );
+}
 
 export default function Elus() {
   const [etat, setEtat] = useState<string>(ETATS.EN_COURS);
   const [fiches, setFiches] = useState<Fiche[]>([]);
   const [filtre, setFiltre] = useState("");
+  const [fonction, setFonction] = useState<Filtre>("tous");
+  const groupes = useGroupes();
   const [essai, setEssai] = useState(0);
 
   useEffect(() => {
@@ -46,8 +79,8 @@ export default function Elus() {
 
   const cherches = motsRecherche(filtre);
   const trouves = useMemo(
-    () => (cherches.length ? fiches.filter(f => correspondFlou(cherches, motsCible(`${f.nom} ${f.fonction} ${f.lieu}`))) : fiches),
-    [fiches, filtre],
+    () => (cherches.length ? fiches.filter(f => correspondFlou(cherches, motsCible(`${f.nom} ${f.fonction} ${f.lieu}`))) : fiches).filter(f => deFiltre(fonction, f)),
+    [fiches, filtre, fonction],
   );
   const phrase = PHRASES[etat as keyof typeof PHRASES] as { titre: string; corps: string; action?: string } | undefined;
 
@@ -55,7 +88,7 @@ export default function Elus() {
     <View style={{ flex: 1, backgroundColor: couleurs.sol }}>
       <Stack.Screen options={{ title: "Élus" }} />
       <FlatList
-        data={etat === ETATS.SERVI ? trouves : []}
+        data={etat === ETATS.SERVI && !ABSENTS[fonction] ? trouves : []}
         keyExtractor={f => f.id}
         keyboardShouldPersistTaps="handled"
         initialNumToRender={20}
@@ -66,7 +99,7 @@ export default function Elus() {
           <View style={{ gap: PAS * 3 }}>
             <DatePublication />
             <Text style={TYPO.affiche} accessibilityRole="header">Élus</Text>
-            <Text style={TYPO.corps}>Les députés et les exécutifs régionaux publiés par Repère. Chaque nom porte sa source.</Text>
+            <Text style={TYPO.note}>Les députés et les exécutifs régionaux publiés par Repère. Chaque nom porte sa source.</Text>
             <View style={{ flexDirection: "row", alignItems: "center", gap: PAS * 2, minHeight: CIBLE + 8, borderRadius: 999, borderWidth: 1.5,
               borderColor: couleurs.trait, backgroundColor: couleurs.carte, paddingLeft: PAS * 4 }}>
               <Loupe couleur={couleurs.sourd} />
@@ -75,7 +108,23 @@ export default function Elus() {
                 accessibilityLabel="Chercher un élu : nom, département ou fonction"
                 style={{ flex: 1, minHeight: CIBLE + 8, paddingHorizontal: PAS * 2, fontSize: 17, color: couleurs.encre }} />
             </View>
-            {etat === ETATS.SERVI ? (
+            {/* Filtres par fonction : des pastilles qui défilent (cinq libellés ne tiennent pas en une ligne à 360 px). */}
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: PAS * 2 }}
+              accessibilityRole="tablist" accessibilityLabel="Filtrer par fonction">
+              {FILTRES.map(o => {
+                const on = fonction === o.cle;
+                return (
+                  <Pressable key={o.cle} onPress={() => setFonction(o.cle)} accessibilityRole="tab" accessibilityState={{ selected: on }}
+                    accessibilityLabel={o.texte}
+                    style={({ pressed }) => ({ minHeight: 44, paddingHorizontal: PAS * 4, justifyContent: "center", borderRadius: 999,
+                      borderWidth: 1, borderColor: on ? couleurs.encre : couleurs.trait, backgroundColor: on ? couleurs.encre : couleurs.carte, opacity: pressed ? 0.7 : 1 })}>
+                    <Text style={[TYPO.note, { color: on ? couleurs.sol : couleurs.encre }]}>{o.texte}</Text>
+                  </Pressable>
+                );
+              })}
+            </ScrollView>
+            {ABSENTS[fonction] ? <Vide titre={ABSENTS[fonction] as string} corps="Repère n'affiche que ce qu'il publie, avec sa source." /> : null}
+            {etat === ETATS.SERVI && !ABSENTS[fonction] ? (
               <View style={{ flexDirection: "row" }}>
                 <StatCard valeur={trouves.length.toLocaleString("fr-FR")} libelle={`élu${trouves.length > 1 ? "s" : ""} affiché${trouves.length > 1 ? "s" : ""}`} />
               </View>
@@ -93,13 +142,13 @@ export default function Elus() {
           </View>
         }
         ListFooterComponent={
-          etat === ETATS.SERVI ? (
+          etat === ETATS.SERVI && !ABSENTS[fonction] ? (
             <View style={{ gap: PAS * 2, marginTop: PAS * 4 }}>
               <Text style={TYPO.etiquette}>Ce qui n'est pas dans cet annuaire, et pourquoi</Text>
               <Puces items={[
                 { icone: "home-outline", texte: "Les maires, adjoints et conseillers municipaux, et les conseillers départementaux et régionaux : leurs données sont rangées par département et ne sont pas encore dans l'annuaire." },
-                { icone: "flag-outline", texte: "Le parti : les groupes politiques ne sont pas publiés dans les données de Repère." },
-                { icone: "image-outline", texte: "Les photos : les données publiées n'en portent pas. Les initiales tiennent lieu d'image." },
+                { icone: "flag-outline", texte: "Le groupe politique est publié pour les députés (table de l'Assemblée nationale), pas pour les exécutifs régionaux." },
+                { icone: "image-outline", texte: "Photos : Wikimedia Commons, sous licence libre. L'auteur et la licence de chaque photo sont sur la fiche de l'élu. Sans photo libre, les initiales." },
               ]} />
             </View>
           ) : undefined
@@ -107,12 +156,7 @@ export default function Elus() {
         /* Les huit premieres fiches apparaissent en cascade (40 ms entre deux) ; les suivantes
            s'affichent d'emblee, pour qu'une liste qui defile ne clignote pas. */
         renderItem={({ item, index }) => {
-          const fiche = (
-            <CarteListe onPress={() => router.push({ pathname: "/annuaire-fiche", params: { ...item } })}
-              etiquette={`${item.nom}, ${item.fonction}, ${item.lieu}`} titre={item.nom} gauche={<Avatar nom={item.nom} taille={44} />}>
-              <Text style={TYPO.note}>{item.fonction} · {item.lieu}</Text>
-            </CarteListe>
-          );
+          const fiche = <LigneElu item={item} groupes={groupes} />;
           return index < 8 ? <Entree delai={index * 40}>{fiche}</Entree> : fiche;
         }}
       />

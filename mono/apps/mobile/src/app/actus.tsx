@@ -100,7 +100,7 @@ function ActuCarte({ x }: { x: Evt }) {
             etiquette={`Voir le scrutin n° ${numeroScrutin(x.id)} et son décompte`}
             style={{ minHeight: CIBLE, flexDirection: "row", alignItems: "center", gap: PAS * 2 }}>
             <Ionicons name="stats-chart-outline" size={18} color={couleurs.encre} accessible={false} importantForAccessibility="no" />
-            <Text style={[TYPO.corps, { fontFamily: POLICE.titre, textDecorationLine: "underline" }]}>Voir le scrutin n° {numeroScrutin(x.id)}</Text>
+            <Text style={[TYPO.corps, { fontFamily: POLICE.titre }]}>Voir le scrutin n° {numeroScrutin(x.id)}</Text>
           </Pression>
         ) : null}
         {x.src ? <LienSortant url={x.src} texte={x.srcn || "Source officielle"} /> : null}

@@ -70,7 +70,7 @@ export function Hemicycle() {
         <Pressable onPress={() => router.push({ pathname: "/groupe", params: { g: choisi } })} accessibilityRole="link"
           accessibilityLabel={`Voir la liste des députés du groupe ${choisi === GROUPE_INCONNU ? "non publié" : choisi}`}
           style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", opacity: pressed ? 0.7 : 1 })}>
-          <Text style={[TYPO.corps, { fontFamily: POLICE.titre, textDecorationLine: "underline" }]}>
+          <Text style={[TYPO.corps, { fontFamily: POLICE.titre }]}>
             Voir les {parts.find(x => x.groupe === choisi)?.sieges ?? ""} députés {choisi === GROUPE_INCONNU ? "sans groupe publié" : choisi} ›
           </Text>
         </Pressable>

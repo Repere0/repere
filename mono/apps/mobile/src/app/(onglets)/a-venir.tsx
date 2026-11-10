@@ -88,8 +88,8 @@ function Ligne({ g }: { g: Groupe }) {
         </View>
         <View style={{ flex: 1, width: 2, backgroundColor: couleurs.trait, marginTop: PAS }} />
       </View>
-      <View style={{ flex: 1, gap: 2, paddingBottom: PAS * 3 }}>
-      <Text style={TYPO.donnee}>{heures || "Heure non publiée"}</Text>
+      <View style={{ flex: 1, gap: 2, paddingBottom: PAS * 2 }}>
+      <Text style={[TYPO.donnee, { fontFamily: POLICE.donneeForte, color: couleurs.encre }]}>{heures || "Heure non publiée"}</Text>
       <Text style={[TYPO.corps, { fontFamily: POLICE.titre }]}>{g.titre}</Text>
       <Text style={TYPO.note}>
         {[g.institution, g.categorie, g.lieu, g.seances > 1 ? `${g.seances} séances ce jour-là` : null].filter(Boolean).join(" · ")}
@@ -123,8 +123,9 @@ function Case({ iso, jour, nb, onPress, taille }: { iso: string; jour: string; n
         backgroundColor: choisi ? ACCENTS.autorite : "transparent" }}>
         <Text style={{ fontFamily: POLICE.donneeForte, fontSize: grand ? 18 : 15, color: choisi ? ACCENTS.surAutorite : couleurs.encre }}>{numero}</Text>
       </View>
-      {/* Maquette Stitch : un point émeraude sous les jours de séance. */}
-      <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: nb > 0 ? ACCENTS.civique : "transparent" }} />
+      {/* Un point bien visible sous les jours de séance (porteur, 09/11/2026) : la couleur de
+          l'échelon national, celui du Parlement. */}
+      <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: nb > 0 ? couleurs.france : "transparent" }} />
     </Pressable>
   );
 }
@@ -196,14 +197,13 @@ export default function AVenir() {
         <Page sansDate>
           <Stack.Screen options={{ title: LIBELLES.calendrier, headerRight: () => <BoutonPartageTexte titre={LIBELLES.calendrier} chemin="a-venir"
             source={lues.map(x => ligneSource({ producteur: x.source.producteur_affiche || x.source.producteur, maj: x.source.releve_le })).filter(Boolean).join(" ")} /> }} />
-          <BadgeZoom />
-          <View style={{ flexDirection: "row", alignItems: "flex-start", justifyContent: "space-between", gap: PAS * 2 }}>
-            <View style={{ flex: 1 }}>
-              <Question etiquette="Au Parlement" question="Calendrier"
-                sous="Les séances annoncées à l'Assemblée nationale et au Sénat. Elles concernent tout le pays, pas seulement votre commune." />
-            </View>
+          {/* En-tête compact (porteur, 09/11/2026) : le titre, une ligne qui dit que l'agenda est national,
+              puis directement la frise des jours. Le badge de vue n'apparaît que s'il masque le calendrier. */}
+          {!nationalVisible ? <BadgeZoom /> : null}
+          <View style={{ gap: PAS }}>
+            <Text style={TYPO.question} accessibilityRole="header">Calendrier</Text>
+            <Text style={TYPO.note}>Les séances annoncées à l'Assemblée nationale et au Sénat concernent tout le pays.</Text>
           </View>
-          <DateDonnee quoi="Relevé de l'agenda" date={releveAncien} testID="maj-agenda" />
 
           {!r.agendaLu ? (
             <Vide {...AGENDA_PAS_ARRIVE} action="Réessayer" onAction={reessayer} />
@@ -233,6 +233,8 @@ export default function AVenir() {
                 </View>
               )}
 
+              <DateDonnee quoi="Relevé de l'agenda" date={releveAncien} testID="maj-agenda" />
+
               {/* Filtre segmenté (maquette Stitch, 09/11/2026) : trois choix, chacun avec le nombre de
                   rendez-vous publiés sur la même période (le jour choisi, sinon deux semaines). */}
               {(() => {
@@ -249,7 +251,7 @@ export default function AVenir() {
               {choisi ? (
                 <Pressable onPress={() => setChoisi(false)} accessibilityRole="button" accessibilityLabel="Revenir à la liste des deux prochaines semaines"
                   style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", opacity: pressed ? 0.6 : 1 })}>
-                  <Text style={{ color: couleurs.lien, fontWeight: "500", textDecorationLine: "underline" }}>Voir les deux prochaines semaines</Text>
+                  <Text style={{ color: couleurs.lien, fontWeight: "500" }}>Voir les deux prochaines semaines</Text>
                 </Pressable>
               ) : null}
 
@@ -269,7 +271,7 @@ export default function AVenir() {
               <Pressable onPress={() => setMois(m => !m)} accessibilityRole="button"
                 accessibilityLabel={mois ? "Voir la semaine" : "Voir le mois"}
                 style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", alignSelf: "flex-start", opacity: pressed ? 0.6 : 1 })}>
-                <Text style={{ color: couleurs.encre, fontWeight: "500", textDecorationLine: "underline" }}>{mois ? "Voir la semaine" : "Voir le mois"}</Text>
+                <Text style={{ color: couleurs.encre, fontWeight: "500" }}>{mois ? "Voir la semaine" : "Voir le mois"}</Text>
               </Pressable>
               {/* V34 bloc 7 (audit) : la mention passe sous la liste, pour que le premier rendez-vous ne soit pas repousse sous la barre d'onglets. */}
               <Text style={TYPO.note}>Sous réserve de modification : l'agenda peut changer, le site officiel fait foi.</Text>
@@ -283,7 +285,7 @@ export default function AVenir() {
               {!aVenir.length && toutes.length ? (
                 <Pressable onPress={() => setInstitution(null)} accessibilityRole="button" accessibilityLabel="Afficher toutes les institutions"
                   style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", opacity: pressed ? 0.6 : 1 })}>
-                  <Text style={{ color: couleurs.lien, fontWeight: "500", textDecorationLine: "underline" }}>Rien de publié pour ce filtre. Afficher toutes les institutions</Text>
+                  <Text style={{ color: couleurs.lien, fontWeight: "500" }}>Rien de publié pour ce filtre. Afficher toutes les institutions</Text>
                 </Pressable>
               ) : null}
               {!toutes.length && !dernierBrut ? <Vide {...AGENDA_VIDE} /> : null}

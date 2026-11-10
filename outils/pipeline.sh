@@ -402,6 +402,15 @@ rm -rf site_engendre
   # publiees. Aucune transformation, aucune generation. Absent : l'application n'affiche rien.
   cp ../data/actus-hebdo.json ./data/actus-hebdo.json 2>/dev/null \
     || echo "::warning::data/actus-hebdo.json absent - aucune actu locale publiee"
+  # PRESIDENTIELLE 2027 (09/11/2026) - candidats, debats, reunions publiques : fichiers versionnes
+  # dans data/presidentielle-2027/ (racine), controles puis recopies. Vides tant qu'aucune source
+  # officielle n'est publiee : l'application dit alors l'absence. Non bloquant.
+  # COLLECTE AUTOMATIQUE (10/11/2026) : lit les sources declarees dans
+  # data/presidentielle-2027/sources.json (vide tant qu'aucune source n'a ete relue). Ne sort
+  # jamais en erreur : une source en echec laisse le fichier precedent intact et ecrit un avertissement.
+  node scripts/collecte-presidentielle.mjs --collecter || true
+  node scripts/collecte-presidentielle.mjs ./data \
+    || echo "::warning::presidentielle 2027 non publiee (fichier mal forme ou absent) - l'application dira que les donnees ne sont pas arrivees"
   # SITES DES MAIRIES (30/10/2026, D28) - annuaire DILA, Licence Ouverte 2.0. Reseau
   # requis. Non bloquant : sans ce fichier, l'application n'affiche simplement pas le lien.
   node scripts/collecte-sites-mairies.mjs ./data \

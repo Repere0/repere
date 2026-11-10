@@ -51,7 +51,7 @@ function ActuFlux({ x }: { x: ActuFluxEntree }) {
       <Pressable onPress={() => Linking.openURL(x.lien)} accessibilityRole="link"
         accessibilityLabel="Source : site de la mairie, ouvre un site externe"
         style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", alignSelf: "flex-start", opacity: pressed ? 0.7 : 1 })}>
-        <Text style={{ color: couleurs.lien, fontWeight: "500", textDecorationLine: "underline" }}>Source : site de la mairie</Text>
+        <Text style={{ color: couleurs.lien, fontWeight: "500" }}>Source : site de la mairie</Text>
       </Pressable>
     </View>
   );
@@ -89,7 +89,7 @@ export function CetteSemaineCommune({ insee, nom }: { insee: string; nom: string
       <Pressable onPress={() => Linking.openURL(e!.source as string)} accessibilityRole="link"
         accessibilityLabel={`Source : ${e!.source_nom || "page officielle"}, ouvre un site externe`}
         style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", alignSelf: "flex-start", opacity: pressed ? 0.7 : 1 })}>
-        <Text style={{ color: couleurs.lien, fontWeight: "500", textDecorationLine: "underline" }}>Source : {e!.source_nom || "page officielle"}</Text>
+        <Text style={{ color: couleurs.lien, fontWeight: "500" }}>Source : {e!.source_nom || "page officielle"}</Text>
       </Pressable>
       <PartagerCarte etiquette={`Partager l'actualité de ${nom}`}
         repli={`${nom} : ${e!.titre}. ${e!.resume} Source : ${e!.source}`}
@@ -105,13 +105,13 @@ export function CetteSemaineCommune({ insee, nom }: { insee: string; nom: string
           {publiee && !voir ? (
             <Pressable onPress={() => setVoir(true)} accessibilityRole="button"
               style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", alignSelf: "flex-start", opacity: pressed ? 0.7 : 1 })}>
-              <Text style={{ color: couleurs.lien, fontWeight: "500", textDecorationLine: "underline" }}>Voir la dernière actu de {nom}</Text>
+              <Text style={{ color: couleurs.lien, fontWeight: "500" }}>Voir la dernière actu de {nom}</Text>
             </Pressable>
           ) : null}
           {publiee && voir ? bloc : null}
           <Pressable onPress={() => router.push("/actus")} accessibilityRole="link"
             style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", alignSelf: "flex-start", opacity: pressed ? 0.7 : 1 })}>
-            <Text style={{ color: couleurs.lien, fontWeight: "500", textDecorationLine: "underline" }}>Voir les dernières publications</Text>
+            <Text style={{ color: couleurs.lien, fontWeight: "500" }}>Voir les dernières publications</Text>
           </Pressable>
         </View>
       )}

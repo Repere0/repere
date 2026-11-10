@@ -55,7 +55,7 @@ export default function Groupe() {
           <Text style={TYPO.micro}>Ordre alphabétique des noms de famille.</Text>
           <View style={{ gap: PAS * 2 }}>
             {membres.map(m => (
-              <CarteListe key={m.ref} titre={m.nom} etiquette={`${m.nom}, ouvrir sa fiche`} gauche={<Avatar nom={m.nom} taille={40} groupe={g} />}
+              <CarteListe key={m.ref} titre={m.nom} etiquette={`${m.nom}, ouvrir sa fiche`} gauche={<Avatar nom={m.nom} taille={40} groupe={g} echelon="france" />}
                 onPress={() => router.push({ pathname: "/elu", params: { nom: m.nom, echelon: "france", niveau: "Assemblée nationale", role: "Député", institution: "Assemblée nationale" } })}>
               </CarteListe>
             ))}

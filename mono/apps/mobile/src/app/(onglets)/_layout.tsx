@@ -10,7 +10,7 @@
  * d'ecran dessine : il ouvre « Qui decide », a confirmer par le porteur.
  * Les ecrans de detail (argent, vote, fiche, partage, dictionnaire...) restent
  * dans la pile, au-dessus de la barre. */
-import { Platform, Text, type ColorValue } from "react-native";
+import { Platform, StyleSheet, Text, type ColorValue } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { Tabs } from "expo-router";
 import { LIBELLES } from "@repere/core";
@@ -24,7 +24,8 @@ import { BoutonReglages } from "../../ui/reglages";
  * « landmark » ni « users » en contour : « business » (un batiment) et « calendar » font l'affaire. */
 type NomIcone = "newspaper" | "business" | "calendar" | "person-circle" | "wallet";
 const icone = (nom: NomIcone) => ({ color, focused }: { color: ColorValue; focused: boolean }) => (
-  <Ionicons name={focused ? nom : (`${nom}-outline` as const)} size={24} color={typeof color === "string" ? color : undefined} allowFontScaling={false} accessible={false} importantForAccessibility="no" />
+  /* Refonte « légère » (09/11/2026) : toujours le contour, fin ; l'onglet actif se lit à sa couleur et à son libellé. */
+  <Ionicons name={`${nom}-outline` as const} size={22} color={typeof color === "string" ? color : undefined} allowFontScaling={false} accessible={false} importantForAccessibility="no" style={{ opacity: focused ? 1 : 0.9 }} />
 );
 
 /* L'intitule de l'onglet, sur deux lignes au plus (D22, 200 %). Le libelle par
@@ -43,7 +44,9 @@ export const TAILLE_MAX_LIBELLE_ONGLET = 1.2;
 
 const etiquette = (texte: string) => ({ color }: { color: ColorValue }) => (
   <Text numberOfLines={2} allowFontScaling={Platform.OS !== "ios"} maxFontSizeMultiplier={TAILLE_MAX_LIBELLE_ONGLET}
-    style={{ color, fontSize: 13, fontWeight: "500", textAlign: "center" }}>{texte}</Text>
+    /* 12 px au moins (porteur, 09/11/2026). Deux lignes au plus : rien n'est tronqué, même sur iOS
+       où la taille reste fixe ; la largeur suit la colonne de l'onglet. */
+    style={{ color, fontSize: 12, lineHeight: 15, fontWeight: "500", textAlign: "center" }}>{texte}</Text>
 );
 
 export default function Onglets() {
@@ -60,7 +63,8 @@ export default function Onglets() {
         animation: "fade", /* changement d'onglet : fondu court, sans glissement */
         tabBarActiveTintColor: ACCENTS.texteAccent,
         tabBarInactiveTintColor: couleurs.sourd,
-        tabBarStyle: { backgroundColor: couleurs.carte, borderTopColor: couleurs.trait, minHeight: 72, paddingTop: 6 },
+        /* Filet de séparation d'un demi-pixel, pas d'ombre (refonte « légère »). */
+        tabBarStyle: { backgroundColor: couleurs.carte, borderTopColor: couleurs.trait, borderTopWidth: StyleSheet.hairlineWidth, elevation: 0, shadowOpacity: 0, minHeight: 72, paddingTop: 6 },
         headerLeft: () => <ChangerCommune />,
         headerRight: () => <BoutonReglages />,
       }}

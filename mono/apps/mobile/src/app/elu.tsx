@@ -23,7 +23,7 @@
  *     dossier : rien a compter sans inventer (BLOCAGES.md, section 15).
  *   - Patrimoine, presence ou absence aux seances : jamais (invariant 8). */
 import { BadgeGroupe } from "../ui/badge-groupe";
-import { GROUPE_INCONNU, groupeDe, useGroupes } from "../lib/groupes";
+import { GROUPE_INCONNU, deputeParNom, groupeDe, useGroupes } from "../lib/groupes";
 import { PartagerCarte } from "../ui/partage/bouton-partage";
 import { VoteStory } from "../ui/partage/variantes/vote.story";
 import { messageVote, VERBE } from "../ui/partage/messages";
@@ -47,7 +47,7 @@ import { AvecDonnees, Page, Question } from "../ui/page";
 import { PastilleSource } from "../ui/source";
 import { DateDonnee } from "../ui/fraicheur";
 import { useApparition } from "../ui/mouvement";
-import { Avatar, CreditPhoto } from "../ui/avatar";
+import { AvatarElu, CreditPhoto } from "../ui/avatar";
 import { usePhotoElu } from "../lib/photos";
 import { useSelection } from "../lib/selection";
 
@@ -137,10 +137,9 @@ function FeuilleVote({ f, nom, resume, base, onFermer }: { f: FaitElu | null; no
 }
 
 /* La photo libre si elle existe (D27), sinon les initiales ; et son credit, dessous. */
-function PhotoOuInitiales({ nom, dep, cle, groupe }: { nom: string; dep: string; cle: string | null; groupe: string }) {
-  const photo = usePhotoElu(dep, cle);
-  /* 07/11/2026 : sans photo, l'avatar en dégradé de la couleur du groupe (plus de rond uni). */
-  return <Avatar nom={nom} taille={88} photo={photo} groupe={groupe} />;
+function PhotoOuInitiales({ nom, dep, cle, groupe, echelon }: { nom: string; dep: string; cle: string | null; groupe: string; echelon: Echelon | null }) {
+  /* 09/11/2026 : l'avatar unique (ui/avatar), le même que dans les listes. */
+  return <AvatarElu nom={nom} taille={88} dep={dep} cle={cle} groupe={groupe} echelon={echelon} />;
 }
 function CreditDe({ dep, cle }: { dep: string; cle: string | null }) {
   const photo = usePhotoElu(dep, cle);
@@ -187,16 +186,16 @@ export default function Elu() {
       const libelleRole = [p.role, p.lieu].filter(Boolean).join(" · ");
       /* La cle de la photo (D27) : l'identifiant de l'Assemblee pour un depute (nom complet
          identique dans deputes.json), « M » + INSEE pour le maire de la commune choisie. */
-      const deps = ((r.deputes && r.deputes.deputes) || {}) as Record<string, { prenom?: string; nom?: string; acteurRef?: string }>;
-      const entreeDepute = depute ? Object.entries(deps).find(([, x]) => [x.prenom, x.nom].filter(Boolean).join(" ") === nom) : undefined;
-      const refDepute = entreeDepute?.[1].acteurRef;
+      const entreeDepute = depute ? deputeParNom(r.deputes, nom) : null;
+      const refDepute = entreeDepute?.ref;
       /* 07/11/2026 : la photo d'un député est rangée par SON département (clé « 94-10 »), pas par
          celui de la commune choisie : une fiche ouverte depuis un groupe la cherchait au mauvais endroit. */
-      const depPhoto = entreeDepute ? entreeDepute[0].split("-")[0] : r.d.dep;
+      const depPhoto = entreeDepute ? entreeDepute.dep : r.d.dep;
       const estMaire = echelon === "ville" && !!r.d.fiche && !!r.d.fiche.maire && r.d.fiche.maire.nom === nom;
       const clePhoto = refDepute || (estMaire && choix ? "M" + choix.insee : null);
       /* Le groupe du depute, par son identifiant ; « Inconnu » pour un maire ou sans entree dans la table. */
       const groupe = groupeDe(refDepute, groupes);
+      const echelonAvatar = (["ville", "agglo", "dept", "region", "france"].includes(echelon) ? echelon : null) as Echelon | null;
       const resume = ouvert ? resumes.find(x => x.id === `scrutin-${ouvert.sc.d}-${ouvert.sc.n}`) || null : null;
       /* Carte de partage : seulement le dernier vote publie de cet elu, avec sa source. Sans
          vote ou sans source publiee, pas de carte : le partage reste textuel. */
@@ -226,7 +225,7 @@ export default function Elu() {
           <Animated.View style={{ opacity: apparition, gap: PAS * 4 }}>
             {/* Identite */}
             <View style={{ flexDirection: "row", gap: PAS * 4, alignItems: "center" }}>
-              <PhotoOuInitiales nom={nom} dep={depPhoto} cle={clePhoto} groupe={groupe} />
+              <PhotoOuInitiales nom={nom} dep={depPhoto} cle={clePhoto} groupe={groupe} echelon={echelonAvatar} />
               <View style={{ flex: 1, gap: 8 }}>
                 {/* Audit 5 s (V19) : pas d'etiquette quand le role la dit deja (« Assemblée nationale »
                     au-dessus de « À l'Assemblée nationale pour votre circonscription »). */}
@@ -307,7 +306,7 @@ export default function Elu() {
             {/* NIVEAU 3 (« Tout voir ») : méthode, dates de relevé, source officielle. */}
             <Pressable onPress={() => setTout(true)} accessibilityRole="button" accessibilityLabel={`Tout voir sur ${nom} : méthode, sources, lien officiel`}
               style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", alignSelf: "flex-start", opacity: pressed ? 0.7 : 1 })}>
-              <Text style={[TYPO.note, { textDecorationLine: "underline" }]}>Tout voir : méthode et sources</Text>
+              <Text style={TYPO.note}>Tout voir : méthode et sources</Text>
             </Pressable>
             <ModaleExhaustif titre={`Fiche de ${nom}`} visible={tout} onFermer={() => setTout(false)} sections={[
               { titre: "Comment Repère compte les votes", contenu: depute
@@ -319,7 +318,7 @@ export default function Elu() {
               { titre: "Lien officiel", contenu: lienElus
                   ? <Pressable onPress={() => Linking.openURL(lienElus)} accessibilityRole="link" accessibilityLabel="Le répertoire des élus, sur le site officiel, ouvre un site externe"
                       style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", opacity: pressed ? 0.7 : 1 })}>
-                      <Text style={[TYPO.corps, { textDecorationLine: "underline" }]}>Le répertoire des élus, sur le site officiel (site externe)</Text>
+                      <Text style={TYPO.corps}>Le répertoire des élus, sur le site officiel (site externe)</Text>
                     </Pressable>
                   : "Aucun lien officiel publié." },
             ]} />

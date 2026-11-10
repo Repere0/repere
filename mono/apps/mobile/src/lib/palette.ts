@@ -38,7 +38,7 @@ export type Neutres = {
    #475569 de Stitch, pas son #64748B : celui-ci tombe à 3,86:1 sur les teintes d'échelon et
    à 4,28:1 sur les pastilles (mesuré dans le navigateur, parcours-web), sous le seuil AA. */
 const NEUTRES_CLAIR: Neutres = {
-  sol: "#F7FAFD", carte: "#FFFFFF", encre: "#0F172A", sourd: "#475569",
+  sol: "#F8FAFC", carte: "#FFFFFF", encre: "#0F172A", sourd: "#475569",
   trait: "#E8EEF3", voile: "#EDF4F7", blanc: "#ffffff", lien: "#0F172A", ancien: "#745C5C",
 };
 
@@ -49,9 +49,11 @@ const NEUTRES_CLAIR: Neutres = {
    sur le voile, sous le seuil AA ; #928F86 est la nuance la plus proche qui le tient (4,55:1). */
 /* 09/11/2026 : « Dark Luxury » des maquettes Stitch (invariant 7 amendé, « tout Stitch ») : textes
    #F8FAFC et #94A3B8, liens en or mat. Sol, carte et trait inchangés (déjà ceux de Stitch). */
+/* 09/11/2026 (DESIGN.md « Dark Luxury », complément du porteur) : texte en ivoire lin #F5F4F0,
+   métadonnées en gris minéral #9C9A92, filets #2B2A26. Sol et carte inchangés. */
 const NEUTRES_SOMBRE: Neutres = {
-  sol: "#141311", carte: "#1F1E1B", encre: "#F8FAFC", sourd: "#94A3B8",
-  trait: "#2C2A26", voile: "#2A2823", blanc: "#ffffff", lien: "#F8FAFC", ancien: "#CCB4B4",
+  sol: "#141311", carte: "#1F1E1B", encre: "#F5F4F0", sourd: "#9C9A92",
+  trait: "#2B2A26", voile: "#2A2823", blanc: "#ffffff", lien: "#F5F4F0", ancien: "#CCB4B4",
 };
 
 /* L'INTERFACE RESTE NEUTRE (décision du porteur, 09/11/2026, après la PR #181) : noir, ivoire,
@@ -65,7 +67,7 @@ const NEUTRES_SOMBRE: Neutres = {
 export type Accents = { autorite: string; texteAccent: string; civique: string; fondCivique: string; surAutorite: string };
 export const ACCENTS_PAR_MODE: Readonly<Record<Mode, Accents>> = Object.freeze({
   clair: { autorite: "#0F172A", texteAccent: "#0F172A", civique: "#475569", fondCivique: "#EDF4F7", surAutorite: "#FFFFFF" },
-  sombre: { autorite: "#F8FAFC", texteAccent: "#F8FAFC", civique: "#94A3B8", fondCivique: "#2A2823", surAutorite: "#141311" },
+  sombre: { autorite: "#F5F4F0", texteAccent: "#F5F4F0", civique: "#9C9A92", fondCivique: "#2A2823", surAutorite: "#141311" },
 });
 
 /* Les échelons : identiques dans les deux thèmes, sauf « France ». */
@@ -86,10 +88,13 @@ export const NEUTRES_PAR_MODE: Record<Mode, Neutres> = { clair: NEUTRES_CLAIR, s
 
 /* Ombres : en sombre, l'ombre se voit par l'opacité du noir, pas par l'encre. */
 export const OMBRE_PAR_MODE = {
-  clair: { shadowColor: "#171614", shadowOpacity: 0.045, shadowRadius: 10, shadowOffset: { width: 0, height: 4 }, elevation: 1 },
+  /* Refonte « légère » (09/11/2026) : une ombre à peine visible. */
+  clair: { shadowColor: "#171614", shadowOpacity: 0.03, shadowRadius: 8, shadowOffset: { width: 0, height: 2 }, elevation: 1 },
   /* DA premium (07/11/2026) : noir à 20 %, flou 20, décalage 5. Le clair, gardé par le banc
      de non-régression, n'est pas touché. */
-  sombre: { shadowColor: "#000000", shadowOpacity: 0.2, shadowRadius: 20, shadowOffset: { width: 0, height: 5 }, elevation: 3 },
+  /* DESIGN.md (09/11/2026) : en sombre, la profondeur vient des surfaces et des filets, pas d'une ombre
+     sous les cartes. */
+  sombre: { shadowColor: "#000000", shadowOpacity: 0, shadowRadius: 0, shadowOffset: { width: 0, height: 0 }, elevation: 0 },
 } as const;
 
 /* La palette des cartes de partage, figée et sombre (décision D5 du porteur, 30/10/2026).
@@ -162,9 +167,11 @@ export const REFLET_AVATAR = { clair: "rgba(255,255,255,0.22)", ombre: "rgba(0,0
 /* LA JAUGE DU BUDGET (maquettes Stitch). Amendements de l'invariant 7 par le porteur, 08/11 puis
    09/11/2026 (« tout Stitch ») : une palette par thème, couleurs de données financières, pour cette
    jauge seulement, jamais politiques. La légende écrite porte le sens.
-   Clair : pétrole (salaires), ardoise (investissements), gris bleuté (fonctionnement). L'émeraude
-   n'y est plus (porteur, 09/11/2026 : elle est réservée aux votes). Sombre : or mat, indigo, ardoise. */
+   Clair (porteur, 09/11/2026, refonte « légère ») : tons pastel, bleu (salaires), vert sauge
+   (investissements), gris clair (autres). Sous 3:1 sur la carte blanche (1,5 à 2,6:1) : la légende
+   écrit chaque part, la couleur ne porte jamais seule le sens. L'émeraude reste réservée aux votes.
+   Sombre : or mat, indigo, ardoise (inchangé). */
 export const JAUGE_BUDGET_PAR_MODE = Object.freeze({
-  clair: { salaires: "#0D3B43", investissement: "#475569", autres: "#CBD5E1" },
+  clair: { salaires: "#8B9DC3", investissement: "#A3C9A8", autres: "#D3D3D3" },
   sombre: { salaires: "#D4AF37", investissement: "#818CF8", autres: "#475569" },
 });

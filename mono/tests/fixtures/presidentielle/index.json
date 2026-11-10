@@ -1,0 +1,5 @@
+{ "https://source.exemple.invalid/candidats.json": "candidats-distants.json",
+  "https://source.exemple.invalid/reunions.json": "reunions-distantes.json",
+  "https://source.exemple.invalid/debats.json": "debats-distants.json",
+  "https://source.exemple.invalid/flux.xml": "flux.xml",
+  "https://source.exemple.invalid/page.json": "page.html" }

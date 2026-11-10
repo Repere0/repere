@@ -17,17 +17,12 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import { useFonts } from "expo-font";
 import { Manrope_800ExtraBold } from "@expo-google-fonts/manrope/800ExtraBold";
 import { Manrope_700Bold } from "@expo-google-fonts/manrope/700Bold";
+import { Manrope_600SemiBold } from "@expo-google-fonts/manrope/600SemiBold";
 import { DMSans_400Regular } from "@expo-google-fonts/dm-sans/400Regular";
 import { DMSans_500Medium } from "@expo-google-fonts/dm-sans/500Medium";
 import { DMSans_700Bold } from "@expo-google-fonts/dm-sans/700Bold";
 import { IBMPlexMono_400Regular } from "@expo-google-fonts/ibm-plex-mono/400Regular";
 import { IBMPlexMono_600SemiBold } from "@expo-google-fonts/ibm-plex-mono/600SemiBold";
-/* Maquettes Stitch (09/11/2026) : Plus Jakarta Sans et Inter pour le thème clair (OFL, embarquées). */
-import { PlusJakartaSans_700Bold } from "@expo-google-fonts/plus-jakarta-sans/700Bold";
-import { PlusJakartaSans_800ExtraBold } from "@expo-google-fonts/plus-jakarta-sans/800ExtraBold";
-import { Inter_400Regular } from "@expo-google-fonts/inter/400Regular";
-import { Inter_500Medium } from "@expo-google-fonts/inter/500Medium";
-import { Inter_700Bold } from "@expo-google-fonts/inter/700Bold";
 import { FournisseurSelection, useSelection } from "../lib/selection";
 import { FournisseurCommune } from "../lib/useCommune";
 import { appliquerChoix, appliquerLecture, couleurs, useModeSysteme, type ChoixTheme } from "../lib/theme";
@@ -73,7 +68,7 @@ export default function Coquille() {
   const valeur = { choix, setChoix, mode };
   const tema = useMemo(() => themeDe(mode), [mode]);
   const fonds = NEUTRES_PAR_MODE[mode];
-  const [polices, erreur] = useFonts({ Manrope_800ExtraBold, Manrope_700Bold, DMSans_400Regular, DMSans_500Medium, DMSans_700Bold, IBMPlexMono_400Regular, IBMPlexMono_600SemiBold, PlusJakartaSans_700Bold, PlusJakartaSans_800ExtraBold, Inter_400Regular, Inter_500Medium, Inter_700Bold });
+  const [polices, erreur] = useFonts({ Manrope_800ExtraBold, Manrope_700Bold, DMSans_400Regular, DMSans_500Medium, DMSans_700Bold, IBMPlexMono_400Regular, IBMPlexMono_600SemiBold, Manrope_600SemiBold });
   if (!polices && !erreur) return null;
   return (
     <FournisseurTheme value={valeur}>
@@ -108,6 +103,7 @@ export default function Coquille() {
                 <Stack.Screen name="mes-elus" options={{ title: "Mes élus", headerLeft: () => <Retour texte="Retour" etiquette="Revenir à l'écran précédent" /> }} />
                 <Stack.Screen name="voter" options={{ title: "Ma voix", headerLeft: () => <Retour texte="Retour" etiquette="Revenir à l'écran précédent" /> }} />
                 <Stack.Screen name="elus" options={{ title: "Élus", headerLeft: () => <Retour texte="Retour" etiquette="Revenir à l'écran précédent" /> }} />
+                <Stack.Screen name="presidentielle-2027" options={{ title: "Présidentielle 2027", headerLeft: () => <Retour texte="Retour" etiquette="Revenir à l'écran précédent" /> }} />
                 <Stack.Screen name="reglement-2027" options={{ title: "Présidentielle 2027", headerLeft: () => <Retour texte="Retour" etiquette="Revenir à l'écran précédent" /> }} />
                 <Stack.Screen name="a-propos" options={{ title: "À propos" }} />
                 <Stack.Screen name="confidentialite" options={{ title: "Confidentialité" }} />

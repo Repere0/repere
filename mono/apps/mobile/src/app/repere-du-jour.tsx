@@ -4,13 +4,15 @@
  * source et son partage. Les faits viennent de @repere/core (via lib/repere-jour) : même
  * commune, même jour, même résultat que le bandeau. Rien n'est calculé ici.
  * Le pied dit les sources réellement affichées et la date de publication (D147). */
-import { Text, View } from "react-native";
+import { useState } from "react";
+import { Pressable, Text, View } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { ModaleExhaustif } from "../ui/modale-exhaustif";
 import { router, Stack } from "expo-router";
 import { dateFr, datePublication } from "@repere/core";
 import { Carte } from "../lib/composants";
-import { Details } from "../ui/details";
 import { useSelection } from "../lib/selection";
-import { PAS, TYPO } from "../lib/theme";
+import { CIBLE, couleurs, PAS, TYPO } from "../lib/theme";
 import { faitsAffichables, repereDuJourPour } from "../lib/repere-jour";
 import { AvecDonnees, Page, Question } from "../ui/page";
 import { PastilleSource } from "../ui/source";
@@ -22,6 +24,7 @@ import { useNiveauZoom } from "../ui/badge-zoom";
 
 export default function RepereDuJourEcran() {
   const { choix } = useSelection();
+  const [explication, setExplication] = useState(false);
   const niveauZoom = useNiveauZoom();
   return (
     <AvecDonnees rendu={r => {
@@ -36,9 +39,17 @@ export default function RepereDuJourEcran() {
           <Stack.Screen options={{ title: "Repère du jour" }} />
           <Question etiquette="Repère du jour" question={`Aujourd'hui à ${nom}`} />
           {/* 07/11/2026 : l'explication passe dans un accordéon (règle des 2 lignes). */}
-          <Details titre="Comment ces faits sont choisis">
-            <Text style={TYPO.note}>Trois faits tirés des données publiées. Ils changent chaque jour : le même jour, la même commune donnent les mêmes faits.</Text>
-          </Details>
+          {/* 09/11/2026 (porteur) : une modale explicative, au lieu d'un accordéon. */}
+          <Pressable onPress={() => setExplication(true)} accessibilityRole="button" accessibilityLabel="Comment ces faits sont choisis"
+            style={({ pressed }) => ({ minHeight: CIBLE, alignSelf: "flex-start", flexDirection: "row", alignItems: "center", gap: PAS * 1.5, opacity: pressed ? 0.6 : 1 })}>
+            <Ionicons name="information-circle-outline" size={18} color={couleurs.sourd} accessible={false} importantForAccessibility="no" />
+            <Text style={[TYPO.note, { color: couleurs.encre }]}>Comment ces faits sont choisis</Text>
+          </Pressable>
+          <ModaleExhaustif titre="Comment ces faits sont choisis" visible={explication} onFermer={() => setExplication(false)} sections={[
+            { titre: "D'où viennent les faits", contenu: "Ce sont trois faits tirés des données publiques que Repère publie pour votre commune : budget, projets aidés par l'État, votes de votre député, histoire de la commune. Chacun porte sa source." },
+            { titre: "Comment ils changent", contenu: "Ils changent chaque jour. Le même jour, la même commune donnent les mêmes faits : l'ordre vient d'un tirage du jour, jamais d'une mesure." },
+            { titre: "Ce que Repère ne fait pas", contenu: "Repère n'écrit aucun fait à la main et n'invente rien quand une donnée manque : dans ce cas, aucun fait n'est affiché." },
+          ]} />
           {affichables.length === 0 ? (
             <Text style={TYPO.corps}>
               Les données publiées ne permettent pas, aujourd'hui, de tirer un fait pour cette commune. Rien n'est inventé à la place.

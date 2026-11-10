@@ -75,11 +75,24 @@ export default function Voter() {
   return (
     <Page>
       <Stack.Screen options={{ title: "Ma voix" }} />
-      <Question etiquette="Guide civique" question="Ma voix" sous="Les prochaines élections, comment voter, et comment suivre votre conseil municipal." />
+      <Question etiquette="Ma voix" question="Ma voix" sous="Les prochaines élections, comment voter, et comment suivre votre conseil municipal." />
+      {/* 09/11/2026 (porteur) : la présidentielle a son écran (presidentielle-2027), branché sur les données publiées. */}
+      <Pressable onPress={() => router.push("/presidentielle-2027")} accessibilityRole="button"
+        accessibilityLabel="Présidentielle 2027 : candidats, débats, réunions publiques"
+        style={({ pressed }) => ({ minHeight: CIBLE + 8, flexDirection: "row", alignItems: "center", gap: PAS * 3, padding: PAS * 4, borderRadius: 16, backgroundColor: couleurs.carte, borderWidth: 1.5, borderColor: couleurs.encre, opacity: pressed ? 0.7 : 1 })}>
+        <Ionicons name="flag-outline" size={20} color={couleurs.encre} accessible={false} importantForAccessibility="no" />
+        <View style={{ flex: 1 }}>
+          <Text style={TYPO.reponse}>Présidentielle 2027</Text>
+          <Text style={TYPO.note}>Candidats, débats, réunions publiques</Text>
+        </View>
+        <Ionicons name="chevron-forward" size={18} color={couleurs.sourd} accessible={false} importantForAccessibility="no" />
+      </Pressable>
 
       <View style={{ gap: PAS * 4 }}>
         {/* 07/11/2026 : la prochaine élection en carte, le nombre de jours en grand (invariant 6 :
             suivre une durée est permis) ; les élections à venir sur une frise verticale. */}
+        {/* La présidentielle a sa bannière plus haut (ui/presidentielle) : la carte ne la répète pas. */}
+        {prochaine && prochaine.type === "presidentielle" ? null : (
         <Carte titre="Prochaine élection" accent={couleurs.encre}>
           {prochaine ? (
             <>
@@ -101,6 +114,7 @@ export default function Voter() {
             </>
           ) : <Text style={TYPO.note}>Aucune élection datée n'est à venir dans l'application.</Text>}
         </Carte>
+        )}
 
         <Carte titre="Les élections à venir">
           <Timeline etapes={datees.filter(e => joursAvant(e.date as string) >= 0).map(e => ({ date: e.date as string, libelle: e.titre, lien: null }))} />

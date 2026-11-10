@@ -68,7 +68,7 @@ export function PastilleSource({ source, quoi, court, nom }: { source: InfoSourc
             au lecteur d'ecran ni derriere un geste. */}
         {/* 07/11/2026 : une forme pour toutes les sources, petit texte gris et icône de lien. */}
         <View style={{ flexDirection: "row", alignItems: "center", gap: PAS }}>
-          <Ionicons name={source.methode ? "calculator-outline" : "link-outline"} size={14} color={couleurs.sourd} accessible={false} importantForAccessibility="no" />
+          <Ionicons name="link-outline" size={14} color={couleurs.sourd} accessible={false} importantForAccessibility="no" />
           <Text style={s.lien}>{source.methode ? (court ? "Calcul Repère" : "Calculé par Repère · source") : (nom || "Source")}{quoi ? " " + quoi : ""}</Text>
         </View>
       </Pressable>

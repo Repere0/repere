@@ -33,3 +33,12 @@ export * from "./actualites.js";
 export * from "./profil.js";
 export * from "./themes.js";
 export * from "./repere-du-jour.js";
+export * from "./presidentielle.js";
+
+/* Les types de la présidentielle 2027 (types/elections.ts), exposés par l'index : un écran écrit
+   `import type { PresidentialCandidate } from "@repere/core"`. */
+/** @typedef {import("./types/elections").PresidentialCandidate} PresidentialCandidate */
+/** @typedef {import("./types/elections").PresidentialDebate} PresidentialDebate */
+/** @typedef {import("./types/elections").PresidentialMeeting} PresidentialMeeting */
+/** @typedef {import("./types/elections").PresidentialMeta} PresidentialMeta */
+/** @typedef {import("./types/elections").PresidentialData} PresidentialData */

@@ -36,7 +36,7 @@ test("theme — le clair garde les valeurs de l'application (aucune régression 
   assert.deepEqual(
     { sol: n.sol, carte: n.carte, encre: n.encre, sourd: n.sourd, trait: n.trait, voile: n.voile, lien: n.lien },
     /* Néo-Civique des maquettes Stitch (09/11/2026, invariant 7 amendé par le porteur, « tout Stitch »). */
-    { sol: "#F7FAFD", carte: "#FFFFFF", encre: "#" + "0F172A", sourd: "#" + "475569", trait: "#E8EEF3", voile: "#EDF4F7", lien: "#" + "0F172A" },
+    { sol: "#F8FAFC", carte: "#FFFFFF", encre: "#" + "0F172A", sourd: "#" + "475569", trait: "#E8EEF3", voile: "#EDF4F7", lien: "#" + "0F172A" },
   );
   assert.deepEqual(TEINTES_PAR_MODE.clair, {
     ville: "#dbeaee", agglo: "#e4f3f7", dept: "#f7ece4", region: "#efe7fb", france: "#ecebe8",
@@ -104,7 +104,7 @@ for (const m of ["clair", "sombre"]) {
    et l'or mat (sombre) sont admis, ces valeurs exactement et rien d'autre. */
 const NEUTRES_STITCH = {
   clair: { encre: "#" + "0F172A", sourd: "#" + "475569", lien: "#" + "0F172A" },
-  sombre: { sourd: "#" + "94A3B8" },
+  sombre: {},
 };
 for (const m of ["clair", "sombre"]) {
   test(`theme ${m} — neutres et teintes restent sous l'amplitude RGB 24 (invariant 7)`, () => {
@@ -280,4 +280,59 @@ test("votes — aucune couleur de vote n'est employée comme couleur de texte", 
     lignes.forEach((l, i) => { if (VOTE.test(l)) fautes.push(`${path.relative(RACINE, f)}:${i + 1}`); });
   }
   assert.deepEqual(fautes, [], `couleur de vote en texte : ${fautes.join(", ")}`);
+});
+
+/* ---- Décision du porteur (09/11/2026) : aucun texte souligné dans l'application. Un lien se
+   reconnaît à sa forme (carte, pastille, chevron, icône), pas au soulignement. */
+test("liens — aucun soulignement dans l'application", () => {
+  const fautes = [];
+  for (const f of fichiers(SRC)) {
+    fs.readFileSync(f, "utf8").split("\n").forEach((l, i) => { if (/textDecorationLine\s*:/.test(l) && /underline/.test(l)) fautes.push(`${path.relative(RACINE, f)}:${i + 1}`); });
+  }
+  assert.deepEqual(fautes, [], `texte souligné : ${fautes.join(", ")}`);
+});
+
+/* ---- Fixtures fictives (09/11/2026) : elles vivent dans mono/tests/fixtures, jamais dans mono/data
+   (ce que l'application publie). Aucun fichier publié ne porte « fictif: true ». */
+test("fixtures — aucune donnée fictive dans les données publiées", () => {
+  const DATA = path.resolve(RACINE, "../../data");
+  const fautes = [];
+  const marche = d => { if (!fs.existsSync(d)) return; for (const e of fs.readdirSync(d, { withFileTypes: true })) {
+    const p = path.join(d, e.name);
+    if (e.isDirectory()) marche(p); else if (e.name.endsWith(".json") && /"fictif"\s*:\s*true/.test(fs.readFileSync(p, "utf8"))) fautes.push(path.relative(DATA, p));
+  } };
+  marche(DATA);
+  assert.deepEqual(fautes, [], `données fictives publiées : ${fautes.join(", ")}`);
+});
+
+/* ---- UN SEUL AVATAR (porteur, 09/11/2026) : tout avatar passe par ui/avatar.tsx, et aucun écran ne
+   lui impose une couleur (« fond ») ni une variante (« doux ») : la règle est dans teinteAvatar. */
+test("avatar — un seul composant, aucune couleur ni variante imposée par un écran", () => {
+  const fautes = [];
+  for (const f of fichiers(SRC)) {
+    const s = fs.readFileSync(f, "utf8");
+    for (const m of s.matchAll(/<Avatar(?:Elu)?\b[^>]*>/g)) if (/\b(fond|doux|couleur)=/.test(m[0]) || /\bdoux\b/.test(m[0])) fautes.push(`${path.relative(RACINE, f)} : ${m[0].slice(0, 60)}`);
+    if (!/ui[\\/]avatar\.tsx$/.test(f) && /borderRadius:\s*taille\s*\/\s*2/.test(s)) fautes.push(`${path.relative(RACINE, f)} : un rond d'avatar hors de ui/avatar.tsx`);
+  }
+  assert.deepEqual(fautes, [], fautes.join(" | "));
+});
+
+/* ---- UNE PHOTO, SON CRÉDIT SUR LE MÊME ÉCRAN (porteur, 09/11/2026 ; D27, CC BY-SA). Tout fichier qui
+   affiche une photo d'élu (AvatarElu, ou Avatar avec « photo= ») affiche aussi son crédit
+   (CreditPhotoElu ou CreditPhoto). Seule exception écrite : la longue liste « Élus », qui annonce
+   en pied que l'auteur et la licence sont sur la fiche de chaque élu, à un geste. */
+test("photos — tout écran qui montre une photo d'élu en montre le crédit", () => {
+  const fautes = [];
+  for (const f of fichiers(SRC)) {
+    const rel = path.relative(RACINE, f).split(path.sep).join("/");
+    if (rel === "src/ui/avatar.tsx") continue;
+    const s = fs.readFileSync(f, "utf8");
+    if (!/<AvatarElu\b|<Avatar\b[^>]*\bphoto=/.test(s)) continue;
+    if (rel === "src/app/elus.tsx") {
+      if (!/L'auteur et la licence de chaque photo sont sur la fiche/.test(s)) fautes.push(rel + " : la liste n'annonce plus où est le crédit");
+      continue;
+    }
+    if (!/<CreditPhotoElu\b|<CreditPhoto\b|<CreditDe\b/.test(s)) fautes.push(rel + " : photo sans crédit");
+  }
+  assert.deepEqual(fautes, [], fautes.join(" | "));
 });
