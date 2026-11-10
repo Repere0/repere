@@ -24,7 +24,7 @@ export function Page({ children, sansDate = false }: { children: ReactNode; sans
      couleurs.sol (lu ci-dessous) donne la couleur du mode courant. */
   useTheme();
   return (
-    <ScrollView style={{ backgroundColor: couleurs.sol }} contentContainerStyle={[s.page, { paddingTop: PAS * 4, paddingBottom: marges.bottom + PAS * 10 }]}>
+    <ScrollView style={{ backgroundColor: couleurs.sol }} contentContainerStyle={[s.page, { paddingTop: sansDate ? PAS * 4 : PAS * 6, paddingBottom: marges.bottom + PAS * 10 }]}>
       {sansDate ? null : <DatePublication flottant />}
       <BandeauFraicheur />
       <Entree style={{ gap: PAS * 3, width: "100%" }}>{children}</Entree>
@@ -77,5 +77,5 @@ export function AvecDonnees({ rendu }: { rendu: (r: Extract<EtatCommune, { pret:
 }
 
 const s = feuille(() => StyleSheet.create({
-  page: { paddingHorizontal: PAS * 5, paddingTop: PAS * 1, gap: PAS * 3, maxWidth: 640, width: "100%", alignSelf: "center" },
+  page: { paddingHorizontal: PAS * 4, paddingTop: PAS * 1, gap: PAS * 3, maxWidth: 640, width: "100%", alignSelf: "center" },
 }));
