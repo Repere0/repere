@@ -93,7 +93,7 @@ export default function Voter() {
             suivre une durée est permis) ; les élections à venir sur une frise verticale. */}
         {/* La présidentielle a sa bannière plus haut (ui/presidentielle) : la carte ne la répète pas. */}
         {prochaine && prochaine.type === "presidentielle" ? null : (
-        <Carte titre="Prochaine élection" accent={couleurs.encre}>
+        <Carte titre="Prochaine élection">
           {prochaine ? (
             <>
               <Text style={TYPO.reponse}>{prochaine.titre}</Text>

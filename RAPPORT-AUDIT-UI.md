@@ -50,7 +50,7 @@ Colonne « écarts mesurés » : somme des deux thèmes, avant → après.
 | presidentielle-2027 | corrigé | Bandeau cerné d'un filet ivoire de 1,5 px ; la date de publication touchait la carte. | Filet standard de 1 px ; 8 px sous la date. | 0 → 0 | [avant sombre](docs/audit-ui/avant/presidentielle-2027-sombre.jpg) · [après sombre](docs/audit-ui/apres/presidentielle-2027-sombre.jpg) · [avant clair](docs/audit-ui/avant/presidentielle-2027-clair.jpg) · [après clair](docs/audit-ui/apres/presidentielle-2027-clair.jpg) |
 | reglement-2027 | corrigé | Date de publication collée à l'étiquette. | 8 px sous la date. | 0 → 0 | [avant sombre](docs/audit-ui/avant/reglement-2027-sombre.jpg) · [après sombre](docs/audit-ui/apres/reglement-2027-sombre.jpg) · [avant clair](docs/audit-ui/avant/reglement-2027-clair.jpg) · [après clair](docs/audit-ui/apres/reglement-2027-clair.jpg) |
 | calendrier | corrigé | Bouton « Réessayer » en bleu pétrole (couleur d'échelon « commune ») dans une interface décidée neutre. Calendrier absent du conteneur : état vide seul vérifié. | Bouton plein neutre (ivoire en sombre, encre en clair). | 0 → 0 | [avant sombre](docs/audit-ui/avant/calendrier-sombre.jpg) · [après sombre](docs/audit-ui/apres/calendrier-sombre.jpg) · [avant clair](docs/audit-ui/avant/calendrier-clair.jpg) · [après clair](docs/audit-ui/apres/calendrier-clair.jpg) |
-| finances | conforme | La date « ancienne » des comptes (plus de 30 jours) est en rose gris et en gras : signal voulu de l'invariant 9, proche du corail des votes à l'œil. | Aucune : décision produit, signalée au porteur. | 0 → 0 | [avant sombre](docs/audit-ui/avant/finances-sombre.jpg) · [après sombre](docs/audit-ui/apres/finances-sombre.jpg) · [avant clair](docs/audit-ui/avant/finances-clair.jpg) · [après clair](docs/audit-ui/apres/finances-clair.jpg) |
+| finances | corrigé | La date « ancienne » des comptes (plus de 30 jours) était en rose gris et en gras, proche du corail des votes à l'œil ; filet coloré à gauche des cartes. | Date en gris neutre, filet retiré (décisions du porteur). | 0 → 0 | [avant sombre](docs/audit-ui/avant/finances-sombre.jpg) · [après sombre](docs/audit-ui/apres/finances-sombre.jpg) · [avant clair](docs/audit-ui/avant/finances-clair.jpg) · [après clair](docs/audit-ui/apres/finances-clair.jpg) |
 | voter | corrigé | Tuile « Présidentielle 2027 » cernée d'un filet ivoire de 1,5 px. | Filet standard, rayon de carte. | 0 → 0 | [avant sombre](docs/audit-ui/avant/voter-sombre.jpg) · [après sombre](docs/audit-ui/apres/voter-sombre.jpg) · [avant clair](docs/audit-ui/avant/voter-clair.jpg) · [après clair](docs/audit-ui/apres/voter-clair.jpg) |
 | pour-vous | corrigé | Ligne « Vote à l'Assemblée · date · il y a N jours » en chasse fixe, alors que l'accueil l'écrit en texte courant. | Texte courant. | 0 → 0 | [avant sombre](docs/audit-ui/avant/pour-vous-sombre.jpg) · [après sombre](docs/audit-ui/apres/pour-vous-sombre.jpg) · [avant clair](docs/audit-ui/avant/pour-vous-clair.jpg) · [après clair](docs/audit-ui/apres/pour-vous-clair.jpg) |
 | sources | corrigé | Marges de 20 px ; date collée à l'étiquette. | Gabarit de page. | 0 → 0 | [avant sombre](docs/audit-ui/avant/sources-sombre.jpg) · [après sombre](docs/audit-ui/apres/sources-sombre.jpg) · [avant clair](docs/audit-ui/avant/sources-clair.jpg) · [après clair](docs/audit-ui/apres/sources-clair.jpg) |
@@ -99,7 +99,13 @@ Colonne « écarts mesurés » : somme des deux thèmes, avant → après.
   mesurera au premier passage : un écart y fera échouer la garde.
 - **Écrans non capturés** : `annuaire-fiche` (fiche ouverte depuis la liste des élus), `dev-impact`
   (outil interne).
-- **Non touché, à décider par le porteur** :
-  1. le filet coloré à gauche des cartes d'échelon (2 px, dessine un croissant sur un angle arrondi) ;
-  2. la date « ancienne » en rose gris et en gras (invariant 9), proche du corail des votes ;
-  3. la section « Pas encore disponible » du confort de lecture, qui liste des réglages non faits.
+
+## Décisions du porteur du 10/11/2026, appliquées
+
+1. **Filet coloré à gauche des cartes d'échelon : supprimé** (`lib/composants.tsx`). Le point et le nom
+   de l'échelon restent. Le cartouche « En clair » et le bandeau de fraîcheur gardent leur filet gris :
+   ce ne sont pas des cartes d'échelon.
+2. **Date « ancienne » : gris neutre, graisse normale**, quel que soit l'âge (`ui/fraicheur.tsx`). Le
+   nombre de jours écrit (« il y a 104 jours ») est le seul signal. La couleur `ancien` est retirée de
+   la palette.
+3. **Section « Pas encore disponible » : supprimée** du confort de lecture.

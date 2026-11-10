@@ -138,7 +138,7 @@ function construire(m: Mode) {
 
 type Palette = Record<Echelon, string> & {
   sol: string; carte: string; encre: string; sourd: string;
-  trait: string; voile: string; blanc: string; lien: string; ancien: string;
+  trait: string; voile: string; blanc: string; lien: string;
 };
 type Vue = ReturnType<typeof construire>;
 

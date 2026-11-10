@@ -16,11 +16,11 @@ import { Pression } from "../ui/pression";
 /* Refonte du 30/09/2026 : l'echelon se dit par un point de couleur devant l'etiquette.
    07/11/2026 (refonte globale, demande du porteur) : le filet de 4 px a gauche revient,
    couleur de l'echelon (ou `accent`) ; `onPress` rend toute la carte touchable (Pression). */
-export function Carte({ echelon, children, titre, accent, onPress, etiquette }: {
-  echelon?: Echelon; children: ReactNode; titre?: string; accent?: string; onPress?: () => void; etiquette?: string;
+export function Carte({ echelon, children, titre, onPress, etiquette }: {
+  echelon?: Echelon; children: ReactNode; titre?: string; onPress?: () => void; etiquette?: string;
 }) {
-  const filet = accent || (echelon ? (pointEchelon(echelon) as { backgroundColor?: string }).backgroundColor : undefined);
-  const style = [s.carte, { backgroundColor: couleurs.carte }, filet ? { borderLeftWidth: 2, borderLeftColor: filet } : null];
+  /* Décision du porteur, 10/11/2026 : aucun filet coloré à gauche ; le point et le nom de l'échelon suffisent. */
+  const style = [s.carte, { backgroundColor: couleurs.carte }];
   const corps = (
     <>
       {titre ? (
@@ -45,9 +45,8 @@ export function CarteQuestion({ echelon, question, reponse, children, pied, acti
   echelon: Echelon; question: string; reponse: ReactNode; children?: ReactNode; pied?: ReactNode;
   action?: { texte: string; onPress: () => void };
 }) {
-  const filet = (pointEchelon(echelon) as { backgroundColor?: string }).backgroundColor;
   return (
-    <View style={[s.carte, { backgroundColor: couleurs.carte }, filet ? { borderLeftWidth: 2, borderLeftColor: filet } : null]}>
+    <View style={[s.carte, { backgroundColor: couleurs.carte }]}>
       <View style={s.carteTete}>
         <View style={[s.point, pointEchelon(echelon)]} />
         <Text style={s.carteTitre} accessibilityRole="header">{question}</Text>

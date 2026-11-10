@@ -65,11 +65,6 @@ export default function ConfortLecture() {
         <Interrupteur texte="Animations réduites" actif={p.animationsReduites} onPress={() => modifier({ animationsReduites: !p.animationsReduites })} />
         <Interrupteur texte="Masquer les images" actif={p.masquerImages} onPress={() => modifier({ masquerImages: !p.masquerImages })} />
       </Carte>
-      <Carte titre="Pas encore disponible">
-        <Text style={TYPO.note}>Ces réglages ne sont pas encore faits. Ils ne sont pas simulés.</Text>
-        <Text style={TYPO.note}>• Police pour la dyslexie : aucune police de ce type n'est dans l'application. Il faut en choisir une et vérifier sa licence.</Text>
-        <Text style={TYPO.note}>• Guide de lecture qui suit le doigt, et mode focus : pas encore conçus pour les écrans.</Text>
-      </Carte>
     </ScrollView>
   );
 }

@@ -26,10 +26,6 @@ export type Echelon = keyof typeof ECHELONS;
 export type Neutres = {
   sol: string; carte: string; encre: string; sourd: string;
   trait: string; voile: string; blanc: string; lien: string;
-  /* « ancien » (V13, 30/10/2026) : la date d'une donnee de plus de 30 jours. Un gris
-     tire vers le rouge, au plafond d'amplitude 24 de l'invariant 7 : un vrai rouge
-     serait une couleur, que l'invariant reserve aux echelons et aux groupes. */
-  ancien: string;
 };
 
 /* Neutres du clair : « Néo-Civique » des maquettes Stitch (09/11/2026, invariant 7 amendé par le
@@ -39,7 +35,7 @@ export type Neutres = {
    à 4,28:1 sur les pastilles (mesuré dans le navigateur, parcours-web), sous le seuil AA. */
 const NEUTRES_CLAIR: Neutres = {
   sol: "#F8FAFC", carte: "#FFFFFF", encre: "#0F172A", sourd: "#475569",
-  trait: "#E8EEF3", voile: "#EDF4F7", blanc: "#ffffff", lien: "#0F172A", ancien: "#745C5C",
+  trait: "#E8EEF3", voile: "#EDF4F7", blanc: "#ffffff", lien: "#0F172A",
 };
 
 /* Neutres du sombre : même famille chaude que le clair (pas de bleu), mesurés
@@ -53,7 +49,7 @@ const NEUTRES_CLAIR: Neutres = {
    métadonnées en gris minéral #9C9A92, filets #2B2A26. Sol et carte inchangés. */
 const NEUTRES_SOMBRE: Neutres = {
   sol: "#141311", carte: "#1F1E1B", encre: "#F5F4F0", sourd: "#9C9A92",
-  trait: "#2B2A26", voile: "#2A2823", blanc: "#ffffff", lien: "#F5F4F0", ancien: "#CCB4B4",
+  trait: "#2B2A26", voile: "#2A2823", blanc: "#ffffff", lien: "#F5F4F0",
 };
 
 /* L'INTERFACE RESTE NEUTRE (décision du porteur, 09/11/2026, après la PR #181) : noir, ivoire,

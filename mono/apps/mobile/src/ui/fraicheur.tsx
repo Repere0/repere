@@ -69,10 +69,9 @@ export function DatePublication({ flottant = false }: { flottant?: boolean }) {
 /* LA DATE D'UNE DONNEE ET SON ANCIENNETE, D'UN COUP D'OEIL (V13, bloc A, 30/10/2026).
    « Comptes OFGL du 29 juillet 2026 · il y a 93 jours · Source ». Jamais « à jour »
    (invariant 9) : la date brute et le nombre de jours, comptes a l'heure de Paris
-   (ageReleve, @repere/core). Au-dela de 30 jours, la ligne passe en « ancien » et en
-   gras : le nombre de jours reste le signal, la couleur ne fait que le souligner.
+   (ageReleve, @repere/core). Décision du porteur, 10/11/2026 : la ligne reste en gris neutre et en
+   graisse normale quel que soit l'âge ; le nombre de jours est le seul signal.
    Toute la ligne est le lien vers la source (44 px, cible tactile du projet). */
-export const SEUIL_ANCIEN_JOURS = 30;
 export const ilYa = (n: number) => (n <= 0 ? "aujourd'hui" : `il y a ${n} jour${n > 1 ? "s" : ""}`);
 /* « avant » : une ligne de contexte posee dans le meme lien (Aujourd'hui : departement et region),
    pour ne pas ajouter de hauteur au premier ecran (les trois reponses doivent y tenir). */
@@ -80,7 +79,6 @@ export function DateDonnee({ quoi, date, url, testID, avant }: { quoi: string; d
   const jour = date ? String(date).slice(0, 10) : "";
   const age = ageReleve(jour);
   if (age === null || age < 0) return null;
-  const ancien = age > SEUIL_ANCIEN_JOURS;
   const ouvrir = () => (url ? Linking.openURL(url) : router.push("/sources"));
   /* Refonte (porteur, 09/11/2026) : la source en tête d'écran est une icône d'information discrète ;
      le nom accessible dit toujours « Ouvrir la source ». */
@@ -101,7 +99,7 @@ export function DateDonnee({ quoi, date, url, testID, avant }: { quoi: string; d
         </View>
       ) : null}
       <View style={{ flexDirection: "row", flexWrap: "wrap", alignItems: "center", columnGap: PAS * 2 }}>
-        <Text style={{ fontSize: 14, lineHeight: 19, color: ancien ? couleurs.ancien : couleurs.sourd, fontWeight: ancien ? "700" : "400" }}>
+        <Text style={{ fontSize: 14, lineHeight: 19, color: couleurs.sourd }}>
           {quoi} du {dateFr(jour)} · {ilYa(age)}
         </Text>
         {avant ? null : lienSource}
