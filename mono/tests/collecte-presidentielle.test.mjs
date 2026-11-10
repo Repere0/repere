@@ -22,7 +22,7 @@ const octets = d => ["candidats", "debats", "meetings", "meta"].map(f => fs.read
 
 test("collecte présidentielle — les sources qui publient écrivent des fichiers que le contrôle accepte", async () => {
   const d = dossierNeuf();
-  const r = await collecter({ dossier: d, sources: SOURCES, fetchImpl, aujourdhui: "2027-02-01" });
+  const r = await collecter({ publicationPermise: true, dossier: d, sources: SOURCES, fetchImpl, aujourdhui: "2027-02-01" });
   const { lu } = controler(d);
   assert.equal(lu.candidats.length, 2);
   assert.equal(lu.meetings.length, 1);
@@ -41,7 +41,7 @@ test("collecte présidentielle — les sources qui publient écrivent des fichie
 test("collecte présidentielle — essai à blanc : rien n'est écrit", async () => {
   const d = dossierNeuf();
   const avant = octets(d);
-  const r = await collecter({ dossier: d, sources: SOURCES, fetchImpl, ecrire: false, brouillonVers: path.join(d, "b.md") });
+  const r = await collecter({ publicationPermise: true, dossier: d, sources: SOURCES, fetchImpl, ecrire: false, brouillonVers: path.join(d, "b.md") });
   assert.deepEqual(Object.keys(r.ecrits).sort(), ["candidats", "meetings", "meta"]);
   assert.equal(octets(d), avant);
   assert.equal(fs.existsSync(path.join(d, "b.md")), false);
@@ -54,9 +54,9 @@ for (const [cas, url, attendu] of [
 ]) {
   test(`collecte présidentielle — ${cas} : pas d'exception, fichiers précédents intacts, erreur au journal`, async () => {
     const d = dossierNeuf();
-    await collecter({ dossier: d, sources: [source("liste-fictive")], fetchImpl, aujourdhui: "2027-02-01" });
+    await collecter({ publicationPermise: true, dossier: d, sources: [source("liste-fictive")], fetchImpl, aujourdhui: "2027-02-01" });
     const avant = octets(d);
-    const r = await collecter({ dossier: d, sources: [{ ...source("liste-fictive"), url }], fetchImpl, aujourdhui: "2027-02-02" });
+    const r = await collecter({ publicationPermise: true, dossier: d, sources: [{ ...source("liste-fictive"), url }], fetchImpl, aujourdhui: "2027-02-02" });
     assert.equal(octets(d), avant, "un fichier a été réécrit alors que la source a échoué");
     assert.deepEqual(r.ecrits, {});
     assert.match(r.journal.filter(j => j.niveau === "erreur").map(j => j.message).join(" "), attendu);
@@ -68,7 +68,7 @@ test("collecte présidentielle — une entrée mal formée fait refuser toute la
   const d = dossierNeuf();
   const avant = octets(d);
   const sansNom = { ...source("liste-fictive"), champs: { id: "code", prenom: "prenom", parti: "mouvement" } };
-  const r = await collecter({ dossier: d, sources: [sansNom], fetchImpl });
+  const r = await collecter({ publicationPermise: true, dossier: d, sources: [sansNom], fetchImpl });
   assert.equal(octets(d), avant);
   assert.match(r.journal[0].message, /2 entrée\(s\) sur 2 refusée/);
 });
@@ -76,7 +76,7 @@ test("collecte présidentielle — une entrée mal formée fait refuser toute la
 test("collecte présidentielle — une réunion pour un candidat absent de la liste n'est pas publiée", async () => {
   const d = dossierNeuf();
   const avant = octets(d);
-  const r = await collecter({ dossier: d, sources: [source("reunions-fictives")], fetchImpl });
+  const r = await collecter({ publicationPermise: true, dossier: d, sources: [source("reunions-fictives")], fetchImpl });
   assert.equal(octets(d), avant);
   assert.match(r.journal.map(j => j.message).join(" "), /candidat absent de la liste/);
 });
@@ -84,9 +84,21 @@ test("collecte présidentielle — une réunion pour un candidat absent de la li
 test("collecte présidentielle — sans source déclarée, rien ne bouge ; et le dépôt n'en déclare aucune non relue", async () => {
   const d = dossierNeuf();
   const avant = octets(d);
-  const r = await collecter({ dossier: d, sources: [], fetchImpl });
+  const r = await collecter({ publicationPermise: true, dossier: d, sources: [], fetchImpl });
   assert.equal(octets(d), avant);
   assert.equal(r.brouillon, null);
   const declarees = JSON.parse(fs.readFileSync(path.join(VRAI, "sources.json"), "utf8")).sources;
   for (const s of declarees) assert.doesNotMatch(s.url, /exemple\.invalid/, "une source fictive est déclarée dans les vraies données");
+});
+
+test("collecte présidentielle — décisions du 10/11/2026 : par défaut rien n'est publié, et les candidats ne sont pas collectés", async () => {
+  const d = dossierNeuf();
+  const avant = octets(d);
+  const r = await collecter({ dossier: d, sources: SOURCES, fetchImpl });
+  assert.equal(octets(d), avant, "la collecte par défaut a écrit un fichier publié");
+  assert.deepEqual(r.ecrits, {});
+  assert.match(r.journal.map(j => j.message).join(" "), /pas de collecte automatique des candidats/);
+  assert.doesNotMatch(r.brouillon, /Exemple-Un/, "des candidats collectés figurent au brouillon");
+  assert.match(r.brouillon, /Annonce fictive/);
+  assert.match(r.brouillon, /Salle fictive/);
 });

@@ -9,6 +9,9 @@
  *      contrôle les quatre fichiers avec la règle de @repere/core et les recopie dans les données
  *      publiées. Une entrée mal formée fait ÉCHOUER cette étape : rien n'est publié à moitié.
  *
+ * DÉCISIONS DU PORTEUR (10/11/2026, data/presidentielle-2027/README.md) : candidats saisis à la main ;
+ * débats et réunions par flux RSS, toujours au brouillon ; presse généraliste refusée.
+ *
  * AUJOURD'HUI : sources.json est VIDE. Aucune source officielle n'est publiée (la liste des candidats
  * est arrêtée par le Conseil constitutionnel en mars 2027), donc aucun format n'a pu être relu.
  * Brancher une source = ajouter une ligne à sources.json après avoir lu sa vraie réponse (skill
@@ -119,7 +122,12 @@ const lireFichier = (dossier, f) => { try { return JSON.parse(fs.readFileSync(pa
 
 /* Toute la collecte. Ne lève jamais : tout échec devient une ligne du journal, et le fichier concerné
    garde sa version précédente. Rend ce qui serait écrit (`ecrits`), le brouillon et le journal. */
-export async function collecter({ dossier, sources, fetchImpl = fetch, aujourdhui = new Date().toISOString().slice(0, 10), ecrire = true, brouillonVers = null }) {
+/* DÉCISIONS DU PORTEUR, 10/11/2026 (data/presidentielle-2027/README.md) : aucune collecte automatique
+   des candidats ; débats et réunions toujours au brouillon, un humain valide. `publicationPermise`
+   reste donc à false : la ligne de commande ne le passe jamais.
+   shortcut: le mécanisme de publication directe est gardé et éprouvé par les tests, pour le jour où
+   le porteur le rouvrira ; à supprimer s'il ne sert pas avant le scrutin. */
+export async function collecter({ dossier, sources, fetchImpl = fetch, aujourdhui = new Date().toISOString().slice(0, 10), ecrire = true, brouillonVers = null, publicationPermise = false }) {
   const journal = [];
   const note = (niveau, source, message) => journal.push({ niveau, source, message });
   const ecrits = {};
@@ -128,6 +136,7 @@ export async function collecter({ dossier, sources, fetchImpl = fetch, aujourdhu
   const lues = new Map();
   for (const s of declarees) {
     if (!sourceValide(s)) { note("erreur", (s && s.id) || "?", "déclaration de source mal formée : ignorée"); continue; }
+    if (!publicationPermise && s.type === "candidats") { note("erreur", s.id, "source de candidats ignorée : pas de collecte automatique des candidats (décision du 10/11/2026)"); continue; }
     try {
       lues.set(s, await lireSource(s, fetchImpl));
     } catch (e) {
@@ -142,9 +151,9 @@ export async function collecter({ dossier, sources, fetchImpl = fetch, aujourdhu
     for (const [s, r] of duType) {
       if (r.erreur) continue;
       if (r.brouillon) { aRelire.push({ source: s, entrees: r.brouillon }); note("info", s.id, `${r.brouillon.length} entrée(s) de flux mises au brouillon (un flux n'est jamais publié)`); }
-      else if (s.publier !== true) { aRelire.push({ source: s, entrees: r.entrees }); note("info", s.id, `${r.entrees.length} entrée(s) mises au brouillon (publier n'est pas true)`); }
+      else if (s.publier !== true || !publicationPermise) { aRelire.push({ source: s, entrees: r.entrees }); note("info", s.id, `${r.entrees.length} entrée(s) mises au brouillon (un humain valide)`); }
     }
-    const publiantes = duType.filter(([s]) => s.format === "json" && s.publier === true);
+    const publiantes = publicationPermise ? duType.filter(([s]) => s.format === "json" && s.publier === true) : [];
     if (!publiantes.length) continue;
     const enEchec = publiantes.filter(([, r]) => r.erreur).map(([s]) => s.id);
     if (enEchec.length) { note("erreur", type, `${type}.json CONSERVÉ tel quel : source(s) en échec (${enEchec.join(", ")})`); continue; }

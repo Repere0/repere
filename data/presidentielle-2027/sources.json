@@ -1,1 +1,12 @@
-{ "sources": [] }
+{
+  "sources": [],
+  "exemple_non_lu": {
+    "_lire": "Modèle de déclaration, jamais lu par le script (seule la liste « sources » l'est). Pour brancher un flux : relire sa vraie réponse, recopier ce bloc dans « sources » avec la vraie adresse. Voir README.md.",
+    "id": "debats-nom-du-producteur",
+    "type": "debats",
+    "format": "rss",
+    "url": "https://adresse-du-flux-relu.exemple.invalid/flux.xml",
+    "producteur": "Nom officiel du producteur du flux",
+    "publier": false
+  }
+}
