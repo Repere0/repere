@@ -1,0 +1,9 @@
+{ "sources": [
+  { "id": "liste-fictive", "type": "candidats", "format": "json", "url": "https://source.exemple.invalid/candidats.json", "producteur": "Source fictive de test", "publier": true, "liste": "resultats",
+    "champs": { "id": "code", "nom": "nom", "prenom": "prenom", "parti": "mouvement", "programmeUrl": "programme" } },
+  { "id": "reunions-fictives", "type": "meetings", "format": "json", "url": "https://source.exemple.invalid/reunions.json", "producteur": "Site de campagne fictif", "publier": true,
+    "champs": { "id": "id", "date": "debut", "ville": "ville", "lieu": "salle", "candidatId": { "fixe": "exemple-un" } } },
+  { "id": "debats-a-relire", "type": "debats", "format": "json", "url": "https://source.exemple.invalid/debats.json", "producteur": "Chaîne fictive", "publier": false,
+    "champs": { "id": "id", "date": "date", "chaine": "chaine", "titre": "titre", "participants": "invites" } },
+  { "id": "flux-fictif", "type": "meetings", "format": "rss", "url": "https://source.exemple.invalid/flux.xml", "producteur": "Flux fictif", "publier": true }
+] }

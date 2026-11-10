@@ -72,3 +72,21 @@ export type PresidentialData = {
   meetings: PresidentialMeeting[];
   meta: PresidentialMeta | null;
 };
+
+/** Une source de la collecte automatique (data/presidentielle-2027/sources.json, 10/11/2026).
+ *  Lue par mono/scripts/collecte-presidentielle.mjs, jamais publiée ni lue par l'application. */
+export type PresidentialCollectSource = {
+  id: string;
+  type: "candidats" | "debats" | "meetings";
+  /** "rss" : jamais publié, toujours au brouillon (un flux ne date pas l'événement) */
+  format: "json" | "rss";
+  /** https uniquement */
+  url: string;
+  producteur: string;
+  /** true : écrit dans les fichiers publiés ; sinon data/auto/presidentielle-brouillon.md, à relire */
+  publier: boolean;
+  /** chemin pointé du tableau dans la réponse ("data.items") ; absent : la réponse est le tableau */
+  liste?: string;
+  /** champ du schéma -> clé de la source, ou valeur fixe. Un champ non donné par la source reste absent. */
+  champs?: Record<string, string | { fixe: unknown }>;
+};

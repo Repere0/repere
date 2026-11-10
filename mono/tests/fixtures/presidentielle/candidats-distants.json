@@ -1,0 +1,4 @@
+{ "fictif": true, "resultats": [
+  { "code": "exemple-un", "nom": "Exemple-Un", "prenom": "Prénom", "mouvement": "Mouvement fictif A", "programme": "https://source.exemple.invalid/programme-un" },
+  { "code": "exemple-deux", "nom": "Exemple-Deux", "prenom": "Prénom", "mouvement": null }
+] }
