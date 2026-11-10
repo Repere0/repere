@@ -218,7 +218,7 @@ function Ligne({ e }: { e: Entree }) {
         <View style={{ width: 28, height: 28, borderRadius: 14, backgroundColor: couleurs.voile, alignItems: "center", justifyContent: "center" }}>
           <Ionicons name={e.icone} size={14} color={couleurs.encre} accessible={false} importantForAccessibility="no" />
         </View>
-        <Text style={[TYPO.donnee, { flex: 1 }]}>{e.quoi} · {quand}</Text>
+        <Text style={[TYPO.micro, { flex: 1 }]}>{e.quoi} · {quand}</Text>
       </View>
       <Text style={[TYPO.corps, { fontFamily: POLICE.titre, color: couleurs.encre }]}>{e.titre}</Text>
       <View style={{ flexDirection: "row", alignItems: "center", gap: PAS }}>

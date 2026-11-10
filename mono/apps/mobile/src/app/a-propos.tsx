@@ -24,13 +24,13 @@ export default function APropos() {
       </Carte>
       {CONTACT ? (
         <>
-          <Bouton texte="Signaler un bug" onPress={() => Linking.openURL(`mailto:${CONTACT}?subject=${encodeURIComponent("Bug Repère")}`)} />
-          <Bouton texte="Donner mon avis" onPress={() => Linking.openURL(`mailto:${CONTACT}?subject=${encodeURIComponent("Feedback Repère")}&body=${encodeURIComponent(CORPS_AVIS)}`)} />
+          <Bouton texte="Signaler un bug" onPress={() => Linking.openURL(`mailto:${CONTACT}?subject=${encodeURIComponent("Bug Repère")}`)} discret />
+          <Bouton texte="Donner mon avis" onPress={() => Linking.openURL(`mailto:${CONTACT}?subject=${encodeURIComponent("Feedback Repère")}&body=${encodeURIComponent(CORPS_AVIS)}`)} discret />
         </>
       ) : (
         <Text style={TYPO.note}>Contact : bientôt disponible dans la bêta.</Text>
       )}
-      <Bouton texte="Politique de confidentialité" onPress={() => router.push("/confidentialite")} />
+      <Bouton texte="Politique de confidentialité" onPress={() => router.push("/confidentialite")} discret />
     </ScrollView>
   );
 }

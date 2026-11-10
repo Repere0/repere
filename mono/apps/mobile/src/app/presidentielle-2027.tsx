@@ -66,7 +66,7 @@ export default function Presidentielle2027() {
   return (
     <Page>
       <Stack.Screen options={{ title: "Présidentielle 2027" }} />
-      <View style={{ gap: PAS * 2, padding: PAS * 5, borderRadius: RAYON.carte, backgroundColor: couleurs.carte, borderWidth: 1.5, borderColor: couleurs.encre }}>
+      <View style={{ gap: PAS * 2, padding: PAS * 5, borderRadius: RAYON.carte, backgroundColor: couleurs.carte, borderWidth: 1, borderColor: couleurs.trait }}>
         <Text style={TYPO.etiquette}>Page temporaire · jusqu'au second tour</Text>
         <Text style={TYPO.affiche} accessibilityRole="header">Élection présidentielle 2027</Text>
         {tour1 && tour1.date ? <Text style={TYPO.corps}>Premier tour le {dateFr(tour1.date)} · second tour le {dateFr("2027-05-02")}.</Text> : null}

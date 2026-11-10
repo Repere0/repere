@@ -55,6 +55,6 @@ const s = feuille(() => StyleSheet.create({
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: couleurs.trait,
   },
-  etiquette: { ...TYPO.micro, fontSize: 11, letterSpacing: 0.6, color: couleurs.sourd },
+  etiquette: { ...TYPO.micro, fontSize: 12, letterSpacing: 0.6, color: couleurs.sourd },
   texte: { ...TYPO.note, flex: 1, color: couleurs.encre },
 }));

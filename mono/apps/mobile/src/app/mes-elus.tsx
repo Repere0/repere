@@ -11,10 +11,13 @@ import { AvecDonnees, Page, Question } from "../ui/page";
 import { BadgeZoom } from "../ui/badge-zoom";
 import { SignalerErreur } from "../ui/contact";
 import { BoutonPartageTexte, ligneSource } from "../ui/partage/partager-texte";
-import { CIBLE, couleurs, PAS, TYPO } from "../lib/theme";
+import { Ionicons } from "@expo/vector-icons";
+import { Avatar } from "../ui/avatar";
+import type { Echelon } from "../lib/palette";
+import { CIBLE, couleurs, PAS, POLICE, RAYON, TYPO } from "../lib/theme";
 
 type Personne = { nom: string; role?: string };
-type Groupe = { titre: string; lignes: { cle: string; nom: string; detail: string; ouvrir?: () => void }[]; note?: string };
+type Groupe = { titre: string; lignes: { cle: string; echelon: Echelon; nom: string; detail: string; ouvrir?: () => void }[]; note?: string };
 
 export default function MesElus() {
   return (
@@ -41,14 +44,14 @@ export default function MesElus() {
         {
           titre: "Maire",
           lignes: ville?.personne
-            ? [{ cle: "maire", nom: ville.personne.nom, detail: ville.personne.role ?? "Maire", ouvrir: ouvrir(ville) }]
+            ? [{ cle: "maire", echelon: "ville" as Echelon, nom: ville.personne.nom, detail: ville.personne.role ?? "Maire", ouvrir: ouvrir(ville) }]
             : [],
           note: ville?.personne ? undefined : "Le Répertoire national des élus ne porte pas de maire pour cette commune.",
         },
         {
           titre: "Député",
           lignes: france?.personne
-            ? [{ cle: "depute", nom: france.personne.nom, detail: france.personne.role ?? "Député", ouvrir: ouvrir(france) }]
+            ? [{ cle: "depute", echelon: "france" as Echelon, nom: france.personne.nom, detail: france.personne.role ?? "Député", ouvrir: ouvrir(france) }]
             : [],
           note: france?.personne ? undefined : (france?.note ?? "Aucun député n'est désigné pour cette commune."),
         },
@@ -59,7 +62,7 @@ export default function MesElus() {
         },
         {
           titre: "Conseillers départementaux de votre canton",
-          lignes: duCanton.map((c, i) => ({ cle: "cd" + i, nom: c.nom, detail: c.fonction ?? "Conseiller départemental" })),
+          lignes: duCanton.map((c, i) => ({ cle: "cd" + i, echelon: "dept" as Echelon, nom: c.nom, detail: c.fonction ?? "Conseiller départemental" })),
           note: cantons.length === 0
             ? "Le canton de votre commune n'est pas dans les données publiées."
             : duCanton.length === 0
@@ -73,6 +76,7 @@ export default function MesElus() {
         },
       ];
 
+      const ligne = { minHeight: CIBLE + 16, flexDirection: "row" as const, alignItems: "center" as const, gap: PAS * 3, padding: PAS * 3, borderRadius: RAYON.bloc, borderWidth: 1, borderColor: couleurs.trait, backgroundColor: couleurs.carte };
       return (
         <Page>
           <Stack.Screen options={{ title: "Mes élus", headerRight: () => <BoutonPartageTexte titre={`Mes élus à ${r.d.nomCommune}`} chemin="mes-elus" source={ligneSource(r.srcElus)} /> }} />
@@ -86,14 +90,21 @@ export default function MesElus() {
                 {g.lignes.map(l => l.ouvrir ? (
                   <Pressable key={l.cle} onPress={l.ouvrir} accessibilityRole="button"
                     accessibilityLabel={`${g.titre} : ${l.nom}, ${l.detail}. Ouvrir la fiche.`}
-                    style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", opacity: pressed ? 0.7 : 1 })}>
-                    <Text style={[TYPO.corps, { fontWeight: "700", color: couleurs.lien }]}>{l.nom}</Text>
-                    <Text style={[TYPO.note, { color: couleurs.sourd }]}>{l.detail} ›</Text>
+                    style={({ pressed }) => [ligne, { opacity: pressed ? 0.7 : 1 }]}>
+                    <Avatar nom={l.nom} taille={40} echelon={l.echelon} />
+                    <View style={{ flex: 1 }}>
+                      <Text style={[TYPO.corps, { fontFamily: POLICE.texteGras, color: couleurs.encre }]}>{l.nom}</Text>
+                      <Text style={TYPO.note}>{l.detail}</Text>
+                    </View>
+                    <Ionicons name="chevron-forward" size={16} color={couleurs.sourd} accessible={false} importantForAccessibility="no" />
                   </Pressable>
                 ) : (
-                  <View key={l.cle} style={{ minHeight: CIBLE, justifyContent: "center" }}>
-                    <Text style={[TYPO.corps, { fontWeight: "700", color: couleurs.encre }]}>{l.nom}</Text>
-                    <Text style={[TYPO.note, { color: couleurs.sourd }]}>{l.detail}</Text>
+                  <View key={l.cle} style={ligne}>
+                    <Avatar nom={l.nom} taille={40} echelon={l.echelon} />
+                    <View style={{ flex: 1 }}>
+                      <Text style={[TYPO.corps, { fontFamily: POLICE.texteGras, color: couleurs.encre }]}>{l.nom}</Text>
+                      <Text style={TYPO.note}>{l.detail}</Text>
+                    </View>
                   </View>
                 ))}
                 {g.note ? <Text style={[TYPO.note, { color: couleurs.sourd }]}>{g.note}</Text> : null}

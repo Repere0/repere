@@ -14,7 +14,7 @@ import { StatCard } from "../ui/donnees";
 import { Details } from "../ui/details";
 import { Timeline } from "../ui/timeline";
 import { DEMARCHES, DEMARCHES_VERIFIEES_LE, ELECTIONS, ELECTIONS_SOURCE, ELECTIONS_VERIFIEES_LE } from "../lib/elections";
-import { CIBLE, couleurs, PAS, TYPO } from "../lib/theme";
+import { CIBLE, couleurs, PAS, TYPO, RAYON } from "../lib/theme";
 import { Page, Question } from "../ui/page";
 
 const JOUR = 86400000;
@@ -79,7 +79,7 @@ export default function Voter() {
       {/* 09/11/2026 (porteur) : la présidentielle a son écran (presidentielle-2027), branché sur les données publiées. */}
       <Pressable onPress={() => router.push("/presidentielle-2027")} accessibilityRole="button"
         accessibilityLabel="Présidentielle 2027 : candidats, débats, réunions publiques"
-        style={({ pressed }) => ({ minHeight: CIBLE + 8, flexDirection: "row", alignItems: "center", gap: PAS * 3, padding: PAS * 4, borderRadius: 16, backgroundColor: couleurs.carte, borderWidth: 1.5, borderColor: couleurs.encre, opacity: pressed ? 0.7 : 1 })}>
+        style={({ pressed }) => ({ minHeight: CIBLE + 8, flexDirection: "row", alignItems: "center", gap: PAS * 3, padding: PAS * 4, borderRadius: RAYON.carte, backgroundColor: couleurs.carte, borderWidth: 1, borderColor: couleurs.trait, opacity: pressed ? 0.7 : 1 })}>
         <Ionicons name="flag-outline" size={20} color={couleurs.encre} accessible={false} importantForAccessibility="no" />
         <View style={{ flex: 1 }}>
           <Text style={TYPO.reponse}>Présidentielle 2027</Text>
@@ -93,7 +93,7 @@ export default function Voter() {
             suivre une durée est permis) ; les élections à venir sur une frise verticale. */}
         {/* La présidentielle a sa bannière plus haut (ui/presidentielle) : la carte ne la répète pas. */}
         {prochaine && prochaine.type === "presidentielle" ? null : (
-        <Carte titre="Prochaine élection" accent={couleurs.encre}>
+        <Carte titre="Prochaine élection">
           {prochaine ? (
             <>
               <Text style={TYPO.reponse}>{prochaine.titre}</Text>
