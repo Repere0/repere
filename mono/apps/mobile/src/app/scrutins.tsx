@@ -434,13 +434,13 @@ const s = feuille(() => StyleSheet.create({
   resumeNombre: { ...TYPO.stat, marginTop: PAS },
   resumePhrase: { fontSize: 16, lineHeight: 22, color: couleurs.sourd },
   recherche: {
-    minHeight: CIBLE, backgroundColor: couleurs.carte, borderWidth: 1, borderColor: couleurs.trait,
+    minHeight: CIBLE, backgroundColor: couleurs.carte,
     borderRadius: RAYON.bloc, paddingHorizontal: PAS * 4, color: couleurs.encre, fontSize: 16,
   },
   scroller: { gap: PAS * 2, paddingRight: PAS * 2 },
   selectionCard: {
     width: 230, minHeight: 112, padding: PAS * 4, borderRadius: RAYON.bloc,
-    backgroundColor: couleurs.carte, borderWidth: 1, borderColor: couleurs.trait, justifyContent: "space-between",
+    backgroundColor: couleurs.carte, justifyContent: "space-between",
   },
   selectionCardActive: { borderColor: couleurs.encre, borderWidth: 1.5 },
   selectionTitre: { fontFamily: POLICE.titre, fontSize: 17, lineHeight: 21, color: couleurs.encre, marginTop: PAS * 2 },

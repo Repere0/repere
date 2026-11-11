@@ -77,7 +77,7 @@ function CarteVote({ f, onComprendre }: { f: FaitElu; onComprendre: () => void }
   const rep = repartitionVote(f.sc);
   const qui = f.qui;
   return (
-    <View style={{ gap: PAS * 3, padding: PAS * 4, borderRadius: RAYON.bloc, backgroundColor: couleurs.carte, borderWidth: 1, borderColor: couleurs.trait, ...OMBRE }}
+    <View style={{ gap: PAS * 3, padding: PAS * 4, borderRadius: RAYON.bloc, backgroundColor: couleurs.carte, ...OMBRE }}
       accessibilityLabel={`${dateFr(f.sc.d)} : ${POSITION[pos]} sur ${titreLisible(f.sc.t)}`}>
       {/* 07/11/2026 : la position dans un badge écrit, la date en chiffres (forme commune des listes). */}
       <View style={{ flexDirection: "row", alignItems: "center", gap: PAS * 2 }}>

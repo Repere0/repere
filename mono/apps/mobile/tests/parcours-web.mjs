@@ -582,7 +582,10 @@ async function ouvrirSemaine({ agenda, senatCoupe, fuseau }) {
   await page.getByText("Aller plus loin").first().waitFor({ timeout: 15000 });
   await page.waitForTimeout(600);
   const bas = await page.evaluate(() => [...document.querySelectorAll('[data-testid="reponse"]')].filter(e => e.offsetParent).map(e => Math.round(e.getBoundingClientRect().bottom)));
-  verifier(bas.length === 3 && bas.every(b => b <= HAUTEUR), `390 x ${HAUTEUR} : les trois réponses tiennent dans le premier écran ${JSON.stringify(bas)}`);
+  /* VARIANTE A (porteur, 11/11/2026) : la règle de densité change. Avant : les trois réponses dans le
+     premier écran. Maintenant : UNE réponse héros entière dans le premier écran, avec son bouton ; les
+     deux autres se lisent en défilant. Trois réponses existent toujours. */
+  verifier(bas.length === 3 && bas[0] <= HAUTEUR, `390 x ${HAUTEUR} : trois réponses, et la réponse héros tient entière dans le premier écran ${JSON.stringify(bas)}`);
   await page.close();
 }
 

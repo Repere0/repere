@@ -392,7 +392,7 @@ const s = feuille(() => StyleSheet.create({
   maillon: { width: 14, height: 14, borderRadius: 7, marginTop: 4 },
   timelineAxe: { width: 36, alignItems: "center" },
   carteElu: { minHeight: 56, flexDirection: "row", alignItems: "center", gap: PAS * 3, padding: PAS * 3, marginTop: PAS,
-    borderRadius: RAYON.bloc, backgroundColor: couleurs.carte, borderWidth: 1, borderColor: couleurs.trait },
+    borderRadius: RAYON.bloc, backgroundColor: couleurs.carte },
   pastilleNiveau: { width: 36, height: 36, borderRadius: 18, borderWidth: 1.5, alignItems: "center", justifyContent: "center" },
   timelineTrait: { flex: 1, width: 1, marginTop: 4 },
   depli: { minHeight: CIBLE, flexDirection: "row", alignItems: "center", justifyContent: "space-between" },

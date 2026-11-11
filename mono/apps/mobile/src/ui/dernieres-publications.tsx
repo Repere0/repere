@@ -50,7 +50,7 @@ export function DernieresPublications() {
   const age0 = liste.length ? ageReleve(liste[0].d) : null;
   if (age0 === null || age0 < 0 || age0 >= RECENT_JOURS) return null;
   return (
-    <View testID="dernieres-publications" style={{ gap: PAS * 3, padding: PAS * 4, borderRadius: RAYON.carte, backgroundColor: D.carte, borderWidth: 1, borderColor: D.trait }}>
+    <View testID="dernieres-publications" style={{ gap: PAS * 3, padding: PAS * 4, borderRadius: RAYON.carte, backgroundColor: D.carte }}>
       <Text style={{ fontSize: 13, fontWeight: "600", color: D.sourd }} accessibilityRole="header">Dernières publications</Text>
       {liste.map(x => {
         const age = ageReleve(x.d);

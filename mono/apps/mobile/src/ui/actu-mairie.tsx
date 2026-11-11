@@ -25,7 +25,7 @@ export function ActuMairie({ insee, nom }: { insee: string; nom: string }) {
   if (!x) return null;
   const age = ageReleve(x.date);
   return (
-    <View style={{ gap: PAS * 2, padding: PAS * 4, borderRadius: RAYON.carte, backgroundColor: couleurs.carte, borderWidth: 1, borderColor: couleurs.trait }}>
+    <View style={{ gap: PAS * 2, padding: PAS * 4, borderRadius: RAYON.carte, backgroundColor: couleurs.carte }}>
       <Text style={TYPO.etiquette}>Publié par la mairie de {nom}</Text>
       <Text style={[TYPO.donnee, { color: couleurs.sourd }]}>{dateFr(x.date)}{age !== null && age >= 0 ? ` · il y a ${age} jour${age > 1 ? "s" : ""}` : ""}</Text>
       <Text style={[TYPO.reponse]}>{x.titre}</Text>

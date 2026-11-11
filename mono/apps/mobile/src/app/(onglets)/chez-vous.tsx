@@ -30,7 +30,7 @@ import { Pression } from "../../ui/pression";
 import { useEffect, useState } from "react";
 import { Linking, Text, View } from "react-native";
 import { actusFlux, chargerActuellesRss, chargerMairies } from "../../lib/donnees";
-import { router, Stack, useLocalSearchParams } from "expo-router";
+import { router, Stack } from "expo-router";
 import {
   dateFr, datePublication, decompte, euros, financementProjet, montantCourt, ordinal, parHabitant, phrasePosition,
   repartitionVote, texteDe,
@@ -61,8 +61,7 @@ import { SignalerErreur } from "../../ui/contact";
 /* VOS DÉCIDEURS (maquette Stitch, 09/11/2026) : composant partagé avec l'accueil (ui/decideurs). */
 import { Decideurs } from "../../ui/decideurs";
 import { RappelElection } from "../../ui/rappel-election";
-import { AccueilVariante } from "../../ui/accueil-variantes";
-import { ELECTIONS } from "../../lib/elections";
+import { BarreBudget } from "../../ui/stitch";
 import { deputeParNom, groupeDe, useGroupes } from "../../lib/groupes";
 import { DataBadge } from "../../ui/donnees";
 import { useCouleurVote } from "../../lib/couleur-vote";
@@ -97,7 +96,6 @@ export default function ChezVous() {
   const niveauZoom = useNiveauZoom();
   const COULEUR = useCouleurVote();
   const groupes = useGroupes();
-  const { v: variante } = useLocalSearchParams<{ v?: string }>();
   return (
     <AvecDonnees rendu={r => {
       const { d } = r;
@@ -122,45 +120,22 @@ export default function ChezVous() {
           <Text style={[TYPO.corps, { fontFamily: POLICE.titre, flex: 1 }]} numberOfLines={2}>{titreLisible(vote.sc.t)}</Text>
         </View>
       ) : null;
-      /* PROTOTYPE (11/11/2026) : /chez-vous?v=a ou ?v=b rend une des deux variantes à juger sur image,
-         avec les mêmes faits que l'écran ci-dessous. Sans ce paramètre, rien ne change. */
-      if (variante === "a" || variante === "b") {
-        const parts = hab && hab.depenses && hab.salaires !== null && hab.investissement !== null && hab.salaires + hab.investissement <= hab.depenses
-          ? (() => { const sal = Math.round(hab.salaires / hab.depenses * 100), inv = Math.round(hab.investissement / hab.depenses * 100); return { sal, inv, aut: 100 - sal - inv }; })() : null;
-        const pres = ELECTIONS.find(e => e.type === "presidentielle" && e.date);
-        const jours = pres && pres.date ? Math.round((Date.parse(pres.date) - Date.parse(aujourdhui())) / 86400000) : null;
-        return (
-          <>
-            <Stack.Screen options={{ title: nom, headerShown: false }} />
-            <AccueilVariante v={variante} faits={{
-              nom, territoire: [depIndex && depIndex.nom, depIndex && depIndex.region].filter(Boolean).join(" · "), publieLe: publie ? dateFr(publie) : "",
-              an: d.exercice ? String(d.exercice.an) : null, depenses: hab ? hab.depenses : null, parts,
-              vote: vote && rep && d.nbCircos <= 1 ? { qui: vote.qui, circo: `${ordinal(vote.circo)} circonscription`, mot: MOTS_VOTE[vote.position] || null,
-                couleur: COULEUR[vote.position as keyof typeof COULEUR] || null, titre: titreLisible(vote.sc.t), date: dateFr(vote.sc.d),
-                pour: rep.segments[0].nombre, contre: rep.segments[1].nombre, abst: rep.segments[2].nombre, couleurs: { p: COULEUR.p, c: COULEUR.c, a: COULEUR.a } } : null,
-              maire, projets: nbProjets, aide: f ? montantCourt(f.subvention)?.texte ?? null : null,
-              repere: repereDuJour.find(x => x.texte)?.texte ?? null, jours: jours !== null && jours >= 0 ? jours : null,
-            }} />
-          </>
-        );
-      }
+      /* La répartition de 100 € : seulement si salaires et investissements sont publiés et tiennent dans les dépenses. */
+      const parts = hab && hab.depenses && hab.salaires !== null && hab.investissement !== null && hab.salaires + hab.investissement <= hab.depenses
+        ? (() => { const sal = Math.round(hab.salaires / hab.depenses * 100), inv = Math.round(hab.investissement / hab.depenses * 100); return { sal, inv, aut: 100 - sal - inv }; })() : null;
       return (
         <Page sansDate>
-          <Stack.Screen options={{ title: nom }} />
-          {/* OU JE SUIS, ET DE QUAND DATE CE QUE JE LIS */}
-          {/* Pas d'etiquette « Chez vous » au-dessus du nom : 20 px gagnes, et la
-             troisieme reponse de Paris revient dans le premier ecran (mesure).
-             Le grand nom de commune n'est plus repete ici (13/10/2026) : la barre
-             haute le porte deja, et la 3e reponse doit tenir au-dessus de la barre basse. */}
+          {/* VARIANTE A (porteur, 11/11/2026) : le nom de la commune en grand titre, le territoire au-dessus,
+             la date de publication dessous. La barre haute ne répète plus le nom. */}
+          <Stack.Screen options={{ title: "" }} />
           <View>
-            {/* « Publication » et non « mis a jour » : la date est celle de la
-               publication affichee, vraie dans les trois etats de l'invariant 9
-               — y compris hors ligne, ou rien n'est « a jour » (BandeauFraicheur). */}
-            <DateDonnee quoi="Publication Repère" date={publie} testID="date-donnee"
-              avant={[depIndex && depIndex.nom, depIndex && depIndex.region].filter(Boolean).join(" · ")} />
+            <Text style={TYPO.etiquette}>{[depIndex && depIndex.nom, depIndex && depIndex.region].filter(Boolean).join(" · ")}</Text>
+            <Text style={TYPO.affiche} accessibilityRole="header">{nom}</Text>
+            {/* « Publication » et non « mis a jour » : vraie dans les trois etats de l'invariant 9. */}
+            <DateDonnee quoi="Publication Repère" date={publie} testID="date-donnee" />
           </View>
 
-          <View style={{ gap: PAS / 2 }}>
+          <View style={{ gap: PAS * 3 }}>
           {/* LE REPÈRE DU JOUR (V52, D139, V54 / D147) — UNE LIGNE, AU-DESSUS des trois réponses.
              Le bandeau ne montre que le premier fait, tronqué ; un geste ouvre la page complète.
              V54 : zone tactile 44 px ; marges réduites (bandeau -> R1 : 4 px ; entre réponses : 2 px)
@@ -168,7 +143,69 @@ export default function ChezVous() {
           <View style={{ paddingBottom: PAS / 2 }}>
             <BandeauRepere faits={repereDuJour} sources={sourcesRepere} onOuvrir={() => router.push("/repere-du-jour")} />
           </View>
-          {/* 1. CE QUE L'ETAT FINANCE ICI — la part se dit en mots pres d'un repere
+          {/* 1. QUI DECIDE, ET AVEC QUEL ARGENT — montant par habitant PUBLIE par
+             l'OFGL ; le nom du maire vient du RNE : deux sources, deux pastilles.
+             « prépare / vote » est la regle du code general des collectivites. */}
+          {d.exercice && hab && hab.depenses !== null ? (
+            <Reponse echelon="ville" heros sur={`Dépenses ${d.exercice.an} · par habitant`}
+              preuve={<View style={{ gap: PAS * 4 }}>
+                <Text style={[TYPO.chiffre, { fontSize: TYPO.chiffre.fontSize * 1.75, lineHeight: TYPO.chiffre.lineHeight * 1.6, letterSpacing: -2 }]}>
+                  {hab.depenses.toLocaleString("fr-FR")}<Text style={{ fontSize: TYPO.chiffre.fontSize, color: couleurs.sourd }}>{"\u00a0"}€</Text>
+                </Text>
+                {parts ? <BarreBudget parts={parts} /> : null}
+              </View>}
+              phrase={`En ${d.exercice.an}, ${nom} a dépensé ${hab.depenses.toLocaleString("fr-FR")} € par habitant.`}
+              note={maire ? `Le maire, ${maire}, prépare ce budget ; le conseil municipal le vote.` : "Le maire prépare ce budget ; le conseil municipal le vote."}
+              sources={<>
+                <PastilleSource court nom="Budget" source={srcComptesPublies(d)} />
+                {maire ? <PastilleSource court nom="Élus" source={srcElus(r.srcElus)} /> : null}
+              </>}
+              partage={{
+                titre: `Les dépenses de ${nom}`,
+                texte: `À ${nom}, ${d.exercice.an}, la commune a dépensé ${hab.depenses.toLocaleString("fr-FR")} € par habitant. Le maire prépare ce budget ; le conseil municipal le vote.`,
+                sourceUrl: srcComptesPublies(d)?.url,
+              }}
+              suite={{ texte: "Où va cet argent ?", onPress: () => router.push("/argent") }} />
+          ) : (
+            <Reponse echelon="ville"
+              phrase={`Les comptes de ${nom} ne permettent pas de dire combien la commune dépense par habitant.`}
+              suite={{ texte: "Pourquoi ?", onPress: () => router.push("/argent") }} />
+          )}
+
+          {/* 2. A L'ASSEMBLEE NATIONALE — une position, jamais une presence ; une
+             date, jamais « dernier » ; plusieurs circonscriptions, jamais UN depute. */}
+          {!r.votesLus ? (
+            <Vide {...copieVoteVide(ETAT_VOTE.RELEVE_NON_LU)} action="Réessayer" onAction={reessayer} />
+          ) : !r.votesFiables ? (
+            <Vide {...copieVoteVide(ETAT_VOTE.RELEVE_INCOHERENT)} />
+          ) : vote ? (
+            <Reponse echelon="france"
+              phrase={d.nbCircos > 1
+                ? `${nom} est partagée entre ${d.nbCircos} circonscriptions. Votre député dépend de votre adresse.`
+                : `Le ${dateFr(vote.sc.d)}, ${texteDe(phrasePosition(vote.position, vote.qui))}`}
+              preuve={rep ? <View style={{ gap: PAS }}>{contexteVote}<Repartition compact segments={rep.segments} total={rep.total} position={vote.position} qui={vote.qui} /></View> : contexteVote}
+              note={d.nbCircos > 1
+                ? `Une circonscription est une partie du territoire dont les électeurs élisent un député. Par exemple, dans la ${ordinal(vote.circo)}, le ${dateFr(vote.sc.d)}, ${texteDe(phrasePosition(vote.position, vote.qui)).replace(/\.$/, "")} (texte ${vote.sc.s}).`
+                /* DEUX LIGNES AU PLUS SUR L'ACCUEIL — 07/10/2026. Le vote affiche est
+                   desormais le plus recent ; pour Meaux, son intitule officiel est plus
+                   long et repoussait la troisieme reponse sous le pli (mesure CI : 861 px
+                   pour 844). Le resultat et le decompte viennent EN TETE, jamais coupes ;
+                   l'intitule suit, non reecrit, et peut etre coupe : le texte entier est
+                   sur « Comprendre ce vote », a un geste. */
+                : <Text style={TYPO.note} numberOfLines={2}>{typo(`${ordinal(vote.circo)} circonscription · ${vote.sc.s.charAt(0).toUpperCase()}${vote.sc.s.slice(1)}, ${decompte(vote.sc.dec)}`)}</Text>}
+              sources={<PastilleSource court source={srcVote(d, vote.sc)} />}
+              partage={{
+                titre: `Un vote concernant ${nom}`,
+                texte: d.nbCircos > 1
+                  ? `${nom} est partagée entre ${d.nbCircos} circonscriptions. Votre député dépend de votre adresse. Exemple : dans la ${ordinal(vote.circo)}, le ${dateFr(vote.sc.d)}, ${texteDe(phrasePosition(vote.position, vote.qui)).replace(/\.$/, "")}.`
+                  : `${nom} est dans la ${ordinal(vote.circo)} circonscription. Le ${dateFr(vote.sc.d)}, ${texteDe(phrasePosition(vote.position, vote.qui))}`,
+                sourceUrl: srcVote(d, vote.sc)?.url,
+              }}
+              suite={{ texte: "Comprendre ce vote", onPress: () => router.push("/vote") }} />
+          ) : (
+            <Vide {...copieVoteVide(d.etatVote, { nom, releve: srcScrutins(d)?.releve, portee: d.srcScrutins && d.srcScrutins.portee })} />
+          )}
+          {/* 3. CE QUE L'ETAT FINANCE ICI — la part se dit en mots pres d'un repere
              vrai, sinon en euros ; le cout est arrondi dans la phrase et exact
              dans la note. */}
           {!r.projetsLus ? (
@@ -205,62 +242,6 @@ export default function ChezVous() {
               sources={<PastilleSource court source={srcProjets(d)} />} />
           )}
 
-          {/* 2. QUI DECIDE, ET AVEC QUEL ARGENT — montant par habitant PUBLIE par
-             l'OFGL ; le nom du maire vient du RNE : deux sources, deux pastilles.
-             « prépare / vote » est la regle du code general des collectivites. */}
-          {d.exercice && hab && hab.depenses !== null ? (
-            <Reponse echelon="ville"
-              phrase={`En ${d.exercice.an}, ${nom} a dépensé ${hab.depenses.toLocaleString("fr-FR")} € par habitant.`}
-              note={maire ? `Le maire, ${maire}, prépare ce budget ; le conseil municipal le vote.` : "Le maire prépare ce budget ; le conseil municipal le vote."}
-              sources={<>
-                <PastilleSource court nom="Budget" source={srcComptesPublies(d)} />
-                {maire ? <PastilleSource court nom="Élus" source={srcElus(r.srcElus)} /> : null}
-              </>}
-              partage={{
-                titre: `Les dépenses de ${nom}`,
-                texte: `À ${nom}, ${d.exercice.an}, la commune a dépensé ${hab.depenses.toLocaleString("fr-FR")} € par habitant. Le maire prépare ce budget ; le conseil municipal le vote.`,
-                sourceUrl: srcComptesPublies(d)?.url,
-              }}
-              suite={{ texte: "Où va cet argent ?", onPress: () => router.push("/argent") }} />
-          ) : (
-            <Reponse echelon="ville"
-              phrase={`Les comptes de ${nom} ne permettent pas de dire combien la commune dépense par habitant.`}
-              suite={{ texte: "Pourquoi ?", onPress: () => router.push("/argent") }} />
-          )}
-
-          {/* 3. A L'ASSEMBLEE NATIONALE — une position, jamais une presence ; une
-             date, jamais « dernier » ; plusieurs circonscriptions, jamais UN depute. */}
-          {!r.votesLus ? (
-            <Vide {...copieVoteVide(ETAT_VOTE.RELEVE_NON_LU)} action="Réessayer" onAction={reessayer} />
-          ) : !r.votesFiables ? (
-            <Vide {...copieVoteVide(ETAT_VOTE.RELEVE_INCOHERENT)} />
-          ) : vote ? (
-            <Reponse echelon="france"
-              phrase={d.nbCircos > 1
-                ? `${nom} est partagée entre ${d.nbCircos} circonscriptions. Votre député dépend de votre adresse.`
-                : `Le ${dateFr(vote.sc.d)}, ${texteDe(phrasePosition(vote.position, vote.qui))}`}
-              preuve={rep ? <View style={{ gap: PAS }}>{contexteVote}<Repartition compact segments={rep.segments} total={rep.total} position={vote.position} qui={vote.qui} /></View> : contexteVote}
-              note={d.nbCircos > 1
-                ? `Une circonscription est une partie du territoire dont les électeurs élisent un député. Par exemple, dans la ${ordinal(vote.circo)}, le ${dateFr(vote.sc.d)}, ${texteDe(phrasePosition(vote.position, vote.qui)).replace(/\.$/, "")} (texte ${vote.sc.s}).`
-                /* DEUX LIGNES AU PLUS SUR L'ACCUEIL — 07/10/2026. Le vote affiche est
-                   desormais le plus recent ; pour Meaux, son intitule officiel est plus
-                   long et repoussait la troisieme reponse sous le pli (mesure CI : 861 px
-                   pour 844). Le resultat et le decompte viennent EN TETE, jamais coupes ;
-                   l'intitule suit, non reecrit, et peut etre coupe : le texte entier est
-                   sur « Comprendre ce vote », a un geste. */
-                : <Text style={TYPO.note} numberOfLines={2}>{typo(`${ordinal(vote.circo)} circonscription · ${vote.sc.s.charAt(0).toUpperCase()}${vote.sc.s.slice(1)}, ${decompte(vote.sc.dec)}`)}</Text>}
-              sources={<PastilleSource court source={srcVote(d, vote.sc)} />}
-              partage={{
-                titre: `Un vote concernant ${nom}`,
-                texte: d.nbCircos > 1
-                  ? `${nom} est partagée entre ${d.nbCircos} circonscriptions. Votre député dépend de votre adresse. Exemple : dans la ${ordinal(vote.circo)}, le ${dateFr(vote.sc.d)}, ${texteDe(phrasePosition(vote.position, vote.qui)).replace(/\.$/, "")}.`
-                  : `${nom} est dans la ${ordinal(vote.circo)} circonscription. Le ${dateFr(vote.sc.d)}, ${texteDe(phrasePosition(vote.position, vote.qui))}`,
-                sourceUrl: srcVote(d, vote.sc)?.url,
-              }}
-              suite={{ texte: "Comprendre ce vote", onPress: () => router.push("/vote") }} />
-          ) : (
-            <Vide {...copieVoteVide(d.etatVote, { nom, releve: srcScrutins(d)?.releve, portee: d.srcScrutins && d.srcScrutins.portee })} />
-          )}
           </View>
 
           <Decideurs maire={maire} depute={vote && d.nbCircos <= 1 ? vote.qui : null} circo={vote && d.nbCircos <= 1 ? vote.circo : null}
@@ -286,7 +267,6 @@ export default function ChezVous() {
             <View style={{ flexDirection: "row", flexWrap: "wrap", gap: PAS * 3 }}>
               {([
                 { t: "Présidentielle 2027", i: "flag-outline", o: () => router.push("/presidentielle-2027") },
-                { t: "Ma voix", i: "checkbox-outline", o: () => router.push("/voter") },
                 { t: "L'Assemblée", i: "business-outline", o: () => router.push("/scrutins") },
                 { t: "Pour vous", i: "bookmark-outline", o: () => router.push("/pour-vous") },
                 { t: "Élus", i: "people-outline", o: () => router.push("/elus") },
@@ -295,7 +275,7 @@ export default function ChezVous() {
                 { t: LIBELLES.sources, i: "link-outline", o: () => router.push("/sources") },
               ] as { t: string; i: keyof typeof Ionicons.glyphMap; o: () => void }[]).map(x => (
                 <Pression key={x.t} onPress={x.o} etiquette={x.t}
-                  style={{ width: "47%", minWidth: 140, flexGrow: 1, minHeight: 92, gap: PAS * 2, padding: PAS * 4, borderRadius: RAYON.bloc, backgroundColor: couleurs.carte, borderWidth: 1, borderColor: couleurs.trait, justifyContent: "space-between" }}>
+                  style={{ width: "47%", minWidth: 140, flexGrow: 1, minHeight: 92, gap: PAS * 2, padding: PAS * 4, borderRadius: RAYON.bloc, backgroundColor: couleurs.carte, justifyContent: "space-between" }}>
                   <Ionicons name={x.i} size={22} color={couleurs.encre} accessible={false} importantForAccessibility="no" />
                   <Text style={[TYPO.corps, { fontFamily: POLICE.titre }]}>{x.t}</Text>
                 </Pression>

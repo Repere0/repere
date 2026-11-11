@@ -121,7 +121,7 @@ export default function Dictionnaire() {
       {liste.length ? liste.map(e => (
         /* Une carte par mot (porteur, 09/11/2026) : titre en Manrope, catégorie en petite étiquette. */
         <View key={e.cle} testID="dico-entree"
-          style={{ gap: PAS * 2, padding: PAS * 4, borderRadius: RAYON.carte, backgroundColor: couleurs.carte, borderWidth: 1, borderColor: couleurs.trait }}>
+          style={{ gap: PAS * 2, padding: PAS * 4, borderRadius: RAYON.carte, backgroundColor: couleurs.carte }}>
           <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: PAS * 2 }}>
             <Text style={[TYPO.reponse, { flex: 1 }]}>{e.titre}</Text>
             <Text style={TYPO.etiquette}>{CATEGORIE_DE[e.cle] || "Institutions"}</Text>

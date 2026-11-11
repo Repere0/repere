@@ -10,8 +10,8 @@ const { chromium } = createRequire(import.meta.url)("playwright");
 const [BASE, OUT] = process.argv.slice(2);
 export const ECRANS = [
   ["accueil", "/"], ["qui-decide", "/qui-decide"], ["elus", "/elus"], ["elu", "@elu"], ["groupe", "/groupe"],
-  ["scrutins", "/scrutins"], ["scrutin-detail", "@scrutin"], ["vote", "/vote"], ["presidentielle-2027", "/presidentielle-2027"], ["reglement-2027", "/reglement-2027"],
-  ["calendrier", "/a-venir"], ["finances", "/finances"], ["voter", "/voter"], ["pour-vous", "/pour-vous"], ["sources", "/sources"], ["confort-lecture", "/confort-lecture"],
+  ["scrutins", "/scrutins"], ["scrutin-detail", "@scrutin"], ["vote", "/vote"], ["presidentielle-2027", "/presidentielle-2027"], 
+  ["calendrier", "/a-venir"], ["finances", "/finances"], ["pour-vous", "/pour-vous"], ["sources", "/sources"], ["confort-lecture", "/confort-lecture"],
   ["chez-vous", "/chez-vous"], ["actus", "/actus"], ["repere-du-jour", "/repere-du-jour"], ["dictionnaire", "/dictionnaire"], ["recherche", "/recherche"],
   ["procedure", "/procedure"], ["questions-gouvernement", "/scrutins?mode=qag"], ["partager", "/partager"], ["faq", "/faq"], ["a-propos", "/a-propos"],
   ["confidentialite", "/confidentialite"], ["bienvenue", "/bienvenue"],

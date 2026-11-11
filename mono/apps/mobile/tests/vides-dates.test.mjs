@@ -143,7 +143,7 @@ test("vides — partager.tsx : le repli passe par la règle partagée ; le vote 
 /* ── D. Démarches en ligne de l'écran « Voter » (05/11/2026) ─────────────── */
 
 const elections = lire("src", "lib", "elections.ts");
-const voter = lire("src", "app", "voter.tsx");
+const voter = lire("src", "ui", "guide-vote.tsx");
 
 test("D — les trois démarches pointent vers service-public.gouv.fr, et nulle part ailleurs", () => {
   const urls = [...elections.matchAll(/url:\s*"([^"]+)"/g)].map(m => m[1]).filter(u => /\/R\d+$/.test(u));
@@ -160,7 +160,7 @@ test("D — l'écran affiche les démarches avec leur date de vérification, et 
 /* ── E. « Ma voix » : accordéons et réponses sourcées (05/11/2026) ───────── */
 
 test("E — chaque réponse sur le conseil municipal porte sa source officielle", () => {
-  const v = lire("src", "app", "voter.tsx");
+  const v = lire("src", "ui", "guide-vote.tsx");
   for (const titre of ["Comment assister au conseil municipal ?", "Où trouver ce qu'a décidé le conseil ?"]) {
     const i = v.indexOf(titre);
     assert.ok(i > 0, `question absente : ${titre}`);
