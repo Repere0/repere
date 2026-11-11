@@ -296,7 +296,7 @@ export default function AVenir() {
             onPress={() => router.push("/procedure")}
             accessibilityRole="button"
             accessibilityLabel="Ouvrir : comment une loi devient loi"
-            style={({ pressed }) => ({ minHeight: 52, padding: 16, borderRadius: 14, borderWidth: 1, borderColor: couleurs.trait, backgroundColor: couleurs.carte, opacity: pressed ? 0.6 : 1 })}
+            style={({ pressed }) => ({ minHeight: 52, padding: 16, borderRadius: 14, backgroundColor: couleurs.carte, opacity: pressed ? 0.6 : 1 })}
           >
             <Text style={{ fontWeight: "500", color: couleurs.encre }}>Comment une loi devient loi</Text>
             <Text style={{ marginTop: 4, color: couleurs.sourd }}>{ETAPES_LOI.length} étapes, du dépôt à la publication, avec la navette.</Text>
@@ -305,7 +305,7 @@ export default function AVenir() {
             onPress={() => router.push("/scrutins?mode=qag")}
             accessibilityRole="button"
             accessibilityLabel="Ouvrir les Questions au Gouvernement"
-            style={({ pressed }) => ({ minHeight: 52, padding: 16, borderRadius: 14, borderWidth: 1, borderColor: couleurs.trait, backgroundColor: couleurs.carte, opacity: pressed ? 0.6 : 1 })}
+            style={({ pressed }) => ({ minHeight: 52, padding: 16, borderRadius: 14, backgroundColor: couleurs.carte, opacity: pressed ? 0.6 : 1 })}
           >
             <Text style={{ fontWeight: "500", color: couleurs.encre }}>Questions au Gouvernement</Text>
             <Text style={{ marginTop: 4, color: couleurs.sourd }}>Voir les questions posées et les réponses publiées.</Text>
@@ -314,7 +314,7 @@ export default function AVenir() {
             onPress={() => router.push("/dictionnaire")}
             accessibilityRole="button"
             accessibilityLabel="Ouvrir le dictionnaire citoyen"
-            style={({ pressed }) => ({ minHeight: 52, padding: 16, borderRadius: 14, borderWidth: 1, borderColor: couleurs.trait, backgroundColor: couleurs.carte, opacity: pressed ? 0.6 : 1 })}
+            style={({ pressed }) => ({ minHeight: 52, padding: 16, borderRadius: 14, backgroundColor: couleurs.carte, opacity: pressed ? 0.6 : 1 })}
           >
             <Text style={{ fontWeight: "500", color: couleurs.encre }}>Dictionnaire citoyen</Text>
             <Text style={{ marginTop: 4, color: couleurs.sourd }}>Ce que veulent dire les mots du Parlement et des collectivités.</Text>

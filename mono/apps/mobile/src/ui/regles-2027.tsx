@@ -1,4 +1,5 @@
 /* LES RÈGLES DE LA PRÉSIDENTIELLE 2027, EN FICHES (maquette Stitch « Règlement & Scrutin », 09/11/2026).
+ * Depuis le 11/11/2026 : une section de la page Présidentielle 2027, plus un écran à part.
  *
  * Quatre fiches, une à la fois : les parrainages, les deux tours, les plafonds de dépenses, les médias.
  * Chaque fiche porte son texte de référence. Vérifié le 09/11/2026 :
@@ -12,13 +13,11 @@
  * Rien ici n'est un chiffre de l'application : ce sont des règles, citées. */
 import { useState } from "react";
 import { Pressable, Text, View } from "react-native";
-import { Stack } from "expo-router";
 import { dateFr } from "@repere/core";
 import { LienSortant } from "../lib/composants";
 import { ELECTIONS } from "../lib/elections";
 import { ACCENTS, CIBLE, couleurs, JAUGE, PAS, POLICE, RAYON, TYPO } from "../lib/theme";
-import { Page, Question } from "../ui/page";
-import { EnClair, Onglets } from "../ui/stitch";
+import { EnClair, Onglets } from "./stitch";
 
 export const REGLES_VERIFIEES_LE = "2026-11-09";
 const LOI_1962 = "https://www.cantal.gouv.fr/contenu/telechargement/11293/95797/file/loi_62-1292_du_6_nov_1962_modifiee_relative_a_l_election_du_pt_de_la_republique-2.pdf";
@@ -37,25 +36,23 @@ const FICHES: { cle: Fiche; texte: string }[] = [
 function Grand({ valeur, legende }: { valeur: string; legende: string }) {
   return (
     <View accessible accessibilityLabel={`${valeur} : ${legende}`}>
-      <Text style={[TYPO.stat, { fontSize: TYPO.stat.fontSize * 1.6, lineHeight: TYPO.stat.lineHeight * 1.6, color: ACCENTS.autorite }]}>{valeur}</Text>
+      <Text style={[TYPO.chiffre, { color: ACCENTS.autorite }]}>{valeur}</Text>
       <Text style={TYPO.etiquette}>{legende}</Text>
     </View>
   );
 }
 
-export default function Reglement2027() {
+export function Regles2027() {
   const [fiche, setFiche] = useState<Fiche>("parrainages");
   const i = FICHES.findIndex(f => f.cle === fiche);
   const pres = ELECTIONS.find(e => e.type === "presidentielle" && e.date);
   /* Le second tour : quatorze jours après le premier (Constitution, article 7). */
   const second = pres && pres.date ? (() => { const [a, m, j] = pres.date.split("-").map(Number); return new Date(Date.UTC(a, m - 1, j + 14)).toISOString().slice(0, 10); })() : null;
   return (
-    <Page>
-      <Stack.Screen options={{ title: "Présidentielle 2027" }} />
-      <Question etiquette="Les règles du scrutin" question="Présidentielle 2027 : les règles" sous="Quatre fiches, chacune avec son texte de référence." />
+    <View style={{ gap: PAS * 3 }}>
       <Onglets etiquette="Fiches des règles" valeurs={FICHES} actif={fiche} choisir={setFiche} />
 
-      <View style={{ gap: PAS * 3, padding: PAS * 5, borderRadius: RAYON.carte, backgroundColor: couleurs.carte, borderWidth: 1, borderColor: couleurs.trait }}>
+      <View style={{ gap: PAS * 3, padding: PAS * 5, borderRadius: RAYON.carte, backgroundColor: couleurs.carte }}>
         {fiche === "parrainages" ? (
           <>
             <Grand valeur="500" legende="élus doivent présenter un candidat" />
@@ -111,6 +108,6 @@ export default function Reglement2027() {
         </Pressable>
       </View>
       <Text style={TYPO.micro}>Règles vérifiées le {dateFr(REGLES_VERIFIEES_LE)}.</Text>
-    </Page>
+    </View>
   );
 }

@@ -227,7 +227,7 @@ function Ligne({ e }: { e: Entree }) {
       </View>
     </View>
   );
-  const style = { padding: PAS * 4, borderRadius: RAYON.bloc, backgroundColor: couleurs.carte, borderWidth: 1, borderColor: couleurs.trait, ...OMBRE };
+  const style = { padding: PAS * 4, borderRadius: RAYON.bloc, backgroundColor: couleurs.carte, ...OMBRE };
   if (!e.lien) return <View style={style}>{contenu}</View>;
   return (
     <Pression onPress={() => Linking.openURL(e.lien as string)} role="link"

@@ -104,7 +104,7 @@ export default function Bienvenue() {
             );
           })}
         </View>
-        <View style={{ borderRadius: 14, padding: PAS * 3, backgroundColor: couleurs.carte, borderWidth: 1, borderColor: couleurs.trait }}>
+        <View style={{ borderRadius: 14, padding: PAS * 3, backgroundColor: couleurs.carte }}>
           <Text style={{ fontSize: taille, lineHeight: Math.round(taille * 1.5), color: couleurs.encre }} accessibilityLabel={`Aperçu à ${taille} points`}>
             Repère vous dit ce qui se décide près de chez vous, avec les sources.
           </Text>

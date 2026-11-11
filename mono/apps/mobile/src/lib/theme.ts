@@ -37,19 +37,21 @@ export const COULEUR_VOTE_DALTONIEN = { p: COULEURS_VOTE_DALTONIEN.votePour, c: 
 export const CIBLE = 48;
 export const PAS = 4;
 /* DESIGN.md (09/11/2026) : cartes au rayon 16, blocs et champs au rayon 12. */
-export const RAYON = { carte: 16, bloc: 12, pastille: 999 } as const;
+/* Variante A (11/11/2026) : cartes au rayon 24, blocs et champs au rayon 16. */
+export const RAYON = { carte: 24, bloc: 16, pastille: 999 } as const;
 
 /* DA premium (07/11/2026, décision du porteur) : Manrope pour les titres, DM Sans pour le
    texte, IBM Plex Mono pour les dates et les chiffres. Toutes sous licence SIL OFL,
    embarquées dans l'application (aucun hôte de polices, aucune requête réseau).
    Une famille par graisse : sous Android, fontWeight ne choisit pas une autre famille. */
-type Polices = { affiche: string; titre: string; texte: string; texteMoyen: string; texteGras: string; donnee: string; donneeForte: string };
+type Polices = { affiche: string; section: string; titre: string; texte: string; texteMoyen: string; texteGras: string; donnee: string; donneeForte: string };
 /* Stitch (09/11/2026) : une famille par thème. Le sombre garde celles du 07/11. */
 export const POLICES_PAR_MODE: Readonly<Record<Mode, Polices>> = {
   /* Refonte « légère » (porteur, 09/11/2026) : les mêmes familles dans les deux thèmes. Titres en
      Manrope SemiBold (plus d'ExtraBold), texte en DM Sans, données en IBM Plex Mono. */
   clair: {
-    affiche: "Manrope_600SemiBold",
+    affiche: "Manrope_800ExtraBold",
+    section: "Manrope_700Bold",
     titre: "Manrope_600SemiBold",
     texte: "DMSans_400Regular",
     texteMoyen: "DMSans_500Medium",
@@ -58,7 +60,8 @@ export const POLICES_PAR_MODE: Readonly<Record<Mode, Polices>> = {
     donneeForte: "IBMPlexMono_600SemiBold",
   },
   sombre: {
-    affiche: "Manrope_600SemiBold",
+    affiche: "Manrope_800ExtraBold",
+    section: "Manrope_700Bold",
     titre: "Manrope_600SemiBold",
     texte: "DMSans_400Regular",
     texteMoyen: "DMSans_500Medium",
@@ -114,16 +117,20 @@ function construire(m: Mode) {
     /* le nom de la commune, les grands nombres */
     /* Refonte « légère » (porteur, 09/11/2026) : titres de 24 px au plus, texte de 15 px à interligne
        généreux, chiffres sans exagération. Les tailles suivent toujours le réglage du lecteur. */
-    affiche: { fontFamily: POLICE.affiche, fontSize: sz(24), lineHeight: lh(30), color: couleurs.encre, letterSpacing: -0.3 },
-    chiffre: { fontFamily: POLICE.donneeForte, fontSize: sz(28), lineHeight: lh(34), color: couleurs.encre, letterSpacing: -0.5 },
-    /* 07/11/2026 : les nombres du décompte (StatCard). */
-    stat: { fontFamily: POLICE.donneeForte, fontSize: sz(26), lineHeight: lh(32), color: couleurs.encre, letterSpacing: -0.5 },
+    /* VARIANTE A (porteur, 11/11/2026) : échelle 34 / 28 / 22 / 17 / 15 / 13. Les chiffres héros sont en
+       Manrope à chiffres alignés ; IBM Plex Mono ne sert plus qu'aux petites données (TYPO.donnee).
+       Remplace « titres de 24 px au plus » (09/11) et « Plex Mono pour les grands chiffres » (07/11). */
+    affiche: { fontFamily: POLICE.affiche, fontSize: sz(34), lineHeight: lh(40), color: couleurs.encre, letterSpacing: -0.8 },
+    chiffre: { fontFamily: POLICE.affiche, fontSize: sz(34), lineHeight: lh(40), color: couleurs.encre, letterSpacing: -1, fontVariant: ["tabular-nums" as const] },
+    stat: { fontFamily: POLICE.section, fontSize: sz(28), lineHeight: lh(34), color: couleurs.encre, letterSpacing: -0.5, fontVariant: ["tabular-nums" as const] },
     /* la question d'un écran */
-    question: { fontFamily: POLICE.affiche, fontSize: sz(22), lineHeight: lh(28), color: couleurs.encre, letterSpacing: -0.2 },
+    question: { fontFamily: POLICE.affiche, fontSize: sz(28), lineHeight: lh(34), color: couleurs.encre, letterSpacing: -0.5 },
+    /* un titre de section, entre deux groupes de cartes */
+    section: { fontFamily: POLICE.section, fontSize: sz(22), lineHeight: lh(28), color: couleurs.encre, letterSpacing: -0.3 },
     /* la réponse d'une carte */
     reponse: { fontFamily: POLICE.titre, fontSize: sz(17), lineHeight: lh(24), color: couleurs.encre },
-    corps: { fontFamily: POLICE.texte, fontSize: sz(15), lineHeight: lh(24), color: couleurs.encre },
-    note: { fontFamily: POLICE.texte, fontSize: sz(14), lineHeight: lh(22), color: couleurs.sourd },
+    corps: { fontFamily: POLICE.texte, fontSize: sz(15), lineHeight: lh(22), color: couleurs.encre },
+    note: { fontFamily: POLICE.texte, fontSize: sz(13), lineHeight: lh(19), color: couleurs.sourd },
     /* l'étiquette au-dessus d'une réponse, en capitales de style */
     etiquette: { fontFamily: POLICE.texteMoyen, fontSize: sz(13), lineHeight: lh(18), letterSpacing: 0.8, textTransform: "uppercase" as const, color: couleurs.sourd },
     micro: { fontFamily: POLICE.texte, fontSize: sz(13), lineHeight: lh(18), color: couleurs.sourd },

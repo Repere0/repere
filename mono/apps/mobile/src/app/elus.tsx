@@ -20,7 +20,7 @@ import { chargerFiches } from "../lib/annuaire";
 import { Vide } from "../lib/composants";
 import { couleurs, CIBLE, PAS, RAYON, TYPO } from "../lib/theme";
 import { AvatarElu } from "../ui/avatar";
-import { CarteListe, Puces, StatCard } from "../ui/donnees";
+import { CarteListe, Puces } from "../ui/donnees";
 import { Loupe } from "../ui/loupe";
 import { DatePublication } from "../ui/fraicheur";
 import { SquelettesListe } from "../ui/squelette";
@@ -126,7 +126,8 @@ export default function Elus() {
             {ABSENTS[fonction] ? <Vide titre={ABSENTS[fonction] as string} corps="Repère n'affiche que ce qu'il publie, avec sa source." /> : null}
             {etat === ETATS.SERVI && !ABSENTS[fonction] ? (
               <View style={{ flexDirection: "row" }}>
-                <StatCard valeur={trouves.length.toLocaleString("fr-FR")} libelle={`élu${trouves.length > 1 ? "s" : ""} affiché${trouves.length > 1 ? "s" : ""}`} />
+                {/* Variante A : le compteur n'est pas la réponse de l'écran ; une ligne discrète suffit. */}
+                <Text style={TYPO.note}>{trouves.length.toLocaleString("fr-FR")} élu{trouves.length > 1 ? "s" : ""} affiché{trouves.length > 1 ? "s" : ""}</Text>
               </View>
             ) : null}
             {etat === ETATS.EN_COURS ? <SquelettesListe n={5} hauteur={68} /> : null}

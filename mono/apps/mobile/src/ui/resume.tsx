@@ -22,7 +22,9 @@ export function Etiquette({ texte, couleur }: { texte: string; couleur?: string 
   );
 }
 
-export function Resume({ phrase, chiffre, legende, enClair, children }: {
+/* `geant` : LE chiffre de l'écran (un seul par écran, porteur, 11/11/2026) ; les autres restent en TYPO.stat. */
+export function Resume({ phrase, chiffre, legende, enClair, children, geant }: {
+  geant?: boolean;
   phrase: string; chiffre?: string | null; legende?: string; enClair?: string | null; children?: ReactNode;
 }) {
   return (
@@ -30,7 +32,7 @@ export function Resume({ phrase, chiffre, legende, enClair, children }: {
       <Text style={TYPO.reponse}>{phrase}</Text>
       {chiffre ? (
         <View accessible accessibilityLabel={`${chiffre}${legende ? ", " + legende : ""}`}>
-          <Text style={TYPO.chiffre}>{typeof chiffre === "string" ? espacesFines(chiffre) : chiffre}</Text>
+          <Text style={geant ? [TYPO.chiffre, { fontSize: TYPO.chiffre.fontSize * 1.75, lineHeight: TYPO.chiffre.lineHeight * 1.6, letterSpacing: -2 }] : TYPO.stat}>{typeof chiffre === "string" ? espacesFines(chiffre) : chiffre}</Text>
           {legende ? <Text style={TYPO.note}>{legende}</Text> : null}
         </View>
       ) : null}

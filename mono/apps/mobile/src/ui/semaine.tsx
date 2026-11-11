@@ -157,7 +157,7 @@ function Suite({ onPress }: { onPress: () => void }) {
 }
 
 const s = feuille(() => StyleSheet.create({
-  carte: { backgroundColor: couleurs.carte, borderRadius: RAYON.carte, paddingHorizontal: PAS * 4, paddingTop: PAS * 3, gap: PAS * 2, borderWidth: 1, borderColor: couleurs.trait, ...OMBRE },
+  carte: { backgroundColor: couleurs.carte, borderRadius: RAYON.carte, paddingHorizontal: PAS * 4, paddingTop: PAS * 3, gap: PAS * 2, ...OMBRE },
   phrase: { ...TYPO.reponse, fontSize: 19, lineHeight: 25 },
   bande: { flexDirection: "row", gap: PAS },
   jour: { flex: 1, minWidth: 0, alignItems: "center", paddingVertical: PAS * 2, borderRadius: RAYON.bloc, backgroundColor: couleurs.sol, gap: 2 },

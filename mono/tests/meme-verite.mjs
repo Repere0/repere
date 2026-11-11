@@ -177,7 +177,10 @@ async function texteApp(nav, { nom }) {
   await p.waitForLoadState("networkidle");
   let { t, n: feuilles } = await toutLire(p);
   for (const action of ["Où va cet argent ?", "Comprendre ce vote", "Qui décide", "Le calendrier", "Sources"]) {
-    const b = p.getByRole("button", { name: action, exact: true });
+    /* 11/11/2026 : « Qui décide » et « Le calendrier » ne sont plus doublés par des tuiles ; on les
+       ouvre par leur onglet, comme le lecteur. */
+    const onglet = action === "Qui décide" || action === "Le calendrier";
+    const b = p.getByRole(onglet ? "tab" : "button", { name: action, exact: !onglet });
     if (!(await b.count())) continue;              /* absence dite par une phrase sur l'accueil */
     await b.first().click();
     await p.waitForTimeout(900);

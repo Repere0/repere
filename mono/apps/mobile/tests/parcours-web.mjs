@@ -286,7 +286,10 @@ for (const largeur of [360, 390, 430]) {
     ["Le calendrier", /Les séances annoncées à l'Assemblée nationale/, /concernent tout le pays/],
     ["Sources", /Repère a traité ces fichiers/, /Repère a traité ces fichiers le \d.*Données publiées le \d.*Données relevées le \d/s],
   ]) {
-    await page.getByRole("button", { name: action, exact: true }).first().click();
+    /* 11/11/2026 : « Qui décide » et « Le calendrier » sont des onglets ; leurs tuiles, qui les doublaient
+       dans « Aller plus loin », sont retirées. Le geste du lecteur est l'onglet de la barre basse. */
+    const onglet = action === "Qui décide" || action === "Le calendrier";
+    await page.getByRole(onglet ? "tab" : "button", { name: action, exact: !onglet }).first().click();
     await page.getByText(question).first().waitFor({ timeout: 10000 });
     await page.waitForTimeout(800);
     const m = await mesurer();
@@ -483,12 +486,9 @@ async function montantA100ms(reduit) {
     "mémoire : deux codes publics pour la commune, et seul « repere.profil » à côté (ADR 0006) " + JSON.stringify(st.ls));
   verifier(st.ss === 0 && st.cookies === "", "mémoire : ni sessionStorage, ni cookie");
   await page.goto(BASE + "/", { waitUntil: "networkidle" });
-  const reprendre = page.getByRole("button", { name: "Voir ce qui se passe à Meaux" });
-  await reprendre.waitFor({ timeout: 10000 });
-  verifier(true, "mémoire : Meaux est proposée à la réouverture");
-  await reprendre.click();
+  /* 11/11/2026 : un seul accueil. Avec une commune gardée, l'application rouvre sur elle, sans geste. */
   await page.getByText("Aller plus loin").first().waitFor({ timeout: 15000 });
-  verifier(true, "mémoire : un geste suffit pour retrouver sa commune");
+  verifier(/Meaux/.test(await page.locator("body").innerText()), "mémoire : l'application rouvre directement sur Meaux");
   await page.getByRole("button", { name: "Oublier Meaux" }).click();
   st = await stockage();
   verifier(Object.keys(st.ls).length === 0, "mémoire : « Oublier » efface tout " + JSON.stringify(st.ls));
@@ -582,7 +582,10 @@ async function ouvrirSemaine({ agenda, senatCoupe, fuseau }) {
   await page.getByText("Aller plus loin").first().waitFor({ timeout: 15000 });
   await page.waitForTimeout(600);
   const bas = await page.evaluate(() => [...document.querySelectorAll('[data-testid="reponse"]')].filter(e => e.offsetParent).map(e => Math.round(e.getBoundingClientRect().bottom)));
-  verifier(bas.length === 3 && bas.every(b => b <= HAUTEUR), `390 x ${HAUTEUR} : les trois réponses tiennent dans le premier écran ${JSON.stringify(bas)}`);
+  /* VARIANTE A (porteur, 11/11/2026) : la règle de densité change. Avant : les trois réponses dans le
+     premier écran. Maintenant : UNE réponse héros entière dans le premier écran, avec son bouton ; les
+     deux autres se lisent en défilant. Trois réponses existent toujours. */
+  verifier(bas.length === 3 && bas[0] <= HAUTEUR, `390 x ${HAUTEUR} : trois réponses, et la réponse héros tient entière dans le premier écran ${JSON.stringify(bas)}`);
   await page.close();
 }
 

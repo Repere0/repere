@@ -42,7 +42,7 @@ export function RappelElection({ aujourdhui = new Date() }: { aujourdhui?: Date 
   const date = dateFr(election.date);
   return (
     <View accessibilityLabel={`${titre}, ${quand}, ${date}`}
-      style={{ gap: PAS * 2, padding: PAS * 4, borderRadius: RAYON.carte, backgroundColor: D.carte, borderWidth: 1, borderColor: D.trait }}>
+      style={{ gap: PAS * 2, padding: PAS * 4, borderRadius: RAYON.carte, backgroundColor: D.carte }}>
       <View style={{ flexDirection: "row", alignItems: "center", gap: PAS * 3 }}>
         <Ionicons name="calendar-outline" size={22} color={D.encre} accessible={false} importantForAccessibility="no" />
         <Text style={{ flex: 1, fontFamily: POLICE.titre, fontSize: 17, lineHeight: 24, color: D.encre }}>{titre}</Text>
@@ -55,7 +55,7 @@ export function RappelElection({ aujourdhui = new Date() }: { aujourdhui?: Date 
           <Text style={{ fontFamily: POLICE.texte, fontSize: 15, lineHeight: 21, color: D.sourd }}>{jours === 1 ? "jour" : "jours"} · {date}</Text>
         </View>
       ) : <Text style={{ fontSize: 15, lineHeight: 21, color: D.encre }}>{quand} ({date})</Text>}
-      <Pressable onPress={() => router.push("/voter")} accessibilityRole="link" accessibilityLabel="Comment voter"
+      <Pressable onPress={() => router.push("/presidentielle-2027")} accessibilityRole="link" accessibilityLabel="Comment voter"
         style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", alignSelf: "flex-start", opacity: pressed ? 0.7 : 1 })}>
         <Text style={{ fontSize: 15, fontWeight: "600", color: D.encre }}>Comment voter ?</Text>
       </Pressable>

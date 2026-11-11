@@ -12,6 +12,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import { Stack, useLocalSearchParams } from "expo-router";
+import { SquelettesListe } from "../ui/squelette";
 import {
   chargerQuestionsGouvernementIndex,
   chargerQuestionGouvernementLot,
@@ -180,6 +181,7 @@ export default function Scrutins() {
   const [ouverts, setOuverts] = useState<Set<string>>(new Set());
   const [chargementDetail, setChargementDetail] = useState(false);
   const [chargementQag, setChargementQag] = useState(false);
+  const [qagCharge, setQagCharge] = useState(false);
 
   useEffect(() => {
     chargerScrutinsIndex().then(r => {
@@ -194,6 +196,7 @@ export default function Scrutins() {
     chargerQuestionsGouvernementIndex().then(r => {
       const d = r.donnees as QagIndex | null;
       setQagIndex(d);
+      setQagCharge(true);
       if (d?.questions?.length) setQagSelection(d.questions[d.questions.length - 1].uid);
     });
   }, []);
@@ -267,7 +270,12 @@ export default function Scrutins() {
 
       {mode === "qag" ? (
         !qagIndex ? (
-          <Vide titre="Chargement des questions au Gouvernement." corps="Repère récupère le relevé officiel des séances de questions." />
+          /* Avant le 11/11/2026 : « Chargement » restait affiché pour toujours quand le relevé n'arrivait pas. */
+          qagCharge ? (
+            <Vide titre="Les questions au Gouvernement ne sont pas encore sur ce téléphone."
+              corps="Repère les republie chaque jour ; elles restent consultables sur le site officiel."
+              lien={{ texte: "Voir la source des questions (Assemblée nationale)", url: "https://data.assemblee-nationale.fr/questions/questions-au-gouvernement" }} />
+          ) : <SquelettesListe n={3} hauteur={88} />
         ) : (
           <>
             <View style={s.resumeEntete}>
@@ -297,7 +305,7 @@ export default function Scrutins() {
               ))}
             </ScrollView>
 
-            {chargementQag ? <Vide titre="Chargement de la question." corps="Repère récupère le contenu publié par l'Assemblée nationale." /> : qagDetail ? (
+            {chargementQag ? <SquelettesListe n={2} hauteur={88} /> : qagDetail ? (
               <View style={s.detail}>
                 <Text style={TYPO.etiquette}>Question au Gouvernement · n° {qagDetail.n}</Text>
                 <Text style={s.detailTitre}>{qagDetail.auteur.nom || "Auteur non identifié"}</Text>
@@ -334,11 +342,11 @@ export default function Scrutins() {
         )
       ) : (
         !index ? (
-          <Vide icone={etat === ETATS.EN_COURS ? "hourglass-outline" : "file-tray-outline"}
-            titre={etat === ETATS.EN_COURS ? "Chargement des scrutins." : "Les scrutins ne sont pas encore sur ce téléphone."}
-            corps="Sans le relevé détaillé de l'Assemblée, Repère n'affiche aucune position. Les scrutins restent consultables sur le site officiel."
-            lien={etat === ETATS.EN_COURS ? undefined : { texte: "Voir les scrutins sur le site de l'Assemblée", url: "https://www.assemblee-nationale.fr/dyn/17/scrutins" }}
-          />
+          etat === ETATS.EN_COURS ? <SquelettesListe n={3} hauteur={88} /> : (
+            <Vide icone="file-tray-outline" titre="Les scrutins ne sont pas encore sur ce téléphone."
+              corps="Sans le relevé détaillé de l'Assemblée, Repère n'affiche aucune position. Les scrutins restent consultables sur le site officiel."
+              lien={{ texte: "Voir les scrutins sur le site de l'Assemblée", url: "https://www.assemblee-nationale.fr/dyn/17/scrutins" }} />
+          )
         ) : (
           <>
             <View style={s.resumeEntete}>
@@ -373,7 +381,7 @@ export default function Scrutins() {
             </ScrollView>
 
             {chargementDetail ? (
-              <Vide titre="Chargement du vote." corps="Repère récupère le détail nominatif de ce scrutin." />
+              <SquelettesListe n={2} hauteur={88} />
             ) : detail ? (
               <View style={s.detail}>
                 <Text style={TYPO.etiquette}>{detail.ty} · {dateFr(detail.d)} · scrutin n° {detail.n}</Text>
@@ -426,13 +434,13 @@ const s = feuille(() => StyleSheet.create({
   resumeNombre: { ...TYPO.stat, marginTop: PAS },
   resumePhrase: { fontSize: 16, lineHeight: 22, color: couleurs.sourd },
   recherche: {
-    minHeight: CIBLE, backgroundColor: couleurs.carte, borderWidth: 1, borderColor: couleurs.trait,
+    minHeight: CIBLE, backgroundColor: couleurs.carte,
     borderRadius: RAYON.bloc, paddingHorizontal: PAS * 4, color: couleurs.encre, fontSize: 16,
   },
   scroller: { gap: PAS * 2, paddingRight: PAS * 2 },
   selectionCard: {
     width: 230, minHeight: 112, padding: PAS * 4, borderRadius: RAYON.bloc,
-    backgroundColor: couleurs.carte, borderWidth: 1, borderColor: couleurs.trait, justifyContent: "space-between",
+    backgroundColor: couleurs.carte, justifyContent: "space-between",
   },
   selectionCardActive: { borderColor: couleurs.encre, borderWidth: 1.5 },
   selectionTitre: { fontFamily: POLICE.titre, fontSize: 17, lineHeight: 21, color: couleurs.encre, marginTop: PAS * 2 },

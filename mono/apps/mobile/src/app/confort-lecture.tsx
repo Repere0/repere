@@ -40,7 +40,7 @@ export default function ConfortLecture() {
         <View style={{ flexDirection: "row", flexWrap: "wrap", gap: PAS * 2 }}>
           {TAILLES_TEXTE.map(t => <Choix key={t} texte={`A ${t}`} etiquette={`Texte de ${t} points`} actif={p.tailleTexte === t} onPress={() => modifier({ tailleTexte: t })} />)}
         </View>
-        <View style={{ borderRadius: 14, padding: PAS * 3, backgroundColor: couleurs.carte, borderWidth: 1, borderColor: couleurs.trait }}>
+        <View style={{ borderRadius: 14, padding: PAS * 3, backgroundColor: couleurs.carte }}>
           <Text style={{ fontSize: p.tailleTexte, lineHeight: Math.round(p.tailleTexte * p.espacement), color: couleurs.encre }}>
             Repère vous dit ce qui se décide près de chez vous, avec les sources.
           </Text>

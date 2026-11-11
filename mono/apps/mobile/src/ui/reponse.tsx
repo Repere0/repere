@@ -10,7 +10,8 @@
  * le premier ecran (tests/parcours-web.mjs). */
 import type { ReactNode } from "react";
 import { Pressable, Share, StyleSheet, Text, View } from "react-native";
-import { feuille, couleurs, CIBLE, OMBRE, PAS, RAYON, TYPO, type Echelon } from "../lib/theme";
+import { Ionicons } from "@expo/vector-icons";
+import { feuille, ACCENTS, couleurs, CIBLE, OMBRE, PAS, POLICE, RAYON, TYPO, type Echelon } from "../lib/theme";
 
 function BoutonPartager({ titre, texte, sourceUrl }: { titre: string; texte: string; sourceUrl?: string | null }) {
   const partager = async () => {
@@ -19,8 +20,8 @@ function BoutonPartager({ titre, texte, sourceUrl }: { titre: string; texte: str
   };
   return (
     <Pressable onPress={partager} accessibilityRole="button" accessibilityLabel={`Partager : ${titre}`}
-      style={({ pressed }) => [s.partage, pressed && { opacity: 0.6 }]}>
-      <Text style={s.suiteTexte}>Partager</Text>
+      style={({ pressed }) => [s.rond, pressed && { opacity: 0.6 }]}>
+      <Ionicons name="share-outline" size={20} color={couleurs.encre} accessible={false} importantForAccessibility="no" />
     </Pressable>
   );
 }
@@ -29,7 +30,10 @@ function BoutonPartager({ titre, texte, sourceUrl }: { titre: string; texte: str
    symbole euro ne tombent seuls a la ligne (vu sur capture : « 332 372 / € »). */
 export const typo = (t: string) => t.replace(/ ([?!:;€»])/g, "\u00a0$1").replace(/« /g, "«\u00a0");
 
-export function Reponse({ phrase, preuve, note, sources, suite, partage }: {
+export function Reponse({ phrase, preuve, note, sources, suite, partage, heros, sur }: {
+  /* VARIANTE A (11/11/2026) : `heros` = la réponse principale de l'écran (le chiffre d'abord, la phrase
+     dessous, le seul bouton plein) ; `sur` = l'étiquette au-dessus du chiffre. */
+  heros?: boolean; sur?: string;
   /* l'echelon qui decide : porte par la donnee, pas encore par le rendu
      (cartes blanches en palette B partiel) ; la PR « Chez vous » s'en servira. */
   echelon: Echelon; phrase: string; preuve?: ReactNode; note?: ReactNode;
@@ -42,19 +46,23 @@ export function Reponse({ phrase, preuve, note, sources, suite, partage }: {
      sauter d'une reponse a l'autre. */
   return (
     <View testID="reponse" style={[s.carte, { backgroundColor: couleurs.carte }]}>
-      <Text style={s.phrase} accessibilityRole="header">{typo(phrase)}</Text>
-      {preuve}
+      {sur ? <Text style={TYPO.etiquette}>{sur}</Text> : null}
+      {heros ? preuve : null}
+      <Text style={heros ? s.phraseHeros : s.phrase} accessibilityRole="header">{typo(phrase)}</Text>
+      {heros ? null : preuve}
       {note ? (typeof note === "string" ? <Text style={TYPO.note}>{typo(note)}</Text> : note) : null}
-      <View style={s.pied}>
-        <View style={{ flexDirection: "row", flexWrap: "wrap", flexShrink: 1 }}>{sources}</View>
-        {partage ? <BoutonPartager {...partage} /> : null}
-        {suite ? (
-          <Pressable onPress={suite.onPress} accessibilityRole="button" accessibilityLabel={suite.texte}
-            style={({ pressed }) => [s.suite, pressed && { opacity: 0.6 }]}>
-            <Text style={s.suiteTexte}>{suite.texte.replace(/ \?$/, " ?")} ›</Text>
-          </Pressable>
-        ) : null}
-      </View>
+      {sources ? <View style={{ flexDirection: "row", flexWrap: "wrap", marginVertical: -PAS * 2 }}>{sources}</View> : null}
+      {suite || partage ? (
+        <View style={s.pied}>
+          {suite ? (
+            <Pressable onPress={suite.onPress} accessibilityRole="button" accessibilityLabel={suite.texte}
+              style={({ pressed }) => [s.suite, heros && s.suitePleine, pressed && { opacity: 0.7 }]}>
+              <Text style={[s.suiteTexte, heros && { color: ACCENTS.surAutorite }]}>{typo(suite.texte)}</Text>
+            </Pressable>
+          ) : <View style={{ flex: 1 }} />}
+          {partage ? <BoutonPartager {...partage} /> : null}
+        </View>
+      ) : null}
     </View>
   );
 }
@@ -64,21 +72,23 @@ export function Plus({ texte, onPress, premier, dernier }: { texte: string; onPr
   return (
     <Pressable onPress={onPress} accessibilityRole="button" accessibilityLabel={texte}
       style={({ pressed }) => [s.plus, premier && s.plusPremier, dernier && s.plusDernier, pressed && { opacity: 0.6 }]}>
-      <Text style={[s.suiteTexte, { flex: 1 }]}>{texte}</Text>
-      <Text style={s.suiteTexte} accessibilityElementsHidden importantForAccessibility="no">›</Text>
+      <Text style={[TYPO.corps, { flex: 1, fontFamily: POLICE.titre }]}>{texte}</Text>
+      <Ionicons name="chevron-forward" size={16} color={couleurs.sourd} accessible={false} importantForAccessibility="no" />
     </Pressable>
   );
 }
 
 const s = feuille(() => StyleSheet.create({
-  /* Stitch (09/11/2026) : carte bordée d'un filet, rayon 20. */
-  carte: { borderRadius: RAYON.carte, paddingHorizontal: PAS * 4, paddingTop: PAS, paddingBottom: 0, gap: PAS, borderWidth: 1, borderColor: couleurs.trait, ...OMBRE },
-  /* Refonte « légère » (09/11/2026) : la phrase suit TYPO.reponse (17 px, Manrope SemiBold). */
+  /* Variante A (11/11/2026) : surface sans filet, 24 px d'intérieur, 16 px entre les éléments. */
+  carte: { borderRadius: RAYON.carte + 4, padding: PAS * 6, gap: PAS * 4, ...OMBRE },
   phrase: { ...TYPO.reponse },
-  pied: { flexDirection: "row", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", columnGap: PAS * 2 },
-  suite: { minHeight: CIBLE, justifyContent: "center", marginLeft: "auto" },
-  suiteTexte: { fontSize: 15, fontWeight: "500", color: couleurs.lien },
-  partage: { minHeight: CIBLE, justifyContent: "center" },
+  phraseHeros: { ...TYPO.corps },
+  pied: { flexDirection: "row", alignItems: "center", gap: PAS * 3 },
+  /* La question suivante : une pilule. Pleine pour la réponse héros (le seul bouton plein de l'écran), discrète sinon. */
+  suite: { flex: 1, minHeight: CIBLE + 4, borderRadius: RAYON.pastille, paddingHorizontal: PAS * 5, alignItems: "center", justifyContent: "center", backgroundColor: couleurs.voile },
+  suitePleine: { backgroundColor: ACCENTS.autorite },
+  suiteTexte: { fontSize: 17, fontFamily: POLICE.section, color: couleurs.encre },
+  rond: { width: CIBLE, height: CIBLE, borderRadius: CIBLE / 2, backgroundColor: couleurs.voile, alignItems: "center", justifyContent: "center" },
   plus: { minHeight: CIBLE + 4, flexDirection: "row", alignItems: "center", paddingHorizontal: PAS * 4, backgroundColor: couleurs.carte,
     borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: couleurs.trait },
   plusPremier: { borderTopLeftRadius: RAYON.bloc, borderTopRightRadius: RAYON.bloc },
