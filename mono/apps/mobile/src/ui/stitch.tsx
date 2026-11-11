@@ -4,7 +4,6 @@
  * VoteBarTricolor    la répartition d'un scrutin (pour, contre, abstention), nombres écrits.
  * StatBubbleTile     une variation entre deux exercices, en bulle (calcul annoncé comme tel).
  * JaugeCofinancement la part de l'État dans un projet aidé, et le reste.
- * MicroJauge         la jauge tripartite du budget (salaires, investissements, fonctionnement).
  * Onglets            le contrôle segmenté compact (pastille blanche, point d'accent).
  * BadgeRepere        le badge « ● REPÈRE DU JOUR · EXERCICE … ».
  *
@@ -20,6 +19,7 @@
 import type { ReactNode } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { BarreSegments } from "./visuels";
 import { ACCENTS, CIBLE, couleurs, feuille, JAUGE, PAS, POLICE, RAYON, TYPO } from "../lib/theme";
 import { useCouleurVote } from "../lib/couleur-vote";
 import { espacesFines } from "./donnees";
@@ -61,9 +61,8 @@ export function VoteBarTricolor({ pour, contre, abstention, position, qui }: {
   return (
     <View style={{ gap: PAS * 2 }} accessible
       accessibilityLabel={`${p} pour, ${c} contre, ${a} abstentions${position && qui ? `. ${qui} : ${mot[position] ?? ""}` : ""}`}>
-      <View style={s.barreVote}>
-        {parts.filter(x => x.n > 0).map(x => <View key={x.cle} style={{ flex: x.n, backgroundColor: C[x.cle] }} />)}
-      </View>
+      <BarreSegments hauteur={32} etiquette={`${p} pour, ${c} contre, ${a} abstentions`}
+        segments={parts.map(x => ({ cle: x.cle, valeur: x.n, couleur: C[x.cle], dedans: `${x.pct}\u00a0%` }))} />
       <View style={s.ligne}>
         {parts.map(x => (
           <View key={x.cle} style={{ flexDirection: "row", alignItems: "center", gap: PAS }}>
@@ -111,31 +110,6 @@ export function JaugeCofinancement({ partEtat, montantEtat, montantTotal, lieu }
   );
 }
 
-/* ── La jauge tripartite du budget ─────────────────────────────────────── */
-export function MicroJauge({ salaires, investissement, autres }: { salaires: number; investissement: number; autres: number }) {
-  const parts = [
-    { cle: "s", v: salaires, c: JAUGE.salaires, l: "Salaires", i: "people-outline" as const },
-    { cle: "i", v: investissement, c: JAUGE.investissement, l: "Investissements", i: "construct-outline" as const },
-    { cle: "a", v: autres, c: JAUGE.autres, l: "Fonctionnement", i: "settings-outline" as const },
-  ];
-  return (
-    <View style={{ gap: PAS * 2 }}>
-      <View style={s.piste} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
-        {parts.filter(x => x.v > 0).map(x => <View key={x.cle} style={{ flex: x.v, backgroundColor: x.c }} />)}
-      </View>
-      <View style={[s.ligne, { columnGap: PAS * 3 }]}>
-        {parts.map(x => (
-          <View key={x.cle} style={{ flexDirection: "row", alignItems: "center", gap: PAS * 1.5 }}>
-            <View style={[s.point, { backgroundColor: x.c, borderWidth: 1, borderColor: couleurs.trait }]} />
-            <Ionicons name={x.i} size={14} color={couleurs.sourd} accessible={false} importantForAccessibility="no" />
-            <Text style={TYPO.micro}>{x.l} <Text style={{ color: couleurs.encre, fontFamily: POLICE.texteGras }}>{x.v}{"\u00a0"}%</Text></Text>
-          </View>
-        ))}
-      </View>
-    </View>
-  );
-}
-
 /* ── Le contrôle segmenté ──────────────────────────────────────────────── */
 export function Onglets<T extends string>({ valeurs, actif, choisir, etiquette }: {
   valeurs: { cle: T; texte: string }[]; actif: T; choisir: (c: T) => void; etiquette: string;
@@ -174,7 +148,6 @@ const s = feuille(() => StyleSheet.create({
   },
   enClairTete: { flexDirection: "row", alignItems: "center", gap: PAS * 1.5 },
   enClairBadge: { ...TYPO.micro, fontFamily: POLICE.texteGras, color: ACCENTS.texteAccent, letterSpacing: 0.6 },
-  barreVote: { flexDirection: "row", height: 8, borderRadius: 4, overflow: "hidden", backgroundColor: couleurs.voile, gap: 2 },
   ligne: { flexDirection: "row", flexWrap: "wrap", columnGap: PAS * 3, rowGap: PAS },
   point: { width: 10, height: 10, borderRadius: 5 },
   badgeDepute: { alignSelf: "flex-start", backgroundColor: couleurs.voile, paddingHorizontal: PAS * 2, paddingVertical: PAS, borderRadius: 6 },
@@ -190,27 +163,3 @@ const s = feuille(() => StyleSheet.create({
   badgeRepere: { flexDirection: "row", alignItems: "center", gap: PAS * 1.5, alignSelf: "flex-start" },
 }));
 
-/* LA RÉPARTITION DE 100 € (Variante A, 11/11/2026) : une barre épaisse en trois segments et sa légende
-   chiffrée. Couleurs de la jauge du budget (invariant 7), jamais politiques ; chaque part est écrite. */
-export function BarreBudget({ parts }: { parts: { sal: number; inv: number; aut: number } }) {
-  const lignes: [string, number, string][] = [["Salaires", parts.sal, JAUGE.salaires], ["Investissements", parts.inv, JAUGE.investissement], ["Autres", parts.aut, JAUGE.autres]];
-  return (
-    <View style={{ gap: PAS * 3 }}>
-      <View accessible accessibilityLabel={`Sur 100 euros dépensés : ${parts.sal} de salaires, ${parts.inv} d'investissements, ${parts.aut} d'autres dépenses.`}
-        style={{ flexDirection: "row", height: 16, borderRadius: 8, overflow: "hidden", gap: 2 }}>
-        {lignes.map(([l, n, c]) => <View key={l} style={{ flex: Math.max(n, 1), backgroundColor: c }} />)}
-      </View>
-      <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
-        {lignes.map(([l, n, c]) => (
-          <View key={l} style={{ gap: 2 }}>
-            <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
-              <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: c }} />
-              <Text style={[TYPO.reponse, { fontFamily: POLICE.section, fontVariant: ["tabular-nums"] }]}>{n}{"\u00a0"}%</Text>
-            </View>
-            <Text style={TYPO.note}>{l}</Text>
-          </View>
-        ))}
-      </View>
-    </View>
-  );
-}

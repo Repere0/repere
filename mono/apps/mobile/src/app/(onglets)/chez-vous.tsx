@@ -61,7 +61,7 @@ import { SignalerErreur } from "../../ui/contact";
 /* VOS DÉCIDEURS (maquette Stitch, 09/11/2026) : composant partagé avec l'accueil (ui/decideurs). */
 import { Decideurs } from "../../ui/decideurs";
 import { RappelElection } from "../../ui/rappel-election";
-import { BarreBudget } from "../../ui/stitch";
+import { BarreBudget } from "../../ui/visuels";
 import { deputeParNom, groupeDe, useGroupes } from "../../lib/groupes";
 import { DataBadge } from "../../ui/donnees";
 import { useCouleurVote } from "../../lib/couleur-vote";
@@ -222,7 +222,7 @@ export default function ChezVous() {
                 <View style={{ gap: PAS }}>
                   <View style={{ flexDirection: "row", alignItems: "baseline", flexWrap: "wrap", columnGap: PAS * 2 }}>
                     {/* 26 / 30 px : la 3e réponse de Meaux reste dans le premier écran de 844 px (mesuré). */}
-                    <Text style={[TYPO.chiffre, { fontSize: TYPO.chiffre.fontSize - 2, lineHeight: TYPO.chiffre.lineHeight - 4 }]}>{euros(f.subvention)}</Text>
+                    <Text style={TYPO.stat}>{euros(f.subvention)}</Text>
                     <Text style={TYPO.note}>{cout ? `d'aide, sur ${cout.texte} annoncés` : "d'aide de l'État"}</Text>
                   </View>
                   {f.partPct !== null ? <BarrePart sansLibelle part={f.partPct} libelle="Part de l'État dans le coût annoncé" valeur={`${f.partPct} € sur 100 €`} /> : null}

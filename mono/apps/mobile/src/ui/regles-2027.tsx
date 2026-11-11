@@ -36,7 +36,7 @@ const FICHES: { cle: Fiche; texte: string }[] = [
 function Grand({ valeur, legende }: { valeur: string; legende: string }) {
   return (
     <View accessible accessibilityLabel={`${valeur} : ${legende}`}>
-      <Text style={[TYPO.stat, { fontSize: TYPO.stat.fontSize * 1.6, lineHeight: TYPO.stat.lineHeight * 1.6, color: ACCENTS.autorite }]}>{valeur}</Text>
+      <Text style={[TYPO.chiffre, { color: ACCENTS.autorite }]}>{valeur}</Text>
       <Text style={TYPO.etiquette}>{legende}</Text>
     </View>
   );

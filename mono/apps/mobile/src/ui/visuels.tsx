@@ -14,7 +14,8 @@ import { AvatarElu, CreditPhotoElu } from "./avatar";
 import { useState, type ReactNode } from "react";
 import { Animated, Pressable, StyleSheet, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { feuille, couleurs, PAS, RAYON, TEINTES, TYPO, CIBLE, type Echelon } from "../lib/theme";
+import { feuille, couleurs, JAUGE, PAS, POLICE, RAYON, TEINTES, TYPO, CIBLE, type Echelon } from "../lib/theme";
+import { NEUTRES_PAR_MODE } from "../lib/palette";
 import { useCouleurVote } from "../lib/couleur-vote";
 import { useApparition, useCompteur } from "./mouvement";
 import { pointEchelon } from "../lib/niveaux";
@@ -22,12 +23,66 @@ import { pointEchelon } from "../lib/niveaux";
 const largeur = (v: Animated.Value, pct: number) =>
   v.interpolate({ inputRange: [0, 1], outputRange: ["0%", `${Math.max(0, Math.min(100, pct))}%`] });
 
+/* ── LA BARRE SEGMENTÉE (porteur, 11/11/2026, « test des 3 secondes ») ──────────────────────
+   Une barre épaisse ; chaque segment porte sa valeur, et son icône quand il en a une. La valeur ne
+   s'écrit dans le segment que s'il est assez large (14 % au moins) : sinon elle reste dans la ligne
+   écrite sous la barre. Le texte posé sur un segment est clair ou sombre selon la couleur du segment
+   (contraste AA mesuré pour les couleurs de vote, leur variante daltonienne et la jauge du budget).
+   La barre se remplit à l'apparition ; « réduire les animations » la montre pleine d'emblée. */
+const luminance = (hex: string) => {
+  const c = [1, 3, 5].map(i => parseInt(hex.slice(i, i + 2), 16) / 255).map(v => (v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4));
+  return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2];
+};
+const texteSur = (fond: string) => (luminance(fond) > 0.2 ? NEUTRES_PAR_MODE.sombre.sol : couleurs.blanc);
+export type SegmentBarre = { cle: string; valeur: number; couleur: string; dedans?: string; icone?: keyof typeof Ionicons.glyphMap };
+export function BarreSegments({ segments, hauteur = 32, etiquette }: { segments: SegmentBarre[]; hauteur?: number; etiquette: string }) {
+  const v = useApparition(80);
+  const total = segments.reduce((n, x) => n + x.valeur, 0);
+  if (total <= 0) return null;
+  return (
+    <View accessible accessibilityLabel={etiquette} style={{ height: hauteur, borderRadius: hauteur / 3, overflow: "hidden", backgroundColor: couleurs.voile }}>
+      <Animated.View style={{ flexDirection: "row", gap: 2, height: hauteur, width: largeur(v, 100) }} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
+        {segments.filter(x => x.valeur > 0).map(x => {
+          const large = x.valeur / total >= 0.14;
+          return (
+            <View key={x.cle} style={{ flex: x.valeur, backgroundColor: x.couleur, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 6, overflow: "hidden" }}>
+              {large && x.icone && hauteur >= 40 ? <Ionicons name={x.icone} size={18} color={texteSur(x.couleur)} /> : null}
+              {large && x.dedans ? <Text numberOfLines={1} style={{ fontFamily: POLICE.section, fontSize: hauteur >= 40 ? 17 : 13, color: texteSur(x.couleur), fontVariant: ["tabular-nums"] }}>{x.dedans}</Text> : null}
+            </View>
+          );
+        })}
+      </Animated.View>
+    </View>
+  );
+}
+
+/* LA RÉPARTITION DE 100 € : en 3 secondes, « sur 100 €, voici ce qui part en salaires, en investissement
+   et dans le reste ». Le montant est DANS le segment, avec son icône ; un mot sous chaque segment, aligné
+   sur lui. Les trois postes sont ceux que la source publie : ni école ni route, que les comptes ne
+   détaillent pas. Couleurs de la jauge du budget (invariant 7), jamais politiques. */
+export function BarreBudget({ parts }: { parts: { sal: number; inv: number; aut: number } }) {
+  const lignes: (SegmentBarre & { mot: string })[] = [
+    { cle: "sal", mot: "Salaires", valeur: parts.sal, couleur: JAUGE.salaires, icone: "people", dedans: `${parts.sal}\u00a0€` },
+    { cle: "inv", mot: "Investir", valeur: parts.inv, couleur: JAUGE.investissement, icone: "construct", dedans: `${parts.inv}\u00a0€` },
+    { cle: "aut", mot: "Autres", valeur: parts.aut, couleur: JAUGE.autres, icone: "ellipsis-horizontal", dedans: `${parts.aut}\u00a0€` },
+  ];
+  return (
+    <View style={{ gap: PAS * 2 }}>
+      <BarreSegments hauteur={48} segments={lignes}
+        etiquette={`Sur 100 euros dépensés : ${parts.sal} de salaires, ${parts.inv} d'investissements, ${parts.aut} d'autres dépenses.`} />
+      <View style={{ flexDirection: "row", gap: 2 }} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
+        {lignes.filter(x => x.valeur > 0).map(x => <Text key={x.cle} numberOfLines={1} style={[TYPO.note, { flex: x.valeur, textAlign: "center" }]}>{x.mot}</Text>)}
+      </View>
+    </View>
+  );
+}
+
 /* ── Un grand nombre qui se revele (le lecteur d'ecran lit la valeur finale) ── */
 export function Compteur({ valeur, suffixe }: { valeur: number; suffixe: string }) {
   const n = useCompteur(valeur);
   return (
     <View accessible accessibilityLabel={`${valeur.toLocaleString("fr-FR")} ${suffixe}`}>
-      <Text style={TYPO.chiffre}>{espacesFines(n.toLocaleString("fr-FR"))}<Text style={[TYPO.reponse, { color: couleurs.sourd }]}> €</Text></Text>
+      <Text style={TYPO.stat}>{espacesFines(n.toLocaleString("fr-FR"))}<Text style={[TYPO.reponse, { color: couleurs.sourd }]}> €</Text></Text>
       <Text style={[TYPO.reponse, { color: couleurs.sourd }]}>{suffixe.replace(/^€\s*/, "")}</Text>
     </View>
   );
@@ -120,6 +175,8 @@ export function Mois({ mois, echelon = "ville" }: { mois: number; echelon?: Eche
   );
 }
 
+const taillePastille = (i: number) => Math.max(28, 48 - i * 5);
+
 /* ── La repartition d'un scrutin ───────────────────────────────────────── */
 type Segment = { cle: string; libelle: string; nombre: number; part: number };
 export function Repartition({ segments, total, position, qui, compact }: {
@@ -133,11 +190,9 @@ export function Repartition({ segments, total, position, qui, compact }: {
     + `, sur ${total} députés ayant pris part au vote.` + (qui && position ? ` ${qui} : ${segments.find(x => x.cle === position)?.libelle.toLowerCase() || "position non portée"}.` : "");
   return (
     <View accessible accessibilityLabel={phrase} style={{ gap: PAS * 3 }}>
-      <View style={s.barreVote}>
-        {segments.map(x => (
-          <Animated.View key={x.cle} style={{ width: largeur(v, x.part * 100), backgroundColor: COULEUR_VOTE[x.cle as keyof typeof COULEUR_VOTE] }} />
-        ))}
-      </View>
+      {/* En 3 secondes : quelle couleur occupe la barre, donc quel camp l'a emporté ; le pourcentage est dedans. */}
+      <BarreSegments hauteur={compact ? 28 : 32} etiquette={phrase}
+        segments={segments.map(x => ({ cle: x.cle, valeur: x.nombre, couleur: COULEUR_VOTE[x.cle as keyof typeof COULEUR_VOTE], dedans: `${Math.round(x.part * 100)}\u00a0%` }))} />
       {compact ? null : <View style={{ gap: PAS * 2 }}>
         {segments.map(x => (
           <View key={x.cle} style={s.legende}>
@@ -296,12 +351,14 @@ export function Chaine({ niveaux, compact, surNom, ouverts, basculer }: {
                 l'icône de ce que le niveau gère, sur la teinte de l'échelon ; un trait gris fin relie
                 les niveaux. En mode compact, le petit maillon d'avant. */}
             {compact ? <View style={[s.maillon, pointEchelon(n.echelon)]} /> : (
-              <View style={[s.pastilleNiveau, { backgroundColor: TEINTES[n.echelon], borderColor: couleurs[n.echelon] }]}
+              /* « Test des 3 secondes » (11/11/2026) : du plus proche au plus lointain, la pastille rapetisse
+                 et le lien s'affine. Proche = gros et épais ; loin = petit et fin. */
+              <View style={[s.pastilleNiveau, { width: taillePastille(i), height: taillePastille(i), borderRadius: taillePastille(i) / 2, backgroundColor: TEINTES[n.echelon], borderColor: couleurs[n.echelon] }]}
                 accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
-                <Ionicons name={ICONE_NIVEAU[n.echelon]} size={16} color={couleurs.encre} />
+                <Ionicons name={ICONE_NIVEAU[n.echelon]} size={Math.round(taillePastille(i) * 0.46)} color={couleurs.encre} />
               </View>
             )}
-            {i < niveaux.length - 1 ? <View style={[compact ? s.jalonTrait : s.timelineTrait, { backgroundColor: couleurs.trait }]} /> : null}
+            {i < niveaux.length - 1 ? <View style={[compact ? s.jalonTrait : s.timelineTrait, { backgroundColor: couleurs.trait }, compact ? null : { width: Math.max(1, 5 - i) }]} /> : null}
           </View>
           <View style={{ flex: 1, paddingBottom: compact ? PAS * 3 : PAS * 7, gap: compact ? 2 : PAS }}>
             {/* La couleur d'echelon est portee par le maillon, pas par le texte :
@@ -379,7 +436,6 @@ const s = feuille(() => StyleSheet.create({
   mois: { flexDirection: "row", flexWrap: "wrap", gap: 4 },
   moisCase: { width: 22, height: 22, borderRadius: 6, backgroundColor: couleurs.voile, overflow: "hidden" },
   moisRempli: { height: "100%" },
-  barreVote: { flexDirection: "row", height: 22, borderRadius: 8, overflow: "hidden", backgroundColor: couleurs.voile },
   legende: { flexDirection: "row", alignItems: "center", gap: PAS * 2 },
   pastilleCouleur: { width: 14, height: 14, borderRadius: 4, borderWidth: StyleSheet.hairlineWidth, borderColor: couleurs.sourd },
   marque: { fontSize: 13, fontWeight: "500", color: couleurs.blanc, backgroundColor: couleurs.ville, paddingHorizontal: 8, paddingVertical: 2, borderRadius: RAYON.pastille, overflow: "hidden", maxWidth: 170 },
@@ -390,7 +446,7 @@ const s = feuille(() => StyleSheet.create({
   jalonActif: { width: 18, height: 18, borderRadius: 9, marginTop: 2 },
   jalonTrait: { flex: 1, width: 2, backgroundColor: couleurs.trait, marginTop: 2 },
   maillon: { width: 14, height: 14, borderRadius: 7, marginTop: 4 },
-  timelineAxe: { width: 36, alignItems: "center" },
+  timelineAxe: { width: 48, alignItems: "center" },
   carteElu: { minHeight: 56, flexDirection: "row", alignItems: "center", gap: PAS * 3, padding: PAS * 3, marginTop: PAS,
     borderRadius: RAYON.bloc, backgroundColor: couleurs.carte },
   pastilleNiveau: { width: 36, height: 36, borderRadius: 18, borderWidth: 1.5, alignItems: "center", justifyContent: "center" },

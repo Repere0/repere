@@ -24,14 +24,14 @@ import { PROJETS_PAS_ARRIVES, projetsAucun } from "../lib/absences";
 import { srcComptes, srcComptesPublies, srcProjets } from "../lib/sources";
 import { useCommuneChoisie } from "../lib/useCommune";
 import { ACCENTS, CIBLE, couleurs, PAS, POLICE, TYPO } from "../lib/theme";
-import { JaugeCofinancement, MicroJauge, Onglets, StatBubbleTile } from "../ui/stitch";
+import { JaugeCofinancement, Onglets, StatBubbleTile } from "../ui/stitch";
 import { AvecDonnees, Page, Question } from "../ui/page";
 import { DateDonnee } from "../ui/fraicheur";
 import { phrasesMoyenne, useMoyenneDepenses } from "../lib/moyenne";
 import { PastilleSource } from "../ui/source";
 import { BoutonPartageTexte, ligneSource } from "../ui/partage/partager-texte";
 import { Resume } from "../ui/resume";
-import { BarrePart, Compteur, DeuxAnnees, Depli, Financement, Mois, RepartitionCent, Tendance } from "../ui/visuels";
+import { BarreBudget, BarrePart, Compteur, DeuxAnnees, Depli, Financement, Mois, RepartitionCent, Tendance } from "../ui/visuels";
 import { PartagerCarte } from "../ui/partage/bouton-partage";
 import { ChiffreStory } from "../ui/partage/variantes/chiffre.story";
 import { messageChiffre } from "../ui/partage/messages";
@@ -129,7 +129,7 @@ export default function Argent() {
                   annoncé comme un calcul). Ce n'est pas ce que paie un foyer : c'est ce que la
                   commune dépense, divisé par le nombre d'habitants (la phrase le dit). */}
               <Carte echelon="ville" titre={`Ce que ${nom} a dépensé en ${ex.an}`}>
-                <Resume phrase={dep ? `${dep.texte} au total sur l'année.` : ""}
+                <Resume geant phrase={dep ? `${dep.texte} au total sur l'année.` : ""}
                   chiffre={hab && hab.depenses !== null ? `${hab.depenses.toLocaleString("fr-FR")} €` : null}
                   legende="par habitant et par an" />
                 {hab && hab.depenses !== null ? (
@@ -169,10 +169,11 @@ export default function Argent() {
                       ? `Sur 100 € dépensés : ${[rap(/salaires/)?.v, rap(/investir/)?.v].filter(Boolean).join(", ")}.`
                       : ""}
                     enClair="Le reste des dépenses n'est pas détaillé par la source.">
-                    {ch.partSalaires !== null && ch.partInvestissement !== null && ch.partSalaires + ch.partInvestissement <= 100 ? (
-                      <MicroJauge salaires={ch.partSalaires} investissement={ch.partInvestissement} autres={100 - ch.partSalaires - ch.partInvestissement} />
-                    ) : null}
-                    <RepartitionCent salaires={ch.partSalaires} investissement={ch.partInvestissement} />
+                    {/* « Test des 3 secondes » (11/11/2026) : une seule barre épaisse, le montant dans chaque segment.
+                       Si un des deux postes manque, les lignes d'avant, qui savent n'en montrer qu'un. */}
+                    {ch.partSalaires !== null && ch.partInvestissement !== null && ch.partSalaires + ch.partInvestissement <= 100
+                      ? <BarreBudget parts={{ sal: ch.partSalaires, inv: ch.partInvestissement, aut: 100 - ch.partSalaires - ch.partInvestissement }} />
+                      : <RepartitionCent salaires={ch.partSalaires} investissement={ch.partInvestissement} />}
                   </Resume>
                   <PasCeQueCaDit r={rap(/salaires/)} sujet="salaires" />
                   <PasCeQueCaDit r={rap(/investir/)} sujet="investissements" />
