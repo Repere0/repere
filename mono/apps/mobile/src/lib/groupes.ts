@@ -3,6 +3,7 @@
    et sa date ; sans elles, ou s'il est absent, tout depute reste « Inconnu » : jamais un faux groupe.
    Un depute absent de la table reste « Inconnu ». Voir docs/adr/0001-couleurs-partis.md. */
 import { useEffect, useState } from "react";
+import { memeNom } from "@repere/core";
 import { chargerDeputesGroupes } from "./donnees";
 import { COULEURS_GROUPES, NEUTRES_PAR_MODE, rapportContraste } from "./palette";
 
@@ -106,6 +107,6 @@ export const sigleDuNom = (nom: string): string => SIGLE_DU_NOM[nom] || GROUPE_I
    député y a le même groupe, donc le même avatar. Introuvable : null, rien n'est deviné. */
 export function deputeParNom(deputes: unknown, nom: string): { ref: string | undefined; dep: string } | null {
   const table = ((deputes as { deputes?: Record<string, { prenom?: string; nom?: string; acteurRef?: string }> } | null)?.deputes) || {};
-  const e = Object.entries(table).find(([, x]) => [x.prenom, x.nom].filter(Boolean).join(" ") === nom);
+  const e = Object.entries(table).find(([, x]) => memeNom([x.prenom, x.nom].filter(Boolean).join(" "), nom));
   return e ? { ref: e[1].acteurRef, dep: e[0].split("-")[0] } : null;
 }

@@ -29,9 +29,10 @@ import { VoteStory } from "../ui/partage/variantes/vote.story";
 import { messageVote, VERBE } from "../ui/partage/messages";
 import { useEffect, useState } from "react";
 import { Animated, Linking, Modal, Pressable, ScrollView, Share, Text, View } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import { router, Stack, useLocalSearchParams } from "expo-router";
-import { chaineDecision, copieVoteVide, dateCourte, dateFr, debutDeMandat, decompte, ETAT_VOTE, LIBELLES, lienScrutin, repartitionVote, titreLisible } from "@repere/core";
-import { Repartition } from "../ui/visuels";
+import { chaineDecision, copieVoteVide, dateCourte, demandeVotesElu, dateFr, debutDeMandat, decompte, ETAT_VOTE, LIBELLES, lienScrutin, memeNom, repartitionVote, titreLisible } from "@repere/core";
+import { BarreSegments, Repartition } from "../ui/visuels";
 import { Carte, Vide } from "../lib/composants";
 import { chargerEvenements } from "../lib/donnees";
 import { srcElus, srcScrutins } from "../lib/sources";
@@ -59,7 +60,9 @@ type Resume = { id: string; axes?: string; src?: string; srcn?: string };
 const PARTI_NON_PUBLIE = "Parti : non publié par la source. Repère ne le déduit pas.";
 const POSITION: Record<string, string> = { p: "Pour", c: "Contre", a: "Abstention" };
 /* Signes de texte (variante texte forcee, pas d'emoji), colores selon le sens du vote (D24). */
+/* Les cartes montrent les 3 derniers votes ; la synthèse (le compte et la barre) porte sur les 10 derniers. */
 const SYNTHESE = 3;
+const HISTO = 10;
 
 
 function Lien({ texte, onPress, etiquette }: { texte: string; onPress: () => void; etiquette?: string }) {
@@ -174,7 +177,7 @@ export default function Elu() {
       const depute = echelon === "france";
       /* LES VOTES DE CET ÉLU, PAS CEUX DE LA COMMUNE : filtrés sur son nom, du plus récent au plus ancien. */
       const votes = depute
-        ? (r.d.faits as FaitElu[]).filter(f => f.type === "vote" && !!f.position && !!POSITION[f.position as string] && f.qui === nom)
+        ? (r.d.faits as FaitElu[]).filter(f => f.type === "vote" && !!f.position && !!POSITION[f.position as string] && memeNom(f.qui, nom))
           .sort((a, b) => (a.sc.d < b.sc.d ? 1 : a.sc.d > b.sc.d ? -1 : 0))
         : [];
       const vote = votes[0];
@@ -191,7 +194,7 @@ export default function Elu() {
       /* 07/11/2026 : la photo d'un député est rangée par SON département (clé « 94-10 »), pas par
          celui de la commune choisie : une fiche ouverte depuis un groupe la cherchait au mauvais endroit. */
       const depPhoto = entreeDepute ? entreeDepute.dep : r.d.dep;
-      const estMaire = echelon === "ville" && !!r.d.fiche && !!r.d.fiche.maire && r.d.fiche.maire.nom === nom;
+      const estMaire = echelon === "ville" && !!r.d.fiche && !!r.d.fiche.maire && memeNom(r.d.fiche.maire.nom, nom);
       const clePhoto = refDepute || (estMaire && choix ? "M" + choix.insee : null);
       /* Le groupe du depute, par son identifiant ; « Inconnu » pour un maire ou sans entree dans la table. */
       const groupe = groupeDe(refDepute, groupes);
@@ -209,7 +212,7 @@ export default function Elu() {
         }),
       } : null;
       /* NIVEAU 1 (V28, bloc 5) : la phrase-conclusion, comptée sur les trois votes affichés (un calcul). */
-      const recents = votes.slice(0, SYNTHESE);
+      const recents = votes.slice(0, HISTO);
       const comptes: Record<string, number> = { p: 0, c: 0, a: 0 };
       recents.forEach(f => { if (f.position) comptes[f.position] = (comptes[f.position] || 0) + 1; });
       const releveVotes = r.index?.sources?.scrutins?.releve_le;
@@ -261,6 +264,12 @@ export default function Elu() {
                         ))}
                       </View>
                     </View>
+                    {/* 12/11/2026 : la barre des 10 derniers votes (un calcul Repère), aux couleurs des votes (un fait). */}
+                    {recents.length > 1 ? (
+                      <BarreSegments hauteur={28} etiquette={`${comptes.p} pour, ${comptes.c} contre, ${comptes.a} abstention${comptes.a > 1 ? "s" : ""} sur ses ${recents.length} derniers votes publiés. Calcul Repère.`}
+                        segments={([["p", "pour"], ["c", "contre"], ["a", "abstention"]] as const).filter(([k]) => comptes[k] > 0)
+                          .map(([k]) => ({ cle: k, valeur: comptes[k], couleur: COULEURS_VOTE[k], dedans: String(comptes[k]) }))} />
+                    ) : null}
                     <PourquoiJeVois etiquette={`le compte des votes de ${nom}`}
                       p={{ source: { texte: `Assemblée nationale, ses ${recents.length} derniers votes publiés`, lien: null },
                         calcul: "Repère compte les positions (pour, contre, abstention) de ces votes. Il n'y a pas d'autre calcul.",
@@ -271,6 +280,20 @@ export default function Elu() {
                 {votes.length ? votes.slice(0, SYNTHESE).map(f => (
                   <CarteVote key={f.sc.n} f={f} onComprendre={() => setOuvert(f)} />
                 )) : videVote ? <Vide {...videVote} /> : null}
+                {/* 12/11/2026 (porteur) : une position réellement absente devient une action, pas un cul-de-sac.
+                    Message neutre, sans destinataire deviné ; Repère n'envoie rien. */}
+                {!votes.length && etatVote === ETAT_VOTE.POSITION_ABSENTE ? (
+                  <View style={{ gap: PAS * 2 }}>
+                    <Pressable onPress={() => Linking.openURL(demandeVotesElu(nom).url)} accessibilityRole="button"
+                      accessibilityLabel={`Demander à ${nom} de publier ses votes : ouvre un message pré-rempli dans votre messagerie`}
+                      style={({ pressed }) => ({ minHeight: CIBLE + 4, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: PAS * 2,
+                        borderRadius: 999, paddingHorizontal: PAS * 5, backgroundColor: couleurs.voile, opacity: pressed ? 0.7 : 1 })}>
+                      <Ionicons name="mail-outline" size={18} color={couleurs.encre} accessible={false} importantForAccessibility="no" />
+                      <Text style={[TYPO.corps, { fontFamily: POLICE.texteGras }]}>Demander à cet élu de publier ses votes</Text>
+                    </Pressable>
+                    <Text style={TYPO.note}>Le message s'ouvre dans votre messagerie, sans destinataire : l'adresse du député est sur sa fiche officielle. Repère n'envoie rien et ne garde rien.</Text>
+                  </View>
+                ) : null}
                 {votes.length > SYNTHESE ? (
                   <Lien texte={`Voir ses ${votes.length} votes publiés`} etiquette={`Voir les ${votes.length} votes publiés de ${nom}`} onPress={() => router.push("/vote")} />
                 ) : null}

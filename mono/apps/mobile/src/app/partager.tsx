@@ -18,7 +18,7 @@ import { Animated, Pressable, Share, Text, View, useWindowDimensions } from "rea
 import { Stack } from "expo-router";
 import * as Sharing from "expo-sharing";
 import { captureRef } from "react-native-view-shot";
-import { chaineDecision, copieVoteVide, dateFr, etapeDuScrutin, ETAPES_LOI, ETAT_VOTE, jourParis, procedure, titreLisible } from "@repere/core";
+import { chaineDecision, copieVoteVide, dateFr, etapeDuScrutin, ETAPES_LOI, ETAT_VOTE, jourParis, memeNom, procedure, titreLisible } from "@repere/core";
 import { couleurs, CIBLE, PAS, PALETTE_CARTE } from "../lib/theme";
 import { Logo as Marque } from "../ui/logo";
 
@@ -79,7 +79,7 @@ export default function Partager() {
       const france = niveaux.find(n => n.echelon === "france");
       const personne = france?.personne?.nom;
       const nom = personne || "Votre député";
-      const vote = (d.faits as (Vote & { type: string; qui: string })[]).find(f => f.type === "vote" && !!f.position && f.qui === personne) as Vote | undefined;
+      const vote = (d.faits as (Vote & { type: string; qui: string })[]).find(f => f.type === "vote" && !!f.position && memeNom(f.qui, personne)) as Vote | undefined;
       if (!vote || !vote.position || !VERBE[vote.position]) {
         /* Le repli : la règle partagée décide du texte selon l'état réel des données. */
         /* Un vote existe mais sa position n'a pas de libellé : ce n'est pas une absence. */

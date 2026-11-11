@@ -15,6 +15,7 @@
  * Un non-vote n'est pas publié par l'Assemblée (outils/scrutins_an.py) : une
  * position absente ne veut pas dire que le député était absent. */
 import { dateFr } from "./format.js";
+import { memeNom } from "./noms.js";
 import { positionsFiables, REFUS_APPARIEMENT } from "./votes.js";
 import { POSITION_NON_PORTEE } from "./phrases.js";
 
@@ -57,9 +58,9 @@ export function etatVotePersonne({ fiche, dep, cat, pos, deputes, faits, nom }) 
   if (circos.length === 0) return ETAT_VOTE.CIRCO_INCONNUE;
   const identifies = circos.map(c => deputes.deputes[dep + "-" + c]).filter(d => d && d.acteurRef);
   if (identifies.length === 0) return ETAT_VOTE.CIRCO_SANS_DEPUTE;
-  const moi = identifies.find(d => [d.prenom, d.nom].filter(Boolean).join(" ") === nom);
+  const moi = identifies.find(d => memeNom([d.prenom, d.nom].filter(Boolean).join(" "), nom));
   if (!moi) return ETAT_VOTE.ELU_NON_IDENTIFIE;
-  const a_un_vote = (faits || []).some(f => f.type === "vote" && f.position && f.qui === nom);
+  const a_un_vote = (faits || []).some(f => f.type === "vote" && f.position && memeNom(f.qui, nom));
   return a_un_vote ? null : ETAT_VOTE.POSITION_ABSENTE;
 }
 
@@ -121,4 +122,23 @@ export function copieVoteVide(etat, { nom = "", releve, portee, elu = false } = 
       return { titre: "Repère ne peut pas afficher le vote de ce député.",
         corps: "Une donnée attendue manque ou n'a pas le bon format. Ce n'est pas une absence de vote.", lien };
   }
+}
+
+/* L'ACTION CITOYENNE (12/11/2026, décision du porteur) : quand la position d'un député est réellement absente des
+   scrutins consultés, le lecteur peut lui écrire. Un `mailto:` SANS destinataire : Repère ne connaît pas
+   l'adresse du député (aucune donnée ne la porte) et ne la devine pas ; le lecteur la prend sur la fiche officielle.
+   Le message est neutre : il pose une question, n'accuse pas, ne dit pas « vous n'avez pas voté » (une position
+   absente n'est pas une absence de vote). Repère n'envoie rien : le message s'ouvre dans la messagerie du lecteur. */
+export function demandeVotesElu(nom) {
+  const sujet = "Où consulter vos positions de vote ?";
+  const corps = [
+    "Bonjour,",
+    "",
+    "Je consulte les données publiques de l'Assemblée nationale sur l'application citoyenne Repère. Je n'y trouve aucune position de vote de votre part dans les scrutins consultés, qui ne portent que sur les derniers votes.",
+    "",
+    "Pouvez-vous m'indiquer où consulter vos positions de vote ?",
+    "",
+    "Cordialement",
+  ].join("\n");
+  return { nom, sujet, corps, url: `mailto:?subject=${encodeURIComponent(sujet)}&body=${encodeURIComponent(corps)}` };
 }
