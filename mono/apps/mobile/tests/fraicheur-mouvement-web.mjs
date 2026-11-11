@@ -74,7 +74,15 @@ verifier(await page.getByTestId("fraicheur").count() >= 1, "fraîcheur : l'écra
 verifier(await page.getByTestId("repere-frais").count() === 0, "repère du jour : aucune bordure « fraîche » en publication précédente");
 await contexte.unroute("**/data/index.json");
 
-/* Présidentielle : illustration d'attente, phrase vraie conservée */
+/* Présidentielle : illustration d'attente, phrase vraie conservée.
+   Les quatre fichiers sont servis par le test, tels que publiés (listes vides) : en CI les données
+   viennent du fichier autonome, sans ces fichiers, et l'écran afficherait « pas arrivé ». */
+const publie = { candidats: { candidats: [] }, debats: { debats: [] }, meetings: { meetings: [] },
+  meta: { lastUpdate: "2026-11-09", source: { producteur: "Conseil constitutionnel", url: "https://www.conseil-constitutionnel.fr/" }, note: "Aucune liste officielle de candidats n'est publiée à cette date." } };
+await contexte.route("**/data/presidentielle-2027/*.json", r => {
+  const nom = r.request().url().split("/").pop().replace(".json", "").split("?")[0];
+  return r.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(publie[nom] ?? {}) });
+});
 await page.goto(BASE + "/presidentielle-2027", { waitUntil: "networkidle" });
 await page.getByText("Bientôt", { exact: true }).first().waitFor({ timeout: 15000 }).catch(() => {});
 verifier(await page.getByText("Bientôt", { exact: true }).count() >= 1, "présidentielle : l'illustration d'attente est là");
