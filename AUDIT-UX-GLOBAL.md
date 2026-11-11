@@ -94,6 +94,9 @@ Par ordre de gain pour le lecteur. Chacune demande un oui du porteur, parce qu'e
   vers « Qui décide » est l'onglet), `parcours-web.mjs` (réouverture directe ; onglets au lieu de
   tuiles), `zoom-web.mjs` (confort de lecture par la roue), `commune-web.mjs` et
   `partage-texte-web.mjs` (« Mes élus » retiré).
+- **Un contrôle oublié en local, vu rouge sur la CI** : `mono/tests/meme-verite.mjs` (site contre
+  application) ouvrait « Qui décide » par la tuile retirée et sautait l'écran sans le dire : 4 échecs
+  sur la phrase des adjoints. Corrigé (il ouvre l'onglet), reproduit rouge puis vert en local.
 - `DESIGN.md` est créé à la racine : il n'existait pas dans le dépôt. Il recopie les valeurs du code.
 
 ## 6. Non vérifié
