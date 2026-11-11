@@ -18,9 +18,9 @@ async function ouvrir(niveau, chemin) {
   }, ["repere.profil", JSON.stringify(profil(niveau))]);
   /* La commune retenue n'est choisie qu'en passant par l'accueil (comme un lecteur). */
   await page.goto(BASE + "/", { waitUntil: "networkidle" });
-  await page.getByRole("button", { name: "Voir ce qui se passe à Meaux" }).click();
+  /* 11/11/2026 : avec une commune gardée, l'application s'ouvre d'elle-même sur « Aujourd'hui ». */
   await page.getByText("Aller plus loin").first().waitFor({ timeout: 15000 });
-  if (chemin === "/qui-decide") await page.getByRole("button", { name: "Qui décide", exact: true }).first().click();
+  if (chemin === "/qui-decide") await page.getByRole("tab", { name: "Qui décide" }).first().click();
   if (chemin === "/actus") await page.getByText("Voir les actualités").first().click();
   await page.waitForTimeout(1200);
   return page;
@@ -85,12 +85,16 @@ async function ouvrir(niveau, chemin) {
     if (!localStorage.getItem("repere.profil")) localStorage.setItem("repere.profil", JSON.stringify({ niveauZoom: "tout", tailleTexte: 16, espacement: 1.5, contraste: "normal", policeDyslexie: false, animationsReduites: false, modeDaltonien: false, masquerImages: false }));
   });
   await p.goto(BASE + "/", { waitUntil: "networkidle" });
+  /* 11/11/2026 : l'application s'ouvre sur « Aujourd'hui » ; le confort de lecture est dans la roue. */
+  await p.getByRole("button", { name: "Réglages de l'affichage" }).first().click();
   await p.getByRole("link", { name: "Confort de lecture" }).click();
   await p.getByRole("radio", { name: /Texte de 22 points/ }).click();
   await p.waitForTimeout(600);
   const gardé = await p.evaluate(() => JSON.parse(localStorage.getItem("repere.profil") || "{}").tailleTexte);
   verifier(gardé === 22, "confort : la taille 22 est gardée dans repere.profil");
   await p.goto(BASE + "/", { waitUntil: "networkidle" });
+  /* 11/11/2026 : l'application s'ouvre sur « Aujourd'hui » ; le confort de lecture est dans la roue. */
+  await p.getByRole("button", { name: "Réglages de l'affichage" }).first().click();
   await p.getByRole("link", { name: "Confort de lecture" }).click();
   await p.getByRole("radio", { name: /Texte de 22 points, choisi/ }).first().waitFor({ timeout: 10000 });
   verifier(true, "confort : la taille choisie est retrouvée après rechargement");

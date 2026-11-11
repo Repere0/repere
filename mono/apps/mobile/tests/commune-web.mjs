@@ -15,7 +15,6 @@ const PHRASE_VIDE = "Aucune commune n'est choisie";
 const ECRANS = [
   { chemin: "/qui-decide", nom: true },
   { chemin: "/elus", nom: false },
-  { chemin: "/mes-elus", nom: true },
   { chemin: "/chez-vous", nom: true },
 ];
 const PROFIL = { niveauZoom: "france", tailleTexte: 16, espacement: 1.5, contraste: "normal", policeDyslexie: false, animationsReduites: true, modeDaltonien: false, masquerImages: false, themes: [] };
@@ -51,14 +50,14 @@ for (const { chemin, nom } of ECRANS) {
   verifier(erreurs.length === 0, `${chemin} : commune gardée → aucune erreur JavaScript${erreurs.length ? " (" + erreurs[0].slice(0, 120) + ")" : ""}`);
 }
 
-for (const chemin of ["/qui-decide", "/mes-elus", "/chez-vous"]) {
+for (const chemin of ["/qui-decide", "/chez-vous"]) {
   const { texte, erreurs } = await ouvrirAFroid(chemin, { gardee: false });
   verifier(texte.includes(PHRASE_VIDE), `${chemin} : sans commune → « ${PHRASE_VIDE} »`);
   verifier(erreurs.length === 0, `${chemin} : sans commune → aucune erreur JavaScript`);
 }
 
 /* Commune gardée après rechargement : la même page, rouverte dans le même contexte. */
-for (const chemin of ["/qui-decide", "/mes-elus"]) {
+for (const chemin of ["/qui-decide"]) {
   const contexte = await navigateur.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
   await contexte.addInitScript(([profil, departement]) => {
     if (!sessionStorage.getItem("amorce")) {

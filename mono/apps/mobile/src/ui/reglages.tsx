@@ -1,5 +1,5 @@
 /* LE REGLAGE D'AFFICHAGE : une roue dans l'en-tete, qui ouvre trois choix
- * (systeme, clair, sombre). V34 bloc 7 (audit) : la roue est un contour qui suit le thème, sans
+ * (systeme, clair, sombre), puis les réglages de lecture et les pages d'information. V34 bloc 7 (audit) : la roue est un contour qui suit le thème, sans
  * pastille noire : elle ne rivalise plus avec le titre de l'écran, et la cible reste de 48 px. */
 import { useState } from "react";
 import { Modal, Pressable, StyleSheet, Text, View } from "react-native";
@@ -54,6 +54,15 @@ function ChoixAffichage({ visible, onFermer }: { visible: boolean; onFermer: () 
             );
           })}
           <View style={{ height: 1, backgroundColor: couleurs.trait, marginVertical: PAS }} />
+          {/* 11/11/2026 : la roue est le seul point d'entrée des réglages et des informations, sur tous les
+              onglets. Le confort de lecture n'était atteignable que depuis l'ancien accueil. */}
+          <Pressable
+            onPress={() => { onFermer(); router.push("/confort-lecture"); }}
+            accessibilityRole="link" accessibilityLabel="Confort de lecture"
+            style={({ pressed }) => [s.option, pressed && { opacity: 0.7 }]}
+          >
+            <Text style={s.optionTexte}>Confort de lecture</Text>
+          </Pressable>
           <Pressable
             onPress={() => { onFermer(); router.push("/confidentialite"); }}
             accessibilityRole="link"

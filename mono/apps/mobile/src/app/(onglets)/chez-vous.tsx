@@ -60,6 +60,7 @@ import { SignalerErreur } from "../../ui/contact";
 
 /* VOS DÉCIDEURS (maquette Stitch, 09/11/2026) : composant partagé avec l'accueil (ui/decideurs). */
 import { Decideurs } from "../../ui/decideurs";
+import { RappelElection } from "../../ui/rappel-election";
 import { deputeParNom, groupeDe, useGroupes } from "../../lib/groupes";
 import { DataBadge } from "../../ui/donnees";
 import { useCouleurVote } from "../../lib/couleur-vote";
@@ -246,6 +247,8 @@ export default function ChezVous() {
              elles : c'est national, et la carte le dit (ui/semaine.tsx). */}
           {/* D31 : l'actu locale de la semaine (communes pilotes), sous les trois reponses. */}
           {choix ? <CetteSemaineCommune insee={choix.insee} nom={nom} /> : null}
+          {/* 11/11/2026 : le rappel de la prochaine élection vivait sur l'ancien accueil ; il suit le lecteur ici, sous les réponses. */}
+          <RappelElection />
 
           <SemaineParlement sp={d.semaineParlement} lu={r.agendaLu} nom={nom} />
 
@@ -257,8 +260,10 @@ export default function ChezVous() {
             {/* 07/11/2026 : des tuiles à icône, deux par ligne, au lieu d'une liste de liens. */}
             <View style={{ flexDirection: "row", flexWrap: "wrap", gap: PAS * 3 }}>
               {([
-                { t: LIBELLES.qui, i: "git-network-outline", o: () => router.push("/qui-decide") },
-                { t: LIBELLES.calendrier, i: "calendar-outline", o: () => router.push("/a-venir") },
+                { t: "Présidentielle 2027", i: "flag-outline", o: () => router.push("/presidentielle-2027") },
+                { t: "Ma voix", i: "checkbox-outline", o: () => router.push("/voter") },
+                { t: "L'Assemblée", i: "business-outline", o: () => router.push("/scrutins") },
+                { t: "Pour vous", i: "bookmark-outline", o: () => router.push("/pour-vous") },
                 { t: "Élus", i: "people-outline", o: () => router.push("/elus") },
                 { t: "Voir les actualités", i: "newspaper-outline", o: () => router.push("/actus") },
                 { t: "Dictionnaire citoyen", i: "book-outline", o: () => router.push("/dictionnaire") },

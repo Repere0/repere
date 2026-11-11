@@ -114,7 +114,10 @@ test("parcours — chaque onglet offre « changer de commune », qui ramene a l'
 test("parcours — le chemin de première utilisation relie accueil, « qui décide », fiche et sources", () => {
   const lectureDe = f => sansCommentaires(lire(path.join(APP, f)));
   assert.match(lectureDe("index.tsx"), /router\.push\(\s*"\/chez-vous"\s*\)/, "l'accueil ne mène pas au territoire");
-  assert.match(lectureDe("(onglets)/chez-vous.tsx"), /pathname:\s*"\/qui-decide"|router\.push\(\s*"\/qui-decide"\s*\)/, "le territoire ne mène pas à « qui décide »");
+  /* 11/11/2026 : le territoire et « qui décide » sont deux onglets de la même barre ; la tuile qui
+     doublait l'onglet est retirée. Le maillon est l'onglet visible (jamais href: null). */
+  const onglet = lectureDe("(onglets)/_layout.tsx").match(/<Tabs\.Screen\s+name="qui-decide"([^>]*)>/);
+  assert.ok(onglet && !/href:\s*null/.test(onglet[1]), "le territoire ne mène pas à « qui décide »");
   assert.match(lectureDe("(onglets)/qui-decide.tsx"), /pathname:\s*"\/elu"/, "« qui décide » ne mène pas à la fiche");
   assert.match(lectureDe("elu.tsx"), /D'où viennent ces informations/, "la fiche ne donne pas ses sources");
 });
