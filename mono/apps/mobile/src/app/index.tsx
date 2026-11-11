@@ -44,6 +44,7 @@ import { PourquoiJeVois } from "../ui/pourquoi";
 import { SignalerErreur } from "../ui/contact";
 import { ModaleExhaustif } from "../ui/modale-exhaustif";
 import { METHODE_COMPTES, USAGE_PAR_HABITANT, srcVote } from "../lib/sources";
+import { enfonce } from "../ui/mouvement";
 
 /* 09/11/2026 (maquettes Stitch) : l'accueil suit le thème choisi (Néo-Civique clair par défaut,
    Dark Luxury en sombre). Il était sombre en toutes circonstances depuis le 30/10/2026. */
@@ -156,7 +157,7 @@ function CarteVote({ etiquette, nom, acteur, ligne, position, dec, date, titre, 
       </Details>
       <Pressable onPress={() => setTout(true)} accessibilityRole="button"
         accessibilityLabel={`Tout voir sur le vote de ${nom} : scrutin, décompte, lecture, lien officiel`}
-        style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", alignSelf: "flex-start", opacity: pressed ? 0.7 : 1 })}>
+        style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", alignSelf: "flex-start", ...enfonce(pressed) })}>
         <Text style={[s.legende, { fontSize: 14 }]}>Tout voir : scrutin et lecture</Text>
       </Pressable>
       <SignalerErreur contexte={`le vote de ${nom}`} donnee={`${date} · ${titre} · ${exemple ? "exemple" : nom}`} />
@@ -168,7 +169,7 @@ function CarteVote({ etiquette, nom, acteur, ligne, position, dec, date, titre, 
           : "Repère n'affiche la position d'un député que si les deux relevés de l'Assemblée nationale se correspondent. Sinon, la carte ne montre aucune position." },
         { titre: "Lien officiel", contenu: lien
           ? <Pressable onPress={() => Linking.openURL(lien)} accessibilityRole="link" accessibilityLabel="Le scrutin sur le site de l'Assemblée nationale, ouvre un site externe"
-              style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", opacity: pressed ? 0.7 : 1 })}>
+              style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", ...enfonce(pressed) })}>
               <Text style={TYPO.corps}>Le scrutin sur le site de l'Assemblée nationale (site externe)</Text>
             </Pressable>
           : "Aucun lien officiel vérifié pour ce scrutin." },
@@ -441,7 +442,7 @@ export default function Accueil() {
                     ) : null}
                     <Pressable onPress={() => setBudgetTout(true)} accessibilityRole="button"
                       accessibilityLabel={`Tout voir sur le budget de ${argent.nom} : méthode, sources, lien officiel`}
-                      style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", alignSelf: "flex-start", opacity: pressed ? 0.7 : 1 })}>
+                      style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", alignSelf: "flex-start", ...enfonce(pressed) })}>
                       <Text style={[s.legende, { fontSize: 14 }]}>Tout voir : méthode et sources</Text>
                     </Pressable>
                     <SignalerErreur contexte={`le budget de ${argent.nom}`} donnee={`${argent.depenses.toLocaleString("fr-FR")} € par habitant en ${argent.an}`} />
@@ -452,15 +453,15 @@ export default function Accueil() {
                       { titre: "La comparaison", contenu: comparaison ? comparaison.note : "Pas de commune médiane calculable pour ce budget." },
                       { titre: "Source officielle", contenu: urlComptes
                         ? <Pressable onPress={() => Linking.openURL(urlComptes)} accessibilityRole="link" accessibilityLabel="Les comptes publiés, sur le site de l'OFGL, ouvre un site externe"
-                            style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", opacity: pressed ? 0.7 : 1 })}>
+                            style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", ...enfonce(pressed) })}>
                             <Text style={TYPO.corps}>Les comptes publiés, sur le site de l'OFGL (site externe)</Text>
                           </Pressable>
                         : "Aucun lien officiel publié." },
                     ]} />
                     <Pressable onPress={() => { if (urlComptes) Linking.openURL(urlComptes); }} accessibilityRole="link"
                       accessibilityLabel="Source : comptes des communes publiés par l'OFGL, ouvre un site externe. Médiane et parts calculées par Repère."
-                      style={({ pressed }) => ({ minHeight: 44, justifyContent: "center", opacity: pressed ? 0.7 : 1 })}>
-                      <Text style={[s.legende, { fontSize: 13 }]}>Source : OFGL · médiane et parts : calcul Repère</Text>
+                      style={({ pressed }) => ({ minHeight: 44, justifyContent: "center", ...enfonce(pressed) })}>
+                      <Text style={[s.legende, { fontSize: 14 }]}>Source : OFGL · médiane et parts : calcul Repère</Text>
                     </Pressable>
                   </View>
                 </View>
@@ -512,13 +513,13 @@ export default function Accueil() {
               </View>
               <View style={{ flexDirection: "row", alignItems: "center" }}>
                 <Pressable onPress={() => router.push("/confort-lecture")} accessibilityRole="link" accessibilityLabel="Confort de lecture"
-                  style={({ pressed }) => [s.outil, pressed && { opacity: 0.7 }]}>
+                  style={({ pressed }) => [s.outil, pressed && enfonce(true)]}>
                   <Ionicons name="text-outline" size={22} color={D.encre} />
                 </Pressable>
                 {/* V37 bloc 3 : la recherche globale (communes, élus, scrutins). */}
                 <Pressable onPress={() => router.push("/recherche")} accessibilityRole="button"
                   accessibilityLabel="Ouvrir la recherche : communes, élus, scrutins"
-                  style={({ pressed }) => [s.outil, pressed && { opacity: 0.7 }]}>
+                  style={({ pressed }) => [s.outil, pressed && enfonce(true)]}>
                   <Ionicons name="search-outline" size={22} color={D.encre} />
                 </Pressable>
               </View>
@@ -537,7 +538,7 @@ export default function Accueil() {
             <Text style={s.accroche}>Ce qui se passe chez vous, expliqué simplement.</Text>
             {!champOuvert ? (
               <Pressable onPress={() => setCherche(true)} accessibilityRole="button" accessibilityLabel="Chercher une commune"
-                style={({ pressed }) => [s.chercher, pressed && { opacity: 0.7 }]}>
+                style={({ pressed }) => [s.chercher, pressed && enfonce(true)]}>
                 <Ionicons name="search" size={24} color={D.encre} accessible={false} importantForAccessibility="no" />
                 <Text style={s.chercherTexte}>Chercher une commune</Text>
               </Pressable>
@@ -545,7 +546,7 @@ export default function Accueil() {
             <View style={s.tuiles}>
               {ACCES.map(a => (
                 <Pressable key={a.texte} onPress={a.ouvrir} accessibilityRole="link" accessibilityLabel={a.etiquette}
-                  style={({ pressed }) => [s.tuile, pressed && { opacity: 0.7 }]}>
+                  style={({ pressed }) => [s.tuile, pressed && enfonce(true)]}>
                   {/* Refonte (porteur, 09/11/2026) : plus de fond coloré ; l'icône au contour, dans l'encre. */}
                   <Ionicons name={`${a.icone}-outline` as keyof typeof Ionicons.glyphMap} size={22} color={D.encre} accessible={false} importantForAccessibility="no" />
                   <Text style={s.tuileTexte}>{a.texte}</Text>
@@ -556,7 +557,7 @@ export default function Accueil() {
             {/* Maquette Stitch : la bannière des moins de 18 ans mène au guide « Ma voix ». */}
             <Pressable onPress={() => router.push("/presidentielle-2027")} accessibilityRole="link"
               accessibilityLabel="Vous avez moins de 18 ans ? Comment on vote, et quand : ouvre Ma voix"
-              style={({ pressed }) => [s.jeunes, pressed && { opacity: 0.7 }]}>
+              style={({ pressed }) => [s.jeunes, pressed && enfonce(true)]}>
               <Ionicons name="sparkles-outline" size={20} color={ACCENTS.autorite} accessible={false} importantForAccessibility="no" />
               <View style={{ flex: 1 }}>
                 <Text style={s.tuileTexte}>Vous avez moins de 18 ans ?</Text>
@@ -612,7 +613,7 @@ export default function Accueil() {
                 {recentes.map(c => (
                   <Pressable key={c.insee} onPress={() => ouvrir(c.insee, c.nom)} accessibilityRole="button"
                     accessibilityLabel={`${c.nom}, ouverte pendant cette session`}
-                    style={({ pressed }) => [s.resultat, pressed && { opacity: 0.7 }]}>
+                    style={({ pressed }) => [s.resultat, pressed && enfonce(true)]}>
                     <View style={s.pastille} />
                     <Text style={s.resultatNom}>{c.nom}</Text>
                   </Pressable>
@@ -644,7 +645,7 @@ export default function Accueil() {
                 {/* Audit 5 s (V19) : une ligne ; l'explication complete est dans la FAQ. */}
                 <Pressable onPress={() => router.push("/faq")} accessibilityRole="link"
                   accessibilityLabel="Pas de compte, pas d'e-mail. Pourquoi ? Ouvre les questions fréquentes"
-                  style={({ pressed }) => [s.confiance, { minHeight: 48, justifyContent: "center" }, pressed && { opacity: 0.7 }]}>
+                  style={({ pressed }) => [s.confiance, { minHeight: 48, justifyContent: "center" }, pressed && enfonce(true)]}>
                   <Text style={[s.note, { color: D.encre, fontWeight: "500" }]}>Pas de compte, pas d'e-mail. <Text style={{ fontWeight: "400", color: D.sourd }}>Pourquoi ?</Text></Text>
                 </Pressable>
                 {/* V29 bloc 1 (audit D51) : phrase retirée de l'accueil en V20, réintégrée au niveau 2. */}
@@ -711,7 +712,7 @@ const s = feuille(() => StyleSheet.create({
   chercherTexte: { fontFamily: POLICE.titre, fontSize: 17, color: D.encre },
   citation: { fontFamily: POLICE.affiche, fontSize: 40, lineHeight: 44, letterSpacing: -0.8, color: D.encre, marginTop: PAS * 6 },
   carte: { gap: PAS * 3, padding: PAS * 5, borderRadius: RAYON.carte, backgroundColor: D.carte, ...OMBRE },
-  etiquette: { fontSize: 13, fontWeight: "500", color: D.sourd },
+  etiquette: { fontSize: 14, fontWeight: "500", color: D.sourd },
   carteTitre: { fontFamily: POLICE.titre, fontSize: 17, lineHeight: 24, color: D.encre },
   chiffre: { fontFamily: POLICE.donneeForte, fontSize: 28, lineHeight: 34, letterSpacing: -0.5, color: D.encre },
   vote: { fontFamily: POLICE.titre, fontSize: 17, lineHeight: 24, color: D.encre },
@@ -720,7 +721,7 @@ const s = feuille(() => StyleSheet.create({
   /* Refonte « légère » : une jauge fine. */
   barre: { flexDirection: "row", height: 6, borderRadius: 3, overflow: "hidden", backgroundColor: D.voile, gap: 2 },
   badge: { alignSelf: "flex-start", paddingHorizontal: PAS * 2, paddingVertical: PAS, borderRadius: RAYON.bloc, backgroundColor: D.voile },
-  badgeTexte: { fontSize: 13, fontWeight: "500", color: D.sourd },
+  badgeTexte: { fontSize: 14, fontWeight: "500", color: D.sourd },
   points: { flexDirection: "row", justifyContent: "center", gap: PAS * 2 },
   point: { width: 8, height: 8, borderRadius: 4, backgroundColor: D.trait },
   pointActif: { backgroundColor: E.ville },

@@ -14,6 +14,7 @@ import { useSelection } from "../lib/selection";
 import { useProfil } from "../lib/profil";
 import { CIBLE, couleurs, PAS, POLICE, TYPO } from "../lib/theme";
 import { Bouton, Texte } from "../lib/composants";
+import { enfonce } from "../ui/mouvement";
 
 const CHOIX_NIVEAU: { niveau: string; icone: "home-outline" | "business-outline" | "flag-outline"; aide: string }[] = [
   { niveau: "rue", icone: "home-outline", aide: "Votre commune et votre intercommunalité" },
@@ -28,7 +29,7 @@ function AucunePreference({ texte, onPress, actif }: { texte: string; onPress: (
       accessibilityLabel={texte}
       style={({ pressed }) => ({
         minHeight: CIBLE, paddingHorizontal: PAS * 3, justifyContent: "center", alignSelf: "flex-start", borderRadius: 999,
-        borderWidth: 1, borderStyle: "dashed", borderColor: couleurs.trait, opacity: pressed ? 0.7 : 1,
+        borderWidth: 1, borderStyle: "dashed", borderColor: couleurs.trait, ...enfonce(pressed),
       })}>
       <Text style={[TYPO.note, { color: couleurs.sourd, fontWeight: actif ? "700" : "400" }]}>{texte}</Text>
     </Pressable>
@@ -80,7 +81,7 @@ export default function Bienvenue() {
                 style={({ pressed }) => ({
                   minHeight: CIBLE, paddingHorizontal: PAS * 4, flexDirection: "row", alignItems: "center", gap: PAS * 2, borderRadius: 999,
                   borderWidth: 2, borderColor: coche ? couleurs.encre : "transparent",
-                  backgroundColor: coche ? couleurs.voile : couleurs.carte, opacity: pressed ? 0.7 : 1,
+                  backgroundColor: coche ? couleurs.voile : couleurs.carte, ...enfonce(pressed),
                 })}>
                 <Ionicons name={coche ? "checkmark" : c.icone} size={18} color={couleurs.encre} accessible={false} importantForAccessibility="no" />
                 <Text style={[TYPO.corps, { fontFamily: coche ? POLICE.texteGras : POLICE.texte }]}>{nom}</Text>
@@ -106,7 +107,7 @@ export default function Bienvenue() {
                 style={({ pressed }) => ({
                   minHeight: CIBLE, minWidth: CIBLE, paddingHorizontal: PAS * 3, justifyContent: "center", borderRadius: 999,
                   borderWidth: actif ? 2 : 1, borderColor: actif ? couleurs.encre : couleurs.trait,
-                  backgroundColor: couleurs.carte, opacity: pressed ? 0.7 : 1,
+                  backgroundColor: couleurs.carte, ...enfonce(pressed),
                 })}>
                 <Text style={{ fontSize: t, color: couleurs.encre, fontWeight: actif ? "700" : "400" }}>A {t}</Text>
               </Pressable>
@@ -135,7 +136,7 @@ export default function Bienvenue() {
                 style={({ pressed }) => ({
                   minHeight: CIBLE, paddingHorizontal: PAS * 3, justifyContent: "center", borderRadius: 999,
                   borderWidth: coche ? 2 : 1, borderColor: coche ? couleurs.encre : couleurs.trait,
-                  backgroundColor: couleurs.carte, opacity: pressed ? 0.7 : 1,
+                  backgroundColor: couleurs.carte, ...enfonce(pressed),
                 })}>
                 <Text style={[TYPO.corps, { color: couleurs.encre, fontWeight: coche ? "700" : "400" }]}>{coche ? "✓ " : ""}{th}</Text>
               </Pressable>

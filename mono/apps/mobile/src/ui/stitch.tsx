@@ -22,6 +22,7 @@ import { BarreSegments } from "./visuels";
 import { ACCENTS, CIBLE, couleurs, feuille, JAUGE, PAS, POLICE, RAYON, TYPO } from "../lib/theme";
 import { useCouleurVote } from "../lib/couleur-vote";
 import { espacesFines } from "./donnees";
+import { enfonce } from "./mouvement";
 
 /* ── Le cartouche « En clair » ─────────────────────────────────────────── */
 export function EnClair({ texte, enfants }: { texte?: string | null; enfants?: ReactNode }) {
@@ -110,7 +111,7 @@ export function Onglets<T extends string>({ valeurs, actif, choisir, etiquette }
         return (
           <Pressable key={v.cle} onPress={() => choisir(v.cle)} accessibilityRole="tab" accessibilityState={{ selected: on }}
             accessibilityLabel={v.texte}
-            style={({ pressed }) => [s.segment, on && s.segmentActif, pressed && { opacity: 0.7 }]}>
+            style={({ pressed }) => [s.segment, on && s.segmentActif, pressed && enfonce(true)]}>
             {on ? <View style={[s.point, { backgroundColor: ACCENTS.civique }]} /> : null}
             <Text numberOfLines={2} style={[s.segmentTexte, on && { color: couleurs.encre }]}>{v.texte}</Text>
           </Pressable>

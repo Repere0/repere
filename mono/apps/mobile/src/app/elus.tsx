@@ -28,6 +28,7 @@ import type { Fiche } from "../types/annuaire";
 import { ScrollView } from "react-native";
 import { groupeDe, useGroupes, type TableGroupes, GROUPE_INCONNU } from "../lib/groupes";
 import { BadgeGroupe } from "../ui/badge-groupe";
+import { enfonce } from "../ui/mouvement";
 
 /* LES FILTRES PAR FONCTION (porteur, 09/11/2026). L'annuaire porte les députés et les exécutifs
    régionaux ; sénateurs et conseillers départementaux n'y sont pas encore : le filtre le dit. */
@@ -117,7 +118,7 @@ export default function Elus() {
                   <Pressable key={o.cle} onPress={() => setFonction(o.cle)} accessibilityRole="tab" accessibilityState={{ selected: on }}
                     accessibilityLabel={o.texte}
                     style={({ pressed }) => ({ minHeight: 44, paddingHorizontal: PAS * 4, justifyContent: "center", borderRadius: 999,
-                      borderWidth: 1, borderColor: on ? couleurs.encre : couleurs.trait, backgroundColor: on ? couleurs.encre : couleurs.carte, opacity: pressed ? 0.7 : 1 })}>
+                      borderWidth: 1, borderColor: on ? couleurs.encre : couleurs.trait, backgroundColor: on ? couleurs.encre : couleurs.carte, ...enfonce(pressed) })}>
                     <Text style={[TYPO.note, { color: on ? couleurs.sol : couleurs.encre }]}>{o.texte}</Text>
                   </Pressable>
                 );

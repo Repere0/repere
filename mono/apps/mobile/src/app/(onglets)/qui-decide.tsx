@@ -30,6 +30,7 @@ import { mandatsTerminesListes } from "../../lib/mandats-termines";
 import { useDecoupage } from "../../lib/decoupage";
 import { SignalerErreur } from "../../ui/contact";
 import { ChoixCirconscription } from "../../ui/choix-circonscription";
+import { enfonce } from "../../ui/mouvement";
 
 /* L'AIGUILLEUR EN UN GESTE (maquette Stitch, 09/11/2026) : un sujet de la vie courante ouvre le
    niveau qui en décide. Les phrases reprennent celles de la chaîne (COMPETENCES, @repere/core) et
@@ -138,7 +139,7 @@ export default function QuiDecide() {
                  date : « dernier » ne dirait pas de quand il date. */
               <Pressable onPress={() => router.push("/vote")} accessibilityRole="button"
                 accessibilityLabel={d.dernierVote ? `Voir son vote du ${dateFr(d.dernierVote.sc.d)}` : "Voir ses votes"}
-                style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", opacity: pressed ? 0.6 : 1 })}>
+                style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", ...enfonce(pressed) })}>
                 <Text style={[TYPO.corps, { color: couleurs.lien, fontWeight: "600" }]}>{d.dernierVote ? `Voir son vote du ${dateFr(d.dernierVote.sc.d)}` : "Voir ses votes"} ›</Text>
               </Pressable>
             ) : undefined };
@@ -164,7 +165,7 @@ export default function QuiDecide() {
                   accessibilityRole="button" accessibilityState={{ selected: on }} accessibilityLabel={`${x.texte} : qui s'en occupe ?`}
                   style={({ pressed }) => ({ minHeight: CIBLE, flexDirection: "row", alignItems: "center", gap: PAS * 2, paddingHorizontal: PAS * 4,
                     borderRadius: RAYON.pastille, borderWidth: 1, borderColor: on ? ACCENTS.autorite : couleurs.trait,
-                    backgroundColor: on ? ACCENTS.autorite : couleurs.carte, opacity: pressed ? 0.7 : 1 })}>
+                    backgroundColor: on ? ACCENTS.autorite : couleurs.carte, ...enfonce(pressed) })}>
                   <Ionicons name={x.icone} size={18} color={on ? ACCENTS.surAutorite : ACCENTS.autorite} accessible={false} importantForAccessibility="no" />
                   <Text style={[TYPO.corps, { fontFamily: POLICE.texteGras, color: on ? ACCENTS.surAutorite : couleurs.encre }]}>{x.texte}</Text>
                 </Pressable>
@@ -187,7 +188,7 @@ export default function QuiDecide() {
               à nouveau montre de nouveau tous les niveaux. */}
           {sujet ? (
             <Pressable onPress={() => setSujet(null)} accessibilityRole="button" accessibilityLabel="Montrer tous les niveaux"
-              style={({ pressed }) => ({ minHeight: CIBLE, alignSelf: "flex-start", flexDirection: "row", alignItems: "center", gap: PAS * 1.5, opacity: pressed ? 0.6 : 1 })}>
+              style={({ pressed }) => ({ minHeight: CIBLE, alignSelf: "flex-start", flexDirection: "row", alignItems: "center", gap: PAS * 1.5, ...enfonce(pressed) })}>
               <Ionicons name="close-circle-outline" size={16} color={couleurs.sourd} accessible={false} importantForAccessibility="no" />
               <Text style={[TYPO.note, { color: couleurs.encre }]}>Montrer tous les niveaux</Text>
             </Pressable>
@@ -199,7 +200,7 @@ export default function QuiDecide() {
           {prefet && visibleAuNiveau(niveauZoom, "region") ? (
             <Pressable onPress={() => router.push({ pathname: "/elu", params: { nom: prefet.nom, role: prefet.titre, echelon: "", niveau: "L'État", institution: "Préfecture de région", lieu: "Île-de-France" } })}
               accessibilityRole="link" accessibilityLabel={`Voir la fiche de ${prefet.nom}, préfet de la région`}
-              style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", opacity: pressed ? 0.6 : 1, gap: PAS })}>
+              style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", ...enfonce(pressed), gap: PAS })}>
               <Text style={TYPO.etiquette}>L'État · préfet de la région</Text>
               <Text style={[TYPO.reponse, { color: couleurs.lien }]}>{prefet.nom}</Text>
             </Pressable>
@@ -210,7 +211,7 @@ export default function QuiDecide() {
               <Text style={TYPO.note}>Source : page de la préfecture de région. Dernier contrôle réussi du titre de la page : {prefet.titreControleLe}. La date de nomination n'est pas contrôlée.</Text>
               <Pressable onPress={() => Linking.openURL(prefet.url)} accessibilityRole="link"
                 accessibilityLabel="Voir la page de la préfecture de région (site officiel)"
-                style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", opacity: pressed ? 0.6 : 1 })}>
+                style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", ...enfonce(pressed) })}>
                 <Text style={[TYPO.corps, { color: couleurs.lien, fontWeight: "600" }]}>Page de la préfecture de région ↗</Text>
               </Pressable>
             </View>

@@ -56,3 +56,10 @@ export function useCompteur(cible: number): number {
   }, [cible, reduit]);
   return n;
 }
+
+/* RETOUR D'APPUI (« enfoncement », 11/11/2026) : sous le doigt, un bouton se tasse de 3 % et s'éclaircit un peu ;
+   relâché, il revient. Instantané, donc rien à réduire : ce n'est pas une animation. Un seul endroit pour
+   le réglage de tous les boutons. */
+export const enfonce = (pressed: boolean) => (pressed
+  ? { opacity: 0.85, transform: [{ scale: 0.97 }] }
+  : { opacity: 1, transform: [{ scale: 1 }] });

@@ -36,6 +36,7 @@ import { PartagerCarte } from "../ui/partage/bouton-partage";
 import { ChiffreStory } from "../ui/partage/variantes/chiffre.story";
 import { messageChiffre } from "../ui/partage/messages";
 import { SignalerErreur } from "../ui/contact";
+import { enfonce } from "../ui/mouvement";
 
 type Rapport = { l: string; v: string; d: string };
 type Projet = { annee: number; dispositif: string; intitule: string; subvention: number; cout?: number; ancien_code?: string };
@@ -325,7 +326,7 @@ export default function Argent() {
           {r.index?.sources?.comptes?.url ? (
             <Pressable onPress={() => Linking.openURL(r.index.sources.comptes.url)} accessibilityRole="link"
               accessibilityLabel="Les comptes publiés par l'OFGL, ouvre un site externe"
-              style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", opacity: pressed ? 0.6 : 1 })}>
+              style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", ...enfonce(pressed) })}>
               <Text style={[TYPO.corps, { color: couleurs.lien, fontFamily: POLICE.texteGras }]}>Les comptes publiés, sur le site de l'OFGL ↗</Text>
             </Pressable>
           ) : null}

@@ -21,7 +21,7 @@ bouton, un titre ou un texte.
 
 ## Typographie (Variante A, décision du porteur du 11/11/2026)
 
-Échelle : **34 / 28 / 22 / 17 / 15 / 13**. Elle remplace « titres de 24 px au plus » (09/11).
+Échelle : **34 / 28 / 22 / 17 / 15 / 14 (13 pour les étiquettes en capitales)**. Elle remplace « titres de 24 px au plus » (09/11).
 
 | style | police | taille / interligne |
 |---|---|---|
@@ -32,8 +32,9 @@ bouton, un titre ou un texte.
 | section | Manrope Bold | 22 / 28 |
 | réponse (titre de carte) | Manrope SemiBold | 17 / 24 |
 | corps | DM Sans | 15 / 22 |
-| note, micro, étiquette | DM Sans | 13 / 18-19 |
-| donnée (date ou nombre seuls, petits) | IBM Plex Mono | 13 / 18 |
+| note, micro | DM Sans | 14 / 20-21 (retour du porteur, 11/11/2026 : 13 → 14) |
+| étiquette (capitales) | DM Sans | 13 / 18 |
+| donnée (date ou nombre seuls, petits) | IBM Plex Mono | 14 / 20 |
 
 - Les chiffres héros sont en Manrope. IBM Plex Mono ne sert plus qu'aux petites données. Remplace
   « Plex Mono pour les grands chiffres » (07/11).
@@ -68,10 +69,22 @@ bouton, un titre ou un texte.
   lettres, pourcentage en grand, montants dessous. **Neutre** : jamais vert ni rouge, une hausse de dépenses n'est
   ni bonne ni mauvaise (invariant 7).
 - **Calendrier** : séances rangées par Matin, Après-midi, Soir d'après l'heure publiée ; titre en 17 px, heure en
-  13 px grise ; « Voir le mois » et « Voir les deux prochaines semaines » en pilules discrètes.
+  14 px grise ; « Voir le mois » et « Voir les deux prochaines semaines » en pilules discrètes.
 - **Réglages et informations** : la roue de l'en-tête des onglets, et elle seule.
 
 ## Mouvement
+
+Angle « Revolut » (porteur, 11/11/2026) : sérieux et fiable, mais fluide. Le mouvement aide à lire ; il ne récompense rien.
+
+- **Retour d'appui** : `enfonce()` (`ui/mouvement.ts`), échelle 0,97 et opacité 0,85 sous le doigt, sur tous les boutons.
+- **Barres** : remplissage de gauche à droite en 0,5 s (`DUREE.remplissage`). **Chiffre héros d'un montant** : de 0 à sa
+  valeur en 0,5 s (`ChiffreQuiCompte`), jamais un décompte de vote (invariant 6) ; le lecteur d'écran lit la valeur finale.
+- **Repère du jour** : bordure qui s'éclaire une fois, avec un point, **seulement si la publication affichée est la
+  courante** (invariant 9) ; aucun effet en « publication précédente » ou « impossible à vérifier ». Neutre, sans boucle.
+- **États d'attente** (`ui/attente.tsx`) : cercles aux teintes d'échelon très douces et une icône ; un décor, jamais la forme
+  d'une donnée ; la phrase vraie et le lien restent dessous (invariant 5).
+- **Icône + titre court** (`ui/ligne-icone.tsx`) : pour les textes écrits dans l'application ; le texte complet reste à un geste.
+  Les phrases de `@repere/core`, les mises en garde et les sources gardent leurs mots.
 
 - Pile : glissement du système. Recherche et partage : montée depuis le bas. Onglets : fondu court.
 - Entrée d'un écran : `ui/entree.tsx`. Toute animation passe par `ui/mouvement.ts`, qui respecte

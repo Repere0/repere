@@ -12,6 +12,7 @@ import { router } from "expo-router";
 import { ACCENTS, feuille, couleurs, CIBLE, PAS, RAYON, OMBRE, TYPO, type Echelon, POLICE } from "./theme";
 import { NIVEAU_NOM, pointEchelon } from "./niveaux";
 import { Pression } from "../ui/pression";
+import { enfonce } from "../ui/mouvement";
 
 /* Refonte du 30/09/2026 : l'echelon se dit par un point de couleur devant l'etiquette.
    07/11/2026 (refonte globale, demande du porteur) : le filet de 4 px a gauche revient,
@@ -57,7 +58,7 @@ export function CarteQuestion({ echelon, question, reponse, children, pied, acti
       {pied}
       {action ? (
         <Pressable onPress={action.onPress} accessibilityRole="button" accessibilityLabel={action.texte}
-          style={({ pressed }) => [s.action, pressed && { opacity: 0.6 }]}>
+          style={({ pressed }) => [s.action, pressed && enfonce(true)]}>
           <Text style={s.actionTexte}>{action.texte}</Text>
           <Text style={s.actionTexte} accessibilityElementsHidden importantForAccessibility="no">›</Text>
         </Pressable>
@@ -90,7 +91,7 @@ export function Definitions({ s: seg }: { s: Segment[] }) {
           onPress={() => router.push({ pathname: "/dictionnaire", params: { mot: m.mot } })}
           /* Refonte (porteur, 09/11/2026) : plus de lien souligné ; un bouton discret, en pastille. */
           style={({ pressed }) => ({ minHeight: CIBLE, alignSelf: "flex-start", flexDirection: "row", alignItems: "center", gap: PAS * 1.5,
-            paddingHorizontal: PAS * 3, borderRadius: RAYON.pastille, borderWidth: 1, borderColor: couleurs.trait, opacity: pressed ? 0.6 : 1 })}>
+            paddingHorizontal: PAS * 3, borderRadius: RAYON.pastille, borderWidth: 1, borderColor: couleurs.trait, ...enfonce(pressed) })}>
           <Ionicons name="book-outline" size={15} color={couleurs.sourd} accessible={false} importantForAccessibility="no" />
           <Text style={[TYPO.note, { color: couleurs.encre }]}>Définition : {m.titre}</Text>
           <Ionicons name="chevron-forward" size={14} color={couleurs.sourd} accessible={false} importantForAccessibility="no" />
@@ -115,7 +116,7 @@ export function LienSortant({ url, texte, etiquette }: { url: string; texte: str
       onPress={() => Linking.openURL(url)}
       accessibilityRole="link"
       accessibilityLabel={(etiquette || texte) + ", ouvre un site externe"}
-      style={({ pressed }) => [s.lien, pressed && { opacity: 0.6 }]}
+      style={({ pressed }) => [s.lien, pressed && enfonce(true)]}
       hitSlop={8}
     >
       <Text style={s.lienTexte}>{texte} ↗</Text>
@@ -163,7 +164,7 @@ export function Bouton({ texte, onPress, discret }: { texte: string; onPress: ()
     <Pressable
       onPress={onPress}
       accessibilityRole="button"
-      style={({ pressed }) => [s.bouton, discret && s.boutonDiscret, pressed && { opacity: 0.7 }]}
+      style={({ pressed }) => [s.bouton, discret && s.boutonDiscret, pressed && enfonce(true)]}
     >
       <Text style={[s.boutonTexte, discret && { color: couleurs.encre }]}>{texte}</Text>
     </Pressable>
@@ -172,7 +173,7 @@ export function Bouton({ texte, onPress, discret }: { texte: string; onPress: ()
 
 const s = feuille(() => StyleSheet.create({
   /* Variante A : la surface se lit à sa teinte, sans filet ; 24 px d'intérieur (grille de 8). */
-  carte: { backgroundColor: couleurs.carte, borderRadius: RAYON.carte, padding: PAS * 6, gap: PAS * 3, ...OMBRE },
+  carte: { backgroundColor: couleurs.carte, borderRadius: RAYON.carte, padding: PAS * 6, gap: PAS * 4, ...OMBRE },
   carteTete: { flexDirection: "row", alignItems: "center", gap: PAS * 2 },
   point: { width: 10, height: 10, borderRadius: 5 },
   carteTitre: { ...TYPO.etiquette, flex: 1 },
@@ -186,7 +187,7 @@ const s = feuille(() => StyleSheet.create({
   fort: { fontWeight: "600" },
   sourd: { color: couleurs.sourd, fontSize: 15, lineHeight: 21 },
   source: { gap: PAS, paddingTop: PAS * 2, borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: couleurs.trait },
-  sourceTexte: { fontSize: 13, lineHeight: 18, color: couleurs.sourd },
+  sourceTexte: { fontSize: 14, lineHeight: 20, color: couleurs.sourd },
   lien: { minHeight: CIBLE, justifyContent: "center" },
   /* En encre, souligne : la couleur de ville sur le gris d'une phrase d'absence
      faisait 4,38:1 (mesure du 30/09/2026), sous le seuil AA. */

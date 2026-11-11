@@ -35,6 +35,7 @@ import { AvatarElu, CreditPhotoElu } from "../ui/avatar";
 import { libelleGroupe } from "../ui/badge-groupe";
 import { deputeParNom, groupeDe, useGroupes } from "../lib/groupes";
 import { useCouleurVote } from "../lib/couleur-vote";
+import { enfonce } from "../ui/mouvement";
 
 type FaitVote = { cle: string; type: string; sc: { t: string; d: string; n: string; s: string; dec?: Record<string, string>; dl?: string; dr?: string; dm?: string; dq?: number; et?: { d: string; f?: string; l: string }[] }; position?: string; qui: string; circo: number; ref?: string };
 
@@ -146,13 +147,13 @@ export default function Vote() {
           {parametresFiche ? (
             <Pressable onPress={() => router.push({ pathname: "/elu", params: parametresFiche })}
               accessibilityRole="button" accessibilityLabel={`Voir la fiche de ${parametresFiche.nom}`}
-              style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", opacity: pressed ? 0.6 : 1 })}>
+              style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", ...enfonce(pressed) })}>
               <Text style={[TYPO.corps, { color: couleurs.lien, fontWeight: "600" }]}>Voir la fiche de {parametresFiche.nom} ›</Text>
             </Pressable>
           ) : null}
           <Pressable onPress={() => router.push("/partager")} accessibilityRole="button"
             accessibilityLabel="Partager ce vote en deux cartes"
-            style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", opacity: pressed ? 0.6 : 1 })}>
+            style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", ...enfonce(pressed) })}>
             <Text style={[TYPO.corps, { color: couleurs.lien, fontWeight: "600" }]}>Partager ce vote ›</Text>
           </Pressable>
 
@@ -195,7 +196,7 @@ export default function Vote() {
               <Timeline etapes={toutesEtapes ? etapes : etapes.slice(-ETAPES_VISIBLES)} etiquette="Les étapes de ce texte, de la plus ancienne à la plus récente" />
               {etapes.length > ETAPES_VISIBLES ? (
                 <Pressable onPress={() => setToutesEtapes(v => !v)} accessibilityRole="button" accessibilityState={{ expanded: toutesEtapes }}
-                  style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", opacity: pressed ? 0.6 : 1 })}>
+                  style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", ...enfonce(pressed) })}>
                   <Text style={[TYPO.corps, { color: couleurs.lien, fontWeight: "600" }]}>{toutesEtapes ? "Afficher seulement les plus récentes" : `Voir les ${etapes.length} étapes`}</Text>
                 </Pressable>
               ) : null}

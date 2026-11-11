@@ -27,6 +27,7 @@ import { couleurs, CIBLE, PAS, TYPO } from "../lib/theme";
 import { PartagerCarte } from "./partage/bouton-partage";
 import { ActuStory } from "./partage/variantes/actu.story";
 import { ilYa } from "./fraicheur";
+import { enfonce } from "./mouvement";
 
 type Entree = { titre?: string; resume?: string; source?: string; source_nom?: string };
 type Fichier = { semaine?: string; date_publication?: string; communes?: Record<string, Entree> };
@@ -50,7 +51,7 @@ function ActuFlux({ x }: { x: ActuFluxEntree }) {
       <Text style={TYPO.micro}>Automatique · flux RSS officiel · publiée le {dateFr(x.date)} · {ilYa(ageReleve(x.date) as number)}</Text>
       <Pressable onPress={() => Linking.openURL(x.lien)} accessibilityRole="link"
         accessibilityLabel="Source : site de la mairie, ouvre un site externe"
-        style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", alignSelf: "flex-start", opacity: pressed ? 0.7 : 1 })}>
+        style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", alignSelf: "flex-start", ...enfonce(pressed) })}>
         <Text style={{ color: couleurs.lien, fontWeight: "500" }}>Source : site de la mairie</Text>
       </Pressable>
     </View>
@@ -88,7 +89,7 @@ export function CetteSemaineCommune({ insee, nom }: { insee: string; nom: string
       <Text style={TYPO.micro}>Publiée le {dateFr(date as string)} · {ilYa(age as number)}</Text>
       <Pressable onPress={() => Linking.openURL(e!.source as string)} accessibilityRole="link"
         accessibilityLabel={`Source : ${e!.source_nom || "page officielle"}, ouvre un site externe`}
-        style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", alignSelf: "flex-start", opacity: pressed ? 0.7 : 1 })}>
+        style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", alignSelf: "flex-start", ...enfonce(pressed) })}>
         <Text style={{ color: couleurs.lien, fontWeight: "500" }}>Source : {e!.source_nom || "page officielle"}</Text>
       </Pressable>
       <PartagerCarte etiquette={`Partager l'actualité de ${nom}`}
@@ -104,13 +105,13 @@ export function CetteSemaineCommune({ insee, nom }: { insee: string; nom: string
           <Text style={TYPO.corps}>Repère publie quand il y a du nouveau. Aucune actu cette semaine pour {nom}.</Text>
           {publiee && !voir ? (
             <Pressable onPress={() => setVoir(true)} accessibilityRole="button"
-              style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", alignSelf: "flex-start", opacity: pressed ? 0.7 : 1 })}>
+              style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", alignSelf: "flex-start", ...enfonce(pressed) })}>
               <Text style={{ color: couleurs.lien, fontWeight: "500" }}>Voir la dernière actu de {nom}</Text>
             </Pressable>
           ) : null}
           {publiee && voir ? bloc : null}
           <Pressable onPress={() => router.push("/actus")} accessibilityRole="link"
-            style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", alignSelf: "flex-start", opacity: pressed ? 0.7 : 1 })}>
+            style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", alignSelf: "flex-start", ...enfonce(pressed) })}>
             <Text style={{ color: couleurs.lien, fontWeight: "500" }}>Voir les dernières publications</Text>
           </Pressable>
         </View>

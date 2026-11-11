@@ -67,7 +67,7 @@ const tailles = await page.evaluate(() => {
   const cs = e => e ? getComputedStyle(e).fontSize : null;
   return { titre: cs(el("ESSAI — réunion du matin")), heure: cs([...document.querySelectorAll("*")].find(e => e.children.length === 0 && /^9 h 30$/.test((e.textContent || "").replace(/ /g, " ")))) };
 });
-verifier(tailles.titre === "17px" && tailles.heure === "13px", "calendrier : titre en 17 px, heure en 13 px (" + JSON.stringify(tailles) + ")");
+verifier(tailles.titre === "17px" && tailles.heure === "14px", "calendrier : titre en 17 px, heure en 14 px (" + JSON.stringify(tailles) + ")");
 
 /* 3. Finances, Évolution */
 await page.getByRole("tab", { name: /Finances/ }).first().click();

@@ -13,6 +13,7 @@ import { Pressable, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { ordinal } from "@repere/core";
 import { CIBLE, couleurs, PAS, POLICE, RAYON, TYPO } from "../lib/theme";
+import { enfonce } from "./mouvement";
 
 export type DeputeCirco = { nom: string; circo: number; role?: string };
 
@@ -26,7 +27,7 @@ export function ChoixCirconscription({ personnes, ouvrirFiche }: { personnes: De
       <Pressable onPress={() => setOuvert(o => !o)} accessibilityRole="button" accessibilityState={{ expanded: ouvert }}
         accessibilityLabel={`Choisir une circonscription, parmi ${liste.length}`}
         style={({ pressed }) => ({ minHeight: CIBLE, flexDirection: "row", alignItems: "center", gap: PAS * 2, paddingHorizontal: PAS * 4,
-          borderRadius: RAYON.pastille, backgroundColor: couleurs.voile, opacity: pressed ? 0.7 : 1 })}>
+          borderRadius: RAYON.pastille, backgroundColor: couleurs.voile, ...enfonce(pressed) })}>
         <Ionicons name="location-outline" size={18} color={couleurs.encre} accessible={false} importantForAccessibility="no" />
         <Text style={[TYPO.corps, { flex: 1, fontFamily: POLICE.texteGras }]}>{elu ? `${ordinal(elu.circo)} circonscription` : "Choisir une circonscription"}</Text>
         <Ionicons name={ouvert ? "chevron-up" : "chevron-down"} size={18} color={couleurs.sourd} accessible={false} importantForAccessibility="no" />
@@ -40,7 +41,7 @@ export function ChoixCirconscription({ personnes, ouvrirFiche }: { personnes: De
                 accessibilityState={{ selected: on }} accessibilityLabel={`${ordinal(p.circo)} circonscription${on ? ", choisie" : ""}`}
                 style={({ pressed }) => ({ minHeight: CIBLE, minWidth: CIBLE, alignItems: "center", justifyContent: "center", paddingHorizontal: PAS * 3,
                   borderRadius: RAYON.pastille, borderWidth: 2, borderColor: on ? couleurs.encre : "transparent",
-                  backgroundColor: on ? couleurs.voile : couleurs.carte, opacity: pressed ? 0.7 : 1 })}>
+                  backgroundColor: on ? couleurs.voile : couleurs.carte, ...enfonce(pressed) })}>
                 <Text style={[TYPO.corps, { fontFamily: on ? POLICE.texteGras : POLICE.texte }]}>{ordinal(p.circo)}</Text>
               </Pressable>
             );
@@ -49,7 +50,7 @@ export function ChoixCirconscription({ personnes, ouvrirFiche }: { personnes: De
       ) : null}
       {elu ? (
         <Pressable onPress={() => ouvrirFiche(elu)} accessibilityRole="link" accessibilityLabel={`Voir la fiche de ${elu.nom}, député de la ${ordinal(elu.circo)} circonscription`}
-          style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", gap: 2, opacity: pressed ? 0.6 : 1 })}>
+          style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", gap: 2, ...enfonce(pressed) })}>
           <Text style={TYPO.reponse}>{elu.nom}</Text>
           <Text style={TYPO.note}>Député, {ordinal(elu.circo)} circonscription ›</Text>
         </Pressable>

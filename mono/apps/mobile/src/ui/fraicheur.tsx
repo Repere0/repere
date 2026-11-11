@@ -19,6 +19,7 @@ import {
 } from "../lib/donnees";
 import { useCommuneChoisie } from "../lib/useCommune";
 import { feuille, CIBLE, couleurs, PAS, RAYON, TYPO } from "../lib/theme";
+import { enfonce } from "./mouvement";
 
 export function BandeauFraicheur() {
   const [e, setE] = useState(etatFraicheur());
@@ -38,7 +39,7 @@ export function BandeauFraicheur() {
       <Text style={TYPO.note}>{p.corps}</Text>
       {p.action ? (
         <Pressable accessibilityRole="button" onPress={() => { publicationPriseEnCompte(); reessayer(); }}
-          style={({ pressed }) => [s.bouton, pressed && { opacity: 0.6 }]}>
+          style={({ pressed }) => [s.bouton, pressed && enfonce(true)]}>
           <Text style={s.boutonTexte}>{p.action}</Text>
         </Pressable>
       ) : null}
@@ -89,7 +90,7 @@ export function DateDonnee({ quoi, date, url, testID, avant }: { quoi: string; d
       /* 45 px : la regle du projet (44) plus un pixel, car le navigateur a mesure 43,99999 px
          (arrondi sous-pixel) ; et non CIBLE (48) : trois pixels qui
          gardent la troisieme reponse d'Aujourd'hui dans le premier ecran a 390 x 844. */
-      style={({ pressed }) => ({ minHeight: 45, justifyContent: "center", opacity: pressed ? 0.7 : 1 })}>
+      style={({ pressed }) => ({ minHeight: 45, justifyContent: "center", ...enfonce(pressed) })}>
       {/* Avec « avant », « Source » monte sur la premiere ligne : la date tient alors sur une
          seule ligne a 390 px, et le lien garde 44 px (mesure du parcours navigateur). */}
       {avant ? (

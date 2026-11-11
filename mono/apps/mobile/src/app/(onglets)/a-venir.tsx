@@ -39,6 +39,7 @@ import { visibleAuNiveau } from "@repere/core";
 import { AgendaStory } from "../../ui/partage/variantes/agenda.story";
 import { messageAgenda } from "../../ui/partage/messages";
 import { BoutonPartageTexte, ligneSource } from "../../ui/partage/partager-texte";
+import { enfonce } from "../../ui/mouvement";
 
 type Ev = { titre: string; debut: string; institution: string; categorie?: string; lieu?: string; description?: string; source: Record<string, string> };
 type Groupe = { jour: string; institution: string; titre: string; debut: string; debuts: string[]; fins?: (string | null)[]; seances: number;
@@ -132,8 +133,8 @@ function Case({ iso, jour, nb, onPress, taille }: { iso: string; jour: string; n
   return (
     <Pressable onPress={onPress} accessibilityRole="button" accessibilityState={{ selected: choisi }}
       accessibilityLabel={`${jourFr(iso) || numero}, ${nb} élément${nb > 1 ? "s" : ""}`}
-      style={({ pressed }) => ({ flex: 1, minHeight: grand ? 58 : 42, alignItems: "center", justifyContent: "center", gap: 4, opacity: pressed ? 0.6 : 1 })}>
-      {grand ? <Text style={{ fontSize: 13, color: couleurs.sourd, fontWeight: "500" }}>{LETTRES[rangLundi(iso)]}</Text> : null}
+      style={({ pressed }) => ({ flex: 1, minHeight: grand ? 58 : 42, alignItems: "center", justifyContent: "center", gap: 4, ...enfonce(pressed) })}>
+      {grand ? <Text style={{ fontSize: 14, color: couleurs.sourd, fontWeight: "500" }}>{LETTRES[rangLundi(iso)]}</Text> : null}
       <View style={{ width: grand ? 40 : 34, height: grand ? 40 : 34, borderRadius: 999, alignItems: "center", justifyContent: "center",
         backgroundColor: choisi ? ACCENTS.autorite : "transparent" }}>
         <Text style={{ fontFamily: POLICE.donneeForte, fontSize: grand ? 18 : 15, color: choisi ? ACCENTS.surAutorite : couleurs.encre }}>{numero}</Text>
@@ -239,7 +240,7 @@ export default function AVenir() {
               {mois ? (
                 <View accessibilityRole="none" accessibilityLabel="Calendrier du mois" style={{ gap: 2 }}>
                   <View style={{ flexDirection: "row" }}>
-                    {LETTRES.map((l, i) => <Text key={i} style={{ flex: 1, textAlign: "center", color: couleurs.sourd, fontWeight: "500", fontSize: 13 }}>{l}</Text>)}
+                    {LETTRES.map((l, i) => <Text key={i} style={{ flex: 1, textAlign: "center", color: couleurs.sourd, fontWeight: "500", fontSize: 14 }}>{l}</Text>)}
                   </View>
                   {Array.from({ length: cases.length / 7 }, (_, ligne) => (
                     <View key={ligne} style={{ flexDirection: "row" }}>
@@ -272,7 +273,7 @@ export default function AVenir() {
               <Text style={[TYPO.corps, { fontWeight: "600" }]}>{choisi && etiquetteJour ? `${etiquetteJour}. ` : ""}{phrase}</Text>
               {choisi ? (
                 <Pressable onPress={() => setChoisi(false)} accessibilityRole="button" accessibilityLabel="Revenir à la liste des deux prochaines semaines"
-                  style={({ pressed }) => [secondaire.bouton, pressed && { opacity: 0.6 }]}>
+                  style={({ pressed }) => [secondaire.bouton, pressed && enfonce(true)]}>
                   <Text style={secondaire.texte}>Voir les deux prochaines semaines</Text>
                 </Pressable>
               ) : null}
@@ -297,7 +298,7 @@ export default function AVenir() {
               {/* V35 bloc 2 (D68) : « Voir le mois » passe sous la liste, hors du premier écran. */}
               <Pressable onPress={() => setMois(m => !m)} accessibilityRole="button"
                 accessibilityLabel={mois ? "Voir la semaine" : "Voir le mois"}
-                style={({ pressed }) => [secondaire.bouton, pressed && { opacity: 0.6 }]}>
+                style={({ pressed }) => [secondaire.bouton, pressed && enfonce(true)]}>
                 <Text style={secondaire.texte}>{mois ? "Voir la semaine" : "Voir le mois"}</Text>
               </Pressable>
               {/* V34 bloc 7 (audit) : la mention passe sous la liste, pour que le premier rendez-vous ne soit pas repousse sous la barre d'onglets. */}
@@ -311,7 +312,7 @@ export default function AVenir() {
 
               {!aVenir.length && toutes.length ? (
                 <Pressable onPress={() => setInstitution(null)} accessibilityRole="button" accessibilityLabel="Afficher toutes les institutions"
-                  style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", opacity: pressed ? 0.6 : 1 })}>
+                  style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", ...enfonce(pressed) })}>
                   <Text style={{ color: couleurs.lien, fontWeight: "500" }}>Rien de publié pour ce filtre. Afficher toutes les institutions</Text>
                 </Pressable>
               ) : null}
@@ -323,7 +324,7 @@ export default function AVenir() {
             onPress={() => router.push("/procedure")}
             accessibilityRole="button"
             accessibilityLabel="Ouvrir : comment une loi devient loi"
-            style={({ pressed }) => ({ minHeight: 52, padding: 16, borderRadius: 14, backgroundColor: couleurs.carte, opacity: pressed ? 0.6 : 1 })}
+            style={({ pressed }) => ({ minHeight: 52, padding: 16, borderRadius: 14, backgroundColor: couleurs.carte, ...enfonce(pressed) })}
           >
             <Text style={{ fontWeight: "500", color: couleurs.encre }}>Comment une loi devient loi</Text>
             <Text style={{ marginTop: 4, color: couleurs.sourd }}>{ETAPES_LOI.length} étapes, du dépôt à la publication, avec la navette.</Text>
@@ -332,7 +333,7 @@ export default function AVenir() {
             onPress={() => router.push("/scrutins?mode=qag")}
             accessibilityRole="button"
             accessibilityLabel="Ouvrir les Questions au Gouvernement"
-            style={({ pressed }) => ({ minHeight: 52, padding: 16, borderRadius: 14, backgroundColor: couleurs.carte, opacity: pressed ? 0.6 : 1 })}
+            style={({ pressed }) => ({ minHeight: 52, padding: 16, borderRadius: 14, backgroundColor: couleurs.carte, ...enfonce(pressed) })}
           >
             <Text style={{ fontWeight: "500", color: couleurs.encre }}>Questions au Gouvernement</Text>
             <Text style={{ marginTop: 4, color: couleurs.sourd }}>Voir les questions posées et les réponses publiées.</Text>
@@ -341,7 +342,7 @@ export default function AVenir() {
             onPress={() => router.push("/dictionnaire")}
             accessibilityRole="button"
             accessibilityLabel="Ouvrir le dictionnaire citoyen"
-            style={({ pressed }) => ({ minHeight: 52, padding: 16, borderRadius: 14, backgroundColor: couleurs.carte, opacity: pressed ? 0.6 : 1 })}
+            style={({ pressed }) => ({ minHeight: 52, padding: 16, borderRadius: 14, backgroundColor: couleurs.carte, ...enfonce(pressed) })}
           >
             <Text style={{ fontWeight: "500", color: couleurs.encre }}>Dictionnaire citoyen</Text>
             <Text style={{ marginTop: 4, color: couleurs.sourd }}>Ce que veulent dire les mots du Parlement et des collectivités.</Text>

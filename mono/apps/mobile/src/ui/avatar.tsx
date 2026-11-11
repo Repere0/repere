@@ -10,6 +10,7 @@ import { usePhotoElu, type PhotoElu } from "../lib/photos";
 import { couleurs, OMBRE, POLICE, type Echelon } from "../lib/theme";
 import { bordureGroupe, couleurGroupe, GROUPE_INCONNU, texteSur } from "../lib/groupes";
 import { REFLET_AVATAR } from "../lib/palette";
+import { enfonce } from "./mouvement";
 
 export function initiales(nom: string): string {
   const morceaux = nom.split(/\s+/).filter(Boolean);
@@ -83,7 +84,7 @@ export function CreditPhotoElu({ nom, dep, cle }: { nom: string; dep?: string | 
   return (
     <Pressable disabled={!page} onPress={() => { if (page) Linking.openURL(page); }} accessibilityRole={page ? "link" : "text"}
       accessibilityLabel={`Photo de ${nom} : ${photo.auteur}, licence ${photo.licence}, Wikimedia Commons, recadrée${page ? ". Ouvre la page de la photo, site externe" : ""}`}
-      style={({ pressed }) => ({ minHeight: 45, justifyContent: "center", opacity: pressed ? 0.7 : 1 })}>
+      style={({ pressed }) => ({ minHeight: 45, justifyContent: "center", ...enfonce(pressed) })}>
       <Text style={{ fontSize: 12, lineHeight: 16, color: couleurs.sourd }} numberOfLines={2}>
         Photo de {nom} : {photo.auteur} · {photo.licence} · Wikimedia Commons (recadrée)
       </Text>
@@ -102,7 +103,7 @@ export function CreditPhoto({ photo }: { photo: PhotoElu }) {
     <View>
     <Pressable disabled={!page} onPress={() => { if (page) Linking.openURL(page); }} accessibilityRole={page ? "link" : "text"}
       accessibilityLabel={`Photo : ${photo.auteur}, licence ${photo.licence}, Wikimedia Commons, recadrée${page ? ". Ouvre la page de la photo, site externe" : ""}`}
-      style={({ pressed }) => ({ minHeight: 45, justifyContent: "center", opacity: pressed ? 0.7 : 1 })}>
+      style={({ pressed }) => ({ minHeight: 45, justifyContent: "center", ...enfonce(pressed) })}>
       <Text style={{ fontSize: 12, lineHeight: 16, color: couleurs.sourd }} numberOfLines={2}>
         Photo : {photo.auteur} · {photo.licence} · Wikimedia Commons (recadrée)
       </Text>
@@ -110,7 +111,7 @@ export function CreditPhoto({ photo }: { photo: PhotoElu }) {
     {CONTACT ? (
       <Pressable onPress={() => Linking.openURL(`mailto:${CONTACT}?subject=${encodeURIComponent("Retrait d'une photo d'élu")}`)} accessibilityRole="link"
         accessibilityLabel={`Photo sous licence libre, but informatif. Demander le retrait par courriel à ${CONTACT}`}
-        style={({ pressed }) => ({ minHeight: 45, justifyContent: "center", opacity: pressed ? 0.7 : 1 })}>
+        style={({ pressed }) => ({ minHeight: 45, justifyContent: "center", ...enfonce(pressed) })}>
         <Text style={{ fontSize: 12, lineHeight: 16, color: couleurs.sourd }}>Photo sous licence libre, but informatif. Retrait sur demande : <Text>{CONTACT}</Text></Text>
       </Pressable>
     ) : null}

@@ -29,6 +29,7 @@ import { Vide } from "../lib/composants";
 import { PastilleSource } from "../ui/source";
 import { feuille, PAS, TYPO, couleurs, CIBLE, RAYON, OMBRE, POLICE } from "../lib/theme";
 import { dateFr, titreLisible, nombreDecompte, resultatDecompteCourt } from "@repere/core";
+import { enfonce } from "../ui/mouvement";
 
 type Resume = {
   n: string; d: string; t: string; ty: string; s: string;
@@ -120,7 +121,7 @@ function GroupeRow({ groupe, ouvert, onPress }: { groupe: Groupe; ouvert: boolea
         accessibilityRole="button"
         accessibilityState={{ expanded: ouvert }}
         accessibilityLabel={`${groupe.nom}, ${texteAccessible}`}
-        style={({ pressed }) => [s.groupeTete, pressed && { opacity: 0.65 }]}
+        style={({ pressed }) => [s.groupeTete, pressed && enfonce(true)]}
       >
         <View style={[s.groupePoint, { backgroundColor: couleurGroupe(sigleDuNom(groupe.nom)) }]} />
         <View style={s.groupeTexte}>
@@ -297,7 +298,7 @@ export default function Scrutins() {
             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.scroller}>
               {qagVisibles.map(x => (
                 <Pressable key={x.uid} onPress={() => choisirQag(x.uid)} accessibilityRole="button"
-                  style={({ pressed }) => [s.selectionCard, x.uid === qagSelection && s.selectionCardActive, pressed && { opacity: 0.7 }]}>
+                  style={({ pressed }) => [s.selectionCard, x.uid === qagSelection && s.selectionCardActive, pressed && enfonce(true)]}>
                   <Text style={TYPO.micro}>{x.d ? dateFr(x.d) : "Date non fournie"} · n° {x.n}</Text>
                   <Text numberOfLines={2} style={s.selectionTitre}>{x.auteur.nom || "Auteur non identifié"}</Text>
                   <Text numberOfLines={1} style={TYPO.note}>{x.ministere || "Ministère non précisé"}</Text>
@@ -372,7 +373,7 @@ export default function Scrutins() {
                   onPress={() => choisir(x.n)}
                   accessibilityRole="button"
                   accessibilityLabel={`Scrutin n°${x.n}, ${dateFr(x.d)}`}
-                  style={({ pressed }) => [s.selectionCard, x.n === selection && s.selectionCardActive, pressed && { opacity: 0.7 }]}
+                  style={({ pressed }) => [s.selectionCard, x.n === selection && s.selectionCardActive, pressed && enfonce(true)]}
                 >
                   <Text style={TYPO.micro}>{dateFr(x.d)} · n° {x.n}</Text>
                   <Text numberOfLines={3} style={s.selectionTitre}>{titreLisible(x.t)}</Text>

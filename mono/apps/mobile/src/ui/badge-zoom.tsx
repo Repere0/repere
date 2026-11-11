@@ -7,6 +7,7 @@ import { LIBELLE_NIVEAU, NIVEAUX_ZOOM } from "@repere/core";
 import { useProfil } from "../lib/profil";
 import { CIBLE, couleurs, PAS, TYPO } from "../lib/theme";
 import { NEUTRES_PAR_MODE } from "../lib/palette";
+import { enfonce } from "./mouvement";
 
 export function useNiveauZoom(): string {
   const { profil } = useProfil();
@@ -24,7 +25,7 @@ export function BadgeZoom({ sombre = false }: { sombre?: boolean }) {
     <View style={{ gap: PAS * 2 }}>
       <Pressable onPress={() => setOuvert(o => !o)} accessibilityRole="button" accessibilityState={{ expanded: ouvert }}
         accessibilityLabel={`Vue : ${libelle}. ${ouvert ? "Fermer le choix" : "Changer la vue"}`}
-        style={({ pressed }) => ({ minHeight: CIBLE, alignSelf: "flex-start", justifyContent: "center", paddingHorizontal: PAS * 3, borderRadius: 999, borderWidth: 1, borderColor: c.trait, opacity: pressed ? 0.7 : 1 })}>
+        style={({ pressed }) => ({ minHeight: CIBLE, alignSelf: "flex-start", justifyContent: "center", paddingHorizontal: PAS * 3, borderRadius: 999, borderWidth: 1, borderColor: c.trait, ...enfonce(pressed) })}>
         <Text style={[TYPO.micro, { color: c.sourd }]}>Vue : {libelle} · <Text style={{ color: c.encre }}>Changer</Text></Text>
       </Pressable>
       {ouvert ? (
@@ -35,7 +36,7 @@ export function BadgeZoom({ sombre = false }: { sombre?: boolean }) {
               <Pressable key={n} accessibilityRole="radio" accessibilityState={{ selected: actif }}
                 accessibilityLabel={`Vue ${LIBELLE_NIVEAU[n as keyof typeof LIBELLE_NIVEAU]}${actif ? ", choisie" : ""}`}
                 onPress={() => { modifier({ niveauZoom: n }); setOuvert(false); }}
-                style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", paddingHorizontal: PAS * 3, borderRadius: 999, borderWidth: actif ? 2 : 1, borderColor: actif ? c.encre : c.trait, opacity: pressed ? 0.7 : 1 })}>
+                style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", paddingHorizontal: PAS * 3, borderRadius: 999, borderWidth: actif ? 2 : 1, borderColor: actif ? c.encre : c.trait, ...enfonce(pressed) })}>
                 <Text style={[TYPO.note, { color: c.encre }]}>{LIBELLE_NIVEAU[n as keyof typeof LIBELLE_NIVEAU]}</Text>
               </Pressable>
             );
