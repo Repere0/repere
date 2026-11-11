@@ -30,7 +30,7 @@ import { Pression } from "../../ui/pression";
 import { useEffect, useState } from "react";
 import { Linking, Text, View } from "react-native";
 import { actusFlux, chargerActuellesRss, chargerMairies } from "../../lib/donnees";
-import { router, Stack } from "expo-router";
+import { router, Stack, useLocalSearchParams } from "expo-router";
 import {
   dateFr, datePublication, decompte, euros, financementProjet, montantCourt, ordinal, parHabitant, phrasePosition,
   repartitionVote, texteDe,
@@ -61,6 +61,8 @@ import { SignalerErreur } from "../../ui/contact";
 /* VOS DÉCIDEURS (maquette Stitch, 09/11/2026) : composant partagé avec l'accueil (ui/decideurs). */
 import { Decideurs } from "../../ui/decideurs";
 import { RappelElection } from "../../ui/rappel-election";
+import { AccueilVariante } from "../../ui/accueil-variantes";
+import { ELECTIONS } from "../../lib/elections";
 import { deputeParNom, groupeDe, useGroupes } from "../../lib/groupes";
 import { DataBadge } from "../../ui/donnees";
 import { useCouleurVote } from "../../lib/couleur-vote";
@@ -95,6 +97,7 @@ export default function ChezVous() {
   const niveauZoom = useNiveauZoom();
   const COULEUR = useCouleurVote();
   const groupes = useGroupes();
+  const { v: variante } = useLocalSearchParams<{ v?: string }>();
   return (
     <AvecDonnees rendu={r => {
       const { d } = r;
@@ -119,6 +122,28 @@ export default function ChezVous() {
           <Text style={[TYPO.corps, { fontFamily: POLICE.titre, flex: 1 }]} numberOfLines={2}>{titreLisible(vote.sc.t)}</Text>
         </View>
       ) : null;
+      /* PROTOTYPE (11/11/2026) : /chez-vous?v=a ou ?v=b rend une des deux variantes à juger sur image,
+         avec les mêmes faits que l'écran ci-dessous. Sans ce paramètre, rien ne change. */
+      if (variante === "a" || variante === "b") {
+        const parts = hab && hab.depenses && hab.salaires !== null && hab.investissement !== null && hab.salaires + hab.investissement <= hab.depenses
+          ? (() => { const sal = Math.round(hab.salaires / hab.depenses * 100), inv = Math.round(hab.investissement / hab.depenses * 100); return { sal, inv, aut: 100 - sal - inv }; })() : null;
+        const pres = ELECTIONS.find(e => e.type === "presidentielle" && e.date);
+        const jours = pres && pres.date ? Math.round((Date.parse(pres.date) - Date.parse(aujourdhui())) / 86400000) : null;
+        return (
+          <>
+            <Stack.Screen options={{ title: nom, headerShown: false }} />
+            <AccueilVariante v={variante} faits={{
+              nom, territoire: [depIndex && depIndex.nom, depIndex && depIndex.region].filter(Boolean).join(" · "), publieLe: publie ? dateFr(publie) : "",
+              an: d.exercice ? String(d.exercice.an) : null, depenses: hab ? hab.depenses : null, parts,
+              vote: vote && rep && d.nbCircos <= 1 ? { qui: vote.qui, circo: `${ordinal(vote.circo)} circonscription`, mot: MOTS_VOTE[vote.position] || null,
+                couleur: COULEUR[vote.position as keyof typeof COULEUR] || null, titre: titreLisible(vote.sc.t), date: dateFr(vote.sc.d),
+                pour: rep.segments[0].nombre, contre: rep.segments[1].nombre, abst: rep.segments[2].nombre, couleurs: { p: COULEUR.p, c: COULEUR.c, a: COULEUR.a } } : null,
+              maire, projets: nbProjets, aide: f ? montantCourt(f.subvention)?.texte ?? null : null,
+              repere: repereDuJour.find(x => x.texte)?.texte ?? null, jours: jours !== null && jours >= 0 ? jours : null,
+            }} />
+          </>
+        );
+      }
       return (
         <Page sansDate>
           <Stack.Screen options={{ title: nom }} />
