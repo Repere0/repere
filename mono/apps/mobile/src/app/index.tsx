@@ -181,12 +181,18 @@ function CarteVote({ etiquette, nom, acteur, ligne, position, dec, date, titre, 
 /* router.push écrit en toutes lettres : le contrôle de parcours (tests/parcours.test.mjs) le lit. */
 /* Couleur de chaque tuile : celle d'un échelon (une section), jamais d'un parti (invariant 7). */
 const ACCES: { ouvrir: () => void; texte: string; etiquette: string; icone: keyof typeof Ionicons.glyphMap; couleur: string }[] = [
-  { ouvrir: () => router.push("/mes-elus"), texte: "Mes élus", etiquette: "Mes élus : qui vous représente", icone: "people", couleur: couleurs.ville },
+  { ouvrir: () => router.push("/qui-decide"), texte: "Mes élus", etiquette: "Mes élus : qui vous représente et qui décide", icone: "people", couleur: couleurs.ville },
   /* 09/11/2026 (porteur) : la tuile ouvre la page de la présidentielle ; le guide « Ma voix » y est à un geste. */
   { ouvrir: () => router.push("/presidentielle-2027"), texte: "Présidentielle 2027", etiquette: "Présidentielle 2027 : candidats, débats, réunions publiques, comment voter", icone: "flag", couleur: couleurs.dept },
   { ouvrir: () => router.push("/pour-vous"), texte: "Pour vous", etiquette: "Pour vous : ce qui a été publié selon votre vue", icone: "bookmark", couleur: couleurs.region },
   { ouvrir: () => router.push("/scrutins"), texte: "L'Assemblée", etiquette: "L'Assemblée : sa composition et ses votes publics", icone: "business", couleur: couleurs.france },
 ];
+
+/* UN SEUL ACCUEIL (11/11/2026, audit d'architecture). Avec une commune gardée sur le téléphone,
+   l'application s'ouvre sur « Aujourd'hui » : cet écran-ci redevient ce qu'il est, le choix de la
+   commune, atteint par « ‹ Communes ». Une seule fois par lancement, et jamais pendant la première
+   ouverture (les trois questions de bienvenue). */
+let OUVERTURE_A_FAIRE = true;
 
 export default function Accueil() {
   const groupesAccueil = useGroupes();
@@ -277,6 +283,13 @@ export default function Accueil() {
      (lib/memoire.ts). Son nom vient de la liste publiee : si elle n'y figure
      plus, on ne propose rien plutot qu'un code nu. */
   const nomRetenue = retenue && beta ? beta.communes[retenue.c] : undefined;
+  useEffect(() => {
+    if (!beta) return;
+    const ouvrirIci = OUVERTURE_A_FAIRE && retenue && nomRetenue && !params.toutes && !absent;
+    OUVERTURE_A_FAIRE = false;
+    if (ouvrirIci) ouvrir(retenue.c, nomRetenue);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [beta]);
 
   /* D18 : la commune retenue si le lecteur l'a demande, sinon l'exemple. Si les comptes
      ne donnent pas de depense par habitant, la carte n'est pas affichee. */

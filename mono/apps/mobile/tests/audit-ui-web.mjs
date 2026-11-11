@@ -9,7 +9,7 @@ import { createRequire } from "node:module";
 const { chromium } = createRequire(import.meta.url)("playwright");
 const [BASE, OUT] = process.argv.slice(2);
 export const ECRANS = [
-  ["accueil", "/"], ["qui-decide", "/qui-decide"], ["elus", "/elus"], ["mes-elus", "/mes-elus"], ["elu", "@elu"], ["groupe", "/groupe"],
+  ["accueil", "/"], ["qui-decide", "/qui-decide"], ["elus", "/elus"], ["elu", "@elu"], ["groupe", "/groupe"],
   ["scrutins", "/scrutins"], ["scrutin-detail", "@scrutin"], ["vote", "/vote"], ["presidentielle-2027", "/presidentielle-2027"], ["reglement-2027", "/reglement-2027"],
   ["calendrier", "/a-venir"], ["finances", "/finances"], ["voter", "/voter"], ["pour-vous", "/pour-vous"], ["sources", "/sources"], ["confort-lecture", "/confort-lecture"],
   ["chez-vous", "/chez-vous"], ["actus", "/actus"], ["repere-du-jour", "/repere-du-jour"], ["dictionnaire", "/dictionnaire"], ["recherche", "/recherche"],
@@ -73,7 +73,7 @@ if (BASE && OUT) {
     for (const [nom, route] of ECRANS) {
       erreurs.length = 0;
       let atteint = true;
-      if (route === "@elu") atteint = await clic("/mes-elus", /député/i);
+      if (route === "@elu") atteint = await clic("/qui-decide", /assemblée nationale pour votre|député/i);
       else if (route === "@groupe") atteint = await clic("/elus", /groupe/i);
       else if (route === "@scrutin") atteint = await clic("/scrutins", /pour|contre|adopt|rejet/i);
       else { await p.goto(BASE + route, { waitUntil: "networkidle" }); await p.waitForTimeout(1200); }

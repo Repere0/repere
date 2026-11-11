@@ -21,7 +21,6 @@ const DEPARTEMENT = { d: "77", c: "77288" };
 /* Chemin, titre attendu contenant, et ce que la source doit contenir (vide = pas de contrôle de source). */
 const ECRANS = [
   { chemin: "argent", titre: "Où va l'argent de Melun", source: "Source : " },
-  { chemin: "mes-elus", titre: "Mes élus à Melun", source: "Source : " },
   { chemin: "actus", titre: "Actualités", source: "Source : sources officielles" },
   { chemin: "a-venir", titre: "Le calendrier", source: "Source : " },
 ];
