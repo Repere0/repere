@@ -189,3 +189,28 @@ const s = feuille(() => StyleSheet.create({
   segmentTexte: { ...TYPO.micro, fontFamily: POLICE.texteGras, color: couleurs.sourd, textAlign: "center" },
   badgeRepere: { flexDirection: "row", alignItems: "center", gap: PAS * 1.5, alignSelf: "flex-start" },
 }));
+
+/* LA RÉPARTITION DE 100 € (Variante A, 11/11/2026) : une barre épaisse en trois segments et sa légende
+   chiffrée. Couleurs de la jauge du budget (invariant 7), jamais politiques ; chaque part est écrite. */
+export function BarreBudget({ parts }: { parts: { sal: number; inv: number; aut: number } }) {
+  const lignes: [string, number, string][] = [["Salaires", parts.sal, JAUGE.salaires], ["Investissements", parts.inv, JAUGE.investissement], ["Autres", parts.aut, JAUGE.autres]];
+  return (
+    <View style={{ gap: PAS * 3 }}>
+      <View accessible accessibilityLabel={`Sur 100 euros dépensés : ${parts.sal} de salaires, ${parts.inv} d'investissements, ${parts.aut} d'autres dépenses.`}
+        style={{ flexDirection: "row", height: 16, borderRadius: 8, overflow: "hidden", gap: 2 }}>
+        {lignes.map(([l, n, c]) => <View key={l} style={{ flex: Math.max(n, 1), backgroundColor: c }} />)}
+      </View>
+      <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
+        {lignes.map(([l, n, c]) => (
+          <View key={l} style={{ gap: 2 }}>
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+              <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: c }} />
+              <Text style={[TYPO.reponse, { fontFamily: POLICE.section, fontVariant: ["tabular-nums"] }]}>{n}{"\u00a0"}%</Text>
+            </View>
+            <Text style={TYPO.note}>{l}</Text>
+          </View>
+        ))}
+      </View>
+    </View>
+  );
+}

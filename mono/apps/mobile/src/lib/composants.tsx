@@ -9,7 +9,7 @@ import type { ReactNode } from "react";
 import { Linking, Pressable, StyleSheet, Text, View } from "react-native";
 import { ligneSource, motsDuTexte, CALCUL_REPERE } from "@repere/core";
 import { router } from "expo-router";
-import { ACCENTS, feuille, couleurs, CIBLE, PAS, RAYON, OMBRE, TYPO, type Echelon } from "./theme";
+import { ACCENTS, feuille, couleurs, CIBLE, PAS, RAYON, OMBRE, TYPO, type Echelon, POLICE } from "./theme";
 import { NIVEAU_NOM, pointEchelon } from "./niveaux";
 import { Pression } from "../ui/pression";
 
@@ -171,7 +171,8 @@ export function Bouton({ texte, onPress, discret }: { texte: string; onPress: ()
 }
 
 const s = feuille(() => StyleSheet.create({
-  carte: { backgroundColor: couleurs.carte, borderRadius: RAYON.carte, padding: PAS * 5, gap: PAS * 3, borderWidth: 1, borderColor: couleurs.trait, ...OMBRE },
+  /* Variante A : la surface se lit à sa teinte, sans filet ; 24 px d'intérieur (grille de 8). */
+  carte: { backgroundColor: couleurs.carte, borderRadius: RAYON.carte, padding: PAS * 6, gap: PAS * 3, ...OMBRE },
   carteTete: { flexDirection: "row", alignItems: "center", gap: PAS * 2 },
   point: { width: 10, height: 10, borderRadius: 5 },
   carteTitre: { ...TYPO.etiquette, flex: 1 },
@@ -190,12 +191,12 @@ const s = feuille(() => StyleSheet.create({
   /* En encre, souligne : la couleur de ville sur le gris d'une phrase d'absence
      faisait 4,38:1 (mesure du 30/09/2026), sous le seuil AA. */
   lienTexte: { fontSize: 15, color: couleurs.encre },
-  vide: { gap: PAS * 3, padding: PAS * 5, backgroundColor: couleurs.carte, borderRadius: RAYON.carte, borderWidth: 1, borderColor: couleurs.trait },
+  vide: { gap: PAS * 3, padding: PAS * 6, backgroundColor: couleurs.carte, borderRadius: RAYON.carte },
   videIcone: { width: 48, height: 48, borderRadius: 24, backgroundColor: couleurs.voile, alignItems: "center", justifyContent: "center" },
   bouton: {
-    minHeight: CIBLE + 4, borderRadius: RAYON.bloc, paddingHorizontal: PAS * 4, alignItems: "center", justifyContent: "center",
+    minHeight: CIBLE + 4, borderRadius: RAYON.pastille, paddingHorizontal: PAS * 6, alignItems: "center", justifyContent: "center",
     backgroundColor: ACCENTS.autorite,
   },
   boutonDiscret: { backgroundColor: couleurs.voile },
-  boutonTexte: { color: ACCENTS.surAutorite, fontSize: 17, fontWeight: "500" },
+  boutonTexte: { color: ACCENTS.surAutorite, fontSize: 17, fontFamily: POLICE.section },
 }));
