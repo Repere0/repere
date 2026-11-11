@@ -158,6 +158,30 @@ export function Tendance({ pct, an1, an2 }: { pct: number | null; an1: string; a
   );
 }
 
+/* « TEST DES 3 SECONDES » (retour iPhone du porteur, 11/11/2026) — une variation d'un exercice à l'autre :
+   une flèche, le pourcentage en grand, les deux montants dessous. Calcul de Repère, annoncé comme tel
+   par l'écran. NEUTRE : encre sur voile, jamais vert ni rouge. Une hausse de dépenses n'est ni bonne ni
+   mauvaise, et le rouge/vert coderait un jugement (invariant 7 ; même règle que `Tendance`). Le sens est
+   dit par la flèche ET par le mot « hausse » ou « baisse ». */
+export function VariationAnnuelle({ libelle, an1, an2, pct, sens, de, vers, diffTexte }: {
+  libelle: string; an1: string; an2: string; pct: string; sens: "hausse" | "baisse" | "stable"; de: string; vers: string; diffTexte: string;
+}) {
+  const icone = sens === "hausse" ? "arrow-up" : sens === "baisse" ? "arrow-down" : "remove";
+  return (
+    <View accessible accessibilityLabel={`${libelle}, entre ${an1} et ${an2} : ${sens}, ${pct}. De ${de} à ${vers}, ${diffTexte}. Calcul Repère.`} style={s.variation}>
+      <View style={s.variationFleche}>
+        <Ionicons name={icone} size={26} color={couleurs.encre} accessible={false} importantForAccessibility="no" />
+      </View>
+      <View style={{ flex: 1, gap: 2 }}>
+        <Text style={TYPO.etiquette}>{libelle} · {sens}</Text>
+        <Text style={TYPO.stat}>{pct}</Text>
+        <Text style={TYPO.note}>{`${de} en ${an1}, ${vers} en ${an2}`}</Text>
+        <Text style={[TYPO.note, { color: couleurs.encre, fontFamily: POLICE.texteGras }]}>{diffTexte}</Text>
+      </View>
+    </View>
+  );
+}
+
 /* ── Des mois de recettes (encours de dette) ───────────────────────────── */
 export function Mois({ mois, echelon = "ville" }: { mois: number; echelon?: Echelon }) {
   const n = Math.max(12, Math.ceil(mois));
@@ -433,6 +457,8 @@ const s = feuille(() => StyleSheet.create({
   pisteBarre: { flex: 1.2, height: 6, borderRadius: 3, backgroundColor: couleurs.voile, overflow: "hidden" },
   remplissageBarre: { height: 6, borderRadius: 3, backgroundColor: couleurs.encre },
   tendance: { alignSelf: "flex-start", flexDirection: "row", flexWrap: "wrap", alignItems: "center", gap: PAS * 2, backgroundColor: couleurs.voile, borderRadius: RAYON.pastille, paddingHorizontal: PAS * 2, paddingVertical: PAS },
+  variation: { flexDirection: "row", alignItems: "center", gap: PAS * 4, padding: PAS * 5, borderRadius: RAYON.carte, backgroundColor: couleurs.carte },
+  variationFleche: { width: 56, height: 56, borderRadius: 28, backgroundColor: couleurs.voile, alignItems: "center", justifyContent: "center" },
   mois: { flexDirection: "row", flexWrap: "wrap", gap: 4 },
   moisCase: { width: 22, height: 22, borderRadius: 6, backgroundColor: couleurs.voile, overflow: "hidden" },
   moisRempli: { height: "100%" },

@@ -2,7 +2,6 @@
  *
  * EnClair            le cartouche « En clair » : une phrase calculée ou lue, jamais rédigée ici.
  * VoteBarTricolor    la répartition d'un scrutin (pour, contre, abstention), nombres écrits.
- * StatBubbleTile     une variation entre deux exercices, en bulle (calcul annoncé comme tel).
  * JaugeCofinancement la part de l'État dans un projet aidé, et le reste.
  * Onglets            le contrôle segmenté compact (pastille blanche, point d'accent).
  * BadgeRepere        le badge « ● REPÈRE DU JOUR · EXERCICE … ».
@@ -80,16 +79,6 @@ export function VoteBarTricolor({ pour, contre, abstention, position, qui }: {
   );
 }
 
-/* ── Une variation, en bulle ───────────────────────────────────────────── */
-export function StatBubbleTile({ libelle, variation }: { libelle: string; variation: string }) {
-  return (
-    <View style={s.bulle} accessible accessibilityLabel={`${libelle} : ${variation}`}>
-      <Text style={[TYPO.micro, { textAlign: "center" }]}>{libelle}</Text>
-      <View style={s.bulleBadge}><Text style={[TYPO.corps, { fontFamily: POLICE.donneeForte, color: ACCENTS.texteAccent }]}>{variation}</Text></View>
-    </View>
-  );
-}
-
 /* ── La part de l'État dans un projet aidé ─────────────────────────────── */
 export function JaugeCofinancement({ partEtat, montantEtat, montantTotal, lieu }: {
   partEtat: number; montantEtat: string; montantTotal: string; lieu: string;
@@ -151,8 +140,6 @@ const s = feuille(() => StyleSheet.create({
   ligne: { flexDirection: "row", flexWrap: "wrap", columnGap: PAS * 3, rowGap: PAS },
   point: { width: 10, height: 10, borderRadius: 5 },
   badgeDepute: { alignSelf: "flex-start", backgroundColor: couleurs.voile, paddingHorizontal: PAS * 2, paddingVertical: PAS, borderRadius: 6 },
-  bulle: { flex: 1, minWidth: 96, alignItems: "center", gap: PAS, paddingVertical: PAS * 2.5, paddingHorizontal: PAS * 1.5, borderRadius: 16, backgroundColor: couleurs.voile },
-  bulleBadge: { paddingHorizontal: PAS * 2, paddingVertical: 3, borderRadius: 10, backgroundColor: couleurs.carte },
   /* Refonte « légère » : une jauge fine. */
   piste: { flexDirection: "row", height: 6, borderRadius: 3, overflow: "hidden", backgroundColor: couleurs.voile, gap: 2 },
   segments: { flexDirection: "row", padding: 4, gap: 4, borderRadius: RAYON.pastille, backgroundColor: couleurs.voile },

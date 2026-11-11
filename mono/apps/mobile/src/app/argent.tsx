@@ -24,14 +24,14 @@ import { PROJETS_PAS_ARRIVES, projetsAucun } from "../lib/absences";
 import { srcComptes, srcComptesPublies, srcProjets } from "../lib/sources";
 import { useCommuneChoisie } from "../lib/useCommune";
 import { ACCENTS, CIBLE, couleurs, PAS, POLICE, TYPO } from "../lib/theme";
-import { JaugeCofinancement, Onglets, StatBubbleTile } from "../ui/stitch";
+import { JaugeCofinancement, Onglets } from "../ui/stitch";
 import { AvecDonnees, Page, Question } from "../ui/page";
 import { DateDonnee } from "../ui/fraicheur";
 import { phrasesMoyenne, useMoyenneDepenses } from "../lib/moyenne";
 import { PastilleSource } from "../ui/source";
 import { BoutonPartageTexte, ligneSource } from "../ui/partage/partager-texte";
 import { Resume } from "../ui/resume";
-import { BarreBudget, BarrePart, Compteur, DeuxAnnees, Depli, Financement, Mois, RepartitionCent, Tendance } from "../ui/visuels";
+import { BarreBudget, BarrePart, Compteur, DeuxAnnees, Depli, Financement, Mois, RepartitionCent, Tendance, VariationAnnuelle } from "../ui/visuels";
 import { PartagerCarte } from "../ui/partage/bouton-partage";
 import { ChiffreStory } from "../ui/partage/variantes/chiffre.story";
 import { messageChiffre } from "../ui/partage/messages";
@@ -291,9 +291,11 @@ export default function Argent() {
             <Vide titre={`Pas d'évolution calculable pour ${nom}.`} corps="Il faut deux exercices publiés qui se suivent, sur le même périmètre. Les comptes publiés ne le permettent pas ici." />
           ) : null}
           {ex && vue === "evolution" && evo && !evo.perimetreChange ? (
-            <View style={{ flexDirection: "row", flexWrap: "wrap", gap: PAS * 2 }}>
-              {[1, 0, 2].map(i => evo.lignes[i]).filter(l => l && l.m1 !== null && l.m2 !== null && variation(l.m1, l.m2)).map((l: { libelle: string; m1: number; m2: number }) => (
-                <StatBubbleTile key={l.libelle} libelle={l.libelle} variation={variation(l.m1, l.m2) as string} />
+            <View style={{ gap: PAS * 3 }}>
+              {[1, 0, 2].map(i => evo.lignes[i]).filter(l => l && l.m1 !== null && l.m2 !== null && variation(l.m1, l.m2)).map((l: { libelle: string; m1: number; m2: number; diff: number }) => (
+                <VariationAnnuelle key={l.libelle} libelle={l.libelle} an1={evo.an1} an2={evo.an2} pct={variation(l.m1, l.m2) as string}
+                  sens={l.m2 > l.m1 ? "hausse" : l.m2 < l.m1 ? "baisse" : "stable"}
+                  de={montantCourt(l.m1)?.texte ?? eurosArrondis(l.m1)} vers={montantCourt(l.m2)?.texte ?? eurosArrondis(l.m2)} diffTexte={diffEuros(l.diff)} />
               ))}
             </View>
           ) : null}

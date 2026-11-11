@@ -59,6 +59,16 @@ bouton, un titre ou un texte.
 - **Avatar** : un seul composant (`ui/avatar.tsx`) ; photo libre créditée sur le même écran, sinon initiales.
 - **État vide** : `Vide` (icône, phrase vraie, action ou lien). Jamais un zéro ni une forme vide (invariant 5).
 - **Chargement** : `SquelettesListe`, partout. Jamais le mot « Chargement » dans une carte.
+- **Puces à cocher** (`bienvenue.tsx`) : bordure encre (ivoire en sombre) et fond « voile » quand elles sont cochées,
+  rôle `checkbox`, état dit dans le libellé (« …, coché »). Rien de coché au départ. Les niveaux de zoom sont
+  emboîtés : en cocher plusieurs garde le plus large.
+- **Sélecteur de circonscription** (`ui/choix-circonscription.tsx`) : accordéon et puces numérotées, un seul député
+  à la fois, celui que le lecteur a choisi ; rien n'est gardé. Pas de Picker natif (dépendance de plus).
+- **Variation annuelle** (`VariationAnnuelle`, `ui/visuels.tsx`) : flèche, « hausse » ou « baisse » en toutes
+  lettres, pourcentage en grand, montants dessous. **Neutre** : jamais vert ni rouge, une hausse de dépenses n'est
+  ni bonne ni mauvaise (invariant 7).
+- **Calendrier** : séances rangées par Matin, Après-midi, Soir d'après l'heure publiée ; titre en 17 px, heure en
+  13 px grise ; « Voir le mois » et « Voir les deux prochaines semaines » en pilules discrètes.
 - **Réglages et informations** : la roue de l'en-tête des onglets, et elle seule.
 
 ## Mouvement
@@ -71,4 +81,5 @@ bouton, un titre ou un texte.
 
 `mono/apps/mobile/tests/audit-ui-web.mjs` (CI mobile) mesure chaque écran : texte sous 12 px, lien
 souligné, cible sous 44 px, contraste de texte AA, emoji, bouton sans nom, débordement.
-`tests/theme.test.mjs` garde les contrastes et l'usage des couleurs de vote.
+`tests/fix-iphone-web.mjs` garde le sélecteur de circonscription, les moments du calendrier et la neutralité des
+variations. `tests/theme.test.mjs` garde les contrastes et l'usage des couleurs de vote.

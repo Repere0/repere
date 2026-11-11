@@ -60,6 +60,19 @@ function parJour(gs: Groupe[]): [string, Groupe[]][] {
   for (const g of gs) m.set(g.jour, [...(m.get(g.jour) || []), g]);
   return [...m.entries()];
 }
+/* Retour iPhone (11/11/2026) : les séances d'un jour se rangent par moment de la journée, d'après l'heure
+   PUBLIÉE du premier début (avant 12 h, de 12 h à 17 h 59, 18 h et après). Sans heure publiée : un groupe à
+   part, jamais rangé au hasard (doctrine du vide). */
+const MOMENTS = ["Matin", "Après-midi", "Soir", "Heure non publiée"] as const;
+function momentDe(g: Groupe): (typeof MOMENTS)[number] {
+  const m = /T(\d{2}):/.exec(g.debuts[0] || g.debut || "");
+  if (!m) return "Heure non publiée";
+  const h = Number(m[1]);
+  return h < 12 ? "Matin" : h < 18 ? "Après-midi" : "Soir";
+}
+function parMoment(gs: Groupe[]): [string, Groupe[]][] {
+  return MOMENTS.map(mo => [mo, gs.filter(g => momentDe(g) === mo)] as [string, Groupe[]]).filter(([, l]) => l.length);
+}
 const majuscule = (t: string) => t.charAt(0).toUpperCase() + t.slice(1);
 
 /* Rang du jour dans la semaine, lundi = 0. */
@@ -89,8 +102,10 @@ function Ligne({ g }: { g: Groupe }) {
         <View style={{ flex: 1, width: 2, backgroundColor: couleurs.trait, marginTop: PAS }} />
       </View>
       <View style={{ flex: 1, gap: 2, paddingBottom: PAS * 2 }}>
-      <Text style={[TYPO.donnee, { fontFamily: POLICE.donneeForte, color: couleurs.encre }]}>{heures || "Heure non publiée"}</Text>
-      <Text style={[TYPO.corps, { fontFamily: POLICE.titre }]}>{g.titre}</Text>
+      {/* Retour iPhone (11/11/2026) : l'heure ne doit plus écraser le titre. Le titre (17 px, encre) se lit
+          d'abord ; l'heure passe dessous, en 13 px gris. */}
+      <Text style={TYPO.reponse}>{g.titre}</Text>
+      <Text style={[TYPO.donnee, { color: couleurs.sourd }]}>{heures || "Heure non publiée"}</Text>
       <Text style={TYPO.note}>
         {[g.institution, g.categorie, g.lieu, g.seances > 1 ? `${g.seances} séances ce jour-là` : null].filter(Boolean).join(" · ")}
       </Text>
@@ -129,6 +144,13 @@ function Case({ iso, jour, nb, onPress, taille }: { iso: string; jour: string; n
     </Pressable>
   );
 }
+
+/* Bouton secondaire discret (retour iPhone, 11/11/2026) : une pilule grise, sans plein ni souligné ; la cible
+   reste de 48 px de haut. */
+const secondaire = {
+  get bouton() { return { minHeight: CIBLE, alignSelf: "flex-start" as const, justifyContent: "center" as const, paddingHorizontal: PAS * 4, borderRadius: 999, backgroundColor: couleurs.voile }; },
+  get texte() { return [TYPO.note, { color: couleurs.sourd }]; },
+};
 
 export default function AVenir() {
   const { reessayer } = useCommuneChoisie();
@@ -175,7 +197,7 @@ export default function AVenir() {
           ? `${duJour.length} rendez-vous ${duJour.length > 1 ? "publiés" : "publié"} ce jour-là.`
           : "Rien de publié pour ce jour et ce filtre. Repère n'affiche que ce qui est annoncé ou publié.")
         : (deuxSemaines.length
-          ? `${deuxSemaines.length} rendez-vous publiés dans les deux prochaines semaines.`
+          ? `${deuxSemaines.length} rendez-vous ${deuxSemaines.length > 1 ? "publiés" : "publié"} dans les deux prochaines semaines.`
           : dernierPasse
             ? `Pas d'événement à venir. Dernier événement : ${dateFr(dernierPasse.debut.slice(0, 10))}.`
             : "Rien de publié dans les deux prochaines semaines pour ce filtre. Repère n'affiche que ce qui est annoncé ou publié.");
@@ -250,8 +272,8 @@ export default function AVenir() {
               <Text style={[TYPO.corps, { fontWeight: "600" }]}>{choisi && etiquetteJour ? `${etiquetteJour}. ` : ""}{phrase}</Text>
               {choisi ? (
                 <Pressable onPress={() => setChoisi(false)} accessibilityRole="button" accessibilityLabel="Revenir à la liste des deux prochaines semaines"
-                  style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", opacity: pressed ? 0.6 : 1 })}>
-                  <Text style={{ color: couleurs.lien, fontWeight: "500" }}>Voir les deux prochaines semaines</Text>
+                  style={({ pressed }) => [secondaire.bouton, pressed && { opacity: 0.6 }]}>
+                  <Text style={secondaire.texte}>Voir les deux prochaines semaines</Text>
                 </Pressable>
               ) : null}
 
@@ -259,7 +281,12 @@ export default function AVenir() {
               {parJour(montres).map(([iso, items]) => (
                 <Carte key={iso} echelon="france">
                   <Text accessibilityRole="header" style={[TYPO.corps, { fontWeight: "600" }]}>{majuscule(jourFr(iso))}</Text>
-                  {items.map((g, i) => <Ligne key={g.debut + i} g={g} />)}
+                  {parMoment(items).map(([moment, liste]) => (
+                    <View key={moment} style={{ gap: PAS * 2 }}>
+                      <Text accessibilityRole="header" style={TYPO.etiquette}>{moment}</Text>
+                      {liste.map((g, i) => <Ligne key={g.debut + i} g={g} />)}
+                    </View>
+                  ))}
                 </Carte>
               ))}
               {montres.length ? (
@@ -270,8 +297,8 @@ export default function AVenir() {
               {/* V35 bloc 2 (D68) : « Voir le mois » passe sous la liste, hors du premier écran. */}
               <Pressable onPress={() => setMois(m => !m)} accessibilityRole="button"
                 accessibilityLabel={mois ? "Voir la semaine" : "Voir le mois"}
-                style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", alignSelf: "flex-start", opacity: pressed ? 0.6 : 1 })}>
-                <Text style={{ color: couleurs.encre, fontWeight: "500" }}>{mois ? "Voir la semaine" : "Voir le mois"}</Text>
+                style={({ pressed }) => [secondaire.bouton, pressed && { opacity: 0.6 }]}>
+                <Text style={secondaire.texte}>{mois ? "Voir la semaine" : "Voir le mois"}</Text>
               </Pressable>
               {/* V34 bloc 7 (audit) : la mention passe sous la liste, pour que le premier rendez-vous ne soit pas repousse sous la barre d'onglets. */}
               <Text style={TYPO.note}>Sous réserve de modification : l'agenda peut changer, le site officiel fait foi.</Text>
