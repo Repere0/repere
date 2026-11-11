@@ -554,7 +554,7 @@ export default function Accueil() {
             </View>
 
             {/* Maquette Stitch : la bannière des moins de 18 ans mène au guide « Ma voix ». */}
-            <Pressable onPress={() => router.push("/voter")} accessibilityRole="link"
+            <Pressable onPress={() => router.push("/presidentielle-2027")} accessibilityRole="link"
               accessibilityLabel="Vous avez moins de 18 ans ? Comment on vote, et quand : ouvre Ma voix"
               style={({ pressed }) => [s.jeunes, pressed && { opacity: 0.7 }]}>
               <Ionicons name="sparkles-outline" size={20} color={ACCENTS.autorite} accessible={false} importantForAccessibility="no" />
@@ -701,7 +701,7 @@ const s = feuille(() => StyleSheet.create({
   outil: { width: CIBLE, height: CIBLE, alignItems: "center", justifyContent: "center" },
   tuiles: { flexDirection: "row", flexWrap: "wrap", gap: PAS * 2 },
   /* Fond D.voile : la teinte demandée par le porteur à 3 unités près, sans couleur hors palette. */
-  tuile: { width: "48%", flexGrow: 1, minHeight: 76, gap: PAS * 2, padding: PAS * 3, borderRadius: RAYON.bloc, backgroundColor: D.carte, borderWidth: 1, borderColor: D.trait, justifyContent: "space-between" },
+  tuile: { width: "48%", flexGrow: 1, minHeight: 76, gap: PAS * 2, padding: PAS * 3, borderRadius: RAYON.bloc, backgroundColor: D.carte, justifyContent: "space-between" },
   tuileTexte: { fontFamily: POLICE.titre, fontSize: 14, lineHeight: 20, color: D.encre },
   marque: { fontFamily: POLICE.affiche, fontSize: 20, color: D.encre },
   /* L'action principale : plus haute, filet plus marqué (refonte du 09/11/2026). */
@@ -710,7 +710,7 @@ const s = feuille(() => StyleSheet.create({
   tuileIcone: { width: 36, height: 36, borderRadius: 12, alignItems: "center", justifyContent: "center" },
   chercherTexte: { fontFamily: POLICE.titre, fontSize: 17, color: D.encre },
   citation: { fontFamily: POLICE.affiche, fontSize: 40, lineHeight: 44, letterSpacing: -0.8, color: D.encre, marginTop: PAS * 6 },
-  carte: { gap: PAS * 3, padding: PAS * 5, borderRadius: RAYON.carte, backgroundColor: D.carte, borderWidth: 1, borderColor: D.trait, ...OMBRE },
+  carte: { gap: PAS * 3, padding: PAS * 5, borderRadius: RAYON.carte, backgroundColor: D.carte, ...OMBRE },
   etiquette: { fontSize: 13, fontWeight: "500", color: D.sourd },
   carteTitre: { fontFamily: POLICE.titre, fontSize: 17, lineHeight: 24, color: D.encre },
   chiffre: { fontFamily: POLICE.donneeForte, fontSize: 28, lineHeight: 34, letterSpacing: -0.5, color: D.encre },
