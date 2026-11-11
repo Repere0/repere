@@ -28,6 +28,10 @@ export type PresidentialCandidate = {
   /** non affiché (invariant 7) : voir l'en-tête */
   couleurParti?: string;
   programmeUrl?: string;
+  /** 12/11/2026 : « declare » = candidature annoncée, relevée dans la presse (pas la liste officielle) ; « officiel » =
+   *  liste du Conseil constitutionnel. Absent = « officiel ». Un « declare » exige au moins deux `sources`. */
+  statut?: "declare" | "officiel";
+  sources?: { producteur: string; url: string; date: string }[];
   /** non affiché (D27, invariant 1) : voir l'en-tête */
   photoUrl?: string;
 };

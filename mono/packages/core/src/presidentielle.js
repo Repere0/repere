@@ -10,9 +10,16 @@ const url = x => typeof x === "string" && /^https:\/\/[^\s]+$/.test(x);
 const dateIso = x => typeof x === "string" && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/.test(x) && !Number.isNaN(Date.parse(x));
 const jour = x => typeof x === "string" && /^\d{4}-\d{2}-\d{2}$/.test(x);
 
+/* 12/11/2026 (décision du porteur, exception à la règle du 10/11) : une candidature DÉCLARÉE (`statut: "declare"`),
+   relevée dans la presse, n'est publiée qu'avec au moins deux sources, chacune avec son producteur, son adresse
+   https et sa date. Sans cela elle est écartée comme toute entrée mal formée. Sans `statut`, c'est l'entrée
+   d'avant (liste officielle), inchangée. */
+const sourceDeclaration = s => !!s && texte(s.producteur) && url(s.url) && jour(s.date);
 export function candidatValide(c) {
   return !!c && texte(c.id) && texte(c.nom) && texte(c.prenom) && (c.parti === null || texte(c.parti))
-    && (c.programmeUrl === undefined || url(c.programmeUrl));
+    && (c.programmeUrl === undefined || url(c.programmeUrl))
+    && (c.statut === undefined || c.statut === "officiel" || (c.statut === "declare" && Array.isArray(c.sources)
+      && c.sources.length >= 2 && c.sources.every(sourceDeclaration)));
 }
 export function debatValide(d) {
   return !!d && texte(d.id) && dateIso(d.date) && texte(d.chaine) && texte(d.titre)

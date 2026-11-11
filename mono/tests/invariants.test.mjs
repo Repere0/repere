@@ -170,6 +170,12 @@ test("invariant 7 — palette gelée ; couleurs de groupes seulement dans palett
   const accents = [...blocAccents.matchAll(/#[0-9a-fA-F]{6}\b/g)].map(m => m[0].toLowerCase()).filter(h => amplitude(h) > AMPLITUDE_MAX);
   /* Porteur, 09/11/2026 : l'interface reste neutre (encre, ardoises). */
   assert.deepEqual([...new Set(accents)].sort(), ["0f172a", "475569"].map(h => "#" + h).sort(), "les accents d'interface sont des neutres (décision du 09/11/2026)");
+  /* Porteur, 12/11/2026 : le badge orange « Déclaration de candidature » (Présidentielle), dans palette.ts seulement,
+     une seule teinte pour tous les candidats. */
+  const blocBadge = (lire("apps/mobile/src/lib/palette.ts").match(/export const BADGE_DECLARATION_PAR_MODE[\s\S]*?\}\);/) || [""])[0];
+  const badge = [...blocBadge.matchAll(/#[0-9a-fA-F]{6}\b/g)].map(m => m[0].toLowerCase()).filter(h => amplitude(h) > AMPLITUDE_MAX);
+  assert.deepEqual(badge, ["ffedd5", "9a3412", "fb923c", "3b2210", "fdba74", "c2410c"].map(h => "#" + h), "le badge de déclaration de candidature porte les couleurs de la décision du 12/11/2026");
+  for (const h of badge) jauge.push(h);
   /* L'émeraude du « pour » est réservée aux données de vote : hors du bloc COULEURS_VOTE, elle
      n'apparaît nulle part dans palette.ts (ni accent, ni jauge, ni neutre). */
   const horsVote = lire("apps/mobile/src/lib/palette.ts").replace(blocVote, "").replace(/\/\*[\s\S]*?\*\//g, "");

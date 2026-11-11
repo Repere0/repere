@@ -6,6 +6,10 @@ l'application dit alors l'absence. `sources.json` n'est jamais publié.
 
 ## Décisions du porteur, 10 novembre 2026
 
+> **Exception du 12/11/2026 (porteur)** : `candidats.json` porte des **candidatures déclarées** (`statut: "declare"`),
+> relevées dans la presse le 11/11/2026, chacune avec **deux sources** datées (règle dans `@repere/core`,
+> `candidatValide`). Ordre alphabétique, aucun classement ; pas de photo. À remplacer par la liste officielle en mars 2027.
+
 1. **Candidats : aucune collecte automatique.** Saisie à la main dans `candidats.json` en mars 2027,
    quand le Conseil constitutionnel aura publié la liste. Mettre à jour `meta.json` (date, source) dans
    le même commit.

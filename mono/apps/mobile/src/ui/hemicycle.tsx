@@ -4,15 +4,19 @@
  * Sans fichier lisible : rien n'est dessiné (doctrine du vide) ; l'écran garde sa phrase.
  * Ordre : alphabétique (@repere/core, compositionGroupes) — jamais par taille (invariant 3).
  * Couleurs : celles des groupes, pour les reconnaître seulement (invariant 7, palette.ts).
+ * 12/11/2026 (porteur : « moins plat ») : chaque point a un filet plus sombre de sa teinte, un reflet en haut
+ * à gauche et une ombre portée ; l'arc apparaît d'un souffle, et le groupe touché grossit (les autres à 20 %).
  * Couleurs trop proches : contour sur le second groupe (groupesACerner).
  * Aucun libellé majorité / opposition. Dessiné avec des View : aucune bibliothèque ajoutée. */
 import { useMemo, useState } from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Animated, Pressable, StyleSheet, Text, View } from "react-native";
 import { router } from "expo-router";
 import { compositionGroupes, groupesACerner, siegesHemicycle } from "@repere/core";
-import { couleurGroupe, groupeDe, GROUPE_INCONNU, useFichierGroupes } from "../lib/groupes";
-import { CIBLE, feuille, couleurs, PAS, POLICE, RAYON, TYPO } from "../lib/theme";
+import { bordureGroupe, couleurGroupe, groupeDe, GROUPE_INCONNU, useFichierGroupes } from "../lib/groupes";
+import { useApparition } from "./mouvement";
+import { CIBLE, feuille, couleurs, OMBRE, PAS, POLICE, RAYON, TYPO } from "../lib/theme";
 import { PastilleSource } from "./source";
+import { REFLET_AVATAR, rapportContraste } from "../lib/palette";
 
 type Part = { groupe: string; sieges: number };
 
@@ -22,6 +26,7 @@ export function Hemicycle() {
   /* 07/11/2026 (maquette Stitch) : toucher un groupe l'éclaire, les autres passent à 20 %.
      Le geste de navigation devient le lien « Voir les N députés » du groupe choisi. */
   const [choisi, setChoisi] = useState<string | null>(null);
+  const apparition = useApparition();
   const parts: Part[] = useMemo(() => {
     if (!fichier) return [];
     const t = fichier.groupes;
@@ -34,6 +39,8 @@ export function Hemicycle() {
   /* Deux couleurs trop proches (DEM/EPR, LIOT/Inconnu…) : le second groupe est cerné de la couleur
      du texte (blanc en sombre, encre en clair), sans toucher à la palette (invariant 7). */
   const cernes: Set<string> = groupesACerner(parts.map(p => p.groupe), couleurGroupe);
+  /* Sous 3:1 sur la carte (WCAG 1.4.11) : un trait gris dessine le point. */
+  const faible = (fond: string) => rapportContraste(fond, couleurs.carte) < 3;
   const siegeDe = parts.flatMap(p => Array(p.sieges).fill(p.groupe) as string[]);
   const rayon = largeur / 2;
   const point = Math.max(3, rayon * 0.04);
@@ -45,14 +52,27 @@ export function Hemicycle() {
       <Text style={TYPO.etiquette} accessibilityRole="header">La composition de l'Assemblée</Text>
       <View onLayout={e => setLargeur(e.nativeEvent.layout.width)} accessible accessibilityLabel={phrase}
         style={{ width: "100%", height: rayon + point }}>
-        {largeur ? sieges.map((p: { x: number; y: number }, i: number) => (
-          <View key={i} style={{
-            position: "absolute", width: point, height: point, borderRadius: point / 2, backgroundColor: couleurGroupe(siegeDe[i]),
-            opacity: choisi && siegeDe[i] !== choisi ? 0.2 : 1,
-            ...(cernes.has(siegeDe[i]) ? { borderWidth: 1.25, borderColor: couleurs.encre } : null),
-            left: rayon + p.x * (rayon - point / 2) - point / 2, top: rayon - p.y * (rayon - point / 2) - point / 2,
-          }} />
-        )) : null}
+        {largeur ? (
+          <Animated.View style={{ width: "100%", height: rayon + point, opacity: apparition,
+            transform: [{ scale: apparition.interpolate({ inputRange: [0, 1], outputRange: [0.94, 1] }) }] }}>
+            {sieges.map((p: { x: number; y: number }, i: number) => {
+              const g = siegeDe[i], fond = couleurGroupe(g), actif = choisi === g;
+              return (
+                <View key={i} style={{
+                  position: "absolute", width: point, height: point, borderRadius: point / 2, backgroundColor: fond,
+                  opacity: choisi && !actif ? 0.2 : 1,
+                  ...(cernes.has(g) ? { borderWidth: 1.25, borderColor: couleurs.encre } : faible(fond) ? { borderWidth: 1, borderColor: couleurs.sourd } : { borderWidth: 0.75, borderColor: bordureGroupe(fond) }),
+                  shadowColor: OMBRE.shadowColor, shadowOpacity: choisi && !actif ? 0 : 0.35, shadowRadius: 1.5, shadowOffset: { width: 0, height: 1 },
+                  transform: [{ scale: actif ? 1.35 : 1 }], zIndex: actif ? 2 : 1,
+                  left: rayon + p.x * (rayon - point / 2) - point / 2, top: rayon - p.y * (rayon - point / 2) - point / 2,
+                }}>
+                  <View style={{ position: "absolute", top: point * 0.14, left: point * 0.18, width: point * 0.34, height: point * 0.34,
+                    borderRadius: point * 0.17, backgroundColor: REFLET_AVATAR.clair }} />
+                </View>
+              );
+            })}
+          </Animated.View>
+        ) : null}
       </View>
       <View style={s.legende}>
         {parts.map(p => (

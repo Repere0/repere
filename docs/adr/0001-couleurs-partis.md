@@ -76,3 +76,11 @@ Le porteur a choisi d'amender cette règle pour les badges d'identification d'un
 
 - Tant que la procédure n'est pas exécutée, le badge reste gris et affiche « Groupe : Inconnu ».
 - Aucun test ne doit être affaibli pour faire passer l'application de cette décision.
+
+## Amendement du 12/11/2026 (décision du porteur : « couleurs plus vives et contrastées pour les groupes »)
+
+Les douze couleurs de `COULEURS_GROUPES` (`palette.ts`) sont remplacées par douze teintes plus saturées et toutes
+distinctes (distance RVB d'au moins 60 entre deux groupes, gardé par `theme.test.mjs`). Le texte de l'invariant 7 est
+inchangé : toujours 12 couleurs, identification des élus seulement. Contrastes mesurés dans le commentaire de
+`palette.ts` : plusieurs groupes sont sous 3:1 sur l'une des cartes ; l'hémicycle cerne alors le point d'un trait gris et
+le nom du groupe est toujours écrit à côté.
