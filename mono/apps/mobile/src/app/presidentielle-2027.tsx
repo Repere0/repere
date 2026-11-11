@@ -9,6 +9,7 @@ import { useState } from "react";
 import { Linking, Pressable, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { router, Stack } from "expo-router";
+import { SquelettesListe } from "../ui/squelette";
 import { dateFr, heureFr } from "@repere/core";
 import type { PresidentialDebate, PresidentialMeeting } from "@repere/core";
 import { Vide } from "../lib/composants";
@@ -77,7 +78,7 @@ export default function Presidentielle2027() {
 
       <Onglets etiquette="Candidats, débats, réunions publiques" valeurs={ONGLETS} actif={onglet} choisir={setOnglet} />
 
-      {!d.charge ? <Text style={TYPO.note}>Chargement…</Text> : null}
+      {!d.charge ? <SquelettesListe n={2} hauteur={88} /> : null}
 
       {d.charge && onglet === "candidats" ? (
         !d.lus.candidats ? <Vide {...PAS_ARRIVE} icone="cloud-offline-outline" action="Réessayer" onAction={d.reessayer} />
