@@ -31,6 +31,10 @@ const BALISES = (nom, couleur) => [
   '<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />',
   `<meta name="apple-mobile-web-app-title" content="${nom}" />`,
   `<meta name="theme-color" content="${couleur}" />`,
+  // 12/11/2026 (iPhone, Safari) : la barre basse disparaissait ou passait sous la barre d'accueil. La page est figee a la
+  // taille VISIBLE (100dvh : suit la barre d'adresse de Safari), le document ne defile plus (seuls les ecrans defilent),
+  // la marge de securite du bas est donnee par la barre elle-meme (react-native-safe-area-context lit env(safe-area-inset-bottom)).
+  '<style id="repere-ios">html,body{height:100%;overflow:hidden;overscroll-behavior:none}body{position:fixed;top:0;right:0;bottom:0;left:0;width:100%}#root{height:100%}@supports(height:100dvh){html,body,#root{height:100dvh}}[role="tablist"]{padding-bottom:env(safe-area-inset-bottom)}</style>',
 ].join("\n    ");
 
 const ENREGISTRE = "<script>if('serviceWorker' in navigator){window.addEventListener('load',function(){navigator.serviceWorker.register('/sw.js').catch(function(){});});}</script>";
