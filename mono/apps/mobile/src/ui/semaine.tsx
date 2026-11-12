@@ -26,6 +26,7 @@ import { feuille, couleurs, CIBLE, OMBRE, PAS, RAYON, TYPO } from "../lib/theme"
 import { typo } from "./reponse";
 import { PastilleSource } from "./source";
 import { AvecPicto } from "./picto";
+import { enfonce } from "./mouvement";
 
 type Jour = { date: string; seances: number; annonce: boolean };
 type Vote = { debut: string; institution: string; texte: string };
@@ -150,7 +151,7 @@ export function SemaineParlement({ sp, lu, nom }: { sp: Semaine | null | undefin
 function Suite({ onPress }: { onPress: () => void }) {
   return (
     <Pressable onPress={onPress} accessibilityRole="button" accessibilityLabel={LIBELLES.calendrier}
-      style={({ pressed }) => [s.suite, pressed && { opacity: 0.6 }]}>
+      style={({ pressed }) => [s.suite, pressed && enfonce(true)]}>
       <Text style={s.suiteTexte}>{LIBELLES.calendrier} ›</Text>
     </Pressable>
   );
@@ -162,7 +163,7 @@ const s = feuille(() => StyleSheet.create({
   bande: { flexDirection: "row", gap: PAS },
   jour: { flex: 1, minWidth: 0, alignItems: "center", paddingVertical: PAS * 2, borderRadius: RAYON.bloc, backgroundColor: couleurs.sol, gap: 2 },
   jourAujourdhui: { borderWidth: 1.5, borderColor: couleurs.france },
-  jourNom: { fontSize: 13, lineHeight: 18, color: couleurs.sourd },
+  jourNom: { fontSize: 14, lineHeight: 20, color: couleurs.sourd },
   encre: { color: couleurs.encre, fontWeight: "600" },
   jourNum: { fontSize: 17, lineHeight: 22, fontWeight: "600", color: couleurs.encre },
   points: { flexDirection: "row", gap: 4, minHeight: 18, alignItems: "center" },

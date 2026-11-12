@@ -3,6 +3,7 @@
  * écrite sous le contenu. Fermeture en haut, défilement vertical. */
 import { Modal, Pressable, ScrollView, Text, View } from "react-native";
 import { CIBLE, couleurs, PAS, TYPO } from "../lib/theme";
+import { enfonce } from "./mouvement";
 
 export type SectionExhaustive = { titre: string; contenu: React.ReactNode; source?: string };
 
@@ -15,7 +16,7 @@ export function ModaleExhaustif({ titre, sections, visible, onFermer }: {
         <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", padding: PAS * 4, gap: PAS * 3 }}>
           <Text style={[TYPO.reponse, { flex: 1 }]} accessibilityRole="header">{titre}</Text>
           <Pressable onPress={onFermer} accessibilityRole="button" accessibilityLabel="Fermer"
-            style={({ pressed }) => ({ minHeight: CIBLE, minWidth: CIBLE, alignItems: "center", justifyContent: "center", opacity: pressed ? 0.7 : 1 })}>
+            style={({ pressed }) => ({ minHeight: CIBLE, minWidth: CIBLE, alignItems: "center", justifyContent: "center", ...enfonce(pressed) })}>
             <Text style={{ color: couleurs.lien, fontWeight: "500", fontSize: 16 }}>Fermer</Text>
           </Pressable>
         </View>

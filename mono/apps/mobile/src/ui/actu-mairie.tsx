@@ -9,6 +9,7 @@ import { ageReleve, dateFr } from "@repere/core";
 import { actusFlux, chargerActuellesRss } from "../lib/donnees";
 import { CIBLE, couleurs, PAS, POLICE, RAYON, TYPO } from "../lib/theme";
 import { aujourdhui } from "./cette-semaine-commune";
+import { enfonce } from "./mouvement";
 
 type Entree = { titre: string; resume?: string; date: string; lien: string };
 
@@ -32,7 +33,7 @@ export function ActuMairie({ insee, nom }: { insee: string; nom: string }) {
       {x.resume ? <Text style={TYPO.note} numberOfLines={3}>{x.resume}</Text> : null}
       <Pressable onPress={() => Linking.openURL(x.lien)} accessibilityRole="link"
         accessibilityLabel={`Lire sur le site de la mairie de ${nom}, ouvre un site externe`}
-        style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", alignSelf: "flex-start", opacity: pressed ? 0.7 : 1 })}>
+        style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", alignSelf: "flex-start", ...enfonce(pressed) })}>
         <Text style={[TYPO.corps, { fontFamily: POLICE.texteMoyen, color: couleurs.lien }]}>Lire sur le site de la mairie ↗</Text>
       </Pressable>
       <Text style={TYPO.micro}>Flux RSS officiel de la mairie, lu automatiquement.</Text>

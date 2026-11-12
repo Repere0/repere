@@ -22,6 +22,7 @@ import { GLOSSAIRE, titreDuMot } from "@repere/core";
 import { couleurs, PAS, POLICE, RAYON, TYPO } from "../lib/theme";
 import { Page, Question } from "../ui/page";
 import { Quiz } from "../ui/quiz";
+import { enfonce } from "../ui/mouvement";
 
 /* LES CATÉGORIES (porteur, 09/11/2026) : les MOTS regroupés par thème, pour filtrer la liste.
    Rien n'y concerne une personne ni un parti. Un mot sans catégorie listée ici va dans « Institutions ». */
@@ -102,7 +103,7 @@ export default function Dictionnaire() {
         {recherche.length > 0 ? (
           <Pressable onPress={() => setRecherche("")} accessibilityRole="button" accessibilityLabel="Effacer la recherche"
             style={({ pressed }) => ({ position: "absolute", right: 4, minHeight: 44, paddingHorizontal: 16, borderRadius: 999,
-              backgroundColor: couleurs.voile, justifyContent: "center", opacity: pressed ? 0.6 : 1 })}>
+              backgroundColor: couleurs.voile, justifyContent: "center", ...enfonce(pressed) })}>
             <Text style={{ fontWeight: "700", color: couleurs.encre, fontSize: 14 }}>Effacer</Text>
           </Pressable>
         ) : null}
@@ -113,7 +114,7 @@ export default function Dictionnaire() {
         {[null, ...CATEGORIES].map(c => (
           <Pressable key={c ?? "toutes"} onPress={() => setCategorie(c)} accessibilityRole="tab"
             accessibilityState={{ selected: categorie === c }} accessibilityLabel={c ? `Catégorie ${c}` : "Toutes les catégories"}
-            style={({ pressed }) => [chip(categorie === c), pressed && { opacity: 0.7 }]}>
+            style={({ pressed }) => [chip(categorie === c), pressed && enfonce(true)]}>
             <Text style={{ fontFamily: POLICE.texteMoyen, color: categorie === c ? couleurs.sol : couleurs.encre }}>{c ?? "Toutes"}</Text>
           </Pressable>
         ))}
@@ -128,7 +129,7 @@ export default function Dictionnaire() {
         {lettres.map(l => (
           <Pressable key={l} onPress={() => setLettre(lettre === l ? null : l)} accessibilityRole="tab"
             accessibilityState={{ selected: lettre === l }} accessibilityLabel={`Lettre ${l}`}
-            style={({ pressed }) => [chip(lettre === l), { width: 44, paddingHorizontal: 0 }, pressed && { opacity: 0.7 }]}>
+            style={({ pressed }) => [chip(lettre === l), { width: 44, paddingHorizontal: 0 }, pressed && enfonce(true)]}>
             <Text style={{ fontWeight: "800", fontSize: 16, color: lettre === l ? couleurs.sol : couleurs.encre }}>{l}</Text>
           </Pressable>
         ))}

@@ -21,7 +21,7 @@
  * de stockage nouvelle : l'invariant 2 (une seule clé locale) est préservé. */
 import { useColorScheme } from "react-native";
 import {
-  NEUTRES_PAR_MODE, ECHELONS_PAR_MODE, TEINTES_PAR_MODE, OMBRE_PAR_MODE, COULEURS_VOTE, COULEURS_VOTE_DALTONIEN,
+  NEUTRES_PAR_MODE, BADGE_DECLARATION_PAR_MODE, ECHELONS_PAR_MODE, TEINTES_PAR_MODE, OMBRE_PAR_MODE, COULEURS_VOTE, COULEURS_VOTE_DALTONIEN,
   ACCENTS_PAR_MODE, JAUGE_BUDGET_PAR_MODE,
   type Mode, type Echelon,
 } from "./palette";
@@ -72,7 +72,7 @@ export const POLICES_PAR_MODE: Readonly<Record<Mode, Polices>> = {
 };
 
 /* Durée des apparitions : courte, pour ne jamais retarder la lecture. */
-export const DUREE = { apparition: 520, remplissage: 700 } as const;
+export const DUREE = { apparition: 520, remplissage: 500 } as const;
 
 /* ---- LE THÈME COURANT ------------------------------------------------- */
 
@@ -130,17 +130,17 @@ function construire(m: Mode) {
     /* la réponse d'une carte */
     reponse: { fontFamily: POLICE.titre, fontSize: sz(17), lineHeight: lh(24), color: couleurs.encre },
     corps: { fontFamily: POLICE.texte, fontSize: sz(15), lineHeight: lh(22), color: couleurs.encre },
-    note: { fontFamily: POLICE.texte, fontSize: sz(13), lineHeight: lh(19), color: couleurs.sourd },
+    note: { fontFamily: POLICE.texte, fontSize: sz(14), lineHeight: lh(21), color: couleurs.sourd },
     /* l'étiquette au-dessus d'une réponse, en capitales de style */
     etiquette: { fontFamily: POLICE.texteMoyen, fontSize: sz(13), lineHeight: lh(18), letterSpacing: 0.8, textTransform: "uppercase" as const, color: couleurs.sourd },
-    micro: { fontFamily: POLICE.texte, fontSize: sz(13), lineHeight: lh(18), color: couleurs.sourd },
+    micro: { fontFamily: POLICE.texte, fontSize: sz(14), lineHeight: lh(20), color: couleurs.sourd },
     /* une date ou une donnée chiffrée en ligne (frise, pastilles) */
-    donnee: { fontFamily: POLICE.donnee, fontSize: sz(13), lineHeight: lh(18), color: couleurs.sourd },
+    donnee: { fontFamily: POLICE.donnee, fontSize: sz(14), lineHeight: lh(20), color: couleurs.sourd },
   };
   /* Les trois gris d'une répartition de vote : ils se distinguent aussi par leur
      libellé et leur nombre, jamais par la couleur seule (accessibilité). */
   const GRIS_VOTE = { p: couleurs.encre, c: couleurs.sourd, a: couleurs.trait } as const;
-  return { couleurs, TYPO, TEINTES: TEINTES_PAR_MODE[m], GRIS_VOTE, OMBRE: OMBRE_PAR_MODE[m], POLICE, ACCENTS: ACCENTS_PAR_MODE[m], JAUGE: JAUGE_BUDGET_PAR_MODE[m] };
+  return { couleurs, TYPO, TEINTES: TEINTES_PAR_MODE[m], GRIS_VOTE, OMBRE: OMBRE_PAR_MODE[m], POLICE, ACCENTS: ACCENTS_PAR_MODE[m], JAUGE: JAUGE_BUDGET_PAR_MODE[m], BADGE_DECLARATION: BADGE_DECLARATION_PAR_MODE[m] };
 }
 
 type Palette = Record<Echelon, string> & {
@@ -179,6 +179,7 @@ export const POLICE: Polices = miroir(() => vue().POLICE);
 /* Accents d'interface et jauge du budget du thème courant (invariant 7 amendé, 09/11/2026). */
 export const ACCENTS: Vue["ACCENTS"] = miroir(() => vue().ACCENTS);
 export const JAUGE: Vue["JAUGE"] = miroir(() => vue().JAUGE);
+export const BADGE_DECLARATION: Vue["BADGE_DECLARATION"] = miroir(() => vue().BADGE_DECLARATION);
 
 /* UNE FEUILLE DE STYLE DE MODULE. `StyleSheet.create({ ... couleurs.encre })`
    au niveau d'un module fige la couleur au chargement : la bascule de thème ne la

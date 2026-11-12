@@ -331,6 +331,11 @@ Ne pas reproposer sans argument neuf.
 - **« Impact » écrit par un modèle de langage.** Un jugement sans source, sur un
   produit dont toute la valeur est de n'en porter aucun. Le résumé automatique reste
   possible **à l'étage brouillon seulement**, réécrit par un humain.
+- **Deux exceptions décidées par le porteur le 12/11/2026** (à relire, pas à étendre) : (1) la Présidentielle affiche
+  des **candidatures déclarées relevées dans la presse**, seulement avec deux sources datées, badge « Déclaration de
+  candidature », note « liste non officielle » ; (2) les Questions au Gouvernement affichent un **résumé extractif**
+  (phrases recopiées, choisies par un calcul de l'appareil, annoncé comme calcul), réponse complète à un geste.
+  Les règles du 10/11 pour les débats et réunions ne changent pas.
 - **Suivi de l'agenda individuel des élus, comptage de présence/absence.**
   Surveillance, et classement de fait (invariants 3 et 8).
 - **Comparaison entre communes.** Invariant 3. L'application ne montre que le

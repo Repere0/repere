@@ -12,13 +12,14 @@
 import { espacesFines } from "./donnees";
 import { AvatarElu, CreditPhotoElu } from "./avatar";
 import { useState, type ReactNode } from "react";
-import { Animated, Pressable, StyleSheet, Text, View } from "react-native";
+import { Animated, Pressable, StyleSheet, Text, View, type TextStyle } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { feuille, couleurs, JAUGE, PAS, POLICE, RAYON, TEINTES, TYPO, CIBLE, type Echelon } from "../lib/theme";
 import { NEUTRES_PAR_MODE } from "../lib/palette";
 import { useCouleurVote } from "../lib/couleur-vote";
 import { useApparition, useCompteur } from "./mouvement";
 import { pointEchelon } from "../lib/niveaux";
+import { enfonce } from "./mouvement";
 
 const largeur = (v: Animated.Value, pct: number) =>
   v.interpolate({ inputRange: [0, 1], outputRange: ["0%", `${Math.max(0, Math.min(100, pct))}%`] });
@@ -88,6 +89,19 @@ export function Compteur({ valeur, suffixe }: { valeur: number; suffixe: string 
   );
 }
 
+/* ── Un montant en grand qui se révèle (accueil, finances) ─────────────────
+   « Moins austère » (retour du porteur, 11/11/2026) : le chiffre monte de 0 à sa valeur en 0,5 s, tabulaire, donc sans
+   saut de largeur. RÉSERVÉ AUX MONTANTS : jamais un décompte de vote (invariant 6, rien qui gamifie). Le lecteur
+   d'écran lit la valeur finale ; « réduire les animations » affiche la valeur d'emblée. */
+export function ChiffreQuiCompte({ valeur, style, suffixe, etiquette }: { valeur: number; style: TextStyle | TextStyle[]; suffixe?: ReactNode; etiquette?: string }) {
+  const n = useCompteur(valeur);
+  return (
+    <Text style={style} accessible accessibilityLabel={etiquette ?? valeur.toLocaleString("fr-FR")}>
+      {espacesFines(n.toLocaleString("fr-FR"))}{suffixe}
+    </Text>
+  );
+}
+
 /* ── Une part de 100 (« sur 100 € dépensés, 47 € de salaires ») ─────────── */
 export function BarrePart({ part, libelle, valeur, echelon = "ville", delai = 0, sansLibelle }: {
   part: number; libelle: string; valeur: string; echelon?: Echelon; delai?: number;
@@ -154,6 +168,30 @@ export function Tendance({ pct, an1, an2 }: { pct: number | null; an1: string; a
       style={s.tendance}>
       <Text style={[TYPO.note, { color: couleurs.encre, fontWeight: "700" }]}>{`${pct > 0 ? "↑" : "↓"} ${texte}`}</Text>
       <Text style={TYPO.note}>{`par rapport à ${an1} · calcul Repère`}</Text>
+    </View>
+  );
+}
+
+/* « TEST DES 3 SECONDES » (retour iPhone du porteur, 11/11/2026) — une variation d'un exercice à l'autre :
+   une flèche, le pourcentage en grand, les deux montants dessous. Calcul de Repère, annoncé comme tel
+   par l'écran. NEUTRE : encre sur voile, jamais vert ni rouge. Une hausse de dépenses n'est ni bonne ni
+   mauvaise, et le rouge/vert coderait un jugement (invariant 7 ; même règle que `Tendance`). Le sens est
+   dit par la flèche ET par le mot « hausse » ou « baisse ». */
+export function VariationAnnuelle({ libelle, an1, an2, pct, sens, de, vers, diffTexte }: {
+  libelle: string; an1: string; an2: string; pct: string; sens: "hausse" | "baisse" | "stable"; de: string; vers: string; diffTexte: string;
+}) {
+  const icone = sens === "hausse" ? "arrow-up" : sens === "baisse" ? "arrow-down" : "remove";
+  return (
+    <View accessible accessibilityLabel={`${libelle}, entre ${an1} et ${an2} : ${sens}, ${pct}. De ${de} à ${vers}, ${diffTexte}. Calcul Repère.`} style={s.variation}>
+      <View style={s.variationFleche}>
+        <Ionicons name={icone} size={26} color={couleurs.encre} accessible={false} importantForAccessibility="no" />
+      </View>
+      <View style={{ flex: 1, gap: 2 }}>
+        <Text style={TYPO.etiquette}>{libelle} · {sens}</Text>
+        <Text style={TYPO.stat}>{pct}</Text>
+        <Text style={TYPO.note}>{`${de} en ${an1}, ${vers} en ${an2}`}</Text>
+        <Text style={[TYPO.note, { color: couleurs.encre, fontFamily: POLICE.texteGras }]}>{diffTexte}</Text>
+      </View>
     </View>
   );
 }
@@ -334,6 +372,24 @@ export type Niveau = {
    est alors une cible de 48 px, lue comme un lien. */
 /* `ouverts` et `basculer` (maquette Stitch, 09/11/2026) : la chaîne devient un accordéon. Chaque
    niveau garde son nom et sa personne visibles ; ce qu'il décide, la note et le pied se déplient. */
+/* Une carte d'élu : avatar, nom, rôle, chevron. La même pour un maire, un député ou un préfet (12/11/2026). */
+export function CarteElu({ nom, role, echelon, groupe, dep, cle, surPress, libelle }: {
+  nom: string; role: string; echelon: Echelon | null; groupe?: string | null; dep?: string | null; cle?: string | null;
+  surPress: () => void; libelle?: string;
+}) {
+  return (
+    <Pressable onPress={surPress} accessibilityRole="link" accessibilityLabel={libelle ?? `Voir la fiche de ${nom}, ${role}`}
+      style={({ pressed }) => [s.carteElu, pressed && { opacity: 0.7 }]}>
+      <AvatarElu nom={nom} taille={40} echelon={echelon} groupe={groupe} dep={dep} cle={cle} />
+      <View style={{ flex: 1 }}>
+        <Text style={TYPO.reponse}>{nom}</Text>
+        <Text style={TYPO.note}>{role}</Text>
+      </View>
+      <Ionicons name="chevron-forward" size={18} color={couleurs.sourd} accessible={false} importantForAccessibility="no" />
+    </Pressable>
+  );
+}
+
 export function Chaine({ niveaux, compact, surNom, ouverts, basculer }: {
   niveaux: Niveau[]; compact?: boolean; surNom?: (n: Niveau) => void;
   ouverts?: ReadonlySet<Echelon>; basculer?: (e: Echelon) => void;
@@ -368,7 +424,7 @@ export function Chaine({ niveaux, compact, surNom, ouverts, basculer }: {
             {ouverts && basculer && !compact ? (
               <Pressable onPress={() => basculer(n.echelon)} accessibilityRole="button" accessibilityState={{ expanded: deplie }}
                 accessibilityLabel={`${n.niveau}${n.lieu ? ", " + n.lieu : ""} : ${deplie ? "replier" : "déplier"} ce que ce niveau décide`}
-                style={({ pressed }) => ({ minHeight: 44, flexDirection: "row", alignItems: "center", gap: PAS * 2, opacity: pressed ? 0.6 : 1 })}>
+                style={({ pressed }) => ({ minHeight: 44, flexDirection: "row", alignItems: "center", gap: PAS * 2, ...enfonce(pressed) })}>
                 <Text style={[TYPO.etiquette, { flex: 1 }]}>{n.niveau}{n.lieu ? " · " + n.lieu : ""}</Text>
                 <Ionicons name={deplie ? "chevron-up" : "chevron-down"} size={18} color={couleurs.sourd} accessible={false} importantForAccessibility="no" />
               </Pressable>
@@ -378,16 +434,8 @@ export function Chaine({ niveaux, compact, surNom, ouverts, basculer }: {
             {n.personne && surNom && !compact ? (
               /* 07/11/2026 : l'avatar (initiales sur la couleur de l'ÉCHELON, jamais d'un parti) à côté du nom. */
               /* Refonte (porteur, 09/11/2026) : une carte cliquable, sans soulignement ; le rôle dedans. */
-              <Pressable onPress={() => surNom(n)} accessibilityRole="link"
-                accessibilityLabel={`Voir la fiche de ${n.personne.nom}, ${n.personne.role}`}
-                style={({ pressed }) => [s.carteElu, pressed && { opacity: 0.7 }]}>
-                <AvatarElu nom={n.personne.nom} taille={40} echelon={n.echelon} groupe={n.groupe} dep={n.photo?.dep} cle={n.photo?.cle} />
-                <View style={{ flex: 1 }}>
-                  <Text style={TYPO.reponse}>{n.personne.nom}</Text>
-                  <Text style={TYPO.note}>{n.personne.role}</Text>
-                </View>
-                <Ionicons name="chevron-forward" size={18} color={couleurs.sourd} accessible={false} importantForAccessibility="no" />
-              </Pressable>
+              <CarteElu nom={n.personne.nom} role={n.personne.role} echelon={n.echelon} groupe={n.groupe} dep={n.photo?.dep} cle={n.photo?.cle}
+                surPress={() => surNom(n)} />
             ) : n.personne ? (
               <Text style={compact ? [TYPO.corps, { fontWeight: "600" }] : TYPO.reponse}>{n.personne.nom}</Text>
             ) : (
@@ -414,7 +462,7 @@ export function Depli({ titre, children }: { titre: string; children: ReactNode 
   return (
     <View>
       <Pressable onPress={() => setOuvert(o => !o)} accessibilityRole="button"
-        accessibilityState={{ expanded: ouvert }} style={({ pressed }) => [s.depli, pressed && { opacity: 0.6 }]}>
+        accessibilityState={{ expanded: ouvert }} style={({ pressed }) => [s.depli, pressed && enfonce(true)]}>
         <Text style={[TYPO.note, { color: couleurs.lien, fontWeight: "500", flex: 1 }]}>{titre.replace(/ ([?!:;])/g, "\u00a0$1")}</Text>
         <Text style={[TYPO.note, { color: couleurs.lien }]} accessibilityElementsHidden importantForAccessibility="no">{ouvert ? "−" : "+"}</Text>
       </Pressable>
@@ -433,12 +481,14 @@ const s = feuille(() => StyleSheet.create({
   pisteBarre: { flex: 1.2, height: 6, borderRadius: 3, backgroundColor: couleurs.voile, overflow: "hidden" },
   remplissageBarre: { height: 6, borderRadius: 3, backgroundColor: couleurs.encre },
   tendance: { alignSelf: "flex-start", flexDirection: "row", flexWrap: "wrap", alignItems: "center", gap: PAS * 2, backgroundColor: couleurs.voile, borderRadius: RAYON.pastille, paddingHorizontal: PAS * 2, paddingVertical: PAS },
+  variation: { flexDirection: "row", alignItems: "center", gap: PAS * 4, padding: PAS * 5, borderRadius: RAYON.carte, backgroundColor: couleurs.carte },
+  variationFleche: { width: 56, height: 56, borderRadius: 28, backgroundColor: couleurs.voile, alignItems: "center", justifyContent: "center" },
   mois: { flexDirection: "row", flexWrap: "wrap", gap: 4 },
   moisCase: { width: 22, height: 22, borderRadius: 6, backgroundColor: couleurs.voile, overflow: "hidden" },
   moisRempli: { height: "100%" },
   legende: { flexDirection: "row", alignItems: "center", gap: PAS * 2 },
   pastilleCouleur: { width: 14, height: 14, borderRadius: 4, borderWidth: StyleSheet.hairlineWidth, borderColor: couleurs.sourd },
-  marque: { fontSize: 13, fontWeight: "500", color: couleurs.blanc, backgroundColor: couleurs.ville, paddingHorizontal: 8, paddingVertical: 2, borderRadius: RAYON.pastille, overflow: "hidden", maxWidth: 170 },
+  marque: { fontSize: 14, fontWeight: "500", color: couleurs.blanc, backgroundColor: couleurs.ville, paddingHorizontal: 8, paddingVertical: 2, borderRadius: RAYON.pastille, overflow: "hidden", maxWidth: 170 },
   annee: { flexDirection: "row", alignItems: "center", gap: PAS * 2 },
   jalon: { flexDirection: "row", gap: PAS * 3 },
   jalonAxe: { width: 18, alignItems: "center" },

@@ -15,6 +15,7 @@ import { Stack, useLocalSearchParams } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { SquelettesListe } from "../ui/squelette";
 import { useCompteur } from "../ui/mouvement";
+import { resumeExtractif } from "../lib/resume-extractif";
 import {
   chargerQuestionsGouvernementIndex,
   chargerQuestionGouvernementLot,
@@ -31,6 +32,7 @@ import { Vide } from "../lib/composants";
 import { PastilleSource } from "../ui/source";
 import { feuille, PAS, TYPO, couleurs, CIBLE, RAYON, OMBRE, POLICE } from "../lib/theme";
 import { dateFr, titreLisible, nombreDecompte, resultatDecompteCourt } from "@repere/core";
+import { enfonce } from "../ui/mouvement";
 
 type Resume = {
   n: string; d: string; t: string; ty: string; s: string;
@@ -122,6 +124,42 @@ function CompteurQuestions({ questions, releve }: { questions: { d: string }[]; 
   );
 }
 
+/* 12/11/2026 : l'essentiel de la réponse d'abord (2 ou 3 phrases recopiées, choisies par un calcul de
+   Repère : lib/resume-extractif), la réponse entière à un geste. Réponse courte : affichée entière. */
+function ReponseResumee({ texte }: { texte: string }) {
+  const [entiere, setEntiere] = useState(false);
+  const r = useMemo(() => resumeExtractif(texte), [texte]);
+  if (r.complet || entiere) {
+    return (
+      <View style={{ gap: PAS * 2 }}>
+        <Text style={TYPO.corps}>{texte}</Text>
+        {!r.complet ? <Pressable onPress={() => setEntiere(false)} accessibilityRole="button" accessibilityLabel="Revenir au résumé"
+          style={({ pressed }) => [s.boutonSecondaire, pressed && { opacity: 0.7 }]}>
+          <Text style={[TYPO.corps, { fontFamily: POLICE.texteGras }]}>Revenir au résumé</Text></Pressable> : null}
+      </View>
+    );
+  }
+  return (
+    <View style={{ gap: PAS * 3 }}>
+      <View style={{ flexDirection: "row", alignItems: "center", gap: PAS * 2 }}>
+        <Ionicons name="sparkles-outline" size={16} color={couleurs.sourd} accessible={false} importantForAccessibility="no" />
+        <Text style={TYPO.etiquette}>L'essentiel · résumé automatique</Text>
+      </View>
+      {r.phrases.map((p, i) => (
+        <View key={i} style={{ flexDirection: "row", gap: PAS * 3 }}>
+          <View style={{ width: 3, borderRadius: 2, backgroundColor: couleurs.trait }} />
+          <Text style={[TYPO.corps, { flex: 1 }]}>{p}</Text>
+        </View>
+      ))}
+      <Text style={TYPO.note}>Calcul Repère : {r.phrases.length} phrases de la réponse, recopiées telles quelles et choisies selon les mots qu'elles répètent. Aucune n'est reformulée.</Text>
+      <Pressable onPress={() => setEntiere(true)} accessibilityRole="button" accessibilityLabel="Lire la réponse complète"
+        style={({ pressed }) => [s.boutonSecondaire, pressed && { opacity: 0.7 }]}>
+        <Text style={[TYPO.corps, { fontFamily: POLICE.texteGras }]}>Lire la réponse complète</Text>
+      </Pressable>
+    </View>
+  );
+}
+
 /* 07/11/2026 : les trois nombres en grand, comme sur l'écran du vote (StatCard, couleurs de vote D24). */
 function StatutVote({ detail }: { detail: Detail }) {
   const COULEUR = useCouleurVote();
@@ -149,7 +187,7 @@ function GroupeRow({ groupe, ouvert, onPress }: { groupe: Groupe; ouvert: boolea
         accessibilityRole="button"
         accessibilityState={{ expanded: ouvert }}
         accessibilityLabel={`${groupe.nom}, ${texteAccessible}`}
-        style={({ pressed }) => [s.groupeTete, pressed && { opacity: 0.65 }]}
+        style={({ pressed }) => [s.groupeTete, pressed && enfonce(true)]}
       >
         <View style={[s.groupePoint, { backgroundColor: couleurGroupe(sigleDuNom(groupe.nom)) }]} />
         <View style={s.groupeTexte}>
@@ -327,7 +365,7 @@ export default function Scrutins() {
             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.scroller}>
               {qagVisibles.map(x => (
                 <Pressable key={x.uid} onPress={() => choisirQag(x.uid)} accessibilityRole="button"
-                  style={({ pressed }) => [s.selectionCard, x.uid === qagSelection && s.selectionCardActive, pressed && { opacity: 0.7 }]}>
+                  style={({ pressed }) => [s.selectionCard, x.uid === qagSelection && s.selectionCardActive, pressed && enfonce(true)]}>
                   <Text style={TYPO.micro}>{x.d ? dateFr(x.d) : "Date non fournie"} · n° {x.n}</Text>
                   <Text numberOfLines={2} style={s.selectionTitre}>{x.auteur.nom || "Auteur non identifié"}</Text>
                   <Text numberOfLines={1} style={TYPO.note}>{x.ministere || "Ministère non précisé"}</Text>
@@ -348,14 +386,14 @@ export default function Scrutins() {
                   </View>
                 ) : (
                   <View style={s.absence}>
-                    <Text style={[TYPO.corps, { fontWeight: "700" }]}>Le texte de la question n'est pas fourni.</Text>
-                    <Text style={TYPO.note}>Repère ne le reconstruit pas à partir d'une autre source.</Text>
+                    <Text style={[TYPO.corps, { fontWeight: "700" }]}>Question non disponible dans les données ouvertes</Text>
+                    <Text style={TYPO.note}>Repère ne la reconstruit pas à partir d'une autre source.</Text>
                   </View>
                 )}
 
                 <View style={s.reponseBloc}>
                   <Text style={TYPO.etiquette}>Réponse du Gouvernement</Text>
-                  {qagDetail.reponse ? <Text style={TYPO.corps}>{textePropre(qagDetail.reponse)}</Text>
+                  {qagDetail.reponse ? <ReponseResumee texte={textePropre(qagDetail.reponse) || ""} />
                     : <Text style={TYPO.note}>Aucune réponse textuelle n'est fournie dans ce relevé.</Text>}
                 </View>
 
@@ -402,7 +440,7 @@ export default function Scrutins() {
                   onPress={() => choisir(x.n)}
                   accessibilityRole="button"
                   accessibilityLabel={`Scrutin n°${x.n}, ${dateFr(x.d)}`}
-                  style={({ pressed }) => [s.selectionCard, x.n === selection && s.selectionCardActive, pressed && { opacity: 0.7 }]}
+                  style={({ pressed }) => [s.selectionCard, x.n === selection && s.selectionCardActive, pressed && enfonce(true)]}
                 >
                   <Text style={TYPO.micro}>{dateFr(x.d)} · n° {x.n}</Text>
                   <Text numberOfLines={3} style={s.selectionTitre}>{titreLisible(x.t)}</Text>
@@ -496,5 +534,6 @@ const s = feuille(() => StyleSheet.create({
   positionNom: { flex: 1, fontSize: 15, lineHeight: 20, color: couleurs.encre },
   positionValeur: { fontSize: 14, lineHeight: 19, fontWeight: "700", color: couleurs.sourd },
   absence: { backgroundColor: couleurs.voile, borderRadius: RAYON.bloc, padding: PAS * 4, gap: PAS, },
+  boutonSecondaire: { minHeight: 48, borderRadius: RAYON.pastille, alignItems: "center", justifyContent: "center", paddingHorizontal: PAS * 5, backgroundColor: couleurs.voile },
   reponseBloc: { backgroundColor: couleurs.carte, borderRadius: RAYON.carte, padding: PAS * 5, gap: PAS * 3, ...OMBRE },
 }));

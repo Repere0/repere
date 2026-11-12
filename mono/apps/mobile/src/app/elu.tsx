@@ -51,6 +51,7 @@ import { useApparition } from "../ui/mouvement";
 import { AvatarElu, CreditPhoto } from "../ui/avatar";
 import { usePhotoElu } from "../lib/photos";
 import { useSelection } from "../lib/selection";
+import { enfonce } from "../ui/mouvement";
 
 type Params = { nom?: string; role?: string; echelon?: string; niveau?: string; institution?: string; lieu?: string };
 type Scrutin = { n: string; t: string; d: string; sl?: string; dec?: unknown };
@@ -68,7 +69,7 @@ const HISTO = 10;
 function Lien({ texte, onPress, etiquette }: { texte: string; onPress: () => void; etiquette?: string }) {
   return (
     <Pressable onPress={onPress} accessibilityRole="button" accessibilityLabel={etiquette ?? texte}
-      style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", alignSelf: "flex-start", opacity: pressed ? 0.7 : 1 })}>
+      style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", alignSelf: "flex-start", ...enfonce(pressed) })}>
       <Text style={{ color: couleurs.lien, fontWeight: "500", fontSize: 15 }}>{texte}</Text>
     </Pressable>
   );
@@ -130,7 +131,7 @@ function FeuilleVote({ f, nom, resume, base, onFermer }: { f: FaitElu | null; no
           )}
           {lien ? <Lien texte="Voir le scrutin sur le site de l'Assemblée" etiquette={`${lien.texte}, ouvre un site externe`} onPress={() => Linking.openURL(lien.url)} /> : null}
           <Pressable onPress={onFermer} accessibilityRole="button"
-            style={({ pressed }) => ({ minHeight: CIBLE, alignItems: "center", justifyContent: "center", borderRadius: 999, borderWidth: 1, borderColor: couleurs.trait, marginTop: PAS * 2, opacity: pressed ? 0.7 : 1 })}>
+            style={({ pressed }) => ({ minHeight: CIBLE, alignItems: "center", justifyContent: "center", borderRadius: 999, borderWidth: 1, borderColor: couleurs.trait, marginTop: PAS * 2, ...enfonce(pressed) })}>
             <Text style={[TYPO.corps, { fontWeight: "500" }]}>Fermer</Text>
           </Pressable>
         </ScrollView>
@@ -330,7 +331,7 @@ export default function Elu() {
             </Details>
             {/* NIVEAU 3 (« Tout voir ») : méthode, dates de relevé, source officielle. */}
             <Pressable onPress={() => setTout(true)} accessibilityRole="button" accessibilityLabel={`Tout voir sur ${nom} : méthode, sources, lien officiel`}
-              style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", alignSelf: "flex-start", opacity: pressed ? 0.7 : 1 })}>
+              style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", alignSelf: "flex-start", ...enfonce(pressed) })}>
               <Text style={TYPO.note}>Tout voir : méthode et sources</Text>
             </Pressable>
             <ModaleExhaustif titre={`Fiche de ${nom}`} visible={tout} onFermer={() => setTout(false)} sections={[
@@ -342,7 +343,7 @@ export default function Elu() {
               { titre: "Ce que Repère n'affiche pas", contenu: "Le patrimoine des élus, et leur présence ou absence aux séances, ne figurent jamais." },
               { titre: "Lien officiel", contenu: lienElus
                   ? <Pressable onPress={() => Linking.openURL(lienElus)} accessibilityRole="link" accessibilityLabel="Le répertoire des élus, sur le site officiel, ouvre un site externe"
-                      style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", opacity: pressed ? 0.7 : 1 })}>
+                      style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", ...enfonce(pressed) })}>
                       <Text style={TYPO.corps}>Le répertoire des élus, sur le site officiel (site externe)</Text>
                     </Pressable>
                   : "Aucun lien officiel publié." },

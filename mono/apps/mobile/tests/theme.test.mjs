@@ -336,3 +336,16 @@ test("photos — tout écran qui montre une photo d'élu en montre le crédit", 
   }
   assert.deepEqual(fautes, [], fautes.join(" | "));
 });
+
+/* ---- 12/11/2026 : les douze couleurs de groupes restent douze teintes distinctes ---- */
+test("groupes — aucune paire de couleurs trop proche (distance RVB >= 60), sinon l'hémicycle devrait cerner un groupe", async () => {
+  const { COULEURS_GROUPES } = await import("../src/lib/palette.ts");
+  const rvb = h => [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16));
+  const noms = Object.keys(COULEURS_GROUPES);
+  assert.equal(noms.length, 12);
+  for (let i = 0; i < noms.length; i++) for (let j = i + 1; j < noms.length; j++) {
+    const a = rvb(COULEURS_GROUPES[noms[i]]), b = rvb(COULEURS_GROUPES[noms[j]]);
+    const d = Math.hypot(...a.map((v, k) => v - b[k]));
+    assert.ok(d >= 60, `${noms[i]} et ${noms[j]} sont trop proches (${d.toFixed(0)})`);
+  }
+});
