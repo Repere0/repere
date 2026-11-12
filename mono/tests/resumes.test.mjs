@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { resumeAffichable, MENTION_RESUME } from "../packages/core/src/index.js";
+import { resumeAffichable, mentionResume } from "../packages/core/src/index.js";
 
 const bon = { valide: true, resume: "Le texte crée une aide.", source: { producteur: "Assemblée nationale", url: "https://www.assemblee-nationale.fr/x", releve_le: "2026-11-12" } };
 test("résumé — affiché seulement validé, avec source https et date", () => {
@@ -13,5 +13,6 @@ test("résumé — affiché seulement validé, avec source https et date", () =>
   assert.equal(resumeAffichable(null), null);
 });
 test("résumé — la mention d'assistance IA est écrite en toutes lettres", () => {
-  assert.match(MENTION_RESUME, /assistance d'une IA/);
+  assert.equal(mentionResume("Assemblée nationale"), "Résumé généré avec l'aide de l'IA à partir des données officielles de l'Assemblée nationale.");
+  assert.match(mentionResume("Sénat"), /avec l'aide de l'IA/);
 });

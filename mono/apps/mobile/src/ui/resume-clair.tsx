@@ -2,7 +2,7 @@
  * aucun résumé validé n'existe. Tant que `resume` n'est pas validé (core `resumeAffichable`), l'écran dit
  * « Pas encore de résumé » et renvoie vers le texte officiel (invariant 5). La mention IA est toujours écrite. */
 import { Linking, Pressable, Text, View } from "react-native";
-import { dateFr, MENTION_RESUME, PAS_DE_RESUME, resumeAffichable } from "@repere/core";
+import { dateFr, mentionResume, PAS_DE_RESUME, resumeAffichable } from "@repere/core";
 import { couleurs, CIBLE, PAS, POLICE, RAYON, TYPO } from "../lib/theme";
 import { Vide } from "../lib/composants";
 import { enfonce } from "./mouvement";
@@ -18,7 +18,7 @@ export function ResumeClair({ resume, lienOfficiel }: { resume: Resume; lienOffi
     <View style={{ gap: PAS * 2, padding: PAS * 4, borderRadius: RAYON.carte, backgroundColor: couleurs.carte }}>
       <Text style={TYPO.etiquette} accessibilityRole="header">En clair</Text>
       <Text style={TYPO.corps}>{r.texte}</Text>
-      <Text style={TYPO.micro}>{MENTION_RESUME}</Text>
+      <Text style={TYPO.micro}>{mentionResume(r.producteur)}</Text>
       <Pressable onPress={() => Linking.openURL(r.url)} accessibilityRole="link"
         accessibilityLabel={`Lire le texte officiel${r.producteur ? ` (${r.producteur})` : ""}, ouvre un site externe`}
         style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", alignSelf: "flex-start", ...enfonce(pressed) })}>
