@@ -10,7 +10,8 @@ const ok = (c, m) => { console.log((c ? "ok    " : "ECHEC ") + m); if (!c) echec
 const nav = await chromium.launch();
 const ctx = await nav.newContext({ viewport: { width: 390, height: 844 } });
 const page = await ctx.newPage();
-const erreurs = []; page.on("pageerror", e => erreurs.push(String(e)));
+let coupe = false;
+const erreurs = []; page.on("pageerror", e => { const m = String(e); if (!(coupe && /NetworkError|Failed to fetch|Load failed/.test(m))) erreurs.push(m); }); // une requete en vol coupee par la coupure simulee n'est pas un defaut
 // Les hebergeurs (Vercel) n'envoient jamais un dossier node_modules : polices et icones y repondaient 404.
 const assets = []; page.on("response", r => { if (r.url().includes("/assets/")) assets.push({ u: r.url(), s: r.status() }); });
 await page.goto(BASE, { waitUntil: "networkidle" });
@@ -32,6 +33,7 @@ ok(etat.cles.includes("/index.html") && etat.cles.some(c => c.startsWith("/_expo
 ok(!etat.cles.some(c => c.startsWith("/data/")), "aucune donnée dans le cache du service worker");
 ok(await page.evaluate(() => document.querySelector('link[rel="manifest"]') && document.querySelector('meta[name="apple-mobile-web-app-capable"]') ? true : false), "manifeste et balise iOS présents");
 
+coupe = true;
 await ctx.setOffline(true);
 await page.reload({ waitUntil: "domcontentloaded" }).catch(() => {});
 await page.waitForTimeout(3000);

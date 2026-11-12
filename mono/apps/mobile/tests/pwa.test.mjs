@@ -78,8 +78,8 @@ test("Vercel relié à Git : les réglages de build vivent dans vercel.json, app
   const v = JSON.parse(readFileSync(new URL("../vercel.json", import.meta.url), "utf8"));
   assert.equal(v.buildCommand, "npm run build:web");
   assert.equal(v.outputDirectory, "dist");
-  assert.match(v.installCommand, /pnpm@8\.15\.9 install --frozen-lockfile/);
-  assert.match(v.installCommand, /extract/, "les données sont absentes du dépôt : il faut les extraire");
+  assert.equal(v.installCommand, "npm ci --no-audit --no-fund", "apps/mobile est hors de l espace pnpm : npm ci sur son verrou");
+  assert.ok(!/pnpm/.test(v.installCommand + v.buildCommand), "aucun pnpm : mobile a sa propre installation");
   assert.equal(app.expo.web.bundler, "metro");
   assert.equal(app.expo.web.output, "single");
 });

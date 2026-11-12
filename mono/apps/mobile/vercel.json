@@ -1,6 +1,6 @@
 {
   "framework": null,
-  "installCommand": "cd ../.. && npx pnpm@8.15.9 install --frozen-lockfile && npx pnpm@8.15.9 extract",
+  "installCommand": "npm ci --no-audit --no-fund",
   "buildCommand": "npm run build:web",
   "outputDirectory": "dist",
   "rewrites": [
