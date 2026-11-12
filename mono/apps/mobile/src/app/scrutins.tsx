@@ -23,6 +23,7 @@ import {
   chargerScrutinLot,
   ETATS,
 } from "../lib/donnees";
+import { BoutonCopierLien } from "../ui/partage/partager-texte";
 import { Page } from "../ui/page";
 import { ResumeClair } from "../ui/resume-clair";
 import { Hemicycle } from "../ui/hemicycle";
@@ -322,7 +323,7 @@ export default function Scrutins() {
 
   return (
     <Page>
-      <Stack.Screen options={{ title: "Scrutins publics" }} />
+      <Stack.Screen options={{ title: "Scrutins publics", headerRight: () => <BoutonCopierLien icone /> }} />
 
       <View style={s.intro}>
         <Text style={TYPO.question}>Les votes de l'Assemblée</Text>

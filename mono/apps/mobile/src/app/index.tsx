@@ -182,7 +182,6 @@ function CarteVote({ etiquette, nom, acteur, ligne, position, dec, date, titre, 
 /* router.push écrit en toutes lettres : le contrôle de parcours (tests/parcours.test.mjs) le lit. */
 /* Couleur de chaque tuile : celle d'un échelon (une section), jamais d'un parti (invariant 7). */
 const ACCES: { ouvrir: () => void; texte: string; etiquette: string; icone: keyof typeof Ionicons.glyphMap; couleur: string }[] = [
-  { ouvrir: () => router.push("/qui-decide"), texte: "Mes élus", etiquette: "Mes élus : qui vous représente et qui décide", icone: "people", couleur: couleurs.ville },
   /* 09/11/2026 (porteur) : la tuile ouvre la page de la présidentielle ; le guide « Ma voix » y est à un geste. */
   { ouvrir: () => router.push("/presidentielle-2027"), texte: "Présidentielle 2027", etiquette: "Présidentielle 2027 : candidats, débats, réunions publiques, comment voter", icone: "flag", couleur: couleurs.dept },
   { ouvrir: () => router.push("/pour-vous"), texte: "Pour vous", etiquette: "Pour vous : ce qui a été publié selon votre vue", icone: "bookmark", couleur: couleurs.region },
@@ -573,16 +572,17 @@ export default function Accueil() {
               ))}
             </View>
 
-            {/* Maquette Stitch : la bannière des moins de 18 ans mène au guide « Ma voix ». */}
-            <Pressable onPress={() => router.push("/presidentielle-2027")} accessibilityRole="link"
-              accessibilityLabel="Vous avez moins de 18 ans ? Comment on vote, et quand : ouvre Ma voix"
+            {/* 12/11/2026 (porteur) : le quiz, bien visible. Remplace la bannière « moins de 18 ans », qui menait à la même page que la
+                tuile « Présidentielle 2027 » (doublon) ; le guide « Ma voix » reste à un geste sur cette page. */}
+            <Pressable onPress={() => router.push("/quiz")} accessibilityRole="link"
+              accessibilityLabel="Testez votre culture civique : jouer au quiz"
               style={({ pressed }) => [s.jeunes, pressed && enfonce(true)]}>
-              <Ionicons name="sparkles-outline" size={20} color={ACCENTS.autorite} accessible={false} importantForAccessibility="no" />
+              <Ionicons name="school-outline" size={22} color={ACCENTS.autorite} accessible={false} importantForAccessibility="no" />
               <View style={{ flex: 1 }}>
-                <Text style={s.tuileTexte}>Vous avez moins de 18 ans ?</Text>
-                <Text style={s.note}>Comment on vote, et quand.</Text>
+                <Text style={s.tuileTexte}>Testez votre culture civique</Text>
+                <Text style={s.note}>Quatre définitions, une seule juste.</Text>
               </View>
-              <Ionicons name="chevron-forward" size={18} color={D.sourd} accessible={false} importantForAccessibility="no" />
+              <Text style={[s.tuileTexte, { color: ACCENTS.autorite }]}>Jouer ›</Text>
             </Pressable>
 
             {/* V37 bloc 6 : le rappel de la prochaine élection, s'il tombe dans les 180 jours. */}

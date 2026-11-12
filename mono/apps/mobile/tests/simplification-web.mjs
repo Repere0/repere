@@ -78,7 +78,7 @@ const photo = async (page, nom) => { if (CAP) await page.screenshot({ path: `${C
   const titres = Object.values(GLOSSAIRE).map(m => m.titre);
   const bonneDe = enonce => { const m = enonce.match(/« (.+) »/); const e = Object.values(GLOSSAIRE).find(x => x.titre === m[1]); return definitionCourte(e.corps); };
   const premiereQuestion = async () => {
-    await page.goto(BASE + "/dictionnaire", { waitUntil: "networkidle" });
+    await page.goto(BASE + "/quiz", { waitUntil: "networkidle" });
     await page.getByRole("radio").first().waitFor({ timeout: 15000 });
     return (await page.getByRole("heading").filter({ hasText: /^Qu'est-ce que/ }).first().innerText()).trim();
   };
@@ -115,8 +115,8 @@ const photo = async (page, nom) => { if (CAP) await page.screenshot({ path: `${C
   const cles = await page.evaluate(() => Object.keys(localStorage).concat(Object.keys(sessionStorage)));
   verifier(!cles.some(k => /quiz|serie|série|streak|score/i.test(k)), "quiz : rien n'est enregistré sur l'appareil (invariant 2)");
   verifier(await page.getByText(/bonne réponse|mauvaise réponse|bravo|score/i).count() === 0, "quiz : aucun vocabulaire de récompense ni de score");
-  await page.getByRole("tab", { name: "Les mots" }).click();
-  verifier(await page.getByLabel("Rechercher un mot du dictionnaire").first().isVisible(), "dictionnaire : la liste des mots reste à un geste");
+  await page.goto(BASE + "/dictionnaire", { waitUntil: "networkidle" });
+  verifier(await page.getByLabel("Rechercher un mot du dictionnaire").first().isVisible(), "dictionnaire : la liste des mots a son écran, sans quiz");
   verifier(erreurs.length === 0, "quiz : aucune erreur JavaScript" + (erreurs[0] ? " : " + erreurs[0] : ""));
   await contexte.close();
 }

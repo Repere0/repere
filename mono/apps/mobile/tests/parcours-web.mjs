@@ -366,12 +366,10 @@ for (const largeur of [360, 390, 430]) {
   await page.getByRole("button", { name: /^Bassevelle,/ }).first().click();
   await page.getByText("Aller plus loin").first().waitFor({ timeout: 15000 });
   await page.getByRole("button", { name: "Dictionnaire citoyen", exact: true }).first().click();
-  /* 12/11/2026 : le dictionnaire s'ouvre sur le quiz ; la liste des mots est à un geste (onglet « Les mots »). */
-  await page.getByRole("radio").first().waitFor({ timeout: 8000 });
-  await page.getByRole("tab", { name: "Les mots" }).click();
+  /* 12/11/2026 : le quiz a son propre écran (/quiz) ; le dictionnaire ne montre que la liste des mots. */
   const champ = page.getByLabel("Rechercher un mot du dictionnaire").first();
   await champ.waitFor({ timeout: 8000 });
-  verifier(await champ.isVisible(), "le dictionnaire s'ouvre depuis « Aujourd'hui » (Aller plus loin) : quiz d'abord, liste des mots à un geste");
+  verifier(await champ.isVisible(), "le dictionnaire s'ouvre depuis « Aujourd'hui » (Aller plus loin) : la liste des mots, sans quiz");
   await page.close();
 }
 /* HORS D'ILE-DE-FRANCE — 08/10/2026 : une commune d'ailleurs n'est jamais dite

@@ -1,0 +1,24 @@
+// Le quiz a son propre écran, atteignable depuis l'accueil (12/11/2026). Usage : node apps/mobile/tests/quiz-ecran-web.mjs http://localhost:8811
+import { createRequire } from "node:module";
+const { chromium } = createRequire(process.cwd() + "/")("playwright");
+const BASE = process.argv[2] || "http://localhost:8811";
+let echecs = 0;
+const ok = (c, m) => { console.log((c ? "ok    " : "ECHEC ") + m); if (!c) echecs++; };
+const nav = await chromium.launch();
+const page = await (await nav.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true })).newPage();
+await page.addInitScript(() => localStorage.setItem("repere.profil", JSON.stringify({ tailleTexte: 16, espacement: 1.5, contraste: "normal", policeDyslexie: false, animationsReduites: true, modeDaltonien: false, masquerImages: false })));
+await page.goto(BASE + "/", { waitUntil: "networkidle" });
+await page.getByRole("link", { name: /Testez votre culture civique/ }).first().click();
+await page.getByRole("radio").first().waitFor({ timeout: 15000 });
+ok(/\/quiz$/.test(page.url()), "la carte de l'accueil ouvre /quiz (" + page.url() + ")");
+ok(await page.getByRole("radio").count() === 4, "quatre propositions");
+ok(await page.getByRole("progressbar").count() === 1, "une barre de progression");
+ok(await page.getByText("Série : à vous de jouer").count() === 1, "la série part de zéro, en mémoire");
+const cles = await page.evaluate(() => Object.keys(localStorage));
+ok(cles.every(k => ["repere.departement", "repere.profil"].includes(k)), "aucune clé de stockage en plus (" + cles.join(",") + ")");
+await page.goto(BASE + "/dictionnaire", { waitUntil: "networkidle" });
+await page.getByLabel("Rechercher un mot du dictionnaire").first().waitFor({ timeout: 15000 });
+ok(await page.getByRole("radio").count() === 0, "le dictionnaire ne contient plus le quiz");
+await nav.close();
+console.log(echecs ? `quiz : ${echecs} échec(s)` : "quiz : zéro échec");
+process.exit(echecs ? 1 : 0);

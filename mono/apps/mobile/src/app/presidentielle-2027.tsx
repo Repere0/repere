@@ -12,7 +12,7 @@
  * Les candidats gardent l'ordre du fichier, celui de la liste officielle : jamais triés (invariant 3).
  * Ni couleur de parti ni photo ici (invariant 7, D27) : initiales sur fond neutre. */
 import { useState } from "react";
-import { Linking, Pressable, Text, View } from "react-native";
+import { Linking, Pressable, ScrollView, Text, useWindowDimensions, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { Stack } from "expo-router";
 import { SquelettesListe } from "../ui/squelette";
@@ -140,6 +140,8 @@ const Section = ({ titre }: { titre: string }) => <Text style={[TYPO.section, { 
 export default function Presidentielle2027() {
   const [onglet, setOnglet] = useState<Onglet>("candidats");
   const d = usePresidentialData();
+  const { width: largeurEcran } = useWindowDimensions();
+  const largeurCarte = Math.min(Math.round(largeurEcran * 0.82), 360);
   const videDebats = d.charge && d.lus.debats && d.debats.length === 0;
   const videMeetings = d.charge && d.lus.meetings && d.meetings.length === 0;
   const onglets = ONGLETS.filter(o => !(o.cle === "debats" && videDebats) && !(o.cle === "meetings" && videMeetings));
@@ -218,7 +220,12 @@ export default function Presidentielle2027() {
                 </Text>
               </View>
             ) : null}
-            {d.candidats.map(c => <CarteCandidat key={c.id} c={c} />)}
+            {/* Carrousel (12/11/2026, porteur) : on fait glisser de gauche à droite ; l'ordre reste alphabétique. */}
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} decelerationRate="fast" snapToInterval={largeurCarte + PAS * 3}
+              accessibilityLabel={`${d.candidats.length} candidat${d.candidats.length > 1 ? "s" : ""}, à faire défiler`}
+              contentContainerStyle={{ gap: PAS * 3 }}>
+              {d.candidats.map(c => <View key={c.id} style={{ width: largeurCarte }}><CarteCandidat c={c} /></View>)}
+            </ScrollView>
           </View>
         )
       ) : null}
