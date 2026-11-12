@@ -353,9 +353,8 @@ export default function Argent() {
                             resteTexte={`${euros(f.reste as number)}, financement non détaillé par la source`} />
                         </Resume>
                       ) : null}
-                      {/* 12/11/2026 (audit des doublons) : la phrase « L'État a engagé X € » répétait le montant de la barre ;
-                          elle ne reste que si la barre n'est pas affichée (coût non publié). */}
-                      {f && f.partPct !== null && cout ? null : <Text style={TYPO.note}>{phraseProjetLocal(p, nom)}</Text>}
+                      {/* Gardée malgré la répétition du montant : c'est la phrase du site, contrôlée par tests/meme-verite.mjs. */}
+                      <Text style={TYPO.note}>{phraseProjetLocal(p, nom)}</Text>
                       {noteRattachement(p) ? <Text style={TYPO.note}>{noteRattachement(p)}</Text> : null}
                       <Depli titre={`Qu'est-ce que l'aide ${p.dispositif} ?`}>
                         <Text style={TYPO.corps}>{nomDispositif(r.projets, p.dispositif)} : l'une des aides de l'État à l'investissement des collectivités recensées par la Direction générale des collectivités locales.</Text>
