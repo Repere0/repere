@@ -34,3 +34,25 @@ test("vercel.json : tout va vers index.html sauf data/, _expo/, assets/", () => 
   for (const ok of ["/elu", "/scrutins/12", "/recherche"]) assert.ok(re.test(ok), ok);
   for (const non of ["/data/communes.json", "/_expo/static/js/web/x.js", "/assets/a.png"]) assert.ok(!re.test(non), non);
 });
+
+test("le service worker : liste et version écrites, /data/ jamais intercepté", async () => {
+  const { preparerSw } = await import("../scripts/pwa.mjs");
+  const src = readFileSync(new URL("../public/sw.js", import.meta.url), "utf8");
+  const a = preparerSw(src, ["/", "/index.html", "/_expo/a.js"]);
+  assert.ok(!a.includes("__VERSION__") && a.includes('"/_expo/a.js"'));
+  assert.notEqual(a, preparerSw(src, ["/", "/index.html", "/_expo/b.js"]), "la version doit suivre la liste");
+  assert.ok(/pathname\.startsWith\("\/data\/"\)/.test(src), "les données doivent passer sans cache (invariants 2 et 9)");
+  assert.throws(() => preparerSw("const VERSION = 1;", []));
+});
+
+test("la garde voit l'enregistrement du service worker manquant", () => {
+  const h = injecterBalises(HTML, app);
+  assert.ok(h.includes("serviceWorker.register('/sw.js')"));
+  assert.ok(manques(h.replace("serviceWorker.register('/sw.js')", ""), construireManifeste(app)).length > 0);
+});
+
+test("vercel.json : sw.js jamais gardé par le CDN", () => {
+  const v = JSON.parse(readFileSync(new URL("../vercel.json", import.meta.url), "utf8"));
+  const h = v.headers.find(x => x.source === "/sw.js");
+  assert.match(h.headers[0].value, /no-cache/);
+});
