@@ -26,7 +26,7 @@ export default function Groupe() {
       <Page sansDate>
         <Stack.Screen options={{ title: titre }} />
         <Question etiquette="Groupe à l'Assemblée nationale" question={titre} />
-        <Vide titre="La liste des députés par groupe n'est pas encore sur ce téléphone." corps="Elle vient de la table des groupes de l'Assemblée nationale, publiée chaque matin par Repère." />
+        <Vide titre="La liste des députés par groupe n'est pas encore sur cet appareil." corps="Elle vient de la table des groupes de l'Assemblée nationale, publiée chaque matin par Repère." />
       </Page>
     );
   }

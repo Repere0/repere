@@ -49,7 +49,6 @@ import { AvecDonnees, Page } from "../../ui/page";
 import { PastilleSource } from "../../ui/source";
 import { BandeauRepere } from "../../ui/bandeau-repere";
 import { repereDuJourPour } from "../../lib/repere-jour";
-import { useNiveauZoom } from "../../ui/badge-zoom";
 import { Etiquette } from "../../ui/resume";
 import { Plus, Reponse, typo } from "../../ui/reponse";
 import { BarrePart, Repartition } from "../../ui/visuels";
@@ -94,7 +93,6 @@ function SiteMairie({ insee }: { insee: string }) {
 export default function ChezVous() {
   const { choix } = useSelection();
   const { reessayer } = useCommuneChoisie();
-  const niveauZoom = useNiveauZoom();
   const COULEUR = useCouleurVote();
   const groupes = useGroupes();
   return (
@@ -111,7 +109,7 @@ export default function ChezVous() {
       const rep = vote ? repartitionVote(vote.sc) : null;
       const hab = d.exercice ? parHabitant(d.exercice.ex) : null;
       /* LE REPÈRE DU JOUR (V51, V52) : le bandeau et sa page lisent les mêmes faits (lib/repere-jour). */
-      const { faits: repereDuJour, sources: sourcesRepere } = repereDuJourPour(r, nom, choix ? choix.insee : "", niveauZoom);
+      const { faits: repereDuJour, sources: sourcesRepere } = repereDuJourPour(r, nom, choix ? choix.insee : "", "france");
       const maire = d.fiche && d.fiche.maire && d.fiche.maire.nom ? d.fiche.maire.nom : null;
       /* Refonte (porteur, 09/11/2026) : le texte voté, en clair, sous la phrase ; la position dans une
          pastille aux couleurs du vote (le mot reste écrit). Commune partagée : pas de député désigné. */

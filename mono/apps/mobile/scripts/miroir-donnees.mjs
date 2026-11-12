@@ -10,7 +10,7 @@ export const BASE_PUBLIQUE = "https://repereapp.netlify.app/data";
 export const FICHIERS = [
   "scrutins-index.json", "scrutins-solennels.json", "scrutins-solennels-recents.json",
   "questions-gouvernement-index.json", "agenda-an.json", "calendrier-senat.json", "actuelles-rss.json",
-  "actus-hebdo.json", "deputes-groupes.json", "mairies-idf.json", "agregats-regionaux.json",
+  "actus-hebdo.json", "codes-postaux.json", "deputes-groupes.json", "mairies-idf.json", "agregats-regionaux.json",
 ];
 const LOTS = ["scrutins-details", "questions-gouvernement"];
 const MAX_LOTS = 400;

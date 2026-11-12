@@ -23,8 +23,6 @@ import { AvecDonnees, Page, Question } from "../../ui/page";
 import { PastilleSource } from "../../ui/source";
 import { CarteElu, Chaine, Depli, type Niveau } from "../../ui/visuels";
 import { prefetDeRegion } from "../../lib/prefet";
-import { BadgeZoom, useNiveauZoom } from "../../ui/badge-zoom";
-import { visibleAuNiveau } from "@repere/core";
 import { useSelection } from "../../lib/selection";
 import { mandatsTerminesListes } from "../../lib/mandats-termines";
 import { useDecoupage } from "../../lib/decoupage";
@@ -59,7 +57,6 @@ export default function QuiDecide() {
   const [ouverts, setOuverts] = useState<Set<Echelon>>(() => new Set<Echelon>(["ville"]));
   const [sujet, setSujet] = useState<string | null>(null);
   const basculer = (e: Echelon) => setOuverts(o => { const n = new Set(o); if (n.has(e)) n.delete(e); else n.add(e); return n; });
-  const niveauZoom = useNiveauZoom();
   /* V59 (bloc 1.1) : le nom de l'intercommunalité vient du découpage officiel quand la fiche ne le porte pas. */
   const decoupage = useDecoupage(choix ? choix.insee : null);
   return (
@@ -146,13 +143,11 @@ export default function QuiDecide() {
         }
         return n;
       });
-      /* V26 bloc 2 : le niveau de zoom filtre la chaîne, sans rien retirer des données. */
-      const visibles = niveaux.filter(n => visibleAuNiveau(niveauZoom, n.echelon));
+      const visibles = niveaux;
       const prefet = prefetDeRegion(d.dep);
       return (
         <Page>
           <Stack.Screen options={{ title: LIBELLES.qui }} />
-          <BadgeZoom />
           <Question etiquette="Qui décide" question={`Qui décide pour ${d.nomCommune} ?`}
             sous="Du plus proche de chez vous au plus lointain. Ce n'est pas un ordre d'importance : c'est un ordre de distance." />
           {/* L'aiguilleur : quatre sujets, un geste chacun. */}
@@ -200,7 +195,7 @@ export default function QuiDecide() {
           {/* 12/11/2026 (porteur) : le préfet est une carte comme les autres élus ; la source et le contrôle
               sont repliés derrière une icône, plus de pavé de texte. La précision « pas le préfet de votre
               département » reste visible : elle empêche une lecture fausse. */}
-          {prefet && visibleAuNiveau(niveauZoom, "region") ? (
+          {prefet ? (
             <View style={{ gap: PAS * 2 }}>
               <Text style={TYPO.etiquette}>L'État · Préfet de région</Text>
               <CarteElu nom={prefet.nom} role="Préfet de région" echelon="france"

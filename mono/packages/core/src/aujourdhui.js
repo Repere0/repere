@@ -60,7 +60,11 @@ export function semaineParlement({ cal, agendaAN, maintenant }) {
       const points = [e.titre, ...String(e.description || "").replace(/^Également à l'ordre du jour\s*:\s*/, "").split(" ; ")]
         .map(t => String(t || "").trim()).filter(Boolean);
       for (const t of points) {
-        if (/^Vote solennel\b/.test(t)) votesSolennels.push({ debut: e.debut, institution: inst, texte: t, source: donnees.source || {} });
+        /* LE COMPTEUR DE VOTES SUIT LE CALENDRIER — 12/11/2026. La fiche annoncait « 1 vote solennel cette
+           semaine » pour un vote déjà passé ce matin, alors que le calendrier (qui ne liste que ce qui est
+           encore à venir) affichait « Tout 0 ». Un vote annoncé est un vote pas encore tenu, à l'heure de
+           Paris, comme `aVenir` ci-dessous. Les séances, elles, restent comptées sur le jour entier. */
+        if (/^Vote solennel\b/.test(t) && String(e.debut || "").slice(0, 16) >= minuteParis(now)) votesSolennels.push({ debut: e.debut, institution: inst, texte: t, source: donnees.source || {} });
       }
     }
   }

@@ -20,17 +20,15 @@ import { BoutonPartageTexte, ligneSource } from "../ui/partage/partager-texte";
 import { Plus } from "../ui/reponse";
 import { PartagerCarte } from "../ui/partage/bouton-partage";
 import { RepereDuJourStory } from "../ui/partage-repere-du-jour";
-import { useNiveauZoom } from "../ui/badge-zoom";
 import { enfonce } from "../ui/mouvement";
 
 export default function RepereDuJourEcran() {
   const { choix } = useSelection();
   const [explication, setExplication] = useState(false);
-  const niveauZoom = useNiveauZoom();
   return (
     <AvecDonnees rendu={r => {
       const nom = r.d.nomCommune;
-      const { faits, sources } = repereDuJourPour(r, nom, choix ? choix.insee : "", niveauZoom);
+      const { faits, sources } = repereDuJourPour(r, nom, choix ? choix.insee : "", "france");
       const affichables = faitsAffichables(faits, sources);
       const producteurs = [...new Set(affichables.map(x => x.src.producteur).filter(Boolean))];
       const publie = datePublication(r.index);

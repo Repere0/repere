@@ -17,12 +17,11 @@ import { useEffect, useMemo, useState } from "react";
 import { FlatList, KeyboardAvoidingView, Linking, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View, useWindowDimensions } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { router, useLocalSearchParams } from "expo-router";
-import { mots, motsCible, correspond, trouverCommunes, departementDe, titreLisible, dernierExercice, evolution, parHabitant, dateFr, decompte, ordinal, positionSur, positionsFiables, visibleAuNiveau } from "@repere/core";
-import { chargerCatalogueScrutins, chargerCommunesBeta, chargerDepartement, chargerDeputes, chargerIndex, chargerVotes, ETATS, PHRASES } from "../lib/donnees";
+import { mots, motsCible, correspond, chercherCommunes, departementDe, titreLisible, dernierExercice, evolution, parHabitant, dateFr, decompte, ordinal, positionSur, positionsFiables } from "@repere/core";
+import { chargerCatalogueScrutins, chargerCodesPostaux, chargerCommunesBeta, chargerDepartement, chargerDeputes, chargerIndex, chargerVotes, ETATS, PHRASES } from "../lib/donnees";
 import { Bouton, Carte, Texte, Vide } from "../lib/composants";
 import { useSelection } from "../lib/selection";
 import { useProfil } from "../lib/profil";
-import { BadgeZoom, useNiveauZoom } from "../ui/badge-zoom";
 import { feuille, ACCENTS, CIBLE, couleurs, FILET_TUILE, JAUGE, OMBRE, PAS, POLICE, RAYON, TYPO } from "../lib/theme";
 import { useTheme } from "../lib/themeChoix";
 import { Decideurs } from "../ui/decideurs";
@@ -203,9 +202,6 @@ export default function Accueil() {
   const { width } = useWindowDimensions();
   const { choix, choisir, retenue, oublier } = useSelection();
   const { absent } = useProfil();
-  const niveauZoom = useNiveauZoom();
-  /* V26 bloc 2 : le vote d'un député est une information nationale (échelon France). */
-  const voteAffiche = visibleAuNiveau(niveauZoom, "france");
   const [etat, setEtat] = useState<string>(ETATS.EN_COURS);
   const [beta, setBeta] = useState<Beta | null>(null);
   const [index, setIndex] = useState<Index | null>(null);
@@ -256,9 +252,23 @@ export default function Accueil() {
   const cherches = mots(filtre);
   /* Toutes les communes de la beta, de A a Z : l'issue d'une recherche sans resultat. */
   const toutes = useMemo(() => (tout ? [...communes].sort((a, b) => a[1].localeCompare(b[1], "fr")) : []), [tout, communes]);
-  const trouvees = trouverCommunes(communes, cherches) as Ligne[];
-  const manquante = cherches.length ? manquantes.find(([, , c]) => correspond(cherches, c)) : undefined;
-  const rien = cherches.length > 0 && trouvees.length === 0 && !manquante;
+  /* 12/11/2026 (porteur) : code postal, « st denis », faute de frappe (« melum » -> « Vouliez-vous dire Melun ? »). */
+  const [codesPostaux, setCodesPostaux] = useState<Record<string, string[]> | null>(null);
+  const cpTape = /^\d{5}$/.test(filtre.trim());
+  useEffect(() => {
+    if (!cpTape || codesPostaux) return undefined;
+    let vivant = true;
+    chargerCodesPostaux().then(r => {
+      const c = (r.donnees as { codes?: Record<string, string[]> } | null)?.codes;
+      if (vivant && c) setCodesPostaux(c);
+    });
+    return () => { vivant = false; };
+  }, [cpTape, codesPostaux]);
+  const recherche = useMemo(() => chercherCommunes(communes, filtre, { codesPostaux }), [communes, filtre, codesPostaux]);
+  const trouvees = recherche.resultats as Ligne[];
+  const suggestions = recherche.suggestions as Ligne[];
+  const manquante = cherches.length && !recherche.codePostal ? manquantes.find(([, , c]) => correspond(cherches, c)) : undefined;
+  const rien = (cherches.length > 0 || !!recherche.codePostal) && trouvees.length === 0 && !manquante && suggestions.length === 0;
   /* Le departement se lit par @repere/core (departementDe), comme sur le site :
      trois chiffres outre-mer (971...), deux ailleurs, 2A/2B en Corse. */
   const nomDep = (code: string) => {
@@ -419,7 +429,7 @@ export default function Accueil() {
                       <View style={{ gap: PAS * 2 }}>
                         <Barre parts={[{ cle: "s", valeur: repartition.sal, couleur: JAUGE.salaires }, { cle: "i", valeur: repartition.inv, couleur: JAUGE.investissement }, { cle: "a", valeur: repartition.aut, couleur: JAUGE.autres }]} />
                         <View style={{ flexDirection: "row", flexWrap: "wrap", columnGap: PAS * 4, rowGap: PAS }}>
-                          {[[JAUGE.salaires, `${repartition.sal} % salaires`], [JAUGE.investissement, `${repartition.inv} % invest.`], [JAUGE.autres, `${repartition.aut} % autres`]].map(([c, l]) => (
+                          {[[JAUGE.salaires, `${repartition.sal} € salaires`], [JAUGE.investissement, `${repartition.inv} € investissement`], [JAUGE.autres, `${repartition.aut} € autres`]].map(([c, l]) => (
                             <View key={l} style={{ flexDirection: "row", alignItems: "center", gap: PAS }}>
                               <View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: c, borderWidth: 1, borderColor: D.trait }} />
                               <Text style={s.legende}>{l}</Text>
@@ -468,7 +478,7 @@ export default function Accueil() {
                   </View>
                 </View>
               ) : null}
-              {voteAffiche ? <View style={{ width: larg }}>
+              <View style={{ width: larg }}>
                 {voteVu && "depute" in voteVu ? (
                   <CarteVote etiquette="Le dernier vote publié de votre député" nom={voteVu.depute} acteur={voteVu.acteur}
                     ligne={`Député de la ${ordinal(voteVu.circo)} circonscription · ${nomDep(departementDe(cible.insee) || "")}`}
@@ -484,10 +494,10 @@ export default function Accueil() {
                     ligne="Député de la 1re circonscription de Seine-et-Marne" position={positionExemple} dec={decExemple}
                     date={dateFr(VOTE.date)} titre={titreLisible(VOTE.titre)} exemple />
                 )}
-              </View> : null}
+              </View>
             </ScrollView>
             <View style={s.points} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
-              {(argent && voteAffiche ? [0, 1] : [0]).map(i => <View key={i} style={[s.point, page === i && s.pointActif]} />)}
+              {(argent ? [0, 1] : [0]).map(i => <View key={i} style={[s.point, page === i && s.pointActif]} />)}
             </View>
     </>
   );
@@ -535,7 +545,6 @@ export default function Accueil() {
             {/* Invariant 9 : la date des données reste visible, en tête, sans prendre la place du contenu. */}
             <View style={{ flexDirection: "row", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", columnGap: PAS * 3 }}>
               <DatePublication />
-              <BadgeZoom />
             </View>
             {/* LE PITCH : une citation, en grand. Demande du CEO (30/10/2026) : elle remplace le paragraphe.
                 07/11/2026 (porteur) : titre court, les deux questions du produit, mot pour mot. */}
@@ -582,7 +591,7 @@ export default function Accueil() {
             {premiere ? null : cartes}
 
             {retenue && nomRetenue ? (
-              <Carte echelon="ville" titre="Votre commune, sur ce téléphone">
+              <Carte echelon="ville" titre="Votre commune, sur cet appareil">
                 <Texte fort>{nomRetenue}</Texte>
                 <Bouton texte={`Voir ce qui se passe à ${nomRetenue}`} onPress={() => ouvrir(retenue.c, nomRetenue)} />
                 <Bouton texte={`Oublier ${nomRetenue}`} discret onPress={oublier} />
@@ -662,7 +671,7 @@ export default function Accueil() {
                 </Pressable>
                 {/* V29 bloc 1 (audit D51) : phrase retirée de l'accueil en V20, réintégrée au niveau 2. */}
                 <Details titre="Repère ne sait pas qui vous êtes" couleur={D.encre} lien={D.encre}>
-                  <Text style={[s.note, { color: D.sourd }]}>Pour afficher votre commune, il télécharge le fichier public de tout votre département, et ne garde votre commune sur ce téléphone que si vous le lui demandez.</Text>
+                  <Text style={[s.note, { color: D.sourd }]}>Pour afficher votre commune, il télécharge le fichier public de tout votre département, et ne garde votre commune sur cet appareil que si vous le lui demandez.</Text>
                 </Details>
               </>
             ) : null}
@@ -674,7 +683,23 @@ export default function Accueil() {
                 corps="Les données publiées que Repère lit ne contiennent pas de fiche pour cette commune. Ce n'est pas une erreur de votre part, et ce n'est pas la preuve que la commune n'existe pas."
                 action="Chercher une autre commune" onAction={() => setFiltre("")} />
             ) : null}
-            {rien ? (
+            {suggestions.length ? (
+              /* Une suggestion se propose, elle ne s'applique jamais seule : un toucher met le nom dans le champ. */
+              <View accessibilityLiveRegion="polite" style={{ gap: PAS * 2 }}>
+                <Text style={s.legende}>Aucune commune ne s'écrit ainsi. Vouliez-vous dire…</Text>
+                {suggestions.map(([insee, nom]) => <Bouton key={insee} texte={nom} discret onPress={() => setFiltre(nom)} />)}
+              </View>
+            ) : null}
+            {recherche.codePostal && trouvees.length === 0 && !manquante ? (
+              recherche.codePostal.disponible
+                ? <Vide titre={`Aucune commune d'Île-de-France pour le code postal ${recherche.codePostal.saisi}.`}
+                    corps="Pendant la bêta, l'application ne couvre que l'Île-de-France. Vous pouvez aussi taper le nom de la commune."
+                    action="Effacer la recherche" onAction={() => setFiltre("")} />
+                : <Vide titre="La recherche par code postal n'est pas encore disponible."
+                    corps="Tapez le nom de la commune : Repère la retrouve même avec une faute de frappe."
+                    action="Effacer la recherche" onAction={() => setFiltre("")} />
+            ) : null}
+            {rien && !recherche.codePostal ? (
               /* 08/10/2026 : « Rien ne correspond » laissait croire que la commune
                  n'existe pas. L'application ne couvre que l'Ile-de-France pendant la
                  beta : c'est une limite de couverture, pas une absence de donnees. */
@@ -682,7 +707,7 @@ export default function Accueil() {
                 corps="Pendant la bêta, l'application ne couvre que l'Île-de-France : pour une commune d'ailleurs, les données ne sont pas encore disponibles ici. Sinon, vérifiez l'orthographe du début du nom."
                 action="Effacer la recherche" onAction={() => setFiltre("")} />
             ) : null}
-            {rien ? (
+            {rien && !recherche.codePostal ? (
               <Bouton texte="Voir toutes les communes d'Île-de-France" discret onPress={() => { setFiltre(""); setTout(true); }} />
             ) : null}
 

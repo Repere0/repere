@@ -134,12 +134,11 @@ for (const largeur of [360, 390, 430]) {
 
   /* V26 bloc 1 : premiere visite sans profil -> trois questions. On repond (rue, 18 points),
      puis on verifie que le profil est garde sur l'appareil et que l'accueil s'ouvre ensuite. */
-  await page.getByText("Question 2 sur 4").first().waitFor({ timeout: 10000 });
-  await page.getByText("Ma rue", { exact: false }).first().click();
+  await page.getByText("Question 2 sur 3").first().waitFor({ timeout: 10000 });
   await page.getByText("A 18").first().click();
   await page.getByText("Terminer", { exact: true }).first().click();
   const profil = await page.evaluate(() => localStorage.getItem("repere.profil"));
-  verifier(profil && JSON.parse(profil).niveauZoom === "rue" && JSON.parse(profil).tailleTexte === 18,
+  verifier(profil && JSON.parse(profil).tailleTexte === 18,
     "bienvenue : les réponses sont gardées dans repere.profil (" + profil + ")");
 
   await page.getByText("Aller plus loin").first().waitFor({ timeout: 15000 });
@@ -482,8 +481,8 @@ async function montantA100ms(reduit) {
   await page.getByText("Aller plus loin").first().waitFor({ timeout: 15000 });
   let st = await stockage();
   verifier(Object.keys(st.ls).filter(k => k !== "repere.profil").length === 0, "mémoire : la commune n'est pas gardée tant que le lecteur ne l'a pas demandée (le profil est à part, D45)" + JSON.stringify(st.ls));
-  await page.getByRole("button", { name: "Retenir Meaux sur ce téléphone" }).click();
-  await page.getByText(/Meaux est retenue sur ce téléphone/).waitFor({ timeout: 5000 });
+  await page.getByRole("button", { name: "Retenir Meaux sur cet appareil" }).click();
+  await page.getByText(/Meaux est retenue sur cet appareil/).waitFor({ timeout: 5000 });
   st = await stockage();
   verifier(st.ls["repere.departement"] === '{"d":"77","c":"77284"}' && Object.keys(st.ls).every(k => k === "repere.departement" || k === "repere.profil"),
     "mémoire : deux codes publics pour la commune, et seul « repere.profil » à côté (ADR 0006) " + JSON.stringify(st.ls));
@@ -498,14 +497,14 @@ async function montantA100ms(reduit) {
   await page.goto(BASE + "/", { waitUntil: "networkidle" });
   await ouvrirRecherche(page);
   await page.getByText("Où habitez-vous ?").waitFor({ timeout: 10000 });
-  verifier(await page.getByText("Votre commune, sur ce téléphone").count() === 0, "mémoire : oubliée, elle n'est plus proposée");
+  verifier(await page.getByText("Votre commune, sur cet appareil").count() === 0, "mémoire : oubliée, elle n'est plus proposée");
   /* Une valeur trafiquee n'est jamais affichee : elle est effacee. */
   await page.evaluate(() => localStorage.setItem("repere.departement", '{"d":"77","c":"<script>"}'));
   await page.goto(BASE + "/", { waitUntil: "networkidle" });
   await ouvrirRecherche(page);
   await page.getByText("Où habitez-vous ?").waitFor({ timeout: 10000 });
   st = await stockage();
-  verifier(Object.keys(st.ls).length === 0 && await page.getByText("Votre commune, sur ce téléphone").count() === 0,
+  verifier(Object.keys(st.ls).length === 0 && await page.getByText("Votre commune, sur cet appareil").count() === 0,
     "mémoire : une valeur mal formée est effacée, jamais affichée");
   /* Un departement qui n'est pas celui de la commune (07/10/2026) : « 97 » pour
      97101 passait, parce que seuls les deux premiers chiffres etaient compares. */
@@ -514,7 +513,7 @@ async function montantA100ms(reduit) {
   await ouvrirRecherche(page);
   await page.getByText("Où habitez-vous ?").waitFor({ timeout: 10000 });
   st = await stockage();
-  verifier(Object.keys(st.ls).length === 0 && await page.getByText("Votre commune, sur ce téléphone").count() === 0,
+  verifier(Object.keys(st.ls).length === 0 && await page.getByText("Votre commune, sur cet appareil").count() === 0,
     "mémoire : un département qui n'est pas celui de la commune (97 pour 97101) est effacé");
   const fautives = demandees.filter(u => adresseFautive(u) || /77284/.test(u));
   verifier(fautives.length === 0, "mémoire : aucune requête ne porte le code de la commune " + JSON.stringify(fautives));

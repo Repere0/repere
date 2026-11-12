@@ -39,6 +39,12 @@ import { SignalerErreur } from "../ui/contact";
 import { enfonce } from "../ui/mouvement";
 
 type Rapport = { l: string; v: string; d: string };
+/* Le sigle seul ne dit rien au lecteur : nom complet d'abord, sigle entre parenthèses (nom publié par la source). */
+const aideNommee = (projets: unknown, code: string) => {
+  const nom = nomDispositif(projets, code);
+  return nom && nom !== code ? `${nom} (${code})` : code;
+};
+
 type Projet = { annee: number; dispositif: string; intitule: string; subvention: number; cout?: number; ancien_code?: string };
 
 /* Le sujet entre dans le titre : deux replis « Ce que ça ne veut pas dire »
@@ -192,7 +198,7 @@ export default function Argent() {
                   <Carte echelon="ville" titre={`Zoom : un projet cofinancé, ${zoom.p.annee}`}>
                     <Text style={TYPO.reponse}>{zoom.p.intitule}</Text>
                     <JaugeCofinancement partEtat={zoom.f.partPct as number} montantEtat={euros(zoom.f.subvention)} montantTotal={total ? total.texte : euros(zoom.f.cout as number)} lieu={nom} />
-                    <Text style={TYPO.micro}>Aide {zoom.p.dispositif}. Le reste n'est pas détaillé par la source (commune et autres financeurs).</Text>
+                    <Text style={TYPO.micro}>Aide {aideNommee(r.projets, zoom.p.dispositif)}. Le reste n'est pas détaillé par la source (commune et autres financeurs).</Text>
                     <PastilleSource source={srcProjets(d, zoom.f.partPct !== null)} />
                   </Carte>
                 );
@@ -349,7 +355,7 @@ export default function Argent() {
                   const f = financementProjet(p);
                   const cout = f && f.cout ? montantCourt(f.cout) : null;
                   return (
-                    <Carte key={i} echelon="ville" titre={`${p.annee} · aide ${p.dispositif}`}>
+                    <Carte key={i} echelon="ville" titre={`${p.annee} · aide ${aideNommee(r.projets, p.dispositif)}`}>
                       <Text style={TYPO.reponse}>{p.intitule}</Text>
                       {f && f.partPct !== null && cout ? (
                         <Resume phrase={partReperee(f.partPct)

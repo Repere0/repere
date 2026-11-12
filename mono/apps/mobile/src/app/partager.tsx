@@ -214,7 +214,7 @@ export default function Partager() {
                 <Text style={{ color: couleurs.sol, fontWeight: "700" }}>Partager la carte 2 (image)</Text>
               </Pressable>
               <Pressable onPress={() => Share.share({ message })} accessibilityRole="button"
-                accessibilityLabel="Partager le texte et le lien par la feuille de partage du téléphone"
+                accessibilityLabel="Partager le texte et le lien par la feuille de partage de l'appareil"
                 style={({ pressed }) => ({ minHeight: CIBLE, borderRadius: 14, borderWidth: 1, borderColor: couleurs.trait,
                   backgroundColor: couleurs.carte, alignItems: "center", justifyContent: "center", padding: 16, opacity: pressed ? 0.6 : 1 })}>
                 <Text style={{ color: couleurs.encre, fontWeight: "700" }}>Partager le texte et le lien</Text>

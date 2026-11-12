@@ -140,6 +140,9 @@ const Section = ({ titre }: { titre: string }) => <Text style={[TYPO.section, { 
 export default function Presidentielle2027() {
   const [onglet, setOnglet] = useState<Onglet>("candidats");
   const d = usePresidentialData();
+  const videDebats = d.charge && d.lus.debats && d.debats.length === 0;
+  const videMeetings = d.charge && d.lus.meetings && d.meetings.length === 0;
+  const onglets = ONGLETS.filter(o => !(o.cle === "debats" && videDebats) && !(o.cle === "meetings" && videMeetings));
   const tour1 = ELECTIONS.find(e => e.type === "presidentielle" && e.date);
   const dans = tour1 && tour1.date ? joursAvant(tour1.date) : null;
   const nomDe = (id: string) => { const c = d.candidats.find(x => x.id === id); return c ? `${c.prenom} ${c.nom}` : null; };
@@ -172,7 +175,7 @@ export default function Presidentielle2027() {
           style={({ pressed }) => ({ minHeight: CIBLE + 4, borderRadius: RAYON.pastille, alignItems: "center", justifyContent: "center", paddingHorizontal: PAS * 5, backgroundColor: ACCENTS.autorite, ...enfonce(pressed) })}>
           <Text style={{ fontSize: 17, fontFamily: POLICE.section, color: ACCENTS.surAutorite }}>Vérifier mon inscription</Text>
         </Pressable>
-        <Text style={TYPO.micro}>Page temporaire, jusqu'au second tour. Le bouton ouvre le service officiel, sur service-public.gouv.fr.</Text>
+        <Text style={TYPO.micro}>Le bouton ouvre le service officiel, sur service-public.gouv.fr.</Text>
       </View>
 
       {/* 2. LES ÉTAPES — ce que dit la loi, et les deux dates fixées. Rien d'autre n'est daté. */}
@@ -190,7 +193,8 @@ export default function Presidentielle2027() {
 
       {/* 4. QUI SE PRÉSENTE — les fichiers publiés ; vides, ils le disent, et montrent la forme à venir. */}
       <Section titre="Candidats, débats, réunions" />
-      <Onglets etiquette="Candidats, débats, réunions publiques" valeurs={ONGLETS} actif={onglet} choisir={setOnglet} />
+      {/* 12/11/2026 (porteur) : un onglet qui n'a rien à montrer est masqué ; une phrase vraie le dit, sous les candidats. */}
+      <Onglets etiquette={onglets.length > 1 ? "Candidats, débats, réunions publiques" : "Candidats"} valeurs={onglets} actif={onglet} choisir={setOnglet} />
 
       {!d.charge ? <SquelettesListe n={2} hauteur={88} /> : null}
 
@@ -222,11 +226,9 @@ export default function Presidentielle2027() {
       {d.charge && onglet === "debats" ? (
         !d.lus.debats ? <Vide {...PAS_ARRIVE} icone="cloud-offline-outline" action="Réessayer" onAction={d.reessayer} />
         : d.debats.length === 0 ? (
-          <>
             <Vide icone="tv-outline" titre="Aucun débat annoncé par une source vérifiée pour le moment."
               corps="Repère n'affiche un débat ou un entretien télévisé qu'avec l'annonce officielle de la chaîne." />
-            <Attente icone="tv-outline" etiquette="Bientôt" texte="Une ligne par débat : date, chaîne, participants, annonce officielle à un geste." />
-          </>
+
         ) : (
           <View style={{ gap: PAS * 2 }}>
             {d.debats.map((x: PresidentialDebate) => (
@@ -240,11 +242,9 @@ export default function Presidentielle2027() {
       {d.charge && onglet === "meetings" ? (
         !d.lus.meetings ? <Vide {...PAS_ARRIVE} icone="cloud-offline-outline" action="Réessayer" onAction={d.reessayer} />
         : d.meetings.length === 0 ? (
-          <>
             <Vide icone="megaphone-outline" titre="Aucune réunion publique annoncée par une source vérifiée pour le moment."
               corps="Repère n'affiche une réunion publique qu'avec l'annonce du candidat qui l'organise." />
-            <Attente icone="megaphone-outline" etiquette="Bientôt" texte="Une ligne par réunion : date, ville, salle, candidat, annonce à un geste." />
-          </>
+
         ) : (
           <View style={{ gap: PAS * 2 }}>
             {d.meetings.map((x: PresidentialMeeting) => (
@@ -252,6 +252,14 @@ export default function Presidentielle2027() {
             ))}
           </View>
         )
+      ) : null}
+
+      {videDebats || videMeetings ? (
+        <Text style={TYPO.note}>
+          {videDebats && videMeetings ? "Aucun débat ni aucune réunion publique n'est annoncé par une source vérifiée pour le moment."
+            : videDebats ? "Aucun débat n'est annoncé par une source vérifiée pour le moment." : "Aucune réunion publique n'est annoncée par une source vérifiée pour le moment."}
+          {" "}Repère les affichera avec l'annonce officielle.
+        </Text>
       ) : null}
 
       {d.meta ? (

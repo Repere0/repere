@@ -2,25 +2,19 @@
  *
  * Affiché quand aucun profil n'est gardé sur ce telephone (repere.profil absent). La
  * question 1 (la commune) est répondue sur l'accueil avant d'arriver ici. « Terminer »
- * garde les réponses 2, 3 et 4 sur ce téléphone. La question 4 (les thèmes) peut rester vide. « Passer » garde les réglages par défaut
+ * garde les réponses 2, 3 et 4 sur cet appareil. La question 4 (les thèmes) peut rester vide. « Passer » garde les réglages par défaut
  * (D45, V27) : c'est un choix explicite. Chaque question 2 à 4 a son « Aucune préférence » (V34) :
  * il remet la question à sa valeur par défaut, sans quitter l'écran. Aucune réponse ne part. */
 import { useState } from "react";
 import { Pressable, ScrollView, Text, View } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
 import { router, Stack } from "expo-router";
-import { LIBELLE_NIVEAU, PROFIL_DEFAUT, TAILLES_TEXTE, THEMES } from "@repere/core";
+import { PROFIL_DEFAUT, TAILLES_TEXTE, THEMES } from "@repere/core";
 import { useSelection } from "../lib/selection";
 import { MODE_INITIAL, useProfil } from "../lib/profil";
-import { CIBLE, couleurs, PAS, POLICE, TYPO } from "../lib/theme";
+import { CIBLE, couleurs, PAS, TYPO } from "../lib/theme";
 import { Bouton, Texte } from "../lib/composants";
 import { enfonce } from "../ui/mouvement";
 
-const CHOIX_NIVEAU: { niveau: string; icone: "home-outline" | "business-outline" | "flag-outline"; aide: string }[] = [
-  { niveau: "rue", icone: "home-outline", aide: "Votre commune et votre intercommunalité" },
-  { niveau: "region", icone: "business-outline", aide: "Ce qui se décide dans votre commune et votre région" },
-  { niveau: "france", icone: "flag-outline", aide: "Ce qui se décide au niveau national" },
-];
 
 /* « Aucune préférence » : remet la question à sa valeur par défaut, sans quitter l'écran (V34, bloc 3). */
 function AucunePreference({ texte, onPress, actif }: { texte: string; onPress: () => void; actif: boolean }) {
@@ -39,18 +33,11 @@ function AucunePreference({ texte, onPress, actif }: { texte: string; onPress: (
 export default function Bienvenue() {
   const { choix } = useSelection();
   const { enregistrer, passer: garderDefauts } = useProfil();
-  /* Retour iPhone (11/11/2026) : des puces qu'on peut cocher ensemble. Les trois niveaux sont EMBOÎTÉS (la rue
-     est dans la région, la région dans la France) : ce que Repère garde est donc le plus LARGE des niveaux
-     cochés (`niveauZoom`, une seule valeur, inchangée dans @repere/core). L'écran le dit. */
-  const [niveaux, setNiveaux] = useState<string[]>([]);
-  /* Rien de coché = « Aucune préférence » = vue France. */
-  const niveau = (CHOIX_NIVEAU.map(c => c.niveau).filter(n => niveaux.includes(n)).pop() ?? "france") as string;
-  const basculerNiveau = (n: string) => setNiveaux(l => (l.includes(n) ? l.filter(x => x !== n) : [...l, n]));
   const [taille, setTaille] = useState<number>(PROFIL_DEFAUT.tailleTexte);
   const [themes, setThemes] = useState<string[]>([]);
 
   const terminer = () => {
-    enregistrer({ ...PROFIL_DEFAUT, mode: MODE_INITIAL, niveauZoom: niveau, tailleTexte: taille, themes });
+    enregistrer({ ...PROFIL_DEFAUT, mode: MODE_INITIAL, tailleTexte: taille, themes });
     router.replace("/chez-vous");
   };
   const passer = () => {
@@ -63,40 +50,13 @@ export default function Bienvenue() {
       <Stack.Screen options={{ title: "Bienvenue", headerShown: true }} />
 
       <View style={{ gap: PAS * 2 }}>
-        <Text style={TYPO.etiquette}>Question 1 sur 4</Text>
+        <Text style={TYPO.etiquette}>Question 1 sur 3</Text>
         <Text style={TYPO.question} accessibilityRole="header">Où habitez-vous ?</Text>
         <Texte>{choix ? `Votre commune : ${choix.nom}.` : "Aucune commune choisie."}</Texte>
       </View>
 
       <View style={{ gap: PAS * 2 }}>
-        <Text style={TYPO.etiquette}>Question 2 sur 4</Text>
-        <Text style={TYPO.question} accessibilityRole="header">Qu'est-ce qui vous intéresse ?</Text>
-        <View style={{ flexDirection: "row", gap: PAS * 2, flexWrap: "wrap" }}>
-          {CHOIX_NIVEAU.map(c => {
-            const coche = niveaux.includes(c.niveau);
-            const nom = LIBELLE_NIVEAU[c.niveau as keyof typeof LIBELLE_NIVEAU];
-            return (
-              <Pressable key={c.niveau} onPress={() => basculerNiveau(c.niveau)} accessibilityRole="checkbox"
-                accessibilityState={{ checked: coche }} accessibilityLabel={`${nom}${coche ? ", coché" : ""}`}
-                style={({ pressed }) => ({
-                  minHeight: CIBLE, paddingHorizontal: PAS * 4, flexDirection: "row", alignItems: "center", gap: PAS * 2, borderRadius: 999,
-                  borderWidth: 2, borderColor: coche ? couleurs.encre : "transparent",
-                  backgroundColor: coche ? couleurs.voile : couleurs.carte, ...enfonce(pressed),
-                })}>
-                <Ionicons name={coche ? "checkmark" : c.icone} size={18} color={couleurs.encre} accessible={false} importantForAccessibility="no" />
-                <Text style={[TYPO.corps, { fontFamily: coche ? POLICE.texteGras : POLICE.texte }]}>{nom}</Text>
-              </Pressable>
-            );
-          })}
-        </View>
-        <Text style={TYPO.note}>
-          {niveaux.length ? "" : "Rien de coché : vue France. "}{CHOIX_NIVEAU.find(c => c.niveau === niveau)?.aide}.{niveaux.length > 1 ? " Plusieurs cochés : Repère montre le plus large, qui comprend déjà les autres." : ""}
-        </Text>
-        <AucunePreference texte="Aucune préférence : vue France" actif={niveaux.length === 0} onPress={() => setNiveaux([])} />
-      </View>
-
-      <View style={{ gap: PAS * 2 }}>
-        <Text style={TYPO.etiquette}>Question 3 sur 4</Text>
+        <Text style={TYPO.etiquette}>Question 2 sur 3</Text>
         <Text style={TYPO.question} accessibilityRole="header">Comment lisez-vous le mieux ?</Text>
         <View style={{ flexDirection: "row", gap: PAS * 2, flexWrap: "wrap" }}>
           {TAILLES_TEXTE.filter(t => t <= 22).map(t => {
@@ -124,7 +84,7 @@ export default function Bienvenue() {
       </View>
 
       <View style={{ gap: PAS * 2 }}>
-        <Text style={TYPO.etiquette}>Question 4 sur 4 (facultative)</Text>
+        <Text style={TYPO.etiquette}>Question 3 sur 3 (facultative)</Text>
         <Text style={TYPO.question} accessibilityRole="header">Quels sujets vous intéressent ?</Text>
         <Text style={TYPO.note}>Le fil « Pour vous » ne montrera que ces sujets. Vous pourrez les changer à tout moment.</Text>
         <View style={{ flexDirection: "row", gap: PAS * 2, flexWrap: "wrap" }}>

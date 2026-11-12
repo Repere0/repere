@@ -4,7 +4,7 @@
  * departement et la commune. Ni nom, ni date, ni historique, ni identifiant.
  * CE QUI N'EST JAMAIS FAIT : l'envoyer. Aucune requete ne porte ce code
  * (invariant 2 : les adresses se composent par departement, dans client.js).
- * QUAND : seulement si le lecteur le demande (« Retenir … sur ce téléphone »),
+ * QUAND : seulement si le lecteur le demande (« Retenir … sur cet appareil »),
  * et il peut l'oublier d'un geste. Rien n'est retenu par defaut.
  *
  * OU :

@@ -245,3 +245,15 @@ test("panne reseau : la cause sous-jacente (e.cause) est ecrite, pas seulement �
   assert.match(r.cause, /ENOTFOUND/);
   assert.equal(causeReseau(Object.assign(new Error("x"), { name: "TimeoutError" })), "delai depasse (30 s)");
 });
+
+/* LE COMPTEUR DE VOTES SUIT LE CALENDRIER — 12/11/2026. Un vote solennel déjà tenu ce matin n'est plus « annoncé » :
+   la fiche disait « 1 vote solennel cette semaine » quand le calendrier (à venir seulement) disait « Tout 0 ». */
+test("semaine — un vote solennel déjà passé aujourd'hui n'est pas compté, un vote à venir l'est", async () => {
+  const { semaineParlement } = await import("../packages/core/src/index.js");
+  const ev = (debut, titre) => ({ debut, titre, description: null, categorie: "Séance publique" });
+  const agendaAN = { evenements: [ev("2026-10-07T09:00", "Vote solennel sur la loi passée"), ev("2026-10-07T16:00", "Vote solennel sur la loi à venir")] };
+  /* 14 h 00 à Paris (12:00 UTC, heure d'été) */
+  const r = semaineParlement({ agendaAN, cal: null, maintenant: new Date("2026-10-07T12:00:00Z") });
+  assert.deepEqual(r.votesSolennels.map(v => v.texte), ["Vote solennel sur la loi à venir"]);
+  assert.equal(r.total, 2, "les séances restent comptées sur le jour entier");
+});

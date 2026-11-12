@@ -9,6 +9,7 @@
  * Les donnees d'une commune sont lues une fois (FournisseurCommune) et
  * partagees par les ecrans. La police de Repere est embarquee dans
  * l'application : aucune requete vers un hote tiers. */
+import { AdresseCommune } from "../lib/adresse-web";
 import "../lib/donnees";
 import { useMemo, useState, type ReactNode } from "react";
 import { Platform } from "react-native";
@@ -77,6 +78,7 @@ export default function Coquille() {
         <FournisseurSelection>
         <FournisseurProfil valeur={etatProfil}>
           <AvecCommune>
+            <AdresseCommune />
             <StatusBar style={mode === "sombre" ? "light" : "dark"} />
             <ThemeProvider value={tema}>
               <Stack
