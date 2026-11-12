@@ -18,8 +18,19 @@ const OPTIONS: { valeur: ChoixTheme; libelle: string }[] = [
 
 export function BoutonReglages() {
   const [ouvert, setOuvert] = useState(false);
+  const { mode, setChoix } = useTheme();
+  const versClair = mode === "sombre";
   return (
     <>
+      {/* 12/11/2026 (porteur) : une bascule directe clair / sombre, visible sur tous les onglets. « Système » reste dans la roue. */}
+      <Pressable
+        onPress={() => setChoix(versClair ? "clair" : "sombre")}
+        accessibilityRole="button"
+        accessibilityLabel={versClair ? "Passer en mode clair" : "Passer en mode sombre"}
+        style={({ pressed }) => [s.roue, pressed && enfonce(true)]}
+      >
+        <Ionicons name={versClair ? "sunny-outline" : "moon-outline"} size={22} color={couleurs.encre} accessible={false} importantForAccessibility="no" />
+      </Pressable>
       <Pressable
         onPress={() => setOuvert(true)}
         accessibilityRole="button"

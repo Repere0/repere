@@ -11,6 +11,7 @@
  * l'application : aucune requete vers un hote tiers. */
 import "../lib/donnees";
 import { useMemo, useState, type ReactNode } from "react";
+import { Platform } from "react-native";
 import { DarkTheme, DefaultTheme, Stack, ThemeProvider } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { SafeAreaProvider } from "react-native-safe-area-context";
@@ -56,7 +57,7 @@ export default function Coquille() {
   const lu = etatProfil.profil ?? PROFIL_DEFAUT;
   /* D67 (V35) : le mode vit dans repere.profil. Sans profil (accueil pas encore répondu),
      le choix reste en mémoire : écrire un profil à ce moment sauterait l'accueil. */
-  const [choixSession, setChoixSession] = useState<ChoixTheme>("clair"); /* Stitch : clair par défaut (09/11/2026) */
+  const [choixSession, setChoixSession] = useState<ChoixTheme>(Platform.OS === "web" ? "sombre" : "clair"); /* Stitch : clair par défaut (09/11/2026) ; web : sombre par défaut (12/11/2026, porteur) */
   const choix: ChoixTheme = etatProfil.profil ? (lu.mode === "clair" || lu.mode === "sombre" ? lu.mode : "systeme") : choixSession;
   const setChoix = (c: ChoixTheme) => {
     if (etatProfil.profil) etatProfil.modifier({ mode: c === "systeme" ? "auto" : c });

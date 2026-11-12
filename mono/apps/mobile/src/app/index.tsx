@@ -198,7 +198,7 @@ let OUVERTURE_A_FAIRE = true;
 
 export default function Accueil() {
   const groupesAccueil = useGroupes();
-  const { mode: modeTheme } = useTheme(); /* l'accueil suit le thème : il se redessine quand le lecteur en change */
+  const { mode: modeTheme, setChoix: choisirTheme } = useTheme(); /* l'accueil suit le thème : il se redessine quand le lecteur en change */
   const marges = useSafeAreaInsets();
   const { width } = useWindowDimensions();
   const { choix, choisir, retenue, oublier } = useSelection();
@@ -210,6 +210,7 @@ export default function Accueil() {
   const [beta, setBeta] = useState<Beta | null>(null);
   const [index, setIndex] = useState<Index | null>(null);
   const [filtre, setFiltre] = useState("");
+  const [champActif, setChampActif] = useState(false);
   const [cherche, setCherche] = useState(false);
   const [page, setPage] = useState(0);
   const [essai, setEssai] = useState(0);
@@ -513,6 +514,12 @@ export default function Accueil() {
                 <Text style={s.marque} accessibilityLabel="Repère">Repère<Text style={{ color: E.ville }}>.</Text></Text>
               </View>
               <View style={{ flexDirection: "row", alignItems: "center" }}>
+                {/* 12/11/2026 (porteur) : la bascule clair / sombre, à un geste dès l'accueil. */}
+                <Pressable onPress={() => choisirTheme(modeTheme === "sombre" ? "clair" : "sombre")} accessibilityRole="button"
+                  accessibilityLabel={modeTheme === "sombre" ? "Passer en mode clair" : "Passer en mode sombre"}
+                  style={({ pressed }) => [s.outil, pressed && enfonce(true)]}>
+                  <Ionicons name={modeTheme === "sombre" ? "sunny-outline" : "moon-outline"} size={22} color={D.encre} accessible={false} importantForAccessibility="no" />
+                </Pressable>
                 <Pressable onPress={() => router.push("/confort-lecture")} accessibilityRole="link" accessibilityLabel="Confort de lecture"
                   style={({ pressed }) => [s.outil, pressed && enfonce(true)]}>
                   <Ionicons name="text-outline" size={22} color={D.encre} />
@@ -584,7 +591,7 @@ export default function Accueil() {
             {champOuvert ? (
               <>
                 <Text style={s.question} nativeID="question">{retenue && nomRetenue ? "Une autre commune ?" : "Où habitez-vous ?"}</Text>
-                <View style={s.champLigne}>
+                <View style={[s.champLigne, champActif && Platform.OS === "web" && { borderColor: E.ville }]}>
                   <View accessibilityElementsHidden importantForAccessibility="no-hide-descendants" style={s.loupe}>
                     <View style={s.loupeRond} />
                     <View style={s.loupeManche} />
@@ -592,6 +599,8 @@ export default function Accueil() {
                 <TextInput
                   value={filtre}
                   onChangeText={setFiltre}
+                  onFocus={() => setChampActif(true)}
+                  onBlur={() => setChampActif(false)}
                   placeholder="Tapez votre ville (ex: Melun...)"
                   placeholderTextColor={D.sourd}
                   autoCorrect={false}
@@ -740,9 +749,10 @@ const s = feuille(() => StyleSheet.create({
   champ: {
     flex: 1, minHeight: CIBLE + 8, paddingHorizontal: PAS * 2, fontSize: 18, color: D.encre, borderRadius: 999,
     /* Sur l'export web, le contour de focus par defaut du navigateur est orange :
-       une sixieme couleur (invariant 7). Le focus reste visible, dans la couleur
-       de la commune. Sans effet sur iOS et Android. */
-    ...(Platform.OS === "web" ? { outlineColor: E.ville, outlineWidth: 2, outlineStyle: "solid" } : {}),
+       une sixieme couleur (invariant 7). Le contour de l'INPUT est supprime : la barre ENTIERE
+       (loupe comprise) prend la couleur de la commune au focus (12/11/2026, Safari : le trait
+       interne laissait la loupe en dehors). Sans effet sur iOS et Android. */
+    ...(Platform.OS === "web" ? ({ outlineStyle: "none" } as object) : {}),
   },
   note: { fontFamily: POLICE.texte, fontSize: 14, lineHeight: 22, color: D.sourd },
   accroche: { fontFamily: POLICE.affiche, fontSize: 22, lineHeight: 30, letterSpacing: -0.2, color: D.encre, marginTop: PAS * 4 },

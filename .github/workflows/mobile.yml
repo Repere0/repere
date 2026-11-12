@@ -115,6 +115,7 @@ jobs:
           node apps/mobile/tests/elections-web.mjs http://localhost:8811
           node apps/mobile/tests/partage-texte-web.mjs http://localhost:8811
           node apps/mobile/tests/onboarding-web.mjs http://localhost:8811
+          node apps/mobile/tests/fix-web-web.mjs http://localhost:8811
           node apps/mobile/tests/simplification-web.mjs http://localhost:8811
           node apps/mobile/tests/final-polish-web.mjs http://localhost:8811
           node apps/mobile/tests/fix-iphone-web.mjs http://localhost:8811
