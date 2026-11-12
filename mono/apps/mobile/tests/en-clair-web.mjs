@@ -16,13 +16,14 @@ await page.getByText("Lien copié").first().waitFor({ timeout: 5000 });
 const presse = await page.evaluate(() => navigator.clipboard.readText());
 ok(presse === BASE + "/actus#melun", `le lien copié porte la commune après le « # » (${presse})`);
 
-await page.goto(BASE + "/apercu-en-clair", { waitUntil: "networkidle" });
+await page.goto(BASE + "/faq", { waitUntil: "networkidle" });
 await page.getByText("En clair", { exact: true }).first().waitFor({ timeout: 10000 });
 const t = await page.locator("body").innerText();
 ok(/503 députés ont voté pour, aucun contre, et 67 se sont abstenus/.test(t), "le résumé d'exemple s'affiche");
 ok(t.includes("Résumé généré avec l'aide de l'IA à partir des données officielles de l'Assemblée nationale."), "la mention d'assistance IA est écrite en toutes lettres");
 ok(await page.getByRole("link", { name: /Lire le texte officiel/ }).count() === 1, "le lien vers la source est là");
-ok(!/Sénat|large majorité/.test(t), "rien qui ne soit dans la source (ni étape à venir, ni jugement)");
+const bloc = t.slice(t.indexOf("En clair\n"), t.indexOf("Lire le texte officiel"));
+ok(bloc.length > 20 && !/Sénat|large majorité/.test(bloc), "rien qui ne soit dans la source (ni étape à venir, ni jugement)");
 ok(!erreurs.length, "aucune erreur JavaScript" + (erreurs.length ? " : " + erreurs[0] : ""));
 await nav.close();
 console.log(echecs ? `en clair : ${echecs} échec(s)` : "en clair : zéro échec");
