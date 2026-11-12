@@ -17,6 +17,17 @@ import { useSelection } from "./selection";
 
 type Table = { parInsee: Record<string, string>; parSlug: Record<string, string> };
 
+/* La table des noms, gardée ici pour que le bouton « Copier le lien » écrive la même adresse que celle qu'on lit. */
+let tableCourante: Table | null = null;
+
+/* « https://…/finances#melun » : l'adresse de la page ouverte, la commune après le « # » (jamais envoyée au serveur).
+   Sans commune choisie ou sans table, l'adresse reste celle de la page, sans « # ». Web seulement. */
+export function lienDeLaPage(insee: string | null | undefined): string {
+  const l = window.location;
+  const slug = insee && tableCourante ? tableCourante.parInsee[insee] : null;
+  return `${l.origin}${l.pathname}${l.search}${slug ? "#" + slug : ""}`;
+}
+
 function Pont() {
   const { choix, choisir } = useSelection();
   const chemin = usePathname();
@@ -32,7 +43,7 @@ function Pont() {
     let vivant = true;
     chargerCommunesBeta().then(r => {
       const c = (r.donnees as { communes?: Record<string, string> } | null)?.communes;
-      if (vivant && c) { setCommunes(c); setTable(tableSlugs(c) as Table); }
+      if (vivant && c) { setCommunes(c); tableCourante = tableSlugs(c) as Table; setTable(tableCourante); }
     });
     return () => { vivant = false; };
   }, []);

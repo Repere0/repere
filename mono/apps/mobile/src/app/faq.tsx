@@ -8,6 +8,16 @@ import { Linking, ScrollView, Text, View } from "react-native";
 import { Stack, router } from "expo-router";
 import { couleurs, PAS, TYPO } from "../lib/theme";
 import { Bouton, Carte } from "../lib/composants";
+import { ResumeClair } from "../ui/resume-clair";
+
+/* Exemple fourni par le porteur (12/11/2026), limité à ce que dit sa source : « Projet de loi de finances pour 2027. Première
+   partie. Adopté par l'Assemblée nationale le 4 novembre 2026. 503 pour, 0 contre, 67 abstentions. » Il illustre la forme ; il
+   n'est relié à aucun vote réel. L'adresse est celle du site de l'Assemblée, faute d'adresse vérifiée du dossier. */
+const EXEMPLE_EN_CLAIR = {
+  valide: true,
+  resume: "Ce texte est la première partie du projet de loi de finances pour 2027. Il a été adopté par l'Assemblée nationale le 4 novembre 2026 : 503 députés ont voté pour, aucun contre, et 67 se sont abstenus.",
+  source: { producteur: "Assemblée nationale", url: "https://www.assemblee-nationale.fr/", releve_le: "2026-11-12" },
+};
 
 const CONTACT = process.env.EXPO_PUBLIC_CONTACT_EMAIL;
 
@@ -85,6 +95,11 @@ export default function Faq() {
           {x.lien ? <Bouton texte={x.lien.texte} discret onPress={x.lien.aller} /> : null}
         </Carte>
       ))}
+      <Carte>
+        <Text style={[TYPO.corps, { fontWeight: "800" }]} accessibilityRole="header">Comment seront écrits les résumés « En clair » ?</Text>
+        <Text style={TYPO.corps}>Repère prépare des résumés courts des textes votés. Ils ne sont pas encore publiés : un résumé n'apparaît qu'après relecture par un humain, avec le lien vers le texte officiel. Voici la forme, avec un exemple qui n'est relié à aucun vote réel.</Text>
+        <ResumeClair resume={EXEMPLE_EN_CLAIR} lienOfficiel={EXEMPLE_EN_CLAIR.source.url} />
+      </Carte>
       {CONTACT ? <Bouton texte="Signaler un bug" onPress={() => Linking.openURL(`mailto:${CONTACT}?subject=${encodeURIComponent("Bug Repère")}`)} /> : null}
     </ScrollView>
   );
