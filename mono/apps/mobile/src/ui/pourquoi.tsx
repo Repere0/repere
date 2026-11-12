@@ -5,6 +5,7 @@ import { useState } from "react";
 import { Linking, Pressable, Text } from "react-native";
 import { CIBLE, couleurs, TYPO } from "../lib/theme";
 import { ModaleExhaustif } from "./modale-exhaustif";
+import { enfonce } from "./mouvement";
 
 export type Pourquoi = { source: { texte: string; lien?: string | null }; calcul: string; ici: string };
 
@@ -14,13 +15,13 @@ export function PourquoiJeVois({ p, etiquette, couleur, fond }: { p: Pourquoi; e
   return (
     <>
       <Pressable onPress={() => setOuvert(true)} accessibilityRole="button" accessibilityLabel={`Pourquoi je vois ça : ${etiquette}`}
-        style={({ pressed }) => ({ minWidth: CIBLE, minHeight: CIBLE, alignItems: "center", justifyContent: "center", opacity: pressed ? 0.7 : 1 })}>
+        style={({ pressed }) => ({ minWidth: CIBLE, minHeight: CIBLE, alignItems: "center", justifyContent: "center", ...enfonce(pressed) })}>
         <Text aria-hidden style={{ width: 24, height: 24, borderRadius: 12, borderWidth: 1, borderColor: encre, color: encre, textAlign: "center", lineHeight: 22, fontWeight: "500", fontSize: 14, backgroundColor: fond }}>?</Text>
       </Pressable>
       <ModaleExhaustif titre="Pourquoi je vois ça" visible={ouvert} onFermer={() => setOuvert(false)} sections={[
         { titre: "Source", contenu: p.source.lien
           ? <Pressable onPress={() => Linking.openURL(p.source.lien as string)} accessibilityRole="link" accessibilityLabel={`${p.source.texte}, ouvre un site externe`}
-              style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", opacity: pressed ? 0.7 : 1 })}>
+              style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", ...enfonce(pressed) })}>
               <Text style={TYPO.corps}>{p.source.texte} (site externe)</Text>
             </Pressable>
           : p.source.texte },

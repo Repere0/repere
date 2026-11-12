@@ -7,6 +7,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { dateFr } from "@repere/core";
 import { CIBLE, couleurs, PAS, TYPO } from "../lib/theme";
 import { POINT_ETAPE } from "../lib/palette";
+import { enfonce } from "./mouvement";
 
 export type Etape = { date: string; fin?: string | null; libelle: string; lien: string | null };
 
@@ -29,7 +30,7 @@ export function Timeline({ etapes, etiquette }: { etapes: Etape[]; etiquette?: s
             {e.lien ? (
               <Pressable onPress={() => Linking.openURL(e.lien as string)} accessibilityRole="link"
                 accessibilityLabel={`${quand(e)} : ${e.libelle}. Ouvrir le document officiel, site externe`}
-                style={({ pressed }) => ({ minHeight: CIBLE, flexDirection: "row", alignItems: "center", gap: 6, opacity: pressed ? 0.7 : 1 })}>
+                style={({ pressed }) => ({ minHeight: CIBLE, flexDirection: "row", alignItems: "center", gap: 6, ...enfonce(pressed) })}>
                 <Ionicons name="document-text-outline" size={16} color={couleurs.lien} accessible={false} importantForAccessibility="no" />
                 <Text style={[TYPO.note, { color: couleurs.lien }]}>Document officiel</Text>
               </Pressable>

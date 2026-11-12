@@ -21,6 +21,7 @@ import { useCommuneChoisie } from "../lib/useCommune";
 import { feuille, couleurs, CIBLE, PAS, POLICE, RAYON, TYPO } from "../lib/theme";
 import { Etiquette } from "./resume";
 import { Ionicons } from "@expo/vector-icons";
+import { enfonce } from "./mouvement";
 
 export type InfoSource = {
   producteur?: string; licence?: string; maj?: string; mention?: string; url?: string;
@@ -62,7 +63,7 @@ export function PastilleSource({ source, quoi, court, nom }: { source: InfoSourc
         onPress={() => setOuverte(true)}
         accessibilityRole="button"
         accessibilityLabel={`D'où vient cette information ? ${source.methode ? "Calcul de Repère à partir de données de " : ""}${source.producteur}${date ? ". " + date : ""}`}
-        style={({ pressed }) => [s.zone, pressed && { opacity: 0.5 }]}
+        style={({ pressed }) => [s.zone, pressed && enfonce(true)]}
       >
         {/* Invariant 4 : un calcul se dit calcul, a l'oeil aussi, pas seulement
             au lecteur d'ecran ni derriere un geste. */}
@@ -108,7 +109,7 @@ export function FeuilleSource({ source, visible, onFermer }: { source: InfoSourc
         {source.url ? (
           <Pressable onPress={() => Linking.openURL(source.url as string)} accessibilityRole="link"
             accessibilityLabel={`${source.lienTexte || "Voir la donnée originale"}, ouvre un site externe`}
-            style={({ pressed }) => [s.bouton, pressed && { opacity: 0.7 }]}>
+            style={({ pressed }) => [s.bouton, pressed && enfonce(true)]}>
             <Text style={s.boutonTexte}>{source.lienTexte || "Voir la donnée originale"} ↗</Text>
           </Pressable>
         ) : null}
@@ -118,7 +119,7 @@ export function FeuilleSource({ source, visible, onFermer }: { source: InfoSourc
           <Text style={TYPO.micro}>{detail}</Text>
         </View>
 
-        <Pressable onPress={onFermer} accessibilityRole="button" style={({ pressed }) => [s.fermer, pressed && { opacity: 0.6 }]}>
+        <Pressable onPress={onFermer} accessibilityRole="button" style={({ pressed }) => [s.fermer, pressed && enfonce(true)]}>
           <Text style={[TYPO.corps, { fontWeight: "500" }]}>Fermer</Text>
         </Pressable>
       </ScrollView>

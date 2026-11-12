@@ -7,6 +7,7 @@ import { Animated, Pressable, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { CIBLE, couleurs, PAS, POLICE, TYPO } from "../lib/theme";
 import { useMouvementReduit } from "./mouvement";
+import { enfonce } from "./mouvement";
 
 /* Sur un fond sombre (carte de l'accueil), la couleur du texte et du lien se passe ici :
    les valeurs par défaut sont celles du thème clair. */
@@ -23,7 +24,7 @@ export function Details({ titre, children, ouvertParDefaut = false, couleur, lie
     <View style={{ gap: PAS * 2 }}>
       <Pressable onPress={() => setOuvert(o => !o)} accessibilityRole="button" accessibilityState={{ expanded: ouvert }}
         accessibilityLabel={`${titre}. ${ouvert ? "Voir moins" : "Voir plus"}`}
-        style={({ pressed }) => ({ minHeight: CIBLE, flexDirection: "row", alignItems: "center", gap: PAS * 2, opacity: pressed ? 0.7 : 1 })}>
+        style={({ pressed }) => ({ minHeight: CIBLE, flexDirection: "row", alignItems: "center", gap: PAS * 2, ...enfonce(pressed) })}>
         <Text style={[TYPO.corps, { flex: 1, fontFamily: POLICE.titre }, couleur ? { color: couleur } : null]}>{titre}</Text>
         <Text style={{ color: lien ?? couleurs.lien, fontWeight: "500" }}>{ouvert ? "Voir moins" : "Voir plus"}</Text>
         <Ionicons name="chevron-forward" size={18} color={lien ?? couleurs.lien} accessible={false} importantForAccessibility="no"

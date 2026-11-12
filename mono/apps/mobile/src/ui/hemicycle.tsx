@@ -13,6 +13,7 @@ import { compositionGroupes, groupesACerner, siegesHemicycle } from "@repere/cor
 import { couleurGroupe, groupeDe, GROUPE_INCONNU, useFichierGroupes } from "../lib/groupes";
 import { CIBLE, feuille, couleurs, PAS, POLICE, RAYON, TYPO } from "../lib/theme";
 import { PastilleSource } from "./source";
+import { enfonce } from "./mouvement";
 
 type Part = { groupe: string; sieges: number };
 
@@ -69,7 +70,7 @@ export function Hemicycle() {
       {choisi ? (
         <Pressable onPress={() => router.push({ pathname: "/groupe", params: { g: choisi } })} accessibilityRole="link"
           accessibilityLabel={`Voir la liste des députés du groupe ${choisi === GROUPE_INCONNU ? "non publié" : choisi}`}
-          style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", opacity: pressed ? 0.7 : 1 })}>
+          style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", ...enfonce(pressed) })}>
           <Text style={[TYPO.corps, { fontFamily: POLICE.titre }]}>
             Voir les {parts.find(x => x.groupe === choisi)?.sieges ?? ""} députés {choisi === GROUPE_INCONNU ? "sans groupe publié" : choisi} ›
           </Text>

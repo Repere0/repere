@@ -21,6 +21,7 @@ import { Plus } from "../ui/reponse";
 import { PartagerCarte } from "../ui/partage/bouton-partage";
 import { RepereDuJourStory } from "../ui/partage-repere-du-jour";
 import { useNiveauZoom } from "../ui/badge-zoom";
+import { enfonce } from "../ui/mouvement";
 
 export default function RepereDuJourEcran() {
   const { choix } = useSelection();
@@ -41,7 +42,7 @@ export default function RepereDuJourEcran() {
           {/* 07/11/2026 : l'explication passe dans un accordéon (règle des 2 lignes). */}
           {/* 09/11/2026 (porteur) : une modale explicative, au lieu d'un accordéon. */}
           <Pressable onPress={() => setExplication(true)} accessibilityRole="button" accessibilityLabel="Comment ces faits sont choisis"
-            style={({ pressed }) => ({ minHeight: CIBLE, alignSelf: "flex-start", flexDirection: "row", alignItems: "center", gap: PAS * 1.5, opacity: pressed ? 0.6 : 1 })}>
+            style={({ pressed }) => ({ minHeight: CIBLE, alignSelf: "flex-start", flexDirection: "row", alignItems: "center", gap: PAS * 1.5, ...enfonce(pressed) })}>
             <Ionicons name="information-circle-outline" size={18} color={couleurs.sourd} accessible={false} importantForAccessibility="no" />
             <Text style={[TYPO.note, { color: couleurs.encre }]}>Comment ces faits sont choisis</Text>
           </Pressable>
