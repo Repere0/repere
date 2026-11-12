@@ -35,7 +35,15 @@
     },
     "web": {
       "favicon": "./assets/favicon.png",
-      "output": "single"
+      "output": "single",
+      "name": "Repère",
+      "shortName": "Repère",
+      "description": "Qui décide chez vous, où va votre argent. Neutre, sourcé.",
+      "lang": "fr",
+      "display": "standalone",
+      "orientation": "portrait",
+      "backgroundColor": "#F7F7F9",
+      "themeColor": "#F7F7F9"
     },
     "plugins": [
       "expo-router",
