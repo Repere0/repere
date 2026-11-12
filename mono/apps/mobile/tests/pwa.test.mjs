@@ -92,3 +92,10 @@ test("les icônes d'installation sont carrées (en-tête PNG) : iOS ne les recad
     assert.equal(b.readUInt32BE(16), n, f + " largeur"); assert.equal(b.readUInt32BE(20), n, f + " hauteur");
   }
 });
+
+test("la balise apple-touch-icon est explicite : 180x180, version dans l'adresse, fichier carré de 180 px", () => {
+  const h = injecterBalises(HTML, app);
+  const m = h.match(/<link rel="apple-touch-icon" sizes="180x180" href="(\/apple-touch-icon\.png)\?v=\d+" \/>/);
+  assert.ok(m, "balise absente ou sans sizes/version");
+  assert.ok(existsSync(new URL("../public" + m[1], import.meta.url)));
+});
