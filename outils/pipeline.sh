@@ -402,6 +402,18 @@ rm -rf site_engendre
   # publiees. Aucune transformation, aucune generation. Absent : l'application n'affiche rien.
   cp ../data/actus-hebdo.json ./data/actus-hebdo.json 2>/dev/null \
     || echo "::warning::data/actus-hebdo.json absent - aucune actu locale publiee"
+  # SITES DES MAIRIES (30/10/2026, D28) - annuaire DILA, Licence Ouverte 2.0. Reseau
+  # requis. Non bloquant : sans ce fichier, l'application n'affiche simplement pas le lien.
+  node scripts/collecte-sites-mairies.mjs ./data \
+    || echo "::warning::sites des mairies non collectes (annuaire DILA) - aucun lien affiche"
+  # ETAT ANNONCE DANS LA CI (29/10/2026). Le banc ne montre sa sortie qu'en cas
+  # d'echec : sans cette annotation, une CI verte ne disait pas si le teaser
+  # etait present ou si sa note d'absence avait ete testee a sa place.
+  bash ../outils/teaser_scrutins_etat.sh ./data ../data/brut_Scrutins
+  pnpm install --frozen-lockfile
+  # 12/11/2026 : PRESIDENTIELLE et PHOTOS deplacees APRES l'install. collecte-presidentielle.mjs importe
+  # rss-parser : avant l'install, il echouait (ERR_MODULE_NOT_FOUND, runs du 11 et du 12/11/2026) et les
+  # fichiers de la presidentielle n'etaient jamais publies. Les photos lisent candidats.json : apres.
   # PRESIDENTIELLE 2027 (09/11/2026) - candidats, debats, reunions publiques : fichiers versionnes
   # dans data/presidentielle-2027/ (racine), controles puis recopies. Vides tant qu'aucune source
   # officielle n'est publiee : l'application dit alors l'absence. Non bloquant.
@@ -411,20 +423,11 @@ rm -rf site_engendre
   node scripts/collecte-presidentielle.mjs --collecter || true
   node scripts/collecte-presidentielle.mjs ./data \
     || echo "::warning::presidentielle 2027 non publiee (fichier mal forme ou absent) - l'application dira que les donnees ne sont pas arrivees"
-  # SITES DES MAIRIES (30/10/2026, D28) - annuaire DILA, Licence Ouverte 2.0. Reseau
-  # requis. Non bloquant : sans ce fichier, l'application n'affiche simplement pas le lien.
-  node scripts/collecte-sites-mairies.mjs ./data \
-    || echo "::warning::sites des mairies non collectes (annuaire DILA) - aucun lien affiche"
   # PHOTOS D'ELUS (30/10/2026, D27) - Wikidata + Wikimedia Commons, licences libres
   # seulement, vignettes integrees par departement. Reseau requis. Non bloquant : sans
   # ce fichier, l'application affiche les initiales.
   node scripts/collecte-photos-elus.mjs ./data \
     || echo "::warning::photos d'elus non collectees - initiales affichees"
-  # ETAT ANNONCE DANS LA CI (29/10/2026). Le banc ne montre sa sortie qu'en cas
-  # d'echec : sans cette annotation, une CI verte ne disait pas si le teaser
-  # etait present ou si sa note d'absence avait ete testee a sa place.
-  bash ../outils/teaser_scrutins_etat.sh ./data ../data/brut_Scrutins
-  pnpm install --frozen-lockfile
   # FLUX RSS DES MAIRIES (31/10/2026, D81, ADR 0007) - seulement les flux publies par la
   # mairie, jamais son HTML. Apres l'install (rss-parser). Reseau requis. Non bloquant :
   # sans ce fichier, l'application n'affiche pas d'actualite de flux.
