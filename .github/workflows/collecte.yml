@@ -44,6 +44,8 @@ on:
 permissions:
   contents: write
   issues: write
+  # 12/11/2026 : l'alerte lit la conclusion du run precedent (gh run list).
+  actions: read
 
 jobs:
   collecte:
@@ -98,9 +100,25 @@ jobs:
         run: python3 outils/collecte.py
 
       - name: Executer la chaine
+        id: chaine
         # Depiler, normaliser, decrire, verifier, reconstruire, eprouver.
         # Tout est dans outils/pipeline.sh — c'est la qu'on modifie, pas ici.
         run: bash outils/pipeline.sh
+        env:
+          # 12/11/2026 : les etapes non bloquantes y ecrivent leurs avertissements (avertir, pipeline.sh).
+          REPERE_AVERTISSEMENTS: ${{ runner.temp }}/avertissements-collecte.txt
+
+      # ALERTE (12/11/2026, decision du porteur) : une etape non bloquante qui avertit DEUX JOURS de suite
+      # ouvre une issue. AVANT le commit : l'etat (data/etat_collecte.json) est enregistre par le bot.
+      # Seulement si la chaine est allee au bout : un fichier d'avertissements incomplet remettrait des
+      # series a zero. Un run en echec est traite a la fin du job (« --run »).
+      - name: Alerte - etapes en echec depuis deux jours
+        if: steps.chaine.outcome == 'success' && env.HORS_MAIN != 'true'
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+          URL_RUN: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: node outils/alerte_collecte.mjs --etapes "${{ runner.temp }}/avertissements-collecte.txt"
 
       # BILAN DE COUVERTURE (V17). Sur toutes les branches : ce que les collectes ont
       # trouve. Hors de main, c'est la seule sortie du job, avec l'artefact ci-dessous.
@@ -190,7 +208,7 @@ jobs:
           while IFS= read -r f; do
             [ -z "$f" ] && continue
             case "$f" in
-              data/journal_collecte.json|data/circos_ministere.xlsx) ;;
+              data/journal_collecte.json|data/circos_ministere.xlsx|data/etat_collecte.json) ;;
               data/auto/*.md) ;;
               data/presidentielle-2027/*.json) ;;
               docs/schema_*.md) ;;
@@ -350,6 +368,16 @@ jobs:
             bash outils/sante_publique.sh echec "${{ github.sha }}" \
               "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
           fi
+
+      # ALERTE, suite : la collecte ENTIERE en echec deux jours de suite (chaine ou publication).
+      - name: Alerte - collecte en echec deux jours de suite
+        if: always() && env.HORS_MAIN != 'true'
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if [ "${{ steps.chaine.outcome }}" = "success" ] && [ "${{ steps.deploy.outcome }}" != "failure" ] && [ "${{ steps.collecte.outcome }}" != "failure" ]; then ETAT=succes; else ETAT=echec; fi
+          node outils/alerte_collecte.mjs --run "$ETAT" "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
 
       - name: Mettre le job au rouge si quelque chose a echoue
         # Apres les explications, pas avant : un job rouge sans phrase est une enigme.

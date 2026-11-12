@@ -11,6 +11,9 @@ export const FICHIERS = [
   "scrutins-index.json", "scrutins-solennels.json", "scrutins-solennels-recents.json",
   "questions-gouvernement-index.json", "agenda-an.json", "calendrier-senat.json", "actuelles-rss.json",
   "actus-hebdo.json", "codes-postaux.json", "deputes-groupes.json", "mairies-idf.json", "agregats-regionaux.json",
+  /* 12/11/2026 : les photos des candidats (ADR 0008) sont produites par la chaine, pas versionnees : sans cette
+     ligne, la version web de l'application ne les recevait jamais. */
+  "presidentielle-2027/photos.json",
 ];
 const LOTS = ["scrutins-details", "questions-gouvernement"];
 const MAX_LOTS = 400;

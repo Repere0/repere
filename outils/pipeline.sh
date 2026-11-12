@@ -25,6 +25,15 @@ set -eEuo pipefail
 #   - toute commande qui fait tomber la chaine est nommee, avec sa ligne ;
 #   - un banc qui echoue remonte ses propres lignes d'echec (voir banc()).
 # Rien n'est rendu plus permissif : le code de sortie reste celui de l'echec.
+# avertir <message> (12/11/2026) : l'avertissement d'une etape NON BLOQUANTE. Il s'affiche comme avant
+# (annotation du run) ET s'ecrit dans $REPERE_AVERTISSEMENTS, que outils/alerte_collecte.mjs relit :
+# une etape qui avertit deux jours de suite ouvre une issue. Sans cela, la presidentielle est restee
+# non publiee du 10 au 12/11/2026 dans une collecte verte. Chemin absolu : les etapes font des cd.
+REPERE_AVERTISSEMENTS="${REPERE_AVERTISSEMENTS:-/dev/null}"
+avertir() {
+  echo "::warning::$*"
+  echo "$*" >> "$REPERE_AVERTISSEMENTS" || true
+}
 annoter() {  # annoter <titre> <fichier> : une annotation d'erreur, lignes preservees
   local corps
   corps=$(sed -e 's/%/%25/g' "$2" | awk 'BEGIN{ORS="%0A"} {print}' | cut -c1-3900)
@@ -87,33 +96,33 @@ for z in *.zip; do
     echo "depile : $z -> brut_$dossier"
   else
     rm -rf "brut_$dossier.tmp"
-    echo "::warning::$z est illisible (pas une archive zip valide) — non depile, les sorties qui en dependent gardent leur version precedente"
+    avertir "$z est illisible (pas une archive zip valide) — non depile, les sorties qui en dependent gardent leur version precedente"
   fi
 done
 cd ..
 
 # ------------------------------------------------- 2. normaliser l'agenda
 python3 outils/agenda_an.py data/brut_Agenda/json data/brut_AMO30/json outils/agenda_an.json \
-  || echo "::warning::agenda de l'Assemblee non renormalise — outils/agenda_an.json garde la version versionnee dans le depot, avec sa date (le controle de l'etape 4 refusera de la publier comme celle du jour)"
+  || avertir "agenda de l'Assemblee non renormalise — outils/agenda_an.json garde la version versionnee dans le depot, avec sa date (le controle de l'etape 4 refusera de la publier comme celle du jour)"
 
 # -------------------------- 2 bis. decrire le schema QAG (documentaire)
 # La source est nouvelle dans la chaine : avant toute publication, on veut
 # mesurer le schema REEL de l'archive, pas en deduire les champs de memoire.
 python3 outils/echantillon_scrutins.py data/brut_Questions_gouvernement/json docs/schema_questions_gouvernement.md \
-  || echo "::warning::le schema des Questions au Gouvernement n'a pas pu etre decrit"
+  || avertir "le schema des Questions au Gouvernement n'a pas pu etre decrit"
 
 # ------------------------- 2 ter. decrire le schema des dossiers legislatifs (documentaire)
 # Source nouvelle (05/11/2026) : avant d'en tirer le contenu d'un texte pour l'ecran
 # du vote, on decrit le schema REEL de l'archive. Ne fait jamais tomber la chaine.
 python3 outils/echantillon_scrutins.py data/brut_Dossiers_Legislatifs docs/schema_dossiers.md \
-  || echo "::warning::le schema des dossiers legislatifs n'a pas pu etre decrit"
+  || avertir "le schema des dossiers legislatifs n'a pas pu etre decrit"
 # Recopie dans le journal : seul moyen de le lire avant fusion depuis le conteneur de travail.
 [ -f docs/schema_dossiers.md ] && { echo "=== DEBUT docs/schema_dossiers.md ==="; head -n 400 docs/schema_dossiers.md; echo "=== FIN docs/schema_dossiers.md ==="; }
 
 # ------------------------------- 3. decrire le schema des scrutins (documentaire)
 # Ne doit jamais faire tomber la chaine : c'est de la documentation.
 python3 outils/echantillon_scrutins.py data/brut_Scrutins docs/schema_scrutins.md \
-  || echo "::warning::le schema des scrutins n'a pas pu etre decrit"
+  || avertir "le schema des scrutins n'a pas pu etre decrit"
 
 # ------------------------- 3 bis. decrire les tables de circonscriptions (documentaire)
 # Sans table commune -> circonscription, un scrutin ne peut etre affiche que
@@ -124,7 +133,7 @@ for paire in "data/circos_bureaux_de_vote.csv docs/schema_circos_bv.md" \
              "data/circos_ministere.xlsx docs/schema_circos_min.md"; do
   set -- $paire
   python3 outils/echantillon_source.py "$1" "$2" \
-    || echo "::warning::description impossible pour $1"
+    || avertir "description impossible pour $1"
 done
 
 # POURQUOI LES DEUX INGESTEURS SUIVANTS N'ARRETENT PAS LA CHAINE (20/08/2026) :
@@ -146,10 +155,10 @@ done
 # l'installation echoue, l'etape avertit au lieu de tomber.
 APP_CIRC=$(ls -1 app_repere_v18_*.html | grep -v '\.bak$' | sort -V | tail -1)
 python3 -m pip install --quiet --disable-pip-version-check openpyxl >/dev/null 2>&1 \
-  || echo "::warning::openpyxl indisponible — la table des circonscriptions ne sera pas relue"
+  || avertir "openpyxl indisponible — la table des circonscriptions ne sera pas relue"
 python3 outils/circos.py data/circos_ministere.xlsx outils/circos.json "$APP_CIRC" \
   && python3 outils/circos_injecter.py "$APP_CIRC" outils/circos.json \
-  || echo "::warning::la table des circonscriptions n'a pas ete produite ou posee"
+  || avertir "la table des circonscriptions n'a pas ete produite ou posee"
 
 # ---------------------------------------- 3 quater. les scrutins, position par depute
 # Les 12 derniers scrutins SOLENNELS ou de censure, choisis sur l'archive entiere
@@ -161,7 +170,7 @@ python3 outils/circos.py data/circos_ministere.xlsx outils/circos.json "$APP_CIR
 # en tete de outils/scrutins_an.py, et le script se controle lui-meme — il refuse de
 # produire un fichier ou un non-votant serait compte comme votant.
 python3 outils/scrutins_an.py data/brut_Scrutins outils/scrutins_an.json 12 \
-  || echo "::warning::scrutins_an.py a echoue — les scrutins ne sont pas produits"
+  || avertir "scrutins_an.py a echoue — les scrutins ne sont pas produits"
 
 # DETAIL DES VOTES — meme archive, meme filtre, mais position + groupe pour
 # l'exploration a la demande. Cette couche est independante du catalogue
@@ -170,8 +179,8 @@ python3 outils/scrutins_an.py data/brut_Scrutins outils/scrutins_an.json 12 \
   cd mono
   node scripts/scrutins-details.mjs ./scripts ../data/brut_Scrutins
 node scripts/scrutins-details.mjs ./scripts ../data/brut_Questions_gouvernement qag \
-  || echo "::warning::Questions au Gouvernement non rafraichies - le reste de l application continue"
-) || echo "::warning::scrutins-details.mjs a echoue — le detail des votes ne sera pas publie"
+  || avertir "Questions au Gouvernement non rafraichies - le reste de l application continue"
+) || avertir "scrutins-details.mjs a echoue — le detail des votes ne sera pas publie"
 
 # ------------- 3 quater bis. LES DEUX RELEVES DU MONOREPO, REFAITS ICI
 # Ils etaient poses a la main, tous les deux dates du 26 aout, pendant que la source
@@ -190,11 +199,11 @@ node scripts/scrutins-details.mjs ./scripts ../data/brut_Questions_gouvernement 
 # administratif d'Etalab — que le runner sait joindre, contrairement au conteneur.
 # Le script refuse d'ecraser un fichier valide par un fichier maigre.
 python3 outils/noms_communes.py . \
-  || echo "::warning::les noms officiels des communes n'ont pas ete rafraichis"
+  || avertir "les noms officiels des communes n'ont pas ete rafraichis"
 
 python3 outils/mono_donnees.py --test \
   && python3 outils/mono_donnees.py . \
-  || echo "::warning::les releves du monorepo n'ont pas ete rafraichis (voir les avertissements ci-dessus)"
+  || avertir "les releves du monorepo n'ont pas ete rafraichis (voir les avertissements ci-dessus)"
 
 # ------------------- 3 quater bis. les projets finances par l'Etat
 # LE PREMIER FAIT DATE DU PRODUIT. L'ecran « Ce qui a ete decide » n'a rien a
@@ -211,7 +220,7 @@ python3 outils/mono_donnees.py --test \
 # code INSEE. Si la source change de forme, on le sait avant d'ecrire.
 python3 outils/projets_etat.py --test \
   && python3 outils/projets_etat.py . \
-  || echo "::warning::les projets finances par l'Etat n'ont pas ete rafraichis (voir ci-dessus)"
+  || avertir "les projets finances par l'Etat n'ont pas ete rafraichis (voir ci-dessus)"
 
 # ------------------- 3 quinquies. decrire les acteurs (pour nommer les references)
 # Les scrutins designent les deputes par une reference opaque (PA1234). Le referentiel
@@ -219,7 +228,7 @@ python3 outils/projets_etat.py --test \
 # lecteur, comme pour les scrutins — c'est ce qui avait evite le piege du champ
 # `votant` tantot liste tantot objet.
 python3 outils/echantillon_scrutins.py data/brut_AMO30/json/acteur docs/schema_acteurs.md \
-  || echo "::warning::les acteurs n'ont pas pu etre decrits (chemin different ?)"
+  || avertir "les acteurs n'ont pas pu etre decrits (chemin different ?)"
 
 # ------------------- 3 sexies. DECOUPAGE : un fichier par departement
 # DATA -> PIPELINE -> JSON. L'application embarque 16,3 Mo pour que quelqu'un lise UNE
@@ -229,7 +238,7 @@ python3 outils/echantillon_scrutins.py data/brut_AMO30/json/acteur docs/schema_a
 # Non bloquant tant que l'application ne consomme pas encore ces fichiers.
 APP_DEC=$(ls -1 app_repere_v18_*.html | grep -v '\.bak$' | sort -V | tail -1)
 python3 outils/decouper.py "$APP_DEC" site_donnees \
-  || echo "::warning::le decoupage par departement a echoue"
+  || avertir "le decoupage par departement a echoue"
 
 # ---------------- 3 septies. AUTO -> RELU -> PUBLIE : la couche editoriale
 # L'etage AUTO pose des brouillons dans data/auto/, jamais affiches. L'etage PUBLIE ne
@@ -238,9 +247,9 @@ python3 outils/decouper.py "$APP_DEC" site_donnees \
 # chaine entierement automatique la rendrait fausse a l'endroit precis ou l'on demande
 # d'etre cru.
 python3 outils/candidats.py outils/scrutins_an.json data/auto 10 \
-  || echo "::warning::les candidats n'ont pas pu etre fabriques"
+  || avertir "les candidats n'ont pas pu etre fabriques"
 python3 outils/evenements.py data/evenements outils/evenements.json \
-  || echo "::warning::la couche editoriale a echoue"
+  || avertir "la couche editoriale a echoue"
 
 # ---------------------------------------------- 4. verifier la sortie, sans confiance
 # On relit ce qui vient d'etre ecrit, sans reutiliser une ligne du script qui l'a ecrit.
@@ -291,7 +300,7 @@ PY
 # (cle « senateurs »). Non bloquant : si les colonnes ne sont pas celles attendues,
 # le script dit lesquelles manquent et n'ecrit rien ; l'ancien fichier reste en place.
 python3 outils/senateurs_idf.py data/ODSEN_GENERAL.csv outils/senateurs_idf.json \
-  || echo "::warning::senateurs d'Ile-de-France non rafraichis - voir la cause juste au-dessus (colonnes du CSV du Senat ?)"
+  || avertir "senateurs d'Ile-de-France non rafraichis - voir la cause juste au-dessus (colonnes du CSV du Senat ?)"
 
 # --------------------------------------------------- 5. reconstruire le site
 # BASCULE PREPAREE LE 19/09/2026, PAS ENCORE PUBLIEE — voir le dry-run de cette
@@ -324,13 +333,13 @@ python3 outils/senateurs_idf.py data/ODSEN_GENERAL.csv outils/senateurs_idf.json
 # mono/scripts/comptes-communes.json, que extract-html.js prefere au bloc fige
 # quand il est complet. Avertit s'il echoue : le bloc fige reste alors en place.
 python3 outils/ofgl.py --produire \
-  || echo "::warning::comptes des communes non releves - le bloc fige du 29/07/2026 reste en place"
+  || avertir "comptes des communes non releves - le bloc fige du 29/07/2026 reste en place"
 
 # LES MAIRES, RELEVES A LA SOURCE (29/09/2026). Ecrit mono/scripts/maires.json,
 # que extract-html.js prefere au bloc fige quand il est complet. Avertit s'il
 # echoue : le bloc fige reste alors en place.
 python3 outils/rne.py --produire \
-  || echo "::warning::maires non releves - le bloc fige reste en place"
+  || avertir "maires non releves - le bloc fige reste en place"
 
 APP=$(ls -1 app_repere_v18_*.html | grep -v '\.bak$' | sort -V | tail -1)
 echo "application retenue (fichier autonome) : $APP"
@@ -345,7 +354,7 @@ rm -rf site_engendre
   # n'est pas versionne) : le Senat est alors absent de la publication, et
   # l'ecran le dit. L'ancien message « le releve d'hier reste » etait faux ici.
   node scripts/calendrier-senat.mjs ./data \
-    || echo "::warning::calendrier du Senat absent ou non rafraichi - voir la cause et l'etat du releve precedent juste au-dessus"
+    || avertir "calendrier du Senat absent ou non rafraichi - voir la cause et l'etat du releve precedent juste au-dessus"
   # GROUPES POLITIQUES DES DEPUTES (V36, B2). Lit l'AMO30 deja depile et ecrit
   # mono/data/deputes-groupes.json. Non bloquant : sans lui, l'application ne montre pas
   # le groupe. Refuse d'ecrire si moins de 90 % des deputes ont un groupe lu.
@@ -377,7 +386,7 @@ rm -rf site_engendre
   # script avertit et rend une main vide - le Senat continue seul, comme le
   # Senat continuerait seul si CE fichier-ci manquait a l'inverse.
   node scripts/agenda-an.mjs ./data \
-    || echo "::warning::agenda de l'Assemblee non rafraichi - le calendrier continue avec le Senat seul"
+    || avertir "agenda de l'Assemblee non rafraichi - le calendrier continue avec le Senat seul"
   # SCRUTINS SOLENNELS (23/09/2026) - lit directement data/brut_Scrutins
   # (depile a l'etape 1 de ce meme script, encore present a ce stade),
   # jamais outils/scrutins_an.json : la fenetre glissante de 80 scrutins de
@@ -396,16 +405,21 @@ rm -rf site_engendre
   # lue par l'application au lieu de telecharger tous les departements de la region.
   # Non bloquant : sans ce fichier, l'application recalcule a partir des departements.
   node scripts/agregats-regionaux.mjs ./data \
-    || echo "::warning::agregats regionaux non produits - l'application recalculera depuis les departements"
+    || avertir "agregats regionaux non produits - l'application recalculera depuis les departements"
   # ACTU LOCALE HEBDOMADAIRE (30/10/2026, D29-D31) - redigee par le CEO dans
   # data/actus-hebdo.json (versionne, a la racine), recopiee telle quelle dans les donnees
   # publiees. Aucune transformation, aucune generation. Absent : l'application n'affiche rien.
   cp ../data/actus-hebdo.json ./data/actus-hebdo.json 2>/dev/null \
-    || echo "::warning::data/actus-hebdo.json absent - aucune actu locale publiee"
+    || avertir "data/actus-hebdo.json absent - aucune actu locale publiee"
+  # CODES POSTAUX (12/11/2026) - Base officielle de La Poste (data.gouv.fr). Reseau requis. La licence et les
+  # colonnes sont LUES sur le runner, pas supposees ; licence fermee, en-tete inattendu ou couverture sous
+  # 90 % : rien n'est ecrit, et l'application dit que la recherche par code postal n'est pas disponible.
+  node scripts/collecte-codes-postaux.mjs ./data \
+    || avertir "codes postaux non collectes (La Poste, data.gouv.fr) - recherche par code postal indisponible"
   # SITES DES MAIRIES (30/10/2026, D28) - annuaire DILA, Licence Ouverte 2.0. Reseau
   # requis. Non bloquant : sans ce fichier, l'application n'affiche simplement pas le lien.
   node scripts/collecte-sites-mairies.mjs ./data \
-    || echo "::warning::sites des mairies non collectes (annuaire DILA) - aucun lien affiche"
+    || avertir "sites des mairies non collectes (annuaire DILA) - aucun lien affiche"
   # ETAT ANNONCE DANS LA CI (29/10/2026). Le banc ne montre sa sortie qu'en cas
   # d'echec : sans cette annotation, une CI verte ne disait pas si le teaser
   # etait present ou si sa note d'absence avait ete testee a sa place.
@@ -422,12 +436,12 @@ rm -rf site_engendre
   # jamais en erreur : une source en echec laisse le fichier precedent intact et ecrit un avertissement.
   node scripts/collecte-presidentielle.mjs --collecter || true
   node scripts/collecte-presidentielle.mjs ./data \
-    || echo "::warning::presidentielle 2027 non publiee (fichier mal forme ou absent) - l'application dira que les donnees ne sont pas arrivees"
+    || avertir "presidentielle 2027 non publiee (fichier mal forme ou absent) - l'application dira que les donnees ne sont pas arrivees"
   # PHOTOS D'ELUS (30/10/2026, D27) - Wikidata + Wikimedia Commons, licences libres
   # seulement, vignettes integrees par departement. Reseau requis. Non bloquant : sans
   # ce fichier, l'application affiche les initiales.
   node scripts/collecte-photos-elus.mjs ./data \
-    || echo "::warning::photos d'elus non collectees - initiales affichees"
+    || avertir "photos d'elus non collectees - initiales affichees"
   # FLUX RSS DES MAIRIES (31/10/2026, D81, ADR 0007) - seulement les flux publies par la
   # mairie, jamais son HTML. Apres l'install (rss-parser). Reseau requis. Non bloquant :
   # sans ce fichier, l'application n'affiche pas d'actualite de flux.
@@ -435,7 +449,7 @@ rm -rf site_engendre
   # Seul le texte exact « true » active la publication. collecte.yml ne le fixe pas.
   REPERE_PUBLICATION_ACTUS="${REPERE_PUBLICATION_ACTUS:-false}" \
     node scripts/collecte-rss-mairies.mjs ./data ../data/auto/actus-brouillon.md \
-    || echo "::warning::flux RSS des mairies non collectes - aucune actu de flux publiee"
+    || avertir "flux RSS des mairies non collectes - aucune actu de flux publiee"
   # RISQUE CONFIRME PAR AUDIT LE 22/09/2026, PAS SUPPOSE : ce bloc n'installait
   # aucun Chromium pour mono/. Le premier essai reel sur le runner GitHub
   # (workflow_dispatch de test, run 35796632331) a echoue exactement ici -
@@ -468,7 +482,7 @@ echo "site engendre depuis mono/ : $(find site_engendre -type f | wc -l) fichier
 # sur une pull request, l'avertissement se lit dans l'epreuve.
 echo "== contexte des agents =="
 node outils/derive_contexte.mjs \
-  || echo "::warning::le contexte des agents a derive (voir outils/derive_contexte.mjs ci-dessus)"
+  || avertir "le contexte des agents a derive (voir outils/derive_contexte.mjs ci-dessus)"
 
 # Collecte sans reseau (07/10/2026) : les etats d'un telechargement (panne, 404,
 # 500, page HTML, archive tronquee) sont verifies sur des reponses simulees.
@@ -487,7 +501,7 @@ banc "scrutins solennels : erreurs bloquantes" bash outils/test_scrutins_solenne
 # un site officiel en panne une matinee n'est pas une erreur de Repere. Les sites des
 # mairies ne sont verifies que pendant la collecte planifiee (voir le script).
 python3 outils/verifier_liens.py --mairies mono/data/mairies-idf.json \
-  || echo "::warning::la verification des liens sortants n'a pas pu tourner"
+  || avertir "la verification des liens sortants n'a pas pu tourner"
 
 echo "== banc : le fichier autonome =="
 banc "fichier autonome" node test_repere.mjs "$APP"

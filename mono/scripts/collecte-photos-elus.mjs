@@ -40,6 +40,7 @@ const SPARQL = "https://query.wikidata.org/sparql";
 const COMMONS = "https://commons.wikimedia.org/w/api.php";
 const DEPS_IDF = ["75", "77", "78", "91", "92", "93", "94", "95"];
 export const LICENCE_OK = /^(cc[ -]by(-sa)?[ -]\d(\.\d)?( [a-z]{2,})?|cc0( 1\.0)?|public domain|domaine public|pd[ -].*)$/i;
+const SITE = (process.env.REPERE_SITE || "https://repereapp.netlify.app/data").replace(/\/$/, "");
 const pause = ms => new Promise(r => setTimeout(r, ms));
 export const norm = s => String(s || "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/[^a-z]+/g, " ").trim();
 /* Le libelle contient-il le nom de famille, mot pour mot (« Breton » dans « Xavier Breton ») ? */
@@ -48,10 +49,45 @@ export const concorde = (libelle, famille) => { const f = norm(famille); return 
 export const familleRNE = nom => String(nom || "").split(/\s+/).filter(m => m.length > 1 && m === m.toUpperCase() && /[A-Z]/.test(m)).join(" ");
 const sansHtml = s => String(s || "").replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
 
+/* ROBUSTESSE (12/11/2026) : Wikidata et Commons repondent parfois 429 (trop de requetes), 5xx, ou pas du tout.
+   Chaque appel a un delai maximal et jusqu'a trois reprises espacees (2 s, 8 s, ou l'en-tete Retry-After).
+   Une erreur 4xx autre que 408 et 429 n'est pas rejouee : la requete est fausse, la rejouer ne change rien. */
+export async function appeler(url, options = {}, { essais = 3, attente = n => 2000 * 4 ** n, delaiMs = 45000, fetchFn = fetch, dormir = pause } = {}) {
+  let derniere = null;
+  for (let n = 0; n < essais; n++) {
+    try {
+      const r = await fetchFn(url, { ...options, signal: AbortSignal.timeout(delaiMs) });
+      if (r.ok) return r;
+      derniere = new Error("HTTP " + r.status);
+      if (r.status < 500 && r.status !== 429 && r.status !== 408) throw Object.assign(derniere, { definitive: true });
+      const apres = Number(r.headers && r.headers.get && r.headers.get("retry-after"));
+      if (n < essais - 1) await dormir(apres > 0 && apres <= 60 ? apres * 1000 : attente(n));
+    } catch (e) {
+      if (e.definitive) throw e;
+      derniere = e;
+      if (n < essais - 1) await dormir(attente(n));
+    }
+  }
+  throw derniere;
+}
 async function sparql(q) {
-  const r = await fetch(SPARQL + "?format=json&query=" + encodeURIComponent(q), { headers: { "user-agent": UA, accept: "application/sparql-results+json" } });
-  if (!r.ok) throw new Error("SPARQL HTTP " + r.status);
-  return (await r.json()).results.bindings;
+  const r = await appeler(SPARQL + "?format=json&query=" + encodeURIComponent(q), { headers: { "user-agent": UA, accept: "application/sparql-results+json" } });
+  const j = await r.json();
+  if (!j || !j.results || !Array.isArray(j.results.bindings)) throw new Error("SPARQL : reponse sans resultats");
+  return j.results.bindings;
+}
+/* REPRISE DE LA PUBLICATION PRECEDENTE (candidats) : si Wikidata ne repond pas, on garde les photos deja publiees
+   plutot que de faire disparaitre tous les visages un matin. Seulement pour des candidats toujours dans la liste,
+   jamais une photo retiree, et chaque entree repasse le controle (vignette, auteur, licence libre). */
+export function photosReprises(precedent, liste, retirees) {
+  const ids = new Set(liste.map(c => c.id));
+  const out = {};
+  for (const [id, x] of Object.entries((precedent && precedent.photos) || {})) {
+    if (!ids.has(id) || retirees.has("C:" + id)) continue;
+    if (!x || !/^data:image\//.test(x.data || "") || !x.auteur || !LICENCE_OK.test(x.licence || "")) continue;
+    out[id] = x;
+  }
+  return out;
 }
 /* RAPPROCHEMENT D'UN CANDIDAT (ADR 0008) : une candidature declaree n'a aucun identifiant officiel.
    `lignes` = reponses SPARQL { p, label, img? } deja filtrees (humain, francais, personnalite politique).
@@ -114,7 +150,7 @@ async function main() {
   }
 
   /* 2 bis. Candidats a la presidentielle (ADR 0008). Une erreur ici ne prive pas les elus de leurs photos. */
-  let nbCandidats = 0, nbCandidatsRapproches = 0;
+  let nbCandidats = 0, nbCandidatsRapproches = 0, candidatsRepris = 0;
   try {
     const fc = path.join(SORTIE, "presidentielle-2027", "candidats.json");
     const liste = fs.existsSync(fc) ? (JSON.parse(fs.readFileSync(fc, "utf8")).candidats || []) : [];
@@ -127,20 +163,40 @@ async function main() {
       nbCandidatsRapproches = retenus.length;
       candidats.push(...retenus);
     }
-  } catch (e) { console.log("photos-candidats : rapprochement impossible (" + e.message + ") - initiales affichees"); }
+  } catch (e) {
+    /* Wikidata injoignable apres reprises : la publication precedente, si elle existe (REPERE_SITE, sinon la production). */
+    console.log("::warning::photos-candidats : rapprochement impossible (" + e.message + ")");
+    /* Meme canal que « avertir » de outils/pipeline.sh : deux jours de suite, outils/alerte_collecte.mjs ouvre une issue. */
+    try { if (process.env.REPERE_AVERTISSEMENTS) fs.appendFileSync(process.env.REPERE_AVERTISSEMENTS, "photos des candidats : Wikidata injoignable, rapprochement impossible\n"); } catch { /* le journal d'alerte ne bloque rien */ }
+    try {
+      const fc = path.join(SORTIE, "presidentielle-2027", "candidats.json");
+      const liste = fs.existsSync(fc) ? (JSON.parse(fs.readFileSync(fc, "utf8")).candidats || []) : [];
+      const prec = await (await appeler(SITE + "/presidentielle-2027/photos.json", { headers: { "user-agent": UA } }, { essais: 2 })).json();
+      const reprises = photosReprises(prec, liste, retirees);
+      if (Object.keys(reprises).length) {
+        fs.writeFileSync(path.join(SORTIE, "presidentielle-2027", "photos.json"), JSON.stringify({ ...prec, photos: reprises }));
+        candidatsRepris = Object.keys(reprises).length;
+      }
+      console.log(`photos-candidats : ${candidatsRepris} photo(s) reprise(s) de la publication du ${prec.genere_le || "date inconnue"}`);
+    } catch (e2) { console.log("photos-candidats : publication precedente illisible (" + e2.message + ") - initiales affichees"); }
+  }
 
   /* 3. Licence et vignette, par lots de 40 fichiers Commons. */
   const parDep = {};
-  let refusees = 0;
+  let refusees = 0, lotsEchoues = 0;
   const avantRetrait = candidats.length;
   for (let i = candidats.length - 1; i >= 0; i--) if (retirees.has(candidats[i].cle)) candidats.splice(i, 1);
   if (avantRetrait !== candidats.length) console.log(`photos-elus : ${avantRetrait - candidats.length} photo(s) retiree(s) sur demande, non reprises`);
   for (let i = 0; i < candidats.length; i += 40) {
     const lot = candidats.slice(i, i + 40);
     const titres = lot.map(c => "File:" + fichier(c.image)).join("|");
-    const r = await fetch(`${COMMONS}?action=query&format=json&prop=imageinfo&iiprop=url|extmetadata&iiurlwidth=160&titles=${encodeURIComponent(titres)}`, { headers: { "user-agent": UA } });
-    if (!r.ok) throw new Error("Commons HTTP " + r.status);
-    const pages = Object.values((await r.json()).query?.pages || {});
+    /* Un lot de Commons en echec (apres reprises) ne fait plus tomber toute la collecte : ses photos manquent
+       ce jour-la, et le compte final le dit. */
+    let pages;
+    try {
+      const r = await appeler(`${COMMONS}?action=query&format=json&prop=imageinfo&iiprop=url|extmetadata&iiurlwidth=160&titles=${encodeURIComponent(titres)}`, { headers: { "user-agent": UA } });
+      pages = Object.values((await r.json()).query?.pages || {});
+    } catch (e) { lotsEchoues++; refusees += lot.length; console.log(`photos-elus : lot Commons ${i / 40 + 1} en echec (${e.message})`); await pause(1000); continue; }
     for (const c of lot) {
       const pg = pages.find(p => norm(p.title) === norm("File:" + fichier(c.image)));
       const ii = pg && pg.imageinfo && pg.imageinfo[0];
@@ -148,8 +204,8 @@ async function main() {
       const licence = md && md.LicenseShortName ? sansHtml(md.LicenseShortName.value) : "";
       const auteur = md && md.Artist ? sansHtml(md.Artist.value) : "";
       if (!ii || !ii.thumburl || !LICENCE_OK.test(licence) || !auteur) { refusees++; continue; }
-      const img = await fetch(ii.thumburl, { headers: { "user-agent": UA } });
-      if (!img.ok) { refusees++; continue; }
+      let img;
+      try { img = await appeler(ii.thumburl, { headers: { "user-agent": UA } }, { essais: 2 }); } catch { refusees++; continue; }
       const octets = Buffer.from(await img.arrayBuffer());
       if (octets.length > 25000) { refusees++; continue; }   /* une vignette, pas une photo pleine taille */
       const type = img.headers.get("content-type") || "image/jpeg";
@@ -180,6 +236,8 @@ async function main() {
   const nbDeputes = Object.keys(deputes).length;
   const nbDep = candidats.filter(c => c.cle.startsWith("PA")).length;
   const nbC = candidats.filter(c => c.cle.startsWith("C:")).length;
-  console.log(`photos-elus : ${total} photos retenues (${refusees} refusees : licence, auteur, taille) ; deputes rapproches ${nbDep}/${nbDeputes} ; maires rapproches ${candidats.length - nbDep - nbC} ; candidats rapproches ${nbCandidatsRapproches}/${nbCandidats}`);
+  console.log(`photos-elus : ${total} photos retenues (${refusees} refusees : licence, auteur, taille) ; deputes rapproches ${nbDep}/${nbDeputes} ; maires rapproches ${candidats.length - nbDep - nbC} ; candidats rapproches ${nbCandidatsRapproches}/${nbCandidats}` + (candidatsRepris ? ` (Wikidata en echec : ${candidatsRepris} photos reprises de la veille)` : "") + (lotsEchoues ? ` ; ${lotsEchoues} lot(s) Commons en echec` : ""));
+  /* Tout Commons en echec : la collecte n'a rien produit, l'etape doit avertir (et alerter au bout de deux jours). */
+  if (candidats.length && total === 0) throw new Error("aucune photo retenue sur " + candidats.length + " rapprochements (Commons injoignable ?)");
 }
 if (import.meta.url === `file://${process.argv[1]}`) main().catch(e => { console.error("photos-elus : " + e.message); process.exit(2); });
