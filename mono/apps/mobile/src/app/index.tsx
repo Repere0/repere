@@ -23,7 +23,7 @@ import { Bouton, Carte, Texte, Vide } from "../lib/composants";
 import { useSelection } from "../lib/selection";
 import { useProfil } from "../lib/profil";
 import { BadgeZoom, useNiveauZoom } from "../ui/badge-zoom";
-import { feuille, ACCENTS, CIBLE, couleurs, JAUGE, OMBRE, PAS, POLICE, RAYON, TYPO } from "../lib/theme";
+import { feuille, ACCENTS, CIBLE, couleurs, FILET_TUILE, JAUGE, OMBRE, PAS, POLICE, RAYON, TYPO } from "../lib/theme";
 import { useTheme } from "../lib/themeChoix";
 import { Decideurs } from "../ui/decideurs";
 import { ActuMairie } from "../ui/actu-mairie";
@@ -705,7 +705,7 @@ const s = feuille(() => StyleSheet.create({
   outil: { width: CIBLE, height: CIBLE, alignItems: "center", justifyContent: "center" },
   tuiles: { flexDirection: "row", flexWrap: "wrap", gap: PAS * 2 },
   /* Fond D.voile : la teinte demandée par le porteur à 3 unités près, sans couleur hors palette. */
-  tuile: { width: "48%", flexGrow: 1, minHeight: 76, gap: PAS * 2, padding: PAS * 3, borderRadius: RAYON.bloc, backgroundColor: D.carte, justifyContent: "space-between" },
+  tuile: { width: "48%", flexGrow: 1, minHeight: 76, gap: PAS * 2, padding: PAS * 3, borderRadius: RAYON.bloc, backgroundColor: D.carte, ...(Platform.OS === "web" ? { borderWidth: 1, borderColor: FILET_TUILE.filet } : {}), justifyContent: "space-between" },
   tuileTexte: { fontFamily: POLICE.titre, fontSize: 14, lineHeight: 20, color: D.encre },
   marque: { fontFamily: POLICE.affiche, fontSize: 20, color: D.encre },
   /* L'action principale : plus haute, filet plus marqué (refonte du 09/11/2026). */

@@ -11,6 +11,8 @@ const nav = await chromium.launch();
 const ctx = await nav.newContext({ viewport: { width: 390, height: 844 } });
 const page = await ctx.newPage();
 const erreurs = []; page.on("pageerror", e => erreurs.push(String(e)));
+// Les hebergeurs (Vercel) n'envoient jamais un dossier node_modules : polices et icones y repondaient 404.
+const assets = []; page.on("response", r => { if (r.url().includes("/assets/")) assets.push({ u: r.url(), s: r.status() }); });
 await page.goto(BASE, { waitUntil: "networkidle" });
 await page.evaluate(() => navigator.serviceWorker.ready);
 await page.waitForTimeout(1500);
@@ -20,6 +22,11 @@ const etat = await page.evaluate(async () => {
   const cles = coq ? (await (await caches.open(coq)).keys()).map(r => new URL(r.url).pathname) : [];
   return { actif: !!(await navigator.serviceWorker.getRegistration())?.active, noms, cles };
 });
+const polices = await page.evaluate(() => [...document.fonts].filter(f => f.status === "loaded").map(f => f.family.replace(/["']/g, "")));
+ok(!assets.some(a => a.u.includes("node_modules")), "aucune adresse ne passe par node_modules");
+ok(assets.length > 0 && assets.every(a => a.s < 400), `polices et icônes : toutes les réponses sont valides (${assets.length})`);
+ok(["Manrope_800ExtraBold", "DMSans_400Regular"].every(f => polices.includes(f)), "Manrope et DM Sans sont chargées : " + polices.join(", "));
+ok(polices.some(f => /ionicons/i.test(f)), "la police d'icônes Ionicons est chargée");
 ok(etat.actif, "le service worker est actif");
 ok(etat.cles.includes("/index.html") && etat.cles.some(c => c.startsWith("/_expo/static/js/")), `la coquille est en cache (${etat.cles.length} fichiers)`);
 ok(!etat.cles.some(c => c.startsWith("/data/")), "aucune donnée dans le cache du service worker");

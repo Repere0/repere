@@ -21,7 +21,7 @@
  * de stockage nouvelle : l'invariant 2 (une seule clé locale) est préservé. */
 import { useColorScheme } from "react-native";
 import {
-  NEUTRES_PAR_MODE, BADGE_DECLARATION_PAR_MODE, ECHELONS_PAR_MODE, TEINTES_PAR_MODE, OMBRE_PAR_MODE, COULEURS_VOTE, COULEURS_VOTE_DALTONIEN,
+  NEUTRES_PAR_MODE, BADGE_DECLARATION_PAR_MODE, FILET_TUILE_PAR_MODE, ECHELONS_PAR_MODE, TEINTES_PAR_MODE, OMBRE_PAR_MODE, COULEURS_VOTE, COULEURS_VOTE_DALTONIEN,
   ACCENTS_PAR_MODE, JAUGE_BUDGET_PAR_MODE,
   type Mode, type Echelon,
 } from "./palette";
@@ -140,7 +140,7 @@ function construire(m: Mode) {
   /* Les trois gris d'une répartition de vote : ils se distinguent aussi par leur
      libellé et leur nombre, jamais par la couleur seule (accessibilité). */
   const GRIS_VOTE = { p: couleurs.encre, c: couleurs.sourd, a: couleurs.trait } as const;
-  return { couleurs, TYPO, TEINTES: TEINTES_PAR_MODE[m], GRIS_VOTE, OMBRE: OMBRE_PAR_MODE[m], POLICE, ACCENTS: ACCENTS_PAR_MODE[m], JAUGE: JAUGE_BUDGET_PAR_MODE[m], BADGE_DECLARATION: BADGE_DECLARATION_PAR_MODE[m] };
+  return { couleurs, TYPO, TEINTES: TEINTES_PAR_MODE[m], GRIS_VOTE, OMBRE: OMBRE_PAR_MODE[m], POLICE, ACCENTS: ACCENTS_PAR_MODE[m], JAUGE: JAUGE_BUDGET_PAR_MODE[m], BADGE_DECLARATION: BADGE_DECLARATION_PAR_MODE[m], FILET_TUILE: FILET_TUILE_PAR_MODE[m] };
 }
 
 type Palette = Record<Echelon, string> & {
@@ -180,6 +180,7 @@ export const POLICE: Polices = miroir(() => vue().POLICE);
 export const ACCENTS: Vue["ACCENTS"] = miroir(() => vue().ACCENTS);
 export const JAUGE: Vue["JAUGE"] = miroir(() => vue().JAUGE);
 export const BADGE_DECLARATION: Vue["BADGE_DECLARATION"] = miroir(() => vue().BADGE_DECLARATION);
+export const FILET_TUILE: Vue["FILET_TUILE"] = miroir(() => vue().FILET_TUILE);
 
 /* UNE FEUILLE DE STYLE DE MODULE. `StyleSheet.create({ ... couleurs.encre })`
    au niveau d'un module fige la couleur au chargement : la bascule de thème ne la
