@@ -45,7 +45,7 @@ export function BoutonCopierLien({ icone = false }: { icone?: boolean }) {
   };
   return (
     <Pressable onPress={onPress} accessibilityRole="button" accessibilityLabel="Copier le lien de cette page"
-      style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", paddingHorizontal: 8, opacity: pressed ? 0.6 : 1 })}>
+      style={({ pressed }) => ({ minHeight: CIBLE, minWidth: CIBLE, alignItems: "center", justifyContent: "center", paddingHorizontal: 8, opacity: pressed ? 0.6 : 1 })}>
       {icone && !etat ? <Ionicons name="share-outline" size={24} color={couleurs.lien} accessible={false} importantForAccessibility="no" /> : (
         <Text style={{ fontSize: 17, color: couleurs.lien, fontWeight: "500" }} accessibilityLiveRegion="polite">
           {etat === "ok" ? "Lien copié" : etat === "echec" ? "Copie impossible" : "Copier le lien"}
