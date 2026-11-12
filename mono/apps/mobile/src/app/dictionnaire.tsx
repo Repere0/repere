@@ -17,9 +17,11 @@
 import { useMemo, useState } from "react";
 import { Pressable, Text, TextInput, View } from "react-native";
 import { Stack, useLocalSearchParams } from "expo-router";
+import { Ionicons } from "@expo/vector-icons";
 import { GLOSSAIRE, titreDuMot } from "@repere/core";
 import { couleurs, PAS, POLICE, RAYON, TYPO } from "../lib/theme";
 import { Page, Question } from "../ui/page";
+import { Quiz } from "../ui/quiz";
 import { enfonce } from "../ui/mouvement";
 
 /* LES CATÉGORIES (porteur, 09/11/2026) : les MOTS regroupés par thème, pour filtrer la liste.
@@ -36,6 +38,7 @@ const CATEGORIE_DE: Record<string, Categorie> = {
   pcf: "Élus", modem: "Élus", hor: "Élus", dem: "Élus", gdr: "Élus", liot: "Élus", udi: "Élus",
 };
 
+const categorieDuMot = (cle: string): string => CATEGORIE_DE[cle] || "Institutions";
 const normaliser = (s: string) => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
 
 type Entree = { cle: string; titre: string; corps: string; lettre: string };
@@ -43,6 +46,8 @@ type Entree = { cle: string; titre: string; corps: string; lettre: string };
 export default function Dictionnaire() {
   const parametres = useLocalSearchParams<{ mot?: string | string[] }>();
   const cleMot = Array.isArray(parametres.mot) ? parametres.mot[0] : parametres.mot;
+  /* 12/11/2026 (porteur) : le quiz d'abord ; un mot tapable dans une phrase (?mot=) ouvre la liste, avec ce mot cherché. */
+  const [mode, setMode] = useState<"quiz" | "mots">(cleMot ? "mots" : "quiz");
   const [recherche, setRecherche] = useState(() => titreDuMot(cleMot) || "");
   const [lettre, setLettre] = useState<string | null>(null);
   const [categorie, setCategorie] = useState<Categorie | null>(null);
@@ -70,8 +75,19 @@ export default function Dictionnaire() {
   return (
     <Page>
       <Stack.Screen options={{ title: "Dictionnaire citoyen" }} />
-      <Question etiquette="Les mots de la vie publique" question="Dictionnaire"
-        sous="Les mots de la vie publique, expliqués simplement. Des définitions courtes, exactes sur le plan institutionnel." />
+      <Question etiquette="Les mots de la vie publique" question={mode === "quiz" ? "Quiz du dictionnaire" : "Dictionnaire"}
+        sous={mode === "quiz" ? "Quatre définitions, une seule juste. Du vocabulaire institutionnel, jamais une opinion." : "Les mots de la vie publique, expliqués simplement. Des définitions courtes, exactes sur le plan institutionnel."} />
+      <View accessibilityRole="tablist" style={{ flexDirection: "row", gap: 8 }}>
+        {([["quiz", "Quiz", "game-controller-outline"], ["mots", "Les mots", "book-outline"]] as const).map(([cle, texte, icone]) => (
+          <Pressable key={cle} onPress={() => setMode(cle)} accessibilityRole="tab" accessibilityState={{ selected: mode === cle }}
+            style={({ pressed }) => [chip(mode === cle), { flexDirection: "row", gap: 8 }, pressed && { opacity: 0.7 }]}>
+            <Ionicons name={icone} size={18} color={mode === cle ? couleurs.sol : couleurs.encre} accessible={false} importantForAccessibility="no" />
+            <Text style={{ fontFamily: POLICE.texteMoyen, color: mode === cle ? couleurs.sol : couleurs.encre }}>{texte}</Text>
+          </Pressable>
+        ))}
+      </View>
+      {mode === "quiz" ? <Quiz categorieDe={categorieDuMot} /> : null}
+      {mode === "mots" ? (<>
 
       <View style={{ flexDirection: "row", alignItems: "center" }}>
         <TextInput
@@ -132,6 +148,7 @@ export default function Dictionnaire() {
       )) : (
         <Text style={TYPO.note}>{`Aucun mot ne correspond à « ${recherche.trim()} ». Essayez une partie du mot, ou parcourez les lettres.`}</Text>
       )}
+      </>) : null}
     </Page>
   );
 }

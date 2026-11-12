@@ -1,0 +1,51 @@
+// LE QUIZ DU DICTIONNAIRE (12/11/2026) : quatre propositions, une seule vraie ; des fausses réponses valables ; du vocabulaire, jamais une opinion.
+import { test } from "node:test";
+import assert from "node:assert/strict";
+import { GLOSSAIRE } from "../../../packages/core/src/index.js";
+import { construireQuestion, definitionCourte, entreesDuQuiz, melanger, sessionDuQuiz } from "../src/lib/quiz.js";
+
+const entrees = Object.entries(GLOSSAIRE).map(([cle, m]) => ({ cle, titre: m.titre, corps: m.corps }));
+const graine = (s = 7) => () => { s = (s * 16807) % 2147483647; return s / 2147483647; };
+const sans = t => t.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+
+test("quiz : chaque mot posable donne exactement quatre propositions, une seule vraie, toutes différentes", () => {
+  const session = sessionDuQuiz(entrees, graine());
+  assert.ok(session.length >= 14, `au moins 14 questions possibles (${session.length})`);
+  for (const q of session) {
+    assert.equal(q.propositions.length, 4, q.cle);
+    assert.equal(q.propositions.filter(p => p.juste).length, 1, q.cle);
+    assert.equal(new Set(q.propositions.map(p => p.texte)).size, 4, `${q.cle} : propositions distinctes`);
+    assert.equal(q.propositions.find(p => p.juste).texte, definitionCourte(GLOSSAIRE[q.cle].corps), "la vraie est la définition du dictionnaire");
+  }
+});
+
+test("quiz : une fausse réponse est la définition d'un AUTRE mot, qui ne partage aucun mot de 4 lettres avec la question et ne la cite pas", () => {
+  for (const q of sessionDuQuiz(entrees, graine(3))) {
+    const motsQ = new Set(sans(q.titre).match(/[a-z]{4,}/g) || []);
+    for (const p of q.propositions.filter(x => !x.juste)) {
+      assert.notEqual(p.cle, q.cle);
+      assert.equal(p.texte, definitionCourte(GLOSSAIRE[p.cle].corps), "texte déjà publié, rien d'inventé");
+      assert.ok(!(sans(p.titre).match(/[a-z]{4,}/g) || []).some(m => motsQ.has(m)), `${q.cle} / ${p.cle} : mots partagés`);
+      assert.ok(!sans(p.texte).includes(sans(q.titre)), `${q.cle} : une fausse réponse cite le mot demandé`);
+    }
+  }
+});
+
+test("quiz : le vocabulaire institutionnel seulement — aucun sigle de groupe politique", () => {
+  const cles = entreesDuQuiz(entrees).map(e => e.cle);
+  for (const interdit of ["ps", "lr", "rn", "lfi", "eelv", "epr", "pcf", "modem", "hor", "dem", "gdr", "liot", "udi"]) assert.ok(!cles.includes(interdit), interdit);
+  assert.ok(cles.includes("circonscription") && cles.includes("mandat"));
+});
+
+test("quiz : l'ordre change d'une session à l'autre, et reste le même pour un même hasard", () => {
+  const a = sessionDuQuiz(entrees, graine(1)).map(q => q.cle).join();
+  const b = sessionDuQuiz(entrees, graine(2)).map(q => q.cle).join();
+  assert.notEqual(a, b);
+  assert.equal(a, sessionDuQuiz(entrees, graine(1)).map(q => q.cle).join());
+  assert.deepEqual(melanger([1, 2, 3, 4], graine()).sort(), [1, 2, 3, 4]);
+});
+
+test("quiz : un mot sans assez de fausses réponses valables ne produit pas de question", () => {
+  const trois = entrees.slice(0, 3);
+  assert.equal(construireQuestion(trois, trois[0].cle), null);
+});

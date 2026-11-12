@@ -12,15 +12,16 @@ import { SquelettesListe } from "../ui/squelette";
 import { Ionicons } from "@expo/vector-icons";
 import { useEffect, useMemo, useState } from "react";
 import { Pressable, ScrollView, Text, TextInput, View } from "react-native";
-import { router } from "expo-router";
-import { correspond, dateFr, departementDe, motsCible, motsRecherche, titreLisible, trouverCommunes } from "@repere/core";
-import { chargerCommunesBeta, chargerIndex, chargerScrutinsIndex, ETATS, PHRASES } from "../lib/donnees";
+import { router, useLocalSearchParams } from "expo-router";
+import { correspond, dateFr, departementDe, motsCible, motsRecherche, themesDuTexte, titreLisible, trouverCommunes } from "@repere/core";
+import { chargerCommunesBeta, chargerIndex, chargerQuestionsGouvernementIndex, chargerScrutinsIndex, ETATS, PHRASES } from "../lib/donnees";
 import { chargerFiches } from "../lib/annuaire";
 import { useSelection } from "../lib/selection";
 import { useProfil } from "../lib/profil";
 import { Vide } from "../lib/composants";
 import { couleurs, CIBLE, PAS, RAYON, TYPO } from "../lib/theme";
 import { Loupe } from "../ui/loupe";
+import { ChipsThemes } from "../ui/chips-themes";
 import type { Fiche } from "../types/annuaire";
 
 /* Au plus cette quantité par section : le lecteur affine plutôt que de faire défiler une liste de mille lignes. */
@@ -29,6 +30,7 @@ const PAR_SECTION = 8;
 type Ligne = [string, string, string[]]; /* [code INSEE, nom, mots de recherche] : la forme de trouverCommunes */
 type Elu = Fiche & { cible: string[] };
 type Scrutin = { n: string; t: string; d?: string; cible: string[] };
+type Question = { uid: string; n: string; d?: string; ministere: string | null; auteur?: { nom?: string | null }; cible: string[] };
 type Charge<T> = { etat: string; liste: T[] };
 type Departement = { code: string; nom?: string };
 
@@ -63,6 +65,10 @@ export default function Recherche() {
   const { choisir } = useSelection();
   const { absent } = useProfil();
   const [filtre, setFiltre] = useState("");
+  /* 12/11/2026 (porteur) : un thème, choisi sur l'accueil ou ici, filtre les scrutins et les questions. */
+  const params = useLocalSearchParams<{ theme?: string }>();
+  const [theme, setTheme] = useState<string | null>(params.theme ?? null);
+  const [questions, setQuestions] = useState<Charge<Question>>({ etat: EN_COURS, liste: [] });
   /* Le focus se lit sur la pastille entière (filet en encre), pas sur un rectangle dans la pastille. */
   const [focus, setFocus] = useState(false);
   const [communes, setCommunes] = useState<Charge<Ligne>>({ etat: EN_COURS, liste: [] });
@@ -94,21 +100,32 @@ export default function Recherche() {
         liste: s ? s.scrutins.map(x => ({ ...x, cible: motsCible(titreLisible(x.t)) })) : [],
       });
     });
+    chargerQuestionsGouvernementIndex().then(r => {
+      if (!vivant) return;
+      const q = r.donnees as { questions: { uid: string; n: string; d?: string; ministere: string | null; auteur?: { nom?: string | null } }[] } | null;
+      setQuestions({ etat: q ? ETATS.SERVI : r.etat, liste: q ? q.questions.map(x => ({ ...x, cible: motsCible(`${x.auteur?.nom ?? ""} ${x.ministere ?? ""}`) })) : [] });
+    });
     return () => { vivant = false; };
   }, []);
 
   const cherches = motsRecherche(filtre);
   const resultats = useMemo(() => {
-    if (!cherches.length) return null;
-    const c = trouverCommunes(communes.liste, cherches);
+    if (!cherches.length && !theme) return null;
+    /* Un thème est un rangement par mots-clés des TITRES (core/themes.js) : il ne s'applique ni aux communes ni aux
+       élus, qui ne sont pas rangés par thème. Avec un thème, seuls les scrutins et les questions sont montrés. */
+    const duTheme = (texte: string) => !theme || (themesDuTexte(texte) as string[]).includes(theme);
+    const c = theme ? [] : trouverCommunes(communes.liste, cherches);
     /* Mot à mot, au début des mots, comme les communes : la recherche tolérante aux fautes reste
        dans l'onglet « Élus ». Ici, « Melun » ne ramène pas « Mélin » ni « Meloni ». */
-    const e = elus.liste.filter(x => correspond(cherches, x.cible));
+    const e = theme ? [] : elus.liste.filter(x => correspond(cherches, x.cible));
     const s = scrutins.liste
-      .filter(x => correspond(cherches, x.cible))
+      .filter(x => duTheme(titreLisible(x.t)) && (!cherches.length || correspond(cherches, x.cible)))
       .sort((a, b) => (b.d ?? "").localeCompare(a.d ?? ""));
-    return { communes: c, elus: e, scrutins: s };
-  }, [filtre, communes, elus, scrutins]);
+    const q = theme ? questions.liste
+      .filter(x => duTheme(x.ministere ?? "") && (!cherches.length || correspond(cherches, x.cible)))
+      .sort((a, b) => (b.d ?? "").localeCompare(a.d ?? "")) : [];
+    return { communes: c, elus: e, scrutins: s, questions: q };
+  }, [filtre, theme, communes, elus, scrutins, questions]);
 
   const nomDep = (insee: string) => {
     const code = departementDe(insee);
@@ -130,10 +147,10 @@ export default function Recherche() {
   /* L'accueil lit le paramètre « toutes » : il ouvre la liste complète des communes. */
   const voirToutes = () => router.navigate({ pathname: "/", params: { toutes: String(Date.now()) } });
 
-  const tousCharges = [communes, elus, scrutins].every(x => x.etat !== EN_COURS);
-  const rien = resultats !== null && resultats.communes.length + resultats.elus.length + resultats.scrutins.length === 0;
+  const tousCharges = [communes, elus, scrutins, questions].every(x => x.etat !== EN_COURS);
+  const rien = resultats !== null && resultats.communes.length + resultats.elus.length + resultats.scrutins.length + resultats.questions.length === 0;
   /* Une source en panne ne se tait pas : « aucun résultat » ne vaut que si toutes ont répondu. */
-  const pannes = [communes.etat, elus.etat, scrutins.etat].some(e => e !== ETATS.SERVI && e !== EN_COURS);
+  const pannes = [communes.etat, elus.etat, scrutins.etat, questions.etat].some(e => e !== ETATS.SERVI && e !== EN_COURS);
 
   return (
     <ScrollView style={{ flex: 1, backgroundColor: couleurs.sol }} keyboardShouldPersistTaps="handled"
@@ -148,6 +165,11 @@ export default function Recherche() {
           style={{ flex: 1, minHeight: CIBLE + 8, paddingHorizontal: PAS * 2, fontSize: 17, color: couleurs.encre, outlineStyle: "none" } as object} />
       </View>
 
+      <ChipsThemes actif={theme} choisir={setTheme} />
+      {theme ? (
+        <Text style={TYPO.note}>Thème « {theme} » : les scrutins et les questions au Gouvernement dont le titre ou le ministère en parle. Le rangement se fait par mots-clés : il peut oublier ou se tromper. Les communes et les élus ne sont pas rangés par thème.</Text>
+      ) : null}
+
       {resultats === null ? (
         <View style={{ gap: PAS * 2 }}>
           <Text style={TYPO.corps}>Tapez le nom d'une commune, d'un élu ou d'un scrutin.</Text>
@@ -161,7 +183,7 @@ export default function Recherche() {
 
       {resultats !== null && rien && tousCharges ? (
         <View style={{ gap: PAS * 2 }}>
-          <Vide titre={`Aucun résultat pour « ${filtre.trim()} ».`} action="Voir toutes les communes" onAction={voirToutes} />
+          <Vide titre={filtre.trim() ? `Aucun résultat pour « ${filtre.trim()} »${theme ? ` dans le thème ${theme}` : ""}.` : `Aucun scrutin ni question pour le thème « ${theme} » dans les données publiées.`} action="Voir toutes les communes" onAction={voirToutes} />
           {pannes ? <Text style={TYPO.note}>Une source n'a pas répondu (voir plus haut) : ce résultat peut être incomplet.</Text> : null}
         </View>
       ) : null}
@@ -189,6 +211,16 @@ export default function Recherche() {
           {resultats.scrutins.slice(0, PAR_SECTION).map(x => (
             <Resultat key={x.n} icone="stats-chart-outline" etiquette={`Scrutin n°${x.n}, ${x.d ? dateFr(x.d) : "date non fournie"}. Ouvrir le scrutin.`}
               titre={titreLisible(x.t)} detail={`${x.d ? dateFr(x.d) : "Date non fournie"} · n° ${x.n}`} onPress={() => ouvrirScrutin(x.n)} />
+          ))}
+        </Section>
+      ) : null}
+
+      {resultats !== null && theme && (resultats.questions.length > 0 || questions.etat !== ETATS.SERVI) ? (
+        <Section titre="Questions au Gouvernement" source={questions.etat} total={resultats.questions.length}>
+          {resultats.questions.slice(0, PAR_SECTION).map(x => (
+            <Resultat key={x.uid} icone="chatbubbles-outline" etiquette={`Question n°${x.n}, ${x.d ? dateFr(x.d) : "date non fournie"}, ${x.ministere ?? "ministère non précisé"}. Ouvrir la question.`}
+              titre={x.ministere ?? "Ministère non précisé"} detail={`${x.d ? dateFr(x.d) : "Date non fournie"} · ${x.auteur?.nom ?? "Auteur non identifié"} · n° ${x.n}`}
+              onPress={() => router.push({ pathname: "/scrutins", params: { mode: "qag", question: x.uid } })} />
           ))}
         </Section>
       ) : null}
