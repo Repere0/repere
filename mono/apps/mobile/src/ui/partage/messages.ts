@@ -1,30 +1,5 @@
 /* Textes de repli des cartes de partage : repris si la capture d'image echoue.
    Ils ne portent que les valeurs passees par l'ecran appelant. */
-export const VERBE: Record<string, string> = {
-  p: "a voté pour.",
-  c: "a voté contre.",
-  a: "s'est abstenu.",
-};
-
-export function messageChiffre({ ville, euros, an, producteur }: { ville: string; euros: string; an: string | number; producteur: string }): string {
-  return [
-    `${ville} : ${euros} dépensés par habitant en ${an}, selon ${producteur}.`,
-    "",
-    "Résumé Repère, à partir des comptes publiés.",
-  ].join("\n");
-}
-
-export function messageVote({ phrase, titre, date, lien }: { phrase: string; titre: string; date: string; lien: string | null }): string {
-  return [
-    phrase,
-    titre,
-    `Vote à l'Assemblée nationale, ${date}.`,
-    "",
-    "Résumé Repère, à partir du scrutin publié. Le détail est dans l'application.",
-    ...(lien ? [lien] : []),
-  ].join("\n");
-}
-
 export function messageElu({ nom, fonction, lieu, depuis, producteur, lien }: {
   nom: string; fonction: string; lieu: string; depuis: string; producteur: string; lien: string | null;
 }): string {
