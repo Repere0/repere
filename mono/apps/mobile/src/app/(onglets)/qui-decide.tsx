@@ -148,7 +148,8 @@ export default function QuiDecide() {
       return (
         <Page>
           <Stack.Screen options={{ title: LIBELLES.qui }} />
-          <Question etiquette="Qui décide" question={`Qui décide pour ${d.nomCommune} ?`}
+          {/* 12/11/2026 (audit des doublons) : plus d'étiquette « Qui décide », déjà le titre de l'écran et la question. */}
+          <Question question={`Qui décide pour ${d.nomCommune} ?`}
             sous="Du plus proche de chez vous au plus lointain. Ce n'est pas un ordre d'importance : c'est un ordre de distance." />
           {/* L'aiguilleur : quatre sujets, un geste chacun. */}
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: PAS * 2 }}

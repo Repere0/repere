@@ -24,7 +24,7 @@ import { PROJETS_PAS_ARRIVES, projetsAucun } from "../lib/absences";
 import { srcComptes, srcComptesPublies, srcProjets } from "../lib/sources";
 import { useCommuneChoisie } from "../lib/useCommune";
 import { ACCENTS, CIBLE, couleurs, PAS, POLICE, TYPO } from "../lib/theme";
-import { JaugeCofinancement, Onglets } from "../ui/stitch";
+import { Onglets } from "../ui/stitch";
 import { AvecDonnees, Page, Question } from "../ui/page";
 import { DateDonnee } from "../ui/fraicheur";
 import { phrasesMoyenne, useMoyenneDepenses } from "../lib/moyenne";
@@ -188,21 +188,8 @@ export default function Argent() {
                 </Carte>
               ) : null}
 
-              {/* ZOOM SUR UN PROJET COFINANCÉ (maquette Stitch) : le plus récent des projets aidés dont le
-                  coût est publié. Sans projet de ce genre, rien : la liste complète est plus bas. */}
-              {vue === "cent" ? (() => {
-                const zoom = listeProjets.map(p => ({ p, f: financementProjet(p) })).find(x => x.f && x.f.partPct !== null && x.f.cout);
-                if (!zoom || !zoom.f) return null;
-                const total = montantCourt(zoom.f.cout as number);
-                return (
-                  <Carte echelon="ville" titre={`Zoom : un projet cofinancé, ${zoom.p.annee}`}>
-                    <Text style={TYPO.reponse}>{zoom.p.intitule}</Text>
-                    <JaugeCofinancement partEtat={zoom.f.partPct as number} montantEtat={euros(zoom.f.subvention)} montantTotal={total ? total.texte : euros(zoom.f.cout as number)} lieu={nom} />
-                    <Text style={TYPO.micro}>Aide {aideNommee(r.projets, zoom.p.dispositif)}. Le reste n'est pas détaillé par la source (commune et autres financeurs).</Text>
-                    <PastilleSource source={srcProjets(d, zoom.f.partPct !== null)} />
-                  </Carte>
-                );
-              })() : null}
+              {/* 12/11/2026 (audit des doublons) : le « Zoom : un projet cofinancé » est retiré. Il répétait, chiffre pour
+                  chiffre, la première carte de « Les projets aidés par l'État », plus bas sur la même page. */}
 
               {/* D'OU VIENT L'ARGENT */}
               {vue === "recettes" && ch.partImpots !== null ? (
@@ -366,7 +353,9 @@ export default function Argent() {
                             resteTexte={`${euros(f.reste as number)}, financement non détaillé par la source`} />
                         </Resume>
                       ) : null}
-                      <Text style={TYPO.note}>{phraseProjetLocal(p, nom)}</Text>
+                      {/* 12/11/2026 (audit des doublons) : la phrase « L'État a engagé X € » répétait le montant de la barre ;
+                          elle ne reste que si la barre n'est pas affichée (coût non publié). */}
+                      {f && f.partPct !== null && cout ? null : <Text style={TYPO.note}>{phraseProjetLocal(p, nom)}</Text>}
                       {noteRattachement(p) ? <Text style={TYPO.note}>{noteRattachement(p)}</Text> : null}
                       <Depli titre={`Qu'est-ce que l'aide ${p.dispositif} ?`}>
                         <Text style={TYPO.corps}>{nomDispositif(r.projets, p.dispositif)} : l'une des aides de l'État à l'investissement des collectivités recensées par la Direction générale des collectivités locales.</Text>
@@ -379,7 +368,8 @@ export default function Argent() {
               </>
             )}
           </View>
-          <Text style={[TYPO.micro, { color: couleurs.sourd }]}>Repère ne compare jamais deux communes : chaque chiffre ne parle que de {nom}.</Text>
+          {/* 12/11/2026 : « Repère ne compare jamais deux communes » retiré : la même page montre la médiane d'Île-de-France
+              (comparaison factuelle permise, D23, ADR 0002). La phrase était devenue fausse. */}
           <SignalerErreur contexte={`l'argent de ${nom}`} donnee={`Argent de la commune : ${nom}`} />
         </Page>
       );

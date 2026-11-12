@@ -2,7 +2,6 @@
  *
  * EnClair            le cartouche « En clair » : une phrase calculée ou lue, jamais rédigée ici.
  * VoteBarTricolor    la répartition d'un scrutin (pour, contre, abstention), nombres écrits.
- * JaugeCofinancement la part de l'État dans un projet aidé, et le reste.
  * Onglets            le contrôle segmenté compact (pastille blanche, point d'accent).
  * BadgeRepere        le badge « ● REPÈRE DU JOUR · EXERCICE … ».
  *
@@ -76,26 +75,6 @@ export function VoteBarTricolor({ pour, contre, abstention, position, qui }: {
           <Text style={[TYPO.micro, { color: ACCENTS.texteAccent, fontFamily: POLICE.texteGras }]}>Position de {qui} : {mot[position]}</Text>
         </View>
       ) : null}
-    </View>
-  );
-}
-
-/* ── La part de l'État dans un projet aidé ─────────────────────────────── */
-export function JaugeCofinancement({ partEtat, montantEtat, montantTotal, lieu }: {
-  partEtat: number; montantEtat: string; montantTotal: string; lieu: string;
-}) {
-  const p = Math.max(0, Math.min(100, Math.round(partEtat)));
-  return (
-    <View style={{ gap: PAS * 2 }} accessible
-      accessibilityLabel={`État : ${p} %, ${montantEtat}. ${lieu} et autres financeurs : ${100 - p} %, sur ${montantTotal}.`}>
-      <View style={s.piste}>
-        <View style={{ width: `${p}%`, backgroundColor: JAUGE.investissement }} />
-        <View style={{ flex: 1, backgroundColor: JAUGE.salaires }} />
-      </View>
-      <View style={[s.ligne, { justifyContent: "space-between" }]}>
-        <Text style={TYPO.micro}><Text style={{ color: couleurs.encre, fontFamily: POLICE.texteGras }}>État · {p} %</Text> ({espacesFines(montantEtat)})</Text>
-        <Text style={TYPO.micro}><Text style={{ color: couleurs.encre, fontFamily: POLICE.texteGras }}>Reste · {100 - p} %</Text> (sur {espacesFines(montantTotal)})</Text>
-      </View>
     </View>
   );
 }
