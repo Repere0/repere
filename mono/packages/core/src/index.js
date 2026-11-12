@@ -22,6 +22,7 @@ export * from "./faits.js";
 export * from "./comptes.js";
 export * from "./aujourdhui.js";
 export * from "./recherche.js";
+export * from "./adresse.js";
 export * from "./phrases.js";
 export * from "./phrases-comptes.js";
 export * from "./source.js";
