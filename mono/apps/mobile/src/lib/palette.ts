@@ -185,3 +185,7 @@ export const BADGE_DECLARATION_PAR_MODE = Object.freeze({
   clair: { fond: "#FFEDD5", texte: "#9A3412", filet: "#FB923C" },
   sombre: { fond: "#3B2210", texte: "#FDBA74", filet: "#C2410C" },
 });
+
+/* FILET DES TUILES DE L'ACCUEIL (web, 12/11/2026, demande du porteur) : une tuile blanche sur fond presque blanc
+   disparaissait en mode clair. Un filet neutre, sans sens : ce n'est ni un parti, ni un vote, ni un rang. */
+export const FILET_TUILE_PAR_MODE = Object.freeze({ clair: { filet: "#E2E8F0" }, sombre: { filet: "#2B2A26" } });

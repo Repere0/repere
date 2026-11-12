@@ -1,7 +1,7 @@
 // PWA : manifeste, balises iOS et vercel.json, deduits de app.json (une seule source).
 // Expo (Metro) ne produit plus de manifeste : ce script le fait apres `expo export`.
 // Fonctions pures exportees pour etre eprouvees (tests/pwa.test.mjs).
-import { readFileSync, writeFileSync, copyFileSync, readdirSync, statSync } from "node:fs";
+import { readFileSync, writeFileSync, copyFileSync, readdirSync, statSync, existsSync, renameSync } from "node:fs";
 import { createHash } from "node:crypto";
 import { join, relative, sep } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -53,6 +53,31 @@ export function manques(html, manifeste) {
   return m;
 }
 
+// POURQUOI : Expo range les polices et les icones sous assets/node_modules/. La CLI Vercel (et d'autres
+// hebergeurs) n'envoie JAMAIS un dossier nomme node_modules : en ligne, polices et icones repondent 404
+// (texte en Times New Roman, icones en carres vides) alors que tout marche en local.
+// On renomme le dossier et on reecrit les adresses du JavaScript. Les noms de fichiers restent empreintes.
+export function deplacerNodeModules(dist) {
+  const src = join(dist, "assets", "node_modules");
+  if (existsSync(src)) renameSync(src, join(dist, "assets", "vendor"));
+  const parcourir = d => { for (const n of readdirSync(d)) { const f = join(d, n);
+    if (statSync(f).isDirectory()) parcourir(f);
+    else if (/\.(js|json|html|css)$/.test(n)) { const t = readFileSync(f, "utf8");
+      if (t.includes("/assets/node_modules/")) writeFileSync(f, t.split("/assets/node_modules/").join("/assets/vendor/")); } } };
+  parcourir(dist);
+}
+
+// Garde : aucun chemin ni adresse ne doit encore contenir node_modules.
+export function restesNodeModules(dist) {
+  const reste = [];
+  const parcourir = d => { for (const n of readdirSync(d)) { const f = join(d, n);
+    if (n === "node_modules") reste.push(relative(dist, f));
+    if (statSync(f).isDirectory()) parcourir(f);
+    else if (/\.(js|json|html|css)$/.test(n) && readFileSync(f, "utf8").includes("/assets/node_modules/")) reste.push(relative(dist, f)); } };
+  parcourir(dist);
+  return reste;
+}
+
 // Tout ce que le build produit hors /data : l'interface complete, jamais les donnees.
 export function fichiersCoquille(dist) {
   const sortie = ["/", "/index.html", "/manifest.json", "/apple-touch-icon.png", "/icon-192.png", "/icon-512.png", "/favicon.ico"];
@@ -73,6 +98,7 @@ export function preparerSw(sw, fichiers) {
 
 export function appliquer(dossierApp, dist) {
   const appJson = JSON.parse(readFileSync(join(dossierApp, "app.json"), "utf8"));
+  deplacerNodeModules(dist);
   const manifeste = construireManifeste(appJson);
   writeFileSync(join(dist, "manifest.json"), JSON.stringify(manifeste, null, 2) + "\n");
   const f = join(dist, "index.html");
@@ -83,6 +109,8 @@ export function appliquer(dossierApp, dist) {
   writeFileSync(sw, preparerSw(readFileSync(join(dossierApp, "public", "sw.js"), "utf8"), fichiersCoquille(dist)));
   const reste = manques(readFileSync(f, "utf8"), manifeste);
   if (reste.length) throw new Error("PWA incomplete : " + reste.join(", "));
+  const nm = restesNodeModules(dist);
+  if (nm.length) throw new Error("node_modules encore present (non envoye par Vercel) : " + nm.join(", "));
 }
 
 // Ligne de commande : node scripts/pwa.mjs <dossier-dist> (utilisee par build-web.mjs et la CI).
