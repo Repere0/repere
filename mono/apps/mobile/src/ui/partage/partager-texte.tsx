@@ -4,6 +4,7 @@
  * ne se met jamais dans une adresse, invariant 2), et la source telle que l'écran la montre. Share de React
  * Native, comme ailleurs ; pas de carte d'image : ce partage-là est un texte. */
 import { useRef, useState } from "react";
+import { Ionicons } from "@expo/vector-icons";
 import { Platform, Pressable, Share, Text, View } from "react-native";
 import { dateFr } from "@repere/core";
 import { couleurs, CIBLE } from "../../lib/theme";
@@ -32,7 +33,7 @@ async function copier(texte: string): Promise<boolean> {
     return false;
   }
 }
-export function BoutonCopierLien() {
+export function BoutonCopierLien({ icone = false }: { icone?: boolean }) {
   const { choix } = useSelection();
   const [etat, setEtat] = useState<"" | "ok" | "echec">("");
   const minuteur = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -44,10 +45,12 @@ export function BoutonCopierLien() {
   };
   return (
     <Pressable onPress={onPress} accessibilityRole="button" accessibilityLabel="Copier le lien de cette page"
-      style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", paddingHorizontal: 8, opacity: pressed ? 0.6 : 1 })}>
-      <Text style={{ fontSize: 17, color: couleurs.lien, fontWeight: "500" }} accessibilityLiveRegion="polite">
-        {etat === "ok" ? "Lien copié" : etat === "echec" ? "Copie impossible" : "Copier le lien"}
-      </Text>
+      style={({ pressed }) => ({ minHeight: CIBLE, minWidth: CIBLE, alignItems: "center", justifyContent: "center", paddingHorizontal: 8, opacity: pressed ? 0.6 : 1 })}>
+      {icone && !etat ? <Ionicons name="share-outline" size={24} color={couleurs.lien} accessible={false} importantForAccessibility="no" /> : (
+        <Text style={{ fontSize: 17, color: couleurs.lien, fontWeight: "500" }} accessibilityLiveRegion="polite">
+          {etat === "ok" ? "Lien copié" : etat === "echec" ? "Copie impossible" : "Copier le lien"}
+        </Text>
+      )}
     </Pressable>
   );
 }

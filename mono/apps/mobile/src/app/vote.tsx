@@ -24,6 +24,7 @@ import { srcScrutins, srcVote } from "../lib/sources";
 import { useCommuneChoisie } from "../lib/useCommune";
 import { couleurs, PAS, POLICE, RAYON, TYPO, CIBLE } from "../lib/theme";
 import { Ionicons } from "@expo/vector-icons";
+import { BoutonCopierLien } from "../ui/partage/partager-texte";
 import { AvecDonnees, Page, Question } from "../ui/page";
 import { PastilleSource } from "../ui/source";
 import { ResumeClair } from "../ui/resume-clair";
@@ -83,7 +84,7 @@ export default function Vote() {
       } : null;
       return (
         <Page>
-          <Stack.Screen options={{ title: partagee ? "Un député de votre commune" : "Votre député" }} />
+          <Stack.Screen options={{ title: partagee ? "Un député de votre commune" : "Votre député", headerRight: () => <BoutonCopierLien icone /> }} />
           {entete}
           {/* L'en-tête compact : le même avatar que sur la fiche (ui/avatar) ; une photo affichée a son
               crédit juste sous l'en-tête (D27). Nom, groupe, circonscription, date du scrutin.

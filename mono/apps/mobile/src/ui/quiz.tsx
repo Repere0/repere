@@ -78,6 +78,12 @@ export function Quiz({ categorieDe }: { categorieDe: (cle: string) => string }) 
       <Animated.View key={`${tour}-${rang}`} style={{ gap: PAS * 4, opacity: entree, transform: [{ translateY: entree.interpolate({ inputRange: [0, 1], outputRange: [12, 0] }) }] }}>
         <View style={{ gap: PAS * 2, padding: PAS * 6, borderRadius: RAYON.carte + 4, backgroundColor: couleurs.carte }}>
           <Text style={TYPO.etiquette}>Question {rang + 1} sur {questions.length}</Text>
+          {/* Barre de progression : où l'on en est dans la série de questions, rien d'autre. */}
+          <View accessible accessibilityRole="progressbar" accessibilityLabel={`Question ${rang + 1} sur ${questions.length}`}
+            accessibilityValue={{ min: 0, max: questions.length, now: rang + 1 }}
+            style={{ height: 8, borderRadius: 4, backgroundColor: couleurs.voile, overflow: "hidden" }}>
+            <View style={{ height: 8, width: `${Math.round(((rang + 1) / questions.length) * 100)}%`, backgroundColor: couleurs.encre }} />
+          </View>
           <Text style={[Platform.OS === "web" ? TYPO.section : TYPO.affiche, MOT_LONG_WEB]} accessibilityRole="header">{q.enonce}</Text>
           <Text style={TYPO.note}>Une seule définition est la bonne.</Text>
         </View>
