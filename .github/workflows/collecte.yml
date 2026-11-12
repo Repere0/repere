@@ -63,6 +63,7 @@ jobs:
       # autorisee a contourner la protection de main. Au niveau du job pour la meme
       # raison que les deux lignes au-dessus : le if: d'une etape ne lit pas son env.
       COLLECTE_APP_ID: ${{ secrets.COLLECTE_APP_ID }}
+      CLOUDFLARE_DEPLOY_HOOK: ${{ secrets.CLOUDFLARE_DEPLOY_HOOK }}
       # HORS_MAIN (V17) : vrai pour un declenchement manuel depuis une branche d'essai.
       # Garde les quatre etapes qui ecrivent dehors : jeton du bot, commit (qui fait
       # « git pull --rebase origin main » puis « git push »), publication Netlify en
@@ -312,6 +313,18 @@ jobs:
             echo "::error::La publication est restee BLOQUEE et a ete interrompue au bout de 5 minutes. netlify-cli attendait probablement une reponse a une question posee dans le vide."
           fi
           exit $CODE_DEPLOI
+
+      # CLOUDFLARE PAGES (12/11/2026, roadmap beta) - facultatif. L'application web copie, a son build, les donnees
+      # publiees sur Netlify (miroir-donnees.mjs). La reconstruire APRES la publication garantit qu'elle lit les
+      # donnees du jour. Sans le secret CLOUDFLARE_DEPLOY_HOOK, l'etape est sautee. L'adresse du crochet est un
+      # secret : elle n'est jamais affichee.
+      - name: Reconstruire l'application sur Cloudflare Pages
+        if: env.CLOUDFLARE_DEPLOY_HOOK != '' && steps.deploy.outcome == 'success' && env.HORS_MAIN != 'true'
+        continue-on-error: true
+        run: |
+          CODE=$(curl -s -o /dev/null -w "%{http_code}" --max-time 30 -X POST "$CLOUDFLARE_DEPLOY_HOOK")
+          echo "crochet de deploiement Cloudflare Pages : HTTP $CODE"
+          [ "$CODE" = "200" ] || echo "::warning::Cloudflare Pages n'a pas accepte le crochet de deploiement (HTTP $CODE)."
 
       - name: Dire si l'enregistrement a abouti
         if: always()

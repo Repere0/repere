@@ -11,6 +11,7 @@
     "web": "expo start --web",
     "verifier": "tsc --noEmit",
     "build:web": "node scripts/build-web.mjs",
+    "build:cloudflare": "node scripts/build-web.mjs && node scripts/cloudflare.mjs dist",
     "exporter": "expo export --platform android --platform ios --platform web --output-dir dist",
     "parcours": "node tests/parcours-web.mjs",
     "commune": "node tests/commune-web.mjs",

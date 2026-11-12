@@ -1,0 +1,7 @@
+# Cloudflare Pages (12/11/2026, roadmap beta). Lu par Pages et par « wrangler pages deploy ».
+# Reglages du projet dans le tableau de bord : dossier racine mono/apps/mobile, commande de build
+# « npm ci --no-audit --no-fund && npm run build:cloudflare ». Procedure : docs/hebergement-cloudflare.md.
+# Pas de table [build] (Pages la refuse), pas de Functions, aucune variable : rien n'est execute chez Cloudflare.
+name = "repere"
+pages_build_output_dir = "dist"
+compatibility_date = "2026-11-01"
