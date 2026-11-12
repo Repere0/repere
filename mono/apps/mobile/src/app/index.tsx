@@ -544,7 +544,7 @@ export default function Accueil() {
               </Pressable>
             ) : null}
             {/* 12/11/2026 (porteur) : les thèmes en un geste ; la recherche s'ouvre filtrée. */}
-            {!champOuvert && !premiere ? <ChipsThemes /> : null}
+            <ChipsThemes />
             <View style={s.tuiles}>
               {ACCES.map(a => (
                 <Pressable key={a.texte} onPress={a.ouvrir} accessibilityRole="link" accessibilityLabel={a.etiquette}

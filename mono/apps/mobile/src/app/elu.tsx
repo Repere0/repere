@@ -249,6 +249,7 @@ export default function Elu() {
               <View style={{ gap: PAS * 3 }}>
                 {/* 07/11/2026 : une ligne de compte au lieu de la phrase et du décompte (même calcul). */}
                 {recents.length ? (
+                  <>
                   <View style={{ flexDirection: "row", alignItems: "center", gap: PAS }}>
                     <View style={{ flex: 1, gap: 2 }}>
                       <Text style={TYPO.etiquette}>{recents.length > 1 ? `Ses ${recents.length} derniers votes publiés` : "Son dernier vote publié"}</Text>
@@ -264,17 +265,18 @@ export default function Elu() {
                         ))}
                       </View>
                     </View>
-                    {/* 12/11/2026 : la barre des 10 derniers votes (un calcul Repère), aux couleurs des votes (un fait). */}
-                    {recents.length > 1 ? (
-                      <BarreSegments hauteur={28} etiquette={`${comptes.p} pour, ${comptes.c} contre, ${comptes.a} abstention${comptes.a > 1 ? "s" : ""} sur ses ${recents.length} derniers votes publiés. Calcul Repère.`}
-                        segments={([["p", "pour"], ["c", "contre"], ["a", "abstention"]] as const).filter(([k]) => comptes[k] > 0)
-                          .map(([k]) => ({ cle: k, valeur: comptes[k], couleur: COULEURS_VOTE[k], dedans: String(comptes[k]) }))} />
-                    ) : null}
                     <PourquoiJeVois etiquette={`le compte des votes de ${nom}`}
                       p={{ source: { texte: `Assemblée nationale, ses ${recents.length} derniers votes publiés`, lien: null },
                         calcul: "Repère compte les positions (pour, contre, abstention) de ces votes. Il n'y a pas d'autre calcul.",
                         ici: "Affiché parce que ce sont les votes publiés les plus récents de cet élu, dans sa fiche." }} />
                   </View>
+                  {/* 12/11/2026 : la barre des 10 derniers votes (un calcul Repère), aux couleurs des votes (un fait). */}
+                    {recents.length > 1 ? (
+                      <BarreSegments hauteur={28} etiquette={`${comptes.p} pour, ${comptes.c} contre, ${comptes.a} abstention${comptes.a > 1 ? "s" : ""} sur ses ${recents.length} derniers votes publiés. Calcul Repère.`}
+                        segments={([["p", "pour"], ["c", "contre"], ["a", "abstention"]] as const).filter(([k]) => comptes[k] > 0)
+                          .map(([k]) => ({ cle: k, valeur: comptes[k], couleur: COULEURS_VOTE[k], dedans: String(comptes[k]) }))} />
+                    ) : null}
+                  </>
                 ) : null}
                 <AvecPicto picto="vote"><Text style={TYPO.etiquette} accessibilityRole="header">Ses derniers votes</Text></AvecPicto>
                 {votes.length ? votes.slice(0, SYNTHESE).map(f => (

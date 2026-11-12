@@ -65,9 +65,9 @@ export function Quiz({ categorieDe }: { categorieDe: (cle: string) => string }) 
       {/* La série : un compteur discret, remis à zéro à la première erreur. Jamais enregistré ni partagé. */}
       <View accessible accessibilityLiveRegion="polite"
         accessibilityLabel={serie ? `${serie} réponse${serie > 1 ? "s" : ""} juste${serie > 1 ? "s" : ""} d'affilée` : "Aucune réponse juste d'affilée pour l'instant"}
-        style={{ flexDirection: "row", alignItems: "center", gap: PAS * 2, alignSelf: "flex-start", minHeight: 36, paddingHorizontal: PAS * 4, borderRadius: RAYON.pastille, backgroundColor: couleurs.voile }}>
+        style={{ flexDirection: "row", alignItems: "center", gap: PAS * 2, alignSelf: "flex-start", maxWidth: "100%", minHeight: 36, paddingHorizontal: PAS * 4, borderRadius: RAYON.pastille, backgroundColor: couleurs.voile }}>
         <Ionicons name="flame-outline" size={18} color={couleurs.encre} accessible={false} importantForAccessibility="no" />
-        <Animated.Text style={[TYPO.corps, { fontFamily: POLICE.texteGras, transform: [{ scale: pop }] }]}>
+        <Animated.Text style={[TYPO.corps, { fontFamily: POLICE.texteGras, flexShrink: 1, opacity: pop.interpolate({ inputRange: [1, 1.25], outputRange: [1, 0.6], extrapolate: "clamp" }) }]}>
           {serie ? `${serie} réponse${serie > 1 ? "s" : ""} juste${serie > 1 ? "s" : ""} d'affilée` : "Série : à vous de jouer"}
         </Animated.Text>
       </View>
