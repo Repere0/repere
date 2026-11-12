@@ -7,8 +7,13 @@
  * Absent = le lecteur n'a jamais repondu a l'accueil : c'est le declencheur de
  * l'onboarding (bienvenue). */
 import { createContext, useContext, useState, type ReactNode } from "react";
+import { Platform } from "react-native";
 import { PROFIL_DEFAUT, valideProfil } from "@repere/core";
 import { ecrireProfilGarde, lireProfilGarde } from "./memoire";
+
+/* 12/11/2026 (porteur) : sur le WEB, sombre par défaut, quel que soit le réglage de l'iPhone ; le lecteur
+   garde « Système », « Clair » et « Sombre » dans la roue. Sur iOS et Android, rien ne change. */
+export const MODE_INITIAL: "auto" | "sombre" = Platform.OS === "web" ? "sombre" : "auto";
 
 export type Profil = {
   niveauZoom: string; tailleTexte: number; espacement: number; contraste: string;
@@ -48,8 +53,8 @@ export function useEtatProfil(): Etat {
     setProfil(v);
   };
   /* D45 (V27) : « Passer » est un choix explicite : il garde les réglages par défaut. */
-  const passer = () => enregistrer(valide(PROFIL_DEFAUT));
-  const modifier = (m: Partial<Profil>) => enregistrer({ ...(profil ?? (PROFIL_DEFAUT as Profil)), ...m });
+  const passer = () => enregistrer(valide({ ...PROFIL_DEFAUT, mode: MODE_INITIAL }));
+  const modifier = (m: Partial<Profil>) => enregistrer({ ...(profil ?? ({ ...PROFIL_DEFAUT, mode: MODE_INITIAL } as Profil)), ...m });
   return { profil, absent: profil === null, enregistrer, passer, modifier };
 }
 

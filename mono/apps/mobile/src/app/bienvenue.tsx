@@ -11,7 +11,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { router, Stack } from "expo-router";
 import { LIBELLE_NIVEAU, PROFIL_DEFAUT, TAILLES_TEXTE, THEMES } from "@repere/core";
 import { useSelection } from "../lib/selection";
-import { useProfil } from "../lib/profil";
+import { MODE_INITIAL, useProfil } from "../lib/profil";
 import { CIBLE, couleurs, PAS, POLICE, TYPO } from "../lib/theme";
 import { Bouton, Texte } from "../lib/composants";
 import { enfonce } from "../ui/mouvement";
@@ -50,7 +50,7 @@ export default function Bienvenue() {
   const [themes, setThemes] = useState<string[]>([]);
 
   const terminer = () => {
-    enregistrer({ ...PROFIL_DEFAUT, niveauZoom: niveau, tailleTexte: taille, themes });
+    enregistrer({ ...PROFIL_DEFAUT, mode: MODE_INITIAL, niveauZoom: niveau, tailleTexte: taille, themes });
     router.replace("/chez-vous");
   };
   const passer = () => {
