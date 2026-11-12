@@ -26,13 +26,15 @@ test("la garde voit une balise manquante", () => {
   assert.ok(manques(HTML.replace("</head>", "</head>"), { display: "browser", icons: [] }).includes("display standalone"));
 });
 
-test("vercel.json : tout va vers index.html sauf data/, _expo/, assets/", () => {
+test("vercel.json : tout va vers index.html sauf data/, _expo/, assets/ et les fichiers à la racine", () => {
   const v = JSON.parse(readFileSync(new URL("../vercel.json", import.meta.url), "utf8"));
   const r = v.rewrites[0];
   assert.equal(r.destination, "/index.html");
   const re = new RegExp("^" + r.source + "$");
   for (const ok of ["/elu", "/scrutins/12", "/recherche"]) assert.ok(re.test(ok), ok);
-  for (const non of ["/data/communes.json", "/_expo/static/js/web/x.js", "/assets/a.png"]) assert.ok(!re.test(non), non);
+  for (const non of ["/data/communes.json", "/_expo/static/js/web/x.js", "/assets/a.png",
+    // 12/11/2026 : sur Vercel le rewrite masquait ces fichiers (« Unmatched Route » sur /apple-touch-icon.png) : iOS ne trouvait pas l'icône.
+    "/apple-touch-icon.png", "/icon-192.png", "/icon-512.png", "/manifest.json", "/sw.js", "/favicon.ico"]) assert.ok(!re.test(non), non);
 });
 
 test("le service worker : liste et version écrites, /data/ jamais intercepté", async () => {
