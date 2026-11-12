@@ -13,8 +13,8 @@ import { Ionicons } from "@expo/vector-icons";
 import { useEffect, useMemo, useState } from "react";
 import { Pressable, ScrollView, Text, TextInput, View } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
-import { correspond, dateFr, departementDe, motsCible, motsRecherche, themesDuTexte, titreLisible, trouverCommunes } from "@repere/core";
-import { chargerCommunesBeta, chargerIndex, chargerQuestionsGouvernementIndex, chargerScrutinsIndex, ETATS, PHRASES } from "../lib/donnees";
+import { correspond, dateFr, departementDe, motsCible, motsRecherche, themesDuTexte, titreLisible, chercherCommunes } from "@repere/core";
+import { chargerCodesPostaux, chargerCommunesBeta, chargerIndex, chargerQuestionsGouvernementIndex, chargerScrutinsIndex, ETATS, PHRASES } from "../lib/donnees";
 import { chargerFiches } from "../lib/annuaire";
 import { useSelection } from "../lib/selection";
 import { useProfil } from "../lib/profil";
@@ -75,6 +75,17 @@ export default function Recherche() {
   const [elus, setElus] = useState<Charge<Elu>>({ etat: EN_COURS, liste: [] });
   const [scrutins, setScrutins] = useState<Charge<Scrutin>>({ etat: EN_COURS, liste: [] });
   const [departements, setDepartements] = useState<Departement[]>([]);
+  const [codesPostaux, setCodesPostaux] = useState<Record<string, string[]> | null>(null);
+  const cpTape = /^\d{5}$/.test(filtre.trim());
+  useEffect(() => {
+    if (!cpTape || codesPostaux) return undefined;
+    let vivant = true;
+    chargerCodesPostaux().then(r => {
+      const c = (r.donnees as { codes?: Record<string, string[]> } | null)?.codes;
+      if (vivant && c) setCodesPostaux(c);
+    });
+    return () => { vivant = false; };
+  }, [cpTape, codesPostaux]);
 
   useEffect(() => {
     let vivant = true;
@@ -114,7 +125,8 @@ export default function Recherche() {
     /* Un thème est un rangement par mots-clés des TITRES (core/themes.js) : il ne s'applique ni aux communes ni aux
        élus, qui ne sont pas rangés par thème. Avec un thème, seuls les scrutins et les questions sont montrés. */
     const duTheme = (texte: string) => !theme || (themesDuTexte(texte) as string[]).includes(theme);
-    const c = theme ? [] : trouverCommunes(communes.liste, cherches);
+    const rc = theme ? { resultats: [] as Ligne[], suggestions: [] as Ligne[], codePostal: null } : chercherCommunes(communes.liste, filtre, { codesPostaux });
+    const c = rc.resultats as Ligne[];
     /* Mot à mot, au début des mots, comme les communes : la recherche tolérante aux fautes reste
        dans l'onglet « Élus ». Ici, « Melun » ne ramène pas « Mélin » ni « Meloni ». */
     const e = theme ? [] : elus.liste.filter(x => correspond(cherches, x.cible));
@@ -124,8 +136,8 @@ export default function Recherche() {
     const q = theme ? questions.liste
       .filter(x => duTheme(x.ministere ?? "") && (!cherches.length || correspond(cherches, x.cible)))
       .sort((a, b) => (b.d ?? "").localeCompare(a.d ?? "")) : [];
-    return { communes: c, elus: e, scrutins: s, questions: q };
-  }, [filtre, theme, communes, elus, scrutins, questions]);
+    return { communes: c, suggestions: rc.suggestions as Ligne[], codePostal: rc.codePostal as { saisi: string; disponible: boolean } | null, elus: e, scrutins: s, questions: q };
+  }, [filtre, theme, communes, elus, scrutins, questions, codesPostaux]);
 
   const nomDep = (insee: string) => {
     const code = departementDe(insee);
@@ -186,6 +198,20 @@ export default function Recherche() {
           <Vide titre={filtre.trim() ? `Aucun résultat pour « ${filtre.trim()} »${theme ? ` dans le thème ${theme}` : ""}.` : `Aucun scrutin ni question pour le thème « ${theme} » dans les données publiées.`} action="Voir toutes les communes" onAction={voirToutes} />
           {pannes ? <Text style={TYPO.note}>Une source n'a pas répondu (voir plus haut) : ce résultat peut être incomplet.</Text> : null}
         </View>
+      ) : null}
+
+      {resultats !== null && resultats.suggestions.length > 0 ? (
+        <View accessibilityLiveRegion="polite" style={{ gap: PAS * 2 }}>
+          <Text style={TYPO.note}>Aucune commune ne s'écrit ainsi. Vouliez-vous dire…</Text>
+          {resultats.suggestions.map(([insee, nom]: Ligne) => (
+            <Resultat key={insee} icone="search-outline" etiquette={`Suggestion : ${nom}. Chercher ${nom}.`} titre={nom} detail="Suggestion" onPress={() => setFiltre(nom)} />
+          ))}
+        </View>
+      ) : null}
+      {resultats !== null && resultats.codePostal && resultats.communes.length === 0 ? (
+        <Text style={TYPO.note}>{resultats.codePostal.disponible
+          ? `Aucune commune d'Île-de-France pour le code postal ${resultats.codePostal.saisi}.`
+          : "La recherche par code postal n'est pas encore disponible : tapez le nom de la commune."}</Text>
       ) : null}
 
       {resultats !== null && (resultats.communes.length > 0 || communes.etat !== ETATS.SERVI) ? (

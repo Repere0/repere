@@ -88,3 +88,42 @@ export function departementDe(insee) {
 export function motsRecherche(t) {
   return mots(t).slice(0, 8);
 }
+
+/* LA RECHERCHE D'UNE COMMUNE, EN TROIS GESTES (12/11/2026, décision du porteur) : le code postal, l'abréviation,
+ * la faute de frappe. Une seule fonction pour le site et l'application ; elle réutilise les règles ci-dessus
+ * (aucune bibliothèque).
+ *   - « 77000 » : les communes de ce code, lues dans la table des codes postaux (`codesPostaux`, { cp: [insee] }).
+ *     Sans table, la réponse le dit (`codePostal.disponible` faux) : jamais « aucune commune » à tort.
+ *   - « st denis », « ste geneviève » : st -> saint, ste -> sainte, comme on les tape.
+ *   - « melum » : sans résultat exact, les communes à une faute près (règle `correspondFlou`, mots courts jamais
+ *     rapprochés). `suggestions` : « Vouliez-vous dire… », au plus trois, du plus proche au plus éloigné puis par
+ *     ordre alphabétique : un ordre de ressemblance au texte tapé, jamais une valeur (invariant 3).
+ * Repère ne devine pas : une suggestion se propose, elle ne s'applique jamais seule. */
+const ABREVIATIONS = { st: "saint", ste: "sainte" };
+export function motsCommune(t) {
+  return motsRecherche(t).map(m => ABREVIATIONS[m] || m);
+}
+const ecart = (cherches, cible) => cherches.reduce((somme, m) => {
+  const meilleur = Math.min(...cible.map(w => Math.min(distanceFrappe(m, w), distanceFrappe(m, w.slice(0, m.length)))));
+  return somme + meilleur;
+}, 0);
+/** @param {Array<[string, string, string[]]>} liste @param {string} texte @param {{ codesPostaux?: Record<string, string[]> | null, max?: number }} [options] */
+export function chercherCommunes(liste, texte, { codesPostaux = null, max = 30 } = {}) {
+  const brut = String(texte ?? "").trim();
+  if (/^\d{5}$/.test(brut)) {
+    if (!codesPostaux) return { resultats: [], suggestions: [], codePostal: { saisi: brut, disponible: false } };
+    const parInsee = new Map(liste.map(l => [l[0], l]));
+    const rows = (Object.prototype.hasOwnProperty.call(codesPostaux, brut) ? codesPostaux[brut] : [])
+      .map(i => parInsee.get(i)).filter(Boolean).sort((a, b) => a[1].localeCompare(b[1], "fr"));
+    return { resultats: rows, suggestions: [], codePostal: { saisi: brut, disponible: true } };
+  }
+  const cherches = motsCommune(brut);
+  if (!cherches.length) return { resultats: [], suggestions: [], codePostal: null };
+  const resultats = trouverCommunes(liste, cherches, max);
+  if (resultats.length) return { resultats, suggestions: [], codePostal: null };
+  const suggestions = liste.filter(([, , cible]) => correspondFlou(cherches, cible))
+    .map(l => [ecart(cherches, l[2]), l])
+    .sort((a, b) => a[0] - b[0] || a[1][1].localeCompare(b[1][1], "fr"))
+    .slice(0, 3).map(x => x[1]);
+  return { resultats, suggestions, codePostal: null };
+}
