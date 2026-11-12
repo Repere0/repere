@@ -4,8 +4,8 @@
  *
  * CE QUE CE CONTROLE MESURE : la carte 9:16 rendue par l'application (meme code React
  * Native, via react-native-web), photographiee a l'echelle 3 : 360 x 640 -> 1080 x 1920.
- * Pour cinq cartes (V21) : actualite locale, budget, vote de la fiche elu, calendrier, fiche de
- * l'annuaire. Une carte absente fait echouer le controle.
+ * Pour trois cartes : actualite locale, calendrier, fiche de l'annuaire (budget et vote de la fiche
+ * elu supprimes le 12/11/2026 par le porteur). Une carte absente fait echouer le controle.
  * L'agenda et l'actualite locale sont des DONNEES D'ESSAI injectees par ce test (page.route),
  * marquees « ESSAI », jamais publiees : les fichiers reels peuvent etre absents ou vides.
  * Pour chaque carte :
@@ -105,21 +105,8 @@ await p.getByText("Aller plus loin").first().waitFor({ timeout: 15000 });
 await p.getByText("Cette semaine à Meaux").first().waitFor({ timeout: 10000 });
 await controler("actu");
 
-/* 1. Budget (ChiffreStory) */
-await p.getByRole("button", { name: "Où va cet argent ?", exact: true }).first().click();
-await p.getByText(/Où va l'argent de Meaux/).first().waitFor({ timeout: 10000 });
-await controler("budget");
-await p.goBack();
-await p.getByText("Aller plus loin").first().waitFor({ timeout: 15000 });
-
-/* 2. Fiche elu, dernier vote (VoteStory) */
-await p.getByRole("button", { name: "Comprendre ce vote", exact: true }).first().click();
-await p.getByRole("button", { name: /^Voir la fiche de/ }).first().click();
-/* 12/11/2026 : le titre est « Ses N derniers votes publiés » (ou « Son dernier vote publié ») depuis l'audit des doublons. */
-await p.getByText(/Ses \d+ derniers votes publiés|Son dernier vote publié|Ses derniers votes/).first().waitFor({ timeout: 10000 });
-await controler("vote");
-await p.goBack(); await p.goBack();
-await p.getByText("Aller plus loin").first().waitFor({ timeout: 15000 });
+/* 12/11/2026 (porteur) : plus de carte de partage sur Finances ni sur la fiche d'un élu (ChiffreStory, VoteStory
+   supprimées : elles répétaient le chiffre principal). */
 
 /* 3. Calendrier (AgendaStory) */
 await p.getByRole("button", { name: "Le calendrier", exact: true }).first().click();

@@ -24,9 +24,6 @@
  *   - Patrimoine, presence ou absence aux seances : jamais (invariant 8). */
 import { BadgeGroupe } from "../ui/badge-groupe";
 import { GROUPE_INCONNU, deputeParNom, groupeDe, useGroupes } from "../lib/groupes";
-import { PartagerCarte } from "../ui/partage/bouton-partage";
-import { VoteStory } from "../ui/partage/variantes/vote.story";
-import { messageVote, VERBE } from "../ui/partage/messages";
 import { useEffect, useState } from "react";
 import { Animated, Linking, Modal, Pressable, ScrollView, Share, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
@@ -201,17 +198,6 @@ export default function Elu() {
       const groupe = groupeDe(refDepute, groupes);
       const echelonAvatar = (["ville", "agglo", "dept", "region", "france"].includes(echelon) ? echelon : null) as Echelon | null;
       const resume = ouvert ? resumes.find(x => x.id === `scrutin-${ouvert.sc.d}-${ouvert.sc.n}`) || null : null;
-      /* Carte de partage : seulement le dernier vote publie de cet elu, avec sa source. Sans
-         vote ou sans source publiee, pas de carte : le partage reste textuel. */
-      const carteVote = vote && vote.position && r.d.srcScrutins ? {
-        position: vote.position as "p" | "c" | "a",
-        date: dateFr(vote.sc.d),
-        source: `Source : ${r.d.srcScrutins.producteur}, scrutin n° ${vote.sc.n}, ${dateFr(vote.sc.d)}.`,
-        repli: messageVote({
-          phrase: `${nom} ${VERBE[vote.position]}`, titre: titreLisible(vote.sc.t), date: dateFr(vote.sc.d),
-          lien: r.d.base ? lienScrutin(r.d.base, vote.sc).url : null,
-        }),
-      } : null;
       /* NIVEAU 1 (V28, bloc 5) : la phrase-conclusion, comptée sur les trois votes affichés (un calcul). */
       const recents = votes.slice(0, HISTO);
       const comptes: Record<string, number> = { p: 0, c: 0, a: 0 };
@@ -369,12 +355,8 @@ export default function Elu() {
             <View style={{ gap: PAS * 2, borderTopWidth: 1, borderTopColor: couleurs.trait, paddingTop: PAS * 3 }}>
               {!depute || groupe === GROUPE_INCONNU ? <Text style={TYPO.micro}>{PARTI_NON_PUBLIE}</Text> : null}
               <Text style={TYPO.micro}>Repère n'affiche que les faits de mandat publiés. Le patrimoine des élus, et leur présence ou absence aux séances, ne figurent jamais.</Text>
-              {carteVote ? (
-                <PartagerCarte etiquette={`Partager le dernier vote de ${nom}`} repli={carteVote.repli}
-                  rendu={ref => <VoteStory refCarte={ref} position={carteVote.position} nom={nom} date={carteVote.date} source={carteVote.source} />} />
-              ) : (
-                <Lien texte="Partager la fiche" onPress={partager} />
-              )}
+              {/* 12/11/2026 (porteur) : plus de carte du dernier vote, elle répétait la première carte de vote. */}
+              <Lien texte="Partager la fiche" onPress={partager} />
             </View>
           </Animated.View>
           <FeuilleVote f={ouvert} nom={nom} resume={resume} base={r.d.base || null} onFermer={() => setOuvert(null)} />

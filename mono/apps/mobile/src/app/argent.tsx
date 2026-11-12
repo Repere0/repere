@@ -32,9 +32,6 @@ import { PastilleSource } from "../ui/source";
 import { BoutonPartageTexte, ligneSource } from "../ui/partage/partager-texte";
 import { Resume } from "../ui/resume";
 import { BarreBudget, BarrePart, Compteur, DeuxAnnees, Depli, Financement, Mois, RepartitionCent, Tendance, VariationAnnuelle } from "../ui/visuels";
-import { PartagerCarte } from "../ui/partage/bouton-partage";
-import { ChiffreStory } from "../ui/partage/variantes/chiffre.story";
-import { messageChiffre } from "../ui/partage/messages";
 import { SignalerErreur } from "../ui/contact";
 import { enfonce } from "../ui/mouvement";
 
@@ -112,9 +109,6 @@ export default function Argent() {
         : [];
       const dep = ch && ch.depenses !== null ? montantCourt(ch.depenses) : null;
       const dette = ch && ch.dette !== null ? montantCourt(ch.dette) : null;
-      /* Carte de partage du chiffre par habitant : seulement quand le montant et sa source sont publies. */
-      const partage = ex && hab && hab.depenses !== null && d.srcComptes
-        ? { euros: `${hab.depenses.toLocaleString("fr-FR")} €`, an: ex.an, producteur: d.srcComptes.producteur } : null;
       return (
         /* Audit 5 s (V15) : sansDate, la ligne DateDonnee de l'ecran dit deja la date et la source. */
         <Page sansDate>
@@ -156,13 +150,7 @@ export default function Argent() {
                     pastille « Calculé par Repère » : la mettre ici l'aurait fait passer
                     pour publiee (invariant 4, relecture du 30/09/2026). */}
                 <PastilleSource source={srcComptesPublies(d)} />
-                {partage ? (
-                  <PartagerCarte etiquette={`Partager le chiffre de ${nom}`}
-                    repli={messageChiffre({ ville: nom, euros: partage.euros, an: partage.an, producteur: partage.producteur })}
-                    rendu={ref => <ChiffreStory refCarte={ref} ville={nom} euros={partage.euros} an={partage.an}
-                      parts={{ salaires: ch?.partSalaires ?? null, investissement: ch?.partInvestissement ?? null }}
-                      source={`Source : ${partage.producteur}, comptes ${partage.an}.`} />} />
-                ) : null}
+                {/* 12/11/2026 (porteur) : plus de carte de partage ici, elle répétait le chiffre ; le partage est en haut à droite. */}
               </Carte>
 
               {/* OU VA CHAQUE 100 € */}
