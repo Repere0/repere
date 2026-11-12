@@ -1,7 +1,7 @@
 // PWA : manifeste, balises iOS et vercel.json, deduits de app.json (une seule source).
 // Expo (Metro) ne produit plus de manifeste : ce script le fait apres `expo export`.
 // Fonctions pures exportees pour etre eprouvees (tests/pwa.test.mjs).
-import { readFileSync, writeFileSync, copyFileSync, readdirSync, statSync, existsSync, renameSync } from "node:fs";
+import { readFileSync, writeFileSync, readdirSync, statSync, existsSync, renameSync } from "node:fs";
 import { createHash } from "node:crypto";
 import { join, relative, sep } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -104,7 +104,9 @@ export function appliquer(dossierApp, dist) {
   const f = join(dist, "index.html");
   writeFileSync(f, injecterBalises(readFileSync(f, "utf8"), appJson));
   // Vercel lit vercel.json dans le dossier deploye : `vercel deploy dist` ignorerait celui de la racine.
-  copyFileSync(join(dossierApp, "vercel.json"), join(dist, "vercel.json"));
+  // Sans les commandes de build : dans dist/, `vercel deploy` ne doit rien reconstruire, seulement reecrire les adresses.
+  const v = JSON.parse(readFileSync(join(dossierApp, "vercel.json"), "utf8"));
+  writeFileSync(join(dist, "vercel.json"), JSON.stringify({ rewrites: v.rewrites, headers: v.headers }, null, 2) + "\n");
   const sw = join(dist, "sw.js");
   writeFileSync(sw, preparerSw(readFileSync(join(dossierApp, "public", "sw.js"), "utf8"), fichiersCoquille(dist)));
   const reste = manques(readFileSync(f, "utf8"), manifeste);

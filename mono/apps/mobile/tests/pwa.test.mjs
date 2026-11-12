@@ -73,3 +73,13 @@ test("node_modules : dossier renommé et adresses réécrites (Vercel ne l'envoi
   assert.ok(lire(join(d, "_expo/static/js/web/e.js"), "utf8").includes('"/assets/vendor/@expo-google-fonts/manrope/m.ttf"'));
   assert.deepEqual(restesNodeModules(d), []);
 });
+
+test("Vercel relié à Git : les réglages de build vivent dans vercel.json, app.json dit metro + single", () => {
+  const v = JSON.parse(readFileSync(new URL("../vercel.json", import.meta.url), "utf8"));
+  assert.equal(v.buildCommand, "npm run build:web");
+  assert.equal(v.outputDirectory, "dist");
+  assert.match(v.installCommand, /pnpm@8\.15\.9 install --frozen-lockfile/);
+  assert.match(v.installCommand, /extract/, "les données sont absentes du dépôt : il faut les extraire");
+  assert.equal(app.expo.web.bundler, "metro");
+  assert.equal(app.expo.web.output, "single");
+});
