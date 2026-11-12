@@ -21,6 +21,12 @@
  * Licence lue dans les metadonnees de Commons (extmetadata) : CC BY, CC BY-SA, CC0 ou
  * domaine public. Toute autre licence, ou une licence absente : pas de photo.
  *
+ * CANDIDATS A LA PRESIDENTIELLE (12/11/2026, ADR 0008) : lus dans data/presidentielle-2027/candidats.json,
+ * ecrits dans data/presidentielle-2027/photos.json ({ photos: { "<id>": { ..., wikidata } } }), un fichier
+ * national comme candidats.json. Rapprochement : libelle francais EXACTEMENT « Prenom Nom », humain de
+ * nationalite francaise, personnalite politique, et SEUL item a remplir ces conditions (voir
+ * rapprocherCandidats). Retrait : cle « C:<id> » dans photos-retirees.json. Jamais de couleur de parti.
+ *
  * NON VERIFIE DANS LA SESSION QUI L'A ECRIT : Wikidata et Commons etaient injoignables
  * (proxy). En particulier, la propriete P4123 n'a pas ete confirmee comme identifiant
  * de l'Assemblee : si elle ne l'est pas, aucun depute ne sera rapproche (la double
@@ -47,6 +53,29 @@ async function sparql(q) {
   if (!r.ok) throw new Error("SPARQL HTTP " + r.status);
   return (await r.json()).results.bindings;
 }
+/* RAPPROCHEMENT D'UN CANDIDAT (ADR 0008) : une candidature declaree n'a aucun identifiant officiel.
+   `lignes` = reponses SPARQL { p, label, img? } deja filtrees (humain, francais, personnalite politique).
+   Un candidat n'est retenu que si UN SEUL item porte exactement son nom ; deux homonymes = aucune photo. */
+export function rapprocherCandidats(candidats, lignes) {
+  const items = new Map();   /* libelle normalise -> Map(item -> premiere image) */
+  for (const l of lignes) {
+    const k = norm(l.label);
+    if (!items.has(k)) items.set(k, new Map());
+    const m = items.get(k);
+    const q = String(l.p).split("/").pop();   /* l'URI complete ou le seul Q… : le meme item */
+    if (!m.get(q)) m.set(q, l.img || null);
+  }
+  const retenus = [];
+  for (const c of candidats) {
+    const m = items.get(norm(`${c.prenom} ${c.nom}`));
+    if (!m || m.size !== 1) continue;
+    const [[p, img]] = [...m];
+    if (!img) continue;
+    retenus.push({ cle: "C:" + c.id, id: c.id, dep: "presidentielle", famille: c.nom, image: img, wikidata: p });
+  }
+  return retenus;
+}
+const echapper = s => String(s).replace(/\\/g, "\\\\").replace(/"/g, '\\"');
 const fichier = url => decodeURIComponent(String(url).split("/").pop()).replace(/_/g, " ");
 
 async function main() {
@@ -84,6 +113,22 @@ async function main() {
     }
   }
 
+  /* 2 bis. Candidats a la presidentielle (ADR 0008). Une erreur ici ne prive pas les elus de leurs photos. */
+  let nbCandidats = 0, nbCandidatsRapproches = 0;
+  try {
+    const fc = path.join(SORTIE, "presidentielle-2027", "candidats.json");
+    const liste = fs.existsSync(fc) ? (JSON.parse(fs.readFileSync(fc, "utf8")).candidats || []) : [];
+    nbCandidats = liste.length;
+    if (liste.length) {
+      await pause(1000);
+      const valeurs = liste.map(c => `"${echapper(`${c.prenom} ${c.nom}`)}"@fr`).join(" ");
+      const rc = await sparql(`SELECT ?p ?label ?img WHERE { VALUES ?label { ${valeurs} } ?p rdfs:label ?label ; wdt:P31 wd:Q5 ; wdt:P27 wd:Q142 ; wdt:P106 wd:Q82955 . OPTIONAL { ?p wdt:P18 ?img } }`);
+      const retenus = rapprocherCandidats(liste, rc.map(b => ({ p: b.p.value, label: b.label.value, img: b.img ? b.img.value : null })));
+      nbCandidatsRapproches = retenus.length;
+      candidats.push(...retenus);
+    }
+  } catch (e) { console.log("photos-candidats : rapprochement impossible (" + e.message + ") - initiales affichees"); }
+
   /* 3. Licence et vignette, par lots de 40 fichiers Commons. */
   const parDep = {};
   let refusees = 0;
@@ -108,10 +153,11 @@ async function main() {
       const octets = Buffer.from(await img.arrayBuffer());
       if (octets.length > 25000) { refusees++; continue; }   /* une vignette, pas une photo pleine taille */
       const type = img.headers.get("content-type") || "image/jpeg";
-      (parDep[c.dep] ||= {})[c.cle] = {
+      (parDep[c.dep] ||= {})[c.id || c.cle] = {
         data: `data:${type};base64,${octets.toString("base64")}`,
         auteur: auteur.slice(0, 120), licence, licence_url: md.LicenseUrl ? sansHtml(md.LicenseUrl.value) : null,
         page: ii.descriptionurl || null,
+        ...(c.wikidata ? { wikidata: c.wikidata } : {}),
       };
       await pause(200);
     }
@@ -124,7 +170,8 @@ async function main() {
   let total = 0;
   for (const [dep, photos] of Object.entries(parDep)) {
     total += Object.keys(photos).length;
-    fs.writeFileSync(path.join(dir, dep + ".json"), JSON.stringify({
+    const cible = dep === "presidentielle" ? path.join(SORTIE, "presidentielle-2027", "photos.json") : path.join(dir, dep + ".json");
+    fs.writeFileSync(cible, JSON.stringify({
       v: 1, genere_le: jour,
       source: { producteur: "Wikimedia Commons (images) et Wikidata (rapprochement)", licence: "licence propre a chaque image (voir chaque entree)", releve_le: jour, url: "https://commons.wikimedia.org" },
       photos,
@@ -132,6 +179,7 @@ async function main() {
   }
   const nbDeputes = Object.keys(deputes).length;
   const nbDep = candidats.filter(c => c.cle.startsWith("PA")).length;
-  console.log(`photos-elus : ${total} photos retenues (${refusees} refusees : licence, auteur, taille) ; deputes rapproches ${nbDep}/${nbDeputes} ; maires rapproches ${candidats.length - nbDep}`);
+  const nbC = candidats.filter(c => c.cle.startsWith("C:")).length;
+  console.log(`photos-elus : ${total} photos retenues (${refusees} refusees : licence, auteur, taille) ; deputes rapproches ${nbDep}/${nbDeputes} ; maires rapproches ${candidats.length - nbDep - nbC} ; candidats rapproches ${nbCandidatsRapproches}/${nbCandidats}`);
 }
 if (import.meta.url === `file://${process.argv[1]}`) main().catch(e => { console.error("photos-elus : " + e.message); process.exit(2); });

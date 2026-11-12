@@ -118,6 +118,8 @@ jobs:
             if (fs.existsSync(dir)) for (const f of fs.readdirSync(dir)) { const ph = lire(dir + "/" + f); for (const k of Object.keys((ph && ph.photos) || {})) (k.startsWith("PA") ? dep++ : mai++); }
             const nbDep = Object.keys((lire("data/deputes.json") || {}).deputes || {}).length;
             console.log("photos : " + dep + " deputes sur " + nbDep + ", " + mai + " maires");
+            const pc = lire("data/presidentielle-2027/photos.json"), lc = lire("data/presidentielle-2027/candidats.json");
+            console.log("photos des candidats : " + Object.keys((pc && pc.photos) || {}).length + " sur " + ((lc && lc.candidats) || []).length);
             const a = lire("data/agregats-regionaux.json");
             console.log("agregats regionaux : " + (a ? Object.keys(a.regions || {}).length + " regions" : "fichier absent"));
           ' | tee bilan-collectes.txt
@@ -133,6 +135,7 @@ jobs:
             mono/bilan-collectes.txt
             mono/data/mairies-idf.json
             mono/data/photos-elus/
+            mono/data/presidentielle-2027/photos.json
             mono/data/agregats-regionaux.json
             mono/data/deputes-groupes.json
           if-no-files-found: warn

@@ -109,7 +109,7 @@ export function CreditPhoto({ photo }: { photo: PhotoElu }) {
       </Text>
     </Pressable>
     {CONTACT ? (
-      <Pressable onPress={() => Linking.openURL(`mailto:${CONTACT}?subject=${encodeURIComponent("Retrait d'une photo d'élu")}`)} accessibilityRole="link"
+      <Pressable onPress={() => Linking.openURL(`mailto:${CONTACT}?subject=${encodeURIComponent("Retrait d'une photo")}`)} accessibilityRole="link"
         accessibilityLabel={`Photo sous licence libre, but informatif. Demander le retrait par courriel à ${CONTACT}`}
         style={({ pressed }) => ({ minHeight: 45, justifyContent: "center", ...enfonce(pressed) })}>
         <Text style={{ fontSize: 12, lineHeight: 16, color: couleurs.sourd }}>Photo sous licence libre, but informatif. Retrait sur demande : <Text>{CONTACT}</Text></Text>

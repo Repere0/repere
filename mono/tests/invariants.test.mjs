@@ -363,13 +363,18 @@ test("invariant 4 — aucune donnée n'est servie sans source déclarée", () =>
   const sources = existe("data/index.json") ? (JSON.parse(lire("data/index.json")).sources || {}) : {};
   /* /photos-elus/{dep}.json (D27, ADR 0004) : chaque photo porte son auteur et sa licence,
      et la licence est libre. Servi par departement, comme les comptes. */
-  if (existe("data/photos-elus")) {
-    for (const f of fs.readdirSync(path.join(RACINE, "data/photos-elus"))) {
-      const ph = JSON.parse(lire("data/photos-elus/" + f));
-      assert.ok(ph.source && ph.genere_le, `photos-elus/${f} sans source ni date`);
+  /* 12/11/2026 (ADR 0008) : les photos des candidats, un fichier national, suivent la même règle. */
+  const fichiersPhotos = [
+    ...(existe("data/photos-elus") ? fs.readdirSync(path.join(RACINE, "data/photos-elus")).map(f => "photos-elus/" + f) : []),
+    ...(existe("data/presidentielle-2027/photos.json") ? ["presidentielle-2027/photos.json"] : []),
+  ];
+  {
+    for (const f of fichiersPhotos) {
+      const ph = JSON.parse(lire("data/" + f));
+      assert.ok(ph.source && ph.genere_le, `${f} sans source ni date`);
       for (const [cle, x] of Object.entries(ph.photos || {})) {
-        assert.ok(x.auteur && x.licence && /^data:image\//.test(x.data), `photos-elus/${f} ${cle} : auteur, licence ou vignette manquant`);
-        assert.ok(!/nc|nd/i.test(x.licence.replace(/cc0/i, "")), `photos-elus/${f} ${cle} : licence non libre (${x.licence})`);
+        assert.ok(x.auteur && x.licence && /^data:image\//.test(x.data), `${f} ${cle} : auteur, licence ou vignette manquant`);
+        assert.ok(!/nc|nd/i.test(x.licence.replace(/cc0/i, "")), `${f} ${cle} : licence non libre (${x.licence})`);
       }
     }
   }
