@@ -38,8 +38,8 @@ une seule fois sont reprises a part, plus bas.
 | `acteur.profession.libelleCourant` | texte | 2081 | Ancien directeur d'une société de recrutement · Inspecteur général de l'équipement |
 | `acteur.profession.socProcINSEE.catSocPro` | texte | 2102 | Anciens artisans, commerçants, chefs d'entreprise · Cadres de la fonction publique, professions intellectuelles et  artistiques |
 | `acteur.profession.socProcINSEE.famSocPro` | texte | 2102 | Retraités · Cadres et professions intellectuelles supérieures |
-| `acteur.uri_hatvp.@xmlns:xsi` | texte | 2474 | http://www.w3.org/2001/XMLSchema-instance |
-| `acteur.uri_hatvp.@xsi:nil` | texte | 2474 | true |
+| `acteur.uri_hatvp.@xmlns:xsi` | texte | 2476 | http://www.w3.org/2001/XMLSchema-instance |
+| `acteur.uri_hatvp.@xsi:nil` | texte | 2476 | true |
 | `acteur.adresses.adresse[]` | liste | 2083 | de 2 a 11 entrees |
 | `acteur.adresses.adresse[].@xmlns:xsi` | texte | 9006 | http://www.w3.org/2001/XMLSchema-instance |
 | `acteur.adresses.adresse[].@xsi:type` | texte | 9006 | AdressePostale_Type · AdresseTelephonique_Type |
@@ -91,7 +91,7 @@ une seule fois sont reprises a part, plus bas.
 | `acteur.etatCivil.infoNaissance.paysNais.@xmlns:xsi` | texte | 1211 | http://www.w3.org/2001/XMLSchema-instance |
 | `acteur.etatCivil.infoNaissance.paysNais.@xsi:nil` | texte | 1211 | true |
 | `acteur.etatCivil.ident.trigramme` | texte | 525 | ADA · JGD |
-| `acteur.uri_hatvp` | texte | 526 | https://www.hatvp.fr/pages_nominatives/david-alain · https://www.hatvp.fr/pages_nominatives/guedj-jerome |
+| `acteur.uri_hatvp` | texte | 524 | https://www.hatvp.fr/pages_nominatives/david-alain · https://www.hatvp.fr/pages_nominatives/guedj-jerome |
 | `acteur.etatCivil.dateDeces` | texte | 270 | 2025-02-16 · 2022-01-01 |
 | `acteur.mandats.mandat[].suppleants.suppleant.dateDebut` | texte | 1036 | 2002-06-19 · 2002-12-15 |
 | `acteur.mandats.mandat[].suppleants.suppleant.dateFin` | texte/vide | 1036 | 2007-06-19 · 2012-06-19 |
