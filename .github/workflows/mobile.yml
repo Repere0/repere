@@ -122,7 +122,6 @@ jobs:
           node apps/mobile/tests/final-polish-web.mjs http://localhost:8811
           node apps/mobile/tests/fix-iphone-web.mjs http://localhost:8811
           node apps/mobile/tests/fraicheur-mouvement-web.mjs http://localhost:8811
-          node apps/mobile/tests/zoom-web.mjs http://localhost:8811
           node apps/mobile/tests/mode-web.mjs http://localhost:8811
           node apps/mobile/tests/audit-ui-web.mjs http://localhost:8811 apps/mobile/captures/audit
           # PWA : une copie de l'export recoit le manifeste et le service worker, puis on coupe le reseau.

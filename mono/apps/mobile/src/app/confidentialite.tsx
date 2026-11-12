@@ -28,7 +28,7 @@ export default function Confidentialite() {
       </Carte>
 
       <Carte titre="Ce qui est gardé sur votre appareil">
-        <Puce>Deux réglages peuvent être gardés sur ce téléphone, et seulement là : la commune que vous avez choisie (deux codes publics, sous la clé repere.departement, uniquement si vous cochez « Retenir sur ce téléphone ») et vos réglages de lecture (taille, contraste, animations, daltonisme, sous la clé repere.profil). Rien de ces réglages ni de la commune n'est envoyé.</Puce>
+        <Puce>Deux réglages peuvent être gardés sur cet appareil, et seulement là : la commune que vous avez choisie (deux codes publics, sous la clé repere.departement, uniquement si vous cochez « Retenir sur cet appareil ») et vos réglages de lecture (taille, contraste, animations, daltonisme, sous la clé repere.profil). Rien de ces réglages ni de la commune n'est envoyé.</Puce>
         <Puce>Le bouton « Oublier » efface cette information.</Puce>
         <Puce>Les fichiers publics de Repère (élus, votes, comptes, calendrier) sont gardés dans le dossier de cache de l'application, pour fonctionner hors ligne. Ce sont des données publiques. Le système peut vider ce dossier à tout moment ; l'application les télécharge alors à nouveau.</Puce>
         <Puce>Supprimer l'application efface tout ce qu'elle a gardé sur votre appareil.</Puce>

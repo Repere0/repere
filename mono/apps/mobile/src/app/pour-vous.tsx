@@ -10,15 +10,14 @@
  * Règles :
  *   - « Cette semaine » : les entrées datées de moins de 7 jours ;
  *   - un exercice de comptes n'est pas daté au jour : il n'est jamais « cette semaine » ;
- *   - le filtre de vue est visibleAuNiveau, la même règle que le reste de l'application ;
- *   - rien n'est supprimé : « Voir plus » déroule les anciennes entrées par tranches. */
+ * *   - rien n'est supprimé : « Voir plus » déroule les anciennes entrées par tranches. */
 import { Pression } from "../ui/pression";
 import { Details } from "../ui/details";
 import { useEffect, useMemo, useState } from "react";
 import { router } from "expo-router";
 import { Linking, Pressable, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { ageReleve, dateFr, dernierExercice, parHabitant, THEMES, themesDuTexte, titreLisible, visibleAuNiveau } from "@repere/core";
+import { ageReleve, dateFr, dernierExercice, parHabitant, THEMES, themesDuTexte, titreLisible } from "@repere/core";
 import { chargerCatalogueScrutins, chargerCommunesBeta, chargerDepartement, chargerEvenements, chargerIndex } from "../lib/donnees";
 import { srcComptesPublies, srcVote } from "../lib/sources";
 import { useSelection } from "../lib/selection";
@@ -26,7 +25,6 @@ import { useProfil } from "../lib/profil";
 import { Vide } from "../lib/composants";
 import { CIBLE, couleurs, OMBRE, PAS, POLICE, RAYON, TYPO } from "../lib/theme";
 import { Page, Question } from "../ui/page";
-import { BadgeZoom, useNiveauZoom } from "../ui/badge-zoom";
 import { ilYa } from "../ui/fraicheur";
 import { SquelettesListe } from "../ui/squelette";
 import { enfonce } from "../ui/mouvement";
@@ -58,7 +56,6 @@ const estCetteSemaine = (e: Entree): boolean => {
 };
 
 export default function PourVous() {
-  const niveau = useNiveauZoom();
   const { modifier, profil } = useProfil();
   const { choix, retenue } = useSelection();
   const [nationales, setNationales] = useState<Entree[] | null>(null);
@@ -93,7 +90,7 @@ export default function PourVous() {
     return () => { vivant = false; };
   }, []);
 
-  /* Les comptes de la commune : la commune choisie, sinon la commune retenue sur ce téléphone.
+  /* Les comptes de la commune : la commune choisie, sinon la commune retenue sur cet appareil.
      Même lecture que la carte budget de l'accueil (dernier exercice, par habitant, publié tel quel). */
   useEffect(() => {
     let vivant = true;
@@ -119,11 +116,11 @@ export default function PourVous() {
     return () => { vivant = false; };
   }, [choix, retenue]);
 
-  /* Les sujets choisis par le lecteur (vide = tout montrer). Le filtre de vue passe d'abord. */
+  /* Les sujets choisis par le lecteur (vide = tout montrer). */
   const choisis: string[] = profil?.themes ?? [];
   const zoneVisibles = useMemo(
-    () => [...(budget ? [budget] : []), ...(nationales ?? [])].filter(e => visibleAuNiveau(niveau, e.echelon)).sort(ordonner),
-    [budget, nationales, niveau],
+    () => [...(budget ? [budget] : []), ...(nationales ?? [])].sort(ordonner),
+    [budget, nationales],
   );
   const visibles = useMemo(
     () => (choisis.length ? zoneVisibles.filter(e => e.themes.some(t => choisis.includes(t))) : zoneVisibles),
@@ -138,7 +135,6 @@ export default function PourVous() {
 
   return (
     <Page sansDate>
-      <BadgeZoom />
       <Question etiquette="Selon votre vue" question="Pour vous" sous="Ce qui a été publié, du plus récent au plus ancien." />
       <View style={{ gap: PAS * 2 }}>
         <Text style={TYPO.etiquette}>Mes sujets</Text>
@@ -170,14 +166,10 @@ export default function PourVous() {
       {echec ? <Vide titre="Les publications ne sont pas disponibles pour le moment." /> : null}
       {!echec && nationales === null ? <SquelettesListe n={3} hauteur={96} /> : null}
       {!echec && nationales !== null && zoneVisibles.length > 0 && visibles.length === 0 ? (
-        <Vide titre="Aucune publication ne correspond à vos sujets pour cette vue." action="Voir tous les sujets" onAction={() => modifier({ themes: [] })} />
+        <Vide titre="Aucune publication ne correspond à vos sujets." action="Voir tous les sujets" onAction={() => modifier({ themes: [] })} />
       ) : null}
       {!echec && nationales !== null && zoneVisibles.length === 0 ? (
-        <Vide
-          titre={niveau === "rue" ? "Pas d'actu locale." : "Rien à montrer pour cette vue."}
-          action={niveau === "france" ? undefined : "Voir la France"}
-          onAction={() => modifier({ niveauZoom: "france" })}
-        />
+        <Vide titre="Rien à montrer pour le moment." />
       ) : null}
       {!echec && nationales !== null && visibles.length > 0 ? (
         <View style={{ gap: PAS * 4 }}>

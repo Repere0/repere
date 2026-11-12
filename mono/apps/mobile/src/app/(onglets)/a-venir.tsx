@@ -34,8 +34,6 @@ import { AvecDonnees, Page, Question } from "../../ui/page";
 import { PastilleSource } from "../../ui/source";
 import { Depli } from "../../ui/visuels";
 import { PartagerCarte } from "../../ui/partage/bouton-partage";
-import { BadgeZoom, useNiveauZoom } from "../../ui/badge-zoom";
-import { visibleAuNiveau } from "@repere/core";
 import { AgendaStory } from "../../ui/partage/variantes/agenda.story";
 import { messageAgenda } from "../../ui/partage/messages";
 import { BoutonPartageTexte, ligneSource } from "../../ui/partage/partager-texte";
@@ -155,7 +153,6 @@ const secondaire = {
 
 export default function AVenir() {
   const { reessayer } = useCommuneChoisie();
-  const niveauZoom = useNiveauZoom();
   /* Filtre par institution : null = les deux. */
   const [institution, setInstitution] = useState<string | null>(null);
   const [jour, setJour] = useState<string>(() => jourParis(new Date()));
@@ -168,9 +165,7 @@ export default function AVenir() {
     <AvecDonnees rendu={r => {
       const { d } = r;
       const toutes = (d.aVenir || []) as Ev[];
-      /* V26 bloc 2 : le calendrier est national ; en vue « Ma rue » ou « Ma région », il ne s'affiche pas. */
-      const nationalVisible = visibleAuNiveau(niveauZoom, "france");
-      const aVenir = !nationalVisible ? [] : institution ? toutes.filter(e => e.institution === institution) : toutes;
+      const aVenir = institution ? toutes.filter(e => e.institution === institution) : toutes;
       const lues = ((d.semaineParlement && d.semaineParlement.institutions) || []) as { institution: string; source: Record<string, string> }[];
       const groupes = regrouperParJour(aVenir) as Groupe[];
       const compte: Record<string, number> = {};
@@ -221,8 +216,7 @@ export default function AVenir() {
           <Stack.Screen options={{ title: LIBELLES.calendrier, headerRight: () => <BoutonPartageTexte titre={LIBELLES.calendrier} chemin="a-venir"
             source={lues.map(x => ligneSource({ producteur: x.source.producteur_affiche || x.source.producteur, maj: x.source.releve_le })).filter(Boolean).join(" ")} /> }} />
           {/* En-tête compact (porteur, 09/11/2026) : le titre, une ligne qui dit que l'agenda est national,
-              puis directement la frise des jours. Le badge de vue n'apparaît que s'il masque le calendrier. */}
-          {!nationalVisible ? <BadgeZoom /> : null}
+              puis directement la frise des jours. */}
           <View style={{ gap: PAS }}>
             <Text style={TYPO.question} accessibilityRole="header">Calendrier</Text>
             <Text style={TYPO.note}>Les séances annoncées à l'Assemblée nationale et au Sénat concernent tout le pays.</Text>
@@ -261,7 +255,7 @@ export default function AVenir() {
               {/* Filtre segmenté (maquette Stitch, 09/11/2026) : trois choix, chacun avec le nombre de
                   rendez-vous publiés sur la même période (le jour choisi, sinon deux semaines). */}
               {(() => {
-                const nb = (i: string | null) => (regrouperParJour(nationalVisible ? (i ? toutes.filter(e => e.institution === i) : toutes) : []) as Groupe[])
+                const nb = (i: string | null) => (regrouperParJour(i ? toutes.filter(e => e.institution === i) : toutes) as Groupe[])
                   .filter(g => (choisi ? g.jour === jour : g.jour < limite)).length;
                 const vals = [{ c: null, t: "Tout" }, { c: "Assemblée nationale", t: "Assemblée" }, { c: "Sénat", t: "Sénat" }];
                 return (

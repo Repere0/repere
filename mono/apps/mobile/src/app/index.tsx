@@ -17,12 +17,11 @@ import { useEffect, useMemo, useState } from "react";
 import { FlatList, KeyboardAvoidingView, Linking, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View, useWindowDimensions } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { router, useLocalSearchParams } from "expo-router";
-import { mots, motsCible, correspond, chercherCommunes, departementDe, titreLisible, dernierExercice, evolution, parHabitant, dateFr, decompte, ordinal, positionSur, positionsFiables, visibleAuNiveau } from "@repere/core";
+import { mots, motsCible, correspond, chercherCommunes, departementDe, titreLisible, dernierExercice, evolution, parHabitant, dateFr, decompte, ordinal, positionSur, positionsFiables } from "@repere/core";
 import { chargerCatalogueScrutins, chargerCodesPostaux, chargerCommunesBeta, chargerDepartement, chargerDeputes, chargerIndex, chargerVotes, ETATS, PHRASES } from "../lib/donnees";
 import { Bouton, Carte, Texte, Vide } from "../lib/composants";
 import { useSelection } from "../lib/selection";
 import { useProfil } from "../lib/profil";
-import { BadgeZoom, useNiveauZoom } from "../ui/badge-zoom";
 import { feuille, ACCENTS, CIBLE, couleurs, FILET_TUILE, JAUGE, OMBRE, PAS, POLICE, RAYON, TYPO } from "../lib/theme";
 import { useTheme } from "../lib/themeChoix";
 import { Decideurs } from "../ui/decideurs";
@@ -203,9 +202,6 @@ export default function Accueil() {
   const { width } = useWindowDimensions();
   const { choix, choisir, retenue, oublier } = useSelection();
   const { absent } = useProfil();
-  const niveauZoom = useNiveauZoom();
-  /* V26 bloc 2 : le vote d'un député est une information nationale (échelon France). */
-  const voteAffiche = visibleAuNiveau(niveauZoom, "france");
   const [etat, setEtat] = useState<string>(ETATS.EN_COURS);
   const [beta, setBeta] = useState<Beta | null>(null);
   const [index, setIndex] = useState<Index | null>(null);
@@ -433,7 +429,7 @@ export default function Accueil() {
                       <View style={{ gap: PAS * 2 }}>
                         <Barre parts={[{ cle: "s", valeur: repartition.sal, couleur: JAUGE.salaires }, { cle: "i", valeur: repartition.inv, couleur: JAUGE.investissement }, { cle: "a", valeur: repartition.aut, couleur: JAUGE.autres }]} />
                         <View style={{ flexDirection: "row", flexWrap: "wrap", columnGap: PAS * 4, rowGap: PAS }}>
-                          {[[JAUGE.salaires, `${repartition.sal} % salaires`], [JAUGE.investissement, `${repartition.inv} % invest.`], [JAUGE.autres, `${repartition.aut} % autres`]].map(([c, l]) => (
+                          {[[JAUGE.salaires, `${repartition.sal} € salaires`], [JAUGE.investissement, `${repartition.inv} € investissement`], [JAUGE.autres, `${repartition.aut} € autres`]].map(([c, l]) => (
                             <View key={l} style={{ flexDirection: "row", alignItems: "center", gap: PAS }}>
                               <View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: c, borderWidth: 1, borderColor: D.trait }} />
                               <Text style={s.legende}>{l}</Text>
@@ -482,7 +478,7 @@ export default function Accueil() {
                   </View>
                 </View>
               ) : null}
-              {voteAffiche ? <View style={{ width: larg }}>
+              <View style={{ width: larg }}>
                 {voteVu && "depute" in voteVu ? (
                   <CarteVote etiquette="Le dernier vote publié de votre député" nom={voteVu.depute} acteur={voteVu.acteur}
                     ligne={`Député de la ${ordinal(voteVu.circo)} circonscription · ${nomDep(departementDe(cible.insee) || "")}`}
@@ -498,10 +494,10 @@ export default function Accueil() {
                     ligne="Député de la 1re circonscription de Seine-et-Marne" position={positionExemple} dec={decExemple}
                     date={dateFr(VOTE.date)} titre={titreLisible(VOTE.titre)} exemple />
                 )}
-              </View> : null}
+              </View>
             </ScrollView>
             <View style={s.points} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
-              {(argent && voteAffiche ? [0, 1] : [0]).map(i => <View key={i} style={[s.point, page === i && s.pointActif]} />)}
+              {(argent ? [0, 1] : [0]).map(i => <View key={i} style={[s.point, page === i && s.pointActif]} />)}
             </View>
     </>
   );
@@ -549,7 +545,6 @@ export default function Accueil() {
             {/* Invariant 9 : la date des données reste visible, en tête, sans prendre la place du contenu. */}
             <View style={{ flexDirection: "row", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", columnGap: PAS * 3 }}>
               <DatePublication />
-              <BadgeZoom />
             </View>
             {/* LE PITCH : une citation, en grand. Demande du CEO (30/10/2026) : elle remplace le paragraphe.
                 07/11/2026 (porteur) : titre court, les deux questions du produit, mot pour mot. */}
@@ -596,7 +591,7 @@ export default function Accueil() {
             {premiere ? null : cartes}
 
             {retenue && nomRetenue ? (
-              <Carte echelon="ville" titre="Votre commune, sur ce téléphone">
+              <Carte echelon="ville" titre="Votre commune, sur cet appareil">
                 <Texte fort>{nomRetenue}</Texte>
                 <Bouton texte={`Voir ce qui se passe à ${nomRetenue}`} onPress={() => ouvrir(retenue.c, nomRetenue)} />
                 <Bouton texte={`Oublier ${nomRetenue}`} discret onPress={oublier} />
@@ -676,7 +671,7 @@ export default function Accueil() {
                 </Pressable>
                 {/* V29 bloc 1 (audit D51) : phrase retirée de l'accueil en V20, réintégrée au niveau 2. */}
                 <Details titre="Repère ne sait pas qui vous êtes" couleur={D.encre} lien={D.encre}>
-                  <Text style={[s.note, { color: D.sourd }]}>Pour afficher votre commune, il télécharge le fichier public de tout votre département, et ne garde votre commune sur ce téléphone que si vous le lui demandez.</Text>
+                  <Text style={[s.note, { color: D.sourd }]}>Pour afficher votre commune, il télécharge le fichier public de tout votre département, et ne garde votre commune sur cet appareil que si vous le lui demandez.</Text>
                 </Details>
               </>
             ) : null}

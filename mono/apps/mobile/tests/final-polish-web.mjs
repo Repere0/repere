@@ -53,7 +53,7 @@ await page.goto(BASE + "/", { waitUntil: "networkidle" });
 if (!(await page.getByLabel(/Où habitez-vous/).isVisible().catch(() => false))) await page.getByRole("button", { name: "Chercher une commune" }).first().click();
 await page.getByLabel(/Où habitez-vous/).fill("Paris");
 await page.getByRole("button", { name: /^Paris,/ }).first().click();
-await page.getByText("Question 4 sur 4", { exact: false }).first().waitFor({ timeout: 15000 });
+await page.getByText("Question 3 sur 3", { exact: false }).first().waitFor({ timeout: 15000 });
 await page.getByRole("button", { name: /^Passer/ }).click();
 await page.getByText("Aller plus loin").first().waitFor({ timeout: 15000 });
 

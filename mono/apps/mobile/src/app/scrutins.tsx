@@ -339,7 +339,7 @@ export default function Scrutins() {
         !qagIndex ? (
           /* Avant le 11/11/2026 : « Chargement » restait affiché pour toujours quand le relevé n'arrivait pas. */
           qagCharge ? (
-            <Vide titre="Les questions au Gouvernement ne sont pas encore sur ce téléphone."
+            <Vide titre="Les questions au Gouvernement ne sont pas encore sur cet appareil."
               corps="Repère les republie chaque jour ; elles restent consultables sur le site officiel."
               lien={{ texte: "Voir la source des questions (Assemblée nationale)", url: "https://data.assemblee-nationale.fr/questions/questions-au-gouvernement" }} />
           ) : <SquelettesListe n={3} hauteur={88} />
@@ -411,7 +411,7 @@ export default function Scrutins() {
       ) : (
         !index ? (
           etat === ETATS.EN_COURS ? <SquelettesListe n={3} hauteur={88} /> : (
-            <Vide icone="file-tray-outline" titre="Les scrutins ne sont pas encore sur ce téléphone."
+            <Vide icone="file-tray-outline" titre="Les scrutins ne sont pas encore sur cet appareil."
               corps="Sans le relevé détaillé de l'Assemblée, Repère n'affiche aucune position. Les scrutins restent consultables sur le site officiel."
               lien={{ texte: "Voir les scrutins sur le site de l'Assemblée", url: "https://www.assemblee-nationale.fr/dyn/17/scrutins" }} />
           )

@@ -104,8 +104,8 @@ export function motsCommune(t) {
   return motsRecherche(t).map(m => ABREVIATIONS[m] || m);
 }
 const ecart = (cherches, cible) => cherches.reduce((somme, m) => {
-  const meilleur = Math.min(...cible.map(w => Math.min(distanceFrappe(m, w), distanceFrappe(m, w.slice(0, m.length)))));
-  return somme + meilleur;
+  const plusProche = Math.min(...cible.map(w => Math.min(distanceFrappe(m, w), distanceFrappe(m, w.slice(0, m.length)))));
+  return somme + plusProche;
 }, 0);
 /** @param {Array<[string, string, string[]]>} liste @param {string} texte @param {{ codesPostaux?: Record<string, string[]> | null, max?: number }} [options] */
 export function chercherCommunes(liste, texte, { codesPostaux = null, max = 30 } = {}) {

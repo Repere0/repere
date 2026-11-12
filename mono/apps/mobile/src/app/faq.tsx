@@ -38,7 +38,7 @@ const FAQ: { q: string; r: string[]; lien?: { texte: string; aller: () => void }
     q: "Pourquoi pas de compte ?",
     r: [
       "Parce que Repère n'a pas besoin de savoir qui vous êtes. Pas de compte, pas d'e-mail, pas de traceur.",
-      "Pour afficher votre commune, l'application télécharge le fichier public de tout votre département : le serveur ne sait pas quelle commune vous regardez. Votre commune n'est gardée sur le téléphone que si vous le demandez.",
+      "Pour afficher votre commune, l'application télécharge le fichier public de tout votre département : le serveur ne sait pas quelle commune vous regardez. Votre commune n'est gardée sur l'appareil que si vous le demandez.",
     ],
     lien: { texte: "Politique de confidentialité", aller: () => router.push("/confidentialite") },
   },
