@@ -8,6 +8,7 @@
  * « refuse ». Les icones sont des reperes de categorie, masques au lecteur
  * d'ecran : ce sont des Ionicons, jamais des emojis (05/11/2026). */
 import { espacesFines } from "./donnees";
+import { ChiffreQuiCompte } from "./visuels";
 import type { ReactNode } from "react";
 import { Text, View } from "react-native";
 import { PAS, TYPO } from "../lib/theme";
@@ -32,7 +33,15 @@ export function Resume({ phrase, chiffre, legende, enClair, children, geant }: {
       <Text style={TYPO.reponse}>{phrase}</Text>
       {chiffre ? (
         <View accessible accessibilityLabel={`${chiffre}${legende ? ", " + legende : ""}`}>
-          <Text style={geant ? [TYPO.chiffre, { fontSize: TYPO.chiffre.fontSize * 1.75, lineHeight: TYPO.chiffre.lineHeight * 1.6, letterSpacing: -2 }] : TYPO.stat}>{typeof chiffre === "string" ? espacesFines(chiffre) : chiffre}</Text>
+          {(() => {
+            const style = geant ? [TYPO.chiffre, { fontSize: TYPO.chiffre.fontSize * 1.75, lineHeight: TYPO.chiffre.lineHeight * 1.6, letterSpacing: -2 }] : TYPO.stat;
+            /* Le chiffre héros d'un montant entier (« 4 493 € ») se révèle en 0,5 s ; tout autre format s'affiche tel quel. */
+            const m = geant && typeof chiffre === "string" ? /^(\d[\d\s\u202f\u00a0]*)(\D*)$/.exec(chiffre) : null;
+            const nombre = m ? Number(m[1].replace(/[\s\u202f\u00a0]/g, "")) : NaN;
+            return Number.isFinite(nombre) && m
+              ? <ChiffreQuiCompte valeur={nombre} style={style} etiquette={chiffre as string} suffixe={m[2] ? <Text>{m[2]}</Text> : undefined} />
+              : <Text style={style}>{typeof chiffre === "string" ? espacesFines(chiffre) : chiffre}</Text>;
+          })()}
           {legende ? <Text style={TYPO.note}>{legende}</Text> : null}
         </View>
       ) : null}

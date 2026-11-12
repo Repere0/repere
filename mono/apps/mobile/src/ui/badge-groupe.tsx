@@ -5,6 +5,7 @@ import { router } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { CIBLE, POLICE } from "../lib/theme";
 import { couleurGroupe, GROUPE_INCONNU, texteSur } from "../lib/groupes";
+import { enfonce } from "./mouvement";
 
 /* Le libelle unique quand le groupe n'est pas connu (V21) : « non publie » dit que Repère
    ne l'a pas (D3 : le lien depute -> groupe de l'Assemblee n'est pas extrait). Pas
@@ -18,7 +19,7 @@ export function BadgeGroupe({ groupe }: { groupe: string }) {
   return (
     <Pressable onPress={() => router.push({ pathname: "/groupe", params: { g: groupe } })} accessibilityRole="link"
       accessibilityLabel={`${libelleGroupe(groupe)}. Voir les députés de ce groupe`}
-      style={({ pressed }) => ({ alignSelf: "flex-start", minHeight: CIBLE, justifyContent: "center", opacity: pressed ? 0.7 : 1 })}>
+      style={({ pressed }) => ({ alignSelf: "flex-start", minHeight: CIBLE, justifyContent: "center", ...enfonce(pressed) })}>
       <View style={{ flexDirection: "row", alignItems: "center", gap: 6, paddingHorizontal: 12, paddingVertical: 6, borderRadius: 999, backgroundColor: fond }}>
         <Text style={{ color: texteSur(fond), fontSize: 14, fontFamily: POLICE.texteGras }}>{libelleGroupe(groupe)}</Text>
         <Ionicons name="chevron-forward" size={14} color={texteSur(fond)} accessible={false} importantForAccessibility="no" />

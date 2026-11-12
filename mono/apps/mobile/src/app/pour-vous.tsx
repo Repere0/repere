@@ -29,6 +29,7 @@ import { Page, Question } from "../ui/page";
 import { BadgeZoom, useNiveauZoom } from "../ui/badge-zoom";
 import { ilYa } from "../ui/fraicheur";
 import { SquelettesListe } from "../ui/squelette";
+import { enfonce } from "../ui/mouvement";
 
 const JOURS_SEMAINE = 7;
 const PAR_TRANCHE = 10;
@@ -151,7 +152,7 @@ export default function PourVous() {
                   minHeight: CIBLE, paddingHorizontal: PAS * 3, justifyContent: "center", borderRadius: 999,
                   flexDirection: "row", alignItems: "center", gap: PAS,
                   borderWidth: 1, borderColor: coche ? couleurs.encre : couleurs.trait,
-                  backgroundColor: coche ? couleurs.encre : couleurs.carte, opacity: pressed ? 0.7 : 1,
+                  backgroundColor: coche ? couleurs.encre : couleurs.carte, ...enfonce(pressed),
                 })}>
                 {coche ? <Ionicons name="checkmark" size={16} color={couleurs.sol} accessible={false} importantForAccessibility="no" /> : null}
                 <Text style={[TYPO.note, { color: coche ? couleurs.sol : couleurs.encre, fontFamily: POLICE.texteMoyen }]}>{th}</Text>
@@ -193,7 +194,7 @@ export default function PourVous() {
               {restantes > 0 ? (
                 <Pressable onPress={() => setTranches(t => t + 1)} accessibilityRole="button"
                   accessibilityLabel={`Voir plus de publications. ${restantes} restantes.`}
-                  style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", alignSelf: "flex-start", opacity: pressed ? 0.7 : 1 })}>
+                  style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", alignSelf: "flex-start", ...enfonce(pressed) })}>
                   <Text style={[TYPO.corps, { color: couleurs.lien, fontWeight: "700" }]}>Voir plus ({restantes} de plus)</Text>
                 </Pressable>
               ) : null}

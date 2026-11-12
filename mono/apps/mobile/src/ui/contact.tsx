@@ -13,6 +13,7 @@ import { Linking, Pressable, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { CIBLE, couleurs, PAS, TYPO } from "../lib/theme";
 import { LienSortant } from "../lib/composants";
+import { enfonce } from "./mouvement";
 
 const CONTACT = process.env.EXPO_PUBLIC_CONTACT_EMAIL || null;
 const COURRIEL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -24,7 +25,7 @@ export function ContacterElu({ nom, courriel, lienSource, sourceNom }: {
     return (
       <Pressable onPress={() => Linking.openURL(`mailto:${courriel}`)} accessibilityRole="link"
         accessibilityLabel={`Contacter ${nom} par courriel. Ouvre la messagerie.`}
-        style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", opacity: pressed ? 0.7 : 1 })}>
+        style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", ...enfonce(pressed) })}>
         <Text style={[TYPO.corps, { color: couleurs.lien, fontWeight: "500" }]}>Contacter {nom} ›</Text>
       </Pressable>
     );
@@ -43,7 +44,7 @@ export function SignalerErreur({ contexte, donnee }: { contexte: string; donnee:
     <View>
       <Pressable onPress={() => Linking.openURL(`mailto:${CONTACT}?subject=${sujet}&body=${corps}`)} accessibilityRole="link"
         accessibilityLabel={`Signaler une erreur sur ${contexte}. Ouvre la messagerie.`}
-        style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", alignSelf: "flex-start", opacity: pressed ? 0.7 : 1 })}>
+        style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", alignSelf: "flex-start", ...enfonce(pressed) })}>
         <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
           <Ionicons name="alert-circle-outline" size={16} color={couleurs.lien} accessible={false} importantForAccessibility="no" />
           <Text style={[TYPO.note, { color: couleurs.lien, fontWeight: "500" }]}>Signaler une erreur</Text>

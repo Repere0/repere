@@ -29,6 +29,8 @@ import { useSelection } from "../../lib/selection";
 import { mandatsTerminesListes } from "../../lib/mandats-termines";
 import { useDecoupage } from "../../lib/decoupage";
 import { SignalerErreur } from "../../ui/contact";
+import { ChoixCirconscription } from "../../ui/choix-circonscription";
+import { enfonce } from "../../ui/mouvement";
 
 /* L'AIGUILLEUR EN UN GESTE (maquette Stitch, 09/11/2026) : un sujet de la vie courante ouvre le
    niveau qui en décide. Les phrases reprennent celles de la chaîne (COMPETENCES, @repere/core) et
@@ -123,14 +125,21 @@ export default function QuiDecide() {
           const liste = n.personnes || [];
           /* Le groupe du député, pour que son avatar soit celui de sa fiche (ui/avatar). */
           const dp = n.personne ? deputeParNom(r.deputes, n.personne.nom) : null;
-          return { ...n, groupe: dp ? groupeDe(dp.ref, groupes) : null, photo: dp && dp.ref ? { dep: dp.dep, cle: dp.ref } : null, note: n.autresCircos ? `${d.nomCommune} est partagée entre plusieurs circonscriptions. Repère ne peut pas dire lequel de ces députés est le vôtre sans votre adresse, que Repère ne demande pas. Dans le fichier des députés : ${listeFr(liste.map(p => `${p.nom} (${ordinal(p.circo)} circonscription)`))}.` : undefined,
-            pied: n.personne && r.votesLus ? (
+          const partagee = !!n.autresCircos;
+          return { ...n, groupe: dp ? groupeDe(dp.ref, groupes) : null, photo: dp && dp.ref ? { dep: dp.dep, cle: dp.ref } : null,
+            /* Retour iPhone (11/11/2026) : plusieurs circonscriptions → plus de mur de 18 noms. Le nombre dans
+               l'étiquette, un sélecteur dessous ; la liste complète reste dans les données. */
+            lieu: partagee ? `${liste.length} circonscriptions` : n.lieu,
+            note: partagee ? `${d.nomCommune} est partagée entre plusieurs circonscriptions. Repère ne peut pas dire lequel de ces députés est le vôtre sans votre adresse, que Repère ne demande pas.` : undefined,
+            pied: partagee ? <ChoixCirconscription personnes={liste}
+                ouvrirFiche={p => router.push({ pathname: "/elu", params: { nom: p.nom, role: p.role || "Député", echelon: "france", niveau: n.niveau, institution: n.institution, lieu: `${ordinal(p.circo)} circonscription` } })} />
+              : n.personne && r.votesLus ? (
               /* Le vote affiche est le plus recent depuis le 07/10/2026 (ordreDesFaits,
                  @repere/core : date, puis numero de scrutin). On dit quand meme sa
                  date : « dernier » ne dirait pas de quand il date. */
               <Pressable onPress={() => router.push("/vote")} accessibilityRole="button"
                 accessibilityLabel={d.dernierVote ? `Voir son vote du ${dateFr(d.dernierVote.sc.d)}` : "Voir ses votes"}
-                style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", opacity: pressed ? 0.6 : 1 })}>
+                style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", ...enfonce(pressed) })}>
                 <Text style={[TYPO.corps, { color: couleurs.lien, fontWeight: "600" }]}>{d.dernierVote ? `Voir son vote du ${dateFr(d.dernierVote.sc.d)}` : "Voir ses votes"} ›</Text>
               </Pressable>
             ) : undefined };
@@ -156,7 +165,7 @@ export default function QuiDecide() {
                   accessibilityRole="button" accessibilityState={{ selected: on }} accessibilityLabel={`${x.texte} : qui s'en occupe ?`}
                   style={({ pressed }) => ({ minHeight: CIBLE, flexDirection: "row", alignItems: "center", gap: PAS * 2, paddingHorizontal: PAS * 4,
                     borderRadius: RAYON.pastille, borderWidth: 1, borderColor: on ? ACCENTS.autorite : couleurs.trait,
-                    backgroundColor: on ? ACCENTS.autorite : couleurs.carte, opacity: pressed ? 0.7 : 1 })}>
+                    backgroundColor: on ? ACCENTS.autorite : couleurs.carte, ...enfonce(pressed) })}>
                   <Ionicons name={x.icone} size={18} color={on ? ACCENTS.surAutorite : ACCENTS.autorite} accessible={false} importantForAccessibility="no" />
                   <Text style={[TYPO.corps, { fontFamily: POLICE.texteGras, color: on ? ACCENTS.surAutorite : couleurs.encre }]}>{x.texte}</Text>
                 </Pressable>
@@ -179,7 +188,7 @@ export default function QuiDecide() {
               à nouveau montre de nouveau tous les niveaux. */}
           {sujet ? (
             <Pressable onPress={() => setSujet(null)} accessibilityRole="button" accessibilityLabel="Montrer tous les niveaux"
-              style={({ pressed }) => ({ minHeight: CIBLE, alignSelf: "flex-start", flexDirection: "row", alignItems: "center", gap: PAS * 1.5, opacity: pressed ? 0.6 : 1 })}>
+              style={({ pressed }) => ({ minHeight: CIBLE, alignSelf: "flex-start", flexDirection: "row", alignItems: "center", gap: PAS * 1.5, ...enfonce(pressed) })}>
               <Ionicons name="close-circle-outline" size={16} color={couleurs.sourd} accessible={false} importantForAccessibility="no" />
               <Text style={[TYPO.note, { color: couleurs.encre }]}>Montrer tous les niveaux</Text>
             </Pressable>

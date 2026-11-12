@@ -61,7 +61,8 @@ import { SignalerErreur } from "../../ui/contact";
 /* VOS DÉCIDEURS (maquette Stitch, 09/11/2026) : composant partagé avec l'accueil (ui/decideurs). */
 import { Decideurs } from "../../ui/decideurs";
 import { RappelElection } from "../../ui/rappel-election";
-import { BarreBudget } from "../../ui/visuels";
+import { BarreBudget, ChiffreQuiCompte } from "../../ui/visuels";
+import { LigneIcone } from "../../ui/ligne-icone";
 import { deputeParNom, groupeDe, useGroupes } from "../../lib/groupes";
 import { DataBadge } from "../../ui/donnees";
 import { useCouleurVote } from "../../lib/couleur-vote";
@@ -149,13 +150,15 @@ export default function ChezVous() {
           {d.exercice && hab && hab.depenses !== null ? (
             <Reponse echelon="ville" heros sur={`Dépenses ${d.exercice.an} · par habitant`}
               preuve={<View style={{ gap: PAS * 4 }}>
-                <Text style={[TYPO.chiffre, { fontSize: TYPO.chiffre.fontSize * 1.75, lineHeight: TYPO.chiffre.lineHeight * 1.6, letterSpacing: -2 }]}>
-                  {hab.depenses.toLocaleString("fr-FR")}<Text style={{ fontSize: TYPO.chiffre.fontSize, color: couleurs.sourd }}>{"\u00a0"}€</Text>
-                </Text>
+                <ChiffreQuiCompte valeur={hab.depenses} etiquette={`${hab.depenses.toLocaleString("fr-FR")} euros`} style={[TYPO.chiffre, { fontSize: TYPO.chiffre.fontSize * 1.75, lineHeight: TYPO.chiffre.lineHeight * 1.6, letterSpacing: -2 }]}
+                  suffixe={<Text style={{ fontSize: TYPO.chiffre.fontSize, color: couleurs.sourd }}>{"\u00a0"}€</Text>} />
                 {parts ? <BarreBudget parts={parts} /> : null}
               </View>}
               phrase={`En ${d.exercice.an}, ${nom} a dépensé ${hab.depenses.toLocaleString("fr-FR")} € par habitant.`}
-              note={maire ? `Le maire, ${maire}, prépare ce budget ; le conseil municipal le vote.` : "Le maire prépare ce budget ; le conseil municipal le vote."}
+              note={<View style={{ gap: PAS * 3 }}>
+                <LigneIcone icone="calculator-outline" titre={maire ? `Le maire, ${maire}, prépare le budget` : "Le maire prépare le budget"} />
+                <LigneIcone icone="hand-left-outline" titre="Le conseil municipal le vote" />
+              </View>}
               sources={<>
                 <PastilleSource court nom="Budget" source={srcComptesPublies(d)} />
                 {maire ? <PastilleSource court nom="Élus" source={srcElus(r.srcElus)} /> : null}

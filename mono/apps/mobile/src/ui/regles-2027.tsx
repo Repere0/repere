@@ -18,6 +18,9 @@ import { LienSortant } from "../lib/composants";
 import { ELECTIONS } from "../lib/elections";
 import { ACCENTS, CIBLE, couleurs, JAUGE, PAS, POLICE, RAYON, TYPO } from "../lib/theme";
 import { EnClair, Onglets } from "./stitch";
+import { LigneIcone } from "./ligne-icone";
+import { Depli } from "./visuels";
+import { enfonce } from "./mouvement";
 
 export const REGLES_VERIFIEES_LE = "2026-11-09";
 const LOI_1962 = "https://www.cantal.gouv.fr/contenu/telechargement/11293/95797/file/loi_62-1292_du_6_nov_1962_modifiee_relative_a_l_election_du_pt_de_la_republique-2.pdf";
@@ -56,7 +59,8 @@ export function Regles2027() {
         {fiche === "parrainages" ? (
           <>
             <Grand valeur="500" legende="élus doivent présenter un candidat" />
-            <Text style={TYPO.corps}>Ces élus (maires, parlementaires, conseillers départementaux et régionaux, entre autres) doivent venir d'au moins 30 départements ou collectivités d'outre-mer.</Text>
+            <LigneIcone icone="map-outline" titre="D'au moins 30 départements ou collectivités d'outre-mer" />
+            <Depli titre="Le texte complet"><Text style={TYPO.corps}>Ces élus (maires, parlementaires, conseillers départementaux et régionaux, entre autres) doivent venir d'au moins 30 départements ou collectivités d'outre-mer.</Text></Depli>
             <View style={{ gap: PAS }} accessible accessibilityLabel="Au plus 50 des 500 présentations, soit un dixième, peuvent venir d'un même département.">
               <View style={{ flexDirection: "row", height: 9, borderRadius: 5, overflow: "hidden", backgroundColor: couleurs.voile }}>
                 <View style={{ width: "10%", backgroundColor: JAUGE.salaires }} />
@@ -70,7 +74,9 @@ export function Regles2027() {
         {fiche === "tours" ? (
           <>
             <Grand valeur="2" legende="tours au plus" />
-            <Text style={TYPO.corps}>Est élu au premier tour le candidat qui obtient la majorité absolue des suffrages exprimés. Sinon, un second tour a lieu quatorze jours plus tard entre les deux candidats arrivés en tête, après d'éventuels retraits.</Text>
+            <LigneIcone icone="checkmark-done-outline" titre="Élu dès le 1er tour : majorité absolue des suffrages exprimés" />
+            <LigneIcone icone="repeat-outline" titre="Sinon : un 2e tour 14 jours plus tard, entre les deux premiers" />
+            <Depli titre="Le texte complet"><Text style={TYPO.corps}>Est élu au premier tour le candidat qui obtient la majorité absolue des suffrages exprimés. Sinon, un second tour a lieu quatorze jours plus tard entre les deux candidats arrivés en tête, après d'éventuels retraits.</Text></Depli>
             {pres && pres.date ? <Text style={[TYPO.corps, { fontFamily: POLICE.texteGras }]}>Premier tour : {dateFr(pres.date)}.{second ? ` Second tour : ${dateFr(second)}.` : ""}</Text> : null}
             <LienSortant url={CONSTITUTION} texte="Constitution, article 7 (Conseil constitutionnel)" />
           </>
@@ -78,7 +84,9 @@ export function Regles2027() {
         {fiche === "plafonds" ? (
           <>
             <Grand valeur="16,9 M€" legende="au plus par candidat au premier tour" />
-            <Text style={TYPO.corps}>22,5 millions d'euros au plus pour chacun des deux candidats présents au second tour. La période de financement de la campagne est ouverte depuis le 1er avril 2026.</Text>
+            <LigneIcone icone="cash-outline" titre="22,5 M€ au plus par candidat au second tour" />
+            <LigneIcone icone="calendar-outline" titre="Financement de campagne ouvert depuis le 1er avril 2026" />
+            <Depli titre="Le texte complet"><Text style={TYPO.corps}>22,5 millions d'euros au plus pour chacun des deux candidats présents au second tour. La période de financement de la campagne est ouverte depuis le 1er avril 2026.</Text></Depli>
             <EnClair texte="Une commission indépendante, la CNCCFP, contrôle les comptes de campagne de chaque candidat." />
             <LienSortant url={CNCCFP} texte="CNCCFP, élection du Président de la République 2027 (lue le 9 novembre 2026)" />
           </>
@@ -95,7 +103,7 @@ export function Regles2027() {
       <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: PAS * 2 }}>
         <Pressable disabled={i === 0} onPress={() => setFiche(FICHES[i - 1].cle)} accessibilityRole="button" accessibilityLabel="Fiche précédente"
           accessibilityState={{ disabled: i === 0 }}
-          style={({ pressed }) => ({ minHeight: CIBLE, paddingHorizontal: PAS * 4, justifyContent: "center", borderRadius: RAYON.pastille, backgroundColor: couleurs.voile, opacity: pressed ? 0.7 : 1 })}>
+          style={({ pressed }) => ({ minHeight: CIBLE, paddingHorizontal: PAS * 4, justifyContent: "center", borderRadius: RAYON.pastille, backgroundColor: couleurs.voile, ...enfonce(pressed) })}>
           <Text style={[TYPO.corps, { fontFamily: POLICE.texteGras, color: i === 0 ? couleurs.sourd : couleurs.encre }]}>‹ Précédent</Text>
         </Pressable>
         <View style={{ flexDirection: "row", gap: PAS * 1.5 }} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
@@ -103,7 +111,7 @@ export function Regles2027() {
         </View>
         <Pressable disabled={i === FICHES.length - 1} onPress={() => setFiche(FICHES[i + 1].cle)} accessibilityRole="button" accessibilityLabel="Fiche suivante"
           accessibilityState={{ disabled: i === FICHES.length - 1 }}
-          style={({ pressed }) => ({ minHeight: CIBLE, paddingHorizontal: PAS * 4, justifyContent: "center", borderRadius: RAYON.pastille, backgroundColor: couleurs.voile, opacity: pressed ? 0.7 : 1 })}>
+          style={({ pressed }) => ({ minHeight: CIBLE, paddingHorizontal: PAS * 4, justifyContent: "center", borderRadius: RAYON.pastille, backgroundColor: couleurs.voile, ...enfonce(pressed) })}>
           <Text style={[TYPO.corps, { fontFamily: POLICE.texteGras, color: i === FICHES.length - 1 ? couleurs.sourd : couleurs.encre }]}>Suivant ›</Text>
         </Pressable>
       </View>

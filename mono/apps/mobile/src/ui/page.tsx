@@ -27,7 +27,7 @@ export function Page({ children, sansDate = false }: { children: ReactNode; sans
     <ScrollView style={{ backgroundColor: couleurs.sol }} contentContainerStyle={[s.page, { paddingTop: sansDate ? PAS * 4 : PAS * 6, paddingBottom: marges.bottom + PAS * 10 }]}>
       {sansDate ? null : <DatePublication flottant />}
       <BandeauFraicheur />
-      <Entree style={{ gap: PAS * 3, width: "100%" }}>{children}</Entree>
+      <Entree style={{ gap: PAS * 4, width: "100%" }}>{children}</Entree>
     </ScrollView>
   );
 }

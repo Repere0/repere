@@ -13,6 +13,7 @@ import { Carte, LienSortant } from "../lib/composants";
 import { Timeline } from "./timeline";
 import { DEMARCHES, DEMARCHES_VERIFIEES_LE, ELECTIONS, ELECTIONS_SOURCE, ELECTIONS_VERIFIEES_LE } from "../lib/elections";
 import { CIBLE, couleurs, PAS, TYPO } from "../lib/theme";
+import { enfonce } from "./mouvement";
 
 const JOUR = 86400000;
 
@@ -30,15 +31,15 @@ function joursAvant(iso: string): number {
 const SOURCE_L2121_18 = "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000006389876";
 const SOURCE_HAUTE_CORSE = "https://www.haute-corse.gouv.fr/contenu/telechargement/6633/54809/file/2022-08_reforme_pub_des_actes_rappel.pdf";
 
-type Entree = { titre: string; texte: string; source?: { texte: string; url: string } };
+type Entree = { titre: string; icone: keyof typeof Ionicons.glyphMap; texte: string; source?: { texte: string; url: string } };
 const GUIDE: Entree[] = [
-  { titre: "Comment s'inscrire ?", texte: "Vous devez être inscrit sur les listes électorales de votre commune. L'inscription se fait en mairie ou en ligne, avant la date limite fixée par la loi : vérifiez-la sur service-public.fr." },
-  { titre: "Comment voter ?", texte: "Présentez-vous au bureau de vote indiqué sur votre carte électorale, avec une pièce d'identité en cours de validité." },
-  { titre: "Faire une procuration", texte: "Si vous ne pouvez pas vous déplacer, vous pouvez donner procuration à une personne inscrite sur les listes électorales, qui votera à votre place. La démarche est détaillée sur service-public.fr." },
-  { titre: "Trouver mon bureau de vote", texte: "Votre bureau de vote figure sur votre carte électorale. Le service officiel « Vérifier mon inscription et mon bureau de vote », plus bas, l'indique aussi." },
-  { titre: "Comment assister au conseil municipal ?", texte: "Les séances du conseil municipal sont publiques (article L. 2121-18 du code général des collectivités territoriales) : chacun peut y assister. À la demande de trois conseillers ou du maire, le conseil peut décider par un vote de se réunir à huis clos. Les séances peuvent être retransmises. Pour connaître la date des prochaines séances, renseignez-vous auprès de votre mairie.",
+  { titre: "Comment s'inscrire ?", icone: "person-add-outline", texte: "Vous devez être inscrit sur les listes électorales de votre commune. L'inscription se fait en mairie ou en ligne, avant la date limite fixée par la loi : vérifiez-la sur service-public.fr." },
+  { titre: "Comment voter ?", icone: "checkbox-outline", texte: "Présentez-vous au bureau de vote indiqué sur votre carte électorale, avec une pièce d'identité en cours de validité." },
+  { titre: "Faire une procuration", icone: "swap-horizontal-outline", texte: "Si vous ne pouvez pas vous déplacer, vous pouvez donner procuration à une personne inscrite sur les listes électorales, qui votera à votre place. La démarche est détaillée sur service-public.fr." },
+  { titre: "Trouver mon bureau de vote", icone: "location-outline", texte: "Votre bureau de vote figure sur votre carte électorale. Le service officiel « Vérifier mon inscription et mon bureau de vote », plus bas, l'indique aussi." },
+  { titre: "Comment assister au conseil municipal ?", icone: "people-outline", texte: "Les séances du conseil municipal sont publiques (article L. 2121-18 du code général des collectivités territoriales) : chacun peut y assister. À la demande de trois conseillers ou du maire, le conseil peut décider par un vote de se réunir à huis clos. Les séances peuvent être retransmises. Pour connaître la date des prochaines séances, renseignez-vous auprès de votre mairie.",
     source: { texte: "Article L. 2121-18, sur Légifrance", url: SOURCE_L2121_18 } },
-  { titre: "Où trouver ce qu'a décidé le conseil ?", texte: "Depuis le 1er juillet 2022, la liste des délibérations est affichée en mairie et mise en ligne sur le site de la commune, s'il existe, dans la semaine. Le procès-verbal de chaque séance est publié sur ce site dans la semaine qui suit son adoption ; un exemplaire papier reste consultable en mairie (articles L. 2121-25 et L. 2121-15).",
+  { titre: "Où trouver ce qu'a décidé le conseil ?", icone: "document-text-outline", texte: "Depuis le 1er juillet 2022, la liste des délibérations est affichée en mairie et mise en ligne sur le site de la commune, s'il existe, dans la semaine. Le procès-verbal de chaque séance est publié sur ce site dans la semaine qui suit son adoption ; un exemplaire papier reste consultable en mairie (articles L. 2121-25 et L. 2121-15).",
     source: { texte: "Rappel de la préfecture de Haute-Corse", url: SOURCE_HAUTE_CORSE } },
 ];
 
@@ -49,7 +50,10 @@ function Accordeon({ e, premier }: { e: Entree; premier?: boolean }) {
     <View style={{ borderTopWidth: premier ? 0 : 1, borderColor: couleurs.voile }}>
       <Pressable onPress={() => setOuvert(o => !o)} accessibilityRole="button" accessibilityState={{ expanded: ouvert }}
         accessibilityLabel={e.titre} accessibilityHint={ouvert ? "Replier la réponse" : "Déplier la réponse"}
-        style={({ pressed }) => ({ minHeight: CIBLE, flexDirection: "row", alignItems: "center", gap: PAS * 2, paddingVertical: PAS * 2, opacity: pressed ? 0.7 : 1 })}>
+        style={({ pressed }) => ({ minHeight: CIBLE, flexDirection: "row", alignItems: "center", gap: PAS * 2, paddingVertical: PAS * 2, ...enfonce(pressed) })}>
+        <View style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: couleurs.voile, alignItems: "center", justifyContent: "center" }}>
+          <Ionicons name={e.icone} size={20} color={couleurs.encre} accessible={false} importantForAccessibility="no" />
+        </View>
         <Text style={[TYPO.corps, { flex: 1, fontWeight: "700", color: couleurs.encre }]}>{e.titre}</Text>
         <Ionicons name={ouvert ? "chevron-up" : "chevron-down"} size={20} color={couleurs.sourd} accessible={false} importantForAccessibility="no" />
       </Pressable>

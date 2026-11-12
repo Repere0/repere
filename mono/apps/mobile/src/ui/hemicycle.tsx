@@ -13,7 +13,7 @@ import { Animated, Pressable, StyleSheet, Text, View } from "react-native";
 import { router } from "expo-router";
 import { compositionGroupes, groupesACerner, siegesHemicycle } from "@repere/core";
 import { bordureGroupe, couleurGroupe, groupeDe, GROUPE_INCONNU, useFichierGroupes } from "../lib/groupes";
-import { useApparition } from "./mouvement";
+import { enfonce, useApparition } from "./mouvement";
 import { CIBLE, feuille, couleurs, OMBRE, PAS, POLICE, RAYON, TYPO } from "../lib/theme";
 import { PastilleSource } from "./source";
 import { REFLET_AVATAR, rapportContraste } from "../lib/palette";
@@ -89,7 +89,7 @@ export function Hemicycle() {
       {choisi ? (
         <Pressable onPress={() => router.push({ pathname: "/groupe", params: { g: choisi } })} accessibilityRole="link"
           accessibilityLabel={`Voir la liste des députés du groupe ${choisi === GROUPE_INCONNU ? "non publié" : choisi}`}
-          style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", opacity: pressed ? 0.7 : 1 })}>
+          style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", ...enfonce(pressed) })}>
           <Text style={[TYPO.corps, { fontFamily: POLICE.titre }]}>
             Voir les {parts.find(x => x.groupe === choisi)?.sieges ?? ""} députés {choisi === GROUPE_INCONNU ? "sans groupe publié" : choisi} ›
           </Text>
