@@ -4,6 +4,7 @@
  * ou trois phrases : aucune date promise, aucune adresse inventee (le contact n'apparait
  * que si EXPO_PUBLIC_CONTACT_EMAIL est defini, comme dans « À propos »). Chaque question
  * est un en-tete : on passe de l'une a l'autre au lecteur d'ecran. */
+import { useBasSur } from "../ui/page";
 import { Linking, ScrollView, Text, View } from "react-native";
 import { Stack, router } from "expo-router";
 import { couleurs, PAS, TYPO } from "../lib/theme";
@@ -82,8 +83,9 @@ const FAQ: { q: string; r: string[]; lien?: { texte: string; aller: () => void }
 ];
 
 export default function Faq() {
+  const bas = useBasSur();
   return (
-    <ScrollView style={{ flex: 1, backgroundColor: couleurs.sol }} contentContainerStyle={{ padding: PAS * 4, gap: PAS * 3, maxWidth: 640, width: "100%", alignSelf: "center" }}>
+    <ScrollView style={{ flex: 1, backgroundColor: couleurs.sol }} contentContainerStyle={{ padding: PAS * 4, paddingBottom: bas, gap: PAS * 3, maxWidth: 640, width: "100%", alignSelf: "center" }}>
       <Stack.Screen options={{ title: "Questions fréquentes" }} />
       <Text style={TYPO.question} accessibilityRole="header">Questions fréquentes</Text>
       {FAQ.map(x => (

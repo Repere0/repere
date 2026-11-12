@@ -133,6 +133,8 @@ jobs:
           node scripts/serveur-statique.mjs apps/mobile/dist-pwa 8812 &
           for i in $(seq 1 20); do curl -sf http://localhost:8812/ >/dev/null && break; sleep 0.5; done
           node apps/mobile/tests/pwa-web.mjs http://localhost:8812
+          # 12/11/2026 : marges de securite de l'iPhone, emulees (34 px) sur le build PWA.
+          node apps/mobile/tests/marges-ios-web.mjs http://localhost:8812
 
       - name: Cartes de partage (story 1080 x 1920, logo, contraste, source)
         run: node apps/mobile/tests/partage-story-web.mjs http://localhost:8811 apps/mobile/captures

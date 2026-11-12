@@ -34,7 +34,11 @@ const BALISES = (nom, couleur) => [
   // 12/11/2026 (iPhone, Safari) : la barre basse disparaissait ou passait sous la barre d'accueil. La page est figee a la
   // taille VISIBLE (100dvh : suit la barre d'adresse de Safari), le document ne defile plus (seuls les ecrans defilent),
   // la marge de securite du bas est donnee par la barre elle-meme (react-native-safe-area-context lit env(safe-area-inset-bottom)).
-  '<style id="repere-ios">html,body{height:100%;overflow:hidden;overscroll-behavior:none}body{position:fixed;top:0;right:0;bottom:0;left:0;width:100%}#root{height:100%}@supports(height:100dvh){html,body,#root{height:100dvh}}[role="tablist"]{padding-bottom:env(safe-area-inset-bottom)}</style>',
+  // 12/11/2026 (roadmap beta) : la regle « [role=tablist]{padding-bottom:env(safe-area-inset-bottom)} » est RETIREE. Mesure
+  // avec une marge de 34 px emulee (tests/marges-ios-web.mjs) : elle doublait la marge que la barre pose deja (les libelles
+  // des onglets descendaient de 6 px dans la zone de la barre d'accueil) et elle gonflait de 34 px chaque controle
+  // segmente de l'application, qui porte le meme role (« 100 EUR citoyen / Evolution / Recettes »).
+  '<style id="repere-ios">html,body{height:100%;overflow:hidden;overscroll-behavior:none}body{position:fixed;top:0;right:0;bottom:0;left:0;width:100%}#root{height:100%}@supports(height:100dvh){html,body,#root{height:100dvh}}</style>',
 ].join("\n    ");
 
 const ENREGISTRE = "<script>if('serviceWorker' in navigator){window.addEventListener('load',function(){navigator.serviceWorker.register('/sw.js').catch(function(){});});}</script>";

@@ -7,6 +7,7 @@
  * Chaque résultat ouvre sa fiche. Aucune donnée nouvelle : chaque lecture est celle d'un écran existant,
  * mise en mémoire pour la session (lib/donnees). Ce qui n'est pas cherché ici : les maires et les
  * conseillers, rangés par département (l'onglet « Élus » le dit). */
+import { useBasSur } from "../ui/page";
 import { CarteListe, Puces } from "../ui/donnees";
 import { SquelettesListe } from "../ui/squelette";
 import { Ionicons } from "@expo/vector-icons";
@@ -164,9 +165,10 @@ export default function Recherche() {
   /* Une source en panne ne se tait pas : « aucun résultat » ne vaut que si toutes ont répondu. */
   const pannes = [communes.etat, elus.etat, scrutins.etat, questions.etat].some(e => e !== ETATS.SERVI && e !== EN_COURS);
 
+  const bas = useBasSur();
   return (
     <ScrollView style={{ flex: 1, backgroundColor: couleurs.sol }} keyboardShouldPersistTaps="handled"
-      contentContainerStyle={{ padding: PAS * 4, gap: PAS * 4 }}>
+      contentContainerStyle={{ padding: PAS * 4, paddingBottom: bas, gap: PAS * 4 }}>
       <View style={{ flexDirection: "row", alignItems: "center", gap: PAS * 2, minHeight: CIBLE + 8, borderRadius: 999, borderWidth: 1.5,
         borderColor: focus ? couleurs.encre : couleurs.trait, backgroundColor: couleurs.carte, paddingLeft: PAS * 4 }}>
         <Loupe couleur={couleurs.sourd} />

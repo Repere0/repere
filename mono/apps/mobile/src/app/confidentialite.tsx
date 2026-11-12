@@ -1,6 +1,7 @@
 /* « CONFIDENTIALITÉ » — 30/10/2026. Le même texte que docs/privacy-policy.md (version
  * du 30/10/2026). Ouvert depuis les réglages. Toute modification se fait dans les deux
  * fichiers à la fois. */
+import { useBasSur } from "../ui/page";
 import { ScrollView, Text, View } from "react-native";
 import { Stack } from "expo-router";
 import { couleurs, PAS, TYPO } from "../lib/theme";
@@ -14,8 +15,9 @@ const Puce = ({ children }: { children: string }) => (
 );
 
 export default function Confidentialite() {
+  const bas = useBasSur();
   return (
-    <ScrollView style={{ flex: 1, backgroundColor: couleurs.sol }} contentContainerStyle={{ padding: PAS * 4, gap: PAS * 4 }}>
+    <ScrollView style={{ flex: 1, backgroundColor: couleurs.sol }} contentContainerStyle={{ padding: PAS * 4, paddingBottom: bas, gap: PAS * 4 }}>
       <Stack.Screen options={{ title: "Confidentialité" }} />
       <Text style={TYPO.question} accessibilityRole="header">Confidentialité</Text>
       <Text style={TYPO.corps}>Version du 30/10/2026.</Text>

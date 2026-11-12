@@ -17,6 +17,13 @@ import { Etiquette } from "./resume";
 import { BandeauFraicheur, DatePublication } from "./fraicheur";
 import { BoutonCopierLien } from "./partage/partager-texte";
 
+/* LE BAS D'UN ÉCRAN QUI DÉFILE (12/11/2026, roadmap bêta) : la marge du bas s'ajoute à la zone protégée de l'iPhone
+   (barre d'accueil, env(safe-area-inset-bottom)). Mesuré avec une marge de 34 px émulée : sans cela, le dernier
+   bouton de « Élus » et de « Bienvenue » passait sous la barre d'accueil. Sans zone protégée : la marge d'avant. */
+export function useBasSur(base: number = PAS * 4): number {
+  return useSafeAreaInsets().bottom + base;
+}
+
 /* « sansDate » : l'écran affiche déjà la date de publication dans son propre contenu
    (Aujourd'hui : « Publication Repère du … »). Sans ce drapeau, deux dates se suivraient. */
 export function Page({ children, sansDate = false }: { children: ReactNode; sansDate?: boolean }) {

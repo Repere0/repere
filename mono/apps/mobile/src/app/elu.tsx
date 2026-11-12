@@ -22,6 +22,7 @@
  *   - « Ce qu'il défend » : absent. Les scrutins publies ne portent ni theme ni
  *     dossier : rien a compter sans inventer (BLOCAGES.md, section 15).
  *   - Patrimoine, presence ou absence aux seances : jamais (invariant 8). */
+import { useBasSur } from "../ui/page";
 import { BadgeGroupe } from "../ui/badge-groupe";
 import { GROUPE_INCONNU, deputeParNom, groupeDe, useGroupes } from "../lib/groupes";
 import { useEffect, useState } from "react";
@@ -100,10 +101,11 @@ function CarteVote({ f, onComprendre }: { f: FaitElu; onComprendre: () => void }
 
 function FeuilleVote({ f, nom, resume, base, onFermer }: { f: FaitElu | null; nom: string; resume: Resume | null; base: string | null; onFermer: () => void }) {
   const lien = f && base ? lienScrutin(base, f.sc) : null;
+  const bas = useBasSur(PAS * 5);
   return (
     <Modal visible={!!f} animationType="slide" presentationStyle="pageSheet" onRequestClose={onFermer}>
       {f ? (
-        <ScrollView style={{ backgroundColor: couleurs.sol }} contentContainerStyle={{ padding: PAS * 5, gap: PAS * 3, maxWidth: 640, width: "100%", alignSelf: "center" }}>
+        <ScrollView style={{ backgroundColor: couleurs.sol }} contentContainerStyle={{ padding: PAS * 5, paddingBottom: bas, gap: PAS * 3, maxWidth: 640, width: "100%", alignSelf: "center" }}>
           <Text style={TYPO.question} accessibilityRole="header">Comprendre ce vote</Text>
           <Text style={TYPO.micro}>Scrutin n° {f.sc.n}, {dateFr(f.sc.d)}</Text>
           <Text style={[TYPO.corps, { fontWeight: "600" }]}>{titreLisible(f.sc.t)}</Text>

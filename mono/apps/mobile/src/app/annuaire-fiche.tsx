@@ -2,6 +2,7 @@
  * Ouverte depuis l'onglet « Élus ». Député : groupe (table AMO30) et photo libre (D27),
  * joints par son identifiant de l'Assemblée. Pas de vote ici : les votes sont dans la fiche
  * « Qui décide », par commune. */
+import { useBasSur } from "../ui/page";
 import { ScrollView, Text, View } from "react-native";
 import { Stack, useLocalSearchParams } from "expo-router";
 import { dateFr } from "@repere/core";
@@ -37,8 +38,9 @@ export default function AnnuaireFiche() {
     p.ref && !photo ? "Pas de photo : aucune image sous licence libre n'est rattachée à cet élu sur Wikimedia Commons." : null,
   ].filter(Boolean) as string[];
   const source = p.producteur ? `Source : ${p.producteur}${p.maj ? `, relevé le ${dateFr(p.maj)}` : ""}.` : "";
+  const bas = useBasSur();
   return (
-    <ScrollView style={{ flex: 1, backgroundColor: couleurs.sol }} contentContainerStyle={{ padding: PAS * 4, gap: PAS * 4 }}>
+    <ScrollView style={{ flex: 1, backgroundColor: couleurs.sol }} contentContainerStyle={{ padding: PAS * 4, paddingBottom: bas, gap: PAS * 4 }}>
       <Stack.Screen options={{ title: "Élu" }} />
       <DatePublication />
       <Entree style={{ gap: PAS * 4 }}>
