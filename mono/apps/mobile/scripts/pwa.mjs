@@ -23,7 +23,8 @@ export function construireManifeste(appJson) {
 // d'etat translucide recouvrirait l'en-tete.
 const BALISES = (nom, couleur) => [
   '<link rel="manifest" href="/manifest.json" />',
-  '<link rel="apple-touch-icon" href="/apple-touch-icon.png" />',
+  // 12/11/2026 : sizes + ?v= pour que Safari redemande l'icone (cache tenace). A incrementer si l'icone change.
+  '<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png?v=2" />',
   '<meta name="apple-mobile-web-app-capable" content="yes" />',
   
   '<meta name="mobile-web-app-capable" content="yes" />',
