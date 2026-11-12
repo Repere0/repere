@@ -2,6 +2,8 @@
 
 Date : 30/10/2026 (V20, bloc 3). Données publiées du 30/10/2026, commune Meaux.
 
+> **12/11/2026 (porteur)** : les cartes « Budget » et « Vote » sont supprimées de l'application (elles répétaient le chiffre principal de l'écran). Le partage de Finances passe par le bouton en haut à droite, celui de la fiche d'un élu par « Partager la fiche » (texte). Les images ci-dessous sont historiques.
+
 ## Les trois cartes
 
 | Budget (écran « Où va l'argent ») | Vote (fiche élu) | Fiche de l'annuaire « Élus » |
