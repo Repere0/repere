@@ -13,6 +13,8 @@ import { useEffect, useMemo, useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import { Stack, useLocalSearchParams } from "expo-router";
 import { SquelettesListe } from "../ui/squelette";
+import { resumeExtractif } from "../lib/resume-extractif";
+import { Ionicons } from "@expo/vector-icons";
 import {
   chargerQuestionsGouvernementIndex,
   chargerQuestionGouvernementLot,
@@ -92,6 +94,42 @@ function textePropre(value: string | null | undefined) {
     .replace(/[ \t]+\n/g, "\n")
     .replace(/\n{3,}/g, "\n\n")
     .trim();
+}
+
+/* 12/11/2026 : l'essentiel de la réponse d'abord (2 ou 3 phrases recopiées, choisies par un calcul de
+   Repère : lib/resume-extractif), la réponse entière à un geste. Réponse courte : affichée entière. */
+function ReponseResumee({ texte }: { texte: string }) {
+  const [entiere, setEntiere] = useState(false);
+  const r = useMemo(() => resumeExtractif(texte), [texte]);
+  if (r.complet || entiere) {
+    return (
+      <View style={{ gap: PAS * 2 }}>
+        <Text style={TYPO.corps}>{texte}</Text>
+        {!r.complet ? <Pressable onPress={() => setEntiere(false)} accessibilityRole="button" accessibilityLabel="Revenir au résumé"
+          style={({ pressed }) => [s.boutonSecondaire, pressed && { opacity: 0.7 }]}>
+          <Text style={[TYPO.corps, { fontFamily: POLICE.texteGras }]}>Revenir au résumé</Text></Pressable> : null}
+      </View>
+    );
+  }
+  return (
+    <View style={{ gap: PAS * 3 }}>
+      <View style={{ flexDirection: "row", alignItems: "center", gap: PAS * 2 }}>
+        <Ionicons name="sparkles-outline" size={16} color={couleurs.sourd} accessible={false} importantForAccessibility="no" />
+        <Text style={TYPO.etiquette}>L'essentiel · résumé automatique</Text>
+      </View>
+      {r.phrases.map((p, i) => (
+        <View key={i} style={{ flexDirection: "row", gap: PAS * 3 }}>
+          <View style={{ width: 3, borderRadius: 2, backgroundColor: couleurs.trait }} />
+          <Text style={[TYPO.corps, { flex: 1 }]}>{p}</Text>
+        </View>
+      ))}
+      <Text style={TYPO.note}>Calcul Repère : {r.phrases.length} phrases de la réponse, recopiées telles quelles et choisies selon les mots qu'elles répètent. Aucune n'est reformulée.</Text>
+      <Pressable onPress={() => setEntiere(true)} accessibilityRole="button" accessibilityLabel="Lire la réponse complète"
+        style={({ pressed }) => [s.boutonSecondaire, pressed && { opacity: 0.7 }]}>
+        <Text style={[TYPO.corps, { fontFamily: POLICE.texteGras }]}>Lire la réponse complète</Text>
+      </Pressable>
+    </View>
+  );
 }
 
 /* 07/11/2026 : les trois nombres en grand, comme sur l'écran du vote (StatCard, couleurs de vote D24). */
@@ -319,14 +357,14 @@ export default function Scrutins() {
                   </View>
                 ) : (
                   <View style={s.absence}>
-                    <Text style={[TYPO.corps, { fontWeight: "700" }]}>Le texte de la question n'est pas fourni.</Text>
-                    <Text style={TYPO.note}>Repère ne le reconstruit pas à partir d'une autre source.</Text>
+                    <Text style={[TYPO.corps, { fontWeight: "700" }]}>Question non disponible dans les données ouvertes</Text>
+                    <Text style={TYPO.note}>Repère ne la reconstruit pas à partir d'une autre source.</Text>
                   </View>
                 )}
 
                 <View style={s.reponseBloc}>
                   <Text style={TYPO.etiquette}>Réponse du Gouvernement</Text>
-                  {qagDetail.reponse ? <Text style={TYPO.corps}>{textePropre(qagDetail.reponse)}</Text>
+                  {qagDetail.reponse ? <ReponseResumee texte={textePropre(qagDetail.reponse) || ""} />
                     : <Text style={TYPO.note}>Aucune réponse textuelle n'est fournie dans ce relevé.</Text>}
                 </View>
 
@@ -467,5 +505,6 @@ const s = feuille(() => StyleSheet.create({
   positionNom: { flex: 1, fontSize: 15, lineHeight: 20, color: couleurs.encre },
   positionValeur: { fontSize: 14, lineHeight: 19, fontWeight: "700", color: couleurs.sourd },
   absence: { backgroundColor: couleurs.voile, borderRadius: RAYON.bloc, padding: PAS * 4, gap: PAS, },
+  boutonSecondaire: { minHeight: 48, borderRadius: RAYON.pastille, alignItems: "center", justifyContent: "center", paddingHorizontal: PAS * 5, backgroundColor: couleurs.voile },
   reponseBloc: { backgroundColor: couleurs.carte, borderRadius: RAYON.carte, padding: PAS * 5, gap: PAS * 3, ...OMBRE },
 }));

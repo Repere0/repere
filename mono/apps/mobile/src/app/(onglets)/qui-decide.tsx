@@ -21,7 +21,7 @@ import { EnClair } from "../../ui/stitch";
 import { deputeParNom, groupeDe, useGroupes } from "../../lib/groupes";
 import { AvecDonnees, Page, Question } from "../../ui/page";
 import { PastilleSource } from "../../ui/source";
-import { Chaine, type Niveau } from "../../ui/visuels";
+import { CarteElu, Chaine, Depli, type Niveau } from "../../ui/visuels";
 import { prefetDeRegion } from "../../lib/prefet";
 import { BadgeZoom, useNiveauZoom } from "../../ui/badge-zoom";
 import { visibleAuNiveau } from "@repere/core";
@@ -197,23 +197,26 @@ export default function QuiDecide() {
             nom: n.personne ? n.personne.nom : "", role: n.personne ? n.personne.role : "", echelon: n.echelon,
             niveau: n.niveau, institution: n.institution, lieu: n.lieu || "" } })} />
           <PastilleSource source={srcElus(r.srcElus ? { ...r.srcElus, url: r.srcElus.url || RNE_URL } : null)} />
+          {/* 12/11/2026 (porteur) : le préfet est une carte comme les autres élus ; la source et le contrôle
+              sont repliés derrière une icône, plus de pavé de texte. La précision « pas le préfet de votre
+              département » reste visible : elle empêche une lecture fausse. */}
           {prefet && visibleAuNiveau(niveauZoom, "region") ? (
-            <Pressable onPress={() => router.push({ pathname: "/elu", params: { nom: prefet.nom, role: prefet.titre, echelon: "", niveau: "L'État", institution: "Préfecture de région", lieu: "Île-de-France" } })}
-              accessibilityRole="link" accessibilityLabel={`Voir la fiche de ${prefet.nom}, préfet de la région`}
-              style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", ...enfonce(pressed), gap: PAS })}>
-              <Text style={TYPO.etiquette}>L'État · préfet de la région</Text>
-              <Text style={[TYPO.reponse, { color: couleurs.lien }]}>{prefet.nom}</Text>
-            </Pressable>
-          ) : null}
-          {prefet && visibleAuNiveau(niveauZoom, "region") ? (
-            <View style={{ gap: PAS }}>
-              <Text style={TYPO.note}>{prefet.titre}. Ce n'est pas le préfet de votre département : leur liste n'est pas encore publiée ici.</Text>
-              <Text style={TYPO.note}>Source : page de la préfecture de région. Dernier contrôle réussi du titre de la page : {prefet.titreControleLe}. La date de nomination n'est pas contrôlée.</Text>
-              <Pressable onPress={() => Linking.openURL(prefet.url)} accessibilityRole="link"
-                accessibilityLabel="Voir la page de la préfecture de région (site officiel)"
-                style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", ...enfonce(pressed) })}>
-                <Text style={[TYPO.corps, { color: couleurs.lien, fontWeight: "600" }]}>Page de la préfecture de région ↗</Text>
-              </Pressable>
+            <View style={{ gap: PAS * 2 }}>
+              <Text style={TYPO.etiquette}>L'État · Préfet de région</Text>
+              <CarteElu nom={prefet.nom} role="Préfet de région" echelon="france"
+                libelle={`Voir la fiche de ${prefet.nom}, préfet de la région`}
+                surPress={() => router.push({ pathname: "/elu", params: { nom: prefet.nom, role: prefet.titre, echelon: "", niveau: "L'État", institution: "Préfecture de région", lieu: "Île-de-France" } })} />
+              <Text style={TYPO.note}>Ce n'est pas le préfet de votre département : leur liste n'est pas encore publiée ici.</Text>
+              <Depli titre="Source et contrôle">
+                <View style={{ gap: PAS }}>
+                  <Text style={TYPO.note}>{prefet.titre}. Source : page de la préfecture de région. Dernier contrôle réussi du titre de la page : {prefet.titreControleLe}. La date de nomination n'est pas contrôlée.</Text>
+                  <Pressable onPress={() => Linking.openURL(prefet.url)} accessibilityRole="link"
+                    accessibilityLabel="Voir la page de la préfecture de région (site officiel)"
+                    style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", opacity: pressed ? 0.6 : 1 })}>
+                    <Text style={[TYPO.corps, { color: couleurs.lien, fontWeight: "600" }]}>Page de la préfecture de région ↗</Text>
+                  </Pressable>
+                </View>
+              </Depli>
             </View>
           ) : null}
           <SignalerErreur contexte={`qui décide pour ${d.nomCommune}`} donnee={`Qui décide : ${d.nomCommune}`} />

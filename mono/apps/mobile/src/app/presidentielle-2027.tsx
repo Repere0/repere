@@ -17,14 +17,14 @@ import { Ionicons } from "@expo/vector-icons";
 import { Stack } from "expo-router";
 import { SquelettesListe } from "../ui/squelette";
 import { dateFr, heureFr } from "@repere/core";
-import type { PresidentialDebate, PresidentialMeeting } from "@repere/core";
+import type { PresidentialCandidate, PresidentialDebate, PresidentialMeeting } from "@repere/core";
 import { Vide } from "../lib/composants";
 import { DEMARCHES } from "../lib/elections";
 import { GuideVote } from "../ui/guide-vote";
 import { Regles2027 } from "../ui/regles-2027";
 import { ELECTIONS } from "../lib/elections";
 import { usePresidentialData } from "../lib/presidentielle";
-import { ACCENTS, CIBLE, couleurs, PAS, POLICE, RAYON, TYPO } from "../lib/theme";
+import { ACCENTS, BADGE_DECLARATION, CIBLE, couleurs, PAS, POLICE, RAYON, TYPO } from "../lib/theme";
 import { Attente } from "../ui/attente";
 import { Avatar } from "../ui/avatar";
 import { Page } from "../ui/page";
@@ -78,6 +78,58 @@ function Etape({ titre, texte, date, dernier }: { titre: string; texte: string; 
   );
 }
 
+/* UNE CANDIDATURE DÉCLARÉE (12/11/2026, décision du porteur) : annoncée dans la presse, pas encore sur la liste
+   officielle. Le badge orange le dit sur chaque carte ; les deux sources sont à un geste. Avatar = initiales
+   (aucune photo : aucune n'est sous licence libre vérifiée). Ordre alphabétique du fichier : pas un ordre de préférence. */
+function CarteCandidat({ c }: { c: PresidentialCandidate }) {
+  const [sources, setSources] = useState(false);
+  const declare = c.statut === "declare";
+  const nom = `${c.prenom} ${c.nom}`;
+  return (
+    <View style={{ padding: PAS * 3, borderRadius: RAYON.bloc, backgroundColor: couleurs.carte, gap: PAS * 2 }}>
+      <View style={{ flexDirection: "row", alignItems: "center", gap: PAS * 3 }}>
+        <Avatar nom={nom} taille={44} />
+        <View style={{ flex: 1, gap: 2 }}>
+          <Text style={TYPO.reponse}>{nom}</Text>
+          <Text style={TYPO.note}>{c.parti ?? "Aucun parti indiqué par les sources"}</Text>
+        </View>
+      </View>
+      <View style={{ flexDirection: "row", alignItems: "center", flexWrap: "wrap", gap: PAS * 2 }}>
+        {declare ? (
+          <View style={{ flexDirection: "row", alignItems: "center", gap: PAS * 1.5, paddingHorizontal: PAS * 3, minHeight: 28, borderRadius: RAYON.pastille,
+            backgroundColor: BADGE_DECLARATION.fond, borderWidth: 1, borderColor: BADGE_DECLARATION.filet }}>
+            <Ionicons name="megaphone-outline" size={14} color={BADGE_DECLARATION.texte} accessible={false} importantForAccessibility="no" />
+            <Text style={{ fontSize: 13, lineHeight: 18, fontFamily: POLICE.section, color: BADGE_DECLARATION.texte }}>Déclaration de candidature</Text>
+          </View>
+        ) : null}
+        {c.sources && c.sources.length ? (
+          <Pressable onPress={() => setSources(o => !o)} accessibilityRole="button" accessibilityState={{ expanded: sources }}
+            accessibilityLabel={`Sources de la candidature de ${nom} : ${sources ? "replier" : "déplier"}`}
+            style={({ pressed }) => ({ minHeight: CIBLE, flexDirection: "row", alignItems: "center", gap: PAS, paddingHorizontal: PAS * 2, opacity: pressed ? 0.7 : 1 })}>
+            <Ionicons name="link-outline" size={14} color={couleurs.sourd} accessible={false} importantForAccessibility="no" />
+            <Text style={TYPO.note}>{c.sources.length} sources</Text>
+            <Ionicons name={sources ? "chevron-up" : "chevron-down"} size={14} color={couleurs.sourd} accessible={false} importantForAccessibility="no" />
+          </Pressable>
+        ) : null}
+        {c.programmeUrl ? (
+          <Pressable onPress={() => Linking.openURL(c.programmeUrl as string)} accessibilityRole="link"
+            accessibilityLabel={`Voir le programme de ${nom}, ouvre un site externe`}
+            style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", paddingHorizontal: PAS * 3, borderRadius: RAYON.pastille, borderWidth: 1, borderColor: couleurs.trait, opacity: pressed ? 0.7 : 1 })}>
+            <Text style={[TYPO.note, { color: couleurs.encre }]}>Programme ↗</Text>
+          </Pressable>
+        ) : null}
+      </View>
+      {sources && c.sources ? c.sources.map(x => (
+        <Pressable key={x.url} onPress={() => Linking.openURL(x.url)} accessibilityRole="link"
+          accessibilityLabel={`Source : ${x.producteur}, ${dateFr(x.date)}, ouvre un site externe`}
+          style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", opacity: pressed ? 0.7 : 1 })}>
+          <Text style={[TYPO.note, { color: couleurs.lien }]}>{x.producteur} · {dateFr(x.date)} ↗</Text>
+        </Pressable>
+      )) : null}
+    </View>
+  );
+}
+
 const Section = ({ titre }: { titre: string }) => <Text style={[TYPO.section, { marginTop: PAS * 4 }]} accessibilityRole="header">{titre}</Text>;
 
 export default function Presidentielle2027() {
@@ -122,12 +174,16 @@ export default function Presidentielle2027() {
       <Section titre="Les étapes" />
       <View style={{ padding: PAS * 6, borderRadius: RAYON.carte, backgroundColor: couleurs.carte }}>
         <Etape titre="Les parrainages" texte="Chaque candidat doit être présenté par 500 élus, venus d'au moins 30 départements ou collectivités d'outre-mer." />
-        <Etape titre="La liste officielle" texte={d.charge && d.candidats.length ? `Le Conseil constitutionnel a publié la liste : ${d.candidats.length} candidats.` : "Le Conseil constitutionnel publie la liste officielle des candidats. Elle n'est pas encore publiée."} />
+        <Etape titre="La liste officielle" texte={d.charge && d.candidats.length && d.candidats.every(c => c.statut !== "declare") ? `Le Conseil constitutionnel a publié la liste : ${d.candidats.length} candidats.` : "Le Conseil constitutionnel publie la liste officielle des candidats. Elle n'est pas encore publiée."} />
         {tour1 && tour1.date ? <Etape date={dateFr(tour1.date)} titre="Premier tour" texte="Est élu le candidat qui obtient la majorité absolue des suffrages exprimés." /> : null}
         <Etape dernier date={dateFr(second)} titre="Second tour" texte="Si personne n'est élu au premier tour, entre les deux candidats arrivés en tête." />
       </View>
 
-      {/* 3. QUI SE PRÉSENTE — les fichiers publiés ; vides, ils le disent, et montrent la forme à venir. */}
+      {/* 3. LES RÈGLES (12/11/2026 : avant les candidats) — quatre fiches, chacune avec son texte de référence. */}
+      <Section titre="Les règles du scrutin" />
+      <Regles2027 />
+
+      {/* 4. QUI SE PRÉSENTE — les fichiers publiés ; vides, ils le disent, et montrent la forme à venir. */}
       <Section titre="Candidats, débats, réunions" />
       <Onglets etiquette="Candidats, débats, réunions publiques" valeurs={ONGLETS} actif={onglet} choisir={setOnglet} />
 
@@ -143,22 +199,17 @@ export default function Presidentielle2027() {
           </>
         ) : (
           <View style={{ gap: PAS * 2 }}>
-            {d.candidats.map(c => (
-              <View key={c.id} style={{ flexDirection: "row", alignItems: "center", gap: PAS * 3, padding: PAS * 3, borderRadius: RAYON.bloc, backgroundColor: couleurs.carte }}>
-                <Avatar nom={`${c.prenom} ${c.nom}`} taille={40} />
-                <View style={{ flex: 1 }}>
-                  <Text style={[TYPO.corps, { fontFamily: POLICE.titre }]}>{c.prenom} {c.nom}</Text>
-                  {c.parti ? <Text style={TYPO.note}>{c.parti}</Text> : null}
-                </View>
-                {c.programmeUrl ? (
-                  <Pressable onPress={() => Linking.openURL(c.programmeUrl as string)} accessibilityRole="link"
-                    accessibilityLabel={`Voir le programme de ${c.prenom} ${c.nom}, ouvre un site externe`}
-                    style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", paddingHorizontal: PAS * 3, borderRadius: RAYON.pastille, borderWidth: 1, borderColor: couleurs.trait, ...enfonce(pressed) })}>
-                    <Text style={[TYPO.note, { color: couleurs.encre }]}>Programme ↗</Text>
-                  </Pressable>
-                ) : <Text style={TYPO.micro}>Programme non publié</Text>}
+            {d.candidats.some(c => c.statut === "declare") ? (
+              <View style={{ flexDirection: "row", gap: PAS * 3, padding: PAS * 4, borderRadius: RAYON.bloc, backgroundColor: BADGE_DECLARATION.fond, borderWidth: 1, borderColor: BADGE_DECLARATION.filet }}
+                accessibilityRole="summary">
+                <Ionicons name="information-circle-outline" size={20} color={BADGE_DECLARATION.texte} accessible={false} importantForAccessibility="no" />
+                <Text style={[TYPO.corps, { flex: 1, color: BADGE_DECLARATION.texte }]}>
+                  Liste des candidatures déclarées. La liste officielle sera arrêtée par le Conseil constitutionnel en 2027.
+                  {" "}Elle n'est pas exhaustive : un nom n'y figure que si deux sources de presse le donnent pour déclaré. Ordre alphabétique : ce n'est pas un ordre de préférence.
+                </Text>
               </View>
-            ))}
+            ) : null}
+            {d.candidats.map(c => <CarteCandidat key={c.id} c={c} />)}
           </View>
         )
       ) : null}
@@ -200,16 +251,12 @@ export default function Presidentielle2027() {
 
       {d.meta ? (
         <Pressable onPress={() => Linking.openURL(d.meta!.source.url)} accessibilityRole="link"
-          accessibilityLabel={`Source de la liste des candidats : ${d.meta.source.producteur}, vérifié le ${dateFr(d.meta.lastUpdate)}, ouvre un site externe`}
-          style={({ pressed }) => ({ minHeight: CIBLE, flexDirection: "row", alignItems: "center", gap: PAS * 1.5, ...enfonce(pressed) })}>
+          accessibilityLabel={`Source de la liste des candidats : ${d.meta.source.producteur}, relevé le ${dateFr(d.meta.lastUpdate)}, ouvre un site externe`}
+          style={({ pressed }) => ({ minHeight: CIBLE, flexDirection: "row", alignItems: "center", gap: PAS * 1.5, opacity: pressed ? 0.7 : 1 })}>
           <Ionicons name="link-outline" size={14} color={couleurs.sourd} accessible={false} importantForAccessibility="no" />
-          <Text style={[TYPO.micro, { flex: 1 }]}>Liste des candidats : {d.meta.source.producteur} · vérifié le {dateFr(d.meta.lastUpdate)}</Text>
+          <Text style={[TYPO.micro, { flex: 1 }]}>Liste des candidats : {d.meta.source.producteur} · relevé le {dateFr(d.meta.lastUpdate)}</Text>
         </Pressable>
       ) : null}
-
-      {/* 4. LES RÈGLES — quatre fiches, chacune avec son texte de référence. */}
-      <Section titre="Les règles du scrutin" />
-      <Regles2027 />
 
       {/* 5. VOTER — l'ancien écran « Ma voix ». */}
       <Section titre="Voter" />

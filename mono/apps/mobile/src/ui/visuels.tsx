@@ -372,6 +372,24 @@ export type Niveau = {
    est alors une cible de 48 px, lue comme un lien. */
 /* `ouverts` et `basculer` (maquette Stitch, 09/11/2026) : la chaîne devient un accordéon. Chaque
    niveau garde son nom et sa personne visibles ; ce qu'il décide, la note et le pied se déplient. */
+/* Une carte d'élu : avatar, nom, rôle, chevron. La même pour un maire, un député ou un préfet (12/11/2026). */
+export function CarteElu({ nom, role, echelon, groupe, dep, cle, surPress, libelle }: {
+  nom: string; role: string; echelon: Echelon | null; groupe?: string | null; dep?: string | null; cle?: string | null;
+  surPress: () => void; libelle?: string;
+}) {
+  return (
+    <Pressable onPress={surPress} accessibilityRole="link" accessibilityLabel={libelle ?? `Voir la fiche de ${nom}, ${role}`}
+      style={({ pressed }) => [s.carteElu, pressed && { opacity: 0.7 }]}>
+      <AvatarElu nom={nom} taille={40} echelon={echelon} groupe={groupe} dep={dep} cle={cle} />
+      <View style={{ flex: 1 }}>
+        <Text style={TYPO.reponse}>{nom}</Text>
+        <Text style={TYPO.note}>{role}</Text>
+      </View>
+      <Ionicons name="chevron-forward" size={18} color={couleurs.sourd} accessible={false} importantForAccessibility="no" />
+    </Pressable>
+  );
+}
+
 export function Chaine({ niveaux, compact, surNom, ouverts, basculer }: {
   niveaux: Niveau[]; compact?: boolean; surNom?: (n: Niveau) => void;
   ouverts?: ReadonlySet<Echelon>; basculer?: (e: Echelon) => void;
@@ -416,16 +434,8 @@ export function Chaine({ niveaux, compact, surNom, ouverts, basculer }: {
             {n.personne && surNom && !compact ? (
               /* 07/11/2026 : l'avatar (initiales sur la couleur de l'ÉCHELON, jamais d'un parti) à côté du nom. */
               /* Refonte (porteur, 09/11/2026) : une carte cliquable, sans soulignement ; le rôle dedans. */
-              <Pressable onPress={() => surNom(n)} accessibilityRole="link"
-                accessibilityLabel={`Voir la fiche de ${n.personne.nom}, ${n.personne.role}`}
-                style={({ pressed }) => [s.carteElu, pressed && enfonce(true)]}>
-                <AvatarElu nom={n.personne.nom} taille={40} echelon={n.echelon} groupe={n.groupe} dep={n.photo?.dep} cle={n.photo?.cle} />
-                <View style={{ flex: 1 }}>
-                  <Text style={TYPO.reponse}>{n.personne.nom}</Text>
-                  <Text style={TYPO.note}>{n.personne.role}</Text>
-                </View>
-                <Ionicons name="chevron-forward" size={18} color={couleurs.sourd} accessible={false} importantForAccessibility="no" />
-              </Pressable>
+              <CarteElu nom={n.personne.nom} role={n.personne.role} echelon={n.echelon} groupe={n.groupe} dep={n.photo?.dep} cle={n.photo?.cle}
+                surPress={() => surNom(n)} />
             ) : n.personne ? (
               <Text style={compact ? [TYPO.corps, { fontWeight: "600" }] : TYPO.reponse}>{n.personne.nom}</Text>
             ) : (

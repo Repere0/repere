@@ -1,1 +1,479 @@
-{ "candidats": [] }
+{
+ "candidats": [
+  {
+   "id": "nathalie-arthaud",
+   "prenom": "Nathalie",
+   "nom": "Arthaud",
+   "parti": "Lutte ouvrière",
+   "statut": "declare",
+   "sources": [
+    {
+     "producteur": "LCP-Assemblée nationale",
+     "url": "https://lcp.fr/actualites/presidentielle-2027-la-liste-des-candidats-declares-et-potentiels-444932",
+     "date": "2026-11-10"
+    },
+    {
+     "producteur": "Toute l'Europe",
+     "url": "https://www.touteleurope.eu/vie-politique-des-etats-membres/presidentielle-2027-qui-sont-les-candidats-deja-declares/",
+     "date": "2026-11-09"
+    }
+   ]
+  },
+  {
+   "id": "francois-asselineau",
+   "prenom": "François",
+   "nom": "Asselineau",
+   "parti": "Union populaire républicaine",
+   "statut": "declare",
+   "sources": [
+    {
+     "producteur": "LCP-Assemblée nationale",
+     "url": "https://lcp.fr/actualites/presidentielle-2027-la-liste-des-candidats-declares-et-potentiels-444932",
+     "date": "2026-11-10"
+    },
+    {
+     "producteur": "Toute l'Europe",
+     "url": "https://www.touteleurope.eu/vie-politique-des-etats-membres/presidentielle-2027-qui-sont-les-candidats-deja-declares/",
+     "date": "2026-11-09"
+    }
+   ]
+  },
+  {
+   "id": "gabriel-attal",
+   "prenom": "Gabriel",
+   "nom": "Attal",
+   "parti": "Renaissance",
+   "statut": "declare",
+   "sources": [
+    {
+     "producteur": "LCP-Assemblée nationale",
+     "url": "https://lcp.fr/actualites/presidentielle-2027-la-liste-des-candidats-declares-et-potentiels-444932",
+     "date": "2026-11-10"
+    },
+    {
+     "producteur": "Toute l'Europe",
+     "url": "https://www.touteleurope.eu/vie-politique-des-etats-membres/presidentielle-2027-qui-sont-les-candidats-deja-declares/",
+     "date": "2026-11-09"
+    }
+   ]
+  },
+  {
+   "id": "juan-branco",
+   "prenom": "Juan",
+   "nom": "Branco",
+   "parti": "Les Ruches",
+   "statut": "declare",
+   "sources": [
+    {
+     "producteur": "LCP-Assemblée nationale",
+     "url": "https://lcp.fr/actualites/presidentielle-2027-la-liste-des-candidats-declares-et-potentiels-444932",
+     "date": "2026-11-10"
+    },
+    {
+     "producteur": "Toute l'Europe",
+     "url": "https://www.touteleurope.eu/vie-politique-des-etats-membres/presidentielle-2027-qui-sont-les-candidats-deja-declares/",
+     "date": "2026-11-09"
+    }
+   ]
+  },
+  {
+   "id": "nicolas-dupont-aignan",
+   "prenom": "Nicolas",
+   "nom": "Dupont-Aignan",
+   "parti": "Debout la France",
+   "statut": "declare",
+   "sources": [
+    {
+     "producteur": "LCP-Assemblée nationale",
+     "url": "https://lcp.fr/actualites/presidentielle-2027-la-liste-des-candidats-declares-et-potentiels-444932",
+     "date": "2026-11-10"
+    },
+    {
+     "producteur": "Toute l'Europe",
+     "url": "https://www.touteleurope.eu/vie-politique-des-etats-membres/presidentielle-2027-qui-sont-les-candidats-deja-declares/",
+     "date": "2026-11-09"
+    }
+   ]
+  },
+  {
+   "id": "clara-egger",
+   "prenom": "Clara",
+   "nom": "Egger",
+   "parti": "Solution démocratique",
+   "statut": "declare",
+   "sources": [
+    {
+     "producteur": "LCP-Assemblée nationale",
+     "url": "https://lcp.fr/actualites/presidentielle-2027-la-liste-des-candidats-declares-et-potentiels-444932",
+     "date": "2026-11-10"
+    },
+    {
+     "producteur": "Toute l'Europe",
+     "url": "https://www.touteleurope.eu/vie-politique-des-etats-membres/presidentielle-2027-qui-sont-les-candidats-deja-declares/",
+     "date": "2026-11-09"
+    }
+   ]
+  },
+  {
+   "id": "raphael-glucksmann",
+   "prenom": "Raphaël",
+   "nom": "Glucksmann",
+   "parti": "Place publique",
+   "statut": "declare",
+   "sources": [
+    {
+     "producteur": "LCP-Assemblée nationale",
+     "url": "https://lcp.fr/actualites/presidentielle-2027-la-liste-des-candidats-declares-et-potentiels-444932",
+     "date": "2026-11-10"
+    },
+    {
+     "producteur": "Toute l'Europe",
+     "url": "https://www.touteleurope.eu/vie-politique-des-etats-membres/presidentielle-2027-qui-sont-les-candidats-deja-declares/",
+     "date": "2026-11-09"
+    }
+   ]
+  },
+  {
+   "id": "anasse-kazib",
+   "prenom": "Anasse",
+   "nom": "Kazib",
+   "parti": "Révolution permanente",
+   "statut": "declare",
+   "sources": [
+    {
+     "producteur": "LCP-Assemblée nationale",
+     "url": "https://lcp.fr/actualites/presidentielle-2027-la-liste-des-candidats-declares-et-potentiels-444932",
+     "date": "2026-11-10"
+    },
+    {
+     "producteur": "Toute l'Europe",
+     "url": "https://www.touteleurope.eu/vie-politique-des-etats-membres/presidentielle-2027-qui-sont-les-candidats-deja-declares/",
+     "date": "2026-11-09"
+    }
+   ]
+  },
+  {
+   "id": "selma-labib",
+   "prenom": "Selma",
+   "nom": "Labib",
+   "parti": "NPA-Révolutionnaires",
+   "statut": "declare",
+   "sources": [
+    {
+     "producteur": "LCP-Assemblée nationale",
+     "url": "https://lcp.fr/actualites/presidentielle-2027-la-liste-des-candidats-declares-et-potentiels-444932",
+     "date": "2026-11-10"
+    },
+    {
+     "producteur": "Toute l'Europe",
+     "url": "https://www.touteleurope.eu/vie-politique-des-etats-membres/presidentielle-2027-qui-sont-les-candidats-deja-declares/",
+     "date": "2026-11-09"
+    }
+   ]
+  },
+  {
+   "id": "francis-lalanne",
+   "prenom": "Francis",
+   "nom": "Lalanne",
+   "parti": null,
+   "statut": "declare",
+   "sources": [
+    {
+     "producteur": "LCP-Assemblée nationale",
+     "url": "https://lcp.fr/actualites/presidentielle-2027-la-liste-des-candidats-declares-et-potentiels-444932",
+     "date": "2026-11-10"
+    },
+    {
+     "producteur": "Toute l'Europe",
+     "url": "https://www.touteleurope.eu/vie-politique-des-etats-membres/presidentielle-2027-qui-sont-les-candidats-deja-declares/",
+     "date": "2026-11-09"
+    }
+   ]
+  },
+  {
+   "id": "marine-le-pen",
+   "prenom": "Marine",
+   "nom": "Le Pen",
+   "parti": "Rassemblement national",
+   "statut": "declare",
+   "sources": [
+    {
+     "producteur": "LCP-Assemblée nationale",
+     "url": "https://lcp.fr/actualites/presidentielle-2027-la-liste-des-candidats-declares-et-potentiels-444932",
+     "date": "2026-11-10"
+    },
+    {
+     "producteur": "Toute l'Europe",
+     "url": "https://www.touteleurope.eu/vie-politique-des-etats-membres/presidentielle-2027-qui-sont-les-candidats-deja-declares/",
+     "date": "2026-11-09"
+    }
+   ]
+  },
+  {
+   "id": "david-lisnard",
+   "prenom": "David",
+   "nom": "Lisnard",
+   "parti": "Nouvelle Énergie",
+   "statut": "declare",
+   "sources": [
+    {
+     "producteur": "LCP-Assemblée nationale",
+     "url": "https://lcp.fr/actualites/presidentielle-2027-la-liste-des-candidats-declares-et-potentiels-444932",
+     "date": "2026-11-10"
+    },
+    {
+     "producteur": "Toute l'Europe",
+     "url": "https://www.touteleurope.eu/vie-politique-des-etats-membres/presidentielle-2027-qui-sont-les-candidats-deja-declares/",
+     "date": "2026-11-09"
+    }
+   ]
+  },
+  {
+   "id": "mira-markovic",
+   "prenom": "Mira",
+   "nom": "Markovic",
+   "parti": "Parti animaliste",
+   "statut": "declare",
+   "sources": [
+    {
+     "producteur": "LCP-Assemblée nationale",
+     "url": "https://lcp.fr/actualites/presidentielle-2027-la-liste-des-candidats-declares-et-potentiels-444932",
+     "date": "2026-11-10"
+    },
+    {
+     "producteur": "Toute l'Europe",
+     "url": "https://www.touteleurope.eu/vie-politique-des-etats-membres/presidentielle-2027-qui-sont-les-candidats-deja-declares/",
+     "date": "2026-11-09"
+    }
+   ]
+  },
+  {
+   "id": "benoit-mathieu",
+   "prenom": "Benoît",
+   "nom": "Mathieu",
+   "parti": null,
+   "statut": "declare",
+   "sources": [
+    {
+     "producteur": "LCP-Assemblée nationale",
+     "url": "https://lcp.fr/actualites/presidentielle-2027-la-liste-des-candidats-declares-et-potentiels-444932",
+     "date": "2026-11-10"
+    },
+    {
+     "producteur": "Toute l'Europe",
+     "url": "https://www.touteleurope.eu/vie-politique-des-etats-membres/presidentielle-2027-qui-sont-les-candidats-deja-declares/",
+     "date": "2026-11-09"
+    }
+   ]
+  },
+  {
+   "id": "jean-luc-melenchon",
+   "prenom": "Jean-Luc",
+   "nom": "Mélenchon",
+   "parti": "La France insoumise",
+   "statut": "declare",
+   "sources": [
+    {
+     "producteur": "LCP-Assemblée nationale",
+     "url": "https://lcp.fr/actualites/presidentielle-2027-la-liste-des-candidats-declares-et-potentiels-444932",
+     "date": "2026-11-10"
+    },
+    {
+     "producteur": "Toute l'Europe",
+     "url": "https://www.touteleurope.eu/vie-politique-des-etats-membres/presidentielle-2027-qui-sont-les-candidats-deja-declares/",
+     "date": "2026-11-09"
+    }
+   ]
+  },
+  {
+   "id": "antoine-mikolajczak",
+   "prenom": "Antoine",
+   "nom": "Mikolajczak",
+   "parti": "Équinoxe",
+   "statut": "declare",
+   "sources": [
+    {
+     "producteur": "LCP-Assemblée nationale",
+     "url": "https://lcp.fr/actualites/presidentielle-2027-la-liste-des-candidats-declares-et-potentiels-444932",
+     "date": "2026-11-10"
+    },
+    {
+     "producteur": "Toute l'Europe",
+     "url": "https://www.touteleurope.eu/vie-politique-des-etats-membres/presidentielle-2027-qui-sont-les-candidats-deja-declares/",
+     "date": "2026-11-09"
+    }
+   ]
+  },
+  {
+   "id": "edouard-philippe",
+   "prenom": "Édouard",
+   "nom": "Philippe",
+   "parti": "Horizons",
+   "statut": "declare",
+   "sources": [
+    {
+     "producteur": "LCP-Assemblée nationale",
+     "url": "https://lcp.fr/actualites/presidentielle-2027-la-liste-des-candidats-declares-et-potentiels-444932",
+     "date": "2026-11-10"
+    },
+    {
+     "producteur": "Toute l'Europe",
+     "url": "https://www.touteleurope.eu/vie-politique-des-etats-membres/presidentielle-2027-qui-sont-les-candidats-deja-declares/",
+     "date": "2026-11-09"
+    }
+   ]
+  },
+  {
+   "id": "florian-philippot",
+   "prenom": "Florian",
+   "nom": "Philippot",
+   "parti": "Les Patriotes",
+   "statut": "declare",
+   "sources": [
+    {
+     "producteur": "LCP-Assemblée nationale",
+     "url": "https://lcp.fr/actualites/presidentielle-2027-la-liste-des-candidats-declares-et-potentiels-444932",
+     "date": "2026-11-10"
+    },
+    {
+     "producteur": "Toute l'Europe",
+     "url": "https://www.touteleurope.eu/vie-politique-des-etats-membres/presidentielle-2027-qui-sont-les-candidats-deja-declares/",
+     "date": "2026-11-09"
+    }
+   ]
+  },
+  {
+   "id": "natacha-polony",
+   "prenom": "Natacha",
+   "nom": "Polony",
+   "parti": null,
+   "statut": "declare",
+   "sources": [
+    {
+     "producteur": "LCP-Assemblée nationale",
+     "url": "https://lcp.fr/actualites/presidentielle-2027-la-liste-des-candidats-declares-et-potentiels-444932",
+     "date": "2026-11-10"
+    },
+    {
+     "producteur": "Toute l'Europe",
+     "url": "https://www.touteleurope.eu/vie-politique-des-etats-membres/presidentielle-2027-qui-sont-les-candidats-deja-declares/",
+     "date": "2026-11-09"
+    }
+   ]
+  },
+  {
+   "id": "bruno-retailleau",
+   "prenom": "Bruno",
+   "nom": "Retailleau",
+   "parti": "Les Républicains",
+   "statut": "declare",
+   "sources": [
+    {
+     "producteur": "LCP-Assemblée nationale",
+     "url": "https://lcp.fr/actualites/presidentielle-2027-la-liste-des-candidats-declares-et-potentiels-444932",
+     "date": "2026-11-10"
+    },
+    {
+     "producteur": "Toute l'Europe",
+     "url": "https://www.touteleurope.eu/vie-politique-des-etats-membres/presidentielle-2027-qui-sont-les-candidats-deja-declares/",
+     "date": "2026-11-09"
+    }
+   ]
+  },
+  {
+   "id": "teddy-riner",
+   "prenom": "Teddy",
+   "nom": "Riner",
+   "parti": null,
+   "statut": "declare",
+   "sources": [
+    {
+     "producteur": "LCP-Assemblée nationale",
+     "url": "https://lcp.fr/actualites/presidentielle-2027-la-liste-des-candidats-declares-et-potentiels-444932",
+     "date": "2026-11-10"
+    },
+    {
+     "producteur": "Toute l'Europe",
+     "url": "https://www.touteleurope.eu/vie-politique-des-etats-membres/presidentielle-2027-qui-sont-les-candidats-deja-declares/",
+     "date": "2026-11-09"
+    }
+   ]
+  },
+  {
+   "id": "fabien-roussel",
+   "prenom": "Fabien",
+   "nom": "Roussel",
+   "parti": "Parti communiste français",
+   "statut": "declare",
+   "sources": [
+    {
+     "producteur": "LCP-Assemblée nationale",
+     "url": "https://lcp.fr/actualites/presidentielle-2027-la-liste-des-candidats-declares-et-potentiels-444932",
+     "date": "2026-11-10"
+    },
+    {
+     "producteur": "Toute l'Europe",
+     "url": "https://www.touteleurope.eu/vie-politique-des-etats-membres/presidentielle-2027-qui-sont-les-candidats-deja-declares/",
+     "date": "2026-11-09"
+    }
+   ]
+  },
+  {
+   "id": "francois-ruffin",
+   "prenom": "François",
+   "nom": "Ruffin",
+   "parti": "Debout !",
+   "statut": "declare",
+   "sources": [
+    {
+     "producteur": "LCP-Assemblée nationale",
+     "url": "https://lcp.fr/actualites/presidentielle-2027-la-liste-des-candidats-declares-et-potentiels-444932",
+     "date": "2026-11-10"
+    },
+    {
+     "producteur": "Toute l'Europe",
+     "url": "https://www.touteleurope.eu/vie-politique-des-etats-membres/presidentielle-2027-qui-sont-les-candidats-deja-declares/",
+     "date": "2026-11-09"
+    }
+   ]
+  },
+  {
+   "id": "marine-tondelier",
+   "prenom": "Marine",
+   "nom": "Tondelier",
+   "parti": "Les Écologistes",
+   "statut": "declare",
+   "sources": [
+    {
+     "producteur": "LCP-Assemblée nationale",
+     "url": "https://lcp.fr/actualites/presidentielle-2027-la-liste-des-candidats-declares-et-potentiels-444932",
+     "date": "2026-11-10"
+    },
+    {
+     "producteur": "Toute l'Europe",
+     "url": "https://www.touteleurope.eu/vie-politique-des-etats-membres/presidentielle-2027-qui-sont-les-candidats-deja-declares/",
+     "date": "2026-11-09"
+    }
+   ]
+  },
+  {
+   "id": "eric-zemmour",
+   "prenom": "Éric",
+   "nom": "Zemmour",
+   "parti": "Reconquête",
+   "statut": "declare",
+   "sources": [
+    {
+     "producteur": "LCP-Assemblée nationale",
+     "url": "https://lcp.fr/actualites/presidentielle-2027-la-liste-des-candidats-declares-et-potentiels-444932",
+     "date": "2026-11-10"
+    },
+    {
+     "producteur": "Toute l'Europe",
+     "url": "https://www.touteleurope.eu/vie-politique-des-etats-membres/presidentielle-2027-qui-sont-les-candidats-deja-declares/",
+     "date": "2026-11-09"
+    }
+   ]
+  }
+ ]
+}
