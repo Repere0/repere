@@ -3,8 +3,8 @@
  * La commune se lit et s'écrit APRÈS le « # » : le navigateur ne l'envoie jamais au serveur, donc ni
  * l'hébergeur ni ses journaux ne la voient (invariant 2). Ce composant ne rend rien : il
  *   1. à l'ouverture d'un lien « …#melun », choisit cette commune (une commune inconnue ne choisit rien) ;
- *   2. garde le « # » à jour quand la commune ou l'écran change (replaceState : aucune requête, aucune entrée
- *      d'historique en plus) ;
+ *   2. retire un « # » que Repère ne comprend pas (le « # » de la commune n'est PAS réécrit à chaque écran : cela
+ *      cassait le bouton « retour », voir plus bas) ;
  *   3. écrit le titre de l'onglet : « Finances de Melun - Repère ».
  * Ouvrir un lien choisit la commune pour la session ; rien n'est gardé sur l'appareil sans que le lecteur le
  * demande (lib/memoire.ts, inchangé). Sur mobile natif : aucun effet. */
@@ -62,8 +62,10 @@ function Pont() {
        changé d'état ; écrire avant ferait perdre le « # » au premier clic. */
     const t = setTimeout(() => {
       const l = window.location;
-      const cible = `${l.pathname}${l.search}${slug ? "#" + slug : ""}`;
-      if (cible !== `${l.pathname}${l.search}${l.hash}`) window.history.replaceState(window.history.state, "", cible);
+      /* On ne fait que RETIRER un « # » refusé. Écrire le « # » de la commune à chaque écran cassait le bouton
+         « retour » (12/11/2026, CI : l'écran précédent s'ouvrait en double) : le routeur lit un historique dont
+         l'adresse porte un « # » comme une nouvelle destination. L'écriture automatique est donc abandonnée. */
+      if (!slug && l.hash) window.history.replaceState(window.history.state, "", `${l.pathname}${l.search}`);
     }, 80);
     return () => clearTimeout(t);
   }, [choix, chemin, table, relance]);
