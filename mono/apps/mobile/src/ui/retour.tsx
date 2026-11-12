@@ -5,6 +5,7 @@
 import { Pressable, Text } from "react-native";
 import { router } from "expo-router";
 import { couleurs, CIBLE } from "../lib/theme";
+import { enfonce } from "./mouvement";
 
 export function Retour({ texte, etiquette }: { texte: string; etiquette: string }) {
   return (
@@ -12,7 +13,7 @@ export function Retour({ texte, etiquette }: { texte: string; etiquette: string 
       onPress={() => (router.canGoBack() ? router.back() : router.replace("/"))}
       accessibilityRole="button"
       accessibilityLabel={etiquette}
-      style={({ pressed }) => ({ minHeight: CIBLE, minWidth: CIBLE, justifyContent: "center", paddingHorizontal: 8, opacity: pressed ? 0.6 : 1 })}
+      style={({ pressed }) => ({ minHeight: CIBLE, minWidth: CIBLE, justifyContent: "center", paddingHorizontal: 8, ...enfonce(pressed) })}
     >
       <Text style={{ fontSize: 17, color: couleurs.lien, fontWeight: "500" }}>‹ {texte}</Text>
     </Pressable>
@@ -30,7 +31,7 @@ export function ChangerCommune() {
       onPress={() => router.dismissTo("/")}
       accessibilityRole="button"
       accessibilityLabel="Changer de commune : revenir à l'accueil"
-      style={({ pressed }) => ({ minHeight: CIBLE, minWidth: CIBLE, justifyContent: "center", paddingHorizontal: 8, opacity: pressed ? 0.6 : 1 })}
+      style={({ pressed }) => ({ minHeight: CIBLE, minWidth: CIBLE, justifyContent: "center", paddingHorizontal: 8, ...enfonce(pressed) })}
     >
       <Text style={{ fontSize: 17, color: couleurs.lien, fontWeight: "500" }}>‹ Communes</Text>
     </Pressable>

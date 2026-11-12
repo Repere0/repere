@@ -13,6 +13,7 @@ import { Carte, LienSortant } from "../lib/composants";
 import { couleurs, CIBLE, PAS, TYPO } from "../lib/theme";
 import { Page, Question } from "../ui/page";
 import { useApparition } from "../ui/mouvement";
+import { enfonce } from "../ui/mouvement";
 
 /* La navette : le texte passe d'une assemblee a l'autre, aller et retour. */
 function Navette() {
@@ -57,7 +58,7 @@ export default function Procedure() {
         {ETAPES_LOI.map((e, i) => (
           <Pressable key={e.cle} onPress={() => aller(i)} accessibilityRole="tab"
             accessibilityState={{ selected: i === etape }} accessibilityLabel={`Étape ${i + 1} : ${e.titre}`}
-            style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1, flex: 1, minHeight: CIBLE, justifyContent: "center" })}>
+            style={({ pressed }) => ({ ...enfonce(pressed), flex: 1, minHeight: CIBLE, justifyContent: "center" })}>
             <View style={{ height: 6, borderRadius: 3, backgroundColor: i <= etape ? couleurs.encre : couleurs.trait }} />
             <Text style={[TYPO.note, { marginTop: 4, textAlign: "center", fontWeight: i === etape ? "700" : "400" }]}>{i + 1}</Text>
           </Pressable>

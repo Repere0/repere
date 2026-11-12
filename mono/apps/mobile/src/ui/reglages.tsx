@@ -8,6 +8,7 @@ import { CIBLE, PAS, RAYON, TYPO, couleurs, feuille, type ChoixTheme } from "../
 import { VOILE_MODAL } from "../lib/palette";
 import { useTheme } from "../lib/themeChoix";
 import { router } from "expo-router";
+import { enfonce } from "./mouvement";
 
 const OPTIONS: { valeur: ChoixTheme; libelle: string }[] = [
   { valeur: "systeme", libelle: "Système" },
@@ -23,7 +24,7 @@ export function BoutonReglages() {
         onPress={() => setOuvert(true)}
         accessibilityRole="button"
         accessibilityLabel="Réglages de l'affichage"
-        style={({ pressed }) => [s.roue, pressed && { opacity: 0.7 }]}
+        style={({ pressed }) => [s.roue, pressed && enfonce(true)]}
       >
         <Ionicons name="settings-outline" size={22} color={couleurs.encre} accessible={false} importantForAccessibility="no" />
       </Pressable>
@@ -47,7 +48,7 @@ function ChoixAffichage({ visible, onFermer }: { visible: boolean; onFermer: () 
                 onPress={() => { setChoix(o.valeur); onFermer(); }}
                 accessibilityRole="radio"
                 accessibilityState={{ checked: actif }}
-                style={({ pressed }) => [s.option, actif && s.optionActive, pressed && { opacity: 0.7 }]}
+                style={({ pressed }) => [s.option, actif && s.optionActive, pressed && enfonce(true)]}
               >
                 <Text style={[s.optionTexte, actif && s.optionTexteActif]}>{o.libelle}</Text>
               </Pressable>
@@ -59,28 +60,28 @@ function ChoixAffichage({ visible, onFermer }: { visible: boolean; onFermer: () 
           <Pressable
             onPress={() => { onFermer(); router.push("/confort-lecture"); }}
             accessibilityRole="link" accessibilityLabel="Confort de lecture"
-            style={({ pressed }) => [s.option, pressed && { opacity: 0.7 }]}
+            style={({ pressed }) => [s.option, pressed && enfonce(true)]}
           >
             <Text style={s.optionTexte}>Confort de lecture</Text>
           </Pressable>
           <Pressable
             onPress={() => { onFermer(); router.push("/confidentialite"); }}
             accessibilityRole="link"
-            style={({ pressed }) => [s.option, pressed && { opacity: 0.7 }]}
+            style={({ pressed }) => [s.option, pressed && enfonce(true)]}
           >
             <Text style={s.optionTexte}>Confidentialité</Text>
           </Pressable>
           <Pressable
             onPress={() => { onFermer(); router.push("/a-propos"); }}
             accessibilityRole="link"
-            style={({ pressed }) => [s.option, pressed && { opacity: 0.7 }]}
+            style={({ pressed }) => [s.option, pressed && enfonce(true)]}
           >
             <Text style={s.optionTexte}>À propos</Text>
           </Pressable>
           <Pressable
             onPress={() => { onFermer(); router.push("/faq"); }}
             accessibilityRole="link"
-            style={({ pressed }) => [s.option, pressed && { opacity: 0.7 }]}
+            style={({ pressed }) => [s.option, pressed && enfonce(true)]}
           >
             <Text style={s.optionTexte}>Questions fréquentes</Text>
           </Pressable>

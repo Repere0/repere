@@ -12,6 +12,7 @@ import type { ReactNode } from "react";
 import { Pressable, Share, StyleSheet, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { feuille, ACCENTS, couleurs, CIBLE, OMBRE, PAS, POLICE, RAYON, TYPO, type Echelon } from "../lib/theme";
+import { enfonce } from "./mouvement";
 
 function BoutonPartager({ titre, texte, sourceUrl }: { titre: string; texte: string; sourceUrl?: string | null }) {
   const partager = async () => {
@@ -20,7 +21,7 @@ function BoutonPartager({ titre, texte, sourceUrl }: { titre: string; texte: str
   };
   return (
     <Pressable onPress={partager} accessibilityRole="button" accessibilityLabel={`Partager : ${titre}`}
-      style={({ pressed }) => [s.rond, pressed && { opacity: 0.6 }]}>
+      style={({ pressed }) => [s.rond, pressed && enfonce(true)]}>
       <Ionicons name="share-outline" size={20} color={couleurs.encre} accessible={false} importantForAccessibility="no" />
     </Pressable>
   );
@@ -56,7 +57,7 @@ export function Reponse({ phrase, preuve, note, sources, suite, partage, heros, 
         <View style={s.pied}>
           {suite ? (
             <Pressable onPress={suite.onPress} accessibilityRole="button" accessibilityLabel={suite.texte}
-              style={({ pressed }) => [s.suite, heros && s.suitePleine, pressed && { opacity: 0.7 }]}>
+              style={({ pressed }) => [s.suite, heros && s.suitePleine, pressed && enfonce(true)]}>
               <Text style={[s.suiteTexte, heros && { color: ACCENTS.surAutorite }]}>{typo(suite.texte)}</Text>
             </Pressable>
           ) : <View style={{ flex: 1 }} />}
@@ -71,7 +72,7 @@ export function Reponse({ phrase, preuve, note, sources, suite, partage, heros, 
 export function Plus({ texte, onPress, premier, dernier }: { texte: string; onPress: () => void; premier?: boolean; dernier?: boolean }) {
   return (
     <Pressable onPress={onPress} accessibilityRole="button" accessibilityLabel={texte}
-      style={({ pressed }) => [s.plus, premier && s.plusPremier, dernier && s.plusDernier, pressed && { opacity: 0.6 }]}>
+      style={({ pressed }) => [s.plus, premier && s.plusPremier, dernier && s.plusDernier, pressed && enfonce(true)]}>
       <Text style={[TYPO.corps, { flex: 1, fontFamily: POLICE.titre }]}>{texte}</Text>
       <Ionicons name="chevron-forward" size={16} color={couleurs.sourd} accessible={false} importantForAccessibility="no" />
     </Pressable>

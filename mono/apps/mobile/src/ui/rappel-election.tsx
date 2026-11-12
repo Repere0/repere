@@ -9,6 +9,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { dateFr } from "@repere/core";
 import { ELECTIONS_SOURCE, ELECTIONS_VERIFIEES_LE, prochaineElection } from "../lib/elections";
 import { CIBLE, PAS, POLICE, RAYON, couleurs } from "../lib/theme";
+import { enfonce } from "./mouvement";
 
 /* 09/11/2026 : l'accueil suit le thème (maquettes Stitch) ; la carte aussi. */
 const D = couleurs;
@@ -56,12 +57,12 @@ export function RappelElection({ aujourdhui = new Date() }: { aujourdhui?: Date 
         </View>
       ) : <Text style={{ fontSize: 15, lineHeight: 21, color: D.encre }}>{quand} ({date})</Text>}
       <Pressable onPress={() => router.push("/presidentielle-2027")} accessibilityRole="link" accessibilityLabel="Comment voter"
-        style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", alignSelf: "flex-start", opacity: pressed ? 0.7 : 1 })}>
+        style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", alignSelf: "flex-start", ...enfonce(pressed) })}>
         <Text style={{ fontSize: 15, fontWeight: "600", color: D.encre }}>Comment voter ?</Text>
       </Pressable>
       <View style={{ flexDirection: "row", alignItems: "center", gap: PAS }}>
         <Ionicons name="link-outline" size={14} color={D.sourd} accessible={false} importantForAccessibility="no" />
-        <Text style={{ flex: 1, fontSize: 13, lineHeight: 18, color: D.sourd }}>
+        <Text style={{ flex: 1, fontSize: 14, lineHeight: 20, color: D.sourd }}>
           Source : {ELECTIONS_SOURCE.producteur}, vérifié le {dateFr(ELECTIONS_VERIFIEES_LE)}.
         </Text>
       </View>

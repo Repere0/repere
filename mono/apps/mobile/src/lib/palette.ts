@@ -145,9 +145,15 @@ export const COULEURS_VOTE_DALTONIEN = Object.freeze({
   voteAbstention: "#6E7781",
 });
 
+/* 12/11/2026 (porteur : « couleurs plus vives et contrastées pour les groupes ») : teintes plus saturées, mêmes
+   familles qu'avant, toujours 12 couleurs, et DOUZE TEINTES DISTINCTES (aucune paire sous 60 de distance RVB :
+   plus aucun groupe n'a besoin d'être cerné). Contraste mesuré sur la carte claire (#FFFFFF) / sombre (#1F1E1B) :
+   LFI 4,2/4,0 ; RN 9,2/1,8 ; EPR 1,6/10,8 ; LÉ 2,7/6,3 ; LR 2,7/6,1 ; SOC 2,6/6,5 ; HOR 2,5/6,8 ; DEM 2,5/6,8 ;
+   LIOT 3,6/4,7 ; GDR 8,7/1,9 ; NI 2,5/6,7 ; Inconnu 6,1/2,7. Sous 3:1 : l'hémicycle cerne alors le point d'un trait
+   gris (ui/hemicycle) et le nom du groupe est toujours écrit à côté. Identification des élus seulement. */
 export const COULEURS_GROUPES: Readonly<Record<string, string>> = Object.freeze({
-  LFI: "#C9462C", RN: "#0D378A", EPR: "#FFA500", "LÉ": "#33A02C", LR: "#0066CC", SOC: "#FF8080",
-  HOR: "#00A0C6", DEM: "#F7B32B", LIOT: "#6B7280", GDR: "#B91C1C", NI: "#9CA3AF", Inconnu: "#6B7280",
+  LFI: "#E63946", RN: "#2236B8", EPR: "#FFC83D", "LÉ": "#2DB55D", LR: "#3FA2F6", SOC: "#FF6FAE",
+  HOR: "#12B5CB", DEM: "#F28C28", LIOT: "#9B6DF5", GDR: "#8F1D3F", NI: "#A0A5AD", Inconnu: "#5B6270",
 });
 
 /* Point d'une étape de la Timeline (05/11/2026, demande du porteur). Gris neutre : il ne code
@@ -170,4 +176,12 @@ export const REFLET_AVATAR = { clair: "rgba(255,255,255,0.22)", ombre: "rgba(0,0
 export const JAUGE_BUDGET_PAR_MODE = Object.freeze({
   clair: { salaires: "#8B9DC3", investissement: "#A3C9A8", autres: "#D3D3D3" },
   sombre: { salaires: "#D4AF37", investissement: "#818CF8", autres: "#475569" },
+});
+
+/* LE BADGE « DÉCLARATION DE CANDIDATURE » (12/11/2026, demande du porteur : badge orange). Il dit que le nom vient
+   d'une annonce relevée dans la presse, pas de la liste officielle. Une seule teinte, la même pour tous les
+   candidats : elle ne code ni un parti, ni une opinion, ni un rang. Texte sur fond : 6,4:1 en clair, 8,8:1 en sombre. */
+export const BADGE_DECLARATION_PAR_MODE = Object.freeze({
+  clair: { fond: "#FFEDD5", texte: "#9A3412", filet: "#FB923C" },
+  sombre: { fond: "#3B2210", texte: "#FDBA74", filet: "#C2410C" },
 });
