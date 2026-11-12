@@ -3,10 +3,10 @@
 Produit par `outils/echantillon_scrutins.py` a partir du fichier telecharge
 par la collecte quotidienne. **Ce document est engendre : ne le modifie pas a la main.**
 
-- Fichiers dans l'archive : **11082**
+- Fichiers dans l'archive : **11091**
 - Fichiers ouverts pour le tirage : **3000** (pas de 3)
 - Fichiers decrits : **3000** — tous ceux qui ont ete ouverts
-- Cles distinctes trouvees : **480**
+- Cles distinctes trouvees : **511**
 - Fichier montre en entier plus bas : `json/dossierParlementaire/DLR5L16N47509.json` (le plus riche de l'echantillon)
 
 ## Arborescence des cles
@@ -19,181 +19,212 @@ une seule fois sont reprises a part, plus bas.
 
 | chemin | type | vu | exemples |
 |---|---|---|---|
-| `document.@xmlns` | texte | 2553 | http://schemas.assemblee-nationale.fr/referentiel |
-| `document.@xmlns:xsi` | texte | 2553 | http://www.w3.org/2001/XMLSchema-instance |
-| `document.@xsi:type` | texte | 2553 | accordInternational_Type · avisConseilEtat_Type |
-| `document.uid` | texte | 2553 | ACINANR5L16B2159 · ACINANR5L16B2628 |
-| `document.legislature` | texte/vide | 2552 | 16 · 17 |
-| `document.cycleDeVie.chrono.dateCreation` | texte/vide | 2552 | 2024-02-07T00:00:00.000+01:00 · 2024-05-16T00:00:00.000+02:00 |
-| `document.cycleDeVie.chrono.dateDepot` | texte/vide | 2552 | 2024-02-07T00:00:00.000+01:00 · 2024-05-16T00:00:00.000+02:00 |
-| `document.cycleDeVie.chrono.datePublication` | texte/vide | 2552 | 2024-04-10T00:00:00.000+02:00 · 2024-05-29T00:00:00.000+02:00 |
-| `document.cycleDeVie.chrono.datePublicationWeb` | texte/vide | 2552 | 2024-02-09T14:56:00.000+01:00 · 2024-05-22T11:40:00.000+02:00 |
-| `document.denominationStructurelle` | texte | 2552 | Projet de loi · Proposition de loi |
-| `document.provenance` | texte | 2541 | Texte Déposé · Commission |
-| `document.titres.titrePrincipal` | texte | 2552 | Accord international sur le projet de loi autorisant l’approbation de l’accord entre le... · Accord international sur le projet de loi autorisant la ratification de l’accord se rap... |
-| `document.titres.titrePrincipalCourt` | texte | 2552 | accord Papouasie Nouvelle Guinée défense · Convention des Nations unies sur le droit de la mer et conservation et utilisation dura... |
-| `document.divisions` | vide | 2438 |  |
-| `document.dossierRef` | texte | 2552 | DLR5L16N49392 · DLR5L16N49957 |
-| `document.redacteur` | vide | 2552 |  |
-| `document.classification.famille.depot.code` | texte | 2552 | INITDEP · INITNAV |
-| `document.classification.famille.depot.libelle` | texte | 2552 | Initiative en 1er Dépôt · Initiative en Navette |
-| `document.classification.famille.classe.code` | texte | 2552 | PRJLOI · PIONLOI |
-| `document.classification.famille.classe.libelle` | texte | 2552 | Projet de loi · Proposition de loi |
-| `document.classification.famille.espece.code` | texte | 537 | AUTRATCONV · ORG |
-| `document.classification.famille.espece.libelle` | texte | 537 | autorisant la ratification d'une convention · organique |
-| `document.classification.type.code` | texte | 2552 | ACIN · AVCE |
-| `document.classification.type.libelle` | texte | 2552 | Accord international · Avis du Conseil d'Etat |
-| `document.classification.sousType.code` | texte | 537 | AUTRATCONV · ORG |
-| `document.classification.sousType.libelle` | texte | 525 | autorisant la ratification d'une convention · organique |
-| `document.classification.sousType.libelleEdition` | texte | 273 | autorisant la ratification d'une convention · organique |
-| `document.classification.statutAdoption` | texte/vide | 2552 | ADOPTSEANCE · ADOPTCOM |
+| `document.@xmlns` | texte | 2555 | http://schemas.assemblee-nationale.fr/referentiel |
+| `document.@xmlns:xsi` | texte | 2555 | http://www.w3.org/2001/XMLSchema-instance |
+| `document.@xsi:type` | texte | 2555 | accordInternational_Type · avisConseilEtat_Type |
+| `document.uid` | texte | 2555 | ACINANR5L16B2159 · ACINANR5L16B2628 |
+| `document.legislature` | texte/vide | 2554 | 16 · 17 |
+| `document.cycleDeVie.chrono.dateCreation` | texte/vide | 2554 | 2024-02-07T00:00:00.000+01:00 · 2024-05-16T00:00:00.000+02:00 |
+| `document.cycleDeVie.chrono.dateDepot` | texte/vide | 2554 | 2024-02-07T00:00:00.000+01:00 · 2024-05-16T00:00:00.000+02:00 |
+| `document.cycleDeVie.chrono.datePublication` | texte/vide | 2554 | 2024-04-10T00:00:00.000+02:00 · 2024-05-29T00:00:00.000+02:00 |
+| `document.cycleDeVie.chrono.datePublicationWeb` | texte/vide | 2554 | 2024-02-09T14:56:00.000+01:00 · 2024-05-22T11:40:00.000+02:00 |
+| `document.denominationStructurelle` | texte | 2554 | Projet de loi · Proposition de loi |
+| `document.provenance` | texte | 2543 | Texte Déposé · Commission |
+| `document.titres.titrePrincipal` | texte | 2554 | Accord international sur le projet de loi autorisant l’approbation de l’accord entre le... · Accord international sur le projet de loi autorisant la ratification de l’accord se rap... |
+| `document.titres.titrePrincipalCourt` | texte | 2554 | accord Papouasie Nouvelle Guinée défense · Convention des Nations unies sur le droit de la mer et conservation et utilisation dura... |
+| `document.divisions` | vide | 2445 |  |
+| `document.dossierRef` | texte | 2554 | DLR5L16N49392 · DLR5L16N49957 |
+| `document.redacteur` | vide | 2554 |  |
+| `document.classification.famille.depot.code` | texte | 2554 | INITDEP · INITNAV |
+| `document.classification.famille.depot.libelle` | texte | 2554 | Initiative en 1er Dépôt · Initiative en Navette |
+| `document.classification.famille.classe.code` | texte | 2554 | PRJLOI · PIONLOI |
+| `document.classification.famille.classe.libelle` | texte | 2554 | Projet de loi · Proposition de loi |
+| `document.classification.famille.espece.code` | texte | 536 | AUTRATCONV · ORG |
+| `document.classification.famille.espece.libelle` | texte | 536 | autorisant la ratification d'une convention · organique |
+| `document.classification.type.code` | texte | 2554 | ACIN · AVCE |
+| `document.classification.type.libelle` | texte | 2554 | Accord international · Avis du Conseil d'Etat |
+| `document.classification.sousType.code` | texte | 536 | AUTRATCONV · ORG |
+| `document.classification.sousType.libelle` | texte | 524 | autorisant la ratification d'une convention · organique |
+| `document.classification.sousType.libelleEdition` | texte | 272 | autorisant la ratification d'une convention · organique |
+| `document.classification.statutAdoption` | texte/vide | 2554 | ADOPTSEANCE · ADOPTCOM |
 | `document.auteurs.auteur.acteur.acteurRef` | texte | 966 | PA722190 · PA368 |
 | `document.auteurs.auteur.acteur.qualite` | texte | 966 | auteur · rapporteur |
-| `document.correction` | vide | 2521 |  |
-| `document.notice.numNotice` | texte | 2541 | 2159 · 2628 |
-| `document.notice.formule` | texte | 2541 | autorisant l’approbation de l’accord entre le Gouvernement de la République française e... · autorisant la ratification de l’accord se rapportant à la convention des Nations unies ... |
-| `document.notice.adoptionConforme` | texte | 2552 | false |
-| `document.indexation` | vide | 2533 |  |
-| `document.imprimerie.ISSN` | texte/vide | 2552 | 77/2025 |
-| `document.imprimerie.ISBN` | vide | 2552 |  |
-| `document.imprimerie.DIAN` | texte/vide | 2552 | 75/2024 · 77/2024 |
-| `document.imprimerie.nbPage` | texte/vide | 2552 | 0 · 3 |
-| `document.imprimerie.prix` | texte/vide | 2552 | 2.0 · 3.299999952316284 |
-| `document.auteurs.auteur.organe.organeRef` | texte | 715 | PO838901 · PO230434 |
-| `document.classification.sousType` | vide | 2015 |  |
+| `document.correction` | vide | 2531 |  |
+| `document.notice.numNotice` | texte | 2543 | 2159 · 2628 |
+| `document.notice.formule` | texte | 2543 | autorisant l’approbation de l’accord entre le Gouvernement de la République française e... · autorisant la ratification de l’accord se rapportant à la convention des Nations unies ... |
+| `document.notice.adoptionConforme` | texte | 2554 | false |
+| `document.indexation` | vide | 2539 |  |
+| `document.imprimerie.ISSN` | texte/vide | 2554 | 77/2025 |
+| `document.imprimerie.ISBN` | vide | 2554 |  |
+| `document.imprimerie.DIAN` | texte/vide | 2554 | 88/2025 · 75/2024 |
+| `document.imprimerie.nbPage` | texte/vide | 2554 | 0 · 3 |
+| `document.imprimerie.prix` | texte/vide | 2554 | 2.0 · 3.299999952316284 |
+| `document.auteurs.auteur.organe.organeRef` | texte | 717 | PO838901 · PO230434 |
+| `document.classification.sousType` | vide | 2018 |  |
 | `document.auteurs.auteur[]` | liste | 871 | de 2 a 192 entrees |
-| `document.auteurs.auteur[].acteur.acteurRef` | texte | 2814 | PA720704 · PA266797 |
-| `document.auteurs.auteur[].acteur.qualite` | texte | 2814 | auteur · rapporteur pour avis |
-| `document.auteurs.auteur[].organe.organeRef` | texte | 768 | PO59048 · PO419865 |
-| `document.organesReferents.organeRef` | texte | 1816 | PO420120 · PO59048 |
-| `document.coSignataires` | vide | 1488 |  |
+| `document.auteurs.auteur[].acteur.acteurRef` | texte | 2821 | PA720704 · PA266797 |
+| `document.auteurs.auteur[].acteur.qualite` | texte | 2821 | auteur · rapporteur pour avis |
+| `document.auteurs.auteur[].organe.organeRef` | texte | 766 | PO59048 · PO419865 |
+| `document.organesReferents.organeRef` | texte | 1810 | PO420120 · PO59048 |
+| `document.coSignataires` | vide | 1491 |  |
 | `document.depotAmendements` | vide | 121 |  |
-| `document.divisions.division[]` | liste | 20 | de 2 a 10 entrees |
-| `document.divisions.division[].@xsi:type` | texte | 79 | texteLoi_Type · rapportParlementaire_Type |
-| `document.divisions.division[].uid` | texte | 79 | AVISANR5L17B0471-tI · AVISANR5L17B0471-tII |
-| `document.divisions.division[].legislature` | texte | 79 | 17 · 16 |
-| `document.divisions.division[].cycleDeVie.chrono.dateCreation` | texte | 79 | 2024-10-23T00:00:00.000+02:00 · 2024-10-25T00:00:00.000+02:00 |
-| `document.divisions.division[].cycleDeVie.chrono.dateDepot` | texte | 79 | 2024-10-23T00:00:00.000+02:00 · 2024-10-25T00:00:00.000+02:00 |
-| `document.divisions.division[].cycleDeVie.chrono.datePublication` | texte/vide | 79 | 2024-11-18T00:00:00.000+01:00 · 2024-11-13T00:00:00.000+01:00 |
-| `document.divisions.division[].cycleDeVie.chrono.datePublicationWeb` | texte/vide | 79 | 2024-11-13T18:00:00.000+01:00 · 2024-11-13T20:40:00.000+01:00 |
-| `document.divisions.division[].denominationStructurelle` | texte | 79 | Tome I · Tome II |
-| `document.divisions.division[].titres.titrePrincipal` | texte | 79 | Administration générale et territoriale de l'État : Administration générale et territor... · Sécurités : Sécurité |
-| `document.divisions.division[].titres.titrePrincipalCourt` | texte | 79 | Administration générale et territoriale de l'État : Administration générale et territor... · Sécurités : Sécurité |
-| `document.divisions.division[].divisions` | vide | 79 |  |
-| `document.divisions.division[].dossierRef` | texte | 79 | DLR5L17N50198 · DLR5L17N52428 |
-| `document.divisions.division[].redacteur` | vide | 79 |  |
-| `document.divisions.division[].classification.famille` | vide | 79 |  |
-| `document.divisions.division[].classification.type.code` | texte | 79 | AVIS · RAPP |
-| `document.divisions.division[].classification.type.libelle` | texte | 79 | Avis · Rapport |
-| `document.divisions.division[].classification.sousType` | vide | 61 |  |
-| `document.divisions.division[].classification.statutAdoption` | texte/vide | 79 | ADOPTCOM |
-| `document.divisions.division[].auteurs.auteur[]` | liste | 79 | de 2 a 10 entrees |
-| `document.divisions.division[].auteurs.auteur[].acteur.acteurRef` | texte | 155 | PA267780 · PA718784 |
-| `document.divisions.division[].auteurs.auteur[].acteur.qualite` | texte | 155 | rapporteur pour avis · rapporteur |
-| `document.divisions.division[].auteurs.auteur[].organe.organeRef` | texte | 79 | PO59051 · PO419865 |
+| `document.divisions.division[]` | liste | 19 | de 2 a 10 entrees |
+| `document.divisions.division[].@xsi:type` | texte | 77 | texteLoi_Type · rapportParlementaire_Type |
+| `document.divisions.division[].uid` | texte | 77 | AVISANR5L17B0471-tI · AVISANR5L17B0471-tII |
+| `document.divisions.division[].legislature` | texte | 77 | 17 · 15 |
+| `document.divisions.division[].cycleDeVie.chrono.dateCreation` | texte | 77 | 2024-10-23T00:00:00.000+02:00 · 2024-10-25T00:00:00.000+02:00 |
+| `document.divisions.division[].cycleDeVie.chrono.dateDepot` | texte | 77 | 2024-10-23T00:00:00.000+02:00 · 2024-10-25T00:00:00.000+02:00 |
+| `document.divisions.division[].cycleDeVie.chrono.datePublication` | texte/vide | 77 | 2024-11-18T00:00:00.000+01:00 · 2024-11-13T00:00:00.000+01:00 |
+| `document.divisions.division[].cycleDeVie.chrono.datePublicationWeb` | texte/vide | 77 | 2024-11-13T18:00:00.000+01:00 · 2024-11-13T20:40:00.000+01:00 |
+| `document.divisions.division[].denominationStructurelle` | texte | 77 | Tome I · Tome II |
+| `document.divisions.division[].titres.titrePrincipal` | texte | 77 | Administration générale et territoriale de l'État : Administration générale et territor... · Sécurités : Sécurité |
+| `document.divisions.division[].titres.titrePrincipalCourt` | texte | 77 | Administration générale et territoriale de l'État : Administration générale et territor... · Sécurités : Sécurité |
+| `document.divisions.division[].divisions` | vide | 75 |  |
+| `document.divisions.division[].dossierRef` | texte | 77 | DLR5L17N50198 · DLR5L17N52428 |
+| `document.divisions.division[].redacteur` | vide | 77 |  |
+| `document.divisions.division[].classification.famille` | vide | 77 |  |
+| `document.divisions.division[].classification.type.code` | texte | 77 | AVIS · RAPP |
+| `document.divisions.division[].classification.type.libelle` | texte | 77 | Avis · Rapport |
+| `document.divisions.division[].classification.sousType` | vide | 55 |  |
+| `document.divisions.division[].classification.statutAdoption` | texte/vide | 77 | ADOPTCOM |
+| `document.divisions.division[].auteurs.auteur[]` | liste | 77 | de 2 a 10 entrees |
+| `document.divisions.division[].auteurs.auteur[].acteur.acteurRef` | texte | 118 | PA267780 · PA718784 |
+| `document.divisions.division[].auteurs.auteur[].acteur.qualite` | texte | 118 | rapporteur pour avis · rapporteur |
+| `document.divisions.division[].auteurs.auteur[].organe.organeRef` | texte | 77 | PO59051 · PO419865 |
 | `document.divisions.division[].organesReferents.organeRef` | texte | 39 | PO59048 |
-| `document.divisions.division[].correction` | vide | 70 |  |
-| `document.divisions.division[].notice.numNotice` | texte | 79 | 471 · 486 |
-| `document.divisions.division[].notice.formule` | texte | 79 | sur le projet de loi de finances pour 2025 (n°324). · sur le projet de loi de finances pour 2026 (n°1906). |
-| `document.divisions.division[].notice.adoptionConforme` | texte | 79 | false |
-| `document.divisions.division[].indexation` | vide | 79 |  |
-| `document.divisions.division[].imprimerie.ISSN` | vide | 79 |  |
-| `document.divisions.division[].imprimerie.ISBN` | vide | 79 |  |
-| `document.divisions.division[].imprimerie.DIAN` | texte/vide | 79 | 117/2025 · 53 / 2026 |
-| `document.divisions.division[].imprimerie.nbPage` | texte/vide | 79 | 0 · 84 |
-| `document.divisions.division[].imprimerie.prix` | texte/vide | 79 | 1.5 · 2.0 |
+| `document.divisions.division[].correction` | vide | 77 |  |
+| `document.divisions.division[].notice.numNotice` | texte | 77 | 471 · 486 |
+| `document.divisions.division[].notice.formule` | texte | 77 | sur le projet de loi de finances pour 2025 (n°324). · sur le projet de loi de finances pour 2026 (n°1906). |
+| `document.divisions.division[].notice.adoptionConforme` | texte | 77 | false |
+| `document.divisions.division[].indexation` | vide | 77 |  |
+| `document.divisions.division[].imprimerie.ISSN` | vide | 77 |  |
+| `document.divisions.division[].imprimerie.ISBN` | vide | 77 |  |
+| `document.divisions.division[].imprimerie.DIAN` | texte/vide | 77 | 21/2025 · 22/2025 |
+| `document.divisions.division[].imprimerie.nbPage` | texte/vide | 77 | 0 |
+| `document.divisions.division[].imprimerie.prix` | texte/vide | 77 | 1.5 · 2.0 |
 | `document.divisions.division[].coSignataires` | vide | 41 |  |
 | `document.divisions.division[].depotAmendements` | vide | 41 |  |
-| `document.indexation.themes.@niveau` | texte | 19 | 1 |
-| `document.indexation.themes.theme.libelleTheme` | texte | 19 | LOIS DE FINANCES RECTIFICATIVES · SANTE PUBLIQUE |
-| `document.organesReferents` | vide | 291 |  |
-| `document.coSignataires.coSignataire[]` | liste | 603 | de 2 a 271 entrees |
-| `document.coSignataires.coSignataire[].acteur.acteurRef` | texte | 20638 | PA305 · PA885 |
-| `document.coSignataires.coSignataire[].dateCosignature` | texte | 20639 | 1999-12-23+01:00 · 2010-05-03+02:00 |
-| `document.coSignataires.coSignataire[].dateRetraitCosignature` | texte/vide | 20639 | 2025-02-17+01:00 · 2025-03-13+01:00 |
-| `document.coSignataires.coSignataire[].edite` | texte | 20639 | false · true |
-| `document.depotAmendements.amendementsSeance.amendable` | texte | 2019 | false · true |
-| `document.depotAmendements.amendementsSeance.dateLimiteDepot` | vide | 2019 |  |
+| `document.indexation.themes.@niveau` | texte | 15 | 1 |
+| `document.indexation.themes.theme.libelleTheme` | texte | 15 | LOIS DE FINANCES RECTIFICATIVES · SANTE PUBLIQUE |
+| `document.organesReferents` | vide | 299 |  |
+| `document.coSignataires.coSignataire[]` | liste | 601 | de 2 a 271 entrees |
+| `document.coSignataires.coSignataire[].acteur.acteurRef` | texte | 20708 | PA305 · PA885 |
+| `document.coSignataires.coSignataire[].dateCosignature` | texte | 20711 | 1999-12-23+01:00 · 2010-05-03+02:00 |
+| `document.coSignataires.coSignataire[].dateRetraitCosignature` | texte/vide | 20711 | 2025-02-17+01:00 · 2025-03-13+01:00 |
+| `document.coSignataires.coSignataire[].edite` | texte | 20711 | false · true |
+| `document.depotAmendements.amendementsSeance.amendable` | texte | 2021 | false · true |
+| `document.depotAmendements.amendementsSeance.dateLimiteDepot` | vide | 2021 |  |
 | `document.depotAmendements.amendementsCommission.commission.organeRef` | texte | 1163 | PO59051 · PO59048 |
 | `document.depotAmendements.amendementsCommission.commission.amendable` | texte | 1163 | true |
 | `document.depotAmendements.amendementsCommission.commission.dateLimiteDepot` | vide | 1163 |  |
-| `document.correction.typeCorrection` | texte | 31 | Rectifié |
-| `document.correction.niveauCorrection` | texte | 31 | 1 · 2 |
-| `document.coSignataires.coSignataire.acteur.acteurRef` | texte | 46 | PA330008 · PA795330 |
-| `document.coSignataires.coSignataire.dateCosignature` | texte | 49 | 2024-11-19+01:00 · 2024-10-29+01:00 |
-| `document.coSignataires.coSignataire.dateRetraitCosignature` | vide | 49 |  |
-| `document.coSignataires.coSignataire.edite` | texte | 49 | false · true |
+| `document.correction.typeCorrection` | texte | 23 | Rectifié |
+| `document.correction.niveauCorrection` | texte | 23 | 1 |
+| `document.coSignataires.coSignataire.acteur.acteurRef` | texte | 47 | PA330008 · PA795330 |
+| `document.coSignataires.coSignataire.dateCosignature` | texte | 50 | 2024-11-19+01:00 · 2024-10-29+01:00 |
+| `document.coSignataires.coSignataire.dateRetraitCosignature` | vide | 50 |  |
+| `document.coSignataires.coSignataire.edite` | texte | 50 | false · true |
 | `document.depotAmendements.amendementsCommission.commission[]` | liste | 30 | de 2 a 8 entrees |
 | `document.depotAmendements.amendementsCommission.commission[].organeRef` | texte | 76 | PO419865 · PO419610 |
 | `document.depotAmendements.amendementsCommission.commission[].amendable` | texte | 76 | true |
 | `document.depotAmendements.amendementsCommission.commission[].dateLimiteDepot` | vide | 76 |  |
-| `document.coSignataires.coSignataire[].organe.organeRef` | texte | 1 | PO77714 |
-| `document.coSignataires.coSignataire[].organe.etApparentes` | texte | 1 | false |
-| `document.coSignataires.coSignataire.organe.organeRef` | texte | 3 | PO77710 |
-| `document.coSignataires.coSignataire.organe.etApparentes` | texte | 3 | true · false |
+| `document.coSignataires.coSignataire.organe.organeRef` | texte | 3 | PO77710 · PO77707 |
+| `document.coSignataires.coSignataire.organe.etApparentes` | texte | 3 | false |
+| `document.coSignataires.coSignataire[].organe.organeRef` | texte | 3 | PO309463 · PO77710 |
+| `document.coSignataires.coSignataire[].organe.etApparentes` | texte | 3 | false · true |
 | `document.metadatas.dateSuppression` | texte | 1 | 2026-11-11T06:06:39.511217 |
 | `document.rapportPublie` | texte | 384 | false · true |
-| `document.divisions.division.@xsi:type` | texte | 94 | rapportParlementaire_Type · texteLoi_Type |
-| `document.divisions.division.uid` | texte | 94 | RAPPANR5L15B3881-COMPA · RAPPANR5L15B4994-COMPA |
-| `document.divisions.division.legislature` | texte | 94 | 15 · 16 |
-| `document.divisions.division.cycleDeVie.chrono.dateCreation` | texte | 94 | 2021-02-11T00:00:00.000+01:00 · 2022-02-03T00:00:00.000+01:00 |
-| `document.divisions.division.cycleDeVie.chrono.dateDepot` | texte | 94 | 2021-02-11T00:00:00.000+01:00 · 2022-02-03T00:00:00.000+01:00 |
-| `document.divisions.division.cycleDeVie.chrono.datePublication` | texte/vide | 94 | 2024-03-08T00:00:00.000+01:00 · 2024-12-04T00:00:00.000+01:00 |
-| `document.divisions.division.cycleDeVie.chrono.datePublicationWeb` | texte | 94 | 2021-02-11T14:16:00.000+01:00 · 2022-02-03T20:50:00.000+01:00 |
-| `document.divisions.division.denominationStructurelle` | texte | 94 | Annexe Texte comparatif COMPA · Tome 2 |
-| `document.divisions.division.titres.titrePrincipal` | texte | 94 | Texte comparatif · Comptes rendus des auditions |
-| `document.divisions.division.titres.titrePrincipalCourt` | texte | 94 | Texte comparatif · Création de l’homicide routier et visant à lutter contre la violence routière |
-| `document.divisions.division.divisions` | vide | 94 |  |
-| `document.divisions.division.dossierRef` | texte | 94 | DLR5L15N41215 · DLR5L15N41449 |
-| `document.divisions.division.redacteur` | vide | 94 |  |
-| `document.divisions.division.classification.famille` | vide | 94 |  |
-| `document.divisions.division.classification.type.code` | texte | 94 | RAPP · RINF |
-| `document.divisions.division.classification.type.libelle` | texte | 94 | Rapport · Rapport d'information |
-| `document.divisions.division.classification.sousType.code` | texte | 93 | COMPA · ENQU |
-| `document.divisions.division.classification.sousType.libelle` | texte | 92 | Texte comparatif · d'enquête |
-| `document.divisions.division.classification.statutAdoption` | texte/vide | 94 | ADOPTCOM |
-| `document.divisions.division.auteurs.auteur[]` | liste | 94 | de 2 a 5 entrees |
-| `document.divisions.division.auteurs.auteur[].acteur.acteurRef` | texte | 115 | PA720170 · PA720480 |
-| `document.divisions.division.auteurs.auteur[].acteur.qualite` | texte | 115 | rapporteur |
-| `document.divisions.division.auteurs.auteur[].organe.organeRef` | texte | 94 | PO420120 · PO419604 |
-| `document.divisions.division.correction` | vide | 91 |  |
-| `document.divisions.division.notice.numNotice` | texte | 94 | 3881 · 4994 |
-| `document.divisions.division.notice.formule` | texte | 94 | sur la proposition de loi, après engagement de la procédure accélérée, de Mmes Charlott... · , en nouvelle lecture, sur la proposition de loi, modifiée par le Sénat, visant à démoc... |
-| `document.divisions.division.notice.adoptionConforme` | texte | 94 | false |
-| `document.divisions.division.indexation` | vide | 94 |  |
-| `document.divisions.division.imprimerie.ISSN` | vide | 94 |  |
-| `document.divisions.division.imprimerie.ISBN` | vide | 94 |  |
-| `document.divisions.division.imprimerie.DIAN` | vide | 94 |  |
-| `document.divisions.division.imprimerie.nbPage` | texte | 94 | 0 |
-| `document.divisions.division.imprimerie.prix` | texte/vide | 94 | 0.75 · 1.0 |
-| `document.divisions.division.rapportPublie` | texte | 93 | false |
-| `document.divisions.division[].classification.sousType.code` | texte | 18 | COMPA · ENQU |
-| `document.divisions.division[].classification.sousType.libelle` | texte | 18 | Texte comparatif · d'enquête |
-| `document.divisions.division[].correction.typeCorrection` | texte | 9 | Rectifié |
-| `document.divisions.division[].correction.niveauCorrection` | texte | 9 | 1 · 2 |
-| `document.divisions.division[].rapportPublie` | texte | 38 | false · true |
-| `document.divisions.division.correction.typeCorrection` | texte | 3 | Rectifié |
-| `document.divisions.division.correction.niveauCorrection` | texte | 3 | 1 · 2 |
-| `document.divisions.division.classification.sousType.libelleEdition` | texte | 1 | d'enquête |
-| `document.divisions.division[].classification.sousType.libelleEdition` | texte | 10 | d'enquête |
+| `document.divisions.division[].classification.sousType.code` | texte | 22 | COMPA · ENQU |
+| `document.divisions.division[].classification.sousType.libelle` | texte | 22 | Texte comparatif · d'enquête |
+| `document.divisions.division[].rapportPublie` | texte | 36 | false · true |
+| `document.divisions.division.@xsi:type` | texte | 90 | rapportParlementaire_Type · texteLoi_Type |
+| `document.divisions.division.uid` | texte | 90 | RAPPANR5L15B4966-COMPA · RAPPANR5L16B0862-COMPA |
+| `document.divisions.division.legislature` | texte | 90 | 15 · 16 |
+| `document.divisions.division.cycleDeVie.chrono.dateCreation` | texte | 90 | 2022-01-26T00:00:00.000+01:00 · 2023-02-15T00:00:00.000+01:00 |
+| `document.divisions.division.cycleDeVie.chrono.dateDepot` | texte | 90 | 2022-01-26T00:00:00.000+01:00 · 2023-02-15T00:00:00.000+01:00 |
+| `document.divisions.division.cycleDeVie.chrono.datePublication` | texte/vide | 90 | 2024-11-28T00:00:00.000+01:00 · 2024-12-02T00:00:00.000+01:00 |
+| `document.divisions.division.cycleDeVie.chrono.datePublicationWeb` | texte | 90 | 2022-01-26T16:05:00.000+01:00 · 2023-02-17T13:30:00.000+01:00 |
+| `document.divisions.division.denominationStructurelle` | texte | 90 | Annexe Texte comparatif COMPA · Annexe 1367 |
+| `document.divisions.division.titres.titrePrincipal` | texte | 90 | Texte comparatif · Texte de la commission |
+| `document.divisions.division.titres.titrePrincipalCourt` | texte | 90 | Texte comparatif · permettre une gestion différenciée des compétences « eau » et « assainissement » |
+| `document.divisions.division.divisions` | vide | 90 |  |
+| `document.divisions.division.dossierRef` | texte | 90 | DLR5L15N43846 · DLR5L16N46888 |
+| `document.divisions.division.redacteur` | vide | 90 |  |
+| `document.divisions.division.classification.famille` | vide | 90 |  |
+| `document.divisions.division.classification.type.code` | texte | 90 | RAPP · RINF |
+| `document.divisions.division.classification.type.libelle` | texte | 90 | Rapport · Rapport d'information |
+| `document.divisions.division.classification.sousType.code` | texte | 89 | COMPA · IMPACTLOIS |
+| `document.divisions.division.classification.sousType.libelle` | texte | 88 | Texte comparatif |
+| `document.divisions.division.classification.statutAdoption` | texte/vide | 90 | ADOPTCOM |
+| `document.divisions.division.auteurs.auteur[]` | liste | 90 | de 2 a 6 entrees |
+| `document.divisions.division.auteurs.auteur[].acteur.acteurRef` | texte | 112 | PA719874 · PA720704 |
+| `document.divisions.division.auteurs.auteur[].acteur.qualite` | texte | 112 | rapporteur |
+| `document.divisions.division.auteurs.auteur[].organe.organeRef` | texte | 90 | PO59051 · PO420120 |
+| `document.divisions.division.correction` | vide | 88 |  |
+| `document.divisions.division.notice.numNotice` | texte | 90 | 4966 · 862 |
+| `document.divisions.division.notice.formule` | texte | 90 | sur la proposition de loi de Mme Élodie Jacquier-Laforge et plusieurs de ses collègues ... · sur la proposition de loi de Mme Laurence Vichnievsky et M. Philippe Gosselin relative ... |
+| `document.divisions.division.notice.adoptionConforme` | texte | 90 | false |
+| `document.divisions.division.indexation` | vide | 90 |  |
+| `document.divisions.division.imprimerie.ISSN` | vide | 90 |  |
+| `document.divisions.division.imprimerie.ISBN` | vide | 90 |  |
+| `document.divisions.division.imprimerie.DIAN` | vide | 90 |  |
+| `document.divisions.division.imprimerie.nbPage` | texte | 90 | 0 · 8 |
+| `document.divisions.division.imprimerie.prix` | texte/vide | 90 | 0.75 · 15.0 |
+| `document.divisions.division.rapportPublie` | texte | 89 | false |
+| `document.divisions.division[].classification.sousType.libelleEdition` | texte | 15 | d'enquête |
 | `document.divisions.division.classification.sousType` | vide | 1 |  |
+| `document.divisions.division.correction.typeCorrection` | texte | 2 | Rectifié |
+| `document.divisions.division.correction.niveauCorrection` | texte | 2 | 1 |
+| `document.divisions.division[].divisions.division[]` | liste | 2 | de 2 a 47 entrees |
+| `document.divisions.division[].divisions.division[].@xsi:type` | texte | 49 | rapportParlementaire_Type |
+| `document.divisions.division[].divisions.division[].uid` | texte | 49 | RAPPANR5L17B1996-tII-v1 · RAPPANR5L17B1996-tII-v2 |
+| `document.divisions.division[].divisions.division[].legislature` | texte | 49 | 17 |
+| `document.divisions.division[].divisions.division[].cycleDeVie.chrono.dateCreation` | texte | 49 | 2025-10-23T00:00:00.000+02:00 |
+| `document.divisions.division[].divisions.division[].cycleDeVie.chrono.dateDepot` | texte | 49 | 2025-10-23T00:00:00.000+02:00 |
+| `document.divisions.division[].divisions.division[].cycleDeVie.chrono.datePublication` | texte/vide | 49 | 2025-10-26T00:00:00.000+02:00 · 2025-11-07T00:00:00.000+01:00 |
+| `document.divisions.division[].divisions.division[].cycleDeVie.chrono.datePublicationWeb` | texte | 49 | 2025-10-24T02:40:00.000+02:00 · 2025-11-05T17:30:00.000+01:00 |
+| `document.divisions.division[].divisions.division[].denominationStructurelle` | texte | 49 | Volume 1 · Volume 2 |
+| `document.divisions.division[].divisions.division[].titres.titrePrincipal` | texte | 49 | Commentaires d'articles · Examen en commission |
+| `document.divisions.division[].divisions.division[].titres.titrePrincipalCourt` | texte | 49 | Projet de loi de finances pour 2026 |
+| `document.divisions.division[].divisions.division[].divisions` | vide | 49 |  |
+| `document.divisions.division[].divisions.division[].dossierRef` | texte | 49 | DLR5L17N52428 |
+| `document.divisions.division[].divisions.division[].redacteur` | vide | 49 |  |
+| `document.divisions.division[].divisions.division[].classification.famille` | vide | 49 |  |
+| `document.divisions.division[].divisions.division[].classification.type.code` | texte | 49 | RAPP |
+| `document.divisions.division[].divisions.division[].classification.type.libelle` | texte | 49 | Rapport |
+| `document.divisions.division[].divisions.division[].classification.sousType` | vide | 49 |  |
+| `document.divisions.division[].divisions.division[].classification.statutAdoption` | vide | 49 |  |
+| `document.divisions.division[].divisions.division[].auteurs.auteur[]` | liste | 49 | de 2 a 3 entrees |
+| `document.divisions.division[].divisions.division[].auteurs.auteur[].acteur.acteurRef` | texte | 56 | PA346782 · PA795454 |
+| `document.divisions.division[].divisions.division[].auteurs.auteur[].acteur.qualite` | texte | 56 | rapporteur général · rapporteur spécial |
+| `document.divisions.division[].divisions.division[].auteurs.auteur[].organe.organeRef` | texte | 49 | PO59048 |
+| `document.divisions.division[].divisions.division[].correction` | vide | 49 |  |
+| `document.divisions.division[].divisions.division[].notice.numNotice` | texte | 49 | 1996 |
+| `document.divisions.division[].divisions.division[].notice.formule` | texte | 49 | sur le projet de loi de finances pour 2026 (n°1906). |
+| `document.divisions.division[].divisions.division[].notice.adoptionConforme` | texte | 49 | false |
+| `document.divisions.division[].divisions.division[].indexation` | vide | 49 |  |
+| `document.divisions.division[].divisions.division[].imprimerie.ISSN` | vide | 49 |  |
+| `document.divisions.division[].divisions.division[].imprimerie.ISBN` | vide | 49 |  |
+| `document.divisions.division[].divisions.division[].imprimerie.DIAN` | vide | 49 |  |
+| `document.divisions.division[].divisions.division[].imprimerie.nbPage` | texte | 49 | 0 |
+| `document.divisions.division[].divisions.division[].imprimerie.prix` | texte/vide | 49 | 11.75 · 1.5 |
+| `document.divisions.division[].divisions.division[].rapportPublie` | texte | 49 | false |
 | `document.organesReferents.organeRef[]` | liste/texte | 99 | 2 entree(s) · PO59047 · PO849911 |
 | `document.divisions.division.organesReferents.organeRef` | texte | 1 | PO420120 |
 | `document.divisions.division.coSignataires` | vide | 1 |  |
 | `document.divisions.division.depotAmendements` | vide | 1 |  |
 | `document.divisions.division[].organesReferents` | vide | 2 |  |
-| `dossierParlementaire.@xmlns` | texte | 447 | http://schemas.assemblee-nationale.fr/referentiel |
-| `dossierParlementaire.@xmlns:xsi` | texte | 447 | http://www.w3.org/2001/XMLSchema-instance |
-| `dossierParlementaire.@xsi:type` | texte | 447 | DossierLegislatif_Type · DossierResolutionAN |
-| `dossierParlementaire.uid` | texte | 447 | DLR5L11N19503 · DLR5L11N19541 |
-| `dossierParlementaire.legislature` | texte | 447 | 11 · 12 |
-| `dossierParlementaire.titreDossier.titre` | texte | 447 | Droit de vote et éligibilité des étrangers aux élections · Contrôle sur la transposition des directives communautaires |
-| `dossierParlementaire.titreDossier.titreChemin` | texte/vide | 447 | 992063 · 0101830001 |
-| `dossierParlementaire.titreDossier.senatChemin` | texte/vide | 447 | http://www.senat.fr/dossier-legislatif/ppl99-329.html · http://www.senat.fr/dossier-legislatif/ppl00-183.html |
-| `dossierParlementaire.procedureParlementaire.code` | texte | 447 | 7 · 2 |
-| `dossierParlementaire.procedureParlementaire.libelle` | texte | 447 | Projet ou proposition de loi constitutionnelle · Proposition de loi ordinaire |
-| `dossierParlementaire.initiateur.acteurs.acteur.acteurRef` | texte | 374 | PA294 · PA1597 |
-| `dossierParlementaire.initiateur.acteurs.acteur.mandatRef` | texte | 374 | PM58570 · PM88798 |
+| `dossierParlementaire.@xmlns` | texte | 445 | http://schemas.assemblee-nationale.fr/referentiel |
+| `dossierParlementaire.@xmlns:xsi` | texte | 445 | http://www.w3.org/2001/XMLSchema-instance |
+| `dossierParlementaire.@xsi:type` | texte | 445 | DossierLegislatif_Type · DossierResolutionAN |
+| `dossierParlementaire.uid` | texte | 445 | DLR5L11N19503 · DLR5L11N19541 |
+| `dossierParlementaire.legislature` | texte | 445 | 11 · 12 |
+| `dossierParlementaire.titreDossier.titre` | texte | 445 | Droit de vote et éligibilité des étrangers aux élections · Contrôle sur la transposition des directives communautaires |
+| `dossierParlementaire.titreDossier.titreChemin` | texte/vide | 445 | 992063 · 0101830001 |
+| `dossierParlementaire.titreDossier.senatChemin` | texte/vide | 445 | http://www.senat.fr/dossier-legislatif/ppl99-329.html · http://www.senat.fr/dossier-legislatif/ppl00-183.html |
+| `dossierParlementaire.procedureParlementaire.code` | texte | 445 | 7 · 2 |
+| `dossierParlementaire.procedureParlementaire.libelle` | texte | 445 | Projet ou proposition de loi constitutionnelle · Proposition de loi ordinaire |
+| `dossierParlementaire.initiateur.acteurs.acteur.acteurRef` | texte | 372 | PA294 · PA1597 |
+| `dossierParlementaire.initiateur.acteurs.acteur.mandatRef` | texte | 372 | PM58570 · PM88798 |
 | `dossierParlementaire.actesLegislatifs.acteLegislatif[]` | liste | 98 | de 2 a 8 entrees |
 | `dossierParlementaire.actesLegislatifs.acteLegislatif[].@xsi:type` | texte | 368 | Etape_Type |
 | `dossierParlementaire.actesLegislatifs.acteLegislatif[].uid` | texte | 368 | L11-AN1-19503 · L11-SN1-19503 |
@@ -264,7 +295,7 @@ une seule fois sont reprises a part, plus bas.
 | `dossierParlementaire.actesLegislatifs.acteLegislatif[].actesLegislatifs.acteLegislatif[].actesLegislatifs.acteLegislatif.actesLegislatifs.acteLegislatif.organeRef` | texte | 174 | PO59051 · PO59048 |
 | `dossierParlementaire.actesLegislatifs.acteLegislatif[].actesLegislatifs.acteLegislatif[].actesLegislatifs.acteLegislatif.actesLegislatifs.acteLegislatif.dateActe` | texte | 174 | 2011-12-09T00:00:00.000+01:00 · 2012-07-02T00:00:00.000+02:00 |
 | `dossierParlementaire.actesLegislatifs.acteLegislatif[].actesLegislatifs.acteLegislatif[].actesLegislatifs.acteLegislatif.actesLegislatifs.acteLegislatif.actesLegislatifs` | vide | 174 |  |
-| `dossierParlementaire.fusionDossier` | vide | 446 |  |
+| `dossierParlementaire.fusionDossier` | vide | 444 |  |
 | `dossierParlementaire.initiateur.organes.organe.organeRef.uid` | texte | 134 | PO78718 · PO847969 |
 | `dossierParlementaire.actesLegislatifs.acteLegislatif[].actesLegislatifs.acteLegislatif[].actesLegislatifs.acteLegislatif.actesLegislatifs` | vide | 47 |  |
 | `dossierParlementaire.actesLegislatifs.acteLegislatif[].actesLegislatifs.acteLegislatif[].actesLegislatifs.acteLegislatif.statutConclusion.fam_code` | texte | 44 | TSORTF03 · TSORTF01 |
@@ -350,30 +381,30 @@ une seule fois sont reprises a part, plus bas.
 | `dossierParlementaire.actesLegislatifs.acteLegislatif[].actesLegislatifs.acteLegislatif[].anneeDecision` | texte | 7 | 2023 · 2026 |
 | `dossierParlementaire.actesLegislatifs.acteLegislatif[].actesLegislatifs.acteLegislatif.texteAssocie` | texte | 1 | RINFANR5L17B1890 |
 | `dossierParlementaire.actesLegislatifs.acteLegislatif[].actesLegislatifs.acteLegislatif.texteAdopte` | vide | 1 |  |
-| `dossierParlementaire.actesLegislatifs.acteLegislatif.@xsi:type` | texte | 349 | Etape_Type |
-| `dossierParlementaire.actesLegislatifs.acteLegislatif.uid` | texte | 349 | L16-SN1-50006 · L16-SN1-50095 |
-| `dossierParlementaire.actesLegislatifs.acteLegislatif.codeActe` | texte | 349 | SN1 · AN21 |
-| `dossierParlementaire.actesLegislatifs.acteLegislatif.libelleActe.nomCanonique` | texte | 349 | 1ère lecture (1ère assemblée saisie) · Débat |
-| `dossierParlementaire.actesLegislatifs.acteLegislatif.libelleActe.libelleCourt` | texte | 266 | 1ère lecture · Débat |
-| `dossierParlementaire.actesLegislatifs.acteLegislatif.organeRef` | texte | 349 | PO78718 · PO838901 |
-| `dossierParlementaire.actesLegislatifs.acteLegislatif.dateActe` | vide | 349 |  |
-| `dossierParlementaire.actesLegislatifs.acteLegislatif.actesLegislatifs.acteLegislatif[]` | liste | 303 | de 2 a 4 entrees |
-| `dossierParlementaire.actesLegislatifs.acteLegislatif.actesLegislatifs.acteLegislatif[].@xsi:type` | texte | 631 | DepotInitiative_Type · Etape_Type |
-| `dossierParlementaire.actesLegislatifs.acteLegislatif.actesLegislatifs.acteLegislatif[].uid` | texte | 631 | L16-VD219797DI · L16-SN1-COM-50006 |
-| `dossierParlementaire.actesLegislatifs.acteLegislatif.actesLegislatifs.acteLegislatif[].codeActe` | texte | 631 | SN1-DEPOT · SN1-COM |
-| `dossierParlementaire.actesLegislatifs.acteLegislatif.actesLegislatifs.acteLegislatif[].libelleActe.nomCanonique` | texte | 631 | 1er dépôt d'une initiative. · Travaux des commissions |
-| `dossierParlementaire.actesLegislatifs.acteLegislatif.actesLegislatifs.acteLegislatif[].libelleActe.libelleCourt` | texte | 631 | 1er dépôt d'une initiative. · Travaux des commissions |
-| `dossierParlementaire.actesLegislatifs.acteLegislatif.actesLegislatifs.acteLegislatif[].organeRef` | texte | 631 | PO78718 · PO838901 |
-| `dossierParlementaire.actesLegislatifs.acteLegislatif.actesLegislatifs.acteLegislatif[].dateActe` | texte/vide | 631 | 2024-05-22T00:00:00.000+02:00 · 2024-06-06T00:00:00.000+02:00 |
-| `dossierParlementaire.actesLegislatifs.acteLegislatif.actesLegislatifs.acteLegislatif[].actesLegislatifs` | vide | 314 |  |
-| `dossierParlementaire.actesLegislatifs.acteLegislatif.actesLegislatifs.acteLegislatif[].texteAssocie` | texte | 316 | PIONSNR5S419B0628 · PIONSNR5S419B0682 |
-| `dossierParlementaire.actesLegislatifs.acteLegislatif.actesLegislatifs.acteLegislatif[].actesLegislatifs.acteLegislatif.@xsi:type` | texte | 299 | Etape_Type · DiscussionSeancePublique_Type |
-| `dossierParlementaire.actesLegislatifs.acteLegislatif.actesLegislatifs.acteLegislatif[].actesLegislatifs.acteLegislatif.uid` | texte | 299 | L16-VD219798CF · L16-VD220118CF |
-| `dossierParlementaire.actesLegislatifs.acteLegislatif.actesLegislatifs.acteLegislatif[].actesLegislatifs.acteLegislatif.codeActe` | texte | 299 | SN1-COM-FOND · AN1-COM-FOND |
-| `dossierParlementaire.actesLegislatifs.acteLegislatif.actesLegislatifs.acteLegislatif[].actesLegislatifs.acteLegislatif.libelleActe.nomCanonique` | texte | 299 | Travaux de la commission saisie au fond · Discussion en séance publique |
-| `dossierParlementaire.actesLegislatifs.acteLegislatif.actesLegislatifs.acteLegislatif[].actesLegislatifs.acteLegislatif.libelleActe.libelleCourt` | texte | 299 | Travaux de la commission saisie au fond · Discussion en séance publique |
-| `dossierParlementaire.actesLegislatifs.acteLegislatif.actesLegislatifs.acteLegislatif[].actesLegislatifs.acteLegislatif.organeRef` | texte | 299 | PO211494 · PO516753 |
-| `dossierParlementaire.actesLegislatifs.acteLegislatif.actesLegislatifs.acteLegislatif[].actesLegislatifs.acteLegislatif.dateActe` | texte/vide | 299 | 2025-01-23T00:00:00.000+01:00 · 2025-01-18T00:00:00.000+01:00 |
+| `dossierParlementaire.actesLegislatifs.acteLegislatif.@xsi:type` | texte | 347 | Etape_Type |
+| `dossierParlementaire.actesLegislatifs.acteLegislatif.uid` | texte | 347 | L16-SN1-50006 · L16-SN1-50095 |
+| `dossierParlementaire.actesLegislatifs.acteLegislatif.codeActe` | texte | 347 | SN1 · AN21 |
+| `dossierParlementaire.actesLegislatifs.acteLegislatif.libelleActe.nomCanonique` | texte | 347 | 1ère lecture (1ère assemblée saisie) · Débat |
+| `dossierParlementaire.actesLegislatifs.acteLegislatif.libelleActe.libelleCourt` | texte | 264 | 1ère lecture · Débat |
+| `dossierParlementaire.actesLegislatifs.acteLegislatif.organeRef` | texte | 347 | PO78718 · PO838901 |
+| `dossierParlementaire.actesLegislatifs.acteLegislatif.dateActe` | vide | 347 |  |
+| `dossierParlementaire.actesLegislatifs.acteLegislatif.actesLegislatifs.acteLegislatif[]` | liste | 301 | de 2 a 4 entrees |
+| `dossierParlementaire.actesLegislatifs.acteLegislatif.actesLegislatifs.acteLegislatif[].@xsi:type` | texte | 627 | DepotInitiative_Type · Etape_Type |
+| `dossierParlementaire.actesLegislatifs.acteLegislatif.actesLegislatifs.acteLegislatif[].uid` | texte | 627 | L16-VD219797DI · L16-SN1-COM-50006 |
+| `dossierParlementaire.actesLegislatifs.acteLegislatif.actesLegislatifs.acteLegislatif[].codeActe` | texte | 627 | SN1-DEPOT · SN1-COM |
+| `dossierParlementaire.actesLegislatifs.acteLegislatif.actesLegislatifs.acteLegislatif[].libelleActe.nomCanonique` | texte | 627 | 1er dépôt d'une initiative. · Travaux des commissions |
+| `dossierParlementaire.actesLegislatifs.acteLegislatif.actesLegislatifs.acteLegislatif[].libelleActe.libelleCourt` | texte | 627 | 1er dépôt d'une initiative. · Travaux des commissions |
+| `dossierParlementaire.actesLegislatifs.acteLegislatif.actesLegislatifs.acteLegislatif[].organeRef` | texte | 627 | PO78718 · PO838901 |
+| `dossierParlementaire.actesLegislatifs.acteLegislatif.actesLegislatifs.acteLegislatif[].dateActe` | texte/vide | 627 | 2024-05-22T00:00:00.000+02:00 · 2024-06-06T00:00:00.000+02:00 |
+| `dossierParlementaire.actesLegislatifs.acteLegislatif.actesLegislatifs.acteLegislatif[].actesLegislatifs` | vide | 312 |  |
+| `dossierParlementaire.actesLegislatifs.acteLegislatif.actesLegislatifs.acteLegislatif[].texteAssocie` | texte | 314 | PIONSNR5S419B0628 · PIONSNR5S419B0682 |
+| `dossierParlementaire.actesLegislatifs.acteLegislatif.actesLegislatifs.acteLegislatif[].actesLegislatifs.acteLegislatif.@xsi:type` | texte | 297 | Etape_Type · DiscussionSeancePublique_Type |
+| `dossierParlementaire.actesLegislatifs.acteLegislatif.actesLegislatifs.acteLegislatif[].actesLegislatifs.acteLegislatif.uid` | texte | 297 | L16-VD219798CF · L16-VD220118CF |
+| `dossierParlementaire.actesLegislatifs.acteLegislatif.actesLegislatifs.acteLegislatif[].actesLegislatifs.acteLegislatif.codeActe` | texte | 297 | SN1-COM-FOND · AN1-COM-FOND |
+| `dossierParlementaire.actesLegislatifs.acteLegislatif.actesLegislatifs.acteLegislatif[].actesLegislatifs.acteLegislatif.libelleActe.nomCanonique` | texte | 297 | Travaux de la commission saisie au fond · Discussion en séance publique |
+| `dossierParlementaire.actesLegislatifs.acteLegislatif.actesLegislatifs.acteLegislatif[].actesLegislatifs.acteLegislatif.libelleActe.libelleCourt` | texte | 297 | Travaux de la commission saisie au fond · Discussion en séance publique |
+| `dossierParlementaire.actesLegislatifs.acteLegislatif.actesLegislatifs.acteLegislatif[].actesLegislatifs.acteLegislatif.organeRef` | texte | 297 | PO211494 · PO516753 |
+| `dossierParlementaire.actesLegislatifs.acteLegislatif.actesLegislatifs.acteLegislatif[].actesLegislatifs.acteLegislatif.dateActe` | texte/vide | 297 | 2025-01-23T00:00:00.000+01:00 · 2025-01-18T00:00:00.000+01:00 |
 | `dossierParlementaire.actesLegislatifs.acteLegislatif.actesLegislatifs.acteLegislatif[].actesLegislatifs.acteLegislatif.actesLegislatifs.acteLegislatif[]` | liste | 26 | de 2 a 6 entrees |
 | `dossierParlementaire.actesLegislatifs.acteLegislatif.actesLegislatifs.acteLegislatif[].actesLegislatifs.acteLegislatif.actesLegislatifs.acteLegislatif[].@xsi:type` | texte | 117 | SaisieComFond_Type · NominRapporteurs_Type |
 | `dossierParlementaire.actesLegislatifs.acteLegislatif.actesLegislatifs.acteLegislatif[].actesLegislatifs.acteLegislatif.actesLegislatifs.acteLegislatif[].uid` | texte | 117 | L16-VD219798CFS · L17-VD222065 |
@@ -398,14 +429,14 @@ une seule fois sont reprises a part, plus bas.
 | `dossierParlementaire.actesLegislatifs.acteLegislatif.actesLegislatifs.acteLegislatif.actesLegislatifs` | vide | 37 |  |
 | `dossierParlementaire.actesLegislatifs.acteLegislatif.actesLegislatifs.acteLegislatif.texteAssocie` | texte | 37 | ALCNANR5L17B0001 · PNREANR5L17B0171 |
 | `dossierParlementaire.actesLegislatifs.acteLegislatif.actesLegislatifs.acteLegislatif.texteAdopte` | vide | 16 |  |
-| `dossierParlementaire.actesLegislatifs.acteLegislatif.actesLegislatifs.acteLegislatif[].actesLegislatifs.acteLegislatif.actesLegislatifs.acteLegislatif.@xsi:type` | texte | 262 | SaisieComFond_Type · RenvoiPrealable_Type |
-| `dossierParlementaire.actesLegislatifs.acteLegislatif.actesLegislatifs.acteLegislatif[].actesLegislatifs.acteLegislatif.actesLegislatifs.acteLegislatif.uid` | texte | 262 | L17-VD220219CFS · L17-VD220229CFS |
-| `dossierParlementaire.actesLegislatifs.acteLegislatif.actesLegislatifs.acteLegislatif[].actesLegislatifs.acteLegislatif.actesLegislatifs.acteLegislatif.codeActe` | texte | 262 | SN1-COM-FOND-SAISIE · AN1-COM-FOND-SAISIE |
-| `dossierParlementaire.actesLegislatifs.acteLegislatif.actesLegislatifs.acteLegislatif[].actesLegislatifs.acteLegislatif.actesLegislatifs.acteLegislatif.libelleActe.nomCanonique` | texte | 262 | Renvoi en commission au fond · Renvoi préalable |
-| `dossierParlementaire.actesLegislatifs.acteLegislatif.actesLegislatifs.acteLegislatif[].actesLegislatifs.acteLegislatif.actesLegislatifs.acteLegislatif.libelleActe.libelleCourt` | texte | 262 | Renvoi en commission au fond · Renvoi préalable |
-| `dossierParlementaire.actesLegislatifs.acteLegislatif.actesLegislatifs.acteLegislatif[].actesLegislatifs.acteLegislatif.actesLegislatifs.acteLegislatif.organeRef` | texte | 262 | PO516753 · PO211495 |
-| `dossierParlementaire.actesLegislatifs.acteLegislatif.actesLegislatifs.acteLegislatif[].actesLegislatifs.acteLegislatif.actesLegislatifs.acteLegislatif.dateActe` | texte | 262 | 2024-07-03T00:00:00.000+02:00 · 2024-07-10T00:00:00.000+02:00 |
-| `dossierParlementaire.actesLegislatifs.acteLegislatif.actesLegislatifs.acteLegislatif[].actesLegislatifs.acteLegislatif.actesLegislatifs.acteLegislatif.actesLegislatifs` | vide | 262 |  |
+| `dossierParlementaire.actesLegislatifs.acteLegislatif.actesLegislatifs.acteLegislatif[].actesLegislatifs.acteLegislatif.actesLegislatifs.acteLegislatif.@xsi:type` | texte | 260 | SaisieComFond_Type · RenvoiPrealable_Type |
+| `dossierParlementaire.actesLegislatifs.acteLegislatif.actesLegislatifs.acteLegislatif[].actesLegislatifs.acteLegislatif.actesLegislatifs.acteLegislatif.uid` | texte | 260 | L17-VD220219CFS · L17-VD220229CFS |
+| `dossierParlementaire.actesLegislatifs.acteLegislatif.actesLegislatifs.acteLegislatif[].actesLegislatifs.acteLegislatif.actesLegislatifs.acteLegislatif.codeActe` | texte | 260 | SN1-COM-FOND-SAISIE · AN1-COM-FOND-SAISIE |
+| `dossierParlementaire.actesLegislatifs.acteLegislatif.actesLegislatifs.acteLegislatif[].actesLegislatifs.acteLegislatif.actesLegislatifs.acteLegislatif.libelleActe.nomCanonique` | texte | 260 | Renvoi en commission au fond · Renvoi préalable |
+| `dossierParlementaire.actesLegislatifs.acteLegislatif.actesLegislatifs.acteLegislatif[].actesLegislatifs.acteLegislatif.actesLegislatifs.acteLegislatif.libelleActe.libelleCourt` | texte | 260 | Renvoi en commission au fond · Renvoi préalable |
+| `dossierParlementaire.actesLegislatifs.acteLegislatif.actesLegislatifs.acteLegislatif[].actesLegislatifs.acteLegislatif.actesLegislatifs.acteLegislatif.organeRef` | texte | 260 | PO516753 · PO211495 |
+| `dossierParlementaire.actesLegislatifs.acteLegislatif.actesLegislatifs.acteLegislatif[].actesLegislatifs.acteLegislatif.actesLegislatifs.acteLegislatif.dateActe` | texte | 260 | 2024-07-03T00:00:00.000+02:00 · 2024-07-10T00:00:00.000+02:00 |
+| `dossierParlementaire.actesLegislatifs.acteLegislatif.actesLegislatifs.acteLegislatif[].actesLegislatifs.acteLegislatif.actesLegislatifs.acteLegislatif.actesLegislatifs` | vide | 260 |  |
 | `dossierParlementaire.actesLegislatifs.acteLegislatif.actesLegislatifs.acteLegislatif[].actesLegislatifs.acteLegislatif.actesLegislatifs.acteLegislatif[].reunionRef` | texte | 42 | RUANR5L17S2025IDC453371 · RUANR5L17S2025IDC453486 |
 | `dossierParlementaire.actesLegislatifs.acteLegislatif.actesLegislatifs.acteLegislatif[].actesLegislatifs.acteLegislatif.actesLegislatifs.acteLegislatif[].odjRef` | texte | 42 | RUANR5L17S2025IDC453371PT34355 · RUANR5L17S2025IDC453486PT34375 |
 | `dossierParlementaire.actesLegislatifs.acteLegislatif.actesLegislatifs.acteLegislatif[].actesLegislatifs.acteLegislatif[]` | liste | 18 | de 2 a 4 entrees |
@@ -507,10 +538,7 @@ C'est exactement ce que l'ancien tirage — les soixante premiers par ordre
 alphabetique — ratait par construction. Une ingestion doit les traiter
 comme facultatives.
 
-- `document.coSignataires.coSignataire[].organe.organeRef`
-- `document.coSignataires.coSignataire[].organe.etApparentes`
 - `document.metadatas.dateSuppression`
-- `document.divisions.division.classification.sousType.libelleEdition`
 - `document.divisions.division.classification.sousType`
 - `document.divisions.division.organesReferents.organeRef`
 - `document.divisions.division.coSignataires`
