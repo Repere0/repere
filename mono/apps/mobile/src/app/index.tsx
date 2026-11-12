@@ -31,6 +31,7 @@ import { groupeDe, useGroupes } from "../lib/groupes";
 import { VOTE } from "../ui/partage/donnees";
 import { SquelettesListe } from "../ui/squelette";
 import { Logo } from "../ui/logo";
+import { ChipsThemes } from "../ui/chips-themes";
 import { Ionicons } from "@expo/vector-icons";
 import { RappelElection } from "../ui/rappel-election";
 import { DatePublication } from "../ui/fraicheur";
@@ -543,6 +544,8 @@ export default function Accueil() {
                 <Text style={s.chercherTexte}>Chercher une commune</Text>
               </Pressable>
             ) : null}
+            {/* 12/11/2026 (porteur) : les thèmes en un geste ; la recherche s'ouvre filtrée. */}
+            <ChipsThemes />
             <View style={s.tuiles}>
               {ACCES.map(a => (
                 <Pressable key={a.texte} onPress={a.ouvrir} accessibilityRole="link" accessibilityLabel={a.etiquette}

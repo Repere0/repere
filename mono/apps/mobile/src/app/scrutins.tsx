@@ -12,9 +12,10 @@
 import { useEffect, useMemo, useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import { Stack, useLocalSearchParams } from "expo-router";
-import { SquelettesListe } from "../ui/squelette";
-import { resumeExtractif } from "../lib/resume-extractif";
 import { Ionicons } from "@expo/vector-icons";
+import { SquelettesListe } from "../ui/squelette";
+import { useCompteur } from "../ui/mouvement";
+import { resumeExtractif } from "../lib/resume-extractif";
 import {
   chargerQuestionsGouvernementIndex,
   chargerQuestionGouvernementLot,
@@ -94,6 +95,33 @@ function textePropre(value: string | null | undefined) {
     .replace(/[ \t]+\n/g, "\n")
     .replace(/\n{3,}/g, "\n\n")
     .trim();
+}
+
+
+const MOIS_FR = ["janvier", "février", "mars", "avril", "mai", "juin", "juillet", "août", "septembre", "octobre", "novembre", "décembre"];
+
+/* 12/11/2026 : le compteur des questions posées, en grand. Compté dans le relevé (un calcul Repère), pour le dernier
+   mois dont le relevé contient des questions ; le mois est écrit, et dit s'il n'est pas fini. Sans date, rien. */
+function CompteurQuestions({ questions, releve }: { questions: { d: string }[]; releve?: string }) {
+  const dates = questions.map(q => q.d).filter(d => /^\d{4}-\d{2}/.test(d)).sort();
+  const mois = dates.length ? dates[dates.length - 1].slice(0, 7) : null;
+  const n = mois ? dates.filter(d => d.startsWith(mois)).length : 0;
+  const affiche = useCompteur(n);
+  if (!mois || !n) return null;
+  const [a, m] = mois.split("-").map(Number);
+  const libelle = `${MOIS_FR[m - 1]} ${a}`;
+  const enCours = releve ? releve.slice(0, 7) === mois : false;
+  return (
+    <View accessible accessibilityLabel={`${n} question${n > 1 ? "s" : ""} posée${n > 1 ? "s" : ""} au Gouvernement en ${libelle}${enCours ? ", mois en cours" : ""}. Calcul Repère sur le relevé de l'Assemblée nationale.`}
+      style={{ flexDirection: "row", alignItems: "center", gap: PAS * 4, padding: PAS * 5, borderRadius: RAYON.carte, backgroundColor: couleurs.carte }}>
+      <Ionicons name="chatbubbles-outline" size={28} color={couleurs.encre} accessible={false} importantForAccessibility="no" />
+      <View style={{ flex: 1 }}>
+        <Text style={[TYPO.chiffre, { fontVariant: ["tabular-nums"] }]}>{affiche.toLocaleString("fr-FR")}</Text>
+        <Text style={TYPO.corps}>question{n > 1 ? "s" : ""} posée{n > 1 ? "s" : ""} en {libelle}{enCours ? " (mois en cours)" : ""}</Text>
+        <Text style={TYPO.micro}>Calcul Repère sur le relevé de l'Assemblée nationale.</Text>
+      </View>
+    </View>
+  );
 }
 
 /* 12/11/2026 : l'essentiel de la réponse d'abord (2 ou 3 phrases recopiées, choisies par un calcul de
@@ -205,7 +233,7 @@ function Onglets({ mode, setMode }: { mode: "votes" | "qag"; setMode: (m: "votes
 }
 
 export default function Scrutins() {
-  const params = useLocalSearchParams<{ mode?: string; n?: string }>();
+  const params = useLocalSearchParams<{ mode?: string; n?: string; question?: string }>();
   const [mode, setMode] = useState<"votes" | "qag">(params.mode === "qag" ? "qag" : "votes");
   const [etat, setEtat] = useState(ETATS.EN_COURS);
   const [qagIndex, setQagIndex] = useState<QagIndex | null>(null);
@@ -236,7 +264,7 @@ export default function Scrutins() {
       const d = r.donnees as QagIndex | null;
       setQagIndex(d);
       setQagCharge(true);
-      if (d?.questions?.length) setQagSelection(d.questions[d.questions.length - 1].uid);
+      if (d?.questions?.length) setQagSelection((params.question && d.questions.find(x => x.uid === params.question)?.uid) || d.questions[d.questions.length - 1].uid);
     });
   }, []);
 
@@ -332,6 +360,7 @@ export default function Scrutins() {
               style={s.recherche}
             />
 
+            {!qagRecherche ? <CompteurQuestions questions={qagIndex.questions} releve={qagIndex.source.releve_le} /> : null}
             <Text style={TYPO.etiquette}>{qagRecherche ? `${qagVisibles.length} résultat${qagVisibles.length > 1 ? "s" : ""}` : "Questions récentes"}</Text>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.scroller}>
               {qagVisibles.map(x => (
