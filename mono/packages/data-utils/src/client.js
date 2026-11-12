@@ -167,9 +167,10 @@ export function adresseAgregatsRegionaux() { return `${BASE_DONNEES}/agregats-re
 export function adresseMairies() { return `${BASE_DONNEES}/mairies-idf.json`; }
 /* L'actu locale hebdomadaire des communes pilotes (D29-D31, 30/10/2026) : un seul fichier, les codes INSEE sont des cles internes. */
 export function adresseActusHebdo() { return `${BASE_DONNEES}/actus-hebdo.json`; }
-/* La présidentielle 2027 (09/11/2026) : quatre fichiers nationaux (candidats, débats, réunions, méta),
+/* La présidentielle 2027 (09/11/2026) : quatre fichiers nationaux (candidats, débats, réunions, méta), et depuis le
+   12/11/2026 (ADR 0008) les photos libres des candidats (scripts/collecte-photos-elus.mjs),
    produits par scripts/collecte-presidentielle.mjs. Un fichier vide est un état normal. */
-const FICHIERS_PRESIDENTIELLE = { candidats: "PRC", debats: "PRD", meetings: "PRM", meta: "PRT" };
+const FICHIERS_PRESIDENTIELLE = { candidats: "PRC", debats: "PRD", meetings: "PRM", meta: "PRT", photos: "PRP" };
 export function adressePresidentielle(fichier) {
   if (!Object.hasOwn(FICHIERS_PRESIDENTIELLE, fichier)) throw new Error("fichier de la présidentielle inconnu : " + fichier);
   return `${BASE_DONNEES}/presidentielle-2027/${fichier}.json`;

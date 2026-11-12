@@ -14,7 +14,8 @@
  *   (`sourceUrl`, obligatoire) ; la source des candidats est dans meta.json ;
  * - invariant 3 : l'ordre des candidats est celui du fichier, donc de la liste officielle ; aucun
  *   champ de rang, de score ou de sondage ;
- * - `couleurParti` et `photoUrl` sont acceptés par le schéma mais NE SONT PAS AFFICHÉS : l'invariant 7
+ * - `couleurParti` et `photoUrl` sont acceptés par le schéma mais NE SONT PAS AFFICHÉS (ADR 0008 : jamais de couleur
+ *   de parti sur un candidat ; la photo vient de presidentielle-2027/photos.json, produit par la chaîne) : l'invariant 7
  *   réserve les couleurs politiques à l'identification des élus, et une photo ne peut venir que de
  *   Wikimedia Commons sous licence libre, servie par Repère (D27, ADR 0004), jamais d'une adresse
  *   externe (invariant 1). Les afficher demande une décision du porteur. */

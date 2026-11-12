@@ -10,7 +10,8 @@
  * réunions publiques. AUCUNE donnée d'exemple : tant qu'un fichier est vide, l'onglet dit pourquoi
  * (invariant 5) ; s'il n'est pas arrivé, il le dit aussi et propose de réessayer (invariant 9).
  * Les candidats gardent l'ordre du fichier, celui de la liste officielle : jamais triés (invariant 3).
- * Ni couleur de parti ni photo ici (invariant 7, D27) : initiales sur fond neutre. */
+ * Jamais de couleur de parti ici (invariant 7, ADR 0008). Photo seulement si la chaîne en publie une, libre
+ * (Wikimedia Commons), rapprochée avec certitude, avec son crédit ; sinon les initiales sur fond neutre. */
 import { useState } from "react";
 import { Linking, Pressable, ScrollView, Text, useWindowDimensions, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
@@ -26,7 +27,8 @@ import { ELECTIONS } from "../lib/elections";
 import { usePresidentialData } from "../lib/presidentielle";
 import { ACCENTS, BADGE_DECLARATION, CIBLE, couleurs, PAS, POLICE, RAYON, TYPO } from "../lib/theme";
 import { Attente } from "../ui/attente";
-import { Avatar } from "../ui/avatar";
+import { Avatar, CreditPhoto } from "../ui/avatar";
+import { usePhotosCandidats, type PhotoElu } from "../lib/photos";
 import { Page } from "../ui/page";
 import { Onglets } from "../ui/stitch";
 import { enfonce } from "../ui/mouvement";
@@ -79,16 +81,16 @@ function Etape({ titre, texte, date, dernier }: { titre: string; texte: string; 
 }
 
 /* UNE CANDIDATURE DÉCLARÉE (12/11/2026, décision du porteur) : annoncée dans la presse, pas encore sur la liste
-   officielle. Le badge orange le dit sur chaque carte ; les deux sources sont à un geste. Avatar = initiales
-   (aucune photo : aucune n'est sous licence libre vérifiée). Ordre alphabétique du fichier : pas un ordre de préférence. */
-function CarteCandidat({ c }: { c: PresidentialCandidate }) {
+   officielle. Le badge orange le dit sur chaque carte ; les deux sources sont à un geste. Avatar : la photo libre
+   publiée par la chaîne (ADR 0008), crédit sous la carte ; sinon les initiales. Ordre alphabétique du fichier. */
+function CarteCandidat({ c, photo }: { c: PresidentialCandidate; photo?: PhotoElu | null }) {
   const [sources, setSources] = useState(false);
   const declare = c.statut === "declare";
   const nom = `${c.prenom} ${c.nom}`;
   return (
     <View style={{ padding: PAS * 3, borderRadius: RAYON.bloc, backgroundColor: couleurs.carte, gap: PAS * 2 }}>
       <View style={{ flexDirection: "row", alignItems: "center", gap: PAS * 3 }}>
-        <Avatar nom={nom} taille={44} />
+        <Avatar nom={nom} taille={44} photo={photo} />
         <View style={{ flex: 1, gap: 2 }}>
           <Text style={TYPO.reponse}>{nom}</Text>
           {c.parti ? (
@@ -131,6 +133,7 @@ function CarteCandidat({ c }: { c: PresidentialCandidate }) {
           <Text style={[TYPO.note, { color: couleurs.lien }]}>{x.producteur} · {dateFr(x.date)} ↗</Text>
         </Pressable>
       )) : null}
+      {photo ? <CreditPhoto photo={photo} /> : null}
     </View>
   );
 }
@@ -140,6 +143,7 @@ const Section = ({ titre }: { titre: string }) => <Text style={[TYPO.section, { 
 export default function Presidentielle2027() {
   const [onglet, setOnglet] = useState<Onglet>("candidats");
   const d = usePresidentialData();
+  const photos = usePhotosCandidats();
   const { width: largeurEcran } = useWindowDimensions();
   const largeurCarte = Math.min(Math.round(largeurEcran * 0.82), 360);
   const videDebats = d.charge && d.lus.debats && d.debats.length === 0;
@@ -224,8 +228,10 @@ export default function Presidentielle2027() {
             <ScrollView horizontal showsHorizontalScrollIndicator={false} decelerationRate="fast" snapToInterval={largeurCarte + PAS * 3}
               accessibilityLabel={`${d.candidats.length} candidat${d.candidats.length > 1 ? "s" : ""}, à faire défiler`}
               contentContainerStyle={{ gap: PAS * 3 }}>
-              {d.candidats.map(c => <View key={c.id} style={{ width: largeurCarte }}><CarteCandidat c={c} /></View>)}
+              {d.candidats.map(c => <View key={c.id} style={{ width: largeurCarte }}><CarteCandidat c={c} photo={photos[c.id]} /></View>)}
             </ScrollView>
+            {/* Doctrine du vide (ADR 0008) : pourquoi certains n'ont pas de photo, en une phrase vraie. */}
+            <Text style={TYPO.note}>Photos : Wikimedia Commons, sous licence libre. Sans photo libre rattachée avec certitude au candidat, ses initiales.</Text>
           </View>
         )
       ) : null}

@@ -115,7 +115,8 @@ await p.getByText("Aller plus loin").first().waitFor({ timeout: 15000 });
 /* 2. Fiche elu, dernier vote (VoteStory) */
 await p.getByRole("button", { name: "Comprendre ce vote", exact: true }).first().click();
 await p.getByRole("button", { name: /^Voir la fiche de/ }).first().click();
-await p.getByText("Ses derniers votes").first().waitFor({ timeout: 10000 });
+/* 12/11/2026 : le titre est « Ses N derniers votes publiés » (ou « Son dernier vote publié ») depuis l'audit des doublons. */
+await p.getByText(/Ses \d+ derniers votes publiés|Son dernier vote publié|Ses derniers votes/).first().waitFor({ timeout: 10000 });
 await controler("vote");
 await p.goBack(); await p.goBack();
 await p.getByText("Aller plus loin").first().waitFor({ timeout: 15000 });

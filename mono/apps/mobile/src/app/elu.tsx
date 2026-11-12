@@ -279,7 +279,9 @@ export default function Elu() {
                     ) : null}
                   </>
                 ) : null}
-                <AvecPicto picto="vote"><Text style={TYPO.etiquette} accessibilityRole="header">Ses derniers votes</Text></AvecPicto>
+                {/* 12/11/2026 (audit des doublons) : sous « Ses 10 derniers votes publiés », un second titre « Ses derniers votes »
+                    répétait le premier ; il ne reste que si le compte n'est pas affiché. */}
+                {recents.length ? null : <AvecPicto picto="vote"><Text style={TYPO.etiquette} accessibilityRole="header">Ses derniers votes</Text></AvecPicto>}
                 {votes.length ? votes.slice(0, SYNTHESE).map(f => (
                   <CarteVote key={f.sc.n} f={f} onComprendre={() => setOuvert(f)} />
                 )) : videVote ? <Vide {...videVote} /> : null}
@@ -325,7 +327,6 @@ export default function Elu() {
               {decide ? (
                 <Carte titre="Ce que ce niveau décide">
                   <Text style={TYPO.corps}>{decide}.</Text>
-                  <Text style={TYPO.note}>Les mêmes phrases que sur « Qui décide ».</Text>
                 </Carte>
               ) : null}
             </Details>

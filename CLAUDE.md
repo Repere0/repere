@@ -49,14 +49,14 @@ explicite du porteur les change ; la PR qui l'applique met alors à jour
 5. **Doctrine du vide.** Une absence de donnée produit une phrase vraie et un lien,
    jamais une forme vide, un zéro ou une barre minuscule.
 6. **Rien qui gamifie le vote ou l'opinion** : aucun score, aucune récompense, aucune série, aucun gain ni son de réussite lié à un vote, une position ou un partage. Les effets de mouvement sont permis pour lire, naviguer et suivre une heure ou une durée (assouplie par décision du porteur, 13/10/2026).
-7. **Invariant 7 (amendé les 30/10, 01/11 (D99), 08/11, puis 09/11/2026 par le porteur : « tout Stitch »)** :
+7. **Invariant 7 (amendé les 30/10, 01/11 (D99), 08/11, 09/11/2026 (« tout Stitch »), puis 12/11/2026 (ADR 0008) par le porteur)** :
    couleurs de groupes politiques pour l'identification des élus seulement (badges, cartes de partage) ; elles ne codent
    JAMAIS un vote, une opinion, un score ou un classement. Votes (Stitch) : émeraude `#00A896` (pour), corail `#BE123C`
    (contre), ardoise `#94A3B8` (abstention) ; ils codent un FAIT, jamais un jugement, la position reste écrite en toutes
    lettres ; variante daltonienne (D56) : `#0072B2`, `#B35900`, `#6E7781`. Jauge du budget : clair `#8B9DC3` / `#A3C9A8` /
    `#D3D3D3` (pastels), sombre `#D4AF37` / `#818CF8` / `#475569` (salaires / investissements / fonctionnement), jamais politiques.
    Émeraude réservée aux données de vote, jamais en texte ; l'interface reste neutre (noir, ivoire, gris). Tout dans
-   palette.ts. D27 (ADR 0004) : photo d'élu sous licence libre Wikimedia Commons, crédit affiché ; jamais celles de l'AN.
+   palette.ts. D27 (ADR 0004) : photo d'élu sous licence libre Wikimedia Commons, crédit affiché ; jamais celles de l'AN. D27 étendu aux candidats à la présidentielle (ADR 0008, 12/11/2026) ; jamais une couleur de parti sur un candidat.
 8. **Jamais le patrimoine d'un élu, jamais de donnée de présence ou d'absence.**
 9. **Fraîcheur** (décision du porteur, 30/09/2026). Une donnée gardée sur
    l'appareil peut être affichée pour préserver l'accès hors ligne, mais jamais

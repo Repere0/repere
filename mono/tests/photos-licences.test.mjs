@@ -2,7 +2,7 @@
 // Les règles sont celles de scripts/collecte-photos-elus.mjs (ADR 0004, docs/data/photos-elus.md).
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { LICENCE_OK, concorde, familleRNE } from "../scripts/collecte-photos-elus.mjs";
+import { LICENCE_OK, concorde, familleRNE, rapprocherCandidats } from "../scripts/collecte-photos-elus.mjs";
 
 test("licences : libres acceptées (CC BY, CC BY-SA, CC0, domaine public)", () => {
   for (const l of ["CC BY 4.0", "CC BY-SA 4.0", "CC BY-SA 3.0", "CC0 1.0", "CC0", "Public domain", "domaine public"])
@@ -23,4 +23,15 @@ test("nom : le nom de famille doit apparaître mot pour mot", () => {
 test("maires : le nom de famille du RNE est la partie en capitales", () => {
   assert.equal(familleRNE("Kadir MEBAREK"), "MEBAREK");
   assert.equal(familleRNE("Jean-Paul DUPONT"), "DUPONT");
+});
+
+/* Candidats (ADR 0008) : un seul item au nom exact, ou aucune photo. Lignes = réponses SPARQL déjà filtrées. */
+test("candidats : rapprochés seulement si un seul item porte exactement leur nom", () => {
+  const liste = [{ id: "a", prenom: "Marine", nom: "Le Pen" }, { id: "b", prenom: "Benoît", nom: "Mathieu" }, { id: "c", prenom: "Teddy", nom: "Riner" }, { id: "d", prenom: "Anne", nom: "Sans Photo" }];
+  const r = rapprocherCandidats(liste, [
+    { p: "http://www.wikidata.org/entity/Q12927", label: "Marine Le Pen", img: "x.jpg" }, { p: "http://www.wikidata.org/entity/Q12927", label: "Marine Le Pen", img: "y.jpg" },
+    { p: "Q1", label: "Benoît Mathieu", img: "a.jpg" }, { p: "Q2", label: "Benoît Mathieu", img: "b.jpg" },
+    { p: "Q3", label: "Anne Sans Photo", img: null },
+  ]);
+  assert.deepEqual(r.map(x => [x.id, x.wikidata, x.image, x.cle]), [["a", "Q12927", "x.jpg", "C:a"]]);
 });
