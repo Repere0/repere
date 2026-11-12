@@ -15,6 +15,7 @@ import { Entree } from "./entree";
 import { SquelettesListe } from "./squelette";
 import { Etiquette } from "./resume";
 import { BandeauFraicheur, DatePublication } from "./fraicheur";
+import { BoutonCopierLien } from "./partage/partager-texte";
 
 /* « sansDate » : l'écran affiche déjà la date de publication dans son propre contenu
    (Aujourd'hui : « Publication Repère du … »). Sans ce drapeau, deux dates se suivraient. */
@@ -28,6 +29,8 @@ export function Page({ children, sansDate = false }: { children: ReactNode; sans
       {sansDate ? null : <DatePublication flottant />}
       <BandeauFraicheur />
       <Entree style={{ gap: PAS * 4, width: "100%" }}>{children}</Entree>
+      {/* « Copier le lien » (web, 12/11/2026) : sur TOUS les écrans, en bas de page, bien visible. */}
+      <View style={{ alignSelf: "flex-start", marginTop: PAS * 4 }}><BoutonCopierLien /></View>
     </ScrollView>
   );
 }

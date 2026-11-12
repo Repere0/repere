@@ -24,6 +24,7 @@ import {
   ETATS,
 } from "../lib/donnees";
 import { Page } from "../ui/page";
+import { ResumeClair } from "../ui/resume-clair";
 import { Hemicycle } from "../ui/hemicycle";
 import { couleurGroupe, sigleDuNom } from "../lib/groupes";
 import { StatCard } from "../ui/donnees";
@@ -460,6 +461,10 @@ export default function Scrutins() {
                   <Text style={s.phraseResultat}>{resultatDecompteCourt(detail.dec)}</Text>
                   <StatutVote detail={detail} />
                 </View>
+
+                {/* « En clair » sur tout scrutin (12/11/2026). Aucun résumé validé n'existe pour ce texte : le bloc dit
+                    « Pas encore de résumé » et renvoie au scrutin officiel, jamais le résumé d'un autre texte. */}
+                <ResumeClair resume={null} lienOfficiel={/^https:\/\//.test(detail.url || "") ? detail.url : undefined} />
 
                 <Text style={TYPO.etiquette}>Position des groupes</Text>
                 <Text style={TYPO.note}>Touchez un groupe pour voir les députés dont la position est publiée.</Text>
