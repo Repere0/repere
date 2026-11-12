@@ -83,3 +83,10 @@ test("Vercel relié à Git : les réglages de build vivent dans vercel.json, app
   assert.equal(app.expo.web.bundler, "metro");
   assert.equal(app.expo.web.output, "single");
 });
+
+test("les icônes d'installation sont carrées (en-tête PNG) : iOS ne les recadre pas", () => {
+  for (const [f, n] of [["apple-touch-icon.png", 180], ["icon-192.png", 192], ["icon-512.png", 512]]) {
+    const b = readFileSync(new URL("../public/" + f, import.meta.url));
+    assert.equal(b.readUInt32BE(16), n, f + " largeur"); assert.equal(b.readUInt32BE(20), n, f + " hauteur");
+  }
+});

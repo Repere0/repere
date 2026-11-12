@@ -91,7 +91,12 @@ function CarteCandidat({ c }: { c: PresidentialCandidate }) {
         <Avatar nom={nom} taille={44} />
         <View style={{ flex: 1, gap: 2 }}>
           <Text style={TYPO.reponse}>{nom}</Text>
-          <Text style={TYPO.note}>{c.parti ?? "Aucun parti indiqué par les sources"}</Text>
+          {c.parti ? (
+            /* 12/11/2026 : le parti en pastille, NEUTRE (voile/encre). Pas de couleur de parti : l'invariant 7 la réserve à l'identification des élus. */
+            <View accessible accessibilityLabel={`Parti : ${c.parti}`} style={{ alignSelf: "flex-start", maxWidth: "100%", paddingHorizontal: PAS * 3, minHeight: 24, justifyContent: "center", borderRadius: RAYON.pastille, backgroundColor: couleurs.voile }}>
+              <Text style={[TYPO.micro, { color: couleurs.encre }]} numberOfLines={2}>{c.parti}</Text>
+            </View>
+          ) : <Text style={TYPO.note}>Aucun parti indiqué par les sources</Text>}
         </View>
       </View>
       <View style={{ flexDirection: "row", alignItems: "center", flexWrap: "wrap", gap: PAS * 2 }}>

@@ -9,7 +9,7 @@
  *   - la définition complète est celle du dictionnaire (rédaction Repère, d'après les textes officiels) ;
  *   - mouvement réduit : pas de transition. */
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Animated, Easing, Pressable, Text, View } from "react-native";
+import { Animated, Easing, Platform, Pressable, Text, View } from "react-native";
 import { router } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { GLOSSAIRE } from "@repere/core";
@@ -18,6 +18,9 @@ import { CIBLE, couleurs, PAS, POLICE, RAYON, TYPO } from "../lib/theme";
 import { useMouvementReduit } from "./mouvement";
 
 const LETTRES = ["A", "B", "C", "D"];
+
+/* Web : l'énoncé en 34 px occupait la moitié d'un écran de téléphone ; il prend le style de section (22 px, qui suit le réglage de taille), et un mot trop long se coupe au lieu de déborder. */
+const MOT_LONG_WEB = Platform.OS === "web" ? ({ overflowWrap: "anywhere" } as object) : null;
 
 export function Quiz({ categorieDe }: { categorieDe: (cle: string) => string }) {
   const entrees = useMemo<EntreeQuiz[]>(() => Object.entries(GLOSSAIRE as Record<string, { titre: string; corps: string }>)
@@ -75,7 +78,7 @@ export function Quiz({ categorieDe }: { categorieDe: (cle: string) => string }) 
       <Animated.View key={`${tour}-${rang}`} style={{ gap: PAS * 4, opacity: entree, transform: [{ translateY: entree.interpolate({ inputRange: [0, 1], outputRange: [12, 0] }) }] }}>
         <View style={{ gap: PAS * 2, padding: PAS * 6, borderRadius: RAYON.carte + 4, backgroundColor: couleurs.carte }}>
           <Text style={TYPO.etiquette}>Question {rang + 1} sur {questions.length}</Text>
-          <Text style={TYPO.affiche} accessibilityRole="header">{q.enonce}</Text>
+          <Text style={[Platform.OS === "web" ? TYPO.section : TYPO.affiche, MOT_LONG_WEB]} accessibilityRole="header">{q.enonce}</Text>
           <Text style={TYPO.note}>Une seule définition est la bonne.</Text>
         </View>
 
