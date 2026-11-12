@@ -273,9 +273,9 @@ export default function Elu() {
                   </View>
                   {/* 12/11/2026 : la barre des 10 derniers votes (un calcul Repère), aux couleurs des votes (un fait). */}
                     {recents.length > 1 ? (
-                      <BarreSegments hauteur={28} etiquette={`${comptes.p} pour, ${comptes.c} contre, ${comptes.a} abstention${comptes.a > 1 ? "s" : ""} sur ses ${recents.length} derniers votes publiés. Calcul Repère.`}
+                      <BarreSegments hauteur={8} etiquette={`${comptes.p} pour, ${comptes.c} contre, ${comptes.a} abstention${comptes.a > 1 ? "s" : ""} sur ses ${recents.length} derniers votes publiés. Calcul Repère.`}
                         segments={([["p", "pour"], ["c", "contre"], ["a", "abstention"]] as const).filter(([k]) => comptes[k] > 0)
-                          .map(([k]) => ({ cle: k, valeur: comptes[k], couleur: COULEURS_VOTE[k], dedans: String(comptes[k]) }))} />
+                          .map(([k]) => ({ cle: k, valeur: comptes[k], couleur: COULEURS_VOTE[k] }))} />
                     ) : null}
                   </>
                 ) : null}

@@ -43,8 +43,8 @@
       "lang": "fr",
       "display": "standalone",
       "orientation": "portrait",
-      "backgroundColor": "#F7F7F9",
-      "themeColor": "#F7F7F9"
+      "backgroundColor": "#141311",
+      "themeColor": "#141311"
     },
     "plugins": [
       "expo-router",
