@@ -11,7 +11,7 @@ import { Platform } from "react-native";
 import { PROFIL_DEFAUT, valideProfil } from "@repere/core";
 import { ecrireProfilGarde, lireProfilGarde } from "./memoire";
 
-/* 12/11/2026 (porteur) : sur le WEB, sombre par défaut (#141311), quel que soit le réglage de l'iPhone ; le lecteur
+/* 12/11/2026 (porteur) : sur le WEB, sombre par défaut, quel que soit le réglage de l'iPhone ; le lecteur
    garde « Système », « Clair » et « Sombre » dans la roue. Sur iOS et Android, rien ne change. */
 export const MODE_INITIAL: "auto" | "sombre" = Platform.OS === "web" ? "sombre" : "auto";
 
