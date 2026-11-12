@@ -1,6 +1,6 @@
 # Actus brouillon : flux RSS des mairies
 
-Généré le 2026-11-12T19:18:17.393Z. **Non publié** : la publication automatique est désactivée (D82).
+Généré le 2026-11-12T20:07:51.167Z. **Non publié** : la publication automatique est désactivée (D82).
 
 Procédure : le CEO relit chaque entrée contre sa page (D33), puis copie au plus une entrée par commune dans `data/actus-hebdo.json` (titre, resume, source, source_nom).
 
@@ -122,6 +122,40 @@ Procédure : le CEO relit chaque entrée contre sa page (D33), puis copie au plu
   - Date : 2021-03-15
   - Lien : https://www.bassevelle.fr/accueil-slideshow-3-blocs-1er-bloc/actualites/inscriptions-pour-annee-scolaire-2021-22/
   - Résumé : Inscription rentrée 2023-2024 L’article Inscriptions pour année scolaire 2023/2024 est apparu en premier sur Bassevelle.
+
+## Beaumont-du-Gâtinais (77027)
+
+- **Retraite et parentalité : l’Agirc-Arrco organise ses Rencontres retraite 2026**
+  - Date : 2026-10-26
+  - Lien : https://beaumont-du-gatinais.fr/retraite-et-parentalite-lagirc-arrco-organise-ses-rencontres-retraite-2026/
+  - Résumé : Retraite et parentalité : l’Agirc-Arrco organise ses Rencontres retraite 2026 Du 21 au 27 novembre 2026, l’Agirc-Arrco organise une édition spéciale des Rencontres retraite, consacrée … Continuer la lecture de « Retraite et parentalité : l’Agirc-Arrco organise ses Rencontres retraite 2026 »
+
+- **La BSV en Île-de-France**
+  - Date : 2026-04-08
+  - Lien : https://beaumont-du-gatinais.fr/la-bsv-en-ile-de-france/
+  - Résumé : En 2026, la Bourse Solidarité Vacances s’impose comme un dispositif clé pour lutter contre les inégalités d’accès aux loisirs, en offrant aux ménages modestes, aux familles monoparentales … Continuer la lecture de « La BSV en Île-de-France »
+
+- **Résultats du scrutin – Élections municipales à Beaumont‑du‑Gâtinais**
+  - Date : 2026-03-17
+  - Lien : https://beaumont-du-gatinais.fr/resultats-du-scrutin-elections-municipales-a-beaumont%e2%80%91du%e2%80%91gatinais/
+  - Résumé : 
+
+## Bernay-Vilbert (77031)
+
+- **Soirée Beaujolais**
+  - Date : 2026-11-11
+  - Lien : https://bernay-vilbert.fr/soiree-beaujolais-village/
+  - Résumé : Vous pouvez vous inscrire dès maintenant à la soirée Beaujolais proposée par le Comité des Fêtes.
+
+- **Conseil Municipal**
+  - Date : 2026-11-04
+  - Lien : https://bernay-vilbert.fr/conseil-municipal-41/
+  - Résumé : REUNION DU CONSEIL MUNICIPAL 9 novembre 2026 à 20h Approbation du procès-verbal de la séance du 12 octobre 2026, Création d’un Conseil Municipal des Jeunes … Continuer la lecture de « Conseil Municipal »
+
+- **Fermeture mairie**
+  - Date : 2026-11-03
+  - Lien : https://bernay-vilbert.fr/fermeture-mairie-16/
+  - Résumé : L’accueil de mairie sera exceptionnellement fermé mardi 10 novembre Merci de votre compréhension.
 
 ## Boissise-le-Roi (77040)
 
@@ -260,6 +294,23 @@ Procédure : le CEO relit chaque entrée contre sa page (D33), puis copie au plu
   - Date : 2026-11-10
   - Lien : https://www.bussysaintgeorges.fr/actualite/concertation-sur-la-requalification-du-village/
   - Résumé : La concertation sur la requalification du village s'est déroulée du 1er octobre au 12 novembre 2026. Le projet vise à améliorer le cadre de vie autour de cinq objectifs : apaiser les circulations et les déplacements, maintenir l’offre de stationnement existante, sécuriser l’espace public et le…
+
+## Buthiers (77060)
+
+- **Cérémonie du 11 novembre**
+  - Date : 2026-10-26
+  - Lien : https://buthiers.fr/ceremonie-du-11-novembre-3/
+  - Résumé : Mercredi 11 novembre à 11h se tiendra Place de la Liberté, la cérémonie commémorative, marquant la signature de l'Armistice entre la France et l'Allemagne, mettant un terme à la Grande Guerre.
+
+- **Fête du pain 2026**
+  - Date : 2026-09-23
+  - Lien : https://buthiers.fr/fete-du-pain-2026/
+  - Résumé : Samedi 3 octobre, participez à une journée et une soirée exceptionnelles à Buthiers... Animations, concerts, remise de prix...
+
+- **Spectacle-débat**
+  - Date : 2026-09-18
+  - Lien : https://buthiers.fr/spectacle-debat/
+  - Résumé : Nouveaux rendez-vous à la médiathèque animés par la Fleur qui rit dans le cadre du dispositif FNP de la CAF...
 
 ## La Celle-sur-Morin (77063)
 
@@ -438,23 +489,6 @@ Procédure : le CEO relit chaque entrée contre sa page (D33), puis copie au plu
   - Lien : https://www.chanteloupenbrie.fr/actualites/nouvelles-modalites-de-reservation-et-dannulation-des-activites-periscolaires/
   - Résumé : Les nouvelles modalités s'appliqueront à toutes les réservations et annulations concernant l'année scolaire 2026-2027. Afin d’améliorer l’organisation des services périscolaires et de simplifier les démarches pour l’ensemble des familles, le Conseil Municipal en date du 9 juin 2026 a adopté un…
 
-## La Chapelle-la-Reine (77088)
-
-- **Places disponibles à l’EHPAD Saint Joseph**
-  - Date : 2026-10-23
-  - Lien : https://www.lachapellelareine.fr/2026/10/23/25749/
-  - Résumé : L’EHPAD SAINT JOSEPH, Association Essaim du Gâtinais à LA CHAPELLE LA REINE (à 10 mins en voiture de Fontainebleau et de Nemours) vous informe que nous avons actuellement des places […]
-
-- **Offrez une seconde vie aux rosiers de notre commune !**
-  - Date : 2026-10-23
-  - Lien : https://www.lachapellelareine.fr/2026/10/23/offrez-une-seconde-vie-aux-rosiers-de-notre-commune/
-  - Résumé : Offrez une seconde vie aux rosiers de notre commune ! Et si vous donniez une nouvelle vie aux rosiers de nos massifs communaux tout en embellissant votre jardin ?
-
-- **Cérémonie du 11 novembre**
-  - Date : 2026-10-22
-  - Lien : https://www.lachapellelareine.fr/2026/10/22/ceremonie-du-11-novembre-2/
-  - Résumé : CÉRÉMONIE COMMÉMORATIVE DU 11 NOVEMBRE Sébastien Colin, Maire de La Chapelle-la-Reine, et l’ensemble du Conseil municipal vous invitent à la cérémonie commémorative du 108ᵉ anniversaire de l’Armistice de 1918, le […]
-
 ## Châtenay-sur-Seine (77101)
 
 - **Permanences administratives et numériques**
@@ -471,23 +505,6 @@ Procédure : le CEO relit chaque entrée contre sa page (D33), puis copie au plu
   - Date : 2024-12-04
   - Lien : https://chatenay-sur-seine.com/actualites
   - Résumé : La prochaine réunion de Conseil Municipal se tiendra en mairie le 9 décembre 2024 à 20h30. L’article Conseil Municipal est apparu en premier sur Chatenay-sur-seine.
-
-## Chelles (77108)
-
-- **La Ville de Chelles s’engage contre les violences faites aux femmes**
-  - Date : 2026-11-04
-  - Lien : https://www.chelles.fr/la-ville-de-chelles-sengage-contre-les-violences-faites-aux-femmes/
-  - Résumé : À l’occasion de la Journée internationale de lutte contre les violences faites aux femmes, le 25 novembre, la Ville de Chelles et ses partenaires proposent, tout au long du mois, des actions de sensibilisation et de prévention à destination de tous les publics.
-
-- **Les exposants du mois**
-  - Date : 2026-10-30
-  - Lien : https://www.chelles.fr/les-exposants-du-mois_be/
-  - Résumé : Envie de produits uniques ou d'un cadeau original ? Les boutiques éphémères de Chelles accueillent chaque semaine des créateurs, artisans et producteurs différents.
-
-- **Modernisation de l’usine d’eau potable de Neuilly-sur-Marne : le SEDIF obtient son autorisation environnementale**
-  - Date : 2026-10-28
-  - Lien : https://www.chelles.fr/modernisation-de-lusine-deau-potable-de-neuilly-sur-marne-le-sedif-obtient-son-autorisation-environnementale/
-  - Résumé : Par un arrêté préfectoral en date du 23 octobre 2026, l'État a officiellement délivré au Syndicat des Eaux d'Île-de-France (SEDIF) l'autorisation environnementale nécessaire pour moderniser l'usine de production d'eau potable de Neuilly-sur-Marne / Noisy-le-Grand.
 
 ## Chessy (77111)
 
@@ -625,6 +642,23 @@ Procédure : le CEO relit chaque entrée contre sa page (D33), puis copie au plu
   - Lien : https://mairie-courchamp.fr/2025/04/22/%f0%9f%93%a2-nouveau-courchamp-utilise-panneaupocket-%f0%9f%93%b1/
   - Résumé : Pour vous informer rapidement et vous alerter en cas de besoin, la commune de Courchamp est désormais sur PanneauPocket ! ✅ Travaux, alertes météo, coupures, … Continuer la lecture de « 📢 NOUVEAU !
 
+## Courtomer (77138)
+
+- **Concours de belote à Courtomer – 8 novembre**
+  - Date : 2026-10-27
+  - Lien : https://courtomer.fr/2026/10/27/concours-de-belote-a-courtomer-8-novembre/
+  - Résumé : 
+
+- **Halloween à Courtomer – 31 octobre**
+  - Date : 2026-10-27
+  - Lien : https://courtomer.fr/2026/10/27/halloween-a-courtomer-31-octobre/
+  - Résumé : Venez célébrer Halloween à Courtomer avec le Comité des Fêtes “Pour Courtomer” et l’Association des Parents d’Elèves !!
+
+- **Parents ou futurs parents ! Sondage**
+  - Date : 2026-10-21
+  - Lien : https://courtomer.fr/2026/10/21/parents-ou-futurs-parents-sondage/
+  - Résumé : Futurs parents ou parents de jeunes enfants : votre avis nous intéresse ! Vous attendez un enfant ou vous êtes déjà parents ?
+
 ## Dammartin-sur-Tigeaux (77154)
 
 - **Parking grande rue**
@@ -658,6 +692,23 @@ Procédure : le CEO relit chaque entrée contre sa page (D33), puis copie au plu
   - Date : 2026-08-27
   - Lien : https://www.dampmart.fr/2026/08/27/vie-a-lart/
   - Résumé : com Edit Template Lieu d’activités Salle Gambetta Horaires Maternelles (3-5 ans) : Tous les mercredis : 10:00 – 10:45 Élémentaires (6-11 ans) : Tous les mercredis : 11:00 – 12:00 Cotisations Maternelles : 220 € Élémentaires : 250 € Ce tarif comprend le matériel, l’adhésion à l’association et…
+
+## Darvault (77156)
+
+- **COMMEMORATION**
+  - Date : 2026-11-07
+  - Lien : https://mairie-darvault.fr/2026/11/07/commemoration/
+  - Résumé : Rendez-vous ce 11 novembre à 11h au cimetière de Darvault. Un moment de recueillement et d’hommage aux héros d’hier, pour ne jamais oublier leur sacrifice.
+
+- **Calendrier des Sapeurs Pompiers**
+  - Date : 2026-11-05
+  - Lien : https://mairie-darvault.fr/2026/11/05/calendrier-des-sapeurs-pompiers/
+  - Résumé : L’Amicale des sapeurs-pompiers de Nemours a le plaisir de vous informer du lancement de sa traditionnelle campagne de distribution des calendrier 2027.
+
+- **Agriculteurs d’Ile de France : C’est la saison des semis !**
+  - Date : 2026-11-05
+  - Lien : https://mairie-darvault.fr/2026/11/05/agriculteurs-dile-de-france-cest-la-saison-des-semis/
+  - Résumé : 
 
 ## Dhuisy (77157)
 
@@ -863,6 +914,23 @@ Procédure : le CEO relit chaque entrée contre sa page (D33), puis copie au plu
   - Lien : https://www.la-ferte-sous-jouarre.fr/actualites/securite-attention-aux-faux-demarchages/
   - Résumé : Des individus se présentent comme agents de la Mairie, d’Enedis, fournisseurs internet ou conseillers bancaires. L’article Sécurité : Attention aux faux démarchages est apparu en premier sur La Ferté-sous-Jouarre.
 
+## Flagy (77184)
+
+- **AJOL**
+  - Date : 2026-11-03
+  - Lien : https://flagy.fr/ajol/
+  - Résumé : AJOL : Association des jeunes de l’Orvanne et du Lunain L’AJO vient de fusionner avec la junior association des ados du Lunain et devient l’AJOL … Continuer la lecture de « AJOL »
+
+- **Comité de defense du Site Classé de Flagy**
+  - Date : 2026-11-03
+  - Lien : https://flagy.fr/comite-de-defense-du-site-classe-de-flagy/
+  - Résumé : CDSCF-VO ou COMITÉ DE DÉFENSE DU SITE CLASSÉ DE FLAGY- VALLEE DE L’ORVANNE Notre comité associatif a pour objectif de défendre la protection du patrimoine … Continuer la lecture de « Comité de defense du Site Classé de Flagy »
+
+- **Arrêté municipal : Interdiction de certaines rues à la circulation routière et au stationnement le dimanche 6 décembre 2026 – Marché de Noël à Flagy**
+  - Date : 2026-10-09
+  - Lien : https://flagy.fr/arrete-municipal-interdiction-de-certaines-rues-a-la-circulation-routiere-et-au-stationnement-le-dimanche-6-decembre-2026-marche-de-noel-a-flagy/
+  - Résumé : Cliquez sur ce lien pour le consulter: 2026 Marché de noël :
+
 ## La Genevraye (77202)
 
 - **Cérémonie du 11 Novembre**
@@ -896,6 +964,23 @@ Procédure : le CEO relit chaque entrée contre sa page (D33), puis copie au plu
   - Date : 2021-10-20
   - Lien : https://www.giremoutiers.fr/nos-professionnel/jb-workshop-2/
   - Résumé : JB WorkShop Secteur d’activité : Artisanat / Travail du boisContact Mr. Besse julien :Téléphone : 06-32-43-68-88 site web L’article JB WorkShop est apparu en premier sur Giremoutiers.
+
+## Gironville (77207)
+
+- **Dates à retenir 🗓**
+  - Date : 2026-09-28
+  - Lien : https://mairiedegironville77.fr/2026/09/28/dates-a-retenir-2/
+  - Résumé : Le programme des manifestations prévues jusqu'à la fin de 2026
+
+- **Assistante maternelle**
+  - Date : 2026-09-04
+  - Lien : https://mairiedegironville77.fr/2026/09/04/assistante-maternelle/
+  - Résumé : Une assistante maternelle vient de s'installer dans la commune.
+
+- **Encombrants : collecte en octobre**
+  - Date : 2026-09-04
+  - Lien : https://mairiedegironville77.fr/2026/09/04/encombrants-collecte-en-octobre/
+  - Résumé : La collecte des encombrants se fera au mois d'octobre uniquement pour les personnes de plus de 70 ans et les personnes à mobilité réduite.
 
 ## Gouaix (77208)
 
@@ -982,6 +1067,40 @@ Procédure : le CEO relit chaque entrée contre sa page (D33), puis copie au plu
   - Lien : https://guerard.fr/inauguration-festive-de-la-boulangerie-patisserie-la-gourmandise/
   - Résumé : Inauguration festive de la boulangerie-pâtisserie « La Gourmandise » C’est dans une ambiance chaleureuse et conviviale que s’est déroulée la cérémonie d’inauguration de la nouvelle boulangerie-pâtisserie « La Gourmandise ». […] L’article Inauguration festive de la boulangerie-pâtisserie « La…
 
+## Hermé (77227)
+
+- **Un « Vrai/Faux » sur la grippe et la vaccination**
+  - Date : 2026-11-01
+  - Lien : https://herme.fr/2026/11/01/un-vrai-faux-sur-la-grippe-et-la-vaccination/
+  - Résumé : Pour plus d’informations sur la vaccination contre la grippe et COVID-19 Vaccination Info Service – Grippe
+
+- **INTERDICTION PREFECTORALE de consommation d’alcool**
+  - Date : 2026-07-12
+  - Lien : https://herme.fr/2026/07/12/interdiction-prefectorale-de-consommation-dalcool/
+  - Résumé : La consommation de boissons alcooliques sur le domaine public est interdite jusqu’au 15 juillet inclus.
+
+- **INTERDICTION PREFECTORALE des feux d’artifice et feux festifs**
+  - Date : 2026-07-11
+  - Lien : https://herme.fr/2026/07/11/interdiction-prefectoral-des-feux-dartifice-et-feux-festifs/
+  - Résumé : Interdiction des tirs de feux d’artifice et de l’allumage de feux festifs (feux de joie, feux de camp) sur l’ensemble du département entre le 10 … Continuer la lecture de « INTERDICTION PREFECTORALE des feux d’artifice et feux festifs »
+
+## Jaignes (77235)
+
+- **Chasse aux oeufs**
+  - Date : 2024-03-15
+  - Lien : https://jaignes.fr/chasse-aux-oeufs/
+  - Résumé : Le 1er avril 2024
+
+- **PanneauPocket**
+  - Date : 2024-01-04
+  - Lien : https://jaignes.fr/panneaupocket/
+  - Résumé : Installez l'application PanneauPocket et vous serez informés directement sur votre téléphone en temps réel.
+
+- **Délibérations**
+  - Date : 2023-10-18
+  - Lien : https://jaignes.fr/deliberations/
+  - Résumé : 2026 2025 2024 2023 Consultez les comptes-rendus des années antérieures
+
 ## Lagny-sur-Marne (77243)
 
 - **Magazine n°75 / Novembre-décembre**
@@ -998,6 +1117,23 @@ Procédure : le CEO relit chaque entrée contre sa page (D33), puis copie au plu
   - Date : 2026-10-14
   - Lien : https://www.lagny-sur-marne.fr/coupure-electrique-4-novembre/
   - Résumé : 
+
+## Longueville (77260)
+
+- **Actualité**
+  - Date : 2021-02-20
+  - Lien : https://longueville.fr/2021/02/20/actualite-2020-a-ne-pas-manquer/
+  - Résumé : mise à jour le 5 novembre 2026
+
+- **Informations diverses**
+  - Date : 2021-02-11
+  - Lien : https://longueville.fr/2021/02/11/informations-diverses/
+  - Résumé : mise à jour le 16 octobre 2026
+
+- **Animation**
+  - Date : 2020-12-30
+  - Lien : https://longueville.fr/2020/12/30/animations/
+  - Résumé : mise à jour le 12 novembre 2026
 
 ## Lorrez-le-Bocage-Préaux (77261)
 
@@ -1051,6 +1187,23 @@ Procédure : le CEO relit chaque entrée contre sa page (D33), puis copie au plu
   - Date : 2026-11-09
   - Lien : https://www.marchemoret.fr/2026-11-information-deplacement-de-la-borne-a-verres/
   - Résumé : La borne de collecte du verre, qui se trouvait auparavant à proximité de la Mairie, a été déplacée. Vous pouvez désormais la retrouver à l’entrée du village, côté Route de Lessart.
+
+## Marcilly (77274)
+
+- **Collecte des cartons**
+  - Date : 2025-12-01
+  - Lien : https://marcilly77.fr/2025/12/01/collecte-des-cartons/
+  - Résumé : Des points d’apport volontaire uniquement pour les cartons vont être mis en place sur la commune. Les cartons devront être bien vidés, pliés et découpés.
+
+- **La Fibre dans la commune**
+  - Date : 2024-05-13
+  - Lien : https://marcilly77.fr/2024/05/13/la-fibre-dans-la-commune/
+  - Résumé : Seine-et-Marne THD, filiale d’XpFibre, a pour mission de construire et d’exploiter le réseau départemental en fibre optique dans le cadre d’une Délégation de Service Public.
+
+- **PROPRIÉTAIRES**
+  - Date : 2024-04-22
+  - Lien : https://marcilly77.fr/2024/04/22/proprietaires/
+  - Résumé : En cas de changement de situation dans l’occupation de vos biens (location, occupé ou vacant) entre le 2 janvier 2023 et le 1er janvier 2024, … Continuer la lecture de « PROPRIÉTAIRES »
 
 ## Marles-en-Brie (77277)
 
@@ -1190,6 +1343,23 @@ Procédure : le CEO relit chaque entrée contre sa page (D33), puis copie au plu
   - Lien : https://www.moissy-cramayel.fr/les-commercants-jouent-la-carte-de-noel/
   - Résumé : Cette année encore, les emplettes de décembre pourraient bien vous réserver quelques […]
 
+## Montigny-sur-Loing (77312)
+
+- **✍️ ATELIER D’ÉCRITURE À LA BIBLIOTHÈQUE 📚**
+  - Date : 2026-11-12
+  - Lien : https://montignysurloing.fr/%e2%9c%8d%ef%b8%8f-atelier-decriture-a-la-bibliotheque-%f0%9f%93%9a/
+  - Résumé : Envie de laisser parler votre imagination et de jouer avec les mots ?
+
+- **🐀 CAMPAGNE DE DÉRATISATION**
+  - Date : 2026-11-09
+  - Lien : https://montignysurloing.fr/%f0%9f%90%80-campagne-de-deratisation/
+  - Résumé : 📅 Vendredi 13 novembre, une campagne de dératisation sera menée sur l’ensemble de la commune de Montigny-sur-Loing.
+
+- **🚆 LIGNE R : TRAVAUX EN NOVEMBRE ET DÉCEMBRE**
+  - Date : 2026-10-30
+  - Lien : https://montignysurloing.fr/%f0%9f%9a%86-ligne-r-travaux-en-novembre-et-decembre/
+  - Résumé : ⚠️ Des travaux entraîneront des interruptions de circulation en soirée et certains week-ends sur la ligne R. Pensez à anticiper vos déplacements !
+
 ## Montry (77315)
 
 - **Cérémonie commémorative du 11 Novembre 1918**
@@ -1241,6 +1411,23 @@ Procédure : le CEO relit chaque entrée contre sa page (D33), puis copie au plu
   - Lien : https://www.ville-mouroux.fr/2026/07/28/nouvelle-version-panneaupocket/
   - Résumé : Téléchargez l’application PanneauPocket pour recevoir les infos et les alertes de Mouroux. Vous pourrez, à tout moment, accéder aux informations utiles et faire un signalement de problème sur la commune (dépôts sauvages, problème de voirie,…), à l’aide de la géolocalisation.
 
+## Mouy-sur-Seine (77325)
+
+- **Alerte canicule : vigilance rouge**
+  - Date : 2026-06-20
+  - Lien : https://mouy-sur-seine.fr/alerte-canicule-vigilance-rouge/
+  - Résumé : Alerte #canicule : vigilance rouge pour ce dimanche à compter de midi.
+
+- **Concert de chant lyrique**
+  - Date : 2025-07-01
+  - Lien : https://mouy-sur-seine.fr/concert-de-chant-lyrique/
+  - Résumé : Concert de chant lyrique, par les élèves du stage de chant lyrique de Mouy-sur-Seine, dirigé par Xavier Toyas.
+
+- **Fête du 14 juillet 2025**
+  - Date : 2025-07-01
+  - Lien : https://mouy-sur-seine.fr/fetes-du-14-juillet-2025/
+  - Résumé : À partir de 13h30, au hangar municipal : concours de pétanque structure gonflable jeux pour tous buvette et restauration sur place Pot de l’amitié à … Continuer la lecture de « Fête du 14 juillet 2025 »
+
 ## Nanteau-sur-Lunain (77329)
 
 - **MESSAGE CITOYEN**
@@ -1274,6 +1461,18 @@ Procédure : le CEO relit chaque entrée contre sa page (D33), puis copie au plu
   - Date : 2026-11-04
   - Lien : https://www.nanteuil-les-meaux.fr/actualites/campagne-de-distribution-des-calendriers-par-les-sapeurs-pompiers-de-trilport/
   - Résumé : Les sapeurs-pompiers de Trilport ont débuté leur campagne de distribution des calendriers 2027. Cette distribution se déroulera du 1er novembre au 31 décembre 2026.
+
+## Obsonville (77342)
+
+- **Gâtinais val de Loing – agenda des manifestation de Septembre 2026**
+  - Date : 2026-09-03
+  - Lien : https://obsonville.fr/2026/09/03/gatinais-val-de-loing-agenda-des-manifestation-de-septembre-2026/
+  - Résumé : Gâtinais-val de Loing – Agenda des manifestations du mois de septembre 2026
+
+- **CABINET INFIRMIER BEAUMONT DU GATINAIS**
+  - Date : 2024-07-03
+  - Lien : https://obsonville.fr/2024/07/03/cabinet-infirmier-beaumont-du-gatinais/
+  - Résumé : Pour information, le Cabinet d’infirmiers de Beaumont du Gâtinais propose dans les locaux de la Maison de Santé des téléconsultations médicales assistées d’une infirmière tous … Continuer la lecture de « CABINET INFIRMIER BEAUMONT DU GATINAIS »
 
 ## Paley (77353)
 
@@ -1750,6 +1949,23 @@ Procédure : le CEO relit chaque entrée contre sa page (D33), puis copie au plu
   - Lien : https://www.touquin.fr/tourisme/decouvrez-notre-territoire/
   - Résumé : Visitez le site COULOMMIERS PAYS DE BRIE pour découvrir la richesse patrimoniale de notre territoire. L’article Découvrez notre territoire est apparu en premier sur Touquin.
 
+## Treuzy-Levelay (77473)
+
+- **Equipements sportifs**
+  - Date : 2026-08-28
+  - Lien : https://treuzy-levelay.fr/equipements-sportifs/
+  - Résumé : Treuzy Levelay, commune sportive.
+
+- **l’eau potable**
+  - Date : 2026-08-04
+  - Lien : https://treuzy-levelay.fr/leau-potable/
+  - Résumé : ORGANISATION DU RÉSEAU Le réseau de distribution d’eau potable Le SIDEAU assure le service de distribution potable.
+
+- **Le fonctionnement**
+  - Date : 2026-08-04
+  - Lien : https://treuzy-levelay.fr/le-fonctionnement/
+  - Résumé : Notre école est composée d’une classe, CM1 / CM2, accueillant les élèves du SIRP Villemer / Treuzy-Levelay / Nonville.
+
 ## Ussy-sur-Marne (77478)
 
 - **LOTO – 21 NOVEMBRE 2026**
@@ -1835,22 +2051,22 @@ Procédure : le CEO relit chaque entrée contre sa page (D33), puis copie au plu
   - Lien : https://www.vaucourtois.fr/actualites/defile-dhalloween/
   - Résumé : L’article Défilé d’Halloween est apparu en premier sur Vaucourtois.
 
-## Le Vaudoué (77485)
+## Vaudoy-en-Brie (77486)
 
-- **Spectacle de Noël**
-  - Date : 2026-11-06
-  - Lien : https://www.levaudoue.fr/2026/11/06/spectacle-de-noel/
-  - Résumé : Cette année le spectacle de Noël organisé par la bibliothèque du Vaudoué aura lieu : le dimanche 6 décembre à 15h dans la salle polyvalente La compagnie Pyxis nous présentera […]
+- **SONDAGE PARENTS CCVB**
+  - Date : 2026-10-20
+  - Lien : https://vaudoyenbrie.fr/2026/10/20/sondage-parents-ccvb/
+  - Résumé : 👶 Futurs parents ou parents de jeunes enfants : votre avis nous intéresse ! Vous attendez un enfant ou vous êtes déjà parents ?
 
-- **ADV Film Débat**
-  - Date : 2026-11-06
-  - Lien : https://www.levaudoue.fr/2026/11/06/adv-film-debat/
-  - Résumé : L’ADV propose un film-débat « détecteur de mythos, à l’attaque des fake news » Comment les jeunes s’informent-ils et se défendent-ils face aux fake news Venez nombreux et préparer vous à débattre […]
+- **CAMPAGNE DE CHASSE 2026-2027**
+  - Date : 2026-10-09
+  - Lien : https://vaudoyenbrie.fr/2026/10/09/campagne-de-chasse-2026-2027/
+  - Résumé : CAMPAGNE DE CHASSE 2026-2027
 
-- **Marché de Noël**
-  - Date : 2026-11-02
-  - Lien : https://www.levaudoue.fr/2026/11/02/marche-de-noel-2/
-  - Résumé : L’association des Parents d’Elèves organise un marché de Noël à la salle des fêtes du Vaudoué le dimanche 29 novembre de 10h à 18h.
+- **BIENTÔT 16 ANS ? PENSEZ AU RECENSEMENT !**
+  - Date : 2026-02-20
+  - Lien : https://vaudoyenbrie.fr/2026/02/20/bientot-16-ans-pensez-au-recensement/
+  - Résumé : 
 
 ## Vaux-le-Pénil (77487)
 
@@ -2090,6 +2306,23 @@ Procédure : le CEO relit chaque entrée contre sa page (D33), puis copie au plu
   - Lien : https://www.bazoches-sur-guyonne.fr/2026/10/27/rappels-aux-proprietaires-de-chiens/
   - Résumé : Suite à l’agression dimanche 25/10 de promeneurs par un chien non maîtrisé, incident signalé en mairie, nous vous rappelons les principales règles applicables si vous possédez un chien.– Règles générales :Vous en êtes responsable vis à vis des personnes, accompagnées ou non d’animaux, que vous…
 
+## Boinville-en-Mantois (78070)
+
+- **Sécheresse 2026 : signalez les fissures !**
+  - Date : 2026-11-09
+  - Lien : https://boinville-en-mantois.fr/2026/11/09/secheresse-2026-signalez-les-fissures/
+  - Résumé : Sécheresse 2026 : signalez les fissures ! Suite à la sécheresse de 2026, la commune souhaite recenser les éventuels dommages (fissures, dégradations…) constatés sur … Continuer la lecture de « Sécheresse 2026 : signalez les fissures !
+
+- **Sécheresse**
+  - Date : 2026-10-30
+  - Lien : https://boinville-en-mantois.fr/2026/10/30/secheresse/
+  - Résumé : Sécheresse : allègement des restrictions d’eau dans les Yvelines Par arrêté préfectoral du 30 octobre 2026, les restrictions d’usage de l’eau sont allégées dans … Continuer la lecture de « Sécheresse »
+
+- **Mesures du week-end du 31 octobre 2026**
+  - Date : 2026-10-30
+  - Lien : https://boinville-en-mantois.fr/2026/10/30/mesures-du-week-end-du-31-octobre-2026/
+  - Résumé : Mesures préventives durant le week-end du 31 octobre 2026 Dans le cadre des mesures de prévention visant à garantir la sécurité des personnes … Continuer la lecture de « Mesures du week-end du 31 octobre 2026 »
+
 ## Boinville-le-Gaillard (78071)
 
 - **ECTM – Sortie à la patinoire**
@@ -2105,6 +2338,23 @@ Procédure : le CEO relit chaque entrée contre sa page (D33), puis copie au plu
 - **Invitation vernissage – FESTIV’ARTS  RN10**
   - Date : 2026-10-26
   - Lien : https://www.boinville-le-gaillard.fr/invitation-vernissage-festivarts-rn10/
+  - Résumé : 
+
+## Boissy-Mauvoisin (78082)
+
+- **Beaujolais Nouveau, le 21 novembre 2026**
+  - Date : 2026-11-05
+  - Lien : https://boissy-mauvoisin.fr/beaujolais-nouveau-le-21-novembre-2026/
+  - Résumé : Soirée beaujolais organisée par l’ALBM.
+
+- **Grand LOTO à Boissy-Mauvoisin le 10 octobre 2026**
+  - Date : 2026-09-30
+  - Lien : https://boissy-mauvoisin.fr/grand-loto-a-boissy-mauvoisin-le-10-octobre-2026/
+  - Résumé : 
+
+- **BALL TRAP 12 & 13 septembre 2026**
+  - Date : 2026-08-21
+  - Lien : https://boissy-mauvoisin.fr/ball-trap-12-13-septembre-2026/
   - Résumé : 
 
 ## Boissy-sans-Avoir (78084)
@@ -2352,6 +2602,23 @@ Procédure : le CEO relit chaque entrée contre sa page (D33), puis copie au plu
   - Lien : https://hargeville78.wordpress.com/2026/09/02/%f0%9f%9a%81-survol-dhelicoptere-pour-linspection-des-lignes-a-haute-tension/
   - Résumé : La commune d’Hargeville vous informe que RTE (Réseau de Transport d’Électricité) réalisera prochainement des opérations de surveillance et d’inspection des lignes électriques à haute tension sur le territoire communal. 📅 Période d’intervention Ces opérations sont prévues : Du lundi 7 septembre…
 
+## Hermeray (78307)
+
+- **Salon des Artistes Locaux**
+  - Date : 2026-11-02
+  - Lien : https://hermeray.fr/4325-2/
+  - Résumé : La commune d’Hermeray organise le Salon des Artistes Locaux, les Samedi 21 Novembre et Dimanche 22 Novembre, de 10h à 17h, à la salle Polyvalente … Continuer la lecture de « Salon des Artistes Locaux »
+
+- **Commémoration 11 novembre 2026**
+  - Date : 2026-11-02
+  - Lien : https://hermeray.fr/commemoration-11-novembre-2026/
+  - Résumé : Ci-après, le programme pour la matinée du 11 novembre 2026 :
+
+- **📢 APPEL À TOUS NOS ACTEURS ÉCONOMIQUES ! 📢**
+  - Date : 2026-05-04
+  - Lien : https://hermeray.fr/%f0%9f%93%a2-appel-a-tous-nos-acteurs-economiques-%f0%9f%93%a2/
+  - Résumé : Habitants d’Hermeray, et de ses Hameaux, notre commune regorge de savoir-faire et nous voulons le faire savoir ! 🌟 ​Dans le cadre de la mise à … Continuer la lecture de « 📢 APPEL À TOUS NOS ACTEURS ÉCONOMIQUES !
+
 ## Houdan (78310)
 
 - **CHANGEMENT DE L’APPLICATION MOBILE POUR PAYER LE STATIONNEMENT**
@@ -2398,6 +2665,23 @@ Procédure : le CEO relit chaque entrée contre sa page (D33), puis copie au plu
   - Lien : https://www.juziers.fr/elections-2026-commission-de-controle-des-listes/
   - Résumé : La commission se réunira le vendredi 20 février 2026 à 17h45 en salle du conseil municipal. Cette séance est ouverte au public.
 
+## Lainville-en-Vexin (78329)
+
+- **⚠️ Information – Éclairage public**
+  - Date : 2026-10-28
+  - Lien : https://lainville-en-vexin.fr/2026/10/28/%e2%9a%a0%ef%b8%8f-information-eclairage-public/
+  - Résumé : La mairie vous informe qu’un dysfonctionnement technique affecte actuellement l’éclairage public sur plusieurs secteurs du territoire de la CUGPS&O, notamment sur le secteur de Limay/Meulan.
+
+- **🟠 INFORMATIONS – JOURS DE CHASSE 2026/2027**
+  - Date : 2026-09-08
+  - Lien : https://lainville-en-vexin.fr/2026/09/08/%f0%9f%9f%a0-informations-jours-de-chasse-2026-2027/
+  - Résumé : 🟠 INFORMATIONS – JOURS DE CHASSE 2026/2027 Une première journée de chasse est prévue dimanche 13 septembre 2026, dans les bois et les maïs, afin … Continuer la lecture de « 🟠 INFORMATIONS – JOURS DE CHASSE 2026/2027 »
+
+- **🚨 Arrêté de circulation**
+  - Date : 2026-07-26
+  - Lien : https://lainville-en-vexin.fr/2026/07/26/%f0%9f%9a%a8-arrete-de-circulation-2/
+  - Résumé : 26.055 Arrêté temporaire de la circulation et du stationnement rue de la mairie, chemin des Bruyères et chemin du Roi les lundi _27 et mardi … Continuer la lecture de « 🚨 Arrêté de circulation »
+
 ## Les Loges-en-Josas (78343)
 
 - **Audition des élèves de l’AMTL**
@@ -2414,6 +2698,23 @@ Procédure : le CEO relit chaque entrée contre sa page (D33), puis copie au plu
   - Date : 2026-11-12
   - Lien : https://www.mairieleslogesenjosas.fr/evenement/disco-soupe/
   - Résumé : La commune organise sa première Disco Soupe ! Le principe : cuisiner collectivement des fruits et légumes invendus ou écartés de la vente pour en faire des soupes, dans une ambiance musicale et festive, afin de sensibiliser au gaspillage alimentaire.
+
+## Longvilliers (78349)
+
+- **Listes délibérations et comptes rendus du Conseil Municipal**
+  - Date : 2026-11-12
+  - Lien : https://longvilliers-yvelines.fr/2026/11/12/comptes-rendus-du-conseil/
+  - Résumé : A compter du 1er juillet 2022, les règles d’entrée en vigueur des actes pris par les communes et leurs groupements sont modifiées par l’ordonnance N°2021-1310 … Continuer la lecture de « Listes délibérations et comptes rendus du Conseil Municipal »
+
+- **Plan de Prévention du Risque Inondation – Vallée de la Rémarde**
+  - Date : 2026-11-10
+  - Lien : https://longvilliers-yvelines.fr/2026/11/10/plan-de-prevention-du-risque-inondation-vallee-de-la-remarde/
+  - Résumé : Bonjour, comme demandé par certains riverains en fin de réunion publique jeudi dernier, veuillez trouvez ci dessous support de présentation Flyer_Enquête_publique_ VF Présentation DDT78_VF —————————————————————————————————– … Continuer la lecture de « Plan de Prévention du Risque Inondation –…
+
+- **Newsletter Mission Locale de Rambouillet**
+  - Date : 2026-11-09
+  - Lien : https://longvilliers-yvelines.fr/2026/11/09/newsletter-mission-locale-de-rambouillet/
+  - Résumé : &#160;
 
 ## Mareil-sur-Mauldre (78368)
 
@@ -2596,23 +2897,6 @@ Procédure : le CEO relit chaque entrée contre sa page (D33), puis copie au plu
   - Lien : https://ponthevrard.fr/2026/09/28/conseil-municipal-30-09-2026/
   - Résumé : CM 2026-09-30 Affiche
 
-## Prunay-le-Temple (78505)
-
-- **Cérémonie du 11 Novembre**
-  - Date : 2026-11-09
-  - Lien : https://mairie-prunayletemple.fr/2026/11/09/ceremonie-du-11-novembre/?utm_source=rss&utm_medium=rss&utm_campaign=ceremonie-du-11-novembre
-  - Résumé : La cérémonie de commémoration du 11 Novembre aura lieu à 10 Heures au monument aux morts du cimetière de Prunay le Temple.
-
-- **Alerte aux cambriolages à Prunay le Temple 78910**
-  - Date : 2026-11-09
-  - Lien : https://mairie-prunayletemple.fr/2026/11/09/alerte-aux-cambriolages-a-prunay-le-temple-78910/?utm_source=rss&utm_medium=rss&utm_campaign=alerte-aux-cambriolages-a-prunay-le-temple-78910
-  - Résumé : Les bons réflexes au quotidien En cas d’absence prolongée (vacances) En cas de cambriolage
-
-- **Messes à Prunay le Temple**
-  - Date : 2026-11-08
-  - Lien : https://mairie-prunayletemple.fr/2026/11/08/messes-a-prunay-le-temple/?utm_source=rss&utm_medium=rss&utm_campaign=messes-a-prunay-le-temple
-  - Résumé : Tous les dimanches de Novembre à 10hrs une messe dominicale sera célébrée à l’Eglise de Prunay le Temple
-
 ## Prunay-en-Yvelines (78506)
 
 - **Bientôt 16 ans ? Pensez au recensement citoyen**
@@ -2646,6 +2930,23 @@ Procédure : le CEO relit chaque entrée contre sa page (D33), puis copie au plu
   - Date : 2024-07-01
   - Lien : https://rambouillet.fr/2024/07/bonjour-tout-le-monde/
   - Résumé : Bienvenue sur Ville de Rambouille. Ceci est votre premier article.
+
+## Richebourg (78520)
+
+- **Carte Tourisme et Patrimoine du Pays Houdanais**
+  - Date : 2026-11-02
+  - Lien : https://richebourg78.fr/2026/11/02/carte-tourisme-et-patrimoine-du-pays-houdanais/
+  - Résumé : L’Office de Tourisme a mis en ligne sur son site une carte interactive du patrimoine.
+
+- **Enquete publique chemins ruraux**
+  - Date : 2026-11-02
+  - Lien : https://richebourg78.fr/2026/11/02/enquete-publique-chemins-ruraux/
+  - Résumé : Enquête publique relative au recensement des chemins ruraux – Phase 1 Du 9 novembre 2026 à 9h00 au 27 novembre 2026 à 17h00 inclus, … Continuer la lecture de « Enquete publique chemins ruraux »
+
+- **Marché de Noël les 28 et 29 Novembre**
+  - Date : 2026-10-13
+  - Lien : https://richebourg78.fr/2026/10/13/marche-de-noel-les-28-et-29-novembre/
+  - Résumé : 
 
 ## Rochefort-en-Yvelines (78522)
 
@@ -2899,6 +3200,23 @@ Procédure : le CEO relit chaque entrée contre sa page (D33), puis copie au plu
   - Lien : https://www.mairie-angerville.fr/actualite/transmettre-la-memoire-aux-jeunes-generations-un-devoir-essentiel/
   - Résumé : 11 novembre, Angerville se souvient, 110 ans après Hier matin (11 novembre), Angerville s’est rassemblée autour du Maire Johann Mittelhausser pour commémorer le 108e anniversaire de l’Armistice de 1918 et rendre hommage à celles et ceux qui ont donné leur vie pour la France. Cette cérémonie…
 
+## Auvers-Saint-Georges (91038)
+
+- **Café’Papote**
+  - Date : 2026-11-09
+  - Lien : https://auvers-saint-georges.fr/2026/11/09/cafepapote/
+  - Résumé : Samedi 5 décembre de 9h30 à 12h Venez prendre un café, un thé ou un sirop… et papotez !
+
+- **Livraison des nouveaux bacs des ordures**
+  - Date : 2026-10-29
+  - Lien : https://auvers-saint-georges.fr/2026/10/29/livraison-des-nouveaux-bacs-des-ordures/
+  - Résumé : Chères habitantes, chers habitants, Suite aux enquêtes menées ces dernières semaines auprès de chaque foyer, la Communauté de communes Entre Juine et Renarde vous informe … Continuer la lecture de « Livraison des nouveaux bacs des ordures »
+
+- **Bourse aux jouets**
+  - Date : 2026-10-27
+  - Lien : https://auvers-saint-georges.fr/2026/10/27/bourse-aux-jouets/
+  - Résumé : Au profit de la classe de découverte de l’école ! une bourse aux jouets est organisée le 22 novembre de 11h à 17h, salle polyvalente.
+
 ## Ballancourt-sur-Essonne (91045)
 
 - **Pôle Jeunesse – Vacances d’Automne 2026**
@@ -2949,23 +3267,6 @@ Procédure : le CEO relit chaque entrée contre sa page (D33), puis copie au plu
   - Date : 2026-03-16
   - Lien : https://www.boigneville.fr/votre-agenda/odj-du-cm-du-20-mars-2026-20h45
   - Résumé : 
-
-## Boissy-la-Rivière (91079)
-
-- **Inscription scolaire : année 2026 / 2027**
-  - Date : 2026-02-26
-  - Lien : https://boissy-la-riviere.fr/inscription-rentree-scolaire/
-  - Résumé : C’est le moment de procéder à l’inscription scolaire de votre enfant pour la rentrée en petite section maternelle de septembre 2026. fr L’article Inscription scolaire : année 2026 / 2027 est apparu en premier sur Mairie de Boissy la Rivière.
-
-- **Ensemble, valorisons les déchets**
-  - Date : 2025-12-11
-  - Lien : https://boissy-la-riviere.fr/compostage/
-  - Résumé : Découvrez les secrets du compostage Vous souhaitez apprendre les secrets d’un compostage réussi à l’heure où nous devons adopter de nouvelles habitudes avec la mise en place du tri à la source des biodéchets ? Ne manquez pas les prochaines formations « Tous au compost » de l’agglo, ouverte à…
-
-- **Pré-inscription aux structures petite enfance**
-  - Date : 2025-12-05
-  - Lien : https://boissy-la-riviere.fr/pre-inscription-aux-structures-petite-enfance/
-  - Résumé : Si vous souhaitez obtenir une place dans l’une des quatre crèches collectives de l’agglomération Etampoise, le Jardin des Lutins à Morigny-Champigny, la Très grande crèche Serge Levrez , la Grande crèche Le Petit Prince et la micro-crèche Mandarine à Etampes pour la rentrée de septembre 2026,…
 
 ## Boissy-le-Sec (91081)
 
@@ -3053,6 +3354,23 @@ Procédure : le CEO relit chaque entrée contre sa page (D33), puis copie au plu
   - Date : 2025-12-10
   - Lien : https://buno-bonnevaux.fr/actualites/creation-dun-city-stade
   - Résumé : L’article Création d’un city stade est apparu en premier sur Mairie de Buno-Bonnevaux.
+
+## Champmotteux (91137)
+
+- **Pâques : Chasses aux oeufs**
+  - Date : 2026-04-07
+  - Lien : https://champmotteux.fr/2026/04/07/paques-chasses-aux-oeufs/
+  - Résumé : Ce week-end, les enfants du village ont participé avec enthousiasme à la traditionnelle chasse aux œufs 🐣🐰🍫.
+
+- **Rénovation**
+  - Date : 2026-03-11
+  - Lien : https://champmotteux.fr/2026/03/11/renovation/
+  - Résumé : 
+
+- **Le rendez-vous des aidants**
+  - Date : 2026-03-11
+  - Lien : https://champmotteux.fr/2026/03/11/le-rendez-vous-des-aidants/
+  - Résumé : 
 
 ## Cheptainville (91156)
 
@@ -3394,23 +3712,6 @@ Procédure : le CEO relit chaque entrée contre sa page (D33), puis copie au plu
   - Lien : https://www.montlhery.fr/actualites/arrete-temporaire-stationnement-chemin-ville-du-bois/
   - Résumé : Travaux de génie civil à l’angle du chemin de la Ville du Bois et de l’allée des Vignes Dans le cadre de travaux de génie civil visant à percer une chambre télécom et à en installer une nouvelle, l’entreprise BEAUVAL interviendra pour le compte de SIPARTECH à l’angle du chemin de la Ville du…
 
-## Morsang-sur-Orge (91434)
-
-- **Sécheresse 2026 : déclaration de catastrophes naturelles**
-  - Date : 2026-10-19
-  - Lien : https://www.morsang.fr/actualites/secheresse-2026-declaration-de-catastrophes-naturelles/
-  - Résumé : La sécheresse de cet été a pu provoquer un phénomène de retrait-gonflement des sols argileux. Ce mouvement du sol peut fissurer les murs, les façades, les dallages ou les cloisons.
-
-- **Travaux : Extension du lycée André-Marie Ampère**
-  - Date : 2026-09-10
-  - Lien : https://www.morsang.fr/actualites/%f0%9d%97%a7%f0%9d%97%a5%f0%9d%97%94%f0%9d%97%a9%f0%9d%97%94%f0%9d%97%a8%f0%9d%97%ab-%f0%9d%97%98%f0%9d%97%ab%f0%9d%97%a7%f0%9d%97%98%f0%9d%97%a1%f0%9d%97%a6%f0%9d%97%9c%f0%9d%97%a2%f0%9d%97%a1/
-  - Résumé : La Région Île-de-France engagera prochainement les travaux d’extension du lycée André-Marie Ampère. Début du chantier : semaine du 14 septembre 2026 Durée prévisionnelle : 2 ans 𝗡𝗼𝘂𝘃𝗲𝗹𝗹𝗲 𝗼𝗿𝗴𝗮𝗻𝗶𝘀𝗮𝘁𝗶𝗼𝗻 𝗱𝘂 𝘀𝘁𝗮𝘁𝗶𝗼𝗻𝗻𝗲𝗺𝗲𝗻𝘁 Le chantier nécessitera…
-
-- **Devenir parent : Une aventure qui se vit accompagnée**
-  - Date : 2026-08-28
-  - Lien : https://www.morsang.fr/actualites/devenir-parent-une-aventure-qui-se-vit-accompagnee/
-  - Résumé : Ateliers de soutien à la parentalité pour parents et futurs parents. De la grossesse jusqu’aux premières années de votre enfant, cette période est essentielle pour la santé et le développement de bébé, mais aussi pour votre bien-être en tant que parent.
-
 ## Ollainville (91461)
 
 - **Cérémonie commémorative du 11 novembre**
@@ -3464,6 +3765,11 @@ Procédure : le CEO relit chaque entrée contre sa page (D33), puis copie au plu
 
 ## Pecqueuse (91482)
 
+- **Plantation citoyenne d’arbres fruitiers – 19 et 20 novembre**
+  - Date : 2026-11-12
+  - Lien : https://mairie-pecqueuse.fr/plantation-citoyenne-darbres-fruitiers-19-et-20-novembre/
+  - Résumé : Plantons aujourd’hui les récoltes de demain ! Un arbre planté, c’est une promesse pour les années à venir : le plaisir de voir mûrir les fruits, de les cueillir et de partager des moments autour des récoltes.
+
 - **Vide ta chambre à Pecqueuse : rendez-vous les 28 et 29 novembre 2026**
   - Date : 2026-11-06
   - Lien : https://mairie-pecqueuse.fr/vide-ta-chambre-a-pecqueuse-rendez-vous-les-28-et-29-novembre-2026/
@@ -3473,11 +3779,6 @@ Procédure : le CEO relit chaque entrée contre sa page (D33), puis copie au plu
   - Date : 2026-10-31
   - Lien : https://mairie-pecqueuse.fr/bilan-qualite-de-leau-pecqueuse-octobre-2026/
   - Résumé : Conclusion sanitaire : Eau d’alimentation conforme aux exigences de qualité en vigueur pour l’ensemble des paramètres mesurés PECQUEUSE – 09100207949 (1)
-
-- **Commémoration du 11 novembre 2026 -11h15 Monument aux Morts**
-  - Date : 2026-10-23
-  - Lien : https://mairie-pecqueuse.fr/commemoration-du-11-novembre-2026-11h15-monument-aux-morts/
-  - Résumé : 
 
 ## Ris-Orangis (91521)
 
@@ -3627,6 +3928,23 @@ Procédure : le CEO relit chaque entrée contre sa page (D33), puis copie au plu
   - Lien : https://souzylabriche.fr/2026/11/07/calendrier-des-pompiers/
   - Résumé : Jusqu’au début du mois de janvier 2027, les sapeurs-pompiers d’Etréchy viennent à votre rencontre, directement à votre domicile, pour vous proposer leur traditionnel calendrier.
 
+## Le Val-Saint-Germain (91630)
+
+- **🗞️ La communication au Val Saint Germain**
+  - Date : 2025-10-04
+  - Lien : https://le-val-saint-germain.fr/%f0%9f%97%9e%ef%b8%8f-la-communication-au-val-saint-germain/
+  - Résumé : Restons connectés ! Chères habitantes, chers habitants, Parce qu’il est essentiel de rester informés, la commune du Val Saint Germain a développé au fil des ...
+
+- **Affaire du Marais, suite !!!**
+  - Date : 2025-08-05
+  - Lien : https://le-val-saint-germain.fr/affaire-du-marais-suite/
+  - Résumé : 📍 Point d’étape – Le Marais – 5 août 2025 Le 6 juillet dernier, nous vous informions de la situation devenue intenable au niveau du ... The post Affaire du Marais, suite !!!
+
+- **🚨 Une partie du hameau du Marais en souffrance !**
+  - Date : 2025-07-06
+  - Lien : https://le-val-saint-germain.fr/%f0%9f%9a%a8-une-partie-du-hameau-du-marais-en-souffrance/
+  - Résumé : Depuis plusieurs mois, le trafic routier s’intensifie dangereusement sur la route des Bruyères (RD132), reliant le Marais à Angervilliers. Ce passage étroit et délicat à ...
+
 ## Varennes-Jarcy (91631)
 
 - **Un atelier « Bien-être et émotions » pour les seniors**
@@ -3762,13 +4080,6 @@ Procédure : le CEO relit chaque entrée contre sa page (D33), puis copie au plu
   - Date : 2026-10-30
   - Lien : https://www.chatenay-malabry.fr/appel-national-a-la-greve/
   - Résumé : Information du 10 novembre
-
-## Châtillon (92020)
-
-- **Appel à projet : un foodtruck à Châtillon**
-  - Date : 2023-04-21
-  - Lien : https://www.ville-chatillon.fr/2023/04/21/appel-a-projet-un-foodtruck-a-chatillon/
-  - Résumé : La Ville lance un appel à projet dans le cadre de la mise en place d’un foodtruck au sein du Parc Henri Matisse, à partir du mois de mai jusqu'au mois de juillet.
 
 ## Garches (92033)
 
@@ -4228,23 +4539,6 @@ Procédure : le CEO relit chaque entrée contre sa page (D33), puis copie au plu
   - Lien : https://mairie-amenucourt.fr/2025/09/11/mardi-9h-12h-des-le-05-11-au-lieu-du-mercredi/
   - Résumé : 
 
-## Andilly (95014)
-
-- **Inauguration du groupe scolaire Frania Eisenbach-Haverland**
-  - Date : 2026-11-09
-  - Lien : https://www.ville-andilly-95.fr/7673-2/
-  - Résumé : L’article Inauguration du groupe scolaire Frania Eisenbach-Haverland est apparu en premier sur Ville Andilly 95.
-
-- **𝐔𝐧𝐞 𝐜𝐨𝐥𝐥𝐞𝐜𝐭𝐞 𝐬𝐨𝐥𝐢𝐝𝐚𝐢𝐫𝐞 𝐚𝐮𝐬𝐬𝐢 𝐩𝐨𝐮𝐫 𝐧𝐨𝐬 𝐚𝐦𝐢𝐬 𝐚̀ 𝐪𝐮𝐚𝐭𝐫𝐞 𝐩𝐚𝐭𝐭𝐞𝐬 !**
-  - Date : 2026-11-05
-  - Lien : https://www.ville-andilly-95.fr/%f0%9d%90%94%f0%9d%90%a7%f0%9d%90%9e-%f0%9d%90%9c%f0%9d%90%a8%f0%9d%90%a5%f0%9d%90%a5%f0%9d%90%9e%f0%9d%90%9c%f0%9d%90%ad%f0%9d%90%9e-%f0%9d%90%ac%f0%9d%90%a8%f0%9d%90%a5%f0%9d%90%a2%f0%9d%90%9d/
-  - Résumé : L’article 𝐔𝐧𝐞 𝐜𝐨𝐥𝐥𝐞𝐜𝐭𝐞 𝐬𝐨𝐥𝐢𝐝𝐚𝐢𝐫𝐞 𝐚𝐮𝐬𝐬𝐢 𝐩𝐨𝐮𝐫 𝐧𝐨𝐬 𝐚𝐦𝐢𝐬 𝐚̀ 𝐪𝐮𝐚𝐭𝐫𝐞 𝐩𝐚𝐭𝐭𝐞𝐬 ! est apparu en premier sur Ville Andilly 95.
-
-- **𝐋𝐞 𝐂𝐨𝐧𝐬𝐞𝐢𝐥 𝐌𝐮𝐧𝐢𝐜𝐢𝐩𝐚𝐥 𝐝𝐞𝐬 𝐉𝐞𝐮𝐧𝐞𝐬 𝐚 𝐭𝐞𝐧𝐮 𝐬𝐨𝐧 𝐩𝐫𝐞𝐦𝐢𝐞𝐫 𝐜𝐨𝐧𝐬𝐞𝐢𝐥 !**
-  - Date : 2026-11-03
-  - Lien : https://www.ville-andilly-95.fr/%f0%9d%90%8b%f0%9d%90%9e-%f0%9d%90%82%f0%9d%90%a8%f0%9d%90%a7%f0%9d%90%ac%f0%9d%90%9e%f0%9d%90%a2%f0%9d%90%a5-%f0%9d%90%8c%f0%9d%90%ae%f0%9d%90%a7%f0%9d%90%a2%f0%9d%90%9c%f0%9d%90%a2%f0%9d%90%a9/
-  - Résumé : L’article 𝐋𝐞 𝐂𝐨𝐧𝐬𝐞𝐢𝐥 𝐌𝐮𝐧𝐢𝐜𝐢𝐩𝐚𝐥 𝐝𝐞𝐬 𝐉𝐞𝐮𝐧𝐞𝐬 𝐚 𝐭𝐞𝐧𝐮 𝐬𝐨𝐧 𝐩𝐫𝐞𝐦𝐢𝐞𝐫 𝐜𝐨𝐧𝐬𝐞𝐢𝐥 ! est apparu en premier sur Ville Andilly 95.
-
 ## Attainville (95028)
 
 - **Matinée Petite Enfance**
@@ -4303,40 +4597,6 @@ Procédure : le CEO relit chaque entrée contre sa page (D33), puis copie au plu
   - Lien : https://lebellayenvexin.com/avis-de-la-population/
   - Résumé : Chères Bellaysiennes, Chers Bellaysiens, Nous sommes nombreux à nous plaindre de la faible couverture des réseaux de téléphonie dans la commune. Il n’est pas possible de téléphoner n’importe où.
 
-## Béthemont-la-Forêt (95061)
-
-- **Fête du Beaujolais – Samedi 28 novembre**
-  - Date : 2026-10-27
-  - Lien : https://bethemont-la-foret.fr/fete-du-beaujolais-samedi-28-novembre/
-  - Résumé : Le comité des fêtes de Béthemont-La-Forêt vous propose de fêter la nouvelle cuvée du Beaujolais le samedi 28 novembre dans la cour de l’école. La réservation vous permettra de déguster un verre de ce Beaujolais nouveau accompagné d’une assiette de charcuterie et fromage (12 € par personne).
-
-- **Armistice 1918**
-  - Date : 2026-10-27
-  - Lien : https://bethemont-la-foret.fr/armistice-1918/
-  - Résumé : En commémoration de l’armistice du 11 novembre 1918, Didier Dagonet, Maire de Béthemont-La-Forêt, et le Conseil Municipal vous invitent à célébrer cet anniversaire à 9h au cimetière pour un dépôt de gerbe devant le Monument aux Morts. Ce moment solennel sera suivi d’un vin d’honneur à la mairie.
-
-- **Tri-Or : horaires d’hiver et compost**
-  - Date : 2026-09-30
-  - Lien : https://bethemont-la-foret.fr/tri-or-horaires-dhiver-et-compost/
-  - Résumé : Nous vous rappelons que les deux déchetteries passent aux horaires d’hiver à partir du jeudi 1er octobre, elles fermeront à 17h (en dehors du dimanche qui reste à 12h30). D’autre part, la mise à disposition de compost reprendra le mercredi 7 octobre, puis tous les mercredis jusqu’au 25 novembre.
-
-## Bouffémont (95091)
-
-- **La collecte des encombrants évolue**
-  - Date : 2026-11-06
-  - Lien : https://ville-bouffemont.fr/la-collecte-des-encombrants-evolue/
-  - Résumé : A compter du 1er janvier 2027, la collecte des encombrants évolue.
-
-- **Monoxyde de carbone**
-  - Date : 2026-11-06
-  - Lien : https://ville-bouffemont.fr/monoxyde-de-carbone/
-  - Résumé : Chaque année, ce gaz toxique est responsable d’une centaine de décès en France.
-
-- **Protection Maternelle Infantile**
-  - Date : 2026-10-27
-  - Lien : https://ville-bouffemont.fr/bus-pmi/
-  - Résumé : En complément de ses centres, le Département propose le bus PMI.
-
 ## Bray-et-Lû (95101)
 
 - **FESTIV’HARP – Festival International de Harpe du Vexin**
@@ -4370,23 +4630,6 @@ Procédure : le CEO relit chaque entrée contre sa page (D33), puis copie au plu
   - Date : 2026-11-04
   - Lien : https://www.bruyeres-sur-oise.com/actualites/a-la-une/ligne-h-trafic-perturbe-le-jeudi-5-novembre/
   - Résumé : En raison d’un mouvement social national interprofessionnel, la circulation des trains de la ligne H sera perturbée le jeudi 5 novembre 2026. La SNCF prévoit en moyenne un train sur deux en circulation sur l’ensemble de la ligne.
-
-## Chaumontel (95149)
-
-- **Fête du livre 2026**
-  - Date : 2026-11-12
-  - Lien : https://ville-chaumontel.fr/2026/11/12/fete-du-livre-2026/
-  - Résumé : 📚 [CULTURE] 41e Fête du Livre à Chaumontel La Bibliothèque de Chaumontel « Yvonne Berthet » organise sa 41e Fête du Livre les vendredi 20 et samedi 21 novembre 2026, à la salle Eugène Coudre.
-
-- **Rétrospective travaux route de Baillon**
-  - Date : 2026-11-12
-  - Lien : https://ville-chaumontel.fr/2026/11/12/retrospective-travaux-route-de-baillon/
-  - Résumé : 🚧 [TRAVAUX] finalisation des travaux route de Baillon Les travaux de voirie route de Baillon sont désormais terminés ! Plusieurs aménagements ont été réalisés :➡️ Retrait des anciens plateaux ralentisseurs ;➡️ Remplacement des caniveaux et pose de nouvelles bordures ;➡️ Réfection de la chaussée…
-
-- **Réunion publique du CMJC – Nouvelle mandature 2026/2028**
-  - Date : 2026-11-10
-  - Lien : https://ville-chaumontel.fr/2026/11/10/reunion-publique-du-cmjc-nouvelle-mandature-2026-2028/
-  - Résumé : 🥳 [ENFANCE] Le CMJC lance son nouveau mandat ! 📆 Le vendredi 6 novembre, une réunion publique s’est tenue en mairie pour présenter le Conseil municipal des jeunes de Chaumontel (CMJC) et son nouveau mandat 2026-2028.
 
 ## Chauvry (95151)
 
@@ -4628,40 +4871,6 @@ Procédure : le CEO relit chaque entrée contre sa page (D33), puis copie au plu
   - Lien : https://genicourt.fr/invitation-a-participera-la-commemoration-du-8-mai-1945-2/
   - Résumé : La population Génicourtoise est cordialement invitée à participer à la cérémoniecommémorant le 80ème anniversaire de l’armistice de la seconde guerre mondiale, le jeudi 8 mai 2025 à 10hà la chapelle Notre-Dame-des-Neiges de Gérocourt A l’issue de cette cérémonie, vous êtes invité (s) par…
 
-## Guiry-en-Vexin (95295)
-
-- **Commémoration de l’armistice de la guerre 14/18**
-  - Date : 2026-11-04
-  - Lien : https://guiry-en-vexin.fr/commemoration-de-larmistice-de-la-guerre-14-18/
-  - Résumé : Le 11 novembre 2026, Madame le maire ainsi que le conseil municipal, vous invitent à 11h00 pour la commémoration de l'armistice de la guerre de 14 / 18. L’article Commémoration de l’armistice de la guerre 14/18 est apparu en premier sur Guiry-en-vexin.
-
-- **compte rendu de reunion conseil Municipal du 25 septembre 2026**
-  - Date : 2026-10-25
-  - Lien : https://guiry-en-vexin.fr/compte-rendu-de-reunion-conseil-municipal-du-25-septembre-2026/
-  - Résumé : L’article compte rendu de reunion conseil Municipal du 25 septembre 2026 est apparu en premier sur Guiry-en-vexin.
-
-- **compte rendu reunion conseil municipal 3 juillet 2026**
-  - Date : 2026-09-23
-  - Lien : https://guiry-en-vexin.fr/compte-rendu-reunion-conseil-municipale-3-juillet-2026/
-  - Résumé : L’article compte rendu reunion conseil municipal 3 juillet 2026 est apparu en premier sur Guiry-en-vexin.
-
-## Haravilliers (95298)
-
-- **Bulletin Municipal 2026**
-  - Date : 2026-11-08
-  - Lien : https://haravilliers.com/bulletin-municipal-2026/
-  - Résumé : Retrouvez notre bulletin municipal
-
-- **Monsieur le Maire et son équipe sont heureux de vous convier à la réunion publique mercredi 11 novembre 2026 à 11h00 au gymnase. Un apéritif vous sera offert par les élus. Venez nombreux !**
-  - Date : 2026-11-05
-  - Lien : https://haravilliers.com/reunion-publique-11-11-2026-11h00/
-  - Résumé : 
-
-- **Réunion publique mercredi 11 novembre 2026 à 11h00 au gymnase**
-  - Date : 2026-11-05
-  - Lien : https://haravilliers.com/reunion-publique-mercredi-11-novembre-2026-a-11h00-au-gymnase/
-  - Résumé : 
-
 ## Labbeville (95328)
 
 - **Fête communale**
@@ -4821,23 +5030,6 @@ Procédure : le CEO relit chaque entrée contre sa page (D33), puis copie au plu
   - Date : 2026-09-20
   - Lien : https://moussy.fr/modification-des-regles-de-publicite-des-actes-de-la-commune-3/
   - Résumé : Mise à jour du 18 septembre 2026 Publicité des actes des communes selon les règles suite à la réforme introduite par l’ordonnance n°2021-1310 et le décret n°2021-1311 du 7 octobre 2021. La dématérialisation est le mode de publicité de droit commun pour les communes de + 3 500 habitants.
-
-## Nesles-la-Vallée (95446)
-
-- **PROCHAINE SEANCE DU CONSEIL MUNICIPAL 20.11.2026**
-  - Date : 2026-11-12
-  - Lien : https://nesleslavallee.fr/2026/11/12/prochaine-seance-du-conseil-municipal-20-11-2026/
-  - Résumé : 2026 est apparu en premier sur Nesles la Vallée 95.
-
-- **AVIS D’ENQUETE PUBLIQUE**
-  - Date : 2026-10-22
-  - Lien : https://nesleslavallee.fr/2026/10/22/avis-denquete-publique/
-  - Résumé : Par arrêté N°2026-099 du 18 octobre, Le Maire de la commune de Nesles la Vallée a prescrit l’ouverture d’une enquête publique relative à la modification du PLU. 📅 Dates et lieu de l’enquête publique 👩‍⚖️ Commissaires enquêteurs Pendant ce délai, les personnes intéressées par le projet de…
-
-- **Fermeture exceptionnelle de l’agence postale**
-  - Date : 2026-10-22
-  - Lien : https://nesleslavallee.fr/2026/10/22/fermeture-exceptionnelle-de-lagence-postale/
-  - Résumé : L’agence postale sera exceptionnellement fermée le samedi 24 octobre 2026. Nous vous remercions de votre compréhension L’article Fermeture exceptionnelle de l’agence postale est apparu en premier sur Nesles la Vallée 95.
 
 ## Neuilly-en-Vexin (95447)
 
