@@ -33,10 +33,23 @@ import { useMouvementReduit } from "./mouvement";
 const tailleEnonce = (n: number) => (n <= 80 ? 26 : n <= 130 ? 23 : n <= 170 ? 21 : 19);
 const pluriel = (n: number) => `${n} réponse${n > 1 ? "s" : ""} juste${n > 1 ? "s" : ""}`;
 
-/* LES RANGS, EN TOUTES LETTRES (13/11/2026, porteur). On montre la règle, et rien d'autre : ce sont
- * des paliers de points, les mêmes pour tout le monde, et Repère ne sait rien des autres lecteurs. */
+/* LES RANGS EN ROADMAP VERTICALE (13/11/2026, refonte demandée par le porteur).
+ *
+ * Un fil continu, un jalon par rang, le rang atteint en plein et les suivants en gris. Ce ne sont pas
+ * des places : ce sont des paliers de points, les mêmes pour tout le monde, et Repère ne sait rien des
+ * autres lecteurs — il n'y a personne à qui se comparer.
+ *
+ * LES ICÔNES, à ma main (le porteur me laissait le choix) : bronze, argent et or auraient demandé
+ * TROIS COULEURS NOUVELLES dans palette.ts, donc un amendement de l'invariant 7 que personne n'a
+ * décidé. Les paliers se lisent donc à la forme et au remplissage — cercle vide, cercle plein, ruban,
+ * trophée — et au texte, jamais à une couleur de métal. Un lecteur daltonien lit la même chose. */
+const JALONS: Record<string, keyof typeof Ionicons.glyphMap> = {
+  neo: "ellipse-outline", citoyen: "ellipse", super: "ribbon", sage: "trophy",
+};
+
 function LesRangs({ ouvert, fermer, points }: { ouvert: boolean; fermer: () => void; points: number }) {
   const atteint = rangPour(points);
+  const rangAtteint = RANGS.indexOf(atteint);
   return (
     <Modal visible={ouvert} animationType="slide" onRequestClose={fermer} transparent={false}>
       <ScrollView style={{ backgroundColor: couleurs.sol }} contentContainerStyle={{ padding: PAS * 5, gap: PAS * 4, maxWidth: 560, width: "100%", alignSelf: "center" }}>
@@ -47,22 +60,44 @@ function LesRangs({ ouvert, fermer, points }: { ouvert: boolean; fermer: () => v
             <Text style={[TYPO.corps, { fontFamily: POLICE.titre }]}>Fermer</Text>
           </Pressable>
         </View>
-        {RANGS.map(r => {
-          const ici = r.cle === atteint.cle;
-          return (
-            <View key={r.cle} testID="rang-ligne"
-              accessibilityLabel={`${r.nom}, ${r.max === null ? `${r.min} points et plus` : `de ${r.min} à ${r.max} points`}${ici ? ". Votre rang." : ""}`}
-              style={{ flexDirection: "row", alignItems: "center", gap: PAS * 3, padding: PAS * 4, borderRadius: RAYON.bloc,
-                backgroundColor: couleurs.carte, borderWidth: ici ? 2 : 1, borderColor: ici ? couleurs.encre : couleurs.trait }}>
-              <Ionicons name={ici ? "ribbon" : "ribbon-outline"} size={22} color={couleurs.encre} accessible={false} importantForAccessibility="no" />
-              <View style={{ flex: 1, gap: 2 }}>
-                <Text style={[TYPO.corps, { fontFamily: POLICE.titre }]}>{r.nom}{ici ? " — votre rang" : ""}</Text>
-                <Text style={TYPO.note}>{r.max === null ? `${r.min} points et plus` : `de ${r.min} à ${r.max} points`}</Text>
+        <Text style={TYPO.note}>Dix points par réponse juste. Les mêmes paliers pour tout le monde.</Text>
+
+        <View style={{ gap: 0 }}>
+          {RANGS.map((r, i) => {
+            const ici = i === rangAtteint;
+            const passe = i < rangAtteint;
+            const aVenir = i > rangAtteint;
+            const teinte = aVenir ? couleurs.sourd : couleurs.encre;
+            return (
+              <View key={r.cle} style={{ flexDirection: "row", gap: PAS * 4 }} testID="rang-ligne"
+                accessibilityLabel={`${r.nom}, ${r.max === null ? `${r.min} points et plus` : `de ${r.min} à ${r.max} points`}${ici ? ". Votre rang." : passe ? ". Franchi." : ". À venir."}`}>
+                {/* LE FIL : le jalon, et le trait qui descend vers le suivant. */}
+                <View style={{ alignItems: "center", width: 40 }}>
+                  <View style={{ width: 40, height: 40, borderRadius: 20, alignItems: "center", justifyContent: "center",
+                    backgroundColor: ici ? couleurs.encre : couleurs.carte, borderWidth: ici ? 0 : 1, borderColor: couleurs.trait }}>
+                    <Ionicons name={JALONS[r.cle] || "ellipse-outline"} size={20} color={ici ? couleurs.sol : teinte}
+                      accessible={false} importantForAccessibility="no" />
+                  </View>
+                  {i < RANGS.length - 1 ? (
+                    <View style={{ width: 2, flex: 1, minHeight: PAS * 6, backgroundColor: passe || ici ? couleurs.encre : couleurs.trait }} />
+                  ) : null}
+                </View>
+                <View style={{ flex: 1, gap: 2, paddingBottom: PAS * 5, opacity: aVenir ? 0.55 : 1 }}>
+                  <Text style={[TYPO.corps, { fontFamily: POLICE.titre, color: teinte }]}>
+                    {r.nom}{ici ? " — votre rang" : ""}
+                  </Text>
+                  <Text style={[TYPO.note, { color: couleurs.sourd }]}>
+                    {r.max === null ? `${r.min} points et plus` : `de ${r.min} à ${r.max} points`}
+                  </Text>
+                  {ici && r.max !== null ? (
+                    <Text style={[TYPO.note, { color: couleurs.sourd }]}>Vous avez {points} points.</Text>
+                  ) : null}
+                </View>
               </View>
-            </View>
-          );
-        })}
-        <Text style={TYPO.micro}>Dix points par réponse juste. Vos points restent sur cet appareil : ils ne sont ni envoyés, ni comparés à ceux de quelqu'un d'autre.</Text>
+            );
+          })}
+        </View>
+        <Text style={TYPO.micro}>100 % local, aucune donnée collectée.</Text>
       </ScrollView>
     </Modal>
   );
@@ -90,6 +125,8 @@ export function Quiz({ categorieDe }: { categorieDe: (cle: string) => string }) 
   /* Le rang suivant, ou null au dernier : sert la barre de progression de fin de manche. */
   const suivant = RANGS[RANGS.indexOf(monRang) + 1] || null;
   const monte = useRef(new Animated.Value(0)).current;
+  /* L'arrivee sur l'ecran de fin : le score grossit puis retombe. Rien de sonore, rien qui tourne. */
+  const arrivee = useRef(new Animated.Value(1)).current;
   const reduit = useMouvementReduit();
   const marges = useSafeAreaInsets();
   const entree = useRef(new Animated.Value(1)).current;
@@ -129,11 +166,16 @@ export function Quiz({ categorieDe }: { categorieDe: (cle: string) => string }) 
       }
     } else setSerie(0);
   };
-  const suivante = () => { setChoix(null); if (derniere) setFini(true); else setRang(r => r + 1); };
+  const suivante = () => {
+    setChoix(null);
+    if (!derniere) { setRang(r => r + 1); return; }
+    setFini(true);
+    if (!reduit) { arrivee.setValue(0.7); Animated.spring(arrivee, { toValue: 1, friction: 4, tension: 70, useNativeDriver: false }).start(); }
+  };
   const rejouer = () => { setFini(false); setRang(0); setChoix(null); setJustes(0); setManche(m => m + 1); };
 
-  const bouton = (texte: string, action: () => void) => (
-    <Pressable onPress={action} accessibilityRole="button" accessibilityLabel={texte}
+  const bouton = (texte: string, action: () => void, id?: string) => (
+    <Pressable onPress={action} accessibilityRole="button" accessibilityLabel={texte} testID={id}
       style={({ pressed }) => ({ minHeight: CIBLE + 8, borderRadius: RAYON.pastille, alignItems: "center", justifyContent: "center", backgroundColor: ACCENTS.autorite, opacity: pressed ? 0.8 : 1 })}>
       <Text style={{ fontSize: 17, fontFamily: POLICE.section, color: ACCENTS.surAutorite }}>{texte}</Text>
     </Pressable>
@@ -175,51 +217,69 @@ export function Quiz({ categorieDe }: { categorieDe: (cle: string) => string }) 
   );
 
   if (fini) {
+    /* L'ÉCRAN DE FIN (13/11/2026, refonte demandée par le porteur : « trop textuel et triste »).
+     * Le score en très gros, une phrase courte, la jauge vers le rang suivant, et « Nouvelle manche »
+     * en bouton plein. Les couleurs sont celles DÉJÀ autorisées pour le quiz (palette.ts) : vert pour
+     * un bon score, rouge pour un score faible, l'encre entre les deux. Pas d'orange : ce serait une
+     * troisième couleur de quiz, donc un amendement de l'invariant 7, et il n'a pas été décidé. */
+    const teinte = justes >= 4 ? COULEURS_QUIZ.juste : justes <= 1 ? COULEURS_QUIZ.faux : couleurs.encre;
+    const phrase = justes >= 4 ? "Bien joué !" : justes >= 2 ? "Continue comme ça !" : "On recommence ?";
     return (
       <ScrollView contentContainerStyle={cadre} alwaysBounceVertical={false}>
         {enTete}
-        <Animated.View style={{ flex: 1, justifyContent: "center", gap: PAS * 3, opacity: entree }}>
-          <Text style={TYPO.etiquette}>Manche terminée</Text>
-          <Text style={TYPO.affiche} accessibilityRole="header">{pluriel(justes)} sur {total}</Text>
-          <Text style={TYPO.corps} testID="quiz-bilan">
-            {justes * POINTS_PAR_REPONSE_JUSTE} points gagnés. Vous êtes {monRang.nom}
-            {pointsAvantRangSuivant(points) !== null ? `, à ${pointsAvantRangSuivant(points)} points du rang suivant` : ""}.
-          </Text>
-          {/* LA PROGRESSION VERS LE RANG SUIVANT (13/11/2026, porteur). C'est une barre de PROGRESSION,
-              pas une place dans une file : il n'y a personne d'autre dessus. */}
+        <Animated.View style={{ flex: 1, justifyContent: "center", gap: PAS * 5, opacity: entree }}>
+          {/* LE SCORE, en très gros. L'animation est un simple agrandissement qui retombe : rien de
+              sonore, rien qui tourne, et rien du tout si les animations sont réduites (invariant 6). */}
+          <Animated.View style={{ alignItems: "center", gap: PAS, transform: [{ scale: arrivee }] }}>
+            <Text accessibilityRole="header" testID="quiz-score"
+              style={{ fontFamily: POLICE.affiche, fontSize: 72, lineHeight: 78, letterSpacing: -2, color: teinte }}>{justes} / {total}</Text>
+            <Text style={[TYPO.reponse, { color: couleurs.encre }]} testID="quiz-phrase">{phrase}</Text>
+            <Text style={TYPO.note}>{justes * POINTS_PAR_REPONSE_JUSTE} points gagnés</Text>
+          </Animated.View>
+
+          {monRang.cle !== rangDepart ? (
+            <View testID="quiz-montee" style={{ flexDirection: "row", alignItems: "center", justifyContent: "center", gap: PAS * 2 }}>
+              <Ionicons name="ribbon" size={22} color={couleurs.encre} accessible={false} importantForAccessibility="no" />
+              <Text style={[TYPO.corps, { fontFamily: POLICE.titre }]}>Nouveau rang : {monRang.nom}</Text>
+            </View>
+          ) : null}
+
+          {/* LA JAUGE vers le rang suivant. C'est une progression, pas une place dans une file :
+              il n'y a personne d'autre dessus. */}
           {suivant ? (
             <View style={{ gap: PAS * 2 }} accessible accessibilityRole="progressbar" testID="quiz-progression"
               accessibilityLabel={`${points} points sur ${suivant.min} pour devenir ${suivant.nom}`}
               accessibilityValue={{ min: 0, max: suivant.min, now: points }}>
-              <Text style={[TYPO.corps, { fontFamily: POLICE.titre }]}>{points} / {suivant.min} points pour devenir {suivant.nom}</Text>
-              <View style={{ height: 12, borderRadius: 6, backgroundColor: couleurs.voile, overflow: "hidden" }}>
-                <View style={{ height: 12, borderRadius: 6, width: `${Math.min(100, Math.round((points / suivant.min) * 100))}%`, backgroundColor: couleurs.encre }} />
+              <View style={{ flexDirection: "row", alignItems: "baseline" }}>
+                <Text style={[TYPO.corps, { fontFamily: POLICE.titre, flex: 1 }]}>{points} pts / {suivant.min} pts pour {suivant.nom}</Text>
+                <Text style={[TYPO.donnee, { color: couleurs.sourd }]}>{Math.min(100, Math.round((points / suivant.min) * 100))} %</Text>
+              </View>
+              <View style={{ height: 14, borderRadius: 7, backgroundColor: couleurs.voile, overflow: "hidden" }}>
+                <View style={{ height: 14, borderRadius: 7, width: `${Math.min(100, Math.round((points / suivant.min) * 100))}%`, backgroundColor: couleurs.encre }} />
               </View>
             </View>
           ) : (
-            <Text style={[TYPO.corps, { fontFamily: POLICE.titre }]} testID="quiz-progression">Vous êtes au dernier rang : {monRang.nom}.</Text>
+            <Text style={[TYPO.corps, { fontFamily: POLICE.titre, textAlign: "center" }]} testID="quiz-progression">Dernier rang atteint : {monRang.nom}.</Text>
           )}
-          {monRang.cle !== rangDepart ? (
-            <Text style={[TYPO.corps, { fontFamily: POLICE.titre }]} testID="quiz-montee">Nouveau rang : {monRang.nom}.</Text>
-          ) : null}
-          <Text style={TYPO.note}>{serie > 1 ? `Série en cours : ${pluriel(serie)} d'affilée. ` : ""}Vos points restent sur cet appareil : ils ne sont ni envoyés, ni comparés à ceux de quelqu'un d'autre.</Text>
         </Animated.View>
+
         <View style={{ gap: PAS * 2 }}>
-          {bouton("Nouvelle manche", rejouer)}
-          <Pressable onPress={() => setRangsOuverts(true)} accessibilityRole="button" accessibilityLabel="Voir les rangs et les points qu'ils demandent"
-            testID="voir-rangs"
-            style={({ pressed }) => ({ minHeight: CIBLE, borderRadius: RAYON.pastille, alignItems: "center", justifyContent: "center",
-              borderWidth: 1, borderColor: couleurs.trait, backgroundColor: couleurs.carte, opacity: pressed ? 0.7 : 1 })}>
-            <Text style={[TYPO.corps, { fontFamily: POLICE.titre }]}>Voir les rangs</Text>
-          </Pressable>
-          {/* Le partage : une image, par le partage du téléphone. Rien d'autre ne quitte l'appareil. */}
-          <PartagerCarte etiquette={`Partager mon rang : ${monRang.nom}`} libelle="Partager mon rang"
-            repli={`J'ai atteint le rang de ${monRang.nom} sur Repère. Peux-tu faire mieux ?`}
-            rendu={ref => <QuizStory refCarte={ref} rang={monRang.nom} defi="Peux-tu faire mieux ?" />} />
-          <Pressable onPress={() => router.push("/dictionnaire")} accessibilityRole="link" accessibilityLabel="Ouvrir le dictionnaire citoyen"
-            style={({ pressed }) => ({ minHeight: CIBLE, alignItems: "center", justifyContent: "center", opacity: pressed ? 0.7 : 1 })}>
-            <Text style={[TYPO.note, { fontFamily: POLICE.texteGras, color: couleurs.encre }]}>Ouvrir le dictionnaire citoyen ›</Text>
-          </Pressable>
+          {bouton("Nouvelle manche", rejouer, "quiz-rejouer")}
+          <View style={{ flexDirection: "row", gap: PAS * 2 }}>
+            <Pressable onPress={() => setRangsOuverts(true)} accessibilityRole="button" accessibilityLabel="Voir les rangs et les points qu'ils demandent"
+              testID="voir-rangs"
+              style={({ pressed }) => ({ flex: 1, minHeight: CIBLE, borderRadius: RAYON.pastille, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: PAS * 2,
+                borderWidth: 1, borderColor: couleurs.trait, backgroundColor: couleurs.carte, opacity: pressed ? 0.7 : 1 })}>
+              <Ionicons name="trophy-outline" size={18} color={couleurs.encre} accessible={false} importantForAccessibility="no" />
+              <Text style={[TYPO.corps, { fontFamily: POLICE.titre }]}>Les rangs</Text>
+            </Pressable>
+            <View style={{ flex: 1 }}>
+              <PartagerCarte etiquette={`Partager mon rang : ${monRang.nom}`} libelle="Partager" icone="share-outline"
+                repli={`J'ai atteint le rang de ${monRang.nom} sur Repère. Peux-tu faire mieux ?`}
+                rendu={ref => <QuizStory refCarte={ref} rang={monRang.nom} defi="Peux-tu faire mieux ?" />} />
+            </View>
+          </View>
+          <Text style={[TYPO.micro, { textAlign: "center" }]} testID="quiz-local">100 % local, aucune donnée collectée.</Text>
         </View>
         <LesRangs ouvert={rangsOuverts} fermer={() => setRangsOuverts(false)} points={points} />
       </ScrollView>

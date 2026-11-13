@@ -6,7 +6,7 @@ let echecs = 0;
 const ok = (c, m) => { console.log((c ? "ok    " : "ECHEC ") + m); if (!c) echecs++; };
 const nav = await chromium.launch();
 const page = await (await nav.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true })).newPage();
-await page.addInitScript(() => localStorage.setItem("repere.profil", JSON.stringify({ tailleTexte: 16, espacement: 1.5, contraste: "normal", policeDyslexie: false, animationsReduites: true, modeDaltonien: false, masquerImages: false })));
+await page.addInitScript(() => localStorage.setItem("repere.profil", JSON.stringify({ tailleTexte: 16, espacement: 1.5, contraste: "normal", policeDyslexie: false, animationsReduites: true, modeDaltonien: false, masquerImages: false , points: 0})));
 await page.goto(BASE + "/", { waitUntil: "networkidle" });
 await page.getByRole("link", { name: /Testez votre culture civique/ }).first().click();
 await page.getByRole("radio").first().waitFor({ timeout: 15000 });
@@ -38,13 +38,21 @@ if (process.argv[3]) await page.screenshot({ path: process.argv[3] + "/quiz-repo
 /* Une manche de cinq questions, puis le résultat, qui ne quitte pas l'écran. */
 for (let i = 0; i < 4; i++) { await page.getByRole("button", { name: "Question suivante" }).click(); await page.getByRole("radio").first().click(); }
 await page.getByRole("button", { name: "Voir le résultat" }).click();
-await page.getByText("Manche terminée").first().waitFor({ timeout: 5000 });
-ok(await page.getByRole("heading", { name: /^\d réponses? justes? sur 5$/ }).count() === 1, "fin de manche : le nombre de réponses justes sur 5");
+await page.getByTestId("quiz-score").waitFor({ timeout: 8000 });
 ok(await page.getByRole("button", { name: "Nouvelle manche" }).count() === 1, "fin de manche : « Nouvelle manche »");
-const bilan = (await page.getByTestId("quiz-bilan").innerText()).replace(/\s+/g, " ");
-ok(/\d+ points gagnés/.test(bilan) && /Vous êtes (Néo-citoyen|Citoyen|Super Citoyen|Sage)/.test(bilan), "fin de manche : les points et le rang (« " + bilan.trim() + " »)");
+/* 13/11/2026 : l'écran de fin refondu — le score en très gros, une phrase courte, la jauge. */
+const score = (await page.getByTestId("quiz-score").innerText()).trim();
+ok(/^\d+ \/ 5$/.test(score), "fin de manche : le score en grand (« " + score + " »)");
+const tailleScore = await page.getByTestId("quiz-score").evaluate(e => parseFloat(getComputedStyle(e).fontSize));
+ok(tailleScore >= 56, "fin de manche : le score est vraiment grand (" + tailleScore + " px)");
+const justesLues = Number(score.split("/")[0].trim());
+const teinte = await page.getByTestId("quiz-score").evaluate(e => getComputedStyle(e).color);
+const attendue = justesLues >= 4 ? "rgb(74, 124, 89)" : justesLues <= 1 ? "rgb(170, 74, 74)" : null;
+ok(attendue === null || teinte === attendue, `fin de manche : la couleur du score suit le résultat (${justesLues}/5 -> ${teinte})`);
+ok((await page.getByTestId("quiz-phrase").innerText()).trim().length > 0, "fin de manche : une phrase courte, pas un paragraphe");
+ok((await page.getByTestId("quiz-local").innerText()).trim() === "100 % local, aucune donnée collectée.", "fin de manche : la mention discrète remplace le paragraphe");
 /* Le test répond au hasard (première carte) : on compare donc les points au nombre de justes annoncé. */
-const justes = Number((await page.getByRole("heading", { name: /réponses? justes? sur 5/ }).innerText()).match(/^(\d+)/)[1]);
+const justes = Number((await page.getByTestId("quiz-score").innerText()).trim().split("/")[0].trim());
 const profil = await page.evaluate(() => JSON.parse(localStorage.getItem("repere.profil") || "null"));
 ok(profil && profil.points === justes * 10, `${justes} réponse(s) juste(s) = ${justes * 10} points dans repere.profil (${profil && profil.points})`);
 const apres = await page.evaluate(() => Object.keys(localStorage).concat(Object.keys(sessionStorage)));
@@ -52,10 +60,10 @@ ok(apres.every(k => ["repere.departement", "repere.profil"].includes(k)), "aucun
 ok(await page.getByRole("button", { name: /^Partager mon rang/ }).count() === 1, "fin de manche : le partage du rang");
 /* ─── 13/11/2026 (porteur) : la progression vers le rang suivant, et la liste des rangs ─── */
 const prog = (await page.getByTestId("quiz-progression").innerText()).replace(/\s+/g, " ").trim();
-ok(/^\d+ \/ 51 points pour devenir Citoyen$/.test(prog), "fin de manche : la progression vers le rang suivant (« " + prog + " »)");
+ok(/^\d+ pts \/ 51 pts pour Citoyen \d+ %$/.test(prog), "fin de manche : la jauge vers le rang suivant (« " + prog + " »)");
 const barre = await page.getByTestId("quiz-progression").evaluate(e => {
-  /* Le fond de la barre : le seul div qui contient un div et fait 12 px de haut. */
-  const fond = [...e.querySelectorAll("div")].find(d => d.querySelector("div") && Math.round(d.getBoundingClientRect().height) === 12);
+  /* Le fond de la jauge : le seul div qui contient un div et fait 14 px de haut. */
+  const fond = [...e.querySelectorAll("div")].find(d => d.querySelector("div") && Math.round(d.getBoundingClientRect().height) === 14);
   const plein = fond && fond.querySelector("div");
   return fond && plein ? Math.round((plein.getBoundingClientRect().width / fond.getBoundingClientRect().width) * 100) : -1;
 });
@@ -68,7 +76,16 @@ const joint = lignes.join(" | ").replace(/\s+/g, " ");
 for (const [nom, points] of [["Néo-citoyen", "de 0 à 50 points"], ["Citoyen", "de 51 à 200 points"], ["Super Citoyen", "de 201 à 500 points"], ["Sage", "501 points et plus"]]) {
   ok(joint.includes(nom) && joint.includes(points), `la modale dit « ${nom} » et « ${points} »`);
 }
-ok(/votre rang/.test(joint), "la modale marque le rang atteint");
+ok(/votre rang/.test(joint), "la roadmap marque le rang atteint");
+/* La roadmap : les rangs à venir sont grisés, le rang atteint ne l'est pas. */
+const opacites = await page.getByTestId("rang-ligne").evaluateAll(n => n.map(e => {
+  const t = [...e.querySelectorAll("div")].find(d => parseFloat(getComputedStyle(d).opacity) < 1);
+  return t ? parseFloat(getComputedStyle(t).opacity) : 1;
+}));
+ok(opacites[0] === 1 && opacites.slice(1).every(o => o < 1), "la roadmap grise les rangs à venir (" + opacites.join(", ") + ")");
+ok(await page.getByTestId("quiz-rejouer").count() === 1, "« Nouvelle manche » est le bouton principal");
+const plein = await page.getByTestId("quiz-rejouer").evaluate(e => getComputedStyle(e).backgroundColor);
+ok(plein === "rgb(15, 23, 42)" || plein === "rgb(245, 244, 240)", "« Nouvelle manche » est un bouton plein (" + plein + ")");
 ok(!/classement|palmarès|meilleur/i.test(joint), "la modale ne compare personne : ce sont des paliers, pas un palmarès");
 await page.getByRole("button", { name: "Fermer la liste des rangs" }).click();
 await page.waitForTimeout(400);
