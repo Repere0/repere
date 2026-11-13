@@ -17,6 +17,8 @@ const presse = await page.evaluate(() => navigator.clipboard.readText());
 ok(presse === BASE + "/actus#melun", `le lien copié porte la commune après le « # » (${presse})`);
 
 await page.goto(BASE + "/faq", { waitUntil: "networkidle" });
+/* 13/11/2026 : la FAQ est en accordéons ; la réponse s'ouvre d'un geste. */
+await page.getByRole("button", { name: /Comment seront écrits les résumés/ }).click();
 await page.getByText("En clair", { exact: true }).first().waitFor({ timeout: 10000 });
 const t = await page.locator("body").innerText();
 ok(/503 députés ont voté pour, aucun contre, et 67 se sont abstenus/.test(t), "le résumé d'exemple s'affiche");

@@ -57,10 +57,9 @@ export function BoutonCopierLien({ icone = false }: { icone?: boolean }) {
 
 export function BoutonPartageTexte({ titre, chemin, source }: { titre: string; chemin: string; source: string }) {
   return (
-    <View style={{ flexDirection: "row", alignItems: "center" }}>
-      <BoutonPartager titre={titre} chemin={chemin} source={source} />
-      <BoutonCopierLien />
-    </View>
+    /* 13/11/2026 (porteur) : « Copier le lien » quitte l'en-tête (il est en bas de chaque page) et « Partager » devient
+       une icône. Mesuré à 390 px sur Finances : le titre (124 à 244 px) passait sous le mot « Partager » (190 à 260 px). */
+    <BoutonPartager titre={titre} chemin={chemin} source={source} />
   );
 }
 
@@ -70,9 +69,9 @@ function BoutonPartager({ titre, chemin, source }: { titre: string; chemin: stri
       onPress={() => { Share.share({ title: titre, message: messagePartage({ titre, chemin, source }) }).catch(() => {}); }}
       accessibilityRole="button"
       accessibilityLabel={`Partager : ${titre}`}
-      style={({ pressed }) => ({ minHeight: CIBLE, minWidth: CIBLE, justifyContent: "center", paddingHorizontal: 8, opacity: pressed ? 0.6 : 1 })}
+      style={({ pressed }) => ({ minHeight: CIBLE, minWidth: CIBLE, alignItems: "center", justifyContent: "center", paddingHorizontal: 8, opacity: pressed ? 0.6 : 1 })}
     >
-      <Text style={{ fontSize: 17, color: couleurs.lien, fontWeight: "500" }}>Partager</Text>
+      <Ionicons name="share-outline" size={24} color={couleurs.lien} accessible={false} importantForAccessibility="no" />
     </Pressable>
   );
 }

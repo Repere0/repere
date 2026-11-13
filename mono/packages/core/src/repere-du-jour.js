@@ -27,6 +27,7 @@ import { ordinal, decompte } from "./votes.js";
 import { phrasePosition } from "./phrases.js";
 import { parHabitant } from "./visuels.js";
 import { visibleAuNiveau } from "./profil.js";
+import { GLOSSAIRE } from "./mots.js";
 
 /* Échelon de chaque modèle : le vote et la circonscription sont nationaux (Assemblée) ;
    le budget et le maire sont locaux. Le réglage « Ma rue » écarte le national (profil.js). */
@@ -276,4 +277,41 @@ export function raccourcirFait(texte, { max = 60, visible = max } = {}) {
   const sp = coupeSure(depart + budget) - depart;
   const coupe = sp > 0 ? reste.slice(0, sp) : reste.slice(0, budget);
   return `${prefixe}${sansFin(coupe)}…`;
+}
+
+/* ── REFONTE DU 13/11/2026 (porteur) : « la minute citoyenne ». Le fait du jour devient une porte : il dit en une
+   phrase À QUOI il se rattache, et mène à l'écran qui l'explique. Un mot du dictionnaire l'accompagne. ───────── */
+
+/* Le mot du jour : un mot du dictionnaire, le même pour tout le monde le même jour. Tirage par empreinte de la
+   date, jamais une mesure ni un choix éditorial. */
+export function motDuJour(date) {
+  const cles = Object.keys(GLOSSAIRE).sort();
+  if (!cles.length) return null;
+  const cle = cles[empreinte("mot:" + cleDuJour(date)) % cles.length];
+  return { cle, titre: GLOSSAIRE[cle].titre, corps: GLOSSAIRE[cle].corps };
+}
+
+/* Ce à quoi un fait se rattache, et où aller pour le comprendre. Les phrases sont des règles de droit, pas des
+   avis : budget (code général des collectivités territoriales, art. L. 2312-1), scrutin public (règlement de
+   l'Assemblée nationale), élection du maire par le conseil municipal (CGCT, art. L. 2122-4). */
+export function suiteDuFait(fait) {
+  const source = fait && fait.source;
+  if (source === "comptes" || source === "comptes-calcul")
+    return { contexte: "Chaque année, le maire propose le budget de la commune et le conseil municipal le vote.", action: "Voir tout le budget", chemin: "/argent" };
+  if (source === "scrutin")
+    return { contexte: "Lors d'un scrutin public, la position de chaque député est enregistrée et publiée.", action: "Comprendre ce vote", chemin: "/vote" };
+  if (source === "elus")
+    return { contexte: "Le maire est élu par le conseil municipal ; le député, par les électeurs de sa circonscription.", action: "Voir qui décide", chemin: "/qui-decide" };
+  return null;
+}
+
+/* Les liens de partage vers un réseau : une simple adresse, ouverte seulement quand le lecteur la touche. Aucun
+   module de ces réseaux n'est chargé dans l'application (aucun traceur, invariant 2). Instagram et Snapchat n'ont
+   pas d'adresse de ce genre pour un texte : ils passent par la feuille de partage du téléphone, avec l'image. */
+export function liensDePartage(texte, lien) {
+  const t = encodeURIComponent(texte), l = lien ? encodeURIComponent(lien) : "";
+  return [
+    { reseau: "X", url: `https://twitter.com/intent/tweet?text=${t}${l ? `&url=${l}` : ""}` },
+    { reseau: "WhatsApp", url: `https://wa.me/?text=${encodeURIComponent(lien ? `${texte} ${lien}` : texte)}` },
+  ];
 }

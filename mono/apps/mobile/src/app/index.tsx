@@ -12,6 +12,7 @@
  * celle de Melun, annoncee comme un exemple. La seconde est un vote fige (depute
  * 77-1, scrutin 8706, verifie le 30/10/2026), annonce lui aussi comme un exemple.
  * Le partage n'est plus sur l'accueil : il est sur les ecrans de contexte (src/ui/partage). */
+import { noterArrondissement } from "../lib/arrondissement";
 import { espacesFines } from "../ui/donnees";
 import { useEffect, useMemo, useState } from "react";
 import { FlatList, KeyboardAvoidingView, Linking, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View, useWindowDimensions } from "react-native";
@@ -279,6 +280,7 @@ export default function Accueil() {
     const dep = departementDe(insee);
     if (!dep) return;
     choisir({ dep, insee, nom });
+    noterArrondissement(insee, filtre);
     const i = RECENTES.findIndex(x => x.insee === insee);
     if (i >= 0) RECENTES.splice(i, 1);
     RECENTES.unshift({ insee, nom });

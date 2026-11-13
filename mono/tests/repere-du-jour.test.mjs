@@ -228,3 +228,36 @@ test("repere du jour — histoire : un jour sur trois, troisième place ; sans e
   const base = faitsDuJour(CONTEXTE(jour(2026, 11, 3)));
   assert.equal(avecHistoire(base, null, jour(2026, 11, 3)), base, "sans entrée d'histoire, rien ne change");
 });
+
+/* ── Refonte du 13/11/2026 : mot du jour, suite d'un fait, liens de partage ── */
+{
+  const { motDuJour, suiteDuFait, liensDePartage } = await import("../packages/core/src/repere-du-jour.js");
+  const { GLOSSAIRE } = await import("../packages/core/src/mots.js");
+  test("mot du jour — le même jour donne le même mot, toujours un mot du dictionnaire", () => {
+    const a = motDuJour(new Date(2026, 10, 13)), b = motDuJour(new Date(2026, 10, 13, 23, 59));
+    assert.deepEqual(a, b);
+    assert.equal(a.titre, GLOSSAIRE[a.cle].titre);
+    const vus = new Set(Array.from({ length: 60 }, (_, i) => motDuJour(new Date(2026, 10, 1 + i)).cle));
+    assert.ok(vus.size > 10, `le mot change d'un jour à l'autre (${vus.size} mots en 60 jours)`);
+  });
+  test("suite d'un fait — chaque source mène à l'écran qui l'explique ; l'histoire n'a pas de suite", () => {
+    assert.equal(suiteDuFait({ source: "comptes" }).chemin, "/argent");
+    assert.equal(suiteDuFait({ source: "comptes-calcul" }).chemin, "/argent");
+    assert.equal(suiteDuFait({ source: "scrutin" }).chemin, "/vote");
+    assert.equal(suiteDuFait({ source: "elus" }).chemin, "/qui-decide");
+    assert.equal(suiteDuFait({ source: "histoire" }), null);
+    assert.equal(suiteDuFait(null), null);
+  });
+  test("liens de partage — de simples adresses https, le texte encodé, aucun autre paramètre", () => {
+    const l = liensDePartage("Sur 100 € : 47 € d'impôts & taxes", "https://exemple.fr/repere-du-jour#melun");
+    assert.deepEqual(l.map(x => x.reseau), ["X", "WhatsApp"]);
+    for (const x of l) {
+      const u = new URL(x.url);
+      assert.equal(u.protocol, "https:");
+      assert.ok(["twitter.com", "wa.me"].includes(u.hostname));
+      assert.ok([...u.searchParams.keys()].every(k => ["text", "url"].includes(k)), "ni identifiant ni traceur dans l'adresse");
+      assert.match(u.searchParams.get("text"), /47 € d'impôts & taxes/);
+    }
+    assert.ok(!liensDePartage("a", "")[0].url.includes("url="));
+  });
+}

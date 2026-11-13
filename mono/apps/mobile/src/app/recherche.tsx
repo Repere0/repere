@@ -7,6 +7,7 @@
  * Chaque résultat ouvre sa fiche. Aucune donnée nouvelle : chaque lecture est celle d'un écran existant,
  * mise en mémoire pour la session (lib/donnees). Ce qui n'est pas cherché ici : les maires et les
  * conseillers, rangés par département (l'onglet « Élus » le dit). */
+import { noterArrondissement } from "../lib/arrondissement";
 import { useBasSur } from "../ui/page";
 import { CarteListe, Puces } from "../ui/donnees";
 import { SquelettesListe } from "../ui/squelette";
@@ -150,6 +151,7 @@ export default function Recherche() {
     const dep = departementDe(insee);
     if (!dep) return;
     choisir({ dep, insee, nom });
+    noterArrondissement(insee, filtre);
     /* Comme l'accueil : premier lancement sans profil -> les trois questions ; sinon la commune. */
     if (absent) router.replace("/bienvenue");
     else router.replace("/chez-vous");

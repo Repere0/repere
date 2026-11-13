@@ -57,8 +57,8 @@ export function Reponse({ phrase, preuve, note, sources, suite, partage, heros, 
         <View style={s.pied}>
           {suite ? (
             <Pressable onPress={suite.onPress} accessibilityRole="button" accessibilityLabel={suite.texte}
-              style={({ pressed }) => [s.suite, heros && s.suitePleine, pressed && enfonce(true)]}>
-              <Text style={[s.suiteTexte, heros && { color: ACCENTS.surAutorite }]}>{typo(suite.texte)}</Text>
+              style={({ pressed }) => [s.suite, pressed && enfonce(true)]}>
+              <Text style={s.suiteTexte}>{typo(suite.texte)}</Text>
             </Pressable>
           ) : <View style={{ flex: 1 }} />}
           {partage ? <BoutonPartager {...partage} /> : null}
@@ -85,10 +85,11 @@ const s = feuille(() => StyleSheet.create({
   phrase: { ...TYPO.reponse },
   phraseHeros: { ...TYPO.corps },
   pied: { flexDirection: "row", alignItems: "center", gap: PAS * 3 },
-  /* La question suivante : une pilule. Pleine pour la réponse héros (le seul bouton plein de l'écran), discrète sinon. */
-  suite: { flex: 1, minHeight: CIBLE + 4, borderRadius: RAYON.pastille, paddingHorizontal: PAS * 5, alignItems: "center", justifyContent: "center", backgroundColor: couleurs.voile },
-  suitePleine: { backgroundColor: ACCENTS.autorite },
-  suiteTexte: { fontSize: 17, fontFamily: POLICE.section, color: couleurs.encre },
+  /* La question suivante : une pilule PLEINE, la même sur toutes les cartes (13/11/2026, porteur). Avant, seule la
+     première carte avait un bouton plein : « Où va cet argent ? » clair, « Comprendre ce vote » et « Le projet »
+     sombres, lus comme un défaut d'affichage. */
+  suite: { flex: 1, minHeight: CIBLE + 4, borderRadius: RAYON.pastille, paddingHorizontal: PAS * 5, alignItems: "center", justifyContent: "center", backgroundColor: ACCENTS.autorite },
+  suiteTexte: { fontSize: 17, fontFamily: POLICE.section, color: ACCENTS.surAutorite },
   rond: { width: CIBLE, height: CIBLE, borderRadius: CIBLE / 2, backgroundColor: couleurs.voile, alignItems: "center", justifyContent: "center" },
   plus: { minHeight: CIBLE + 4, flexDirection: "row", alignItems: "center", paddingHorizontal: PAS * 4, backgroundColor: couleurs.carte,
     borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: couleurs.trait },

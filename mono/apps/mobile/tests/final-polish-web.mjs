@@ -107,9 +107,17 @@ verifier(await page.getByText("Question non disponible dans les données ouverte
 
 /* 4. Présidentielle */
 await page.goto(BASE + "/presidentielle-2027", { waitUntil: "networkidle" });
+/* 13/11/2026 : la page est rangée en quatre parties (onglets) ; les règles restent avant les candidats. */
+await page.getByRole("tab", { name: "Règles" }).waitFor({ timeout: 15000 });
+const gauche = async t => page.getByRole("tab", { name: t, exact: true }).evaluate(e => e.getBoundingClientRect().left);
+verifier(await gauche("Règles") < await gauche("Candidats"), "présidentielle : les règles viennent avant les candidats");
+const hauteurPage = await page.evaluate(() => Math.max(...[...document.querySelectorAll("*")].map(e => e.scrollHeight)));
+verifier(hauteurPage < 1700, `présidentielle : la page ouverte tient en moins de deux écrans (${hauteurPage} px ; 3 837 px avant les onglets)`);
+await page.getByRole("tab", { name: "Règles" }).click();
 await page.getByText("Les règles du scrutin", { exact: true }).first().waitFor({ timeout: 15000 });
-const haut = async t => page.getByText(t, { exact: true }).first().evaluate(e => e.getBoundingClientRect().top + window.scrollY);
-verifier(await haut("Les règles du scrutin") < await haut("Candidats, débats, réunions"), "présidentielle : les règles viennent avant les candidats");
+await page.getByRole("tab", { name: "Candidats", exact: true }).click();
+await page.getByText("Déclaration de candidature", { exact: true }).first().waitFor({ timeout: 15000 });
+await page.getByRole("button", { name: /Ce n'est pas la liste officielle/ }).click();
 const badges = await page.getByText("Déclaration de candidature", { exact: true }).count();
 verifier(badges >= 20, `présidentielle : chaque candidature déclarée porte le badge (${badges})`);
 verifier(await page.getByText("Liste des candidatures déclarées. La liste officielle sera arrêtée par le Conseil constitutionnel en 2027.", { exact: false }).count() === 1, "présidentielle : la note dit que la liste n'est pas officielle");
@@ -118,7 +126,6 @@ const noms = await page.evaluate(() => [...document.querySelectorAll("[role=link
 verifier(noms >= 2, "présidentielle : les candidats déclarés sont affichés");
 await page.getByRole("button", { name: /Sources de la candidature de Nathalie Arthaud/ }).click();
 verifier(await page.getByRole("link", { name: /Source : LCP/ }).count() >= 1 && await page.getByRole("link", { name: /Source : Toute l'Europe/ }).count() >= 1, "présidentielle : les deux sources d'une candidature sont à un geste");
-await page.getByText("Candidats, débats, réunions", { exact: true }).first().scrollIntoViewIfNeeded();
 await photo("4-presidentielle");
 await page.evaluate(() => window.scrollTo(0, 0));
 

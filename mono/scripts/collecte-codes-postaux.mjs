@@ -60,11 +60,15 @@ export function lireBase(csv, inseeBeta) {
   if (iInsee < 0 || iCp < 0) throw new Error("en-tete inattendu, colonnes INSEE et code postal introuvables : " + lignes[0].slice(0, 200));
   const beta = new Set(inseeBeta);
   const parCode = new Map();
+  const arr = new Map();
   for (const l of lignes.slice(1)) {
     const c = champs(l, sep);
     let insee = String(c[iInsee] || "").toUpperCase().padStart(5, "0");
     const cp = String(c[iCp] || "").padStart(5, "0");
     if (!/^\d{5}$/.test(cp) || !/^(\d{5}|2[AB]\d{3})$/.test(insee)) continue;
+    /* 13/11/2026 : l'arrondissement de chaque code postal parisien est garde a part (core paris.js). Un code postal
+       a cheval sur deux arrondissements n'en designe aucun. */
+    if (/^751(0[1-9]|1\d|20)$/.test(insee)) { if (!arr.has(cp)) arr.set(cp, new Set()); arr.get(cp).add(insee); }
     if (/^751[0-2]\d$/.test(insee)) insee = "75056";
     if (!DEPS_IDF.includes(insee.slice(0, 2)) || !beta.has(insee)) continue;
     if (!parCode.has(cp)) parCode.set(cp, new Set());
@@ -74,7 +78,9 @@ export function lireBase(csv, inseeBeta) {
   for (const cp of [...parCode.keys()].sort()) codes[cp] = [...parCode.get(cp)].sort();
   const couvertes = new Set(Object.values(codes).flat());
   const sans = [...beta].filter(i => !couvertes.has(i)).sort();
-  return { codes, couverture: { communes: beta.size, avec_code: couvertes.size, sans_code: sans } };
+  const arrondissements = {};
+  for (const cp of [...arr.keys()].sort()) if (arr.get(cp).size === 1 && codes[cp]) arrondissements[cp] = [...arr.get(cp)][0];
+  return { codes, arrondissements, couverture: { communes: beta.size, avec_code: couvertes.size, sans_code: sans } };
 }
 
 async function lire(url, type) {
@@ -109,7 +115,7 @@ async function main() {
   /* 2. Le CSV. */
   const csv = local ? fs.readFileSync(local, "utf8") : await lire(url, "texte");
   console.log("codes-postaux : en-tete lu : " + csv.split(/\r?\n/)[0].slice(0, 200));
-  const { codes, couverture } = lireBase(csv, beta);
+  const { codes, arrondissements, couverture } = lireBase(csv, beta);
   const part = couverture.communes ? couverture.avec_code / couverture.communes : 0;
   if (part < COUVERTURE_MIN) throw new Error(`seulement ${couverture.avec_code} communes sur ${couverture.communes} ont un code postal : rien n'est ecrit`);
 
@@ -118,7 +124,8 @@ async function main() {
     source: { producteur: "La Poste, Base officielle des codes postaux", licence: licence || "non relue (fichier fourni a la main)", maj, releve_le: jour, url: FICHE },
     couverture: { communes: couverture.communes, avec_code: couverture.avec_code, sans_code: couverture.sans_code.slice(0, 50) },
     codes,
+    arrondissements,
   }));
-  console.log(`codes-postaux : ${Object.keys(codes).length} codes postaux, ${couverture.avec_code}/${couverture.communes} communes couvertes` + (couverture.sans_code.length ? ` ; sans code : ${couverture.sans_code.slice(0, 10).join(", ")}` : ""));
+  console.log(`codes-postaux : ${Object.keys(codes).length} codes postaux, ${couverture.avec_code}/${couverture.communes} communes couvertes, ${Object.keys(arrondissements).length} codes postaux parisiens rattaches a un arrondissement` + (couverture.sans_code.length ? ` ; sans code : ${couverture.sans_code.slice(0, 10).join(", ")}` : ""));
 }
 if (import.meta.url === `file://${process.argv[1]}`) main().catch(e => { console.error("codes-postaux : " + e.message); process.exit(2); });

@@ -5,10 +5,12 @@
  * que si EXPO_PUBLIC_CONTACT_EMAIL est defini, comme dans « À propos »). Chaque question
  * est un en-tete : on passe de l'une a l'autre au lecteur d'ecran. */
 import { useBasSur } from "../ui/page";
-import { Linking, ScrollView, Text, View } from "react-native";
+import { useState, type ReactNode } from "react";
+import { Linking, Pressable, ScrollView, Text, View } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import { Stack, router } from "expo-router";
-import { couleurs, PAS, TYPO } from "../lib/theme";
-import { Bouton, Carte } from "../lib/composants";
+import { couleurs, CIBLE, PAS, POLICE, RAYON, TYPO } from "../lib/theme";
+import { Bouton } from "../lib/composants";
 import { ResumeClair } from "../ui/resume-clair";
 
 /* Exemple fourni par le porteur (12/11/2026), limité à ce que dit sa source : « Projet de loi de finances pour 2027. Première
@@ -63,7 +65,7 @@ const FAQ: { q: string; r: string[]; lien?: { texte: string; aller: () => void }
   {
     q: "Puis-je partager une info ?",
     r: [
-      "Oui. Sur les écrans qui l'affichent, le bouton « Partager » crée une image avec le chiffre ou le vote, et sa source, prête pour vos messages ou vos stories.",
+      "Oui. Le bouton « Partager » envoie le texte et sa source. Le Repère du jour, le calendrier et les actualités créent aussi une image, prête pour vos messages ou vos stories.",
       "La source voyage avec l'image : celui qui la reçoit peut vérifier.",
     ],
   },
@@ -82,26 +84,63 @@ const FAQ: { q: string; r: string[]; lien?: { texte: string; aller: () => void }
   },
 ];
 
+/* LES ATOUTS, EN TÊTE (13/11/2026, porteur) : ce que Repère garantit, en quatre tuiles qui se font défiler du doigt.
+   Chaque phrase est une règle du produit (invariants 1 à 4), pas un argument : rien n'y est comparé à un autre service. */
+const ATOUTS: { icone: keyof typeof Ionicons.glyphMap; titre: string; texte: string }[] = [
+  { icone: "person-remove-outline", titre: "Aucun compte", texte: "Ni e-mail, ni mot de passe, ni traceur." },
+  { icone: "document-text-outline", titre: "Sources officielles", texte: "Chaque chiffre porte sa source et sa date." },
+  { icone: "scale-outline", titre: "Aucun avis", texte: "Repère ne classe ni ne note personne." },
+  { icone: "cloud-offline-outline", titre: "Hors ligne", texte: "Ce que vous avez ouvert reste lisible sans réseau." },
+];
+
+/* UNE QUESTION = UN ACCORDÉON (13/11/2026, porteur) : la page tenait sur 3 036 px à 390 px de large (mesuré), toutes
+   réponses dépliées. Les questions tiennent maintenant sur un écran ; une seule réponse est ouverte à la fois. */
+function Question({ q, ouvert, basculer, children }: { q: string; ouvert: boolean; basculer: () => void; children: ReactNode }) {
+  return (
+    <View style={{ borderBottomWidth: 1, borderBottomColor: couleurs.trait }}>
+      <Pressable onPress={basculer} accessibilityRole="button" accessibilityState={{ expanded: ouvert }} aria-expanded={ouvert} accessibilityLabel={q}
+        style={({ pressed }) => ({ minHeight: CIBLE + 8, flexDirection: "row", alignItems: "center", gap: PAS * 3, paddingVertical: PAS * 3, opacity: pressed ? 0.7 : 1 })}>
+        <Text style={[TYPO.corps, { flex: 1, fontFamily: POLICE.titre }]}>{q}</Text>
+        <Ionicons name={ouvert ? "remove" : "add"} size={22} color={couleurs.encre} accessible={false} importantForAccessibility="no" />
+      </Pressable>
+      {ouvert ? <View style={{ gap: PAS * 3, paddingBottom: PAS * 4 }}>{children}</View> : null}
+    </View>
+  );
+}
+
+const Q_EN_CLAIR = "Comment seront écrits les résumés « En clair » ?";
+
 export default function Faq() {
   const bas = useBasSur();
+  const [ouverte, setOuverte] = useState<string | null>(null);
+  const basculer = (q: string) => setOuverte(o => (o === q ? null : q));
   return (
-    <ScrollView style={{ flex: 1, backgroundColor: couleurs.sol }} contentContainerStyle={{ padding: PAS * 4, paddingBottom: bas, gap: PAS * 3, maxWidth: 640, width: "100%", alignSelf: "center" }}>
+    <ScrollView style={{ flex: 1, backgroundColor: couleurs.sol }} contentContainerStyle={{ padding: PAS * 4, paddingBottom: bas, gap: PAS * 4, maxWidth: 640, width: "100%", alignSelf: "center" }}>
       <Stack.Screen options={{ title: "Questions fréquentes" }} />
       <Text style={TYPO.question} accessibilityRole="header">Questions fréquentes</Text>
-      {FAQ.map(x => (
-        <Carte key={x.q}>
-          <Text style={[TYPO.corps, { fontWeight: "800" }]} accessibilityRole="header">{x.q}</Text>
-          <View style={{ gap: PAS * 2 }}>
-            {x.r.map(p => <Text key={p.slice(0, 24)} style={TYPO.corps}>{p}</Text>)}
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginHorizontal: -PAS * 4 }} contentContainerStyle={{ gap: PAS * 3, paddingHorizontal: PAS * 4 }}
+        accessibilityLabel="Ce que Repère garantit">
+        {ATOUTS.map(a => (
+          <View key={a.titre} accessible accessibilityLabel={`${a.titre}. ${a.texte}`}
+            style={{ width: 168, gap: PAS * 2, padding: PAS * 4, borderRadius: RAYON.carte, backgroundColor: couleurs.carte }}>
+            <Ionicons name={a.icone} size={24} color={couleurs.encre} accessible={false} importantForAccessibility="no" />
+            <Text style={[TYPO.corps, { fontFamily: POLICE.titre }]}>{a.titre}</Text>
+            <Text style={TYPO.note}>{a.texte}</Text>
           </View>
-          {x.lien ? <Bouton texte={x.lien.texte} discret onPress={x.lien.aller} /> : null}
-        </Carte>
-      ))}
-      <Carte>
-        <Text style={[TYPO.corps, { fontWeight: "800" }]} accessibilityRole="header">Comment seront écrits les résumés « En clair » ?</Text>
-        <Text style={TYPO.corps}>Repère prépare des résumés courts des textes votés. Ils ne sont pas encore publiés : un résumé n'apparaît qu'après relecture par un humain, avec le lien vers le texte officiel. Voici la forme, avec un exemple qui n'est relié à aucun vote réel.</Text>
-        <ResumeClair resume={EXEMPLE_EN_CLAIR} lienOfficiel={EXEMPLE_EN_CLAIR.source.url} />
-      </Carte>
+        ))}
+      </ScrollView>
+      <View style={{ paddingHorizontal: PAS * 5, borderRadius: RAYON.carte, backgroundColor: couleurs.carte }}>
+        {FAQ.map(x => (
+          <Question key={x.q} q={x.q} ouvert={ouverte === x.q} basculer={() => basculer(x.q)}>
+            {x.r.map(p => <Text key={p.slice(0, 24)} style={TYPO.corps}>{p}</Text>)}
+            {x.lien ? <Bouton texte={x.lien.texte} discret onPress={x.lien.aller} /> : null}
+          </Question>
+        ))}
+        <Question q={Q_EN_CLAIR} ouvert={ouverte === Q_EN_CLAIR} basculer={() => basculer(Q_EN_CLAIR)}>
+          <Text style={TYPO.corps}>Repère prépare des résumés courts des textes votés. Ils ne sont pas encore publiés : un résumé n'apparaît qu'après relecture par un humain, avec le lien vers le texte officiel. Voici la forme, avec un exemple qui n'est relié à aucun vote réel.</Text>
+          <ResumeClair resume={EXEMPLE_EN_CLAIR} lienOfficiel={EXEMPLE_EN_CLAIR.source.url} />
+        </Question>
+      </View>
       {CONTACT ? <Bouton texte="Signaler un bug" onPress={() => Linking.openURL(`mailto:${CONTACT}?subject=${encodeURIComponent("Bug Repère")}`)} /> : null}
     </ScrollView>
   );

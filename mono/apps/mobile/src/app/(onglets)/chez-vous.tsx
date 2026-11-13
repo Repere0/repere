@@ -4,6 +4,7 @@
  * Repere ? ». Trois reponses, pas cinq rubriques, qui suivent la progression
  * d'un lecteur qui ne connait rien a la politique locale :
  *   1. ce que l'Etat finance ici        (-> pourquoi, combien : « Où va l'argent »)
+ *   (13/11/2026 : l'ordre suit les niveaux de decision : la commune, qui decide, le Parlement, le pays.)
  *   2. qui decide, et avec quel argent  (-> « Où va cet argent ? »)
  *   3. ce qu'a vote le depute           (-> « Comprendre ce vote »)
  * puis, SOUS les trois reponses, la semaine au Parlement (nationale, dite comme
@@ -34,7 +35,7 @@ import { router, Stack } from "expo-router";
 import {
   dateFr, datePublication, decompte, euros, financementProjet, montantCourt, ordinal, parHabitant, phrasePosition,
   repartitionVote, texteDe,
-  titreLisible, LIBELLES, copieVoteVide, ETAT_VOTE,
+  titreLisible, LIBELLES, copieVoteVide, ETAT_VOTE, estParis,
 } from "@repere/core";
 import { Vide } from "../../lib/composants";
 import { CarteMemoire } from "../../cartes/CarteMemoire";
@@ -44,7 +45,8 @@ import {
   PROJETS_PAS_ARRIVES, projetsAucun,
 } from "../../lib/absences";
 import { srcComptesPublies, srcElus, srcProjets, srcScrutins, srcVote } from "../../lib/sources";
-import { couleurs, PAS, POLICE, RAYON, TYPO } from "../../lib/theme";
+import { couleurs, CIBLE, PAS, POLICE, RAYON, TYPO } from "../../lib/theme";
+import { ArrondissementParis } from "../../ui/arrondissement-paris";
 import { AvecDonnees, Page } from "../../ui/page";
 import { PastilleSource } from "../../ui/source";
 import { BandeauRepere } from "../../ui/bandeau-repere";
@@ -61,7 +63,6 @@ import { SignalerErreur } from "../../ui/contact";
 import { Decideurs } from "../../ui/decideurs";
 import { RappelElection } from "../../ui/rappel-election";
 import { BarreBudget, ChiffreQuiCompte } from "../../ui/visuels";
-import { LigneIcone } from "../../ui/ligne-icone";
 import { deputeParNom, groupeDe, useGroupes } from "../../lib/groupes";
 import { DataBadge } from "../../ui/donnees";
 import { useCouleurVote } from "../../lib/couleur-vote";
@@ -88,6 +89,24 @@ function SiteMairie({ insee }: { insee: string }) {
   }, [insee]);
   if (!site || avecFlux) return null;
   return <Plus texte="Site officiel de la mairie" onPress={() => Linking.openURL(site)} />;
+}
+
+/* « DUPONT-MARTIN » du répertoire des élus -> « Dupont-Martin » : le nom n'est pas crié. Prénom laissé tel quel. */
+const nomPropre = (n: string) => n.replace(/\p{Lu}{2,}/gu, m => m.charAt(0) + m.slice(1).toLowerCase());
+
+/* Une étape de la décision du budget : son numéro, ce qui se passe, et qui (ou comment). */
+function EtapeBudget({ n, titre, detail }: { n: number; titre: string; detail?: string | null }) {
+  return (
+    <View style={{ flexDirection: "row", alignItems: "center", gap: PAS * 3 }} accessible accessibilityLabel={`Étape ${n} : ${titre}${detail ? `. ${detail}` : ""}`}>
+      <View style={{ width: 32, height: 32, borderRadius: 16, backgroundColor: couleurs.voile, alignItems: "center", justifyContent: "center" }}>
+        <Text style={[TYPO.note, { fontFamily: POLICE.section, color: couleurs.encre }]}>{n}</Text>
+      </View>
+      <View style={{ flex: 1 }}>
+        <Text style={[TYPO.corps, { fontFamily: POLICE.titre }]}>{titre}</Text>
+        {detail ? <Text style={TYPO.note}>{detail}</Text> : null}
+      </View>
+    </View>
+  );
 }
 
 export default function ChezVous() {
@@ -142,6 +161,9 @@ export default function ChezVous() {
           <View style={{ paddingBottom: PAS / 2 }}>
             <BandeauRepere faits={repereDuJour} sources={sourcesRepere} onOuvrir={() => router.push("/repere-du-jour")} />
           </View>
+          {/* PARIS (13/11/2026) : la Ville entière, et le choix d'un arrondissement, avant les chiffres. */}
+          {choix && estParis(choix.insee) ? <ArrondissementParis /> : null}
+          <Etiquette texte="Votre commune" />
           {/* 1. QUI DECIDE, ET AVEC QUEL ARGENT — montant par habitant PUBLIE par
              l'OFGL ; le nom du maire vient du RNE : deux sources, deux pastilles.
              « prépare / vote » est la regle du code general des collectivites. */}
@@ -154,8 +176,12 @@ export default function ChezVous() {
               </View>}
               phrase={`En ${d.exercice.an}, ${nom} a dépensé ${hab.depenses.toLocaleString("fr-FR")} € par habitant.`}
               note={<View style={{ gap: PAS * 3 }}>
-                <LigneIcone icone="calculator-outline" titre={maire ? `Le maire, ${maire}, prépare le budget` : "Le maire prépare le budget"} />
-                <LigneIcone icone="hand-left-outline" titre="Le conseil municipal le vote" />
+                {/* 13/11/2026 (porteur) : « Le maire, X, prépare le budget » / « Le conseil municipal le vote » étaient lus
+                    comme une phrase bancale et un pronom sans objet. Deux étapes numérotées, dans les mots de la loi
+                    (code général des collectivités territoriales, art. L. 2312-1 : proposé par le maire, voté par le conseil). */}
+                <Text style={TYPO.etiquette}>Qui décide de ce budget</Text>
+                <EtapeBudget n={1} titre="Le maire propose le budget" detail={maire ? nomPropre(maire) : null} />
+                <EtapeBudget n={2} titre="Le conseil municipal vote ce budget" detail="Les élus de la commune l'adoptent ou le rejettent." />
               </View>}
               sources={<>
                 <PastilleSource court nom="Budget" source={srcComptesPublies(d)} />
@@ -163,7 +189,7 @@ export default function ChezVous() {
               </>}
               partage={{
                 titre: `Les dépenses de ${nom}`,
-                texte: `À ${nom}, ${d.exercice.an}, la commune a dépensé ${hab.depenses.toLocaleString("fr-FR")} € par habitant. Le maire prépare ce budget ; le conseil municipal le vote.`,
+                texte: `À ${nom}, ${d.exercice.an}, la commune a dépensé ${hab.depenses.toLocaleString("fr-FR")} € par habitant. Le maire propose ce budget ; le conseil municipal le vote.`,
                 sourceUrl: srcComptesPublies(d)?.url,
               }}
               suite={{ texte: "Où va cet argent ?", onPress: () => router.push("/argent") }} />
@@ -173,40 +199,11 @@ export default function ChezVous() {
               suite={{ texte: "Pourquoi ?", onPress: () => router.push("/argent") }} />
           )}
 
-          {/* 2. A L'ASSEMBLEE NATIONALE — une position, jamais une presence ; une
-             date, jamais « dernier » ; plusieurs circonscriptions, jamais UN depute. */}
-          {!r.votesLus ? (
-            <Vide {...copieVoteVide(ETAT_VOTE.RELEVE_NON_LU)} action="Réessayer" onAction={reessayer} />
-          ) : !r.votesFiables ? (
-            <Vide {...copieVoteVide(ETAT_VOTE.RELEVE_INCOHERENT)} />
-          ) : vote ? (
-            <Reponse echelon="france"
-              phrase={d.nbCircos > 1
-                ? `${nom} est partagée entre ${d.nbCircos} circonscriptions. Votre député dépend de votre adresse.`
-                : `Le ${dateFr(vote.sc.d)}, ${texteDe(phrasePosition(vote.position, vote.qui))}`}
-              preuve={rep ? <View style={{ gap: PAS }}>{contexteVote}<Repartition compact segments={rep.segments} total={rep.total} position={vote.position} qui={vote.qui} /></View> : contexteVote}
-              note={d.nbCircos > 1
-                ? `Une circonscription est une partie du territoire dont les électeurs élisent un député. Par exemple, dans la ${ordinal(vote.circo)}, le ${dateFr(vote.sc.d)}, ${texteDe(phrasePosition(vote.position, vote.qui)).replace(/\.$/, "")} (texte ${vote.sc.s}).`
-                /* DEUX LIGNES AU PLUS SUR L'ACCUEIL — 07/10/2026. Le vote affiche est
-                   desormais le plus recent ; pour Meaux, son intitule officiel est plus
-                   long et repoussait la troisieme reponse sous le pli (mesure CI : 861 px
-                   pour 844). Le resultat et le decompte viennent EN TETE, jamais coupes ;
-                   l'intitule suit, non reecrit, et peut etre coupe : le texte entier est
-                   sur « Comprendre ce vote », a un geste. */
-                : <Text style={TYPO.note} numberOfLines={2}>{typo(`${ordinal(vote.circo)} circonscription · ${vote.sc.s.charAt(0).toUpperCase()}${vote.sc.s.slice(1)}, ${decompte(vote.sc.dec)}`)}</Text>}
-              sources={<PastilleSource court source={srcVote(d, vote.sc)} />}
-              partage={{
-                titre: `Un vote concernant ${nom}`,
-                texte: d.nbCircos > 1
-                  ? `${nom} est partagée entre ${d.nbCircos} circonscriptions. Votre député dépend de votre adresse. Exemple : dans la ${ordinal(vote.circo)}, le ${dateFr(vote.sc.d)}, ${texteDe(phrasePosition(vote.position, vote.qui)).replace(/\.$/, "")}.`
-                  : `${nom} est dans la ${ordinal(vote.circo)} circonscription. Le ${dateFr(vote.sc.d)}, ${texteDe(phrasePosition(vote.position, vote.qui))}`,
-                sourceUrl: srcVote(d, vote.sc)?.url,
-              }}
-              suite={{ texte: "Comprendre ce vote", onPress: () => router.push("/vote") }} />
-          ) : (
-            <Vide {...copieVoteVide(d.etatVote, { nom, releve: srcScrutins(d)?.releve, portee: d.srcScrutins && d.srcScrutins.portee })} />
-          )}
-          {/* 3. CE QUE L'ETAT FINANCE ICI — la part se dit en mots pres d'un repere
+          {/* 13/11/2026 (porteur) : l'ordre suit les niveaux de décision, du plus proche au plus lointain. D'abord la
+             commune (le budget, ce que l'État y finance, l'actualité locale), puis qui décide à chaque niveau, puis
+             le Parlement (le vote du député et la semaine, ensemble), enfin le pays (la présidentielle). Avant :
+             budget, vote, projet, décideurs, présidentielle, Parlement. */}
+          {/* 2. CE QUE L'ETAT FINANCE ICI — la part se dit en mots pres d'un repere
              vrai, sinon en euros ; le cout est arrondi dans la phrase et exact
              dans la note. */}
           {!r.projetsLus ? (
@@ -243,21 +240,65 @@ export default function ChezVous() {
               sources={<PastilleSource court source={srcProjets(d)} />} />
           )}
 
-          </View>
+          {/* D31 : l'actu locale de la semaine (communes pilotes), avec la commune. */}
+          {choix ? <CetteSemaineCommune insee={choix.insee} nom={nom} /> : null}
 
+          {/* QUI DÉCIDE, À CHAQUE NIVEAU : les deux élus les plus proches, puis toute la chaîne à un geste. */}
           <Decideurs maire={maire} depute={vote && d.nbCircos <= 1 ? vote.qui : null} circo={vote && d.nbCircos <= 1 ? vote.circo : null}
             groupeDepute={vote ? groupeDe(vote.ref, groupes) : null}
             photos={{ maire: maire && choix ? { dep: d.dep, cle: "M" + choix.insee } : null,
               depute: vote && vote.ref ? { dep: deputeParNom(r.deputes, vote.qui)?.dep ?? d.dep, cle: vote.ref } : null }} />
+          <Pression onPress={() => router.push("/qui-decide")} etiquette="Tous les niveaux qui décident pour vous : commune, intercommunalité, département, région, État"
+            style={{ minHeight: CIBLE + 4, flexDirection: "row", alignItems: "center", gap: PAS * 3, paddingHorizontal: PAS * 4, paddingVertical: PAS * 3, borderRadius: RAYON.bloc, backgroundColor: couleurs.carte }}>
+            <Ionicons name="layers-outline" size={22} color={couleurs.encre} accessible={false} importantForAccessibility="no" />
+            <View style={{ flex: 1 }}>
+              <Text style={[TYPO.corps, { fontFamily: POLICE.titre }]}>Tous les niveaux qui décident</Text>
+              <Text style={TYPO.note}>Commune, intercommunalité, département, région, État</Text>
+            </View>
+            <Ionicons name="chevron-forward" size={18} color={couleurs.sourd} accessible={false} importantForAccessibility="no" />
+          </Pression>
 
-          {/* AU PARLEMENT CETTE SEMAINE — sous les trois reponses, jamais parmi
-             elles : c'est national, et la carte le dit (ui/semaine.tsx). */}
-          {/* D31 : l'actu locale de la semaine (communes pilotes), sous les trois reponses. */}
-          {choix ? <CetteSemaineCommune insee={choix.insee} nom={nom} /> : null}
-          {/* 11/11/2026 : le rappel de la prochaine élection vivait sur l'ancien accueil ; il suit le lecteur ici, sous les réponses. */}
-          <RappelElection />
-
+          <Etiquette texte="Au Parlement" />
+          {/* 3. A L'ASSEMBLEE NATIONALE — une position, jamais une presence ; une
+             date, jamais « dernier » ; plusieurs circonscriptions, jamais UN depute. */}
+          {!r.votesLus ? (
+            <Vide {...copieVoteVide(ETAT_VOTE.RELEVE_NON_LU)} action="Réessayer" onAction={reessayer} />
+          ) : !r.votesFiables ? (
+            <Vide {...copieVoteVide(ETAT_VOTE.RELEVE_INCOHERENT)} />
+          ) : vote ? (
+            <Reponse echelon="france"
+              phrase={d.nbCircos > 1
+                ? `${nom} est partagée entre ${d.nbCircos} circonscriptions. Votre député dépend de votre adresse.`
+                : `Le ${dateFr(vote.sc.d)}, ${texteDe(phrasePosition(vote.position, vote.qui))}`}
+              preuve={rep ? <View style={{ gap: PAS }}>{contexteVote}<Repartition compact segments={rep.segments} total={rep.total} position={vote.position} qui={vote.qui} /></View> : contexteVote}
+              note={d.nbCircos > 1
+                ? `Une circonscription est une partie du territoire dont les électeurs élisent un député. Par exemple, dans la ${ordinal(vote.circo)}, le ${dateFr(vote.sc.d)}, ${texteDe(phrasePosition(vote.position, vote.qui)).replace(/\.$/, "")} (texte ${vote.sc.s}).`
+                /* DEUX LIGNES AU PLUS SUR L'ACCUEIL — 07/10/2026. Le vote affiche est
+                   desormais le plus recent ; pour Meaux, son intitule officiel est plus
+                   long et repoussait la troisieme reponse sous le pli (mesure CI : 861 px
+                   pour 844). Le resultat et le decompte viennent EN TETE, jamais coupes ;
+                   l'intitule suit, non reecrit, et peut etre coupe : le texte entier est
+                   sur « Comprendre ce vote », a un geste. */
+                : <Text style={TYPO.note} numberOfLines={2}>{typo(`${ordinal(vote.circo)} circonscription · ${vote.sc.s.charAt(0).toUpperCase()}${vote.sc.s.slice(1)}, ${decompte(vote.sc.dec)}`)}</Text>}
+              sources={<PastilleSource court source={srcVote(d, vote.sc)} />}
+              partage={{
+                titre: `Un vote concernant ${nom}`,
+                texte: d.nbCircos > 1
+                  ? `${nom} est partagée entre ${d.nbCircos} circonscriptions. Votre député dépend de votre adresse. Exemple : dans la ${ordinal(vote.circo)}, le ${dateFr(vote.sc.d)}, ${texteDe(phrasePosition(vote.position, vote.qui)).replace(/\.$/, "")}.`
+                  : `${nom} est dans la ${ordinal(vote.circo)} circonscription. Le ${dateFr(vote.sc.d)}, ${texteDe(phrasePosition(vote.position, vote.qui))}`,
+                sourceUrl: srcVote(d, vote.sc)?.url,
+              }}
+              suite={{ texte: "Comprendre ce vote", onPress: () => router.push("/vote") }} />
+          ) : (
+            <Vide {...copieVoteVide(d.etatVote, { nom, releve: srcScrutins(d)?.releve, portee: d.srcScrutins && d.srcScrutins.portee })} />
+          )}
+          {/* LA SEMAINE AU PARLEMENT : juste sous le vote du député, dans la même rubrique (13/11/2026). Elle reste
+             sous les trois réponses (tests/parcours-web.mjs) et dit qu'elle est nationale (ui/semaine.tsx). */}
           <SemaineParlement sp={d.semaineParlement} lu={r.agendaLu} nom={nom} />
+
+          <Etiquette texte="Le pays" />
+          <RappelElection />
+          </View>
 
           {/* ALLER PLUS LOIN — liens simples. « Actualités » reste : c'est le seul acces a son
              ecran (tests/parcours.test.mjs, aucune impasse), meme vide. Le retirer est une

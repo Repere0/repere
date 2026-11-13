@@ -84,6 +84,7 @@ await contexte.route("**/data/presidentielle-2027/*.json", r => {
   return r.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(publie[nom] ?? {}) });
 });
 await page.goto(BASE + "/presidentielle-2027", { waitUntil: "networkidle" });
+await page.getByRole("tab", { name: "Candidats", exact: true }).click();   /* 13/11/2026 : la page est rangée en onglets */
 await page.getByText("Bientôt", { exact: true }).first().waitFor({ timeout: 15000 }).catch(() => {});
 verifier(await page.getByText("Bientôt", { exact: true }).count() >= 1, "présidentielle : l'illustration d'attente est là");
 verifier(await page.getByText("Aucun nom n'est affiché avant la liste officielle", { exact: false }).count() >= 1, "présidentielle : la phrase vraie reste sous l'illustration");

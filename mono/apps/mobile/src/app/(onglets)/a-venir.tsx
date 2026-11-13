@@ -27,7 +27,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { AGENDA_PAS_ARRIVE, AGENDA_VIDE } from "../../lib/absences";
 import { srcAgenda } from "../../lib/sources";
 import { useCommuneChoisie } from "../../lib/useCommune";
-import { ACCENTS, couleurs, CIBLE, PAS, POLICE, TYPO } from "../../lib/theme";
+import { ACCENTS, couleurs, CIBLE, PAS, POLICE, RAYON, TYPO } from "../../lib/theme";
 import { DateDonnee } from "../../ui/fraicheur";
 import { Onglets } from "../../ui/stitch";
 import { AvecDonnees, Page, Question } from "../../ui/page";
@@ -188,6 +188,7 @@ export default function AVenir() {
       for (let i = 0; i < nbJours; i++) cases.push(decaler(premier, i));
       while (cases.length % 7) cases.push(null);
       const etiquetteJour = jourFr(jour);
+      const aujourdhui = jourParis(new Date());
       const phrase = choisi
         ? (duJour.length
           ? `${duJour.length} rendez-vous ${duJour.length > 1 ? "publiés" : "publié"} ce jour-là.`
@@ -230,7 +231,36 @@ export default function AVenir() {
                 <Text key={i} style={TYPO.note}>{nbsp(`Le calendrier ${de(i)} n'est pas arrivé jusqu'ici : il n'est pas affiché, et rien n'est inventé à sa place.`)}</Text>
               ))}
 
-              {/* Semaine ou mois : un seul choix de jour, en haut de l'ecran. */}
+              {/* 13/11/2026 (porteur : « trop complexe ») — L'ÉCRAN S'OUVRE SUR UNE RÉPONSE : le prochain rendez-vous, et
+                  dans combien de temps. La frise des jours, le mois et les compteurs des filtres ne sont plus affichés
+                  d'emblée : le choix d'un jour est replié sous « Choisir un jour ». Un compte à rebours suit une durée
+                  (invariant 6) : ce n'est ni un score ni une récompense. */}
+              {!choisi && deuxSemaines.length ? (() => {
+                const g = deuxSemaines[0];
+                const ecart = Math.round((Date.UTC(+g.jour.slice(0, 4), +g.jour.slice(5, 7) - 1, +g.jour.slice(8, 10)) - Date.UTC(+aujourdhui.slice(0, 4), +aujourdhui.slice(5, 7) - 1, +aujourdhui.slice(8, 10))) / 864e5);
+                const quandCourt = ecart <= 0 ? "Aujourd'hui" : ecart === 1 ? "Demain" : `Dans ${ecart} jours`;
+                const heure = heureFr(g.debuts[0] || g.debut);
+                return (
+                  <View testID="cal-prochain" accessible accessibilityLabel={`Prochain rendez-vous : ${quandCourt}${heure ? `, ${heure}` : ""}. ${g.titre}. ${g.institution}.`}
+                    style={{ gap: PAS * 2, padding: PAS * 6, borderRadius: RAYON.carte + 4, backgroundColor: couleurs.carte }}>
+                    <Text style={TYPO.etiquette}>Prochain rendez-vous</Text>
+                    <Text style={[TYPO.affiche, { fontSize: 34, lineHeight: 40 }]}>{quandCourt}</Text>
+                    <Text style={TYPO.reponse} numberOfLines={3}>{g.titre}</Text>
+                    <Text style={TYPO.note}>{[majuscule(jourFr(g.jour) || ""), heure ? heure.replace(/ /g, "\u00a0") : null, g.institution].filter(Boolean).join(" · ")}</Text>
+                  </View>
+                );
+              })() : null}
+
+              {/* Filtre : trois choix, sans compteur (13/11/2026). */}
+              <Onglets etiquette="Afficher une institution" actif={institution ?? "tout"} choisir={c => setInstitution(c === "tout" ? null : c)}
+                valeurs={[{ cle: "tout", texte: "Tout" }, { cle: "Assemblée nationale", texte: "Assemblée" }, { cle: "Sénat", texte: "Sénat" }]} />
+
+              <Pressable onPress={() => setMois(m => !m)} accessibilityRole="button" accessibilityState={{ expanded: mois }}
+                accessibilityLabel={mois ? "Masquer le calendrier du mois" : "Choisir un jour dans le mois"}
+                style={({ pressed }) => [secondaire.bouton, { flexDirection: "row", alignItems: "center", gap: PAS * 2 }, pressed && enfonce(true)]}>
+                <Ionicons name="calendar-outline" size={16} color={couleurs.sourd} accessible={false} importantForAccessibility="no" />
+                <Text style={secondaire.texte}>{mois ? "Masquer le mois" : "Choisir un jour"}</Text>
+              </Pressable>
               {mois ? (
                 <View accessibilityRole="none" accessibilityLabel="Calendrier du mois" style={{ gap: 2 }}>
                   <View style={{ flexDirection: "row" }}>
@@ -244,25 +274,7 @@ export default function AVenir() {
                     </View>
                   ))}
                 </View>
-              ) : (
-                <View style={{ flexDirection: "row", alignItems: "flex-end" }}>
-                  {semaine.map(c => <Case key={c} iso={c} jour={jour} nb={compte[c] || 0} taille="semaine" onPress={() => choisirJour(c)} />)}
-                </View>
-              )}
-
-              <DateDonnee quoi="Relevé de l'agenda" date={releveAncien} testID="maj-agenda" />
-
-              {/* Filtre segmenté (maquette Stitch, 09/11/2026) : trois choix, chacun avec le nombre de
-                  rendez-vous publiés sur la même période (le jour choisi, sinon deux semaines). */}
-              {(() => {
-                const nb = (i: string | null) => (regrouperParJour(i ? toutes.filter(e => e.institution === i) : toutes) as Groupe[])
-                  .filter(g => (choisi ? g.jour === jour : g.jour < limite)).length;
-                const vals = [{ c: null, t: "Tout" }, { c: "Assemblée nationale", t: "Assemblée" }, { c: "Sénat", t: "Sénat" }];
-                return (
-                  <Onglets etiquette="Afficher une institution" actif={institution ?? "tout"} choisir={c => setInstitution(c === "tout" ? null : c)}
-                    valeurs={vals.map(o => ({ cle: o.c ?? "tout", texte: `${o.t} ${nb(o.c)}` }))} />
-                );
-              })()}
+              ) : null}
 
               <Text style={[TYPO.corps, { fontWeight: "600" }]}>{choisi && etiquetteJour ? `${etiquetteJour}. ` : ""}{phrase}</Text>
               {choisi ? (
@@ -275,7 +287,7 @@ export default function AVenir() {
               {/* V35 bloc 2 (D68) : un bloc par jour (« Mardi 3 novembre »), puis la source. */}
               {parJour(montres).map(([iso, items]) => (
                 <Carte key={iso} echelon="france">
-                  <Text accessibilityRole="header" style={[TYPO.corps, { fontWeight: "600" }]}>{majuscule(jourFr(iso))}</Text>
+                  <Text accessibilityRole="header" style={[TYPO.corps, { fontWeight: "600" }]}>{iso === aujourdhui ? "Aujourd'hui · " : iso === decaler(aujourdhui, 1) ? "Demain · " : ""}{iso === aujourdhui || iso === decaler(aujourdhui, 1) ? jourFr(iso) : majuscule(jourFr(iso))}</Text>
                   {parMoment(items).map(([moment, liste]) => (
                     <View key={moment} style={{ gap: PAS * 2 }}>
                       <Text accessibilityRole="header" style={TYPO.etiquette}>{moment}</Text>
@@ -289,12 +301,7 @@ export default function AVenir() {
                   {lues.map(x => <PastilleSource key={x.institution} nom={x.institution === "Sénat" ? "Sénat" : "Assemblée"} source={srcAgenda(x.source)} />)}
                 </View>
               ) : null}
-              {/* V35 bloc 2 (D68) : « Voir le mois » passe sous la liste, hors du premier écran. */}
-              <Pressable onPress={() => setMois(m => !m)} accessibilityRole="button"
-                accessibilityLabel={mois ? "Voir la semaine" : "Voir le mois"}
-                style={({ pressed }) => [secondaire.bouton, pressed && enfonce(true)]}>
-                <Text style={secondaire.texte}>{mois ? "Voir la semaine" : "Voir le mois"}</Text>
-              </Pressable>
+              <DateDonnee quoi="Relevé de l'agenda" date={releveAncien} testID="maj-agenda" />
               {/* V34 bloc 7 (audit) : la mention passe sous la liste, pour que le premier rendez-vous ne soit pas repousse sous la barre d'onglets. */}
               <Text style={TYPO.note}>Sous réserve de modification : l'agenda peut changer, le site officiel fait foi.</Text>
               {suivant && lue && lue.source.releve_le ? (
