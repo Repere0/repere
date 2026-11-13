@@ -106,7 +106,18 @@ programme de l'un et pas des autres est une inégalité de traitement.
 - `publier: false` par défaut, comme pour les meetings (décision du 10/11).
 - Champ absent ou `null` si la donnée manque : jamais de valeur inventée.
 
-## 6. Questions au porteur (oui / non)
+## Décisions du porteur (13/11/2026)
+
+1. Jeu sous licence ouverte compilé par un tiers citoyen : **non**, ce n'est pas
+   une source officielle. 2027etmoi et LaFacture2027 ne sont pas ingérés.
+2. Licence CC BY-NC-SA : **non**. Aucun texte de melenchon2027.fr n'est repris.
+3. Lien vers la page programme officielle de chaque candidat : **oui**. Lien
+   seulement, contenu jamais lu ni reproduit. À faire dans une PR séparée.
+
+La publication automatique des programmes reste donc fermée ; la saisie
+manuelle de mars 2027 est maintenue.
+
+## 6. Questions posées au porteur (pour mémoire)
 
 1. Un jeu sous Licence Ouverte 2.0 compilé par un **tiers citoyen**
    (2027etmoi, LaFacture2027) compte-t-il comme « source officielle » ?
