@@ -8,6 +8,16 @@ export const mentionResume = producteur => (producteur === "Assemblée nationale
   ? "Résumé généré avec l'aide de l'IA à partir des données officielles de l'Assemblée nationale."
   : "Résumé généré avec l'aide de l'IA à partir des données officielles de la source citée.");
 export const PAS_DE_RESUME = "Pas encore de résumé pour ce texte.";
+/* Le resume publie d'un vote (12/11/2026) : cherche par la reference du dossier, sinon par le numero du scrutin.
+   `index` est le contenu de resumes-clairs.json ({ resumes: { "DLR5L17N…": …, "scrutin:9759": … } }) ou null. */
+/** @param {unknown} index @param {{ dossier?: string | null, scrutin?: string | number | null }} [cles] */
+export function resumePour(index, cles = {}) {
+  const { dossier = null, scrutin = null } = cles;
+  const t = index && /** @type {{ resumes?: Record<string, unknown> }} */ (index).resumes;
+  if (!t || typeof t !== "object") return null;
+  const lire = k => (k && Object.prototype.hasOwnProperty.call(t, k) ? t[k] : null);
+  return lire(dossier) || lire(scrutin != null ? "scrutin:" + scrutin : null);
+}
 export function resumeAffichable(r) {
   if (!r || r.valide !== true) return null;
   const texte = String(r.resume || "").trim();

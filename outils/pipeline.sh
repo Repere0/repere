@@ -411,6 +411,11 @@ rm -rf site_engendre
   # publiees. Aucune transformation, aucune generation. Absent : l'application n'affiche rien.
   cp ../data/actus-hebdo.json ./data/actus-hebdo.json 2>/dev/null \
     || avertir "data/actus-hebdo.json absent - aucune actu locale publiee"
+  # RESUMES « EN CLAIR » (12/11/2026) - hors ligne : publie les seuls resumes valides par le porteur
+  # (data/resumes/*.json), recontroles contre leur texte officiel. Un resume valide qui ne passe plus n'est pas
+  # publie, et l'etape avertit.
+  node scripts/resumes-clairs.mjs --publier ./data \
+    || avertir "resumes en clair : un resume valide ne passe plus les controles, il n'est pas publie"
   # CODES POSTAUX (12/11/2026) - Base officielle de La Poste (data.gouv.fr). Reseau requis. La licence et les
   # colonnes sont LUES sur le runner, pas supposees ; licence fermee, en-tete inattendu ou couverture sous
   # 90 % : rien n'est ecrit, et l'application dit que la recherche par code postal n'est pas disponible.

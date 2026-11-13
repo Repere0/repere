@@ -153,6 +153,7 @@ export function dossierDuScrutin(sc) {
   const ref = typeof sc.dr === "string" && REF_DOSSIER.test(sc.dr) ? sc.dr : null;
   return {
     intitule: sc.dl.trim(),
+    ref,
     url: ref ? `https://www.assemblee-nationale.fr/dyn/17/dossiers/${ref}` : null,
     demandeur: typeof sc.dm === "string" && sc.dm.trim() ? sc.dm.trim() : null,
   };

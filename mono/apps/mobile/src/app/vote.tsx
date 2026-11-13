@@ -27,7 +27,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { BoutonCopierLien } from "../ui/partage/partager-texte";
 import { AvecDonnees, Page, Question } from "../ui/page";
 import { PastilleSource } from "../ui/source";
-import { ResumeClair } from "../ui/resume-clair";
+import { ResumeClairDuVote } from "../ui/resume-clair";
 import { Frise, Repartition } from "../ui/visuels";
 import { SignalerErreur } from "../ui/contact";
 import { Timeline } from "../ui/timeline";
@@ -160,7 +160,7 @@ export default function Vote() {
           </Pressable>
 
           {/* « En clair » (12/11/2026) : aucun résumé validé n'existe pour ce texte, le bloc le dit et renvoie au dossier officiel. */}
-          <ResumeClair resume={null} lienOfficiel={dossier && dossier.url && /^https:\/\//.test(dossier.url) ? dossier.url : undefined} />
+          <ResumeClairDuVote dossier={dossier ? dossier.ref : null} scrutin={vote.sc.n} lienOfficiel={dossier && dossier.url && /^https:\/\//.test(dossier.url) ? dossier.url : undefined} />
 
           {/* DE QUOI PARLE CE TEXTE (05/11/2026) : l'intitulé officiel du dossier et qui a demandé
               le scrutin public, tels que l'Assemblée les publie dans le scrutin. Aucun résumé écrit
