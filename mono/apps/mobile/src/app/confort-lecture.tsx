@@ -1,6 +1,7 @@
 /* CONFORT DE LECTURE — V26, bloc 3. Les réglages qui ont un effet réel sont appliqués
  * en direct et gardés dans repere.profil (ADR 0006). Ceux qui n'en ont pas encore sont
  * listés, avec la raison, plutôt que faits à moitié. Aucune requête ne part. */
+import { MARQUE_DEFILEMENT } from "../lib/defilement-ios";
 import { useBasSur } from "../ui/page";
 import { Pressable, ScrollView, Text, View } from "react-native";
 import { Stack } from "expo-router";
@@ -37,7 +38,7 @@ export default function ConfortLecture() {
   const p = profil ?? { tailleTexte: 16, espacement: 1.5, contraste: "normal", animationsReduites: false, masquerImages: false, niveauZoom: "france", policeDyslexie: false, modeDaltonien: false };
   const bas = useBasSur();
   return (
-    <ScrollView style={{ flex: 1, backgroundColor: couleurs.sol }} contentContainerStyle={{ padding: PAS * 4, paddingBottom: bas, gap: PAS * 4 }}>
+    <ScrollView {...MARQUE_DEFILEMENT} style={{ flex: 1, backgroundColor: couleurs.sol }} contentContainerStyle={{ padding: PAS * 4, paddingBottom: bas, gap: PAS * 4 }}>
       <Stack.Screen options={{ title: "Confort de lecture" }} />
       <Carte titre="Taille du texte">
         <View style={{ flexDirection: "row", flexWrap: "wrap", gap: PAS * 2 }}>

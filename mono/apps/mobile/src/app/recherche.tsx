@@ -7,6 +7,7 @@
  * Chaque résultat ouvre sa fiche. Aucune donnée nouvelle : chaque lecture est celle d'un écran existant,
  * mise en mémoire pour la session (lib/donnees). Ce qui n'est pas cherché ici : les maires et les
  * conseillers, rangés par département (l'onglet « Élus » le dit). */
+import { MARQUE_DEFILEMENT } from "../lib/defilement-ios";
 import { noterArrondissement } from "../lib/arrondissement";
 import { useBasSur } from "../ui/page";
 import { CarteListe, Puces } from "../ui/donnees";
@@ -169,7 +170,7 @@ export default function Recherche() {
 
   const bas = useBasSur();
   return (
-    <ScrollView style={{ flex: 1, backgroundColor: couleurs.sol }} keyboardShouldPersistTaps="handled"
+    <ScrollView {...MARQUE_DEFILEMENT} style={{ flex: 1, backgroundColor: couleurs.sol }} keyboardShouldPersistTaps="handled"
       contentContainerStyle={{ padding: PAS * 4, paddingBottom: bas, gap: PAS * 4 }}>
       <View style={{ flexDirection: "row", alignItems: "center", gap: PAS * 2, minHeight: CIBLE + 8, borderRadius: 999, borderWidth: 1.5,
         borderColor: focus ? couleurs.encre : couleurs.trait, backgroundColor: couleurs.carte, paddingLeft: PAS * 4 }}>

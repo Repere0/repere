@@ -13,6 +13,7 @@
  *   Details                         -> la ligne complete du site (licence…),
  *                                      pour qui veut aller jusqu'au bout.
  * Le lecteur d'ecran entend le producteur et la date sans ouvrir la feuille. */
+import { MARQUE_DEFILEMENT } from "../lib/defilement-ios";
 import { useState } from "react";
 import { Linking, Modal, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -88,7 +89,7 @@ export function FeuilleSource({ source, visible, onFermer }: { source: InfoSourc
   const detail = ligneSource(source.releve && !source.mention ? { ...source, mention: "relevé le " + dateFr(source.releve) } : source);
   return (
     <Modal visible={visible} animationType="slide" presentationStyle="pageSheet" onRequestClose={onFermer}>
-      <ScrollView style={{ backgroundColor: couleurs.sol }} contentContainerStyle={[s.feuille, { paddingBottom: marges.bottom + PAS * 8 }]}>
+      <ScrollView {...MARQUE_DEFILEMENT} style={{ backgroundColor: couleurs.sol }} contentContainerStyle={[s.feuille, { paddingBottom: marges.bottom + PAS * 8 }]}>
         <Etiquette texte="D'où vient cette information ?" />
         <Text style={TYPO.question} accessibilityRole="header">{source.producteur}</Text>
         {date ? <Text style={[TYPO.corps, { fontWeight: "500" }]}>{date}</Text> : null}

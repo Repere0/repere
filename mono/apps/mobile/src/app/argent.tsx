@@ -10,6 +10,7 @@
  * (et non « exercice 2025 »). Les phrases partagees avec le site (rapports,
  * sous-titre, calcul) restent intactes au niveau 3, pour que les deux supports
  * disent la meme chose. */
+import { MARQUE_DEFILEMENT } from "../lib/defilement-ios";
 import { useState } from "react";
 import { FlatList, Linking, Modal, Pressable, Text, TextInput, View } from "react-native";
 import { Stack } from "expo-router";
@@ -90,6 +91,7 @@ function ToutesLesAides({ ouvert, fermer, liste, nom, nomDe }: {
           </Text>
         </View>
         <FlatList
+        {...MARQUE_DEFILEMENT}
           data={filtres}
           keyExtractor={(p, i) => `${p.annee}-${p.dispositif}-${i}`}
           /* Tout rendre : une commune publie quelques dizaines d'aides au plus, et la MEME VERITE que le

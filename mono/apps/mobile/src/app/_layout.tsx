@@ -17,6 +17,7 @@ import { DarkTheme, DefaultTheme, Stack, ThemeProvider } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { Demarrage } from "../ui/demarrage";
+import { poserDefilementIos } from "../lib/defilement-ios";
 import { useFonts } from "expo-font";
 import { Manrope_800ExtraBold } from "@expo-google-fonts/manrope/800ExtraBold";
 import { Manrope_700Bold } from "@expo-google-fonts/manrope/700Bold";
@@ -47,6 +48,9 @@ function AvecCommune({ children }: { children: ReactNode }) {
   const { choix } = useSelection();
   return <FournisseurCommune choix={choix}>{children}</FournisseurCommune>;
 }
+
+/* Safari iOS : la feuille de style du defilement, posee une fois, avant le premier rendu. */
+poserDefilementIos();
 
 export default function Coquille() {
   /* Le rendu attend la police (quelques millisecondes, fichier local) : un

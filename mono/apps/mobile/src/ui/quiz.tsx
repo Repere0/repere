@@ -14,6 +14,7 @@
  *   - vert et rouge du quiz (palette.ts, ADR 0009) : réservés au quiz, distincts des couleurs de vote, et jamais
  *     seuls : une coche ou une croix, et « Juste » ou « Faux » en toutes lettres ;
  *   - mouvement réduit : pas de transition. */
+import { MARQUE_DEFILEMENT } from "../lib/defilement-ios";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Animated, Easing, Modal, Pressable, ScrollView, Text, View } from "react-native";
 import { router } from "expo-router";
@@ -52,7 +53,7 @@ function LesRangs({ ouvert, fermer, points }: { ouvert: boolean; fermer: () => v
   const rangAtteint = RANGS.indexOf(atteint);
   return (
     <Modal visible={ouvert} animationType="slide" onRequestClose={fermer} transparent={false}>
-      <ScrollView style={{ backgroundColor: couleurs.sol }} contentContainerStyle={{ padding: PAS * 5, gap: PAS * 4, maxWidth: 560, width: "100%", alignSelf: "center" }}>
+      <ScrollView {...MARQUE_DEFILEMENT} style={{ backgroundColor: couleurs.sol }} contentContainerStyle={{ padding: PAS * 5, gap: PAS * 4, maxWidth: 560, width: "100%", alignSelf: "center" }}>
         <View style={{ flexDirection: "row", alignItems: "center", gap: PAS * 3 }}>
           <Text style={[TYPO.affiche, { flex: 1 }]} accessibilityRole="header">Les rangs</Text>
           <Pressable onPress={fermer} accessibilityRole="button" accessibilityLabel="Fermer la liste des rangs"
@@ -225,7 +226,7 @@ export function Quiz({ categorieDe }: { categorieDe: (cle: string) => string }) 
     const teinte = justes >= 4 ? COULEURS_QUIZ.juste : justes <= 1 ? COULEURS_QUIZ.faux : couleurs.encre;
     const phrase = justes >= 4 ? "Bien joué !" : justes >= 2 ? "Continue comme ça !" : "On recommence ?";
     return (
-      <ScrollView contentContainerStyle={cadre} alwaysBounceVertical={false}>
+      <ScrollView {...MARQUE_DEFILEMENT} contentContainerStyle={cadre} alwaysBounceVertical={false}>
         {enTete}
         <Animated.View style={{ flex: 1, justifyContent: "center", gap: PAS * 5, opacity: entree }}>
           {/* LE SCORE, en très gros. L'animation est un simple agrandissement qui retombe : rien de
@@ -288,7 +289,7 @@ export function Quiz({ categorieDe }: { categorieDe: (cle: string) => string }) 
 
   const bonne = q.propositions.find(p => p.juste)!;
   return (
-    <ScrollView contentContainerStyle={cadre} alwaysBounceVertical={false}>
+    <ScrollView {...MARQUE_DEFILEMENT} contentContainerStyle={cadre} alwaysBounceVertical={false}>
       {enTete}
       <Animated.View key={`${manche}-${rang}`} style={{ flex: 1, gap: PAS * 4, opacity: entree, transform: [{ translateY: entree.interpolate({ inputRange: [0, 1], outputRange: [12, 0] }) }] }}>
         <View style={{ flex: 1, justifyContent: "center", gap: PAS * 2, minHeight: 120 }}>

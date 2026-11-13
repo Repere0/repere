@@ -4,6 +4,7 @@
  * ou trois phrases : aucune date promise, aucune adresse inventee (le contact n'apparait
  * que si EXPO_PUBLIC_CONTACT_EMAIL est defini, comme dans « À propos »). Chaque question
  * est un en-tete : on passe de l'une a l'autre au lecteur d'ecran. */
+import { MARQUE_DEFILEMENT } from "../lib/defilement-ios";
 import { useBasSur } from "../ui/page";
 import { useState, type ReactNode } from "react";
 import { Linking, Pressable, ScrollView, Text, View } from "react-native";
@@ -115,7 +116,7 @@ export default function Faq() {
   const [ouverte, setOuverte] = useState<string | null>(null);
   const basculer = (q: string) => setOuverte(o => (o === q ? null : q));
   return (
-    <ScrollView style={{ flex: 1, backgroundColor: couleurs.sol }} contentContainerStyle={{ padding: PAS * 4, paddingBottom: bas, gap: PAS * 4, maxWidth: 640, width: "100%", alignSelf: "center" }}>
+    <ScrollView {...MARQUE_DEFILEMENT} style={{ flex: 1, backgroundColor: couleurs.sol }} contentContainerStyle={{ padding: PAS * 4, paddingBottom: bas, gap: PAS * 4, maxWidth: 640, width: "100%", alignSelf: "center" }}>
       <Stack.Screen options={{ title: "Questions fréquentes" }} />
       <Text style={TYPO.question} accessibilityRole="header">Questions fréquentes</Text>
       <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginHorizontal: -PAS * 4 }} contentContainerStyle={{ gap: PAS * 3, paddingHorizontal: PAS * 4 }}

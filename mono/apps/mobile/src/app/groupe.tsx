@@ -34,6 +34,7 @@ import { couleurs, feuille, PAS, TYPO } from "../lib/theme";
 import { StyleSheet } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { BoutonCopierLien } from "../ui/partage/partager-texte";
+import { MARQUE_DEFILEMENT } from "../lib/defilement-ios";
 import { useEffect, useState } from "react";
 import { chargerDeputes } from "../lib/donnees";
 import { useSelection } from "../lib/selection";
@@ -120,6 +121,7 @@ export default function Groupe() {
     <View style={{ flex: 1, backgroundColor: couleurs.sol }}>
       <Stack.Screen options={{ title: titre }} />
       <FlatList
+        {...MARQUE_DEFILEMENT}
         data={membres}
         keyExtractor={m => m.ref}
         initialNumToRender={12}
