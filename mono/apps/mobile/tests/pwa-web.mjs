@@ -2,6 +2,7 @@
 // et /data/ n'est jamais rangé dans le cache du service worker.
 // Usage : node tests/pwa-web.mjs http://localhost:8812   (dossier dist traité par scripts/pwa.mjs)
 import { createRequire } from "node:module";
+import { passerBienvenue } from "./_premier-lancement.mjs";
 const { chromium } = createRequire(process.cwd() + "/")("playwright");
 const BASE = process.argv[2] || "http://localhost:8812";
 let echecs = 0;
@@ -15,6 +16,7 @@ const erreurs = []; page.on("pageerror", e => { const m = String(e); if (!(coupe
 // Les hebergeurs (Vercel) n'envoient jamais un dossier node_modules : polices et icones y repondaient 404.
 const assets = []; page.on("response", r => { if (r.url().includes("/assets/")) assets.push({ u: r.url(), s: r.status() }); });
 await page.goto(BASE, { waitUntil: "networkidle" });
+await passerBienvenue(page);
 await page.evaluate(() => navigator.serviceWorker.ready);
 await page.waitForTimeout(1500);
 const etat = await page.evaluate(async () => {

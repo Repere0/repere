@@ -5,6 +5,7 @@
 // sa fiche (commune, élu, scrutin) ; aucune erreur JavaScript.
 // Données : un député (Xavier Breton, 01-1) et le scrutin n° 8706 de data/ (copiés dans dist-web/data).
 import { createRequire } from "node:module";
+import { passerBienvenue } from "./_premier-lancement.mjs";
 const require = createRequire(process.cwd() + "/");
 const { chromium } = require("playwright");
 
@@ -34,6 +35,7 @@ const CHAMP = "Rechercher une commune, un élu ou un scrutin";
 
 try {
   await page.goto(BASE + "/", { waitUntil: "networkidle" });
+  await passerBienvenue(page);
   await page.waitForTimeout(2000);
   const loupe = page.getByRole("button", { name: "Ouvrir la recherche : communes, élus, scrutins" });
   verifier((await loupe.count()) > 0, "accueil : la loupe de recherche est présente");

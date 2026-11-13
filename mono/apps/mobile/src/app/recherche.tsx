@@ -152,7 +152,7 @@ export default function Recherche() {
     if (!dep) return;
     choisir({ dep, insee, nom });
     noterArrondissement(insee, filtre);
-    /* Comme l'accueil : premier lancement sans profil -> les trois questions ; sinon la commune. */
+    /* Comme l'accueil : sans profil -> la question du prénom, une fois ; sinon la commune. */
     if (absent) router.replace("/bienvenue");
     else router.replace("/chez-vous");
   };

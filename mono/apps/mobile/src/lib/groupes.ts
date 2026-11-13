@@ -4,7 +4,7 @@
    Un depute absent de la table reste « Inconnu ». Voir docs/adr/0001-couleurs-partis.md. */
 import { useEffect, useState } from "react";
 import { memeNom } from "@repere/core";
-import { chargerDeputesGroupes } from "./donnees";
+import { chargerDeputesGroupes, chargerHemicyclePlan } from "./donnees";
 import { COULEURS_GROUPES, NEUTRES_PAR_MODE, rapportContraste } from "./palette";
 
 export const GROUPE_INCONNU = "Inconnu";
@@ -109,4 +109,33 @@ export function deputeParNom(deputes: unknown, nom: string): { ref: string | und
   const table = ((deputes as { deputes?: Record<string, { prenom?: string; nom?: string; acteurRef?: string }> } | null)?.deputes) || {};
   const e = Object.entries(table).find(([, x]) => memeNom([x.prenom, x.nom].filter(Boolean).join(" "), nom));
   return e ? { ref: e[1].acteurRef, dep: e[0].split("-")[0] } : null;
+}
+
+/* ─── LE PLAN DE L'HÉMICYCLE (13/11/2026) ────────────────────────────────────────────────────────────
+ * data/hemicycle-plan.json, produit par scripts/collecte-hemicycle.mjs depuis le plan publié par
+ * l'Assemblée. Sans source, sans date ou sans sièges, il n'est pas lu : l'écran retombe sur l'arc, qui
+ * dit ce qu'il est. Jamais un plan inventé présenté comme le vrai. */
+export type SiegePlan = { n: number; x: number; y: number; acteur?: string };
+export type FichierPlan = { source: { producteur: string; licence: string; url?: string }; genere_le: string; sieges: SiegePlan[] };
+
+export async function lirePlanHemicycle(): Promise<FichierPlan | null> {
+  try {
+    const r = await chargerHemicyclePlan();
+    const d = r.donnees as Partial<FichierPlan> | null;
+    if (!d || !d.source || !d.source.producteur || !d.source.licence || !d.genere_le || !Array.isArray(d.sieges) || !d.sieges.length) return null;
+    return d as FichierPlan;
+  } catch {
+    return null;
+  }
+}
+
+/* undefined pendant la lecture, null si le plan n'est pas publié. */
+export function usePlanHemicycle(): FichierPlan | null | undefined {
+  const [p, setP] = useState<FichierPlan | null | undefined>(undefined);
+  useEffect(() => {
+    let vivant = true;
+    lirePlanHemicycle().then(x => { if (vivant) setP(x); });
+    return () => { vivant = false; };
+  }, []);
+  return p;
 }

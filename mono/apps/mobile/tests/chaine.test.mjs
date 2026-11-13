@@ -98,7 +98,8 @@ test("epreuve.yml n'ignore que apps/mobile, et mobile.yml se declenche sur ce ch
 // navigateur a 200 %) : un script ajoute sans etre cite dans mobile.yml ne tournait
 // jamais, et la CI restait verte. Tout .mjs du dossier de tests doit etre cite
 // quelque part dans mobile.yml, sauf les aides explicitement listees ici.
-const AIDES_NON_LANCEES = new Set([]);
+/* Les aides : du code partage par plusieurs tests, jamais lance seul. Le nom commence par « _ ». */
+const AIDES_NON_LANCEES = new Set(["_premier-lancement.mjs"]);
 test("chaque script .mjs de apps/mobile/tests est cite par mobile.yml (pas seulement les *.test.mjs)", () => {
   const yml = lire(join(DEPOT, ".github", "workflows", "mobile.yml"));
   const scripts = readdirSync(ICI).filter((f) => f.endsWith(".mjs") && !f.endsWith(".test.mjs") && !AIDES_NON_LANCEES.has(f));

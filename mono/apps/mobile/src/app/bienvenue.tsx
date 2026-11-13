@@ -1,117 +1,67 @@
-/* BIENVENUE — quatre questions, trente secondes (V26, bloc 1 ; thèmes ajoutés en V31, D57).
+/* BIENVENUE — une seule question, facultative : le prénom (13/11/2026, décision du porteur, ADR 0009).
  *
- * Affiché quand aucun profil n'est gardé sur ce telephone (repere.profil absent). La
- * question 1 (la commune) est répondue sur l'accueil avant d'arriver ici. « Terminer »
- * garde les réponses 2, 3 et 4 sur cet appareil. La question 4 (les thèmes) peut rester vide. « Passer » garde les réglages par défaut
- * (D45, V27) : c'est un choix explicite. Chaque question 2 à 4 a son « Aucune préférence » (V34) :
- * il remet la question à sa valeur par défaut, sans quitter l'écran. Aucune réponse ne part. */
-import { useBasSur } from "../ui/page";
+ * Remplace les trois questions de l'ancien accueil (taille du texte, sujets) : ces réglages restent à un geste, dans
+ * « Confort de lecture » et « Pour vous ». Affiché une fois, quand aucun profil n'est gardé sur l'appareil.
+ * « C'est parti » garde le prénom (s'il y en a un) dans repere.profil ; « Passer » n'en garde aucun. Les deux gardent
+ * les réglages par défaut. Le prénom reste sur l'appareil : il n'est jamais transmis (invariant 2). */
 import { useState } from "react";
-import { Pressable, ScrollView, Text, View } from "react-native";
+import { KeyboardAvoidingView, Platform, Pressable, Text, TextInput, View } from "react-native";
 import { router, Stack } from "expo-router";
-import { PROFIL_DEFAUT, TAILLES_TEXTE, THEMES } from "@repere/core";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { nettoyerPrenom, PRENOM_MAX, PROFIL_DEFAUT } from "@repere/core";
 import { useSelection } from "../lib/selection";
 import { MODE_INITIAL, useProfil } from "../lib/profil";
-import { CIBLE, couleurs, PAS, TYPO } from "../lib/theme";
-import { Bouton, Texte } from "../lib/composants";
-import { enfonce } from "../ui/mouvement";
-
-
-/* « Aucune préférence » : remet la question à sa valeur par défaut, sans quitter l'écran (V34, bloc 3). */
-function AucunePreference({ texte, onPress, actif }: { texte: string; onPress: () => void; actif: boolean }) {
-  return (
-    <Pressable onPress={onPress} accessibilityRole="button" accessibilityState={{ selected: actif }}
-      accessibilityLabel={texte}
-      style={({ pressed }) => ({
-        minHeight: CIBLE, paddingHorizontal: PAS * 3, justifyContent: "center", alignSelf: "flex-start", borderRadius: 999,
-        borderWidth: 1, borderStyle: "dashed", borderColor: couleurs.trait, ...enfonce(pressed),
-      })}>
-      <Text style={[TYPO.note, { color: couleurs.sourd, fontWeight: actif ? "700" : "400" }]}>{texte}</Text>
-    </Pressable>
-  );
-}
+import { CIBLE, couleurs, PAS, POLICE, RAYON, TYPO, ACCENTS } from "../lib/theme";
+import { enfonce, useApparition } from "../ui/mouvement";
+import { Animated } from "react-native";
+import { Logo } from "../ui/logo";
 
 export default function Bienvenue() {
   const { choix } = useSelection();
-  const { enregistrer, passer: garderDefauts } = useProfil();
-  const [taille, setTaille] = useState<number>(PROFIL_DEFAUT.tailleTexte);
-  const [themes, setThemes] = useState<string[]>([]);
+  const { enregistrer } = useProfil();
+  const marges = useSafeAreaInsets();
+  const [saisie, setSaisie] = useState("");
+  const apparition = useApparition();
+  const prenom = nettoyerPrenom(saisie);
+  /* Une saisie non vide que la règle refuse (chiffres, signes) : on le dit, on ne la garde pas en silence. */
+  const refuse = saisie.trim().length > 0 && !prenom;
 
-  const terminer = () => {
-    enregistrer({ ...PROFIL_DEFAUT, mode: MODE_INITIAL, tailleTexte: taille, themes });
-    router.replace("/chez-vous");
-  };
-  const passer = () => {
-    garderDefauts();
-    router.replace("/chez-vous");
+  const suite = (p: string) => {
+    enregistrer({ ...PROFIL_DEFAUT, mode: MODE_INITIAL, prenom: p } as Parameters<typeof enregistrer>[0]);
+    router.replace(choix ? "/chez-vous" : "/");
   };
 
-  const bas = useBasSur();
   return (
-    <ScrollView style={{ flex: 1, backgroundColor: couleurs.sol }} contentContainerStyle={{ padding: PAS * 4, paddingBottom: bas, gap: PAS * 5 }}>
-      <Stack.Screen options={{ title: "Bienvenue", headerShown: true }} />
-
-      <View style={{ gap: PAS * 2 }}>
-        <Text style={TYPO.etiquette}>Question 1 sur 3</Text>
-        <Text style={TYPO.question} accessibilityRole="header">Où habitez-vous ?</Text>
-        <Texte>{choix ? `Votre commune : ${choix.nom}.` : "Aucune commune choisie."}</Texte>
-      </View>
-
-      <View style={{ gap: PAS * 2 }}>
-        <Text style={TYPO.etiquette}>Question 2 sur 3</Text>
-        <Text style={TYPO.question} accessibilityRole="header">Comment lisez-vous le mieux ?</Text>
-        <View style={{ flexDirection: "row", gap: PAS * 2, flexWrap: "wrap" }}>
-          {TAILLES_TEXTE.filter(t => t <= 22).map(t => {
-            const actif = taille === t;
-            return (
-              <Pressable key={t} onPress={() => setTaille(t)} accessibilityRole="radio"
-                accessibilityState={{ selected: actif }} accessibilityLabel={`Texte de ${t} points${actif ? ", choisi" : ""}`}
-                style={({ pressed }) => ({
-                  minHeight: CIBLE, minWidth: CIBLE, paddingHorizontal: PAS * 3, justifyContent: "center", borderRadius: 999,
-                  borderWidth: actif ? 2 : 1, borderColor: actif ? couleurs.encre : couleurs.trait,
-                  backgroundColor: couleurs.carte, ...enfonce(pressed),
-                })}>
-                <Text style={{ fontSize: t, color: couleurs.encre, fontWeight: actif ? "700" : "400" }}>A {t}</Text>
-              </Pressable>
-            );
-          })}
+    <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined} style={{ flex: 1, backgroundColor: couleurs.sol }}>
+      <Stack.Screen options={{ title: "Bienvenue", headerShown: false }} />
+      <Animated.View style={{ flex: 1, paddingHorizontal: PAS * 6, paddingTop: marges.top + PAS * 6, paddingBottom: marges.bottom + PAS * 6, justifyContent: "center", gap: PAS * 6,
+        maxWidth: 520, width: "100%", alignSelf: "center", opacity: apparition, transform: [{ translateY: apparition.interpolate({ inputRange: [0, 1], outputRange: [12, 0] }) }] }}>
+        <View style={{ alignItems: "center", gap: PAS * 5 }}>
+          <Logo size={64} />
+          <Text style={[TYPO.affiche, { textAlign: "center" }]} accessibilityRole="header">Bienvenue sur Repère.</Text>
+          <Text style={[TYPO.corps, { textAlign: "center", fontSize: 18, lineHeight: 26 }]} nativeID="question-prenom">Comment souhaitez-vous qu'on vous appelle ?</Text>
         </View>
-        <View style={{ borderRadius: 14, padding: PAS * 3, backgroundColor: couleurs.carte }}>
-          <Text style={{ fontSize: taille, lineHeight: Math.round(taille * 1.5), color: couleurs.encre }} accessibilityLabel={`Aperçu à ${taille} points`}>
-            Repère vous dit ce qui se décide près de chez vous, avec les sources.
+        <View style={{ gap: PAS * 2 }}>
+          <TextInput value={saisie} onChangeText={setSaisie} maxLength={PRENOM_MAX} autoCapitalize="words" autoCorrect={false} autoComplete="given-name"
+            returnKeyType="done" onSubmitEditing={() => suite(prenom)} placeholder="Votre prénom" placeholderTextColor={couleurs.sourd}
+            accessibilityLabel="Votre prénom, facultatif"
+            style={{ minHeight: CIBLE + 12, borderRadius: RAYON.bloc, borderWidth: 1, borderColor: refuse ? couleurs.encre : couleurs.trait, backgroundColor: couleurs.carte,
+              paddingHorizontal: PAS * 5, fontSize: 20, fontFamily: POLICE.titre, color: couleurs.encre, textAlign: "center" }} />
+          <Text style={[TYPO.note, { textAlign: "center" }]} accessibilityLiveRegion="polite">
+            {refuse ? "Un prénom : des lettres, un espace ou un trait d'union. Il ne sera pas gardé tel quel." : "Facultatif. Il reste sur cet appareil et n'est jamais envoyé."}
           </Text>
         </View>
-        <AucunePreference texte={`Aucune préférence : texte de ${PROFIL_DEFAUT.tailleTexte} points`} actif={taille === PROFIL_DEFAUT.tailleTexte}
-          onPress={() => setTaille(PROFIL_DEFAUT.tailleTexte)} />
-      </View>
-
-      <View style={{ gap: PAS * 2 }}>
-        <Text style={TYPO.etiquette}>Question 3 sur 3 (facultative)</Text>
-        <Text style={TYPO.question} accessibilityRole="header">Quels sujets vous intéressent ?</Text>
-        <Text style={TYPO.note}>Le fil « Pour vous » ne montrera que ces sujets. Vous pourrez les changer à tout moment.</Text>
-        <View style={{ flexDirection: "row", gap: PAS * 2, flexWrap: "wrap" }}>
-          {THEMES.map(th => {
-            const coche = themes.includes(th);
-            return (
-              <Pressable key={th} accessibilityRole="checkbox" accessibilityState={{ checked: coche }} accessibilityLabel={`${th}${coche ? ", coché" : ""}`}
-                onPress={() => setThemes(t => (t.includes(th) ? t.filter(x => x !== th) : [...t, th]))}
-                style={({ pressed }) => ({
-                  minHeight: CIBLE, paddingHorizontal: PAS * 3, justifyContent: "center", borderRadius: 999,
-                  borderWidth: coche ? 2 : 1, borderColor: coche ? couleurs.encre : couleurs.trait,
-                  backgroundColor: couleurs.carte, ...enfonce(pressed),
-                })}>
-                <Text style={[TYPO.corps, { color: couleurs.encre, fontWeight: coche ? "700" : "400" }]}>{coche ? "✓ " : ""}{th}</Text>
-              </Pressable>
-            );
-          })}
+        <View style={{ gap: PAS * 2 }}>
+          <Pressable onPress={() => suite(prenom)} accessibilityRole="button" accessibilityLabel="C'est parti"
+            style={({ pressed }) => ({ minHeight: CIBLE + 8, borderRadius: RAYON.pastille, alignItems: "center", justifyContent: "center", backgroundColor: ACCENTS.autorite, ...enfonce(pressed) })}>
+            <Text style={{ fontSize: 18, fontFamily: POLICE.section, color: ACCENTS.surAutorite }}>C'est parti</Text>
+          </Pressable>
+          <Pressable onPress={() => suite("")} accessibilityRole="button" accessibilityLabel="Passer, sans donner de prénom"
+            style={({ pressed }) => ({ minHeight: CIBLE, alignItems: "center", justifyContent: "center", ...enfonce(pressed) })}>
+            <Text style={[TYPO.note, { color: couleurs.sourd, fontFamily: POLICE.texteGras }]}>Passer</Text>
+          </Pressable>
         </View>
-        <AucunePreference texte="Aucune préférence : aucun sujet" actif={themes.length === 0} onPress={() => setThemes([])} />
-      </View>
-
-      <View style={{ gap: PAS * 3 }}>
-        <Bouton texte="Terminer" onPress={terminer} />
-        <Bouton texte="Passer (garde les réglages par défaut)" onPress={passer} discret />
-      </View>
-    </ScrollView>
+      </Animated.View>
+    </KeyboardAvoidingView>
   );
 }

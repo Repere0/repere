@@ -186,7 +186,7 @@ const ACCES: { ouvrir: () => void; texte: string; etiquette: string; icone: keyo
   /* 09/11/2026 (porteur) : la tuile ouvre la page de la présidentielle ; le guide « Ma voix » y est à un geste. */
   { ouvrir: () => router.push("/presidentielle-2027"), texte: "Présidentielle 2027", etiquette: "Présidentielle 2027 : candidats, débats, réunions publiques, comment voter", icone: "flag", couleur: couleurs.dept },
   { ouvrir: () => router.push("/pour-vous"), texte: "Pour vous", etiquette: "Pour vous : ce qui a été publié selon votre vue", icone: "bookmark", couleur: couleurs.region },
-  { ouvrir: () => router.push("/scrutins"), texte: "L'Assemblée", etiquette: "L'Assemblée : sa composition et ses votes publics", icone: "business", couleur: couleurs.france },
+  { ouvrir: () => router.push("/scrutins"), texte: "Le Parlement", etiquette: "Le Parlement : l'Assemblée nationale et le Sénat, leur composition et les votes publics", icone: "business", couleur: couleurs.france },
 ];
 
 /* UN SEUL ACCUEIL (11/11/2026, audit d'architecture). Avec une commune gardée sur le téléphone,
@@ -201,7 +201,12 @@ export default function Accueil() {
   const marges = useSafeAreaInsets();
   const { width } = useWindowDimensions();
   const { choix, choisir, retenue, oublier } = useSelection();
-  const { absent } = useProfil();
+  const { absent, profil } = useProfil();
+  const prenom = profil ? profil.prenom : "";
+  /* 13/11/2026 (porteur, ADR 0009) : au premier lancement (aucun profil gardé), l'accueil laisse la place à la
+     question du prénom, juste après l'écran de démarrage. Une fois, et seulement depuis l'accueil : un lien
+     ouvert sur une page précise n'est jamais détourné. */
+  useEffect(() => { if (absent) router.replace("/bienvenue"); /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, []);
   const [etat, setEtat] = useState<string>(ETATS.EN_COURS);
   const [beta, setBeta] = useState<Beta | null>(null);
   const [index, setIndex] = useState<Index | null>(null);
@@ -288,7 +293,7 @@ export default function Accueil() {
     setRecentes([...RECENTES]);
     /* La recherche se referme une fois la commune choisie : au retour, l'accueil est propre. */
     setFiltre(""); setCherche(false); setTout(false);
-    /* V26 bloc 1 : premiere ouverture sans profil -> trois questions, une seule fois. */
+    /* Sans profil (arrivée par un lien, sans passer par l'accueil) : la question du prénom, une seule fois. */
     if (absent) router.replace("/bienvenue");
     else router.push("/chez-vous");
   };
@@ -553,6 +558,8 @@ export default function Accueil() {
                 Le titre reste pour le lecteur d'écran (un écran sans titre est une impasse). */}
             <Text style={s.titreCache} accessibilityRole="header">Repère, accueil</Text>
             {/* Maquette Stitch « Recherche » (09/11/2026) : l'accroche, au-dessus de la recherche. */}
+            {/* 13/11/2026 (ADR 0009) : le prénom, s'il a été donné. Il vient de repere.profil, jamais du réseau. */}
+            {prenom ? <Text style={[s.accroche, { fontFamily: POLICE.affiche, color: D.encre }]} testID="bonjour">Bonjour {prenom}</Text> : null}
             <Text style={s.accroche}>Ce qui se passe chez vous, expliqué simplement.</Text>
             {!champOuvert ? (
               <Pressable onPress={() => setCherche(true)} accessibilityRole="button" accessibilityLabel="Chercher une commune"

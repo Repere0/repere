@@ -47,3 +47,38 @@ export function groupesACerner(groupes, couleurDe, seuil = 60) {
   });
   return cernes;
 }
+
+/* ─── LE PLAN RÉEL DE L'HÉMICYCLE (13/11/2026, décision du porteur) ───────────────────────────────────
+ * Tant que le plan publié par l'Assemblée n'est pas lisible, l'arc ci-dessus reste : des sièges inventés,
+ * rangés par ordre alphabétique de groupe, et l'écran l'écrit. Quand il l'est, chaque point est la VRAIE
+ * place d'un député dans la salle : le creux du perchoir, les travées, tout vient de la source.
+ *
+ * L'ORDRE DE LA LÉGENDE SUIT ALORS LA SALLE, de la gauche vers la droite vue du perchoir. Ce n'est pas
+ * un rang (invariant 3) : personne n'est « premier », rien n'est trié par taille ni par valeur ; c'est
+ * la description d'un lieu, comme le plan lui-même, et l'écran dit d'où elle vient. */
+
+/* Les sièges du plan, chacun avec le groupe de son occupant : [{ x, y, groupe }].
+ * `groupeDe(acteur)` rend le groupe d'un député, ou l'inconnu. Un siège vide (personne ne l'occupe) est
+ * écarté : un point sans député serait un fait faux. */
+export function siegesDuPlan(plan, groupeDe, inconnu = "Inconnu") {
+  if (!plan || !Array.isArray(plan.sieges)) return [];
+  return plan.sieges
+    .filter(s => s && s.acteur && Number.isFinite(s.x) && Number.isFinite(s.y))
+    .map(s => ({ x: s.x, y: s.y, groupe: groupeDe(s.acteur) || inconnu }));
+}
+
+/* Les groupes du plan, de la gauche vers la droite : [{ groupe, sieges }].
+ * La place d'un groupe est la moyenne des x de ses sièges ; à égalité (deux groupes mêlés), l'ordre
+ * alphabétique départage, pour que la liste ne bouge pas d'une publication à l'autre. */
+export function groupesDansLaSalle(sieges, inconnu = "Inconnu") {
+  const par = new Map();
+  for (const s of sieges || []) {
+    const g = par.get(s.groupe) || { groupe: s.groupe, sieges: 0, somme: 0 };
+    g.sieges++; g.somme += s.x;
+    par.set(s.groupe, g);
+  }
+  return [...par.values()]
+    .map(g => ({ groupe: g.groupe, sieges: g.sieges, place: g.somme / g.sieges }))
+    .sort((a, b) => (a.groupe === inconnu) - (b.groupe === inconnu) || a.place - b.place || a.groupe.localeCompare(b.groupe, "fr"))
+    .map(({ groupe, sieges }) => ({ groupe, sieges }));
+}

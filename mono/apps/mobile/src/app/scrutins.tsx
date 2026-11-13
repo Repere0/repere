@@ -27,6 +27,10 @@ import { BoutonCopierLien } from "../ui/partage/partager-texte";
 import { Page } from "../ui/page";
 import { ResumeClairDuVote } from "../ui/resume-clair";
 import { Hemicycle } from "../ui/hemicycle";
+import { PanneauSenat } from "../ui/senat";
+import { Onglets as SegmentsStitch } from "../ui/stitch";
+
+type Chambre = "an" | "senat";
 import { couleurGroupe, sigleDuNom } from "../lib/groupes";
 import { StatCard } from "../ui/donnees";
 import { useCouleurVote } from "../lib/couleur-vote";
@@ -235,8 +239,10 @@ function Onglets({ mode, setMode }: { mode: "votes" | "qag"; setMode: (m: "votes
 }
 
 export default function Scrutins() {
-  const params = useLocalSearchParams<{ mode?: string; n?: string; question?: string }>();
+  const params = useLocalSearchParams<{ mode?: string; n?: string; question?: string; chambre?: string }>();
   const [mode, setMode] = useState<"votes" | "qag">(params.mode === "qag" ? "qag" : "votes");
+  /* 13/11/2026 (porteur) : « Le Parlement » — une chambre à la fois, l'Assemblée d'abord. */
+  const [chambre, setChambre] = useState<Chambre>(params.chambre === "senat" ? "senat" : "an");
   const [etat, setEtat] = useState(ETATS.EN_COURS);
   const [qagIndex, setQagIndex] = useState<QagIndex | null>(null);
   const [qagDetail, setQagDetail] = useState<Qag | null>(null);
@@ -323,8 +329,23 @@ export default function Scrutins() {
 
   return (
     <Page>
-      <Stack.Screen options={{ title: "Scrutins publics", headerRight: () => <BoutonCopierLien icone /> }} />
+      <Stack.Screen options={{ title: "Le Parlement", headerRight: () => <BoutonCopierLien icone /> }} />
 
+      {/* 13/11/2026 (porteur) : une chambre à la fois. Les deux assemblées votent la loi ; l'écran les met
+          côte à côte sans les comparer (invariant 3 : aucun rang, aucune note). */}
+      <SegmentsStitch valeurs={[{ cle: "an" as Chambre, texte: "Assemblée nationale" }, { cle: "senat" as Chambre, texte: "Sénat" }]}
+        actif={chambre} choisir={setChambre} etiquette="Choisir une chambre du Parlement" />
+
+      {chambre === "senat" ? (
+        <>
+          <View style={s.intro}>
+            <Text style={TYPO.question}>Le Sénat</Text>
+            <Text style={TYPO.note}>348 sièges. Les sénateurs sont élus par environ 160 000 grands électeurs, par moitié tous les trois ans.</Text>
+          </View>
+          <PanneauSenat />
+        </>
+      ) : (
+      <>
       <View style={s.intro}>
         <Text style={TYPO.question}>Les votes de l'Assemblée</Text>
         <Text style={TYPO.note}>
@@ -490,6 +511,8 @@ export default function Scrutins() {
             ) : null}
           </>
         )
+      )}
+      </>
       )}
     </Page>
   );

@@ -2,6 +2,7 @@
 // barre de recherche dont le focus entoure toute la barre, recherche de Melun qui aboutit.
 // Usage : node apps/mobile/tests/fix-web-web.mjs http://localhost:8811 [dossier-captures]
 import { createRequire } from "node:module";
+import { passerBienvenue } from "./_premier-lancement.mjs";
 const { chromium } = createRequire(process.cwd() + "/")("playwright");
 const BASE = process.argv[2] || "http://localhost:8811";
 const CAP = process.argv[3] || null;
@@ -15,6 +16,7 @@ const ctx = await nav.newContext({ viewport: { width: 390, height: 844 }, colorS
 const page = await ctx.newPage();
 const erreurs = []; page.on("pageerror", e => erreurs.push(String(e)));
 await page.goto(BASE, { waitUntil: "networkidle" });
+await passerBienvenue(page);
 await page.waitForTimeout(1200);
 const fond = async () => rgb(await page.evaluate(() => { let e = document.elementFromPoint(4, 420); while (e) { const c = getComputedStyle(e).backgroundColor; if (c && c !== "rgba(0, 0, 0, 0)") return c; e = e.parentElement; } return "0,0,0"; }));
 ok((await fond()) === "20,19,17", `sombre par défaut malgré un système en clair (fond ${await fond()})`);

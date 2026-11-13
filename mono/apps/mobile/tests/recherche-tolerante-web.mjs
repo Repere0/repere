@@ -2,6 +2,7 @@
 // « Vouliez-vous dire… »), code postal (dit honnêtement qu'il n'est pas encore disponible tant que le fichier
 // n'est pas publié). Usage : node apps/mobile/tests/recherche-tolerante-web.mjs http://localhost:8811
 import { createRequire } from "node:module";
+import { passerBienvenue } from "./_premier-lancement.mjs";
 const { chromium } = createRequire(process.cwd() + "/")("playwright");
 const BASE = process.argv[2] || "http://localhost:8811";
 let echecs = 0;
@@ -10,7 +11,8 @@ const ok = (c, m) => { console.log((c ? "ok    " : "ECHEC ") + m); if (!c) echec
 const nav = await chromium.launch();
 const page = await (await nav.newContext({ viewport: { width: 390, height: 844 } })).newPage();
 const erreurs = []; page.on("pageerror", e => erreurs.push(String(e)));
-await page.goto(BASE, { waitUntil: "networkidle" }); await page.waitForTimeout(1200);
+await page.goto(BASE, { waitUntil: "networkidle" });
+await passerBienvenue(page); await page.waitForTimeout(1200);
 await page.getByRole("button", { name: /Chercher une commune/ }).first().click().catch(() => {});
 const champ = page.getByPlaceholder(/Tapez votre ville/);
 const taper = async t => { await champ.fill(t); await page.waitForTimeout(900); return (await page.locator("body").innerText()).replace(/\s+/g, " "); };
@@ -31,7 +33,8 @@ ok(/code postal/.test(t) && !/ne correspond/.test(t), "un code postal sans fichi
 const page2 = await (await nav.newContext({ viewport: { width: 390, height: 844 } })).newPage();
 await page2.route("**/data/codes-postaux.json", r => r.fulfill({ status: 200, contentType: "application/json",
   body: JSON.stringify({ v: 1, genere_le: "2026-11-12", source: { producteur: "DONNEE D'ESSAI", licence: "essai", url: "https://exemple.invalid" }, codes: { "77000": ["77288"] } }) }));
-await page2.goto(BASE, { waitUntil: "networkidle" }); await page2.waitForTimeout(1200);
+await page2.goto(BASE, { waitUntil: "networkidle" });
+await passerBienvenue(page2); await page2.waitForTimeout(1200);
 await page2.getByRole("button", { name: /Chercher une commune/ }).first().click().catch(() => {});
 const champ2 = page2.getByPlaceholder(/Tapez votre ville/);
 const taper2 = async t => { await champ2.fill(t); await page2.waitForTimeout(1500); return (await page2.locator("body").innerText()).replace(/\s+/g, " "); };

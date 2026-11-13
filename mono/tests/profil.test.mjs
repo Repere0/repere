@@ -75,3 +75,25 @@ test("thèmes : un titre se range par mots-clés, sans accents, en début de mot
   assert.deepEqual(themesDuTexte("Une loi sans rapport"), []);
   assert.deepEqual(themesDuTexte("entraînement sportif"), [], "« train » ne doit pas être trouvé au milieu d'un mot");
 });
+
+/* 13/11/2026 (ADR 0009) : le prénom, facultatif, gardé dans repere.profil. La règle est pure : ce qui n'est pas un
+   prénom (chiffres, balises, texte trop long) n'est jamais gardé, et rien n'est « réparé » en silence. */
+test("prénom : gardé nettoyé (espaces, apostrophe typographique), 24 caractères au plus", async () => {
+  const { nettoyerPrenom, PRENOM_MAX } = await import("../packages/core/src/profil.js");
+  assert.equal(nettoyerPrenom("  Léa  "), "Léa");
+  assert.equal(nettoyerPrenom("Jean   Pierre"), "Jean Pierre");
+  assert.equal(nettoyerPrenom("Marie-Hélène"), "Marie-Hélène");
+  assert.equal(nettoyerPrenom("N’Golo"), "N'Golo");
+  assert.equal(nettoyerPrenom("A".repeat(PRENOM_MAX)), "A".repeat(PRENOM_MAX));
+  assert.equal(nettoyerPrenom("A".repeat(PRENOM_MAX + 1)), "");
+});
+test("prénom : chiffres, signes, balises, vide ou autre chose qu'un texte ne sont pas gardés", async () => {
+  const { nettoyerPrenom } = await import("../packages/core/src/profil.js");
+  for (const v of ["", "   ", "R2D2", "<b>Léa</b>", "léa@exemple.fr", "-Léa", "Léa!", 12, null, undefined, { prenom: "Léa" }]) assert.equal(nettoyerPrenom(v), "", JSON.stringify(v));
+});
+test("prénom : valideProfil le garde, et un profil sans prénom vaut le défaut (vide)", () => {
+  assert.equal(PROFIL_DEFAUT.prenom, "");
+  assert.equal(valideProfil({ prenom: " Inès " }).prenom, "Inès");
+  assert.equal(valideProfil({ prenom: "<script>" }).prenom, "");
+  assert.equal(valideProfil({ tailleTexte: 18 }).prenom, "");
+});

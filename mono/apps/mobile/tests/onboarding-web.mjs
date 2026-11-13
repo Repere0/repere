@@ -1,47 +1,106 @@
-/* ONBOARDING : « Aucune préférence » à chaque question (V34, bloc 3).
- * Première visite sans profil : on choisit une commune, puis on règle les questions 2 à 4
- * et on remet chacune à sa valeur par défaut avec « Aucune préférence ». « Terminer » garde
- * les valeurs par défaut : vue France, texte de 16 points, aucun sujet.
+/* PREMIER LANCEMENT : l'écran de démarrage, puis la question du prénom (13/11/2026, ADR 0009).
+ * Sans profil, l'accueil laisse la place à « Bienvenue sur Repère ». On vérifie : le voile de démarrage disparaît en
+ * 1,5 s au plus et ne capte aucun geste ; tout tient sur un écran d'iPhone sans défiler ; un prénom refusé (chiffres)
+ * n'est pas gardé ; un prénom donné est gardé, nettoyé, et l'accueil dit bonjour ; « Passer » n'en garde aucun ;
+ * le prénom n'apparaît dans aucune adresse demandée (invariant 2) ; un lien profond n'est pas détourné.
  * Usage : node apps/mobile/tests/onboarding-web.mjs http://localhost:8811 */
 import { createRequire } from "node:module";
 const { chromium } = createRequire(process.cwd() + "/")("playwright");
 
 const BASE = process.argv[2] || "http://localhost:8811";
+const CAP = process.argv[3] || null;
 let echecs = 0;
 const verifier = (ok, texte) => { console.log((ok ? "ok    " : "ECHEC ") + texte); if (!ok) echecs++; };
-
 const navigateur = await chromium.launch();
-const contexte = await navigateur.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
-const page = await contexte.newPage();
-const erreurs = [];
-page.on("pageerror", e => erreurs.push(String(e.message || e).slice(0, 160)));
+const nouveau = async () => {
+  const contexte = await navigateur.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
+  const page = await contexte.newPage();
+  const erreurs = [], demandees = [];
+  page.on("pageerror", e => erreurs.push(String(e.message || e).slice(0, 160)));
+  page.on("request", r => demandees.push(r.url()));
+  return { contexte, page, erreurs, demandees };
+};
+const lireProfil = page => page.evaluate(() => JSON.parse(localStorage.getItem("repere.profil") || "null"));
 
-await page.goto(BASE + "/", { waitUntil: "networkidle" });
-if (!(await page.getByLabel(/Où habitez-vous/).isVisible().catch(() => false))) await page.getByRole("button", { name: "Chercher une commune" }).first().click();
-await page.getByLabel(/Où habitez-vous/).fill("Paris");
-await page.getByRole("button", { name: /^Paris,/ }).first().click();
-await page.getByText("QUESTION 3 SUR 3", { exact: false }).first().waitFor({ timeout: 15000 });
+/* 1. Démarrage, puis prénom donné */
+{
+  const { contexte, page, erreurs, demandees } = await nouveau();
+  const t0 = Date.now();
+  await page.goto(BASE + "/", { waitUntil: "commit" });
+  const voile = page.getByTestId("demarrage");
+  await voile.waitFor({ state: "attached", timeout: 10000 });
+  const pointeur = await voile.evaluate(e => getComputedStyle(e).pointerEvents);
+  const fond = await voile.evaluate(e => getComputedStyle(e).backgroundColor);
+  const vu = Date.now();
+  await voile.waitFor({ state: "detached", timeout: 5000 });
+  const duree = Date.now() - vu;
+  verifier(pointeur === "none", "démarrage : le voile ne capte aucun geste (pointer-events " + pointeur + ")");
+  verifier(fond === "rgb(20, 19, 17)", "démarrage : fond #141311 (" + fond + ")");
+  verifier(duree <= 1500, "démarrage : le voile a disparu en 1,5 s au plus (" + duree + " ms après son apparition, " + (Date.now() - t0) + " ms après l'ouverture)");
 
-/* React Native Web n'expose pas aria-checked : l'état coché est dans le libellé (« …, coché »). */
-const sujetsCoches = () => page.getByRole("checkbox", { name: /, coché$/ }).count();
-/* Le sélecteur de vue (Ma rue / Ma région / La France) est retiré (12/11/2026) : plus aucune puce de niveau. */
-verifier(await page.getByRole("checkbox", { name: /^(Ma rue|Ma région|La France)/ }).count() === 0, "onboarding : plus de question sur la vue");
+  await page.waitForURL(/\/bienvenue/, { timeout: 10000 });
+  await page.getByRole("heading", { name: "Bienvenue sur Repère." }).waitFor({ timeout: 10000 });
+  await page.waitForTimeout(600);
+  if (CAP) await page.screenshot({ path: `${CAP}/bienvenue.png` });
+  verifier(await page.getByText("Comment souhaitez-vous qu'on vous appelle ?").count() === 1, "bienvenue : la question est posée");
+  const bas = await page.getByRole("button", { name: /^Passer, sans/ }).boundingBox();
+  verifier(bas && bas.y + bas.height <= 844, "bienvenue : tout tient sur l'écran sans défiler (« Passer » finit à " + (bas && Math.round(bas.y + bas.height)) + " px sur 844)");
+  for (const nom of ["C'est parti", /^Passer, sans/]) {
+    const b = await page.getByRole("button", { name: nom }).boundingBox();
+    verifier(b && b.height >= 44, `bienvenue : cible tactile de 44 px au moins (${String(nom)} : ${b && Math.round(b.height)} px)`);
+  }
+  const champ = page.getByLabel(/Votre prénom/);
+  await champ.fill("R2-D2 <script>");
+  verifier(await page.getByText("Un prénom : des lettres", { exact: false }).count() === 1, "bienvenue : une saisie refusée est dite au lecteur");
+  await champ.fill("  marie-Hélène  ");
+  await page.getByRole("button", { name: "C'est parti" }).click();
+  await page.getByTestId("bonjour").waitFor({ timeout: 10000 });
+  const profil = await lireProfil(page);
+  verifier(profil && profil.prenom === "marie-Hélène", "« C'est parti » garde le prénom, nettoyé, dans repere.profil (" + JSON.stringify(profil && profil.prenom) + ")");
+  verifier((await page.getByTestId("bonjour").innerText()).trim() === "Bonjour marie-Hélène", "accueil : « Bonjour marie-Hélène »");
+  const cles = await page.evaluate(() => Object.keys(localStorage));
+  verifier(cles.every(k => k === "repere.profil" || k === "repere.departement"), "aucune autre clé de stockage (" + cles.join(", ") + ")");
+  verifier(!demandees.some(u => /marie|H%C3%A9l/i.test(u)), "le prénom n'apparaît dans aucune adresse demandée (" + demandees.length + " requêtes)");
+  await page.reload({ waitUntil: "networkidle" });
+  await page.waitForTimeout(1500);
+  verifier(!page.url().includes("/bienvenue") && await page.getByTestId("bonjour").count() === 1, "au lancement suivant : pas de question, le bonjour est là");
+  verifier(erreurs.length === 0, "aucune erreur JavaScript" + (erreurs.length ? " (" + erreurs[0] + ")" : ""));
+  await contexte.close();
+}
 
-await page.getByRole("radio", { name: /Texte de 22 points/ }).first().click();
-await page.getByRole("button", { name: "Aucune préférence : texte de 16 points" }).click();
-await page.waitForTimeout(300);
+/* 2. « Passer » : aucun prénom ; une saisie refusée n'est pas gardée */
+{
+  const { contexte, page } = await nouveau();
+  await page.goto(BASE + "/", { waitUntil: "networkidle" });
+  await page.waitForURL(/\/bienvenue/, { timeout: 10000 });
+  await page.getByLabel(/Votre prénom/).fill("12345");
+  await page.getByRole("button", { name: "C'est parti" }).click();
+  await page.waitForURL(u => !String(u).includes("/bienvenue"), { timeout: 10000 });
+  await page.waitForTimeout(800);
+  let profil = await lireProfil(page);
+  verifier(profil && profil.prenom === "" && profil.tailleTexte === 16, "une saisie refusée n'est pas gardée ; les réglages par défaut le sont");
+  verifier(await page.getByTestId("bonjour").count() === 0, "sans prénom : pas de « Bonjour » à moitié vide");
+  await contexte.close();
+}
+{
+  const { contexte, page } = await nouveau();
+  await page.goto(BASE + "/", { waitUntil: "networkidle" });
+  await page.waitForURL(/\/bienvenue/, { timeout: 10000 });
+  await page.getByRole("button", { name: /^Passer, sans/ }).click();
+  await page.waitForURL(u => !String(u).includes("/bienvenue"), { timeout: 10000 });
+  const profil = await lireProfil(page);
+  verifier(profil && profil.prenom === "", "« Passer » ne garde aucun prénom");
+  await contexte.close();
+}
 
-await page.getByRole("checkbox", { name: /^Santé/ }).click();
-verifier(await sujetsCoches() === 1, "question 3 : « Santé » se coche");
-await page.getByRole("button", { name: "Aucune préférence : aucun sujet" }).click();
-verifier(await sujetsCoches() === 0, "question 3 : « Aucune préférence » décoche tous les sujets");
-
-await page.getByRole("button", { name: "Terminer" }).click();
-await page.waitForTimeout(2000);
-const profil = await page.evaluate(() => JSON.parse(localStorage.getItem("repere.profil") || "null"));
-verifier(profil && profil.tailleTexte === 16 && Array.isArray(profil.themes) && profil.themes.length === 0,
-  `« Terminer » garde les valeurs par défaut (${JSON.stringify(profil && { tailleTexte: profil.tailleTexte, themes: profil.themes })})`);
-verifier(erreurs.length === 0, "onboarding : aucune erreur JavaScript" + (erreurs.length ? " (" + erreurs[0] + ")" : ""));
+/* 3. Un lien ouvert sur une page précise n'est pas détourné vers la question */
+{
+  const { contexte, page } = await nouveau();
+  await page.goto(BASE + "/faq", { waitUntil: "networkidle" });
+  await page.waitForTimeout(1800);
+  verifier(page.url().includes("/faq"), "lien profond sans profil : la page demandée reste affichée");
+  await contexte.close();
+}
 
 await navigateur.close();
 console.log(echecs === 0 ? "onboarding : zéro échec" : `onboarding : ${echecs} échec(s)`);

@@ -308,7 +308,7 @@ export default function ChezVous() {
             <View style={{ flexDirection: "row", flexWrap: "wrap", gap: PAS * 3 }}>
               {([
                 { t: "Présidentielle 2027", i: "flag-outline", o: () => router.push("/presidentielle-2027") },
-                { t: "L'Assemblée", i: "business-outline", o: () => router.push("/scrutins") },
+                { t: "Le Parlement", i: "business-outline", o: () => router.push("/scrutins") },
                 { t: "Pour vous", i: "bookmark-outline", o: () => router.push("/pour-vous") },
                 { t: "Élus", i: "people-outline", o: () => router.push("/elus") },
                 { t: "Voir les actualités", i: "newspaper-outline", o: () => router.push("/actus") },

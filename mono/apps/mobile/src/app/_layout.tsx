@@ -16,6 +16,7 @@ import { Platform } from "react-native";
 import { DarkTheme, DefaultTheme, Stack, ThemeProvider } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { SafeAreaProvider } from "react-native-safe-area-context";
+import { Demarrage } from "../ui/demarrage";
 import { useFonts } from "expo-font";
 import { Manrope_800ExtraBold } from "@expo-google-fonts/manrope/800ExtraBold";
 import { Manrope_700Bold } from "@expo-google-fonts/manrope/700Bold";
@@ -94,7 +95,7 @@ export default function Coquille() {
                 <Stack.Screen name="(onglets)" options={{ headerShown: false }} />
                 <Stack.Screen name="argent" options={{ title: LIBELLES.argent, headerLeft: () => <Retour texte={LIBELLES.aujourdhui} etiquette={`Revenir à l'écran ${LIBELLES.aujourdhui}`} /> }} />
                 <Stack.Screen name="vote" options={{ title: "Votre député", headerLeft: () => <Retour texte={LIBELLES.aujourdhui} etiquette={`Revenir à l'écran ${LIBELLES.aujourdhui}`} /> }} />
-                <Stack.Screen name="scrutins" options={{ title: "Scrutins publics", headerLeft: () => <Retour texte="Votre député" etiquette="Revenir à l'écran du député" /> }} />
+                <Stack.Screen name="scrutins" options={{ title: "Le Parlement", headerLeft: () => <Retour texte="Votre député" etiquette="Revenir à l'écran du député" /> }} />
                 <Stack.Screen name="sources" options={{ title: LIBELLES.sources, headerLeft: () => <Retour texte={LIBELLES.aujourdhui} etiquette={`Revenir à l'écran ${LIBELLES.aujourdhui}`} /> }} />
                 <Stack.Screen name="dictionnaire" options={{ title: "Dictionnaire citoyen", headerLeft: () => <Retour texte={LIBELLES.calendrier} etiquette={`Revenir à l'écran ${LIBELLES.calendrier}`} /> }} />
                 <Stack.Screen name="procedure" options={{ title: "La procédure", headerLeft: () => <Retour texte={LIBELLES.calendrier} etiquette={`Revenir à l'écran ${LIBELLES.calendrier}`} /> }} />
@@ -113,6 +114,7 @@ export default function Coquille() {
                 <Stack.Screen name="recherche" options={{ title: "Rechercher", animation: "slide_from_bottom", headerLeft: () => <Retour texte="Fermer" etiquette="Fermer la recherche" /> }} />
                 <Stack.Screen name="partager" options={{ title: "Partager", animation: "slide_from_bottom", headerLeft: () => <Retour texte="Votre député" etiquette="Revenir à l'écran du député" /> }} />
               </Stack>
+              <Demarrage />
             </ThemeProvider>
           </AvecCommune>
         </FournisseurProfil>
