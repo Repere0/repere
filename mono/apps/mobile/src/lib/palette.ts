@@ -160,6 +160,13 @@ export const COULEURS_GROUPES: Readonly<Record<string, string>> = Object.freeze(
    ni un vote ni une opinion. 09/11/2026 : l'ardoise des métadonnées de Stitch (l'ancien gris était
    celui de l'abstention D24). Contraste mesuré (objet graphique, 3:1) : 4,76:1 sur la carte claire,
    3,50:1 sur la carte sombre. */
+/* QUIZ CIVIQUE (13/11/2026, décision du porteur, ADR 0009) : le retour d'une réponse. Vert sauge si elle est juste,
+   rouge brique si elle est fausse. Ces deux teintes ne servent QU'AU QUIZ (une question de vocabulaire a une bonne
+   réponse) : jamais à un vote, une position, un élu, un parti ou une commune. Elles sont volontairement distinctes
+   de l'émeraude et du corail des votes. Le texte posé dessus est blanc (contraste mesuré : 4,9 et 6,0 pour 1), et
+   la couleur n'est jamais seule : une coche ou une croix, et le mot « Juste » ou « Faux », l'accompagnent. */
+export const COULEURS_QUIZ = Object.freeze({ juste: "#4A7C59", faux: "#AA4A4A", texte: "#FFFFFF" });
+
 export const POINT_ETAPE = "#64748B";
 
 /* Le reflet et l'ombre d'un avatar (07/11/2026) : blanc et noir translucides, posés sur la

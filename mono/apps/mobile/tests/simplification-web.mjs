@@ -9,6 +9,7 @@
 import { createRequire } from "node:module";
 import { GLOSSAIRE } from "../../../packages/core/src/index.js";
 import { definitionCourte } from "../src/lib/quiz.js";
+import { passerBienvenue } from "./_premier-lancement.mjs";
 const { chromium } = createRequire(process.cwd() + "/")("playwright");
 
 const BASE = process.argv[2] || "http://localhost:8811";
@@ -41,11 +42,10 @@ const nouveau = async (positionsVides = false) => {
 };
 const choisirCommune = async (page, nom) => {
   await page.goto(BASE + "/", { waitUntil: "networkidle" });
+  await passerBienvenue(page);
   if (!(await page.getByLabel(/Où habitez-vous/).isVisible().catch(() => false))) await page.getByRole("button", { name: "Chercher une commune" }).first().click();
   await page.getByLabel(/Où habitez-vous/).fill(nom);
   await page.getByRole("button", { name: new RegExp("^" + nom + ",") }).first().click();
-  await page.getByText("Question 3 sur 3", { exact: false }).first().waitFor({ timeout: 15000 });
-  await page.getByRole("button", { name: /^Passer/ }).click();
   await page.getByText("Aller plus loin").first().waitFor({ timeout: 15000 });
 };
 const photo = async (page, nom) => { if (CAP) await page.screenshot({ path: `${CAP}/${nom}.png` }); };
@@ -54,6 +54,7 @@ const photo = async (page, nom) => { if (CAP) await page.screenshot({ path: `${C
 {
   const { contexte, page, erreurs } = await nouveau();
   await page.goto(BASE + "/", { waitUntil: "networkidle" });
+  await passerBienvenue(page);
   await page.getByRole("button", { name: /^Thème Santé/ }).waitFor({ timeout: 15000 });
   const themes = await page.getByRole("button", { name: /^Thème / }).count();
   verifier(themes >= 7, `accueil : une rangée de thèmes (${themes})`);
@@ -75,42 +76,38 @@ const photo = async (page, nom) => { if (CAP) await page.screenshot({ path: `${C
 /* ───── 2. Quiz du dictionnaire ───── */
 {
   const { contexte, page, erreurs } = await nouveau();
-  const titres = Object.values(GLOSSAIRE).map(m => m.titre);
-  const bonneDe = enonce => { const m = enonce.match(/« (.+) »/); const e = Object.values(GLOSSAIRE).find(x => x.titre === m[1]); return definitionCourte(e.corps); };
+  /* 13/11/2026 : le quiz pose la DÉFINITION, et propose quatre MOTS (un seul écran). */
+  const bonneDe = enonce => Object.values(GLOSSAIRE).find(x => definitionCourte(x.corps) === enonce).titre;
+  const lireEnonce = async () => (await page.getByTestId("quiz-enonce").innerText()).trim();
+  const serie = async () => (await page.getByTestId("quiz-serie").innerText()).trim();
   const premiereQuestion = async () => {
     await page.goto(BASE + "/quiz", { waitUntil: "networkidle" });
     await page.getByRole("radio").first().waitFor({ timeout: 15000 });
-    return (await page.getByRole("heading").filter({ hasText: /^Qu'est-ce que/ }).first().innerText()).trim();
+    return lireEnonce();
   };
   const ordres = new Set();
   for (let i = 0; i < 4; i++) ordres.add(await premiereQuestion());
   verifier(ordres.size >= 2, `quiz : l'ordre change d'une ouverture à l'autre (${ordres.size} questions différentes sur 4 ouvertures)`);
   const enonce = await premiereQuestion();
   verifier(await page.getByRole("radio").count() === 4, "quiz : quatre propositions");
-  verifier(await page.getByText("Série : à vous de jouer").count() === 1, "quiz : la série part de zéro");
+  verifier(await serie() === "0", "quiz : la série part de zéro");
   await photo(page, "2-quiz-question");
-  const bonne = bonneDe(enonce);
   const radios = page.getByRole("radio");
-  let iBonne = -1;
-  for (let i = 0; i < 4; i++) if ((await radios.nth(i).getAttribute("aria-label"))?.includes(bonne)) iBonne = i;
-  verifier(iBonne >= 0, "quiz : la définition du dictionnaire est l'une des quatre");
+  const indice = async (titre, juste) => { for (let i = 0; i < 4; i++) { const t = (await radios.nth(i).innerText()).trim(); if ((t === titre) === juste) return i; } return -1; };
+  const iBonne = await indice(bonneDe(enonce), true);
+  verifier(iBonne >= 0, "quiz : le mot du dictionnaire est l'une des quatre cartes");
   await radios.nth(iBonne).click();
   await page.getByText("Juste.", { exact: true }).waitFor({ timeout: 5000 });
-  verifier(await page.getByText("1 réponse juste d'affilée").count() >= 1, "quiz : une réponse juste, la série passe à 1");
-  verifier(await page.getByRole("link", { name: "Les sources de Repère" }).count() === 1, "quiz : le retour renvoie aux sources");
-  verifier(await page.getByText("Définition rédigée par Repère", { exact: false }).count() === 1, "quiz : le retour dit d'où vient la définition");
+  verifier(await serie() === "1", "quiz : une réponse juste, la série passe à 1");
   await photo(page, "2b-quiz-juste");
   await page.getByRole("button", { name: "Question suivante" }).click();
-  await page.getByText("Une seule définition est la bonne.").waitFor({ timeout: 5000 });
-  const enonce2 = (await page.getByRole("heading").filter({ hasText: /^Qu'est-ce que/ }).first().innerText()).trim();
+  await page.waitForTimeout(500);
+  const enonce2 = await lireEnonce();
   verifier(enonce2 !== enonce, "quiz : la question suivante est une autre");
-  const b2 = bonneDe(enonce2);
-  let iFausse = -1;
-  for (let i = 0; i < 4; i++) if (!(await radios.nth(i).getAttribute("aria-label"))?.includes(b2)) { iFausse = i; break; }
-  await radios.nth(iFausse).click();
-  await page.getByText("Pas tout à fait.", { exact: true }).waitFor({ timeout: 5000 });
-  verifier(await page.getByText("Ce que vous avez choisi définit", { exact: false }).count() === 1, "quiz : une erreur reçoit une explication neutre");
-  verifier(await page.getByText("Série : à vous de jouer").count() >= 1, "quiz : la série retombe à zéro à la première erreur");
+  await radios.nth(await indice(bonneDe(enonce2), false)).click();
+  await page.getByText("Pas tout à fait : c'était", { exact: false }).waitFor({ timeout: 5000 });
+  verifier(await page.getByTestId("quiz-carte-juste").count() === 1 && await page.getByTestId("quiz-carte-faux").count() === 1, "quiz : une erreur montre la carte choisie et la bonne réponse");
+  verifier(await serie() === "0", "quiz : la série retombe à zéro à la première erreur");
   await photo(page, "2c-quiz-erreur");
   const cles = await page.evaluate(() => Object.keys(localStorage).concat(Object.keys(sessionStorage)));
   verifier(!cles.some(k => /quiz|serie|série|streak|score/i.test(k)), "quiz : rien n'est enregistré sur l'appareil (invariant 2)");

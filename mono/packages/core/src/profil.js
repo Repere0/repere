@@ -27,7 +27,19 @@ export const PROFIL_DEFAUT = {
      le sombre par défaut du 07/11/2026). Système, Clair, Sombre restent au choix. */
   mode: "clair",
   themes: [],
+  /* 13/11/2026 (porteur, ADR 0009) : le prénom que le lecteur a bien voulu donner, pour un « Bonjour ». Facultatif,
+     vide par défaut, gardé sur l'appareil seulement, jamais transmis. */
+  prenom: "",
 };
+
+/* Un prénom affichable : lettres, espaces, traits d'union et apostrophes, 24 caractères au plus. Tout le reste
+   (chiffres, balises, adresses) rend une chaîne vide : ce champ ne garde pas autre chose qu'un prénom. */
+export const PRENOM_MAX = 24;
+export function nettoyerPrenom(v) {
+  if (typeof v !== "string") return "";
+  const t = v.replace(/[\u2019\u02BC]/g, "'").replace(/\s+/g, " ").trim();
+  return t.length >= 1 && t.length <= PRENOM_MAX && /^\p{L}[\p{L} '-]*$/u.test(t) ? t : "";
+}
 
 /* Valeur par champ : une valeur absente ou mal formee revient au defaut de ce champ,
    sans effacer les autres. Rend toujours un profil complet. */
@@ -49,6 +61,7 @@ export function valideProfil(v) {
     mode: pris(src.mode, MODES),
     /* D57 (V31) : thèmes d'intérêt, parmi THEMES, sans doublon. */
     themes: Array.isArray(src.themes) ? [...new Set(src.themes)].filter(t => THEMES.includes(t)) : [],
+    prenom: nettoyerPrenom(src.prenom),
   };
   for (const k of Object.keys(out)) if (out[k] === undefined) out[k] = PROFIL_DEFAUT[k];
   return out;

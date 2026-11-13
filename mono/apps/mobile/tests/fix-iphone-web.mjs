@@ -6,6 +6,7 @@
  *     Jamais de vert ni de rouge (invariant 7) : vérifié sur les couleurs réellement calculées.
  * Usage : node apps/mobile/tests/fix-iphone-web.mjs http://localhost:8811 */
 import { createRequire } from "node:module";
+import { passerBienvenue } from "./_premier-lancement.mjs";
 const { chromium } = createRequire(process.cwd() + "/")("playwright");
 
 const BASE = process.argv[2] || "http://localhost:8811";
@@ -31,11 +32,10 @@ page.on("pageerror", e => erreurs.push(String(e.message || e).slice(0, 160)));
 
 /* La commune se choisit comme un lecteur : aucune clé de stockage écrite ici. */
 await page.goto(BASE + "/", { waitUntil: "networkidle" });
+await passerBienvenue(page);
 if (!(await page.getByLabel(/Où habitez-vous/).isVisible().catch(() => false))) await page.getByRole("button", { name: "Chercher une commune" }).first().click();
 await page.getByLabel(/Où habitez-vous/).fill("Paris");
 await page.getByRole("button", { name: /^Paris,/ }).first().click();
-await page.getByText("Question 3 sur 3", { exact: false }).first().waitFor({ timeout: 15000 });
-await page.getByRole("button", { name: /^Passer/ }).click();
 await page.getByText("Aller plus loin").first().waitFor({ timeout: 15000 });
 
 /* 1. Qui décide, Paris */

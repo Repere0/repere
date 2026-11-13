@@ -81,3 +81,55 @@ export function sessionDuQuiz(entrees, hasard = Math.random) {
   const pool = entreesDuQuiz(entrees);
   return melanger(pool, hasard).map(e => construireQuestion(pool, e.cle, hasard)).filter(Boolean);
 }
+
+/* ─── LE QUIZ SUR UN SEUL ÉCRAN (13/11/2026, décision du porteur) ───────────────────────────────────────────────────
+ * La question s'inverse : la DÉFINITION est posée en grand, les quatre réponses sont des MOTS (courts : une carte
+ * d'une ligne ou deux). Quatre définitions de 100 à 200 caractères ne tiennent pas sur un écran de téléphone sans
+ * défiler ; quatre mots, si. Les mêmes règles de qualité tiennent : aucun mot proposé ne partage un mot de 4 lettres
+ * avec le bon (deux réponses pourraient être vraies), aucune définition posée ne cite son propre mot (ce serait la
+ * réponse dans la question), et les faux mots viennent de préférence du même thème. */
+export const TITRE_MAX_QUIZ = 38;
+export const TAILLE_MANCHE = 5;
+
+const citeSonTitre = e => sansAccents(definitionCourte(e.corps)).includes(sansAccents(e.titre));
+
+/* Les entrées qu'une question « quel mot ? » peut poser ou proposer. */
+export function entreesDuQuizMots(entrees) {
+  return entreesDuQuiz(entrees).filter(e => e.titre.length <= TITRE_MAX_QUIZ && !citeSonTitre(e));
+}
+
+export function construireQuestionMot(entrees, cle, hasard = Math.random) {
+  const cible = entrees.find(e => e.cle === cle);
+  if (!cible) return null;
+  const definition = definitionCourte(cible.corps);
+  const defSansAccents = sansAccents(definition);
+  const valables = entrees.filter(e => e.cle !== cible.cle
+    && sansAccents(e.titre) !== sansAccents(cible.titre)
+    && !partageUnMot(e.titre, cible.titre)
+    /* Un faux mot que la définition posée cite serait un piège injuste. */
+    && !defSansAccents.includes(sansAccents(e.titre))
+    && !trop_proche(definitionCourte(e.corps), definition));
+  const memeTheme = melanger(valables.filter(e => e.categorie === cible.categorie), hasard);
+  const autres = melanger(valables.filter(e => e.categorie !== cible.categorie), hasard);
+  const fausses = [];
+  for (const e of [...memeTheme, ...autres]) {
+    if (fausses.some(f => partageUnMot(f.titre, e.titre))) continue;
+    fausses.push({ cle: e.cle, titre: e.titre, texte: e.titre, juste: false });
+    if (fausses.length === 3) break;
+  }
+  if (fausses.length < 3) return null;
+  const propositions = melanger([{ cle: cible.cle, titre: cible.titre, texte: cible.titre, juste: true }, ...fausses], hasard);
+  return { cle: cible.cle, titre: cible.titre, enonce: definition, propositions, explication: cible.corps };
+}
+
+/* Une manche : TAILLE_MANCHE questions, tirées au hasard, sans répétition. */
+export function mancheDuQuiz(entrees, taille = TAILLE_MANCHE, hasard = Math.random) {
+  const pool = entreesDuQuizMots(entrees);
+  const questions = [];
+  for (const e of melanger(pool, hasard)) {
+    const q = construireQuestionMot(pool, e.cle, hasard);
+    if (q) questions.push(q);
+    if (questions.length === taille) break;
+  }
+  return questions;
+}

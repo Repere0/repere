@@ -22,6 +22,8 @@ export type Profil = {
   mode: string;
   /* D57 (V31) : thèmes d'intérêt choisis par le lecteur, parmi THEMES (@repere/core). */
   themes: string[];
+  /* 13/11/2026 (ADR 0009) : prénom facultatif, pour le « Bonjour » de l'accueil. Vide = pas de prénom. */
+  prenom: string;
 };
 /* valideProfil est en JavaScript (@repere/core) : son type est rendu ici, une fois. */
 const valide = (x: unknown): Profil => valideProfil(x) as Profil;

@@ -7,6 +7,7 @@
  *   - Texte secondaire : 14 px.
  * Usage : node apps/mobile/tests/fraicheur-mouvement-web.mjs http://localhost:8811 */
 import { createRequire } from "node:module";
+import { passerBienvenue } from "./_premier-lancement.mjs";
 const { chromium } = createRequire(process.cwd() + "/")("playwright");
 
 const BASE = process.argv[2] || "http://localhost:8811";
@@ -21,23 +22,21 @@ page.on("pageerror", e => erreurs.push(String(e.message || e).slice(0, 160)));
 
 /* La commune se choisit comme un lecteur : aucune clé de stockage écrite ici. */
 await page.goto(BASE + "/", { waitUntil: "networkidle" });
+await passerBienvenue(page);
 if (!(await page.getByLabel(/Où habitez-vous/).isVisible().catch(() => false))) await page.getByRole("button", { name: "Chercher une commune" }).first().click();
 await page.getByLabel(/Où habitez-vous/).fill("Paris");
 await page.getByRole("button", { name: /^Paris,/ }).first().click();
-await page.getByText("Question 3 sur 3", { exact: false }).first().waitFor({ timeout: 15000 });
-
-/* Texte secondaire à 14 px, et retour d'appui sur « Terminer » (page d'onboarding) */
-const note = page.getByText("Le fil « Pour vous » ne montrera que ces sujets", { exact: false }).first();
-verifier(await note.evaluate(e => getComputedStyle(e).fontSize) === "14px", "texte secondaire : 14 px");
-await page.getByRole("button", { name: /^Passer/ }).click();
 await page.getByText("Aller plus loin").first().waitFor({ timeout: 15000 });
 
-/* Retour d'appui : une souris (contexte non tactile) tient « Terminer » enfoncé */
+/* Retour d'appui : une souris (contexte non tactile) tient « C'est parti » enfoncé */
 {
   const ctxSouris = await navigateur.newContext({ viewport: { width: 390, height: 844 } });
   const p2 = await ctxSouris.newPage();
   await p2.goto(BASE + "/bienvenue", { waitUntil: "networkidle" });
-  const terminer = p2.getByRole("button", { name: "Terminer" });
+  /* Texte secondaire à 14 px (page de bienvenue) */
+  const note = p2.getByText("Facultatif. Il reste sur cet appareil", { exact: false }).first();
+  verifier(await note.evaluate(e => getComputedStyle(e).fontSize) === "14px", "texte secondaire : 14 px");
+  const terminer = p2.getByRole("button", { name: "C'est parti" });
   await terminer.scrollIntoViewIfNeeded();
   const boite = await terminer.boundingBox();
   await p2.mouse.move(boite.x + boite.width / 2, boite.y + boite.height / 2);
@@ -63,6 +62,7 @@ verifier(await page.getByTestId("repere-frais").count() === 1, "repère du jour 
 /* Index injoignable, copie gardée sur l'appareil : « publication précédente », donc plus d'effet « frais » */
 await contexte.route("**/data/index.json", r => r.abort());
 await page.goto(BASE + "/", { waitUntil: "networkidle" });
+await passerBienvenue(page);
 if (!(await page.getByLabel(/Où habitez-vous/).isVisible().catch(() => false))) await page.getByRole("button", { name: "Chercher une commune" }).first().click();
 await page.getByLabel(/Où habitez-vous/).fill("Paris");
 await page.getByRole("button", { name: /^Paris,/ }).first().click();

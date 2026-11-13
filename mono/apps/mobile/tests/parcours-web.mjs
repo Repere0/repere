@@ -126,20 +126,23 @@ for (const largeur of [360, 390, 430]) {
   page.on("request", r => demandees.push(r.url()));
   await page.goto(BASE + "/", { waitUntil: "networkidle" });
 
+  /* 13/11/2026 (ADR 0009) : premier lancement sans profil -> la question du prénom, avant l'accueil. On répond,
+     puis on vérifie que le prénom est gardé sur l'appareil, et là seulement, et que l'accueil dit bonjour. */
+  await page.waitForURL(/\/bienvenue/, { timeout: 10000 });
+  await page.getByLabel(/Votre prénom/).fill("  Léa-Rose ");
+  await page.getByRole("button", { name: "C'est parti" }).click();
+  await page.getByTestId("bonjour").waitFor({ timeout: 10000 });
+  const profil = await page.evaluate(() => localStorage.getItem("repere.profil"));
+  verifier(profil && JSON.parse(profil).prenom === "Léa-Rose",
+    "bienvenue : le prénom est gardé dans repere.profil, nettoyé (" + profil + ")");
+  verifier((await page.getByTestId("bonjour").innerText()).trim() === "Bonjour Léa-Rose", "accueil : « Bonjour Léa-Rose »");
+  verifier(!demandees.some(u => /L%C3%A9a|Léa|Lea-Rose/i.test(u)), "bienvenue : le prénom n'apparaît dans aucune adresse demandée");
+
   await chercher(page, COMMUNE.saisie);
   const resultat = page.getByRole("button", { name: new RegExp("^" + COMMUNE.nom + ",") }).first();
   await resultat.waitFor({ timeout: 10000 });
   if (CAPTURES) await page.screenshot({ path: path.join(CAPTURES, `accueil-${largeur}.png`), fullPage: true });
   await resultat.click();
-
-  /* V26 bloc 1 : premiere visite sans profil -> trois questions. On repond (rue, 18 points),
-     puis on verifie que le profil est garde sur l'appareil et que l'accueil s'ouvre ensuite. */
-  await page.getByText("Question 2 sur 3").first().waitFor({ timeout: 10000 });
-  await page.getByText("A 18").first().click();
-  await page.getByText("Terminer", { exact: true }).first().click();
-  const profil = await page.evaluate(() => localStorage.getItem("repere.profil"));
-  verifier(profil && JSON.parse(profil).tailleTexte === 18,
-    "bienvenue : les réponses sont gardées dans repere.profil (" + profil + ")");
 
   await page.getByText("Aller plus loin").first().waitFor({ timeout: 15000 });
   await page.waitForLoadState("networkidle");

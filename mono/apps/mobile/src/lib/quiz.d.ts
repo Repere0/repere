@@ -6,3 +6,8 @@ export function definitionCourte(corps: string): string;
 export function entreesDuQuiz(entrees: EntreeQuiz[]): EntreeQuiz[];
 export function construireQuestion(entrees: EntreeQuiz[], cle: string, hasard?: () => number): QuestionQuiz | null;
 export function sessionDuQuiz(entrees: EntreeQuiz[], hasard?: () => number): QuestionQuiz[];
+export const TITRE_MAX_QUIZ: number;
+export const TAILLE_MANCHE: number;
+export function entreesDuQuizMots(entrees: EntreeQuiz[]): EntreeQuiz[];
+export function construireQuestionMot(entrees: EntreeQuiz[], cle: string, hasard?: () => number): QuestionQuiz | null;
+export function mancheDuQuiz(entrees: EntreeQuiz[], taille?: number, hasard?: () => number): QuestionQuiz[];
