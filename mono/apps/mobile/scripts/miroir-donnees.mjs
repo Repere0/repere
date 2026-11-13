@@ -14,6 +14,12 @@ export const FICHIERS = [
   /* 12/11/2026 : les photos des candidats (ADR 0008) sont produites par la chaine, pas versionnees : sans cette
      ligne, la version web de l'application ne les recevait jamais. */
   "presidentielle-2027/photos.json",
+  /* 13/11/2026 : MEME OUBLI, DEUX FOIS DE SUITE. Le plan de l'hemicycle et les senateurs sont produits par la
+     chaine du matin ; sans ces deux lignes, l'application servie depuis sa propre origine ne les recevait pas,
+     et l'onglet Senat affichait « Repere ne publie pas encore la liste des senateurs » alors que la collecte
+     avait reussi sur le runner (348 senateurs). Une garde du banc (tests/chaine.test.mjs) refuse desormais
+     qu'une adresse de fichier entier existe sans etre ici ou produite par l'extraction. */
+  "hemicycle-plan.json", "senateurs.json",
 ];
 const LOTS = ["scrutins-details", "questions-gouvernement"];
 const MAX_LOTS = 400;

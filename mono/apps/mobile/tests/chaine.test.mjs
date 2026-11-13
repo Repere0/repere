@@ -106,3 +106,43 @@ test("chaque script .mjs de apps/mobile/tests est cite par mobile.yml (pas seule
   const orphelins = scripts.filter((f) => !yml.includes(f));
   assert.deepEqual(orphelins, [], `scripts presents mais jamais cites par mobile.yml : ${orphelins.join(", ")}`);
 });
+
+/* ─── 13/11/2026 : UN FICHIER PUBLIE QUE L'APPLICATION NE RECOIT PAS ────────────────────────────────────
+ * L'application servie sur le web lit SA PROPRE ORIGINE (/data, invariants 1 et 2). dist/data est rempli
+ * par deux voies, et deux seulement : l'extraction du fichier autonome, ou le miroir des fichiers publics
+ * (scripts/miroir-donnees.mjs). Un fichier publie par la chaine mais absent des deux n'arrive jamais a
+ * l'ecran — et l'ecran applique alors la doctrine du vide en disant « pas encore publie », ce qui est FAUX.
+ * C'est arrive deux fois : les photos des candidats (12/11), puis les senateurs et le plan de l'hemicycle
+ * (13/11, trouve par un test sur iPhone, pas par le banc). Cette garde le refuse. */
+test("tout fichier entier servi a l'application arrive jusqu'a dist/data", async () => {
+  const { FICHIERS } = await import("../scripts/miroir-donnees.mjs");
+  /* Produits par `extract-html.js` depuis le fichier autonome, puis copies tels quels dans dist/data. */
+  const PRODUITES_PAR_EXTRACTION = new Set([
+    "index.json", "communes-beta.json", "deputes.json", "scrutins.json", "evenements.json",
+    "comptes-regions.json", "decoupage-idf.json",
+  ]);
+  const client = lire(join(DEPOT, "mono", "packages", "data-utils", "src", "client.js"));
+  /* Les adresses de FICHIER ENTIER : celles qui ne portent aucun parametre (`${d}`, `${lotPadded}`...).
+     Les autres (par departement, par lot) sont prises en charge par les boucles du miroir. */
+  const entieres = [...new Set([...client.matchAll(/\$\{BASE_DONNEES\}\/([A-Za-z0-9_.-]+\.json)\b/g)].map(m => m[1]))];
+  assert.ok(entieres.length >= 20, `trop peu d'adresses lues dans client.js (${entieres.length}) : la lecture a change de forme`);
+  const couvertes = new Set([...FICHIERS, ...PRODUITES_PAR_EXTRACTION]);
+  const orphelines = entieres.filter(f => !couvertes.has(f));
+  assert.deepEqual(orphelines, [],
+    "ces fichiers sont demandes par l'application mais n'arrivent jamais dans dist/data : "
+    + orphelines.join(", ") + ". Ajoutez-les a FICHIERS dans apps/mobile/scripts/miroir-donnees.mjs "
+    + "(ou a PRODUITES_PAR_EXTRACTION ici s'ils sortent du fichier autonome).");
+});
+
+/* ─── 13/11/2026 : UNE REDIRECTION AU MONTAGE NE PASSE PAS PAR `router` ────────────────────────────────
+ * Vu sur iPhone : au premier lancement, la question du prenom ne s'affichait jamais. La cause etait un
+ * `router.replace` lance depuis un effet du PREMIER rendu : l'ordre part avant que la pile d'ecrans soit
+ * prete, et expo-router le perd SANS BRUIT. En navigateur de bureau, la pile etait prete a temps et le
+ * banc restait vert — c'est pour cela que cette garde lit le code, et pas l'ecran. */
+test("l'accueil redirige vers la bienvenue de facon declarative, jamais par un ordre de navigation au montage", () => {
+  const accueil = lire(join(ICI, "..", "src", "app", "index.tsx"));
+  assert.match(accueil, /<Redirect href="\/bienvenue" \/>/, "l'accueil doit rediriger avec <Redirect> (expo-router l'applique quand la pile est prete)");
+  const effets = [...accueil.matchAll(/useEffect\(\s*\(\)\s*=>\s*\{?[^}]*router\.(replace|push)\(\s*["'`]\/bienvenue/g)];
+  assert.deepEqual(effets.map(m => m[0].slice(0, 60)), [],
+    "une redirection vers /bienvenue part d'un effet : elle sera perdue si la pile d'ecrans n'est pas encore prete");
+});

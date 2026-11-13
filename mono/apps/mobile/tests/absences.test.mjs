@@ -23,10 +23,11 @@ test("absences — le libellé d'un groupe de scrutin n'additionne pas une posit
   const fs = await import("node:fs");
   const path = await import("node:path");
   const src = fs.readFileSync(path.join(import.meta.dirname, "..", "src", "app", "scrutins.tsx"), "utf8");
-  const debut = src.indexOf("function GroupeRow");
-  assert.ok(debut > 0, "GroupeRow introuvable");
+  /* 13/11/2026 : GroupeRow est devenu la grille a deux colonnes ; la regle, elle, n'a pas bouge. */
+  const debut = src.indexOf("function decompteDuGroupe");
+  assert.ok(debut > 0, "decompteDuGroupe introuvable");
   const corps = src.slice(debut, src.indexOf("\n}\n", debut));
-  assert.doesNotMatch(corps, /\|\|\s*0\b/, "GroupeRow additionne une position absente comme zéro (|| 0)");
+  assert.doesNotMatch(corps, /\|\|\s*0\b/, "le décompte d'un groupe additionne une position absente comme zéro (|| 0)");
   assert.doesNotMatch(corps, /positions publiées/, "le libellé annonce une somme au lieu de ce qui est publié");
 });
 
@@ -35,11 +36,14 @@ test("absences — le libellé d'accessibilité d'un groupe écrit « abstention
   const fs = await import("node:fs");
   const path = await import("node:path");
   const src = fs.readFileSync(path.join(import.meta.dirname, "..", "src", "app", "scrutins.tsx"), "utf8");
-  const debut = src.indexOf("function GroupeRow");
+  const debut = src.indexOf("function GroupeCellule");
+  assert.ok(debut > 0, "GroupeCellule introuvable");
   const corps = src.slice(debut, src.indexOf("\n}\n", debut));
   const ligne = (corps.match(/accessibilityLabel=\{[^\n]*\}/) || [""])[0];
-  assert.match(ligne, /texteAccessible/, "le libellé d'accessibilité doit venir d'un texte réservé à la lecture");
-  assert.doesNotMatch(corps.match(/const texteAccessible[\s\S]*?;\n/)?.[0] || "", /abst\./, "le texte lu ne doit pas contenir « abst. »");
+  /* La forme longue, c'est `court: false` : « abstentions », jamais « abst. ». */
+  assert.match(ligne, /decompteDuGroupe\(groupe, false\)/, "le libellé d'accessibilité doit venir de la forme longue du décompte");
+  const court = src.slice(src.indexOf("function decompteDuGroupe"), src.indexOf("\n}\n", src.indexOf("function decompteDuGroupe")));
+  assert.match(court, /court \? "abst\." : "abstentions"/, "l'abréviation ne doit servir qu'à l'œil, jamais au lecteur d'écran");
 });
 
 /* La date de debut d'un mandat est affichee avec sa source, ou le manque est dit. */

@@ -1,5 +1,13 @@
 /* L'ÉCRAN DE DÉMARRAGE (13/11/2026, décision du porteur) : le logo sur le fond sombre de Repère, en fondu.
  *
+ * 13/11/2026 (test sur iPhone) : « on voit le rond du logo, mais c'est buggé, et la page du prénom ne
+ * s'affiche jamais ». La cause : le voile ne partait QUE sur la fin de l'animation. Sur iOS, pendant le
+ * lancement d'une application installée, les images par seconde peuvent être bridées et la séquence ne
+ * rend jamais la main : le voile restait, et avec lui le logo à mi-fondu, sur un écran noir définitif.
+ * Un FILET DE SÉCURITÉ retire maintenant le voile au bout de la durée totale, quoi qu'il arrive, et un
+ * second filet le retire si rien ne s'est passé en deux secondes. Le voile n'est plus jamais ce qui
+ * décide : il se contente de couvrir une application déjà dessinée et déjà navigable.
+ *
  * 1,2 seconde en tout (plafond demandé : 1,5 s) : le logo apparaît (350 ms, léger grossissement de 0,92 à 1), tient
  * 500 ms, puis le voile s'efface (350 ms) sur l'application DÉJÀ dessinée dessous. Le voile ne capte aucun geste
  * (pointerEvents none) : il ne retarde ni un lecteur pressé, ni un lecteur d'écran, ni un lien ouvert sur une page
@@ -11,6 +19,9 @@ import { Logo } from "./logo";
 import { useMouvementReduit } from "./mouvement";
 
 export const DUREE_DEMARRAGE = { entree: 350, tenue: 500, sortie: 350 };
+/* Le retard qu'on tolere avant de couper court : au-dela, le voile part sans attendre l'animation. */
+export const MARGE_FILET = 250;
+export const PLAFOND_DEMARRAGE = DUREE_DEMARRAGE.entree + DUREE_DEMARRAGE.tenue + DUREE_DEMARRAGE.sortie + MARGE_FILET;
 let dejaJoue = false;
 
 export function Demarrage() {
@@ -23,11 +34,16 @@ export function Demarrage() {
     dejaJoue = true;
     if (reduit) { setFini(true); return; }
     const d = DUREE_DEMARRAGE;
-    Animated.sequence([
+    const sequence = Animated.sequence([
       Animated.timing(logo, { toValue: 1, duration: d.entree, easing: Easing.out(Easing.cubic), useNativeDriver: false }),
       Animated.delay(d.tenue),
       Animated.timing(voile, { toValue: 0, duration: d.sortie, easing: Easing.in(Easing.quad), useNativeDriver: false }),
-    ]).start(() => setFini(true));
+    ]);
+    sequence.start(() => setFini(true));
+    /* LE FILET. Un `setTimeout` ne depend pas des images par seconde : meme si l'animation cale, le voile
+       part a l'heure. MARGE_FILET couvre le retard normal d'un demarrage charge. */
+    const filet = setTimeout(() => { sequence.stop(); setFini(true); }, d.entree + d.tenue + d.sortie + MARGE_FILET);
+    return () => clearTimeout(filet);
   }, [fini, reduit, logo, voile]);
   if (fini) return null;
   const sombre = NEUTRES_PAR_MODE.sombre;
