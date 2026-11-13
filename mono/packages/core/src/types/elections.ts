@@ -29,6 +29,9 @@ export type PresidentialCandidate = {
   /** non affiché (invariant 7) : voir l'en-tête */
   couleurParti?: string;
   programmeUrl?: string;
+  /** 13/11/2026 (porteur) : le site de campagne du candidat, adresse https ouverte et relue à la main. Lien seulement,
+   *  contenu jamais lu ni repris. Absent si le site est introuvable, mort, ou n'est que le site générique d'un parti. */
+  siteCampagne?: string;
   /** 12/11/2026 : « declare » = candidature annoncée, relevée dans la presse (pas la liste officielle) ; « officiel » =
    *  liste du Conseil constitutionnel. Absent = « officiel ». Un « declare » exige au moins deux `sources`. */
   statut?: "declare" | "officiel";

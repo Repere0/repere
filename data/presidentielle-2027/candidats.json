@@ -5,6 +5,7 @@
    "prenom": "Nathalie",
    "nom": "Arthaud",
    "parti": "Lutte ouvrière",
+   "siteCampagne": "https://www.nathalie-arthaud.info",
    "statut": "declare",
    "sources": [
     {
@@ -43,6 +44,7 @@
    "prenom": "Gabriel",
    "nom": "Attal",
    "parti": "Renaissance",
+   "siteCampagne": "https://attalpresident.fr",
    "statut": "declare",
    "sources": [
     {
@@ -81,6 +83,7 @@
    "prenom": "Nicolas",
    "nom": "Dupont-Aignan",
    "parti": "Debout la France",
+   "siteCampagne": "https://www.dupontaignan.fr",
    "statut": "declare",
    "sources": [
     {
@@ -119,6 +122,7 @@
    "prenom": "Raphaël",
    "nom": "Glucksmann",
    "parti": "Place publique",
+   "siteCampagne": "https://glucks2027.fr",
    "statut": "declare",
    "sources": [
     {
@@ -195,6 +199,7 @@
    "prenom": "Marine",
    "nom": "Le Pen",
    "parti": "Rassemblement national",
+   "siteCampagne": "https://marinelepen.com",
    "statut": "declare",
    "sources": [
     {
@@ -271,6 +276,7 @@
    "prenom": "Jean-Luc",
    "nom": "Mélenchon",
    "parti": "La France insoumise",
+   "siteCampagne": "https://melenchon2027.fr",
    "statut": "declare",
    "sources": [
     {
@@ -309,6 +315,7 @@
    "prenom": "Édouard",
    "nom": "Philippe",
    "parti": "Horizons",
+   "siteCampagne": "https://edouardphilippe.fr",
    "statut": "declare",
    "sources": [
     {
@@ -423,6 +430,7 @@
    "prenom": "François",
    "nom": "Ruffin",
    "parti": "Debout !",
+   "siteCampagne": "https://nouspresident.fr",
    "statut": "declare",
    "sources": [
     {

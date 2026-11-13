@@ -18,6 +18,7 @@ const sourceDeclaration = s => !!s && texte(s.producteur) && url(s.url) && jour(
 export function candidatValide(c) {
   return !!c && texte(c.id) && texte(c.nom) && texte(c.prenom) && (c.parti === null || texte(c.parti))
     && (c.programmeUrl === undefined || url(c.programmeUrl))
+    && (c.siteCampagne === undefined || url(c.siteCampagne))
     && (c.statut === undefined || c.statut === "officiel" || (c.statut === "declare" && Array.isArray(c.sources)
       && c.sources.length >= 2 && c.sources.every(sourceDeclaration)));
 }

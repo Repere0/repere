@@ -104,3 +104,18 @@ test("collecte présidentielle — décisions du 10/11/2026 : par défaut rien n
   assert.match(r.brouillon, /Annonce fictive/);
   assert.match(r.brouillon, /Salle fictive/);
 });
+
+/* 13/11/2026 (porteur) : `siteCampagne` = l'adresse du site de campagne, relevée et ouverte à la main.
+   Facultatif ; s'il est là, c'est une adresse https, sinon l'entrée est écartée comme toute entrée mal formée. */
+test("présidentielle — siteCampagne : facultatif, https seulement, et le fichier publié reste entièrement valide", async () => {
+  const { candidatValide } = await import("../packages/core/src/presidentielle.js");
+  const base = { id: "a", nom: "Nom", prenom: "Prénom", parti: null };
+  assert.equal(candidatValide(base), true);
+  assert.equal(candidatValide({ ...base, siteCampagne: "https://exemple.invalid" }), true);
+  assert.equal(candidatValide({ ...base, siteCampagne: "http://exemple.invalid" }), false);
+  assert.equal(candidatValide({ ...base, siteCampagne: "exemple.invalid" }), false);
+  assert.equal(candidatValide({ ...base, siteCampagne: "" }), false);
+  const vrais = JSON.parse(fs.readFileSync(path.join(VRAI, "candidats.json"), "utf8")).candidats;
+  assert.equal(vrais.filter(candidatValide).length, vrais.length);
+  assert.ok(vrais.some(c => c.siteCampagne), "au moins un site de campagne relevé");
+});
