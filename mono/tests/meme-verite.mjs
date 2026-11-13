@@ -196,9 +196,10 @@ async function texteApp(nav, { nom }) {
     const tous = p.getByRole("button", { name: /^Voir tous les projets/ });
     if (await tous.count()) {
       await tous.first().click();
-      await p.waitForTimeout(700);
-      lu = await toutLire(p);
-      t += "\n" + lu.t;
+      await p.waitForTimeout(900);
+      /* On LIT la feuille, on ne la fouille pas : toutLire ouvre toutes les feuilles de source, et il n'y
+         en a pas ici — ses clics tombaient sur les titres de projet. Les phrases suffisent. */
+      t += "\n" + (await p.locator("body").innerText());
       await p.getByRole("button", { name: "Fermer la liste des projets" }).click();
       await p.waitForTimeout(400);
     }
