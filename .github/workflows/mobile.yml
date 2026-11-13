@@ -104,6 +104,17 @@ jobs:
           cp -r ../../data dist-web/data
           ls -la dist/_expo/static/js/ios dist/_expo/static/js/android
 
+      # DIAGNOSTIC SAFARI iOS (13/11/2026, demande du porteur). Trois bugs corriges trois fois sans jamais
+      # etre reproduits : le porteur les voit sur Safari, le banc tourne sur Chromium. WebKit n'est pas
+      # installable dans le conteneur de developpement (il n'y est pas, et le CDN de Playwright n'y est pas
+      # joignable) : la reproduction se fait ICI, ou le reseau fonctionne.
+      - name: Diagnostic Safari iOS (WebKit, iPhone 14 Pro)
+        run: |
+          npx playwright install --with-deps webkit
+          node scripts/serveur-statique.mjs apps/mobile/dist-web 8811 &
+          for i in $(seq 1 20); do curl -sf http://localhost:8811/ >/dev/null && break; sleep 0.5; done
+          node apps/mobile/tests/webkit-iphone-web.mjs http://localhost:8811 apps/mobile/captures
+
       - name: Parcours dans un navigateur (360 / 390 / 430 px, pannes)
         run: |
           npx playwright install --with-deps chromium
