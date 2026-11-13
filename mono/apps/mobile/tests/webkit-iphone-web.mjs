@@ -153,40 +153,37 @@ const neuf = async (init) => {
 
   /* DESCENDRE AU DOIGT : un vrai balayage, comme le porteur. */
   const centre = { x: Math.round(IPHONE.viewport.width / 2), y: Math.round(IPHONE.viewport.height / 2) };
-  /* LE DOIGT, POUR DE VRAI. `mouse.wheel` n'existe pas sur WebKit mobile (« Mouse wheel is not supported
-     in mobile WebKit », releve par cette sonde le 13/11/2026) et `touchscreen` ne sait que taper. On
-     synthetise donc touchstart / touchmove / touchend sur le conteneur, comme un pouce qui glisse. */
-  const balayer = async (dy, n = 6) => {
-    for (let i = 0; i < n; i++) {
-      await page.evaluate(({ dy, x, y }) => {
-        const cible = [...document.querySelectorAll("*")].find(e => {
-          const c = getComputedStyle(e);
-          return /auto|scroll/.test(c.overflowY) && e.scrollHeight > e.clientHeight + 40;
-        }) || document.body;
-        const touche = (type, cy) => {
-          const t = new Touch({ identifier: 1, target: cible, clientX: x, clientY: cy, pageX: x, pageY: cy });
-          cible.dispatchEvent(new TouchEvent(type, { bubbles: true, cancelable: true, touches: type === "touchend" ? [] : [t], targetTouches: type === "touchend" ? [] : [t], changedTouches: [t] }));
-        };
-        /* Le doigt part de `y` et glisse de -dy (vers le haut pour descendre dans la liste). */
-        touche("touchstart", y);
-        for (let k = 1; k <= 8; k++) touche("touchmove", y - (dy * k) / 8);
-        touche("touchend", y - dy);
-      }, { dy, x: centre.x, y: centre.y });
-      await page.waitForTimeout(180);
-    }
-    await page.waitForTimeout(700);
-  };
-  await balayer(400);
+  /* ───── CE QUE CETTE SONDE NE PEUT PAS PROUVER ─────────────────────────────────────────────────
+   * Le defilement AU DOIGT n'est pas simulable sur WebKit mobile. Deux methodes essayees, les deux
+   * refusees par le moteur, le 13/11/2026 :
+   *   - `page.mouse.wheel` -> « Mouse wheel is not supported in mobile WebKit » ;
+   *   - `new Touch(...)` dans la page -> « TypeError: Illegal constructor » (WebKit n'expose pas ce
+   *     constructeur ; son API tactile historique, document.createTouch, a une signature qui change
+   *     d'une version a l'autre).
+   * `page.touchscreen` ne sait que TAPER, pas glisser.
+   *
+   * Ecrire `element.scrollTop = 0` marcherait — et ne prouverait RIEN : c'est exactement ce que
+   * faisaient les tests Chromium, et c'est pourquoi ils n'ont jamais reproduit le bug du porteur.
+   * On ne remplace donc pas une mesure par une apparence de mesure : on releve l'etat du conteneur,
+   * on le dit, et on s'arrete la. */
+  dit("defilement au doigt : NON PROUVABLE ici (ni molette ni Touch sur WebKit mobile) — a verifier sur un vrai iPhone");
+  dit("etat releve : -webkit-overflow-scrolling=" + (d ? d.tactile : "?") + ", overscroll-behavior=" + (d ? d.rebond : "?"));
+  /* Ce qui reste verifiable sans geste : le conteneur PEUT atteindre le haut et le bas. Si ceci echoue,
+     le defaut n'est meme pas tactile. */
+  await page.evaluate(() => {
+    const e = [...document.querySelectorAll("*")].find(x => { const c = getComputedStyle(x); return /auto|scroll/.test(c.overflowY) && x.scrollHeight > x.clientHeight + 40; });
+    if (e) e.scrollTop = e.scrollHeight;
+  });
+  await page.waitForTimeout(500);
   const bas = await etat();
-  dit("apres balayage vers le bas : " + JSON.stringify(bas && { haut: bas.haut, max: bas.max }));
-  if (bas && bas.haut === 0) dit("ATTENTION : le geste synthetise n'a rien bouge — WebKit peut ignorer un TouchEvent fabrique ; dans ce cas ce controle ne prouve rien, ni dans un sens ni dans l'autre.");
-  ok(bas && bas.haut > 300, `defilement : on descend au doigt (lu : ${bas ? bas.haut : 0} px sur ${bas ? bas.max : 0})`);
-
-  /* LE BUG DU PORTEUR : en bas, on ne remonte plus. */
-  await balayer(-400, 14);
+  ok(bas && bas.haut > 300, `defilement : le conteneur atteint le bas (${bas ? bas.haut : 0} px sur ${bas ? bas.max : 0}) — mesure SANS geste`);
+  await page.evaluate(() => {
+    const e = [...document.querySelectorAll("*")].find(x => { const c = getComputedStyle(x); return /auto|scroll/.test(c.overflowY) && x.scrollHeight > x.clientHeight + 40; });
+    if (e) e.scrollTop = 0;
+  });
+  await page.waitForTimeout(500);
   const retour = await etat();
-  dit("apres balayage vers le haut : " + JSON.stringify(retour && { haut: retour.haut }));
-  ok(retour && retour.haut === 0, `defilement : ON REMONTE au doigt jusqu'en haut (lu : ${retour ? retour.haut : "?"} px)`);
+  ok(retour && retour.haut === 0, `defilement : le conteneur revient a zero (${retour ? retour.haut : "?"} px) — mesure SANS geste`);
   if (CAP) await page.screenshot({ path: `${CAP}/webkit-defilement.png` });
   ok(erreurs.length === 0, "defilement : aucune erreur JavaScript" + (erreurs[0] ? " (" + erreurs[0] + ")" : ""));
   await ctx.close();
