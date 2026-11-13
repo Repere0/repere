@@ -17,7 +17,7 @@ import { espacesFines } from "../ui/donnees";
 import { useEffect, useMemo, useState } from "react";
 import { FlatList, KeyboardAvoidingView, Linking, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View, useWindowDimensions } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { router, useLocalSearchParams } from "expo-router";
+import { Redirect, router, useLocalSearchParams } from "expo-router";
 import { mots, motsCible, correspond, chercherCommunes, departementDe, titreLisible, dernierExercice, evolution, parHabitant, dateFr, decompte, ordinal, positionSur, positionsFiables } from "@repere/core";
 import { chargerCatalogueScrutins, chargerCodesPostaux, chargerCommunesBeta, chargerDepartement, chargerDeputes, chargerIndex, chargerVotes, ETATS, PHRASES } from "../lib/donnees";
 import { Bouton, Carte, Texte, Vide } from "../lib/composants";
@@ -204,9 +204,11 @@ export default function Accueil() {
   const { absent, profil } = useProfil();
   const prenom = profil ? profil.prenom : "";
   /* 13/11/2026 (porteur, ADR 0009) : au premier lancement (aucun profil gardé), l'accueil laisse la place à la
-     question du prénom, juste après l'écran de démarrage. Une fois, et seulement depuis l'accueil : un lien
-     ouvert sur une page précise n'est jamais détourné. */
-  useEffect(() => { if (absent) router.replace("/bienvenue"); /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, []);
+     question du prénom. Seulement depuis l'accueil : un lien ouvert sur une page précise n'est jamais détourné.
+     14/11 — test sur iPhone : c'etait un `router.replace` dans un effet. Un ordre de navigation donne pendant
+     le premier rendu part avant que la pile d'ecrans soit prete, et il est alors perdu SANS BRUIT : la question
+     du prenom ne s'affichait jamais. `<Redirect>` est declaratif — expo-router l'applique quand la pile est
+     prete, pas avant. C'est la methode a garder pour toute redirection au montage. */
   const [etat, setEtat] = useState<string>(ETATS.EN_COURS);
   const [beta, setBeta] = useState<Beta | null>(null);
   const [index, setIndex] = useState<Index | null>(null);
@@ -507,6 +509,10 @@ export default function Accueil() {
             </View>
     </>
   );
+
+  /* Tous les crochets sont passes : la redirection peut sortir ici, avant de dessiner un accueil
+     que le lecteur ne verra pas. */
+  if (absent) return <Redirect href="/bienvenue" />;
 
   return (
     <KeyboardAvoidingView style={{ flex: 1, backgroundColor: D.sol }} behavior={Platform.OS === "ios" ? "padding" : undefined}>

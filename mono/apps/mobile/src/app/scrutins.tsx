@@ -31,7 +31,7 @@ import { PanneauSenat } from "../ui/senat";
 import { Onglets as SegmentsStitch } from "../ui/stitch";
 
 type Chambre = "an" | "senat";
-import { couleurGroupe, sigleDuNom } from "../lib/groupes";
+import { couleurGroupe, GROUPE_INCONNU, sigleDuNom } from "../lib/groupes";
 import { StatCard } from "../ui/donnees";
 import { useCouleurVote } from "../lib/couleur-vote";
 import { Vide } from "../lib/composants";
@@ -178,43 +178,70 @@ function StatutVote({ detail }: { detail: Detail }) {
   );
 }
 
-function GroupeRow({ groupe, ouvert, onPress }: { groupe: Groupe; ouvert: boolean; onPress: () => void }) {
-  /* Ce qui est publie, et rien d'autre : une position absente n'est pas un zero,
-     elle n'est pas comptee. Le meme texte sert a l'ecran et au lecteur d'ecran. */
-  const texteStats = [groupe.pour != null ? `${groupe.pour} pour` : null, groupe.contre != null ? `${groupe.contre} contre` : null, groupe.abstentions != null ? `${groupe.abstentions} abst.` : null]
-    .filter(Boolean).join(" · ") || "décompte non publié";
-  /* Version lue par un lecteur d'écran : le mot entier, pas l'abréviation. */
-  const texteAccessible = [groupe.pour != null ? `${groupe.pour} pour` : null, groupe.contre != null ? `${groupe.contre} contre` : null, groupe.abstentions != null ? `${groupe.abstentions} abstentions` : null]
-    .filter(Boolean).join(" · ") || "décompte non publié";
+/* LA GRILLE DES GROUPES (13/11/2026, retour d'un test sur iPhone : « la liste prend toute la hauteur de
+ * l'écran, on doit scroller pendant 3 minutes »).
+ *
+ * Une liste verticale de dix à douze groupes faisait 700 px et plus sur un iPhone ; la grille à deux
+ * colonnes la ramène à six lignes. Chaque cellule porte la pastille du groupe, son nom (tronqué s'il est
+ * long) et le décompte sur une deuxième ligne, en plus petit.
+ *
+ * Les positions individuelles ne tiennent pas dans une cellule de demi-largeur : elles s'ouvrent SOUS la
+ * grille, en pleine largeur. Un seul groupe ouvert à la fois — c'est ce qui garde l'écran court.
+ * Les couleurs servent à reconnaître un groupe, jamais à dire un vote (invariant 7) : le décompte reste
+ * écrit en toutes lettres dans la cellule. */
+/* Le decompte d'un groupe. Distinct de `decompte` de @repere/core, qui blanchit TOUT le decompte des
+   qu'une part manque : ici, une position absente n'est simplement pas comptee, et ce qui est publie reste
+   affiche. `court` n'abrege QUE pour l'oeil ; un lecteur d'ecran entend toujours « abstentions ». */
+function decompteDuGroupe(groupe: Groupe, court: boolean) {
+  const mot = court ? "abst." : "abstentions";
+  return [groupe.pour != null ? `${groupe.pour} pour` : null, groupe.contre != null ? `${groupe.contre} contre` : null,
+    groupe.abstentions != null ? `${groupe.abstentions} ${mot}` : null].filter(Boolean).join(" · ") || "décompte non publié";
+}
+
+function GroupeCellule({ groupe, ouvert, onPress }: { groupe: Groupe; ouvert: boolean; onPress: () => void }) {
+  /* Dans une demi-largeur, « Rassemblement National » devient « Rassemblemen… », qui en dit MOINS que
+     « RN ». On affiche donc le sigle quand il est connu (meme table que l'hemicycle, lib/groupes.ts), et
+     le nom tronque sinon : un sigle n'est jamais devine, et « Inconnu » n'est jamais montre comme un nom.
+     Le nom entier reste lu par un lecteur d'ecran, dans l'etiquette ci-dessous. */
+  const sigle = sigleDuNom(groupe.nom);
+  const etiquette = sigle === GROUPE_INCONNU ? groupe.nom : sigle;
   return (
-    <View style={s.groupe}>
-      <Pressable
-        onPress={onPress}
-        accessibilityRole="button"
-        accessibilityState={{ expanded: ouvert }}
-        accessibilityLabel={`${groupe.nom}, ${texteAccessible}`}
-        style={({ pressed }) => [s.groupeTete, pressed && enfonce(true)]}
-      >
+    <Pressable
+      onPress={onPress}
+      accessibilityRole="button"
+      accessibilityState={{ expanded: ouvert }}
+      aria-expanded={ouvert}
+      accessibilityLabel={`${groupe.nom}, ${decompteDuGroupe(groupe, false)}`}
+      testID="groupe-cellule"
+      style={({ pressed }) => [s.cellule, ouvert && s.celluleOuverte, pressed && enfonce(true)]}
+    >
+      <View style={s.celluleTete}>
+        <View style={[s.groupePoint, { backgroundColor: couleurGroupe(sigle) }]} />
+        <Text style={[s.celluleNom, ouvert && { fontFamily: POLICE.titre }]} numberOfLines={1}>{etiquette}</Text>
+      </View>
+      <Text style={s.celluleStats} numberOfLines={2}>{decompteDuGroupe(groupe, true)}</Text>
+    </Pressable>
+  );
+}
+
+/* Les positions individuelles du groupe ouvert, sous la grille, en pleine largeur. */
+function PositionsDuGroupe({ groupe, onFermer }: { groupe: Groupe; onFermer: () => void }) {
+  return (
+    <View style={s.positions}>
+      <Pressable onPress={onFermer} accessibilityRole="button" accessibilityLabel={`Fermer les positions du groupe ${groupe.nom}`}
+        style={({ pressed }) => [s.positionsTete, pressed && enfonce(true)]}>
         <View style={[s.groupePoint, { backgroundColor: couleurGroupe(sigleDuNom(groupe.nom)) }]} />
-        <View style={s.groupeTexte}>
-          <Text style={s.groupeNom}>{groupe.nom}</Text>
-          <Text style={s.groupeStats}>
-            {texteStats}
-          </Text>
-        </View>
-        <Text style={s.chevron}>{ouvert ? "−" : "+"}</Text>
+        <Text style={[s.groupeNom, { flex: 1 }]} numberOfLines={2}>{groupe.nom}</Text>
+        <Text style={s.chevron}>−</Text>
       </Pressable>
-      {ouvert ? (
-        <View style={s.positions}>
-          {groupe.positions.map((p, i) => (
-            <View key={p.a + i} style={s.positionLigne}>
-              <Text style={s.positionNom}>{p.n || p.a}</Text>
-              <Text style={s.positionValeur}>{position(p.p)}</Text>
-            </View>
-          ))}
-          {!groupe.positions.length ? <Text style={TYPO.note}>Aucune position individuelle publiée pour ce groupe sur ce scrutin.</Text> : null}
+      <Text style={[s.groupeStats, { paddingHorizontal: PAS * 4 }]}>{decompteDuGroupe(groupe, false)}</Text>
+      {groupe.positions.map((p, i) => (
+        <View key={p.a + i} style={s.positionLigne}>
+          <Text style={s.positionNom}>{p.n || p.a}</Text>
+          <Text style={s.positionValeur}>{position(p.p)}</Text>
         </View>
-      ) : null}
+      ))}
+      {!groupe.positions.length ? <Text style={[TYPO.note, { paddingHorizontal: PAS * 4 }]}>Aucune position individuelle publiée pour ce groupe sur ce scrutin.</Text> : null}
     </View>
   );
 }
@@ -253,7 +280,8 @@ export default function Scrutins() {
   /* V37 bloc 3 : la recherche globale ouvre un scrutin précis (paramètre n). */
   const [selection, setSelection] = useState<string | null>(params.n ?? null);
   const [recherche, setRecherche] = useState("");
-  const [ouverts, setOuverts] = useState<Set<string>>(new Set());
+  /* 13/11/2026 : un seul groupe ouvert a la fois — c'est ce qui garde l'ecran court. */
+  const [ouvert, setOuvert] = useState<string | null>(null);
   const [chargementDetail, setChargementDetail] = useState(false);
   const [chargementQag, setChargementQag] = useState(false);
   const [qagCharge, setQagCharge] = useState(false);
@@ -324,7 +352,7 @@ export default function Scrutins() {
     return source.slice().reverse();
   }, [qagIndex, qagRecherche]);
 
-  const choisir = (n: string) => { setSelection(n); setDetail(null); setOuverts(new Set()); };
+  const choisir = (n: string) => { setSelection(n); setDetail(null); setOuvert(null); };
   const choisirQag = (uid: string) => { setQagSelection(uid); setQagDetail(null); };
 
   return (
@@ -490,15 +518,13 @@ export default function Scrutins() {
 
                 <Text style={TYPO.etiquette}>Position des groupes</Text>
                 <Text style={TYPO.note}>Touchez un groupe pour voir les députés dont la position est publiée.</Text>
-                <View style={s.groupes}>
+                <View style={s.grille}>
                   {detail.groupes.map(g => (
-                    <GroupeRow key={g.ref} groupe={g} ouvert={ouverts.has(g.ref)} onPress={() => setOuverts(prev => {
-                      const n = new Set(prev);
-                      if (n.has(g.ref)) n.delete(g.ref); else n.add(g.ref);
-                      return n;
-                    })} />
+                    <GroupeCellule key={g.ref} groupe={g} ouvert={ouvert === g.ref}
+                      onPress={() => setOuvert(o => (o === g.ref ? null : g.ref))} />
                   ))}
                 </View>
+                {(() => { const g = detail.groupes.find(x => x.ref === ouvert); return g ? <PositionsDuGroupe groupe={g} onFermer={() => setOuvert(null)} /> : null; })()}
 
                 <PastilleSource court source={{
                   producteur: index.source.producteur_affiche,
@@ -547,18 +573,26 @@ const s = feuille(() => StyleSheet.create({
     backgroundColor: couleurs.carte, borderRadius: RAYON.carte, padding: PAS * 5, gap: PAS * 3, ...OMBRE,
   },
   phraseResultat: { fontFamily: POLICE.titre, fontSize: 20, lineHeight: 26, color: couleurs.encre },
-  groupes: {
-    backgroundColor: couleurs.carte, borderRadius: RAYON.carte, overflow: "hidden",
-    borderWidth: 1, borderColor: couleurs.trait,
+  /* 13/11/2026 : deux colonnes. « 48,5 % » laisse 3 % de gouttiere ; sous 340 px de large, une cellule
+     descend d'elle-meme sur sa ligne. La hauteur minimale de 64 px tient la cible tactile. */
+  grille: { flexDirection: "row", flexWrap: "wrap", justifyContent: "space-between", rowGap: PAS * 2 },
+  cellule: {
+    width: "48.5%", minHeight: 64, justifyContent: "center", gap: PAS,
+    backgroundColor: couleurs.carte, borderRadius: RAYON.bloc, borderWidth: 1, borderColor: couleurs.trait,
+    paddingHorizontal: PAS * 3, paddingVertical: PAS * 2,
   },
-  groupe: { borderBottomWidth: 1, borderBottomColor: couleurs.trait },
+  celluleOuverte: { borderWidth: 2, borderColor: couleurs.encre },
+  celluleTete: { flexDirection: "row", alignItems: "center", gap: PAS * 2 },
+  celluleNom: { flex: 1, fontSize: 15, lineHeight: 20, fontWeight: "700", color: couleurs.encre },
+  celluleStats: { fontSize: 13, lineHeight: 17, color: couleurs.sourd },
   groupeTete: { minHeight: 68, flexDirection: "row", alignItems: "center", paddingHorizontal: PAS * 4, paddingVertical: PAS * 3, gap: PAS * 3 },
   groupePoint: { width: 12, height: 12, borderRadius: 6 },
   groupeTexte: { flex: 1, gap: 2 },
   groupeNom: { fontSize: 16, lineHeight: 21, fontWeight: "700", color: couleurs.encre },
   groupeStats: { fontSize: 14, lineHeight: 19, color: couleurs.sourd },
   chevron: { fontSize: 24, lineHeight: 28, color: couleurs.sourd, width: 24, textAlign: "center" },
-  positions: { borderTopWidth: 1, borderTopColor: couleurs.trait, paddingVertical: PAS * 2 },
+  positions: { backgroundColor: couleurs.carte, borderRadius: RAYON.carte, borderWidth: 1, borderColor: couleurs.trait, paddingBottom: PAS * 2, overflow: "hidden" },
+  positionsTete: { minHeight: 56, flexDirection: "row", alignItems: "center", paddingHorizontal: PAS * 4, paddingVertical: PAS * 2, gap: PAS * 3 },
   positionLigne: { minHeight: 46, flexDirection: "row", alignItems: "center", paddingHorizontal: PAS * 4, gap: PAS * 3 },
   positionNom: { flex: 1, fontSize: 15, lineHeight: 20, color: couleurs.encre },
   positionValeur: { fontSize: 14, lineHeight: 19, fontWeight: "700", color: couleurs.sourd },
