@@ -84,7 +84,7 @@ const s = feuille(() => StyleSheet.create({
   },
   visible: {
     minHeight: HAUTEUR_VISIBLE,
-    paddingVertical: PAS * 2,
+    paddingVertical: PAS,
     flexDirection: "row",
     alignItems: "center",
     gap: PAS * 2,

@@ -91,9 +91,6 @@ function SiteMairie({ insee }: { insee: string }) {
   return <Plus texte="Site officiel de la mairie" onPress={() => Linking.openURL(site)} />;
 }
 
-/* « DUPONT-MARTIN » du répertoire des élus -> « Dupont-Martin » : le nom n'est pas crié. Prénom laissé tel quel. */
-const nomPropre = (n: string) => n.replace(/\p{Lu}{2,}/gu, m => m.charAt(0) + m.slice(1).toLowerCase());
-
 /* Une étape de la décision du budget : son numéro, ce qui se passe, et qui (ou comment). */
 function EtapeBudget({ n, titre, detail }: { n: number; titre: string; detail?: string | null }) {
   return (
@@ -163,7 +160,8 @@ export default function ChezVous() {
           </View>
           {/* PARIS (13/11/2026) : la Ville entière, et le choix d'un arrondissement, avant les chiffres. */}
           {choix && estParis(choix.insee) ? <ArrondissementParis /> : null}
-          <Etiquette texte="Votre commune" />
+          {/* Pas d'étiquette « Votre commune » : le titre de la page est la commune, et la réponse héros doit tenir
+             dans le premier écran. Les rubriques suivantes, elles, sont nommées (« Au Parlement », « Le pays »). */}
           {/* 1. QUI DECIDE, ET AVEC QUEL ARGENT — montant par habitant PUBLIE par
              l'OFGL ; le nom du maire vient du RNE : deux sources, deux pastilles.
              « prépare / vote » est la regle du code general des collectivites. */}
@@ -179,9 +177,10 @@ export default function ChezVous() {
                 {/* 13/11/2026 (porteur) : « Le maire, X, prépare le budget » / « Le conseil municipal le vote » étaient lus
                     comme une phrase bancale et un pronom sans objet. Deux étapes numérotées, dans les mots de la loi
                     (code général des collectivités territoriales, art. L. 2312-1 : proposé par le maire, voté par le conseil). */}
-                <Text style={TYPO.etiquette}>Qui décide de ce budget</Text>
-                <EtapeBudget n={1} titre="Le maire propose le budget" detail={maire ? nomPropre(maire) : null} />
-                <EtapeBudget n={2} titre="Le conseil municipal vote ce budget" detail="Les élus de la commune l'adoptent ou le rejettent." />
+                {/* Le nom du maire tel que le répertoire des élus le publie : Repère ne réécrit pas un nom. Pas de troisième
+                    ligne : la réponse héros doit tenir entière dans le premier écran (tests/parcours-web.mjs). */}
+                <EtapeBudget n={1} titre="Le maire propose le budget" detail={maire} />
+                <EtapeBudget n={2} titre="Le conseil municipal vote ce budget" />
               </View>}
               sources={<>
                 <PastilleSource court nom="Budget" source={srcComptesPublies(d)} />

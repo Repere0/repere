@@ -14,8 +14,11 @@ const hauteur = () => page.evaluate(() => Math.max(...[...document.querySelector
 
 /* 1. La page de la commune : du plus proche au plus lointain. */
 await aller("/chez-vous#meaux");
-const [commune, parlement, pays] = [await haut("VOTRE COMMUNE") ?? await haut("Votre commune"), await haut("AU PARLEMENT") ?? await haut("Au Parlement"), await haut("LE PAYS") ?? await haut("Le pays")];
-ok(commune !== null && parlement !== null && pays !== null && commune < parlement && parlement < pays, `commune : « Votre commune », puis « Au Parlement », puis « Le pays » (${commune}, ${parlement}, ${pays})`);
+const hautDe = sel => page.evaluate(q => { const e = document.querySelector(q); return e ? e.getBoundingClientRect().top : null; }, sel);
+const [commune, parlement, pays] = [await hautDe('[data-testid="reponse"]'), await haut("AU PARLEMENT") ?? await haut("Au Parlement"), await haut("LE PAYS") ?? await haut("Le pays")];
+ok(commune !== null && parlement !== null && pays !== null && commune < parlement && parlement < pays, `commune : d'abord la commune, puis « Au Parlement », puis « Le pays » (${commune}, ${parlement}, ${pays})`);
+const reponses = await page.evaluate(() => [...document.querySelectorAll('[data-testid="reponse"]')].map(e => (e.innerText || "").replace(/\s+/g, " ").slice(0, 400)));
+ok(reponses.length === 3 && /par habitant/.test(reponses[0]) && /a voté|circonscriptions/.test(reponses[2]), "commune : le budget, puis ce que l'État finance, puis le vote du député");
 let t = await page.locator("body").innerText();
 ok(/Le maire propose le budget/.test(t) && /Le conseil municipal vote ce budget/.test(t) && !/Le conseil municipal le vote/.test(t), "commune : qui décide du budget se lit en deux étapes claires");
 /* Les boutons de suite des cartes : une seule couleur de fond (avant : le premier clair, les autres sombres). */
