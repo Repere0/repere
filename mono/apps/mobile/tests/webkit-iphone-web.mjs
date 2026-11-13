@@ -145,7 +145,10 @@ const neuf = async (init) => {
   const d = await etat();
   dit("conteneur : " + JSON.stringify(d));
   ok(d && d.scrollers === 1, `defilement : UN SEUL conteneur qui defile (lu : ${d ? d.scrollers : "aucun"})`);
-  ok(d && d.max > 800, `defilement : la liste depasse l'ecran de ${d ? d.max : 0} px`);
+  /* La liste est virtualisee : au premier rendu, seules ~12 lignes sont montees, et `max` vaut quelques
+     centaines de pixels ; il grandit a mesure qu'on descend. Le seuil porte donc sur « ca depasse
+     l'ecran », pas sur une hauteur finale — c'est la descente, plus bas, qui donne la vraie mesure. */
+  ok(d && d.max > 300, `defilement : la liste depasse deja l'ecran de ${d ? d.max : 0} px (liste virtualisee)`);
   /* `body { overflow: hidden }` est pose par l'export web d'Expo : l'application possede la fenetre, et
      le defilement vit DANS son conteneur. Ce n'est donc pas un defaut en soi — on le RELEVE, et c'est le
      geste au doigt, juste en dessous, qui dit si le defilement marche vraiment. */
@@ -176,7 +179,7 @@ const neuf = async (init) => {
   });
   await page.waitForTimeout(500);
   const bas = await etat();
-  ok(bas && bas.haut > 300, `defilement : le conteneur atteint le bas (${bas ? bas.haut : 0} px sur ${bas ? bas.max : 0}) — mesure SANS geste`);
+  ok(bas && bas.haut > 600 && bas.max > 1000, `defilement : le conteneur atteint le bas (${bas ? bas.haut : 0} px sur ${bas ? bas.max : 0}) — mesure SANS geste`);
   await page.evaluate(() => {
     const e = [...document.querySelectorAll("*")].find(x => { const c = getComputedStyle(x); return /auto|scroll/.test(c.overflowY) && x.scrollHeight > x.clientHeight + 40; });
     if (e) e.scrollTop = 0;

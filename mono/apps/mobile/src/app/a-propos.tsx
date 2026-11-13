@@ -1,6 +1,7 @@
 /* « À PROPOS » — 30/10/2026. Ce qu'est Repère, sans compte ni promesse qui ne se tient pas.
  * Le contact n'apparaît que si EXPO_PUBLIC_CONTACT_EMAIL est défini au moment du build
  * (décision D2 du porteur) : aucune adresse n'est écrite dans le code. */
+import { MARQUE_DEFILEMENT } from "../lib/defilement-ios";
 import { useBasSur } from "../ui/page";
 import { Linking, ScrollView, Text } from "react-native";
 import { Stack, router } from "expo-router";
@@ -14,7 +15,7 @@ const CORPS_AVIS = "Ce que j'ai aimé :\n\nCe qui m'a gêné :\n\nUne idée :\n"
 export default function APropos() {
   const bas = useBasSur();
   return (
-    <ScrollView style={{ flex: 1, backgroundColor: couleurs.sol }} contentContainerStyle={{ padding: PAS * 4, paddingBottom: bas, gap: PAS * 4 }}>
+    <ScrollView {...MARQUE_DEFILEMENT} style={{ flex: 1, backgroundColor: couleurs.sol }} contentContainerStyle={{ padding: PAS * 4, paddingBottom: bas, gap: PAS * 4 }}>
       <Stack.Screen options={{ title: "À propos" }} />
       <Logo size={96} variant="mono" />
       <Text style={TYPO.question} accessibilityRole="header">Repère</Text>

@@ -13,6 +13,7 @@
  * 77-1, scrutin 8706, verifie le 30/10/2026), annonce lui aussi comme un exemple.
  * Le partage n'est plus sur l'accueil : il est sur les ecrans de contexte (src/ui/partage). */
 import { noterArrondissement } from "../lib/arrondissement";
+import { MARQUE_DEFILEMENT } from "../lib/defilement-ios";
 import { espacesFines } from "../ui/donnees";
 import { useEffect, useMemo, useState } from "react";
 import { FlatList, KeyboardAvoidingView, Linking, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View, useWindowDimensions } from "react-native";
@@ -517,6 +518,7 @@ export default function Accueil() {
   return (
     <KeyboardAvoidingView style={{ flex: 1, backgroundColor: D.sol }} behavior={Platform.OS === "ios" ? "padding" : undefined}>
       <FlatList
+        {...MARQUE_DEFILEMENT}
         data={tout && !cherches.length ? toutes : trouvees}
         keyExtractor={l => l[0]}
         keyboardShouldPersistTaps="handled"

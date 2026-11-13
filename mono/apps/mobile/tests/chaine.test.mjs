@@ -160,3 +160,33 @@ test("un seul parcours de l'écran de bienvenue, partagé par tous les bancs", (
   assert.doesNotMatch(parcours, /getByRole\("button", \{ name: \/\^Passer/,
     "meme-verite.mjs refait le parcours de bienvenue à la main : il divergera au prochain changement");
 });
+
+/* ─── 13/11/2026 : TOUT CONTENEUR QUI DÉFILE PORTE LE MARQUEUR iOS ───────────────────────────────────
+ * Le CSS défensif de Safari (-webkit-overflow-scrolling, overscroll-behavior) s'applique par un
+ * marqueur posé sur chaque conteneur de défilement. Marquer à la main, c'est en oublier : cette garde
+ * refuse qu'un ScrollView ou une FlatList VERTICALE apparaisse sans lui. Les listes horizontales
+ * (carrousels, puces de thèmes) n'en veulent pas : un geste horizontal n'a rien à contenir. */
+test("tout conteneur de défilement vertical porte le marqueur iOS", () => {
+  const racine = join(ICI, "..", "src");
+  const fichiers = [];
+  const parcourir = d => { for (const e of readdirSync(d, { withFileTypes: true })) {
+    const p = join(d, e.name);
+    if (e.isDirectory()) parcourir(p); else if (/\.tsx$/.test(e.name)) fichiers.push(p);
+  } };
+  parcourir(racine);
+  const oublies = [];
+  for (const f of fichiers) {
+    const src = lire(f);
+    if (f.endsWith("defilement-ios.ts")) continue;
+    for (const [, balise] of src.matchAll(/<(ScrollView|FlatList)\b([^>]*)>/g)) { void balise; }
+    for (const m of src.matchAll(/<(ScrollView|FlatList)\b((?:[^>"']|"[^"]*"|'[^']*'|\{[^}]*\})*?)(?:\/?>)/g)) {
+      const attrs = m[2] || "";
+      if (/\bhorizontal\b/.test(attrs)) continue;          /* un carrousel n'a rien a contenir */
+      if (/MARQUE_DEFILEMENT/.test(attrs)) continue;
+      oublies.push(`${f.slice(f.indexOf("src/"))} : <${m[1]}>`);
+    }
+  }
+  assert.deepEqual(oublies, [],
+    "ces conteneurs defilent verticalement sans le marqueur iOS : " + oublies.join(" ; ")
+    + ". Ajoutez {...MARQUE_DEFILEMENT} (lib/defilement-ios.ts).");
+});

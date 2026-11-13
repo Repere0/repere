@@ -1,6 +1,7 @@
 /* Le cadre commun des ecrans : defilement, marges sures, largeur de lecture,
  * et l'etat d'une commune qui n'est pas prete (chargement, panne, absence).
  * Chaque ecran de detail commence par UNE question, en grand. */
+import { MARQUE_DEFILEMENT } from "../lib/defilement-ios";
 import type { ReactNode } from "react";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -32,7 +33,7 @@ export function Page({ children, sansDate = false }: { children: ReactNode; sans
      couleurs.sol (lu ci-dessous) donne la couleur du mode courant. */
   useTheme();
   return (
-    <ScrollView style={{ backgroundColor: couleurs.sol }} contentContainerStyle={[s.page, { paddingTop: sansDate ? PAS * 4 : PAS * 6, paddingBottom: marges.bottom + PAS * 10 }]}>
+    <ScrollView {...MARQUE_DEFILEMENT} style={{ backgroundColor: couleurs.sol }} contentContainerStyle={[s.page, { paddingTop: sansDate ? PAS * 4 : PAS * 6, paddingBottom: marges.bottom + PAS * 10 }]}>
       {sansDate ? null : <DatePublication flottant />}
       <BandeauFraicheur />
       <Entree style={{ gap: PAS * 4, width: "100%" }}>{children}</Entree>

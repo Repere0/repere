@@ -10,6 +10,7 @@
  * 09/11/2026 : filtres par fonction ; photo libre et badge de groupe dans chaque ligne.
  * Recherche par nom, departement ou fonction. La recherche par ville n'est pas offerte :
  * les circonscriptions ne portent pas le nom des villes dans les donnees publiees. */
+import { MARQUE_DEFILEMENT } from "../lib/defilement-ios";
 import { useBasSur } from "../ui/page";
 import { useEffect, useMemo, useState } from "react";
 import { FlatList, Pressable, Text, TextInput, View } from "react-native";
@@ -91,6 +92,7 @@ export default function Elus() {
     <View style={{ flex: 1, backgroundColor: couleurs.sol }}>
       <Stack.Screen options={{ title: "Élus" }} />
       <FlatList
+        {...MARQUE_DEFILEMENT}
         data={etat === ETATS.SERVI && !ABSENTS[fonction] ? trouves : []}
         keyExtractor={f => f.id}
         keyboardShouldPersistTaps="handled"
