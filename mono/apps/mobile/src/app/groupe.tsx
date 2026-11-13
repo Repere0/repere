@@ -12,9 +12,15 @@
  * source — et on garde /elu quand une commune est choisie, parce qu'elle y ajoute les votes.
  *
  * 13/11/2026 aussi : la photo libre dans la liste (D27). Elle vit dans photos-elus/{dep}.json, un
- * fichier PAR DEPARTEMENT : un groupe de 120 deputes en toucherait des dizaines. La liste est donc
- * une FlatList, qui ne monte que les lignes visibles ; chaque ligne visible demande le fichier de
- * son departement, deja en cache la plupart du temps. Sans photo publiee : les initiales. */
+ * fichier PAR DEPARTEMENT, d'environ 130 Ko : un groupe de 123 deputes en toucherait des dizaines,
+ * soit plusieurs mega-octets pour des vignettes de 40 px. La liste est donc virtualisee : seules les
+ * lignes visibles demandent le fichier de leur departement. Sans photo publiee : les initiales.
+ *
+ * 13/11/2026, soir (test sur iPhone : « on ne peut pas remonter quand on est en bas ») : cette
+ * FlatList etait IMBRIQUEE dans le ScrollView de `Page`. Deux conteneurs de defilement l'un dans
+ * l'autre : sur le web, le defilement se bloque. La FlatList EST donc l'ecran — un seul conteneur,
+ * la virtualisation gardee, et le defilement natif revient. L'en-tete et le pied passent par
+ * ListHeaderComponent / ListFooterComponent. */
 import { FlatList, Text, View } from "react-native";
 import { router, Stack, useLocalSearchParams } from "expo-router";
 import { couleurGroupe, groupeDe, GROUPE_INCONNU, useFichierGroupes } from "../lib/groupes";
@@ -24,7 +30,10 @@ import { AvatarElu, CreditPhotoElu } from "../ui/avatar";
 import { CarteListe, StatCard } from "../ui/donnees";
 import { PastilleSource } from "../ui/source";
 import { SquelettesListe } from "../ui/squelette";
-import { PAS, TYPO } from "../lib/theme";
+import { couleurs, feuille, PAS, TYPO } from "../lib/theme";
+import { StyleSheet } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { BoutonCopierLien } from "../ui/partage/partager-texte";
 import { useEffect, useState } from "react";
 import { chargerDeputes } from "../lib/donnees";
 import { useSelection } from "../lib/selection";
@@ -70,6 +79,7 @@ export default function Groupe() {
   const fichier = useFichierGroupes();
   const depParRef = useDepartementParRef();
   const { choix } = useSelection();
+  const marges = useSafeAreaInsets();
   const titre = g === GROUPE_INCONNU ? "Groupe non publié" : g;
   if (fichier === null) {
     return (
@@ -93,36 +103,53 @@ export default function Groupe() {
     .filter(([ref]) => groupeDe(ref, fichier.groupes) === g)
     .map(([ref, x]) => ({ ref, nom: x.nom || "Nom non publié" }))
     .sort((a, b) => famille(a.nom).localeCompare(famille(b.nom), "fr") || a.nom.localeCompare(b.nom, "fr"));
+  const source = (
+    <PastilleSource source={{ producteur: fichier.source.producteur, licence: fichier.source.licence, url: fichier.source.url, releve: fichier.genere_le }} />
+  );
+  if (!membres.length) {
+    return (
+      <Page sansDate>
+        <Stack.Screen options={{ title: titre }} />
+        <Question etiquette="Groupe à l'Assemblée nationale" question={titre} />
+        <Vide titre="Aucun député de ce groupe dans la table publiée." corps="La table des groupes de l'Assemblée ne rattache aucun député à ce groupe à cette date." />
+        {source}
+      </Page>
+    );
+  }
   return (
-    <Page sansDate>
+    <View style={{ flex: 1, backgroundColor: couleurs.sol }}>
       <Stack.Screen options={{ title: titre }} />
-      <Question etiquette="Groupe à l'Assemblée nationale" question={titre} />
-      {membres.length ? (
-        <>
-          <View style={{ flexDirection: "row" }}>
-            <StatCard valeur={String(membres.length)} libelle={membres.length > 1 ? "députés" : "député"} couleur={couleurGroupe(g)} />
+      <FlatList
+        data={membres}
+        keyExtractor={m => m.ref}
+        initialNumToRender={12}
+        windowSize={5}
+        contentContainerStyle={[s.liste, { paddingBottom: marges.bottom + PAS * 8 }]}
+        ListHeaderComponent={
+          <View style={{ gap: PAS * 3, marginBottom: PAS * 3 }}>
+            <Question etiquette="Groupe à l'Assemblée nationale" question={titre} />
+            <View style={{ flexDirection: "row" }}>
+              <StatCard valeur={String(membres.length)} libelle={membres.length > 1 ? "députés" : "député"} couleur={couleurGroupe(g)} />
+            </View>
+            <Text style={TYPO.micro}>Ordre alphabétique des noms de famille.</Text>
           </View>
-          <Text style={TYPO.micro}>Ordre alphabétique des noms de famille.</Text>
-          <FlatList
-            data={membres}
-            keyExtractor={m => m.ref}
-            scrollEnabled={false}
-            initialNumToRender={12}
-            windowSize={5}
-            removeClippedSubviews
-            contentContainerStyle={{ gap: PAS * 2 }}
-            renderItem={({ item: m }) => (
-              <CarteListe titre={m.nom} etiquette={`${m.nom}, ouvrir sa fiche`}
-                gauche={<AvatarElu nom={m.nom} taille={40} groupe={g} echelon="france" dep={depParRef[m.ref]} cle={m.ref} />}
-                onPress={() => router.push(ouvrir(m, depParRef[m.ref], g, fichier, !!choix))}>
-                {/* D27 (ADR 0004) : une photo ne s'affiche jamais sans son credit. Sans photo publiee, rien. */}
-                <CreditPhotoElu nom={m.nom} dep={depParRef[m.ref]} cle={m.ref} />
-              </CarteListe>
-            )}
-          />
-        </>
-      ) : <Vide titre="Aucun député de ce groupe dans la table publiée." corps="La table des groupes de l'Assemblée ne rattache aucun député à ce groupe à cette date." />}
-      <PastilleSource source={{ producteur: fichier.source.producteur, licence: fichier.source.licence, url: fichier.source.url, releve: fichier.genere_le }} />
-    </Page>
+        }
+        ListFooterComponent={<View style={{ marginTop: PAS * 4, gap: PAS * 3 }}>{source}<View style={{ alignSelf: "flex-start" }}><BoutonCopierLien /></View></View>}
+        ItemSeparatorComponent={() => <View style={{ height: PAS * 2 }} />}
+        renderItem={({ item: m }) => (
+          <CarteListe titre={m.nom} etiquette={`${m.nom}, ouvrir sa fiche`}
+            gauche={<AvatarElu nom={m.nom} taille={40} groupe={g} echelon="france" dep={depParRef[m.ref]} cle={m.ref} />}
+            onPress={() => router.push(ouvrir(m, depParRef[m.ref], g, fichier, !!choix))}>
+            {/* D27 (ADR 0004) : une photo ne s'affiche jamais sans son credit. Sans photo publiee, rien. */}
+            <CreditPhotoElu nom={m.nom} dep={depParRef[m.ref]} cle={m.ref} />
+          </CarteListe>
+        )}
+      />
+    </View>
   );
 }
+
+const s = feuille(() => StyleSheet.create({
+  /* Les memes marges que `Page`, parce que la liste prend sa place comme conteneur de defilement. */
+  liste: { paddingHorizontal: PAS * 4, paddingTop: PAS * 4, maxWidth: 640, width: "100%", alignSelf: "center" },
+}));

@@ -17,6 +17,7 @@ import { Animated, Easing, StyleSheet } from "react-native";
 import { NEUTRES_PAR_MODE } from "../lib/palette";
 import { Logo } from "./logo";
 import { useMouvementReduit } from "./mouvement";
+import { useProfil } from "../lib/profil";
 
 export const DUREE_DEMARRAGE = { entree: 350, tenue: 500, sortie: 350 };
 /* Le retard qu'on tolere avant de couper court : au-dela, le voile part sans attendre l'animation. */
@@ -26,6 +27,10 @@ let dejaJoue = false;
 
 export function Demarrage() {
   const reduit = useMouvementReduit();
+  /* 13/11/2026 (porteur) : AU PREMIER LANCEMENT, PAS DE VOILE. L'écran 1 de la bienvenue montre déjà le
+     logo, avec un bouton : deux logos à la suite, dont un qui part tout seul, se lisaient comme un
+     blocage. Le voile ne sert qu'aux lancements suivants, quand il n'y a plus d'onboarding à afficher. */
+  const { absent } = useProfil();
   const [fini, setFini] = useState(dejaJoue);
   const logo = useRef(new Animated.Value(0)).current;
   const voile = useRef(new Animated.Value(1)).current;
@@ -45,13 +50,16 @@ export function Demarrage() {
     const filet = setTimeout(() => { sequence.stop(); setFini(true); }, d.entree + d.tenue + d.sortie + MARGE_FILET);
     return () => clearTimeout(filet);
   }, [fini, reduit, logo, voile]);
-  if (fini) return null;
+  if (fini || absent) return null;
   const sombre = NEUTRES_PAR_MODE.sombre;
   return (
     <Animated.View pointerEvents="none" testID="demarrage" accessible={false} importantForAccessibility="no-hide-descendants" aria-hidden
       style={[StyleSheet.absoluteFill, { zIndex: 1000, alignItems: "center", justifyContent: "center", backgroundColor: sombre.sol, opacity: voile }]}>
       <Animated.View style={{ opacity: logo, transform: [{ scale: logo.interpolate({ inputRange: [0, 1], outputRange: [0.92, 1] }) }] }}>
-        <Logo size={96} c={{ encre: sombre.encre, sol: sombre.sol } as never} />
+        {/* 13/11/2026 : « variant », PAS « c ». En passant une teinte sans `sourd`, le logo perdait son
+            anneau gris intermédiaire et se réduisait à un cercle et un point — ce n'était plus le logo.
+            La variante sombre porte les trois valeurs : ivoire, gris, ivoire. */}
+        <Logo size={96} variant="sombre" />
       </Animated.View>
     </Animated.View>
   );
