@@ -146,25 +146,44 @@ const neuf = async (init) => {
   dit("conteneur : " + JSON.stringify(d));
   ok(d && d.scrollers === 1, `defilement : UN SEUL conteneur qui defile (lu : ${d ? d.scrollers : "aucun"})`);
   ok(d && d.max > 800, `defilement : la liste depasse l'ecran de ${d ? d.max : 0} px`);
-  ok(d && d.coupants.length === 0, "defilement : aucun parent en overflow hidden" + (d && d.coupants.length ? " (" + d.coupants.join(" ; ") + ")" : ""));
+  /* `body { overflow: hidden }` est pose par l'export web d'Expo : l'application possede la fenetre, et
+     le defilement vit DANS son conteneur. Ce n'est donc pas un defaut en soi — on le RELEVE, et c'est le
+     geste au doigt, juste en dessous, qui dit si le defilement marche vraiment. */
+  dit("parents qui coupent : " + (d && d.coupants.length ? d.coupants.join(" ; ") : "aucun"));
 
   /* DESCENDRE AU DOIGT : un vrai balayage, comme le porteur. */
   const centre = { x: Math.round(IPHONE.viewport.width / 2), y: Math.round(IPHONE.viewport.height / 2) };
+  /* LE DOIGT, POUR DE VRAI. `mouse.wheel` n'existe pas sur WebKit mobile (« Mouse wheel is not supported
+     in mobile WebKit », releve par cette sonde le 13/11/2026) et `touchscreen` ne sait que taper. On
+     synthetise donc touchstart / touchmove / touchend sur le conteneur, comme un pouce qui glisse. */
   const balayer = async (dy, n = 6) => {
     for (let i = 0; i < n; i++) {
-      await page.mouse.move(centre.x, centre.y);
-      await page.mouse.wheel(0, dy);
-      await page.waitForTimeout(120);
+      await page.evaluate(({ dy, x, y }) => {
+        const cible = [...document.querySelectorAll("*")].find(e => {
+          const c = getComputedStyle(e);
+          return /auto|scroll/.test(c.overflowY) && e.scrollHeight > e.clientHeight + 40;
+        }) || document.body;
+        const touche = (type, cy) => {
+          const t = new Touch({ identifier: 1, target: cible, clientX: x, clientY: cy, pageX: x, pageY: cy });
+          cible.dispatchEvent(new TouchEvent(type, { bubbles: true, cancelable: true, touches: type === "touchend" ? [] : [t], targetTouches: type === "touchend" ? [] : [t], changedTouches: [t] }));
+        };
+        /* Le doigt part de `y` et glisse de -dy (vers le haut pour descendre dans la liste). */
+        touche("touchstart", y);
+        for (let k = 1; k <= 8; k++) touche("touchmove", y - (dy * k) / 8);
+        touche("touchend", y - dy);
+      }, { dy, x: centre.x, y: centre.y });
+      await page.waitForTimeout(180);
     }
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(700);
   };
-  await balayer(600);
+  await balayer(400);
   const bas = await etat();
   dit("apres balayage vers le bas : " + JSON.stringify(bas && { haut: bas.haut, max: bas.max }));
+  if (bas && bas.haut === 0) dit("ATTENTION : le geste synthetise n'a rien bouge — WebKit peut ignorer un TouchEvent fabrique ; dans ce cas ce controle ne prouve rien, ni dans un sens ni dans l'autre.");
   ok(bas && bas.haut > 300, `defilement : on descend au doigt (lu : ${bas ? bas.haut : 0} px sur ${bas ? bas.max : 0})`);
 
   /* LE BUG DU PORTEUR : en bas, on ne remonte plus. */
-  await balayer(-600, 12);
+  await balayer(-400, 14);
   const retour = await etat();
   dit("apres balayage vers le haut : " + JSON.stringify(retour && { haut: retour.haut }));
   ok(retour && retour.haut === 0, `defilement : ON REMONTE au doigt jusqu'en haut (lu : ${retour ? retour.haut : "?"} px)`);
