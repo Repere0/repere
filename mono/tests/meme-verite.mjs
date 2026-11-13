@@ -187,9 +187,21 @@ async function texteApp(nav, { nom }) {
     if (!(await b.count())) continue;              /* absence dite par une phrase sur l'accueil */
     await b.first().click();
     await p.waitForTimeout(900);
-    const lu = await toutLire(p);
+    let lu = await toutLire(p);
     t += "\n" + lu.t;
     feuilles += lu.n;
+    /* 13/11/2026 : « Où va cet argent » ne montre plus que les trois aides les plus élevées, et range les
+       autres derriere « Voir tous les projets (N) » (decision du porteur). La MEME VERITE est toujours la :
+       elle est a un geste. Le controle fait ce geste, pour continuer a exiger TOUTES les phrases de projet. */
+    const tous = p.getByRole("button", { name: /^Voir tous les projets/ });
+    if (await tous.count()) {
+      await tous.first().click();
+      await p.waitForTimeout(700);
+      lu = await toutLire(p);
+      t += "\n" + lu.t;
+      await p.getByRole("button", { name: "Fermer la liste des projets" }).click();
+      await p.waitForTimeout(400);
+    }
     /* Qui décide et Le calendrier sont des onglets (13/10/2026) : retour par la barre basse. */
     if (action === "Qui décide" || action === "Le calendrier") await p.getByText("Aujourd'hui", { exact: true }).last().click();
     else await p.getByRole("button", { name: "Revenir à l'écran Aujourd'hui" }).last().click();

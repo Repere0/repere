@@ -92,6 +92,10 @@ function ToutesLesAides({ ouvert, fermer, liste, nom, nomDe }: {
         <FlatList
           data={filtres}
           keyExtractor={(p, i) => `${p.annee}-${p.dispositif}-${i}`}
+          /* Tout rendre : une commune publie quelques dizaines d'aides au plus, et la MEME VERITE que le
+             site exige que chaque phrase de projet soit lisible ici (tests/meme-verite.mjs). */
+          initialNumToRender={200}
+          windowSize={21}
           contentContainerStyle={{ padding: PAS * 5, gap: PAS * 3 }}
           ListEmptyComponent={<Text style={TYPO.corps}>Aucun projet publié pour {nom} ne correspond à cette recherche.</Text>}
           renderItem={({ item: p }) => {
@@ -103,6 +107,9 @@ function ToutesLesAides({ ouvert, fermer, liste, nom, nomDe }: {
                 {f && f.partPct !== null && cout ? (
                   <Text style={TYPO.note}>{`${euros(f.subvention)} de l'État sur ${euros(f.cout as number)}.`}</Text>
                 ) : null}
+                {/* La phrase du site, mot pour mot : l'application ne dit pas autre chose (meme-verite.mjs). */}
+                <Text style={TYPO.note}>{phraseProjetLocal(p, nom)}</Text>
+                {noteRattachement(p) ? <Text style={TYPO.note}>{noteRattachement(p)}</Text> : null}
               </Carte>
             );
           }}
