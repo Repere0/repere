@@ -11,3 +11,4 @@ export const TAILLE_MANCHE: number;
 export function entreesDuQuizMots(entrees: EntreeQuiz[]): EntreeQuiz[];
 export function construireQuestionMot(entrees: EntreeQuiz[], cle: string, hasard?: () => number): QuestionQuiz | null;
 export function mancheDuQuiz(entrees: EntreeQuiz[], taille?: number, hasard?: () => number): QuestionQuiz[];
+export function donneLaReponse(texte: string, titre: string): boolean;

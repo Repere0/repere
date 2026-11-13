@@ -91,23 +91,27 @@ export function sessionDuQuiz(entrees, hasard = Math.random) {
 export const TITRE_MAX_QUIZ = 38;
 export const TAILLE_MANCHE = 5;
 
-const citeSonTitre = e => sansAccents(definitionCourte(e.corps)).includes(sansAccents(e.titre));
+/* LA DEFINITION NE DOIT PAS CONTENIR SA REPONSE. Comparer des chaines entieres ne suffit pas : « Abreviation
+ * de l'Assemblee nationale... » ne contient pas « AN (Assemblee nationale) » tel quel, et donnait pourtant la
+ * reponse a l'ecran le 13/11/2026. On compare donc MOT A MOT, et un mot en couvre un autre des qu'il le
+ * commence (« parlementaire » / « parlementaires »). */
+const couvre = (a, b) => a.length >= 4 && b.length >= 4 && (a.startsWith(b) || b.startsWith(a));
+export const donneLaReponse = (texte, titre) => mots(texte).some(m => mots(titre).some(t => couvre(m, t)));
 
 /* Les entrées qu'une question « quel mot ? » peut poser ou proposer. */
 export function entreesDuQuizMots(entrees) {
-  return entreesDuQuiz(entrees).filter(e => e.titre.length <= TITRE_MAX_QUIZ && !citeSonTitre(e));
+  return entreesDuQuiz(entrees).filter(e => e.titre.length <= TITRE_MAX_QUIZ && !donneLaReponse(definitionCourte(e.corps), e.titre));
 }
 
 export function construireQuestionMot(entrees, cle, hasard = Math.random) {
   const cible = entrees.find(e => e.cle === cle);
   if (!cible) return null;
   const definition = definitionCourte(cible.corps);
-  const defSansAccents = sansAccents(definition);
   const valables = entrees.filter(e => e.cle !== cible.cle
     && sansAccents(e.titre) !== sansAccents(cible.titre)
     && !partageUnMot(e.titre, cible.titre)
     /* Un faux mot que la définition posée cite serait un piège injuste. */
-    && !defSansAccents.includes(sansAccents(e.titre))
+    && !donneLaReponse(definition, e.titre)
     && !trop_proche(definitionCourte(e.corps), definition));
   const memeTheme = melanger(valables.filter(e => e.categorie === cible.categorie), hasard);
   const autres = melanger(valables.filter(e => e.categorie !== cible.categorie), hasard);
