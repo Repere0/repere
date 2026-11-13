@@ -6,9 +6,11 @@
  *
  * Règles du produit tenues ici :
  *   - le vocabulaire institutionnel seulement (lib/quiz : aucun sigle de groupe, aucune opinion) ;
- *   - la série et le résultat de la manche vivent en mémoire, le temps de l'écran : aucune clé de stockage
- *     (invariant 2), aucune comparaison entre joueurs, aucun partage, aucun son (invariant 6 : rien ici ne touche
- *     à un vote ou à une opinion) ;
+ *   - 13/11/2026 (ADR 0010, invariant 6 amendé) : POINTS ET RANGS. +10 par réponse juste, gardés dans
+ *     repere.profil — pas de clé de stockage en plus (invariant 2), rien qui parte sur le réseau, aucun
+ *     rang comparé entre lecteurs (Repère ne sait rien des autres). Cela ne porte QUE sur du vocabulaire
+ *     institutionnel : jamais un vote, un élu, un parti, un territoire. C'est la limite de l'amendement ;
+ *   - la série et le résultat de la manche vivent en mémoire, le temps de l'écran ;
  *   - vert et rouge du quiz (palette.ts, ADR 0009) : réservés au quiz, distincts des couleurs de vote, et jamais
  *     seuls : une coche ou une croix, et « Juste » ou « Faux » en toutes lettres ;
  *   - mouvement réduit : pas de transition. */
@@ -19,6 +21,10 @@ import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { GLOSSAIRE } from "@repere/core";
 import { mancheDuQuiz, TAILLE_MANCHE, type EntreeQuiz, type QuestionQuiz } from "../lib/quiz";
+import { POINTS_PAR_REPONSE_JUSTE, pointsAvantRangSuivant, rangPour } from "@repere/core";
+import { useProfil } from "../lib/profil";
+import { PartagerCarte } from "./partage/bouton-partage";
+import { QuizStory } from "./partage/variantes/quiz.story";
 import { COULEURS_QUIZ } from "../lib/palette";
 import { ACCENTS, CIBLE, couleurs, PAS, POLICE, RAYON, TYPO } from "../lib/theme";
 import { useMouvementReduit } from "./mouvement";
@@ -39,6 +45,13 @@ export function Quiz({ categorieDe }: { categorieDe: (cle: string) => string }) 
   const [serie, setSerie] = useState(0);
   const [justes, setJustes] = useState(0);
   const [fini, setFini] = useState(false);
+  const { profil, modifier } = useProfil();
+  const points = profil ? profil.points : 0;
+  const monRang = rangPour(points);
+  /* Le rang au DÉBUT de la manche : c'est ce qui permet de dire « vous avez changé de rang » à la fin,
+     sans rien enregistrer de plus. */
+  const [rangDepart] = useState(() => rangPour(profil ? profil.points : 0).cle);
+  const monte = useRef(new Animated.Value(0)).current;
   const reduit = useMouvementReduit();
   const marges = useSafeAreaInsets();
   const entree = useRef(new Animated.Value(1)).current;
@@ -65,7 +78,17 @@ export function Quiz({ categorieDe }: { categorieDe: (cle: string) => string }) 
     setChoix(i);
     if (q.propositions[i].juste) {
       setSerie(s => s + 1); setJustes(j => j + 1);
-      if (!reduit) { pop.setValue(1.35); Animated.spring(pop, { toValue: 1, friction: 4, useNativeDriver: false }).start(); }
+      const avant = rangPour(points).cle;
+      const apres = rangPour(points + POINTS_PAR_REPONSE_JUSTE);
+      modifier({ points: points + POINTS_PAR_REPONSE_JUSTE });
+      if (!reduit) {
+        pop.setValue(1.35); Animated.spring(pop, { toValue: 1, friction: 4, useNativeDriver: false }).start();
+        /* Montée de rang : la pastille du rang grossit puis revient. Rien de sonore (invariant 6). */
+        if (apres.cle !== avant) { monte.setValue(0); Animated.sequence([
+          Animated.spring(monte, { toValue: 1, friction: 3, useNativeDriver: false }),
+          Animated.timing(monte, { toValue: 0, duration: 900, useNativeDriver: false }),
+        ]).start(); }
+      }
     } else setSerie(0);
   };
   const suivante = () => { setChoix(null); if (derniere) setFini(true); else setRang(r => r + 1); };
@@ -81,7 +104,19 @@ export function Quiz({ categorieDe }: { categorieDe: (cle: string) => string }) 
   /* En-tête : la progression de la manche et la série en cours. */
   const faites = fini ? total : rang + (repondu ? 1 : 0);
   const enTete = (
-    <View style={{ flexDirection: "row", alignItems: "center", gap: PAS * 3 }}>
+    <View style={{ gap: PAS * 2 }}>
+      {/* LE RANG, en haut (ADR 0010). Il ne se compare a personne : Repere ne sait rien des autres lecteurs. */}
+      <View style={{ flexDirection: "row", alignItems: "center", gap: PAS * 3 }}>
+        <Animated.View testID="quiz-rang-pastille"
+          style={{ flexDirection: "row", alignItems: "center", gap: PAS * 2, paddingHorizontal: PAS * 4, minHeight: 36,
+            borderRadius: RAYON.pastille, backgroundColor: couleurs.voile,
+            transform: [{ scale: monte.interpolate({ inputRange: [0, 1], outputRange: [1, 1.12] }) }] }}>
+          <Ionicons name="ribbon-outline" size={18} color={couleurs.encre} accessible={false} importantForAccessibility="no" />
+          <Text style={[TYPO.corps, { fontFamily: POLICE.titre }]} testID="quiz-rang-nom">{monRang.nom}</Text>
+        </Animated.View>
+        <Text style={[TYPO.donnee, { color: couleurs.sourd, flex: 1, textAlign: "right" }]} testID="quiz-points">{points} pts</Text>
+      </View>
+      <View style={{ flexDirection: "row", alignItems: "center", gap: PAS * 3 }}>
       <View accessible accessibilityRole="progressbar" accessibilityLabel={fini ? "Manche terminée" : `Question ${rang + 1} sur ${total}`}
         accessibilityValue={{ min: 0, max: total, now: faites }}
         style={{ flex: 1, height: 12, borderRadius: 6, backgroundColor: couleurs.voile, overflow: "hidden" }}>
@@ -97,6 +132,7 @@ export function Quiz({ categorieDe }: { categorieDe: (cle: string) => string }) 
         </Animated.View>
         <Text testID="quiz-serie" style={[TYPO.donnee, { fontFamily: POLICE.donneeForte, color: couleurs.encre }]}>{serie}</Text>
       </View>
+      </View>
     </View>
   );
 
@@ -107,10 +143,21 @@ export function Quiz({ categorieDe }: { categorieDe: (cle: string) => string }) 
         <Animated.View style={{ flex: 1, justifyContent: "center", gap: PAS * 3, opacity: entree }}>
           <Text style={TYPO.etiquette}>Manche terminée</Text>
           <Text style={TYPO.affiche} accessibilityRole="header">{pluriel(justes)} sur {total}</Text>
-          <Text style={TYPO.corps}>{serie > 1 ? `Série en cours : ${pluriel(serie)} d'affilée. Elle continue à la manche suivante. ` : ""}Ce résultat reste sur cet écran : il n'est ni enregistré ni partagé.</Text>
+          <Text style={TYPO.corps} testID="quiz-bilan">
+            {justes * POINTS_PAR_REPONSE_JUSTE} points gagnés. Vous êtes {monRang.nom}
+            {pointsAvantRangSuivant(points) !== null ? `, à ${pointsAvantRangSuivant(points)} points du rang suivant` : ""}.
+          </Text>
+          {monRang.cle !== rangDepart ? (
+            <Text style={[TYPO.corps, { fontFamily: POLICE.titre }]} testID="quiz-montee">Nouveau rang : {monRang.nom}.</Text>
+          ) : null}
+          <Text style={TYPO.note}>{serie > 1 ? `Série en cours : ${pluriel(serie)} d'affilée. ` : ""}Vos points restent sur cet appareil : ils ne sont ni envoyés, ni comparés à ceux de quelqu'un d'autre.</Text>
         </Animated.View>
         <View style={{ gap: PAS * 2 }}>
           {bouton("Nouvelle manche", rejouer)}
+          {/* Le partage : une image, par le partage du téléphone. Rien d'autre ne quitte l'appareil. */}
+          <PartagerCarte etiquette={`Partager mon rang : ${monRang.nom}`} libelle="Partager mon rang"
+            repli={`J'ai atteint le rang de ${monRang.nom} sur Repère. Peux-tu faire mieux ?`}
+            rendu={ref => <QuizStory refCarte={ref} rang={monRang.nom} defi="Peux-tu faire mieux ?" />} />
           <Pressable onPress={() => router.push("/dictionnaire")} accessibilityRole="link" accessibilityLabel="Ouvrir le dictionnaire citoyen"
             style={({ pressed }) => ({ minHeight: CIBLE, alignItems: "center", justifyContent: "center", opacity: pressed ? 0.7 : 1 })}>
             <Text style={[TYPO.note, { fontFamily: POLICE.texteGras, color: couleurs.encre }]}>Ouvrir le dictionnaire citoyen ›</Text>

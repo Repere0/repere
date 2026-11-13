@@ -34,7 +34,7 @@ explicite du porteur les change ; la PR qui l'applique met alors à jour
 1. **Autonomie.** L'application fonctionne hors ligne, sans serveur applicatif.
 2. **Deux clés de stockage local, nommées, rien d'autre.** `repere.departement` (la commune,
    `{d, v}` depuis le 23/09/2026) et `repere.profil` (réglages de lecture : taille, contraste,
-   espacement, police, animations, daltonisme, images, et depuis D57 `themes` : les thèmes d'intérêt choisis, parmi une liste fixe ; depuis D67 `mode` : auto, clair ou sombre ; et depuis le 13/11/2026 `prenom` : un prénom FACULTATIF, donné au premier lancement, jamais deviné, ce qui n'en est pas un n'étant pas gardé — ADR 0006 amendé, ADR 0009). Ni l'une ni l'autre n'est
+   espacement, police, animations, daltonisme, images, et depuis D57 `themes` : les thèmes d'intérêt choisis, parmi une liste fixe ; depuis D67 `mode` : auto, clair ou sombre ; et depuis le 13/11/2026 `prenom` : un prénom FACULTATIF, jamais deviné, ce qui n'en est pas un n'étant pas gardé — ADR 0009 ; et `points` : les points du quiz civique, jamais transmis — ADR 0010). Ni l'une ni l'autre n'est
    transmise : aucun compte, email, traceur, cookie. Le magasin de données (IndexedDB sur le
    site, cache de l'application sur le téléphone) ne garde que les fichiers publics publiés
    par Repère, sous une garde unique (`store.js`). Aucune adresse réseau ne porte un code de
@@ -50,7 +50,7 @@ explicite du porteur les change ; la PR qui l'applique met alors à jour
    D81 (ADR 0007) : flux RSS officiel de mairie lisible (titre, deux phrases au plus, date, lien), jamais l'article entier.
 5. **Doctrine du vide.** Une absence de donnée produit une phrase vraie et un lien,
    jamais une forme vide, un zéro ou une barre minuscule.
-6. **Rien qui gamifie le vote ou l'opinion** : aucun score, aucune récompense, aucune série, aucun gain ni son de réussite lié à un vote, une position ou un partage. Les effets de mouvement sont permis pour lire, naviguer et suivre une heure ou une durée (assouplie par décision du porteur, 13/10/2026).
+6. **Rien qui gamifie le vote ou l'opinion** : aucun score, aucune récompense, aucune série, aucun gain ni son de réussite lié à un vote, une position, un élu, un parti, un territoire ou un partage. Les effets de mouvement sont permis pour lire et naviguer (porteur, 13/10/2026). **Amendé (porteur, 13/11/2026, ADR 0010)** : points, rangs et séries sont permis AU SEUL module de culture civique (quiz du dictionnaire), parce qu'une définition a une bonne réponse publiée ; points dans `repere.profil`, jamais transmis, aucun rang comparé entre lecteurs. `MOTS_GAMIFICATION` et `MOTS_CLASSEMENT` restent interdits partout, quiz compris.
 7. **Invariant 7 (amendé les 30/10, 01/11 (D99), 08/11, 09/11/2026 (« tout Stitch »), 12/11/2026 (ADR 0008), puis 13/11/2026 (ADR 0009) par le porteur)** :
    couleurs de groupes politiques pour l'identification des élus seulement (badges, cartes de partage) ; elles ne codent
    JAMAIS un vote, une opinion, un score ou un classement. Votes (Stitch) : émeraude `#00A896` (pour), corail `#BE123C`
@@ -98,7 +98,7 @@ explicite du porteur les change ; la PR qui l'applique met alors à jour
 | histoire de l'ère mono-fichier (avant le 23/09) | `CONTEXTE_PROJET.md` § 4 à 8 et 12 |
 | carte produit, questions citoyennes | `docs/PRODUCT_MAP_V1_2026-09-23.md` |
 | retour arrière de la production, couche éditoriale | `docs/MONO_PRODUCTION_ROLLBACK.md`, `docs/COUCHE_EDITORIALE.md` |
-| décisions qui ont amendé un invariant | `docs/adr/` (0001 à 0009) |
+| décisions qui ont amendé un invariant | `docs/adr/` (0001 à 0010) |
 
 ## Procédures — skills de `.claude/skills/`
 

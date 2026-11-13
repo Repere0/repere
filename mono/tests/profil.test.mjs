@@ -97,3 +97,30 @@ test("prénom : valideProfil le garde, et un profil sans prénom vaut le défaut
   assert.equal(valideProfil({ prenom: "<script>" }).prenom, "");
   assert.equal(valideProfil({ tailleTexte: 18 }).prenom, "");
 });
+
+/* 13/11/2026 (ADR 0010) : les points et les rangs du quiz civique, dans repere.profil. */
+test("quiz : un total illisible ou négatif revient à zéro, jamais réparé vers le haut", async () => {
+  const { nettoyerPoints, POINTS_MAX } = await import("../packages/core/src/profil.js");
+  for (const v of [-1, -1000, "abc", null, undefined, NaN, Infinity, {}]) assert.equal(nettoyerPoints(v), 0, JSON.stringify(v));
+  assert.equal(nettoyerPoints(10.7), 10, "un total est entier");
+  assert.equal(nettoyerPoints("250"), 250, "un total écrit en texte est lu");
+  assert.equal(nettoyerPoints(POINTS_MAX + 5), POINTS_MAX, "un total aberrant est borné");
+});
+test("quiz : les quatre rangs du porteur, bornes comprises, et le reste avant le suivant", async () => {
+  const { rangPour, pointsAvantRangSuivant, RANGS } = await import("../packages/core/src/profil.js");
+  assert.deepEqual(RANGS.map(r => r.nom), ["Néo-citoyen", "Citoyen", "Super Citoyen", "Sage"]);
+  for (const [p, nom] of [[0, "Néo-citoyen"], [50, "Néo-citoyen"], [51, "Citoyen"], [200, "Citoyen"],
+    [201, "Super Citoyen"], [500, "Super Citoyen"], [501, "Sage"], [99999, "Sage"]]) {
+    assert.equal(rangPour(p).nom, nom, `${p} points`);
+  }
+  assert.equal(rangPour(-5).nom, "Néo-citoyen", "un total refusé donne quand même un rang");
+  assert.equal(pointsAvantRangSuivant(0), 51);
+  assert.equal(pointsAvantRangSuivant(200), 1);
+  assert.equal(pointsAvantRangSuivant(501), null, "au dernier rang, il n'y a plus de suivant");
+});
+test("quiz : les points sont gardés dans repere.profil, pas dans une clé de plus (invariant 2)", () => {
+  assert.equal(PROFIL_DEFAUT.points, 0);
+  assert.equal(valideProfil({ points: 320 }).points, 320);
+  assert.equal(valideProfil({ points: "beaucoup" }).points, 0);
+  assert.equal(valideProfil({}).points, 0);
+});

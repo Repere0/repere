@@ -39,13 +39,18 @@ const lireProfil = page => page.evaluate(() => JSON.parse(localStorage.getItem("
   verifier(duree <= 1500, "démarrage : le voile a disparu en 1,5 s au plus (" + duree + " ms après son apparition, " + (Date.now() - t0) + " ms après l'ouverture)");
 
   await page.waitForURL(/\/bienvenue/, { timeout: 10000 });
-  await page.getByRole("heading", { name: "Bienvenue sur Repère." }).waitFor({ timeout: 10000 });
-  await page.waitForTimeout(600);
+  /* ÉCRAN 1 : le logo et un bouton. Rien ici ne dépend d'une animation : un lecteur bloqué est impossible. */
+  await page.getByTestId("continuer-0").waitFor({ timeout: 10000 });
+  verifier(await page.getByRole("heading", { name: "Repère" }).count() === 1, "écran 1 : le logo et le nom");
+  if (CAP) await page.screenshot({ path: `${CAP}/bienvenue-0.png` });
+  await page.getByTestId("continuer-0").click();
+  /* ÉCRAN 2 : le prénom. */
+  await page.waitForTimeout(500);
   if (CAP) await page.screenshot({ path: `${CAP}/bienvenue.png` });
-  verifier(await page.getByText("Comment souhaitez-vous qu'on vous appelle ?").count() === 1, "bienvenue : la question est posée");
+  verifier(await page.getByText("Comment souhaitez-vous qu'on vous appelle ?").count() === 1, "écran 2 : la question est posée");
   const bas = await page.getByRole("button", { name: /^Passer, sans/ }).boundingBox();
   verifier(bas && bas.y + bas.height <= 844, "bienvenue : tout tient sur l'écran sans défiler (« Passer » finit à " + (bas && Math.round(bas.y + bas.height)) + " px sur 844)");
-  for (const nom of ["C'est parti", /^Passer, sans/]) {
+  for (const nom of [/^Continuer$/, /^Passer, sans/]) {
     const b = await page.getByRole("button", { name: nom }).boundingBox();
     verifier(b && b.height >= 44, `bienvenue : cible tactile de 44 px au moins (${String(nom)} : ${b && Math.round(b.height)} px)`);
   }
@@ -53,7 +58,14 @@ const lireProfil = page => page.evaluate(() => JSON.parse(localStorage.getItem("
   await champ.fill("R2-D2 <script>");
   verifier(await page.getByText("Un prénom : des lettres", { exact: false }).count() === 1, "bienvenue : une saisie refusée est dite au lecteur");
   await champ.fill("  marie-Hélène  ");
-  await page.getByRole("button", { name: "C'est parti" }).click();
+  await page.getByTestId("continuer-1").click();
+  /* ÉCRAN 3 : ce que Repère ne fait pas. */
+  await page.waitForTimeout(500);
+  verifier(await page.getByRole("heading", { name: "Ce que Repère ne fait pas" }).count() === 1, "écran 3 : les valeurs sont annoncées");
+  for (const t of ["Zéro traceur", "Pas de compte", "Des faits, leurs sources"]) verifier(await page.getByText(t, { exact: false }).count() >= 1, `écran 3 : « ${t} »`);
+  if (CAP) await page.screenshot({ path: `${CAP}/bienvenue-2.png` });
+  verifier(await page.getByTestId("continuer-2").innerText() === "C'est parti, marie-Hélène", "écran 3 : le bouton reprend le prénom donné");
+  await page.getByTestId("continuer-2").click();
   await page.getByTestId("bonjour").waitFor({ timeout: 10000 });
   const profil = await lireProfil(page);
   verifier(profil && profil.prenom === "marie-Hélène", "« C'est parti » garde le prénom, nettoyé, dans repere.profil (" + JSON.stringify(profil && profil.prenom) + ")");
@@ -73,8 +85,10 @@ const lireProfil = page => page.evaluate(() => JSON.parse(localStorage.getItem("
   const { contexte, page } = await nouveau();
   await page.goto(BASE + "/", { waitUntil: "networkidle" });
   await page.waitForURL(/\/bienvenue/, { timeout: 10000 });
+  await page.getByTestId("continuer-0").click();
   await page.getByLabel(/Votre prénom/).fill("12345");
-  await page.getByRole("button", { name: "C'est parti" }).click();
+  await page.getByTestId("continuer-1").click();
+  await page.getByTestId("continuer-2").click();
   await page.waitForURL(u => !String(u).includes("/bienvenue"), { timeout: 10000 });
   await page.waitForTimeout(800);
   let profil = await lireProfil(page);
@@ -86,7 +100,9 @@ const lireProfil = page => page.evaluate(() => JSON.parse(localStorage.getItem("
   const { contexte, page } = await nouveau();
   await page.goto(BASE + "/", { waitUntil: "networkidle" });
   await page.waitForURL(/\/bienvenue/, { timeout: 10000 });
+  await page.getByTestId("continuer-0").click();
   await page.getByRole("button", { name: /^Passer, sans/ }).click();
+  await page.getByTestId("continuer-2").click();
   await page.waitForURL(u => !String(u).includes("/bienvenue"), { timeout: 10000 });
   const profil = await lireProfil(page);
   verifier(profil && profil.prenom === "", "« Passer » ne garde aucun prénom");
