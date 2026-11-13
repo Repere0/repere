@@ -123,6 +123,7 @@ jobs:
           node apps/mobile/tests/hemicycle-web.mjs http://localhost:8811
           node apps/mobile/tests/senat-web.mjs http://localhost:8811
           node apps/mobile/tests/groupes-grille-web.mjs http://localhost:8811
+          node apps/mobile/tests/groupe-defilement-web.mjs http://localhost:8811
           node apps/mobile/tests/recherche-tolerante-web.mjs http://localhost:8811
           node apps/mobile/tests/simplification-web.mjs http://localhost:8811
           node apps/mobile/tests/final-polish-web.mjs http://localhost:8811

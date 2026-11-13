@@ -50,6 +50,29 @@ ok(profil && profil.points === justes * 10, `${justes} réponse(s) juste(s) = ${
 const apres = await page.evaluate(() => Object.keys(localStorage).concat(Object.keys(sessionStorage)));
 ok(apres.every(k => ["repere.departement", "repere.profil"].includes(k)), "aucune clé de stockage en plus pour les points (invariant 2) : " + apres.join(","));
 ok(await page.getByRole("button", { name: /^Partager mon rang/ }).count() === 1, "fin de manche : le partage du rang");
+/* ─── 13/11/2026 (porteur) : la progression vers le rang suivant, et la liste des rangs ─── */
+const prog = (await page.getByTestId("quiz-progression").innerText()).replace(/\s+/g, " ").trim();
+ok(/^\d+ \/ 51 points pour devenir Citoyen$/.test(prog), "fin de manche : la progression vers le rang suivant (« " + prog + " »)");
+const barre = await page.getByTestId("quiz-progression").evaluate(e => {
+  /* Le fond de la barre : le seul div qui contient un div et fait 12 px de haut. */
+  const fond = [...e.querySelectorAll("div")].find(d => d.querySelector("div") && Math.round(d.getBoundingClientRect().height) === 12);
+  const plein = fond && fond.querySelector("div");
+  return fond && plein ? Math.round((plein.getBoundingClientRect().width / fond.getBoundingClientRect().width) * 100) : -1;
+});
+ok(barre >= 0 && barre <= 100, "fin de manche : la barre est remplie à " + barre + " %");
+await page.getByTestId("voir-rangs").click();
+await page.getByRole("heading", { name: "Les rangs" }).waitFor({ timeout: 10000 });
+const lignes = await page.getByTestId("rang-ligne").allInnerTexts();
+ok(lignes.length === 4, "la modale montre les quatre rangs (" + lignes.length + ")");
+const joint = lignes.join(" | ").replace(/\s+/g, " ");
+for (const [nom, points] of [["Néo-citoyen", "de 0 à 50 points"], ["Citoyen", "de 51 à 200 points"], ["Super Citoyen", "de 201 à 500 points"], ["Sage", "501 points et plus"]]) {
+  ok(joint.includes(nom) && joint.includes(points), `la modale dit « ${nom} » et « ${points} »`);
+}
+ok(/votre rang/.test(joint), "la modale marque le rang atteint");
+ok(!/classement|palmarès|meilleur/i.test(joint), "la modale ne compare personne : ce sont des paliers, pas un palmarès");
+await page.getByRole("button", { name: "Fermer la liste des rangs" }).click();
+await page.waitForTimeout(400);
+ok(await page.getByRole("heading", { name: "Les rangs" }).count() === 0, "la modale se ferme");
 /* La gamification ne doit JAMAIS déborder sur un vote, un élu, un parti ou une commune. */
 const texte = (await page.locator("body").innerText()).toLowerCase();
 for (const mot of ["classement", "palmarès", "meilleur", "score de vote", "bonne réponse", "mauvaise réponse", "tu as gagné"]) {

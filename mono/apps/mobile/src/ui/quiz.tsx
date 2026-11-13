@@ -15,13 +15,13 @@
  *     seuls : une coche ou une croix, et « Juste » ou « Faux » en toutes lettres ;
  *   - mouvement réduit : pas de transition. */
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Animated, Easing, Pressable, ScrollView, Text, View } from "react-native";
+import { Animated, Easing, Modal, Pressable, ScrollView, Text, View } from "react-native";
 import { router } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { GLOSSAIRE } from "@repere/core";
 import { mancheDuQuiz, TAILLE_MANCHE, type EntreeQuiz, type QuestionQuiz } from "../lib/quiz";
-import { POINTS_PAR_REPONSE_JUSTE, pointsAvantRangSuivant, rangPour } from "@repere/core";
+import { POINTS_PAR_REPONSE_JUSTE, pointsAvantRangSuivant, RANGS, rangPour } from "@repere/core";
 import { useProfil } from "../lib/profil";
 import { PartagerCarte } from "./partage/bouton-partage";
 import { QuizStory } from "./partage/variantes/quiz.story";
@@ -32,6 +32,41 @@ import { useMouvementReduit } from "./mouvement";
 /* La définition est « en gros » : la taille descend d'un cran quand elle est longue, pour tenir sans défiler. */
 const tailleEnonce = (n: number) => (n <= 80 ? 26 : n <= 130 ? 23 : n <= 170 ? 21 : 19);
 const pluriel = (n: number) => `${n} réponse${n > 1 ? "s" : ""} juste${n > 1 ? "s" : ""}`;
+
+/* LES RANGS, EN TOUTES LETTRES (13/11/2026, porteur). On montre la règle, et rien d'autre : ce sont
+ * des paliers de points, les mêmes pour tout le monde, et Repère ne sait rien des autres lecteurs. */
+function LesRangs({ ouvert, fermer, points }: { ouvert: boolean; fermer: () => void; points: number }) {
+  const atteint = rangPour(points);
+  return (
+    <Modal visible={ouvert} animationType="slide" onRequestClose={fermer} transparent={false}>
+      <ScrollView style={{ backgroundColor: couleurs.sol }} contentContainerStyle={{ padding: PAS * 5, gap: PAS * 4, maxWidth: 560, width: "100%", alignSelf: "center" }}>
+        <View style={{ flexDirection: "row", alignItems: "center", gap: PAS * 3 }}>
+          <Text style={[TYPO.affiche, { flex: 1 }]} accessibilityRole="header">Les rangs</Text>
+          <Pressable onPress={fermer} accessibilityRole="button" accessibilityLabel="Fermer la liste des rangs"
+            style={({ pressed }) => ({ minHeight: CIBLE, minWidth: CIBLE, alignItems: "center", justifyContent: "center", opacity: pressed ? 0.6 : 1 })}>
+            <Text style={[TYPO.corps, { fontFamily: POLICE.titre }]}>Fermer</Text>
+          </Pressable>
+        </View>
+        {RANGS.map(r => {
+          const ici = r.cle === atteint.cle;
+          return (
+            <View key={r.cle} testID="rang-ligne"
+              accessibilityLabel={`${r.nom}, ${r.max === null ? `${r.min} points et plus` : `de ${r.min} à ${r.max} points`}${ici ? ". Votre rang." : ""}`}
+              style={{ flexDirection: "row", alignItems: "center", gap: PAS * 3, padding: PAS * 4, borderRadius: RAYON.bloc,
+                backgroundColor: couleurs.carte, borderWidth: ici ? 2 : 1, borderColor: ici ? couleurs.encre : couleurs.trait }}>
+              <Ionicons name={ici ? "ribbon" : "ribbon-outline"} size={22} color={couleurs.encre} accessible={false} importantForAccessibility="no" />
+              <View style={{ flex: 1, gap: 2 }}>
+                <Text style={[TYPO.corps, { fontFamily: POLICE.titre }]}>{r.nom}{ici ? " — votre rang" : ""}</Text>
+                <Text style={TYPO.note}>{r.max === null ? `${r.min} points et plus` : `de ${r.min} à ${r.max} points`}</Text>
+              </View>
+            </View>
+          );
+        })}
+        <Text style={TYPO.micro}>Dix points par réponse juste. Vos points restent sur cet appareil : ils ne sont ni envoyés, ni comparés à ceux de quelqu'un d'autre.</Text>
+      </ScrollView>
+    </Modal>
+  );
+}
 
 export function Quiz({ categorieDe }: { categorieDe: (cle: string) => string }) {
   const entrees = useMemo<EntreeQuiz[]>(() => Object.entries(GLOSSAIRE as Record<string, { titre: string; corps: string }>)
@@ -45,12 +80,15 @@ export function Quiz({ categorieDe }: { categorieDe: (cle: string) => string }) 
   const [serie, setSerie] = useState(0);
   const [justes, setJustes] = useState(0);
   const [fini, setFini] = useState(false);
+  const [rangsOuverts, setRangsOuverts] = useState(false);
   const { profil, modifier } = useProfil();
   const points = profil ? profil.points : 0;
   const monRang = rangPour(points);
   /* Le rang au DÉBUT de la manche : c'est ce qui permet de dire « vous avez changé de rang » à la fin,
      sans rien enregistrer de plus. */
   const [rangDepart] = useState(() => rangPour(profil ? profil.points : 0).cle);
+  /* Le rang suivant, ou null au dernier : sert la barre de progression de fin de manche. */
+  const suivant = RANGS[RANGS.indexOf(monRang) + 1] || null;
   const monte = useRef(new Animated.Value(0)).current;
   const reduit = useMouvementReduit();
   const marges = useSafeAreaInsets();
@@ -147,6 +185,20 @@ export function Quiz({ categorieDe }: { categorieDe: (cle: string) => string }) 
             {justes * POINTS_PAR_REPONSE_JUSTE} points gagnés. Vous êtes {monRang.nom}
             {pointsAvantRangSuivant(points) !== null ? `, à ${pointsAvantRangSuivant(points)} points du rang suivant` : ""}.
           </Text>
+          {/* LA PROGRESSION VERS LE RANG SUIVANT (13/11/2026, porteur). C'est une barre de PROGRESSION,
+              pas une place dans une file : il n'y a personne d'autre dessus. */}
+          {suivant ? (
+            <View style={{ gap: PAS * 2 }} accessible accessibilityRole="progressbar" testID="quiz-progression"
+              accessibilityLabel={`${points} points sur ${suivant.min} pour devenir ${suivant.nom}`}
+              accessibilityValue={{ min: 0, max: suivant.min, now: points }}>
+              <Text style={[TYPO.corps, { fontFamily: POLICE.titre }]}>{points} / {suivant.min} points pour devenir {suivant.nom}</Text>
+              <View style={{ height: 12, borderRadius: 6, backgroundColor: couleurs.voile, overflow: "hidden" }}>
+                <View style={{ height: 12, borderRadius: 6, width: `${Math.min(100, Math.round((points / suivant.min) * 100))}%`, backgroundColor: couleurs.encre }} />
+              </View>
+            </View>
+          ) : (
+            <Text style={[TYPO.corps, { fontFamily: POLICE.titre }]} testID="quiz-progression">Vous êtes au dernier rang : {monRang.nom}.</Text>
+          )}
           {monRang.cle !== rangDepart ? (
             <Text style={[TYPO.corps, { fontFamily: POLICE.titre }]} testID="quiz-montee">Nouveau rang : {monRang.nom}.</Text>
           ) : null}
@@ -154,6 +206,12 @@ export function Quiz({ categorieDe }: { categorieDe: (cle: string) => string }) 
         </Animated.View>
         <View style={{ gap: PAS * 2 }}>
           {bouton("Nouvelle manche", rejouer)}
+          <Pressable onPress={() => setRangsOuverts(true)} accessibilityRole="button" accessibilityLabel="Voir les rangs et les points qu'ils demandent"
+            testID="voir-rangs"
+            style={({ pressed }) => ({ minHeight: CIBLE, borderRadius: RAYON.pastille, alignItems: "center", justifyContent: "center",
+              borderWidth: 1, borderColor: couleurs.trait, backgroundColor: couleurs.carte, opacity: pressed ? 0.7 : 1 })}>
+            <Text style={[TYPO.corps, { fontFamily: POLICE.titre }]}>Voir les rangs</Text>
+          </Pressable>
           {/* Le partage : une image, par le partage du téléphone. Rien d'autre ne quitte l'appareil. */}
           <PartagerCarte etiquette={`Partager mon rang : ${monRang.nom}`} libelle="Partager mon rang"
             repli={`J'ai atteint le rang de ${monRang.nom} sur Repère. Peux-tu faire mieux ?`}
@@ -163,6 +221,7 @@ export function Quiz({ categorieDe }: { categorieDe: (cle: string) => string }) 
             <Text style={[TYPO.note, { fontFamily: POLICE.texteGras, color: couleurs.encre }]}>Ouvrir le dictionnaire citoyen ›</Text>
           </Pressable>
         </View>
+        <LesRangs ouvert={rangsOuverts} fermer={() => setRangsOuverts(false)} points={points} />
       </ScrollView>
     );
   }

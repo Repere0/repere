@@ -69,13 +69,15 @@ export default function Bienvenue() {
         {etape === 0 ? (
           <>
             <View style={{ alignItems: "center", gap: PAS * 5 }}>
-              <Logo size={96} />
+              {/* Le logo officiel, ses trois éléments : cercle ivoire, anneau gris, point ivoire.
+                  La variante « mono » n'en a que deux — elle est faite pour les petits formats. */}
+              <Logo size={120} variant="sombre" />
               <Text style={[TYPO.affiche, { textAlign: "center" }]} accessibilityRole="header">Repère</Text>
               <Text style={[TYPO.corps, { textAlign: "center", fontSize: 18, lineHeight: 26 }]}>
                 Qui décide chez vous, et où va votre argent. Deux questions, des réponses sourcées.
               </Text>
             </View>
-            {bouton("Continuer", () => setEtape(1), "continuer-0")}
+            {bouton("Commencer", () => setEtape(1), "continuer-0")}
           </>
         ) : null}
 

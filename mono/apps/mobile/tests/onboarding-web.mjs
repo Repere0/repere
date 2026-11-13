@@ -25,23 +25,31 @@ const lireProfil = page => page.evaluate(() => JSON.parse(localStorage.getItem("
 /* 1. Démarrage, puis prénom donné */
 {
   const { contexte, page, erreurs, demandees } = await nouveau();
-  const t0 = Date.now();
   await page.goto(BASE + "/", { waitUntil: "commit" });
-  const voile = page.getByTestId("demarrage");
-  await voile.waitFor({ state: "attached", timeout: 10000 });
-  const pointeur = await voile.evaluate(e => getComputedStyle(e).pointerEvents);
-  const fond = await voile.evaluate(e => getComputedStyle(e).backgroundColor);
-  const vu = Date.now();
-  await voile.waitFor({ state: "detached", timeout: 5000 });
-  const duree = Date.now() - vu;
-  verifier(pointeur === "none", "démarrage : le voile ne capte aucun geste (pointer-events " + pointeur + ")");
-  verifier(fond === "rgb(20, 19, 17)", "démarrage : fond #141311 (" + fond + ")");
-  verifier(duree <= 1500, "démarrage : le voile a disparu en 1,5 s au plus (" + duree + " ms après son apparition, " + (Date.now() - t0) + " ms après l'ouverture)");
+  /* 13/11/2026 (porteur) : AU PREMIER LANCEMENT, AUCUN VOILE. L'écran 1 de la bienvenue montre déjà le
+     logo, avec un bouton : deux logos à la suite se lisaient comme un blocage. */
+  await page.waitForTimeout(1800);
+  verifier(await page.getByTestId("demarrage").count() === 0, "premier lancement : pas de voile de démarrage, l'écran 1 de la bienvenue le remplace");
 
   await page.waitForURL(/\/bienvenue/, { timeout: 10000 });
   /* ÉCRAN 1 : le logo et un bouton. Rien ici ne dépend d'une animation : un lecteur bloqué est impossible. */
   await page.getByTestId("continuer-0").waitFor({ timeout: 10000 });
   verifier(await page.getByRole("heading", { name: "Repère" }).count() === 1, "écran 1 : le logo et le nom");
+  /* LE LOGO OFFICIEL : trois éléments concentriques (cercle ivoire, anneau gris, point ivoire). Une
+     teinte sans gris réduisait le logo à un cercle et un point — défaut vu par le porteur le 13/11. */
+  const ronds = await page.evaluate(() => {
+    const h = [...document.querySelectorAll("h1,h2,[role=heading]")].find(e => /Repère/.test(e.textContent || ""));
+    const bloc = h && h.parentElement;
+    if (!bloc) return { n: -1, couleurs: [] };
+    const cercles = [...bloc.querySelectorAll("div")].filter(e => {
+      const c = getComputedStyle(e); const r = e.getBoundingClientRect();
+      return r.width > 8 && parseFloat(c.borderRadius) >= r.width / 2 - 1;
+    });
+    return { n: cercles.length, couleurs: cercles.map(e => { const c = getComputedStyle(e); return c.borderTopColor !== "rgba(0, 0, 0, 0)" ? c.borderTopColor : c.backgroundColor; }) };
+  });
+  verifier(ronds.n === 3, "écran 1 : le logo a ses TROIS éléments concentriques (" + ronds.n + ")");
+  verifier(ronds.couleurs.includes("rgb(156, 154, 146)"), "écran 1 : l'anneau intermédiaire est bien gris (" + ronds.couleurs.join(" / ") + ")");
+  verifier((await page.getByTestId("continuer-0").innerText()).trim() === "Commencer", "écran 1 : le bouton dit « Commencer »");
   if (CAP) await page.screenshot({ path: `${CAP}/bienvenue-0.png` });
   await page.getByTestId("continuer-0").click();
   /* ÉCRAN 2 : le prénom. */
@@ -73,8 +81,19 @@ const lireProfil = page => page.evaluate(() => JSON.parse(localStorage.getItem("
   const cles = await page.evaluate(() => Object.keys(localStorage));
   verifier(cles.every(k => k === "repere.profil" || k === "repere.departement"), "aucune autre clé de stockage (" + cles.join(", ") + ")");
   verifier(!demandees.some(u => /marie|H%C3%A9l/i.test(u)), "le prénom n'apparaît dans aucune adresse demandée (" + demandees.length + " requêtes)");
-  await page.reload({ waitUntil: "networkidle" });
-  await page.waitForTimeout(1500);
+  /* AU LANCEMENT SUIVANT, le voile reprend son rôle : il n'y a plus d'onboarding à afficher. */
+  await page.goto(BASE + "/", { waitUntil: "commit" });
+  const voile = page.getByTestId("demarrage");
+  await voile.waitFor({ state: "attached", timeout: 10000 });
+  const pointeur = await voile.evaluate(e => getComputedStyle(e).pointerEvents);
+  const fond = await voile.evaluate(e => getComputedStyle(e).backgroundColor);
+  const vu = Date.now();
+  await voile.waitFor({ state: "detached", timeout: 5000 });
+  const duree = Date.now() - vu;
+  verifier(pointeur === "none", "lancement suivant : le voile ne capte aucun geste (pointer-events " + pointeur + ")");
+  verifier(fond === "rgb(20, 19, 17)", "lancement suivant : fond #141311 (" + fond + ")");
+  verifier(duree <= 1500, "lancement suivant : le voile part en 1,5 s au plus (" + duree + " ms)");
+  await page.waitForTimeout(1200);
   verifier(!page.url().includes("/bienvenue") && await page.getByTestId("bonjour").count() === 1, "au lancement suivant : pas de question, le bonjour est là");
   verifier(erreurs.length === 0, "aucune erreur JavaScript" + (erreurs.length ? " (" + erreurs[0] + ")" : ""));
   await contexte.close();
