@@ -411,6 +411,9 @@ rm -rf site_engendre
   # publiees. Aucune transformation, aucune generation. Absent : l'application n'affiche rien.
   cp ../data/actus-hebdo.json ./data/actus-hebdo.json 2>/dev/null \
     || avertir "data/actus-hebdo.json absent - aucune actu locale publiee"
+  # ECHANTILLON (13/11/2026) : decrit dans le journal le plan de l'hemicycle et les donnees du Senat, avant de
+  # coder leur lecture. N'ecrit rien, n'echoue jamais.
+  (cd .. && node outils/echantillon_parlement.mjs) || true
   # RESUMES « EN CLAIR » (12/11/2026) - hors ligne : publie les seuls resumes valides par le porteur
   # (data/resumes/*.json), recontroles contre leur texte officiel. Un resume valide qui ne passe plus n'est pas
   # publie, et l'etape avertit.
