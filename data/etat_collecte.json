@@ -1,5 +1,12 @@
 {
  "v": 1,
  "maj": "2026-11-13",
- "etapes": {}
+ "etapes": {
+  "les projets finances par l'Etat n'ont pas ete rafraichis (voir ci-dessus)": {
+   "message": "les projets finances par l'Etat n'ont pas ete rafraichis (voir ci-dessus)",
+   "depuis": "2026-11-13",
+   "vu_le": "2026-11-13",
+   "jours": 1
+  }
+ }
 }
