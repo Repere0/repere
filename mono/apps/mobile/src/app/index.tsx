@@ -186,7 +186,7 @@ const ACCES: { ouvrir: () => void; texte: string; etiquette: string; icone: keyo
   /* 09/11/2026 (porteur) : la tuile ouvre la page de la présidentielle ; le guide « Ma voix » y est à un geste. */
   { ouvrir: () => router.push("/presidentielle-2027"), texte: "Présidentielle 2027", etiquette: "Présidentielle 2027 : candidats, débats, réunions publiques, comment voter", icone: "flag", couleur: couleurs.dept },
   { ouvrir: () => router.push("/pour-vous"), texte: "Pour vous", etiquette: "Pour vous : ce qui a été publié selon votre vue", icone: "bookmark", couleur: couleurs.region },
-  { ouvrir: () => router.push("/scrutins"), texte: "L'Assemblée", etiquette: "L'Assemblée : sa composition et ses votes publics", icone: "business", couleur: couleurs.france },
+  { ouvrir: () => router.push("/scrutins"), texte: "Le Parlement", etiquette: "Le Parlement : l'Assemblée nationale et le Sénat, leur composition et les votes publics", icone: "business", couleur: couleurs.france },
 ];
 
 /* UN SEUL ACCUEIL (11/11/2026, audit d'architecture). Avec une commune gardée sur le téléphone,

@@ -105,6 +105,13 @@ export function adresseDecoupageIdf() { return `${BASE_DONNEES}/decoupage-idf.js
 /* LES GROUPES POLITIQUES DES DEPUTES (V62) : un seul fichier pour toute la France, comme les
    deputes. Sa source et sa date vivent dedans (invariant 4). */
 export function adresseDeputesGroupes() { return `${BASE_DONNEES}/deputes-groupes.json`; }
+/* LE PLAN DE L'HEMICYCLE (13/11/2026) : un seul fichier pour toute la France, la place reelle de chaque
+   siege dans la salle et le depute qui l'occupe. Sa source et sa date vivent dedans (invariant 4).
+   Il ne part qu'a l'ouverture de l'ecran du Parlement. */
+export function adresseHemicyclePlan() { return `${BASE_DONNEES}/hemicycle-plan.json`; }
+/* LES SENATEURS (13/11/2026) : un seul fichier pour toute la France, comme les deputes. Sa source, sa
+   licence relevee et sa date vivent dedans (invariant 4). Il ne part qu'a l'ouverture de l'onglet Senat. */
+export function adresseSenateurs() { return `${BASE_DONNEES}/senateurs.json`; }
 /* LES COMPTES REGIONAUX : un seul petit fichier, commun a toute la France —
    comme scrutins.json. Les comptes DEPARTEMENTAUX, eux, vivent directement
    dans chaque paquet departemental (`adresseDepartement`) : un departement ne
@@ -521,6 +528,12 @@ export async function chargerDecoupageIdf({ delaiMs = 8000 } = {}) {
 }
 export async function chargerDeputesGroupes({ delaiMs = 8000 } = {}) {
   return chargerSocle("socle:DGRP", adresseDeputesGroupes(), delaiMs);
+}
+export async function chargerHemicyclePlan({ delaiMs = 8000 } = {}) {
+  return chargerSocle("socle:HPLAN", adresseHemicyclePlan(), delaiMs);
+}
+export async function chargerSenateurs({ delaiMs = 8000 } = {}) {
+  return chargerSocle("socle:SEN", adresseSenateurs(), delaiMs);
 }
 export async function chargerComptesRegions({ delaiMs = 8000 } = {}) {
   return chargerSocle("socle:CTR", adresseComptesRegions(), delaiMs);

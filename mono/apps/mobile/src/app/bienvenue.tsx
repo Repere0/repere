@@ -58,7 +58,7 @@ export default function Bienvenue() {
           </Pressable>
           <Pressable onPress={() => suite("")} accessibilityRole="button" accessibilityLabel="Passer, sans donner de prénom"
             style={({ pressed }) => ({ minHeight: CIBLE, alignItems: "center", justifyContent: "center", ...enfonce(pressed) })}>
-            <Text style={[TYPO.note, { color: couleurs.sourd, textDecorationLine: "underline" }]}>Passer</Text>
+            <Text style={[TYPO.note, { color: couleurs.sourd, fontFamily: POLICE.texteGras }]}>Passer</Text>
           </Pressable>
         </View>
       </Animated.View>

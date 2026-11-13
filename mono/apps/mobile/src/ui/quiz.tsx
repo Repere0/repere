@@ -113,7 +113,7 @@ export function Quiz({ categorieDe }: { categorieDe: (cle: string) => string }) 
           {bouton("Nouvelle manche", rejouer)}
           <Pressable onPress={() => router.push("/dictionnaire")} accessibilityRole="link" accessibilityLabel="Ouvrir le dictionnaire citoyen"
             style={({ pressed }) => ({ minHeight: CIBLE, alignItems: "center", justifyContent: "center", opacity: pressed ? 0.7 : 1 })}>
-            <Text style={[TYPO.note, { textDecorationLine: "underline" }]}>Ouvrir le dictionnaire citoyen</Text>
+            <Text style={[TYPO.note, { fontFamily: POLICE.texteGras, color: couleurs.encre }]}>Ouvrir le dictionnaire citoyen ›</Text>
           </Pressable>
         </View>
       </ScrollView>

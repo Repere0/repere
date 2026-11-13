@@ -411,9 +411,15 @@ rm -rf site_engendre
   # publiees. Aucune transformation, aucune generation. Absent : l'application n'affiche rien.
   cp ../data/actus-hebdo.json ./data/actus-hebdo.json 2>/dev/null \
     || avertir "data/actus-hebdo.json absent - aucune actu locale publiee"
-  # ECHANTILLON (13/11/2026) : decrit dans le journal le plan de l'hemicycle et les donnees du Senat, avant de
-  # coder leur lecture. N'ecrit rien, n'echoue jamais.
-  (cd .. && node outils/echantillon_parlement.mjs) || true
+  # PLAN DE L'HEMICYCLE (13/11/2026) - la place reelle de chaque depute dans la salle, relevee sur le plan
+  # publie par l'Assemblee. Reseau requis. Page qui change de forme, moins de 500 sieges ou moins de 90 %
+  # rattaches a un depute : rien n'est ecrit, et l'ecran retombe sur l'arc en disant qu'il est indicatif.
+  node scripts/collecte-hemicycle.mjs ./data \
+    || avertir "plan de l'hemicycle non collecte (assemblee-nationale.fr) - l'hemicycle reste une disposition indicative"
+  # SENATEURS (13/11/2026) - api-senat, avec la LICENCE RELEVEE sur data.senat.fr a chaque passage. Reseau
+  # requis. Aucune licence lisible, moins de 300 senateurs ou moins de 95 % avec un groupe : rien n'est ecrit.
+  node scripts/collecte-senat.mjs ./data \
+    || avertir "senateurs non collectes (senat.fr) - l'onglet Senat dira que la liste n'est pas disponible"
   # RESUMES « EN CLAIR » (12/11/2026) - hors ligne : publie les seuls resumes valides par le porteur
   # (data/resumes/*.json), recontroles contre leur texte officiel. Un resume valide qui ne passe plus n'est pas
   # publie, et l'etape avertit.

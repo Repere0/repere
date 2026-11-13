@@ -27,9 +27,9 @@ await suite.waitFor({ timeout: 5000 });
 const bs = await suite.boundingBox();
 ok(bs.y + bs.height <= 844, "après la réponse : « Question suivante » est à l'écran sans défiler (bas à " + Math.round(bs.y + bs.height) + " px)");
 const vert = await page.getByTestId("quiz-carte-juste").evaluate(e => getComputedStyle(e).backgroundColor);
-ok(vert === "rgb(74, 124, 89)", "la bonne réponse passe au vert #4A7C59 (" + vert + ")");
+ok(vert === "rgb(74, 124, 89)", "la bonne réponse passe au vert du quiz (" + vert + ")");
 const rouges = page.getByTestId("quiz-carte-faux");
-if (await rouges.count()) ok(await rouges.first().evaluate(e => getComputedStyle(e).backgroundColor) === "rgb(170, 74, 74)", "la réponse fausse passe au rouge #AA4A4A");
+if (await rouges.count()) ok(await rouges.first().evaluate(e => getComputedStyle(e).backgroundColor) === "rgb(170, 74, 74)", "la réponse fausse passe au rouge du quiz");
 ok(await page.getByTestId("quiz-carte-juste").getByText("Juste", { exact: true }).count() === 1, "la couleur n'est pas seule : « Juste » est écrit sur la carte");
 if (process.argv[3]) await page.screenshot({ path: process.argv[3] + "/quiz-repondu.png" });
 /* Une manche de cinq questions, puis le résultat, qui ne quitte pas l'écran. */

@@ -176,6 +176,15 @@ test("invariant 7 — palette gelée ; couleurs de groupes seulement dans palett
   const badge = [...blocBadge.matchAll(/#[0-9a-fA-F]{6}\b/g)].map(m => m[0].toLowerCase()).filter(h => amplitude(h) > AMPLITUDE_MAX);
   assert.deepEqual(badge, ["ffedd5", "9a3412", "fb923c", "3b2210", "fdba74", "c2410c"].map(h => "#" + h), "le badge de déclaration de candidature porte les couleurs de la décision du 12/11/2026");
   for (const h of badge) jauge.push(h);
+  /* 13/11/2026 (porteur, ADR 0009) : le quiz civique a deux couleurs de retour, dans palette.ts seulement.
+     Une question de vocabulaire a une bonne reponse : ces teintes disent juste ou faux, jamais un vote, une
+     position, un elu, un parti ou une commune. Elles sont distinctes de l'emeraude et du corail des votes. */
+  const blocQuiz = (lire("apps/mobile/src/lib/palette.ts").match(/export const COULEURS_QUIZ[\s\S]*?\}\);/) || [""])[0];
+  const quiz = [...blocQuiz.matchAll(/#[0-9a-fA-F]{6}\b/g)].map(m => m[0].toLowerCase()).filter(h => amplitude(h) > AMPLITUDE_MAX);
+  assert.deepEqual(quiz, ["4a7c59", "aa4a4a"].map(h => "#" + h), "le quiz porte les couleurs de la décision du 13/11/2026 (ADR 0009)");
+  for (const h of quiz) jauge.push(h);
+  for (const h of ["00a896", "be123c"]) assert.ok(!quiz.includes("#" + h), "une couleur de vote servirait au quiz");
+
   /* L'émeraude du « pour » est réservée aux données de vote : hors du bloc COULEURS_VOTE, elle
      n'apparaît nulle part dans palette.ts (ni accent, ni jauge, ni neutre). */
   const horsVote = lire("apps/mobile/src/lib/palette.ts").replace(blocVote, "").replace(/\/\*[\s\S]*?\*\//g, "");
@@ -352,13 +361,19 @@ test("invariant 4 — aucune donnée n'est servie sans source déclarée", () =>
      dans l'adresse.
      La quinzieme, /deputes-groupes.json, est ajoutee le 03/11/2026 (V62, bloc 3) : le groupe de
      chaque depute, produit par scripts/collecte-groupes.mjs depuis AMO30. Fichier entier, sa source
-     et sa date dedans (controle ci-dessus). */
+     et sa date dedans (controle ci-dessus).
+     La seizieme, /hemicycle-plan.json, est ajoutee le 13/11/2026 : la place reelle de chaque siege
+     dans l'hemicycle, relevee sur le plan publie par l'Assemblee (scripts/collecte-hemicycle.mjs).
+     Fichier entier, sa source et sa date dedans (controle ci-dessous).
+     La dix-septieme, /senateurs.json, est ajoutee le 13/11/2026 : les senateurs, leur groupe et leur
+     siege, produits par scripts/collecte-senat.mjs depuis api-senat. Fichier entier, sa source, sa
+     licence RELEVEE a la collecte et sa date dedans. */
   const client = lire("packages/data-utils/src/client.js");
   const composees = [...client.matchAll(/\$\{BASE_DONNEES\}(\/[A-Za-z0-9_${}./-]*)/g)].map(m => m[1]);
   assert.deepEqual([...new Set(composees)].sort(),
     ["/actuelles-rss.json", "/actus-hebdo.json", "/agenda-an.json", "/agregats-regionaux.json", "/calendrier-senat.json", "/codes-postaux.json", "/communes-beta.json", "/comptes-regions.json", "/decoupage-idf.json", "/departments/${d}.json",
-     "/deputes-groupes.json", "/deputes.json", "/elus-regions/${c}.json", "/evenements.json", "/index.json", "/mairies-idf.json",
-     "/photos-elus/${d}.json", "/presidentielle-2027/${fichier}.json", "/projets/${d}.json", "/questions-gouvernement-index.json", "/questions-gouvernement/${lotPadded}.json", "/resumes-clairs.json", "/scrutins-details/${lotPadded}.json", "/scrutins-index.json", "/scrutins-solennels-recents.json", "/scrutins-solennels.json", "/scrutins.json", "/scrutins/${d}.json"],
+     "/deputes-groupes.json", "/deputes.json", "/elus-regions/${c}.json", "/evenements.json", "/hemicycle-plan.json", "/index.json", "/mairies-idf.json",
+     "/photos-elus/${d}.json", "/presidentielle-2027/${fichier}.json", "/projets/${d}.json", "/questions-gouvernement-index.json", "/questions-gouvernement/${lotPadded}.json", "/resumes-clairs.json", "/scrutins-details/${lotPadded}.json", "/scrutins-index.json", "/scrutins-solennels-recents.json", "/scrutins-solennels.json", "/scrutins.json", "/scrutins/${d}.json", "/senateurs.json"],
     "client.js compose une adresse de donnees inattendue : " + composees.join(", "));
   const sources = existe("data/index.json") ? (JSON.parse(lire("data/index.json")).sources || {}) : {};
   /* /photos-elus/{dep}.json (D27, ADR 0004) : chaque photo porte son auteur et sa licence,
@@ -1773,4 +1788,18 @@ test("presidentielle 2027 — vide, absent et mal forme ne sont jamais confondus
   assert.equal(lu.meetings.length, 0, "une reunion pour un candidat hors liste est ecartee");
   assert.equal(lu.meta, null, "une meta sans date ni source n'est pas retenue");
   assert.equal(lu.ecartes, 3);
+});
+
+test("invariant 7 — les groupes du Sénat n'ajoutent aucune couleur ; la correspondance est écrite", () => {
+  /* 13/11/2026 : l'onglet Sénat réutilise les teintes de COULEURS_GROUPES, jamais une teinte neuve.
+     Le contrôle le prouve : chaque valeur de la table du Sénat est une valeur de la table des groupes. */
+  const palette = lire("apps/mobile/src/lib/palette.ts");
+  const bloc = (palette.match(/export const COULEURS_GROUPES_SENAT[\s\S]*?\}\);/) || [""])[0];
+  assert.ok(bloc, "la table des groupes du Sénat n'est plus dans palette.ts");
+  assert.equal((bloc.match(/#[0-9a-fA-F]{6}\b/g) || []).length, 0,
+    "un groupe du Sénat porte une couleur écrite à la main : elle doit venir de COULEURS_GROUPES (invariant 7)");
+  const refs = [...bloc.matchAll(/COULEURS_GROUPES(?:\.(\w+)|\["([^"]+)"\])/g)].map(m => m[1] || m[2]);
+  assert.ok(refs.length >= 10, `la table du Sénat renvoie à ${refs.length} groupes seulement`);
+  const groupes = (palette.match(/export const COULEURS_GROUPES[^_][\s\S]*?\}\);/) || [""])[0];
+  for (const r of refs) assert.ok(new RegExp(`(^|[\\s{,])"?${r}"?\\s*:`, "m").test(groupes), `« ${r} » n'existe pas dans COULEURS_GROUPES`);
 });
