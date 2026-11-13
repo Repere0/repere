@@ -33,10 +33,13 @@ await page.getByText("Aller plus loin").first().waitFor({ timeout: 15000 });
   const ctxSouris = await navigateur.newContext({ viewport: { width: 390, height: 844 } });
   const p2 = await ctxSouris.newPage();
   await p2.goto(BASE + "/bienvenue", { waitUntil: "networkidle" });
-  /* Texte secondaire à 14 px (page de bienvenue) */
-  const note = p2.getByText("Facultatif. Il reste sur cet appareil", { exact: false }).first();
-  verifier(await note.evaluate(e => getComputedStyle(e).fontSize) === "14px", "texte secondaire : 14 px");
-  const terminer = p2.getByRole("button", { name: "C'est parti" });
+  /* Les trois écrans de bienvenue, puis le retour d'appui sur le dernier bouton. */
+  await p2.getByTestId("continuer-0").click();
+  await p2.getByRole("button", { name: /^Passer, sans/ }).click();
+  const note = p2.getByText("Zéro traceur", { exact: false }).first();
+  await note.waitFor({ timeout: 10000 });
+  verifier(await note.evaluate(e => getComputedStyle(e).fontSize) === "15px", "texte de l'écran des valeurs : 15 px");
+  const terminer = p2.getByTestId("continuer-2");
   await terminer.scrollIntoViewIfNeeded();
   const boite = await terminer.boundingBox();
   await p2.mouse.move(boite.x + boite.width / 2, boite.y + boite.height / 2);

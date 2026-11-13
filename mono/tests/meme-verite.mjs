@@ -28,6 +28,8 @@ import {
 const require = createRequire(import.meta.url);
 const { chromium } = require("playwright");
 
+import { passerBienvenue } from "../apps/mobile/tests/_premier-lancement.mjs";
+
 const [SITE, APP, DONNEES = path.resolve(import.meta.dirname, "../data")] = process.argv.slice(2);
 if (!SITE || !APP) { console.error("usage : node tests/meme-verite.mjs <site> <app> [data]"); process.exit(2); }
 
@@ -165,15 +167,11 @@ async function texteApp(nav, { nom }) {
   const c = await nav.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, reducedMotion: "reduce" });
   const p = await c.newPage();
   await p.goto(APP, { waitUntil: "networkidle" });
-  /* 13/11/2026 (ADR 0009) : au premier lancement, l'accueil laisse la place a la question du prenom.
-     On repond « Passer », comme un lecteur presse : ce controle compare ce que le lecteur LIT, pas les
-     reglages. L'aide de apps/mobile/tests n'est pas importable ici (autre dossier, autre banc). */
-  await p.waitForURL(/\/bienvenue/, { timeout: 5000 }).catch(() => {});
-  if (p.url().includes("/bienvenue")) {
-    await p.getByRole("button", { name: /^Passer, sans/ }).click();
-    await p.waitForURL(u => !String(u).includes("/bienvenue"), { timeout: 10000 });
-    await p.waitForLoadState("networkidle").catch(() => {});
-  }
+  /* Au premier lancement, l'accueil laisse la place a l'ecran de bienvenue. On le traverse avec LA MEME
+     AIDE que les tests de apps/mobile : elle a change deux fois en un jour (ADR 0009 puis trois ecrans),
+     et les deux fois ce fichier-ci l'a appris par une CI rouge, parce qu'il en gardait sa propre copie.
+     Une seule fonction, un seul endroit a corriger. */
+  await passerBienvenue(p);
   /* L'accueil ne montre le champ qu'apres « Chercher une commune » (c7ee4d0), comme parcours-web. */
   if (!(await p.getByLabel(/Où habitez-vous/).isVisible())) await p.getByRole("button", { name: "Chercher une commune" }).first().click();
   await p.getByLabel(/Où habitez-vous/).fill(nom);
@@ -189,9 +187,22 @@ async function texteApp(nav, { nom }) {
     if (!(await b.count())) continue;              /* absence dite par une phrase sur l'accueil */
     await b.first().click();
     await p.waitForTimeout(900);
-    const lu = await toutLire(p);
+    let lu = await toutLire(p);
     t += "\n" + lu.t;
     feuilles += lu.n;
+    /* 13/11/2026 : « Où va cet argent » ne montre plus que les trois aides les plus élevées, et range les
+       autres derriere « Voir tous les projets (N) » (decision du porteur). La MEME VERITE est toujours la :
+       elle est a un geste. Le controle fait ce geste, pour continuer a exiger TOUTES les phrases de projet. */
+    const tous = p.getByRole("button", { name: /^Voir tous les projets/ });
+    if (await tous.count()) {
+      await tous.first().click();
+      await p.waitForTimeout(900);
+      /* On LIT la feuille, on ne la fouille pas : toutLire ouvre toutes les feuilles de source, et il n'y
+         en a pas ici — ses clics tombaient sur les titres de projet. Les phrases suffisent. */
+      t += "\n" + (await p.locator("body").innerText());
+      await p.getByRole("button", { name: "Fermer la liste des projets" }).click();
+      await p.waitForTimeout(400);
+    }
     /* Qui décide et Le calendrier sont des onglets (13/10/2026) : retour par la barre basse. */
     if (action === "Qui décide" || action === "Le calendrier") await p.getByText("Aujourd'hui", { exact: true }).last().click();
     else await p.getByRole("button", { name: "Revenir à l'écran Aujourd'hui" }).last().click();

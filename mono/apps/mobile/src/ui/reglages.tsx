@@ -82,6 +82,14 @@ function ChoixAffichage({ visible, onFermer }: { visible: boolean; onFermer: () 
           >
             <Text style={s.optionTexte}>Confidentialité</Text>
           </Pressable>
+          {/* 13/11/2026 (porteur) : « Soutenir Repère ». Aucun paiement n'y est encaissé (voir l'écran). */}
+          <Pressable
+            onPress={() => { onFermer(); router.push("/soutenir"); }}
+            accessibilityRole="link"
+            style={({ pressed }) => [s.option, pressed && enfonce(true)]}
+          >
+            <Text style={s.optionTexte}>Soutenir Repère</Text>
+          </Pressable>
           <Pressable
             onPress={() => { onFermer(); router.push("/a-propos"); }}
             accessibilityRole="link"

@@ -13,6 +13,9 @@ await page.getByRole("radio").first().waitFor({ timeout: 15000 });
 ok(/\/quiz$/.test(page.url()), "la carte de l'accueil ouvre /quiz (" + page.url() + ")");
 ok(await page.getByRole("radio").count() === 4, "quatre propositions");
 ok(await page.getByRole("progressbar").count() === 1, "une barre de progression");
+/* ─── 13/11/2026 (ADR 0010) : points et rangs, dans repere.profil et nulle part ailleurs ─── */
+ok((await page.getByTestId("quiz-rang-nom").innerText()).trim() === "Néo-citoyen", "on commence Néo-citoyen");
+ok((await page.getByTestId("quiz-points").innerText()).trim() === "0 pts", "on commence à zéro point");
 ok((await page.getByTestId("quiz-serie").innerText()).trim() === "0", "la série part de zéro, en mémoire");
 ok((await page.getByTestId("quiz-rang").innerText()).trim() === "1/5", "progression : 1/5");
 /* Tout sur un écran : la dernière carte et la place du bouton finissent dans les 844 px, et rien ne défile. */
@@ -38,6 +41,21 @@ await page.getByRole("button", { name: "Voir le résultat" }).click();
 await page.getByText("Manche terminée").first().waitFor({ timeout: 5000 });
 ok(await page.getByRole("heading", { name: /^\d réponses? justes? sur 5$/ }).count() === 1, "fin de manche : le nombre de réponses justes sur 5");
 ok(await page.getByRole("button", { name: "Nouvelle manche" }).count() === 1, "fin de manche : « Nouvelle manche »");
+const bilan = (await page.getByTestId("quiz-bilan").innerText()).replace(/\s+/g, " ");
+ok(/\d+ points gagnés/.test(bilan) && /Vous êtes (Néo-citoyen|Citoyen|Super Citoyen|Sage)/.test(bilan), "fin de manche : les points et le rang (« " + bilan.trim() + " »)");
+/* Le test répond au hasard (première carte) : on compare donc les points au nombre de justes annoncé. */
+const justes = Number((await page.getByRole("heading", { name: /réponses? justes? sur 5/ }).innerText()).match(/^(\d+)/)[1]);
+const profil = await page.evaluate(() => JSON.parse(localStorage.getItem("repere.profil") || "null"));
+ok(profil && profil.points === justes * 10, `${justes} réponse(s) juste(s) = ${justes * 10} points dans repere.profil (${profil && profil.points})`);
+const apres = await page.evaluate(() => Object.keys(localStorage).concat(Object.keys(sessionStorage)));
+ok(apres.every(k => ["repere.departement", "repere.profil"].includes(k)), "aucune clé de stockage en plus pour les points (invariant 2) : " + apres.join(","));
+ok(await page.getByRole("button", { name: /^Partager mon rang/ }).count() === 1, "fin de manche : le partage du rang");
+/* La gamification ne doit JAMAIS déborder sur un vote, un élu, un parti ou une commune. */
+const texte = (await page.locator("body").innerText()).toLowerCase();
+for (const mot of ["classement", "palmarès", "meilleur", "score de vote", "bonne réponse", "mauvaise réponse", "tu as gagné"]) {
+  ok(!texte.includes(mot), `aucun mot de classement ni de récompense à l'écran : « ${mot} »`);
+}
+
 const cles = await page.evaluate(() => Object.keys(localStorage));
 ok(cles.every(k => ["repere.departement", "repere.profil"].includes(k)), "aucune clé de stockage en plus (" + cles.join(",") + ")");
 await page.goto(BASE + "/dictionnaire", { waitUntil: "networkidle" });

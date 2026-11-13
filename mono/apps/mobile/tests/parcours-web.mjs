@@ -129,8 +129,10 @@ for (const largeur of [360, 390, 430]) {
   /* 13/11/2026 (ADR 0009) : premier lancement sans profil -> la question du prénom, avant l'accueil. On répond,
      puis on vérifie que le prénom est gardé sur l'appareil, et là seulement, et que l'accueil dit bonjour. */
   await page.waitForURL(/\/bienvenue/, { timeout: 10000 });
+  await page.getByTestId("continuer-0").click();
   await page.getByLabel(/Votre prénom/).fill("  Léa-Rose ");
-  await page.getByRole("button", { name: "C'est parti" }).click();
+  await page.getByTestId("continuer-1").click();
+  await page.getByTestId("continuer-2").click();
   await page.getByTestId("bonjour").waitFor({ timeout: 10000 });
   const profil = await page.evaluate(() => localStorage.getItem("repere.profil"));
   verifier(profil && JSON.parse(profil).prenom === "Léa-Rose",

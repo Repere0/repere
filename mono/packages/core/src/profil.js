@@ -30,11 +30,47 @@ export const PROFIL_DEFAUT = {
   /* 13/11/2026 (porteur, ADR 0009) : le prénom que le lecteur a bien voulu donner, pour un « Bonjour ». Facultatif,
      vide par défaut, gardé sur l'appareil seulement, jamais transmis. */
   prenom: "",
+  /* 13/11/2026 (ADR 0010) : les points du quiz civique, sur l'appareil seulement. */
+  points: 0,
 };
 
 /* Un prénom affichable : lettres, espaces, traits d'union et apostrophes, 24 caractères au plus. Tout le reste
    (chiffres, balises, adresses) rend une chaîne vide : ce champ ne garde pas autre chose qu'un prénom. */
 export const PRENOM_MAX = 24;
+
+/* ─── LE QUIZ CIVIQUE : POINTS ET RANGS (13/11/2026, décision du porteur, invariant 6 amendé) ────────
+ * +10 points par réponse juste au quiz du dictionnaire. Les points vivent dans repere.profil, sur
+ * l'appareil : PAS de troisième clé de stockage (invariant 2), aucun rang comparé entre lecteurs, rien
+ * qui parte sur le réseau. Ils ne portent QUE sur du vocabulaire institutionnel : jamais un vote, un
+ * élu, un parti ou un territoire — c'est la limite exacte de l'amendement (ADR 0010).
+ * Un total illisible ou négatif revient à 0 : on ne répare pas un compteur en silence vers le haut. */
+export const POINTS_PAR_REPONSE_JUSTE = 10;
+export const POINTS_MAX = 1000000;
+export const RANGS = Object.freeze([
+  { cle: "neo", nom: "Néo-citoyen", min: 0, max: 50 },
+  { cle: "citoyen", nom: "Citoyen", min: 51, max: 200 },
+  { cle: "super", nom: "Super Citoyen", min: 201, max: 500 },
+  { cle: "sage", nom: "Sage", min: 501, max: null },
+]);
+
+export function nettoyerPoints(v) {
+  const n = typeof v === "number" ? v : Number(v);
+  if (!Number.isFinite(n) || n < 0) return 0;
+  return Math.min(Math.floor(n), POINTS_MAX);
+}
+
+/* Le rang d'un total de points. Toujours un rang : 0 point, c'est « Néo-citoyen ». */
+export function rangPour(points) {
+  const p = nettoyerPoints(points);
+  return RANGS.find(r => p >= r.min && (r.max === null || p <= r.max)) || RANGS[0];
+}
+
+/* Les points qui restent avant le rang suivant, ou null au dernier rang. */
+export function pointsAvantRangSuivant(points) {
+  const p = nettoyerPoints(points);
+  const i = RANGS.indexOf(rangPour(p));
+  return i < RANGS.length - 1 ? RANGS[i + 1].min - p : null;
+}
 export function nettoyerPrenom(v) {
   if (typeof v !== "string") return "";
   const t = v.replace(/[\u2019\u02BC]/g, "'").replace(/\s+/g, " ").trim();
@@ -62,6 +98,7 @@ export function valideProfil(v) {
     /* D57 (V31) : thèmes d'intérêt, parmi THEMES, sans doublon. */
     themes: Array.isArray(src.themes) ? [...new Set(src.themes)].filter(t => THEMES.includes(t)) : [],
     prenom: nettoyerPrenom(src.prenom),
+    points: nettoyerPoints(src.points),
   };
   for (const k of Object.keys(out)) if (out[k] === undefined) out[k] = PROFIL_DEFAUT[k];
   return out;

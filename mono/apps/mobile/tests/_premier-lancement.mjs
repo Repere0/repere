@@ -4,7 +4,10 @@
 export async function passerBienvenue(page) {
   await page.waitForURL(/\/bienvenue/, { timeout: 2500 }).catch(() => {});
   if (!page.url().includes("/bienvenue")) return false;
+  /* 13/11/2026 : trois ecrans. Logo -> prenom (passe) -> valeurs -> l'application. */
+  await page.getByTestId("continuer-0").click();
   await page.getByRole("button", { name: /^Passer, sans/ }).click();
+  await page.getByTestId("continuer-2").click();
   await page.waitForURL(u => !String(u).includes("/bienvenue"), { timeout: 10000 });
   await page.waitForLoadState("networkidle").catch(() => {});
   return true;

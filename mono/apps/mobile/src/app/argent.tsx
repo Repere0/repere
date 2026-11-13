@@ -11,7 +11,7 @@
  * sous-titre, calcul) restent intactes au niveau 3, pour que les deux supports
  * disent la meme chose. */
 import { useState } from "react";
-import { Linking, Pressable, Text, View } from "react-native";
+import { FlatList, Linking, Modal, Pressable, Text, TextInput, View } from "react-native";
 import { Stack } from "expo-router";
 import {
   chiffresComptes, etatDette, comptesAbsents, comptesIncoherents, comptesInsuffisants, diffEuros, eurosArrondis,
@@ -19,11 +19,12 @@ import {
   NOTE_EVOLUTION, NOTE_FINANCEMENT, nomDispositif, parHabitant, partReperee, perimetreChange, phraseEcartes,
   phraseProjetLocal, rapports, sousTitreRapports, euros, CALCUL_REPERE, LIBELLES, exercicePrecedent,
 } from "@repere/core";
-import { Carte, Definitions, Vide } from "../lib/composants";
+import { Bouton, Carte, Definitions, Vide } from "../lib/composants";
 import { PROJETS_PAS_ARRIVES, projetsAucun } from "../lib/absences";
 import { srcComptes, srcComptesPublies, srcProjets } from "../lib/sources";
 import { useCommuneChoisie } from "../lib/useCommune";
-import { ACCENTS, CIBLE, couleurs, PAS, POLICE, TYPO } from "../lib/theme";
+import { ACCENTS, CIBLE, couleurs, PAS, POLICE, RAYON, TYPO } from "../lib/theme";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Onglets } from "../ui/stitch";
 import { AvecDonnees, Page, Question } from "../ui/page";
 import { DateDonnee } from "../ui/fraicheur";
@@ -37,6 +38,87 @@ import { enfonce } from "../ui/mouvement";
 
 type Rapport = { l: string; v: string; d: string };
 /* Le sigle seul ne dit rien au lecteur : nom complet d'abord, sigle entre parenthèses (nom publié par la source). */
+export const PROJETS_EN_TETE = 3;
+
+/* TOUTES LES AIDES, DANS UNE FEUILLE QUI SE CHERCHE ET SE FILTRE (13/11/2026, porteur).
+ * Vingt-deux projets à la suite faisaient défiler l'écran sans fin. Ici : un champ de recherche sur
+ * l'intitulé, et un filtre par dispositif (DETR, DSIL…) construit à partir des SEULS dispositifs
+ * présents dans la liste — jamais une catégorie inventée. L'ordre reste celui de la source. */
+function ToutesLesAides({ ouvert, fermer, liste, nom, nomDe }: {
+  ouvert: boolean; fermer: () => void; liste: Projet[]; nom: string; nomDe: (code: string) => string;
+}) {
+  const [q, setQ] = useState("");
+  const [dispositif, setDispositif] = useState<string | null>(null);
+  const marges = useSafeAreaInsets();
+  const sansAccents = (t: string) => t.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+  const dispositifs = [...new Set(liste.map(p => p.dispositif).filter(Boolean))].sort((a, b) => String(a).localeCompare(String(b), "fr"));
+  const filtres = liste.filter(p =>
+    (!dispositif || p.dispositif === dispositif)
+    && (!q.trim() || sansAccents(String(p.intitule || "")).includes(sansAccents(q.trim()))));
+  return (
+    <Modal visible={ouvert} animationType="slide" onRequestClose={fermer} transparent={false}>
+      <View style={{ flex: 1, backgroundColor: couleurs.sol, paddingTop: marges.top + PAS * 3, paddingBottom: marges.bottom }}>
+        <View style={{ paddingHorizontal: PAS * 5, gap: PAS * 3 }}>
+          <View style={{ flexDirection: "row", alignItems: "center", gap: PAS * 3 }}>
+            <Text style={[TYPO.question, { flex: 1 }]} accessibilityRole="header">Les {liste.length} projets aidés</Text>
+            <Pressable onPress={fermer} accessibilityRole="button" accessibilityLabel="Fermer la liste des projets"
+              style={({ pressed }) => ({ minHeight: CIBLE, minWidth: CIBLE, alignItems: "center", justifyContent: "center", opacity: pressed ? 0.6 : 1 })}>
+              <Text style={[TYPO.corps, { fontFamily: POLICE.titre }]}>Fermer</Text>
+            </Pressable>
+          </View>
+          <TextInput value={q} onChangeText={setQ} placeholder="Rechercher un projet" placeholderTextColor={couleurs.sourd}
+            accessibilityLabel="Rechercher un projet par son intitulé" testID="recherche-projets"
+            style={{ minHeight: CIBLE, borderRadius: RAYON.bloc, borderWidth: 1, borderColor: couleurs.trait, backgroundColor: couleurs.carte,
+              paddingHorizontal: PAS * 4, fontSize: 16, fontFamily: POLICE.texte, color: couleurs.encre }} />
+          {dispositifs.length > 1 ? (
+            <View style={{ flexDirection: "row", flexWrap: "wrap", gap: PAS * 2 }}>
+              {[null, ...dispositifs].map(code => {
+                const on = dispositif === code;
+                return (
+                  <Pressable key={String(code)} onPress={() => setDispositif(code as string | null)} accessibilityRole="button"
+                    accessibilityState={{ selected: on }} accessibilityLabel={code ? `Filtrer sur les aides ${nomDe(code as string)}` : "Toutes les aides"}
+                    style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", paddingHorizontal: PAS * 4, borderRadius: RAYON.pastille,
+                      borderWidth: on ? 2 : 1, borderColor: on ? couleurs.encre : couleurs.trait, backgroundColor: couleurs.carte, opacity: pressed ? 0.7 : 1 })}>
+                    <Text style={[TYPO.note, on ? { color: couleurs.encre, fontFamily: POLICE.titre } : null]}>{code ? String(code) : "Toutes"}</Text>
+                  </Pressable>
+                );
+              })}
+            </View>
+          ) : null}
+          <Text style={TYPO.micro} accessibilityLiveRegion="polite" testID="compte-projets">
+            {filtres.length} projet{filtres.length > 1 ? "s" : ""} sur {liste.length}
+          </Text>
+        </View>
+        <FlatList
+          data={filtres}
+          keyExtractor={(p, i) => `${p.annee}-${p.dispositif}-${i}`}
+          /* Tout rendre : une commune publie quelques dizaines d'aides au plus, et la MEME VERITE que le
+             site exige que chaque phrase de projet soit lisible ici (tests/meme-verite.mjs). */
+          initialNumToRender={200}
+          windowSize={21}
+          contentContainerStyle={{ padding: PAS * 5, gap: PAS * 3 }}
+          ListEmptyComponent={<Text style={TYPO.corps}>Aucun projet publié pour {nom} ne correspond à cette recherche.</Text>}
+          renderItem={({ item: p }) => {
+            const f = financementProjet(p);
+            const cout = f && f.cout ? montantCourt(f.cout) : null;
+            return (
+              <Carte echelon="ville" titre={`${p.annee} · aide ${nomDe(p.dispositif)}`}>
+                <Text style={TYPO.reponse}>{p.intitule}</Text>
+                {f && f.partPct !== null && cout ? (
+                  <Text style={TYPO.note}>{`${euros(f.subvention)} de l'État sur ${euros(f.cout as number)}.`}</Text>
+                ) : null}
+                {/* La phrase du site, mot pour mot : l'application ne dit pas autre chose (meme-verite.mjs). */}
+                <Text style={TYPO.note}>{phraseProjetLocal(p, nom)}</Text>
+                {noteRattachement(p) ? <Text style={TYPO.note}>{noteRattachement(p)}</Text> : null}
+              </Carte>
+            );
+          }}
+        />
+      </View>
+    </Modal>
+  );
+}
+
 const aideNommee = (projets: unknown, code: string) => {
   const nom = nomDispositif(projets, code);
   return nom && nom !== code ? `${nom} (${code})` : code;
@@ -86,6 +168,7 @@ const variation = (m1: number, m2: number) => {
 export default function Argent() {
   const { reessayer } = useCommuneChoisie();
   const [vue, setVue] = useState<Vue>("cent");
+  const [tousProjets, setTousProjets] = useState(false);
   return (
     <AvecDonnees rendu={r => {
       const { d } = r;
@@ -107,7 +190,24 @@ export default function Argent() {
       const listeProjets: Projet[] = r.projetsLus
         ? ((d.faits || []).filter((x: { type: string }) => x.type === "projet").map((x: { p: Projet }) => x.p) as Projet[])
         : [];
+      /* Les trois aides les plus élevées, d'abord. `subvention` absente : le projet reste dans la liste
+         complète, jamais en tête — on ne met pas devant ce qu'on ne sait pas chiffrer. */
+      const projetsEnTete = [...listeProjets]
+        .sort((x, y) => (financementProjet(y)?.subvention ?? -1) - (financementProjet(x)?.subvention ?? -1))
+        .slice(0, PROJETS_EN_TETE);
       const dep = ch && ch.depenses !== null ? montantCourt(ch.depenses) : null;
+      const rec = ch && ch.recettes !== null ? montantCourt(ch.recettes) : null;
+      /* LE GRAND CHIFFRE DE CHAQUE VUE. Tout vient des comptes publiés ; l'évolution est un calcul, et
+         le dit. Un chiffre absent reste `null` : la carte n'affiche alors pas de nombre (invariant 5). */
+      const eur = (v: number | null | undefined) => (typeof v === "number" ? `${v.toLocaleString("fr-FR")} €` : null);
+      const hero = vue === "recettes"
+        ? { titre: `Ce que ${nom} a encaissé en ${ex ? ex.an : ""}`, chiffre: eur(hab && hab.recettes), legende: "par habitant et par an", phrase: rec ? `${rec.texte} au total sur l'année.` : "" }
+        : vue === "evolution"
+          ? { titre: `L'évolution des dépenses de ${nom}`,
+              chiffre: tendancePct !== null ? `${tendancePct > 0 ? "+" : ""}${tendancePct.toLocaleString("fr-FR")} %` : null,
+              legende: precedent && ex ? `de dépenses par habitant, de ${precedent.an} à ${ex.an} (calcul Repère)` : "calcul Repère",
+              phrase: precedent ? "" : "Une seule année de comptes publiée : il n'y a rien à comparer." }
+          : { titre: `Ce que ${nom} a dépensé en ${ex ? ex.an : ""}`, chiffre: eur(hab && hab.depenses), legende: "par habitant et par an", phrase: dep ? `${dep.texte} au total sur l'année.` : "" };
       const dette = ch && ch.dette !== null ? montantCourt(ch.dette) : null;
       return (
         /* Audit 5 s (V15) : sansDate, la ligne DateDonnee de l'ecran dit deja la date et la source. */
@@ -129,19 +229,22 @@ export default function Argent() {
               {/* COMBIEN (maquette Stitch : le chiffre par habitant, et son équivalent par mois,
                   annoncé comme un calcul). Ce n'est pas ce que paie un foyer : c'est ce que la
                   commune dépense, divisé par le nombre d'habitants (la phrase le dit). */}
-              <Carte echelon="ville" titre={`Ce que ${nom} a dépensé en ${ex.an}`}>
-                <Resume geant phrase={dep ? `${dep.texte} au total sur l'année.` : ""}
-                  chiffre={hab && hab.depenses !== null ? `${hab.depenses.toLocaleString("fr-FR")} €` : null}
-                  legende="par habitant et par an" />
-                {hab && hab.depenses !== null ? (
+              {/* 13/11/2026 (porteur) : LE GRAND CHIFFRE SUIT LE FILTRE. Avant, il montrait toujours la
+                  dépense par habitant, quel que soit l'onglet : « Recettes » affichait un chiffre de dépenses.
+                  Chaque vue a son chiffre, pris dans les mêmes comptes publiés, et les lignes propres à la vue
+                  « 100 € citoyen » ne se répètent plus ailleurs. */}
+              <Carte echelon="ville" titre={hero.titre}>
+                <Resume geant phrase={hero.phrase} chiffre={hero.chiffre} legende={hero.legende} />
+                {vue === "cent" && hab && hab.depenses !== null ? (
                   <Text style={TYPO.note}>
                     Soit <Text style={{ color: ACCENTS.texteAccent, fontFamily: POLICE.texteGras }}>{Math.round(hab.depenses / 12).toLocaleString("fr-FR")} € par mois</Text> et par habitant (calcul Repère : le montant annuel divisé par 12). C'est la dépense de la commune, pas ce que paie votre foyer.
                   </Text>
                 ) : null}
-                {precedent && ex ? <Tendance pct={tendancePct} an1={precedent.an} an2={ex.an} /> : null}
+                {/* La tendance est DÉJÀ le grand chiffre dans la vue « Évolution » : on ne la répète pas. */}
+                {vue !== "evolution" && precedent && ex ? <Tendance pct={tendancePct} an1={precedent.an} an2={ex.an} /> : null}
                 {/* D23 (ADR 0002), A1 : la commune mediane de la region, un calcul annonce comme tel. */}
-                {hab && hab.depenses !== null ? <Comparaison nom={nom} valeur={hab.depenses} index={r.index} dep={d.dep} an={ex.an} /> : null}
-                {hab && hab.salaires !== null && hab.investissement !== null ? (
+                {vue === "cent" && hab && hab.depenses !== null ? <Comparaison nom={nom} valeur={hab.depenses} index={r.index} dep={d.dep} an={ex.an} /> : null}
+                {vue === "cent" && hab && hab.salaires !== null && hab.investissement !== null ? (
                   /* Audit 5 s (V19) : le detail se deplie ; le chiffre et la comparaison restent visibles. */
                   <Depli titre="Ce que finance cet argent"><Text style={TYPO.corps}>Dont {hab.salaires.toLocaleString("fr-FR")} € par habitant pour vos agents (salaires) et {hab.investissement.toLocaleString("fr-FR")} € pour vos équipements (investissement).</Text></Depli>
                 ) : null}
@@ -326,7 +429,7 @@ export default function Argent() {
               </>
             ) : (
               <>
-                {listeProjets.map((p, i) => {
+                {projetsEnTete.map((p, i) => {
                   const f = financementProjet(p);
                   const cout = f && f.cout ? montantCourt(f.cout) : null;
                   return (
@@ -351,10 +454,22 @@ export default function Argent() {
                     </Carte>
                   );
                 })}
+                {/* 13/11/2026 (porteur) : trois projets ici, le reste dans une feuille qui se cherche et se
+                    filtre. Les trois sont ceux dont la SUBVENTION publiée est la plus élevée — un fait sur des
+                    projets, pas un rang de personnes, de partis ou de territoires (invariant 3) — et l'écran le
+                    dit. Un projet sans montant publié n'est jamais mis devant : il n'a rien à y faire. */}
+                {listeProjets.length > PROJETS_EN_TETE ? (
+                  <>
+                    <Text style={TYPO.micro}>Les {PROJETS_EN_TETE} aides les plus élevées parmi les {listeProjets.length} publiées pour {nom}.</Text>
+                    <Bouton texte={`Voir tous les projets (${listeProjets.length})`} onPress={() => setTousProjets(true)} />
+                  </>
+                ) : null}
                 <PastilleSource source={srcProjets(d, true)} />
               </>
             )}
           </View>
+          <ToutesLesAides ouvert={tousProjets} fermer={() => setTousProjets(false)} liste={listeProjets} nom={nom}
+            nomDe={code => aideNommee(r.projets, code)} />
           {/* 12/11/2026 : « Repère ne compare jamais deux communes » retiré : la même page montre la médiane d'Île-de-France
               (comparaison factuelle permise, D23, ADR 0002). La phrase était devenue fausse. */}
           <SignalerErreur contexte={`l'argent de ${nom}`} donnee={`Argent de la commune : ${nom}`} />

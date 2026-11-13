@@ -108,6 +108,7 @@ export default function Coquille() {
                 <Stack.Screen name="presidentielle-2027" options={{ title: "Présidentielle 2027", headerLeft: () => <Retour texte="Retour" etiquette="Revenir à l'écran précédent" /> }} />
                 <Stack.Screen name="a-propos" options={{ title: "À propos" }} />
                 <Stack.Screen name="confidentialite" options={{ title: "Confidentialité" }} />
+                <Stack.Screen name="soutenir" options={{ title: "Soutenir Repère", headerLeft: () => <Retour texte="Retour" etiquette="Revenir à l'écran précédent" /> }} />
                 <Stack.Screen name="faq" options={{ title: "Questions fréquentes", headerLeft: () => <Retour texte="Retour" etiquette="Revenir à l'écran précédent" /> }} />
                 <Stack.Screen name="groupe" options={{ title: "Groupe", headerLeft: () => <Retour texte="Retour" etiquette="Revenir à l'écran précédent" /> }} />
                 <Stack.Screen name="elu" options={{ title: "Fiche", headerLeft: () => <Retour texte={LIBELLES.qui} etiquette={`Revenir à l'écran ${LIBELLES.qui}`} /> }} />
