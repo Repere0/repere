@@ -16,20 +16,54 @@ fichier, le build en produit quelques centaines, le plus gros pèse 1,3 Mo). Lim
 | `mono/apps/mobile/scripts/cloudflare.mjs` | écrit `_redirects`, `_headers` et `404.html` dans `dist/` |
 | `npm run build:cloudflare` | `build:web` (export, données, PWA) puis `cloudflare.mjs` |
 
-## Créer le projet (une fois, dans le tableau de bord)
+## Créer le projet, pas à pas (une fois, environ dix minutes)
 
-1. Workers & Pages → Créer → Pages → Connecter à Git → dépôt `Repere0/repere`, branche de production `main`.
-2. Répertoire racine : `mono/apps/mobile`.
-3. Commande de build : `npm ci --no-audit --no-fund && npm run build:cloudflare`.
-4. Dossier de sortie : `dist` (déjà dans `wrangler.toml`).
-5. Variable de build, si tu veux le bouton de contact : `EXPO_PUBLIC_CONTACT_EMAIL`. **Non vérifié** : avec un
-   `wrangler.toml`, Cloudflare peut refuser les variables saisies dans le tableau de bord. Si c'est le cas, dis-le-moi :
-   la valeur ira dans le script de build.
-6. Facultatif : Réglages → Builds → Crochets de déploiement → en créer un, et ranger son adresse dans le secret
-   GitHub `CLOUDFLARE_DEPLOY_HOOK`. La collecte reconstruit alors l'application juste après avoir publié les données
-   du jour. Sans lui, Pages reconstruit à chaque commit sur `main` (dont celui de la collecte), comme Vercel aujourd'hui.
+Tout se fait dans le tableau de bord de Cloudflare, connecté à ton compte. Rien à installer.
+
+1. **Ouvrir** `dash.cloudflare.com`, menu de gauche **Workers & Pages**, bouton **Créer**, onglet **Pages**, puis
+   **Se connecter à Git**.
+2. **Autoriser GitHub** quand Cloudflare le demande, en limitant l'accès au seul dépôt `Repere0/repere`.
+3. **Choisir le dépôt** `Repere0/repere`, puis **Commencer la configuration**.
+4. **Remplir exactement** :
+
+   | champ | valeur |
+   |---|---|
+   | Nom du projet | `repere` (le même que dans `wrangler.toml`, sinon Cloudflare ignore le fichier) |
+   | Branche de production | `main` |
+   | Préréglage de framework | Aucun |
+   | Commande de build | `npm ci --no-audit --no-fund && npm run build:cloudflare` |
+   | Répertoire de sortie du build | `dist` |
+   | Répertoire racine (dans « Paramètres avancés ») | `mono/apps/mobile` |
+
+5. **Enregistrer et déployer.** Le premier build prend quelques minutes. À la fin, Cloudflare donne une adresse du
+   type `repere.pages.dev` (ou `repere-xxx.pages.dev` si le nom est pris).
+6. **Vérifier** l'adresse avec le tableau « Ce qui a été vérifié » plus bas, puis `docs/test-iphone.md`.
+
+### Si le build échoue
+
+| message | quoi faire |
+|---|---|
+| version de Node trop ancienne, ou erreur de syntaxe dans `expo` | Paramètres → Variables et secrets → ajouter `NODE_VERSION` = `22` (type « texte »), puis relancer le déploiement. Le dépôt porte déjà `mono/apps/mobile/.node-version` (22) ; **non vérifié** que Cloudflare le lit dans un sous-dossier |
+| `npm ci` ne trouve pas `package-lock.json` | le répertoire racine n'est pas `mono/apps/mobile` : le corriger dans Paramètres → Builds |
+| le site s'ouvre mais sans données | le build n'a pas pu copier les données publiées sur Netlify (`miroir-donnees.mjs`) : relancer le déploiement, puis me donner le journal du build |
+| Cloudflare refuse une variable saisie dans le tableau de bord | c'est l'effet du `wrangler.toml` : dis-le-moi, la valeur ira dans le fichier |
+
+### Facultatif, plus tard
+
+- **Bouton de contact** : variable de build `EXPO_PUBLIC_CONTACT_EMAIL`.
+- **Reconstruire après chaque collecte** : Paramètres → Builds → Crochets de déploiement → en créer un ; copier son
+  adresse dans GitHub (dépôt → Settings → Secrets and variables → Actions → nouveau secret `CLOUDFLARE_DEPLOY_HOOK`).
+  Sans lui, Pages reconstruit déjà à chaque commit sur `main`, dont celui de la collecte du matin.
+- **Nom de domaine** : Pages → Domaines personnalisés. Un nom de domaine se paie chez un bureau d'enregistrement :
+  dépense à décider, rien n'est engagé ici.
 
 Déploiement à la main, sans Git : `npm run build:cloudflare`, puis `npx wrangler pages deploy` depuis `mono/apps/mobile`.
+
+### Le fichier `wrangler.toml`
+
+Trois lignes utiles : `name`, `pages_build_output_dir`, `compatibility_date`. L'émulateur de Pages (`wrangler pages
+dev`, lancé sans autre argument) l'a lu et a servi `dist/` : sa forme est donc acceptée par l'outil de Cloudflare.
+**Non vérifié** : son acceptation par le vrai service au premier build, que seul ton compte peut montrer.
 
 ## Les règles de routage, et pourquoi
 

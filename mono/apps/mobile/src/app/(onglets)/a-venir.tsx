@@ -43,6 +43,7 @@ type Ev = { titre: string; debut: string; institution: string; categorie?: strin
 type Groupe = { jour: string; institution: string; titre: string; debut: string; debuts: string[]; fins?: (string | null)[]; seances: number;
   categorie: string | null; lieu: string | null; points: string[] | null; textesLibres: string[] };
 
+const JOURS_OUVERTS = 3;
 const INSTITUTIONS = ["Assemblée nationale", "Sénat"];
 const de = (i: string) => (i === "Sénat" ? "du Sénat" : "de l'Assemblée nationale");
 const nbsp = (t: string) => t.replace(/ ([?!:;])/g, " $1");
@@ -161,6 +162,9 @@ export default function AVenir() {
   const [choisi, setChoisi] = useState(false);
   const choisirJour = (c: string) => { setJour(c); setChoisi(true); };
   const [mois, setMois] = useState(false);
+  /* 13/11/2026 : avec le vrai agenda de l'Assemblée (17 rendez-vous sur deux semaines), l'écran mesurait 6 269 px de
+     haut. La liste montre les trois premiers jours ; les suivants s'ouvrent d'un geste. */
+  const [suite, setSuite] = useState(false);
   return (
     <AvecDonnees rendu={r => {
       const { d } = r;
@@ -285,7 +289,7 @@ export default function AVenir() {
               ) : null}
 
               {/* V35 bloc 2 (D68) : un bloc par jour (« Mardi 3 novembre »), puis la source. */}
-              {parJour(montres).map(([iso, items]) => (
+              {(choisi || suite ? parJour(montres) : parJour(montres).slice(0, JOURS_OUVERTS)).map(([iso, items]) => (
                 <Carte key={iso} echelon="france">
                   <Text accessibilityRole="header" style={[TYPO.corps, { fontWeight: "600" }]}>{iso === aujourdhui ? "Aujourd'hui · " : iso === decaler(aujourdhui, 1) ? "Demain · " : ""}{iso === aujourdhui || iso === decaler(aujourdhui, 1) ? jourFr(iso) : majuscule(jourFr(iso))}</Text>
                   {parMoment(items).map(([moment, liste]) => (
@@ -296,6 +300,13 @@ export default function AVenir() {
                   ))}
                 </Carte>
               ))}
+              {!choisi && !suite && parJour(montres).length > JOURS_OUVERTS ? (
+                <Pressable onPress={() => setSuite(true)} accessibilityRole="button"
+                  accessibilityLabel={`Voir les ${parJour(montres).length - JOURS_OUVERTS} jours suivants`}
+                  style={({ pressed }) => ({ minHeight: CIBLE + 4, borderRadius: 999, alignItems: "center", justifyContent: "center", paddingHorizontal: PAS * 5, backgroundColor: ACCENTS.autorite, ...enfonce(pressed) })}>
+                  <Text style={{ fontSize: 17, fontFamily: POLICE.section, color: ACCENTS.surAutorite }}>Voir les {parJour(montres).length - JOURS_OUVERTS} jours suivants</Text>
+                </Pressable>
+              ) : null}
               {montres.length ? (
                 <View style={{ flexDirection: "row", flexWrap: "wrap" }}>
                   {lues.map(x => <PastilleSource key={x.institution} nom={x.institution === "Sénat" ? "Sénat" : "Assemblée"} source={srcAgenda(x.source)} />)}
