@@ -28,6 +28,8 @@ import {
 const require = createRequire(import.meta.url);
 const { chromium } = require("playwright");
 
+import { passerBienvenue } from "../apps/mobile/tests/_premier-lancement.mjs";
+
 const [SITE, APP, DONNEES = path.resolve(import.meta.dirname, "../data")] = process.argv.slice(2);
 if (!SITE || !APP) { console.error("usage : node tests/meme-verite.mjs <site> <app> [data]"); process.exit(2); }
 
@@ -165,15 +167,11 @@ async function texteApp(nav, { nom }) {
   const c = await nav.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, reducedMotion: "reduce" });
   const p = await c.newPage();
   await p.goto(APP, { waitUntil: "networkidle" });
-  /* 13/11/2026 (ADR 0009) : au premier lancement, l'accueil laisse la place a la question du prenom.
-     On repond « Passer », comme un lecteur presse : ce controle compare ce que le lecteur LIT, pas les
-     reglages. L'aide de apps/mobile/tests n'est pas importable ici (autre dossier, autre banc). */
-  await p.waitForURL(/\/bienvenue/, { timeout: 5000 }).catch(() => {});
-  if (p.url().includes("/bienvenue")) {
-    await p.getByRole("button", { name: /^Passer, sans/ }).click();
-    await p.waitForURL(u => !String(u).includes("/bienvenue"), { timeout: 10000 });
-    await p.waitForLoadState("networkidle").catch(() => {});
-  }
+  /* Au premier lancement, l'accueil laisse la place a l'ecran de bienvenue. On le traverse avec LA MEME
+     AIDE que les tests de apps/mobile : elle a change deux fois en un jour (ADR 0009 puis trois ecrans),
+     et les deux fois ce fichier-ci l'a appris par une CI rouge, parce qu'il en gardait sa propre copie.
+     Une seule fonction, un seul endroit a corriger. */
+  await passerBienvenue(p);
   /* L'accueil ne montre le champ qu'apres « Chercher une commune » (c7ee4d0), comme parcours-web. */
   if (!(await p.getByLabel(/Où habitez-vous/).isVisible())) await p.getByRole("button", { name: "Chercher une commune" }).first().click();
   await p.getByLabel(/Où habitez-vous/).fill(nom);

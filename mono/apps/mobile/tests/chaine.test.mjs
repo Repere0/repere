@@ -146,3 +146,17 @@ test("l'accueil redirige vers la bienvenue de facon declarative, jamais par un o
   assert.deepEqual(effets.map(m => m[0].slice(0, 60)), [],
     "une redirection vers /bienvenue part d'un effet : elle sera perdue si la pile d'ecrans n'est pas encore prete");
 });
+
+/* ─── 13/11/2026 : UNE SEULE FAÇON DE TRAVERSER L'ÉCRAN DE BIENVENUE ──────────────────────────────────
+ * L'écran de bienvenue a changé deux fois en une journée (une question, puis trois écrans). Les deux
+ * fois, tests/meme-verite.mjs l'a appris par une CI rouge, parce qu'il gardait sa propre copie du
+ * parcours. Il importe maintenant la même aide que les tests de apps/mobile. Cette garde refuse qu'une
+ * deuxième copie réapparaisse. */
+test("un seul parcours de l'écran de bienvenue, partagé par tous les bancs", () => {
+  const aide = join(ICI, "_premier-lancement.mjs");
+  assert.ok(existsSync(aide), "l'aide _premier-lancement.mjs a disparu");
+  const parcours = lire(join(DEPOT, "mono", "tests", "meme-verite.mjs"));
+  assert.match(parcours, /import \{ passerBienvenue \}/, "meme-verite.mjs doit importer l'aide, pas la recopier");
+  assert.doesNotMatch(parcours, /getByRole\("button", \{ name: \/\^Passer/,
+    "meme-verite.mjs refait le parcours de bienvenue à la main : il divergera au prochain changement");
+});
