@@ -22,7 +22,7 @@ export function Details({ titre, children, ouvertParDefaut = false, couleur, lie
   }, [ouvert, reduit, fondu]);
   return (
     <View style={{ gap: PAS * 2 }}>
-      <Pressable onPress={() => setOuvert(o => !o)} accessibilityRole="button" accessibilityState={{ expanded: ouvert }}
+      <Pressable onPress={() => setOuvert(o => !o)} accessibilityRole="button" accessibilityState={{ expanded: ouvert }} aria-expanded={ouvert}
         accessibilityLabel={`${titre}. ${ouvert ? "Voir moins" : "Voir plus"}`}
         style={({ pressed }) => ({ minHeight: CIBLE, flexDirection: "row", alignItems: "center", gap: PAS * 2, ...enfonce(pressed) })}>
         <Text style={[TYPO.corps, { flex: 1, fontFamily: POLICE.titre }, couleur ? { color: couleur } : null]}>{titre}</Text>

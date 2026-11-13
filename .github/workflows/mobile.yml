@@ -88,7 +88,7 @@ jobs:
           pnpm build
 
       - name: Socle partage et invariants
-        run: node --test --test-concurrency=1 tests/core.test.mjs tests/invariants.test.mjs tests/sante.test.mjs tests/donnees.test.mjs tests/votes-vides.test.mjs tests/profil.test.mjs tests/vote-vide-site.test.mjs tests/collecte-groupes.test.mjs tests/photos-licences.test.mjs apps/mobile/tests/cibles.test.mjs apps/mobile/tests/recherche-flou.test.mjs apps/mobile/tests/resume-extractif.test.mjs apps/mobile/tests/conformite.test.mjs apps/mobile/tests/onglets.test.mjs apps/mobile/tests/theme.test.mjs apps/mobile/tests/daltonisme.test.mjs apps/mobile/tests/parcours.test.mjs apps/mobile/tests/absences.test.mjs apps/mobile/tests/chaine.test.mjs apps/mobile/tests/dictionnaire.test.mjs apps/mobile/tests/niveaux.test.mjs apps/mobile/tests/vides-dates.test.mjs apps/mobile/tests/theme-proxy.test.mjs tests/repere-du-jour.test.mjs tests/decoupage.test.mjs tests/local-types.test.mjs tests/noms.test.mjs apps/mobile/tests/quiz.test.mjs apps/mobile/tests/pwa.test.mjs apps/mobile/tests/miroir.test.mjs tests/adresse.test.mjs tests/recherche-commune.test.mjs tests/resumes.test.mjs
+        run: node --test --test-concurrency=1 tests/core.test.mjs tests/invariants.test.mjs tests/sante.test.mjs tests/donnees.test.mjs tests/votes-vides.test.mjs tests/profil.test.mjs tests/vote-vide-site.test.mjs tests/collecte-groupes.test.mjs tests/photos-licences.test.mjs apps/mobile/tests/cibles.test.mjs apps/mobile/tests/recherche-flou.test.mjs apps/mobile/tests/resume-extractif.test.mjs apps/mobile/tests/conformite.test.mjs apps/mobile/tests/onglets.test.mjs apps/mobile/tests/theme.test.mjs apps/mobile/tests/daltonisme.test.mjs apps/mobile/tests/parcours.test.mjs apps/mobile/tests/absences.test.mjs apps/mobile/tests/chaine.test.mjs apps/mobile/tests/dictionnaire.test.mjs apps/mobile/tests/niveaux.test.mjs apps/mobile/tests/vides-dates.test.mjs apps/mobile/tests/theme-proxy.test.mjs tests/repere-du-jour.test.mjs tests/decoupage.test.mjs tests/local-types.test.mjs tests/noms.test.mjs apps/mobile/tests/quiz.test.mjs apps/mobile/tests/pwa.test.mjs apps/mobile/tests/miroir.test.mjs apps/mobile/tests/cloudflare.test.mjs tests/adresse.test.mjs tests/recherche-commune.test.mjs tests/resumes.test.mjs tests/codes-postaux.test.mjs tests/alerte-collecte.test.mjs tests/resumes-clairs.test.mjs
 
       - name: Construire l'application (iOS, Android, web)
         working-directory: mono/apps/mobile
@@ -127,12 +127,16 @@ jobs:
           node apps/mobile/tests/fraicheur-mouvement-web.mjs http://localhost:8811
           node apps/mobile/tests/mode-web.mjs http://localhost:8811
           node apps/mobile/tests/audit-ui-web.mjs http://localhost:8811 apps/mobile/captures/audit
+          # 13/11/2026 : refonte UX (ordre de la page commune, Paris, en-tete de Finances, FAQ, Repere du jour).
+          node apps/mobile/tests/refonte-web.mjs http://localhost:8811
           # PWA : une copie de l'export recoit le manifeste et le service worker, puis on coupe le reseau.
           cp -r apps/mobile/dist-web apps/mobile/dist-pwa
           node apps/mobile/scripts/pwa.mjs apps/mobile/dist-pwa
           node scripts/serveur-statique.mjs apps/mobile/dist-pwa 8812 &
           for i in $(seq 1 20); do curl -sf http://localhost:8812/ >/dev/null && break; sleep 0.5; done
           node apps/mobile/tests/pwa-web.mjs http://localhost:8812
+          # 12/11/2026 : marges de securite de l'iPhone, emulees (34 px) sur le build PWA.
+          node apps/mobile/tests/marges-ios-web.mjs http://localhost:8812
 
       - name: Cartes de partage (story 1080 x 1920, logo, contraste, source)
         run: node apps/mobile/tests/partage-story-web.mjs http://localhost:8811 apps/mobile/captures

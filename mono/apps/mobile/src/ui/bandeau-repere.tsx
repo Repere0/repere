@@ -8,7 +8,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Animated, Easing, Pressable, StyleSheet, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { raccourcirFait } from "@repere/core";
 import { couleurs, feuille, PAS, TYPO } from "../lib/theme";
 import { etatFraicheur, FRAICHEUR, surFraicheur } from "../lib/donnees";
 import { useMouvementReduit } from "./mouvement";
@@ -22,7 +21,6 @@ const HAUTEUR_VISIBLE = 32;
    Le préfixe en prend 14 ; le fait est raccourci à 22 caractères, à un mot près, et garde son
    premier chiffre quand il y en a un. La phrase entière reste à un geste, sur la page complète. */
 const PREFIXE = ""; /* 09/11/2026 : l'étiquette « Repère du jour » est à part, en petites capitales. */
-const FAIT_MAX = 22;
 
 /* « FRAIS », ET SEULEMENT SI C'EST VRAI (retour du porteur, 11/11/2026 ; invariant 9). La bordure s'éclaire une
    fois à l'arrivée puis se pose, avec un petit point, UNIQUEMENT quand la publication affichée est la courante,
@@ -66,8 +64,13 @@ export function BandeauRepere({ faits, sources, onOuvrir }: {
       <Animated.View testID={fraiche ? "repere-frais" : undefined}
         style={[s.visible, fraiche && { ...s.frais, borderColor: lueur.interpolate({ inputRange: [0, 1], outputRange: [couleurs.trait, couleurs.encre] }) }]}>
         {fraiche ? <View style={s.point} accessibilityElementsHidden importantForAccessibility="no-hide-descendants" /> : null}
-        <Text style={s.etiquette}>REPÈRE DU JOUR</Text>
-        <Text numberOfLines={1} style={s.texte}>{`${PREFIXE}${raccourcirFait(premier.f.texte, { max: FAIT_MAX + 6, visible: FAIT_MAX + 6 })}`}</Text>
+        {/* 13/11/2026 (porteur) : la bulle coupait le fait à 28 caractères sur une ligne (« Sur 100 € encaissés à… ») :
+            avec un nom de commune long, il ne restait rien à lire. L'étiquette passe au-dessus, le fait entier
+            dessous, sur deux lignes au plus, et la bulle grandit avec lui. */}
+        <View style={{ flex: 1, gap: 2 }}>
+          <Text style={s.etiquette}>REPÈRE DU JOUR</Text>
+          <Text numberOfLines={2} style={s.texte}>{`${PREFIXE}${premier.f.texte}`}</Text>
+        </View>
         <Ionicons name="chevron-forward" size={16} color={couleurs.sourd} accessible={false} importantForAccessibility="no" />
       </Animated.View>
     </Pressable>
@@ -77,11 +80,11 @@ export function BandeauRepere({ faits, sources, onOuvrir }: {
 const s = feuille(() => StyleSheet.create({
   zone: {
     minHeight: ZONE_TACTILE,
-    height: ZONE_TACTILE,
     justifyContent: "center",
   },
   visible: {
-    height: HAUTEUR_VISIBLE,
+    minHeight: HAUTEUR_VISIBLE,
+    paddingVertical: PAS,
     flexDirection: "row",
     alignItems: "center",
     gap: PAS * 2,
@@ -91,5 +94,5 @@ const s = feuille(() => StyleSheet.create({
   frais: { borderWidth: 1, borderRadius: 16, paddingHorizontal: PAS * 3, borderBottomWidth: 1 },
   point: { width: 6, height: 6, borderRadius: 3, backgroundColor: couleurs.encre },
   etiquette: { ...TYPO.micro, fontSize: 13, letterSpacing: 0.6, color: couleurs.sourd },
-  texte: { ...TYPO.note, flex: 1, color: couleurs.encre },
+  texte: { ...TYPO.note, color: couleurs.encre },
 }));

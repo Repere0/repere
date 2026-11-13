@@ -32,15 +32,20 @@ const estBonne = r => r && r.ok && r.status === 200 && r.type === "basic";
 /* Un document EST du HTML : sans ce contrôle, un fichier quelconque pourrait être rangé sous /index.html. */
 const estDocument = r => (r.headers.get("content-type") || "").indexOf("text/html") >= 0;
 
+const coquille = () => caches.match("/").then(c => (c && !c.redirected ? c : caches.match("/index.html")));
+
 self.addEventListener("fetch", e => {
   const req = e.request;
   const url = new URL(req.url);
   if (req.method !== "GET" || url.origin !== self.location.origin || url.pathname.startsWith("/data/")) return;
 
   if (req.mode === "navigate") {
-    /* Réseau d'abord (version à jour), la coquille en secours. Toute adresse interne mène à index.html. */
-    e.respondWith(fetch(req).then(r => (estBonne(r) && estDocument(r) ? r : caches.match("/index.html").then(c => c || r)))
-      .catch(() => caches.match("/index.html")));
+    /* Réseau d'abord (version à jour), la coquille en secours. Toute adresse interne mène à l'application.
+       12/11/2026 : la coquille est rangée sous « / », pas sous « /index.html ». Sur Cloudflare Pages, « /index.html »
+       répond une redirection vers « / » ; une réponse redirigée ne peut pas servir une navigation (le navigateur la
+       refuse), et l'application ne s'ouvrait plus hors ligne. « / » n'est jamais redirigée, chez aucun hébergeur. */
+    e.respondWith(fetch(req).then(r => (estBonne(r) && estDocument(r) ? r : coquille().then(c => c || r)))
+      .catch(() => coquille()));
     return;
   }
   e.respondWith(caches.match(req).then(c => c || fetch(req).then(r => {

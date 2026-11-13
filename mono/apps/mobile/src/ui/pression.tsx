@@ -8,8 +8,9 @@ import { useMouvementReduit } from "./mouvement";
 const PLACEMENT = new Set(["width", "minWidth", "maxWidth", "flex", "flexGrow", "flexShrink", "flexBasis", "alignSelf",
   "margin", "marginTop", "marginBottom", "marginLeft", "marginRight", "marginHorizontal", "marginVertical", "position", "top", "left", "right", "bottom"]);
 
-export function Pression({ onPress, children, style, role = "button", etiquette }: {
+export function Pression({ onPress, children, style, role = "button", etiquette, etat }: {
   onPress: () => void; children: ReactNode; style?: StyleProp<ViewStyle>; role?: AccessibilityRole; etiquette?: string;
+  etat?: { checked?: boolean; selected?: boolean; expanded?: boolean };
 }) {
   const reduit = useMouvementReduit();
   const e = useRef(new Animated.Value(1)).current;
@@ -22,7 +23,7 @@ export function Pression({ onPress, children, style, role = "button", etiquette 
   const reste: Record<string, unknown> = {};
   for (const [k, v] of Object.entries(plat)) (PLACEMENT.has(k) ? (placement as Record<string, unknown>) : reste)[k] = v;
   return (
-    <Pressable onPress={onPress} accessibilityRole={role} accessibilityLabel={etiquette} style={placement}
+    <Pressable onPress={onPress} accessibilityRole={role} accessibilityLabel={etiquette} accessibilityState={etat} style={placement}
       onPressIn={() => (reduit ? e.setValue(0.97) : vers(0.97))} onPressOut={() => (reduit ? e.setValue(1) : vers(1))}>
       <Animated.View style={[reste as ViewStyle, { flexGrow: 1 }, reduit ? { opacity: e.interpolate({ inputRange: [0.97, 1], outputRange: [0.7, 1] }) } : { transform: [{ scale: e }] }]}>
         {children}

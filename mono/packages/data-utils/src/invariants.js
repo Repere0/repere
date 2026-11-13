@@ -105,3 +105,8 @@ export const MOTS_A_ACCENTS = [
   "ministere", "Repertoire", "resultat", "resultats", "reel", "meme", "memes",
   "eleve", "elevee", "facon", "regulier", "irregulieres", "exterieur",
 ];
+
+/* Resumes « En clair » (12/11/2026, scripts/resumes-clairs.mjs) : un resume qui contient l'un de ces mots est refuse.
+   Jugement ou comparaison de valeur ; radical suivi de ses terminaisons. */
+export const JUGEMENT_RESUME = /\b(mieux|pires?|meilleure?s?|importante?s?|majeure?s?|historiques?|controvers[ée]e?s?|scandal\w*|excellente?s?|catastroph\w*|inacceptables?|courageu\w+|dangereu\w+|heureusement|malheureusement|enfin|bonne nouvelle|mauvaise nouvelle|il faut|on doit)\b/giu;
+

@@ -10,6 +10,7 @@
  * 09/11/2026 : filtres par fonction ; photo libre et badge de groupe dans chaque ligne.
  * Recherche par nom, departement ou fonction. La recherche par ville n'est pas offerte :
  * les circonscriptions ne portent pas le nom des villes dans les donnees publiees. */
+import { useBasSur } from "../ui/page";
 import { useEffect, useMemo, useState } from "react";
 import { FlatList, Pressable, Text, TextInput, View } from "react-native";
 import { Entree } from "../ui/entree";
@@ -85,6 +86,7 @@ export default function Elus() {
   );
   const phrase = PHRASES[etat as keyof typeof PHRASES] as { titre: string; corps: string; action?: string } | undefined;
 
+  const bas = useBasSur();
   return (
     <View style={{ flex: 1, backgroundColor: couleurs.sol }}>
       <Stack.Screen options={{ title: "Élus" }} />
@@ -95,7 +97,7 @@ export default function Elus() {
         initialNumToRender={20}
         maxToRenderPerBatch={20}
         windowSize={10}
-        contentContainerStyle={{ padding: PAS * 4, gap: PAS * 2 }}
+        contentContainerStyle={{ padding: PAS * 4, paddingBottom: bas, gap: PAS * 2 }}
         ListHeaderComponent={
           <View style={{ gap: PAS * 3 }}>
             <DatePublication />

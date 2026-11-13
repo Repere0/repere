@@ -8,7 +8,7 @@
     "calendrier:senat": "node scripts/calendrier-senat.mjs ./data",
     "dev": "turbo run dev",
     "build": "turbo run build",
-    "test": "node --test --test-concurrency=1 tests/core.test.mjs tests/resumes.test.mjs tests/adresse.test.mjs tests/recherche-commune.test.mjs tests/noms.test.mjs tests/invariants.test.mjs tests/sante.test.mjs tests/donnees.test.mjs tests/sources-parlementaires.test.mjs tests/ordre-faits.test.mjs tests/runtime.test.mjs tests/seances-duree.test.mjs tests/votes-vides.test.mjs tests/profil.test.mjs tests/vote-vide-site.test.mjs tests/collecte-groupes.test.mjs tests/photos-licences.test.mjs tests/collecte-rss.test.mjs tests/impact-scrutins.test.mjs tests/repere-du-jour.test.mjs tests/decoupage.test.mjs tests/local-types.test.mjs tests/hemicycle.test.mjs tests/collecte-presidentielle.test.mjs",
+    "test": "node --test --test-concurrency=1 tests/core.test.mjs tests/resumes.test.mjs tests/adresse.test.mjs tests/recherche-commune.test.mjs tests/noms.test.mjs tests/invariants.test.mjs tests/sante.test.mjs tests/donnees.test.mjs tests/sources-parlementaires.test.mjs tests/ordre-faits.test.mjs tests/runtime.test.mjs tests/seances-duree.test.mjs tests/votes-vides.test.mjs tests/profil.test.mjs tests/vote-vide-site.test.mjs tests/collecte-groupes.test.mjs tests/photos-licences.test.mjs tests/collecte-rss.test.mjs tests/impact-scrutins.test.mjs tests/repere-du-jour.test.mjs tests/decoupage.test.mjs tests/local-types.test.mjs tests/hemicycle.test.mjs tests/collecte-presidentielle.test.mjs tests/codes-postaux.test.mjs tests/alerte-collecte.test.mjs tests/resumes-clairs.test.mjs",
     "test:runtime": "node tests/runtime.test.mjs apps/web/dist"
   },
   "devDependencies": {

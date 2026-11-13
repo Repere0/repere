@@ -296,6 +296,9 @@ for (const largeur of [360, 390, 430]) {
     if (action === "Le calendrier") {
       /* PAR JOURNEE (07/10/2026) : autant de lignes que de groupes calcules par le
          socle sur les fichiers servis, pour les deux prochaines semaines. */
+      /* 13/11/2026 : la liste s'ouvre sur trois jours ; « Voir les N jours suivants » montre le reste. */
+      const voirSuite = page.getByRole("button", { name: /^Voir les \d+ jours suivants$/ });
+      if (await voirSuite.count()) { await voirSuite.first().click(); await page.waitForTimeout(400); }
       const lignes = await page.evaluate(() => document.querySelectorAll('[data-testid="cal-ligne"]').length);
       verifier(lignes === CAL.lignes, `${largeur}px · Le calendrier : une ligne par texte et par jour (${lignes} affichées, ${CAL.lignes} attendues)`);
       verifier(CAL.vieux.every(x => new RegExp("Agenda " + x.de + " relevé le .+, il y a " + x.age + " jours").test(m.brut)),

@@ -12,6 +12,7 @@
  * Les candidats gardent l'ordre du fichier, celui de la liste officielle : jamais triés (invariant 3).
  * Jamais de couleur de parti ici (invariant 7, ADR 0008). Photo seulement si la chaîne en publie une, libre
  * (Wikimedia Commons), rapprochée avec certitude, avec son crédit ; sinon les initiales sur fond neutre. */
+import { Details } from "../ui/details";
 import { useState } from "react";
 import { Linking, Pressable, ScrollView, Text, useWindowDimensions, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
@@ -25,6 +26,7 @@ import { GuideVote } from "../ui/guide-vote";
 import { Regles2027 } from "../ui/regles-2027";
 import { ELECTIONS } from "../lib/elections";
 import { usePresidentialData } from "../lib/presidentielle";
+import { joursAvant } from "../lib/elections";
 import { ACCENTS, BADGE_DECLARATION, CIBLE, couleurs, PAS, POLICE, RAYON, TYPO } from "../lib/theme";
 import { Attente } from "../ui/attente";
 import { Avatar, CreditPhoto } from "../ui/avatar";
@@ -34,16 +36,15 @@ import { Onglets } from "../ui/stitch";
 import { enfonce } from "../ui/mouvement";
 
 type Onglet = "candidats" | "debats" | "meetings";
+type Partie = "etapes" | "regles" | "candidats" | "voter";
+const PARTIES: { cle: Partie; texte: string }[] = [
+  { cle: "etapes", texte: "Étapes" }, { cle: "regles", texte: "Règles" }, { cle: "candidats", texte: "Candidats" }, { cle: "voter", texte: "Voter" },
+];
 const ONGLETS: { cle: Onglet; texte: string }[] = [
   { cle: "candidats", texte: "Candidats" }, { cle: "debats", texte: "Débats" }, { cle: "meetings", texte: "Réunions" },
 ];
 const PAS_ARRIVE = { titre: "Ces données ne sont pas arrivées jusqu'à cet appareil.", corps: "Repère n'a pas pu les charger cette fois-ci. Rien n'est affiché à leur place." };
 
-const joursAvant = (iso: string) => {
-  const [a, m, j] = iso.split("-").map(Number);
-  const n = new Date();
-  return Math.round((Date.UTC(a, m - 1, j) - Date.UTC(n.getFullYear(), n.getMonth(), n.getDate())) / 86400000);
-};
 
 function Ligne({ date, titre, sous, sourceUrl }: { date: string; titre: string; sous: string; sourceUrl: string }) {
   return (
@@ -142,6 +143,9 @@ const Section = ({ titre }: { titre: string }) => <Text style={[TYPO.section, { 
 
 export default function Presidentielle2027() {
   const [onglet, setOnglet] = useState<Onglet>("candidats");
+  /* 13/11/2026 (porteur) : la page mesurait 3 837 px de haut à 390 px de large. Le compte à rebours reste en tête ;
+     le reste se range en quatre parties, une seule affichée. L'ordre du 12/11 est gardé : les règles avant les candidats. */
+  const [partie, setPartie] = useState<Partie>("etapes");
   const d = usePresidentialData();
   const photos = usePhotosCandidats();
   const { width: largeurEcran } = useWindowDimensions();
@@ -184,7 +188,10 @@ export default function Presidentielle2027() {
         <Text style={TYPO.micro}>Le bouton ouvre le service officiel, sur service-public.gouv.fr.</Text>
       </View>
 
+      <Onglets etiquette="Les parties de cette page" valeurs={PARTIES} actif={partie} choisir={setPartie} />
+
       {/* 2. LES ÉTAPES — ce que dit la loi, et les deux dates fixées. Rien d'autre n'est daté. */}
+      {partie === "etapes" ? <>
       <Section titre="Les étapes" />
       <View style={{ padding: PAS * 6, borderRadius: RAYON.carte, backgroundColor: couleurs.carte }}>
         <Etape titre="Les parrainages" texte="Chaque candidat doit être présenté par 500 élus, venus d'au moins 30 départements ou collectivités d'outre-mer." />
@@ -193,14 +200,21 @@ export default function Presidentielle2027() {
         <Etape dernier date={dateFr(second)} titre="Second tour" texte="Si personne n'est élu au premier tour, entre les deux candidats arrivés en tête." />
       </View>
 
+      </> : null}
+
       {/* 3. LES RÈGLES (12/11/2026 : avant les candidats) — quatre fiches, chacune avec son texte de référence. */}
+      {partie === "regles" ? <>
       <Section titre="Les règles du scrutin" />
       <Regles2027 />
+      </> : null}
+
+      {partie === "candidats" ? <>
 
       {/* 4. QUI SE PRÉSENTE — les fichiers publiés ; vides, ils le disent, et montrent la forme à venir. */}
-      <Section titre="Candidats, débats, réunions" />
+      <Section titre={onglets.length > 1 ? "Candidats, débats, réunions" : "Les candidats"} />
       {/* 12/11/2026 (porteur) : un onglet qui n'a rien à montrer est masqué ; une phrase vraie le dit, sous les candidats. */}
-      <Onglets etiquette={onglets.length > 1 ? "Candidats, débats, réunions publiques" : "Candidats"} valeurs={onglets} actif={onglet} choisir={setOnglet} />
+      {/* 13/11/2026 : un sélecteur à un seul choix n'est plus affiché. */}
+      {onglets.length > 1 ? <Onglets etiquette="Candidats, débats, réunions publiques" valeurs={onglets} actif={onglet} choisir={setOnglet} /> : null}
 
       {!d.charge ? <SquelettesListe n={2} hauteur={88} /> : null}
 
@@ -215,13 +229,19 @@ export default function Presidentielle2027() {
         ) : (
           <View style={{ gap: PAS * 2 }}>
             {d.candidats.some(c => c.statut === "declare") ? (
-              <View style={{ flexDirection: "row", gap: PAS * 3, padding: PAS * 4, borderRadius: RAYON.bloc, backgroundColor: BADGE_DECLARATION.fond, borderWidth: 1, borderColor: BADGE_DECLARATION.filet }}
-                accessibilityRole="summary">
-                <Ionicons name="information-circle-outline" size={20} color={BADGE_DECLARATION.texte} accessible={false} importantForAccessibility="no" />
-                <Text style={[TYPO.corps, { flex: 1, color: BADGE_DECLARATION.texte }]}>
-                  Liste des candidatures déclarées. La liste officielle sera arrêtée par le Conseil constitutionnel en 2027.
-                  {" "}Elle n'est pas exhaustive : un nom n'y figure que si deux sources de presse le donnent pour déclaré. Ordre alphabétique : ce n'est pas un ordre de préférence.
-                </Text>
+              /* 13/11/2026 (porteur) : l'avertissement n'est plus un pavé orange cerclé. Une note de la même famille que
+                 les autres cartes : l'essentiel en une ligne, le détail d'un geste. Aucun mot n'est retiré. */
+              <View style={{ gap: PAS, paddingHorizontal: PAS * 4, paddingVertical: PAS * 2, borderRadius: RAYON.bloc, backgroundColor: couleurs.carte }} accessibilityRole="summary">
+                <View style={{ flexDirection: "row", alignItems: "center", gap: PAS * 2 }}>
+                  <Ionicons name="information-circle-outline" size={20} color={couleurs.encre} accessible={false} importantForAccessibility="no" />
+                  <Text style={[TYPO.corps, { flex: 1, fontFamily: POLICE.titre }]}>Candidatures déclarées, par ordre alphabétique</Text>
+                </View>
+                <Details titre="Ce n'est pas la liste officielle">
+                  <Text style={TYPO.corps}>
+                    Liste des candidatures déclarées. La liste officielle sera arrêtée par le Conseil constitutionnel en 2027.
+                    {" "}Elle n'est pas exhaustive : un nom n'y figure que si deux sources de presse le donnent pour déclaré. Ordre alphabétique : ce n'est pas un ordre de préférence.
+                  </Text>
+                </Details>
               </View>
             ) : null}
             {/* Carrousel (12/11/2026, porteur) : on fait glisser de gauche à droite ; l'ordre reste alphabétique. */}
@@ -284,9 +304,13 @@ export default function Presidentielle2027() {
         </Pressable>
       ) : null}
 
+      </> : null}
+
       {/* 5. VOTER — l'ancien écran « Ma voix ». */}
+      {partie === "voter" ? <>
       <Section titre="Voter" />
       <GuideVote />
+      </> : null}
     </Page>
   );
 }

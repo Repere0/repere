@@ -5,6 +5,7 @@
  * garde les réponses 2, 3 et 4 sur cet appareil. La question 4 (les thèmes) peut rester vide. « Passer » garde les réglages par défaut
  * (D45, V27) : c'est un choix explicite. Chaque question 2 à 4 a son « Aucune préférence » (V34) :
  * il remet la question à sa valeur par défaut, sans quitter l'écran. Aucune réponse ne part. */
+import { useBasSur } from "../ui/page";
 import { useState } from "react";
 import { Pressable, ScrollView, Text, View } from "react-native";
 import { router, Stack } from "expo-router";
@@ -45,8 +46,9 @@ export default function Bienvenue() {
     router.replace("/chez-vous");
   };
 
+  const bas = useBasSur();
   return (
-    <ScrollView style={{ flex: 1, backgroundColor: couleurs.sol }} contentContainerStyle={{ padding: PAS * 4, gap: PAS * 5 }}>
+    <ScrollView style={{ flex: 1, backgroundColor: couleurs.sol }} contentContainerStyle={{ padding: PAS * 4, paddingBottom: bas, gap: PAS * 5 }}>
       <Stack.Screen options={{ title: "Bienvenue", headerShown: true }} />
 
       <View style={{ gap: PAS * 2 }}>

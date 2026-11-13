@@ -321,6 +321,20 @@ PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers node test_repere.mjs site_v18_20/index
 
 ---
 
+- **Une étape non bloquante peut échouer des jours dans une collecte verte** (12/11/2026). Du 10 au 12/11, la
+  présidentielle n'a pas été publiée : son script importait `rss-parser` avant `pnpm install`. Depuis : toute étape
+  non bloquante passe par `avertir` (`outils/pipeline.sh`), et `outils/alerte_collecte.mjs` ouvre une issue au
+  deuxième jour (`data/etat_collecte.json`). Une nouvelle étape qui utilise `echo "::warning::"` échappe à l'alerte.
+- **Cloudflare Pages, deux pièges mesurés** (12/11/2026, émulateur `wrangler pages dev`) : une réécriture vers
+  `/index.html` répond 308 vers `/` et perd l'écran ; un service worker qui range la coquille sous `/index.html` ne
+  s'ouvre plus hors ligne. Voir `docs/hebergement-cloudflare.md`.
+- **Marges de l'iPhone** (12/11/2026) : Chromium les émule (`Emulation.setSafeAreaInsetsOverride`,
+  `mono/apps/mobile/tests/marges-ios-web.mjs`). Un écran qui défile sans `Page` prend `useBasSur()`. Ne jamais poser
+  `env(safe-area-inset-bottom)` sur `[role="tablist"]` : les contrôles segmentés portent ce rôle.
+- **Codes postaux** (12/11/2026) : `mono/scripts/collecte-codes-postaux.mjs`, Base officielle de La Poste via
+  data.gouv.fr ; licence et colonnes lues sur le runner, jamais vérifiées depuis le conteneur. Première couverture
+  à lire dans le journal de la collecte.
+
 ## 10. Ce qui a été refusé, et pourquoi
 
 Ne pas reproposer sans argument neuf.

@@ -95,6 +95,9 @@ export function adresseCommunesBeta() { return `${BASE_DONNEES}/communes-beta.js
    l'Ile-de-France, jamais un code de commune dans l'adresse. Tant que la chaine de collecte ne le publie pas,
    le fichier est absent et la recherche par code postal le dit (doctrine du vide). */
 export function adresseCodesPostaux() { return `${BASE_DONNEES}/codes-postaux.json`; }
+/* Resumes « En clair » des textes votes (12/11/2026) : un seul fichier national, seulement les resumes VALIDES par le
+   porteur (scripts/resumes-clairs.mjs --publier). Absent ou vide : l'ecran dit « Pas encore de resume pour ce texte ». */
+export function adresseResumesClairs() { return `${BASE_DONNEES}/resumes-clairs.json`; }
 /* LE DÉCOUPAGE ADMINISTRATIF DES HUIT DÉPARTEMENTS D'ÎLE-DE-FRANCE (V59, bloc 1.1) :
    un seul fichier, communes actuelles, avec EPCI, EPT et population. Il porte des codes INSEE,
    comme communes-beta.json, mais il est demandé ENTIER, jamais composé avec un code de commune. */
@@ -508,6 +511,9 @@ export async function chargerCommunesBeta({ delaiMs = 8000 } = {}) {
 }
 export async function chargerCodesPostaux({ delaiMs = 8000 } = {}) {
   return chargerSocle("socle:CPO", adresseCodesPostaux(), delaiMs);
+}
+export async function chargerResumesClairs({ delaiMs = 8000 } = {}) {
+  return chargerSocle("socle:RCL", adresseResumesClairs(), delaiMs);
 }
 /* Le découpage IDF (V59) : mémoire, magasin, réseau, comme les autres fichiers partagés. */
 export async function chargerDecoupageIdf({ delaiMs = 8000 } = {}) {

@@ -358,7 +358,7 @@ test("invariant 4 — aucune donnée n'est servie sans source déclarée", () =>
   assert.deepEqual([...new Set(composees)].sort(),
     ["/actuelles-rss.json", "/actus-hebdo.json", "/agenda-an.json", "/agregats-regionaux.json", "/calendrier-senat.json", "/codes-postaux.json", "/communes-beta.json", "/comptes-regions.json", "/decoupage-idf.json", "/departments/${d}.json",
      "/deputes-groupes.json", "/deputes.json", "/elus-regions/${c}.json", "/evenements.json", "/index.json", "/mairies-idf.json",
-     "/photos-elus/${d}.json", "/presidentielle-2027/${fichier}.json", "/projets/${d}.json", "/questions-gouvernement-index.json", "/questions-gouvernement/${lotPadded}.json", "/scrutins-details/${lotPadded}.json", "/scrutins-index.json", "/scrutins-solennels-recents.json", "/scrutins-solennels.json", "/scrutins.json", "/scrutins/${d}.json"],
+     "/photos-elus/${d}.json", "/presidentielle-2027/${fichier}.json", "/projets/${d}.json", "/questions-gouvernement-index.json", "/questions-gouvernement/${lotPadded}.json", "/resumes-clairs.json", "/scrutins-details/${lotPadded}.json", "/scrutins-index.json", "/scrutins-solennels-recents.json", "/scrutins-solennels.json", "/scrutins.json", "/scrutins/${d}.json"],
     "client.js compose une adresse de donnees inattendue : " + composees.join(", "));
   const sources = existe("data/index.json") ? (JSON.parse(lire("data/index.json")).sources || {}) : {};
   /* /photos-elus/{dep}.json (D27, ADR 0004) : chaque photo porte son auteur et sa licence,
@@ -404,6 +404,18 @@ test("invariant 4 — aucune donnée n'est servie sans source déclarée", () =>
       const fin = (e.match(/fin: "([^"]*)"/) || [])[1] || "";
       assert.ok(/^\d{4}-\d{2}-\d{2}$/.test(fin) && fin <= new Date().toISOString().slice(0, 10), `mandats-termines.ts : fin absente ou future (${fin})`);
       assert.ok(/source: "https:\/\//.test(e) && /sourceNom: "[^"]+"/.test(e), "mandats-termines.ts : source https et nom de source exiges (invariant 4)");
+    }
+  }
+  /* /codes-postaux.json (12/11/2026) : provenance dans le fichier (La Poste), et que des codes à cinq chiffres
+     vers des communes de la bêta. */
+  if (existe("data/codes-postaux.json")) {
+    const cp = JSON.parse(lire("data/codes-postaux.json"));
+    assert.ok(cp.source && cp.source.producteur && cp.source.licence && cp.source.url && cp.genere_le,
+      "codes-postaux.json publie sans source, licence ni date (invariant 4)");
+    const beta = JSON.parse(lire("data/communes-beta.json")).communes || {};
+    for (const [code, liste] of Object.entries(cp.codes || {})) {
+      assert.match(code, /^\d{5}$/, "code postal mal forme : " + code);
+      for (const i of liste) assert.ok(beta[i], `codes-postaux.json : ${code} pointe vers ${i}, hors de la beta`);
     }
   }
   /* /mairies-idf.json (D28, ADR 0005) : provenance dans le fichier (annuaire DILA). */

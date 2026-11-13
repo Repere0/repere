@@ -13,6 +13,7 @@
 import { Platform, StyleSheet, Text, type ColorValue } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { Tabs } from "expo-router";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { LIBELLES } from "@repere/core";
 import { ACCENTS, couleurs } from "../../lib/theme";
 import { useTheme } from "../../lib/themeChoix";
@@ -53,6 +54,10 @@ export default function Onglets() {
   /* V35 : s'abonner au thème fait relire les couleurs de l'en-tête à chaque changement de mode
      (sans cela, passer de sombre à clair laissait l'en-tête sombre jusqu'au rechargement). */
   useTheme();
+  /* 12/11/2026 (roadmap bêta) : la hauteur minimale s'ajoute à la zone protégée de l'iPhone. La barre pose déjà cette
+     marge en bas (paddingBottom) ; avec un minimum fixe de 72 px, il ne restait que 43 px pour l'icône et le libellé,
+     qui descendaient de 6 px sous la barre d'accueil (mesuré avec une marge de 34 px, tests/marges-ios-web.mjs). */
+  const marges = useSafeAreaInsets();
   return (
     <Tabs
       screenOptions={{
@@ -64,7 +69,7 @@ export default function Onglets() {
         tabBarActiveTintColor: ACCENTS.texteAccent,
         tabBarInactiveTintColor: couleurs.sourd,
         /* Filet de séparation d'un demi-pixel, pas d'ombre (refonte « légère »). */
-        tabBarStyle: { backgroundColor: couleurs.carte, borderTopColor: couleurs.trait, borderTopWidth: StyleSheet.hairlineWidth, elevation: 0, shadowOpacity: 0, minHeight: 72, paddingTop: 6 },
+        tabBarStyle: { backgroundColor: couleurs.carte, borderTopColor: couleurs.trait, borderTopWidth: StyleSheet.hairlineWidth, elevation: 0, shadowOpacity: 0, minHeight: 72 + marges.bottom, paddingTop: 6 },
         headerLeft: () => <ChangerCommune />,
         headerRight: () => <BoutonReglages />,
       }}

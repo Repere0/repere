@@ -57,3 +57,11 @@ export function prochaineElection(aujourdhui: Date): { election: Election; jours
   }
   return plusProche;
 }
+
+/* Le nombre de jours avant une date (déplacé de l'écran de la présidentielle le 13/11/2026 : une seule fonction pour
+   le compte à rebours de la présidentielle et celui du Repère du jour). */
+export const joursAvant = (iso: string) => {
+  const [a, m, j] = iso.split("-").map(Number);
+  const n = new Date();
+  return Math.round((Date.UTC(a, m - 1, j) - Date.UTC(n.getFullYear(), n.getMonth(), n.getDate())) / 86400000);
+};
