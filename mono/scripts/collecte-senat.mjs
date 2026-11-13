@@ -33,13 +33,16 @@ import fs from "node:fs";
 import path from "node:path";
 
 export const SOURCE = "https://www.senat.fr/api-senat/senateurs.json";
-export const PAGE_LICENCE = "https://data.senat.fr/les-senateurs/";
+/* La page de licence du Senat. La page des senateurs, elle, ne nomme PAS la licence : elle renvoie ici
+   (verifie le 13/11/2026, apres un premier passage du runner qui a refuse de publier, comme prevu). */
+export const PAGE_LICENCE = "https://data.senat.fr/licence/";
 export const SENATEURS_MIN = 300;
 export const PART_GROUPES = 0.95;
 
 /* Les licences ouvertes que le Senat peut declarer. La premiere trouvee sur la page est retenue,
    telle qu'elle est ecrite. On ne connait pas la licence tant qu'on ne l'a pas lue. */
 export const LICENCES = [
+  { motif: /ETALAB[- ]Licence[- ]Ouverte[- ]v2\.0/i, nom: "Licence Ouverte 2.0" },
   { motif: /licence\s+ouverte[^<.,;]{0,20}(?:2\.0|v2)/i, nom: "Licence Ouverte 2.0" },
   { motif: /licence\s+ouverte/i, nom: "Licence Ouverte" },
   { motif: /\bODbL\b/i, nom: "ODbL" },
@@ -47,9 +50,13 @@ export const LICENCES = [
   { motif: /\bCC[- ]?BY(?:[- ]?SA)?\b/i, nom: "Creative Commons BY" },
 ];
 
+/* On cherche dans le texte VISIBLE et dans le HTML brut : le Senat nomme sa licence dans le nom du
+   fichier qu'il met en lien (« ETALAB-Licence-Ouverte-v2.0 »), donc dans un attribut. Les motifs sont
+   essayes du plus precis au plus vague : une page qui dit « v2.0 » ne sort pas « Licence Ouverte » tout court. */
 export function licenceDeLaPage(html) {
-  const texte = String(html || "").replace(/<[^>]*>/g, " ");
-  for (const l of LICENCES) if (l.motif.test(texte)) return l.nom;
+  const brut = String(html || "");
+  const texte = brut.replace(/<[^>]*>/g, " ");
+  for (const l of LICENCES) if (l.motif.test(texte) || l.motif.test(brut)) return l.nom;
   return null;
 }
 

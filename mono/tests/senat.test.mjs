@@ -73,3 +73,14 @@ test("sénateurs : le fichier publié porte sa source, sa licence relevée et sa
   assert.equal(f.senateurs[0].nom.localeCompare(f.senateurs[1].nom, "fr") <= 0, true, "liste rangée par nom");
   assert.ok(!JSON.stringify(f).includes("senimg"), "aucune photo du Sénat dans le fichier publié");
 });
+
+test("licence : la page du Sénat renvoie vers data.senat.fr/licence/, et c'est celle-là qu'on lit", async () => {
+  /* Premier passage du runner (13/11/2026) : la collecte a REFUSÉ de publier, parce que la page des
+     sénateurs ne nomme pas la licence. Elle renvoie vers data.senat.fr/licence/, qui dit, en toutes
+     lettres, « ETALAB-Licence-Ouverte-v2.0 ». C'est cette page que la collecte lit désormais. */
+  const { PAGE_LICENCE } = await import("../scripts/collecte-senat.mjs");
+  assert.equal(PAGE_LICENCE, "https://data.senat.fr/licence/");
+  assert.equal(licenceDeLaPage('<a href="/doc/ETALAB-Licence-Ouverte-v2.0.pdf">Licence</a>'), "Licence Ouverte 2.0");
+  assert.equal(licenceDeLaPage("<p>L'utilisation de ces données vaut acceptation de la licence.</p>"), null,
+    "une page qui parle de « la licence » sans la nommer ne suffit pas : on ne publie pas un chiffre sans sa licence");
+});
