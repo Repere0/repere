@@ -26,13 +26,15 @@ import { useSelection } from "../lib/selection";
 import { useProfil } from "../lib/profil";
 import { feuille, ACCENTS, CIBLE, couleurs, FILET_TUILE, JAUGE, OMBRE, PAS, POLICE, RAYON, TYPO } from "../lib/theme";
 import { useTheme } from "../lib/themeChoix";
-import { Decideurs } from "../ui/decideurs";
 import { ActuMairie } from "../ui/actu-mairie";
 import { groupeDe, useGroupes } from "../lib/groupes";
 import { VOTE } from "../ui/partage/donnees";
 import { SquelettesListe } from "../ui/squelette";
 import { Logo } from "../ui/logo";
 import { ChipsThemes } from "../ui/chips-themes";
+
+/* Les six thèmes de l'accueil (14/11/2026, porteur) : des thèmes de @repere/core, pas un de plus. */
+const THEMES_ACCUEIL = ["Santé", "École", "Transport", "Environnement", "Sécurité", "Budget"];
 import { Ionicons } from "@expo/vector-icons";
 import { RappelElection } from "../ui/rappel-election";
 import { DatePublication } from "../ui/fraicheur";
@@ -188,6 +190,7 @@ const ACCES: { ouvrir: () => void; texte: string; etiquette: string; icone: keyo
   { ouvrir: () => router.push("/presidentielle-2027"), texte: "Présidentielle 2027", etiquette: "Présidentielle 2027 : candidats, débats, réunions publiques, comment voter", icone: "flag", couleur: couleurs.dept },
   { ouvrir: () => router.push("/pour-vous"), texte: "Pour vous", etiquette: "Pour vous : ce qui a été publié selon votre vue", icone: "bookmark", couleur: couleurs.region },
   { ouvrir: () => router.push("/scrutins"), texte: "Le Parlement", etiquette: "Le Parlement : l'Assemblée nationale et le Sénat, leur composition et les votes publics", icone: "business", couleur: couleurs.france },
+  { ouvrir: () => router.push("/elus"), texte: "Mes élus", etiquette: "Mes élus : l'annuaire des élus, du maire au Parlement", icone: "people", couleur: couleurs.ville },
 ];
 
 /* UN SEUL ACCUEIL (11/11/2026, audit d'architecture). Avec une commune gardée sur le téléphone,
@@ -394,6 +397,8 @@ export default function Accueil() {
      d'ecran supplementaire : c'est cet ecran qui accueille. */
   const premiere = !retenue;
   const champOuvert = cherche || !!filtre || premiere;
+  /* Une recherche en cours (ou la liste A-Z) : l'accueil se retire pour laisser les résultats sous le champ. */
+  const recherchant = filtre.trim().length > 0 || tout;
 
   /* Le député montré : celui de la commune retenue, sinon celui de l'exemple (dit comme tel). */
   const deputeVu = voteVu && "depute" in voteVu ? { nom: voteVu.depute, circo: voteVu.circo, ref: voteVu.acteur } : exemple && !voteVu ? { nom: VOTE.depute, circo: 1, ref: VOTE.acteur as string } : null;
@@ -402,11 +407,6 @@ export default function Accueil() {
      09/11/2026) : les décideurs du quotidien et la dernière publication de la mairie. */
   const cartes = (
     <>
-            <Decideurs titre={exemple ? `Décideurs du quotidien · exemple : ${cible.nom}` : "Décideurs de votre quotidien"}
-              maire={maire} depute={deputeVu ? deputeVu.nom : null} circo={deputeVu ? deputeVu.circo : null}
-              groupeDepute={deputeVu ? groupeDe(deputeVu.ref, groupesAccueil) : null}
-              photos={{ maire: maire && depCible ? { dep: depCible, cle: "M" + cible.insee } : null,
-                depute: deputeVu && depCible ? { dep: depCible, cle: deputeVu.ref } : null }} />
             {!exemple ? <ActuMairie insee={cible.insee} nom={cible.nom} /> : null}
             <ScrollView horizontal showsHorizontalScrollIndicator={false} decelerationRate="fast" snapToInterval={pas}
               accessibilityLabel={argent ? "Cartes à faire défiler : l'argent de la commune, puis un vote" : "Un vote, à titre d'exemple"}
@@ -563,86 +563,78 @@ export default function Accueil() {
                 Le titre reste pour le lecteur d'écran (un écran sans titre est une impasse). */}
             <Text style={s.titreCache} accessibilityRole="header">Repère, accueil</Text>
             {/* Maquette Stitch « Recherche » (09/11/2026) : l'accroche, au-dessus de la recherche. */}
-            {/* 13/11/2026 (ADR 0009) : le prénom, s'il a été donné. Il vient de repere.profil, jamais du réseau. */}
-            {prenom ? <Text style={[s.accroche, { fontFamily: POLICE.affiche, color: D.encre }]} testID="bonjour">Bonjour {prenom}</Text> : null}
-            <Text style={s.accroche}>Ce qui se passe chez vous, expliqué simplement.</Text>
-            {!champOuvert ? (
-              <Pressable onPress={() => setCherche(true)} accessibilityRole="button" accessibilityLabel="Chercher une commune"
-                style={({ pressed }) => [s.chercher, pressed && enfonce(true)]}>
-                <Ionicons name="search" size={24} color={D.encre} accessible={false} importantForAccessibility="no" />
-                <Text style={s.chercherTexte}>Chercher une commune</Text>
-              </Pressable>
-            ) : null}
-            {/* 12/11/2026 (porteur) : les thèmes en un geste ; la recherche s'ouvre filtrée. */}
-            <ChipsThemes />
-            <View style={s.tuiles}>
-              {ACCES.map(a => (
-                <Pressable key={a.texte} onPress={a.ouvrir} accessibilityRole="link" accessibilityLabel={a.etiquette}
-                  style={({ pressed }) => [s.tuile, pressed && enfonce(true)]}>
-                  {/* Refonte (porteur, 09/11/2026) : plus de fond coloré ; l'icône au contour, dans l'encre. */}
-                  <Ionicons name={`${a.icone}-outline` as keyof typeof Ionicons.glyphMap} size={22} color={D.encre} accessible={false} importantForAccessibility="no" />
-                  <Text style={s.tuileTexte}>{a.texte}</Text>
-                </Pressable>
-              ))}
+            {/* 14/11/2026 (porteur, refonte de l'accueil, après le test iPhone). De haut en bas : « Bonjour », le sous-titre,
+                LA RECHERCHE (l'action n°1, toujours ouverte), le quiz, les quatre accès, les thèmes. Pendant une recherche,
+                tout ce qui n'est pas la recherche s'efface : les résultats viennent juste sous le champ.
+                « Bonjour » : le prénom vient de repere.profil, jamais du réseau ; sans prénom, « Citoyen ». */}
+            <Text style={s.bonjour} testID="bonjour" accessibilityRole="header">Bonjour {prenom || "Citoyen"}</Text>
+            <Text style={s.sousTitre}>Ce qui se passe chez vous, expliqué simplement.</Text>
+            <Text style={s.titreCache} nativeID="question">Où habitez-vous ?</Text>
+            <View style={[s.champLigne, { borderColor: ACCENTS.autorite }, champActif && Platform.OS === "web" && { borderColor: E.ville }]}>
+              <Ionicons name="search" size={22} color={D.sourd} accessible={false} importantForAccessibility="no" style={{ marginRight: PAS * 2 }} />
+              <TextInput
+                value={filtre}
+                onChangeText={setFiltre}
+                onFocus={() => setChampActif(true)}
+                onBlur={() => setChampActif(false)}
+                placeholder="Tapez votre ville (ex: Melun...)"
+                placeholderTextColor={D.sourd}
+                autoCorrect={false}
+                autoCapitalize="none"
+                autoFocus={cherche && !premiere}
+                returnKeyType="search"
+                accessibilityLabel="Où habitez-vous ? Tapez le nom de votre commune"
+                accessibilityLabelledBy="question"
+                style={s.champ}
+              />
             </View>
-
-            {/* 12/11/2026 (porteur) : le quiz, bien visible. Remplace la bannière « moins de 18 ans », qui menait à la même page que la
-                tuile « Présidentielle 2027 » (doublon) ; le guide « Ma voix » reste à un geste sur cette page. */}
-            <Pressable onPress={() => router.push("/quiz")} accessibilityRole="link"
-              accessibilityLabel="Testez votre culture civique : jouer au quiz"
-              style={({ pressed }) => [s.jeunes, pressed && enfonce(true)]}>
-              <Ionicons name="school-outline" size={22} color={ACCENTS.autorite} accessible={false} importantForAccessibility="no" />
-              <View style={{ flex: 1 }}>
-                <Text style={s.tuileTexte}>Testez votre culture civique</Text>
-                <Text style={s.note}>Quatre définitions, une seule juste.</Text>
-              </View>
-              <Text style={[s.tuileTexte, { color: ACCENTS.autorite }]}>Jouer ›</Text>
-            </Pressable>
-
-            {/* V37 bloc 6 : le rappel de la prochaine élection, s'il tombe dans les 180 jours. */}
-            {premiere ? null : <View style={{ marginTop: PAS * 4 }}><RappelElection /></View>}
-            {premiere ? null : <DernieresPublications />}
-            {premiere ? null : cartes}
-
-            {retenue && nomRetenue ? (
-              <Carte echelon="ville" titre="Votre commune, sur cet appareil">
-                <Texte fort>{nomRetenue}</Texte>
-                <Bouton texte={`Voir ce qui se passe à ${nomRetenue}`} onPress={() => ouvrir(retenue.c, nomRetenue)} />
-                <Bouton texte={`Oublier ${nomRetenue}`} discret onPress={oublier} />
-              </Carte>
-            ) : null}
-            {champOuvert ? (
+            {recherchant ? null : (
               <>
-                <Text style={s.question} nativeID="question">{retenue && nomRetenue ? "Une autre commune ?" : "Où habitez-vous ?"}</Text>
-                <View style={[s.champLigne, champActif && Platform.OS === "web" && { borderColor: E.ville }]}>
-                  <View accessibilityElementsHidden importantForAccessibility="no-hide-descendants" style={s.loupe}>
-                    <View style={s.loupeRond} />
-                    <View style={s.loupeManche} />
+                {retenue && nomRetenue ? (
+                  <Carte echelon="ville" titre="Votre commune, sur cet appareil">
+                    <Texte fort>{nomRetenue}</Texte>
+                    <Bouton texte={`Voir ce qui se passe à ${nomRetenue}`} onPress={() => ouvrir(retenue.c, nomRetenue)} />
+                    <Bouton texte={`Oublier ${nomRetenue}`} discret onPress={oublier} />
+                  </Carte>
+                ) : null}
+
+                {/* Le quiz : une carte pleine largeur, à part des quatre accès (fond civique, bordure d'accent). */}
+                <Pressable onPress={() => router.push("/quiz")} accessibilityRole="link"
+                  accessibilityLabel="Testez votre culture civique : jouer au quiz"
+                  style={({ pressed }) => [s.jeunes, pressed && enfonce(true)]}>
+                  <Ionicons name="school-outline" size={28} color={ACCENTS.autorite} accessible={false} importantForAccessibility="no" />
+                  <View style={{ flex: 1, gap: 2 }}>
+                    <Text style={[s.tuileTexte, { fontSize: 17 }]}>Testez votre culture civique</Text>
+                    <Text style={s.note}>Quatre définitions, une seule juste.</Text>
                   </View>
-                <TextInput
-                  value={filtre}
-                  onChangeText={setFiltre}
-                  onFocus={() => setChampActif(true)}
-                  onBlur={() => setChampActif(false)}
-                  placeholder="Tapez votre ville (ex: Melun...)"
-                  placeholderTextColor={D.sourd}
-                  autoCorrect={false}
-                  autoCapitalize="none"
-                  autoFocus={cherche && !premiere}
-                  returnKeyType="search"
-                  accessibilityLabel="Où habitez-vous ? Tapez le nom de votre commune"
-                  accessibilityLabelledBy="question"
-                  style={s.champ}
-                />
+                  <View style={s.jouer}><Text style={s.jouerTexte}>Jouer</Text></View>
+                </Pressable>
+
+                <View style={s.tuiles}>
+                  {ACCES.map(a => (
+                    <Pressable key={a.texte} onPress={a.ouvrir} accessibilityRole="link" accessibilityLabel={a.etiquette}
+                      style={({ pressed }) => [s.tuile, pressed && enfonce(true)]}>
+                      <Ionicons name={`${a.icone}-outline` as keyof typeof Ionicons.glyphMap} size={22} color={D.encre} accessible={false} importantForAccessibility="no" />
+                      <Text style={s.tuileTexte}>{a.texte}</Text>
+                    </Pressable>
+                  ))}
                 </View>
+
+                {/* 12/11/2026 (porteur) : les thèmes en un geste ; la recherche s'ouvre filtrée. Six sur l'accueil (14/11). */}
+                <ChipsThemes themes={THEMES_ACCUEIL} />
+
+                {/* V37 bloc 6 : le rappel de la prochaine élection, s'il tombe dans les 180 jours. */}
+                {premiere ? null : <View style={{ marginTop: PAS * 4 }}><RappelElection /></View>}
+                <DernieresPublications />
+                {cartes}
               </>
-            ) : null}
+            )}
             {etat === ETATS.EN_COURS ? <SquelettesListe n={3} hauteur={72} /> : null}
             {etat !== ETATS.SERVI && etat !== ETATS.EN_COURS && phrase ? (
               <Vide titre={phrase.titre} corps={phrase.corps}
                 action="Réessayer" onAction={() => setEssai(n => n + 1)} />
             ) : null}
-            {champOuvert && !cherches.length && !tout && recentes.length ? (
+            {!recherchant && !cherches.length && !tout && recentes.length ? (
               <View style={{ gap: PAS * 2 }}>
                 <Text style={s.note}>Ouvertes pendant cette session</Text>
                 {recentes.map(c => (
@@ -661,7 +653,7 @@ export default function Accueil() {
                 <Bouton texte="Fermer la liste" discret onPress={() => setTout(false)} />
               </View>
             ) : null}
-            {etat === ETATS.SERVI && !cherches.length && !tout ? (
+            {etat === ETATS.SERVI && !cherches.length && !tout && !recherchant ? (
               <>
                 <Text style={s.note}>La bêta couvre les {communes.length} communes d'Île-de-France qui ont une fiche.</Text>
                 {/* Maquette Stitch : les réassurances en pied. « Compris en 4 secondes » n'est pas
@@ -690,8 +682,6 @@ export default function Accueil() {
               </>
             ) : null}
             {/* V13 bloc D : sous le pitch et la recherche, au-dessus des cartes. Masquee sans fait de moins de 7 jours. */}
-            {premiere && !cherches.length && !tout ? <DernieresPublications /> : null}
-            {premiere && !cherches.length && !tout ? cartes : null}
             {manquante ? (
               <Vide titre={`${manquante[1]} existe bien en Île-de-France : c'est nous qui n'avons pas encore sa fiche.`}
                 corps="Les données publiées que Repère lit ne contiennent pas de fiche pour cette commune. Ce n'est pas une erreur de votre part, et ce n'est pas la preuve que la commune n'existe pas."
@@ -753,7 +743,7 @@ const s = feuille(() => StyleSheet.create({
   outil: { width: CIBLE, height: CIBLE, alignItems: "center", justifyContent: "center" },
   tuiles: { flexDirection: "row", flexWrap: "wrap", gap: PAS * 2 },
   /* Fond D.voile : la teinte demandée par le porteur à 3 unités près, sans couleur hors palette. */
-  tuile: { width: "48%", flexGrow: 1, minHeight: 76, gap: PAS * 2, padding: PAS * 3, borderRadius: RAYON.bloc, backgroundColor: D.carte, ...(Platform.OS === "web" ? { borderWidth: 1, borderColor: FILET_TUILE.filet } : {}), justifyContent: "space-between" },
+  tuile: { width: "48%", flexGrow: 1, minHeight: 76, gap: PAS * 2, padding: PAS * 3, borderRadius: 16, backgroundColor: D.carte, ...(Platform.OS === "web" ? { borderWidth: 1, borderColor: FILET_TUILE.filet } : {}), justifyContent: "space-between" },
   tuileTexte: { fontFamily: POLICE.titre, fontSize: 14, lineHeight: 20, color: D.encre },
   marque: { fontFamily: POLICE.affiche, fontSize: 20, color: D.encre },
   /* L'action principale : plus haute, filet plus marqué (refonte du 09/11/2026). */
@@ -779,8 +769,8 @@ const s = feuille(() => StyleSheet.create({
   confiance: { gap: PAS, padding: PAS * 4, borderRadius: RAYON.bloc, backgroundColor: D.voile, marginTop: PAS * 2 },
   question: { fontFamily: POLICE.titre, fontSize: 20, lineHeight: 26, color: D.encre, marginTop: PAS * 6 },
   champLigne: {
-    flexDirection: "row", alignItems: "center", minHeight: CIBLE + 8, borderRadius: 999, borderWidth: 1.5, borderColor: D.trait,
-    backgroundColor: D.carte, paddingLeft: PAS * 4, ...OMBRE,
+    flexDirection: "row", alignItems: "center", minHeight: 60, borderRadius: 999, borderWidth: 2, borderColor: D.trait,
+    backgroundColor: D.carte, paddingLeft: PAS * 5, ...OMBRE,
   },
   loupe: { width: 18, height: 18, marginRight: PAS * 2 },
   loupeRond: { position: "absolute", top: 0, left: 0, width: 13, height: 13, borderRadius: 7, borderWidth: 2, borderColor: D.sourd },
@@ -794,8 +784,12 @@ const s = feuille(() => StyleSheet.create({
     ...(Platform.OS === "web" ? ({ outlineStyle: "none" } as object) : {}),
   },
   note: { fontFamily: POLICE.texte, fontSize: 14, lineHeight: 22, color: D.sourd },
+  bonjour: { fontFamily: POLICE.section, fontSize: 34, lineHeight: 40, letterSpacing: -0.6, color: D.encre, marginTop: PAS * 4 },
+  sousTitre: { fontFamily: POLICE.titre, fontSize: 20, lineHeight: 28, color: D.sourd },
+  jouer: { minHeight: 36, paddingHorizontal: PAS * 4, borderRadius: 999, backgroundColor: D.encre, alignItems: "center", justifyContent: "center" },
+  jouerTexte: { fontFamily: POLICE.titre, fontSize: 15, color: D.sol },
   accroche: { fontFamily: POLICE.affiche, fontSize: 22, lineHeight: 30, letterSpacing: -0.2, color: D.encre, marginTop: PAS * 4 },
-  jeunes: { minHeight: CIBLE + 16, flexDirection: "row", alignItems: "center", gap: PAS * 3, padding: PAS * 4, borderRadius: RAYON.carte, backgroundColor: ACCENTS.fondCivique, borderWidth: 1, borderColor: D.trait },
+  jeunes: { minHeight: CIBLE + 16, flexDirection: "row", alignItems: "center", gap: PAS * 3, padding: PAS * 4, borderRadius: 16, backgroundColor: ACCENTS.fondCivique, borderWidth: 1.5, borderColor: ACCENTS.autorite },
   reassurances: { gap: PAS * 2 },
   reassurance: { flexDirection: "row", alignItems: "center", gap: PAS * 2 },
   resultat: {
