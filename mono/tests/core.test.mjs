@@ -784,3 +784,17 @@ test("core — mediane : [1, 2, 100] donne 2, pas 34 ; nombre pair : milieu des 
   assert.equal(m.moyenne, 34);
   assert.equal(m.n, 3);
 });
+
+/* 14/11/2026 (porteur, PR « parcours des élus ») : le nombre de législatures où un député a siégé, compté sur les
+   mandats publiés par l'Assemblée. Un état, jamais une phrase ; rien si la donnée manque ; « au moins » quand le
+   premier mandat connu tombe sur la plus ancienne législature publiée (on ne sait pas ce qu'il y avait avant). */
+test("parcours du député : législatures comptées sur la source, « au moins » au bord des données, rien sans donnée", async () => {
+  const { legislaturesDepute } = await import("../packages/core/src/visuels.js");
+  const src = { producteur: "Assemblée nationale", releve_le: "2026-11-13" };
+  assert.deepEqual(legislaturesDepute({ legislatures: [17] }, src), { etat: "compte", nombre: 1, auMoins: false, producteur: "Assemblée nationale", releve_le: "2026-11-13" });
+  assert.equal(legislaturesDepute({ legislatures: [16, 17, 15, 17] }, src).nombre, 3, "une législature ne compte qu'une fois");
+  assert.equal(legislaturesDepute({ legislatures: [11, 12, 17] }, src).auMoins, true);
+  assert.equal(legislaturesDepute({ legislatures: [12, 17] }, src).auMoins, false);
+  for (const d of [null, {}, { legislatures: [] }, { legislatures: "17" }, { legislatures: ["17", null, 0, 2.5] }]) assert.deepEqual(legislaturesDepute(d, src), { etat: "absent" }, JSON.stringify(d));
+  assert.deepEqual(legislaturesDepute({ legislatures: [17] }, {}), { etat: "sans_releve" }, "sans date de relevé, rien n'est affiché (invariant 4)");
+});

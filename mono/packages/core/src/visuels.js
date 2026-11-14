@@ -250,7 +250,7 @@ export function chaineDecision({ fiche, paquet, index, deputes, elusRegion, dep 
   const dd = deputes && deputes.deputes ? circos.map(c => ({ circo: c, d: deputes.deputes[dep + "-" + c] })) : [];
   const ed = elusDepartement(paquet, fiche);
   const region = elusRegion && Array.isArray(elusRegion.elus) && elusRegion.elus.length ? elusRegion.elus[0] : null;
-  const tousDeputes = dd.filter(x => x.d).map(x => ({ nom: [x.d.prenom, x.d.nom].filter(Boolean).join(" "), role: "À l'Assemblée nationale pour votre circonscription", debut: x.d.dateDebut || null, circo: x.circo }));
+  const tousDeputes = dd.filter(x => x.d).map(x => ({ nom: [x.d.prenom, x.d.nom].filter(Boolean).join(" "), role: "À l'Assemblée nationale pour votre circonscription", debut: x.d.dateDebut || null, legislatures: x.d.legislatures || null, circo: x.circo }));
   return [
     { echelon: "ville", niveau: "Commune", institution: "Conseil municipal", lieu: fiche.nom,
       personne: fiche.maire && fiche.maire.nom ? { nom: fiche.maire.nom, role: "Maire" } : null,
@@ -291,6 +291,20 @@ export function debutDeMandat(niveau, source) {
   if (!debut) return { etat: "non_publie" };
   if (!source || !source.releve_le) return { etat: "sans_releve" };
   return { etat: "date", date: debut, producteur: source.producteur, releve_le: source.releve_le };
+}
+
+/* PARCOURS DU DÉPUTÉ (14/11/2026, porteur). Le nombre de législatures où il a siégé, compté par Repère sur les
+   mandats « ASSEMBLEE » que publie l'Assemblée nationale (référentiel historique AMO30). C'est un CALCUL : l'écran
+   l'annonce comme tel (invariant 4). Ce n'est ni un rang ni une note (invariant 3) : aucun député n'est comparé.
+   `auMoins` : le premier mandat connu tombe sur la plus ancienne législature du fichier (la XIe, 1997, d'après le
+   nom du fichier — non vérifié sur l'archive) : il a pu siéger avant, et on ne le sait pas. Un état, jamais une phrase. */
+export const PREMIERE_LEGISLATURE_PUBLIEE = 11;
+export function legislaturesDepute(depute, source) {
+  const brut = depute && Array.isArray(depute.legislatures) ? depute.legislatures : [];
+  const l = [...new Set(brut.filter(n => Number.isInteger(n) && n >= 1 && n <= 99))].sort((a, b) => a - b);
+  if (!l.length) return { etat: "absent" };
+  if (!source || !source.releve_le) return { etat: "sans_releve" };
+  return { etat: "compte", nombre: l.length, auMoins: l[0] <= PREMIERE_LEGISLATURE_PUBLIEE, producteur: source.producteur, releve_le: source.releve_le };
 }
 
 /* --- la fraicheur ---------------------------------------------------------- */
