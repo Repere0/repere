@@ -221,10 +221,10 @@ const neuf = async (init) => {
       dessus: !!dessus && jalon.contains(dessus) };
   }));
   dit("frise lue (jalon haut/bas/l/h, segments [haut, bas, écart au centre]) : " + JSON.stringify(frise));
-  ok(frise.length === 4 && frise.every(f => f && f.l === 40 && f.h === 40), "rangs : quatre jalons de 40 px, aucun écrasé ni étiré");
+  ok(frise.length === 10 && frise.every(f => f && f.l === 32 && f.h === 32), "rangs : dix jalons de 32 px, aucun écrasé ni étiré");
   ok(frise.every(f => f && f.traverse), "rangs : le fil passe par le centre de chaque jalon");
   ok(frise.every(f => f && f.dessus), "rangs : chaque jalon est peint au-dessus du fil");
-  ok(frise.every((f, i) => i === 0 || (f && frise[i - 1] && f.haut - frise[i - 1].bas >= 8)), "rangs : deux jalons ne se touchent jamais (écarts : " + frise.slice(1).map((f, i) => f && frise[i] ? f.haut - frise[i].bas : "?").join(", ") + " px)");
+  ok(frise.every((f, i) => i === 0 || (f && frise[i - 1] && f.haut - frise[i - 1].bas >= 4)), "rangs : deux jalons ne se touchent jamais (écarts : " + frise.slice(1).map((f, i) => f && frise[i] ? f.haut - frise[i].bas : "?").join(", ") + " px)");
   ok(erreurs.length === 0, "rangs : aucune erreur JavaScript" + (erreurs[0] ? " (" + erreurs[0] + ")" : ""));
   await ctx.close();
 }

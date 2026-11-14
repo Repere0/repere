@@ -19,7 +19,7 @@ const contexte = await navigateur.newContext({ viewport: { width: 390, height: 8
 /* Profil déjà répondu, commune retenue, taille de texte 22 : elle doit survivre au changement de mode. */
 await contexte.addInitScript(() => {
   if (!localStorage.getItem("repere.departement")) localStorage.setItem("repere.departement", JSON.stringify({ d: "77", c: "77284" }));
-  if (!localStorage.getItem("repere.profil")) localStorage.setItem("repere.profil", JSON.stringify({
+  if (!localStorage.getItem("repere.profil")) localStorage.setItem("repere.profil", JSON.stringify({ prenom: "Test",
     niveauZoom: "france", tailleTexte: 22, espacement: 1.5, contraste: "normal", policeDyslexie: false,
     animationsReduites: false, modeDaltonien: false, masquerImages: false, themes: [], mode: "auto",
   }));

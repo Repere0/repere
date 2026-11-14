@@ -45,7 +45,8 @@ const pluriel = (n: number) => `${n} réponse${n > 1 ? "s" : ""} juste${n > 1 ? 
  * décidé. Les paliers se lisent donc à la forme et au remplissage — cercle vide, cercle plein, ruban,
  * trophée — et au texte, jamais à une couleur de métal. Un lecteur daltonien lit la même chose. */
 const JALONS: Record<string, keyof typeof Ionicons.glyphMap> = {
-  neo: "ellipse-outline", citoyen: "ellipse", super: "ribbon", sage: "trophy",
+  neo: "ellipse-outline", apprenti: "leaf-outline", citoyen: "ellipse", initie: "book-outline", averti: "bulb-outline",
+  eclaire: "sunny-outline", expert: "ribbon-outline", maitre: "ribbon", mentor: "star", sage: "trophy",
 };
 
 function LesRangs({ ouvert, fermer, points }: { ouvert: boolean; fermer: () => void; points: number }) {
@@ -53,7 +54,7 @@ function LesRangs({ ouvert, fermer, points }: { ouvert: boolean; fermer: () => v
   const rangAtteint = RANGS.indexOf(atteint);
   return (
     <Modal visible={ouvert} animationType="slide" onRequestClose={fermer} transparent={false}>
-      <ScrollView {...MARQUE_DEFILEMENT} style={{ backgroundColor: couleurs.sol }} contentContainerStyle={{ padding: PAS * 5, gap: PAS * 4, maxWidth: 560, width: "100%", alignSelf: "center" }}>
+      <ScrollView {...MARQUE_DEFILEMENT} style={{ backgroundColor: couleurs.sol }} contentContainerStyle={{ padding: PAS * 3, gap: PAS * 2, maxWidth: 560, width: "100%", alignSelf: "center" }}>
         <View style={{ flexDirection: "row", alignItems: "center", gap: PAS * 3 }}>
           <Text style={[TYPO.affiche, { flex: 1 }]} accessibilityRole="header">Les rangs</Text>
           <Pressable onPress={fermer} accessibilityRole="button" accessibilityLabel="Fermer la liste des rangs"
@@ -70,25 +71,25 @@ function LesRangs({ ouvert, fermer, points }: { ouvert: boolean; fermer: () => v
             const aVenir = i > rangAtteint;
             const teinte = aVenir ? couleurs.sourd : couleurs.encre;
             return (
-              <View key={r.cle} style={{ flexDirection: "row", gap: PAS * 4, position: "relative" }} testID="rang-ligne"
+              <View key={r.cle} style={{ flexDirection: "row", gap: PAS * 3, position: "relative" }} testID="rang-ligne"
                 accessibilityLabel={`${r.nom}, ${r.max === null ? `${r.min} points et plus` : `de ${r.min} à ${r.max} points`}${ici ? ". Votre rang." : passe ? ". Franchi." : ". À venir."}`}>
                 {/* LE FIL (14/11/2026, porteur, iPhone : les cercles et le trait se chevauchaient). Le trait ne dépend plus
                     de la mise en page : deux segments posés en absolu dans la ligne, DERRIÈRE le jalon (zIndex 0), qui
                     se rejoignent au centre du cercle. Le jalon, opaque et de taille fixe, est peint au-dessus (zIndex 1). */}
                 {i > 0 ? (
-                  <View testID="rang-fil" pointerEvents="none" style={{ position: "absolute", zIndex: 0, left: 19, top: 0, height: 20, width: 2,
+                  <View testID="rang-fil" pointerEvents="none" style={{ position: "absolute", zIndex: 0, left: 15.5, top: 0, height: 16, width: 1,
                     backgroundColor: i <= rangAtteint + 1 ? couleurs.encre : couleurs.trait }} />
                 ) : null}
                 {i < RANGS.length - 1 ? (
-                  <View testID="rang-fil" pointerEvents="none" style={{ position: "absolute", zIndex: 0, left: 19, top: 20, bottom: 0, width: 2,
+                  <View testID="rang-fil" pointerEvents="none" style={{ position: "absolute", zIndex: 0, left: 15.5, top: 16, bottom: 0, width: 1,
                     backgroundColor: passe || ici ? couleurs.encre : couleurs.trait }} />
                 ) : null}
-                <View testID="rang-jalon" style={{ zIndex: 1, flexShrink: 0, width: 40, height: 40, borderRadius: 20, alignItems: "center", justifyContent: "center",
+                <View testID="rang-jalon" style={{ zIndex: 1, flexShrink: 0, width: 32, height: 32, borderRadius: 16, alignItems: "center", justifyContent: "center",
                   backgroundColor: ici ? couleurs.encre : couleurs.carte, borderWidth: ici ? 0 : 1, borderColor: couleurs.trait }}>
-                  <Ionicons name={JALONS[r.cle] || "ellipse-outline"} size={20} color={ici ? couleurs.sol : teinte}
+                  <Ionicons name={JALONS[r.cle] || "ellipse-outline"} size={16} color={ici ? couleurs.sol : teinte}
                     accessible={false} importantForAccessibility="no" />
                 </View>
-                <View style={{ flex: 1, gap: 2, paddingBottom: PAS * 5, opacity: aVenir ? 0.55 : 1 }}>
+                <View style={{ flex: 1, gap: 0, paddingBottom: PAS * 3, opacity: aVenir ? 0.55 : 1 }}>
                   <Text style={[TYPO.corps, { fontFamily: POLICE.titre, color: teinte }]}>
                     {r.nom}{ici ? " — votre rang" : ""}
                   </Text>
