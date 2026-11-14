@@ -1,12 +1,12 @@
 {
  "v": 1,
- "maj": "2026-11-13",
+ "maj": "2026-11-14",
  "etapes": {
   "le contexte des agents a derive (voir outils/derive_contexte.mjs ci-dessus)": {
    "message": "le contexte des agents a derive (voir outils/derive_contexte.mjs ci-dessus)",
    "depuis": "2026-11-13",
-   "vu_le": "2026-11-13",
-   "jours": 1
+   "vu_le": "2026-11-14",
+   "jours": 2
   }
  }
 }
