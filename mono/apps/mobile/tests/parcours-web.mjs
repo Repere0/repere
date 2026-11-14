@@ -350,7 +350,7 @@ for (const largeur of [360, 390, 430]) {
    un encours de dette nul : la carte disparaissait sans un mot. */
 {
   const page = await navigateur.newPage({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, reducedMotion: "reduce" });
-  await page.addInitScript(() => { if (!localStorage.getItem("repere.profil")) localStorage.setItem("repere.profil", JSON.stringify({ niveauZoom: "tout", tailleTexte: 16, espacement: 1.5, contraste: "normal", policeDyslexie: false, animationsReduites: false, modeDaltonien: false, masquerImages: false })); });  /* V26 : profil deja repondu, l'accueil ne pose pas les 3 questions */
+  await page.addInitScript(() => { if (!localStorage.getItem("repere.profil")) localStorage.setItem("repere.profil", JSON.stringify({ prenom: "Test", niveauZoom: "tout", tailleTexte: 16, espacement: 1.5, contraste: "normal", policeDyslexie: false, animationsReduites: false, modeDaltonien: false, masquerImages: false })); });  /* V26 : profil deja repondu, l'accueil ne pose pas les 3 questions */
   await page.goto(BASE + "/", { waitUntil: "networkidle" });
   await chercher(page, "bassevelle");
   await page.getByRole("button", { name: /^Bassevelle,/ }).first().click();
@@ -368,7 +368,7 @@ for (const largeur of [360, 390, 430]) {
    « Aller plus loin ». Le contrôle ouvre l'écran, il ne se contente pas du libellé. */
 {
   const page = await navigateur.newPage({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, reducedMotion: "reduce" });
-  await page.addInitScript(() => { if (!localStorage.getItem("repere.profil")) localStorage.setItem("repere.profil", JSON.stringify({ niveauZoom: "tout", tailleTexte: 16, espacement: 1.5, contraste: "normal", policeDyslexie: false, animationsReduites: false, modeDaltonien: false, masquerImages: false })); });  /* V26 : profil deja repondu, l'accueil ne pose pas les 3 questions */
+  await page.addInitScript(() => { if (!localStorage.getItem("repere.profil")) localStorage.setItem("repere.profil", JSON.stringify({ prenom: "Test", niveauZoom: "tout", tailleTexte: 16, espacement: 1.5, contraste: "normal", policeDyslexie: false, animationsReduites: false, modeDaltonien: false, masquerImages: false })); });  /* V26 : profil deja repondu, l'accueil ne pose pas les 3 questions */
   await page.goto(BASE + "/", { waitUntil: "networkidle" });
   await chercher(page, "bassevelle");
   await page.getByRole("button", { name: /^Bassevelle,/ }).first().click();
@@ -384,7 +384,7 @@ for (const largeur of [360, 390, 430]) {
    introuvable ; la phrase dit que la beta ne la couvre pas encore. */
 {
   const page = await navigateur.newPage({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
-  await page.addInitScript(() => { if (!localStorage.getItem("repere.profil")) localStorage.setItem("repere.profil", JSON.stringify({ niveauZoom: "tout", tailleTexte: 16, espacement: 1.5, contraste: "normal", policeDyslexie: false, animationsReduites: false, modeDaltonien: false, masquerImages: false })); });  /* V26 : profil deja repondu, l'accueil ne pose pas les 3 questions */
+  await page.addInitScript(() => { if (!localStorage.getItem("repere.profil")) localStorage.setItem("repere.profil", JSON.stringify({ prenom: "Test", niveauZoom: "tout", tailleTexte: 16, espacement: 1.5, contraste: "normal", policeDyslexie: false, animationsReduites: false, modeDaltonien: false, masquerImages: false })); });  /* V26 : profil deja repondu, l'accueil ne pose pas les 3 questions */
   await page.goto(BASE + "/", { waitUntil: "networkidle" });
   await chercher(page, "Lyon");
   await page.waitForTimeout(800);
@@ -398,7 +398,7 @@ for (const largeur of [360, 390, 430]) {
    faisait afficher « Aucun projet ... n'est publie » : une phrase fausse. */
 async function ouvrirAvecPanne(motif) {
   const page = await navigateur.newPage({ viewport: { width: 390, height: 800 }, isMobile: true, hasTouch: true });
-  await page.addInitScript(() => { if (!localStorage.getItem("repere.profil")) localStorage.setItem("repere.profil", JSON.stringify({ niveauZoom: "tout", tailleTexte: 16, espacement: 1.5, contraste: "normal", policeDyslexie: false, animationsReduites: false, modeDaltonien: false, masquerImages: false })); });  /* V26 : profil deja repondu, l'accueil ne pose pas les 3 questions */
+  await page.addInitScript(() => { if (!localStorage.getItem("repere.profil")) localStorage.setItem("repere.profil", JSON.stringify({ prenom: "Test", niveauZoom: "tout", tailleTexte: 16, espacement: 1.5, contraste: "normal", policeDyslexie: false, animationsReduites: false, modeDaltonien: false, masquerImages: false })); });  /* V26 : profil deja repondu, l'accueil ne pose pas les 3 questions */
   await page.route(motif, r => r.abort());
   await page.goto(BASE + "/", { waitUntil: "networkidle" });
   await chercher(page, COMMUNE.saisie);
@@ -433,7 +433,7 @@ async function ouvrirAvecPanne(motif) {
 async function montantA100ms(reduit) {
   const ctx = await navigateur.newContext({ viewport: { width: 390, height: 800 }, isMobile: true, hasTouch: true, reducedMotion: reduit ? "reduce" : "no-preference" });
   const page = await ctx.newPage();
-  await page.addInitScript(() => { if (!localStorage.getItem("repere.profil")) localStorage.setItem("repere.profil", JSON.stringify({ niveauZoom: "tout", tailleTexte: 16, espacement: 1.5, contraste: "normal", policeDyslexie: false, animationsReduites: false, modeDaltonien: false, masquerImages: false })); });  /* V26 : profil deja repondu, l'accueil ne pose pas les 3 questions */
+  await page.addInitScript(() => { if (!localStorage.getItem("repere.profil")) localStorage.setItem("repere.profil", JSON.stringify({ prenom: "Test", niveauZoom: "tout", tailleTexte: 16, espacement: 1.5, contraste: "normal", policeDyslexie: false, animationsReduites: false, modeDaltonien: false, masquerImages: false })); });  /* V26 : profil deja repondu, l'accueil ne pose pas les 3 questions */
   await page.goto(BASE + "/", { waitUntil: "networkidle" });
   await chercher(page, COMMUNE.saisie);
   await page.getByRole("button", { name: new RegExp("^" + COMMUNE.nom + ",") }).first().click();
@@ -474,7 +474,7 @@ async function montantA100ms(reduit) {
 {
   const ctx = await navigateur.newContext({ viewport: { width: 390, height: 800 }, isMobile: true, hasTouch: true });
   const page = await ctx.newPage();
-  await page.addInitScript(() => { if (!localStorage.getItem("repere.profil")) localStorage.setItem("repere.profil", JSON.stringify({ niveauZoom: "tout", tailleTexte: 16, espacement: 1.5, contraste: "normal", policeDyslexie: false, animationsReduites: false, modeDaltonien: false, masquerImages: false })); });  /* V26 : profil deja repondu, l'accueil ne pose pas les 3 questions */
+  await page.addInitScript(() => { if (!localStorage.getItem("repere.profil")) localStorage.setItem("repere.profil", JSON.stringify({ prenom: "Test", niveauZoom: "tout", tailleTexte: 16, espacement: 1.5, contraste: "normal", policeDyslexie: false, animationsReduites: false, modeDaltonien: false, masquerImages: false })); });  /* V26 : profil deja repondu, l'accueil ne pose pas les 3 questions */
   const demandees = [];
   page.on("request", r => demandees.push(r.url()));
   const stockage = () => page.evaluate(() => ({
@@ -537,7 +537,7 @@ async function ouvrirSemaine({ agenda, senatCoupe, fuseau }) {
   await ctx.route("**/data/agenda-an.json", r => agenda ? r.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(agenda) }) : r.abort());
   if (senatCoupe) await ctx.route("**/data/calendrier-senat.json", r => r.abort());
   const page = await ctx.newPage();
-  await page.addInitScript(() => { if (!localStorage.getItem("repere.profil")) localStorage.setItem("repere.profil", JSON.stringify({ niveauZoom: "tout", tailleTexte: 16, espacement: 1.5, contraste: "normal", policeDyslexie: false, animationsReduites: false, modeDaltonien: false, masquerImages: false })); });  /* V26 : profil deja repondu, l'accueil ne pose pas les 3 questions */
+  await page.addInitScript(() => { if (!localStorage.getItem("repere.profil")) localStorage.setItem("repere.profil", JSON.stringify({ prenom: "Test", niveauZoom: "tout", tailleTexte: 16, espacement: 1.5, contraste: "normal", policeDyslexie: false, animationsReduites: false, modeDaltonien: false, masquerImages: false })); });  /* V26 : profil deja repondu, l'accueil ne pose pas les 3 questions */
   await page.goto(BASE + "/", { waitUntil: "networkidle" });
   await chercher(page, COMMUNE.saisie);
   await page.getByRole("button", { name: new RegExp("^" + COMMUNE.nom + ",") }).first().click();
@@ -583,7 +583,7 @@ async function ouvrirSemaine({ agenda, senatCoupe, fuseau }) {
 {
   const HAUTEUR = Number(process.env.REPERE_HAUTEUR_PLI || 844);
   const page = await navigateur.newPage({ viewport: { width: 390, height: HAUTEUR }, deviceScaleFactor: 2, isMobile: true, hasTouch: true, reducedMotion: "reduce" });
-  await page.addInitScript(() => { if (!localStorage.getItem("repere.profil")) localStorage.setItem("repere.profil", JSON.stringify({ niveauZoom: "tout", tailleTexte: 16, espacement: 1.5, contraste: "normal", policeDyslexie: false, animationsReduites: false, modeDaltonien: false, masquerImages: false })); });  /* V26 : profil deja repondu, l'accueil ne pose pas les 3 questions */
+  await page.addInitScript(() => { if (!localStorage.getItem("repere.profil")) localStorage.setItem("repere.profil", JSON.stringify({ prenom: "Test", niveauZoom: "tout", tailleTexte: 16, espacement: 1.5, contraste: "normal", policeDyslexie: false, animationsReduites: false, modeDaltonien: false, masquerImages: false })); });  /* V26 : profil deja repondu, l'accueil ne pose pas les 3 questions */
   await page.goto(BASE + "/", { waitUntil: "networkidle" });
   await chercher(page, COMMUNE.saisie);
   await page.getByRole("button", { name: new RegExp("^" + COMMUNE.nom + ",") }).first().click();
@@ -603,7 +603,7 @@ async function ouvrirSemaine({ agenda, senatCoupe, fuseau }) {
 {
   const ctx = await navigateur.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, reducedMotion: "reduce" });
   const page = await ctx.newPage();
-  await page.addInitScript(() => { if (!localStorage.getItem("repere.profil")) localStorage.setItem("repere.profil", JSON.stringify({ niveauZoom: "tout", tailleTexte: 16, espacement: 1.5, contraste: "normal", policeDyslexie: false, animationsReduites: false, modeDaltonien: false, masquerImages: false })); });  /* V26 : profil deja repondu, l'accueil ne pose pas les 3 questions */
+  await page.addInitScript(() => { if (!localStorage.getItem("repere.profil")) localStorage.setItem("repere.profil", JSON.stringify({ prenom: "Test", niveauZoom: "tout", tailleTexte: 16, espacement: 1.5, contraste: "normal", policeDyslexie: false, animationsReduites: false, modeDaltonien: false, masquerImages: false })); });  /* V26 : profil deja repondu, l'accueil ne pose pas les 3 questions */
   const ouvrir = async () => {
     await page.goto(BASE + "/", { waitUntil: "networkidle" });
     await chercher(page, COMMUNE.saisie);

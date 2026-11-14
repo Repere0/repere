@@ -7,6 +7,8 @@ let echecs = 0;
 const ok = (c, m) => { console.log((c ? "ok    " : "ECHEC ") + m); if (!c) echecs++; };
 const nav = await chromium.launch();
 const page = await (await nav.newContext({ viewport: { width: 390, height: 844 }, serviceWorkers: "block" })).newPage();
+/* 14/11/2026 : sans prénom, la barrière couvre l'application. */
+await page.addInitScript(() => localStorage.setItem("repere.profil", JSON.stringify({ prenom: "Test" })));
 const erreurs = []; page.on("pageerror", e => erreurs.push(String(e)));
 const aller = async chemin => { await page.goto(BASE + chemin, { waitUntil: "load" }); await page.waitForTimeout(3500); };
 const haut = t => page.getByText(t, { exact: true }).first().evaluate(e => e.getBoundingClientRect().top + (document.scrollingElement?.scrollTop || 0)).catch(() => null);
