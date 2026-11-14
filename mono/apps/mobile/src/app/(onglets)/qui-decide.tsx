@@ -21,7 +21,8 @@ import { EnClair } from "../../ui/stitch";
 import { deputeParNom, groupeDe, useGroupes } from "../../lib/groupes";
 import { AvecDonnees, Page, Question } from "../../ui/page";
 import { PastilleSource } from "../../ui/source";
-import { CarteElu, Chaine, Depli, type Niveau } from "../../ui/visuels";
+import { CarteElu, Chaine, type Niveau } from "../../ui/visuels";
+import { Details } from "../../ui/details";
 import { prefetDeRegion } from "../../lib/prefet";
 import { useSelection } from "../../lib/selection";
 import { mandatsTerminesListes } from "../../lib/mandats-termines";
@@ -202,8 +203,9 @@ export default function QuiDecide() {
               <CarteElu nom={prefet.nom} role="Préfet de région" echelon="france"
                 libelle={`Voir la fiche de ${prefet.nom}, préfet de la région`}
                 surPress={() => router.push({ pathname: "/elu", params: { nom: prefet.nom, role: prefet.titre, echelon: "", niveau: "L'État", institution: "Préfecture de région", lieu: "Île-de-France" } })} />
-              <Text style={TYPO.note}>Ce n'est pas le préfet de votre département : leur liste n'est pas encore publiée ici.</Text>
-              <Depli titre="Source et contrôle">
+              {/* 14/11/2026 (porteur) : la précision reste écrite (elle évite une lecture fausse) mais discrète : petite, grise. */}
+              <Text style={[TYPO.micro, { color: couleurs.sourd }]}>Ce n'est pas le préfet de votre département : leur liste n'est pas encore publiée ici.</Text>
+              <Details titre="Source et contrôle">
                 <View style={{ gap: PAS }}>
                   <Text style={TYPO.note}>{prefet.titre}. Source : page de la préfecture de région. Dernier contrôle réussi du titre de la page : {prefet.titreControleLe}. La date de nomination n'est pas contrôlée.</Text>
                   <Pressable onPress={() => Linking.openURL(prefet.url)} accessibilityRole="link"
@@ -212,7 +214,7 @@ export default function QuiDecide() {
                     <Text style={[TYPO.corps, { color: couleurs.lien, fontWeight: "600" }]}>Page de la préfecture de région ↗</Text>
                   </Pressable>
                 </View>
-              </Depli>
+              </Details>
             </View>
           ) : null}
           <SignalerErreur contexte={`qui décide pour ${d.nomCommune}`} donnee={`Qui décide : ${d.nomCommune}`} />
