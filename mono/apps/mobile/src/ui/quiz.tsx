@@ -52,9 +52,12 @@ const JALONS: Record<string, keyof typeof Ionicons.glyphMap> = {
 function LesRangs({ ouvert, fermer, points }: { ouvert: boolean; fermer: () => void; points: number }) {
   const atteint = rangPour(points);
   const rangAtteint = RANGS.indexOf(atteint);
+  /* 14/11/2026 (porteur, iPhone) : le titre « Les rangs » passait sous l'encoche et la barre d'état. La modale couvre tout
+     l'écran : elle prend elle-même les marges de sécurité, en haut (encoche) et en bas (barre d'accueil). */
+  const marges = useSafeAreaInsets();
   return (
     <Modal visible={ouvert} animationType="slide" onRequestClose={fermer} transparent={false}>
-      <ScrollView {...MARQUE_DEFILEMENT} style={{ backgroundColor: couleurs.sol }} contentContainerStyle={{ padding: PAS * 3, gap: PAS * 2, maxWidth: 560, width: "100%", alignSelf: "center" }}>
+      <ScrollView {...MARQUE_DEFILEMENT} style={{ backgroundColor: couleurs.sol }} contentContainerStyle={{ paddingHorizontal: PAS * 3, paddingTop: marges.top + PAS * 3, paddingBottom: marges.bottom + PAS * 3, gap: PAS * 2, maxWidth: 560, width: "100%", alignSelf: "center" }}>
         <View style={{ flexDirection: "row", alignItems: "center", gap: PAS * 3 }}>
           <Text style={[TYPO.affiche, { flex: 1 }]} accessibilityRole="header">Les rangs</Text>
           <Pressable onPress={fermer} accessibilityRole="button" accessibilityLabel="Fermer la liste des rangs"

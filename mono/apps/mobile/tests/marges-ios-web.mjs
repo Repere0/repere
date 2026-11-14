@@ -13,7 +13,7 @@ const nav = await chromium.launch();
 const ctx = await nav.newContext({ viewport: { width: 390, height: 844 }, serviceWorkers: "block" });
 const page = await ctx.newPage();
 /* 14/11/2026 : sans prénom, la barrière couvre tout. Un lecteur installé en a un. */
-await page.addInitScript(() => localStorage.setItem("repere.profil", JSON.stringify({ prenom: "Test" })));
+await page.addInitScript(() => localStorage.setItem("repere.profil", JSON.stringify({ prenom: "Test", animationsReduites: true })));
 const cdp = await ctx.newCDPSession(page);
 try { await cdp.send("Emulation.setSafeAreaInsetsOverride", { insets: { top: 47, bottom: MARGE } }); }
 catch (e) {
@@ -56,6 +56,23 @@ for (const chemin of ["/elus", "/soutenir", "/faq", "/confidentialite", "/confor
     return { defile: true, bas: Math.round(bas), H };
   });
   ok(!m.defile || m.bas <= m.H - MARGE, m.defile ? `${chemin} : en bas de page, le dernier texte est à ${m.bas} px (zone protégée à ${m.H - MARGE} px)` : `${chemin} : tient sur un écran`);
+}
+/* 14/11/2026 (porteur, iPhone) : le titre « Les rangs » passait sous l'encoche. La modale prend la marge du HAUT (47 px
+   émulés) et celle du bas : le titre est entièrement sous la barre d'état, et le dernier rang au-dessus de la barre d'accueil. */
+{
+  await page.goto(BASE + "/quiz", { waitUntil: "load" });
+  await page.getByRole("radio").first().waitFor({ timeout: 30000 });
+  await page.getByRole("radio").first().click();
+  for (let i = 0; i < 4; i++) { await page.getByRole("button", { name: "Question suivante" }).click(); await page.getByRole("radio").first().click(); }
+  await page.getByRole("button", { name: "Voir le résultat" }).click();
+  await page.getByTestId("voir-rangs").click();
+  await page.getByRole("heading", { name: "Les rangs" }).waitFor({ timeout: 10000 });
+  await page.waitForTimeout(900);
+  const titre = await page.getByRole("heading", { name: "Les rangs" }).boundingBox();
+  ok(titre && titre.y >= 47, `modale des rangs : le titre commence à ${titre && Math.round(titre.y)} px, sous la barre d'état (47 px)`);
+  const bas = await page.getByTestId("rang-ligne").last().boundingBox();
+  ok(bas && bas.y + bas.height <= 844 - MARGE, `modale des rangs : le dernier rang finit à ${bas && Math.round(bas.y + bas.height)} px, au-dessus de la zone protégée (${844 - MARGE} px)`);
+  if (process.argv[3]) await page.screenshot({ path: process.argv[3] + "/marges-rangs.png" });
 }
 await nav.close();
 console.log(echecs ? `marges iOS : ${echecs} échec(s)` : "marges iOS : zéro échec");
