@@ -126,6 +126,14 @@ function CarteCandidat({ c, photo }: { c: PresidentialCandidate; photo?: PhotoEl
             <Text style={[TYPO.note, { color: couleurs.encre }]}>Programme ↗</Text>
           </Pressable>
         ) : null}
+        {/* 14/11/2026 (porteur) : le site de campagne, lien seulement, affiché quand il existe. Aucun contenu repris. */}
+        {c.siteCampagne ? (
+          <Pressable onPress={() => Linking.openURL(c.siteCampagne as string)} accessibilityRole="link"
+            accessibilityLabel={`Site de campagne de ${nom}, ouvre un site externe`}
+            style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", paddingHorizontal: PAS * 3, borderRadius: RAYON.pastille, borderWidth: 1, borderColor: couleurs.trait, opacity: pressed ? 0.7 : 1 })}>
+            <Text style={[TYPO.note, { color: couleurs.encre }]}>Site de campagne ↗</Text>
+          </Pressable>
+        ) : null}
       </View>
       {sources && c.sources ? c.sources.map(x => (
         <Pressable key={x.url} onPress={() => Linking.openURL(x.url)} accessibilityRole="link"
@@ -252,6 +260,7 @@ export default function Presidentielle2027() {
             </ScrollView>
             {/* Doctrine du vide (ADR 0008) : pourquoi certains n'ont pas de photo, en une phrase vraie. */}
             <Text style={TYPO.note}>Photos : Wikimedia Commons, sous licence libre. Sans photo libre rattachée avec certitude au candidat, ses initiales.</Text>
+            {d.candidats.some(c => c.siteCampagne) ? <Text style={TYPO.note}>Lien vers le site officiel de campagne, quand il existe.</Text> : null}
           </View>
         )
       ) : null}

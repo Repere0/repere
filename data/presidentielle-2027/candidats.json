@@ -25,6 +25,7 @@
    "prenom": "François",
    "nom": "Asselineau",
    "parti": "Union populaire républicaine",
+   "siteCampagne": "https://www.upr.fr",
    "statut": "declare",
    "sources": [
     {
@@ -103,6 +104,7 @@
    "prenom": "Clara",
    "nom": "Egger",
    "parti": "Solution démocratique",
+   "siteCampagne": "https://solutiondemocratique.fr",
    "statut": "declare",
    "sources": [
     {
@@ -219,6 +221,7 @@
    "prenom": "David",
    "nom": "Lisnard",
    "parti": "Nouvelle Énergie",
+   "siteCampagne": "https://www.unenouvelleenergie.fr",
    "statut": "declare",
    "sources": [
     {
@@ -450,6 +453,7 @@
    "prenom": "Marine",
    "nom": "Tondelier",
    "parti": "Les Écologistes",
+   "siteCampagne": "https://marinetondelier.fr",
    "statut": "declare",
    "sources": [
     {
@@ -469,6 +473,7 @@
    "prenom": "Éric",
    "nom": "Zemmour",
    "parti": "Reconquête",
+   "siteCampagne": "https://www.ericzemmour.fr",
    "statut": "declare",
    "sources": [
     {

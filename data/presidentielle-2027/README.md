@@ -29,8 +29,23 @@ l'application dit alors l'absence. `sources.json` n'est jamais publié.
   licence ouverte compilé par un tiers n'est pas une source officielle ; la licence CC BY-NC-SA est refusée.
 - **`siteCampagne`** : champ facultatif de `candidats.json`. Chaque adresse est ouverte à la main pour confirmer
   qu'elle répond et qu'elle est bien celle du candidat. **Aucun contenu n'est copié.** Site mort, introuvable ou
-  simple site générique de parti : pas d'adresse. Le champ **n'est pas affiché** : huit candidats sur vingt-cinq en
-  ont un, l'afficher tel quel montrerait une inégalité qui tient en partie à la méthode ; au porteur de trancher.
+  simple site générique de parti : pas d'adresse. Le 13/11 le champ n'était pas affiché (huit candidats
+  sur vingt-cinq) ; le porteur a levé cette réserve le 14/11 (voir plus bas) : il est affiché quand il existe.
+
+### Décisions du porteur, 14 novembre 2026 (13 adresses sur 25)
+
+- **Zemmour** (https://www.ericzemmour.fr) et **Tondelier** (https://marinetondelier.fr) : inscrits **sur décision du
+  porteur**, qui les tient pour leurs sites de campagne officiels. Le relevé n'avait qu'un indice (le site se dit de campagne).
+- **Site de parti ou de mouvement** : inscrit si et seulement si sa page d'accueil mentionne explicitement la campagne
+  présidentielle 2027. Rouverts le 14/11 : **Asselineau** (https://www.upr.fr), **Egger** (https://solutiondemocratique.fr),
+  **Lisnard** (https://www.unenouvelleenergie.fr) : oui, inscrits.
+- **Non inscrits** : Markovic (parti-animaliste.fr : aucune mention) ; Philippot (les-patriotes.fr : un appel au
+  soutien « Élections 2027 », pas de candidature nommée) ; Retailleau (republicains.fr : 2027 et son équipe n'apparaissent
+  que dans des articles d'actualité, cas limite laissé au porteur) ; Branco (2027.juanbranco.org, adresse donnée par
+  le porteur : **non ouverte**, l'outil de lecture n'a pas eu l'autorisation, donc non inscrite).
+- **Affichage** : le lien « Site de campagne » paraît sur la carte du candidat quand l'adresse existe, avec la phrase
+  « Lien vers le site officiel de campagne, quand il existe. » (porteur : ce n'est pas une inégalité, c'est l'état des données).
+- melenchon2027.fr : laissé en l'état, le porteur vérifiera à la main.
 
 ### Relevé du 13/11/2026 (8 adresses sur 25)
 
