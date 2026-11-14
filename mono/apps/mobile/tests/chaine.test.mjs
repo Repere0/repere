@@ -139,12 +139,14 @@ test("tout fichier entier servi a l'application arrive jusqu'a dist/data", async
  * `router.replace` lance depuis un effet du PREMIER rendu : l'ordre part avant que la pile d'ecrans soit
  * prete, et expo-router le perd SANS BRUIT. En navigateur de bureau, la pile etait prete a temps et le
  * banc restait vert — c'est pour cela que cette garde lit le code, et pas l'ecran. */
-test("l'accueil redirige vers la bienvenue de facon declarative, jamais par un ordre de navigation au montage", () => {
+test("la barriere du prenom est posee par la coquille, sans aucune redirection ni ordre de navigation", () => {
   const accueil = lire(join(ICI, "..", "src", "app", "index.tsx"));
-  assert.match(accueil, /<Redirect href="\/bienvenue" \/>/, "l'accueil doit rediriger avec <Redirect> (expo-router l'applique quand la pile est prete)");
-  const effets = [...accueil.matchAll(/useEffect\(\s*\(\)\s*=>\s*\{?[^}]*router\.(replace|push)\(\s*["'`]\/bienvenue/g)];
-  assert.deepEqual(effets.map(m => m[0].slice(0, 60)), [],
-    "une redirection vers /bienvenue part d'un effet : elle sera perdue si la pile d'ecrans n'est pas encore prete");
+  assert.doesNotMatch(accueil, /\/bienvenue/, "l'accueil ne redirige plus vers /bienvenue : la barriere vit dans _layout.tsx");
+  const coque = lire(join(ICI, "..", "src", "app", "_layout.tsx"));
+  assert.match(coque, /const barriere = !\(etatProfil\.profil && etatProfil\.profil\.prenom\)/, "la barriere tient a un seul fait : pas de prenom gardé");
+  assert.match(coque, /testID="barriere-bienvenue"/, "la barriere doit etre reperable");
+  assert.match(coque, /<Bienvenue \/>/, "la barriere montre l'ecran de bienvenue");
+  assert.doesNotMatch(coque, /router\.(replace|push)\(/, "la coque ne navigue pas : un ordre au lancement se perd sur iPhone");
 });
 
 /* ─── 13/11/2026 : UNE SEULE FAÇON DE TRAVERSER L'ÉCRAN DE BIENVENUE ──────────────────────────────────

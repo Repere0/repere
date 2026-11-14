@@ -28,7 +28,7 @@ const dit = m => console.log("      " + m);
 console.log(`== DIAGNOSTIC WEBKIT (Safari) — ${IPHONE.viewport.width}x${IPHONE.viewport.height}, tactile ${IPHONE.hasTouch} ==`);
 
 const nav = await webkit.launch();
-const PROFIL = { tailleTexte: 16, espacement: 1.5, contraste: "normal", policeDyslexie: false, animationsReduites: false, modeDaltonien: false, masquerImages: false, themes: [], mode: "clair", prenom: "", points: 0 };
+const PROFIL = { tailleTexte: 16, espacement: 1.5, contraste: "normal", policeDyslexie: false, animationsReduites: false, modeDaltonien: false, masquerImages: false, themes: [], mode: "clair", prenom: "Test", points: 0 };
 const neuf = async (init) => {
   const ctx = await nav.newContext({ ...IPHONE });
   const page = await ctx.newPage();
@@ -41,12 +41,12 @@ const neuf = async (init) => {
 /* ───── 1. LE LOGO : combien d'elements concentriques, et de quelle couleur ───── */
 {
   const { ctx, page, erreurs } = await neuf();
-  await page.goto(BASE + "/bienvenue", { waitUntil: "load" });
+  await page.goto(BASE + "/", { waitUntil: "load" });
   await page.getByRole("heading", { name: "Repère" }).waitFor({ timeout: 30000 });
   await page.waitForTimeout(1200);
   if (CAP) await page.screenshot({ path: `${CAP}/webkit-logo.png` });
   const vu = await page.evaluate(() => {
-    const h = [...document.querySelectorAll("h1,h2,[role=heading]")].find(e => /Repère/.test(e.textContent || ""));
+    const h = [...document.querySelectorAll("[data-testid=barriere-bienvenue] h1,[data-testid=barriere-bienvenue] h2,[data-testid=barriere-bienvenue] [role=heading]")].find(e => /Repère/.test(e.textContent || ""));
     const bloc = h && h.parentElement;
     if (!bloc) return null;
     const ronds = [...bloc.querySelectorAll("div")].map(e => {
@@ -79,7 +79,7 @@ const neuf = async (init) => {
   dit("adresse apres 4 s : " + url);
   const voile = await page.getByTestId("demarrage").count();
   dit("voile de demarrage encore present : " + voile);
-  ok(url.includes("/bienvenue"), `onboarding : l'application s'ouvre sur la bienvenue (lu : ${url.replace(BASE, "") || "/"})`);
+  ok(await page.getByTestId("barriere-bienvenue").isVisible(), `onboarding : sans prénom, la barrière de bienvenue couvre l'application (adresse : ${url.replace(BASE, "") || "/"})`);
   const bouton = page.getByTestId("continuer-0");
   ok(await bouton.count() === 1, "onboarding : le bouton de l'ecran 1 est present");
   if (await bouton.count()) {

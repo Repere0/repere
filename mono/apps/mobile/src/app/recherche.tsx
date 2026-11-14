@@ -20,7 +20,6 @@ import { correspond, dateFr, departementDe, motsCible, motsRecherche, themesDuTe
 import { chargerCodesPostaux, chargerCommunesBeta, chargerIndex, chargerQuestionsGouvernementIndex, chargerScrutinsIndex, ETATS, PHRASES } from "../lib/donnees";
 import { chargerFiches } from "../lib/annuaire";
 import { useSelection } from "../lib/selection";
-import { useProfil } from "../lib/profil";
 import { Vide } from "../lib/composants";
 import { couleurs, CIBLE, PAS, RAYON, TYPO } from "../lib/theme";
 import { Loupe } from "../ui/loupe";
@@ -66,7 +65,6 @@ function Section({ titre, source, total, children }: { titre: string; source: st
 
 export default function Recherche() {
   const { choisir } = useSelection();
-  const { absent } = useProfil();
   const [filtre, setFiltre] = useState("");
   /* 12/11/2026 (porteur) : un thème, choisi sur l'accueil ou ici, filtre les scrutins et les questions. */
   const params = useLocalSearchParams<{ theme?: string }>();
@@ -153,9 +151,7 @@ export default function Recherche() {
     if (!dep) return;
     choisir({ dep, insee, nom });
     noterArrondissement(insee, filtre);
-    /* Comme l'accueil : sans profil -> la question du prénom, une fois ; sinon la commune. */
-    if (absent) router.replace("/bienvenue");
-    else router.replace("/chez-vous");
+    router.replace("/chez-vous");
   };
 
   const ouvrirElu = ({ cible, ...fiche }: Elu) => router.push({ pathname: "/annuaire-fiche", params: { ...fiche } });

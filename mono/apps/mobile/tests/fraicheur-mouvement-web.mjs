@@ -32,7 +32,7 @@ await page.getByText("Aller plus loin").first().waitFor({ timeout: 15000 });
 {
   const ctxSouris = await navigateur.newContext({ viewport: { width: 390, height: 844 } });
   const p2 = await ctxSouris.newPage();
-  await p2.goto(BASE + "/bienvenue", { waitUntil: "networkidle" });
+  await p2.goto(BASE + "/", { waitUntil: "networkidle" });
   /* Les trois écrans de bienvenue, puis le retour d'appui sur le dernier bouton. */
   await p2.getByTestId("continuer-0").click();
   await p2.getByRole("button", { name: /^Passer, sans/ }).click();

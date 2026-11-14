@@ -18,7 +18,7 @@ import { espacesFines } from "../ui/donnees";
 import { useEffect, useMemo, useState } from "react";
 import { FlatList, KeyboardAvoidingView, Linking, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View, useWindowDimensions } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Redirect, router, useLocalSearchParams } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import { mots, motsCible, correspond, chercherCommunes, departementDe, titreLisible, dernierExercice, evolution, parHabitant, dateFr, decompte, ordinal, positionSur, positionsFiables } from "@repere/core";
 import { chargerCatalogueScrutins, chargerCodesPostaux, chargerCommunesBeta, chargerDepartement, chargerDeputes, chargerIndex, chargerVotes, ETATS, PHRASES } from "../lib/donnees";
 import { Bouton, Carte, Texte, Vide } from "../lib/composants";
@@ -296,9 +296,7 @@ export default function Accueil() {
     setRecentes([...RECENTES]);
     /* La recherche se referme une fois la commune choisie : au retour, l'accueil est propre. */
     setFiltre(""); setCherche(false); setTout(false);
-    /* Sans profil (arrivée par un lien, sans passer par l'accueil) : la question du prénom, une seule fois. */
-    if (absent) router.replace("/bienvenue");
-    else router.push("/chez-vous");
+    router.push("/chez-vous");
   };
 
   /* La commune retenue sur ce telephone, si le lecteur l'a demande
@@ -307,11 +305,13 @@ export default function Accueil() {
   const nomRetenue = retenue && beta ? beta.communes[retenue.c] : undefined;
   useEffect(() => {
     if (!beta) return;
-    const ouvrirIci = OUVERTURE_A_FAIRE && retenue && nomRetenue && !params.toutes && !absent;
+    /* Derrière la barrière de bienvenue (aucun prénom), on n'ouvre rien : l'ouverture attend qu'elle soit levée. */
+    if (absent) return;
+    const ouvrirIci = OUVERTURE_A_FAIRE && retenue && nomRetenue && !params.toutes;
     OUVERTURE_A_FAIRE = false;
     if (ouvrirIci) ouvrir(retenue.c, nomRetenue);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [beta]);
+  }, [beta, absent]);
 
   /* D18 : la commune retenue si le lecteur l'a demande, sinon l'exemple. Si les comptes
      ne donnent pas de depense par habitant, la carte n'est pas affichee. */
@@ -511,9 +511,6 @@ export default function Accueil() {
     </>
   );
 
-  /* Tous les crochets sont passes : la redirection peut sortir ici, avant de dessiner un accueil
-     que le lecteur ne verra pas. */
-  if (absent) return <Redirect href="/bienvenue" />;
 
   return (
     <KeyboardAvoidingView style={{ flex: 1, backgroundColor: D.sol }} behavior={Platform.OS === "ios" ? "padding" : undefined}>

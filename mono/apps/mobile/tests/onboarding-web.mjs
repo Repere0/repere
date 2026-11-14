@@ -5,6 +5,7 @@
  * le prénom n'apparaît dans aucune adresse demandée (invariant 2) ; un lien profond n'est pas détourné.
  * Usage : node apps/mobile/tests/onboarding-web.mjs http://localhost:8811 */
 import { createRequire } from "node:module";
+import { passerBienvenue } from "./_premier-lancement.mjs";
 const { chromium } = createRequire(process.cwd() + "/")("playwright");
 
 const BASE = process.argv[2] || "http://localhost:8811";
@@ -31,14 +32,14 @@ const lireProfil = page => page.evaluate(() => JSON.parse(localStorage.getItem("
   await page.waitForTimeout(1800);
   verifier(await page.getByTestId("demarrage").count() === 0, "premier lancement : pas de voile de démarrage, l'écran 1 de la bienvenue le remplace");
 
-  await page.waitForURL(/\/bienvenue/, { timeout: 10000 });
+  await page.getByTestId("barriere-bienvenue").waitFor({ state: "visible", timeout: 10000 });
   /* ÉCRAN 1 : le logo et un bouton. Rien ici ne dépend d'une animation : un lecteur bloqué est impossible. */
   await page.getByTestId("continuer-0").waitFor({ timeout: 10000 });
   verifier(await page.getByRole("heading", { name: "Repère" }).count() === 1, "écran 1 : le logo et le nom");
   /* LE LOGO OFFICIEL : trois éléments concentriques (cercle ivoire, anneau gris, point ivoire). Une
      teinte sans gris réduisait le logo à un cercle et un point — défaut vu par le porteur le 13/11. */
   const ronds = await page.evaluate(() => {
-    const h = [...document.querySelectorAll("h1,h2,[role=heading]")].find(e => /Repère/.test(e.textContent || ""));
+    const h = [...document.querySelectorAll("[data-testid=barriere-bienvenue] h1,[data-testid=barriere-bienvenue] h2,[data-testid=barriere-bienvenue] [role=heading]")].find(e => /Repère/.test(e.textContent || ""));
     const bloc = h && h.parentElement;
     if (!bloc) return { n: -1, couleurs: [] };
     const cercles = [...bloc.querySelectorAll("div")].filter(e => {
@@ -94,7 +95,7 @@ const lireProfil = page => page.evaluate(() => JSON.parse(localStorage.getItem("
   verifier(fond === "rgb(20, 19, 17)", "lancement suivant : fond #141311 (" + fond + ")");
   verifier(duree <= 1500, "lancement suivant : le voile part en 1,5 s au plus (" + duree + " ms)");
   await page.waitForTimeout(1200);
-  verifier(!page.url().includes("/bienvenue") && await page.getByTestId("bonjour").count() === 1, "au lancement suivant : pas de question, le bonjour est là");
+  verifier(await page.getByTestId("barriere-bienvenue").count() === 0 && await page.getByTestId("bonjour").count() === 1, "au lancement suivant : pas de question, le bonjour est là");
   verifier(erreurs.length === 0, "aucune erreur JavaScript" + (erreurs.length ? " (" + erreurs[0] + ")" : ""));
   await contexte.close();
 }
@@ -103,28 +104,28 @@ const lireProfil = page => page.evaluate(() => JSON.parse(localStorage.getItem("
 {
   const { contexte, page } = await nouveau();
   await page.goto(BASE + "/", { waitUntil: "networkidle" });
-  await page.waitForURL(/\/bienvenue/, { timeout: 10000 });
+  await page.getByTestId("barriere-bienvenue").waitFor({ state: "visible", timeout: 10000 });
   await page.getByTestId("continuer-0").click();
   await page.getByLabel(/Votre prénom/).fill("12345");
   await page.getByTestId("continuer-1").click();
   await page.getByTestId("continuer-2").click();
-  await page.waitForURL(u => !String(u).includes("/bienvenue"), { timeout: 10000 });
+  await page.getByTestId("barriere-bienvenue").waitFor({ state: "detached", timeout: 10000 });
   await page.waitForTimeout(800);
   let profil = await lireProfil(page);
-  verifier(profil && profil.prenom === "" && profil.tailleTexte === 16, "une saisie refusée n'est pas gardée ; les réglages par défaut le sont");
-  verifier(await page.getByTestId("bonjour").count() === 0, "sans prénom : pas de « Bonjour » à moitié vide");
+  verifier(profil && profil.prenom === "Citoyen" && profil.tailleTexte === 16, "une saisie refusée n'est pas gardée : le prénom par défaut « Citoyen » l'est, avec les réglages par défaut");
   await contexte.close();
 }
 {
   const { contexte, page } = await nouveau();
   await page.goto(BASE + "/", { waitUntil: "networkidle" });
-  await page.waitForURL(/\/bienvenue/, { timeout: 10000 });
+  await page.getByTestId("barriere-bienvenue").waitFor({ state: "visible", timeout: 10000 });
   await page.getByTestId("continuer-0").click();
   await page.getByRole("button", { name: /^Passer, sans/ }).click();
   await page.getByTestId("continuer-2").click();
-  await page.waitForURL(u => !String(u).includes("/bienvenue"), { timeout: 10000 });
+  await page.getByTestId("barriere-bienvenue").waitFor({ state: "detached", timeout: 10000 });
   const profil = await lireProfil(page);
-  verifier(profil && profil.prenom === "", "« Passer » ne garde aucun prénom");
+  verifier(profil && profil.prenom === "Citoyen", "« Passer » donne le prénom « Citoyen »");
+  verifier((await page.getByTestId("bonjour").innerText()).trim() === "Bonjour Citoyen", "accueil : « Bonjour Citoyen »");
   await contexte.close();
 }
 
@@ -133,7 +134,33 @@ const lireProfil = page => page.evaluate(() => JSON.parse(localStorage.getItem("
   const { contexte, page } = await nouveau();
   await page.goto(BASE + "/faq", { waitUntil: "networkidle" });
   await page.waitForTimeout(1800);
-  verifier(page.url().includes("/faq"), "lien profond sans profil : la page demandée reste affichée");
+  verifier(page.url().includes("/faq"), "lien profond sans profil : l'adresse demandée n'est pas détournée");
+  verifier(await page.getByTestId("barriere-bienvenue").isVisible(), "lien profond sans profil : la barrière du prénom couvre la page (14/11)");
+  verifier(await page.getByTestId("bonjour").count() === 0, "sans prénom : l'accueil n'est pas atteignable");
+  await contexte.close();
+}
+
+/* 4. 14/11/2026 : la barrière tient à UN fait (pas de prénom) ; « Changer de prénom » la relève pour tester */
+{
+  const { contexte, page } = await nouveau();
+  await page.goto(BASE + "/", { waitUntil: "networkidle" });
+  await passerBienvenue(page);
+  await page.getByTestId("bonjour").waitFor({ timeout: 10000 });
+  verifier((await page.getByTestId("bonjour").innerText()).trim() === "Bonjour Citoyen", "après « Passer » : « Bonjour Citoyen »");
+  /* L'accueil n'a pas d'en-tête : le bouton des réglages est dans les onglets. */
+  await page.goto(BASE + "/a-venir", { waitUntil: "networkidle" });
+  await page.getByRole("button", { name: "Réglages de l'affichage" }).first().click();
+  await page.getByTestId("changer-prenom").click();
+  await page.getByTestId("barriere-bienvenue").waitFor({ state: "visible", timeout: 10000 });
+  verifier(await page.getByLabel(/Votre prénom/).count() === 1, "« Changer de prénom » : la question du prénom revient, sans refaire le logo");
+  verifier(await page.getByTestId("bonjour").count() === 0 || !(await page.getByTestId("bonjour").isVisible()), "« Changer de prénom » : l'accueil est de nouveau masqué");
+  await page.getByLabel(/Votre prénom/).fill("Zoé");
+  await page.getByTestId("continuer-1").click();
+  await page.getByTestId("continuer-2").click();
+  await page.getByTestId("barriere-bienvenue").waitFor({ state: "detached", timeout: 10000 });
+  await page.goto(BASE + "/", { waitUntil: "networkidle" });
+  await page.getByTestId("bonjour").waitFor({ timeout: 10000 });
+  verifier((await page.getByTestId("bonjour").innerText()).trim() === "Bonjour Zoé", "nouveau prénom : « Bonjour Zoé »");
   await contexte.close();
 }
 

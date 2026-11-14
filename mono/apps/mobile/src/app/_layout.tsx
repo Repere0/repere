@@ -12,11 +12,12 @@
 import { AdresseCommune } from "../lib/adresse-web";
 import "../lib/donnees";
 import { useMemo, useState, type ReactNode } from "react";
-import { Platform } from "react-native";
-import { DarkTheme, DefaultTheme, Stack, ThemeProvider } from "expo-router";
+import { Platform, View } from "react-native";
+import { DarkTheme, DefaultTheme, Stack, ThemeProvider, usePathname } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { Demarrage } from "../ui/demarrage";
+import { Bienvenue } from "../ui/bienvenue";
 import { poserDefilementIos } from "../lib/defilement-ios";
 import { useFonts } from "expo-font";
 import { Manrope_800ExtraBold } from "@expo-google-fonts/manrope/800ExtraBold";
@@ -75,6 +76,14 @@ export default function Coquille() {
   const valeur = { choix, setChoix, mode };
   const tema = useMemo(() => themeDe(mode), [mode]);
   const fonds = NEUTRES_PAR_MODE[mode];
+  /* LA BARRIÈRE DE BIENVENUE (14/11/2026, porteur, ADR 0011). Tant qu'aucun prénom n'est gardé sur l'appareil, la
+     bienvenue est posée PAR-DESSUS l'application et l'application est retirée de l'affichage : on ne voit ni l'accueil
+     ni aucune autre page. Ce n'est PAS une redirection : un ordre de navigation donné au lancement se perdait sans
+     bruit sur iPhone (CONTEXTE, 13/11). Ici rien ne navigue ; l'adresse demandée reste, et s'affiche une fois la
+     barrière levée. Seule la page Confidentialité reste lisible avant de donner un prénom (lien de la bienvenue). */
+  const chemin = usePathname();
+  const barriere = !(etatProfil.profil && etatProfil.profil.prenom);
+  const dressee = barriere && chemin !== "/confidentialite";
   const [polices, erreur] = useFonts({ Manrope_800ExtraBold, Manrope_700Bold, DMSans_400Regular, DMSans_500Medium, DMSans_700Bold, IBMPlexMono_400Regular, IBMPlexMono_600SemiBold, Manrope_600SemiBold });
   if (!polices && !erreur) return null;
   return (
@@ -86,6 +95,7 @@ export default function Coquille() {
             <AdresseCommune />
             <StatusBar style={mode === "sombre" ? "light" : "dark"} />
             <ThemeProvider value={tema}>
+              <View style={{ flex: 1, display: dressee ? "none" : "flex" }} testID="application" accessibilityElementsHidden={dressee} importantForAccessibility={dressee ? "no-hide-descendants" : "auto"}>
               <Stack
                 screenOptions={{
                   headerStyle: { backgroundColor: couleurs.sol },
@@ -119,6 +129,12 @@ export default function Coquille() {
                 <Stack.Screen name="recherche" options={{ title: "Rechercher", animation: "slide_from_bottom", headerLeft: () => <Retour texte="Fermer" etiquette="Fermer la recherche" /> }} />
                 <Stack.Screen name="partager" options={{ title: "Partager", animation: "slide_from_bottom", headerLeft: () => <Retour texte="Votre député" etiquette="Revenir à l'écran du député" /> }} />
               </Stack>
+              </View>
+              {barriere ? (
+                <View testID="barriere-bienvenue" style={{ position: "absolute", top: 0, right: 0, bottom: 0, left: 0, zIndex: 10, backgroundColor: fonds.sol, display: dressee ? "flex" : "none" }}>
+                  <Bienvenue />
+                </View>
+              ) : null}
               <Demarrage />
             </ThemeProvider>
           </AvecCommune>
