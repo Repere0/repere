@@ -83,6 +83,23 @@ const opacites = await page.getByTestId("rang-ligne").evaluateAll(n => n.map(e =
   return t ? parseFloat(getComputedStyle(t).opacity) : 1;
 }));
 ok(opacites[0] === 1 && opacites.slice(1).every(o => o < 1), "la roadmap grise les rangs à venir (" + opacites.join(", ") + ")");
+/* 14/11/2026 (porteur, iPhone) : les cercles et le trait de la frise se chevauchaient. Le trait est maintenant UN fil
+   posé DERRIÈRE les jalons : il traverse chaque cercle, et c'est le cercle, opaque, qu'on voit au-dessus. */
+await page.waitForTimeout(600); /* la modale glisse : on mesure une fois posée, sinon le point visé est hors écran */
+const frise = await page.getByTestId("rang-ligne").evaluateAll(n => n.map(e => {
+  const jalon = e.querySelector('[data-testid="rang-jalon"]');
+  const fils = [...e.querySelectorAll('[data-testid="rang-fil"]')];
+  if (!jalon) return null;
+  const j = jalon.getBoundingClientRect(), cx = j.left + j.width / 2, cy = j.top + j.height / 2;
+  const dessus = document.elementFromPoint(cx, cy);
+  return { fils: fils.length, traverse: fils.some(f => { const r = f.getBoundingClientRect(); return r.top <= cy + 1 && r.bottom >= cy - 1 && Math.abs(r.left + r.width / 2 - cx) <= 1; }),
+    cercleDessus: !!dessus && jalon.contains(dessus), opaque: !/rgba\(.*,\s*0\)$|transparent/.test(getComputedStyle(jalon).backgroundColor),
+    bas: Math.round(Math.max(...fils.map(f => f.getBoundingClientRect().bottom), 0) - e.getBoundingClientRect().bottom) };
+}));
+ok(frise.every(f => f && f.traverse), "frise des rangs : le fil passe par le centre de chaque jalon (" + JSON.stringify(frise.map(f => f && f.fils)) + " segments)");
+ok(frise.every(f => f && f.cercleDessus && f.opaque), "frise des rangs : chaque jalon est opaque et peint AU-DESSUS du fil (" + JSON.stringify(frise.map(f => f && [f.cercleDessus, f.opaque])) + ")");
+ok(frise.slice(0, -1).every(f => f && f.bas === 0), "frise des rangs : le fil descend jusqu'au rang suivant, sans trou (" + frise.map(f => f && f.bas).join(", ") + ")");
+if (process.argv[3]) await page.screenshot({ path: process.argv[3] + "/quiz-rangs.png" });
 ok(await page.getByTestId("quiz-rejouer").count() === 1, "« Nouvelle manche » est le bouton principal");
 const plein = await page.getByTestId("quiz-rejouer").evaluate(e => getComputedStyle(e).backgroundColor);
 ok(plein === "rgb(15, 23, 42)" || plein === "rgb(245, 244, 240)", "« Nouvelle manche » est un bouton plein (" + plein + ")");

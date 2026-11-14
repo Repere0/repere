@@ -192,6 +192,43 @@ const neuf = async (init) => {
   await ctx.close();
 }
 
+/* ───── 4. LA FRISE DES RANGS (14/11/2026) : le porteur voit, sur iPhone, les cercles et le trait se chevaucher ─────
+   Chromium ne montrait AUCUN défaut, avant comme après le correctif : seul WebKit peut dire quelque chose. On imprime
+   la géométrie lue (cercles, segments), puis on juge : le fil passe au centre de chaque jalon, le jalon est au-dessus,
+   deux jalons ne se touchent pas. La capture webkit-rangs.png est la pièce à regarder. */
+{
+  const { ctx, page, erreurs } = await neuf();
+  await page.addInitScript(p => localStorage.setItem("repere.profil", JSON.stringify(p)), { ...PROFIL, animationsReduites: true });
+  await page.goto(BASE + "/quiz", { waitUntil: "load" });
+  await page.getByRole("radio").first().waitFor({ timeout: 30000 });
+  await page.getByRole("radio").first().click();
+  for (let i = 0; i < 4; i++) { await page.getByRole("button", { name: "Question suivante" }).click(); await page.getByRole("radio").first().click(); }
+  await page.getByRole("button", { name: "Voir le résultat" }).click();
+  await page.getByTestId("voir-rangs").waitFor({ timeout: 10000 });
+  await page.getByTestId("voir-rangs").click();
+  await page.getByRole("heading", { name: "Les rangs" }).waitFor({ timeout: 10000 });
+  await page.waitForTimeout(900);
+  if (CAP) await page.screenshot({ path: `${CAP}/webkit-rangs.png` });
+  const frise = await page.getByTestId("rang-ligne").evaluateAll(n => n.map(e => {
+    const jalon = e.querySelector('[data-testid="rang-jalon"]');
+    const fils = [...e.querySelectorAll('[data-testid="rang-fil"]')].map(f => f.getBoundingClientRect());
+    if (!jalon) return null;
+    const j = jalon.getBoundingClientRect(), cx = j.left + j.width / 2, cy = j.top + j.height / 2;
+    const dessus = document.elementFromPoint(cx, cy);
+    return { haut: Math.round(j.top), bas: Math.round(j.bottom), l: Math.round(j.width), h: Math.round(j.height),
+      fils: fils.map(r => [Math.round(r.top), Math.round(r.bottom), Math.round(r.left + r.width / 2 - cx)]),
+      traverse: fils.some(r => r.top <= cy + 1 && r.bottom >= cy - 1 && Math.abs(r.left + r.width / 2 - cx) <= 1),
+      dessus: !!dessus && jalon.contains(dessus) };
+  }));
+  dit("frise lue (jalon haut/bas/l/h, segments [haut, bas, écart au centre]) : " + JSON.stringify(frise));
+  ok(frise.length === 4 && frise.every(f => f && f.l === 40 && f.h === 40), "rangs : quatre jalons de 40 px, aucun écrasé ni étiré");
+  ok(frise.every(f => f && f.traverse), "rangs : le fil passe par le centre de chaque jalon");
+  ok(frise.every(f => f && f.dessus), "rangs : chaque jalon est peint au-dessus du fil");
+  ok(frise.every((f, i) => i === 0 || (f && frise[i - 1] && f.haut - frise[i - 1].bas >= 8)), "rangs : deux jalons ne se touchent jamais (écarts : " + frise.slice(1).map((f, i) => f && frise[i] ? f.haut - frise[i].bas : "?").join(", ") + " px)");
+  ok(erreurs.length === 0, "rangs : aucune erreur JavaScript" + (erreurs[0] ? " (" + erreurs[0] + ")" : ""));
+  await ctx.close();
+}
+
 await nav.close();
 console.log(echecs ? `== DIAGNOSTIC WEBKIT : ${echecs} echec(s) ==` : "== DIAGNOSTIC WEBKIT : zero echec ==");
 process.exit(echecs ? 1 : 0);

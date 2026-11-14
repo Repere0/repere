@@ -70,18 +70,23 @@ function LesRangs({ ouvert, fermer, points }: { ouvert: boolean; fermer: () => v
             const aVenir = i > rangAtteint;
             const teinte = aVenir ? couleurs.sourd : couleurs.encre;
             return (
-              <View key={r.cle} style={{ flexDirection: "row", gap: PAS * 4 }} testID="rang-ligne"
+              <View key={r.cle} style={{ flexDirection: "row", gap: PAS * 4, position: "relative" }} testID="rang-ligne"
                 accessibilityLabel={`${r.nom}, ${r.max === null ? `${r.min} points et plus` : `de ${r.min} à ${r.max} points`}${ici ? ". Votre rang." : passe ? ". Franchi." : ". À venir."}`}>
-                {/* LE FIL : le jalon, et le trait qui descend vers le suivant. */}
-                <View style={{ alignItems: "center", width: 40 }}>
-                  <View style={{ width: 40, height: 40, borderRadius: 20, alignItems: "center", justifyContent: "center",
-                    backgroundColor: ici ? couleurs.encre : couleurs.carte, borderWidth: ici ? 0 : 1, borderColor: couleurs.trait }}>
-                    <Ionicons name={JALONS[r.cle] || "ellipse-outline"} size={20} color={ici ? couleurs.sol : teinte}
-                      accessible={false} importantForAccessibility="no" />
-                  </View>
-                  {i < RANGS.length - 1 ? (
-                    <View style={{ width: 2, flex: 1, minHeight: PAS * 6, backgroundColor: passe || ici ? couleurs.encre : couleurs.trait }} />
-                  ) : null}
+                {/* LE FIL (14/11/2026, porteur, iPhone : les cercles et le trait se chevauchaient). Le trait ne dépend plus
+                    de la mise en page : deux segments posés en absolu dans la ligne, DERRIÈRE le jalon (zIndex 0), qui
+                    se rejoignent au centre du cercle. Le jalon, opaque et de taille fixe, est peint au-dessus (zIndex 1). */}
+                {i > 0 ? (
+                  <View testID="rang-fil" pointerEvents="none" style={{ position: "absolute", zIndex: 0, left: 19, top: 0, height: 20, width: 2,
+                    backgroundColor: i <= rangAtteint + 1 ? couleurs.encre : couleurs.trait }} />
+                ) : null}
+                {i < RANGS.length - 1 ? (
+                  <View testID="rang-fil" pointerEvents="none" style={{ position: "absolute", zIndex: 0, left: 19, top: 20, bottom: 0, width: 2,
+                    backgroundColor: passe || ici ? couleurs.encre : couleurs.trait }} />
+                ) : null}
+                <View testID="rang-jalon" style={{ zIndex: 1, flexShrink: 0, width: 40, height: 40, borderRadius: 20, alignItems: "center", justifyContent: "center",
+                  backgroundColor: ici ? couleurs.encre : couleurs.carte, borderWidth: ici ? 0 : 1, borderColor: couleurs.trait }}>
+                  <Ionicons name={JALONS[r.cle] || "ellipse-outline"} size={20} color={ici ? couleurs.sol : teinte}
+                    accessible={false} importantForAccessibility="no" />
                 </View>
                 <View style={{ flex: 1, gap: 2, paddingBottom: PAS * 5, opacity: aVenir ? 0.55 : 1 }}>
                   <Text style={[TYPO.corps, { fontFamily: POLICE.titre, color: teinte }]}>
