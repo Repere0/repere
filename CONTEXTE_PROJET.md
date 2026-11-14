@@ -341,6 +341,9 @@ PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers node test_repere.mjs site_v18_20/index
 - **Fiche d'un député : la date vient de LUI** (14/11/2026) : elle était lue dans la chaîne de la commune choisie
   (`niveauDuDepute`, core, corrige). Les législatures (`legislatures`) n'existent qu'après une collecte du runner
   avec `mono_donnees.py` à jour ; `deputes.json` est ignoré par git, la production n'a pas pu être lue depuis le conteneur.
+- **Calendrier : aucun thème officiel** (14/11/2026, mesuré dans `agenda-an.mjs` et `calendrier-senat.mjs`) : `categorie` n'est
+  qu'un type de réunion. Les filtres thématiques sont un calcul Repère par mots-clés (`core/themes-calendrier.js`, sept thèmes
+  du porteur), dit comme tel à l'écran. « Sécurité sociale » range en Santé, jamais en Sécurité.
 
 ## 10. Ce qui a été refusé, et pourquoi
 

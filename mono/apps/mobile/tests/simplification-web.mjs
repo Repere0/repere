@@ -57,7 +57,7 @@ const photo = async (page, nom) => { if (CAP) await page.screenshot({ path: `${C
   await passerBienvenue(page);
   await page.getByRole("button", { name: /^Thème Santé/ }).waitFor({ timeout: 15000 });
   const themes = await page.getByRole("button", { name: /^Thème / }).count();
-  verifier(themes >= 7, `accueil : une rangée de thèmes (${themes})`);
+  verifier(themes === 6, `accueil : six thèmes (14/11, porteur) (${themes})`);
   await photo(page, "1-accueil-themes");
   await page.getByRole("button", { name: /^Thème Santé/ }).click();
   await page.getByText("Thème « Santé »", { exact: false }).first().waitFor({ timeout: 15000 });

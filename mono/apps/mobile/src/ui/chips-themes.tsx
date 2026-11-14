@@ -10,7 +10,7 @@ import { CIBLE, couleurs, PAS, POLICE, RAYON } from "../lib/theme";
 
 export const ICONE_THEME: Record<string, keyof typeof Ionicons.glyphMap> = {
   "Santé": "medkit-outline", "École": "school-outline", "Transport": "bus-outline", "Environnement": "leaf-outline",
-  "Budget": "wallet-outline", "Sécurité": "shield-checkmark-outline", "Économie": "briefcase-outline",
+  "Budget": "wallet-outline", "Éducation": "school-outline", "Social": "people-outline", "Écologie": "leaf-outline", "Institutions": "business-outline", "Sécurité": "shield-checkmark-outline", "Économie": "briefcase-outline",
 };
 
 export function ChipsThemes({ actif, choisir, themes }: { actif?: string | null; choisir?: (t: string | null) => void; themes?: string[] }) {

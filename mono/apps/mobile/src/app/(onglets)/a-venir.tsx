@@ -20,8 +20,9 @@ import { useState } from "react";
 import { Pressable, Text, View } from "react-native";
 import { router, Stack } from "expo-router";
 import {
-  ageReleve, dateFr, ETAPES_LOI, heureFr, jourFr, jourParis, LIBELLES, regrouperParJour,
+  ageReleve, dateFr, ETAPES_LOI, heureFr, jourFr, jourParis, LIBELLES, regrouperParJour, THEMES_CALENDRIER, themesDuRendezVous,
 } from "@repere/core";
+import { ChipsThemes } from "../../ui/chips-themes";
 import { Carte, Vide } from "../../lib/composants";
 import { Ionicons } from "@expo/vector-icons";
 import { AGENDA_PAS_ARRIVE, AGENDA_VIDE } from "../../lib/absences";
@@ -156,6 +157,8 @@ export default function AVenir() {
   const { reessayer } = useCommuneChoisie();
   /* Filtre par institution : null = les deux. */
   const [institution, setInstitution] = useState<string | null>(null);
+  /* 14/11/2026 (porteur) : filtre par thème. Aucun thème par défaut : tout s'affiche à l'arrivée. */
+  const [theme, setTheme] = useState<string | null>(null);
   const [jour, setJour] = useState<string>(() => jourParis(new Date()));
   /* Par defaut la liste montre les deux prochaines semaines (une ligne par texte et par
      jour) ; un jour touche la restreint a ce jour, « Deux semaines » revient en arriere. */
@@ -169,7 +172,9 @@ export default function AVenir() {
     <AvecDonnees rendu={r => {
       const { d } = r;
       const toutes = (d.aVenir || []) as Ev[];
-      const aVenir = institution ? toutes.filter(e => e.institution === institution) : toutes;
+      const duFiltre = institution ? toutes.filter(e => e.institution === institution) : toutes;
+      /* Le thème est un calcul Repère par mots-clés (core/themes-calendrier.js) : les sources n'en publient pas. */
+      const aVenir = theme ? duFiltre.filter(e => (themesDuRendezVous(e) as string[]).includes(theme)) : duFiltre;
       const lues = ((d.semaineParlement && d.semaineParlement.institutions) || []) as { institution: string; source: Record<string, string> }[];
       const groupes = regrouperParJour(aVenir) as Groupe[];
       const compte: Record<string, number> = {};
@@ -259,6 +264,14 @@ export default function AVenir() {
               <Onglets etiquette="Afficher une institution" actif={institution ?? "tout"} choisir={c => setInstitution(c === "tout" ? null : c)}
                 valeurs={[{ cle: "tout", texte: "Tout" }, { cle: "Assemblée nationale", texte: "Assemblée" }, { cle: "Sénat", texte: "Sénat" }]} />
 
+              {/* Les thèmes, sous les institutions : un toucher filtre, un second toucher retire. */}
+              <ChipsThemes themes={THEMES_CALENDRIER as string[]} actif={theme} choisir={setTheme} />
+              {theme ? (
+                <Text style={TYPO.note} testID="calendrier-note-theme">
+                  Thème « {theme} » : rangement fait par Repère d'après les mots du titre, car l'Assemblée et le Sénat ne publient pas de thème. Un rendez-vous peut être mal rangé, ou ne pas l'être.
+                </Text>
+              ) : null}
+
               <Pressable onPress={() => setMois(m => !m)} accessibilityRole="button" accessibilityState={{ expanded: mois }}
                 accessibilityLabel={mois ? "Masquer le calendrier du mois" : "Choisir un jour dans le mois"}
                 style={({ pressed }) => [secondaire.bouton, { flexDirection: "row", alignItems: "center", gap: PAS * 2 }, pressed && enfonce(true)]}>
@@ -323,9 +336,9 @@ export default function AVenir() {
               ) : null}
 
               {!aVenir.length && toutes.length ? (
-                <Pressable onPress={() => setInstitution(null)} accessibilityRole="button" accessibilityLabel="Afficher toutes les institutions"
+                <Pressable onPress={() => { setInstitution(null); setTheme(null); }} accessibilityRole="button" accessibilityLabel="Retirer les filtres"
                   style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", ...enfonce(pressed) })}>
-                  <Text style={{ color: couleurs.lien, fontWeight: "500" }}>Rien de publié pour ce filtre. Afficher toutes les institutions</Text>
+                  <Text style={{ color: couleurs.lien, fontWeight: "500" }}>Rien de publié pour ce filtre. Retirer les filtres</Text>
                 </Pressable>
               ) : null}
               {!toutes.length && !dernierBrut ? <Vide {...AGENDA_VIDE} /> : null}
