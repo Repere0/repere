@@ -47,6 +47,16 @@ l'application dit alors l'absence. `sources.json` n'est jamais publié.
   « Lien vers le site officiel de campagne, quand il existe. » (porteur : ce n'est pas une inégalité, c'est l'état des données).
 - melenchon2027.fr : laissé en l'état, le porteur vérifiera à la main.
 
+### Suite du 14 novembre 2026 (14 adresses sur 25)
+
+- **Branco** : https://2027.juanbranco.org ouverte avec l'autorisation du porteur ; la page d'accueil présente
+  explicitement la candidature de 2027 (logo « Les Ruches », éditeur non indiqué). **Inscrite.**
+- **Philippot** : lespatriotes.fr interdit la lecture automatique, donc non vérifiée. Le site du parti,
+  les-patriotes.fr, rouvert ce jour, ne présente aucune candidature : seulement un appel au soutien financier pour les
+  « Élections 2027 ». **Non inscrit.**
+- **Retailleau** : **non** (porteur). Une actualité sur ses porte-paroles n'est pas une plateforme de campagne ;
+  mieux vaut une absence qu'une donnée ambiguë. À ajouter si un vrai site de campagne ouvre.
+
 ### Relevé du 13/11/2026 (8 adresses sur 25)
 
 Règle d'inscription : le site se présente comme la campagne 2027 du candidat **et** un second indice le confirme.
