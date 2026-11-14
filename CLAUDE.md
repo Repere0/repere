@@ -34,7 +34,7 @@ explicite du porteur les change ; la PR qui l'applique met alors à jour
 1. **Autonomie.** L'application fonctionne hors ligne, sans serveur applicatif.
 2. **Deux clés de stockage local, nommées, rien d'autre.** `repere.departement` (la commune,
    `{d, v}` depuis le 23/09/2026) et `repere.profil` (réglages de lecture : taille, contraste,
-   espacement, police, animations, daltonisme, images, et depuis D57 `themes` : les thèmes d'intérêt choisis, parmi une liste fixe ; depuis D67 `mode` : auto, clair ou sombre ; et depuis le 13/11/2026 `prenom` : un prénom FACULTATIF, jamais deviné, ce qui n'en est pas un n'étant pas gardé — ADR 0009 ; et `points` : les points du quiz civique, jamais transmis — ADR 0010). Ni l'une ni l'autre n'est
+   espacement, police, animations, daltonisme, images, et depuis D57 `themes` : les thèmes d'intérêt choisis, parmi une liste fixe ; depuis D67 `mode` : auto, clair ou sombre ; et depuis le 13/11/2026 `prenom` : un prénom FACULTATIF, jamais deviné, ce qui n'en est pas un n'étant pas gardé — ADR 0009 ; `points` : les points du quiz civique, jamais transmis — ADR 0010 ; et depuis le 14/11/2026 `onboardingVu` : la bienvenue a été terminée sur cet appareil, rien d'autre — ADR 0011). Ni l'une ni l'autre n'est
    transmise : aucun compte, email, traceur, cookie. Le magasin de données (IndexedDB sur le
    site, cache de l'application sur le téléphone) ne garde que les fichiers publics publiés
    par Repère, sous une garde unique (`store.js`). Aucune adresse réseau ne porte un code de
@@ -98,7 +98,7 @@ explicite du porteur les change ; la PR qui l'applique met alors à jour
 | histoire de l'ère mono-fichier (avant le 23/09) | `CONTEXTE_PROJET.md` § 4 à 8 et 12 |
 | carte produit, questions citoyennes | `docs/PRODUCT_MAP_V1_2026-09-23.md` |
 | retour arrière de la production, couche éditoriale | `docs/MONO_PRODUCTION_ROLLBACK.md`, `docs/COUCHE_EDITORIALE.md` |
-| décisions qui ont amendé un invariant | `docs/adr/` (0001 à 0010) |
+| décisions qui ont amendé un invariant | `docs/adr/` (0001 à 0011) |
 
 ## Procédures — skills de `.claude/skills/`
 

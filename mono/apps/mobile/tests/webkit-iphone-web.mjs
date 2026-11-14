@@ -28,7 +28,7 @@ const dit = m => console.log("      " + m);
 console.log(`== DIAGNOSTIC WEBKIT (Safari) — ${IPHONE.viewport.width}x${IPHONE.viewport.height}, tactile ${IPHONE.hasTouch} ==`);
 
 const nav = await webkit.launch();
-const PROFIL = { tailleTexte: 16, espacement: 1.5, contraste: "normal", policeDyslexie: false, animationsReduites: false, modeDaltonien: false, masquerImages: false, themes: [], mode: "clair", prenom: "", points: 0 };
+const PROFIL = { tailleTexte: 16, onboardingVu: true, espacement: 1.5, contraste: "normal", policeDyslexie: false, animationsReduites: false, modeDaltonien: false, masquerImages: false, themes: [], mode: "clair", prenom: "", points: 0 };
 const neuf = async (init) => {
   const ctx = await nav.newContext({ ...IPHONE });
   const page = await ctx.newPage();
@@ -102,10 +102,38 @@ const neuf = async (init) => {
       dit("prenom garde : " + JSON.stringify(prenom));
       ok(prenom === "Inès", "onboarding : le prenom est garde sur l'appareil");
       ok(await page.getByTestId("bonjour").count() === 1, "onboarding : l'accueil dit bonjour");
+      const vu = await page.evaluate(() => (JSON.parse(localStorage.getItem("repere.profil") || "null") || {}).onboardingVu);
+      ok(vu === true, "onboarding : la bienvenue terminee est marquee vue (onboardingVu = " + JSON.stringify(vu) + ")");
     }
   }
   if (CAP) await page.screenshot({ path: `${CAP}/webkit-onboarding.png` });
   ok(erreurs.length === 0, "onboarding : aucune erreur JavaScript" + (erreurs[0] ? " (" + erreurs[0] + ")" : ""));
+  await ctx.close();
+}
+
+/* ───── 2 bis. UN IPHONE QUI GARDE DEJA UN PROFIL (14/11/2026, ADR 0011) : le cas du porteur ─────
+   Un profil d'avant, sans `onboardingVu` : la bienvenue doit s'ouvrir quand meme, une fois. */
+{
+  const { ctx, page, erreurs } = await neuf();
+  await page.addInitScript(() => { if (!localStorage.getItem("repere.profil")) localStorage.setItem("repere.profil", JSON.stringify({ tailleTexte: 18, espacement: 1.5,
+    contraste: "normal", policeDyslexie: false, animationsReduites: false, modeDaltonien: false, masquerImages: false, themes: [], mode: "clair", prenom: "", points: 30 })); });
+  await page.goto(BASE + "/", { waitUntil: "load" });
+  await page.waitForTimeout(4000);
+  dit("profil deja garde, adresse apres 4 s : " + page.url());
+  ok(page.url().includes("/bienvenue"), "profil deja garde : la bienvenue s'ouvre (lu : " + (page.url().replace(BASE, "") || "/") + ")");
+  if (page.url().includes("/bienvenue")) {
+    await page.getByTestId("continuer-0").tap();
+    await page.getByLabel(/Votre prénom/).fill("Inès");
+    await page.getByTestId("continuer-1").tap();
+    await page.getByTestId("continuer-2").tap();
+    await page.waitForTimeout(2000);
+    const p = await page.evaluate(() => JSON.parse(localStorage.getItem("repere.profil") || "null"));
+    dit("profil apres la bienvenue : " + JSON.stringify(p && { prenom: p.prenom, tailleTexte: p.tailleTexte, points: p.points, onboardingVu: p.onboardingVu }));
+    ok(p && p.prenom === "Inès" && p.onboardingVu === true, "profil deja garde : prenom garde, bienvenue marquee vue");
+    ok(p && p.tailleTexte === 18 && p.points === 30, "profil deja garde : la taille du texte et les points ne sont pas remis a zero");
+  }
+  if (CAP) await page.screenshot({ path: `${CAP}/webkit-onboarding-profil-garde.png` });
+  ok(erreurs.length === 0, "profil deja garde : aucune erreur JavaScript" + (erreurs[0] ? " (" + erreurs[0] + ")" : ""));
   await ctx.close();
 }
 

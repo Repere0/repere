@@ -137,6 +137,46 @@ const lireProfil = page => page.evaluate(() => JSON.parse(localStorage.getItem("
   await contexte.close();
 }
 
+/* 4. UN APPAREIL QUI GARDE DÉJÀ UN PROFIL (14/11/2026, porteur, ADR 0011). Son iPhone : « le logo, puis l'accueil,
+   jamais le prénom ». Il gardait un profil depuis des semaines, et « profil présent » valait « bienvenue déjà vue ».
+   Sans `onboardingVu`, la bienvenue passe UNE fois ; les réglages, le prénom et les points déjà là sont gardés. */
+{
+  const { contexte, page } = await nouveau();
+  await page.addInitScript(() => { if (!localStorage.getItem("repere.profil")) localStorage.setItem("repere.profil", JSON.stringify({ niveauZoom: "france", tailleTexte: 22,
+    espacement: 1.8, contraste: "normal", policeDyslexie: false, animationsReduites: false, modeDaltonien: false, masquerImages: false, mode: "sombre", themes: [], prenom: "Léa", points: 40 })); });
+  await page.goto(BASE + "/", { waitUntil: "commit" });
+  let arrive = true;
+  await page.waitForURL(/\/bienvenue/, { timeout: 8000 }).catch(() => { arrive = false; });
+  verifier(arrive, "profil déjà gardé, bienvenue jamais vue : elle s'ouvre (lu : " + (page.url().replace(BASE, "") || "/") + ")");
+  if (arrive) {
+    await page.getByTestId("continuer-0").click();
+    const champ = page.getByLabel(/Votre prénom/);
+    await champ.waitFor({ timeout: 8000 });
+    verifier(await champ.inputValue() === "Léa", "profil déjà gardé : le prénom déjà donné est dans le champ (« " + await champ.inputValue() + " »)");
+    await page.getByRole("button", { name: /^Passer, sans/ }).click();
+    await page.getByTestId("continuer-2").click();
+    await page.waitForTimeout(1500);
+    const profil = await lireProfil(page);
+    verifier(profil && profil.onboardingVu === true, "profil déjà gardé : la bienvenue terminée est marquée vue");
+    verifier(profil && profil.tailleTexte === 22 && profil.espacement === 1.8 && profil.points === 40 && profil.prenom === "Léa",
+      "profil déjà gardé : réglages, points et prénom GARDÉS (" + JSON.stringify(profil && [profil.tailleTexte, profil.espacement, profil.points, profil.prenom]) + ")");
+    await page.goto(BASE + "/", { waitUntil: "commit" });
+    await page.waitForTimeout(3000);
+    verifier(!page.url().includes("/bienvenue"), "profil déjà gardé : la bienvenue ne revient plus jamais");
+  }
+  await contexte.close();
+}
+/* 5. Bienvenue déjà vue : jamais reposée, même sans prénom. */
+{
+  const { contexte, page } = await nouveau();
+  await page.addInitScript(() => localStorage.setItem("repere.profil", JSON.stringify({ niveauZoom: "france", tailleTexte: 16, espacement: 1.5, contraste: "normal",
+    policeDyslexie: false, animationsReduites: false, modeDaltonien: false, masquerImages: false, mode: "sombre", themes: [], prenom: "", points: 0, onboardingVu: true })));
+  await page.goto(BASE + "/", { waitUntil: "commit" });
+  await page.waitForTimeout(3000);
+  verifier(!page.url().includes("/bienvenue"), "bienvenue déjà vue : elle n'est pas reposée");
+  await contexte.close();
+}
+
 await navigateur.close();
 console.log(echecs === 0 ? "onboarding : zéro échec" : `onboarding : ${echecs} échec(s)`);
 process.exit(echecs === 0 ? 0 : 1);

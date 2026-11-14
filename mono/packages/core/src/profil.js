@@ -32,6 +32,9 @@ export const PROFIL_DEFAUT = {
   prenom: "",
   /* 13/11/2026 (ADR 0010) : les points du quiz civique, sur l'appareil seulement. */
   points: 0,
+  /* 14/11/2026 (porteur, ADR 0011) : la bienvenue a-t-elle été terminée sur cet appareil ? Faux par défaut, et faux
+     pour tout profil gardé avant ce jour (la clé n'y est pas) : la bienvenue passe alors une fois, réglages gardés. */
+  onboardingVu: false,
 };
 
 /* Un prénom affichable : lettres, espaces, traits d'union et apostrophes, 24 caractères au plus. Tout le reste
@@ -99,6 +102,7 @@ export function valideProfil(v) {
     themes: Array.isArray(src.themes) ? [...new Set(src.themes)].filter(t => THEMES.includes(t)) : [],
     prenom: nettoyerPrenom(src.prenom),
     points: nettoyerPoints(src.points),
+    onboardingVu: src.onboardingVu === true,
   };
   for (const k of Object.keys(out)) if (out[k] === undefined) out[k] = PROFIL_DEFAUT[k];
   return out;

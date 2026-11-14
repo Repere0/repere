@@ -54,7 +54,7 @@ const servir = async (page, avecPlan) => {
 const ouvrir = async avecPlan => {
   const ctx = await nav.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
   const page = await ctx.newPage();
-  await page.addInitScript(() => localStorage.setItem("repere.profil", JSON.stringify({ tailleTexte: 16, espacement: 1.5, contraste: "normal", policeDyslexie: false, animationsReduites: true, modeDaltonien: false, masquerImages: false, themes: [], mode: "clair", prenom: "" })));
+  await page.addInitScript(() => localStorage.setItem("repere.profil", JSON.stringify({ tailleTexte: 16, onboardingVu: true, espacement: 1.5, contraste: "normal", policeDyslexie: false, animationsReduites: true, modeDaltonien: false, masquerImages: false, themes: [], mode: "clair", prenom: "" })));
   await servir(page, avecPlan);
   await page.goto(BASE + "/scrutins", { waitUntil: "networkidle" });
   await page.getByTestId("hemicycle-ordre").waitFor({ timeout: 20000 });

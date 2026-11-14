@@ -8,7 +8,7 @@ const ok = (c, m) => { console.log((c ? "ok    " : "ECHEC ") + m); if (!c) echec
 const nav = await chromium.launch();
 const ctx = await nav.newContext({ viewport: { width: 390, height: 664 }, isMobile: true, hasTouch: true });
 const page = await ctx.newPage();
-await page.addInitScript(() => localStorage.setItem("repere.profil", JSON.stringify({ tailleTexte: 16, espacement: 1.5, contraste: "normal", policeDyslexie: false, animationsReduites: true, modeDaltonien: false, masquerImages: false })));
+await page.addInitScript(() => localStorage.setItem("repere.profil", JSON.stringify({ tailleTexte: 16, onboardingVu: true, espacement: 1.5, contraste: "normal", policeDyslexie: false, animationsReduites: true, modeDaltonien: false, masquerImages: false })));
 await page.goto(BASE + "/finances#meaux", { waitUntil: "networkidle" });
 await page.waitForTimeout(2500);
 const mesure = () => page.evaluate(() => {

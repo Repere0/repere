@@ -21,7 +21,7 @@ const nav = await chromium.launch();
 const ctx = await nav.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
 const page = await ctx.newPage();
 const erreurs = []; page.on("pageerror", e => erreurs.push(String(e.message || e).slice(0, 160)));
-await page.addInitScript(() => localStorage.setItem("repere.profil", JSON.stringify({ tailleTexte: 16, espacement: 1.5, contraste: "normal", policeDyslexie: false, animationsReduites: true, modeDaltonien: false, masquerImages: false, themes: [], mode: "clair", prenom: "", points: 0 })));
+await page.addInitScript(() => localStorage.setItem("repere.profil", JSON.stringify({ tailleTexte: 16, onboardingVu: true, espacement: 1.5, contraste: "normal", policeDyslexie: false, animationsReduites: true, modeDaltonien: false, masquerImages: false, themes: [], mode: "clair", prenom: "", points: 0 })));
 await page.route("**/deputes-groupes.json", r => r.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(fichier) }));
 await page.goto(BASE + "/groupe?g=RN", { waitUntil: "networkidle" });
 await page.getByText("Ordre alphabétique des noms de famille.").waitFor({ timeout: 20000 });

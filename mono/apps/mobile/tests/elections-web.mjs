@@ -16,7 +16,7 @@ const verifier = (ok, message) => {
 };
 
 /* Une commune retenue (sinon l'accueil est l'écran de premier lancement, où la carte ne s'affiche pas). */
-const PROFIL = { niveauZoom: "france", tailleTexte: 16, espacement: 1.5, contraste: "normal", policeDyslexie: false,
+const PROFIL = { niveauZoom: "france", tailleTexte: 16, onboardingVu: true, espacement: 1.5, contraste: "normal", policeDyslexie: false,
   animationsReduites: false, modeDaltonien: false, masquerImages: false, mode: "auto", themes: [] };
 const DEPARTEMENT = { d: "77", c: "77288" };
 

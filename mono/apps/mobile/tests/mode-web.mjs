@@ -20,7 +20,7 @@ const contexte = await navigateur.newContext({ viewport: { width: 390, height: 8
 await contexte.addInitScript(() => {
   if (!localStorage.getItem("repere.departement")) localStorage.setItem("repere.departement", JSON.stringify({ d: "77", c: "77284" }));
   if (!localStorage.getItem("repere.profil")) localStorage.setItem("repere.profil", JSON.stringify({
-    niveauZoom: "france", tailleTexte: 22, espacement: 1.5, contraste: "normal", policeDyslexie: false,
+    niveauZoom: "france", tailleTexte: 22, onboardingVu: true, espacement: 1.5, contraste: "normal", policeDyslexie: false,
     animationsReduites: false, modeDaltonien: false, masquerImages: false, themes: [], mode: "auto",
   }));
 });

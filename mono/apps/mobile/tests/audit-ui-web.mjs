@@ -66,7 +66,7 @@ if (BASE && OUT) {
     const erreurs = [];
     p.on("pageerror", e => erreurs.push(e.message));
     await p.addInitScript(m => {
-      localStorage.setItem("repere.profil", JSON.stringify({ niveauZoom: "tout", tailleTexte: 16, espacement: 1.5, contraste: "normal", policeDyslexie: false, animationsReduites: true, modeDaltonien: false, masquerImages: false, mode: m }));
+      localStorage.setItem("repere.profil", JSON.stringify({ niveauZoom: "tout", tailleTexte: 16, onboardingVu: true, espacement: 1.5, contraste: "normal", policeDyslexie: false, animationsReduites: true, modeDaltonien: false, masquerImages: false, mode: m }));
       localStorage.setItem("repere.departement", JSON.stringify({ d: "77", c: "77284" }));
     }, mode);
     const clic = async (depuis, texte) => { await p.goto(BASE + depuis, { waitUntil: "networkidle" }); await p.waitForTimeout(900); const c = p.getByRole("link", { name: texte }).or(p.getByRole("button", { name: texte })).first(); if (!(await c.count())) return false; await c.click(); await p.waitForTimeout(1200); return true; };

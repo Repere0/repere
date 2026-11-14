@@ -26,6 +26,8 @@ export type Profil = {
   prenom: string;
   /* 13/11/2026 (ADR 0010) : les points du quiz civique. Jamais transmis, jamais comparés. */
   points: number;
+  /* 14/11/2026 (ADR 0011) : la bienvenue a été terminée sur cet appareil. Absent d'un profil d'avant = faux. */
+  onboardingVu: boolean;
 };
 /* valideProfil est en JavaScript (@repere/core) : son type est rendu ici, une fois. */
 const valide = (x: unknown): Profil => valideProfil(x) as Profil;
@@ -59,7 +61,11 @@ export function useEtatProfil(): Etat {
   /* D45 (V27) : « Passer » est un choix explicite : il garde les réglages par défaut. */
   const passer = () => enregistrer(valide({ ...PROFIL_DEFAUT, mode: MODE_INITIAL }));
   const modifier = (m: Partial<Profil>) => enregistrer({ ...(profil ?? ({ ...PROFIL_DEFAUT, mode: MODE_INITIAL } as Profil)), ...m });
-  return { profil, absent: profil === null, enregistrer, passer, modifier };
+  /* 14/11/2026 (porteur, ADR 0011). « absent » voulait dire « aucun profil gardé » : un téléphone qui en gardait un
+     d'avant le 13/11 (réglages de lecture, points) ne voyait donc JAMAIS la bienvenue — le défaut du porteur sur son
+     iPhone, cinq fois « corrigé » ailleurs. Il veut dire maintenant « la bienvenue n'a pas été terminée ici ».
+     Seule la bienvenue pose `onboardingVu` ; `modifier` (un réglage, des points) le laisse comme il est. */
+  return { profil, absent: profil === null || !profil.onboardingVu, enregistrer, passer, modifier };
 }
 
 const Contexte = createContext<Etat>({

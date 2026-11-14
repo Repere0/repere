@@ -39,7 +39,7 @@ const ouvrir = async avecFichier => {
   const page = await ctx.newPage();
   const images = [];
   page.on("request", r => { if (r.resourceType() === "image") images.push(r.url()); });
-  await page.addInitScript(() => localStorage.setItem("repere.profil", JSON.stringify({ tailleTexte: 16, espacement: 1.5, contraste: "normal", policeDyslexie: false, animationsReduites: true, modeDaltonien: false, masquerImages: false, themes: [], mode: "clair", prenom: "" })));
+  await page.addInitScript(() => localStorage.setItem("repere.profil", JSON.stringify({ tailleTexte: 16, onboardingVu: true, espacement: 1.5, contraste: "normal", policeDyslexie: false, animationsReduites: true, modeDaltonien: false, masquerImages: false, themes: [], mode: "clair", prenom: "" })));
   await page.route("**/senateurs.json", r => avecFichier
     ? r.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(fichier) })
     : r.fulfill({ status: 404, contentType: "text/plain", body: "absent" }));

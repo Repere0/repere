@@ -124,3 +124,15 @@ test("quiz : les points sont gardés dans repere.profil, pas dans une clé de pl
   assert.equal(valideProfil({ points: "beaucoup" }).points, 0);
   assert.equal(valideProfil({}).points, 0);
 });
+
+/* 14/11/2026 (porteur, ADR 0011) : `onboardingVu` dit si la bienvenue a été terminée sur cet appareil. Un profil
+   gardé avant ce jour ne porte pas la clé : c'est « pas encore vu », et la bienvenue passe une fois. */
+test("onboarding : onboardingVu est un booléen de repere.profil, faux tant que la bienvenue n'est pas terminée", () => {
+  assert.equal(PROFIL_DEFAUT.onboardingVu, false);
+  assert.equal(valideProfil({ tailleTexte: 22, prenom: "Inès", points: 40 }).onboardingVu, false, "profil d'avant : pas encore vu");
+  assert.equal(valideProfil({ onboardingVu: true }).onboardingVu, true);
+  for (const v of ["true", 1, "oui", null, {}]) assert.equal(valideProfil({ onboardingVu: v }).onboardingVu, false, JSON.stringify(v));
+  /* les réglages d'un profil d'avant sont lus tels quels : rien n'est remis à zéro par la lecture */
+  const avant = valideProfil({ tailleTexte: 22, espacement: 1.8, prenom: "Inès", points: 40, themes: [] });
+  assert.deepEqual([avant.tailleTexte, avant.espacement, avant.prenom, avant.points], [22, 1.8, "Inès", 40]);
+});

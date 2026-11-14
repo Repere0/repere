@@ -32,17 +32,20 @@ const VALEURS: { icone: keyof typeof Ionicons.glyphMap; titre: string; corps: st
 
 export default function Bienvenue() {
   const { choix } = useSelection();
-  const { enregistrer } = useProfil();
+  const { enregistrer, profil } = useProfil();
   const marges = useSafeAreaInsets();
   const [etape, setEtape] = useState(0);
-  const [saisie, setSaisie] = useState("");
+  /* Un profil d'avant (14/11/2026, ADR 0011) : son prénom, s'il en a un, est déjà dans le champ. */
+  const [saisie, setSaisie] = useState(profil ? profil.prenom : "");
   const apparition = useApparition();
   const prenom = nettoyerPrenom(saisie);
   /* Une saisie non vide que la règle refuse (chiffres, signes) : on le dit, on ne la garde pas en silence. */
   const refuse = saisie.trim().length > 0 && !prenom;
 
   const terminer = (p: string) => {
-    enregistrer({ ...PROFIL_DEFAUT, mode: MODE_INITIAL, prenom: p } as Parameters<typeof enregistrer>[0]);
+    /* Les réglages déjà faits sur cet appareil (lecture, thèmes, points) sont GARDÉS : la bienvenue n'ajoute que le
+       prénom et la marque « vue ». Sans profil, les réglages par défaut. */
+    enregistrer({ ...(profil ?? { ...PROFIL_DEFAUT, mode: MODE_INITIAL }), prenom: p, onboardingVu: true } as Parameters<typeof enregistrer>[0]);
     router.replace(choix ? "/chez-vous" : "/");
   };
 
@@ -98,7 +101,7 @@ export default function Bienvenue() {
             </View>
             <View style={{ gap: PAS * 2 }}>
               {bouton("Continuer", () => setEtape(2), "continuer-1")}
-              {discret("Passer", "Passer, sans donner de prénom", () => { setSaisie(""); setEtape(2); })}
+              {discret("Passer", "Passer, sans donner de prénom", () => { setSaisie(profil ? profil.prenom : ""); setEtape(2); })}
             </View>
           </>
         ) : null}

@@ -15,7 +15,7 @@ const verifier = (ok, message) => {
   if (!ok) echecs++;
 };
 
-const PROFIL = { niveauZoom: "france", tailleTexte: 16, espacement: 1.5, contraste: "normal", policeDyslexie: false,
+const PROFIL = { niveauZoom: "france", tailleTexte: 16, onboardingVu: true, espacement: 1.5, contraste: "normal", policeDyslexie: false,
   animationsReduites: false, modeDaltonien: false, masquerImages: false, mode: "auto", themes: [] };
 const DEPARTEMENT = { d: "77", c: "77288" };
 /* Chemin, titre attendu contenant, et ce que la source doit contenir (vide = pas de contrôle de source). */

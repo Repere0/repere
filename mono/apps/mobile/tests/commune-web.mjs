@@ -17,7 +17,7 @@ const ECRANS = [
   { chemin: "/elus", nom: false },
   { chemin: "/chez-vous", nom: true },
 ];
-const PROFIL = { niveauZoom: "france", tailleTexte: 16, espacement: 1.5, contraste: "normal", policeDyslexie: false, animationsReduites: true, modeDaltonien: false, masquerImages: false, themes: [] };
+const PROFIL = { niveauZoom: "france", tailleTexte: 16, onboardingVu: true, espacement: 1.5, contraste: "normal", policeDyslexie: false, animationsReduites: true, modeDaltonien: false, masquerImages: false, themes: [] };
 
 let echecs = 0;
 const verifier = (ok, texte) => { console.log((ok ? "ok    " : "ECHEC ") + texte); if (!ok) echecs++; };
