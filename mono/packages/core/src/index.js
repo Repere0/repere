@@ -36,6 +36,7 @@ export * from "./mots.js";
 export * from "./actualites.js";
 export * from "./profil.js";
 export * from "./themes.js";
+export * from "./themes-calendrier.js";
 export * from "./repere-du-jour.js";
 export * from "./presidentielle.js";
 

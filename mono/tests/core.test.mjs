@@ -817,3 +817,22 @@ test("parcours du député : législatures comptées sur la source, « au moins 
   for (const d of [null, {}, { legislatures: [] }, { legislatures: "17" }, { legislatures: ["17", null, 0, 2.5] }]) assert.deepEqual(legislaturesDepute(d, src), { etat: "absent" }, JSON.stringify(d));
   assert.deepEqual(legislaturesDepute({ legislatures: [17] }, {}), { etat: "sans_releve" }, "sans date de relevé, rien n'est affiché (invariant 4)");
 });
+
+/* 14/11/2026 (porteur) : les filtres thématiques du calendrier. Aucun thème officiel dans les sources : rangement par mots-clés,
+   calcul Repère. On prouve les cas du porteur, les pièges (« sécurité sociale »), et l'absence de thème par défaut. */
+test("core — thèmes du calendrier : mots-clés, « sécurité sociale » n'est pas de la Sécurité, aucun thème inventé", async () => {
+  const { themesDuRendezVous, THEMES_CALENDRIER } = await import("../packages/core/src/themes-calendrier.js");
+  assert.deepEqual(THEMES_CALENDRIER, ["Santé", "Éducation", "Budget", "Social", "Écologie", "Sécurité", "Institutions"]);
+  const t = titre => themesDuRendezVous({ titre });
+  assert.deepEqual(t("Suite PLFSS Financement de la sécurité sociale pour 2027"), ["Santé"], "PLFSS : Santé, et pas Sécurité");
+  assert.deepEqual(t("Projet de loi de finances pour 2027 — première partie"), ["Budget"]);
+  assert.deepEqual(t("Proposition de loi sur le logement des jeunes"), ["Social"]);
+  assert.deepEqual(t("Débat sur les écoles et l'enseignement"), ["Éducation"]);
+  assert.deepEqual(t("Projet de loi renforçant la sécurité du quotidien"), ["Sécurité"]);
+  assert.deepEqual(t("Réforme de la Constitution"), ["Institutions"]);
+  assert.deepEqual(t("Plan climat et énergie"), ["Écologie"]);
+  assert.deepEqual(t("Séance publique — ordre du jour non encore publié"), [], "aucun mot, aucun thème : jamais de thème par défaut");
+  assert.deepEqual(themesDuRendezVous({ titre: "Séance publique", description: "Hôpital public et budget de la santé" }), ["Santé", "Budget"], "plusieurs thèmes possibles ; description lue");
+  assert.deepEqual(t("Ecole de la Republique"), ["Éducation"], "sans accents");
+  assert.deepEqual(t("Malécoles"), [], "début de mot seulement");
+});

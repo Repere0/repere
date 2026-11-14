@@ -10,14 +10,14 @@ import { CIBLE, couleurs, PAS, POLICE, RAYON } from "../lib/theme";
 
 export const ICONE_THEME: Record<string, keyof typeof Ionicons.glyphMap> = {
   "Santé": "medkit-outline", "École": "school-outline", "Transport": "bus-outline", "Environnement": "leaf-outline",
-  "Budget": "wallet-outline", "Sécurité": "shield-checkmark-outline", "Économie": "briefcase-outline",
+  "Budget": "wallet-outline", "Éducation": "school-outline", "Social": "people-outline", "Écologie": "leaf-outline", "Institutions": "business-outline", "Sécurité": "shield-checkmark-outline", "Économie": "briefcase-outline",
 };
 
-export function ChipsThemes({ actif, choisir }: { actif?: string | null; choisir?: (t: string | null) => void }) {
+export function ChipsThemes({ actif, choisir, themes }: { actif?: string | null; choisir?: (t: string | null) => void; themes?: string[] }) {
   return (
     <ScrollView horizontal showsHorizontalScrollIndicator={false} accessibilityLabel="Thèmes : filtrer la recherche par sujet"
       contentContainerStyle={{ gap: PAS * 2, paddingVertical: PAS }}>
-      {(THEMES as string[]).map(t => {
+      {(themes ?? (THEMES as string[])).map(t => {
         const on = actif === t;
         return (
           <Pressable key={t} onPress={() => (choisir ? choisir(on ? null : t) : router.push({ pathname: "/recherche", params: { theme: t } }))}
