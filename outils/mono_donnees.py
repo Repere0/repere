@@ -68,6 +68,12 @@ def lire_acteur(a):
         mandats = [mandats]
     ident = (a.get("etatCivil") or {}).get("ident") or {}
     uid = (a.get("uid") or {}).get("#text", "")
+    # PARCOURS (14/11/2026) : les legislatures ou cet acteur a eu un mandat de depute, toutes epoques
+    # du fichier confondues. `legislature` est une CHAINE ou null (piege 3) : seules les chaines de
+    # chiffres comptent, une legislature ne compte qu'une fois. Aucune presence, aucun vote : des mandats.
+    legislatures = sorted({int(str(m.get("legislature"))) for m in mandats
+                           if isinstance(m, dict) and m.get("typeOrgane") == "ASSEMBLEE"
+                           and str(m.get("legislature") or "").isdigit()})
     for m in mandats:
         if not isinstance(m, dict):                   continue
         lieu = ((m.get("election") or {}).get("lieu") or {})
@@ -78,7 +84,8 @@ def lire_acteur(a):
         if not uid:                                   continue
         yield ("%s-%s" % (lieu["numDepartement"], lieu["numCirco"]),
                {"prenom": ident.get("prenom", ""), "nom": ident.get("nom", ""),
-                "acteurRef": uid, "dateDebut": m.get("dateDebut")})
+                "acteurRef": uid, "dateDebut": m.get("dateDebut"),
+                "legislatures": legislatures})
 
 
 def deputes():
@@ -203,14 +210,32 @@ def autotest():
                  "dateFin": None, "election": {"lieu": {"numDepartement": "099", "numCirco": "5"}}}]}},
             [("099-5", "PA8")]),
     ]
+    # PARCOURS : les legislatures comptees une fois, les mandats hors Assemblee et sans legislature ecartes.
+    parcours = {"uid": {"#text": "PA9"}, "etatCivil": {"ident": {"prenom": "G", "nom": "Neuf"}},
+        "mandats": {"mandat": [
+            {"legislature": "17", "typeOrgane": "ASSEMBLEE", "dateDebut": "2024-07-07", "dateFin": None,
+             "election": {"lieu": {"numDepartement": "77", "numCirco": "1"}}},
+            {"legislature": "16", "typeOrgane": "ASSEMBLEE", "dateDebut": "2022-06-22", "dateFin": "2024-06-09",
+             "election": {"lieu": {"numDepartement": "77", "numCirco": "1"}}},
+            {"legislature": "16", "typeOrgane": "ASSEMBLEE", "dateDebut": "2023-01-01", "dateFin": "2023-02-01",
+             "election": {"lieu": {"numDepartement": "77", "numCirco": "1"}}},
+            {"legislature": "14", "typeOrgane": "COMPER", "dateDebut": "2012-07-01", "dateFin": "2017-06-20", "election": {"lieu": {}}},
+            {"legislature": None, "typeOrgane": "ASSEMBLEE", "dateDebut": "2010-01-01", "dateFin": "2010-02-01", "election": {"lieu": {}}},
+            {"legislature": "13", "typeOrgane": "ASSEMBLEE", "dateDebut": "2007-06-20", "dateFin": "2012-06-19",
+             "election": {"lieu": {"numDepartement": "77", "numCirco": "1"}}},
+        ]}}
     echecs = 0
+    lu = [f.get("legislatures") for c, f in lire_acteur(parcours)]
+    ok = lu == [[13, 16, 17]]
+    echecs += 0 if ok else 1
+    print("  %-4s %-42s %s" % ("ok" if ok else "ECHEC", "parcours : legislatures 13, 16, 17", "" if ok else "obtenu %s" % lu))
     for titre, acteur, attendu in cas:
         obtenu = [(c, f["acteurRef"]) for c, f in lire_acteur(acteur)]
         ok = obtenu == attendu
         echecs += 0 if ok else 1
         print("  %-4s %-42s %s" % ("ok" if ok else "ECHEC", titre,
                                    "" if ok else "attendu %s, obtenu %s" % (attendu, obtenu)))
-    print("\n%d cas, %d echec(s)." % (len(cas), echecs))
+    print("\n%d cas, %d echec(s)." % (len(cas) + 1, echecs))
     return 1 if echecs else 0
 
 if "--test" in sys.argv:
