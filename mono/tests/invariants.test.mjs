@@ -505,7 +505,12 @@ test("invariant 4 — le fichier des députés emporte sa source avec lui", () =
   /* Ni patrimoine ni presence, ni etiquette politique : on verifie la FORME des
      entrees, pas seulement l'absence de mots interdits. Un champ de plus ici
      serait passe inapercu. */
-  const attendus = new Set(["prenom", "nom", "acteurRef", "dateDebut"]);
+  /* 14/11/2026 : `legislatures`, les législatures où le député a eu un mandat (source AN). Des mandats, pas une
+     présence ni un vote : l'invariant 8 n'est pas touché. Le champ doit être une liste d'entiers, rien d'autre. */
+  const attendus = new Set(["prenom", "nom", "acteurRef", "dateDebut", "legislatures"]);
+  for (const [k, v] of Object.entries(f.deputes)) {
+    if ("legislatures" in v) assert.ok(Array.isArray(v.legislatures) && v.legislatures.every(Number.isInteger), `legislatures mal formé sur ${k}`);
+  }
   for (const [k, v] of Object.entries(f.deputes)) {
     for (const champ of Object.keys(v)) {
       assert.ok(attendus.has(champ), `champ inattendu « ${champ} » sur ${k}`);

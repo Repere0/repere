@@ -59,7 +59,10 @@ export function useEtatProfil(): Etat {
   /* D45 (V27) : « Passer » est un choix explicite : il garde les réglages par défaut. */
   const passer = () => enregistrer(valide({ ...PROFIL_DEFAUT, mode: MODE_INITIAL }));
   const modifier = (m: Partial<Profil>) => enregistrer({ ...(profil ?? ({ ...PROFIL_DEFAUT, mode: MODE_INITIAL } as Profil)), ...m });
-  return { profil, absent: profil === null, enregistrer, passer, modifier };
+  /* 14/11/2026 (porteur, ADR 0011) : « absent » = AUCUN PRÉNOM GARDÉ, et plus « aucun profil gardé ». Un téléphone qui
+     gardait un profil d'avant le 13/11 (réglages, points) n'était jamais « absent » : il ne voyait donc jamais la
+     question du prénom. Tant que c'est vrai, la coquille dresse la barrière de bienvenue devant tout le reste. */
+  return { profil, absent: !(profil && profil.prenom), enregistrer, passer, modifier };
 }
 
 const Contexte = createContext<Etat>({

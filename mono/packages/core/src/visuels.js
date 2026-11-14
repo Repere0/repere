@@ -1,3 +1,4 @@
+import { memeNom } from "./noms.js";
 /* @repere/core — CE QUE LES INFOGRAPHIES MONTRENT, CALCULE UNE SEULE FOIS
  * (30/09/2026, refonte de l'experience mobile).
  *
@@ -250,7 +251,7 @@ export function chaineDecision({ fiche, paquet, index, deputes, elusRegion, dep 
   const dd = deputes && deputes.deputes ? circos.map(c => ({ circo: c, d: deputes.deputes[dep + "-" + c] })) : [];
   const ed = elusDepartement(paquet, fiche);
   const region = elusRegion && Array.isArray(elusRegion.elus) && elusRegion.elus.length ? elusRegion.elus[0] : null;
-  const tousDeputes = dd.filter(x => x.d).map(x => ({ nom: [x.d.prenom, x.d.nom].filter(Boolean).join(" "), role: "À l'Assemblée nationale pour votre circonscription", debut: x.d.dateDebut || null, circo: x.circo }));
+  const tousDeputes = dd.filter(x => x.d).map(x => ({ nom: [x.d.prenom, x.d.nom].filter(Boolean).join(" "), role: "À l'Assemblée nationale pour votre circonscription", debut: x.d.dateDebut || null, legislatures: x.d.legislatures || null, circo: x.circo }));
   return [
     { echelon: "ville", niveau: "Commune", institution: "Conseil municipal", lieu: fiche.nom,
       personne: fiche.maire && fiche.maire.nom ? { nom: fiche.maire.nom, role: "Maire" } : null,
@@ -281,6 +282,19 @@ export function chaineDecision({ fiche, paquet, index, deputes, elusRegion, dep 
   ];
 }
 
+/* LE NIVEAU « FRANCE » D'UNE FICHE DE DÉPUTÉ (14/11/2026, porteur : la fiche d'Ugo Bernalicis disait « date de début non publiée »).
+   Avant, la fiche lisait la date dans la chaîne de la COMMUNE CHOISIE : le député de cette commune, ou personne pour une
+   commune partagée, pas l'élu dont on ouvre la fiche. Désormais la date et les législatures sont lues dans la ligne de
+   deputes.json de CET élu, retrouvée par son nom. Introuvable par son nom : on ne retombe sur la chaîne que si elle
+   nomme la même personne ; sinon `null` (rien n'est deviné, la fiche n'affiche pas de ligne). */
+export function niveauDuDepute(niveau, deputes, nom) {
+  const table = deputes && deputes.deputes ? deputes.deputes : {};
+  const trouve = Object.values(table).find(x => x && memeNom([x.prenom, x.nom].filter(Boolean).join(" "), nom));
+  if (trouve) return { echelon: "france", personne: { nom, debut: trouve.dateDebut || null, legislatures: trouve.legislatures || null } };
+  const p = niveau && niveau.echelon === "france" ? niveau.personne : null;
+  return p && memeNom(p.nom, nom) ? niveau : null;
+}
+
 /* La date de début de fonction, telle qu'elle peut être affichée. Seul le
    député (échelon France) porte une date dans les données. Une date n'est
    montrée que si sa source dit quand elle a été relevée (invariant 4).
@@ -291,6 +305,20 @@ export function debutDeMandat(niveau, source) {
   if (!debut) return { etat: "non_publie" };
   if (!source || !source.releve_le) return { etat: "sans_releve" };
   return { etat: "date", date: debut, producteur: source.producteur, releve_le: source.releve_le };
+}
+
+/* PARCOURS DU DÉPUTÉ (14/11/2026, porteur). Le nombre de législatures où il a siégé, compté par Repère sur les
+   mandats « ASSEMBLEE » que publie l'Assemblée nationale (référentiel historique AMO30). C'est un CALCUL : l'écran
+   l'annonce comme tel (invariant 4). Ce n'est ni un rang ni une note (invariant 3) : aucun député n'est comparé.
+   `auMoins` : le premier mandat connu tombe sur la plus ancienne législature du fichier (la XIe, 1997, d'après le
+   nom du fichier — non vérifié sur l'archive) : il a pu siéger avant, et on ne le sait pas. Un état, jamais une phrase. */
+export const PREMIERE_LEGISLATURE_PUBLIEE = 11;
+export function legislaturesDepute(depute, source) {
+  const brut = depute && Array.isArray(depute.legislatures) ? depute.legislatures : [];
+  const l = [...new Set(brut.filter(n => Number.isInteger(n) && n >= 1 && n <= 99))].sort((a, b) => a - b);
+  if (!l.length) return { etat: "absent" };
+  if (!source || !source.releve_le) return { etat: "sans_releve" };
+  return { etat: "compte", nombre: l.length, auMoins: l[0] <= PREMIERE_LEGISLATURE_PUBLIEE, producteur: source.producteur, releve_le: source.releve_le };
 }
 
 /* --- la fraicheur ---------------------------------------------------------- */

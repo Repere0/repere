@@ -7,6 +7,8 @@ const ok = (c, m) => { console.log((c ? "ok    " : "ECHEC ") + m); if (!c) echec
 const nav = await chromium.launch();
 const ctx = await nav.newContext({ viewport: { width: 390, height: 844 }, permissions: ["clipboard-read", "clipboard-write"] });
 const page = await ctx.newPage();
+/* 14/11/2026 : sans prénom, la barrière couvre l'application. */
+await page.addInitScript(() => localStorage.setItem("repere.profil", JSON.stringify({ prenom: "Test" })));
 const erreurs = []; page.on("pageerror", e => erreurs.push(String(e)));
 
 await page.goto(BASE + "/actus#melun", { waitUntil: "networkidle" });

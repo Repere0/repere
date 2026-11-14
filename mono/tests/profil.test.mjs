@@ -106,17 +106,22 @@ test("quiz : un total illisible ou négatif revient à zéro, jamais réparé ve
   assert.equal(nettoyerPoints("250"), 250, "un total écrit en texte est lu");
   assert.equal(nettoyerPoints(POINTS_MAX + 5), POINTS_MAX, "un total aberrant est borné");
 });
-test("quiz : les quatre rangs du porteur, bornes comprises, et le reste avant le suivant", async () => {
+test("quiz : les dix rangs, bornes comprises et contigus, et le reste avant le suivant", async () => {
   const { rangPour, pointsAvantRangSuivant, RANGS } = await import("../packages/core/src/profil.js");
-  assert.deepEqual(RANGS.map(r => r.nom), ["Néo-citoyen", "Citoyen", "Super Citoyen", "Sage"]);
-  for (const [p, nom] of [[0, "Néo-citoyen"], [50, "Néo-citoyen"], [51, "Citoyen"], [200, "Citoyen"],
-    [201, "Super Citoyen"], [500, "Super Citoyen"], [501, "Sage"], [99999, "Sage"]]) {
+  assert.deepEqual(RANGS.map(r => r.nom), ["Néo-citoyen", "Apprenti", "Citoyen", "Initié", "Averti", "Éclairé", "Expert", "Maître", "Mentor", "Sage"]);
+  /* Contigus : le début de chacun suit la fin du précédent, aucun trou ; seul le dernier est ouvert. */
+  RANGS.forEach((r, i) => {
+    assert.equal(r.min, i === 0 ? 0 : RANGS[i - 1].max + 1, r.nom + " : début contigu");
+    assert.equal(r.max === null, i === RANGS.length - 1, r.nom + " : seul le dernier rang est ouvert");
+  });
+  for (const [p, nom] of [[0, "Néo-citoyen"], [50, "Néo-citoyen"], [51, "Apprenti"], [100, "Apprenti"], [101, "Citoyen"], [200, "Citoyen"],
+    [201, "Initié"], [350, "Initié"], [351, "Averti"], [551, "Éclairé"], [801, "Expert"], [1101, "Maître"], [1501, "Mentor"], [2000, "Mentor"], [2001, "Sage"], [99999, "Sage"]]) {
     assert.equal(rangPour(p).nom, nom, `${p} points`);
   }
   assert.equal(rangPour(-5).nom, "Néo-citoyen", "un total refusé donne quand même un rang");
   assert.equal(pointsAvantRangSuivant(0), 51);
   assert.equal(pointsAvantRangSuivant(200), 1);
-  assert.equal(pointsAvantRangSuivant(501), null, "au dernier rang, il n'y a plus de suivant");
+  assert.equal(pointsAvantRangSuivant(2001), null, "au dernier rang, il n'y a plus de suivant");
 });
 test("quiz : les points sont gardés dans repere.profil, pas dans une clé de plus (invariant 2)", () => {
   assert.equal(PROFIL_DEFAUT.points, 0);

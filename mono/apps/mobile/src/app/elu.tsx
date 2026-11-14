@@ -30,7 +30,7 @@ import { useEffect, useState } from "react";
 import { Animated, Linking, Modal, Pressable, ScrollView, Share, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { router, Stack, useLocalSearchParams } from "expo-router";
-import { chaineDecision, copieVoteVide, dateCourte, demandeVotesElu, dateFr, debutDeMandat, decompte, ETAT_VOTE, LIBELLES, lienScrutin, memeNom, repartitionVote, titreLisible } from "@repere/core";
+import { chaineDecision, copieVoteVide, dateCourte, demandeVotesElu, dateFr, debutDeMandat, legislaturesDepute, niveauDuDepute, decompte, ETAT_VOTE, LIBELLES, lienScrutin, memeNom, repartitionVote, titreLisible } from "@repere/core";
 import { BarreSegments, Repartition } from "../ui/visuels";
 import { Carte, Vide } from "../lib/composants";
 import { chargerEvenements } from "../lib/donnees";
@@ -174,8 +174,12 @@ export default function Elu() {
       const niveau = (niveaux as { echelon: string; decide?: string; personne?: { debut?: string | null } | null }[]).find(n => n.echelon === echelon);
       const decide = niveau?.decide;
       /* Date de debut du mandat : montree seulement avec la date de relevé de sa source (core). */
-      const debutMandat = debutDeMandat(niveau, r.deputes && r.deputes.source);
       const depute = echelon === "france";
+      /* 14/11/2026 : pour un député, la date et les législatures sont ceux de CET élu (deputes.json, par son nom), pas ceux
+         du député de la commune choisie (core, niveauDuDepute). */
+      const niveauDate = depute ? niveauDuDepute(niveau, r.deputes, nom) : niveau;
+      const debutMandat = debutDeMandat(niveauDate, r.deputes && r.deputes.source);
+      const parcours = niveauDate && niveauDate.echelon === "france" ? legislaturesDepute(niveauDate.personne, r.deputes && r.deputes.source) : { etat: "absent" as const };
       /* LES VOTES DE CET ÉLU, PAS CEUX DE LA COMMUNE : filtrés sur son nom, du plus récent au plus ancien. */
       const votes = depute
         ? (r.d.faits as FaitElu[]).filter(f => f.type === "vote" && !!f.position && !!POSITION[f.position as string] && memeNom(f.qui, nom))
@@ -311,6 +315,13 @@ export default function Elu() {
                   <Text style={TYPO.note}>Date de début de la fonction : non affichée, la source ne dit pas quand ses données ont été relevées.</Text>
                 ) : debutMandat.etat === "non_publie" ? (
                   <Text style={TYPO.note}>Date de début de la fonction : non publiée par la source. Repère ne la devine pas.</Text>
+                ) : null}
+                {/* Le parcours : affiché seulement quand la donnée existe (règle du 07/11 : pas de ligne d'absence). */}
+                {parcours.etat === "compte" ? (
+                  <Text style={TYPO.note} testID="parcours-legislatures">
+                    A siégé à l'Assemblée nationale au cours {parcours.auMoins ? "d'au moins " : parcours.nombre === 1 ? "d'" : "de "}{parcours.nombre === 1 ? "une législature" : `${parcours.nombre} législatures`}
+                    {parcours.auMoins ? " (les données publiées commencent en 1997)" : ""}. Calcul Repère d'après {parcours.producteur}, données relevées le {dateFr(parcours.releve_le)}.
+                  </Text>
                 ) : null}
               </Carte>
               {decide ? (

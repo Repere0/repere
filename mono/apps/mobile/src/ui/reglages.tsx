@@ -9,6 +9,7 @@ import { VOILE_MODAL } from "../lib/palette";
 import { useTheme } from "../lib/themeChoix";
 import { router } from "expo-router";
 import { enfonce } from "./mouvement";
+import { useProfil } from "../lib/profil";
 
 const OPTIONS: { valeur: ChoixTheme; libelle: string }[] = [
   { valeur: "systeme", libelle: "Système" },
@@ -46,6 +47,7 @@ export function BoutonReglages() {
 
 function ChoixAffichage({ visible, onFermer }: { visible: boolean; onFermer: () => void }) {
   const { choix, setChoix } = useTheme();
+  const { modifier } = useProfil();
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onFermer}>
       <Pressable style={s.voile} onPress={onFermer} accessibilityRole="button" accessibilityLabel="Fermer les réglages">
@@ -74,6 +76,15 @@ function ChoixAffichage({ visible, onFermer }: { visible: boolean; onFermer: () 
             style={({ pressed }) => [s.option, pressed && enfonce(true)]}
           >
             <Text style={s.optionTexte}>Confort de lecture</Text>
+          </Pressable>
+          {/* 14/11/2026 (porteur) : changer de prénom. Le prénom est vidé, et la coquille redresse aussitôt la
+              question du prénom (ui/bienvenue.tsx) ; les autres réglages ne bougent pas. */}
+          <Pressable
+            onPress={() => { onFermer(); modifier({ prenom: "" }); }}
+            accessibilityRole="button" accessibilityLabel="Changer de prénom" testID="changer-prenom"
+            style={({ pressed }) => [s.option, pressed && enfonce(true)]}
+          >
+            <Text style={s.optionTexte}>Changer de prénom</Text>
           </Pressable>
           <Pressable
             onPress={() => { onFermer(); router.push("/confidentialite"); }}

@@ -48,9 +48,15 @@ export const POINTS_PAR_REPONSE_JUSTE = 10;
 export const POINTS_MAX = 1000000;
 export const RANGS = Object.freeze([
   { cle: "neo", nom: "Néo-citoyen", min: 0, max: 50 },
-  { cle: "citoyen", nom: "Citoyen", min: 51, max: 200 },
-  { cle: "super", nom: "Super Citoyen", min: 201, max: 500 },
-  { cle: "sage", nom: "Sage", min: 501, max: null },
+  { cle: "apprenti", nom: "Apprenti", min: 51, max: 100 },
+  { cle: "citoyen", nom: "Citoyen", min: 101, max: 200 },
+  { cle: "initie", nom: "Initié", min: 201, max: 350 },
+  { cle: "averti", nom: "Averti", min: 351, max: 550 },
+  { cle: "eclaire", nom: "Éclairé", min: 551, max: 800 },
+  { cle: "expert", nom: "Expert", min: 801, max: 1100 },
+  { cle: "maitre", nom: "Maître", min: 1101, max: 1500 },
+  { cle: "mentor", nom: "Mentor", min: 1501, max: 2000 },
+  { cle: "sage", nom: "Sage", min: 2001, max: null },
 ]);
 
 export function nettoyerPoints(v) {

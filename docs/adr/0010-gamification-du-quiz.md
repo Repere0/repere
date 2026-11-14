@@ -23,8 +23,9 @@ l'amendement ne le touche pas.
 
 ## Ce qui est construit
 
-- **+10 points par réponse juste**, quatre rangs : Néo-citoyen (0-50), Citoyen (51-200),
-  Super Citoyen (201-500), Sage (501 et plus).
+- **+10 points par réponse juste**, dix rangs (14/11/2026, porteur ; quatre à l'origine) : Néo-citoyen (0-50),
+  Apprenti (51-100), Citoyen (101-200), Initié (201-350), Averti (351-550), Éclairé (551-800), Expert (801-1100),
+  Maître (1101-1500), Mentor (1501-2000), Sage (2001 et plus).
 - Les points vivent dans `repere.profil`, **sur l'appareil**. Pas de troisième clé de stockage
   (invariant 2 : c'est ce qu'amende cet ADR). Rien ne part sur le réseau.
 - **Aucun classement entre lecteurs**, et il n'y en aura pas : Repère ne sait rien des autres

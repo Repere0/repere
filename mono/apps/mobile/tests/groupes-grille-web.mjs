@@ -39,7 +39,7 @@ const nav = await chromium.launch();
 const ctx = await nav.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
 const page = await ctx.newPage();
 const erreurs = []; page.on("pageerror", e => erreurs.push(String(e.message || e).slice(0, 160)));
-await page.addInitScript(() => localStorage.setItem("repere.profil", JSON.stringify({ tailleTexte: 16, espacement: 1.5, contraste: "normal", policeDyslexie: false, animationsReduites: true, modeDaltonien: false, masquerImages: false, themes: [], mode: "clair", prenom: "" })));
+await page.addInitScript(() => localStorage.setItem("repere.profil", JSON.stringify({ tailleTexte: 16, espacement: 1.5, contraste: "normal", policeDyslexie: false, animationsReduites: true, modeDaltonien: false, masquerImages: false, themes: [], mode: "clair", prenom: "Test" })));
 await page.route("**/scrutins-index.json", r => r.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(index) }));
 await page.route("**/scrutins-details/0000.json", r => r.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(paquet) }));
 await page.goto(BASE + "/scrutins", { waitUntil: "networkidle" });

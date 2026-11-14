@@ -12,6 +12,8 @@ const ok = (c, m) => { console.log((c ? "ok    " : "ECHEC ") + m); if (!c) echec
 const nav = await chromium.launch();
 const ctx = await nav.newContext({ viewport: { width: 390, height: 844 }, serviceWorkers: "block" });
 const page = await ctx.newPage();
+/* 14/11/2026 : sans prénom, la barrière couvre tout. Un lecteur installé en a un. */
+await page.addInitScript(() => localStorage.setItem("repere.profil", JSON.stringify({ prenom: "Test" })));
 const cdp = await ctx.newCDPSession(page);
 try { await cdp.send("Emulation.setSafeAreaInsetsOverride", { insets: { top: 47, bottom: MARGE } }); }
 catch (e) {
@@ -41,7 +43,7 @@ ok(barre.basFond === barre.H, `barre basse : son fond descend jusqu'au bas de l'
 ok(barre.segments.length > 0 && barre.segments.every(s => parseFloat(s.pb) < MARGE && s.hauteur < 70), `contrôle segmenté : aucune marge de sécurité ajoutée (${JSON.stringify(barre.segments)})`);
 
 /* Les écrans qui défilent sans barre basse : arrivé en bas, le dernier texte reste au-dessus de la zone protégée. */
-for (const chemin of ["/elus", "/bienvenue", "/faq", "/confidentialite", "/confort-lecture", "/dictionnaire", "/quiz"]) {
+for (const chemin of ["/elus", "/soutenir", "/faq", "/confidentialite", "/confort-lecture", "/dictionnaire", "/quiz"]) {
   await aller(chemin);
   const m = await page.evaluate(async () => {
     const H = window.innerHeight;

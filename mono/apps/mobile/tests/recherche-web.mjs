@@ -89,7 +89,7 @@ try {
   await attendre("Communes");
   await page.getByRole("button", { name: /^Commune : Melun,/ }).first().click();
   await page.waitForTimeout(1500);
-  verifier(!page.url().includes("/recherche"), "commune → quitte la recherche (profil absent : accueil de bienvenue)");
+  verifier(!page.url().includes("/recherche"), "commune → quitte la recherche (la recherche reste la même, sans profil)");
 
   await page.goto(BASE + "/recherche", { waitUntil: "networkidle" });
   await page.waitForTimeout(1500);

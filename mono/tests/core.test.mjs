@@ -619,6 +619,25 @@ test("core — la chaîne transmet la date de début du mandat du député, ou r
   assert.strictEqual(france({ nom: "X", circo: 2 }).personne.debut, null, "une date absente de la source ne doit pas être inventée");
 });
 
+/* 14/11/2026 (porteur) : la fiche d'Ugo Bernalicis disait « date de début non publiée ». La date doit venir de LA LIGNE DE L'ÉLU,
+   pas du député de la commune choisie. */
+test("core — la date de début d'une fiche de député est celle de cet élu, pas du député de la commune choisie", async () => {
+  const { niveauDuDepute, debutDeMandat, chaineDecision } = await import("../packages/core/src/visuels.js");
+  const deputes = { deputes: { "59-2": { prenom: "Ugo", nom: "Bernalicis", dateDebut: "2024-07-07", legislatures: [15, 16, 17] }, "93-2": { prenom: "Bo", nom: "Sans" } },
+    source: { producteur: "AN", releve_le: "2026-11-13" } };
+  /* Commune choisie en Seine-Saint-Denis, circo 2 : son député (Bo Sans) n'a pas de date. */
+  const chaine = chaineDecision({ fiche: { nom: "X", circo: 2 }, paquet: null, index: null, deputes, elusRegion: null, dep: "93" }).find(n => n.echelon === "france");
+  assert.equal(debutDeMandat(chaine, deputes.source).etat, "non_publie", "avant : la fiche d'un AUTRE élu héritait de ce « non publiée »");
+  const n = niveauDuDepute(chaine, deputes, "Ugo Bernalicis");
+  assert.equal(debutDeMandat(n, deputes.source).date, "2024-07-07");
+  assert.deepEqual(n.personne.legislatures, [15, 16, 17]);
+  /* Élu absent du fichier : aucune date empruntée à un autre. */
+  assert.equal(niveauDuDepute(chaine, deputes, "Inconnu Quelconque"), null);
+  assert.equal(debutDeMandat(null, deputes.source).etat, "absent");
+  /* Absent du fichier mais nommé par la chaîne : la chaîne sert. */
+  assert.equal(niveauDuDepute(chaine, { deputes: {} }, "Bo Sans"), chaine);
+});
+
 /* Commune à plusieurs circonscriptions : aucun député n'est désigné par défaut
    (invariant 3 et règle « votre député »). Le premier de la liste n'est pas
    « votre député » : la chaîne liste tous les députés de la commune. */
@@ -783,4 +802,18 @@ test("core — mediane : [1, 2, 100] donne 2, pas 34 ; nombre pair : milieu des 
   assert.equal(m.mediane, 2);
   assert.equal(m.moyenne, 34);
   assert.equal(m.n, 3);
+});
+
+/* 14/11/2026 (porteur, PR « parcours des élus ») : le nombre de législatures où un député a siégé, compté sur les
+   mandats publiés par l'Assemblée. Un état, jamais une phrase ; rien si la donnée manque ; « au moins » quand le
+   premier mandat connu tombe sur la plus ancienne législature publiée (on ne sait pas ce qu'il y avait avant). */
+test("parcours du député : législatures comptées sur la source, « au moins » au bord des données, rien sans donnée", async () => {
+  const { legislaturesDepute } = await import("../packages/core/src/visuels.js");
+  const src = { producteur: "Assemblée nationale", releve_le: "2026-11-13" };
+  assert.deepEqual(legislaturesDepute({ legislatures: [17] }, src), { etat: "compte", nombre: 1, auMoins: false, producteur: "Assemblée nationale", releve_le: "2026-11-13" });
+  assert.equal(legislaturesDepute({ legislatures: [16, 17, 15, 17] }, src).nombre, 3, "une législature ne compte qu'une fois");
+  assert.equal(legislaturesDepute({ legislatures: [11, 12, 17] }, src).auMoins, true);
+  assert.equal(legislaturesDepute({ legislatures: [12, 17] }, src).auMoins, false);
+  for (const d of [null, {}, { legislatures: [] }, { legislatures: "17" }, { legislatures: ["17", null, 0, 2.5] }]) assert.deepEqual(legislaturesDepute(d, src), { etat: "absent" }, JSON.stringify(d));
+  assert.deepEqual(legislaturesDepute({ legislatures: [17] }, {}), { etat: "sans_releve" }, "sans date de relevé, rien n'est affiché (invariant 4)");
 });

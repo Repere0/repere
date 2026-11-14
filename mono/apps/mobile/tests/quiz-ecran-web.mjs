@@ -6,7 +6,7 @@ let echecs = 0;
 const ok = (c, m) => { console.log((c ? "ok    " : "ECHEC ") + m); if (!c) echecs++; };
 const nav = await chromium.launch();
 const page = await (await nav.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true })).newPage();
-await page.addInitScript(() => localStorage.setItem("repere.profil", JSON.stringify({ tailleTexte: 16, espacement: 1.5, contraste: "normal", policeDyslexie: false, animationsReduites: true, modeDaltonien: false, masquerImages: false , points: 0})));
+await page.addInitScript(() => localStorage.setItem("repere.profil", JSON.stringify({ prenom: "Test", tailleTexte: 16, espacement: 1.5, contraste: "normal", policeDyslexie: false, animationsReduites: true, modeDaltonien: false, masquerImages: false , points: 0})));
 await page.goto(BASE + "/", { waitUntil: "networkidle" });
 await page.getByRole("link", { name: /Testez votre culture civique/ }).first().click();
 await page.getByRole("radio").first().waitFor({ timeout: 15000 });
@@ -60,7 +60,7 @@ ok(apres.every(k => ["repere.departement", "repere.profil"].includes(k)), "aucun
 ok(await page.getByRole("button", { name: /^Partager mon rang/ }).count() === 1, "fin de manche : le partage du rang");
 /* ─── 13/11/2026 (porteur) : la progression vers le rang suivant, et la liste des rangs ─── */
 const prog = (await page.getByTestId("quiz-progression").innerText()).replace(/\s+/g, " ").trim();
-ok(/^\d+ pts \/ 51 pts pour Citoyen \d+ %$/.test(prog), "fin de manche : la jauge vers le rang suivant (« " + prog + " »)");
+ok(/^\d+ pts \/ 51 pts pour Apprenti \d+ %$/.test(prog), "fin de manche : la jauge vers le rang suivant (« " + prog + " »)");
 const barre = await page.getByTestId("quiz-progression").evaluate(e => {
   /* Le fond de la jauge : le seul div qui contient un div et fait 14 px de haut. */
   const fond = [...e.querySelectorAll("div")].find(d => d.querySelector("div") && Math.round(d.getBoundingClientRect().height) === 14);
@@ -71,9 +71,9 @@ ok(barre >= 0 && barre <= 100, "fin de manche : la barre est remplie à " + barr
 await page.getByTestId("voir-rangs").click();
 await page.getByRole("heading", { name: "Les rangs" }).waitFor({ timeout: 10000 });
 const lignes = await page.getByTestId("rang-ligne").allInnerTexts();
-ok(lignes.length === 4, "la modale montre les quatre rangs (" + lignes.length + ")");
+ok(lignes.length === 10, "la modale montre les dix rangs (" + lignes.length + ")");
 const joint = lignes.join(" | ").replace(/\s+/g, " ");
-for (const [nom, points] of [["Néo-citoyen", "de 0 à 50 points"], ["Citoyen", "de 51 à 200 points"], ["Super Citoyen", "de 201 à 500 points"], ["Sage", "501 points et plus"]]) {
+for (const [nom, points] of [["Néo-citoyen", "de 0 à 50 points"], ["Apprenti", "de 51 à 100 points"], ["Citoyen", "de 101 à 200 points"], ["Initié", "de 201 à 350 points"], ["Sage", "2001 points et plus"]]) {
   ok(joint.includes(nom) && joint.includes(points), `la modale dit « ${nom} » et « ${points} »`);
 }
 ok(/votre rang/.test(joint), "la roadmap marque le rang atteint");

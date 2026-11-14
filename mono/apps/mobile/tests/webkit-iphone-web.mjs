@@ -28,7 +28,7 @@ const dit = m => console.log("      " + m);
 console.log(`== DIAGNOSTIC WEBKIT (Safari) — ${IPHONE.viewport.width}x${IPHONE.viewport.height}, tactile ${IPHONE.hasTouch} ==`);
 
 const nav = await webkit.launch();
-const PROFIL = { tailleTexte: 16, espacement: 1.5, contraste: "normal", policeDyslexie: false, animationsReduites: false, modeDaltonien: false, masquerImages: false, themes: [], mode: "clair", prenom: "", points: 0 };
+const PROFIL = { tailleTexte: 16, espacement: 1.5, contraste: "normal", policeDyslexie: false, animationsReduites: false, modeDaltonien: false, masquerImages: false, themes: [], mode: "clair", prenom: "Test", points: 0 };
 const neuf = async (init) => {
   const ctx = await nav.newContext({ ...IPHONE });
   const page = await ctx.newPage();
@@ -41,12 +41,12 @@ const neuf = async (init) => {
 /* ───── 1. LE LOGO : combien d'elements concentriques, et de quelle couleur ───── */
 {
   const { ctx, page, erreurs } = await neuf();
-  await page.goto(BASE + "/bienvenue", { waitUntil: "load" });
+  await page.goto(BASE + "/", { waitUntil: "load" });
   await page.getByRole("heading", { name: "Repère" }).waitFor({ timeout: 30000 });
   await page.waitForTimeout(1200);
   if (CAP) await page.screenshot({ path: `${CAP}/webkit-logo.png` });
   const vu = await page.evaluate(() => {
-    const h = [...document.querySelectorAll("h1,h2,[role=heading]")].find(e => /Repère/.test(e.textContent || ""));
+    const h = [...document.querySelectorAll("[data-testid=barriere-bienvenue] h1,[data-testid=barriere-bienvenue] h2,[data-testid=barriere-bienvenue] [role=heading]")].find(e => /Repère/.test(e.textContent || ""));
     const bloc = h && h.parentElement;
     if (!bloc) return null;
     const ronds = [...bloc.querySelectorAll("div")].map(e => {
@@ -79,7 +79,7 @@ const neuf = async (init) => {
   dit("adresse apres 4 s : " + url);
   const voile = await page.getByTestId("demarrage").count();
   dit("voile de demarrage encore present : " + voile);
-  ok(url.includes("/bienvenue"), `onboarding : l'application s'ouvre sur la bienvenue (lu : ${url.replace(BASE, "") || "/"})`);
+  ok(await page.getByTestId("barriere-bienvenue").isVisible(), `onboarding : sans prénom, la barrière de bienvenue couvre l'application (adresse : ${url.replace(BASE, "") || "/"})`);
   const bouton = page.getByTestId("continuer-0");
   ok(await bouton.count() === 1, "onboarding : le bouton de l'ecran 1 est present");
   if (await bouton.count()) {
@@ -221,10 +221,10 @@ const neuf = async (init) => {
       dessus: !!dessus && jalon.contains(dessus) };
   }));
   dit("frise lue (jalon haut/bas/l/h, segments [haut, bas, écart au centre]) : " + JSON.stringify(frise));
-  ok(frise.length === 4 && frise.every(f => f && f.l === 40 && f.h === 40), "rangs : quatre jalons de 40 px, aucun écrasé ni étiré");
+  ok(frise.length === 10 && frise.every(f => f && f.l === 32 && f.h === 32), "rangs : dix jalons de 32 px, aucun écrasé ni étiré");
   ok(frise.every(f => f && f.traverse), "rangs : le fil passe par le centre de chaque jalon");
   ok(frise.every(f => f && f.dessus), "rangs : chaque jalon est peint au-dessus du fil");
-  ok(frise.every((f, i) => i === 0 || (f && frise[i - 1] && f.haut - frise[i - 1].bas >= 8)), "rangs : deux jalons ne se touchent jamais (écarts : " + frise.slice(1).map((f, i) => f && frise[i] ? f.haut - frise[i].bas : "?").join(", ") + " px)");
+  ok(frise.every((f, i) => i === 0 || (f && frise[i - 1] && f.haut - frise[i - 1].bas >= 4)), "rangs : deux jalons ne se touchent jamais (écarts : " + frise.slice(1).map((f, i) => f && frise[i] ? f.haut - frise[i].bas : "?").join(", ") + " px)");
   ok(erreurs.length === 0, "rangs : aucune erreur JavaScript" + (erreurs[0] ? " (" + erreurs[0] + ")" : ""));
   await ctx.close();
 }

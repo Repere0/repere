@@ -8,6 +8,8 @@ const ok = (c, m) => { console.log((c ? "ok    " : "ECHEC ") + m); if (!c) echec
 
 const nav = await chromium.launch();
 const page = await (await nav.newContext({ viewport: { width: 390, height: 844 } })).newPage();
+/* 14/11/2026 : sans prénom, la barrière couvre l'application. */
+await page.addInitScript(() => localStorage.setItem("repere.profil", JSON.stringify({ prenom: "Test" })));
 const requetes = [], erreurs = [];
 page.on("request", r => requetes.push(r.url())); page.on("pageerror", e => erreurs.push(String(e)));
 const aller = async url => { await page.goto(BASE + url, { waitUntil: "networkidle" }); await page.waitForTimeout(1800); };
