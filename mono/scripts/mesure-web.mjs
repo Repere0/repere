@@ -14,7 +14,7 @@ if (!base) { console.error("usage: mesure-web.mjs <url> clavier|perf [sortie.jso
 
 // Écrans navigables sans paramètre. annuaire-fiche et elu exigent un identifiant : testés à part.
 const ROUTES = ["/", "/a-venir", "/chez-vous", "/elus", "/qui-decide", "/actus", "/a-propos", "/argent",
-  "/bienvenue", "/confidentialite", "/confort-lecture", "/dictionnaire", "/faq", "/mes-elus", "/partager",
+  "/soutenir", "/confidentialite", "/confort-lecture", "/dictionnaire", "/faq", "/mes-elus", "/partager",
   "/pour-vous", "/procedure", "/recherche", "/scrutins", "/sources", "/vote", "/voter"];
 const TOUCHES_MAX = 80;
 

@@ -1,3 +1,4 @@
+import { memeNom } from "./noms.js";
 /* @repere/core — CE QUE LES INFOGRAPHIES MONTRENT, CALCULE UNE SEULE FOIS
  * (30/09/2026, refonte de l'experience mobile).
  *
@@ -279,6 +280,19 @@ export function chaineDecision({ fiche, paquet, index, deputes, elusRegion, dep 
       autresCircos: dd.length > 1 ? dd.length - 1 : 0,
       decide: COMPETENCES.france },
   ];
+}
+
+/* LE NIVEAU « FRANCE » D'UNE FICHE DE DÉPUTÉ (14/11/2026, porteur : la fiche d'Ugo Bernalicis disait « date de début non publiée »).
+   Avant, la fiche lisait la date dans la chaîne de la COMMUNE CHOISIE : le député de cette commune, ou personne pour une
+   commune partagée, pas l'élu dont on ouvre la fiche. Désormais la date et les législatures sont lues dans la ligne de
+   deputes.json de CET élu, retrouvée par son nom. Introuvable par son nom : on ne retombe sur la chaîne que si elle
+   nomme la même personne ; sinon `null` (rien n'est deviné, la fiche n'affiche pas de ligne). */
+export function niveauDuDepute(niveau, deputes, nom) {
+  const table = deputes && deputes.deputes ? deputes.deputes : {};
+  const trouve = Object.values(table).find(x => x && memeNom([x.prenom, x.nom].filter(Boolean).join(" "), nom));
+  if (trouve) return { echelon: "france", personne: { nom, debut: trouve.dateDebut || null, legislatures: trouve.legislatures || null } };
+  const p = niveau && niveau.echelon === "france" ? niveau.personne : null;
+  return p && memeNom(p.nom, nom) ? niveau : null;
 }
 
 /* La date de début de fonction, telle qu'elle peut être affichée. Seul le

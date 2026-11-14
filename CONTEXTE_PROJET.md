@@ -334,6 +334,13 @@ PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers node test_repere.mjs site_v18_20/index
 - **Codes postaux** (12/11/2026) : `mono/scripts/collecte-codes-postaux.mjs`, Base officielle de La Poste via
   data.gouv.fr ; licence et colonnes lues sur le runner, jamais vérifiées depuis le conteneur. Première couverture
   à lire dans le journal de la collecte.
+- **Premier lancement iPhone : jamais de redirection** (14/11/2026) : cinq correctifs par navigation (`router.replace`,
+  `<Redirect>`) ont échoué sur iPhone alors que Chromium restait vert. La question du prénom est une BARRIÈRE posée par
+  `_layout.tsx` (`testID="barriere-bienvenue"`) tant que `repere.profil.prenom` est vide ; aucune adresse `/bienvenue`.
+  Tout banc navigateur qui pose un profil à la main y met un prénom, sinon la barrière couvre l'application.
+- **Fiche d'un député : la date vient de LUI** (14/11/2026) : elle était lue dans la chaîne de la commune choisie
+  (`niveauDuDepute`, core, corrige). Les législatures (`legislatures`) n'existent qu'après une collecte du runner
+  avec `mono_donnees.py` à jour ; `deputes.json` est ignoré par git, la production n'a pas pu être lue depuis le conteneur.
 
 ## 10. Ce qui a été refusé, et pourquoi
 

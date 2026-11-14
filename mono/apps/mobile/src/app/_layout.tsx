@@ -115,7 +115,6 @@ export default function Coquille() {
                 <Stack.Screen name="procedure" options={{ title: "La procédure", headerLeft: () => <Retour texte={LIBELLES.calendrier} etiquette={`Revenir à l'écran ${LIBELLES.calendrier}`} /> }} />
                 <Stack.Screen name="annuaire-fiche" options={{ title: "Élu", headerLeft: () => <Retour texte="Élus" etiquette="Revenir à l'écran Élus" /> }} />
                 <Stack.Screen name="actus" options={{ title: "Actualités", headerLeft: () => <Retour texte={LIBELLES.aujourdhui} etiquette={`Revenir à l'écran ${LIBELLES.aujourdhui}`} /> }} />
-                <Stack.Screen name="bienvenue" options={{ headerShown: false }} />
                 <Stack.Screen name="confort-lecture" options={{ title: "Confort de lecture", headerLeft: () => <Retour texte="Retour" etiquette="Revenir à l'écran précédent" /> }} />
                 <Stack.Screen name="pour-vous" options={{ title: "Pour vous", headerLeft: () => <Retour texte="Retour" etiquette="Revenir à l'écran précédent" /> }} />
                 <Stack.Screen name="elus" options={{ title: "Élus", headerLeft: () => <Retour texte="Retour" etiquette="Revenir à l'écran précédent" /> }} />
