@@ -76,6 +76,7 @@ const photo = async (page, nom) => { if (CAP) await page.screenshot({ path: `${C
 /* ───── 2. Quiz du dictionnaire ───── */
 {
   const { contexte, page, erreurs } = await nouveau();
+  await page.addInitScript(() => localStorage.setItem("repere.profil", JSON.stringify({ prenom: "Test" }))); /* 14/11/2026 : sans prénom, la barrière couvre l'application */
   /* 13/11/2026 : le quiz pose la DÉFINITION, et propose quatre MOTS (un seul écran). */
   const bonneDe = enonce => Object.values(GLOSSAIRE).find(x => definitionCourte(x.corps) === enonce).titre;
   const lireEnonce = async () => (await page.getByTestId("quiz-enonce").innerText()).trim();
@@ -155,6 +156,7 @@ const photo = async (page, nom) => { if (CAP) await page.screenshot({ path: `${C
 /* ───── 5. Questions au Gouvernement : le compteur ───── */
 {
   const { contexte, page, erreurs } = await nouveau();
+  await page.addInitScript(() => localStorage.setItem("repere.profil", JSON.stringify({ prenom: "Test" }))); /* 14/11/2026 : sans prénom, la barrière couvre l'application */
   await page.goto(BASE + "/scrutins?mode=qag", { waitUntil: "networkidle" });
   await page.getByText("Questions récentes").waitFor({ timeout: 15000 });
   await page.waitForTimeout(900);
