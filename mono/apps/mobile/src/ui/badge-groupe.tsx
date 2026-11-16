@@ -20,7 +20,7 @@ export function BadgeGroupe({ groupe }: { groupe: string }) {
     <Pressable onPress={() => router.push({ pathname: "/groupe", params: { g: groupe } })} accessibilityRole="link"
       accessibilityLabel={`${libelleGroupe(groupe)}. Voir les députés de ce groupe`}
       style={({ pressed }) => ({ alignSelf: "flex-start", minHeight: CIBLE, justifyContent: "center", ...enfonce(pressed) })}>
-      <View style={{ flexDirection: "row", alignItems: "center", gap: 6, paddingHorizontal: 12, paddingVertical: 6, borderRadius: 999, backgroundColor: fond }}>
+      <View style={{ flexDirection: "row", alignItems: "center", gap: 4, paddingHorizontal: 12, paddingVertical: 4, borderRadius: 999, backgroundColor: fond }}>
         <Text style={{ color: texteSur(fond), fontSize: 14, fontFamily: POLICE.texteGras }}>{libelleGroupe(groupe)}</Text>
         <Ionicons name="chevron-forward" size={14} color={texteSur(fond)} accessible={false} importantForAccessibility="no" />
       </View>

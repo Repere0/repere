@@ -7,6 +7,7 @@ import { ScrollView, Text, View } from "react-native";
 import { Stack } from "expo-router";
 import { couleurs, PAS, TYPO } from "../lib/theme";
 import { Carte, LienSortant } from "../lib/composants";
+import { niveauTitre } from "../ui/titre";
 
 type Fiche = { n: string; titre_officiel: string; impact_citoyen: string | null; source_url: string; relecture_ceo: boolean };
 
@@ -17,7 +18,7 @@ export default function DevImpact() {
   return (
     <ScrollView {...MARQUE_DEFILEMENT} style={{ flex: 1, backgroundColor: couleurs.sol }} contentContainerStyle={{ padding: PAS * 4, gap: PAS * 4 }}>
       <Stack.Screen options={{ title: "Aperçu impacts (dev)" }} />
-      <Text style={TYPO.question} accessibilityRole="header">Fiches impact concret : {fiches.length}</Text>
+      <Text style={TYPO.question} {...niveauTitre(1)}>Fiches impact concret : {fiches.length}</Text>
       <Text style={TYPO.note}>Écran de développement. Relire chaque fiche, corriger le fichier, passer relecture_ceo à true.</Text>
       {fiches.map(f => (
         <Carte key={f.n} titre={`Scrutin ${f.n}`}>

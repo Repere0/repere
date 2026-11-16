@@ -8,6 +8,7 @@ import { chargerResumesClairs } from "../lib/donnees";
 import { couleurs, CIBLE, PAS, POLICE, RAYON, TYPO } from "../lib/theme";
 import { Vide } from "../lib/composants";
 import { enfonce } from "./mouvement";
+import { niveauTitre } from "./titre";
 
 type Resume = { valide?: boolean; resume?: string; source?: { producteur?: string; url?: string; releve_le?: string } } | null | undefined;
 
@@ -18,7 +19,7 @@ export function ResumeClair({ resume, lienOfficiel }: { resume: Resume; lienOffi
   }
   return (
     <View style={{ gap: PAS * 2, padding: PAS * 4, borderRadius: RAYON.carte, backgroundColor: couleurs.carte }}>
-      <Text style={TYPO.etiquette} accessibilityRole="header">En clair</Text>
+      <Text style={TYPO.etiquette} {...niveauTitre(2)}>En clair</Text>
       <Text style={TYPO.corps}>{r.texte}</Text>
       <Text style={TYPO.micro}>{mentionResume(r.producteur)}</Text>
       <Pressable onPress={() => Linking.openURL(r.url)} accessibilityRole="link"

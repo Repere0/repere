@@ -51,7 +51,7 @@ Point de départ : `main` à 3c5e601f. Branche : `chore/repo-professionalisation
 - **Fichiers de plus de 1 Mo encore suivis** : `app_repere_v18_20.html` (16,6 Mo, source des données de la chaîne, indispensable), `site/index.html` (15,5 Mo), `data/circos_ministere.xlsx` (1,6 Mo).
 - **Taille de l'historique** : 94 Mo compressés. Retirer les fichiers de l'arbre **ne réduit pas** ce poids, il reste dans l'historique. Le réduire voudrait dire réécrire l'historique (`git filter-repo`) puis forcer la poussée sur `main` : c'est irréversible et ça casse tous les clones et toutes les PR ouvertes. **Je ne le recommande pas avant la bêta.** Git LFS ne servirait à rien non plus : le gros fichier restant est régénéré chaque jour par la chaîne.
 - **Fichiers d'OS** : aucun `.DS_Store`, `Thumbs.db` ni `node_modules` suivi.
-- **Écart constaté, non corrigé** : `CLAUDE.md` parle de 1 262 communes, la chaîne en indexe 1 264 (journal de l'épreuve du 16/11). Le README garde le chiffre de `CLAUDE.md`. La question est posée au porteur.
+- **Écart tranché** : `CLAUDE.md` parlait de 1 262 communes, la chaîne en indexe 1 264 (journal de l'épreuve du 16/11). Décision du porteur (16/11/2026) : **1 264**. `CLAUDE.md`, `AGENTS.md`, le README et la documentation courante sont alignés ; les mesures datées gardent leur chiffre d'époque.
 
 ## Dependabot : pourquoi seulement les correctifs de sécurité pour npm
 

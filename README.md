@@ -9,7 +9,7 @@ Application civique française et neutre : pour une commune, **qui décide chez 
 ![Statut : bêta Île-de-France](https://img.shields.io/badge/statut-b%C3%AAta%20%C3%8Ele--de--France-orange.svg)
 
 - Pas de compte, pas de publicité, pas de traceur. Après le premier chargement, l'application fonctionne hors ligne.
-- La bêta couvre les 1 262 communes d'Île-de-France. L'application n'est pas encore publiée sur les magasins.
+- La bêta couvre les 1 264 communes d'Île-de-France. L'application n'est pas encore publiée sur les magasins.
 - Les règles qui ne bougent pas (neutralité, sources, aucun classement) sont dans [`CLAUDE.md`](CLAUDE.md), les décisions dans [`docs/adr/`](docs/adr/).
 
 ![Budget d'une commune, carte partageable](docs/partage-story/story-budget.png)

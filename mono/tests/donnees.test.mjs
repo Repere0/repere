@@ -248,8 +248,9 @@ test("fraicheur — la phrase dit la date de la publication affichee (PRECEDENTE
   const e = etatFraicheur();
   assert.equal(e.etat, FRAICHEUR.INCONNUE);
   assert.equal(typeof clientDonnees.phraseFraicheur, "function", "phraseFraicheur doit exister : la phrase et sa date viennent du paquet partage");
-  const p = clientDonnees.phraseFraicheur(e);
-  assert.ok(p.corps.includes("30 septembre 2026"), "la date de la publication affichee manque : " + p.corps);
+  /* 16/11/2026 (porteur) : « Mis à jour il y a X jours », compté depuis la publication affichée. */
+  const p = clientDonnees.phraseFraicheur(e, new Date("2026-10-02T10:00:00Z"));
+  assert.equal(p.corps, "Mis à jour il y a 2 jours.", "l'ancienneté de la publication affichee manque : " + p.corps);
   assert.ok(!/undefined|null/.test(p.corps + p.titre), "phrase invalide : " + JSON.stringify(p));
 });
 
@@ -260,12 +261,25 @@ test("fraicheur — la phrase dit la date de la publication affichee (PRECEDENTE
 test("garde — date de publication absente ou invalide : la phrase ne fabrique aucune date", () => {
   for (const generation of [null, undefined, "", "pas une date", "2026-13-45"]) {
     const p = clientDonnees.phraseFraicheur({ etat: FRAICHEUR.INCONNUE, generation });
-    assert.ok(!/Publication du/.test(p.corps), `date inventee pour ${JSON.stringify(generation)} : ${p.corps}`);
+    assert.ok(!/Publication du|Mis à jour/.test(p.corps), `date inventee pour ${JSON.stringify(generation)} : ${p.corps}`);
     assert.ok(!/undefined|null|NaN/.test(p.corps), `phrase invalide pour ${JSON.stringify(generation)}`);
   }
 });
 
 test("garde — la date affichee vient de la generation fournie, jamais de l'horloge", () => {
-  const p = clientDonnees.phraseFraicheur({ etat: FRAICHEUR.PRECEDENTE, generation: "2019-02-03T05:47:00Z" });
-  assert.ok(p.corps.endsWith("Publication du 3 février 2019."), p.corps);
+  const g = { etat: FRAICHEUR.PRECEDENTE, generation: "2019-02-03T05:47:00Z" };
+  assert.equal(clientDonnees.phraseFraicheur(g, new Date("2019-02-03T20:00:00Z")).corps, "Mis à jour aujourd'hui.");
+  assert.equal(clientDonnees.phraseFraicheur(g, new Date("2019-02-04T20:00:00Z")).corps, "Mis à jour il y a 1 jour.");
+  assert.equal(clientDonnees.phraseFraicheur(g, new Date("2019-02-13T20:00:00Z")).corps, "Mis à jour il y a 10 jours.");
+});
+
+/* AUDIT UI, VAGUE 2 (16/11/2026) : rien reçu sur l'appareil (première visite hors ligne). Avant, le
+   bandeau disait « ce qui s'affiche est la dernière publication reçue » : faux. Et les trois états de
+   l'invariant 9 restent distinguables : le titre change, la ligne de date est la même. */
+test("garde — première visite hors ligne : pas de « dernière publication reçue », titres des états distincts", () => {
+  const p = clientDonnees.phraseFraicheur({ etat: FRAICHEUR.INCONNUE, generation: null });
+  assert.equal(p.corps, "Pas encore de publication sur cet appareil.");
+  const titres = new Set([FRAICHEUR.PRECEDENTE, FRAICHEUR.INCONNUE].map(etat => clientDonnees.phraseFraicheur({ etat, generation: "2026-11-01" }).titre));
+  titres.add(clientDonnees.phraseFraicheur({ etat: FRAICHEUR.PRECEDENTE, nouvelle: true, generation: "2026-11-01" }).titre);
+  assert.equal(titres.size, 3, "les trois états de l'invariant 9 doivent rester distinguables");
 });

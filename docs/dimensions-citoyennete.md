@@ -28,7 +28,7 @@ Manques :
 Présent : les comptes publiés de la commune (exercice 2025) et les comptes régionaux.
 
 Manques :
-- Les comptes communaux ne sont disponibles que pour les départements de la phase bêta : 75, 77, 78, 91, 92, 93, 94, 95 (`data/communes-beta.json`, 1 262 communes). Hors Île-de-France, l'écran n'affiche rien pour la commune.
+- Les comptes communaux ne sont disponibles que pour les départements de la phase bêta : 75, 77, 78, 91, 92, 93, 94, 95 (`data/communes-beta.json`, 1 264 communes). Hors Île-de-France, l'écran n'affiche rien pour la commune.
 - Les chiffres sont ceux de la source officielle, sans commentaire éditorial.
 
 ### 3. Votes des élus — partiel

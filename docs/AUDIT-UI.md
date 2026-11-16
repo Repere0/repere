@@ -171,3 +171,21 @@ Aucune régression mesurée : contrastes, cibles, petits textes et noms accessib
 La vague 1 est codée (§ 7). Deux points sont à trancher avant la vague 2 :
 - la phrase du bandeau de fraîcheur quand rien n'a encore été reçu (invariant 9) ;
 - la fusion des routes doublons, qui change les adresses que les testeurs ont peut-être déjà enregistrées.
+
+## 9. Vague 2 : faite le 16/11/2026
+
+| # | Ce qui a changé | Preuve |
+|---|---|---|
+| 2.3 | `ui/titre.ts` (`niveauTitre`) : un titre de niveau 1 par écran, sections en niveau 2, `Etiquette` n'est plus un titre ; titres ajoutés à scrutins, confort-lecture et recherche (masqué) ; plus de titre vide dans l'en-tête | 29 écrans sur 29 avec exactement un titre de niveau 1 (avant : 21 en avaient 2 ou plus, 3 aucun) ; axe `empty-heading` à 0 |
+| 2.1 | `Retour` unique pour toute la pile (`screenOptions`), libellé lu dans l'état de navigation | Qui décide → fiche : « ‹ Qui décide » ; Aujourd'hui → Repère du jour : « ‹ Aujourd'hui » ; lien direct : « ‹ Accueil » |
+| 2.6 | `ui/repliable.tsx` : au-delà de 160 caractères, 3 lignes puis « Lire la suite » ; actualités, dictionnaire, notes de Qui décide | Texte entier pour les lecteurs d'écran (`accessibilityLabel`) |
+| 2.4 | `ECHELLE_TYPO` (lib/theme.ts) et `tests/echelle.test.mjs` : tailles et espacements écrits en dur suivent l'échelle et la grille de 4 | Garde rouge sur `main` (≈ 30 écarts), verte ici |
+| 2.5 | Bandeau de fraîcheur : « Mis à jour il y a X jours » (décision du porteur) ; « Pas encore de publication sur cet appareil » quand rien n'a été reçu | `tests/donnees.test.mjs` : 3 gardes rouges avant, vertes après |
+| 2.2 | `/argent` redirige vers l'onglet `/finances` ; l'écran vit dans `ui/ecran-argent.tsx` | Liens « Où va cet argent ? » ouvrent l'onglet |
+| + | `tests/reseau-lent-web.mjs` (2 s par fichier, liste des communes coupée) | Rouge sur le code d'avant la vague 1 (6 échecs), vert ici |
+
+**Deux erreurs de cet audit, corrigées ici** :
+- `/` et `/chez-vous` ne sont **pas** des doublons. `/` est le choix de commune, `/chez-vous` l'onglet « Aujourd'hui » ; la sonde voyait la même page parce que l'accueil ouvre seul la commune gardée. Seul `/argent` / `/finances` était un vrai doublon.
+- La recherche **a** un indicateur de focus (la bordure de son cadre passe en encre) ; la sonde mesurait le champ, pas son cadre.
+
+**Non fait** : la place réservée du bandeau de fraîcheur (le décalage de 0,13 sur réseau lent demeure). Les tailles des cartes de partage (images de 1 080 px) restent hors de l'échelle.

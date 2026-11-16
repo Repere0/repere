@@ -26,6 +26,7 @@ import { enfonce } from "../ui/mouvement";
 /* LES CATÉGORIES (porteur, 09/11/2026) : les MOTS regroupés par thème, pour filtrer la liste.
    Rien n'y concerne une personne ni un parti. Un mot sans catégorie listée ici va dans « Institutions ». */
 import { CATEGORIES, CATEGORIE_DE, type Categorie } from "../lib/categories-mots";
+import { Repliable } from "../ui/repliable";
 const normaliser = (s: string) => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
 
 type Entree = { cle: string; titre: string; corps: string; lettre: string };
@@ -119,7 +120,7 @@ export default function Dictionnaire() {
             <Text style={[TYPO.reponse, { flex: 1 }]}>{e.titre}</Text>
             <Text style={TYPO.etiquette}>{CATEGORIE_DE[e.cle] || "Institutions"}</Text>
           </View>
-          <Text style={TYPO.corps}>{e.corps}</Text>
+          <Repliable texte={e.corps} />
         </View>
       )) : (
         <Text style={TYPO.note}>{`Aucun mot ne correspond à « ${recherche.trim()} ». Essayez une partie du mot, ou parcourez les lettres.`}</Text>

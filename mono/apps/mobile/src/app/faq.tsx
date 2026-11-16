@@ -13,6 +13,7 @@ import { Stack, router } from "expo-router";
 import { couleurs, CIBLE, PAS, POLICE, RAYON, TYPO } from "../lib/theme";
 import { Bouton } from "../lib/composants";
 import { ResumeClair } from "../ui/resume-clair";
+import { niveauTitre } from "../ui/titre";
 
 /* Exemple fourni par le porteur (12/11/2026), limité à ce que dit sa source : « Projet de loi de finances pour 2027. Première
    partie. Adopté par l'Assemblée nationale le 4 novembre 2026. 503 pour, 0 contre, 67 abstentions. » Il illustre la forme ; il
@@ -118,7 +119,7 @@ export default function Faq() {
   return (
     <ScrollView {...MARQUE_DEFILEMENT} style={{ flex: 1, backgroundColor: couleurs.sol }} contentContainerStyle={{ padding: PAS * 4, paddingBottom: bas, gap: PAS * 4, maxWidth: 640, width: "100%", alignSelf: "center" }}>
       <Stack.Screen options={{ title: "Questions fréquentes" }} />
-      <Text style={TYPO.question} accessibilityRole="header">Questions fréquentes</Text>
+      <Text style={TYPO.question} {...niveauTitre(1)}>Questions fréquentes</Text>
       <ScrollView horizontal focusable showsHorizontalScrollIndicator={false} style={{ marginHorizontal: -PAS * 4 }} contentContainerStyle={{ gap: PAS * 3, paddingHorizontal: PAS * 4 }}
         accessibilityLabel="Ce que Repère garantit">
         {ATOUTS.map(a => (

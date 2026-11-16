@@ -20,6 +20,7 @@ import { useCouleurVote } from "../lib/couleur-vote";
 import { useApparition, useCompteur } from "./mouvement";
 import { pointEchelon } from "../lib/niveaux";
 import { enfonce } from "./mouvement";
+import { Repliable } from "./repliable";
 
 const largeur = (v: Animated.Value, pct: number) =>
   v.interpolate({ inputRange: [0, 1], outputRange: ["0%", `${Math.max(0, Math.min(100, pct))}%`] });
@@ -46,7 +47,7 @@ export function BarreSegments({ segments, hauteur = 32, etiquette }: { segments:
         {segments.filter(x => x.valeur > 0).map(x => {
           const large = x.valeur / total >= 0.14;
           return (
-            <View key={x.cle} style={{ flex: x.valeur, backgroundColor: x.couleur, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 6, overflow: "hidden" }}>
+            <View key={x.cle} style={{ flex: x.valeur, backgroundColor: x.couleur, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8, overflow: "hidden" }}>
               {large && x.icone && hauteur >= 40 && x.valeur / total >= 0.3 ? <Ionicons name={x.icone} size={18} color={texteSur(x.couleur)} /> : null}
               {large && x.dedans ? <Text numberOfLines={1} ellipsizeMode="clip" style={{ fontFamily: POLICE.section, fontSize: hauteur >= 40 ? 15 : 13, color: texteSur(x.couleur), fontVariant: ["tabular-nums"] }}>{x.dedans}</Text> : null}
             </View>
@@ -345,7 +346,7 @@ function GrilleDecide({ decide }: { decide: string }) {
           const icone = (ICONES_COMPETENCE.find(([re]) => re.test(x)) || [null, "ellipse-outline"])[1] as keyof typeof Ionicons.glyphMap;
           return (
             <View key={x} style={{ width: "50%", flexDirection: "row", alignItems: "flex-start", gap: PAS * 2, paddingRight: PAS * 2 }}>
-              <Ionicons name={icone} size={16} color={couleurs.sourd} style={{ marginTop: 3 }} />
+              <Ionicons name={icone} size={16} color={couleurs.sourd} style={{ marginTop: 3 /* alignement optique : icône sur la 1re ligne */ }} />
               <Text style={[TYPO.note, { color: couleurs.encre, flex: 1 }]}>{x.charAt(0).toUpperCase() + x.slice(1)}</Text>
             </View>
           );
@@ -446,7 +447,7 @@ export function Chaine({ niveaux, compact, surNom, ouverts, basculer }: {
             {!compact && deplie && n.decide ? <GrilleDecide decide={n.decide} /> : null}
             {/* La note reste visible, repliée ou non : elle porte les précisions qui empêchent une
                 lecture fausse (en Île-de-France, les transports relèvent d'Île-de-France Mobilités). */}
-            {!compact && n.note ? <Text style={TYPO.note}>{n.note}</Text> : null}
+            {!compact && n.note ? <Repliable texte={n.note} style={TYPO.note} /> : null}
             {!compact && deplie && n.pied ? n.pied : null}
           </View>
         </View>

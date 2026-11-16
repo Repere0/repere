@@ -28,6 +28,7 @@ import { Page, Question } from "../ui/page";
 import { ilYa } from "../ui/fraicheur";
 import { SquelettesListe } from "../ui/squelette";
 import { enfonce } from "../ui/mouvement";
+import { niveauTitre } from "../ui/titre";
 
 const JOURS_SEMAINE = 7;
 const PAR_TRANCHE = 10;
@@ -174,14 +175,14 @@ export default function PourVous() {
       {!echec && nationales !== null && visibles.length > 0 ? (
         <View style={{ gap: PAS * 4 }}>
           <View style={{ gap: PAS * 3 }}>
-            <Text style={[TYPO.corps, { fontWeight: "700", color: couleurs.encre }]} accessibilityRole="header">Cette semaine</Text>
+            <Text style={[TYPO.corps, { fontWeight: "700", color: couleurs.encre }]} {...niveauTitre(2)}>Cette semaine</Text>
             {recentes.length === 0 ? (
               <Vide titre="Rien de nouveau cette semaine." action="Voir les archives" onAction={() => router.push("/actus")} />
             ) : recentes.map(e => <Ligne key={e.cle} e={e} />)}
           </View>
           {anciennes.length > 0 ? (
             <View style={{ gap: PAS * 3 }}>
-              <Text style={[TYPO.corps, { fontWeight: "700", color: couleurs.encre }]} accessibilityRole="header">Plus anciennes</Text>
+              <Text style={[TYPO.corps, { fontWeight: "700", color: couleurs.encre }]} {...niveauTitre(2)}>Plus anciennes</Text>
               {montrees.map(e => <Ligne key={e.cle} e={e} />)}
               {restantes > 0 ? (
                 <Pressable onPress={() => setTranches(t => t + 1)} accessibilityRole="button"

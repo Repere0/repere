@@ -45,7 +45,7 @@ export function SignalerErreur({ contexte, donnee }: { contexte: string; donnee:
       <Pressable onPress={() => Linking.openURL(`mailto:${CONTACT}?subject=${sujet}&body=${corps}`)} accessibilityRole="link"
         accessibilityLabel={`Signaler une erreur sur ${contexte}. Ouvre la messagerie.`}
         style={({ pressed }) => ({ minHeight: CIBLE, justifyContent: "center", alignSelf: "flex-start", ...enfonce(pressed) })}>
-        <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+        <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
           <Ionicons name="alert-circle-outline" size={16} color={couleurs.lien} accessible={false} importantForAccessibility="no" />
           <Text style={[TYPO.note, { color: couleurs.lien, fontWeight: "500" }]}>Signaler une erreur</Text>
         </View>

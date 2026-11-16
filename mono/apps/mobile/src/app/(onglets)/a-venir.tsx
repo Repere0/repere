@@ -39,6 +39,7 @@ import { AgendaStory } from "../../ui/partage/variantes/agenda.story";
 import { messageAgenda } from "../../ui/partage/messages";
 import { BoutonPartageTexte, ligneSource } from "../../ui/partage/partager-texte";
 import { enfonce } from "../../ui/mouvement";
+import { niveauTitre } from "../../ui/titre";
 
 type Ev = { titre: string; debut: string; institution: string; categorie?: string; lieu?: string; description?: string; source: Record<string, string> };
 type Groupe = { jour: string; institution: string; titre: string; debut: string; debuts: string[]; fins?: (string | null)[]; seances: number;
@@ -137,7 +138,7 @@ function Case({ iso, jour, nb, onPress, taille }: { iso: string; jour: string; n
       {grand ? <Text style={{ fontSize: 14, color: couleurs.sourd, fontWeight: "500" }}>{LETTRES[rangLundi(iso)]}</Text> : null}
       <View style={{ width: grand ? 40 : 34, height: grand ? 40 : 34, borderRadius: 999, alignItems: "center", justifyContent: "center",
         backgroundColor: choisi ? ACCENTS.autorite : "transparent" }}>
-        <Text style={{ fontFamily: POLICE.donneeForte, fontSize: grand ? 18 : 15, color: choisi ? ACCENTS.surAutorite : couleurs.encre }}>{numero}</Text>
+        <Text style={{ fontFamily: POLICE.donneeForte, fontSize: grand ? 17 : 15, color: choisi ? ACCENTS.surAutorite : couleurs.encre }}>{numero}</Text>
       </View>
       {/* Un point bien visible sous les jours de séance (porteur, 09/11/2026) : la couleur de
           l'échelon national, celui du Parlement. */}
@@ -228,7 +229,7 @@ export default function AVenir() {
           {/* En-tête compact (porteur, 09/11/2026) : le titre, une ligne qui dit que l'agenda est national,
               puis directement la frise des jours. */}
           <View style={{ gap: PAS }}>
-            <Text style={TYPO.question} accessibilityRole="header">Calendrier</Text>
+            <Text style={TYPO.question} {...niveauTitre(1)}>Calendrier</Text>
             <Text style={TYPO.note}>Les séances annoncées à l'Assemblée nationale et au Sénat concernent tout le pays.</Text>
           </View>
 
@@ -304,10 +305,10 @@ export default function AVenir() {
               {/* V35 bloc 2 (D68) : un bloc par jour (« Mardi 3 novembre »), puis la source. */}
               {(choisi || suite ? parJour(montres) : parJour(montres).slice(0, JOURS_OUVERTS)).map(([iso, items]) => (
                 <Carte key={iso} echelon="france">
-                  <Text accessibilityRole="header" style={[TYPO.corps, { fontWeight: "600" }]}>{iso === aujourdhui ? "Aujourd'hui · " : iso === decaler(aujourdhui, 1) ? "Demain · " : ""}{iso === aujourdhui || iso === decaler(aujourdhui, 1) ? jourFr(iso) : majuscule(jourFr(iso))}</Text>
+                  <Text {...niveauTitre(2)} style={[TYPO.corps, { fontWeight: "600" }]}>{iso === aujourdhui ? "Aujourd'hui · " : iso === decaler(aujourdhui, 1) ? "Demain · " : ""}{iso === aujourdhui || iso === decaler(aujourdhui, 1) ? jourFr(iso) : majuscule(jourFr(iso))}</Text>
                   {parMoment(items).map(([moment, liste]) => (
                     <View key={moment} style={{ gap: PAS * 2 }}>
-                      <Text accessibilityRole="header" style={TYPO.etiquette}>{moment}</Text>
+                      <Text {...niveauTitre(2)} style={TYPO.etiquette}>{moment}</Text>
                       {liste.map((g, i) => <Ligne key={g.debut + i} g={g} />)}
                     </View>
                   ))}

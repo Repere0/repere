@@ -20,6 +20,7 @@ import { Entree } from "../ui/entree";
 import { ElusStory } from "../ui/partage/variantes/elu.story";
 import { messageElu } from "../ui/partage/messages";
 import type { Fiche } from "../types/annuaire";
+import { niveauTitre } from "../ui/titre";
 
 type Params = Partial<Fiche>;
 
@@ -47,7 +48,7 @@ export default function AnnuaireFiche() {
       <Entree style={{ gap: PAS * 4 }}>
         <View style={{ alignItems: "center", gap: PAS * 3 }}>
           <Avatar nom={nom} taille={88} photo={photo} groupe={groupe} echelon={p.ref ? "france" : "region"} />
-          <Text style={[TYPO.question, { textAlign: "center" }]} accessibilityRole="header">{nom}</Text>
+          <Text style={[TYPO.question, { textAlign: "center" }]} {...niveauTitre(1)}>{nom}</Text>
           {p.fonction ? <Text style={[TYPO.corps, { textAlign: "center" }]}>{p.fonction}</Text> : null}
           {p.lieu ? <Text style={[TYPO.note, { textAlign: "center" }]}>{p.lieu}</Text> : null}
           {p.ref ? <BadgeGroupe groupe={groupe} /> : null}

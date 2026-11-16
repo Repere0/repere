@@ -20,6 +20,7 @@ import { MODE_INITIAL, useProfil } from "../lib/profil";
 import { ACCENTS, CIBLE, couleurs, PAS, POLICE, RAYON, TYPO } from "../lib/theme";
 import { enfonce, useApparition } from "./mouvement";
 import { Logo } from "./logo";
+import { niveauTitre } from "./titre";
 
 /* Ce que Repère ne fait pas. Chaque ligne est vérifiable dans l'application : aucune promesse en l'air. */
 const VALEURS: { icone: keyof typeof Ionicons.glyphMap; titre: string; corps: string }[] = [
@@ -50,7 +51,7 @@ export function Bienvenue() {
   const bouton = (texte: string, action: () => void, id?: string) => (
     <Pressable onPress={action} accessibilityRole="button" accessibilityLabel={texte} testID={id}
       style={({ pressed }) => ({ minHeight: CIBLE + 8, borderRadius: RAYON.pastille, alignItems: "center", justifyContent: "center", backgroundColor: ACCENTS.autorite, ...enfonce(pressed) })}>
-      <Text style={{ fontSize: 18, fontFamily: POLICE.section, color: ACCENTS.surAutorite }}>{texte}</Text>
+      <Text style={{ fontSize: 17, fontFamily: POLICE.section, color: ACCENTS.surAutorite }}>{texte}</Text>
     </Pressable>
   );
   const discret = (texte: string, etiquette: string, action: () => void) => (
@@ -72,8 +73,8 @@ export function Bienvenue() {
               {/* Le logo officiel, ses trois éléments : cercle ivoire, anneau gris, point ivoire.
                   La variante « mono » n'en a que deux — elle est faite pour les petits formats. */}
               <Logo size={120} variant="sombre" />
-              <Text style={[TYPO.affiche, { textAlign: "center" }]} accessibilityRole="header">Repère</Text>
-              <Text style={[TYPO.corps, { textAlign: "center", fontSize: 18, lineHeight: 26 }]}>
+              <Text style={[TYPO.affiche, { textAlign: "center" }]} {...niveauTitre(1)}>Repère</Text>
+              <Text style={[TYPO.corps, { textAlign: "center", fontSize: 17, lineHeight: 26 }]}>
                 Qui décide chez vous, et où va votre argent. Deux questions, des réponses sourcées.
               </Text>
             </View>
@@ -84,7 +85,7 @@ export function Bienvenue() {
         {etape === 1 ? (
           <>
             <View style={{ alignItems: "center", gap: PAS * 4 }}>
-              <Text style={[TYPO.affiche, { textAlign: "center" }]} accessibilityRole="header">Comment souhaitez-vous qu'on vous appelle ?</Text>
+              <Text style={[TYPO.affiche, { textAlign: "center" }]} {...niveauTitre(1)}>Comment souhaitez-vous qu'on vous appelle ?</Text>
             </View>
             <View style={{ gap: PAS * 2 }}>
               <TextInput value={saisie} onChangeText={setSaisie} maxLength={PRENOM_MAX} autoCapitalize="words" autoCorrect={false} autoComplete="given-name"
@@ -106,7 +107,7 @@ export function Bienvenue() {
         {etape === 2 ? (
           <>
             <View style={{ gap: PAS * 5 }}>
-              <Text style={[TYPO.affiche, { textAlign: "center" }]} accessibilityRole="header">Ce que Repère ne fait pas</Text>
+              <Text style={[TYPO.affiche, { textAlign: "center" }]} {...niveauTitre(1)}>Ce que Repère ne fait pas</Text>
               <View style={{ gap: PAS * 4 }}>
                 {VALEURS.map(v => (
                   <View key={v.titre} style={{ flexDirection: "row", gap: PAS * 4, alignItems: "flex-start" }}>

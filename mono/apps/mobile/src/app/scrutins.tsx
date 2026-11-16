@@ -37,6 +37,7 @@ import { useCouleurVote } from "../lib/couleur-vote";
 import { Vide } from "../lib/composants";
 import { PastilleSource } from "../ui/source";
 import { feuille, PAS, TYPO, couleurs, CIBLE, RAYON, OMBRE, POLICE } from "../lib/theme";
+import { niveauTitre } from "../ui/titre";
 import { dateFr, titreLisible, nombreDecompte, resultatDecompteCourt } from "@repere/core";
 import { enfonce } from "../ui/mouvement";
 
@@ -367,7 +368,7 @@ export default function Scrutins() {
       {chambre === "senat" ? (
         <>
           <View style={s.intro}>
-            <Text style={TYPO.question}>Le Sénat</Text>
+            <Text style={TYPO.question} {...niveauTitre(1)}>Le Sénat</Text>
             <Text style={TYPO.note}>348 sièges. Les sénateurs sont élus par environ 160 000 grands électeurs, par moitié tous les trois ans.</Text>
           </View>
           <PanneauSenat />
@@ -375,7 +376,7 @@ export default function Scrutins() {
       ) : (
       <>
       <View style={s.intro}>
-        <Text style={TYPO.question}>Les votes de l'Assemblée</Text>
+        <Text style={TYPO.question} {...niveauTitre(1)}>Les votes de l'Assemblée</Text>
         <Text style={TYPO.note}>
           {index ? `${index.total_publics.toLocaleString("fr-FR")} scrutins publics depuis le début de la législature.`
             : "Les scrutins publics de la XVIIe législature."}
@@ -546,7 +547,7 @@ export default function Scrutins() {
 
 const s = feuille(() => StyleSheet.create({
   intro: { gap: PAS, paddingTop: PAS * 2 },
-  onglets: { flexDirection: "row", backgroundColor: couleurs.voile, borderRadius: RAYON.pastille, padding: 3 },
+  onglets: { flexDirection: "row", backgroundColor: couleurs.voile, borderRadius: RAYON.pastille, padding: 4 },
   onglet: { minHeight: CIBLE, flex: 1, borderRadius: RAYON.pastille, alignItems: "center", justifyContent: "center", paddingHorizontal: PAS * 2 },
   ongletActif: { backgroundColor: couleurs.encre, ...OMBRE },
   ongletTexte: { fontFamily: POLICE.texteMoyen, fontSize: 14, lineHeight: 18, color: couleurs.sourd, textAlign: "center" },
@@ -590,7 +591,7 @@ const s = feuille(() => StyleSheet.create({
   groupeTexte: { flex: 1, gap: 2 },
   groupeNom: { fontSize: 16, lineHeight: 21, fontWeight: "700", color: couleurs.encre },
   groupeStats: { fontSize: 14, lineHeight: 19, color: couleurs.sourd },
-  chevron: { fontSize: 24, lineHeight: 28, color: couleurs.sourd, width: 24, textAlign: "center" },
+  chevron: { fontSize: 22, lineHeight: 28, color: couleurs.sourd, width: 24, textAlign: "center" },
   positions: { backgroundColor: couleurs.carte, borderRadius: RAYON.carte, borderWidth: 1, borderColor: couleurs.trait, paddingBottom: PAS * 2, overflow: "hidden" },
   positionsTete: { minHeight: 56, flexDirection: "row", alignItems: "center", paddingHorizontal: PAS * 4, paddingVertical: PAS * 2, gap: PAS * 3 },
   positionLigne: { minHeight: 46, flexDirection: "row", alignItems: "center", paddingHorizontal: PAS * 4, gap: PAS * 3 },
