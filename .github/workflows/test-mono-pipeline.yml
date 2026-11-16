@@ -52,7 +52,7 @@ jobs:
 
     steps:
       - name: Recuperer le depot (branche isolee)
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
 
       - name: Confirmer l'absence de toute etape de publication dans ce fichier
         run: |
@@ -71,7 +71,7 @@ jobs:
           echo "PRODUCTION ACTIVEE : NON — aucune etape de ce job ne peut publier."
 
       - name: Installer Node (version explicite, pas le defaut implicite de l'image)
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: "lts/*"
 
@@ -135,7 +135,7 @@ jobs:
         run: node tests/poids.mjs ../site_engendre
 
       - name: Deposer l'artefact CI (inspection seulement — aucune publication)
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: site_engendre-test-ci
           path: site_engendre

@@ -54,10 +54,10 @@ jobs:
     timeout-minutes: 30
     steps:
       - name: Recuperer le depot
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
 
       - name: Installer Python
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@v7
         with:
           python-version: "3.12"
 
@@ -78,7 +78,7 @@ jobs:
 
       - name: Garder le site construit en artefact
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: site-epreuve
           path: site_engendre
@@ -90,7 +90,7 @@ jobs:
       # n'etait lisible qu'apres fusion et collecte du lendemain.
       - name: Garder les schemas des sources en artefact
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: schemas-sources
           path: docs/schema_*.md
