@@ -2,24 +2,6 @@
  "v": 1,
  "maj": "2026-11-16",
  "etapes": {
-  "description impossible pour data/circos_ministere.xlsx": {
-   "message": "description impossible pour data/circos_ministere.xlsx",
-   "depuis": "2026-11-16",
-   "vu_le": "2026-11-16",
-   "jours": 1
-  },
-  "la table des circonscriptions n'a pas ete produite ou posee": {
-   "message": "la table des circonscriptions n'a pas ete produite ou posee",
-   "depuis": "2026-11-16",
-   "vu_le": "2026-11-16",
-   "jours": 1
-  },
-  "les projets finances par l'Etat n'ont pas ete rafraichis (voir ci-dessus)": {
-   "message": "les projets finances par l'Etat n'ont pas ete rafraichis (voir ci-dessus)",
-   "depuis": "2026-11-16",
-   "vu_le": "2026-11-16",
-   "jours": 1
-  },
   "le contexte des agents a derive (voir outils/derive_contexte.mjs ci-dessus)": {
    "message": "le contexte des agents a derive (voir outils/derive_contexte.mjs ci-dessus)",
    "depuis": "2026-11-13",
