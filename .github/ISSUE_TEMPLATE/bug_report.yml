@@ -1,0 +1,58 @@
+name: Signaler un bug
+description: Un écran qui affiche une chose fausse, vide ou cassée.
+title: "[bug] "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Merci. Ne joignez ni adresse, ni numéro de téléphone, ni opinion : Repère n'en a pas besoin pour corriger.
+        Une faille de sécurité se signale en privé (voir SECURITY.md).
+  - type: input
+    id: ecran
+    attributes:
+      label: Écran
+      description: L'écran concerné, et la commune si elle compte.
+      placeholder: "Finances, Melun"
+    validations:
+      required: true
+  - type: textarea
+    id: etapes
+    attributes:
+      label: Ce que vous faisiez juste avant
+      placeholder: "1. J'ouvre…\n2. Je touche…"
+    validations:
+      required: true
+  - type: textarea
+    id: constate
+    attributes:
+      label: Ce qui s'est passé, et ce que vous attendiez
+    validations:
+      required: true
+  - type: dropdown
+    id: support
+    attributes:
+      label: Support
+      options:
+        - iPhone (Expo Go)
+        - iPhone (navigateur)
+        - Android (Expo Go)
+        - Android (navigateur)
+        - Ordinateur (navigateur)
+        - Autre
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Version du système, du navigateur ou d'Expo Go
+  - type: textarea
+    id: source
+    attributes:
+      label: Si un chiffre est faux, la source officielle qui le contredit
+      description: Lien et date de la publication.
+  - type: textarea
+    id: capture
+    attributes:
+      label: Capture d'écran
+      description: Seulement si elle ne montre aucune donnée personnelle.

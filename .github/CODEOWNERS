@@ -1,0 +1,14 @@
+# Relecteur demandé automatiquement sur les fichiers sensibles.
+# (Un seul mainteneur : la relecture n'est pas rendue obligatoire, voir AUDIT-REPO.md.)
+
+/.github/                 @Repere0
+/.claude/                 @Repere0
+/CLAUDE.md                @Repere0
+/AGENTS.md                @Repere0
+/docs/adr/                @Repere0
+/outils/                  @Repere0
+/mono/scripts/            @Repere0
+/data/evenements/         @Repere0
+/mono/apps/mobile/src/lib/palette.ts  @Repere0
+/LICENSE                  @Repere0
+/SECURITY.md              @Repere0

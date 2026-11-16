@@ -10,9 +10,11 @@ Une bonne proposition répond à trois questions :
 2. **Quelle source officielle** permettrait d'y répondre, et avec quelle date ? Sans source, pas de fonctionnalité.
 3. **Quelle règle de `CLAUDE.md` est touchée** ? Si la réponse est « aucune », dites-le ; si elle est « une », proposez un amendement, en citant la décision (D…) qui le permet.
 
-Ouvrez une issue sur le dépôt GitHub si les issues y sont activées (non vérifié à ce jour), ou écrivez à **repere0@protonmail.com**.
+Ouvrez une issue avec le formulaire « Proposer une fonctionnalité », ou écrivez à **repere0@protonmail.com**.
 
 ## Signaler un bug
+
+Utilisez le formulaire « Signaler un bug » des issues. Une faille de sécurité ne s'ouvre pas en issue publique : voir [SECURITY.md](SECURITY.md).
 
 Indiquez :
 
@@ -45,10 +47,24 @@ Pour l'équipe, quelques points de procédure :
 
 ## Ouvrir une demande de fusion
 
-- Partez de `main`, travaillez sur une branche, et ouvrez une demande de fusion vers `main`.
-- Une demande de fusion qui touche les données, la chaîne de collecte ou une règle d'invariant est relue par le porteur avant fusion.
-- Ne fusionnez jamais directement dans `main`.
+1. Forkez le dépôt (ou, si vous y avez accès, partez de `main`) et créez une branche nommée par sa nature : `feat/…`, `fix/…`, `docs/…`, `chore/…`, `data/…`, `ux/…`.
+2. Lancez les contrôles avant de pousser :
+   - depuis `mono/` : `npx pnpm@8.15.9 install --frozen-lockfile`, puis `npm test` ;
+   - depuis `mono/apps/mobile` : `npm ci`, puis `npm run verifier` ;
+   - si vous touchez `CLAUDE.md`, `AGENTS.md`, une skill ou `CONTEXTE_PROJET.md` : `node outils/derive_contexte.mjs`.
+3. Ouvrez la demande vers `main` et remplissez le modèle (ce qui change, comment c'est vérifié, ce qui ne l'est pas).
+4. Une demande qui touche les données, la chaîne de collecte ou un invariant est relue par le porteur avant fusion. Personne ne fusionne directement dans `main`.
+
+### Messages de commit
+
+Le titre suit [Conventional Commits](https://www.conventionalcommits.org/fr/) : `type(portée): résumé`, en français, à l'impératif ou au présent. Types en usage : `feat`, `fix`, `docs`, `test`, `ci`, `chore`, `refactor`, `data`, `ux`.
+
+```
+fix(calendrier): les horaires sont à l'heure de Paris
+```
+
+Le corps dit ce qui était faux, ce qui a été mesuré, et ce qui ne l'a pas été. Aucun hook n'impose ce format : la relecture s'en charge.
 
 ## Licence des contributions
 
-Le code est sous AGPL-3.0 (fichier `LICENSE` à la racine depuis le 02/11/2026) : en contribuant, vous acceptez que votre contribution soit publiée sous cette licence.
+Le code est publié sous [AGPL-3.0](LICENSE). En contribuant, vous acceptez que votre contribution soit publiée sous cette licence.

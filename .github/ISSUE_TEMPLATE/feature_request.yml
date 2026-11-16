@@ -1,0 +1,36 @@
+name: Proposer une fonctionnalité
+description: Une question qu'un habitant se pose et que Repère ne sait pas encore répondre.
+title: "[proposition] "
+labels: ["proposition"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Sans source officielle, pas de fonctionnalité. Les règles qui ne bougent pas sont dans CLAUDE.md.
+  - type: textarea
+    id: question
+    attributes:
+      label: Quelle question un habitant se pose-t-il ?
+    validations:
+      required: true
+  - type: textarea
+    id: source
+    attributes:
+      label: Quelle source officielle permettrait d'y répondre ?
+      description: Producteur, licence, fréquence de mise à jour, lien.
+    validations:
+      required: true
+  - type: dropdown
+    id: invariant
+    attributes:
+      label: Touche-t-elle une règle de CLAUDE.md ?
+      options:
+        - Non
+        - Oui (préciser ci-dessous)
+        - Je ne sais pas
+    validations:
+      required: true
+  - type: textarea
+    id: details
+    attributes:
+      label: Précisions

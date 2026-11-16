@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Signaler une faille de sécurité
+    url: https://github.com/Repere0/repere/security/advisories/new
+    about: En privé, jamais en issue publique. Voir SECURITY.md.
+  - name: Écrire au projet
+    url: mailto:repere0@protonmail.com
+    about: Une question, un retour de test.

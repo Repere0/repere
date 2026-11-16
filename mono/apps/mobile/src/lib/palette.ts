@@ -45,7 +45,7 @@ const NEUTRES_CLAIR: Neutres = {
    sur le voile, sous le seuil AA ; #928F86 est la nuance la plus proche qui le tient (4,55:1). */
 /* 09/11/2026 : « Dark Luxury » des maquettes Stitch (invariant 7 amendé, « tout Stitch ») : textes
    #F8FAFC et #94A3B8, liens en or mat. Sol, carte et trait inchangés (déjà ceux de Stitch). */
-/* 09/11/2026 (DESIGN.md « Dark Luxury », complément du porteur) : texte en ivoire lin #F5F4F0,
+/* 09/11/2026 (docs/historique/DESIGN.md « Dark Luxury », complément du porteur) : texte en ivoire lin #F5F4F0,
    métadonnées en gris minéral #9C9A92, filets #2B2A26. Sol et carte inchangés. */
 const NEUTRES_SOMBRE: Neutres = {
   sol: "#141311", carte: "#1F1E1B", encre: "#F5F4F0", sourd: "#9C9A92",
@@ -88,7 +88,7 @@ export const OMBRE_PAR_MODE = {
   clair: { shadowColor: "#171614", shadowOpacity: 0.03, shadowRadius: 8, shadowOffset: { width: 0, height: 2 }, elevation: 1 },
   /* DA premium (07/11/2026) : noir à 20 %, flou 20, décalage 5. Le clair, gardé par le banc
      de non-régression, n'est pas touché. */
-  /* DESIGN.md (09/11/2026) : en sombre, la profondeur vient des surfaces et des filets, pas d'une ombre
+  /* docs/historique/DESIGN.md (09/11/2026) : en sombre, la profondeur vient des surfaces et des filets, pas d'une ombre
      sous les cartes. */
   sombre: { shadowColor: "#000000", shadowOpacity: 0, shadowRadius: 0, shadowOffset: { width: 0, height: 0 }, elevation: 0 },
 } as const;

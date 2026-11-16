@@ -1,58 +1,66 @@
 # Repère
 
-Repère est une application civique française et neutre. Elle répond à deux questions pour une commune : qui décide chez moi, et où va mon argent.
-Chaque information renvoie à sa source officielle, avec sa date, et rien n'est donné sans source.
-Pas de compte, pas de publicité, pas de traceur : après le premier chargement, l'application fonctionne hors ligne.
-La bêta couvre les communes d'Île-de-France, soit 1 262 communes à ce jour.
-Le projet est en cours de test : l'application n'est pas encore publiée sur les magasins.
+Application civique française et neutre : pour une commune, **qui décide chez moi** et **où va mon argent**, chaque chiffre avec sa source officielle et sa date.
+
+[![Collecte quotidienne](https://github.com/Repere0/repere/actions/workflows/collecte.yml/badge.svg?branch=main)](https://github.com/Repere0/repere/actions/workflows/collecte.yml)
+[![CodeQL](https://github.com/Repere0/repere/actions/workflows/codeql.yml/badge.svg?branch=main)](https://github.com/Repere0/repere/actions/workflows/codeql.yml)
+[![Licence : AGPL-3.0](https://img.shields.io/badge/licence-AGPL--3.0-blue.svg)](LICENSE)
+[![Node 22](https://img.shields.io/badge/node-22-339933.svg)](.github/workflows/mobile.yml)
+![Statut : bêta Île-de-France](https://img.shields.io/badge/statut-b%C3%AAta%20%C3%8Ele--de--France-orange.svg)
+
+- Pas de compte, pas de publicité, pas de traceur. Après le premier chargement, l'application fonctionne hors ligne.
+- La bêta couvre les 1 262 communes d'Île-de-France. L'application n'est pas encore publiée sur les magasins.
+- Les règles qui ne bougent pas (neutralité, sources, aucun classement) sont dans [`CLAUDE.md`](CLAUDE.md), les décisions dans [`docs/adr/`](docs/adr/).
 
 ![Budget d'une commune, carte partageable](docs/partage-story/story-budget.png)
 ![Vote d'un député, carte partageable](docs/partage-story/story-vote.png)
 ![Annuaire des élus, carte partageable](docs/partage-story/story-annuaire.png)
 
-## Lancer en local
+## Démarrage rapide
 
-Il faut Node.js et npm. Vérifié dans la session de rédaction : la vérification de types (`npm run verifier`, équivalent de `tsc --noEmit`) et l'export web. Non rejoué dans cette session : `npm ci` (les dépendances étaient déjà installées), le lancement interactif (`npm run start`) et la version web (`npm run web`).
+Prérequis : Node.js 22 et npm ; Expo Go sur un téléphone pour l'essayer sur mobile.
 
-1. Cloner le dépôt :
-   `git clone https://github.com/Repere0/repere.git && cd repere/mono/apps/mobile`
-2. Installer les dépendances de l'application (elle a son propre `package-lock.json`, hors du workspace pnpm) :
-   `npm ci`
-3. Lancer Expo :
-   `npm run start`, puis scanner le QR code avec **Expo Go** (App Store ou Google Play).
-4. Ou lancer la version navigateur :
-   `npm run web`
-5. Vérifier les types :
-   `npm run verifier`
+```sh
+git clone https://github.com/Repere0/repere.git
+cd repere/mono/apps/mobile
+npm ci              # l'application a son propre package-lock.json, hors du workspace pnpm
+npm run start       # puis scanner le QR code avec Expo Go
+npm run web         # ou : version navigateur
+npm run verifier    # vérification des types (tsc --noEmit)
+```
 
-Par défaut, l'application lit ses données publiées sur `https://repereapp.netlify.app/data`. Elle a donc besoin du réseau au premier chargement, puis garde les fichiers dans le cache de l'application.
+L'application lit ses données publiées sur `https://repereapp.netlify.app/data` : il faut le réseau au premier chargement, ensuite les fichiers restent en cache.
 
-Les tests du monorepo se lancent depuis `mono/` : `npx pnpm@8.15.9 install --frozen-lockfile`, puis `npm test`. Certains tests demandent un navigateur Playwright.
+Tests du monorepo, depuis `mono/` :
+
+```sh
+npx pnpm@8.15.9 install --frozen-lockfile
+npm test            # certains tests demandent un navigateur Playwright
+```
 
 ## Architecture
 
 | Dossier | Contenu |
 |---|---|
-| `mono/apps/mobile` | L'application Expo (React Native). Les écrans sont dans `src/app`, les composants dans `src/ui`, la logique dans `src/lib`. |
-| `mono/packages/core` | Logique partagée (dates, formats, calculs). Paquet `@repere/core`. |
+| `mono/apps/mobile` | L'application Expo (React Native, TypeScript) : écrans dans `src/app`, composants dans `src/ui`, logique dans `src/lib`. |
+| `mono/packages/core` | Logique partagée (dates, formats, calculs), paquet `@repere/core`. |
 | `mono/packages/data-utils` | Chargement, cache et contrôles des fichiers publics. |
 | `mono/packages/ui` | Composants partagés. |
-| `mono/apps/web`, `mono/apps/api` | Présents dans le monorepo ; leur rôle n'est pas détaillé ici. |
-| `data/` | Données publiées, brouillons générés (`data/auto/`), fiches de contenu (`data/contenu/`). |
-| `outils/` | La chaîne de collecte (`pipeline.sh`), lancée chaque nuit par `.github/workflows/collecte.yml`. |
-| `docs/` | Décisions (ADR), stratégie éditoriale, guides, audits. |
-| `BLOCAGES.md` | Ce qui n'est pas fait, pas vérifié, ou attend une décision. |
+| `mono/scripts`, `outils/` | La chaîne de collecte des données publiques (`outils/pipeline.sh`), lancée chaque matin par `.github/workflows/collecte.yml`. |
+| `data/` | Données publiées, brouillons générés (`data/auto/`), fiches de contenu. |
+| `docs/` | Décisions (`adr/`), guides, audits ; `docs/historique/` garde les notes de version et rapports des versions précédentes. |
+| `app_repere_v18_20.html` | L'application historique en un seul fichier ; ses blocs `REPERE_*` alimentent encore la chaîne. |
 
-Les décisions d'architecture et de contenu sont dans `docs/adr/` et `docs/strategie-editoriale.md`. Les règles qui ne bougent pas sont dans `CLAUDE.md`.
+`BLOCAGES.md` liste ce qui n'est pas fait, pas vérifié, ou attend une décision.
+
+## Contribuer
+
+Lire [CONTRIBUTING.md](CONTRIBUTING.md). Pour une faille de sécurité, suivre [SECURITY.md](SECURITY.md) plutôt qu'ouvrir une issue publique. Les échanges suivent le [code de conduite](CODE_OF_CONDUCT.md).
 
 ## Licence
 
-Le code est sous licence **AGPL-3.0** (décision du porteur, D88). Le fichier `LICENSE` est à la racine depuis le 02/11/2026 (`cc6a8d4`).
-
-Les données affichées sont publiques. Chaque information indique son producteur, sa licence et sa date.
+Le code est publié sous licence [AGPL-3.0](LICENSE). Les données affichées sont publiques : chacune indique son producteur, sa licence et sa date.
 
 ## Contact
 
-Pour une erreur, une question ou un retour de test : **repere0@protonmail.com** (décision D71, voir `docs/contact-email.md`).
-
-Pour contribuer, lire [CONTRIBUTING.md](CONTRIBUTING.md).
+Une erreur, une question, un retour de test : **repere0@protonmail.com**.

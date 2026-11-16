@@ -21,7 +21,7 @@ Préparé le 30/10/2026 (V32, bloc 3). Ce document ne crée ni ne modifie aucune
 |---|---|---|
 | Écrans et logique de l'application | 75 | `apps/mobile/src/app`, `lib`, `ui` |
 | Documentation (ADR, audits, UX, distribution) | 41 | `docs/` |
-| Rapports et gouvernance | 26 | `RESUME-v*.md`, `BLOCAGES.md`, `CLAUDE.md`, `AGENTS.md`, `APP_STORE_READINESS.md` |
+| Rapports et gouvernance | 26 | `RESUME-v*.md`, `BLOCAGES.md`, `CLAUDE.md`, `AGENTS.md`, `docs/historique/APP_STORE_READINESS.md` |
 | Outillage, CI, sceau des invariants | 25 | `.github/`, `.claude/`, `outils/`, `scripts/` |
 | Tests | 16 | `apps/mobile/tests/`, `mono/tests/` |
 | Configuration de l'application (build, README) | 17 | `apps/mobile/package.json`, `app.json`, `eas.json`, `README.md` |

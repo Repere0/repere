@@ -91,7 +91,7 @@ if (BASE && OUT) {
   await nav.close();
   fs.writeFileSync(`${OUT}/mesures.json`, JSON.stringify(bilan, null, 1));
   const cles = ["petit", "souligne", "cible", "contraste", "emoji", "sansNom"];
-  /* EXCEPTIONS DOCUMENTÉES (RAPPORT-AUDIT-UI.md) — tout autre écart fait échouer le script :
+  /* EXCEPTIONS DOCUMENTÉES (docs/historique/RAPPORT-AUDIT-UI.md) — tout autre écart fait échouer le script :
      - partager / petit : les cartes de partage sont des aperçus réduits d'une image de 1080 px ;
      - accueil / contraste : le point final du logotype « Repère. », décoratif. */
   const EXCEPTIONS = { partager: ["petit"], accueil: ["contraste"] };

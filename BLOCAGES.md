@@ -98,7 +98,7 @@ Pas de temps consacré au bonus, pour ne pas multiplier les changements non relu
 ## 12. Compte Apple Developer et premier build
 
 - Compte payant à ouvrir par le porteur. Nécessaire pour `eas submit` et TestFlight.
-- Première construction iOS jamais faite (pas de dossier `ios/`). Le manifeste de confidentialité reste à valider par le rapport de confidentialité de Xcode (voir `APP_STORE_READINESS.md`).
+- Première construction iOS jamais faite (pas de dossier `ios/`). Le manifeste de confidentialité reste à valider par le rapport de confidentialité de Xcode (voir `docs/historique/APP_STORE_READINESS.md`).
 - URL publique de la politique de confidentialité : proposée `https://repereapp.netlify.app/confidentialite`, à vérifier (voir `docs/privacy-policy-hosting.md`).
 
 ## 13. Mission v8 (30/10/2026) — blocs non faits ou décisions à prendre
@@ -231,7 +231,7 @@ Recherche faite sur le site officiel (melun.fr / ville-melun.fr) :
 - **Bloc 4 (data viz : titres-conclusions, encodage non coloriel, labels directs, barres à zéro)** : non fait. Un titre-conclusion (« 45 € sur 100 vont aux salaires ») est une phrase qui affirme un fait ; c'est un texte que le CEO doit valider, pas un gabarit à remplir. Les autres règles touchent la carte budget, la carte vote, la fiche élu et la modale : à faire après validation des titres.
 - **Bloc 5 (« Pourquoi je vois ça »)** : non fait. Source, méthode et « pourquoi ici » sont à écrire pour chaque chiffre ; c'est le cœur de la transparence (invariant 4), donc à relire.
 - **Bloc 6 (fil « Pour vous »)** : non fait. Il demande de trancher quoi entre dans le fil (scrutins, budgets, actus, échéances) et ce qui se passe quand il est vide dans chaque vue.
-- **Bloc 7** : `RESUME-v26.md` écrit. Les tests passent à chaque commit.
+- **Bloc 7** : `docs/historique/RESUME-v26.md` écrit. Les tests passent à chaque commit.
 - **Brief V25 absent** : V26 dit « V25 + corrections V23 » et « enchaîne sur l'universalité (V25) ». Le texte de V25 n'a pas été reçu. Seul ce qui figure dans V26 est fait.
 
 ### Bloc 0 — invariant 2 (fait, 1ad1d3a et 4f63856)
@@ -698,7 +698,7 @@ Livré :
 
 ### 56.6 Dernier contrôle
 
-- « Même vérité » (`meme-verite.mjs`) : lancé en fin de passe, résultat à reporter dans RESUME-v51.md / VERDICT-v51.md.
+- « Même vérité » (`meme-verite.mjs`) : lancé en fin de passe, résultat à reporter dans docs/historique/RESUME-v51.md / docs/historique/VERDICT-v51.md.
 - `runtime.test.mjs` : à relancer avec le Chromium disponible dans cette session (le chemin Playwright a été contourné par un lien local, sans modifier le dépôt).
 
 ## 57. V52 (03/11/2026) : bandeau « Repère du jour » non livré (contrainte de 844 px et cible de 44 px), 22 modèles sur 30
@@ -854,7 +854,7 @@ Livré :
 
 ### 60.2 Ce qui est dans l'application
 
-- Découpage IDF : `apps/mobile/src/lib/decoupage.ts`, chargé via `chargerDecoupageIdf` (`packages/data-utils`). Affichage : voir RESUME-v59.md.
+- Découpage IDF : `apps/mobile/src/lib/decoupage.ts`, chargé via `chargerDecoupageIdf` (`packages/data-utils`). Affichage : voir docs/historique/RESUME-v59.md.
 - Fichier publié par `extract-html.js` depuis `scripts/decoupage-idf.json`. **Il n'est pas encore sur le site public** : la publication passe par la chaîne quotidienne du porteur.
 
 ### 60.3 Conséquence
