@@ -74,7 +74,7 @@ explicite du porteur les change ; la PR qui l'applique met alors à jour
 
 - **Production** : `mono/` (React/Vite, sortie statique). `outils/pipeline.sh` la
   construit et l'éprouve ; `.github/workflows/collecte.yml` la publie chaque matin
-  sur Netlify. Cloudflare Pages est la cible décidée, **non commencée**.
+  sur Netlify. Cloudflare Pages : dépôt prêt pour l'app web (`docs/hebergement-cloudflare.md`), **rien n'est déployé**.
 - **Source des données** : les blocs `REPERE_*` de `app_repere_v18_20.html`, lus
   par `mono/scripts/extract-html.js`. Ne jamais éditer un bloc à la main.
 - **Fil éditorial** : `data/evenements/*.md` (validés par le porteur) ; `data/auto/*.md` = brouillons machine, jamais affichés.
