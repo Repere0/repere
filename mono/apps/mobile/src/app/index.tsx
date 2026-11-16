@@ -512,6 +512,17 @@ export default function Accueil() {
   );
 
 
+  /* AUDIT UI (16/11/2026) : avec une commune gardee, l'accueil s'affichait puis cedait la place a la
+     commune quand la liste arrivait (decalage de mise en page mesure : 0,24). On attend la liste, en
+     squelettes, sans montrer un ecran qu'on va quitter. Si elle n'arrive pas, l'accueil revient. */
+  if (OUVERTURE_A_FAIRE && retenue && !absent && !params.toutes && !beta && etat === ETATS.EN_COURS) {
+    return (
+      <View style={{ flex: 1, backgroundColor: D.sol, paddingTop: marges.top + PAS * 12, paddingHorizontal: PAS * 4 }}>
+        <SquelettesListe n={4} hauteur={88} />
+      </View>
+    );
+  }
+
   return (
     <KeyboardAvoidingView style={{ flex: 1, backgroundColor: D.sol }} behavior={Platform.OS === "ios" ? "padding" : undefined}>
       <FlatList

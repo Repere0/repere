@@ -142,7 +142,7 @@ export default function PourVous() {
           {THEMES.map(th => {
             const coche = choisis.includes(th);
             return (
-              <Pressable key={th} accessibilityRole="checkbox" accessibilityState={{ checked: coche }} accessibilityLabel={`${th}${coche ? ", coché" : ""}`}
+              <Pressable key={th} accessibilityRole="checkbox" accessibilityState={{ checked: coche }} aria-checked={coche} accessibilityLabel={`${th}${coche ? ", coché" : ""}`}
                 onPress={() => basculer(th)}
                 style={({ pressed }) => ({
                   minHeight: CIBLE, paddingHorizontal: PAS * 3, justifyContent: "center", borderRadius: 999,

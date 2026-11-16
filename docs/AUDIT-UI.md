@@ -154,8 +154,20 @@ Preuve attendue : la sonde `etats.cjs` ne voit plus « Aucune commune » quand u
 | 3.5 | Contact cohérent entre « À propos » et le README. | S | `app/a-propos.tsx` | Confiance |
 | 3.6 | Rejouer l'audit sur **WebKit et iPhone réel** (VoiceOver, Dynamic Type), avec les données complètes publiées. | M | — | Ce que cet audit n'a pas pu voir |
 
-## 7. Validation demandée
+## 7. Vague 1 : faite le 16/11/2026, mesurée avant et après
 
-Rien n'est codé. La vague 1 attend ton accord. Deux points sont à trancher avant la vague 2 :
+| # | Ce qui a changé | Avant | Après (mêmes sondes) |
+|---|---|---|---|
+| 1.1 | `lib/selection.tsx` expose `restauration` (`en_cours`, `echec`, `introuvable`). `AvecDonnees` affiche des squelettes pendant la restauration, puis « Repère n'a pas pu retrouver votre commune » avec « Réessayer » si la liste n'arrive pas. L'accueil attend la liste au lieu de s'afficher puis de céder la place. | « Aucune commune n'est choisie » affiché pendant 7,1 s (1,5 s de latence) à 17,2 s (4 s) ; CLS de l'accueil 0,244 | « Aucune commune » n'est **jamais** affiché sur ces deux latences ; CLS de l'accueil **0,04** |
+| 1.2 | Le `catch` silencieux devient un état `echec` ; `relancer()` refait la restauration. | Un échec laissait l'écran sans issue | « Réessayer » relance la restauration |
+| 1.3 | Bouton retour sur repère-du-jour, quiz, à-propos et confidentialité (`_layout.tsx`). | Aucun bouton retour | « Revenir à l'écran précédent » sur les 4 écrans |
+| 1.4 | `aria-checked` sur les puces et les segments (`pour-vous`, `confort-lecture`, `ui/quiz.tsx`, `ui/reglages.tsx`, `ui/pression.tsx`). | axe critical : 7 + 13 + 4 nœuds | 0 |
+| 1.5 | Zones défilantes focalisables (faq, confidentialité). Les visuels à nom accessible (`ui/visuels.tsx`, 11 vues) portent `role="img"`. | axe serious : faq, confidentialité, accueil, élu | 0 |
+
+Aucune régression mesurée : contrastes, cibles, petits textes et noms accessibles sont identiques sur les 29 écrans. Le temps total avant l'affichage de la commune sur un réseau lent ne change pas : c'est la cascade de requêtes, à traiter à part.
+
+## 8. Validation demandée
+
+La vague 1 est codée (§ 7). Deux points sont à trancher avant la vague 2 :
 - la phrase du bandeau de fraîcheur quand rien n'a encore été reçu (invariant 9) ;
 - la fusion des routes doublons, qui change les adresses que les testeurs ont peut-être déjà enregistrées.

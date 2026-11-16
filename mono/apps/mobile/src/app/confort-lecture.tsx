@@ -15,7 +15,7 @@ const ETIQUETTE_CONTRASTE: Record<string, string> = { normal: "Normal", eleve: "
 
 function Choix({ texte, actif, onPress, etiquette }: { texte: string; actif: boolean; onPress: () => void; etiquette: string }) {
   return (
-    <Pressable onPress={onPress} accessibilityRole="radio" accessibilityState={{ selected: actif }} accessibilityLabel={`${etiquette}${actif ? ", choisi" : ""}`}
+    <Pressable onPress={onPress} accessibilityRole="radio" accessibilityState={{ selected: actif }} aria-checked={actif} accessibilityLabel={`${etiquette}${actif ? ", choisi" : ""}`}
       style={({ pressed }) => ({ minHeight: CIBLE, minWidth: CIBLE, paddingHorizontal: PAS * 3, justifyContent: "center", borderRadius: 999,
         borderWidth: actif ? 2 : 1, borderColor: actif ? couleurs.encre : couleurs.trait, backgroundColor: couleurs.carte, ...enfonce(pressed) })}>
       <Text style={[TYPO.note, { color: couleurs.encre, fontWeight: actif ? "700" : "400" }]}>{texte}</Text>
@@ -25,7 +25,7 @@ function Choix({ texte, actif, onPress, etiquette }: { texte: string; actif: boo
 
 function Interrupteur({ texte, actif, onPress }: { texte: string; actif: boolean; onPress: () => void }) {
   return (
-    <Pressable onPress={onPress} accessibilityRole="switch" accessibilityState={{ checked: actif }} accessibilityLabel={`${texte} : ${actif ? "activé" : "désactivé"}`}
+    <Pressable onPress={onPress} accessibilityRole="switch" accessibilityState={{ checked: actif }} aria-checked={actif} accessibilityLabel={`${texte} : ${actif ? "activé" : "désactivé"}`}
       style={({ pressed }) => ({ minHeight: CIBLE, flexDirection: "row", alignItems: "center", justifyContent: "space-between", ...enfonce(pressed) })}>
       <Text style={[TYPO.corps, { flex: 1, paddingRight: PAS * 3 }]}>{texte}</Text>
       <Text style={[TYPO.note, { fontWeight: "700", color: couleurs.encre }]}>{actif ? "Activé" : "Désactivé"}</Text>

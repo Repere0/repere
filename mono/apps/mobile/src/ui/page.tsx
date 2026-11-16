@@ -59,8 +59,22 @@ export function Question({ etiquette, question, sous }: { etiquette?: string; qu
 
 /* Rend `rendu(r)` quand la commune est prete ; sinon la phrase de l'etat. */
 export function AvecDonnees({ rendu }: { rendu: (r: Extract<EtatCommune, { pret: true }>) => ReactNode }) {
-  const { choix } = useSelection();
+  const { choix, restauration, relancer } = useSelection();
   const { r, reessayer } = useCommuneChoisie();
+  /* AUDIT UI (16/11/2026) : une commune GARDEE dont on cherche encore le nom n'est pas « aucune
+     commune ». Avant, l'ecran le disait 7 a 17 s sur un reseau lent, avec un bouton pour partir. */
+  if (!choix && restauration === "en_cours") {
+    return <View style={[s.page, { paddingTop: PAS * 6 }]}><SquelettesListe n={3} hauteur={88} /></View>;
+  }
+  if (!choix && restauration === "echec") {
+    return (
+      <View style={[s.page, { paddingTop: PAS * 6 }]}>
+        <Vide titre="Repère n'a pas pu retrouver votre commune." corps="La liste des communes n'a pas pu être chargée. Vérifiez votre connexion, puis réessayez."
+          action="Réessayer" onAction={relancer} />
+        <Bouton texte="Choisir une autre commune" onPress={() => router.replace("/")} discret />
+      </View>
+    );
+  }
   if (!choix) {
     return (
       <View style={[s.page, { paddingTop: PAS * 6 }]}>

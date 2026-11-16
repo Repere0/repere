@@ -316,7 +316,7 @@ export function Quiz({ categorieDe }: { categorieDe: (cle: string) => string }) 
             const encre = plein ? COULEURS_QUIZ.texte : couleurs.encre;
             return (
               <Pressable key={p.cle} onPress={() => repondre(i)} disabled={repondu} accessibilityRole="radio" testID={`quiz-carte-${etat}`}
-                accessibilityState={{ selected: estChoix, disabled: repondu }}
+                accessibilityState={{ selected: estChoix, disabled: repondu }} aria-checked={estChoix}
                 accessibilityLabel={`${p.texte}${etat === "juste" ? (estChoix ? ". Juste." : ". C'était le mot juste.") : etat === "faux" ? ". Faux." : ""}`}
                 style={({ pressed }) => ({ minHeight: CIBLE + 12, flexDirection: "row", alignItems: "center", gap: PAS * 3, paddingVertical: PAS * 2, paddingHorizontal: PAS * 4,
                   borderRadius: RAYON.bloc, backgroundColor: fond, borderWidth: 1, borderColor: plein ? fond : couleurs.trait,

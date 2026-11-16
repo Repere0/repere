@@ -41,7 +41,7 @@ export function BarreSegments({ segments, hauteur = 32, etiquette }: { segments:
   const total = segments.reduce((n, x) => n + x.valeur, 0);
   if (total <= 0) return null;
   return (
-    <View accessible accessibilityLabel={etiquette} style={{ height: hauteur, borderRadius: hauteur / 3, overflow: "hidden", backgroundColor: couleurs.voile }}>
+    <View accessible accessibilityRole="image" accessibilityLabel={etiquette} style={{ height: hauteur, borderRadius: hauteur / 3, overflow: "hidden", backgroundColor: couleurs.voile }}>
       <Animated.View style={{ flexDirection: "row", gap: 2, height: hauteur, width: largeur(v, 100) }} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
         {segments.filter(x => x.valeur > 0).map(x => {
           const large = x.valeur / total >= 0.14;
@@ -82,7 +82,7 @@ export function BarreBudget({ parts }: { parts: { sal: number; inv: number; aut:
 export function Compteur({ valeur, suffixe }: { valeur: number; suffixe: string }) {
   const n = useCompteur(valeur);
   return (
-    <View accessible accessibilityLabel={`${valeur.toLocaleString("fr-FR")} ${suffixe}`}>
+    <View accessible accessibilityRole="image" accessibilityLabel={`${valeur.toLocaleString("fr-FR")} ${suffixe}`}>
       <Text style={TYPO.stat}>{espacesFines(n.toLocaleString("fr-FR"))}<Text style={[TYPO.reponse, { color: couleurs.sourd }]}> €</Text></Text>
       <Text style={[TYPO.reponse, { color: couleurs.sourd }]}>{suffixe.replace(/^€\s*/, "")}</Text>
     </View>
@@ -110,7 +110,7 @@ export function BarrePart({ part, libelle, valeur, echelon = "ville", delai = 0,
 }) {
   const v = useApparition(delai);
   return (
-    <View accessible accessibilityLabel={`${libelle} : ${valeur}`} style={{ gap: 8 }}>
+    <View accessible accessibilityRole="image" accessibilityLabel={`${libelle} : ${valeur}`} style={{ gap: 8 }}>
       {sansLibelle ? null : <View style={s.ligneH}>
         <Text style={TYPO.note}>{libelle}</Text>
         <Text style={[TYPO.corps, { fontWeight: "700" }]}>{valeur}</Text>
@@ -141,7 +141,7 @@ export function RepartitionCent({ salaires, investissement }: { salaires: number
   lignes.sort((a, b) => b.valeur - a.valeur);
   const dit = lignes.map(p => `${p.libelle} ${p.valeur} €`).join(", ");
   return (
-    <View accessible accessibilityLabel={`Sur 100 € dépensés : ${dit}.`} style={{ gap: PAS * 3 }}>
+    <View accessible accessibilityRole="image" accessibilityLabel={`Sur 100 € dépensés : ${dit}.`} style={{ gap: PAS * 3 }}>
       {lignes.map(p => (
         <View key={p.libelle} style={s.ligneBarre}>
           <Text style={[TYPO.note, { flex: 1.4 }]}>{p.libelle}</Text>
@@ -164,7 +164,7 @@ export function Tendance({ pct, an1, an2 }: { pct: number | null; an1: string; a
   const texte = `${Math.abs(pct).toLocaleString("fr-FR", { maximumFractionDigits: 1 })} %`;
   const sens = pct > 0 ? "en hausse" : "en baisse";
   return (
-    <View accessible accessibilityLabel={`${sens.charAt(0).toUpperCase()}${sens.slice(1)} de ${texte} par habitant entre ${an1} et ${an2}. Calcul Repère.`}
+    <View accessible accessibilityRole="image" accessibilityLabel={`${sens.charAt(0).toUpperCase()}${sens.slice(1)} de ${texte} par habitant entre ${an1} et ${an2}. Calcul Repère.`}
       style={s.tendance}>
       <Text style={[TYPO.note, { color: couleurs.encre, fontWeight: "700" }]}>{`${pct > 0 ? "↑" : "↓"} ${texte}`}</Text>
       <Text style={TYPO.note}>{`par rapport à ${an1} · calcul Repère`}</Text>
@@ -182,7 +182,7 @@ export function VariationAnnuelle({ libelle, an1, an2, pct, sens, de, vers, diff
 }) {
   const icone = sens === "hausse" ? "arrow-up" : sens === "baisse" ? "arrow-down" : "remove";
   return (
-    <View accessible accessibilityLabel={`${libelle}, entre ${an1} et ${an2} : ${sens}, ${pct}. De ${de} à ${vers}, ${diffTexte}. Calcul Repère.`} style={s.variation}>
+    <View accessible accessibilityRole="image" accessibilityLabel={`${libelle}, entre ${an1} et ${an2} : ${sens}, ${pct}. De ${de} à ${vers}, ${diffTexte}. Calcul Repère.`} style={s.variation}>
       <View style={s.variationFleche}>
         <Ionicons name={icone} size={26} color={couleurs.encre} accessible={false} importantForAccessibility="no" />
       </View>
@@ -202,7 +202,7 @@ export function Mois({ mois, echelon = "ville" }: { mois: number; echelon?: Eche
   const cases = Array.from({ length: n }, (_, i) => Math.max(0, Math.min(1, mois - i)));
   const v = useApparition(120);
   return (
-    <View accessible accessibilityLabel={`Environ ${mois.toLocaleString("fr-FR", { maximumFractionDigits: 1 })} mois de recettes, sur une frise de ${n} mois.`}
+    <View accessible accessibilityRole="image" accessibilityLabel={`Environ ${mois.toLocaleString("fr-FR", { maximumFractionDigits: 1 })} mois de recettes, sur une frise de ${n} mois.`}
       style={s.mois}>
       {cases.map((r, i) => (
         <View key={i} style={s.moisCase}>
@@ -227,7 +227,7 @@ export function Repartition({ segments, total, position, qui, compact }: {
   const phrase = segments.map(x => `${x.libelle} : ${x.nombre}`).join(", ")
     + `, sur ${total} députés ayant pris part au vote.` + (qui && position ? ` ${qui} : ${segments.find(x => x.cle === position)?.libelle.toLowerCase() || "position non portée"}.` : "");
   return (
-    <View accessible accessibilityLabel={phrase} style={{ gap: PAS * 3 }}>
+    <View accessible accessibilityRole="image" accessibilityLabel={phrase} style={{ gap: PAS * 3 }}>
       {/* En 3 secondes : quelle couleur occupe la barre, donc quel camp l'a emporté ; le pourcentage est dedans. */}
       <BarreSegments hauteur={compact ? 28 : 32} etiquette={phrase}
         segments={segments.map(x => ({ cle: x.cle, valeur: x.nombre, couleur: COULEUR_VOTE[x.cle as keyof typeof COULEUR_VOTE], dedans: `${Math.round(x.part * 100)}\u00a0%` }))} />
@@ -251,7 +251,7 @@ export function Financement({ subvention, cout, partPct, subventionTexte, resteT
 }) {
   const v = useApparition(100);
   return (
-    <View accessible accessibilityLabel={`L'État finance ${subventionTexte}, soit ${partPct} % du coût annoncé. Reste ${resteTexte}, dont la source ne dit pas qui le paie.`}
+    <View accessible accessibilityRole="image" accessibilityLabel={`L'État finance ${subventionTexte}, soit ${partPct} % du coût annoncé. Reste ${resteTexte}, dont la source ne dit pas qui le paie.`}
       style={{ gap: PAS * 2 }}>
       <View style={[s.piste, { height: 18 }]}>
         <Animated.View style={[s.rempli, { width: largeur(v, (subvention / cout) * 100), backgroundColor: couleurs.ville }]} />
@@ -271,7 +271,7 @@ export function DeuxAnnees({ libelle, an1, an2, m1, m2, texte1, texte2, diffText
   const max = Math.max(m1, m2) || 1;
   const v = useApparition(60);
   return (
-    <View accessible accessibilityLabel={`${libelle} : ${an1}, ${texte1} ; ${an2}, ${texte2}. ${diffTexte}.`} style={{ gap: 8 }}>
+    <View accessible accessibilityRole="image" accessibilityLabel={`${libelle} : ${an1}, ${texte1} ; ${an2}, ${texte2}. ${diffTexte}.`} style={{ gap: 8 }}>
       <View style={s.ligneH}>
         <Text style={TYPO.note}>{libelle}</Text>
         <Text style={[TYPO.corps, { fontWeight: "600" }]}>{diffTexte}</Text>
@@ -338,7 +338,7 @@ export function elementsDecide(decide: string): string[] {
 function GrilleDecide({ decide }: { decide: string }) {
   const items = elementsDecide(decide);
   return (
-    <View accessible accessibilityLabel={`Décide : ${decide}.`} style={{ gap: PAS * 2, marginTop: PAS }}>
+    <View accessible accessibilityRole="image" accessibilityLabel={`Décide : ${decide}.`} style={{ gap: PAS * 2, marginTop: PAS }}>
       <Text style={TYPO.etiquette}>Décide</Text>
       <View style={{ flexDirection: "row", flexWrap: "wrap", rowGap: PAS * 2 }}>
         {items.map(x => {
