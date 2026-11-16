@@ -364,7 +364,7 @@ PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers node test_repere.mjs site_v18_20/index
   `ubuntu26.04-x64`, et `npx playwright install --with-deps chromium` (Playwright 1.56.0) y échoue (« does not
   support chromium on ubuntu26.04-x64 ») ; l'étape « Executer la chaine » s'arrête, rien n'est publié ni enregistré.
   La migration avait été annoncée et un épinglage `ubuntu-24.04` proposé dès le 16/10 (#150, brouillon jamais
-  fusionné). Toute image `-latest` change sans prévenir : épingler la version du runner.
+  fusionné ; épinglé par #224 le 16/11). Toute image `-latest` change sans prévenir : épingler la version du runner.
 - **Un invariant amendé doit être scellé dans la même PR** (relevé le 16/11/2026) : ADR 0009 et 0010 (décisions du
   porteur du 13/11) ont changé le bloc des invariants dans 71b654ec (#207) et 5e3ff2cb (#209) sans
   `node outils/derive_contexte.mjs --sceller` ; `outils/pipeline.sh` ne fait qu'`avertir` sur cette erreur, donc
