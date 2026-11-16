@@ -73,10 +73,10 @@ jobs:
 
     steps:
       - name: Recuperer le depot
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
 
       - name: Installer Python
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@v7
         with:
           python-version: "3.12"
 
@@ -147,7 +147,7 @@ jobs:
 
       - name: Garder les sorties d'essai (hors main)
         if: always() && env.HORS_MAIN == 'true'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: collectes-essai
           path: |
@@ -171,7 +171,7 @@ jobs:
         id: jeton
         if: env.COLLECTE_APP_ID != '' && env.HORS_MAIN != 'true'
         continue-on-error: true
-        uses: actions/create-github-app-token@v2
+        uses: actions/create-github-app-token@v3
         with:
           app-id: ${{ secrets.COLLECTE_APP_ID }}
           private-key: ${{ secrets.COLLECTE_APP_KEY }}

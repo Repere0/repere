@@ -15,11 +15,11 @@ jobs:
     timeout-minutes: 10
     steps:
       - name: Recuperer le depot
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
         with:
           persist-credentials: false
 
       - name: Revue des dependances
-        uses: actions/dependency-review-action@v4
+        uses: actions/dependency-review-action@v5
         with:
           fail-on-severity: high
