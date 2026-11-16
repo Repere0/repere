@@ -1,0 +1,3408 @@
+{
+ "accueil": {
+  "clair": {
+   "petit": [],
+   "contraste": [],
+   "cible": [],
+   "sansNom": [],
+   "tailles": {
+    "12": 4,
+    "13": 12,
+    "14": 29,
+    "15": 21,
+    "16": 2,
+    "17": 10,
+    "18": 4,
+    "19": 1,
+    "20": 3,
+    "22": 19,
+    "28": 2,
+    "34": 2,
+    "60": 1
+   },
+   "lhFaible": [],
+   "pave": [],
+   "horsGrille": 40,
+   "espacesTotal": 224,
+   "valeursHors": {
+    "2": 9,
+    "5": 16,
+    "6": 15
+   },
+   "proches": [
+    "3px « Où va cet argent ? » / «   Le calendrier »"
+   ],
+   "imgSansAlt": [],
+   "bordureFaible": [],
+   "liensNonDistincts": [],
+   "premierEcran": {
+    "mots": 97,
+    "plusGrand": {
+     "px": 59.5,
+     "t": "2"
+    }
+   },
+   "debordement": 0,
+   "retour": null,
+   "nInteractifs": 33,
+   "nInteractifs1": 13,
+   "cls": 0.24424125798105425,
+   "axe": [
+    {
+     "id": "aria-prohibited-attr",
+     "impact": "serious",
+     "n": 1,
+     "ex": ".r-a1yn9n.r-f4gmv6[data-testid=\"reponse\"]:nth-child(3) > .css-g5y9jx:nth-child(2) > .css-g5y9jx:nth-child(2)"
+    },
+    {
+     "id": "empty-heading",
+     "impact": "minor",
+     "n": 1,
+     "ex": "h1[aria-level=\"1\"]"
+    },
+    {
+     "id": "region",
+     "impact": "moderate",
+     "n": 24,
+     "ex": ".r-1cmskyw.r-3pj75a.r-1ssbvtb > .css-g5y9jx:nth-child(1) > .css-g5y9jx:nth-child(1)"
+    }
+   ],
+   "focusVisible": {
+    "outline": "none 3px",
+    "border": "rgb(0, 0, 0)",
+    "ombre": "none"
+   },
+   "chargement": {
+    "texte": "",
+    "squelette": false
+   },
+   "url": "/chez-vous",
+   "erreursJs": []
+  },
+  "sombre": {
+   "petit": [],
+   "contraste": [],
+   "cible": [],
+   "sansNom": [],
+   "tailles": {
+    "12": 4,
+    "13": 12,
+    "14": 29,
+    "15": 21,
+    "16": 2,
+    "17": 10,
+    "18": 4,
+    "19": 1,
+    "20": 3,
+    "22": 19,
+    "28": 2,
+    "34": 2,
+    "60": 1
+   },
+   "lhFaible": [],
+   "pave": [],
+   "horsGrille": 40,
+   "espacesTotal": 224,
+   "valeursHors": {
+    "2": 9,
+    "5": 16,
+    "6": 15
+   },
+   "proches": [
+    "3px « Où va cet argent ? » / «   Le calendrier »"
+   ],
+   "imgSansAlt": [],
+   "bordureFaible": [],
+   "liensNonDistincts": [],
+   "premierEcran": {
+    "mots": 97,
+    "plusGrand": {
+     "px": 59.5,
+     "t": "2"
+    }
+   },
+   "debordement": 0,
+   "retour": null,
+   "nInteractifs": 33,
+   "nInteractifs1": 13,
+   "cls": 0.21107873105717828,
+   "focusVisible": {
+    "outline": "none 3px",
+    "border": "rgb(0, 0, 0)",
+    "ombre": "none"
+   },
+   "chargement": {
+    "texte": "",
+    "squelette": false
+   },
+   "url": "/chez-vous",
+   "erreursJs": []
+  }
+ },
+ "qui-decide": {
+  "clair": {
+   "petit": [],
+   "contraste": [],
+   "cible": [],
+   "sansNom": [],
+   "tailles": {
+    "12": 5,
+    "13": 8,
+    "14": 21,
+    "15": 12,
+    "16": 5,
+    "17": 9,
+    "18": 16,
+    "20": 1,
+    "22": 11,
+    "34": 1
+   },
+   "lhFaible": [],
+   "pave": [
+    "6 lignes « Le Répertoire national des élus y liste 21 élus de »"
+   ],
+   "horsGrille": 24,
+   "espacesTotal": 166,
+   "valeursHors": {
+    "3": 5,
+    "5": 16,
+    "6": 3
+   },
+   "proches": [],
+   "imgSansAlt": [],
+   "bordureFaible": [],
+   "liensNonDistincts": [],
+   "premierEcran": {
+    "mots": 158,
+    "plusGrand": {
+     "px": 34,
+     "t": "Qui décide pour Melun ?"
+    }
+   },
+   "debordement": 0,
+   "retour": null,
+   "nInteractifs": 25,
+   "nInteractifs1": 15,
+   "cls": 0,
+   "axe": [
+    {
+     "id": "region",
+     "impact": "moderate",
+     "n": 21,
+     "ex": ".r-12vffkv.r-1777fci.css-g5y9jx"
+    }
+   ],
+   "focusVisible": null,
+   "chargement": {
+    "texte": "",
+    "squelette": false
+   },
+   "url": "/qui-decide",
+   "erreursJs": []
+  },
+  "sombre": {
+   "petit": [],
+   "contraste": [],
+   "cible": [],
+   "sansNom": [],
+   "tailles": {
+    "12": 5,
+    "13": 8,
+    "14": 21,
+    "15": 12,
+    "16": 5,
+    "17": 9,
+    "18": 16,
+    "20": 1,
+    "22": 11,
+    "34": 1
+   },
+   "lhFaible": [],
+   "pave": [
+    "6 lignes « Le Répertoire national des élus y liste 21 élus de »"
+   ],
+   "horsGrille": 24,
+   "espacesTotal": 166,
+   "valeursHors": {
+    "3": 5,
+    "5": 16,
+    "6": 3
+   },
+   "proches": [],
+   "imgSansAlt": [],
+   "bordureFaible": [],
+   "liensNonDistincts": [],
+   "premierEcran": {
+    "mots": 158,
+    "plusGrand": {
+     "px": 34,
+     "t": "Qui décide pour Melun ?"
+    }
+   },
+   "debordement": 0,
+   "retour": null,
+   "nInteractifs": 25,
+   "nInteractifs1": 15,
+   "cls": 0,
+   "focusVisible": null,
+   "chargement": {
+    "texte": "",
+    "squelette": false
+   },
+   "url": "/qui-decide",
+   "erreursJs": []
+  }
+ },
+ "chez-vous": {
+  "clair": {
+   "petit": [],
+   "contraste": [],
+   "cible": [],
+   "sansNom": [],
+   "tailles": {
+    "12": 4,
+    "13": 12,
+    "14": 29,
+    "15": 21,
+    "16": 2,
+    "17": 10,
+    "18": 4,
+    "19": 1,
+    "20": 3,
+    "22": 19,
+    "28": 2,
+    "34": 2,
+    "60": 1
+   },
+   "lhFaible": [],
+   "pave": [],
+   "horsGrille": 40,
+   "espacesTotal": 224,
+   "valeursHors": {
+    "2": 9,
+    "5": 16,
+    "6": 15
+   },
+   "proches": [
+    "3px « Où va cet argent ? » / «   Le calendrier »"
+   ],
+   "imgSansAlt": [],
+   "bordureFaible": [],
+   "liensNonDistincts": [],
+   "premierEcran": {
+    "mots": 97,
+    "plusGrand": {
+     "px": 59.5,
+     "t": "2"
+    }
+   },
+   "debordement": 0,
+   "retour": null,
+   "nInteractifs": 33,
+   "nInteractifs1": 13,
+   "cls": 0.018502963324909624,
+   "axe": [
+    {
+     "id": "aria-prohibited-attr",
+     "impact": "serious",
+     "n": 1,
+     "ex": ".r-a1yn9n.r-f4gmv6[data-testid=\"reponse\"]:nth-child(3) > .css-g5y9jx:nth-child(2) > .css-g5y9jx:nth-child(2)"
+    },
+    {
+     "id": "empty-heading",
+     "impact": "minor",
+     "n": 1,
+     "ex": ".r-1i10wst"
+    },
+    {
+     "id": "region",
+     "impact": "moderate",
+     "n": 24,
+     "ex": ".r-1cmskyw > .css-g5y9jx:nth-child(1) > .css-g5y9jx:nth-child(1)"
+    }
+   ],
+   "focusVisible": null,
+   "chargement": {
+    "texte": "",
+    "squelette": false
+   },
+   "url": "/chez-vous",
+   "erreursJs": []
+  },
+  "sombre": {
+   "petit": [],
+   "contraste": [],
+   "cible": [],
+   "sansNom": [],
+   "tailles": {
+    "12": 4,
+    "13": 12,
+    "14": 29,
+    "15": 21,
+    "16": 2,
+    "17": 10,
+    "18": 4,
+    "19": 1,
+    "20": 3,
+    "22": 19,
+    "28": 2,
+    "34": 2,
+    "60": 1
+   },
+   "lhFaible": [],
+   "pave": [],
+   "horsGrille": 40,
+   "espacesTotal": 224,
+   "valeursHors": {
+    "2": 9,
+    "5": 16,
+    "6": 15
+   },
+   "proches": [
+    "3px « Où va cet argent ? » / «   Le calendrier »"
+   ],
+   "imgSansAlt": [],
+   "bordureFaible": [],
+   "liensNonDistincts": [],
+   "premierEcran": {
+    "mots": 97,
+    "plusGrand": {
+     "px": 59.5,
+     "t": "2"
+    }
+   },
+   "debordement": 0,
+   "retour": null,
+   "nInteractifs": 33,
+   "nInteractifs1": 13,
+   "cls": 0.018560473638394644,
+   "focusVisible": null,
+   "chargement": {
+    "texte": "",
+    "squelette": false
+   },
+   "url": "/chez-vous",
+   "erreursJs": []
+  }
+ },
+ "finances": {
+  "clair": {
+   "petit": [],
+   "contraste": [],
+   "cible": [],
+   "sansNom": [],
+   "tailles": {
+    "12": 4,
+    "13": 7,
+    "14": 59,
+    "15": 7,
+    "17": 13,
+    "18": 4,
+    "22": 8,
+    "24": 1,
+    "28": 2,
+    "34": 1,
+    "60": 2
+   },
+   "lhFaible": [],
+   "pave": [],
+   "horsGrille": 31,
+   "espacesTotal": 172,
+   "valeursHors": {
+    "2": 6,
+    "5": 16,
+    "6": 9
+   },
+   "proches": [
+    "4px « 100 € citoyen » / « Évolution »",
+    "4px « Évolution » / « Recettes »"
+   ],
+   "imgSansAlt": [],
+   "bordureFaible": [],
+   "liensNonDistincts": [],
+   "premierEcran": {
+    "mots": 87,
+    "plusGrand": {
+     "px": 59.5,
+     "t": "2"
+    }
+   },
+   "debordement": 0,
+   "retour": null,
+   "nInteractifs": 26,
+   "nInteractifs1": 11,
+   "cls": 0.03324506852751424,
+   "axe": [
+    {
+     "id": "region",
+     "impact": "moderate",
+     "n": 30,
+     "ex": ".r-12vffkv.r-1777fci.css-g5y9jx"
+    }
+   ],
+   "focusVisible": null,
+   "chargement": {
+    "texte": "",
+    "squelette": false
+   },
+   "url": "/finances",
+   "erreursJs": []
+  },
+  "sombre": {
+   "petit": [],
+   "contraste": [],
+   "cible": [],
+   "sansNom": [],
+   "tailles": {
+    "12": 4,
+    "13": 7,
+    "14": 59,
+    "15": 7,
+    "17": 13,
+    "18": 4,
+    "22": 8,
+    "24": 1,
+    "28": 2,
+    "34": 1,
+    "60": 2
+   },
+   "lhFaible": [],
+   "pave": [],
+   "horsGrille": 31,
+   "espacesTotal": 172,
+   "valeursHors": {
+    "2": 6,
+    "5": 16,
+    "6": 9
+   },
+   "proches": [
+    "4px « 100 € citoyen » / « Évolution »",
+    "4px « Évolution » / « Recettes »"
+   ],
+   "imgSansAlt": [],
+   "bordureFaible": [],
+   "liensNonDistincts": [],
+   "premierEcran": {
+    "mots": 87,
+    "plusGrand": {
+     "px": 59.5,
+     "t": "2"
+    }
+   },
+   "debordement": 0,
+   "retour": null,
+   "nInteractifs": 26,
+   "nInteractifs1": 11,
+   "cls": 0.01709477352843861,
+   "focusVisible": null,
+   "chargement": {
+    "texte": "",
+    "squelette": false
+   },
+   "url": "/finances",
+   "erreursJs": []
+  }
+ },
+ "argent": {
+  "clair": {
+   "petit": [],
+   "contraste": [],
+   "cible": [],
+   "sansNom": [],
+   "tailles": {
+    "13": 7,
+    "14": 59,
+    "15": 7,
+    "17": 13,
+    "18": 3,
+    "24": 1,
+    "28": 2,
+    "34": 1,
+    "60": 2
+   },
+   "lhFaible": [],
+   "pave": [],
+   "horsGrille": 14,
+   "espacesTotal": 155,
+   "valeursHors": {
+    "2": 6,
+    "6": 8
+   },
+   "proches": [
+    "4px « 100 € citoyen » / « Évolution »",
+    "4px « Évolution » / « Recettes »"
+   ],
+   "imgSansAlt": [],
+   "bordureFaible": [],
+   "liensNonDistincts": [],
+   "premierEcran": {
+    "mots": 69,
+    "plusGrand": {
+     "px": 59.5,
+     "t": "2"
+    }
+   },
+   "debordement": 0,
+   "retour": null,
+   "nInteractifs": 22,
+   "nInteractifs1": 7,
+   "cls": 0.02182478601282368,
+   "axe": [
+    {
+     "id": "empty-heading",
+     "impact": "minor",
+     "n": 1,
+     "ex": ".r-1i10wst"
+    },
+    {
+     "id": "region",
+     "impact": "moderate",
+     "n": 28,
+     "ex": ".r-1kihuf0 > .css-g5y9jx:nth-child(1) > .css-g5y9jx:nth-child(1)"
+    }
+   ],
+   "focusVisible": null,
+   "chargement": {
+    "texte": "",
+    "squelette": false
+   },
+   "url": "/argent",
+   "erreursJs": []
+  },
+  "sombre": {
+   "petit": [],
+   "contraste": [],
+   "cible": [],
+   "sansNom": [],
+   "tailles": {
+    "13": 7,
+    "14": 59,
+    "15": 7,
+    "17": 13,
+    "18": 3,
+    "24": 1,
+    "28": 2,
+    "34": 1,
+    "60": 2
+   },
+   "lhFaible": [],
+   "pave": [],
+   "horsGrille": 14,
+   "espacesTotal": 155,
+   "valeursHors": {
+    "2": 6,
+    "6": 8
+   },
+   "proches": [
+    "4px « 100 € citoyen » / « Évolution »",
+    "4px « Évolution » / « Recettes »"
+   ],
+   "imgSansAlt": [],
+   "bordureFaible": [],
+   "liensNonDistincts": [],
+   "premierEcran": {
+    "mots": 69,
+    "plusGrand": {
+     "px": 59.5,
+     "t": "2"
+    }
+   },
+   "debordement": 0,
+   "retour": null,
+   "nInteractifs": 22,
+   "nInteractifs1": 7,
+   "cls": 0.024963126690357593,
+   "focusVisible": null,
+   "chargement": {
+    "texte": "",
+    "squelette": false
+   },
+   "url": "/argent",
+   "erreursJs": []
+  }
+ },
+ "a-venir": {
+  "clair": {
+   "petit": [],
+   "contraste": [],
+   "cible": [],
+   "sansNom": [],
+   "tailles": {
+    "12": 4,
+    "14": 8,
+    "17": 3,
+    "18": 2,
+    "22": 8,
+    "24": 1,
+    "26": 1,
+    "28": 1
+   },
+   "lhFaible": [
+    "1.33 (18px) « Le calendrier n'est arrivé jusqu'à cet appareil po »",
+    "1.20 (14px) « 6 »",
+    "1.20 (14px) « Voir les questions posées et les réponses publiées »",
+    "1.20 (14px) « Ce que veulent dire les mots du Parlement et des c »"
+   ],
+   "pave": [],
+   "horsGrille": 17,
+   "espacesTotal": 57,
+   "valeursHors": {
+    "5": 16,
+    "6": 1
+   },
+   "proches": [],
+   "imgSansAlt": [],
+   "bordureFaible": [],
+   "liensNonDistincts": [],
+   "premierEcran": {
+    "mots": 94,
+    "plusGrand": {
+     "px": 28,
+     "t": "Calendrier"
+    }
+   },
+   "debordement": 0,
+   "retour": null,
+   "nInteractifs": 11,
+   "nInteractifs1": 11,
+   "cls": 0,
+   "axe": [
+    {
+     "id": "aria-allowed-role",
+     "impact": "minor",
+     "n": 1,
+     "ex": "section"
+    },
+    {
+     "id": "region",
+     "impact": "moderate",
+     "n": 3,
+     "ex": ".r-12vffkv.r-1777fci.css-g5y9jx"
+    }
+   ],
+   "focusVisible": null,
+   "chargement": {
+    "texte": "",
+    "squelette": false
+   },
+   "url": "/a-venir",
+   "erreursJs": []
+  },
+  "sombre": {
+   "petit": [],
+   "contraste": [],
+   "cible": [],
+   "sansNom": [],
+   "tailles": {
+    "12": 4,
+    "14": 8,
+    "17": 3,
+    "18": 2,
+    "22": 8,
+    "24": 1,
+    "26": 1,
+    "28": 1
+   },
+   "lhFaible": [
+    "1.33 (18px) « Le calendrier n'est arrivé jusqu'à cet appareil po »",
+    "1.20 (14px) « 6 »",
+    "1.20 (14px) « Voir les questions posées et les réponses publiées »",
+    "1.20 (14px) « Ce que veulent dire les mots du Parlement et des c »"
+   ],
+   "pave": [],
+   "horsGrille": 17,
+   "espacesTotal": 57,
+   "valeursHors": {
+    "5": 16,
+    "6": 1
+   },
+   "proches": [],
+   "imgSansAlt": [],
+   "bordureFaible": [],
+   "liensNonDistincts": [],
+   "premierEcran": {
+    "mots": 94,
+    "plusGrand": {
+     "px": 28,
+     "t": "Calendrier"
+    }
+   },
+   "debordement": 0,
+   "retour": null,
+   "nInteractifs": 11,
+   "nInteractifs1": 11,
+   "cls": 0,
+   "focusVisible": null,
+   "chargement": {
+    "texte": "",
+    "squelette": false
+   },
+   "url": "/a-venir",
+   "erreursJs": []
+  }
+ },
+ "elus": {
+  "clair": {
+   "petit": [],
+   "contraste": [],
+   "cible": [],
+   "sansNom": [],
+   "tailles": {
+    "13": 1,
+    "14": 48,
+    "15": 37,
+    "17": 38,
+    "18": 40,
+    "34": 1
+   },
+   "lhFaible": [
+    "1.20 (18px) «  »",
+    "1.20 (18px) «  »",
+    "1.20 (18px) «  »"
+   ],
+   "pave": [],
+   "horsGrille": 3,
+   "espacesTotal": 338,
+   "valeursHors": {
+    "2": 3
+   },
+   "proches": [],
+   "imgSansAlt": [],
+   "bordureFaible": [],
+   "liensNonDistincts": [],
+   "premierEcran": {
+    "mots": 57,
+    "plusGrand": {
+     "px": 34,
+     "t": "Élus"
+    }
+   },
+   "debordement": 0,
+   "retour": null,
+   "nInteractifs": 44,
+   "nInteractifs1": 12,
+   "cls": 0,
+   "axe": [
+    {
+     "id": "empty-heading",
+     "impact": "minor",
+     "n": 1,
+     "ex": ".r-dnmrzs"
+    },
+    {
+     "id": "region",
+     "impact": "moderate",
+     "n": 2,
+     "ex": ".r-eqz5dr > .css-g5y9jx > .css-g5y9jx:nth-child(1)"
+    }
+   ],
+   "focusVisible": {
+    "outline": "auto 1px",
+    "border": "rgb(0, 0, 0)",
+    "ombre": "none"
+   },
+   "chargement": {
+    "texte": "",
+    "squelette": false
+   },
+   "url": "/elus",
+   "erreursJs": []
+  },
+  "sombre": {
+   "petit": [],
+   "contraste": [],
+   "cible": [],
+   "sansNom": [],
+   "tailles": {
+    "13": 1,
+    "14": 48,
+    "15": 37,
+    "17": 38,
+    "18": 40,
+    "34": 1
+   },
+   "lhFaible": [
+    "1.20 (18px) «  »",
+    "1.20 (18px) «  »",
+    "1.20 (18px) «  »"
+   ],
+   "pave": [],
+   "horsGrille": 3,
+   "espacesTotal": 338,
+   "valeursHors": {
+    "2": 3
+   },
+   "proches": [],
+   "imgSansAlt": [],
+   "bordureFaible": [],
+   "liensNonDistincts": [],
+   "premierEcran": {
+    "mots": 57,
+    "plusGrand": {
+     "px": 34,
+     "t": "Élus"
+    }
+   },
+   "debordement": 0,
+   "retour": null,
+   "nInteractifs": 44,
+   "nInteractifs1": 12,
+   "cls": 0,
+   "focusVisible": {
+    "outline": "auto 1px",
+    "border": "rgb(0, 0, 0)",
+    "ombre": "none"
+   },
+   "chargement": {
+    "texte": "",
+    "squelette": false
+   },
+   "url": "/elus",
+   "erreursJs": []
+  }
+ },
+ "elu": {
+  "clair": {
+   "petit": [],
+   "contraste": [],
+   "cible": [],
+   "sansNom": [],
+   "tailles": {
+    "13": 8,
+    "14": 21,
+    "15": 13,
+    "17": 2,
+    "18": 3,
+    "33": 1,
+    "34": 1
+   },
+   "lhFaible": [],
+   "pave": [],
+   "horsGrille": 32,
+   "espacesTotal": 141,
+   "valeursHors": {
+    "2": 10,
+    "6": 22
+   },
+   "proches": [],
+   "imgSansAlt": [],
+   "bordureFaible": [],
+   "liensNonDistincts": [],
+   "premierEcran": {
+    "mots": 68,
+    "plusGrand": {
+     "px": 34,
+     "t": "Arnaud Saint-Martin"
+    }
+   },
+   "debordement": 0,
+   "retour": null,
+   "nInteractifs": 14,
+   "nInteractifs1": 5,
+   "cls": 0.004773704839987641,
+   "axe": [
+    {
+     "id": "aria-prohibited-attr",
+     "impact": "serious",
+     "n": 1,
+     "ex": ".css-g5y9jx:nth-child(4) > .css-g5y9jx:nth-child(2)"
+    },
+    {
+     "id": "empty-heading",
+     "impact": "minor",
+     "n": 1,
+     "ex": ".r-1i10wst"
+    },
+    {
+     "id": "region",
+     "impact": "moderate",
+     "n": 12,
+     "ex": ".r-1kihuf0 > .css-g5y9jx:nth-child(1) > .css-g5y9jx > .css-g5y9jx:nth-child(1)"
+    }
+   ],
+   "focusVisible": null,
+   "chargement": {
+    "texte": "",
+    "squelette": false
+   },
+   "url": "/elu?nom=Arnaud%20Saint-Martin&role=D%C3%A9put%C3%A9&echelon=france&niveau=Assembl%C3%A9e%20nationale&institution=Assembl%C3%A9e%20nationale&lieu=",
+   "erreursJs": []
+  },
+  "sombre": {
+   "petit": [],
+   "contraste": [],
+   "cible": [],
+   "sansNom": [],
+   "tailles": {
+    "13": 8,
+    "14": 21,
+    "15": 13,
+    "17": 2,
+    "18": 3,
+    "33": 1,
+    "34": 1
+   },
+   "lhFaible": [],
+   "pave": [],
+   "horsGrille": 32,
+   "espacesTotal": 141,
+   "valeursHors": {
+    "2": 10,
+    "6": 22
+   },
+   "proches": [],
+   "imgSansAlt": [],
+   "bordureFaible": [],
+   "liensNonDistincts": [],
+   "premierEcran": {
+    "mots": 68,
+    "plusGrand": {
+     "px": 34,
+     "t": "Arnaud Saint-Martin"
+    }
+   },
+   "debordement": 0,
+   "retour": null,
+   "nInteractifs": 14,
+   "nInteractifs1": 5,
+   "cls": 0.003830540378272944,
+   "focusVisible": null,
+   "chargement": {
+    "texte": "",
+    "squelette": false
+   },
+   "url": "/elu?nom=Arnaud%20Saint-Martin&role=D%C3%A9put%C3%A9&echelon=france&niveau=Assembl%C3%A9e%20nationale&institution=Assembl%C3%A9e%20nationale&lieu=",
+   "erreursJs": []
+  }
+ },
+ "annuaire-fiche": {
+  "clair": {
+   "petit": [],
+   "contraste": [],
+   "cible": [],
+   "sansNom": [],
+   "tailles": {
+    "13": 2,
+    "14": 4,
+    "15": 1,
+    "17": 1,
+    "28": 1,
+    "33": 1
+   },
+   "lhFaible": [],
+   "pave": [],
+   "horsGrille": 0,
+   "espacesTotal": 29,
+   "valeursHors": {},
+   "proches": [],
+   "imgSansAlt": [],
+   "bordureFaible": [],
+   "liensNonDistincts": [],
+   "premierEcran": {
+    "mots": 48,
+    "plusGrand": {
+     "px": 33,
+     "t": "AD"
+    }
+   },
+   "debordement": 0,
+   "retour": null,
+   "nInteractifs": 1,
+   "nInteractifs1": 1,
+   "cls": 0,
+   "axe": [
+    {
+     "id": "empty-heading",
+     "impact": "minor",
+     "n": 1,
+     "ex": ".r-dnmrzs"
+    },
+    {
+     "id": "region",
+     "impact": "moderate",
+     "n": 1,
+     "ex": ".r-13awgt0.css-g5y9jx > .r-1p0dtai.r-1d2f490.r-u8s1d > .r-13awgt0.css-g5y9jx"
+    }
+   ],
+   "focusVisible": null,
+   "chargement": {
+    "texte": "",
+    "squelette": false
+   },
+   "url": "/annuaire-fiche?nom=Adrien%20Delacroix&fonction=Conseiller%20r%C3%A9gional&lieu=R%C3%A9gion%20%C3%8Ele-de-France",
+   "erreursJs": []
+  },
+  "sombre": {
+   "petit": [],
+   "contraste": [],
+   "cible": [],
+   "sansNom": [],
+   "tailles": {
+    "13": 2,
+    "14": 4,
+    "15": 1,
+    "17": 1,
+    "28": 1,
+    "33": 1
+   },
+   "lhFaible": [],
+   "pave": [],
+   "horsGrille": 0,
+   "espacesTotal": 29,
+   "valeursHors": {},
+   "proches": [],
+   "imgSansAlt": [],
+   "bordureFaible": [],
+   "liensNonDistincts": [],
+   "premierEcran": {
+    "mots": 48,
+    "plusGrand": {
+     "px": 33,
+     "t": "AD"
+    }
+   },
+   "debordement": 0,
+   "retour": null,
+   "nInteractifs": 1,
+   "nInteractifs1": 1,
+   "cls": 0,
+   "focusVisible": null,
+   "chargement": {
+    "texte": "",
+    "squelette": false
+   },
+   "url": "/annuaire-fiche?nom=Adrien%20Delacroix&fonction=Conseiller%20r%C3%A9gional&lieu=R%C3%A9gion%20%C3%8Ele-de-France",
+   "erreursJs": []
+  }
+ },
+ "groupe": {
+  "clair": {
+   "petit": [],
+   "contraste": [],
+   "cible": [],
+   "sansNom": [],
+   "tailles": {
+    "13": 1,
+    "14": 1,
+    "17": 2,
+    "18": 1,
+    "26": 1,
+    "34": 1
+   },
+   "lhFaible": [
+    "1.33 (18px) « La liste des députés par groupe n'est pas encore s »"
+   ],
+   "pave": [],
+   "horsGrille": 0,
+   "espacesTotal": 24,
+   "valeursHors": {},
+   "proches": [],
+   "imgSansAlt": [],
+   "bordureFaible": [],
+   "liensNonDistincts": [],
+   "premierEcran": {
+    "mots": 39,
+    "plusGrand": {
+     "px": 34,
+     "t": "Groupe non publié"
+    }
+   },
+   "debordement": 0,
+   "retour": null,
+   "nInteractifs": 2,
+   "nInteractifs1": 2,
+   "cls": 0,
+   "axe": [
+    {
+     "id": "aria-allowed-role",
+     "impact": "minor",
+     "n": 1,
+     "ex": "section"
+    },
+    {
+     "id": "empty-heading",
+     "impact": "minor",
+     "n": 1,
+     "ex": ".r-dnmrzs"
+    },
+    {
+     "id": "region",
+     "impact": "moderate",
+     "n": 1,
+     "ex": ".r-1kihuf0 > .css-g5y9jx:nth-child(1) > .css-g5y9jx:nth-child(1)"
+    }
+   ],
+   "focusVisible": null,
+   "chargement": {
+    "texte": "",
+    "squelette": false
+   },
+   "url": "/groupe",
+   "erreursJs": []
+  },
+  "sombre": {
+   "petit": [],
+   "contraste": [],
+   "cible": [],
+   "sansNom": [],
+   "tailles": {
+    "13": 1,
+    "14": 1,
+    "17": 2,
+    "18": 1,
+    "26": 1,
+    "34": 1
+   },
+   "lhFaible": [
+    "1.33 (18px) « La liste des députés par groupe n'est pas encore s »"
+   ],
+   "pave": [],
+   "horsGrille": 0,
+   "espacesTotal": 24,
+   "valeursHors": {},
+   "proches": [],
+   "imgSansAlt": [],
+   "bordureFaible": [],
+   "liensNonDistincts": [],
+   "premierEcran": {
+    "mots": 39,
+    "plusGrand": {
+     "px": 34,
+     "t": "Groupe non publié"
+    }
+   },
+   "debordement": 0,
+   "retour": null,
+   "nInteractifs": 2,
+   "nInteractifs1": 2,
+   "cls": 0,
+   "focusVisible": null,
+   "chargement": {
+    "texte": "",
+    "squelette": false
+   },
+   "url": "/groupe",
+   "erreursJs": []
+  }
+ },
+ "scrutins": {
+  "clair": {
+   "petit": [],
+   "contraste": [],
+   "cible": [],
+   "sansNom": [],
+   "tailles": {
+    "12": 1,
+    "14": 6,
+    "15": 1,
+    "17": 2,
+    "18": 1,
+    "24": 1,
+    "26": 1,
+    "28": 1
+   },
+   "lhFaible": [
+    "1.33 (18px) « Les scrutins ne sont pas encore sur cet appareil. »",
+    "1.20 (15px) « Voir les scrutins sur le site de l'Assemblée »"
+   ],
+   "pave": [],
+   "horsGrille": 4,
+   "espacesTotal": 46,
+   "valeursHors": {
+    "3": 4
+   },
+   "proches": [
+    "4px « Assemblée nationale » / « Sénat »"
+   ],
+   "imgSansAlt": [],
+   "bordureFaible": [],
+   "liensNonDistincts": [],
+   "premierEcran": {
+    "mots": 62,
+    "plusGrand": {
+     "px": 28,
+     "t": "Les votes de l'Assemblée"
+    }
+   },
+   "debordement": 0,
+   "retour": null,
+   "nInteractifs": 8,
+   "nInteractifs1": 8,
+   "cls": 0,
+   "axe": [
+    {
+     "id": "aria-allowed-role",
+     "impact": "minor",
+     "n": 1,
+     "ex": "section"
+    },
+    {
+     "id": "empty-heading",
+     "impact": "minor",
+     "n": 1,
+     "ex": "h1"
+    },
+    {
+     "id": "region",
+     "impact": "moderate",
+     "n": 4,
+     "ex": "div[data-testid=\"date-publication\"]"
+    }
+   ],
+   "focusVisible": null,
+   "chargement": {
+    "texte": "",
+    "squelette": false
+   },
+   "url": "/scrutins",
+   "erreursJs": []
+  },
+  "sombre": {
+   "petit": [],
+   "contraste": [],
+   "cible": [],
+   "sansNom": [],
+   "tailles": {
+    "12": 1,
+    "14": 6,
+    "15": 1,
+    "17": 2,
+    "18": 1,
+    "24": 1,
+    "26": 1,
+    "28": 1
+   },
+   "lhFaible": [
+    "1.33 (18px) « Les scrutins ne sont pas encore sur cet appareil. »",
+    "1.20 (15px) « Voir les scrutins sur le site de l'Assemblée »"
+   ],
+   "pave": [],
+   "horsGrille": 4,
+   "espacesTotal": 46,
+   "valeursHors": {
+    "3": 4
+   },
+   "proches": [
+    "4px « Assemblée nationale » / « Sénat »"
+   ],
+   "imgSansAlt": [],
+   "bordureFaible": [],
+   "liensNonDistincts": [],
+   "premierEcran": {
+    "mots": 62,
+    "plusGrand": {
+     "px": 28,
+     "t": "Les votes de l'Assemblée"
+    }
+   },
+   "debordement": 0,
+   "retour": null,
+   "nInteractifs": 8,
+   "nInteractifs1": 8,
+   "cls": 0,
+   "focusVisible": null,
+   "chargement": {
+    "texte": "",
+    "squelette": false
+   },
+   "url": "/scrutins",
+   "erreursJs": []
+  }
+ },
+ "qag": {
+  "clair": {
+   "petit": [],
+   "contraste": [],
+   "cible": [],
+   "sansNom": [],
+   "tailles": {
+    "12": 1,
+    "14": 6,
+    "15": 1,
+    "17": 2,
+    "18": 1,
+    "24": 1,
+    "26": 1,
+    "28": 1
+   },
+   "lhFaible": [
+    "1.33 (18px) « Les questions au Gouvernement ne sont pas encore s »",
+    "1.20 (15px) « Voir la source des questions (Assemblée nationale) »"
+   ],
+   "pave": [],
+   "horsGrille": 4,
+   "espacesTotal": 46,
+   "valeursHors": {
+    "3": 4
+   },
+   "proches": [
+    "4px « Assemblée nationale » / « Sénat »"
+   ],
+   "imgSansAlt": [],
+   "bordureFaible": [],
+   "liensNonDistincts": [],
+   "premierEcran": {
+    "mots": 58,
+    "plusGrand": {
+     "px": 28,
+     "t": "Les votes de l'Assemblée"
+    }
+   },
+   "debordement": 0,
+   "retour": null,
+   "nInteractifs": 8,
+   "nInteractifs1": 8,
+   "cls": 0,
+   "axe": [
+    {
+     "id": "aria-allowed-role",
+     "impact": "minor",
+     "n": 1,
+     "ex": "section"
+    },
+    {
+     "id": "empty-heading",
+     "impact": "minor",
+     "n": 1,
+     "ex": "h1"
+    },
+    {
+     "id": "region",
+     "impact": "moderate",
+     "n": 4,
+     "ex": "div[data-testid=\"date-publication\"]"
+    }
+   ],
+   "focusVisible": null,
+   "chargement": {
+    "texte": "",
+    "squelette": false
+   },
+   "url": "/scrutins?mode=qag",
+   "erreursJs": []
+  },
+  "sombre": {
+   "petit": [],
+   "contraste": [],
+   "cible": [],
+   "sansNom": [],
+   "tailles": {
+    "12": 1,
+    "14": 6,
+    "15": 1,
+    "17": 2,
+    "18": 1,
+    "24": 1,
+    "26": 1,
+    "28": 1
+   },
+   "lhFaible": [
+    "1.33 (18px) « Les questions au Gouvernement ne sont pas encore s »",
+    "1.20 (15px) « Voir la source des questions (Assemblée nationale) »"
+   ],
+   "pave": [],
+   "horsGrille": 4,
+   "espacesTotal": 46,
+   "valeursHors": {
+    "3": 4
+   },
+   "proches": [
+    "4px « Assemblée nationale » / « Sénat »"
+   ],
+   "imgSansAlt": [],
+   "bordureFaible": [],
+   "liensNonDistincts": [],
+   "premierEcran": {
+    "mots": 58,
+    "plusGrand": {
+     "px": 28,
+     "t": "Les votes de l'Assemblée"
+    }
+   },
+   "debordement": 0,
+   "retour": null,
+   "nInteractifs": 8,
+   "nInteractifs1": 8,
+   "cls": 0,
+   "focusVisible": null,
+   "chargement": {
+    "texte": "",
+    "squelette": false
+   },
+   "url": "/scrutins?mode=qag",
+   "erreursJs": []
+  }
+ },
+ "vote": {
+  "clair": {
+   "petit": [],
+   "contraste": [],
+   "cible": [],
+   "sansNom": [],
+   "tailles": {
+    "12": 1,
+    "13": 12,
+    "14": 50,
+    "15": 20,
+    "17": 3,
+    "18": 2,
+    "22": 4,
+    "24": 1,
+    "26": 1,
+    "28": 6,
+    "34": 1
+   },
+   "lhFaible": [
+    "1.20 (15px) « Le dossier complet : texte, rapports, étapes »",
+    "1.29 (14px) « Position non portée par le relevé »"
+   ],
+   "pave": [],
+   "horsGrille": 40,
+   "espacesTotal": 254,
+   "valeursHors": {
+    "2": 28,
+    "6": 12
+   },
+   "proches": [],
+   "imgSansAlt": [],
+   "bordureFaible": [],
+   "liensNonDistincts": [],
+   "premierEcran": {
+    "mots": 77,
+    "plusGrand": {
+     "px": 34,
+     "t": "Qu'a voté votre député ?"
+    }
+   },
+   "debordement": 0,
+   "retour": null,
+   "nInteractifs": 16,
+   "nInteractifs1": 4,
+   "cls": 0.0020135754864169545,
+   "axe": [
+    {
+     "id": "aria-allowed-role",
+     "impact": "minor",
+     "n": 1,
+     "ex": "section"
+    },
+    {
+     "id": "empty-heading",
+     "impact": "minor",
+     "n": 1,
+     "ex": ".r-1i10wst"
+    },
+    {
+     "id": "region",
+     "impact": "moderate",
+     "n": 20,
+     "ex": "div[data-testid=\"date-publication\"]"
+    }
+   ],
+   "focusVisible": null,
+   "chargement": {
+    "texte": "",
+    "squelette": false
+   },
+   "url": "/vote",
+   "erreursJs": []
+  },
+  "sombre": {
+   "petit": [],
+   "contraste": [],
+   "cible": [],
+   "sansNom": [],
+   "tailles": {
+    "12": 1,
+    "13": 12,
+    "14": 50,
+    "15": 20,
+    "17": 3,
+    "18": 2,
+    "22": 4,
+    "24": 1,
+    "26": 1,
+    "28": 6,
+    "34": 1
+   },
+   "lhFaible": [
+    "1.20 (15px) « Le dossier complet : texte, rapports, étapes »",
+    "1.29 (14px) « Position non portée par le relevé »"
+   ],
+   "pave": [],
+   "horsGrille": 40,
+   "espacesTotal": 254,
+   "valeursHors": {
+    "2": 28,
+    "6": 12
+   },
+   "proches": [],
+   "imgSansAlt": [],
+   "bordureFaible": [],
+   "liensNonDistincts": [],
+   "premierEcran": {
+    "mots": 77,
+    "plusGrand": {
+     "px": 34,
+     "t": "Qu'a voté votre député ?"
+    }
+   },
+   "debordement": 0,
+   "retour": null,
+   "nInteractifs": 16,
+   "nInteractifs1": 4,
+   "cls": 0.002046498944030446,
+   "focusVisible": null,
+   "chargement": {
+    "texte": "",
+    "squelette": false
+   },
+   "url": "/vote",
+   "erreursJs": []
+  }
+ },
+ "presidentielle-2027": {
+  "clair": {
+   "petit": [],
+   "contraste": [],
+   "cible": [],
+   "sansNom": [],
+   "tailles": {
+    "12": 1,
+    "13": 1,
+    "14": 13,
+    "15": 1,
+    "17": 9,
+    "22": 1,
+    "34": 1,
+    "60": 1
+   },
+   "lhFaible": [],
+   "pave": [],
+   "horsGrille": 16,
+   "espacesTotal": 85,
+   "valeursHors": {
+    "2": 12,
+    "6": 4
+   },
+   "proches": [
+    "4px « Étapes » / « Règles »",
+    "4px « Règles » / « Candidats »",
+    "4px « Candidats » / « Voter »"
+   ],
+   "imgSansAlt": [],
+   "bordureFaible": [],
+   "liensNonDistincts": [],
+   "premierEcran": {
+    "mots": 76,
+    "plusGrand": {
+     "px": 59.5,
+     "t": "153"
+    }
+   },
+   "debordement": 0,
+   "retour": null,
+   "nInteractifs": 7,
+   "nInteractifs1": 6,
+   "cls": 0,
+   "axe": [
+    {
+     "id": "empty-heading",
+     "impact": "minor",
+     "n": 1,
+     "ex": ".r-1udh08x"
+    },
+    {
+     "id": "region",
+     "impact": "moderate",
+     "n": 2,
+     "ex": "div[data-testid=\"date-publication\"]"
+    }
+   ],
+   "focusVisible": null,
+   "chargement": {
+    "texte": "",
+    "squelette": false
+   },
+   "url": "/presidentielle-2027",
+   "erreursJs": []
+  },
+  "sombre": {
+   "petit": [],
+   "contraste": [],
+   "cible": [],
+   "sansNom": [],
+   "tailles": {
+    "12": 1,
+    "13": 1,
+    "14": 13,
+    "15": 1,
+    "17": 9,
+    "22": 1,
+    "34": 1,
+    "60": 1
+   },
+   "lhFaible": [],
+   "pave": [],
+   "horsGrille": 16,
+   "espacesTotal": 85,
+   "valeursHors": {
+    "2": 12,
+    "6": 4
+   },
+   "proches": [
+    "4px « Étapes » / « Règles »",
+    "4px « Règles » / « Candidats »",
+    "4px « Candidats » / « Voter »"
+   ],
+   "imgSansAlt": [],
+   "bordureFaible": [],
+   "liensNonDistincts": [],
+   "premierEcran": {
+    "mots": 76,
+    "plusGrand": {
+     "px": 59.5,
+     "t": "153"
+    }
+   },
+   "debordement": 0,
+   "retour": null,
+   "nInteractifs": 7,
+   "nInteractifs1": 6,
+   "cls": 0,
+   "focusVisible": null,
+   "chargement": {
+    "texte": "",
+    "squelette": false
+   },
+   "url": "/presidentielle-2027",
+   "erreursJs": []
+  }
+ },
+ "pour-vous": {
+  "clair": {
+   "petit": [],
+   "contraste": [],
+   "cible": [],
+   "sansNom": [],
+   "tailles": {
+    "13": 2,
+    "14": 54,
+    "15": 15,
+    "17": 2,
+    "18": 1,
+    "34": 1
+   },
+   "lhFaible": [],
+   "pave": [],
+   "horsGrille": 0,
+   "espacesTotal": 170,
+   "valeursHors": {},
+   "proches": [],
+   "imgSansAlt": [],
+   "bordureFaible": [],
+   "liensNonDistincts": [],
+   "premierEcran": {
+    "mots": 82,
+    "plusGrand": {
+     "px": 34,
+     "t": "Pour vous"
+    }
+   },
+   "debordement": 0,
+   "retour": null,
+   "nInteractifs": 12,
+   "nInteractifs1": 9,
+   "cls": 0,
+   "axe": [
+    {
+     "id": "aria-required-attr",
+     "impact": "critical",
+     "n": 7,
+     "ex": "div[aria-label=\"Santé\"]"
+    },
+    {
+     "id": "empty-heading",
+     "impact": "minor",
+     "n": 1,
+     "ex": ".r-dnmrzs"
+    },
+    {
+     "id": "region",
+     "impact": "moderate",
+     "n": 16,
+     "ex": ".r-1kihuf0 > .css-g5y9jx:nth-child(1) > .css-g5y9jx:nth-child(1)"
+    }
+   ],
+   "focusVisible": null,
+   "chargement": {
+    "texte": "",
+    "squelette": false
+   },
+   "url": "/pour-vous",
+   "erreursJs": []
+  },
+  "sombre": {
+   "petit": [],
+   "contraste": [],
+   "cible": [],
+   "sansNom": [],
+   "tailles": {
+    "13": 2,
+    "14": 54,
+    "15": 15,
+    "17": 2,
+    "18": 1,
+    "34": 1
+   },
+   "lhFaible": [],
+   "pave": [],
+   "horsGrille": 0,
+   "espacesTotal": 170,
+   "valeursHors": {},
+   "proches": [],
+   "imgSansAlt": [],
+   "bordureFaible": [],
+   "liensNonDistincts": [],
+   "premierEcran": {
+    "mots": 82,
+    "plusGrand": {
+     "px": 34,
+     "t": "Pour vous"
+    }
+   },
+   "debordement": 0,
+   "retour": null,
+   "nInteractifs": 12,
+   "nInteractifs1": 9,
+   "cls": 0,
+   "focusVisible": null,
+   "chargement": {
+    "texte": "",
+    "squelette": false
+   },
+   "url": "/pour-vous",
+   "erreursJs": []
+  }
+ },
+ "sources": {
+  "clair": {
+   "petit": [],
+   "contraste": [],
+   "cible": [],
+   "sansNom": [],
+   "tailles": {
+    "12": 1,
+    "13": 8,
+    "14": 16,
+    "15": 21,
+    "17": 2,
+    "34": 1
+   },
+   "lhFaible": [],
+   "pave": [],
+   "horsGrille": 0,
+   "espacesTotal": 81,
+   "valeursHors": {},
+   "proches": [],
+   "imgSansAlt": [],
+   "bordureFaible": [],
+   "liensNonDistincts": [],
+   "premierEcran": {
+    "mots": 101,
+    "plusGrand": {
+     "px": 34,
+     "t": "D'où viennent ces informations ?"
+    }
+   },
+   "debordement": 0,
+   "retour": null,
+   "nInteractifs": 9,
+   "nInteractifs1": 2,
+   "cls": 0,
+   "axe": [
+    {
+     "id": "empty-heading",
+     "impact": "minor",
+     "n": 1,
+     "ex": ".r-dnmrzs"
+    },
+    {
+     "id": "region",
+     "impact": "moderate",
+     "n": 2,
+     "ex": "div[data-testid=\"date-publication\"]"
+    }
+   ],
+   "focusVisible": null,
+   "chargement": {
+    "texte": "",
+    "squelette": false
+   },
+   "url": "/sources",
+   "erreursJs": []
+  },
+  "sombre": {
+   "petit": [],
+   "contraste": [],
+   "cible": [],
+   "sansNom": [],
+   "tailles": {
+    "12": 1,
+    "13": 8,
+    "14": 16,
+    "15": 21,
+    "17": 2,
+    "34": 1
+   },
+   "lhFaible": [],
+   "pave": [],
+   "horsGrille": 0,
+   "espacesTotal": 81,
+   "valeursHors": {},
+   "proches": [],
+   "imgSansAlt": [],
+   "bordureFaible": [],
+   "liensNonDistincts": [],
+   "premierEcran": {
+    "mots": 101,
+    "plusGrand": {
+     "px": 34,
+     "t": "D'où viennent ces informations ?"
+    }
+   },
+   "debordement": 0,
+   "retour": null,
+   "nInteractifs": 9,
+   "nInteractifs1": 2,
+   "cls": 0,
+   "focusVisible": null,
+   "chargement": {
+    "texte": "",
+    "squelette": false
+   },
+   "url": "/sources",
+   "erreursJs": []
+  }
+ },
+ "confort-lecture": {
+  "clair": {
+   "petit": [],
+   "contraste": [],
+   "cible": [],
+   "sansNom": [],
+   "tailles": {
+    "13": 5,
+    "14": 15,
+    "15": 3,
+    "16": 1,
+    "17": 1
+   },
+   "lhFaible": [],
+   "pave": [],
+   "horsGrille": 0,
+   "espacesTotal": 81,
+   "valeursHors": {},
+   "proches": [],
+   "imgSansAlt": [],
+   "bordureFaible": [],
+   "liensNonDistincts": [],
+   "premierEcran": {
+    "mots": 87,
+    "plusGrand": {
+     "px": 17,
+     "t": "‹"
+    }
+   },
+   "debordement": 0,
+   "retour": null,
+   "nInteractifs": 14,
+   "nInteractifs1": 12,
+   "cls": 0,
+   "axe": [
+    {
+     "id": "aria-required-attr",
+     "impact": "critical",
+     "n": 13,
+     "ex": "div[aria-label=\"Texte de 16 points, choisi\"]"
+    },
+    {
+     "id": "empty-heading",
+     "impact": "minor",
+     "n": 1,
+     "ex": ".r-dnmrzs"
+    },
+    {
+     "id": "region",
+     "impact": "moderate",
+     "n": 1,
+     "ex": ".r-13awgt0.css-g5y9jx > .r-1p0dtai.r-1d2f490.r-u8s1d > .r-13awgt0.css-g5y9jx"
+    }
+   ],
+   "focusVisible": null,
+   "chargement": {
+    "texte": "",
+    "squelette": false
+   },
+   "url": "/confort-lecture",
+   "erreursJs": []
+  },
+  "sombre": {
+   "petit": [],
+   "contraste": [],
+   "cible": [],
+   "sansNom": [],
+   "tailles": {
+    "13": 5,
+    "14": 15,
+    "15": 3,
+    "16": 1,
+    "17": 1
+   },
+   "lhFaible": [],
+   "pave": [],
+   "horsGrille": 0,
+   "espacesTotal": 81,
+   "valeursHors": {},
+   "proches": [],
+   "imgSansAlt": [],
+   "bordureFaible": [],
+   "liensNonDistincts": [],
+   "premierEcran": {
+    "mots": 87,
+    "plusGrand": {
+     "px": 17,
+     "t": "‹"
+    }
+   },
+   "debordement": 0,
+   "retour": null,
+   "nInteractifs": 14,
+   "nInteractifs1": 12,
+   "cls": 0,
+   "focusVisible": null,
+   "chargement": {
+    "texte": "",
+    "squelette": false
+   },
+   "url": "/confort-lecture",
+   "erreursJs": []
+  }
+ },
+ "actus": {
+  "clair": {
+   "petit": [],
+   "contraste": [],
+   "cible": [],
+   "sansNom": [],
+   "tailles": {
+    "13": 17,
+    "14": 28,
+    "15": 19,
+    "16": 8,
+    "17": 10,
+    "18": 26,
+    "20": 8,
+    "24": 1,
+    "28": 6,
+    "34": 3
+   },
+   "lhFaible": [
+    "1.20 (15px) « Décision n° 2026-910 DC du 14 août 2026 »",
+    "1.20 (18px) «  »",
+    "1.20 (15px) « Assemblée nationale — scrutin public n° 8434 »",
+    "1.20 (15px) « Assemblée nationale — scrutin public n° 8433 »",
+    "1.20 (15px) « Assemblée nationale — scrutin public n° 8431 »",
+    "1.20 (15px) « Assemblée nationale — scrutin public n° 8430 »",
+    "1.20 (15px) « Assemblée nationale — scrutin public n° 8421 »",
+    "1.20 (15px) « Assemblée nationale — scrutin public n° 8419 »",
+    "1.20 (15px) « Assemblée nationale — scrutin public n° 8418 »"
+   ],
+   "pave": [
+    "8 lignes « Le texte crée une foncière de l'État, établissemen »",
+    "12 lignes « Le texte crée un délit d'inhalation de protoxyde d »",
+    "9 lignes « Les autres mesures — interdiction de la publicité  »",
+    "19 lignes « Il encadre la durée des placements judiciaires (un »",
+    "13 lignes « Côté pénal, il prévoit l'audition sans délai de la »",
+    "15 lignes « Le texte adapte les règles applicables aux territo »",
+    "8 lignes « Elle renforce le dépistage lors des rendez-vous de »",
+    "10 lignes « Le texte réforme la gouvernance du sport professio »"
+   ],
+   "horsGrille": 42,
+   "espacesTotal": 265,
+   "valeursHors": {
+    "2": 10,
+    "6": 16,
+    "22": 16
+   },
+   "proches": [],
+   "imgSansAlt": [],
+   "bordureFaible": [],
+   "liensNonDistincts": [],
+   "premierEcran": {
+    "mots": 179,
+    "plusGrand": {
+     "px": 34,
+     "t": "Actualités"
+    }
+   },
+   "debordement": 0,
+   "retour": null,
+   "nInteractifs": 27,
+   "nInteractifs1": 5,
+   "cls": 0,
+   "axe": [
+    {
+     "id": "empty-heading",
+     "impact": "minor",
+     "n": 1,
+     "ex": ".r-1udh08x"
+    },
+    {
+     "id": "region",
+     "impact": "moderate",
+     "n": 49,
+     "ex": ".r-1kihuf0 > .css-g5y9jx:nth-child(1) > .css-g5y9jx:nth-child(1)"
+    }
+   ],
+   "focusVisible": null,
+   "chargement": {
+    "texte": "",
+    "squelette": false
+   },
+   "url": "/actus",
+   "erreursJs": []
+  },
+  "sombre": {
+   "petit": [],
+   "contraste": [],
+   "cible": [],
+   "sansNom": [],
+   "tailles": {
+    "13": 17,
+    "14": 28,
+    "15": 19,
+    "16": 8,
+    "17": 10,
+    "18": 26,
+    "20": 8,
+    "24": 1,
+    "28": 6,
+    "34": 3
+   },
+   "lhFaible": [
+    "1.20 (15px) « Décision n° 2026-910 DC du 14 août 2026 »",
+    "1.20 (18px) «  »",
+    "1.20 (15px) « Assemblée nationale — scrutin public n° 8434 »",
+    "1.20 (15px) « Assemblée nationale — scrutin public n° 8433 »",
+    "1.20 (15px) « Assemblée nationale — scrutin public n° 8431 »",
+    "1.20 (15px) « Assemblée nationale — scrutin public n° 8430 »",
+    "1.20 (15px) « Assemblée nationale — scrutin public n° 8421 »",
+    "1.20 (15px) « Assemblée nationale — scrutin public n° 8419 »",
+    "1.20 (15px) « Assemblée nationale — scrutin public n° 8418 »"
+   ],
+   "pave": [
+    "8 lignes « Le texte crée une foncière de l'État, établissemen »",
+    "12 lignes « Le texte crée un délit d'inhalation de protoxyde d »",
+    "9 lignes « Les autres mesures — interdiction de la publicité  »",
+    "19 lignes « Il encadre la durée des placements judiciaires (un »",
+    "13 lignes « Côté pénal, il prévoit l'audition sans délai de la »",
+    "15 lignes « Le texte adapte les règles applicables aux territo »",
+    "8 lignes « Elle renforce le dépistage lors des rendez-vous de »",
+    "10 lignes « Le texte réforme la gouvernance du sport professio »"
+   ],
+   "horsGrille": 42,
+   "espacesTotal": 265,
+   "valeursHors": {
+    "2": 10,
+    "6": 16,
+    "22": 16
+   },
+   "proches": [],
+   "imgSansAlt": [],
+   "bordureFaible": [],
+   "liensNonDistincts": [],
+   "premierEcran": {
+    "mots": 179,
+    "plusGrand": {
+     "px": 34,
+     "t": "Actualités"
+    }
+   },
+   "debordement": 0,
+   "retour": null,
+   "nInteractifs": 27,
+   "nInteractifs1": 5,
+   "cls": 0,
+   "focusVisible": null,
+   "chargement": {
+    "texte": "",
+    "squelette": false
+   },
+   "url": "/actus",
+   "erreursJs": []
+  }
+ },
+ "repere-du-jour": {
+  "clair": {
+   "petit": [],
+   "contraste": [],
+   "cible": [],
+   "sansNom": [],
+   "tailles": {
+    "12": 4,
+    "13": 8,
+    "14": 13,
+    "15": 5,
+    "16": 1,
+    "17": 8,
+    "18": 1,
+    "20": 1,
+    "26": 1,
+    "34": 1,
+    "36": 1,
+    "44": 1
+   },
+   "lhFaible": [
+    "1.33 (12px) « Source : Observatoire des finances et de la gestio »"
+   ],
+   "pave": [
+    "7 lignes « Le Premier ministre engage la responsabilité du go »"
+   ],
+   "horsGrille": 13,
+   "espacesTotal": 104,
+   "valeursHors": {
+    "6": 6,
+    "7": 3,
+    "18": 2,
+    "22": 2
+   },
+   "proches": [],
+   "imgSansAlt": [],
+   "bordureFaible": [],
+   "liensNonDistincts": [],
+   "premierEcran": {
+    "mots": 90,
+    "plusGrand": {
+     "px": 34,
+     "t": "Aujourd'hui à Melun"
+    }
+   },
+   "debordement": 0,
+   "retour": null,
+   "nInteractifs": 11,
+   "nInteractifs1": 4,
+   "cls": 0,
+   "axe": [
+    {
+     "id": "empty-heading",
+     "impact": "minor",
+     "n": 1,
+     "ex": ".r-dnmrzs"
+    },
+    {
+     "id": "region",
+     "impact": "moderate",
+     "n": 19,
+     "ex": "div[data-testid=\"date-publication\"]"
+    }
+   ],
+   "focusVisible": null,
+   "chargement": {
+    "texte": "",
+    "squelette": false
+   },
+   "url": "/repere-du-jour",
+   "erreursJs": []
+  },
+  "sombre": {
+   "petit": [],
+   "contraste": [],
+   "cible": [],
+   "sansNom": [],
+   "tailles": {
+    "12": 4,
+    "13": 8,
+    "14": 13,
+    "15": 5,
+    "16": 1,
+    "17": 8,
+    "18": 1,
+    "20": 1,
+    "26": 1,
+    "34": 1,
+    "36": 1,
+    "44": 1
+   },
+   "lhFaible": [
+    "1.33 (12px) « Source : Observatoire des finances et de la gestio »"
+   ],
+   "pave": [
+    "7 lignes « Le Premier ministre engage la responsabilité du go »"
+   ],
+   "horsGrille": 13,
+   "espacesTotal": 104,
+   "valeursHors": {
+    "6": 6,
+    "7": 3,
+    "18": 2,
+    "22": 2
+   },
+   "proches": [],
+   "imgSansAlt": [],
+   "bordureFaible": [],
+   "liensNonDistincts": [],
+   "premierEcran": {
+    "mots": 90,
+    "plusGrand": {
+     "px": 34,
+     "t": "Aujourd'hui à Melun"
+    }
+   },
+   "debordement": 0,
+   "retour": null,
+   "nInteractifs": 11,
+   "nInteractifs1": 4,
+   "cls": 0,
+   "focusVisible": null,
+   "chargement": {
+    "texte": "",
+    "squelette": false
+   },
+   "url": "/repere-du-jour",
+   "erreursJs": []
+  }
+ },
+ "dictionnaire": {
+  "clair": {
+   "petit": [],
+   "contraste": [],
+   "cible": [],
+   "sansNom": [],
+   "tailles": {
+    "12": 1,
+    "13": 91,
+    "14": 7,
+    "15": 90,
+    "16": 19,
+    "17": 92,
+    "34": 1
+   },
+   "lhFaible": [],
+   "pave": [
+    "7 lignes « Le Premier ministre engage la responsabilité du go »",
+    "7 lignes « Sigle du groupe parlementaire « Les Démocrates » à »",
+    "10 lignes « Sigle du groupe parlementaire « Ensemble pour la R »",
+    "6 lignes « Sigle du groupe parlementaire « Gauche démocrate e »",
+    "7 lignes « Sigle du groupe parlementaire « Horizons & Indépen »",
+    "8 lignes « Sigle du groupe parlementaire « Libertés, indépend »",
+    "8 lignes « L'autre chambre du Parlement. Ses membres, les sén »"
+   ],
+   "horsGrille": 0,
+   "espacesTotal": 756,
+   "valeursHors": {},
+   "proches": [],
+   "imgSansAlt": [],
+   "bordureFaible": [],
+   "liensNonDistincts": [],
+   "premierEcran": {
+    "mots": 116,
+    "plusGrand": {
+     "px": 34,
+     "t": "Dictionnaire"
+    }
+   },
+   "debordement": 0,
+   "retour": null,
+   "nInteractifs": 28,
+   "nInteractifs1": 27,
+   "cls": 0,
+   "axe": [
+    {
+     "id": "empty-heading",
+     "impact": "minor",
+     "n": 1,
+     "ex": ".r-dnmrzs"
+    },
+    {
+     "id": "region",
+     "impact": "moderate",
+     "n": 2,
+     "ex": "div[data-testid=\"date-publication\"]"
+    }
+   ],
+   "focusVisible": {
+    "outline": "auto 1px",
+    "border": "rgb(232, 238, 243)",
+    "ombre": "none"
+   },
+   "chargement": {
+    "texte": "",
+    "squelette": false
+   },
+   "url": "/dictionnaire",
+   "erreursJs": []
+  },
+  "sombre": {
+   "petit": [],
+   "contraste": [],
+   "cible": [],
+   "sansNom": [],
+   "tailles": {
+    "12": 1,
+    "13": 91,
+    "14": 7,
+    "15": 90,
+    "16": 19,
+    "17": 92,
+    "34": 1
+   },
+   "lhFaible": [],
+   "pave": [
+    "7 lignes « Le Premier ministre engage la responsabilité du go »",
+    "7 lignes « Sigle du groupe parlementaire « Les Démocrates » à »",
+    "10 lignes « Sigle du groupe parlementaire « Ensemble pour la R »",
+    "6 lignes « Sigle du groupe parlementaire « Gauche démocrate e »",
+    "7 lignes « Sigle du groupe parlementaire « Horizons & Indépen »",
+    "8 lignes « Sigle du groupe parlementaire « Libertés, indépend »",
+    "8 lignes « L'autre chambre du Parlement. Ses membres, les sén »"
+   ],
+   "horsGrille": 0,
+   "espacesTotal": 756,
+   "valeursHors": {},
+   "proches": [],
+   "imgSansAlt": [],
+   "bordureFaible": [],
+   "liensNonDistincts": [],
+   "premierEcran": {
+    "mots": 116,
+    "plusGrand": {
+     "px": 34,
+     "t": "Dictionnaire"
+    }
+   },
+   "debordement": 0,
+   "retour": null,
+   "nInteractifs": 28,
+   "nInteractifs1": 27,
+   "cls": 0,
+   "focusVisible": {
+    "outline": "auto 1px",
+    "border": "rgb(43, 42, 38)",
+    "ombre": "none"
+   },
+   "chargement": {
+    "texte": "",
+    "squelette": false
+   },
+   "url": "/dictionnaire",
+   "erreursJs": []
+  }
+ },
+ "quiz": {
+  "clair": {
+   "petit": [],
+   "contraste": [],
+   "cible": [],
+   "sansNom": [],
+   "tailles": {
+    "13": 1,
+    "14": 3,
+    "15": 1,
+    "17": 4,
+    "18": 2,
+    "23": 1
+   },
+   "lhFaible": [],
+   "pave": [],
+   "horsGrille": 2,
+   "espacesTotal": 52,
+   "valeursHors": {
+    "10": 2
+   },
+   "proches": [],
+   "imgSansAlt": [],
+   "bordureFaible": [],
+   "liensNonDistincts": [],
+   "premierEcran": {
+    "mots": 38,
+    "plusGrand": {
+     "px": 23,
+     "t": "Élu à la tête de la commune. Il exécute les délibé"
+    }
+   },
+   "debordement": 0,
+   "retour": null,
+   "nInteractifs": 4,
+   "nInteractifs1": 4,
+   "cls": 0,
+   "axe": [
+    {
+     "id": "aria-required-attr",
+     "impact": "critical",
+     "n": 4,
+     "ex": "div[aria-label=\"Rapporteur\"]"
+    },
+    {
+     "id": "empty-heading",
+     "impact": "minor",
+     "n": 1,
+     "ex": ".r-1udh08x"
+    },
+    {
+     "id": "region",
+     "impact": "moderate",
+     "n": 4,
+     "ex": ".r-150rngu > .css-g5y9jx > .css-g5y9jx:nth-child(1) > .css-g5y9jx:nth-child(1)"
+    }
+   ],
+   "focusVisible": null,
+   "chargement": {
+    "texte": "",
+    "squelette": false
+   },
+   "url": "/quiz",
+   "erreursJs": []
+  },
+  "sombre": {
+   "petit": [],
+   "contraste": [],
+   "cible": [],
+   "sansNom": [],
+   "tailles": {
+    "13": 1,
+    "14": 3,
+    "15": 1,
+    "17": 4,
+    "18": 2,
+    "21": 1
+   },
+   "lhFaible": [],
+   "pave": [],
+   "horsGrille": 2,
+   "espacesTotal": 52,
+   "valeursHors": {
+    "10": 2
+   },
+   "proches": [],
+   "imgSansAlt": [],
+   "bordureFaible": [],
+   "liensNonDistincts": [],
+   "premierEcran": {
+    "mots": 48,
+    "plusGrand": {
+     "px": 21,
+     "t": "Texte que le gouvernement dépose chaque année, à l"
+    }
+   },
+   "debordement": 0,
+   "retour": null,
+   "nInteractifs": 4,
+   "nInteractifs1": 4,
+   "cls": 0,
+   "focusVisible": null,
+   "chargement": {
+    "texte": "",
+    "squelette": false
+   },
+   "url": "/quiz",
+   "erreursJs": []
+  }
+ },
+ "recherche": {
+  "clair": {
+   "petit": [],
+   "contraste": [],
+   "cible": [],
+   "sansNom": [],
+   "tailles": {
+    "14": 3,
+    "15": 8,
+    "17": 1,
+    "18": 10
+   },
+   "lhFaible": [
+    "1.20 (18px) «  »",
+    "1.20 (18px) «  »",
+    "1.20 (18px) «  »"
+   ],
+   "pave": [],
+   "horsGrille": 3,
+   "espacesTotal": 58,
+   "valeursHors": {
+    "2": 3
+   },
+   "proches": [],
+   "imgSansAlt": [],
+   "bordureFaible": [],
+   "liensNonDistincts": [],
+   "premierEcran": {
+    "mots": 68,
+    "plusGrand": {
+     "px": 18,
+     "t": ""
+    }
+   },
+   "debordement": 0,
+   "retour": null,
+   "nInteractifs": 9,
+   "nInteractifs1": 9,
+   "cls": 0,
+   "axe": [
+    {
+     "id": "empty-heading",
+     "impact": "minor",
+     "n": 1,
+     "ex": "h1"
+    },
+    {
+     "id": "region",
+     "impact": "moderate",
+     "n": 1,
+     "ex": ".r-13awgt0.css-g5y9jx > .r-1p0dtai.r-1d2f490.r-u8s1d > .r-13awgt0.css-g5y9jx"
+    }
+   ],
+   "focusVisible": {
+    "outline": "none 1px",
+    "border": "rgb(0, 0, 0)",
+    "ombre": "none"
+   },
+   "chargement": {
+    "texte": "",
+    "squelette": false
+   },
+   "url": "/recherche",
+   "erreursJs": []
+  },
+  "sombre": {
+   "petit": [],
+   "contraste": [],
+   "cible": [],
+   "sansNom": [],
+   "tailles": {
+    "14": 3,
+    "15": 8,
+    "17": 1,
+    "18": 10
+   },
+   "lhFaible": [
+    "1.20 (18px) «  »",
+    "1.20 (18px) «  »",
+    "1.20 (18px) «  »"
+   ],
+   "pave": [],
+   "horsGrille": 3,
+   "espacesTotal": 58,
+   "valeursHors": {
+    "2": 3
+   },
+   "proches": [],
+   "imgSansAlt": [],
+   "bordureFaible": [],
+   "liensNonDistincts": [],
+   "premierEcran": {
+    "mots": 68,
+    "plusGrand": {
+     "px": 18,
+     "t": ""
+    }
+   },
+   "debordement": 0,
+   "retour": null,
+   "nInteractifs": 9,
+   "nInteractifs1": 9,
+   "cls": 0,
+   "focusVisible": {
+    "outline": "none 1px",
+    "border": "rgb(0, 0, 0)",
+    "ombre": "none"
+   },
+   "chargement": {
+    "texte": "",
+    "squelette": false
+   },
+   "url": "/recherche",
+   "erreursJs": []
+  }
+ },
+ "procedure": {
+  "clair": {
+   "petit": [],
+   "contraste": [],
+   "cible": [],
+   "sansNom": [],
+   "tailles": {
+    "12": 1,
+    "13": 2,
+    "14": 10,
+    "15": 1,
+    "17": 3,
+    "34": 1
+   },
+   "lhFaible": [],
+   "pave": [],
+   "horsGrille": 0,
+   "espacesTotal": 36,
+   "valeursHors": {},
+   "proches": [
+    "4px « Étape 1 : Dépôt » / « Étape 2 : Première lecture »",
+    "4px « Étape 2 : Première lecture » / « Étape 3 : Navette »",
+    "4px « Étape 3 : Navette » / « Étape 4 : Commission mixte paritaire »",
+    "4px « Étape 4 : Commission mixte paritaire » / « Étape 5 : Lecture définitive »",
+    "4px « Étape 5 : Lecture définitive » / « Étape 6 : Promulgation »"
+   ],
+   "imgSansAlt": [],
+   "bordureFaible": [],
+   "liensNonDistincts": [],
+   "premierEcran": {
+    "mots": 81,
+    "plusGrand": {
+     "px": 34,
+     "t": "Comment une loi devient loi"
+    }
+   },
+   "debordement": 0,
+   "retour": null,
+   "nInteractifs": 11,
+   "nInteractifs1": 11,
+   "cls": 0,
+   "axe": [
+    {
+     "id": "empty-heading",
+     "impact": "minor",
+     "n": 1,
+     "ex": ".r-dnmrzs"
+    },
+    {
+     "id": "region",
+     "impact": "moderate",
+     "n": 6,
+     "ex": "div[data-testid=\"date-publication\"]"
+    }
+   ],
+   "focusVisible": null,
+   "chargement": {
+    "texte": "",
+    "squelette": false
+   },
+   "url": "/procedure",
+   "erreursJs": []
+  },
+  "sombre": {
+   "petit": [],
+   "contraste": [],
+   "cible": [],
+   "sansNom": [],
+   "tailles": {
+    "12": 1,
+    "13": 2,
+    "14": 10,
+    "15": 1,
+    "17": 3,
+    "34": 1
+   },
+   "lhFaible": [],
+   "pave": [],
+   "horsGrille": 0,
+   "espacesTotal": 36,
+   "valeursHors": {},
+   "proches": [
+    "4px « Étape 1 : Dépôt » / « Étape 2 : Première lecture »",
+    "4px « Étape 2 : Première lecture » / « Étape 3 : Navette »",
+    "4px « Étape 3 : Navette » / « Étape 4 : Commission mixte paritaire »",
+    "4px « Étape 4 : Commission mixte paritaire » / « Étape 5 : Lecture définitive »",
+    "4px « Étape 5 : Lecture définitive » / « Étape 6 : Promulgation »"
+   ],
+   "imgSansAlt": [],
+   "bordureFaible": [],
+   "liensNonDistincts": [],
+   "premierEcran": {
+    "mots": 81,
+    "plusGrand": {
+     "px": 34,
+     "t": "Comment une loi devient loi"
+    }
+   },
+   "debordement": 0,
+   "retour": null,
+   "nInteractifs": 11,
+   "nInteractifs1": 11,
+   "cls": 0,
+   "focusVisible": null,
+   "chargement": {
+    "texte": "",
+    "squelette": false
+   },
+   "url": "/procedure",
+   "erreursJs": []
+  }
+ },
+ "partager": {
+  "clair": {
+   "petit": [
+    "11.0526px « Résumé Repère, à partir du scrutin publié. Le déta »",
+    "11.0526px « Explication »",
+    "11.9737px « Où en est le texte, selon la procédure »",
+    "11.0526px « Chaque assemblée l'examine une première fois, en c »",
+    "11.0526px « Source : Assemblée nationale, scrutin n° »",
+    "11.0526px « Résumé Repère du »"
+   ],
+   "contraste": [],
+   "cible": [],
+   "sansNom": [],
+   "tailles": {
+    "11": 5,
+    "12": 2,
+    "13": 4,
+    "14": 3,
+    "16": 1,
+    "17": 3,
+    "20": 3,
+    "24": 2,
+    "34": 1,
+    "46": 1
+   },
+   "lhFaible": [
+    "1.33 (11.0526px) « Résumé Repère, à partir du scrutin publié. Le déta »",
+    "1.20 (11.0526px) « Explication »",
+    "1.20 (12.8947px) « Vote à l'Assemblée nationale, »",
+    "1.33 (11.0526px) « Chaque assemblée l'examine une première fois, en c »",
+    "1.33 (11.0526px) « Source : Assemblée nationale, scrutin n° »",
+    "1.33 (11.0526px) « Résumé Repère du »"
+   ],
+   "pave": [],
+   "horsGrille": 28,
+   "espacesTotal": 70,
+   "valeursHors": {
+    "25.7895": 8,
+    "11.0526": 6,
+    "7.36842": 6,
+    "14.7368": 8
+   },
+   "proches": [],
+   "imgSansAlt": [],
+   "bordureFaible": [],
+   "liensNonDistincts": [],
+   "premierEcran": {
+    "mots": 73,
+    "plusGrand": {
+     "px": 46.0526,
+     "t": "a voté contre."
+    }
+   },
+   "debordement": 0,
+   "retour": null,
+   "nInteractifs": 5,
+   "nInteractifs1": 1,
+   "cls": 0,
+   "axe": [
+    {
+     "id": "empty-heading",
+     "impact": "minor",
+     "n": 1,
+     "ex": ".r-dnmrzs"
+    },
+    {
+     "id": "region",
+     "impact": "moderate",
+     "n": 4,
+     "ex": "div[data-testid=\"date-publication\"]"
+    }
+   ],
+   "focusVisible": null,
+   "chargement": {
+    "texte": "",
+    "squelette": false
+   },
+   "url": "/partager",
+   "erreursJs": []
+  },
+  "sombre": {
+   "petit": [
+    "11.0526px « Résumé Repère, à partir du scrutin publié. Le déta »",
+    "11.0526px « Explication »",
+    "11.9737px « Où en est le texte, selon la procédure »",
+    "11.0526px « Chaque assemblée l'examine une première fois, en c »",
+    "11.0526px « Source : Assemblée nationale, scrutin n° »",
+    "11.0526px « Résumé Repère du »"
+   ],
+   "contraste": [],
+   "cible": [],
+   "sansNom": [],
+   "tailles": {
+    "11": 5,
+    "12": 2,
+    "13": 4,
+    "14": 3,
+    "16": 1,
+    "17": 3,
+    "20": 3,
+    "24": 2,
+    "34": 1,
+    "46": 1
+   },
+   "lhFaible": [
+    "1.33 (11.0526px) « Résumé Repère, à partir du scrutin publié. Le déta »",
+    "1.20 (11.0526px) « Explication »",
+    "1.20 (12.8947px) « Vote à l'Assemblée nationale, »",
+    "1.33 (11.0526px) « Chaque assemblée l'examine une première fois, en c »",
+    "1.33 (11.0526px) « Source : Assemblée nationale, scrutin n° »",
+    "1.33 (11.0526px) « Résumé Repère du »"
+   ],
+   "pave": [],
+   "horsGrille": 28,
+   "espacesTotal": 70,
+   "valeursHors": {
+    "25.7895": 8,
+    "11.0526": 6,
+    "7.36842": 6,
+    "14.7368": 8
+   },
+   "proches": [],
+   "imgSansAlt": [],
+   "bordureFaible": [],
+   "liensNonDistincts": [],
+   "premierEcran": {
+    "mots": 73,
+    "plusGrand": {
+     "px": 46.0526,
+     "t": "a voté contre."
+    }
+   },
+   "debordement": 0,
+   "retour": null,
+   "nInteractifs": 5,
+   "nInteractifs1": 1,
+   "cls": 0,
+   "focusVisible": null,
+   "chargement": {
+    "texte": "",
+    "squelette": false
+   },
+   "url": "/partager",
+   "erreursJs": []
+  }
+ },
+ "faq": {
+  "clair": {
+   "petit": [],
+   "contraste": [],
+   "cible": [],
+   "sansNom": [],
+   "tailles": {
+    "14": 4,
+    "15": 13,
+    "17": 1,
+    "22": 9,
+    "24": 4,
+    "28": 1
+   },
+   "lhFaible": [],
+   "pave": [],
+   "horsGrille": 0,
+   "espacesTotal": 74,
+   "valeursHors": {},
+   "proches": [
+    "1px « D'où viennent les données ? » / « Pourquoi je ne vois pas ma commune ? »",
+    "1px « Pourquoi je ne vois pas ma commune ? » / « Comment calculez-vous le budget par habitant ? »",
+    "1px « Comment calculez-vous le budget par habitant ? » / « Pourquoi pas de compte ? »",
+    "1px « Pourquoi pas de compte ? » / « Pourquoi pas de notes sur les élus ? »",
+    "1px « Pourquoi pas de notes sur les élus ? » / « Puis-je partager une info ? »",
+    "1px « Puis-je partager une info ? » / « Comment signaler un bug ? »",
+    "1px « Comment signaler un bug ? » / « Quand couvrirez-vous toute la France ? »",
+    "1px « Quand couvrirez-vous toute la France ? » / « Comment seront écrits les résumés « En clair » ? »"
+   ],
+   "imgSansAlt": [],
+   "bordureFaible": [],
+   "liensNonDistincts": [],
+   "premierEcran": {
+    "mots": 115,
+    "plusGrand": {
+     "px": 28,
+     "t": "Questions fréquentes"
+    }
+   },
+   "debordement": 0,
+   "retour": null,
+   "nInteractifs": 10,
+   "nInteractifs1": 10,
+   "cls": 0,
+   "axe": [
+    {
+     "id": "empty-heading",
+     "impact": "minor",
+     "n": 1,
+     "ex": ".r-dnmrzs"
+    },
+    {
+     "id": "region",
+     "impact": "moderate",
+     "n": 2,
+     "ex": ".r-eqz5dr > .css-g5y9jx > h1"
+    },
+    {
+     "id": "scrollable-region-focusable",
+     "impact": "serious",
+     "n": 1,
+     "ex": ".r-lltvgl"
+    }
+   ],
+   "focusVisible": null,
+   "chargement": {
+    "texte": "",
+    "squelette": false
+   },
+   "url": "/faq",
+   "erreursJs": []
+  },
+  "sombre": {
+   "petit": [],
+   "contraste": [],
+   "cible": [],
+   "sansNom": [],
+   "tailles": {
+    "14": 4,
+    "15": 13,
+    "17": 1,
+    "22": 9,
+    "24": 4,
+    "28": 1
+   },
+   "lhFaible": [],
+   "pave": [],
+   "horsGrille": 0,
+   "espacesTotal": 74,
+   "valeursHors": {},
+   "proches": [
+    "1px « D'où viennent les données ? » / « Pourquoi je ne vois pas ma commune ? »",
+    "1px « Pourquoi je ne vois pas ma commune ? » / « Comment calculez-vous le budget par habitant ? »",
+    "1px « Comment calculez-vous le budget par habitant ? » / « Pourquoi pas de compte ? »",
+    "1px « Pourquoi pas de compte ? » / « Pourquoi pas de notes sur les élus ? »",
+    "1px « Pourquoi pas de notes sur les élus ? » / « Puis-je partager une info ? »",
+    "1px « Puis-je partager une info ? » / « Comment signaler un bug ? »",
+    "1px « Comment signaler un bug ? » / « Quand couvrirez-vous toute la France ? »",
+    "1px « Quand couvrirez-vous toute la France ? » / « Comment seront écrits les résumés « En clair » ? »"
+   ],
+   "imgSansAlt": [],
+   "bordureFaible": [],
+   "liensNonDistincts": [],
+   "premierEcran": {
+    "mots": 115,
+    "plusGrand": {
+     "px": 28,
+     "t": "Questions fréquentes"
+    }
+   },
+   "debordement": 0,
+   "retour": null,
+   "nInteractifs": 10,
+   "nInteractifs1": 10,
+   "cls": 0,
+   "focusVisible": null,
+   "chargement": {
+    "texte": "",
+    "squelette": false
+   },
+   "url": "/faq",
+   "erreursJs": []
+  }
+ },
+ "a-propos": {
+  "clair": {
+   "petit": [],
+   "contraste": [],
+   "cible": [],
+   "sansNom": [],
+   "tailles": {
+    "14": 1,
+    "15": 4,
+    "17": 1,
+    "28": 1
+   },
+   "lhFaible": [],
+   "pave": [],
+   "horsGrille": 0,
+   "espacesTotal": 14,
+   "valeursHors": {},
+   "proches": [],
+   "imgSansAlt": [],
+   "bordureFaible": [],
+   "liensNonDistincts": [],
+   "premierEcran": {
+    "mots": 69,
+    "plusGrand": {
+     "px": 28,
+     "t": "Repère"
+    }
+   },
+   "debordement": 0,
+   "retour": null,
+   "nInteractifs": 1,
+   "nInteractifs1": 1,
+   "cls": 0,
+   "axe": [
+    {
+     "id": "empty-heading",
+     "impact": "minor",
+     "n": 1,
+     "ex": ".r-dnmrzs"
+    },
+    {
+     "id": "region",
+     "impact": "moderate",
+     "n": 4,
+     "ex": ".r-150rngu > .css-g5y9jx > h1"
+    }
+   ],
+   "focusVisible": null,
+   "chargement": {
+    "texte": "",
+    "squelette": false
+   },
+   "url": "/a-propos",
+   "erreursJs": []
+  },
+  "sombre": {
+   "petit": [],
+   "contraste": [],
+   "cible": [],
+   "sansNom": [],
+   "tailles": {
+    "14": 1,
+    "15": 4,
+    "17": 1,
+    "28": 1
+   },
+   "lhFaible": [],
+   "pave": [],
+   "horsGrille": 0,
+   "espacesTotal": 14,
+   "valeursHors": {},
+   "proches": [],
+   "imgSansAlt": [],
+   "bordureFaible": [],
+   "liensNonDistincts": [],
+   "premierEcran": {
+    "mots": 69,
+    "plusGrand": {
+     "px": 28,
+     "t": "Repère"
+    }
+   },
+   "debordement": 0,
+   "retour": null,
+   "nInteractifs": 1,
+   "nInteractifs1": 1,
+   "cls": 0,
+   "focusVisible": null,
+   "chargement": {
+    "texte": "",
+    "squelette": false
+   },
+   "url": "/a-propos",
+   "erreursJs": []
+  }
+ },
+ "confidentialite": {
+  "clair": {
+   "petit": [],
+   "contraste": [],
+   "cible": [],
+   "sansNom": [],
+   "tailles": {
+    "13": 5,
+    "14": 28,
+    "15": 1,
+    "28": 1
+   },
+   "lhFaible": [],
+   "pave": [
+    "6 lignes « Repère ne crée aucun compte. Aucune adresse e-mail »",
+    "10 lignes « Deux réglages peuvent être gardés sur cet appareil »",
+    "7 lignes « Les fichiers publics de Repère (élus, votes, compt »"
+   ],
+   "horsGrille": 0,
+   "espacesTotal": 72,
+   "valeursHors": {},
+   "proches": [],
+   "imgSansAlt": [],
+   "bordureFaible": [],
+   "liensNonDistincts": [],
+   "premierEcran": {
+    "mots": 167,
+    "plusGrand": {
+     "px": 28,
+     "t": "Confidentialité"
+    }
+   },
+   "debordement": 0,
+   "retour": null,
+   "nInteractifs": 0,
+   "nInteractifs1": 0,
+   "cls": 0,
+   "axe": [
+    {
+     "id": "empty-heading",
+     "impact": "minor",
+     "n": 1,
+     "ex": ".r-dnmrzs"
+    },
+    {
+     "id": "region",
+     "impact": "moderate",
+     "n": 1,
+     "ex": "div[data-testid=\"application\"] > .r-13awgt0.css-g5y9jx"
+    },
+    {
+     "id": "scrollable-region-focusable",
+     "impact": "serious",
+     "n": 1,
+     "ex": ".r-150rngu"
+    }
+   ],
+   "focusVisible": null,
+   "chargement": {
+    "texte": "",
+    "squelette": false
+   },
+   "url": "/confidentialite",
+   "erreursJs": []
+  },
+  "sombre": {
+   "petit": [],
+   "contraste": [],
+   "cible": [],
+   "sansNom": [],
+   "tailles": {
+    "13": 5,
+    "14": 28,
+    "15": 1,
+    "28": 1
+   },
+   "lhFaible": [],
+   "pave": [
+    "6 lignes « Repère ne crée aucun compte. Aucune adresse e-mail »",
+    "10 lignes « Deux réglages peuvent être gardés sur cet appareil »",
+    "7 lignes « Les fichiers publics de Repère (élus, votes, compt »"
+   ],
+   "horsGrille": 0,
+   "espacesTotal": 72,
+   "valeursHors": {},
+   "proches": [],
+   "imgSansAlt": [],
+   "bordureFaible": [],
+   "liensNonDistincts": [],
+   "premierEcran": {
+    "mots": 167,
+    "plusGrand": {
+     "px": 28,
+     "t": "Confidentialité"
+    }
+   },
+   "debordement": 0,
+   "retour": null,
+   "nInteractifs": 0,
+   "nInteractifs1": 0,
+   "cls": 0,
+   "focusVisible": null,
+   "chargement": {
+    "texte": "",
+    "squelette": false
+   },
+   "url": "/confidentialite",
+   "erreursJs": []
+  }
+ },
+ "soutenir": {
+  "clair": {
+   "petit": [],
+   "contraste": [],
+   "cible": [],
+   "sansNom": [],
+   "tailles": {
+    "13": 2,
+    "14": 6,
+    "15": 3,
+    "17": 3,
+    "22": 3,
+    "34": 1
+   },
+   "lhFaible": [],
+   "pave": [],
+   "horsGrille": 6,
+   "espacesTotal": 38,
+   "valeursHors": {
+    "2": 6
+   },
+   "proches": [],
+   "imgSansAlt": [],
+   "bordureFaible": [],
+   "liensNonDistincts": [],
+   "premierEcran": {
+    "mots": 117,
+    "plusGrand": {
+     "px": 34,
+     "t": "Soutenir Repère"
+    }
+   },
+   "debordement": 0,
+   "retour": null,
+   "nInteractifs": 3,
+   "nInteractifs1": 3,
+   "cls": 0,
+   "axe": [
+    {
+     "id": "empty-heading",
+     "impact": "minor",
+     "n": 1,
+     "ex": ".r-dnmrzs"
+    },
+    {
+     "id": "region",
+     "impact": "moderate",
+     "n": 4,
+     "ex": ".r-1kihuf0 > .css-g5y9jx:nth-child(1) > .css-g5y9jx:nth-child(1)"
+    }
+   ],
+   "focusVisible": null,
+   "chargement": {
+    "texte": "",
+    "squelette": false
+   },
+   "url": "/soutenir",
+   "erreursJs": []
+  },
+  "sombre": {
+   "petit": [],
+   "contraste": [],
+   "cible": [],
+   "sansNom": [],
+   "tailles": {
+    "13": 2,
+    "14": 6,
+    "15": 3,
+    "17": 3,
+    "22": 3,
+    "34": 1
+   },
+   "lhFaible": [],
+   "pave": [],
+   "horsGrille": 6,
+   "espacesTotal": 38,
+   "valeursHors": {
+    "2": 6
+   },
+   "proches": [],
+   "imgSansAlt": [],
+   "bordureFaible": [],
+   "liensNonDistincts": [],
+   "premierEcran": {
+    "mots": 117,
+    "plusGrand": {
+     "px": 34,
+     "t": "Soutenir Repère"
+    }
+   },
+   "debordement": 0,
+   "retour": null,
+   "nInteractifs": 3,
+   "nInteractifs1": 3,
+   "cls": 0,
+   "focusVisible": null,
+   "chargement": {
+    "texte": "",
+    "squelette": false
+   },
+   "url": "/soutenir",
+   "erreursJs": []
+  }
+ },
+ "bienvenue": {
+  "clair": {
+   "petit": [],
+   "contraste": [],
+   "cible": [],
+   "sansNom": [],
+   "tailles": {
+    "18": 2,
+    "34": 1
+   },
+   "lhFaible": [],
+   "pave": [],
+   "horsGrille": 0,
+   "espacesTotal": 8,
+   "valeursHors": {},
+   "proches": [],
+   "imgSansAlt": [],
+   "bordureFaible": [],
+   "liensNonDistincts": [],
+   "premierEcran": {
+    "mots": 16,
+    "plusGrand": {
+     "px": 34,
+     "t": "Repère"
+    }
+   },
+   "debordement": 0,
+   "retour": null,
+   "nInteractifs": 1,
+   "nInteractifs1": 1,
+   "cls": 0,
+   "axe": [
+    {
+     "id": "region",
+     "impact": "moderate",
+     "n": 1,
+     "ex": "div[data-testid=\"bienvenue-0\"] > .css-g5y9jx:nth-child(1)"
+    }
+   ],
+   "focusVisible": {
+    "outline": "none 3px",
+    "border": "rgb(0, 0, 0)",
+    "ombre": "none"
+   },
+   "chargement": null,
+   "url": "/?vierge=1",
+   "erreursJs": []
+  },
+  "sombre": {
+   "petit": [],
+   "contraste": [],
+   "cible": [],
+   "sansNom": [],
+   "tailles": {
+    "18": 2,
+    "34": 1
+   },
+   "lhFaible": [],
+   "pave": [],
+   "horsGrille": 0,
+   "espacesTotal": 8,
+   "valeursHors": {},
+   "proches": [],
+   "imgSansAlt": [],
+   "bordureFaible": [],
+   "liensNonDistincts": [],
+   "premierEcran": {
+    "mots": 16,
+    "plusGrand": {
+     "px": 34,
+     "t": "Repère"
+    }
+   },
+   "debordement": 0,
+   "retour": null,
+   "nInteractifs": 1,
+   "nInteractifs1": 1,
+   "cls": 0,
+   "focusVisible": {
+    "outline": "none 3px",
+    "border": "rgb(0, 0, 0)",
+    "ombre": "none"
+   },
+   "chargement": null,
+   "url": "/?vierge=1",
+   "erreursJs": []
+  }
+ }
+}
