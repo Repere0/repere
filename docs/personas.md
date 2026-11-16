@@ -6,7 +6,7 @@ Date : 31/10/2026 (V35, bloc 4, décision CEO D70).
 
 Ces trois profils sont fournis par le brief du CEO. **Ils ne viennent pas d'une enquête** : ce sont des personnages pour choisir les parcours à tester et pour relire les écrans, pas des résultats de recherche utilisateur. Aucun chiffre sur leur usage réel n'en découle.
 
-Point à trancher : le brief V35 dit que ces profils étaient « déjà utilisés dans les rapports V28-V34 ». Les rapports `RESUME-v29.md`, `RESUME-v30.md` et `RESUME-v31.md` disent au contraire que « Marie, Karim et Thomas ne sont définis nulle part dans le dépôt ». Le fichier les définit maintenant ; la phrase du brief reste à confirmer par le CEO.
+Point à trancher : le brief V35 dit que ces profils étaient « déjà utilisés dans les rapports V28-V34 ». Les rapports `docs/historique/RESUME-v29.md`, `docs/historique/RESUME-v30.md` et `docs/historique/RESUME-v31.md` disent au contraire que « Marie, Karim et Thomas ne sont définis nulle part dans le dépôt ». Le fichier les définit maintenant ; la phrase du brief reste à confirmer par le CEO.
 
 Les profils des rapports V28 (une personne âgée peu à l'aise avec le tactile, une personne malvoyante qui règle la taille du texte, une personne qui veut seulement savoir qui la représente) sont distincts. Ils ne sont pas repris ici.
 

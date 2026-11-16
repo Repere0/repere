@@ -41,8 +41,8 @@ Les numéros « V » sont les sprints de travail. Ils ne sont pas tous datés da
 | V15, V18 à V23 | 30/10/2026 | « fix(audit) : régressions V15/V20 », rapports RESUME |
 | V26 | 30/10/2026 | profil de lecture (ADR 0006) |
 | V28 à V32 | 30/10/2026 | rapports RESUME-v28 à v32, SDK 54 puis 58 sur la branche de test |
-| V34 | 31/10/2026 | correction crash Élus, refonte UI (`RESUME-v34.md`) |
-| V35 | 31/10/2026 | mode sombre persisté, densité calendrier, graisse, personas (`RESUME-v35.md`) |
+| V34 | 31/10/2026 | correction crash Élus, refonte UI (`docs/historique/RESUME-v34.md`) |
+| V35 | 31/10/2026 | mode sombre persisté, densité calendrier, graisse, personas (`docs/historique/RESUME-v35.md`) |
 | V36 | 31/10/2026 | ce document, audit complet |
 
 Les dates du 30/10 regroupent plusieurs sprints : les rapports ont été réécrits ou regroupés ce jour-là. Pour V2 à V6, V9 à V14, V16, V17, V24, V25, V27 et V33, l'historique ne donne pas de date fiable.

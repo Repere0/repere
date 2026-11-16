@@ -1,0 +1,35 @@
+# Dependabot (16/11/2026).
+# - GitHub Actions : mises à jour de version chaque semaine, regroupées en une seule PR.
+# - npm : SEULEMENT les correctifs de sécurité (open-pull-requests-limit: 0 coupe les
+#   mises à jour de version). Les versions d'Expo se suivent avec `npx expo install`,
+#   qui sait lesquelles vont ensemble ; Dependabot ne le sait pas.
+#   Les PR de sécurité demandent « Dependabot security updates » dans les réglages du dépôt.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      timezone: Europe/Paris
+    groups:
+      actions:
+        patterns: ["*"]
+    commit-message:
+      prefix: ci
+
+  - package-ecosystem: npm
+    directory: /mono/apps/mobile
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 0
+    commit-message:
+      prefix: fix
+
+  - package-ecosystem: npm
+    directory: /mono
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 0
+    commit-message:
+      prefix: fix

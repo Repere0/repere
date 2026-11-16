@@ -1,0 +1,25 @@
+# Revue des dépendances (16/11/2026) : une PR qui ajoute une dépendance connue
+# comme vulnérable (gravité haute ou critique) échoue. Gratuit sur un dépôt public.
+name: Revue des dependances
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  revue:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Recuperer le depot
+        uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+
+      - name: Revue des dependances
+        uses: actions/dependency-review-action@v4
+        with:
+          fail-on-severity: high

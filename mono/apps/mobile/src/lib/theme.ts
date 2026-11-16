@@ -36,7 +36,7 @@ export const COULEUR_VOTE_DALTONIEN = { p: COULEURS_VOTE_DALTONIEN.votePour, c: 
 
 export const CIBLE = 48;
 export const PAS = 4;
-/* DESIGN.md (09/11/2026) : cartes au rayon 16, blocs et champs au rayon 12. */
+/* docs/historique/DESIGN.md (09/11/2026) : cartes au rayon 16, blocs et champs au rayon 12. */
 /* Variante A (11/11/2026) : cartes au rayon 24, blocs et champs au rayon 16. */
 export const RAYON = { carte: 24, bloc: 16, pastille: 999 } as const;
 

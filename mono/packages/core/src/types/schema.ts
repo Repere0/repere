@@ -2,7 +2,7 @@
  *
  * STATUT : VOCABULAIRE DE RÉFÉRENCE, PAS LE CONTRAT DES DONNÉES PUBLIÉES. Aucun écran ni script ne
  * l'importe. Les données de Repère gardent leur forme actuelle tant que ces écarts ne sont pas tranchés
- * (détail : RAPPORT-SCHEMA-STITCH.md à la racine du dépôt) :
+ * (détail : docs/historique/RAPPORT-SCHEMA-STITCH.md) :
  *  - aucune provenance par chiffre (invariant 4) : seul `derniereMiseAJour` existe, au niveau du budget ;
  *  - `photoUrl` : une adresse distante. Les photos de Repère sont des vignettes Commons servies par
  *    département, jamais chargées ailleurs (D27, invariant 1) ;

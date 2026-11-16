@@ -1,0 +1,60 @@
+# Analyse statique CodeQL (16/11/2026). Gratuite sur un dépôt public.
+# Les gros fichiers de données (application mono-fichier, site historique, data/)
+# sont exclus : ce sont des sorties, pas du code qu'on maintient, et ils feraient
+# durer l'analyse sans rien apprendre.
+name: CodeQL
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    - cron: "17 4 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: codeql-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  analyser:
+    name: Analyser (${{ matrix.language }})
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      security-events: write
+      actions: read
+    strategy:
+      fail-fast: false
+      matrix:
+        language: [javascript-typescript, python, actions]
+    steps:
+      - name: Recuperer le depot
+        uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+
+      - name: Initialiser CodeQL
+        uses: github/codeql-action/init@v4
+        with:
+          languages: ${{ matrix.language }}
+          build-mode: none
+          config: |
+            paths-ignore:
+              - app_repere_v18_20.html
+              - site
+              - site_donnees
+              - data
+              - docs
+              - "**/node_modules"
+              - "**/dist"
+
+      - name: Analyser
+        uses: github/codeql-action/analyze@v4
+        with:
+          category: /language:${{ matrix.language }}
