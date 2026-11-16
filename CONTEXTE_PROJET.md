@@ -358,8 +358,17 @@ PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers node test_repere.mjs site_v18_20/index
   (`niveauDuDepute`, core, corrige). Les législatures (`legislatures`) n'existent qu'après une collecte du runner
   avec `mono_donnees.py` à jour ; `deputes.json` est ignoré par git, la production n'a pas pu être lue depuis le conteneur.
 - **Calendrier : aucun thème officiel** (14/11/2026, mesuré dans `agenda-an.mjs` et `calendrier-senat.mjs`) : `categorie` n'est
-  qu'un type de réunion. Les filtres thématiques sont un calcul Repère par mots-clés (`core/themes-calendrier.js`, sept thèmes
+  qu'un type de réunion. Les filtres thématiques sont un calcul Repère par mots-clés (`packages/core/src/themes-calendrier.js`, sept thèmes
   du porteur), dit comme tel à l'écran. « Sécurité sociale » range en Santé, jamais en Sécurité.
+- **Runner GitHub passé à Ubuntu 26.04 : collecte rouge** (15/11/2026, run 144) : `ubuntu-latest` est devenu
+  `ubuntu26.04-x64`, et `npx playwright install --with-deps chromium` (Playwright 1.56.0) y échoue (« does not
+  support chromium on ubuntu26.04-x64 ») ; l'étape « Executer la chaine » s'arrête, rien n'est publié ni enregistré.
+  La migration avait été annoncée et un épinglage `ubuntu-24.04` proposé dès le 16/10 (#150, brouillon jamais
+  fusionné). Toute image `-latest` change sans prévenir : épingler la version du runner.
+- **Un invariant amendé doit être scellé dans la même PR** (relevé le 16/11/2026) : ADR 0009 et 0010 (décisions du
+  porteur du 13/11) ont changé le bloc des invariants dans 71b654ec (#207) et 5e3ff2cb (#209) sans
+  `node outils/derive_contexte.mjs --sceller` ; `outils/pipeline.sh` ne fait qu'`avertir` sur cette erreur, donc
+  aucune épreuve n'a rougi. Les amendements précédents l'avaient fait (1821a91, a65e778, 0c7cdca, f22731b).
 
 ## 10. Ce qui a été refusé, et pourquoi
 
