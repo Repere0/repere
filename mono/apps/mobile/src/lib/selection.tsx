@@ -19,10 +19,17 @@ type Valeur = {
   retenue: Retenue | null;
   retenir: (c: NonNullable<Choix>) => boolean;
   oublier: () => void;
+  /* La commune gardee, pendant qu'on retrouve son nom dans la liste publiee : « en_cours », puis
+     « echec » si la liste n'arrive pas (audit UI du 16/11/2026). Sans commune gardee : « aucune ». */
+  restauration: Restauration;
+  relancer: () => void;
 };
+
+export type Restauration = "aucune" | "en_cours" | "echec" | "introuvable";
 
 const Contexte = createContext<Valeur>({
   choix: null, choisir: () => {}, retenue: null, retenir: () => false, oublier: () => {},
+  restauration: "aucune", relancer: () => {},
 });
 
 export function FournisseurSelection({ children }: { children: ReactNode }) {
@@ -36,16 +43,23 @@ export function FournisseurSelection({ children }: { children: ReactNode }) {
   const oublier = useCallback(() => { oublierMemoire(); setRetenue(lire()); }, []);
   /* V31 : la commune gardée redevient la commune choisie dès le démarrage, quel que soit
      l'écran d'entrée (lien direct compris). Son nom vient de la liste publiée. */
+  const [restauration, setRestauration] = useState<Restauration>("aucune");
+  const [essai, setEssai] = useState(0);
+  const relancer = useCallback(() => setEssai(n => n + 1), []);
   useEffect(() => {
-    if (choix || !retenue) return undefined;
+    if (choix || !retenue) { setRestauration("aucune"); return undefined; }
     let annule = false;
+    setRestauration("en_cours");
     chargerCommunesBeta().then(r => {
+      if (annule) return;
       const nom = (r.donnees as { communes: Record<string, string> } | undefined)?.communes[retenue.c];
-      if (!annule && nom) choisir({ dep: retenue.d, insee: retenue.c, nom });
-    }).catch(() => {});
+      if (nom) choisir({ dep: retenue.d, insee: retenue.c, nom });
+      /* Pas de liste du tout : un echec de chargement. Une liste sans la commune : elle n'y est plus. */
+      else setRestauration(r.donnees ? "introuvable" : "echec");
+    }).catch(() => { if (!annule) setRestauration("echec"); });
     return () => { annule = true; };
-  }, [choix, retenue]);
-  return <Contexte.Provider value={{ choix, choisir, retenue, retenir, oublier }}>{children}</Contexte.Provider>;
+  }, [choix, retenue, essai]);
+  return <Contexte.Provider value={{ choix, choisir, retenue, retenir, oublier, restauration, relancer }}>{children}</Contexte.Provider>;
 }
 
 export const useSelection = () => useContext(Contexte);

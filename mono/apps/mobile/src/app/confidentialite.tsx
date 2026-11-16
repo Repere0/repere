@@ -18,7 +18,7 @@ const Puce = ({ children }: { children: string }) => (
 export default function Confidentialite() {
   const bas = useBasSur();
   return (
-    <ScrollView {...MARQUE_DEFILEMENT} style={{ flex: 1, backgroundColor: couleurs.sol }} contentContainerStyle={{ padding: PAS * 4, paddingBottom: bas, gap: PAS * 4 }}>
+    <ScrollView {...MARQUE_DEFILEMENT} focusable style={{ flex: 1, backgroundColor: couleurs.sol }} contentContainerStyle={{ padding: PAS * 4, paddingBottom: bas, gap: PAS * 4 }}>
       <Stack.Screen options={{ title: "Confidentialité" }} />
       <Text style={TYPO.question} accessibilityRole="header">Confidentialité</Text>
       <Text style={TYPO.corps}>Version du 30/10/2026.</Text>

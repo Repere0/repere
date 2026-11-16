@@ -61,6 +61,7 @@ function ChoixAffichage({ visible, onFermer }: { visible: boolean; onFermer: () 
                 onPress={() => { setChoix(o.valeur); onFermer(); }}
                 accessibilityRole="radio"
                 accessibilityState={{ checked: actif }}
+                aria-checked={actif}
                 style={({ pressed }) => [s.option, actif && s.optionActive, pressed && enfonce(true)]}
               >
                 <Text style={[s.optionTexte, actif && s.optionTexteActif]}>{o.libelle}</Text>
