@@ -2,6 +2,24 @@
  "v": 1,
  "maj": "2026-11-16",
  "etapes": {
+  "comptes des communes non releves - le bloc fige du N/N/N reste en place": {
+   "message": "comptes des communes non releves - le bloc fige du 29/07/2026 reste en place",
+   "depuis": "2026-11-16",
+   "vu_le": "2026-11-16",
+   "jours": 1
+  },
+  "calendrier du Senat absent ou non rafraichi - voir la cause et l'etat du releve precedent juste au-dessus": {
+   "message": "calendrier du Senat absent ou non rafraichi - voir la cause et l'etat du releve precedent juste au-dessus",
+   "depuis": "2026-11-16",
+   "vu_le": "2026-11-16",
+   "jours": 1
+  },
+  "senateurs non collectes (senat.fr) - l'onglet Senat dira que la liste n'est pas disponible": {
+   "message": "senateurs non collectes (senat.fr) - l'onglet Senat dira que la liste n'est pas disponible",
+   "depuis": "2026-11-16",
+   "vu_le": "2026-11-16",
+   "jours": 1
+  },
   "le contexte des agents a derive (voir outils/derive_contexte.mjs ci-dessus)": {
    "message": "le contexte des agents a derive (voir outils/derive_contexte.mjs ci-dessus)",
    "depuis": "2026-11-13",
