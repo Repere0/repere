@@ -74,6 +74,13 @@ jobs:
     steps:
       - name: Recuperer le depot
         uses: actions/checkout@v7
+        # 16/11/2026 : depuis checkout v6, le jeton du workflow n'est plus un simple
+        # http.extraheader de .git/config mais un fichier inclus (includeIf) que
+        # `git config --unset-all` ne retire pas. Il l'emportait sur le jeton de l'App :
+        # push refuse par la protection de main (GH013, run 147). Le depot est public,
+        # aucune etape n'a besoin du jeton dans git : on ne le pose pas.
+        with:
+          persist-credentials: false
 
       - name: Installer Python
         uses: actions/setup-python@v7
