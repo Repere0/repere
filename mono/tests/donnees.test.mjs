@@ -250,7 +250,8 @@ test("fraicheur — la phrase dit la date de la publication affichee (PRECEDENTE
   assert.equal(typeof clientDonnees.phraseFraicheur, "function", "phraseFraicheur doit exister : la phrase et sa date viennent du paquet partage");
   /* 16/11/2026 (porteur) : « Mis à jour il y a X jours », compté depuis la publication affichée. */
   const p = clientDonnees.phraseFraicheur(e, new Date("2026-10-02T10:00:00Z"));
-  assert.equal(p.corps, "Mis à jour il y a 2 jours.", "l'ancienneté de la publication affichee manque : " + p.corps);
+  /* État « impossible à vérifier » : jamais « Mis à jour » (garde de l'invariant 9), l'ancienneté de ce qui a été reçu. */
+  assert.equal(p.corps, "Dernière publication reçue il y a 2 jours.", "l'ancienneté de la publication affichee manque : " + p.corps);
   assert.ok(!/undefined|null/.test(p.corps + p.titre), "phrase invalide : " + JSON.stringify(p));
 });
 

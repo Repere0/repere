@@ -180,7 +180,7 @@ La vague 1 est codée (§ 7). Deux points sont à trancher avant la vague 2 :
 | 2.1 | `Retour` unique pour toute la pile (`screenOptions`), libellé lu dans l'état de navigation | Qui décide → fiche : « ‹ Qui décide » ; Aujourd'hui → Repère du jour : « ‹ Aujourd'hui » ; lien direct : « ‹ Accueil » |
 | 2.6 | `ui/repliable.tsx` : au-delà de 160 caractères, 3 lignes puis « Lire la suite » ; actualités, dictionnaire, notes de Qui décide | Texte entier pour les lecteurs d'écran (`accessibilityLabel`) |
 | 2.4 | `ECHELLE_TYPO` (lib/theme.ts) et `tests/echelle.test.mjs` : tailles et espacements écrits en dur suivent l'échelle et la grille de 4 | Garde rouge sur `main` (≈ 30 écarts), verte ici |
-| 2.5 | Bandeau de fraîcheur : « Mis à jour il y a X jours » (décision du porteur) ; « Pas encore de publication sur cet appareil » quand rien n'a été reçu | `tests/donnees.test.mjs` : 3 gardes rouges avant, vertes après |
+| 2.5 | Bandeau de fraîcheur : « Mis à jour il y a X jours » (décision du porteur) ; « Dernière publication reçue il y a X jours » quand rien n'a pu être vérifié (choix du porteur, la garde de l'invariant 9 interdit « Mis à jour » dans cet état) ; « Pas encore de publication sur cet appareil » quand rien n'a été reçu | `tests/donnees.test.mjs` : 3 gardes rouges avant, vertes après |
 | 2.2 | `/argent` redirige vers l'onglet `/finances` ; l'écran vit dans `ui/ecran-argent.tsx` | Liens « Où va cet argent ? » ouvrent l'onglet |
 | + | `tests/reseau-lent-web.mjs` (2 s par fichier, liste des communes coupée) | Rouge sur le code d'avant la vague 1 (6 échecs), vert ici |
 

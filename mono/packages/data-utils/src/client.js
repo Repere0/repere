@@ -368,7 +368,8 @@ function jourPublication(generation) {
   if (reelle.getUTCFullYear() !== an || reelle.getUTCMonth() !== mois - 1 || reelle.getUTCDate() !== jour) return null;
   return jour + " " + MOIS_FR[mois - 1] + " " + an;
 }
-/* « MIS À JOUR IL Y A X JOURS » — décision du porteur du 16/11/2026 (audit UI, vague 2, tâche 5).
+/* « MIS À JOUR IL Y A X JOURS » — décision du porteur du 16/11/2026 (audit UI, vague 2, tâche 5) ;
+   « Dernière publication reçue il y a X jours » quand rien n'a pu être vérifié (voir recueIlYa).
    Remplace « Publication du … » et « … la dernière publication reçue sur cet appareil », qui était
    faux à la première visite hors ligne (rien n'avait été reçu). Le TITRE reste : il dit lequel des
    trois états de l'invariant 9 s'applique (précédente, impossible à vérifier, nouvelle parue).
@@ -384,6 +385,9 @@ export function joursDepuis(generation, maintenant) {
   return n < 0 ? null : n;
 }
 export const misAJour = n => (n === 0 ? "Mis à jour aujourd'hui." : `Mis à jour il y a ${n} jour${n > 1 ? "s" : ""}.`);
+/* « IMPOSSIBLE À VÉRIFIER » NE DIT JAMAIS « MIS À JOUR » (choix du porteur du 16/11/2026, sur la garde de
+   l'invariant 9 de parcours-web) : on dit depuis quand la publication gardée a été reçue, pas qu'elle est à jour. */
+export const recueIlYa = n => (n === 0 ? "Dernière publication reçue aujourd'hui." : `Dernière publication reçue il y a ${n} jour${n > 1 ? "s" : ""}.`);
 export function phraseFraicheur(e, maintenant) {
   const base = e.nouvelle ? PHRASES_FRAICHEUR.nouvelle : PHRASES_FRAICHEUR[e.etat];
   if (!base) return null;
@@ -391,7 +395,7 @@ export function phraseFraicheur(e, maintenant) {
   const n = joursDepuis(e.generation, maintenant);
   /* une génération illisible : aucune date inventée, la phrase d'origine reste */
   if (n === null) return base;
-  return { ...base, corps: misAJour(n) };
+  return { ...base, corps: e.etat === FRAICHEUR.INCONNUE && !e.nouvelle ? recueIlYa(n) : misAJour(n) };
 }
 let indexVerifie = null;                 /* null : pas encore de reponse */
 let nouvelleParue = false;
