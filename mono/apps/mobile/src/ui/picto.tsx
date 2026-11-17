@@ -5,7 +5,7 @@
  * Liste fermee : Parlement, budget, vote. */
 import type { ReactNode } from "react";
 import { View } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import Ionicons from "@expo/vector-icons/Ionicons";
 import { couleurs } from "../lib/theme";
 
 export const PICTO = { parlement: "business-outline", budget: "bar-chart-outline", vote: "checkbox-outline" } as const;

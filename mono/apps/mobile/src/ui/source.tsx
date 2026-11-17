@@ -21,7 +21,7 @@ import { CALCUL_REPERE, dateFr, datePublication, ligneSource } from "@repere/cor
 import { useCommuneChoisie } from "../lib/useCommune";
 import { feuille, couleurs, CIBLE, PAS, POLICE, RAYON, TYPO } from "../lib/theme";
 import { Etiquette } from "./resume";
-import { Ionicons } from "@expo/vector-icons";
+import Ionicons from "@expo/vector-icons/Ionicons";
 import { enfonce } from "./mouvement";
 import { niveauTitre } from "./titre";
 

@@ -28,7 +28,7 @@ import { BadgeGroupe } from "../ui/badge-groupe";
 import { GROUPE_INCONNU, deputeParNom, groupeDe, useGroupes } from "../lib/groupes";
 import { useEffect, useState } from "react";
 import { Animated, Linking, Modal, Pressable, ScrollView, Share, Text, View } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import Ionicons from "@expo/vector-icons/Ionicons";
 import { router, Stack, useLocalSearchParams } from "expo-router";
 import { chaineDecision, copieVoteVide, dateCourte, demandeVotesElu, dateFr, debutDeMandat, legislaturesDepute, niveauDuDepute, decompte, ETAT_VOTE, LIBELLES, lienScrutin, memeNom, repartitionVote, titreLisible } from "@repere/core";
 import { BarreSegments, Repartition } from "../ui/visuels";

@@ -8,7 +8,7 @@ import { dateFr, plusRecentEnPremier } from "@repere/core";
 import { chargerEvenements, ETATS, PHRASES } from "../lib/donnees";
 import { Carte, LienSortant, Vide } from "../lib/composants";
 import { CIBLE, couleurs, PAS, POLICE, TYPO } from "../lib/theme";
-import { Ionicons } from "@expo/vector-icons";
+import Ionicons from "@expo/vector-icons/Ionicons";
 import { Pression } from "../ui/pression";
 import { DateDonnee } from "../ui/fraicheur";
 import { Page, Question } from "../ui/page";

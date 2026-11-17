@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { Pressable, Text, View } from "react-native";
 import { useMouvementReduit } from "./mouvement";
 import { router } from "expo-router";
-import { Ionicons } from "@expo/vector-icons";
+import Ionicons from "@expo/vector-icons/Ionicons";
 import { dateFr } from "@repere/core";
 import { ELECTIONS_SOURCE, ELECTIONS_VERIFIEES_LE, prochaineElection } from "../lib/elections";
 import { CIBLE, PAS, POLICE, RAYON, couleurs } from "../lib/theme";

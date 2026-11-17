@@ -3,7 +3,7 @@
  * pastille noire : elle ne rivalise plus avec le titre de l'écran, et la cible reste de 48 px. */
 import { useState } from "react";
 import { Modal, Pressable, StyleSheet, Text, View } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import Ionicons from "@expo/vector-icons/Ionicons";
 import { CIBLE, PAS, RAYON, TYPO, couleurs, feuille, type ChoixTheme } from "../lib/theme";
 import { VOILE_MODAL } from "../lib/palette";
 import { useTheme } from "../lib/themeChoix";

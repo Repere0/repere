@@ -14,7 +14,7 @@ import { useState } from "react";
 import { Animated, KeyboardAvoidingView, Platform, Pressable, Text, TextInput, View } from "react-native";
 import { router } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Ionicons } from "@expo/vector-icons";
+import Ionicons from "@expo/vector-icons/Ionicons";
 import { nettoyerPrenom, PRENOM_MAX, PROFIL_DEFAUT } from "@repere/core";
 import { MODE_INITIAL, useProfil } from "../lib/profil";
 import { ACCENTS, CIBLE, couleurs, PAS, POLICE, RAYON, TYPO } from "../lib/theme";

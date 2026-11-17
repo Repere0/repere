@@ -10,7 +10,7 @@
  * le premier ecran (tests/parcours-web.mjs). */
 import type { ReactNode } from "react";
 import { Pressable, Share, StyleSheet, Text, View } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import Ionicons from "@expo/vector-icons/Ionicons";
 import { feuille, ACCENTS, couleurs, CIBLE, OMBRE, PAS, POLICE, RAYON, TYPO, type Echelon } from "../lib/theme";
 import { enfonce } from "./mouvement";
 import { niveauTitre } from "./titre";

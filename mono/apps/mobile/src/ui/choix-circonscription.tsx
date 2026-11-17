@@ -10,7 +10,7 @@
  * justifier) et se comporte autrement sur le web, l'iPhone et Android ; 18 puces tiennent en 4 lignes. */
 import { useState } from "react";
 import { Pressable, Text, View } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import Ionicons from "@expo/vector-icons/Ionicons";
 import { ordinal } from "@repere/core";
 import { CIBLE, couleurs, PAS, POLICE, RAYON, TYPO } from "../lib/theme";
 import { enfonce } from "./mouvement";

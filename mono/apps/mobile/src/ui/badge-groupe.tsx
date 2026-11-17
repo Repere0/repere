@@ -2,7 +2,7 @@
    et un texte lisible dessus. Il identifie l'élu ; il ne code aucun vote (invariant 7). */
 import { Pressable, Text, View } from "react-native";
 import { router } from "expo-router";
-import { Ionicons } from "@expo/vector-icons";
+import Ionicons from "@expo/vector-icons/Ionicons";
 import { CIBLE, POLICE } from "../lib/theme";
 import { couleurGroupe, GROUPE_INCONNU, texteSur } from "../lib/groupes";
 import { enfonce } from "./mouvement";

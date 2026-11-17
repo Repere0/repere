@@ -111,3 +111,17 @@ test("chaque fiche porte « Signaler une erreur »", () => {
   const manquantes = FICHES.filter(f => !/<SignalerErreur\b/.test(fs.readFileSync(path.join(MOBILE, "src", "app", f), "utf8")));
   assert.deepEqual(manquantes, [], "fiche(s) sans signalement : " + manquantes.join(", "));
 });
+
+/* POIDS DU PREMIER CHARGEMENT (17/11/2026, sprint « stores »). Importer « @expo/vector-icons » par sa racine embarque
+   les tables de TOUTES les familles d'icônes (MaterialCommunityIcons 186 Ko, FontAwesome6 47 Ko…) alors que
+   l'application n'utilise qu'Ionicons. Mesuré : le paquet commun passe de 787 à 360 Ko (236 à 103 Ko compressés). */
+test("les icônes s'importent par leur famille, jamais par la racine de @expo/vector-icons", () => {
+  const racine = [];
+  const parcourir = d => { for (const n of fs.readdirSync(d, { withFileTypes: true })) {
+    const f = path.join(d, n.name);
+    if (n.isDirectory()) parcourir(f);
+    else if (/\.tsx?$/.test(n.name) && /from "@expo\/vector-icons"/.test(fs.readFileSync(f, "utf8"))) racine.push(path.relative(MOBILE, f));
+  } };
+  parcourir(path.join(MOBILE, "src"));
+  assert.deepEqual(racine, [], "import par la racine : " + racine.join(", "));
+});

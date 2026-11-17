@@ -8,7 +8,7 @@
 import type { ReactNode } from "react";
 import { StyleSheet, Text, View } from "react-native";
 import { Pression } from "./pression";
-import { Ionicons } from "@expo/vector-icons";
+import Ionicons from "@expo/vector-icons/Ionicons";
 import { feuille, couleurs, OMBRE, PAS, POLICE, RAYON, TYPO } from "../lib/theme";
 import { bordureGroupe, texteSur } from "../lib/groupes";
 import { phrasesDe } from "@repere/core";
