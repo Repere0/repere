@@ -8,7 +8,7 @@ l'application dit alors l'absence. `sources.json` n'est jamais publié.
 
 > **Exception du 12/11/2026 (porteur)** : `candidats.json` porte des **candidatures déclarées** (`statut: "declare"`),
 > relevées dans la presse le 11/11/2026, chacune avec **deux sources** datées (règle dans `@repere/core`,
-> `candidatValide`). Ordre alphabétique, aucun classement. Photos (ADR 0008) : produites par la chaîne dans `photos.json`, jamais saisies ici ; jamais de couleur de parti. À remplacer par la liste officielle en mars 2027.
+> `candidatValide`). Ordre alphabétique, aucun classement. Photos (ADR 0008) : produites par la chaîne dans `photos.json`, jamais saisies ici ; jamais de couleur de parti. Champ facultatif `wikidata` (« Q… ») : à écrire seulement après avoir vérifié l'item à la main, il lève un homonyme ou un libellé Wikidata différent (17/11/2026). À remplacer par la liste officielle en mars 2027.
 
 1. **Candidats : aucune collecte automatique.** Saisie à la main dans `candidats.json` en mars 2027,
    quand le Conseil constitutionnel aura publié la liste. Mettre à jour `meta.json` (date, source) dans

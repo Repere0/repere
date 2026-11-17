@@ -32,6 +32,16 @@ Avec le vrai agenda de l'Assemblée (relevé du 12/11/2026 : 35 séances, du 12 
   bouton « Voir les N jours suivants » montre le reste ;
 - sans le fichier du Sénat, la phrase d'absence du Sénat s'affiche, et le filtre « Sénat » ne montre rien.
 
+## Quand le Sénat ne répond pas (17/11/2026)
+
+`mono/data` n'est pas versionné : jusqu'ici, un runner neuf n'avait aucun relevé précédent, et une panne du flux du
+Sénat (comme le 15/11/2026) retirait le Sénat de la publication. Désormais `outils/pipeline.sh` récupère d'abord
+`https://repereapp.netlify.app/data/calendrier-senat.json` (la publication de la veille) et ne le garde que s'il a la
+forme attendue (`source.releve_le` daté, `evenements` en liste). Si le Sénat répond, le fichier est remplacé ; sinon,
+le relevé d'hier reste publié **avec sa date**, et l'écran dit son âge (`ageReleve`, « relevé le …, il y a N jours »).
+Rien n'est inventé : si la publication précédente est elle aussi absente ou illisible, le Sénat est absent et l'écran
+le dit, comme avant. Un agenda vide (aucune séance) reste un fichier valide, affiché comme tel.
+
 ## Ce qui reste à vérifier
 
 - **Le Sénat avec de vraies données** : jamais vu ici (réseau). À regarder en production ou après l'étape 2.
