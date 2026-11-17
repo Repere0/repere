@@ -243,10 +243,16 @@ async function main() {
       try { img = await appeler(ii.thumburl, { headers: { "user-agent": UA } }, { essais: 2 }); } catch { refusees++; continue; }
       let octets = Buffer.from(await img.arrayBuffer());
       const etroite = octets.length > 25000 ? vignettePlusPetite(ii.thumburl) : null;
+      let essai120 = octets.length > 25000 ? (etroite ? "" : `pas d'adresse 120 px tiree de ${ii.thumburl}`) : "";
       if (etroite) {
-        try { img = await appeler(etroite, { headers: { "user-agent": UA } }, { essais: 2 }); octets = Buffer.from(await img.arrayBuffer()); } catch { /* la vignette de 160 reste trop lourde : refusee ci-dessous */ }
+        try {
+          const img2 = await appeler(etroite, { headers: { "user-agent": UA } }, { essais: 2 });
+          const o2 = Buffer.from(await img2.arrayBuffer());
+          essai120 = `120 px : ${o2.length} octets`;
+          if (o2.length < octets.length) { img = img2; octets = o2; }
+        } catch (e) { essai120 = `120 px en echec (${e.message})`; }   /* la vignette de 160 reste trop lourde : refusee ci-dessous */
       }
-      if (octets.length > 25000) { refusees++; if (c.id) console.log(`::notice title=photos-candidats::${c.id} : vignette trop lourde (${octets.length} octets)`); continue; }   /* une vignette, pas une photo pleine taille */
+      if (octets.length > 25000) { refusees++; if (c.id) console.log(`::notice title=photos-candidats::${c.id} : vignette trop lourde (${octets.length} octets ; ${essai120})`); continue; }   /* une vignette, pas une photo pleine taille */
       const type = img.headers.get("content-type") || "image/jpeg";
       (parDep[c.dep] ||= {})[c.id || c.cle] = {
         data: `data:${type};base64,${octets.toString("base64")}`,
