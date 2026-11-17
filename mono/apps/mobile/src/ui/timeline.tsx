@@ -3,7 +3,7 @@
  * existe. Aucun plafond de taille : le texte suit le Dynamic Type et Confort de lecture.
  * Liste vide : rien n'est rendu (pas de cadre vide, invariant 5). */
 import { Linking, Pressable, Text, View } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import Ionicons from "@expo/vector-icons/Ionicons";
 import { dateFr } from "@repere/core";
 import { CIBLE, couleurs, PAS, TYPO } from "../lib/theme";
 import { POINT_ETAPE } from "../lib/palette";

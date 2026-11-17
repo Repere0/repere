@@ -8,7 +8,7 @@
  * L'ordre est un ordre de distance, pas d'importance : c'est ecrit. */
 import { useState } from "react";
 import { Linking, Pressable, ScrollView, Text, View } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import Ionicons from "@expo/vector-icons/Ionicons";
 import { router, Stack } from "expo-router";
 import { chaineDecision, dateFr, listeFr, MAIRE_ABSENT, ordinal, phraseAdjoints, RNE_URL, LIBELLES } from "@repere/core";
 import { sansConseilDepartemental } from "@repere/core";

@@ -7,7 +7,7 @@
  * Sans fait affichable, le bandeau ne s'affiche pas. */
 import { useEffect, useRef, useState } from "react";
 import { Animated, Easing, Pressable, StyleSheet, Text, View } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import Ionicons from "@expo/vector-icons/Ionicons";
 import { couleurs, feuille, PAS, TYPO } from "../lib/theme";
 import { etatFraicheur, FRAICHEUR, surFraicheur } from "../lib/donnees";
 import { useMouvementReduit } from "./mouvement";

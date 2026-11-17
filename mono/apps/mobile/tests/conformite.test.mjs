@@ -68,8 +68,27 @@ test("la politique de confidentialite existe, et l'ecran et le document disent l
   assert.ok(reglages.includes('"/confidentialite"'), "le lien Confidentialité des reglages ne mene pas a l'ecran");
 });
 
+test("les mentions légales existent, l'écran et le document disent la même chose, et les réglages y mènent", () => {
+  const doc = fs.readFileSync(path.join(DOCS, "mentions-legales.md"), "utf8");
+  const ecran = fs.readFileSync(path.join(MOBILE, "src", "app", "mentions-legales.tsx"), "utf8");
+  for (const cle of ["à titre non professionnel", "repere0@protonmail.com", "Netlify, Inc.", "101 2nd Street", "Vercel Inc.", "AGPL-3.0", "Wikimedia Commons"]) {
+    assert.ok(doc.includes(cle), `docs/mentions-legales.md ne contient pas « ${cle} »`);
+    assert.ok(ecran.includes(cle), `mentions-legales.tsx ne contient pas « ${cle} »`);
+  }
+  const reglages = fs.readFileSync(path.join(MOBILE, "src", "ui", "reglages.tsx"), "utf8");
+  assert.ok(reglages.includes('"/mentions-legales"'), "les réglages ne mènent pas aux mentions légales");
+});
+
+test("la politique de confidentialité ne dit plus qu'aucune photo d'élu n'est publiée (D27, ADR 0004)", () => {
+  for (const f of [path.join(DOCS, "privacy-policy.md"), path.join(MOBILE, "src", "app", "confidentialite.tsx")]) {
+    const t = fs.readFileSync(f, "utf8");
+    assert.doesNotMatch(t, /ne publie ni photo/, f);
+    assert.match(t, /Wikimedia Commons/, f);
+  }
+});
+
 test("les documents de soumission ne contiennent pas de remplissage", () => {
-  for (const nom of ["privacy-policy.md", "app-store-metadata.md"]) {
+  for (const nom of ["privacy-policy.md", "app-store-metadata.md", "mentions-legales.md"]) {
     const t = fs.readFileSync(path.join(DOCS, nom), "utf8");
     assert.doesNotMatch(t, /lorem ipsum|\bTODO\b|\bXXX\b/i, nom);
     assert.doesNotMatch(t, /\u2019/, nom);
@@ -110,4 +129,18 @@ test("chaque fiche porte « Signaler une erreur »", () => {
   const FICHES = ["(onglets)/chez-vous.tsx", "(onglets)/qui-decide.tsx", "../ui/ecran-argent.tsx", "vote.tsx", "elu.tsx"];
   const manquantes = FICHES.filter(f => !/<SignalerErreur\b/.test(fs.readFileSync(path.join(MOBILE, "src", "app", f), "utf8")));
   assert.deepEqual(manquantes, [], "fiche(s) sans signalement : " + manquantes.join(", "));
+});
+
+/* POIDS DU PREMIER CHARGEMENT (17/11/2026, sprint « stores »). Importer « @expo/vector-icons » par sa racine embarque
+   les tables de TOUTES les familles d'icônes (MaterialCommunityIcons 186 Ko, FontAwesome6 47 Ko…) alors que
+   l'application n'utilise qu'Ionicons. Mesuré : le paquet commun passe de 787 à 360 Ko (236 à 103 Ko compressés). */
+test("les icônes s'importent par leur famille, jamais par la racine de @expo/vector-icons", () => {
+  const racine = [];
+  const parcourir = d => { for (const n of fs.readdirSync(d, { withFileTypes: true })) {
+    const f = path.join(d, n.name);
+    if (n.isDirectory()) parcourir(f);
+    else if (/\.tsx?$/.test(n.name) && /from "@expo\/vector-icons"/.test(fs.readFileSync(f, "utf8"))) racine.push(path.relative(MOBILE, f));
+  } };
+  parcourir(path.join(MOBILE, "src"));
+  assert.deepEqual(racine, [], "import par la racine : " + racine.join(", "));
 });

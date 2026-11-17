@@ -4,7 +4,7 @@
  * ne se met jamais dans une adresse, invariant 2), et la source telle que l'écran la montre. Share de React
  * Native, comme ailleurs ; pas de carte d'image : ce partage-là est un texte. */
 import { useRef, useState } from "react";
-import { Ionicons } from "@expo/vector-icons";
+import Ionicons from "@expo/vector-icons/Ionicons";
 import { Platform, Pressable, Share, Text, View } from "react-native";
 import { dateFr } from "@repere/core";
 import { couleurs, CIBLE } from "../../lib/theme";

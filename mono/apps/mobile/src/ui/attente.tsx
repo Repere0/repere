@@ -7,7 +7,7 @@
  * restent dessous (invariant 5 : jamais une forme vide à la place d'une donnée). Décoratif : le lecteur
  * d'écran ne lit que la phrase. Une apparition de 0,5 s, une fois ; aucune boucle. */
 import { Animated, Text, View } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import Ionicons from "@expo/vector-icons/Ionicons";
 import { couleurs, PAS, RAYON, TEINTES, TYPO } from "../lib/theme";
 import { useApparition } from "./mouvement";
 

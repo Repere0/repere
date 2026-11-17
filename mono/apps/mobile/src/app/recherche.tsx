@@ -12,7 +12,7 @@ import { noterArrondissement } from "../lib/arrondissement";
 import { useBasSur } from "../ui/page";
 import { CarteListe, Puces } from "../ui/donnees";
 import { SquelettesListe } from "../ui/squelette";
-import { Ionicons } from "@expo/vector-icons";
+import Ionicons from "@expo/vector-icons/Ionicons";
 import { useEffect, useMemo, useState } from "react";
 import { Pressable, ScrollView, Text, TextInput, View } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";

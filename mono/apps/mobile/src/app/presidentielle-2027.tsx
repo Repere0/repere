@@ -15,7 +15,7 @@
 import { Details } from "../ui/details";
 import { useState } from "react";
 import { Linking, Pressable, ScrollView, Text, useWindowDimensions, View } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import Ionicons from "@expo/vector-icons/Ionicons";
 import { Stack } from "expo-router";
 import { SquelettesListe } from "../ui/squelette";
 import { dateFr, heureFr } from "@repere/core";

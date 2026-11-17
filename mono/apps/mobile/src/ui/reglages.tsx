@@ -3,7 +3,7 @@
  * pastille noire : elle ne rivalise plus avec le titre de l'écran, et la cible reste de 48 px. */
 import { useState } from "react";
 import { Modal, Pressable, StyleSheet, Text, View } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import Ionicons from "@expo/vector-icons/Ionicons";
 import { CIBLE, PAS, RAYON, TYPO, couleurs, feuille, type ChoixTheme } from "../lib/theme";
 import { VOILE_MODAL } from "../lib/palette";
 import { useTheme } from "../lib/themeChoix";
@@ -95,6 +95,14 @@ function ChoixAffichage({ visible, onFermer }: { visible: boolean; onFermer: () 
             style={({ pressed }) => [s.option, pressed && enfonce(true)]}
           >
             <Text style={s.optionTexte}>Confidentialité</Text>
+          </Pressable>
+          {/* 17/11/2026 : obligatoires pour les magasins d'applications et pour la loi (LCEN, art. 1-1). */}
+          <Pressable
+            onPress={() => { onFermer(); router.push("/mentions-legales"); }}
+            accessibilityRole="link"
+            style={({ pressed }) => [s.option, pressed && enfonce(true)]}
+          >
+            <Text style={s.optionTexte}>Mentions légales</Text>
           </Pressable>
           {/* 13/11/2026 (porteur) : « Soutenir Repère ». Aucun paiement n'y est encaissé (voir l'écran). */}
           <Pressable

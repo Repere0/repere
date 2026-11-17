@@ -23,7 +23,7 @@ import { Carte, LienSortant, Segments, Vide } from "../lib/composants";
 import { srcScrutins, srcVote } from "../lib/sources";
 import { useCommuneChoisie } from "../lib/useCommune";
 import { couleurs, PAS, POLICE, RAYON, TYPO, CIBLE } from "../lib/theme";
-import { Ionicons } from "@expo/vector-icons";
+import Ionicons from "@expo/vector-icons/Ionicons";
 import { BoutonCopierLien } from "../ui/partage/partager-texte";
 import { AvecDonnees, Page, Question } from "../ui/page";
 import { PastilleSource } from "../ui/source";

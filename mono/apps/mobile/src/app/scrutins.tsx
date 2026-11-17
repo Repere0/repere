@@ -12,7 +12,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import { Stack, useLocalSearchParams } from "expo-router";
-import { Ionicons } from "@expo/vector-icons";
+import Ionicons from "@expo/vector-icons/Ionicons";
 import { SquelettesListe } from "../ui/squelette";
 import { useCompteur } from "../ui/mouvement";
 import { resumeExtractif } from "../lib/resume-extractif";

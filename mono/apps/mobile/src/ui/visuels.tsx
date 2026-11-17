@@ -13,7 +13,7 @@ import { espacesFines } from "./donnees";
 import { AvatarElu, CreditPhotoElu } from "./avatar";
 import { useState, type ReactNode } from "react";
 import { Animated, Pressable, StyleSheet, Text, View, type TextStyle } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import Ionicons from "@expo/vector-icons/Ionicons";
 import { feuille, couleurs, JAUGE, PAS, POLICE, RAYON, TEINTES, TYPO, CIBLE, type Echelon } from "../lib/theme";
 import { NEUTRES_PAR_MODE } from "../lib/palette";
 import { useCouleurVote } from "../lib/couleur-vote";

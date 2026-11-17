@@ -123,6 +123,7 @@ export default function Coquille() {
                 <Stack.Screen name="presidentielle-2027" options={{ title: "Présidentielle 2027" }} />
                 <Stack.Screen name="a-propos" options={{ title: "À propos" }} />
                 <Stack.Screen name="confidentialite" options={{ title: "Confidentialité" }} />
+                <Stack.Screen name="mentions-legales" options={{ title: "Mentions légales" }} />
                 {/* Audit UI (16/11/2026) : ces quatre écrans n'avaient pas de bouton retour ; ouverts par un lien direct, c'était une impasse. */}
                 <Stack.Screen name="quiz" options={{ title: "Quiz civique" }} />
                 <Stack.Screen name="repere-du-jour" options={{ title: "Repère du jour" }} />

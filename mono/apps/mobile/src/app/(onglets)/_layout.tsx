@@ -11,7 +11,7 @@
  * Les ecrans de detail (argent, vote, fiche, partage, dictionnaire...) restent
  * dans la pile, au-dessus de la barre. */
 import { Platform, StyleSheet, Text, type ColorValue } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import Ionicons from "@expo/vector-icons/Ionicons";
 import { Tabs } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { LIBELLES } from "@repere/core";

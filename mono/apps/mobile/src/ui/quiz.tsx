@@ -18,7 +18,7 @@ import { MARQUE_DEFILEMENT } from "../lib/defilement-ios";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Animated, Easing, Modal, Pressable, ScrollView, Text, View } from "react-native";
 import { router } from "expo-router";
-import { Ionicons } from "@expo/vector-icons";
+import Ionicons from "@expo/vector-icons/Ionicons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { GLOSSAIRE } from "@repere/core";
 import { mancheDuQuiz, TAILLE_MANCHE, type EntreeQuiz, type QuestionQuiz } from "../lib/quiz";

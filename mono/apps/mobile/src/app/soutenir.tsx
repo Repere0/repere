@@ -9,7 +9,7 @@
  * compte. Si l'une d'elles cessait d'être vraie, c'est cette page qu'il faudrait corriger en premier. */
 import { Text, View } from "react-native";
 import { Stack } from "expo-router";
-import { Ionicons } from "@expo/vector-icons";
+import Ionicons from "@expo/vector-icons/Ionicons";
 import { Carte } from "../lib/composants";
 import { Page, Question } from "../ui/page";
 import { CIBLE, couleurs, PAS, POLICE, RAYON, TYPO } from "../lib/theme";

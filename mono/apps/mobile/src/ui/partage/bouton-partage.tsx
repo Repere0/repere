@@ -1,6 +1,6 @@
 /* Le bouton « Partager » d'un ecran de contexte : il capture la carte correspondante
    (hors ecran) puis ouvre la feuille de partage native. Le texte de repli est fourni. */
-import { Ionicons } from "@expo/vector-icons";
+import Ionicons from "@expo/vector-icons/Ionicons";
 import type { ComponentRef, ReactNode, RefObject } from "react";
 import { Pressable, Text, View } from "react-native";
 import { couleurs, CIBLE, PAS } from "../../lib/theme";

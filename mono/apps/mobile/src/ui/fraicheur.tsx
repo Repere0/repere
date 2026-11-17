@@ -12,7 +12,7 @@
 import { useEffect, useState } from "react";
 import { AppState, Linking, Pressable, StyleSheet, Text, View } from "react-native";
 import { router } from "expo-router";
-import { Ionicons } from "@expo/vector-icons";
+import Ionicons from "@expo/vector-icons/Ionicons";
 import { ageReleve, dateFr } from "@repere/core";
 import {
   etatFraicheur, surFraicheur, verifierPublication, publicationPriseEnCompte, phraseFraicheur, FRAICHEUR,

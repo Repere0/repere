@@ -16,7 +16,7 @@ import { Details } from "../ui/details";
 import { useEffect, useMemo, useState } from "react";
 import { router } from "expo-router";
 import { Linking, Pressable, Text, View } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import Ionicons from "@expo/vector-icons/Ionicons";
 import { ageReleve, dateFr, dernierExercice, parHabitant, THEMES, themesDuTexte, titreLisible } from "@repere/core";
 import { chargerCatalogueScrutins, chargerCommunesBeta, chargerDepartement, chargerEvenements, chargerIndex } from "../lib/donnees";
 import { srcComptesPublies, srcVote } from "../lib/sources";

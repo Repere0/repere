@@ -35,8 +35,20 @@ ok(etat.cles.includes("/index.html") && etat.cles.some(c => c.startsWith("/_expo
 ok(!etat.cles.some(c => c.startsWith("/data/")), "aucune donnée dans le cache du service worker");
 ok(await page.evaluate(() => document.querySelector('link[rel="manifest"]') && document.querySelector('meta[name="apple-mobile-web-app-capable"]') ? true : false), "manifeste et balise iOS présents");
 
+/* 17/11/2026 : la dernière commune RETENUE (« Retenir sur cet appareil », clé repere.departement) et ses
+   données de base s'ouvrent sans réseau, avec la mention de fraîcheur de l'invariant 9. Meaux, en ligne d'abord. */
+await page.evaluate(() => localStorage.setItem("repere.departement", JSON.stringify({ d: "77", c: "77284" })));
+await page.goto(BASE + "/finances", { waitUntil: "networkidle" });
+await page.waitForTimeout(2500);
+
 coupe = true;
 await ctx.setOffline(true);
+await page.goto(BASE + "/finances", { waitUntil: "domcontentloaded" }).catch(() => {});
+await page.waitForTimeout(3500);
+const fin = (await page.locator("body").innerText()).replace(/\s+/g, " ");
+ok(/Meaux/.test(fin) && /€/.test(fin), "hors ligne : la commune retenue et ses comptes s'affichent");
+ok(/pas pu vérifier/.test(fin) && !/Mis à jour/.test(fin), "hors ligne : la fraîcheur dit « impossible à vérifier », jamais « mis à jour » (invariant 9)");
+await page.goto(BASE + "/", { waitUntil: "domcontentloaded" }).catch(() => {});
 await page.reload({ waitUntil: "domcontentloaded" }).catch(() => {});
 await page.waitForTimeout(3000);
 const texte = (await page.locator("body").innerText()).trim();
@@ -44,6 +56,21 @@ ok(texte.length > 40, `hors ligne : l'interface s'affiche (${texte.length} carac
 await page.goto(BASE + "/recherche", { waitUntil: "domcontentloaded" }).catch(() => {});
 await page.waitForTimeout(2500);
 ok((await page.locator("body").innerText()).trim().length > 40, "hors ligne : une adresse interne s'ouvre aussi");
+/* 17/11/2026 : si le système a vidé la coquille, la page hors ligne dit la vérité et propose de réessayer.
+   1. Toujours vérifiable : la page de secours est préchargée avec la coquille.
+   2. Le comportement, seulement si le navigateur coupe VRAIMENT le réseau du service worker. Mesuré le 17/11/2026 :
+      le Chromium de Playwright 1.56 (celui de la CI) laisse passer les requêtes du service worker malgré setOffline ;
+      le serveur répond alors l'application, et l'on ne peut rien conclure. Le journal le dit au lieu de mentir. */
+ok(etat.cles.includes("/offline.html"), "la page hors ligne de secours est préchargée avec la coquille");
+const reseauDuSw = await page.evaluate(() => fetch("/manifest.json?sonde=" + Date.now()).then(r => r.ok, () => false));
+if (reseauDuSw) console.log("non mesuré ici : ce navigateur laisse passer le réseau du service worker hors ligne (page de secours vérifiée seulement en cache)");
+else {
+  await page.evaluate(async () => { for (const n of await caches.keys()) { const c = await caches.open(n); await c.delete("/"); await c.delete("/index.html"); } });
+  await page.goto(BASE + "/a-propos?secours=" + Date.now(), { waitUntil: "domcontentloaded" }).catch(() => {});
+  await page.waitForTimeout(1500);
+  const secours = (await page.locator("body").innerText()).replace(/\s+/g, " ");
+  ok(/Pas de connexion/.test(secours) && (await page.getByRole("link", { name: "Réessayer" }).count()) === 1, "hors ligne sans coquille : la page de secours et « Réessayer »");
+}
 ok(!erreurs.length, "aucune erreur JavaScript" + (erreurs.length ? " : " + erreurs[0] : ""));
 await nav.close();
 console.log(echecs ? `pwa : ${echecs} échec(s)` : "pwa : zéro échec");

@@ -4,7 +4,7 @@
  * Chargement), reecrits en composants React Native : le DOM n'existe pas sur
  * un telephone. La logique (dates, montants, lecture d'un scrutin) n'est PAS
  * reecrite : elle vient de @repere/core. */
-import { Ionicons } from "@expo/vector-icons";
+import Ionicons from "@expo/vector-icons/Ionicons";
 import type { ReactNode } from "react";
 import { Linking, Pressable, StyleSheet, Text, View } from "react-native";
 import { ligneSource, motsDuTexte, CALCUL_REPERE } from "@repere/core";
