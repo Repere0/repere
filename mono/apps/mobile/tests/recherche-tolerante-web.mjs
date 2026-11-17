@@ -14,7 +14,7 @@ const erreurs = []; page.on("pageerror", e => erreurs.push(String(e)));
 await page.goto(BASE, { waitUntil: "networkidle" });
 await passerBienvenue(page); await page.waitForTimeout(1200);
 await page.getByRole("button", { name: /Chercher une commune/ }).first().click().catch(() => {});
-const champ = page.getByPlaceholder(/Tapez votre ville/);
+const champ = page.getByPlaceholder(/Votre ville ou code postal/);
 const taper = async t => { await champ.fill(t); await page.waitForTimeout(900); return (await page.locator("body").innerText()).replace(/\s+/g, " "); };
 
 let t = await taper("st denis");
@@ -36,7 +36,7 @@ await page2.route("**/data/codes-postaux.json", r => r.fulfill({ status: 200, co
 await page2.goto(BASE, { waitUntil: "networkidle" });
 await passerBienvenue(page2); await page2.waitForTimeout(1200);
 await page2.getByRole("button", { name: /Chercher une commune/ }).first().click().catch(() => {});
-const champ2 = page2.getByPlaceholder(/Tapez votre ville/);
+const champ2 = page2.getByPlaceholder(/Votre ville ou code postal/);
 const taper2 = async t => { await champ2.fill(t); await page2.waitForTimeout(1500); return (await page2.locator("body").innerText()).replace(/\s+/g, " "); };
 t = await taper2("77000");
 ok(/Melun/.test(t) && !/pas encore disponible/.test(t), "avec le fichier des codes postaux, « 77000 » trouve Melun");

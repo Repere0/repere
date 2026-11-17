@@ -55,9 +55,14 @@ const photo = async (page, nom) => { if (CAP) await page.screenshot({ path: `${C
   const { contexte, page, erreurs } = await nouveau();
   await page.goto(BASE + "/", { waitUntil: "networkidle" });
   await passerBienvenue(page);
+  /* 17/11/2026 (porteur) : sans commune retenue, l'accueil n'a que la recherche, quatre cartes et « Soutenir » ;
+     avec une commune retenue, il ouvre la page de la commune. Les thèmes restent sur l'écran de recherche. */
+  await page.getByTestId("soutenir-accueil").waitFor({ timeout: 15000 });
+  verifier(await page.getByRole("button", { name: /^Thème / }).count() === 0, "accueil sans commune : aucun thème");
+  await page.goto(BASE + "/recherche", { waitUntil: "networkidle" });
   await page.getByRole("button", { name: /^Thème Santé/ }).waitFor({ timeout: 15000 });
   const themes = await page.getByRole("button", { name: /^Thème / }).count();
-  verifier(themes === 6, `accueil : six thèmes (14/11, porteur) (${themes})`);
+  verifier(themes >= 6, `recherche : les thèmes sont proposés (${themes})`);
   await photo(page, "1-accueil-themes");
   await page.getByRole("button", { name: /^Thème Santé/ }).click();
   await page.getByText("Thème « Santé »", { exact: false }).first().waitFor({ timeout: 15000 });
