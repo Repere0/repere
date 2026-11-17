@@ -95,6 +95,8 @@ export function adresseCommunesBeta() { return `${BASE_DONNEES}/communes-beta.js
    l'Ile-de-France, jamais un code de commune dans l'adresse. Tant que la chaine de collecte ne le publie pas,
    le fichier est absent et la recherche par code postal le dit (doctrine du vide). */
 export function adresseCodesPostaux() { return `${BASE_DONNEES}/codes-postaux.json`; }
+/* Paris par arrondissement (17/11/2026, scripts/collecte-paris-arrondissements.mjs) : circonscriptions et maires. */
+export function adresseParisArrondissements() { return `${BASE_DONNEES}/paris-arrondissements.json`; }
 /* Resumes « En clair » des textes votes (12/11/2026) : un seul fichier national, seulement les resumes VALIDES par le
    porteur (scripts/resumes-clairs.mjs --publier). Absent ou vide : l'ecran dit « Pas encore de resume pour ce texte ». */
 export function adresseResumesClairs() { return `${BASE_DONNEES}/resumes-clairs.json`; }
@@ -540,6 +542,9 @@ export async function chargerCommunesBeta({ delaiMs = 8000 } = {}) {
 }
 export async function chargerCodesPostaux({ delaiMs = 8000 } = {}) {
   return chargerSocle("socle:CPO", adresseCodesPostaux(), delaiMs);
+}
+export async function chargerParisArrondissements({ delaiMs = 8000 } = {}) {
+  return chargerSocle("socle:PAR", adresseParisArrondissements(), delaiMs);
 }
 export async function chargerResumesClairs({ delaiMs = 8000 } = {}) {
   return chargerSocle("socle:RCL", adresseResumesClairs(), delaiMs);

@@ -2,7 +2,7 @@
 // Les règles sont celles de scripts/collecte-photos-elus.mjs (ADR 0004, docs/data/photos-elus.md).
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { LICENCE_OK, appeler, concorde, familleRNE, photosReprises, rapprocherCandidats } from "../scripts/collecte-photos-elus.mjs";
+import { LICENCE_OK, appeler, concorde, familleRNE, photosReprises, rapprocherCandidats, vignettePlusPetite } from "../scripts/collecte-photos-elus.mjs";
 
 test("licences : libres acceptées (CC BY, CC BY-SA, CC0, domaine public)", () => {
   for (const l of ["CC BY 4.0", "CC BY-SA 4.0", "CC BY-SA 3.0", "CC0 1.0", "CC0", "Public domain", "domaine public"])
@@ -34,6 +34,34 @@ test("candidats : rapprochés seulement si un seul item porte exactement leur no
     { p: "Q3", label: "Anne Sans Photo", img: null },
   ]);
   assert.deepEqual(r.map(x => [x.id, x.wikidata, x.image, x.cle]), [["a", "Q12927", "x.jpg", "C:a"]]);
+});
+
+/* 17/11/2026 (12 photos sur 25) : la requête large (sans « personnalité politique ») ne sert qu'aux noms
+   que la stricte ne connaît pas ; des homonymes restent des homonymes ; un QID écrit par le porteur prime. */
+test("candidats : requête large pour les non-politiques, jamais pour départager des homonymes", () => {
+  const liste = [{ id: "r", prenom: "Teddy", nom: "Riner" }, { id: "m", prenom: "Benoît", nom: "Mathieu" }, { id: "x", prenom: "Inconnu", nom: "Total" }];
+  const strict = [{ p: "Q1", label: "Benoît Mathieu", img: "a.jpg" }, { p: "Q2", label: "Benoît Mathieu", img: "b.jpg" }];
+  const large = [{ p: "Q9", label: "Teddy Riner", img: "t.jpg" }, { p: "Q1", label: "Benoît Mathieu", img: "a.jpg" }];
+  const r = rapprocherCandidats(liste, strict, large);
+  assert.deepEqual(r.map(x => [x.id, x.wikidata, x.image]), [["r", "Q9", "t.jpg"]]);
+  assert.match(r.raisons.m, /homonymes/);
+  assert.match(r.raisons.x, /aucun item/);
+});
+
+test("candidats : un QID écrit dans candidats.json est pris tel quel, sans rapprochement par le nom", () => {
+  const liste = [{ id: "h", prenom: "Jean", nom: "Martin", wikidata: "Q42" }, { id: "s", prenom: "Ana", nom: "Sans", wikidata: "Q43" }];
+  const r = rapprocherCandidats(liste, [{ p: "Q1", label: "Jean Martin", img: "faux.jpg" }], [], [{ p: "http://www.wikidata.org/entity/Q42", img: "vrai.jpg" }, { p: "Q43", img: null }]);
+  assert.deepEqual(r.map(x => [x.id, x.wikidata, x.image]), [["h", "Q42", "vrai.jpg"]]);
+  assert.match(r.raisons.s, /aucune image/);
+});
+
+test("vignette trop lourde : on redemande 120 px au lieu de refuser", () => {
+  assert.equal(vignettePlusPetite("https://upload.wikimedia.org/x/thumb/a/ab/F.jpg/160px-F.jpg"), "https://upload.wikimedia.org/x/thumb/a/ab/F.jpg/120px-F.jpg");
+  assert.equal(vignettePlusPetite("https://upload.wikimedia.org/x/F.jpg"), null);
+  /* adresse reelle relevee le 17/11/2026 : Commons sert 250 px pour une demande de 160 */
+  assert.equal(vignettePlusPetite("https://thumb.wikimedia.org/wikipedia/commons/thumb/a/ae/Roussel_Fabien_1.jpg/250px-Roussel_Fabien_1.jpg?utm_source=commons.wikimedia.org"),
+    "https://thumb.wikimedia.org/wikipedia/commons/thumb/a/ae/Roussel_Fabien_1.jpg/120px-Roussel_Fabien_1.jpg?utm_source=commons.wikimedia.org");
+  assert.equal(vignettePlusPetite("https://upload.wikimedia.org/x/thumb/a/ab/F.jpg/120px-F.jpg"), null);
 });
 
 /* Robustesse (12/11/2026) : Wikidata et Commons en erreur. Faux fetch, aucune attente réelle. */

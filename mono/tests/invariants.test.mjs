@@ -367,13 +367,16 @@ test("invariant 4 — aucune donnée n'est servie sans source déclarée", () =>
      Fichier entier, sa source et sa date dedans (controle ci-dessous).
      La dix-septieme, /senateurs.json, est ajoutee le 13/11/2026 : les senateurs, leur groupe et leur
      siege, produits par scripts/collecte-senat.mjs depuis api-senat. Fichier entier, sa source, sa
-     licence RELEVEE a la collecte et sa date dedans. */
+     licence RELEVEE a la collecte et sa date dedans.
+     La dix-huitieme, /paris-arrondissements.json, est ajoutee le 17/11/2026 : circonscriptions et maires
+     de chaque arrondissement de Paris (scripts/collecte-paris-arrondissements.mjs). Fichier entier, sans
+     code d'arrondissement dans l'adresse ; chaque partie porte sa source et sa date (controle ci-dessous). */
   const client = lire("packages/data-utils/src/client.js");
   const composees = [...client.matchAll(/\$\{BASE_DONNEES\}(\/[A-Za-z0-9_${}./-]*)/g)].map(m => m[1]);
   assert.deepEqual([...new Set(composees)].sort(),
     ["/actuelles-rss.json", "/actus-hebdo.json", "/agenda-an.json", "/agregats-regionaux.json", "/calendrier-senat.json", "/codes-postaux.json", "/communes-beta.json", "/comptes-regions.json", "/decoupage-idf.json", "/departments/${d}.json",
      "/deputes-groupes.json", "/deputes.json", "/elus-regions/${c}.json", "/evenements.json", "/hemicycle-plan.json", "/index.json", "/mairies-idf.json",
-     "/photos-elus/${d}.json", "/presidentielle-2027/${fichier}.json", "/projets/${d}.json", "/questions-gouvernement-index.json", "/questions-gouvernement/${lotPadded}.json", "/resumes-clairs.json", "/scrutins-details/${lotPadded}.json", "/scrutins-index.json", "/scrutins-solennels-recents.json", "/scrutins-solennels.json", "/scrutins.json", "/scrutins/${d}.json", "/senateurs.json"],
+     "/paris-arrondissements.json", "/photos-elus/${d}.json", "/presidentielle-2027/${fichier}.json", "/projets/${d}.json", "/questions-gouvernement-index.json", "/questions-gouvernement/${lotPadded}.json", "/resumes-clairs.json", "/scrutins-details/${lotPadded}.json", "/scrutins-index.json", "/scrutins-solennels-recents.json", "/scrutins-solennels.json", "/scrutins.json", "/scrutins/${d}.json", "/senateurs.json"],
     "client.js compose une adresse de donnees inattendue : " + composees.join(", "));
   const sources = existe("data/index.json") ? (JSON.parse(lire("data/index.json")).sources || {}) : {};
   /* /photos-elus/{dep}.json (D27, ADR 0004) : chaque photo porte son auteur et sa licence,
@@ -432,6 +435,17 @@ test("invariant 4 — aucune donnée n'est servie sans source déclarée", () =>
       assert.match(code, /^\d{5}$/, "code postal mal forme : " + code);
       for (const i of liste) assert.ok(beta[i], `codes-postaux.json : ${code} pointe vers ${i}, hors de la beta`);
     }
+  }
+  /* /paris-arrondissements.json (17/11/2026) : chaque partie publiee porte sa source et sa date ; le
+     calcul des circonscriptions s'annonce comme un calcul (invariant 4). */
+  if (existe("data/paris-arrondissements.json")) {
+    const pa = JSON.parse(lire("data/paris-arrondissements.json"));
+    for (const k of ["circonscriptions", "maires"]) {
+      if (!pa[k]) continue;
+      assert.ok(pa[k].source && pa[k].source.producteur && pa[k].source.licence && /^https:\/\//.test(pa[k].source.url || "") && /^\d{4}-\d{2}-\d{2}$/.test(pa[k].source.releve_le || ""),
+        `paris-arrondissements.json : ${k} sans source, licence, adresse ou date (invariant 4)`);
+    }
+    if (pa.circonscriptions) assert.match(pa.circonscriptions.methode || "", /^Calcul Rep/, "paris-arrondissements.json : le calcul doit s'annoncer comme tel");
   }
   /* /mairies-idf.json (D28, ADR 0005) : provenance dans le fichier (annuaire DILA). */
   if (existe("data/mairies-idf.json")) {

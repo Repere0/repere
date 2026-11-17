@@ -148,6 +148,10 @@ jobs:
             console.log("photos des candidats : " + Object.keys((pc && pc.photos) || {}).length + " sur " + ((lc && lc.candidats) || []).length);
             const a = lire("data/agregats-regionaux.json");
             console.log("agregats regionaux : " + (a ? Object.keys(a.regions || {}).length + " regions" : "fichier absent"));
+            const pa = lire("data/paris-arrondissements.json");
+            console.log("Paris par arrondissement : " + (pa ? Object.keys((pa.circonscriptions && pa.circonscriptions.par_arrondissement) || {}).length + " arrondissements avec circonscriptions, " + Object.keys((pa.maires && pa.maires.par_arrondissement) || {}).length + " maires" : "fichier absent"));
+            const se = lire("data/calendrier-senat.json");
+            console.log("calendrier du Senat : " + (se && se.source ? (se.evenements || []).length + " evenements, releve du " + se.source.releve_le : "fichier absent"));
           ' | tee bilan-collectes.txt
           echo "### Bilan des collectes" >> "$GITHUB_STEP_SUMMARY"
           sed 's/^/- /' bilan-collectes.txt >> "$GITHUB_STEP_SUMMARY"
@@ -164,6 +168,7 @@ jobs:
             mono/data/presidentielle-2027/photos.json
             mono/data/agregats-regionaux.json
             mono/data/deputes-groupes.json
+            mono/data/paris-arrondissements.json
           if-no-files-found: warn
           retention-days: 7
 
