@@ -168,6 +168,8 @@ async function main() {
         par_arrondissement: r.par,
       };
       console.log(`paris-arrondissements : circonscriptions lues sur ${r.bureaux} bureaux, ${Object.values(r.par).filter(c => c.length > 1).length} arrondissement(s) partagé(s)`);
+      /* 17/11/2026 : le detail, pour le comparer a la carte officielle (donnee publique, aucun nom). */
+      for (const [a, c] of Object.entries(r.par)) console.log(`  ${a}${a === "1" ? "er" : "e"} arrondissement : ${c.join(", ")}`);
     } else console.log(`::warning::paris-arrondissements : circonscriptions non écrites — ${r.raison}`);
   } catch (e) { console.log(`::warning::paris-arrondissements : table des bureaux illisible (${e.message})`); }
 
