@@ -366,7 +366,8 @@ rm -rf site_engendre
     ' 2>/dev/null || { rm -f data/calendrier-senat.json; echo "calendrier du Senat : releve precedent illisible, ecarte"; }
   else
     rm -f data/calendrier-senat.json
-    echo "calendrier du Senat : aucun releve precedent publie recupere (HTTP ${code_senat:-aucune reponse})"
+    code_index=$(curl -s --max-time 30 -o /dev/null -w '%{http_code}' https://repereapp.netlify.app/data/index.json || true)
+    echo "calendrier du Senat : aucun releve precedent publie recupere (HTTP ${code_senat:-aucune reponse} ; index.json publie : HTTP ${code_index:-aucune reponse})"
   fi
   node scripts/calendrier-senat.mjs ./data \
     || avertir "calendrier du Senat absent ou non rafraichi - voir la cause et l'etat du releve precedent juste au-dessus"

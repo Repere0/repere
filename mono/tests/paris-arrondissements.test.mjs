@@ -63,3 +63,17 @@ test("RNE : la description de Paris compte secteurs et fonctions, sans aucun nom
   assert.deepEqual(r.fonctions, { "Maire d'arrondissement": 1, "(vide)": 1 });
   assert.ok(!JSON.stringify(r).includes("FICTIF"), "aucun nom d'élu dans la description");
 });
+
+test("RNE : libellés réels des secteurs (« Paris 11Eme Secteur », « Paris 1Er Secteur » = Paris Centre)", () => {
+  assert.deepEqual(arrondissementsDe("75056", "Paris 11Eme Secteur"), ["11"]);
+  assert.deepEqual(arrondissementsDe("75056", "Paris 20Eme Secteur"), ["20"]);
+  assert.deepEqual(arrondissementsDe("75056", "Paris 1Er Secteur"), ["1", "2", "3", "4"]);
+  assert.deepEqual(arrondissementsDe("75101", ""), ["1"]);
+  const secteurs = ["1Er", ...Array.from({ length: 16 }, (_, i) => (i + 5) + "Eme")];
+  const table = lireCsv("Code de la commune;Libellé du secteur;Nom de l'élu;Prénom de l'élu;Libellé de la fonction\n"
+    + secteurs.map((x, i) => `75056;Paris ${x} Secteur;FICTIF${i};Essai;Maire d'arrondissement\n75056;Paris ${x} Secteur;AUTRE${i};Essai;1er adjoint au maire d'arrondissement`).join("\n") + "\n");
+  const r = mairesParArrondissement(table);
+  assert.equal(Object.keys(r.par).length, 20, r.raison || "");
+  assert.equal(r.par["3"].maire, "Essai FICTIF0");
+  assert.equal(r.par["11"].maire, "Essai FICTIF7");
+});

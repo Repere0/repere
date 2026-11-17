@@ -13,8 +13,9 @@
  * l'adresse reste nécessaire, l'arrondissement réduit seulement la liste.
  *
  * MAIRES D'ARRONDISSEMENT. Source : le Répertoire national des élus (data.gouv.fr), sur le runner seulement (le
- * conteneur ne joint pas data.gouv.fr). Le nom de la ressource et ses colonnes ne sont PAS connus d'avance : le script
- * les écrit dans le journal (« décrire avant de deviner »), reconnaît les colonnes par mots-clés comme outils/rne.py,
+ * conteneur ne joint pas data.gouv.fr). Ressource lue sur le runner le 17/11/2026 : elus-conseillers-darrondissements-ca.csv,
+ * 503 lignes a Paris, 17 « Maire d'arrondissement », un par secteur. Le script continue de la décrire dans le journal
+ * (« décrire avant de deviner »), reconnaît les colonnes par mots-clés comme outils/rne.py,
  * et n'écrit les maires que si au moins 16 arrondissements ont exactement un maire. Sinon : rien, et l'écran garde sa
  * phrase « pas encore publié ». Seuls le nom, la fonction et la date de début sont gardés (invariant 8).
  *
@@ -88,8 +89,12 @@ export function arrondissementsDe(code, libelle) {
   if (/^751(0[1-9]|1\d|20)$/.test(c)) return [String(Number(c.slice(3)))];
   const l = String(libelle || "");
   if (/paris\s*centre/i.test(l)) return ["1", "2", "3", "4"];
-  const m = /paris\s+(\d{1,2})\s*(?:er|e|ème)?\b/i.exec(l);
-  return m && ARR.includes(String(Number(m[1]))) ? [String(Number(m[1]))] : null;
+  /* Libelles lus sur le runner le 17/11/2026 (elus-conseillers-darrondissements-ca.csv) : « Paris 11Eme Secteur »,
+     « Paris 1Er Secteur ». Il n'y a que 17 secteurs (1er, puis 5e a 20e) : le 1er secteur est Paris Centre, qui
+     reunit les 1er a 4e arrondissements depuis juillet 2020. */
+  const m = /paris\s+(\d{1,2})\s*(?:er|eme|ème|e)?\b(\s*secteur)?/i.exec(l);
+  if (!m || !ARR.includes(String(Number(m[1])))) return null;
+  return m[2] && Number(m[1]) === 1 ? ["1", "2", "3", "4"] : [String(Number(m[1]))];
 }
 
 /* MAIRES D'ARRONDISSEMENT, depuis une table du RNE. Retourne { par, raison }. */

@@ -34,7 +34,15 @@ qui permette le calcul.
 Le runner repart chaque matin du fichier publié la veille : une partie illisible aujourd'hui garde celle d'hier, avec
 sa date de relevé (`source.releve_le`), affichée par la carte.
 
-**À vérifier au premier passage sur le runner** (bilan « Paris par arrondissement » de la collecte, artefact
+**Lu sur le runner le 17/11/2026** (collectes d'essai 149 et 150, hors de `main`) :
+- circonscriptions : 899 bureaux parisiens, tous lus selon l'hypothèse « arrondissement + bureau », les 20
+  arrondissements couverts, 13 partagés entre plusieurs circonscriptions ;
+- maires : la ressource est `elus-conseillers-darrondissements-ca.csv` (modifiée le 11/08/2026), 503 lignes à Paris,
+  code commune 75056, colonne « Libellé du secteur » en « Paris 11Eme Secteur », 17 secteurs (« Paris 1Er Secteur »,
+  puis 5e à 20e), et 17 lignes « Maire d'arrondissement », une par secteur. Le 1er secteur est Paris Centre (1er à 4e).
+  Le fichier des conseillers municipaux ne porte aucun maire d'arrondissement : il n'est pas lu.
+
+**Reste à vérifier** (bilan « Paris par arrondissement » de la collecte, artefact
 `collectes-essai` hors de `main`) : que les 20 arrondissements ont des circonscriptions, que les circonscriptions
 lues pour un arrondissement (le 11e par exemple) correspondent à la carte officielle du découpage de 2010, et ce que le
 RNE publie réellement.
