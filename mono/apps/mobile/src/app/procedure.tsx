@@ -23,7 +23,7 @@ function Navette() {
     <View accessible accessibilityLabel="Le texte passe de l'Assemblée nationale au Sénat, puis revient, jusqu'à ce qu'ils s'accordent."
       style={{ flexDirection: "row", alignItems: "center", gap: PAS * 2, marginTop: PAS * 2 }}>
       <View style={boite}><Text style={{ fontWeight: "700", color: couleurs.encre, textAlign: "center" }}>Assemblée nationale</Text></View>
-      <Text style={{ color: couleurs.sourd, fontSize: 18 }}>⇄</Text>
+      <Text style={{ color: couleurs.sourd, fontSize: 17 }}>⇄</Text>
       <View style={boite}><Text style={{ fontWeight: "700", color: couleurs.encre, textAlign: "center" }}>Sénat</Text></View>
     </View>
   );

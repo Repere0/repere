@@ -4,14 +4,15 @@ Version du 17/11/2026. Ce texte est la version de l'application (Réglages, « M
 
 ## Éditeur
 
-Repère est une application d'information civique, gratuite et sans publicité, éditée à titre non professionnel par une personne physique.
+Repère, projet citoyen indépendant. Application d'information civique, gratuite et sans publicité, éditée à titre non professionnel par une personne physique, qui a communiqué son identité à l'hébergeur (loi du 21 juin 2004, article 1-1, II).
 
 Contact : repere0@protonmail.com
 
 ## Hébergement
 
-- Données publiées (fichiers lus par l'application) : Netlify, Inc., 101 2nd Street, San Francisco, CA 94105, États-Unis.
-- Application web (version actuelle) : Vercel Inc., 440 N Barranca Ave, suite 4133, Covina, CA 91723, États-Unis.
+- Application web : Cloudflare, Inc., 101 Townsend Street, San Francisco, CA 94107, États-Unis, téléphone +1 650 319 8930.
+- Données publiées (fichiers lus par l'application) : Netlify, Inc., 101 2nd Street, suite 575, San Francisco, CA 94105, États-Unis, téléphone +1 415 691 1573.
+- Application web, jusqu'à la bascule vers Cloudflare : Vercel Inc., 440 N Barranca Ave, suite 4133, Covina, CA 91723, États-Unis.
 
 ## Les données affichées
 
@@ -24,6 +25,23 @@ Le code de Repère est publié sous licence AGPL-3.0 : https://github.com/Repere
 ## Vos données
 
 Repère ne crée aucun compte et ne détient aucune donnée qui vous concerne. Le détail est dans la politique de confidentialité (`docs/privacy-policy.md`).
+
+## Décisions et sources (porteur, 17/11/2026)
+
+- **Éditeur** : « Repère (projet citoyen indépendant) », sans identité publiée. C'est la voie de l'anonymat de l'éditeur
+  non professionnel (LCEN, art. 1-1, II) : elle n'est valable que si le porteur a bien communiqué son identité aux
+  hébergeurs (comptes Netlify, Vercel, Cloudflare), et elle tombe dès qu'il y a un revenu.
+- **Directeur de publication** : non publié. La consigne en laissait le nom à remplir ; « L'équipe Repère » n'est pas
+  une personne. Dans la voie de l'anonymat, la loi ne demande que l'hébergeur. À ajouter si le porteur choisit l'autre voie.
+- **Contact** : repere0@protonmail.com, l'adresse déjà publiée (README, CONTRIBUTING). La consigne en laissait une à remplir.
+- **Géolocalisation** : non mentionnée. L'application n'en utilise aucune (vérifié dans le code le 17/11/2026) ;
+  l'écrire serait faux.
+- **Sources des hébergeurs** (relevé le 17/11/2026) :
+  - Cloudflare : ses conditions d'utilisation publiées (cloudflare.com/en/website-terms), adresse et téléphone ;
+  - Netlify : adresse dans son contrat-cadre (netlify.com/legal/enterprise-master-subscription-agreement) ; suite et
+    téléphone relevés sur la page de mentions d'un autre site (weesperneonflow.ai/fr/legal), **à confirmer** ;
+  - Vercel : adresse relevée sur la page de mentions d'un autre site, téléphone non trouvé, **à confirmer**. Vercel
+    disparaît de la liste à la bascule vers Cloudflare.
 
 ## Avant publication (porteur, à décider et vérifier)
 

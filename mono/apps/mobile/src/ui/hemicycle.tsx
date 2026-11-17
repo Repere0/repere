@@ -22,6 +22,7 @@ import { enfonce, useApparition } from "./mouvement";
 import { CIBLE, feuille, couleurs, OMBRE, PAS, POLICE, RAYON, TYPO } from "../lib/theme";
 import { PastilleSource } from "./source";
 import { REFLET_AVATAR, rapportContraste } from "../lib/palette";
+import { niveauTitre } from "./titre";
 
 type Part = { groupe: string; sieges: number };
 
@@ -65,7 +66,7 @@ export function Hemicycle() {
 
   return (
     <View style={s.carte}>
-      <Text style={TYPO.etiquette} accessibilityRole="header">La composition de l'Assemblée</Text>
+      <Text style={TYPO.etiquette} {...niveauTitre(2)}>La composition de l'Assemblée</Text>
       <View onLayout={e => setLargeur(e.nativeEvent.layout.width)} accessible accessibilityLabel={phrase}
         style={{ width: "100%", height: rayon + point }}>
         {largeur ? (

@@ -10,6 +10,7 @@ import { useTheme } from "../lib/themeChoix";
 import { router } from "expo-router";
 import { enfonce } from "./mouvement";
 import { useProfil } from "../lib/profil";
+import { niveauTitre } from "./titre";
 
 const OPTIONS: { valeur: ChoixTheme; libelle: string }[] = [
   { valeur: "systeme", libelle: "Système" },
@@ -52,7 +53,7 @@ function ChoixAffichage({ visible, onFermer }: { visible: boolean; onFermer: () 
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onFermer}>
       <Pressable style={s.voile} onPress={onFermer} accessibilityRole="button" accessibilityLabel="Fermer les réglages">
         <View style={s.carte} accessibilityViewIsModal>
-          <Text style={TYPO.corps} accessibilityRole="header">Affichage</Text>
+          <Text style={TYPO.corps} {...niveauTitre(2)}>Affichage</Text>
           {OPTIONS.map(o => {
             const actif = choix === o.valeur;
             return (

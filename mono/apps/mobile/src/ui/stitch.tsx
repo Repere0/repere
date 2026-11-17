@@ -115,7 +115,7 @@ const s = feuille(() => StyleSheet.create({
     gap: PAS, padding: PAS * 3, borderRadius: RAYON.bloc, backgroundColor: ACCENTS.fondCivique,
     borderLeftWidth: 4, borderLeftColor: ACCENTS.civique,
   },
-  enClairTete: { flexDirection: "row", alignItems: "center", gap: PAS * 1.5 },
+  enClairTete: { flexDirection: "row", alignItems: "center", gap: PAS * 2 },
   enClairBadge: { ...TYPO.micro, fontFamily: POLICE.texteGras, color: ACCENTS.texteAccent, letterSpacing: 0.6 },
   ligne: { flexDirection: "row", flexWrap: "wrap", columnGap: PAS * 3, rowGap: PAS },
   point: { width: 10, height: 10, borderRadius: 5 },
@@ -127,6 +127,6 @@ const s = feuille(() => StyleSheet.create({
   segmentActif: { backgroundColor: couleurs.carte },
   /* Pas de capitales : à 360 px, « PLAFONDS » se coupait au milieu du mot (capture du 09/11/2026). */
   segmentTexte: { ...TYPO.micro, fontFamily: POLICE.texteGras, color: couleurs.sourd, textAlign: "center" },
-  badgeRepere: { flexDirection: "row", alignItems: "center", gap: PAS * 1.5, alignSelf: "flex-start" },
+  badgeRepere: { flexDirection: "row", alignItems: "center", gap: PAS * 2, alignSelf: "flex-start" },
 }));
 

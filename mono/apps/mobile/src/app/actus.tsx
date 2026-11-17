@@ -9,7 +9,6 @@ import { chargerEvenements, ETATS, PHRASES } from "../lib/donnees";
 import { Carte, LienSortant, Vide } from "../lib/composants";
 import { CIBLE, couleurs, PAS, POLICE, TYPO } from "../lib/theme";
 import { Ionicons } from "@expo/vector-icons";
-import { TexteLong } from "../ui/donnees";
 import { Pression } from "../ui/pression";
 import { DateDonnee } from "../ui/fraicheur";
 import { Page, Question } from "../ui/page";
@@ -18,6 +17,8 @@ import { PartagerCarte } from "../ui/partage/bouton-partage";
 import { ActuStory } from "../ui/partage/variantes/actu.story";
 import { messageActu } from "../ui/partage/messages";
 import { BoutonPartageTexte, ligneSource } from "../ui/partage/partager-texte";
+import { niveauTitre } from "../ui/titre";
+import { Repliable } from "../ui/repliable";
 
 type Evt = { id: string; t: string; d: string; axes?: string; e: string; src?: string; srcn?: string };
 
@@ -80,8 +81,8 @@ function ActuCarte({ x }: { x: Evt }) {
           <Ionicons name="newspaper-outline" size={16} color={couleurs.sourd} accessible={false} importantForAccessibility="no" />
           <Text style={TYPO.donnee}>{dateFr(x.d)}</Text>
         </View>
-        <Text style={TYPO.reponse} accessibilityRole="header">{x.t}</Text>
-        {texte ? <TexteLong texte={texte} icone="chevron-forward-outline" /> : null}
+        <Text style={TYPO.reponse} {...niveauTitre(2)}>{x.t}</Text>
+        {texte ? <Repliable texte={texte} /> : null}
         {/* Maillage (07/11/2026) : un fait tiré d'un scrutin (id « scrutin-AAAA-MM-JJ-N ») ouvre ce scrutin. */}
         {numeroScrutin(x.id) ? (
           <Pression onPress={() => router.push({ pathname: "/scrutins", params: { n: numeroScrutin(x.id) as string } })} role="link"

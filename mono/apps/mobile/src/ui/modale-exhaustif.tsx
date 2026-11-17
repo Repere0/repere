@@ -6,6 +6,7 @@ import { useBasSur } from "./page";
 import { Modal, Pressable, ScrollView, Text, View } from "react-native";
 import { CIBLE, couleurs, PAS, TYPO } from "../lib/theme";
 import { enfonce } from "./mouvement";
+import { niveauTitre } from "./titre";
 
 export type SectionExhaustive = { titre: string; contenu: React.ReactNode; source?: string };
 
@@ -17,7 +18,7 @@ export function ModaleExhaustif({ titre, sections, visible, onFermer }: {
     <Modal visible={visible} animationType="slide" presentationStyle="pageSheet" onRequestClose={onFermer}>
       <View style={{ flex: 1, backgroundColor: couleurs.sol }}>
         <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", padding: PAS * 4, gap: PAS * 3 }}>
-          <Text style={[TYPO.reponse, { flex: 1 }]} accessibilityRole="header">{titre}</Text>
+          <Text style={[TYPO.reponse, { flex: 1 }]} {...niveauTitre(2)}>{titre}</Text>
           <Pressable onPress={onFermer} accessibilityRole="button" accessibilityLabel="Fermer"
             style={({ pressed }) => ({ minHeight: CIBLE, minWidth: CIBLE, alignItems: "center", justifyContent: "center", ...enfonce(pressed) })}>
             <Text style={{ color: couleurs.lien, fontWeight: "500", fontSize: 16 }}>Fermer</Text>
@@ -26,7 +27,7 @@ export function ModaleExhaustif({ titre, sections, visible, onFermer }: {
         <ScrollView {...MARQUE_DEFILEMENT} contentContainerStyle={{ padding: PAS * 4, paddingBottom: bas, paddingTop: 0, gap: PAS * 5 }}>
           {sections.map((s, i) => (
             <View key={i} style={{ gap: PAS * 2 }}>
-              <Text style={[TYPO.corps, { fontWeight: "600" }]} accessibilityRole="header">{s.titre}</Text>
+              <Text style={[TYPO.corps, { fontWeight: "600" }]} {...niveauTitre(2)}>{s.titre}</Text>
               {typeof s.contenu === "string" ? <Text style={TYPO.corps}>{s.contenu}</Text> : s.contenu}
               {s.source ? <Text style={TYPO.note}>Source : {s.source}</Text> : null}
             </View>

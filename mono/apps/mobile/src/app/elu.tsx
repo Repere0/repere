@@ -51,6 +51,7 @@ import { AvatarElu, CreditPhoto } from "../ui/avatar";
 import { usePhotoElu } from "../lib/photos";
 import { useSelection } from "../lib/selection";
 import { enfonce } from "../ui/mouvement";
+import { niveauTitre } from "../ui/titre";
 
 type Params = { nom?: string; role?: string; echelon?: string; niveau?: string; institution?: string; lieu?: string };
 type Scrutin = { n: string; t: string; d: string; sl?: string; dec?: unknown };
@@ -107,7 +108,7 @@ function FeuilleVote({ f, nom, resume, base, onFermer }: { f: FaitElu | null; no
     <Modal visible={!!f} animationType="slide" presentationStyle="pageSheet" onRequestClose={onFermer}>
       {f ? (
         <ScrollView {...MARQUE_DEFILEMENT} style={{ backgroundColor: couleurs.sol }} contentContainerStyle={{ padding: PAS * 5, paddingBottom: bas, gap: PAS * 3, maxWidth: 640, width: "100%", alignSelf: "center" }}>
-          <Text style={TYPO.question} accessibilityRole="header">Comprendre ce vote</Text>
+          <Text style={TYPO.question} {...niveauTitre(2)}>Comprendre ce vote</Text>
           <Text style={TYPO.micro}>Scrutin n° {f.sc.n}, {dateFr(f.sc.d)}</Text>
           <Text style={[TYPO.corps, { fontWeight: "600" }]}>{titreLisible(f.sc.t)}</Text>
           <Text style={TYPO.corps}>{nom} : {POSITION[f.position as string].toLowerCase()}.</Text>
@@ -121,7 +122,7 @@ function FeuilleVote({ f, nom, resume, base, onFermer }: { f: FaitElu | null; no
           {f.sc.sl ? <Text style={TYPO.corps}>{f.sc.sl.charAt(0).toUpperCase() + f.sc.sl.slice(1)}{f.sc.dec ? `, ${decompte(f.sc.dec)}` : ""}.</Text> : null}
           {resume && resume.axes ? (
             <View style={{ gap: PAS * 2, padding: PAS * 4, borderRadius: RAYON.bloc, backgroundColor: couleurs.carte }}>
-              <Text style={[TYPO.corps, { fontWeight: "600" }]} accessibilityRole="header">Ce que change ce texte</Text>
+              <Text style={[TYPO.corps, { fontWeight: "600" }]} {...niveauTitre(2)}>Ce que change ce texte</Text>
               <Text style={TYPO.corps}>{resume.axes.replace(/\s*\n\s*/g, " ")}</Text>
               <Text style={TYPO.note}>Résumé de la rédaction Repère{resume.srcn ? `, d'après : ${resume.srcn}` : ""}.</Text>
               {resume.src ? <Lien texte="Lire la source officielle" etiquette="Lire la source officielle, ouvre un site externe" onPress={() => Linking.openURL(resume.src as string)} /> : null}
@@ -250,7 +251,7 @@ export default function Elu() {
                       {/* 07/11/2026 (maquette Stitch) : une pastille de la couleur de vote (D24, un fait)
                           devant chaque compte ; le mot reste écrit. */}
                       <View style={{ flexDirection: "row", flexWrap: "wrap", columnGap: PAS * 4, rowGap: PAS }} accessible
-                        accessibilityRole="header" accessibilityLabel={`${comptes.p} pour, ${comptes.c} contre, ${comptes.a} abstention${comptes.a > 1 ? "s" : ""}`}>
+                        accessibilityLabel={`${comptes.p} pour, ${comptes.c} contre, ${comptes.a} abstention${comptes.a > 1 ? "s" : ""}`}>
                         {([["p", "pour"], ["c", "contre"], ["a", comptes.a > 1 ? "abstentions" : "abstention"]] as const).map(([k, mot]) => (
                           <View key={k} style={{ flexDirection: "row", alignItems: "center", gap: PAS }}>
                             <View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: COULEURS_VOTE[k] }} />
@@ -274,7 +275,7 @@ export default function Elu() {
                 ) : null}
                 {/* 12/11/2026 (audit des doublons) : sous « Ses 10 derniers votes publiés », un second titre « Ses derniers votes »
                     répétait le premier ; il ne reste que si le compte n'est pas affiché. */}
-                {recents.length ? null : <AvecPicto picto="vote"><Text style={TYPO.etiquette} accessibilityRole="header">Ses derniers votes</Text></AvecPicto>}
+                {recents.length ? null : <AvecPicto picto="vote"><Text style={TYPO.etiquette} {...niveauTitre(2)}>Ses derniers votes</Text></AvecPicto>}
                 {votes.length ? votes.slice(0, SYNTHESE).map(f => (
                   <CarteVote key={f.sc.n} f={f} onComprendre={() => setOuvert(f)} />
                 )) : videVote ? <Vide {...videVote} /> : null}

@@ -29,6 +29,7 @@ import { QuizStory } from "./partage/variantes/quiz.story";
 import { COULEURS_QUIZ } from "../lib/palette";
 import { ACCENTS, CIBLE, couleurs, PAS, POLICE, RAYON, TYPO } from "../lib/theme";
 import { useMouvementReduit } from "./mouvement";
+import { niveauTitre } from "./titre";
 
 /* La définition est « en gros » : la taille descend d'un cran quand elle est longue, pour tenir sans défiler. */
 const tailleEnonce = (n: number) => (n <= 80 ? 26 : n <= 130 ? 23 : n <= 170 ? 21 : 19);
@@ -59,7 +60,7 @@ function LesRangs({ ouvert, fermer, points }: { ouvert: boolean; fermer: () => v
     <Modal visible={ouvert} animationType="slide" onRequestClose={fermer} transparent={false}>
       <ScrollView {...MARQUE_DEFILEMENT} style={{ backgroundColor: couleurs.sol }} contentContainerStyle={{ paddingHorizontal: PAS * 3, paddingTop: marges.top + PAS * 3, paddingBottom: marges.bottom + PAS * 3, gap: PAS * 2, maxWidth: 560, width: "100%", alignSelf: "center" }}>
         <View style={{ flexDirection: "row", alignItems: "center", gap: PAS * 3 }}>
-          <Text style={[TYPO.affiche, { flex: 1 }]} accessibilityRole="header">Les rangs</Text>
+          <Text style={[TYPO.affiche, { flex: 1 }]} {...niveauTitre(1)}>Les rangs</Text>
           <Pressable onPress={fermer} accessibilityRole="button" accessibilityLabel="Fermer la liste des rangs"
             style={({ pressed }) => ({ minHeight: CIBLE, minWidth: CIBLE, alignItems: "center", justifyContent: "center", opacity: pressed ? 0.6 : 1 })}>
             <Text style={[TYPO.corps, { fontFamily: POLICE.titre }]}>Fermer</Text>
@@ -241,8 +242,8 @@ export function Quiz({ categorieDe }: { categorieDe: (cle: string) => string }) 
           {/* LE SCORE, en très gros. L'animation est un simple agrandissement qui retombe : rien de
               sonore, rien qui tourne, et rien du tout si les animations sont réduites (invariant 6). */}
           <Animated.View style={{ alignItems: "center", gap: PAS, transform: [{ scale: arrivee }] }}>
-            <Text accessibilityRole="header" testID="quiz-score"
-              style={{ fontFamily: POLICE.affiche, fontSize: 72, lineHeight: 78, letterSpacing: -2, color: teinte }}>{justes} / {total}</Text>
+            <Text {...niveauTitre(2)} testID="quiz-score"
+              style={{ fontFamily: POLICE.affiche, fontSize: 72 /* hors échelle : le score « en très gros », décision du porteur du 13/11/2026 */, lineHeight: 78, letterSpacing: -2, color: teinte }}>{justes} / {total}</Text>
             <Text style={[TYPO.reponse, { color: couleurs.encre }]} testID="quiz-phrase">{phrase}</Text>
             <Text style={TYPO.note}>{justes * POINTS_PAR_REPONSE_JUSTE} points gagnés</Text>
           </Animated.View>
@@ -303,11 +304,11 @@ export function Quiz({ categorieDe }: { categorieDe: (cle: string) => string }) 
       <Animated.View key={`${manche}-${rang}`} style={{ flex: 1, gap: PAS * 4, opacity: entree, transform: [{ translateY: entree.interpolate({ inputRange: [0, 1], outputRange: [12, 0] }) }] }}>
         <View style={{ flex: 1, justifyContent: "center", gap: PAS * 2, minHeight: 120 }}>
           <Text style={TYPO.etiquette}>Quel mot correspond à cette définition ?</Text>
-          <Text accessibilityRole="header" testID="quiz-enonce"
+          <Text {...niveauTitre(1)} testID="quiz-enonce"
             style={{ fontFamily: POLICE.affiche, color: couleurs.encre, letterSpacing: -0.3, fontSize: tailleEnonce(q.enonce.length), lineHeight: Math.round(tailleEnonce(q.enonce.length) * 1.28) }}>{q.enonce}</Text>
         </View>
 
-        <View accessibilityRole="radiogroup" style={{ gap: PAS * 2.5 }}>
+        <View accessibilityRole="radiogroup" style={{ gap: PAS * 2 }}>
           {q.propositions.map((p, i) => {
             const estChoix = choix === i;
             const etat = !repondu ? "attente" : p.juste ? "juste" : estChoix ? "faux" : "autre";

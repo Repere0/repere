@@ -370,12 +370,34 @@ function jourPublication(generation) {
   if (reelle.getUTCFullYear() !== an || reelle.getUTCMonth() !== mois - 1 || reelle.getUTCDate() !== jour) return null;
   return jour + " " + MOIS_FR[mois - 1] + " " + an;
 }
-export function phraseFraicheur(e) {
+/* « MIS À JOUR IL Y A X JOURS » — décision du porteur du 16/11/2026 (audit UI, vague 2, tâche 5) ;
+   « Dernière publication reçue il y a X jours » quand rien n'a pu être vérifié (voir recueIlYa).
+   Remplace « Publication du … » et « … la dernière publication reçue sur cet appareil », qui était
+   faux à la première visite hors ligne (rien n'avait été reçu). Le TITRE reste : il dit lequel des
+   trois états de l'invariant 9 s'applique (précédente, impossible à vérifier, nouvelle parue).
+   X : jours écoulés depuis la publication affichée, à l'heure de Paris. */
+export const PAS_ENCORE_RECU = "Pas encore de publication sur cet appareil.";
+export function joursDepuis(generation, maintenant) {
+  if (!jourPublication(generation)) return null;
+  const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(generation));
+  const p = {};
+  for (const x of new Intl.DateTimeFormat("fr-FR", { timeZone: "Europe/Paris", year: "numeric", month: "2-digit", day: "2-digit" })
+    .formatToParts(maintenant instanceof Date ? maintenant : new Date())) p[x.type] = x.value;
+  const n = Math.round((Date.UTC(Number(p.year), Number(p.month) - 1, Number(p.day)) - Date.UTC(Number(m[1]), Number(m[2]) - 1, Number(m[3]))) / 864e5);
+  return n < 0 ? null : n;
+}
+export const misAJour = n => (n === 0 ? "Mis à jour aujourd'hui." : `Mis à jour il y a ${n} jour${n > 1 ? "s" : ""}.`);
+/* « IMPOSSIBLE À VÉRIFIER » NE DIT JAMAIS « MIS À JOUR » (choix du porteur du 16/11/2026, sur la garde de
+   l'invariant 9 de parcours-web) : on dit depuis quand la publication gardée a été reçue, pas qu'elle est à jour. */
+export const recueIlYa = n => (n === 0 ? "Dernière publication reçue aujourd'hui." : `Dernière publication reçue il y a ${n} jour${n > 1 ? "s" : ""}.`);
+export function phraseFraicheur(e, maintenant) {
   const base = e.nouvelle ? PHRASES_FRAICHEUR.nouvelle : PHRASES_FRAICHEUR[e.etat];
   if (!base) return null;
-  const jour = jourPublication(e.generation);
-  if (!jour) return base;
-  return { ...base, corps: base.corps + " Publication du " + jour + "." };
+  if (!e.generation) return { ...base, corps: PAS_ENCORE_RECU };
+  const n = joursDepuis(e.generation, maintenant);
+  /* une génération illisible : aucune date inventée, la phrase d'origine reste */
+  if (n === null) return base;
+  return { ...base, corps: e.etat === FRAICHEUR.INCONNUE && !e.nouvelle ? recueIlYa(n) : misAJour(n) };
 }
 let indexVerifie = null;                 /* null : pas encore de reponse */
 let nouvelleParue = false;

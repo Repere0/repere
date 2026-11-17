@@ -1,6 +1,6 @@
 # Héberger l'application web sur Cloudflare Pages
 
-Date : 12/11/2026 (roadmap bêta, chantier 2). Remplace Vercel pour l'application (`mono/apps/mobile`, export web).
+Date : 12/11/2026 (roadmap bêta, chantier 2), complété le 17/11/2026 (déploiement par GitHub Actions). Remplace Vercel pour l'application (`mono/apps/mobile`, export web).
 Le site historique et les données restent publiés sur Netlify par la collecte : ce document n'y touche pas.
 
 **Rien n'est déployé.** Le dépôt est prêt ; créer le projet demande ton compte Cloudflare. Coût : l'offre gratuite
@@ -15,8 +15,46 @@ fichier, le build en produit quelques centaines, le plus gros pèse 1,3 Mo). Lim
 | `mono/apps/mobile/wrangler.toml` | nom du projet, dossier publié (`dist`) |
 | `mono/apps/mobile/scripts/cloudflare.mjs` | écrit `_redirects`, `_headers` et `404.html` dans `dist/` |
 | `npm run build:cloudflare` | `build:web` (export, données, PWA) puis `cloudflare.mjs` |
+| `.github/workflows/cloudflare.yml` | chemin A : construit et déploie depuis GitHub, seulement si les deux secrets existent |
 
-## Créer le projet, pas à pas (une fois, environ dix minutes)
+## Deux chemins : en choisir UN seul
+
+| | A. GitHub Actions (recommandé) | B. Intégration Git de Pages |
+|---|---|---|
+| qui construit | le runner GitHub (`.github/workflows/cloudflare.yml`) | les serveurs de Cloudflare |
+| quand | push sur `main` (application) **et** fin de chaque collecte réussie | chaque commit sur `main` |
+| données du jour | oui : le build part après la publication sur Netlify | pas garanti : le commit de la collecte précède la publication Netlify (d'où le crochet facultatif plus bas) |
+| journal du build | dans GitHub, à côté de la CI | dans le tableau de bord Cloudflare |
+| ce qu'il faut faire | 3 gestes, ci-dessous | environ dix minutes, plus bas |
+
+**Ne pas activer les deux** : deux déploiements concurrents du même site. Un projet créé par le chemin A (« envoi
+direct ») ne peut pas être converti au chemin B, et inversement : c'est une règle de Cloudflare, relevée dans leur
+documentation, non éprouvée ici.
+
+## Chemin A : trois gestes (recommandé)
+
+1. **Créer un jeton** : `dash.cloudflare.com` → icône de profil → **Mon profil** → **Jetons d'API** → **Créer un
+   jeton** → **Créer un jeton personnalisé**. Nom : `repere-pages`. Autorisation : **Compte** → **Cloudflare Pages**
+   → **Modifier**. Ressources du compte : ton compte. **Continuer**, **Créer le jeton**, copier la valeur (elle ne
+   s'affiche qu'une fois).
+2. **Copier l'identifiant du compte** : **Workers & Pages** → colonne de droite, « ID de compte » → copier.
+3. **Les donner à GitHub** : dépôt `Repere0/repere` → **Settings** → **Secrets and variables** → **Actions** →
+   **New repository secret**, deux fois :
+   - `CLOUDFLARE_API_TOKEN` = le jeton du geste 1 ;
+   - `CLOUDFLARE_ACCOUNT_ID` = l'identifiant du geste 2.
+
+C'est tout. Pour un premier déploiement sans attendre : onglet **Actions** → **Cloudflare Pages (application web)** →
+**Run workflow**. Le premier passage crée le projet `repere` (adresse `repere.pages.dev`, ou `repere-xxx.pages.dev`
+si le nom est pris : elle s'affiche dans **Workers & Pages**). Ensuite, vérifier l'adresse avec le tableau « Ce qui a
+été vérifié » plus bas, puis `docs/test-iphone.md`.
+
+Sans les deux secrets, le workflow s'arrête à sa première étape avec une note, sans échec : il peut rester dans le
+dépôt tant que tu n'as pas fait ces trois gestes.
+
+**Non vérifié** : aucun déploiement réel n'a eu lieu (pas de compte). La commande `wrangler pages project create`
+puis `wrangler pages deploy` est celle de la documentation de Cloudflare ; le premier passage le dira.
+
+## Chemin B : intégration Git, pas à pas (une fois, environ dix minutes)
 
 Tout se fait dans le tableau de bord de Cloudflare, connecté à ton compte. Rien à installer.
 
@@ -51,7 +89,7 @@ Tout se fait dans le tableau de bord de Cloudflare, connecté à ton compte. Rie
 ### Facultatif, plus tard
 
 - **Bouton de contact** : variable de build `EXPO_PUBLIC_CONTACT_EMAIL`.
-- **Reconstruire après chaque collecte** : Paramètres → Builds → Crochets de déploiement → en créer un ; copier son
+- **Reconstruire après chaque collecte** (chemin B seulement ; le chemin A le fait déjà) : Paramètres → Builds → Crochets de déploiement → en créer un ; copier son
   adresse dans GitHub (dépôt → Settings → Secrets and variables → Actions → nouveau secret `CLOUDFLARE_DEPLOY_HOOK`).
   Sans lui, Pages reconstruit déjà à chaque commit sur `main`, dont celui de la collecte du matin.
 - **Nom de domaine** : Pages → Domaines personnalisés. Un nom de domaine se paie chez un bureau d'enregistrement :

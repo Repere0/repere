@@ -106,7 +106,7 @@ export function Regles2027() {
           style={({ pressed }) => ({ minHeight: CIBLE, paddingHorizontal: PAS * 4, justifyContent: "center", borderRadius: RAYON.pastille, backgroundColor: couleurs.voile, ...enfonce(pressed) })}>
           <Text style={[TYPO.corps, { fontFamily: POLICE.texteGras, color: i === 0 ? couleurs.sourd : couleurs.encre }]}>‹ Précédent</Text>
         </Pressable>
-        <View style={{ flexDirection: "row", gap: PAS * 1.5 }} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
+        <View style={{ flexDirection: "row", gap: PAS * 2 }} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
           {FICHES.map((f, k) => <View key={f.cle} style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: k === i ? ACCENTS.autorite : couleurs.trait }} />)}
         </View>
         <Pressable disabled={i === FICHES.length - 1} onPress={() => setFiche(FICHES[i + 1].cle)} accessibilityRole="button" accessibilityLabel="Fiche suivante"

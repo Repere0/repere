@@ -34,6 +34,7 @@ import { usePhotosCandidats, type PhotoElu } from "../lib/photos";
 import { Page } from "../ui/page";
 import { Onglets } from "../ui/stitch";
 import { enfonce } from "../ui/mouvement";
+import { niveauTitre } from "../ui/titre";
 
 type Onglet = "candidats" | "debats" | "meetings";
 type Partie = "etapes" | "regles" | "candidats" | "voter";
@@ -69,7 +70,7 @@ function Etape({ titre, texte, date, dernier }: { titre: string; texte: string; 
   return (
     <View style={{ flexDirection: "row", gap: PAS * 4 }}>
       <View style={{ alignItems: "center", width: 12 }} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
-        <View style={{ width: 12, height: 12, borderRadius: 6, marginTop: 6, backgroundColor: date ? ACCENTS.autorite : couleurs.voile }} />
+        <View style={{ width: 12, height: 12, borderRadius: 6, marginTop: 6 /* alignement optique */, backgroundColor: date ? ACCENTS.autorite : couleurs.voile }} />
         {dernier ? null : <View style={{ flex: 1, width: 2, backgroundColor: couleurs.voile }} />}
       </View>
       <View style={{ flex: 1, gap: 2, paddingBottom: dernier ? 0 : PAS * 5 }}>
@@ -104,7 +105,7 @@ function CarteCandidat({ c, photo }: { c: PresidentialCandidate; photo?: PhotoEl
       </View>
       <View style={{ flexDirection: "row", alignItems: "center", flexWrap: "wrap", gap: PAS * 2 }}>
         {declare ? (
-          <View style={{ flexDirection: "row", alignItems: "center", gap: PAS * 1.5, paddingHorizontal: PAS * 3, minHeight: 28, borderRadius: RAYON.pastille,
+          <View style={{ flexDirection: "row", alignItems: "center", gap: PAS * 2, paddingHorizontal: PAS * 3, minHeight: 28, borderRadius: RAYON.pastille,
             backgroundColor: BADGE_DECLARATION.fond, borderWidth: 1, borderColor: BADGE_DECLARATION.filet }}>
             <Ionicons name="megaphone-outline" size={14} color={BADGE_DECLARATION.texte} accessible={false} importantForAccessibility="no" />
             <Text style={{ fontSize: 13, lineHeight: 18, fontFamily: POLICE.section, color: BADGE_DECLARATION.texte }}>Déclaration de candidature</Text>
@@ -147,7 +148,7 @@ function CarteCandidat({ c, photo }: { c: PresidentialCandidate; photo?: PhotoEl
   );
 }
 
-const Section = ({ titre }: { titre: string }) => <Text style={[TYPO.section, { marginTop: PAS * 4 }]} accessibilityRole="header">{titre}</Text>;
+const Section = ({ titre }: { titre: string }) => <Text style={[TYPO.section, { marginTop: PAS * 4 }]} {...niveauTitre(2)}>{titre}</Text>;
 
 export default function Presidentielle2027() {
   const [onglet, setOnglet] = useState<Onglet>("candidats");
@@ -172,11 +173,11 @@ export default function Presidentielle2027() {
       <View style={{ gap: PAS * 4, padding: PAS * 6, borderRadius: RAYON.carte + 4, backgroundColor: couleurs.carte }}>
         <Text style={TYPO.etiquette}>Élection présidentielle 2027</Text>
         {dans !== null && dans > 0 ? (
-          <Text accessibilityRole="header" accessibilityLabel={`Premier tour dans ${dans} jours`}
+          <Text {...niveauTitre(1)} accessibilityLabel={`Premier tour dans ${dans} jours`}
             style={[TYPO.chiffre, { fontSize: TYPO.chiffre.fontSize * 1.75, lineHeight: TYPO.chiffre.lineHeight * 1.6, letterSpacing: -2 }]}>
             {dans}<Text style={{ fontSize: TYPO.chiffre.fontSize, color: couleurs.sourd }}> jours</Text>
           </Text>
-        ) : <Text style={TYPO.affiche} accessibilityRole="header">Élection présidentielle 2027</Text>}
+        ) : <Text style={TYPO.affiche} {...niveauTitre(1)}>Élection présidentielle 2027</Text>}
         <Text style={TYPO.corps}>{dans !== null && dans > 0 ? "avant le premier tour." : dans === 0 ? "Le premier tour, c'est aujourd'hui." : "Le premier tour a eu lieu."}</Text>
         {tour1 && tour1.date ? (
           <View style={{ flexDirection: "row", gap: PAS * 3 }}>
@@ -307,7 +308,7 @@ export default function Presidentielle2027() {
       {d.meta ? (
         <Pressable onPress={() => Linking.openURL(d.meta!.source.url)} accessibilityRole="link"
           accessibilityLabel={`Source de la liste des candidats : ${d.meta.source.producteur}, relevé le ${dateFr(d.meta.lastUpdate)}, ouvre un site externe`}
-          style={({ pressed }) => ({ minHeight: CIBLE, flexDirection: "row", alignItems: "center", gap: PAS * 1.5, opacity: pressed ? 0.7 : 1 })}>
+          style={({ pressed }) => ({ minHeight: CIBLE, flexDirection: "row", alignItems: "center", gap: PAS * 2, opacity: pressed ? 0.7 : 1 })}>
           <Ionicons name="link-outline" size={14} color={couleurs.sourd} accessible={false} importantForAccessibility="no" />
           <Text style={[TYPO.micro, { flex: 1 }]}>Liste des candidats : {d.meta.source.producteur} · relevé le {dateFr(d.meta.lastUpdate)}</Text>
         </Pressable>
