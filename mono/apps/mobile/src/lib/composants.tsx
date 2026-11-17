@@ -13,6 +13,7 @@ import { ACCENTS, feuille, couleurs, CIBLE, PAS, RAYON, OMBRE, TYPO, type Echelo
 import { NIVEAU_NOM, pointEchelon } from "./niveaux";
 import { Pression } from "../ui/pression";
 import { enfonce } from "../ui/mouvement";
+import { niveauTitre } from "../ui/titre";
 
 /* Refonte du 30/09/2026 : l'echelon se dit par un point de couleur devant l'etiquette.
    07/11/2026 (refonte globale, demande du porteur) : le filet de 4 px a gauche revient,
@@ -27,7 +28,7 @@ export function Carte({ echelon, children, titre, onPress, etiquette }: {
       {titre ? (
         <View style={s.carteTete}>
           {echelon ? <View style={[s.point, pointEchelon(echelon)]} /> : null}
-          <Text style={s.carteTitre} accessibilityRole="header">{titre}</Text>
+          <Text style={s.carteTitre} {...niveauTitre(2)}>{titre}</Text>
           {echelon ? <Text style={s.niveau}>{NIVEAU_NOM[echelon]}</Text> : null}
         </View>
       ) : null}
@@ -50,7 +51,7 @@ export function CarteQuestion({ echelon, question, reponse, children, pied, acti
     <View style={[s.carte, { backgroundColor: couleurs.carte }]}>
       <View style={s.carteTete}>
         <View style={[s.point, pointEchelon(echelon)]} />
-        <Text style={s.carteTitre} accessibilityRole="header">{question}</Text>
+        <Text style={s.carteTitre} {...niveauTitre(2)}>{question}</Text>
         <Text style={s.niveau}>{NIVEAU_NOM[echelon]}</Text>
       </View>
       {!reponse ? null : typeof reponse === "string" ? <Text style={TYPO.reponse}>{reponse}</Text> : reponse}
@@ -90,7 +91,7 @@ export function Definitions({ s: seg }: { s: Segment[] }) {
           accessibilityHint="Ouvre la définition dans le dictionnaire"
           onPress={() => router.push({ pathname: "/dictionnaire", params: { mot: m.mot } })}
           /* Refonte (porteur, 09/11/2026) : plus de lien souligné ; un bouton discret, en pastille. */
-          style={({ pressed }) => ({ minHeight: CIBLE, alignSelf: "flex-start", flexDirection: "row", alignItems: "center", gap: PAS * 1.5,
+          style={({ pressed }) => ({ minHeight: CIBLE, alignSelf: "flex-start", flexDirection: "row", alignItems: "center", gap: PAS * 2,
             paddingHorizontal: PAS * 3, borderRadius: RAYON.pastille, borderWidth: 1, borderColor: couleurs.trait, ...enfonce(pressed) })}>
           <Ionicons name="book-outline" size={15} color={couleurs.sourd} accessible={false} importantForAccessibility="no" />
           <Text style={[TYPO.note, { color: couleurs.encre }]}>Définition : {m.titre}</Text>
@@ -151,7 +152,7 @@ export function Vide({ titre, corps, lien, action, onAction, icone = "file-tray-
       <View style={s.videIcone}>
         <Ionicons name={icone} size={26} color={couleurs.sourd} accessible={false} importantForAccessibility="no" />
       </View>
-      <Text style={[TYPO.reponse, { fontSize: 18, lineHeight: 24 }]}>{titre}</Text>
+      <Text style={[TYPO.reponse, { fontSize: 17, lineHeight: 24 }]}>{titre}</Text>
       {corps ? <Text style={TYPO.note}>{corps}</Text> : null}
       {lien ? <LienSortant url={lien.url} texte={lien.texte} /> : null}
       {action && onAction ? <Bouton texte={action} onPress={onAction} /> : null}

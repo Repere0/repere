@@ -13,12 +13,13 @@ import type { ReactNode } from "react";
 import { Text, View } from "react-native";
 import { PAS, TYPO } from "../lib/theme";
 import { EnClair } from "./stitch";
+import { niveauTitre } from "./titre";
 
 /* Une etiquette de categorie : libelle en capitales de style. */
 export function Etiquette({ texte, couleur }: { texte: string; couleur?: string }) {
   return (
     <View style={{ flexDirection: "row", alignItems: "center", gap: PAS * 2 }}>
-      <Text style={[TYPO.etiquette, couleur ? { color: couleur } : null, { flex: 1 }]} accessibilityRole="header">{texte}</Text>
+      <Text style={[TYPO.etiquette, couleur ? { color: couleur } : null, { flex: 1 }]}>{texte}</Text>
     </View>
   );
 }

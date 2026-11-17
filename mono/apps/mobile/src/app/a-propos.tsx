@@ -8,6 +8,7 @@ import { Stack, router } from "expo-router";
 import { couleurs, PAS, TYPO } from "../lib/theme";
 import { Bouton, Carte } from "../lib/composants";
 import { Logo } from "../ui/logo";
+import { niveauTitre } from "../ui/titre";
 
 const CONTACT = process.env.EXPO_PUBLIC_CONTACT_EMAIL;
 const CORPS_AVIS = "Ce que j'ai aimé :\n\nCe qui m'a gêné :\n\nUne idée :\n";
@@ -18,7 +19,7 @@ export default function APropos() {
     <ScrollView {...MARQUE_DEFILEMENT} style={{ flex: 1, backgroundColor: couleurs.sol }} contentContainerStyle={{ padding: PAS * 4, paddingBottom: bas, gap: PAS * 4 }}>
       <Stack.Screen options={{ title: "À propos" }} />
       <Logo size={96} variant="mono" />
-      <Text style={TYPO.question} accessibilityRole="header">Repère</Text>
+      <Text style={TYPO.question} {...niveauTitre(1)}>Repère</Text>
       <Text style={TYPO.corps}>L'application qui vous raccroche à votre citoyenneté française.</Text>
       <Carte>
         <Text style={TYPO.corps}>Repère montre ce qui se décide et ce qui se dépense dans votre commune, à partir de données publiques.</Text>

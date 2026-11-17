@@ -21,6 +21,7 @@ import { PastilleSource } from "../ui/source";
 import { PartagerCarte } from "../ui/partage/bouton-partage";
 import { RepereDuJourStory } from "../ui/partage-repere-du-jour";
 import { enfonce } from "../ui/mouvement";
+import { niveauTitre } from "../ui/titre";
 
 /* REFONTE DU 13/11/2026 (porteur : « le contenu ne sert à rien, le partage n'a aucun intérêt ») — « LA MINUTE CITOYENNE ».
  *
@@ -35,7 +36,7 @@ import { enfonce } from "../ui/mouvement";
 function Bloc({ etiquette, children }: { etiquette: string; children: ReactNode }) {
   return (
     <View style={{ gap: PAS * 3, padding: PAS * 5, borderRadius: RAYON.carte, backgroundColor: couleurs.carte }}>
-      <Text style={TYPO.etiquette} accessibilityRole="header">{etiquette}</Text>
+      <Text style={TYPO.etiquette} {...niveauTitre(2)}>{etiquette}</Text>
       {children}
     </View>
   );
@@ -72,10 +73,10 @@ export default function RepereDuJourEcran() {
             </Text>
           ) : (
             <Bloc etiquette="Le fait du jour">
-              <Text style={[TYPO.affiche, { fontSize: 26, lineHeight: 32 }]}>{premier.f.texte}</Text>
+              <Text style={[TYPO.affiche, { fontSize: 28, lineHeight: 34 }]}>{premier.f.texte}</Text>
               {suite ? <Text style={TYPO.corps}>{suite.contexte}</Text> : null}
               <PastilleSource court source={premier.src} />
-              {suite ? <Bouton texte={suite.action} onPress={() => router.push(suite.chemin)} /> : null}
+              {suite ? <Bouton texte={suite.action} onPress={() => (suite.chemin === "/argent" ? router.navigate("/finances") : router.push(suite.chemin))} /> : null}
             </Bloc>
           )}
 
@@ -102,7 +103,7 @@ export default function RepereDuJourEcran() {
             <Bloc etiquette="Le prochain rendez-vous">
               <View style={{ flexDirection: "row", alignItems: "baseline", gap: PAS * 2 }} accessible
                 accessibilityLabel={jours === 0 ? `Aujourd'hui : ${prochaine.titre}` : `Dans ${jours} jour${jours > 1 ? "s" : ""} : ${prochaine.titre}, le ${dateFr(prochaine.date as string)}`}>
-                <Text style={[TYPO.chiffre, { fontSize: 44, lineHeight: 48 }]}>{jours === 0 ? "Aujourd'hui" : jours}</Text>
+                <Text style={[TYPO.chiffre, { fontSize: 48, lineHeight: 52 }]}>{jours === 0 ? "Aujourd'hui" : jours}</Text>
                 {jours === 0 ? null : <Text style={TYPO.note}>jour{jours > 1 ? "s" : ""}</Text>}
               </View>
               <Text style={TYPO.corps}>{prochaine.titre}, le {dateFr(prochaine.date as string)}.</Text>
@@ -129,7 +130,7 @@ export default function RepereDuJourEcran() {
 
           {/* 09/11/2026 (porteur) : une modale explicative, au lieu d'un accordéon. */}
           <Pressable onPress={() => setExplication(true)} accessibilityRole="button" accessibilityLabel="Comment ces faits sont choisis"
-            style={({ pressed }) => ({ minHeight: CIBLE, alignSelf: "flex-start", flexDirection: "row", alignItems: "center", gap: PAS * 1.5, ...enfonce(pressed) })}>
+            style={({ pressed }) => ({ minHeight: CIBLE, alignSelf: "flex-start", flexDirection: "row", alignItems: "center", gap: PAS * 2, ...enfonce(pressed) })}>
             <Ionicons name="information-circle-outline" size={18} color={couleurs.sourd} accessible={false} importantForAccessibility="no" />
             <Text style={[TYPO.note, { color: couleurs.encre }]}>Comment ces faits sont choisis</Text>
           </Pressable>

@@ -27,6 +27,7 @@ import { CIBLE, couleurs, feuille, OMBRE, PAS, POLICE, RAYON, TYPO } from "../li
 import { PastilleSource } from "./source";
 import { useApparition } from "./mouvement";
 import { Animated } from "react-native";
+import { niveauTitre } from "./titre";
 
 export const SANS_GROUPE = "Non inscrit ou sans groupe publié";
 
@@ -86,7 +87,7 @@ export function PanneauSenat() {
   return (
     <View style={{ gap: PAS * 4 }}>
       <View style={s.carte}>
-        <Text style={TYPO.etiquette} accessibilityRole="header">La composition du Sénat</Text>
+        <Text style={TYPO.etiquette} {...niveauTitre(2)}>La composition du Sénat</Text>
         <View onLayout={e => setLargeur(e.nativeEvent.layout.width)} accessible accessibilityLabel={phrase}
           style={{ width: "100%", height: rayon + point }}>
           {largeur ? (
@@ -125,7 +126,7 @@ export function PanneauSenat() {
         <PastilleSource source={{ producteur: f.source.producteur, licence: f.source.licence, url: f.source.url, releve: f.genere_le }} />
       </View>
 
-      <Text style={TYPO.etiquette} accessibilityRole="header">
+      <Text style={TYPO.etiquette} {...niveauTitre(2)}>
         {choisi ? `Les ${liste.length} sénateurs ${choisi}` : `Les ${liste.length} sénateurs`}
       </Text>
       {liste.map(x => (

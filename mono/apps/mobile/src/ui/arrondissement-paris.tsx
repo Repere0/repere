@@ -11,6 +11,7 @@ import { couleurs, CIBLE, PAS, POLICE, RAYON, TYPO, ACCENTS } from "../lib/theme
 import { LienSortant } from "../lib/composants";
 import { choisirArrondissement, useArrondissement } from "../lib/arrondissement";
 import { Pression } from "./pression";
+import { niveauTitre } from "./titre";
 import { DateDonnee } from "./fraicheur";
 import { chargerDeputes, chargerParisArrondissements } from "../lib/donnees";
 
@@ -43,7 +44,7 @@ export function ArrondissementParis() {
   const noms = (circos ?? []).map(c => ({ c, d: deputes[c] })).filter(x => x.d);
   return (
     <View testID="arrondissement-paris" style={{ gap: PAS * 3, padding: PAS * 5, borderRadius: RAYON.carte, backgroundColor: couleurs.carte }}>
-      <Text style={TYPO.etiquette} accessibilityRole="header">Votre arrondissement</Text>
+      <Text style={TYPO.etiquette} {...niveauTitre(2)}>Votre arrondissement</Text>
       <Text style={TYPO.note}>Cette page montre Paris en entier : une seule commune, un seul budget. Choisissez votre arrondissement pour voir ce qui en dépend.</Text>
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: PAS * 2, paddingVertical: PAS }}
         accessibilityRole="radiogroup" accessibilityLabel="Arrondissement de Paris">

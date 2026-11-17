@@ -7,6 +7,7 @@ import { ScrollView, Text, View } from "react-native";
 import { Stack } from "expo-router";
 import { couleurs, PAS, TYPO } from "../lib/theme";
 import { Carte } from "../lib/composants";
+import { niveauTitre } from "../ui/titre";
 
 const Puce = ({ children }: { children: string }) => (
   <View style={{ flexDirection: "row", gap: PAS * 2 }}>
@@ -20,7 +21,7 @@ export default function Confidentialite() {
   return (
     <ScrollView {...MARQUE_DEFILEMENT} focusable style={{ flex: 1, backgroundColor: couleurs.sol }} contentContainerStyle={{ padding: PAS * 4, paddingBottom: bas, gap: PAS * 4 }}>
       <Stack.Screen options={{ title: "Confidentialité" }} />
-      <Text style={TYPO.question} accessibilityRole="header">Confidentialité</Text>
+      <Text style={TYPO.question} {...niveauTitre(1)}>Confidentialité</Text>
       <Text style={TYPO.corps}>Version du 30/10/2026.</Text>
 
       <Carte titre="Ce que Repère ne fait pas">

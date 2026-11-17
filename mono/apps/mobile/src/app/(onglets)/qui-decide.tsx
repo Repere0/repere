@@ -185,7 +185,7 @@ export default function QuiDecide() {
               à nouveau montre de nouveau tous les niveaux. */}
           {sujet ? (
             <Pressable onPress={() => setSujet(null)} accessibilityRole="button" accessibilityLabel="Montrer tous les niveaux"
-              style={({ pressed }) => ({ minHeight: CIBLE, alignSelf: "flex-start", flexDirection: "row", alignItems: "center", gap: PAS * 1.5, ...enfonce(pressed) })}>
+              style={({ pressed }) => ({ minHeight: CIBLE, alignSelf: "flex-start", flexDirection: "row", alignItems: "center", gap: PAS * 2, ...enfonce(pressed) })}>
               <Ionicons name="close-circle-outline" size={16} color={couleurs.sourd} accessible={false} importantForAccessibility="no" />
               <Text style={[TYPO.note, { color: couleurs.encre }]}>Montrer tous les niveaux</Text>
             </Pressable>

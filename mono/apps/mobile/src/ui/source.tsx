@@ -23,6 +23,7 @@ import { feuille, couleurs, CIBLE, PAS, POLICE, RAYON, TYPO } from "../lib/theme
 import { Etiquette } from "./resume";
 import { Ionicons } from "@expo/vector-icons";
 import { enfonce } from "./mouvement";
+import { niveauTitre } from "./titre";
 
 export type InfoSource = {
   producteur?: string; licence?: string; maj?: string; mention?: string; url?: string;
@@ -91,7 +92,7 @@ export function FeuilleSource({ source, visible, onFermer }: { source: InfoSourc
     <Modal visible={visible} animationType="slide" presentationStyle="pageSheet" onRequestClose={onFermer}>
       <ScrollView {...MARQUE_DEFILEMENT} style={{ backgroundColor: couleurs.sol }} contentContainerStyle={[s.feuille, { paddingBottom: marges.bottom + PAS * 8 }]}>
         <Etiquette texte="D'où vient cette information ?" />
-        <Text style={TYPO.question} accessibilityRole="header">{source.producteur}</Text>
+        <Text style={TYPO.question} {...niveauTitre(1)}>{source.producteur}</Text>
         {date ? <Text style={[TYPO.corps, { fontWeight: "500" }]}>{date}</Text> : null}
         {traite ? <Text style={TYPO.note}>Traitées par Repère le {dateFr(traite)}</Text> : null}
 

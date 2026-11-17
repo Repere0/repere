@@ -1,3 +1,3 @@
-/* L'ONGLET « FINANCES » (maquettes Stitch, 09/11/2026) : l'écran « Où va l'argent », tel quel.
- * La route /argent reste : les liens « Où va cet argent ? » y mènent, au-dessus de la barre. */
-export { default } from "../argent";
+/* L'ONGLET « FINANCES » : l'écran « Où va l'argent » (ui/ecran-argent.tsx). Seule adresse de cet
+ * écran depuis le 16/11/2026 : /argent y redirige. */
+export { default } from "../../ui/ecran-argent";
