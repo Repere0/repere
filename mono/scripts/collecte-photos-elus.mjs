@@ -196,7 +196,10 @@ async function main() {
       await pause(1000);
       const rl = await sparql(`SELECT ?p ?label ?img WHERE { VALUES ?label { ${valeurs} } ?p rdfs:label ?label ; wdt:P31 wd:Q5 ; wdt:P27 wd:Q142 . OPTIONAL { ?p wdt:P18 ?img } }`);
       const qids = liste.map(c => c.wikidata).filter(q => /^Q\d+$/.test(q || ""));
-      const rq = qids.length ? (await pause(1000), await sparql(`SELECT ?p ?img WHERE { VALUES ?p { ${qids.map(q => "wd:" + q).join(" ")} } OPTIONAL { ?p wdt:P18 ?img } }`)) : [];
+      const rq = qids.length ? (await pause(1000), await sparql(`SELECT ?p ?img ?label WHERE { VALUES ?p { ${qids.map(q => "wd:" + q).join(" ")} } OPTIONAL { ?p wdt:P18 ?img } OPTIONAL { ?p rdfs:label ?label FILTER(lang(?label) = "fr") } }`)) : [];
+      /* VERIFIER LE QID ECRIT A LA MAIN (17/11/2026) : le journal dit quel item il designe, pour qu'une faute de
+         frappe dans candidats.json se voie avant d'afficher la photo d'une autre personne. */
+      for (const l of enLignes(rq)) console.log(`::notice title=photos-candidats::${String(l.p).split("/").pop()} = « ${l.label || "(sans libelle francais)"} »`);
       const retenus = rapprocherCandidats(liste, enLignes(rc), enLignes(rl), enLignes(rq));
       for (const [id, r] of Object.entries(retenus.raisons)) console.log(`::notice title=photos-candidats::${id} : pas de photo — ${r}`);
       nbCandidatsRapproches = retenus.length;
