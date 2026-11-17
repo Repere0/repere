@@ -39,7 +39,7 @@ Préparé le 30/10/2026 (V32, bloc 3). Ce document ne crée ni ne modifie aucune
 
 ## Ce qui est partiel
 
-- Île-de-France seulement pour les budgets communaux (1 262 communes, 8 départements).
+- Île-de-France seulement pour les budgets communaux (1 264 communes, 8 départements).
 - Sénat et conseils régionaux non publiés : l'application le dit à l'écran.
 - « Contacter » renvoie à la source officielle : aucun courriel d'élu n'est publié dans les données.
 - Signalement d'erreur et contact : masqués tant que `EXPO_PUBLIC_CONTACT_EMAIL` n'est pas définie. Adresse prévue : `repere0@protonmail.com`.

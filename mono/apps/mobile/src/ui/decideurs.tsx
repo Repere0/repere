@@ -8,6 +8,7 @@ import { ordinal } from "@repere/core";
 import { couleurs, PAS, POLICE, TYPO } from "../lib/theme";
 import { AvatarElu, CreditPhotoElu } from "./avatar";
 import { Pression } from "./pression";
+import { niveauTitre } from "./titre";
 
 /* « J.-F. Copé » : l'initiale du prénom (composé ou non), puis le nom. Le nom entier reste dans le nom accessible. */
 export function nomCourt(nom: string): string {
@@ -31,7 +32,7 @@ export function Decideurs({ maire, depute, circo, titre = "Vos décideurs", grou
   if (!gens.length) return null;
   return (
     <View style={{ gap: PAS * 2 }}>
-      <Text style={TYPO.etiquette} accessibilityRole="header">{titre}</Text>
+      <Text style={TYPO.etiquette} {...niveauTitre(2)}>{titre}</Text>
       <View style={{ flexDirection: "row", flexWrap: "wrap", columnGap: PAS * 5, rowGap: PAS * 2 }}>
         {gens.map(g => (
           <Pression key={g.nom} etiquette={`${g.nom}, ${g.role} : ouvrir sa fiche`}

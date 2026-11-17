@@ -36,6 +36,12 @@ export const COULEUR_VOTE_DALTONIEN = { p: COULEURS_VOTE_DALTONIEN.votePour, c: 
 
 export const CIBLE = 48;
 export const PAS = 4;
+/* L'ÉCHELLE DES TAILLES DE TEXTE (audit UI, vague 2, 16/11/2026). Les tailles de TYPO (13, 14, 15, 17,
+   22, 28, 34), plus quatre rôles nommés : 12 (libellés de la barre basse, décision du 09/11), 16 (champs de
+   saisie : Safari iOS zoome en dessous), 20 (marque et sous-titres), 48 (le grand chiffre d'un écran).
+   Toute autre taille écrite en dur est refusée par tests/echelle.test.mjs ; les cartes de partage
+   (images de 1 080 px) en sont exclues. Les espacements suivent PAS (4) ; 1 et 2 restent permis (filets). */
+export const ECHELLE_TYPO = [12, 13, 14, 15, 16, 17, 20, 22, 28, 34, 48] as const;
 /* docs/historique/DESIGN.md (09/11/2026) : cartes au rayon 16, blocs et champs au rayon 12. */
 /* Variante A (11/11/2026) : cartes au rayon 24, blocs et champs au rayon 16. */
 export const RAYON = { carte: 24, bloc: 16, pastille: 999 } as const;

@@ -30,7 +30,7 @@ En pratique :
 - `date_publication` reste la date où Repère publie, pas celle de la page source.
 
 ### D30 — Combien de communes
-- **Automatique** : toute l'Île-de-France (1 262 communes).
+- **Automatique** : toute l'Île-de-France (1 264 communes).
 - **Manuel, chaque semaine** : 3 communes pilotes au démarrage, **Melun (77288), Meaux (77284), Versailles (78646)**. Extension après les retours des testeurs.
 
 ### D31 — Rythme

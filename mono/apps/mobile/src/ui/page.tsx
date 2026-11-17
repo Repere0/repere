@@ -17,6 +17,7 @@ import { SquelettesListe } from "./squelette";
 import { Etiquette } from "./resume";
 import { BandeauFraicheur, DatePublication } from "./fraicheur";
 import { BoutonCopierLien } from "./partage/partager-texte";
+import { niveauTitre } from "./titre";
 
 /* LE BAS D'UN ÉCRAN QUI DÉFILE (12/11/2026, roadmap bêta) : la marge du bas s'ajoute à la zone protégée de l'iPhone
    (barre d'accueil, env(safe-area-inset-bottom)). Mesuré avec une marge de 34 px émulée : sans cela, le dernier
@@ -51,7 +52,7 @@ export function Question({ etiquette, question, sous }: { etiquette?: string; qu
   return (
     <View style={{ gap: PAS * 2, marginBottom: PAS * 1 }}>
       {etiquette ? <Etiquette texte={etiquette} /> : null}
-      <Text style={TYPO.affiche} accessibilityRole="header">{insecable(question)}</Text>
+      <Text style={TYPO.affiche} {...niveauTitre(1)}>{insecable(question)}</Text>
       {sous ? <Text style={TYPO.note}>{sous}</Text> : null}
     </View>
   );

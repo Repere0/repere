@@ -69,9 +69,11 @@ export default function Onglets() {
         tabBarActiveTintColor: ACCENTS.texteAccent,
         tabBarInactiveTintColor: couleurs.sourd,
         /* Filet de séparation d'un demi-pixel, pas d'ombre (refonte « légère »). */
-        tabBarStyle: { backgroundColor: couleurs.carte, borderTopColor: couleurs.trait, borderTopWidth: StyleSheet.hairlineWidth, elevation: 0, shadowOpacity: 0, minHeight: 72 + marges.bottom, paddingTop: 6 },
+        tabBarStyle: { backgroundColor: couleurs.carte, borderTopColor: couleurs.trait, borderTopWidth: StyleSheet.hairlineWidth, elevation: 0, shadowOpacity: 0, minHeight: 72 + marges.bottom, paddingTop: 4 },
         headerLeft: () => <ChangerCommune />,
         headerRight: () => <BoutonReglages />,
+        /* Audit UI, vague 2 : le titre de l'en-tête n'est pas un titre de niveau 1 (celui de l'écran l'est). */
+        headerTitle: ({ children }) => <Text numberOfLines={1} style={{ fontSize: 17, fontWeight: "600", color: couleurs.encre }}>{children}</Text>,
       }}
     >
       <Tabs.Screen

@@ -8,6 +8,7 @@ import { Stack } from "expo-router";
 import { CONTRASTES, ESPACEMENTS, TAILLES_TEXTE } from "@repere/core";
 import { useProfil } from "../lib/profil";
 import { CIBLE, couleurs, PAS, TYPO } from "../lib/theme";
+import { niveauTitre } from "../ui/titre";
 import { Carte } from "../lib/composants";
 import { enfonce } from "../ui/mouvement";
 
@@ -40,6 +41,7 @@ export default function ConfortLecture() {
   return (
     <ScrollView {...MARQUE_DEFILEMENT} style={{ flex: 1, backgroundColor: couleurs.sol }} contentContainerStyle={{ padding: PAS * 4, paddingBottom: bas, gap: PAS * 4 }}>
       <Stack.Screen options={{ title: "Confort de lecture" }} />
+      <Text style={TYPO.question} {...niveauTitre(1)}>Confort de lecture</Text>
       <Carte titre="Taille du texte">
         <View style={{ flexDirection: "row", flexWrap: "wrap", gap: PAS * 2 }}>
           {TAILLES_TEXTE.map(t => <Choix key={t} texte={`A ${t}`} etiquette={`Texte de ${t} points`} actif={p.tailleTexte === t} onPress={() => modifier({ tailleTexte: t })} />)}

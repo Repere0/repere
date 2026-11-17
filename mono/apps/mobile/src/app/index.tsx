@@ -49,6 +49,7 @@ import { SignalerErreur } from "../ui/contact";
 import { ModaleExhaustif } from "../ui/modale-exhaustif";
 import { METHODE_COMPTES, USAGE_PAR_HABITANT, srcVote } from "../lib/sources";
 import { enfonce } from "../ui/mouvement";
+import { niveauTitre } from "../ui/titre";
 
 /* 09/11/2026 (maquettes Stitch) : l'accueil suit le thème choisi (Néo-Civique clair par défaut,
    Dark Luxury en sombre). Il était sombre en toutes circonstances depuis le 30/10/2026. */
@@ -572,13 +573,13 @@ export default function Accueil() {
                 07/11/2026 (porteur) : titre court, les deux questions du produit, mot pour mot. */}
             {/* 07/11/2026 (porteur, refonte globale) : plus de slogan ; la recherche devient le héros.
                 Le titre reste pour le lecteur d'écran (un écran sans titre est une impasse). */}
-            <Text style={s.titreCache} accessibilityRole="header">Repère, accueil</Text>
+            <Text style={s.titreCache}>Repère, accueil</Text>
             {/* Maquette Stitch « Recherche » (09/11/2026) : l'accroche, au-dessus de la recherche. */}
             {/* 14/11/2026 (porteur, refonte de l'accueil, après le test iPhone). De haut en bas : « Bonjour », le sous-titre,
                 LA RECHERCHE (l'action n°1, toujours ouverte), le quiz, les quatre accès, les thèmes. Pendant une recherche,
                 tout ce qui n'est pas la recherche s'efface : les résultats viennent juste sous le champ.
                 « Bonjour » : le prénom vient de repere.profil, jamais du réseau ; sans prénom, « Citoyen ». */}
-            <Text style={s.bonjour} testID="bonjour" accessibilityRole="header">Bonjour {prenom || "Citoyen"}</Text>
+            <Text style={s.bonjour} testID="bonjour" {...niveauTitre(1)}>Bonjour {prenom || "Citoyen"}</Text>
             <Text style={s.sousTitre}>Ce qui se passe chez vous, expliqué simplement.</Text>
             <Text style={s.titreCache} nativeID="question">Où habitez-vous ?</Text>
             <View style={[s.champLigne, { borderColor: ACCENTS.autorite }, champActif && Platform.OS === "web" && { borderColor: E.ville }]}>
@@ -660,7 +661,7 @@ export default function Accueil() {
             ) : null}
             {tout && !cherches.length ? (
               <View style={{ gap: PAS * 2 }}>
-                <Text style={s.question} accessibilityRole="header">Les {communes.length} communes de la bêta, de A à Z</Text>
+                <Text style={s.question} {...niveauTitre(1)}>Les {communes.length} communes de la bêta, de A à Z</Text>
                 <Bouton texte="Fermer la liste" discret onPress={() => setTout(false)} />
               </View>
             ) : null}
@@ -762,7 +763,7 @@ const s = feuille(() => StyleSheet.create({
   titreCache: { position: "absolute", width: 1, height: 1, overflow: "hidden", opacity: 0 },
   tuileIcone: { width: 36, height: 36, borderRadius: 12, alignItems: "center", justifyContent: "center" },
   chercherTexte: { fontFamily: POLICE.titre, fontSize: 17, color: D.encre },
-  citation: { fontFamily: POLICE.affiche, fontSize: 40, lineHeight: 44, letterSpacing: -0.8, color: D.encre, marginTop: PAS * 6 },
+  citation: { fontFamily: POLICE.affiche, fontSize: 34, lineHeight: 40, letterSpacing: -0.8, color: D.encre, marginTop: PAS * 6 },
   carte: { gap: PAS * 3, padding: PAS * 5, borderRadius: RAYON.carte, backgroundColor: D.carte, ...OMBRE },
   etiquette: { fontSize: 14, fontWeight: "500", color: D.sourd },
   carteTitre: { fontFamily: POLICE.titre, fontSize: 17, lineHeight: 24, color: D.encre },
@@ -787,7 +788,7 @@ const s = feuille(() => StyleSheet.create({
   loupeRond: { position: "absolute", top: 0, left: 0, width: 13, height: 13, borderRadius: 7, borderWidth: 2, borderColor: D.sourd },
   loupeManche: { position: "absolute", right: 0, bottom: 1, width: 7, height: 2, borderRadius: 1, backgroundColor: D.sourd, transform: [{ rotate: "45deg" }] },
   champ: {
-    flex: 1, minHeight: CIBLE + 8, paddingHorizontal: PAS * 2, fontSize: 18, color: D.encre, borderRadius: 999,
+    flex: 1, minHeight: CIBLE + 8, paddingHorizontal: PAS * 2, fontSize: 17, color: D.encre, borderRadius: 999,
     /* Sur l'export web, le contour de focus par defaut du navigateur est orange :
        une sixieme couleur (invariant 7). Le contour de l'INPUT est supprime : la barre ENTIERE
        (loupe comprise) prend la couleur de la commune au focus (12/11/2026, Safari : le trait

@@ -9,7 +9,7 @@ lignes, gardé par `outils/derive_contexte.mjs`). Le détail se lit **à la dema
 - Application civique française, **neutre**, qui répond à deux questions pour
   une commune : **qui décide chez moi** et **où va mon argent**. Chaque affirmation
   est sourcée, aucune opinion.
-- Cap : bêta **Île-de-France** (1 262 communes), utilisable par un banc de
+- Cap : bêta **Île-de-France** (1 264 communes), utilisable par un banc de
   **10 testeurs en décembre 2026** ; présidentielle d'avril 2027 en toile de fond.
 - Un seul développeur, budget quasi nul : **aucune dépense sans la signaler et la
   justifier d'abord**.

@@ -31,6 +31,7 @@ import { ScrollView } from "react-native";
 import { groupeDe, useGroupes, type TableGroupes, GROUPE_INCONNU } from "../lib/groupes";
 import { BadgeGroupe } from "../ui/badge-groupe";
 import { enfonce } from "../ui/mouvement";
+import { niveauTitre } from "../ui/titre";
 
 /* LES FILTRES PAR FONCTION (porteur, 09/11/2026). L'annuaire porte les députés et les exécutifs
    régionaux ; sénateurs et conseillers départementaux n'y sont pas encore : le filtre le dit. */
@@ -103,7 +104,7 @@ export default function Elus() {
         ListHeaderComponent={
           <View style={{ gap: PAS * 3 }}>
             <DatePublication />
-            <Text style={TYPO.affiche} accessibilityRole="header">Élus</Text>
+            <Text style={TYPO.affiche} {...niveauTitre(1)}>Élus</Text>
             <Text style={TYPO.note}>Les députés et les exécutifs régionaux publiés par Repère. Chaque nom porte sa source.</Text>
             <View style={{ flexDirection: "row", alignItems: "center", gap: PAS * 2, minHeight: CIBLE + 8, borderRadius: 999, borderWidth: 1.5,
               borderColor: couleurs.trait, backgroundColor: couleurs.carte, paddingLeft: PAS * 4 }}>

@@ -25,6 +25,7 @@ import { couleurs, CIBLE, PAS, RAYON, TYPO } from "../lib/theme";
 import { Loupe } from "../ui/loupe";
 import { ChipsThemes } from "../ui/chips-themes";
 import type { Fiche } from "../types/annuaire";
+import { niveauTitre } from "../ui/titre";
 
 /* Au plus cette quantité par section : le lecteur affine plutôt que de faire défiler une liste de mille lignes. */
 const PAR_SECTION = 8;
@@ -52,7 +53,7 @@ function Section({ titre, source, total, children }: { titre: string; source: st
   const phrase = PHRASES[source as keyof typeof PHRASES] as { titre: string } | undefined;
   return (
     <View style={{ gap: PAS * 2 }}>
-      <Text style={TYPO.etiquette} accessibilityRole="header">{titre}{source === ETATS.SERVI && total ? ` · ${total}` : ""}</Text>
+      <Text style={TYPO.etiquette} {...niveauTitre(2)}>{titre}{source === ETATS.SERVI && total ? ` · ${total}` : ""}</Text>
       {source === EN_COURS ? <SquelettesListe n={2} hauteur={64} /> : null}
       {source !== EN_COURS && source !== ETATS.SERVI && phrase ? <Text style={TYPO.note}>{phrase.titre}</Text> : null}
       {source === ETATS.SERVI ? children : null}
@@ -168,6 +169,8 @@ export default function Recherche() {
   return (
     <ScrollView {...MARQUE_DEFILEMENT} style={{ flex: 1, backgroundColor: couleurs.sol }} keyboardShouldPersistTaps="handled"
       contentContainerStyle={{ padding: PAS * 4, paddingBottom: bas, gap: PAS * 4 }}>
+      {/* Audit UI, vague 2 : un titre d'écran pour les lecteurs d'écran, sans prendre de place (le champ dit déjà tout). */}
+      <Text {...niveauTitre(1)} style={{ position: "absolute", width: 1, height: 1, overflow: "hidden", opacity: 0 }}>Rechercher</Text>
       <View style={{ flexDirection: "row", alignItems: "center", gap: PAS * 2, minHeight: CIBLE + 8, borderRadius: 999, borderWidth: 1.5,
         borderColor: focus ? couleurs.encre : couleurs.trait, backgroundColor: couleurs.carte, paddingLeft: PAS * 4 }}>
         <Loupe couleur={couleurs.sourd} />
