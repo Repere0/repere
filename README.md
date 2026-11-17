@@ -8,7 +8,10 @@ Application civique française et neutre : pour une commune, **qui décide chez 
 [![Node 22](https://img.shields.io/badge/node-22-339933.svg)](.github/workflows/mobile.yml)
 ![Statut : bêta Île-de-France](https://img.shields.io/badge/statut-b%C3%AAta%20%C3%8Ele--de--France-orange.svg)
 
-- Pas de compte, pas de publicité, pas de traceur. Après le premier chargement, l'application fonctionne hors ligne.
+**Zéro compte · zéro traceur · zéro publicité · code ouvert (AGPL-3.0).**
+
+- **Essayer la démo** : https://repere-demo-plum.vercel.app (l'adresse passera à Cloudflare Pages à la bascule, voir `docs/hebergement-cloudflare.md`). Une version de démonstration : un bouton « Laisser un avis » ouvre votre messagerie avec un message pré-rempli, rien n'est envoyé ailleurs.
+- Après le premier chargement, l'application fonctionne hors ligne et peut s'installer sur l'écran d'accueil (PWA).
 - La bêta couvre les 1 264 communes d'Île-de-France. L'application n'est pas encore publiée sur les magasins.
 - Les règles qui ne bougent pas (neutralité, sources, aucun classement) sont dans [`CLAUDE.md`](CLAUDE.md), les décisions dans [`docs/adr/`](docs/adr/).
 

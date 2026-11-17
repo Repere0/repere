@@ -74,8 +74,15 @@ jobs:
         if: steps.secrets.outputs.pret == 'oui'
         run: npm ci --no-audit --no-fund
 
+      # MODE DEMO ET AVIS (17/11/2026, src/lib/avis.ts). Variables du depot (Settings > Secrets and variables >
+      # Actions > Variables), pas des secrets : elles finissent dans le code servi. Par defaut : demo, et l'adresse
+      # deja publiee du projet. FEEDBACK_EMAIL ne doit nommer qu'une adresse dont le porteur detient le domaine.
       - name: Construire (export web, donnees publiees, PWA, regles de routage)
         if: steps.secrets.outputs.pret == 'oui'
+        env:
+          EXPO_PUBLIC_APP_MODE: ${{ vars.APP_MODE || 'demo' }}
+          EXPO_PUBLIC_CONTACT_EMAIL: ${{ vars.CONTACT_EMAIL || 'repere0@protonmail.com' }}
+          EXPO_PUBLIC_FEEDBACK_EMAIL: ${{ vars.FEEDBACK_EMAIL || vars.CONTACT_EMAIL || 'repere0@protonmail.com' }}
         run: npm run build:cloudflare
 
       # Le projet est cree au premier passage s'il n'existe pas (type « envoi direct »). Les fois suivantes, la

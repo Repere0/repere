@@ -1,4 +1,4 @@
-/* ACCUEIL : NOUVELLE HIÉRARCHIE (14/11/2026, porteur, après le test iPhone).
+/* ACCUEIL SANS COMMUNE (17/11/2026, porteur) : recherche, quatre cartes, « Soutenir Repère ». Avant : (14/11/2026).
  * De haut en bas : Bonjour (34 px), sous-titre, RECHERCHE, quiz, quatre accès 2x2, six thèmes. Plus de « Décideurs du quotidien ».
  * Pendant une recherche, l'accueil se retire : les résultats viennent sous le champ.
  * Usage : node apps/mobile/tests/accueil-refonte-web.mjs http://localhost:8811 [dossier-captures] */
@@ -23,26 +23,35 @@ verifier(await bonjour.evaluate(e => getComputedStyle(e).fontSize) === "34px", "
 const sous = page.getByText("Ce qui se passe chez vous, expliqué simplement.");
 verifier(await sous.evaluate(e => getComputedStyle(e).fontSize) === "20px", "le sous-titre fait 20 px");
 const champ = page.getByLabel(/Où habitez-vous/);
-verifier(await champ.getAttribute("placeholder") === "Tapez votre ville (ex: Melun...)", "le champ de recherche dit « Tapez votre ville (ex: Melun...) »");
-const quiz = page.getByRole("link", { name: /Testez votre culture civique/ });
-const accès = ["Présidentielle 2027", "Pour vous", "Le Parlement", "Mes élus"].map(t => page.getByRole("link", { name: new RegExp("^" + t) }));
-const chips = page.getByRole("button", { name: /^Thème / });
-const ys = [await y(bonjour), await y(sous), await y(champ), await y(quiz), await y(accès[0]), await y(chips)];
-verifier(ys.every((v, i) => i === 0 || v > ys[i - 1]), "ordre de haut en bas : Bonjour, sous-titre, recherche, quiz, accès, thèmes (" + ys.map(Math.round).join(" < ") + ")");
+verifier(await champ.getAttribute("placeholder") === "Votre ville ou code postal", "le champ de recherche dit « Votre ville ou code postal » (plus d'exemple Melun)");
+/* 17/11/2026 (porteur) : sans commune, l'accueil ne contient QUE la recherche, quatre cartes et « Soutenir Repère ». */
+const cartes = ["Présidentielle 2027", "Le Parlement", "Mes élus", "Quiz civique"].map(t => page.getByRole("link", { name: new RegExp("^" + t) }));
+const soutenir = page.getByTestId("soutenir-accueil");
+const ys = [await y(bonjour), await y(sous), await y(champ), await y(cartes[0]), await y(soutenir)];
+verifier(ys.every((v, i) => i === 0 || v > ys[i - 1]), "ordre : Bonjour, sous-titre, recherche, cartes, Soutenir (" + ys.map(Math.round).join(" < ") + ")");
 verifier((await champ.boundingBox()).y + 60 < 844 / 2 + 100, "la recherche est dans le haut de l'écran");
-const b = await Promise.all(accès.map(a => a.boundingBox()));
-verifier(b.every(Boolean) && Math.abs(b[0].y - b[1].y) < 2 && Math.abs(b[2].y - b[3].y) < 2 && b[2].y > b[0].y + 20, "quatre accès en grille 2 x 2");
-verifier(await chips.count() === 6, "six thèmes : " + (await chips.evaluateAll(n => n.map(e => e.getAttribute("aria-label").replace(/^Thème | : .*/g, "")))).join(", "));
-verifier(await page.getByText("Décideurs du quotidien", { exact: false }).count() === 0 && await page.getByText("Décideurs de votre quotidien", { exact: false }).count() === 0, "« Décideurs du quotidien » a disparu de l'accueil");
-verifier((await quiz.innerText()).includes("Quatre définitions, une seule juste.") && (await quiz.innerText()).includes("Jouer"), "le quiz : sous-titre et bouton « Jouer »");
+const b = await Promise.all(cartes.map(a => a.boundingBox()));
+verifier(b.every(Boolean) && Math.abs(b[0].y - b[1].y) < 2 && Math.abs(b[2].y - b[3].y) < 2 && b[2].y > b[0].y + 20, "quatre cartes en grille 2 x 2");
+verifier(b.every(r => r.height >= 44 && r.width >= 44) && (await soutenir.boundingBox()).height >= 44, "cartes et Soutenir : 44 px au moins");
+const texte = await page.locator("body").innerText();
+for (const absent of ["Dernières publications", "Melun", "Un exemple", "Thème ", "Testez votre culture civique", "Aucun compte"])
+  verifier(!texte.includes(absent), `« ${absent} » n'est plus sur l'accueil sans commune`);
+verifier(await page.getByRole("button", { name: /^Thème / }).count() === 0, "plus de thèmes sur l'accueil sans commune");
+await soutenir.click();
+await page.waitForTimeout(300);
+verifier((await page.getByTestId("message-dons").innerText()).includes("Les dons arrivent très bientôt") , "Soutenir : « Les dons arrivent très bientôt ! Merci pour votre soutien. »");
+verifier(/\/$/.test(new URL(page.url()).pathname), "Soutenir n'ouvre aucune page de paiement");
 if (CAP) await page.screenshot({ path: `${CAP}/accueil-refonte.png` });
 await champ.fill("Mel");
 await page.waitForTimeout(800);
-verifier(await quiz.count() === 0 && await chips.count() === 0, "en cherchant, quiz et thèmes s'effacent");
+verifier(await cartes[0].count() === 0 && await soutenir.count() === 0, "en cherchant, cartes et Soutenir s'effacent");
 verifier(await page.getByRole("button", { name: /^Melun,/ }).count() >= 1, "les résultats viennent sous le champ");
 await champ.fill("");
 await page.waitForTimeout(500);
-verifier(await quiz.count() === 1, "champ vidé : l'accueil revient");
+verifier(await cartes[3].count() === 1, "champ vidé : l'accueil revient");
+await cartes[3].click();
+await page.getByRole("radio").first().waitFor({ timeout: 15000 });
+verifier(/\/quiz$/.test(page.url()), "la carte « Quiz civique » ouvre le quiz");
 verifier(erreurs.length === 0, "aucune erreur JavaScript" + (erreurs[0] ? " : " + erreurs[0] : ""));
 await nav.close();
 console.log(echecs ? `accueil : ${echecs} échec(s)` : "accueil : zéro échec");
