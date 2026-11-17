@@ -27,3 +27,12 @@
 ## Motif de la règle sur les photos de l'Assemblée (réintégré, V29)
 
 Le motif était écrit dans le commentaire de `mono/apps/mobile/src/ui/avatar.tsx` en V15 : les photos de l'Assemblée nationale ne sont pas chargées par l'application, pour ne pas révéler l'adresse du lecteur. Une image chargée depuis un serveur de l'Assemblée transmettrait en effet l'adresse du lecteur à ce serveur. Ce motif s'ajoute à celui de la licence ci-dessus. Il a disparu d'un commentaire réécrit en V20 et n'était plus écrit nulle part ; il est réintégré ici (audit anti-perte, D51).
+
+## Amendement proposé — Licence Art Libre (17/11/2026, NON VALIDÉ)
+
+Proposé dans la PR `feat/licence-fal`, à valider par le porteur. Il accepte la licence **FAL** (Licence Art Libre 1.3),
+telle que Commons l'écrit (« FAL »). C'est une licence copyleft proche de CC BY-SA : réutilisation commerciale et
+modification permises, à condition de citer l'auteur et de garder la licence. Le crédit reste affiché à l'identique :
+auteur, licence, « Wikimedia Commons », « recadrée ».
+Effet mesuré à la collecte d'essai 153 : une photo de candidat (Francis Lalanne). La photo de Raphaël Glucksmann est
+sous la mention « European Parliament », pas sous FAL : elle reste refusée.
