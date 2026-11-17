@@ -77,8 +77,9 @@ print("app : %d corrections" % len(R))
 
 # ---------------------------------------------------- 3 : la page de confidentialite
 conf = io.open(CONF, encoding="utf-8").read()
-assert conf.count("arthurpinardpro@gmail.com") == 1, "adresse personnelle introuvable"
-conf = conf.replace("arthurpinardpro@gmail.com", "repere0@protonmail.com", 1)
+# 19/08/2026 : cette etape remplacait l'adresse personnelle du porteur par l'adresse publique du projet.
+# 17/11/2026 : l'adresse personnelle est retiree du depot avant son ouverture ; le script ne la nomme plus.
+assert "repere0@protonmail.com" in conf, "adresse publique du projet introuvable"
 
 motif = re.compile(r"Repère n'en met en œuvre aucun\s*:.*?</p>", re.S)
 trouve = motif.findall(conf)
