@@ -9,6 +9,11 @@ test("licences : libres acceptées (CC BY, CC BY-SA, CC0, domaine public)", () =
     assert.ok(LICENCE_OK.test(l), l);
 });
 
+test("licences : FAL (Licence Art Libre) acceptée, comme CC BY-SA ; « European Parliament » toujours refusée", () => {
+  for (const l of ["FAL", "FAL 1.3"]) assert.ok(LICENCE_OK.test(l), l);
+  for (const l of ["European Parliament", "FAL-NC", "Attribution"]) assert.ok(!LICENCE_OK.test(l), l);
+});
+
 test("licences : non libres ou ambiguës refusées (NC, ND, GFDL, vide)", () => {
   for (const l of ["CC BY-NC-SA 4.0", "CC BY-ND 4.0", "CC BY-NC 2.0", "GFDL", "", "Copyrighted", "All rights reserved"])
     assert.ok(!LICENCE_OK.test(l), "« " + l + " » ne doit pas passer");

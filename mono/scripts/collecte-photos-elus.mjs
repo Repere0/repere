@@ -39,7 +39,10 @@ const UA = "Repere/1.0 (application civique ; donnees publiques ; https://repere
 const SPARQL = "https://query.wikidata.org/sparql";
 const COMMONS = "https://commons.wikimedia.org/w/api.php";
 const DEPS_IDF = ["75", "77", "78", "91", "92", "93", "94", "95"];
-export const LICENCE_OK = /^(cc[ -]by(-sa)?[ -]\d(\.\d)?( [a-z]{2,})?|cc0( 1\.0)?|public domain|domaine public|pd[ -].*)$/i;
+/* FAL (Licence Art Libre), proposee le 17/11/2026 (PR feat/licence-fal, decision du porteur) : copyleft comme
+   CC BY-SA, reutilisation commerciale et modification permises si l'auteur est cite et la licence conservee.
+   Seule la forme courte « FAL » est lue (c'est celle de Commons) ; aucune autre licence n'est ajoutee. */
+export const LICENCE_OK = /^(cc[ -]by(-sa)?[ -]\d(\.\d)?( [a-z]{2,})?|cc0( 1\.0)?|public domain|domaine public|pd[ -].*|fal( 1\.[0-3])?)$/i;
 const SITE = (process.env.REPERE_SITE || "https://repereapp.netlify.app/data").replace(/\/$/, "");
 const pause = ms => new Promise(r => setTimeout(r, ms));
 export const norm = s => String(s || "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/[^a-z]+/g, " ").trim();
