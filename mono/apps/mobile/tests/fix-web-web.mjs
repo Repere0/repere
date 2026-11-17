@@ -29,7 +29,7 @@ ok(await page.getByRole("button", { name: "Passer en mode sombre" }).count() ===
 await page.getByRole("button", { name: "Passer en mode sombre" }).click(); await page.waitForTimeout(600);
 ok((await fond()) === "20,19,17", "et revient en sombre");
 
-const champ = page.getByPlaceholder(/Tapez votre ville/);
+const champ = page.getByPlaceholder(/Votre ville ou code postal/);
 await champ.click(); await page.waitForTimeout(300);
 const r = await champ.evaluate(el => { const p = el.parentElement; return { style: getComputedStyle(el).outlineStyle, bordure: getComputedStyle(p).borderTopColor, repos: null }; });
 await page.evaluate(() => document.activeElement.blur()); await page.waitForTimeout(300);

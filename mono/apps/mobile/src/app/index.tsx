@@ -50,6 +50,7 @@ import { ModaleExhaustif } from "../ui/modale-exhaustif";
 import { METHODE_COMPTES, USAGE_PAR_HABITANT, srcVote } from "../lib/sources";
 import { enfonce } from "../ui/mouvement";
 import { niveauTitre } from "../ui/titre";
+import { BandeauDemo } from "../ui/demo";
 
 /* 09/11/2026 (maquettes Stitch) : l'accueil suit le thème choisi (Néo-Civique clair par défaut,
    Dark Luxury en sombre). Il était sombre en toutes circonstances depuis le 30/10/2026. */
@@ -193,6 +194,14 @@ const ACCES: { ouvrir: () => void; texte: string; etiquette: string; icone: keyo
   { ouvrir: () => router.push("/scrutins"), texte: "Le Parlement", etiquette: "Le Parlement : l'Assemblée nationale et le Sénat, leur composition et les votes publics", icone: "business", couleur: couleurs.france },
   { ouvrir: () => router.push("/elus"), texte: "Mes élus", etiquette: "Mes élus : l'annuaire des élus, du maire au Parlement", icone: "people", couleur: couleurs.ville },
 ];
+/* ACCUEIL SANS COMMUNE (17/11/2026, porteur) : la recherche, quatre cartes, « Soutenir Repère », rien d'autre.
+   « Pour vous » cède sa place au quiz : sans commune, ce fil n'a rien à montrer (il reste dans « Aujourd'hui »),
+   et le quiz n'a pas d'autre entrée que l'accueil. */
+const ACCES_PREMIERE: typeof ACCES = [
+  ACCES[0], ACCES[2], ACCES[3],
+  { ouvrir: () => router.push("/quiz"), texte: "Quiz civique", etiquette: "Quiz civique : testez votre culture civique, quatre définitions, une seule juste", icone: "school", couleur: couleurs.region },
+];
+const MESSAGE_DONS = "Les dons arrivent très bientôt\u00a0! Merci pour votre soutien.";
 
 /* UN SEUL ACCUEIL (11/11/2026, audit d'architecture). Avec une commune gardée sur le téléphone,
    l'application s'ouvre sur « Aujourd'hui » : cet écran-ci redevient ce qu'il est, le choix de la
@@ -389,6 +398,7 @@ export default function Accueil() {
     : null;
   if (repartition) repartition.aut = 100 - repartition.sal - repartition.inv;
   const [budgetTout, setBudgetTout] = useState(false);
+  const [donsAnnonces, setDonsAnnonces] = useState(false);
 
   const phrase = PHRASES[etat as keyof typeof PHRASES] as { titre: string; corps: string; action?: string } | undefined;
 
@@ -579,6 +589,8 @@ export default function Accueil() {
                 LA RECHERCHE (l'action n°1, toujours ouverte), le quiz, les quatre accès, les thèmes. Pendant une recherche,
                 tout ce qui n'est pas la recherche s'efface : les résultats viennent juste sous le champ.
                 « Bonjour » : le prénom vient de repere.profil, jamais du réseau ; sans prénom, « Citoyen ». */}
+            {/* 17/11/2026 : en mode démo, une ligne discrète au-dessus de tout, avec « Laisser un avis ». */}
+            <BandeauDemo />
             <Text style={s.bonjour} testID="bonjour" {...niveauTitre(1)}>Bonjour {prenom || "Citoyen"}</Text>
             <Text style={s.sousTitre}>Ce qui se passe chez vous, expliqué simplement.</Text>
             <Text style={s.titreCache} nativeID="question">Où habitez-vous ?</Text>
@@ -589,7 +601,7 @@ export default function Accueil() {
                 onChangeText={setFiltre}
                 onFocus={() => setChampActif(true)}
                 onBlur={() => setChampActif(false)}
-                placeholder="Tapez votre ville (ex: Melun...)"
+                placeholder="Votre ville ou code postal"
                 placeholderTextColor={D.sourd}
                 autoCorrect={false}
                 autoCapitalize="none"
@@ -610,8 +622,9 @@ export default function Accueil() {
                   </Carte>
                 ) : null}
 
-                {/* Le quiz : une carte pleine largeur, à part des quatre accès (fond civique, bordure d'accent). */}
-                <Pressable onPress={() => router.push("/quiz")} accessibilityRole="link"
+                {/* Le quiz : une carte pleine largeur, à part des quatre accès (fond civique, bordure d'accent).
+                    Sans commune (17/11/2026), il devient l'une des quatre cartes. */}
+                {premiere ? null : <Pressable onPress={() => router.push("/quiz")} accessibilityRole="link"
                   accessibilityLabel="Testez votre culture civique : jouer au quiz"
                   style={({ pressed }) => [s.jeunes, pressed && enfonce(true)]}>
                   <Ionicons name="school-outline" size={28} color={ACCENTS.autorite} accessible={false} importantForAccessibility="no" />
@@ -620,10 +633,10 @@ export default function Accueil() {
                     <Text style={s.note}>Quatre définitions, une seule juste.</Text>
                   </View>
                   <View style={s.jouer}><Text style={s.jouerTexte}>Jouer</Text></View>
-                </Pressable>
+                </Pressable>}
 
                 <View style={s.tuiles}>
-                  {ACCES.map(a => (
+                  {(premiere ? ACCES_PREMIERE : ACCES).map(a => (
                     <Pressable key={a.texte} onPress={a.ouvrir} accessibilityRole="link" accessibilityLabel={a.etiquette}
                       style={({ pressed }) => [s.tuile, pressed && enfonce(true)]}>
                       <Ionicons name={`${a.icone}-outline` as keyof typeof Ionicons.glyphMap} size={22} color={D.encre} accessible={false} importantForAccessibility="no" />
@@ -632,13 +645,27 @@ export default function Accueil() {
                   ))}
                 </View>
 
-                {/* 12/11/2026 (porteur) : les thèmes en un geste ; la recherche s'ouvre filtrée. Six sur l'accueil (14/11). */}
-                <ChipsThemes themes={THEMES_ACCUEIL} />
-
-                {/* V37 bloc 6 : le rappel de la prochaine élection, s'il tombe dans les 180 jours. */}
-                {premiere ? null : <View style={{ marginTop: PAS * 4 }}><RappelElection /></View>}
-                <DernieresPublications />
-                {cartes}
+                {premiere ? (
+                  /* 17/11/2026 (porteur) : aucun paiement n'est relié ; le bouton le dit, sans ouvrir de page. */
+                  <View style={{ gap: PAS * 2 }}>
+                    <Pressable onPress={() => setDonsAnnonces(true)} accessibilityRole="button" testID="soutenir-accueil"
+                      accessibilityLabel="Soutenir Repère"
+                      style={({ pressed }) => [s.soutenir, pressed && enfonce(true)]}>
+                      <Ionicons name="heart-outline" size={20} color={D.encre} accessible={false} importantForAccessibility="no" />
+                      <Text style={s.tuileTexte}>Soutenir Repère</Text>
+                    </Pressable>
+                    {donsAnnonces ? <Text style={[s.note, { textAlign: "center" }]} accessibilityLiveRegion="polite" testID="message-dons">{MESSAGE_DONS}</Text> : null}
+                  </View>
+                ) : (
+                  <>
+                    {/* 12/11/2026 (porteur) : les thèmes en un geste ; la recherche s'ouvre filtrée. Six sur l'accueil (14/11). */}
+                    <ChipsThemes themes={THEMES_ACCUEIL} />
+                    {/* V37 bloc 6 : le rappel de la prochaine élection, s'il tombe dans les 180 jours. */}
+                    <View style={{ marginTop: PAS * 4 }}><RappelElection /></View>
+                    <DernieresPublications />
+                    {cartes}
+                  </>
+                )}
               </>
             )}
             {etat === ETATS.EN_COURS ? <SquelettesListe n={3} hauteur={72} /> : null}
@@ -665,7 +692,7 @@ export default function Accueil() {
                 <Bouton texte="Fermer la liste" discret onPress={() => setTout(false)} />
               </View>
             ) : null}
-            {etat === ETATS.SERVI && !cherches.length && !tout && !recherchant ? (
+            {etat === ETATS.SERVI && !cherches.length && !tout && !recherchant && !premiere ? (
               <>
                 <Text style={s.note}>La bêta couvre les {communes.length} communes d'Île-de-France qui ont une fiche.</Text>
                 {/* Maquette Stitch : les réassurances en pied. « Compris en 4 secondes » n'est pas
@@ -801,6 +828,7 @@ const s = feuille(() => StyleSheet.create({
   jouer: { minHeight: 36, paddingHorizontal: PAS * 4, borderRadius: 999, backgroundColor: D.encre, alignItems: "center", justifyContent: "center" },
   jouerTexte: { fontFamily: POLICE.titre, fontSize: 15, color: D.sol },
   accroche: { fontFamily: POLICE.affiche, fontSize: 22, lineHeight: 30, letterSpacing: -0.2, color: D.encre, marginTop: PAS * 4 },
+  soutenir: { minHeight: CIBLE + 4, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: PAS * 2, paddingHorizontal: PAS * 4, borderRadius: 999, borderWidth: 1.5, borderColor: D.encre, alignSelf: "center", marginTop: PAS * 2 },
   jeunes: { minHeight: CIBLE + 16, flexDirection: "row", alignItems: "center", gap: PAS * 3, padding: PAS * 4, borderRadius: 16, backgroundColor: ACCENTS.fondCivique, borderWidth: 1.5, borderColor: ACCENTS.autorite },
   reassurances: { gap: PAS * 2 },
   reassurance: { flexDirection: "row", alignItems: "center", gap: PAS * 2 },

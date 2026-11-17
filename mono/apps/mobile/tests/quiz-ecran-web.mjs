@@ -8,7 +8,7 @@ const nav = await chromium.launch();
 const page = await (await nav.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true })).newPage();
 await page.addInitScript(() => localStorage.setItem("repere.profil", JSON.stringify({ prenom: "Test", tailleTexte: 16, espacement: 1.5, contraste: "normal", policeDyslexie: false, animationsReduites: true, modeDaltonien: false, masquerImages: false , points: 0})));
 await page.goto(BASE + "/", { waitUntil: "networkidle" });
-await page.getByRole("link", { name: /Testez votre culture civique/ }).first().click();
+await page.getByRole("link", { name: /^Quiz civique/ }).first().click();
 await page.getByRole("radio").first().waitFor({ timeout: 15000 });
 ok(/\/quiz$/.test(page.url()), "la carte de l'accueil ouvre /quiz (" + page.url() + ")");
 ok(await page.getByRole("radio").count() === 4, "quatre propositions");

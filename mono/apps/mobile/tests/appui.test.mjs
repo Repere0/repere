@@ -9,7 +9,6 @@ import path from "node:path";
 const SRC = new URL("../src/", import.meta.url).pathname;
 const EXCEPTIONS = new Map([
   ["ui/pression.tsx", "le composant Pression anime lui-même son contenu (Animated.View)"],
-  ["ui/reglages.tsx:54", "le voile derrière la feuille des réglages : le toucher ferme, il n'y a rien à enfoncer"],
 ]);
 
 export function sansRetour(fichier, texte) {
@@ -17,7 +16,9 @@ export function sansRetour(fichier, texte) {
   for (const m of texte.matchAll(/<Pressable\b/g)) {
     let i = m.index + m[0].length, prof = 0;
     for (; i < texte.length; i++) { const c = texte[i]; if (c === "{") prof++; else if (c === "}") prof--; else if (c === ">" && prof === 0) break; }
-    if (!/pressed/.test(texte.slice(m.index, i))) sortie.push(`${fichier}:${texte.slice(0, m.index).split("\n").length}`);
+    /* Exception écrite : le voile derrière la feuille des réglages (style={s.voile}) ; le toucher ferme, rien à enfoncer. */
+    const balise = texte.slice(m.index, i);
+    if (!/pressed/.test(balise) && !/style=\{s\.voile\}/.test(balise)) sortie.push(`${fichier}:${texte.slice(0, m.index).split("\n").length}`);
   }
   return sortie;
 }

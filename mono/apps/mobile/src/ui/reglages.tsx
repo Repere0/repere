@@ -9,6 +9,7 @@ import { VOILE_MODAL } from "../lib/palette";
 import { useTheme } from "../lib/themeChoix";
 import { router } from "expo-router";
 import { enfonce } from "./mouvement";
+import { BoutonAvis } from "./demo";
 import { useProfil } from "../lib/profil";
 import { niveauTitre } from "./titre";
 
@@ -125,6 +126,8 @@ function ChoixAffichage({ visible, onFermer }: { visible: boolean; onFermer: () 
           >
             <Text style={s.optionTexte}>Questions fréquentes</Text>
           </Pressable>
+          {/* 17/11/2026 : l'avis du lecteur, par sa messagerie (lib/avis.ts). Absent si aucune adresse n'est réglée. */}
+          <BoutonAvis style={s.option} />
         </View>
       </Pressable>
     </Modal>
