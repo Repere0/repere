@@ -350,9 +350,23 @@ rm -rf site_engendre
   node scripts/extract-html.js "../$APP" ./data
   # SENAT (07/10/2026) : le script relance seul une panne passagere, puis dit
   # la cause (echec / introuvable / invalide) et ce qui existe VRAIMENT dans
-  # ./data. Sur un runner neuf il n'y a jamais de releve precedent (mono/data
-  # n'est pas versionne) : le Senat est alors absent de la publication, et
-  # l'ecran le dit. L'ancien message « le releve d'hier reste » etait faux ici.
+  # ./data. mono/data n'est pas versionne : jusqu'au 17/11/2026, un runner neuf
+  # n'avait aucun releve precedent et le Senat disparaissait de la publication.
+  # RELEVE PRECEDENT (17/11/2026). Le runner repart de la derniere publication :
+  # si le Senat ne repond pas, le releve d'hier reste publie AVEC SA DATE
+  # (source.releve_le), et l'application dit son age (core/calendrier.js,
+  # ageReleve). Le fichier n'est garde que s'il a la forme attendue ; sinon
+  # il est retire et le Senat est absent, comme avant.
+  if curl -sf --max-time 30 https://repereapp.netlify.app/data/calendrier-senat.json -o data/calendrier-senat.json; then
+    node -e '
+      const j = JSON.parse(require("fs").readFileSync("data/calendrier-senat.json", "utf8"));
+      if (!j || !j.source || !/^\d{4}-\d{2}-\d{2}$/.test(j.source.releve_le || "") || !Array.isArray(j.evenements)) process.exit(1);
+      console.log("calendrier du Senat : releve precedent recupere, date du " + j.source.releve_le);
+    ' 2>/dev/null || { rm -f data/calendrier-senat.json; echo "calendrier du Senat : releve precedent illisible, ecarte"; }
+  else
+    rm -f data/calendrier-senat.json
+    echo "calendrier du Senat : aucun releve precedent publie n a pu etre recupere"
+  fi
   node scripts/calendrier-senat.mjs ./data \
     || avertir "calendrier du Senat absent ou non rafraichi - voir la cause et l'etat du releve precedent juste au-dessus"
   # GROUPES POLITIQUES DES DEPUTES (V36, B2). Lit l'AMO30 deja depile et ecrit
@@ -456,6 +470,17 @@ rm -rf site_engendre
   # ce fichier, l'application affiche les initiales.
   node scripts/collecte-photos-elus.mjs ./data \
     || avertir "photos d'elus non collectees - initiales affichees"
+  # PARIS PAR ARRONDISSEMENT (17/11/2026, docs/paris-arrondissements.md). Deux parties,
+  # chacune refusee si elle n'est pas complete : circonscriptions de chaque
+  # arrondissement (calcul Repere sur la table des bureaux de vote, etape 3 bis) et
+  # maires d'arrondissement (RNE, si data.gouv.fr publie le fichier). Une partie
+  # absente garde celle de la veille si elle existe ; sinon l'ecran dit qu'elle
+  # n'est pas publiee. Non bloquant.
+  curl -sf --max-time 30 https://repereapp.netlify.app/data/paris-arrondissements.json -o data/paris-arrondissements.json \
+    && node -e 'const j = JSON.parse(require("fs").readFileSync("data/paris-arrondissements.json", "utf8")); if (!j || j.v !== 1) process.exit(1);' 2>/dev/null \
+    || rm -f data/paris-arrondissements.json
+  node scripts/collecte-paris-arrondissements.mjs ./data ../data/circos_bureaux_de_vote.csv \
+    || avertir "Paris par arrondissement non publie - l'ecran garde ses phrases generales"
   # FLUX RSS DES MAIRIES (31/10/2026, D81, ADR 0007) - seulement les flux publies par la
   # mairie, jamais son HTML. Apres l'install (rss-parser). Reseau requis. Non bloquant :
   # sans ce fichier, l'application n'affiche pas d'actualite de flux.

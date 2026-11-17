@@ -91,26 +91,51 @@ export function photosReprises(precedent, liste, retirees) {
 }
 /* RAPPROCHEMENT D'UN CANDIDAT (ADR 0008) : une candidature declaree n'a aucun identifiant officiel.
    `lignes` = reponses SPARQL { p, label, img? } deja filtrees (humain, francais, personnalite politique).
-   Un candidat n'est retenu que si UN SEUL item porte exactement son nom ; deux homonymes = aucune photo. */
-export function rapprocherCandidats(candidats, lignes) {
-  const items = new Map();   /* libelle normalise -> Map(item -> premiere image) */
-  for (const l of lignes) {
-    const k = norm(l.label);
-    if (!items.has(k)) items.set(k, new Map());
-    const m = items.get(k);
-    const q = String(l.p).split("/").pop();   /* l'URI complete ou le seul Q… : le meme item */
-    if (!m.get(q)) m.set(q, l.img || null);
-  }
-  const retenus = [];
+   Un candidat n'est retenu que si UN SEUL item porte exactement son nom ; deux homonymes = aucune photo.
+   17/11/2026 (12 photos sur 25) : trois leviers, sans rien deviner.
+   - `c.wikidata` (Q…), s'il est ecrit dans candidats.json par le porteur : l'item est celui-la, sans
+     rapprochement par le nom. C'est le seul moyen sur pour un nom porte par plusieurs personnes.
+   - `larges` : memes regles (humain, nationalite francaise, nom exact, un seul item), SANS exiger
+     l'occupation « personnalite politique ». Plusieurs candidats sont d'abord sportive, journaliste,
+     avocat ou syndicaliste sur Wikidata. N'est consulte que si la requete stricte ne trouve AUCUN item :
+     des homonymes dans la stricte restent des homonymes.
+   - `raisons` : pour chaque candidat sans photo, pourquoi (affiche dans le journal de la collecte). */
+export function rapprocherCandidats(candidats, lignes, larges = [], parId = []) {
+  const indexer = ls => {
+    const items = new Map();   /* libelle normalise -> Map(item -> premiere image) */
+    for (const l of ls) {
+      const k = norm(l.label);
+      if (!items.has(k)) items.set(k, new Map());
+      const m = items.get(k);
+      const q = String(l.p).split("/").pop();   /* l'URI complete ou le seul Q… : le meme item */
+      if (!m.get(q)) m.set(q, l.img || null);
+    }
+    return items;
+  };
+  const strict = indexer(lignes), large = indexer(larges);
+  const images = new Map(parId.map(l => [String(l.p).split("/").pop(), l.img || null]));
+  const retenus = [], raisons = {};
   for (const c of candidats) {
-    const m = items.get(norm(`${c.prenom} ${c.nom}`));
-    if (!m || m.size !== 1) continue;
-    const [[p, img]] = [...m];
-    if (!img) continue;
+    let p, img;
+    if (c.wikidata && /^Q\d+$/.test(c.wikidata)) {
+      p = c.wikidata; img = images.get(p) || null;
+      if (!img) { raisons[c.id] = `${p} : aucune image (P18) sur Wikidata`; continue; }
+    } else {
+      const cle = norm(`${c.prenom} ${c.nom}`);
+      const m = strict.get(cle) || large.get(cle);
+      if (!m) { raisons[c.id] = "aucun item Wikidata a ce nom exact (humain, nationalite francaise)"; continue; }
+      if (m.size !== 1) { raisons[c.id] = `${m.size} items au meme nom : homonymes, aucune photo (ajouter « wikidata » dans candidats.json)`; continue; }
+      [[p, img]] = [...m];
+      if (!img) { raisons[c.id] = `${p} : aucune image (P18) sur Wikidata`; continue; }
+    }
     retenus.push({ cle: "C:" + c.id, id: c.id, dep: "presidentielle", famille: c.nom, image: img, wikidata: p });
   }
+  Object.defineProperty(retenus, "raisons", { value: raisons, enumerable: false });
   return retenus;
 }
+/* VIGNETTE TROP LOURDE (17/11/2026) : au-dessus de 25 Ko, on redemande une vignette plus etroite au lieu
+   de refuser la photo. Commons sert « …/160px-Nom.jpg » ; la meme image existe en « …/120px-… ». */
+export const vignettePlusPetite = url => (/\/160px-/.test(String(url)) ? String(url).replace("/160px-", "/120px-") : null);
 const echapper = s => String(s).replace(/\\/g, "\\\\").replace(/"/g, '\\"');
 const fichier = url => decodeURIComponent(String(url).split("/").pop()).replace(/_/g, " ");
 
@@ -158,8 +183,14 @@ async function main() {
     if (liste.length) {
       await pause(1000);
       const valeurs = liste.map(c => `"${echapper(`${c.prenom} ${c.nom}`)}"@fr`).join(" ");
+      const enLignes = r => r.map(b => ({ p: b.p.value, label: b.label ? b.label.value : "", img: b.img ? b.img.value : null }));
       const rc = await sparql(`SELECT ?p ?label ?img WHERE { VALUES ?label { ${valeurs} } ?p rdfs:label ?label ; wdt:P31 wd:Q5 ; wdt:P27 wd:Q142 ; wdt:P106 wd:Q82955 . OPTIONAL { ?p wdt:P18 ?img } }`);
-      const retenus = rapprocherCandidats(liste, rc.map(b => ({ p: b.p.value, label: b.label.value, img: b.img ? b.img.value : null })));
+      await pause(1000);
+      const rl = await sparql(`SELECT ?p ?label ?img WHERE { VALUES ?label { ${valeurs} } ?p rdfs:label ?label ; wdt:P31 wd:Q5 ; wdt:P27 wd:Q142 . OPTIONAL { ?p wdt:P18 ?img } }`);
+      const qids = liste.map(c => c.wikidata).filter(q => /^Q\d+$/.test(q || ""));
+      const rq = qids.length ? (await pause(1000), await sparql(`SELECT ?p ?img WHERE { VALUES ?p { ${qids.map(q => "wd:" + q).join(" ")} } OPTIONAL { ?p wdt:P18 ?img } }`)) : [];
+      const retenus = rapprocherCandidats(liste, enLignes(rc), enLignes(rl), enLignes(rq));
+      for (const [id, r] of Object.entries(retenus.raisons)) console.log(`::notice title=photos-candidats::${id} : pas de photo — ${r}`);
       nbCandidatsRapproches = retenus.length;
       candidats.push(...retenus);
     }
@@ -203,11 +234,19 @@ async function main() {
       const md = ii && ii.extmetadata;
       const licence = md && md.LicenseShortName ? sansHtml(md.LicenseShortName.value) : "";
       const auteur = md && md.Artist ? sansHtml(md.Artist.value) : "";
-      if (!ii || !ii.thumburl || !LICENCE_OK.test(licence) || !auteur) { refusees++; continue; }
+      if (!ii || !ii.thumburl || !LICENCE_OK.test(licence) || !auteur) {
+        refusees++;
+        if (c.id) console.log(`::notice title=photos-candidats::${c.id} : photo refusee — ${!ii || !ii.thumburl ? "fichier introuvable sur Commons" : !auteur ? "auteur absent" : `licence « ${licence} » non libre`}`);
+        continue;
+      }
       let img;
       try { img = await appeler(ii.thumburl, { headers: { "user-agent": UA } }, { essais: 2 }); } catch { refusees++; continue; }
-      const octets = Buffer.from(await img.arrayBuffer());
-      if (octets.length > 25000) { refusees++; continue; }   /* une vignette, pas une photo pleine taille */
+      let octets = Buffer.from(await img.arrayBuffer());
+      const etroite = octets.length > 25000 ? vignettePlusPetite(ii.thumburl) : null;
+      if (etroite) {
+        try { img = await appeler(etroite, { headers: { "user-agent": UA } }, { essais: 2 }); octets = Buffer.from(await img.arrayBuffer()); } catch { /* la vignette de 160 reste trop lourde : refusee ci-dessous */ }
+      }
+      if (octets.length > 25000) { refusees++; if (c.id) console.log(`::notice title=photos-candidats::${c.id} : vignette trop lourde (${octets.length} octets)`); continue; }   /* une vignette, pas une photo pleine taille */
       const type = img.headers.get("content-type") || "image/jpeg";
       (parDep[c.dep] ||= {})[c.id || c.cle] = {
         data: `data:${type};base64,${octets.toString("base64")}`,
