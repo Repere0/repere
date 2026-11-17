@@ -121,6 +121,7 @@ export default function Coquille() {
                 <Stack.Screen name="presidentielle-2027" options={{ title: "Présidentielle 2027", headerLeft: () => <Retour texte="Retour" etiquette="Revenir à l'écran précédent" /> }} />
                 <Stack.Screen name="a-propos" options={{ title: "À propos", headerLeft: () => <Retour texte="Retour" etiquette="Revenir à l'écran précédent" /> }} />
                 <Stack.Screen name="confidentialite" options={{ title: "Confidentialité", headerLeft: () => <Retour texte="Retour" etiquette="Revenir à l'écran précédent" /> }} />
+                <Stack.Screen name="mentions-legales" options={{ title: "Mentions légales", headerLeft: () => <Retour texte="Retour" etiquette="Revenir à l'écran précédent" /> }} />
                 {/* Audit UI (16/11/2026) : ces quatre écrans n'avaient pas de bouton retour ; ouverts par un lien direct, c'était une impasse. */}
                 <Stack.Screen name="quiz" options={{ title: "Quiz civique", headerLeft: () => <Retour texte="Retour" etiquette="Revenir à l'écran précédent" /> }} />
                 <Stack.Screen name="repere-du-jour" options={{ title: "Repère du jour", headerLeft: () => <Retour texte="Retour" etiquette="Revenir à l'écran précédent" /> }} />

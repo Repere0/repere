@@ -1,6 +1,6 @@
 # Politique de confidentialité de Repère
 
-Version du 30/10/2026. Ce texte est la version de l'application (écran Réglages, « Confidentialité ») et la version à publier en ligne pour l'App Store. Il doit être relu par le porteur avant publication.
+Version du 17/11/2026 (précédente : 30/10/2026). Ce texte est la version de l'application (écran Réglages, « Confidentialité ») et la version à publier en ligne pour l'App Store. Il doit être relu par le porteur avant publication.
 
 ## Ce que Repère ne fait pas
 
@@ -11,7 +11,7 @@ Version du 30/10/2026. Ce texte est la version de l'application (écran Réglage
 
 ## Ce qui est gardé sur votre appareil
 
-- Une seule information peut être gardée : la commune que vous avez choisie, sous la forme de deux codes publics (le code du département et le code INSEE de la commune). Elle n'est gardée que si vous cochez « Retenir sur ce téléphone ». Elle est sous la clé `repere.departement`.
+- Deux réglages peuvent être gardés, et seulement sur votre appareil : la commune que vous avez choisie, sous la forme de deux codes publics (le code du département et le code INSEE de la commune), sous la clé `repere.departement`, seulement si vous cochez « Retenir sur cet appareil » ; et vos réglages de lecture (taille, contraste, animations, daltonisme, et le prénom si vous en avez donné un), sous la clé `repere.profil`. Rien de ces réglages ni de la commune n'est envoyé.
 - Le bouton « Oublier » efface cette information.
 - Les fichiers publics de Repère (élus, votes, comptes, calendrier) sont gardés dans le dossier de cache de l'application, pour fonctionner hors ligne. Ce sont des données publiques, pas des données qui vous concernent. Le système peut vider ce dossier à tout moment ; l'application les télécharge alors à nouveau.
 - Supprimer l'application efface tout ce qu'elle a gardé sur votre appareil.
@@ -23,11 +23,12 @@ Pour afficher les données, l'application les télécharge depuis le serveur qui
 - Comme pour tout site web, ce serveur reçoit votre adresse IP, la date de la demande et le type d'appareil ou de navigateur. Il peut consigner ces informations dans ses journaux techniques, selon sa propre politique.
 - Les fichiers demandés sont découpés par département. Le serveur voit donc quel département vous consultez. Il ne voit ni votre nom, ni votre commune exacte (la commune n'apparaît pas dans les adresses des fichiers).
 - Repère n'a pas accès à ces journaux, n'en fait aucun usage et ne les relie à aucun compte, puisqu'il n'y en a pas.
+- La version web de l'application est servie par Vercel ; ce serveur reçoit les mêmes informations techniques que ci-dessus. Aucun réglage ni aucune commune n'est transmis.
 - Quand vous ouvrez une source officielle (site de l'Assemblée nationale, data.gouv.fr, ministères), vous quittez Repère. Ce site applique sa propre politique.
 
 ## Données concernant des élus
 
-Les données sur les élus, les votes et les comptes sont publiques. Repère les reprend avec leur source et leur date. Repère ne publie ni photo ni patrimoine d'élu.
+Les données sur les élus, les votes et les comptes sont publiques. Repère les reprend avec leur source et leur date. Repère ne publie jamais le patrimoine d'un élu. Les photos d'élus et de candidats viennent de Wikimedia Commons, sous licence libre, avec leur auteur et leur licence.
 
 ## Vos droits
 
