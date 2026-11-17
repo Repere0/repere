@@ -55,6 +55,27 @@ Pour l'équipe, quelques points de procédure :
 3. Ouvrez la demande vers `main` et remplissez le modèle (ce qui change, comment c'est vérifié, ce qui ne l'est pas).
 4. Une demande qui touche les données, la chaîne de collecte ou un invariant est relue par le porteur avant fusion. Personne ne fusionne directement dans `main`.
 
+### Protection de la branche `main`
+
+Ces règles sont réglées dans GitHub (**Settings → Branches**, ou **Rules → Rulesets**). Ce fichier les écrit pour
+qu'elles ne dépendent pas de la mémoire de quelqu'un ; la procédure pas à pas est dans `AUDIT-REPO.md`.
+
+| règle | valeur | pourquoi |
+|---|---|---|
+| Passer par une demande de fusion | obligatoire | rien n'arrive sur `main` sans être rejoué par la CI |
+| Relectures exigées | **0** tant qu'il y a un seul mainteneur, 1 ensuite | GitHub interdit d'approuver sa propre demande |
+| Contrôles exigés, verts avant fusion | `mobile`, `epreuve`, `Analyser (javascript-typescript)`, `revue`, `gitleaks` | application, chaîne de publication, analyse de code, dépendances, secrets |
+| Branche à jour avant fusion | oui | les contrôles portent sur ce qui sera réellement fusionné |
+| Poussée forcée, suppression | interdites | l'historique de `main` ne se réécrit pas |
+| Contournement | la seule App « repere-collecte » | la collecte quotidienne commite ses données (voir `collecte.yml`) |
+
+La file `epreuve-sources-publiques` ne rejoue qu'une épreuve à la fois : une épreuve en attente peut être annulée
+par une plus récente. Elle se relance depuis l'onglet **Actions** ; ce n'est pas un échec.
+
+**Secrets** : `.github/workflows/secrets.yml` (gitleaks) fait échouer une demande qui ajoute une clé ou un jeton. Si
+un secret a été poussé, le révoquer d'abord chez son fournisseur : le retirer du code ne suffit pas, il reste dans
+l'historique. Puis suivre [SECURITY.md](SECURITY.md).
+
 ### Messages de commit
 
 Le titre suit [Conventional Commits](https://www.conventionalcommits.org/fr/) : `type(portée): résumé`, en français, à l'impératif ou au présent. Types en usage : `feat`, `fix`, `docs`, `test`, `ci`, `chore`, `refactor`, `data`, `ux`.
