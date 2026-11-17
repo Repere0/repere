@@ -56,12 +56,21 @@ ok(texte.length > 40, `hors ligne : l'interface s'affiche (${texte.length} carac
 await page.goto(BASE + "/recherche", { waitUntil: "domcontentloaded" }).catch(() => {});
 await page.waitForTimeout(2500);
 ok((await page.locator("body").innerText()).trim().length > 40, "hors ligne : une adresse interne s'ouvre aussi");
-/* 17/11/2026 : si le système a vidé la coquille, la page hors ligne dit la vérité et propose de réessayer. */
-await page.evaluate(async () => { for (const n of await caches.keys()) { const c = await caches.open(n); await c.delete("/"); await c.delete("/index.html"); } });
-await page.goto(BASE + "/qui-decide", { waitUntil: "domcontentloaded" }).catch(() => {});
-await page.waitForTimeout(1500);
-const secours = (await page.locator("body").innerText()).replace(/\s+/g, " ");
-ok(/Pas de connexion/.test(secours) && (await page.getByRole("link", { name: "Réessayer" }).count()) === 1, "hors ligne sans coquille : la page de secours et « Réessayer »");
+/* 17/11/2026 : si le système a vidé la coquille, la page hors ligne dit la vérité et propose de réessayer.
+   1. Toujours vérifiable : la page de secours est préchargée avec la coquille.
+   2. Le comportement, seulement si le navigateur coupe VRAIMENT le réseau du service worker. Mesuré le 17/11/2026 :
+      le Chromium de Playwright 1.56 (celui de la CI) laisse passer les requêtes du service worker malgré setOffline ;
+      le serveur répond alors l'application, et l'on ne peut rien conclure. Le journal le dit au lieu de mentir. */
+ok(etat.cles.includes("/offline.html"), "la page hors ligne de secours est préchargée avec la coquille");
+const reseauDuSw = await page.evaluate(() => fetch("/manifest.json?sonde=" + Date.now()).then(r => r.ok, () => false));
+if (reseauDuSw) console.log("non mesuré ici : ce navigateur laisse passer le réseau du service worker hors ligne (page de secours vérifiée seulement en cache)");
+else {
+  await page.evaluate(async () => { for (const n of await caches.keys()) { const c = await caches.open(n); await c.delete("/"); await c.delete("/index.html"); } });
+  await page.goto(BASE + "/a-propos?secours=" + Date.now(), { waitUntil: "domcontentloaded" }).catch(() => {});
+  await page.waitForTimeout(1500);
+  const secours = (await page.locator("body").innerText()).replace(/\s+/g, " ");
+  ok(/Pas de connexion/.test(secours) && (await page.getByRole("link", { name: "Réessayer" }).count()) === 1, "hors ligne sans coquille : la page de secours et « Réessayer »");
+}
 ok(!erreurs.length, "aucune erreur JavaScript" + (erreurs.length ? " : " + erreurs[0] : ""));
 await nav.close();
 console.log(echecs ? `pwa : ${echecs} échec(s)` : "pwa : zéro échec");
