@@ -101,35 +101,37 @@ export default function Coquille() {
                   headerStyle: { backgroundColor: couleurs.sol },
                   headerTintColor: couleurs.encre,
                   headerShadowVisible: false,
-                  headerTitle: "",
+                  headerTitle: () => null, /* pas de titre vide expose comme titre de niveau 1 (audit UI, vague 2) */
+                  /* Audit UI, vague 2 : un seul bouton retour pour toute la pile, qui lit l'écran précédent. */
+                  headerLeft: () => <Retour />,
                   contentStyle: { backgroundColor: fonds.sol },
                 }}
               >
                 <Stack.Screen name="index" options={{ headerShown: false, title: "Repère" }} />
                 <Stack.Screen name="(onglets)" options={{ headerShown: false }} />
-                <Stack.Screen name="argent" options={{ title: LIBELLES.argent, headerLeft: () => <Retour texte={LIBELLES.aujourdhui} etiquette={`Revenir à l'écran ${LIBELLES.aujourdhui}`} /> }} />
-                <Stack.Screen name="vote" options={{ title: "Votre député", headerLeft: () => <Retour texte={LIBELLES.aujourdhui} etiquette={`Revenir à l'écran ${LIBELLES.aujourdhui}`} /> }} />
-                <Stack.Screen name="scrutins" options={{ title: "Le Parlement", headerLeft: () => <Retour texte="Votre député" etiquette="Revenir à l'écran du député" /> }} />
-                <Stack.Screen name="sources" options={{ title: LIBELLES.sources, headerLeft: () => <Retour texte={LIBELLES.aujourdhui} etiquette={`Revenir à l'écran ${LIBELLES.aujourdhui}`} /> }} />
-                <Stack.Screen name="dictionnaire" options={{ title: "Dictionnaire citoyen", headerLeft: () => <Retour texte={LIBELLES.calendrier} etiquette={`Revenir à l'écran ${LIBELLES.calendrier}`} /> }} />
-                <Stack.Screen name="procedure" options={{ title: "La procédure", headerLeft: () => <Retour texte={LIBELLES.calendrier} etiquette={`Revenir à l'écran ${LIBELLES.calendrier}`} /> }} />
-                <Stack.Screen name="annuaire-fiche" options={{ title: "Élu", headerLeft: () => <Retour texte="Élus" etiquette="Revenir à l'écran Élus" /> }} />
-                <Stack.Screen name="actus" options={{ title: "Actualités", headerLeft: () => <Retour texte={LIBELLES.aujourdhui} etiquette={`Revenir à l'écran ${LIBELLES.aujourdhui}`} /> }} />
-                <Stack.Screen name="confort-lecture" options={{ title: "Confort de lecture", headerLeft: () => <Retour texte="Retour" etiquette="Revenir à l'écran précédent" /> }} />
-                <Stack.Screen name="pour-vous" options={{ title: "Pour vous", headerLeft: () => <Retour texte="Retour" etiquette="Revenir à l'écran précédent" /> }} />
-                <Stack.Screen name="elus" options={{ title: "Élus", headerLeft: () => <Retour texte="Retour" etiquette="Revenir à l'écran précédent" /> }} />
-                <Stack.Screen name="presidentielle-2027" options={{ title: "Présidentielle 2027", headerLeft: () => <Retour texte="Retour" etiquette="Revenir à l'écran précédent" /> }} />
-                <Stack.Screen name="a-propos" options={{ title: "À propos", headerLeft: () => <Retour texte="Retour" etiquette="Revenir à l'écran précédent" /> }} />
-                <Stack.Screen name="confidentialite" options={{ title: "Confidentialité", headerLeft: () => <Retour texte="Retour" etiquette="Revenir à l'écran précédent" /> }} />
+                <Stack.Screen name="argent" options={{ headerShown: false }} />
+                <Stack.Screen name="vote" options={{ title: "Votre député" }} />
+                <Stack.Screen name="scrutins" options={{ title: "Le Parlement" }} />
+                <Stack.Screen name="sources" options={{ title: LIBELLES.sources }} />
+                <Stack.Screen name="dictionnaire" options={{ title: "Dictionnaire citoyen" }} />
+                <Stack.Screen name="procedure" options={{ title: "La procédure" }} />
+                <Stack.Screen name="annuaire-fiche" options={{ title: "Élu" }} />
+                <Stack.Screen name="actus" options={{ title: "Actualités" }} />
+                <Stack.Screen name="confort-lecture" options={{ title: "Confort de lecture" }} />
+                <Stack.Screen name="pour-vous" options={{ title: "Pour vous" }} />
+                <Stack.Screen name="elus" options={{ title: "Élus" }} />
+                <Stack.Screen name="presidentielle-2027" options={{ title: "Présidentielle 2027" }} />
+                <Stack.Screen name="a-propos" options={{ title: "À propos" }} />
+                <Stack.Screen name="confidentialite" options={{ title: "Confidentialité" }} />
                 {/* Audit UI (16/11/2026) : ces quatre écrans n'avaient pas de bouton retour ; ouverts par un lien direct, c'était une impasse. */}
-                <Stack.Screen name="quiz" options={{ title: "Quiz civique", headerLeft: () => <Retour texte="Retour" etiquette="Revenir à l'écran précédent" /> }} />
-                <Stack.Screen name="repere-du-jour" options={{ title: "Repère du jour", headerLeft: () => <Retour texte="Retour" etiquette="Revenir à l'écran précédent" /> }} />
-                <Stack.Screen name="soutenir" options={{ title: "Soutenir Repère", headerLeft: () => <Retour texte="Retour" etiquette="Revenir à l'écran précédent" /> }} />
-                <Stack.Screen name="faq" options={{ title: "Questions fréquentes", headerLeft: () => <Retour texte="Retour" etiquette="Revenir à l'écran précédent" /> }} />
-                <Stack.Screen name="groupe" options={{ title: "Groupe", headerLeft: () => <Retour texte="Retour" etiquette="Revenir à l'écran précédent" /> }} />
-                <Stack.Screen name="elu" options={{ title: "Fiche", headerLeft: () => <Retour texte={LIBELLES.qui} etiquette={`Revenir à l'écran ${LIBELLES.qui}`} /> }} />
+                <Stack.Screen name="quiz" options={{ title: "Quiz civique" }} />
+                <Stack.Screen name="repere-du-jour" options={{ title: "Repère du jour" }} />
+                <Stack.Screen name="soutenir" options={{ title: "Soutenir Repère" }} />
+                <Stack.Screen name="faq" options={{ title: "Questions fréquentes" }} />
+                <Stack.Screen name="groupe" options={{ title: "Groupe" }} />
+                <Stack.Screen name="elu" options={{ title: "Fiche" }} />
                 <Stack.Screen name="recherche" options={{ title: "Rechercher", animation: "slide_from_bottom", headerLeft: () => <Retour texte="Fermer" etiquette="Fermer la recherche" /> }} />
-                <Stack.Screen name="partager" options={{ title: "Partager", animation: "slide_from_bottom", headerLeft: () => <Retour texte="Votre député" etiquette="Revenir à l'écran du député" /> }} />
+                <Stack.Screen name="partager" options={{ title: "Partager", animation: "slide_from_bottom" }} />
               </Stack>
               </View>
               {barriere ? (

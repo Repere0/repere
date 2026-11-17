@@ -204,7 +204,8 @@ async function texteApp(nav, { nom }) {
       await p.waitForTimeout(400);
     }
     /* Qui décide et Le calendrier sont des onglets (13/10/2026) : retour par la barre basse. */
-    if (action === "Qui décide" || action === "Le calendrier") await p.getByText("Aujourd'hui", { exact: true }).last().click();
+    /* 16/11/2026 : « Où va cet argent ? » ouvre l'onglet Finances (fusion de /argent). */
+    if (action === "Qui décide" || action === "Le calendrier" || /argent/.test(action)) await p.getByText("Aujourd'hui", { exact: true }).last().click();
     else await p.getByRole("button", { name: "Revenir à l'écran Aujourd'hui" }).last().click();
     await p.waitForTimeout(500);
   }

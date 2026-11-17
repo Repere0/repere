@@ -27,6 +27,7 @@ import { typo } from "./reponse";
 import { PastilleSource } from "./source";
 import { AvecPicto } from "./picto";
 import { enfonce } from "./mouvement";
+import { niveauTitre } from "./titre";
 
 type Jour = { date: string; seances: number; annonce: boolean };
 type Vote = { debut: string; institution: string; texte: string };
@@ -70,7 +71,7 @@ export function SemaineParlement({ sp, lu, nom }: { sp: Semaine | null | undefin
   if (!lu || !sp || !sp.institutions.length) {
     return (
       <View testID="semaine-parlement" style={s.carte}>
-        <AvecPicto picto="parlement"><Text style={TYPO.etiquette} accessibilityRole="header">Cette semaine au Parlement</Text></AvecPicto>
+        <AvecPicto picto="parlement"><Text style={TYPO.etiquette} {...niveauTitre(2)}>Cette semaine au Parlement</Text></AvecPicto>
         <Text style={s.phrase}>{typo(AGENDA_PAS_ARRIVE.titre)}</Text>
         <Text style={TYPO.note}>{typo(AGENDA_PAS_ARRIVE.corps)}</Text>
         <Suite onPress={aller} />
@@ -102,7 +103,7 @@ export function SemaineParlement({ sp, lu, nom }: { sp: Semaine | null | undefin
 
   return (
     <View testID="semaine-parlement" style={s.carte}>
-      <AvecPicto picto="parlement"><Text style={TYPO.etiquette} accessibilityRole="header">Cette semaine au Parlement</Text></AvecPicto>
+      <AvecPicto picto="parlement"><Text style={TYPO.etiquette} {...niveauTitre(2)}>Cette semaine au Parlement</Text></AvecPicto>
       <Text style={s.phrase}>{typo(phrase)}</Text>
 
       {/* Sept colonnes egales : a 360 px, 44 px chacune. Le nombre est ecrit pour
@@ -159,7 +160,7 @@ function Suite({ onPress }: { onPress: () => void }) {
 
 const s = feuille(() => StyleSheet.create({
   carte: { backgroundColor: couleurs.carte, borderRadius: RAYON.carte, paddingHorizontal: PAS * 4, paddingTop: PAS * 3, gap: PAS * 2, ...OMBRE },
-  phrase: { ...TYPO.reponse, fontSize: 19, lineHeight: 25 },
+  phrase: { ...TYPO.reponse, fontSize: 20, lineHeight: 26 },
   bande: { flexDirection: "row", gap: PAS },
   jour: { flex: 1, minWidth: 0, alignItems: "center", paddingVertical: PAS * 2, borderRadius: RAYON.bloc, backgroundColor: couleurs.sol, gap: 2 },
   jourAujourdhui: { borderWidth: 1.5, borderColor: couleurs.france },

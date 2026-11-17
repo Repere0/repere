@@ -12,7 +12,7 @@ export const PICTO = { parlement: "business-outline", budget: "bar-chart-outline
 
 export function AvecPicto({ picto, children }: { picto: keyof typeof PICTO; children: ReactNode }) {
   return (
-    <View style={{ flexDirection: "row", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
+    <View style={{ flexDirection: "row", alignItems: "center", gap: 4, flexWrap: "wrap" }}>
       {children}
       <Ionicons name={PICTO[picto]} size={16} color={couleurs.sourd} accessible={false} importantForAccessibility="no" />
     </View>

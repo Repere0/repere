@@ -17,7 +17,7 @@ const lire = (...p) => fs.readFileSync(path.join(RACINE, ...p), "utf8");
 const prefet = lire("src", "lib", "prefet.ts");
 const absences = lire("src", "lib", "absences.ts");
 const qui = lire("src", "app", "(onglets)", "qui-decide.tsx");
-const argent = lire("src", "app", "argent.tsx");
+const argent = lire("src", "ui", "ecran-argent.tsx"); /* l'écran de l'onglet Finances depuis le 16/11/2026 */
 const chez = lire("src", "app", "(onglets)", "chez-vous.tsx");
 const vote = lire("src", "app", "vote.tsx");
 

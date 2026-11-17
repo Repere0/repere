@@ -33,13 +33,13 @@ une seule fois sont reprises a part, plus bas.
 | `acteur.etatCivil.infoNaissance.villeNais` | texte | 2155 | Lille · Fontevraud-l'Abbaye |
 | `acteur.etatCivil.infoNaissance.depNais` | texte | 2000 | Nord · Maine-et-Loire |
 | `acteur.etatCivil.infoNaissance.paysNais` | texte | 1790 | France · Maroc |
-| `acteur.etatCivil.dateDeces.@xmlns:xsi` | texte | 2729 | http://www.w3.org/2001/XMLSchema-instance |
-| `acteur.etatCivil.dateDeces.@xsi:nil` | texte | 2729 | true |
+| `acteur.etatCivil.dateDeces.@xmlns:xsi` | texte | 2728 | http://www.w3.org/2001/XMLSchema-instance |
+| `acteur.etatCivil.dateDeces.@xsi:nil` | texte | 2728 | true |
 | `acteur.profession.libelleCourant` | texte | 2082 | Ancien directeur d'une société de recrutement · Inspecteur général de l'équipement |
 | `acteur.profession.socProcINSEE.catSocPro` | texte | 2103 | Anciens artisans, commerçants, chefs d'entreprise · Cadres de la fonction publique, professions intellectuelles et  artistiques |
 | `acteur.profession.socProcINSEE.famSocPro` | texte | 2103 | Retraités · Cadres et professions intellectuelles supérieures |
-| `acteur.uri_hatvp.@xmlns:xsi` | texte | 2476 | http://www.w3.org/2001/XMLSchema-instance |
-| `acteur.uri_hatvp.@xsi:nil` | texte | 2476 | true |
+| `acteur.uri_hatvp.@xmlns:xsi` | texte | 2475 | http://www.w3.org/2001/XMLSchema-instance |
+| `acteur.uri_hatvp.@xsi:nil` | texte | 2475 | true |
 | `acteur.adresses.adresse[]` | liste | 2084 | de 2 a 11 entrees |
 | `acteur.adresses.adresse[].@xmlns:xsi` | texte | 9008 | http://www.w3.org/2001/XMLSchema-instance |
 | `acteur.adresses.adresse[].@xsi:type` | texte | 9008 | AdressePostale_Type · AdresseTelephonique_Type |
@@ -56,26 +56,26 @@ une seule fois sont reprises a part, plus bas.
 | `acteur.adresses.adresse[].ville` | texte/vide | 2805 | Paris 07 SP · Cenon |
 | `acteur.adresses.adresse[].valElec` | texte/vide | 6203 | 01 40 63 75 53 · 01 40 63 79 37 |
 | `acteur.mandats.mandat[]` | liste | 2995 | de 2 a 814 entrees |
-| `acteur.mandats.mandat[].@xmlns:xsi` | texte | 98186 | http://www.w3.org/2001/XMLSchema-instance |
-| `acteur.mandats.mandat[].@xsi:type` | texte | 98186 | MandatSimple_Type · MandatMission_Type |
-| `acteur.mandats.mandat[].uid` | texte | 98186 | PM391145 · PM15423365 |
-| `acteur.mandats.mandat[].acteurRef` | texte | 98186 | PA1001 · PA1002 |
-| `acteur.mandats.mandat[].legislature` | texte/vide | 98186 | 13 · 14 |
-| `acteur.mandats.mandat[].typeOrgane` | texte | 98186 | DELEGBUREAU · GOUVERNEMENT |
-| `acteur.mandats.mandat[].dateDebut` | texte | 98186 | 2007-06-28 · 2010-03-22 |
-| `acteur.mandats.mandat[].datePublication` | texte/vide | 98186 | 2010-03-23 · 2012-06-27 |
-| `acteur.mandats.mandat[].dateFin` | texte/vide | 98186 | 2008-10-08 · 2010-11-13 |
-| `acteur.mandats.mandat[].preseance` | texte/vide | 98186 | 24 · 50 |
-| `acteur.mandats.mandat[].nominPrincipale` | texte | 98186 | 0 · 1 |
-| `acteur.mandats.mandat[].infosQualite.codeQualite` | texte/vide | 98186 | Membre · membre |
-| `acteur.mandats.mandat[].infosQualite.libQualite` | texte | 98186 | Membre · membre |
-| `acteur.mandats.mandat[].infosQualite.libQualiteSex` | texte/vide | 98186 | Membre · membre |
-| `acteur.mandats.mandat[].organes.organeRef` | texte | 98065 | PO391141 · PO384206 |
+| `acteur.mandats.mandat[].@xmlns:xsi` | texte | 98191 | http://www.w3.org/2001/XMLSchema-instance |
+| `acteur.mandats.mandat[].@xsi:type` | texte | 98191 | MandatSimple_Type · MandatMission_Type |
+| `acteur.mandats.mandat[].uid` | texte | 98191 | PM391145 · PM15423365 |
+| `acteur.mandats.mandat[].acteurRef` | texte | 98191 | PA1001 · PA1002 |
+| `acteur.mandats.mandat[].legislature` | texte/vide | 98191 | 13 · 14 |
+| `acteur.mandats.mandat[].typeOrgane` | texte | 98191 | DELEGBUREAU · GOUVERNEMENT |
+| `acteur.mandats.mandat[].dateDebut` | texte | 98191 | 2007-06-28 · 2010-03-22 |
+| `acteur.mandats.mandat[].datePublication` | texte/vide | 98191 | 2010-03-23 · 2012-06-27 |
+| `acteur.mandats.mandat[].dateFin` | texte/vide | 98191 | 2008-10-08 · 2010-11-13 |
+| `acteur.mandats.mandat[].preseance` | texte/vide | 98191 | 24 · 50 |
+| `acteur.mandats.mandat[].nominPrincipale` | texte | 98191 | 0 · 1 |
+| `acteur.mandats.mandat[].infosQualite.codeQualite` | texte/vide | 98191 | Membre · membre |
+| `acteur.mandats.mandat[].infosQualite.libQualite` | texte | 98191 | Membre · membre |
+| `acteur.mandats.mandat[].infosQualite.libQualiteSex` | texte/vide | 98191 | Membre · membre |
+| `acteur.mandats.mandat[].organes.organeRef` | texte | 98070 | PO391141 · PO384206 |
 | `acteur.mandats.mandat[].libelle` | texte/vide | 6031 | Mise en place du plan de relance · L'avenir des trains d'équilibre du territoire |
 | `acteur.mandats.mandat[].missionSuivanteRef` | texte/vide | 6031 | PM773756 · PM789978 |
 | `acteur.mandats.mandat[].missionPrecedenteRef` | texte/vide | 6031 | PM769451 · PM786854 |
-| `acteur.mandats.mandat[].suppleants` | vide | 4876 |  |
-| `acteur.mandats.mandat[].chambre` | vide | 3186 |  |
+| `acteur.mandats.mandat[].suppleants` | vide | 4877 |  |
+| `acteur.mandats.mandat[].chambre` | vide | 3356 |  |
 | `acteur.mandats.mandat[].election.lieu.region` | texte/vide | 3356 | Auvergne-Rhône-Alpes · Hauts-de-France |
 | `acteur.mandats.mandat[].election.lieu.regionType` | texte/vide | 3356 | Métropolitain · Collectivités d'outre-mer et Nouvelle-Calédonie |
 | `acteur.mandats.mandat[].election.lieu.departement` | texte/vide | 3356 | Rhône · Nord |
@@ -91,8 +91,8 @@ une seule fois sont reprises a part, plus bas.
 | `acteur.etatCivil.infoNaissance.paysNais.@xmlns:xsi` | texte | 1210 | http://www.w3.org/2001/XMLSchema-instance |
 | `acteur.etatCivil.infoNaissance.paysNais.@xsi:nil` | texte | 1210 | true |
 | `acteur.etatCivil.ident.trigramme` | texte | 525 | ADA · JGD |
-| `acteur.uri_hatvp` | texte | 524 | https://www.hatvp.fr/pages_nominatives/david-alain · https://www.hatvp.fr/pages_nominatives/guedj-jerome |
-| `acteur.etatCivil.dateDeces` | texte | 271 | 2025-02-16 · 2022-01-01 |
+| `acteur.uri_hatvp` | texte | 525 | https://www.hatvp.fr/pages_nominatives/david-alain · /tribun/resources/html/defautDeclarationActeur.html |
+| `acteur.etatCivil.dateDeces` | texte | 272 | 2025-02-16 · 2022-01-01 |
 | `acteur.mandats.mandat[].suppleants.suppleant.dateDebut` | texte | 1036 | 2002-06-19 · 2002-12-15 |
 | `acteur.mandats.mandat[].suppleants.suppleant.dateFin` | texte/vide | 1036 | 2007-06-19 · 2012-06-19 |
 | `acteur.mandats.mandat[].suppleants.suppleant.suppleantRef` | texte | 1036 | PA267501 · PA333972 |
@@ -123,11 +123,11 @@ une seule fois sont reprises a part, plus bas.
 | `acteur.adresses.adresse.ville` | texte | 31 | Paris 07 SP |
 | `acteur.mandats.mandat[].organes.organeRef[]` | liste/texte | 410 | de 2 a 7 entrees · PO702890 · PO702892 |
 | `acteur.mandats.mandat[].collaborateurs.collaborateur[]` | liste | 132 | de 2 a 6 entrees |
-| `acteur.mandats.mandat[].collaborateurs.collaborateur[].qualite` | texte | 471 | M. · Mme |
-| `acteur.mandats.mandat[].collaborateurs.collaborateur[].prenom` | texte | 471 | Thomas · Bernard |
-| `acteur.mandats.mandat[].collaborateurs.collaborateur[].nom` | texte | 471 | Jacquelin · Combes |
-| `acteur.mandats.mandat[].collaborateurs.collaborateur[].dateDebut` | vide | 471 |  |
-| `acteur.mandats.mandat[].collaborateurs.collaborateur[].dateFin` | vide | 471 |  |
+| `acteur.mandats.mandat[].collaborateurs.collaborateur[].qualite` | texte | 473 | M. · Mme |
+| `acteur.mandats.mandat[].collaborateurs.collaborateur[].prenom` | texte | 473 | Thomas · Bernard |
+| `acteur.mandats.mandat[].collaborateurs.collaborateur[].nom` | texte | 473 | Jacquelin · Combes |
+| `acteur.mandats.mandat[].collaborateurs.collaborateur[].dateDebut` | vide | 473 |  |
+| `acteur.mandats.mandat[].collaborateurs.collaborateur[].dateFin` | vide | 473 |  |
 | `acteur.adresses.@xmlns:xsi` | texte | 77 | http://www.w3.org/2001/XMLSchema-instance |
 | `acteur.adresses.@xsi:nil` | texte | 77 | true |
 | `acteur.mandats.mandat.@xmlns:xsi` | texte | 5 | http://www.w3.org/2001/XMLSchema-instance |

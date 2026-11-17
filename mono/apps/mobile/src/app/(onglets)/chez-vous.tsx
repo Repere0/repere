@@ -66,6 +66,7 @@ import { BarreBudget, ChiffreQuiCompte } from "../../ui/visuels";
 import { deputeParNom, groupeDe, useGroupes } from "../../lib/groupes";
 import { DataBadge } from "../../ui/donnees";
 import { useCouleurVote } from "../../lib/couleur-vote";
+import { niveauTitre } from "../../ui/titre";
 const MOTS_VOTE: Record<string, string> = { p: "Pour", c: "Contre", a: "Abstention" };
 
 /* LE SITE OFFICIEL DE LA MAIRIE (D28, ADR 0005) : un lien externe, lu dans l'annuaire DILA
@@ -145,7 +146,7 @@ export default function ChezVous() {
           <Stack.Screen options={{ title: "" }} />
           <View>
             <Text style={TYPO.etiquette}>{[depIndex && depIndex.nom, depIndex && depIndex.region].filter(Boolean).join(" · ")}</Text>
-            <Text style={TYPO.affiche} accessibilityRole="header">{nom}</Text>
+            <Text style={TYPO.affiche} {...niveauTitre(1)}>{nom}</Text>
             {/* « Publication » et non « mis a jour » : vraie dans les trois etats de l'invariant 9. */}
             <DateDonnee quoi="Publication Repère" date={publie} testID="date-donnee" />
           </View>
@@ -191,11 +192,11 @@ export default function ChezVous() {
                 texte: `À ${nom}, ${d.exercice.an}, la commune a dépensé ${hab.depenses.toLocaleString("fr-FR")} € par habitant. Le maire propose ce budget ; le conseil municipal le vote.`,
                 sourceUrl: srcComptesPublies(d)?.url,
               }}
-              suite={{ texte: "Où va cet argent ?", onPress: () => router.push("/argent") }} />
+              suite={{ texte: "Où va cet argent ?", onPress: () => router.navigate("/finances") }} />
           ) : (
             <Reponse echelon="ville"
               phrase={`Les comptes de ${nom} ne permettent pas de dire combien la commune dépense par habitant.`}
-              suite={{ texte: "Pourquoi ?", onPress: () => router.push("/argent") }} />
+              suite={{ texte: "Pourquoi ?", onPress: () => router.navigate("/finances") }} />
           )}
 
           {/* 13/11/2026 (porteur) : l'ordre suit les niveaux de décision, du plus proche au plus lointain. D'abord la
@@ -233,7 +234,7 @@ export default function ChezVous() {
                   : `À ${nom} : l'État apporte ${euros(f.subvention)} à un projet.`,
                 sourceUrl: srcProjets(d, f.partPct !== null)?.url,
               }}
-              suite={{ texte: nbProjets > 1 ? `${nbProjets} projets aidés` : "Le projet", onPress: () => router.push("/argent") }} />
+              suite={{ texte: nbProjets > 1 ? `${nbProjets} projets aidés` : "Le projet", onPress: () => router.navigate("/finances") }} />
           ) : (
             <Reponse echelon="ville" phrase={projetsAucun(nom, d.srcProjets && d.srcProjets.exercices, d.srcProjets && d.srcProjets.mis_a_jour_le).titre} note={projetsAucun(nom, d.srcProjets && d.srcProjets.exercices, d.srcProjets && d.srcProjets.mis_a_jour_le).corps}
               sources={<PastilleSource court source={srcProjets(d)} />} />

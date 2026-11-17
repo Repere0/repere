@@ -13,6 +13,7 @@ import { Pressable, Share, StyleSheet, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { feuille, ACCENTS, couleurs, CIBLE, OMBRE, PAS, POLICE, RAYON, TYPO, type Echelon } from "../lib/theme";
 import { enfonce } from "./mouvement";
+import { niveauTitre } from "./titre";
 
 function BoutonPartager({ titre, texte, sourceUrl }: { titre: string; texte: string; sourceUrl?: string | null }) {
   const partager = async () => {
@@ -49,7 +50,7 @@ export function Reponse({ phrase, preuve, note, sources, suite, partage, heros, 
     <View testID="reponse" style={[s.carte, { backgroundColor: couleurs.carte }]}>
       {sur ? <Text style={TYPO.etiquette}>{sur}</Text> : null}
       {heros ? preuve : null}
-      <Text style={heros ? s.phraseHeros : s.phrase} accessibilityRole="header">{typo(phrase)}</Text>
+      <Text style={heros ? s.phraseHeros : s.phrase} {...niveauTitre(2)}>{typo(phrase)}</Text>
       {heros ? null : preuve}
       {note ? (typeof note === "string" ? <Text style={TYPO.note}>{typo(note)}</Text> : note) : null}
       {sources ? <View style={{ flexDirection: "row", flexWrap: "wrap", marginVertical: -PAS * 2 }}>{sources}</View> : null}

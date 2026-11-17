@@ -28,7 +28,8 @@ const FICHIERS = fichiersEcrans(APP);
 const nomDe = f => path.basename(f, ".tsx");
 /* Les écrans « dev-* » ne sont montés qu'en __DEV__ (D115) : ils ne font pas
    partie du parcours citoyen, donc pas de geste d'accès à exiger. */
-const TOUS = FICHIERS.map(nomDe).filter(n => !n.startsWith("dev-"));
+/* Une route qui ne fait que rediriger (16/11/2026 : /argent -> /finances) n'est pas un écran. */
+const TOUS = FICHIERS.filter(f => !/return <Redirect href=/.test(lire(f))).map(nomDe).filter(n => !n.startsWith("dev-"));
 
 /* Ce que chaque écran peut ouvrir, lu dans son source. */
 /* 07/11/2026 : un composant de src/ui importé par l'écran compte comme l'écran (le badge de

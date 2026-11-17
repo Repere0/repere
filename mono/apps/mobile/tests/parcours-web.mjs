@@ -325,7 +325,8 @@ for (const largeur of [360, 390, 430]) {
     }
     /* Qui décide et Le calendrier sont des onglets (13/10/2026) : on y revient par la
        barre basse, pas par un bouton « Revenir ». Les autres écrans gardent le bouton. */
-    if (action === "Qui décide" || action === "Le calendrier") {
+    /* 16/11/2026 (audit UI, vague 2) : « Où va cet argent ? » ouvre l'onglet Finances, plus un écran empilé. */
+    if (action === "Qui décide" || action === "Le calendrier" || /argent/.test(action)) {
       await page.getByText("Aujourd'hui", { exact: true }).last().click();
     } else {
       await page.getByRole("button", { name: "Revenir à l'écran Aujourd'hui" }).last().click();

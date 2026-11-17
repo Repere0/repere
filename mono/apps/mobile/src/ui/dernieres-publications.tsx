@@ -19,6 +19,7 @@ import { ageReleve, dateFr, titreLisible } from "@repere/core";
 import { chargerCatalogueScrutins, chargerEvenements } from "../lib/donnees";
 import { PAS, RAYON, couleurs } from "../lib/theme";
 import { ilYa } from "./fraicheur";
+import { niveauTitre } from "./titre";
 
 /* 09/11/2026 : l'accueil suit le thème (maquettes Stitch) ; la carte aussi. */
 const D = couleurs;
@@ -51,7 +52,7 @@ export function DernieresPublications() {
   if (age0 === null || age0 < 0 || age0 >= RECENT_JOURS) return null;
   return (
     <View testID="dernieres-publications" style={{ gap: PAS * 3, padding: PAS * 4, borderRadius: RAYON.carte, backgroundColor: D.carte }}>
-      <Text style={{ fontSize: 14, fontWeight: "600", color: D.sourd }} accessibilityRole="header">Dernières publications</Text>
+      <Text style={{ fontSize: 14, fontWeight: "600", color: D.sourd }} {...niveauTitre(2)}>Dernières publications</Text>
       {liste.map(x => {
         const age = ageReleve(x.d);
         return (
