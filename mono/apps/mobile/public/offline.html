@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#141311">
+<title>Repère — hors ligne</title>
+<style>
+  :root { color-scheme: light dark; --sol: #F7F5F0; --encre: #171614; --sourd: #5C5852; --carte: #FFFFFF; --trait: #E4E0D8; }
+  @media (prefers-color-scheme: dark) { :root { --sol: #141311; --encre: #F2EFE9; --sourd: #B4AEA4; --carte: #1E1C19; --trait: #34312C; } }
+  html, body { margin: 0; min-height: 100%; background: var(--sol); color: var(--encre); font: 17px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+  main { max-width: 34rem; margin: 0 auto; padding: max(48px, env(safe-area-inset-top)) 20px 32px; display: grid; gap: 16px; }
+  .rond { width: 56px; height: 56px; border-radius: 50%; border: 3px solid var(--encre); display: grid; place-items: center; }
+  .rond::after { content: ""; width: 14px; height: 14px; border-radius: 50%; background: var(--encre); }
+  h1 { font-size: 28px; line-height: 1.2; margin: 8px 0 0; }
+  p { margin: 0; color: var(--sourd); }
+  a.bouton { display: inline-flex; align-items: center; justify-content: center; min-height: 48px; padding: 0 24px; border-radius: 999px;
+    background: var(--encre); color: var(--sol); text-decoration: none; font-weight: 700; justify-self: start; }
+  a.bouton:focus-visible { outline: 3px solid var(--encre); outline-offset: 3px; }
+  a.bouton:active { transform: scale(0.97); }
+</style>
+</head>
+<body>
+<main>
+  <div class="rond" aria-hidden="true"></div>
+  <h1>Pas de connexion pour l'instant.</h1>
+  <p>Repère n'a pas encore été enregistré sur cet appareil : il faut une première connexion pour le télécharger. Ensuite, l'application s'ouvre sans réseau, avec la dernière publication reçue et sa date.</p>
+  <a class="bouton" href="/">Réessayer</a>
+</main>
+</body>
+</html>

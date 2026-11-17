@@ -31,3 +31,19 @@ test("préparer : _redirects, _headers et un 404.html identique à index.html (u
   assert.match(readFileSync(join(dist, "_headers"), "utf8"), /\/sw\.js\n {2}Cache-Control: no-cache/);
   assert.ok(existsSync(join(dist, "_headers")));
 });
+
+test("sécurité : CSP stricte (aucun unsafe pour les scripts, empreinte du script écrit), cadres interdits, aucun référent", async () => {
+  const { entetes, empreintesScripts } = await import("../scripts/cloudflare.mjs");
+  const html = "<head><script>console.log(1)</script><script src=\"/a.js\" defer></script></head>";
+  assert.equal(empreintesScripts(html).length, 1, "seul le script écrit dans la page a une empreinte");
+  const t = entetes(html);
+  const csp = /Content-Security-Policy: (.*)/.exec(t)[1];
+  const script = /script-src ([^;]*)/.exec(csp)[1];
+  assert.ok(!/unsafe/.test(script), "script-src sans unsafe-inline ni unsafe-eval : " + script);
+  assert.match(script, /'sha256-[A-Za-z0-9+/=]+'/);
+  assert.match(csp, /frame-ancestors 'none'/);
+  assert.match(csp, /connect-src 'self'(;|$)/, "les données viennent du même hôte, rien d'autre (invariant 2)");
+  assert.match(t, /X-Frame-Options: DENY/);
+  assert.match(t, /Referrer-Policy: no-referrer/);
+  assert.match(t, /^\/\*$/m, "les en-têtes de sécurité valent pour toutes les adresses");
+});

@@ -33,6 +33,9 @@ const estBonne = r => r && r.ok && r.status === 200 && r.type === "basic";
 const estDocument = r => (r.headers.get("content-type") || "").indexOf("text/html") >= 0;
 
 const coquille = () => caches.match("/").then(c => (c && !c.redirected ? c : caches.match("/index.html")));
+/* 17/11/2026 : dernier recours, si la coquille manque (cache vidé par le système) : une page hors ligne qui dit la
+   vérité et propose de réessayer, plutôt que l'erreur du navigateur. Préchargée avec la coquille. */
+const secours = () => coquille().then(c => c || caches.match("/offline.html"));
 
 self.addEventListener("fetch", e => {
   const req = e.request;
@@ -45,7 +48,7 @@ self.addEventListener("fetch", e => {
        répond une redirection vers « / » ; une réponse redirigée ne peut pas servir une navigation (le navigateur la
        refuse), et l'application ne s'ouvrait plus hors ligne. « / » n'est jamais redirigée, chez aucun hébergeur. */
     e.respondWith(fetch(req).then(r => (estBonne(r) && estDocument(r) ? r : coquille().then(c => c || r)))
-      .catch(() => coquille()));
+      .catch(() => secours()));
     return;
   }
   e.respondWith(caches.match(req).then(c => c || fetch(req).then(r => {

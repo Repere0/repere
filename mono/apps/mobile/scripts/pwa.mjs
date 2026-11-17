@@ -5,23 +5,43 @@ import { readFileSync, writeFileSync, readdirSync, statSync, existsSync, renameS
 import { createHash } from "node:crypto";
 import { join, relative, sep } from "node:path";
 import { fileURLToPath } from "node:url";
+import { politique } from "./cloudflare.mjs";
 
 export function construireManifeste(appJson) {
   const w = appJson.expo.web, e = appJson.expo;
   return {
-    name: w.name || e.name, short_name: w.shortName || e.name, description: w.description,
-    lang: w.lang || "fr", start_url: "/", scope: "/", display: w.display || "standalone",
+    /* id (17/11/2026) : identite stable de l'application installee, meme si start_url change un jour. */
+    id: "/", name: w.name || e.name, short_name: w.shortName || e.name, description: w.description,
+    lang: w.lang || "fr", dir: "ltr", start_url: "/", scope: "/", display: w.display || "standalone",
     orientation: w.orientation || "portrait", background_color: w.backgroundColor, theme_color: w.themeColor,
     icons: [
       { src: "/icon-192.png", sizes: "192x192", type: "image/png", purpose: "any" },
       { src: "/icon-512.png", sizes: "512x512", type: "image/png", purpose: "any" },
+      /* MASQUABLE (17/11/2026) : Android decoupe l'icone en cercle, en goutte ou en carre arrondi. Sans entree
+         « maskable », il la reduit dans une pastille blanche. Mesure : le logo tient dans un rayon de 171,5 px sur
+         512, la zone sure est de 204,8 px (40 %), fond plein : la meme image convient, sans marge a ajouter. */
+      { src: "/icon-512.png", sizes: "512x512", type: "image/png", purpose: "maskable" },
     ],
   };
 }
 
 // viewport-fit=cover : sans lui, iOS ne donne pas les marges de securite et la barre
 // d'etat translucide recouvrirait l'en-tete.
-const BALISES = (nom, couleur) => [
+/* PARTAGE D'UN LIEN (17/11/2026) : Open Graph et carte « summary », communs a tout le site. Une seule page HTML
+   est servie (export « single ») : un robot de reseau social n'execute pas le JavaScript, il lit ces balises-ci
+   pour toutes les adresses. Pas d'og:image ni d'og:url : il leur faut une adresse absolue, et l'hote definitif
+   (Cloudflare) n'est pas encore connu. */
+const echapper = t => String(t || "").replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;");
+const PARTAGE = (nom, description) => [
+  `<meta property="og:type" content="website" />`,
+  `<meta property="og:site_name" content="${echapper(nom)}" />`,
+  `<meta property="og:title" content="${echapper(nom)}" />`,
+  `<meta property="og:description" content="${echapper(description)}" />`,
+  `<meta property="og:locale" content="fr_FR" />`,
+  `<meta name="twitter:card" content="summary" />`,
+];
+const BALISES = (nom, couleur, description) => [
+  ...PARTAGE(nom, description),
   '<link rel="manifest" href="/manifest.json" />',
   // 12/11/2026 : sizes + ?v= pour que Safari redemande l'icone (cache tenace). A incrementer si l'icone change.
   '<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png?v=3" />',
@@ -47,7 +67,9 @@ export function injecterBalises(html, appJson) {
   if (html.includes("apple-mobile-web-app-capable")) return html.includes("serviceWorker.register") ? html : html.replace("</head>", `  ${ENREGISTRE}\n  </head>`); // idempotent
   const w = appJson.expo.web;
   let sortie = html.replace(/(<meta name="viewport" content="[^"]*?)"/, (m, a) => (a.includes("viewport-fit") ? m : `${a}, viewport-fit=cover"`));
-  sortie = sortie.replace("</head>", `  ${BALISES(w.shortName || appJson.expo.name, w.themeColor)}\n    ${ENREGISTRE}\n  </head>`);
+  sortie = sortie.replace("</head>", `  ${BALISES(w.shortName || appJson.expo.name, w.themeColor, w.description)}\n    ${ENREGISTRE}\n  </head>`);
+  /* Langue du document : sans elle, lecteurs d'ecran et moteurs lisent le francais avec une voix anglaise. */
+  if (!/<html[^>]*\blang=/.test(sortie)) sortie = sortie.replace(/<html(\s|>)/, '<html lang="fr"$1');
   return sortie;
 }
 
@@ -89,7 +111,7 @@ export function restesNodeModules(dist) {
 
 // Tout ce que le build produit hors /data : l'interface complete, jamais les donnees.
 export function fichiersCoquille(dist) {
-  const sortie = ["/", "/index.html", "/manifest.json", "/apple-touch-icon.png", "/icon-192.png", "/icon-512.png", "/favicon.ico"];
+  const sortie = ["/", "/index.html", "/offline.html", "/manifest.json", "/apple-touch-icon.png", "/icon-192.png", "/icon-512.png", "/favicon.ico"];
   const parcourir = d => { for (const n of readdirSync(d)) { const f = join(d, n);
     if (statSync(f).isDirectory()) parcourir(f); else sortie.push("/" + relative(dist, f).split(sep).join("/").split("/").map(encodeURIComponent).join("/")); } };
   for (const d of ["_expo", "assets"]) parcourir(join(dist, d));
@@ -115,7 +137,15 @@ export function appliquer(dossierApp, dist) {
   // Vercel lit vercel.json dans le dossier deploye : `vercel deploy dist` ignorerait celui de la racine.
   // Sans les commandes de build : dans dist/, `vercel deploy` ne doit rien reconstruire, seulement reecrire les adresses.
   const v = JSON.parse(readFileSync(join(dossierApp, "vercel.json"), "utf8"));
-  writeFileSync(join(dist, "vercel.json"), JSON.stringify({ rewrites: v.rewrites, headers: v.headers }, null, 2) + "\n");
+  /* 17/11/2026 : les memes en-tetes de securite que sur Cloudflare (scripts/cloudflare.mjs), la politique de contenu
+     etant deduite de l'index.html construit (empreinte du script ecrit). */
+  const securite = { source: "/(.*)", headers: [
+    { key: "Content-Security-Policy", value: politique(readFileSync(f, "utf8")) },
+    { key: "X-Frame-Options", value: "DENY" }, { key: "Referrer-Policy", value: "no-referrer" },
+    { key: "X-Content-Type-Options", value: "nosniff" },
+    { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=(), payment=(), usb=(), interest-cohort=()" },
+  ] };
+  writeFileSync(join(dist, "vercel.json"), JSON.stringify({ rewrites: v.rewrites, headers: [...(v.headers || []), securite] }, null, 2) + "\n");
   const sw = join(dist, "sw.js");
   writeFileSync(sw, preparerSw(readFileSync(join(dossierApp, "public", "sw.js"), "utf8"), fichiersCoquille(dist)));
   const reste = manques(readFileSync(f, "utf8"), manifeste);

@@ -77,3 +77,6 @@ mono/bilan-collectes.txt
 *.bak
 dist/
 Claude outputs/
+
+# Etat local de l emulateur Cloudflare (wrangler pages dev), jamais versionne
+.wrangler/

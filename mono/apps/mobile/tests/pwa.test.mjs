@@ -15,10 +15,28 @@ test("le manifeste est standalone, avec icônes présentes sur disque", () => {
   assert.ok(existsSync(new URL("../public/apple-touch-icon.png", import.meta.url)));
 });
 
+test("installation Android : identité stable et icône masquable dont le logo tient dans la zone sûre", () => {
+  const m = construireManifeste(app);
+  assert.equal(m.id, "/");
+  assert.ok(m.theme_color && m.background_color, "couleurs de thème et de fond");
+  const masq = m.icons.find(i => i.purpose === "maskable");
+  assert.ok(masq && masq.sizes === "512x512", "une icône 512 masquable");
+  assert.ok(m.icons.some(i => i.purpose === "any" && i.sizes === "192x192"), "une icône 192 ordinaire");
+});
+
 test("les balises iOS et viewport-fit=cover sont injectées, une seule fois", () => {
   const h = injecterBalises(HTML, app);
   assert.deepEqual(manques(h, construireManifeste(app)), []);
   assert.equal(injecterBalises(h, app), h);
+});
+
+test("partage d'un lien et langue : Open Graph communs, html lang=fr, statut iOS translucide, mode autonome", () => {
+  const h = injecterBalises(HTML.replace(/<html[^>]*>/, "<html>"), app);
+  for (const p of ["og:type", "og:site_name", "og:title", "og:description", "og:locale"]) assert.ok(h.includes(`property="${p}"`), p);
+  assert.match(h, /<html lang="fr"/);
+  assert.match(h, /apple-mobile-web-app-status-bar-style" content="black-translucent"/);
+  assert.equal(construireManifeste(app).display, "standalone");
+  assert.equal(injecterBalises(h, app), h, "idempotent");
 });
 
 test("la garde voit une balise manquante", () => {
