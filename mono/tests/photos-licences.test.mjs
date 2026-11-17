@@ -58,6 +58,10 @@ test("candidats : un QID écrit dans candidats.json est pris tel quel, sans rapp
 test("vignette trop lourde : on redemande 120 px au lieu de refuser", () => {
   assert.equal(vignettePlusPetite("https://upload.wikimedia.org/x/thumb/a/ab/F.jpg/160px-F.jpg"), "https://upload.wikimedia.org/x/thumb/a/ab/F.jpg/120px-F.jpg");
   assert.equal(vignettePlusPetite("https://upload.wikimedia.org/x/F.jpg"), null);
+  /* adresse reelle relevee le 17/11/2026 : Commons sert 250 px pour une demande de 160 */
+  assert.equal(vignettePlusPetite("https://thumb.wikimedia.org/wikipedia/commons/thumb/a/ae/Roussel_Fabien_1.jpg/250px-Roussel_Fabien_1.jpg?utm_source=commons.wikimedia.org"),
+    "https://thumb.wikimedia.org/wikipedia/commons/thumb/a/ae/Roussel_Fabien_1.jpg/120px-Roussel_Fabien_1.jpg?utm_source=commons.wikimedia.org");
+  assert.equal(vignettePlusPetite("https://upload.wikimedia.org/x/thumb/a/ab/F.jpg/120px-F.jpg"), null);
 });
 
 /* Robustesse (12/11/2026) : Wikidata et Commons en erreur. Faux fetch, aucune attente réelle. */

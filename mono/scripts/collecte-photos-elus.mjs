@@ -134,8 +134,13 @@ export function rapprocherCandidats(candidats, lignes, larges = [], parId = []) 
   return retenus;
 }
 /* VIGNETTE TROP LOURDE (17/11/2026) : au-dessus de 25 Ko, on redemande une vignette plus etroite au lieu
-   de refuser la photo. Commons sert « …/160px-Nom.jpg » ; la meme image existe en « …/120px-… ». */
-export const vignettePlusPetite = url => (/\/160px-/.test(String(url)) ? String(url).replace("/160px-", "/120px-") : null);
+   de refuser la photo. Commons sert « …/NNNpx-Nom.jpg » ; la meme image existe en « …/120px-… ».
+   Lu sur le runner le 17/11/2026 (collecte d'essai 152) : a une demande de 160 px, Commons repond desormais
+   par une vignette de 250 px (tailles normalisees). La largeur est donc lue dans l'adresse, quelle qu'elle soit. */
+export const vignettePlusPetite = url => {
+  const u = String(url), m = /\/(\d+)px-/.exec(u);
+  return m && Number(m[1]) > 120 ? u.replace(m[0], "/120px-") : null;
+};
 const echapper = s => String(s).replace(/\\/g, "\\\\").replace(/"/g, '\\"');
 const fichier = url => decodeURIComponent(String(url).split("/").pop()).replace(/_/g, " ");
 
