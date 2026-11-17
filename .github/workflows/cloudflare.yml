@@ -1,0 +1,92 @@
+name: Cloudflare Pages (application web)
+
+# DEPLOIEMENT DE L'APPLICATION WEB SUR CLOUDFLARE PAGES — 17/11/2026 (docs/hebergement-cloudflare.md).
+#
+# QUAND :
+#   - un push sur main qui touche l'application ou le socle ;
+#   - la fin d'une collecte quotidienne reussie sur main : l'application copie a son build les donnees publiees
+#     sur Netlify (scripts/miroir-donnees.mjs), il faut donc la reconstruire APRES la publication du jour ;
+#   - a la main (workflow_dispatch).
+#
+# OPT-IN : sans les deux secrets CLOUDFLARE_API_TOKEN et CLOUDFLARE_ACCOUNT_ID, le job s'arrete a la premiere etape
+# et le dit. Rien n'est deploye, rien n'echoue. A ne PAS combiner avec l'integration Git de Pages (un seul des deux
+# chemins, sinon deux deploiements concurrents) : voir la documentation.
+#
+# Le jeton n'est jamais affiche ; il ne sert qu'a l'etape de deploiement.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "mono/apps/mobile/**"
+      - "mono/packages/core/**"
+      - "mono/packages/data-utils/**"
+      - ".github/workflows/cloudflare.yml"
+  workflow_run:
+    workflows: ["Collecte quotidienne"]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: cloudflare-pages
+  cancel-in-progress: true
+
+jobs:
+  deployer:
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+    defaults:
+      run:
+        working-directory: mono/apps/mobile
+    steps:
+      - name: Secrets presents ?
+        id: secrets
+        working-directory: .
+        run: |
+          if [ -z "$CLOUDFLARE_API_TOKEN" ] || [ -z "$CLOUDFLARE_ACCOUNT_ID" ]; then
+            echo "::notice::Cloudflare Pages : secrets CLOUDFLARE_API_TOKEN et CLOUDFLARE_ACCOUNT_ID absents, rien n'est deploye (docs/hebergement-cloudflare.md)."
+            echo "pret=non" >> "$GITHUB_OUTPUT"
+          else
+            echo "pret=oui" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: actions/checkout@v7
+        if: steps.secrets.outputs.pret == 'oui'
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@v7
+        if: steps.secrets.outputs.pret == 'oui'
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: mono/apps/mobile/package-lock.json
+
+      - name: Installer (verrou exact)
+        if: steps.secrets.outputs.pret == 'oui'
+        run: npm ci --no-audit --no-fund
+
+      - name: Construire (export web, donnees publiees, PWA, regles de routage)
+        if: steps.secrets.outputs.pret == 'oui'
+        run: npm run build:cloudflare
+
+      # Le projet est cree au premier passage s'il n'existe pas (type « envoi direct »). Les fois suivantes, la
+      # commande repond que le projet existe deja : ce n'est pas une erreur.
+      - name: Creer le projet Pages si besoin
+        if: steps.secrets.outputs.pret == 'oui'
+        run: npx --yes wrangler@4.161.0 pages project create repere --production-branch=main || echo "projet deja present"
+
+      - name: Deployer
+        if: steps.secrets.outputs.pret == 'oui'
+        run: |
+          npx --yes wrangler@4.161.0 pages deploy dist --project-name=repere --branch=main \
+            --commit-hash="${{ github.event.workflow_run.head_sha || github.sha }}" --commit-dirty=true
+          echo "- Cloudflare Pages : deploye ($(date -u +%d/%m/%Y\ %H:%M) UTC)" >> "$GITHUB_STEP_SUMMARY"
