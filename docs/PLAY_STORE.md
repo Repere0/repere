@@ -148,7 +148,7 @@ Les données proviennent des jeux de données publics de l'administration franç
 ```
 
 **Catégorie** : Actualités et magazines · **Étiquettes** : actualités, éducation, gouvernement
-**Adresse e-mail de contact** : arthurpinardpro@gmail.com
+**Adresse e-mail de contact** : repere0@protonmail.com
 
 ## 7. Les captures d'écran à fournir
 
