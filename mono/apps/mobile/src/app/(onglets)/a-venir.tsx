@@ -24,7 +24,7 @@ import {
 } from "@repere/core";
 import { ChipsThemes } from "../../ui/chips-themes";
 import { Carte, Vide } from "../../lib/composants";
-import { Ionicons } from "@expo/vector-icons";
+import Ionicons from "@expo/vector-icons/Ionicons";
 import { AGENDA_PAS_ARRIVE, AGENDA_VIDE } from "../../lib/absences";
 import { srcAgenda } from "../../lib/sources";
 import { useCommuneChoisie } from "../../lib/useCommune";

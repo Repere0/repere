@@ -35,7 +35,7 @@ import { ChipsThemes } from "../ui/chips-themes";
 
 /* Les six thèmes de l'accueil (14/11/2026, porteur) : des thèmes de @repere/core, pas un de plus. */
 const THEMES_ACCUEIL = ["Santé", "École", "Transport", "Environnement", "Sécurité", "Budget"];
-import { Ionicons } from "@expo/vector-icons";
+import Ionicons from "@expo/vector-icons/Ionicons";
 import { RappelElection } from "../ui/rappel-election";
 import { DatePublication } from "../ui/fraicheur";
 import { DernieresPublications } from "../ui/dernieres-publications";

@@ -7,7 +7,7 @@
  * Le guide ne donne que des règles générales et renvoie au site officiel pour les délais et démarches. */
 import { useState } from "react";
 import { Pressable, Text, View } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import Ionicons from "@expo/vector-icons/Ionicons";
 import { dateFr } from "@repere/core";
 import { Carte, LienSortant } from "../lib/composants";
 import { Timeline } from "./timeline";

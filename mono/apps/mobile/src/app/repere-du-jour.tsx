@@ -6,7 +6,7 @@
  * Le pied dit les sources réellement affichées et la date de publication (D147). */
 import { useState, type ReactNode } from "react";
 import { Linking, Platform, Pressable, Text, View } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import Ionicons from "@expo/vector-icons/Ionicons";
 import { ModaleExhaustif } from "../ui/modale-exhaustif";
 import { router, Stack } from "expo-router";
 import { dateFr, datePublication, liensDePartage, motDuJour, suiteDuFait } from "@repere/core";

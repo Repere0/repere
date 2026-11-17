@@ -10,7 +10,7 @@
  * - SignalerErreur : une ligne « Signaler une erreur » (icone d'alerte) qui ouvre la messagerie, avec le sujet et le
  *   texte de la donnée déjà remplis. */
 import { Linking, Pressable, Text, View } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import Ionicons from "@expo/vector-icons/Ionicons";
 import { CIBLE, couleurs, PAS, TYPO } from "../lib/theme";
 import { LienSortant } from "../lib/composants";
 import { enfonce } from "./mouvement";

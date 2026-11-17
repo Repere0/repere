@@ -3,7 +3,7 @@
  * dans « Le texte complet » (Depli). Réservé aux textes écrits dans l'application : les phrases de
  * @repere/core, les mises en garde et les mentions de source gardent leurs mots. */
 import { Text, View } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import Ionicons from "@expo/vector-icons/Ionicons";
 import { couleurs, PAS, TYPO } from "../lib/theme";
 
 export function LigneIcone({ icone, titre }: { icone: keyof typeof Ionicons.glyphMap; titre: string }) {

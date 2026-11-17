@@ -4,7 +4,7 @@
  * Le rangement d'un titre dans un thème se fait par mots-clés (core/themes.js) : approximatif, et la recherche le dit. */
 import { Pressable, ScrollView, Text } from "react-native";
 import { router } from "expo-router";
-import { Ionicons } from "@expo/vector-icons";
+import Ionicons from "@expo/vector-icons/Ionicons";
 import { THEMES } from "@repere/core";
 import { CIBLE, couleurs, PAS, POLICE, RAYON } from "../lib/theme";
 

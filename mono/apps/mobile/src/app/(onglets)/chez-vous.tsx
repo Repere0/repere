@@ -26,7 +26,7 @@
  * cette information ? » ; celle du traitement par Repere en en-tete.
  *
  * RIEN N'EST CALCULE ICI : @repere/core derive, lib/absences.ts dit les absences. */
-import { Ionicons } from "@expo/vector-icons";
+import Ionicons from "@expo/vector-icons/Ionicons";
 import { Pression } from "../../ui/pression";
 import { useEffect, useState } from "react";
 import { Linking, Text, View } from "react-native";
