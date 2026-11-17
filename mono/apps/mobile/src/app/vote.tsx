@@ -95,7 +95,7 @@ export default function Vote() {
             <View style={{ flex: 1, gap: 2 }}>
               <View style={{ flexDirection: "row", alignItems: "center", gap: PAS * 2 }}>
                 {/* Maillage (07/11/2026) : le nom ouvre la fiche, partout où la fiche sait la retrouver. */}
-                <Pressable style={{ flex: 1, minHeight: CIBLE, justifyContent: "center" }} disabled={!parametresFiche} accessibilityRole={parametresFiche ? "link" : "text"}
+                <Pressable style={({ pressed }) => [{ flex: 1, minHeight: CIBLE, justifyContent: "center" }, pressed && enfonce(true)]} disabled={!parametresFiche} accessibilityRole={parametresFiche ? "link" : "text"}
                   onPress={() => { if (parametresFiche) router.push({ pathname: "/elu", params: parametresFiche }); }}>
                   <Text style={[TYPO.corps, { fontFamily: POLICE.titre }, null]}>{vote.qui}</Text>
                 </Pressable>
@@ -117,7 +117,7 @@ export default function Vote() {
             <Text style={TYPO.question}><Segments s={phrasePosition(vote.position, vote.qui)} /></Text>
             <View style={{ gap: PAS }}>
               {/* Deux lignes au plus ; le titre officiel entier reste lisible d'un geste (jamais réécrit). */}
-              <Pressable onPress={() => setTitreEntier(v => !v)} style={{ minHeight: CIBLE, justifyContent: "center" }} accessibilityRole="button" accessibilityState={{ expanded: titreEntier }}
+              <Pressable onPress={() => setTitreEntier(v => !v)} style={({ pressed }) => [{ minHeight: CIBLE, justifyContent: "center" }, pressed && enfonce(true)]} accessibilityRole="button" accessibilityState={{ expanded: titreEntier }}
                 accessibilityLabel={`${dossier ? dossier.intitule : titreLisible(vote.sc.t)}. ${titreEntier ? "Réduire le titre" : "Afficher le titre entier"}`}>
                 <Text style={[TYPO.corps, { fontFamily: POLICE.titre, fontSize: 17, lineHeight: 23 }]} numberOfLines={titreEntier ? undefined : 2}>
                   {dossier ? dossier.intitule : titreLisible(vote.sc.t)}
@@ -243,7 +243,7 @@ export default function Vote() {
             </Carte>
           ) : null}
 
-          <Pressable accessibilityRole="button" accessibilityLabel="Voir les scrutins publics et les votes détaillés" onPress={() => router.push("/scrutins")} style={{ minHeight: CIBLE, justifyContent: "center", marginTop: PAS * 2 }}><Text style={{ color: couleurs.lien, fontWeight: "600" }}>Voir les scrutins publics et les votes détaillés ›</Text></Pressable>
+          <Pressable accessibilityRole="button" accessibilityLabel="Voir les scrutins publics et les votes détaillés" onPress={() => router.push("/scrutins")} style={({ pressed }) => [{ minHeight: CIBLE, justifyContent: "center", marginTop: PAS * 2 }, pressed && enfonce(true)]}><Text style={{ color: couleurs.lien, fontWeight: "600" }}>Voir les scrutins publics et les votes détaillés ›</Text></Pressable>
           <PastilleSource source={srcScrutins(d)} />
           <SignalerErreur contexte={`le vote de ${vote.qui}`} donnee={`${dateFr(vote.sc.d)} · ${titreLisible(vote.sc.t)} · ${vote.qui}`} />
         </Page>

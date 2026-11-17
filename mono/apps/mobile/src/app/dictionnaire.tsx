@@ -100,7 +100,7 @@ export default function Dictionnaire() {
       {/* Lettres : une seule rangee, seules les lettres presentes. */}
       <View accessibilityRole="tablist" style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
         <Pressable onPress={() => setLettre(null)} accessibilityRole="tab" accessibilityState={{ selected: lettre === null }}
-          accessibilityLabel="Tous les mots" style={chip(lettre === null)}>
+          accessibilityLabel="Tous les mots" style={({ pressed }) => [chip(lettre === null), pressed && enfonce(true)]}>
           <Text style={{ fontWeight: "700", color: lettre === null ? couleurs.sol : couleurs.encre }}>Tous</Text>
         </Pressable>
         {lettres.map(l => (

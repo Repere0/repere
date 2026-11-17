@@ -78,7 +78,9 @@ export const POLICES_PAR_MODE: Readonly<Record<Mode, Polices>> = {
 };
 
 /* Durée des apparitions : courte, pour ne jamais retarder la lecture. */
-export const DUREE = { apparition: 520, remplissage: 500 } as const;
+/* Vague 3 de l'audit UI (17/11/2026) : 300 ms au plus pour une transition (apparition 520 -> 240, remplissage 500 -> 300).
+   Gardé par tests/echelle.test.mjs. Le mouvement réduit les supprime toutes (ui/mouvement.ts). */
+export const DUREE = { apparition: 240, remplissage: 300 } as const;
 
 /* ---- LE THÈME COURANT ------------------------------------------------- */
 

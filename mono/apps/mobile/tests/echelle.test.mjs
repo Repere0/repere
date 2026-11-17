@@ -45,3 +45,22 @@ test("la garde voit bien une taille, un espacement et un pas hors échelle", () 
   assert.equal(ecarts("{ fontSize: 17, padding: 8, gap: PAS * 2, marginTop: 2 }").length, 0);
   assert.equal(ecarts("{ marginTop: 6 /* alignement optique */ }").length, 0);
 });
+
+/* GARDE — TRANSITIONS DE 300 MS AU PLUS (audit UI, vague 3, 17/11/2026). Une transition plus longue retient
+   l'information ; les durées mesurées allaient jusqu'à 900 ms. Exception : la boucle d'attente du squelette
+   (ui/squelette.tsx), qui n'est pas une transition mais une pulsation pendant le chargement. */
+test("aucune transition de plus de 300 ms, hors boucle d'attente du squelette", () => {
+  const racine = new URL("../src/", import.meta.url);
+  const trop = [];
+  const parcourir = d => { for (const n of fs.readdirSync(d, { withFileTypes: true })) {
+    const f = new URL(n.name + (n.isDirectory() ? "/" : ""), d);
+    if (n.isDirectory()) parcourir(f);
+    else if (/\.tsx?$/.test(n.name) && n.name !== "squelette.tsx") {
+      const t = fs.readFileSync(f, "utf8");
+      for (const m of t.matchAll(/duration: *(\d+)/g)) if (Number(m[1]) > 300) trop.push(`${n.name} ${m[1]} ms`);
+      const d2 = /DUREE = \{([^}]*)\}/.exec(t);
+      if (d2) for (const m of d2[1].matchAll(/(\w+): *(\d+)/g)) if (Number(m[2]) > 300) trop.push(`DUREE.${m[1]} ${m[2]} ms`);
+    } } };
+  parcourir(racine);
+  assert.deepEqual(trop, [], "transitions trop longues : " + trop.join(", "));
+});

@@ -172,7 +172,7 @@ export function Quiz({ categorieDe }: { categorieDe: (cle: string) => string }) 
         /* Montée de rang : la pastille du rang grossit puis revient. Rien de sonore (invariant 6). */
         if (apres.cle !== avant) { monte.setValue(0); Animated.sequence([
           Animated.spring(monte, { toValue: 1, friction: 3, useNativeDriver: false }),
-          Animated.timing(monte, { toValue: 0, duration: 900, useNativeDriver: false }),
+          Animated.timing(monte, { toValue: 0, duration: 300, useNativeDriver: false }),
         ]).start(); }
       }
     } else setSerie(0);

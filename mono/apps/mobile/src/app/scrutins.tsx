@@ -258,7 +258,7 @@ function Onglets({ mode, setMode }: { mode: "votes" | "qag"; setMode: (m: "votes
     <View style={s.onglets} accessibilityRole="tablist">
       {ONGLETS.map(o => (
         <Pressable key={o.cle} onPress={() => setMode(o.cle)} accessibilityRole="tab" accessibilityLabel={o.etiquette}
-          accessibilityState={{ selected: mode === o.cle }} style={[s.onglet, mode === o.cle && s.ongletActif]}>
+          accessibilityState={{ selected: mode === o.cle }} style={({ pressed }) => [s.onglet, mode === o.cle && s.ongletActif, pressed && enfonce(true)]}>
           <Text style={[s.ongletTexte, mode === o.cle && s.ongletTexteActif]} numberOfLines={1}>{o.texte}</Text>
         </Pressable>
       ))}
