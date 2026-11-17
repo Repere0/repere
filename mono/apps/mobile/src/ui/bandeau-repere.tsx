@@ -48,8 +48,8 @@ export function BandeauRepere({ faits, sources, onOuvrir }: {
     if (!fraiche) { lueur.setValue(0); return undefined; }
     if (reduit) { lueur.setValue(0.4); return undefined; }
     const a = Animated.sequence([
-      Animated.timing(lueur, { toValue: 1, duration: 600, easing: Easing.out(Easing.cubic), useNativeDriver: false }),
-      Animated.timing(lueur, { toValue: 0.4, duration: 900, easing: Easing.inOut(Easing.cubic), useNativeDriver: false }),
+      Animated.timing(lueur, { toValue: 1, duration: 300, easing: Easing.out(Easing.cubic), useNativeDriver: false }),
+      Animated.timing(lueur, { toValue: 0.4, duration: 300, easing: Easing.inOut(Easing.cubic), useNativeDriver: false }),
     ]);
     a.start();
     return () => a.stop();

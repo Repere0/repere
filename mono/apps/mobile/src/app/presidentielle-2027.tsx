@@ -297,10 +297,13 @@ export default function Presidentielle2027() {
         )
       ) : null}
 
-      {videDebats || videMeetings ? (
+      {/* Vague 3 (17/11/2026) : l'état vide commun quand rien n'est annoncé ; une phrase seule quand une partie l'est. */}
+      {videDebats && videMeetings ? (
+        <Vide icone="calendar-outline" titre="Aucun débat ni aucune réunion publique n'est annoncé par une source vérifiée pour le moment."
+          corps="Repère les affichera avec l'annonce officielle, chacun avec sa source et sa date." />
+      ) : videDebats || videMeetings ? (
         <Text style={TYPO.note}>
-          {videDebats && videMeetings ? "Aucun débat ni aucune réunion publique n'est annoncé par une source vérifiée pour le moment."
-            : videDebats ? "Aucun débat n'est annoncé par une source vérifiée pour le moment." : "Aucune réunion publique n'est annoncée par une source vérifiée pour le moment."}
+          {videDebats ? "Aucun débat n'est annoncé par une source vérifiée pour le moment." : "Aucune réunion publique n'est annoncée par une source vérifiée pour le moment."}
           {" "}Repère les affichera avec l'annonce officielle.
         </Text>
       ) : null}

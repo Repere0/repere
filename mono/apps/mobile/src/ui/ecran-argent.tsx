@@ -100,7 +100,10 @@ function ToutesLesAides({ ouvert, fermer, liste, nom, nomDe }: {
           initialNumToRender={200}
           windowSize={21}
           contentContainerStyle={{ padding: PAS * 5, gap: PAS * 3 }}
-          ListEmptyComponent={<Text style={TYPO.corps}>Aucun projet publié pour {nom} ne correspond à cette recherche.</Text>}
+          /* Vague 3 (17/11/2026) : l'état vide commun, avec le geste qui en sort. */
+          ListEmptyComponent={<Vide icone="search-outline" titre={`Aucun projet publié pour ${nom} ne correspond à cette recherche.`}
+            corps="La recherche porte sur l'intitulé des projets aidés, dans le dispositif choisi. Effacez-la pour revoir toute la liste."
+            action="Effacer la recherche" onAction={() => { setQ(""); setDispositif(null); }} />}
           renderItem={({ item: p }) => {
             const f = financementProjet(p);
             const cout = f && f.cout ? montantCourt(f.cout) : null;
