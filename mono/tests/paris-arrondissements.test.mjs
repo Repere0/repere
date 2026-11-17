@@ -52,3 +52,14 @@ test("RNE : moins de 16 arrondissements sûrs = rien d'écrit ; deux maires pour
   assert.equal(r.par["7"], undefined);
   assert.equal(Object.keys(r.par).length, 19);
 });
+
+test("RNE : la description de Paris compte secteurs et fonctions, sans aucun nom d'élu", async () => {
+  const { resumeParis } = await import("../scripts/collecte-paris-arrondissements.mjs");
+  const table = lireCsv("Code du département;Code de la commune;Libellé du secteur;Nom de l'élu;Prénom de l'élu;Libellé de la fonction\n"
+    + "75;75056;Paris Secteur 11;FICTIF;Un;Maire d'arrondissement\n75;75056;Paris Secteur 11;FICTIF;Deux;\n13;13055;Marseille Secteur 1;FICTIF;Trois;\n");
+  const r = resumeParis(table);
+  assert.equal(r.lignes, 2);
+  assert.deepEqual(r.secteurs, { "Paris Secteur 11": 2 });
+  assert.deepEqual(r.fonctions, { "Maire d'arrondissement": 1, "(vide)": 1 });
+  assert.ok(!JSON.stringify(r).includes("FICTIF"), "aucun nom d'élu dans la description");
+});

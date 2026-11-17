@@ -357,7 +357,8 @@ rm -rf site_engendre
   # (source.releve_le), et l'application dit son age (core/calendrier.js,
   # ageReleve). Le fichier n'est garde que s'il a la forme attendue ; sinon
   # il est retire et le Senat est absent, comme avant.
-  if curl -sf --max-time 30 https://repereapp.netlify.app/data/calendrier-senat.json -o data/calendrier-senat.json; then
+  code_senat=$(curl -s --max-time 30 -o data/calendrier-senat.json -w '%{http_code}' https://repereapp.netlify.app/data/calendrier-senat.json || true)
+  if [ "$code_senat" = "200" ]; then
     node -e '
       const j = JSON.parse(require("fs").readFileSync("data/calendrier-senat.json", "utf8"));
       if (!j || !j.source || !/^\d{4}-\d{2}-\d{2}$/.test(j.source.releve_le || "") || !Array.isArray(j.evenements)) process.exit(1);
@@ -365,7 +366,7 @@ rm -rf site_engendre
     ' 2>/dev/null || { rm -f data/calendrier-senat.json; echo "calendrier du Senat : releve precedent illisible, ecarte"; }
   else
     rm -f data/calendrier-senat.json
-    echo "calendrier du Senat : aucun releve precedent publie n a pu etre recupere"
+    echo "calendrier du Senat : aucun releve precedent publie recupere (HTTP ${code_senat:-aucune reponse})"
   fi
   node scripts/calendrier-senat.mjs ./data \
     || avertir "calendrier du Senat absent ou non rafraichi - voir la cause et l'etat du releve precedent juste au-dessus"

@@ -114,6 +114,20 @@ export function mairesParArrondissement({ entete, lignes }) {
   return { par, raison: null };
 }
 
+/* DECRIRE AVANT DE DEVINER : les lignes de Paris d'une table du RNE, en comptes (secteurs, fonctions), sans
+   aucun nom d'elu dans le journal. */
+export function resumeParis({ entete, lignes }) {
+  const cDep = colonne(entete, ["code", "departement"]), cCom = colonne(entete, ["code", "commune"]);
+  const cSect = colonne(entete, ["secteur"]), cFon = colonne(entete, ["libelle", "fonction"]);
+  const paris = lignes.filter(l => (cDep >= 0 && String(l[cDep]).trim() === "75") || (cCom >= 0 && /^75/.test(String(l[cCom]).trim())));
+  const compter = i => { const m = {}; if (i >= 0) for (const l of paris) { const v = String(l[i] || "").trim() || "(vide)"; m[v] = (m[v] || 0) + 1; } return m; };
+  return { lignes: paris.length, communes: compter(cCom), secteurs: compter(cSect), fonctions: compter(cFon) };
+}
+function decrireParis(titre, table) {
+  const r = resumeParis(table);
+  console.log(`::notice title=paris-rne::${titre} : ${r.lignes} ligne(s) a Paris ; codes commune ${JSON.stringify(r.communes)} ; secteurs ${JSON.stringify(r.secteurs)} ; fonctions ${JSON.stringify(r.fonctions)}`);
+}
+
 async function lireRne(fetchFn = fetch) {
   const meta = await (await fetchFn(JEU_RNE, { headers: UA })).json();
   const ress = (meta.resources || []).map(r => ({ titre: r.title || "", url: r.url, maj: r.last_modified || null }));
@@ -122,6 +136,12 @@ async function lireRne(fetchFn = fetch) {
   if (!r) return { par: null, raison: "aucune ressource « arrondissement » dans le RNE (titres ci-dessus)" };
   const table = lireCsv(await (await fetchFn(r.url, { headers: UA })).text());
   console.log(`::notice title=paris-rne::${r.titre}, modifiée ${r.maj}, entête = ${JSON.stringify(table.entete)} ; 1re ligne = ${JSON.stringify(table.lignes[0] || [])}`);
+  decrireParis(r.titre, table);
+  /* 17/11/2026, premier passage sur le runner : le fichier des conseillers d'arrondissement ne donne qu'un
+     arrondissement avec un maire. Les maires d'arrondissement de Paris sont aussi conseillers de Paris : le
+     fichier des conseillers municipaux est DECRIT ici (rien n'en est lu) pour choisir sur pieces. */
+  const cm = ress.find(x => /municipaux/i.test(x.titre));
+  if (cm) { try { decrireParis(cm.titre, lireCsv(await (await fetchFn(cm.url, { headers: UA })).text())); } catch (e) { console.log(`::notice title=paris-rne::${cm.titre} illisible (${e.message})`); } }
   const res = mairesParArrondissement(table);
   return { ...res, source: { producteur: "Ministère de l'Intérieur — Répertoire national des élus", licence: "Licence Ouverte 2.0", url: "https://www.data.gouv.fr/fr/datasets/repertoire-national-des-elus-1/", ressource: r.titre, mis_a_jour_le: r.maj ? String(r.maj).slice(0, 10) : null } };
 }

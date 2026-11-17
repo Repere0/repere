@@ -149,7 +149,7 @@ jobs:
             const a = lire("data/agregats-regionaux.json");
             console.log("agregats regionaux : " + (a ? Object.keys(a.regions || {}).length + " regions" : "fichier absent"));
             const pa = lire("data/paris-arrondissements.json");
-            console.log("Paris par arrondissement : " + (pa ? Object.keys(pa.circonscriptions || {}).length + " arrondissements avec circonscriptions, " + Object.keys(pa.maires || {}).length + " maires" : "fichier absent"));
+            console.log("Paris par arrondissement : " + (pa ? Object.keys((pa.circonscriptions && pa.circonscriptions.par_arrondissement) || {}).length + " arrondissements avec circonscriptions, " + Object.keys((pa.maires && pa.maires.par_arrondissement) || {}).length + " maires" : "fichier absent"));
             const se = lire("data/calendrier-senat.json");
             console.log("calendrier du Senat : " + (se && se.source ? (se.evenements || []).length + " evenements, releve du " + se.source.releve_le : "fichier absent"));
           ' | tee bilan-collectes.txt
