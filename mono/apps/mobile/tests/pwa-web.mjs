@@ -56,6 +56,12 @@ ok(texte.length > 40, `hors ligne : l'interface s'affiche (${texte.length} carac
 await page.goto(BASE + "/recherche", { waitUntil: "domcontentloaded" }).catch(() => {});
 await page.waitForTimeout(2500);
 ok((await page.locator("body").innerText()).trim().length > 40, "hors ligne : une adresse interne s'ouvre aussi");
+/* 17/11/2026 : si le système a vidé la coquille, la page hors ligne dit la vérité et propose de réessayer. */
+await page.evaluate(async () => { for (const n of await caches.keys()) { const c = await caches.open(n); await c.delete("/"); await c.delete("/index.html"); } });
+await page.goto(BASE + "/qui-decide", { waitUntil: "domcontentloaded" }).catch(() => {});
+await page.waitForTimeout(1500);
+const secours = (await page.locator("body").innerText()).replace(/\s+/g, " ");
+ok(/Pas de connexion/.test(secours) && (await page.getByRole("link", { name: "Réessayer" }).count()) === 1, "hors ligne sans coquille : la page de secours et « Réessayer »");
 ok(!erreurs.length, "aucune erreur JavaScript" + (erreurs.length ? " : " + erreurs[0] : ""));
 await nav.close();
 console.log(echecs ? `pwa : ${echecs} échec(s)` : "pwa : zéro échec");

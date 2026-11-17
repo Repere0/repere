@@ -30,6 +30,15 @@ test("les balises iOS et viewport-fit=cover sont injectées, une seule fois", ()
   assert.equal(injecterBalises(h, app), h);
 });
 
+test("partage d'un lien et langue : Open Graph communs, html lang=fr, statut iOS translucide, mode autonome", () => {
+  const h = injecterBalises(HTML.replace(/<html[^>]*>/, "<html>"), app);
+  for (const p of ["og:type", "og:site_name", "og:title", "og:description", "og:locale"]) assert.ok(h.includes(`property="${p}"`), p);
+  assert.match(h, /<html lang="fr"/);
+  assert.match(h, /apple-mobile-web-app-status-bar-style" content="black-translucent"/);
+  assert.equal(construireManifeste(app).display, "standalone");
+  assert.equal(injecterBalises(h, app), h, "idempotent");
+});
+
 test("la garde voit une balise manquante", () => {
   assert.ok(manques(HTML, construireManifeste(app)).length > 0);
   assert.ok(manques(HTML.replace("</head>", "</head>"), { display: "browser", icons: [] }).includes("display standalone"));
