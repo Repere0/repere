@@ -35,8 +35,20 @@ ok(etat.cles.includes("/index.html") && etat.cles.some(c => c.startsWith("/_expo
 ok(!etat.cles.some(c => c.startsWith("/data/")), "aucune donnée dans le cache du service worker");
 ok(await page.evaluate(() => document.querySelector('link[rel="manifest"]') && document.querySelector('meta[name="apple-mobile-web-app-capable"]') ? true : false), "manifeste et balise iOS présents");
 
+/* 17/11/2026 : la dernière commune RETENUE (« Retenir sur cet appareil », clé repere.departement) et ses
+   données de base s'ouvrent sans réseau, avec la mention de fraîcheur de l'invariant 9. Meaux, en ligne d'abord. */
+await page.evaluate(() => localStorage.setItem("repere.departement", JSON.stringify({ d: "77", c: "77284" })));
+await page.goto(BASE + "/finances", { waitUntil: "networkidle" });
+await page.waitForTimeout(2500);
+
 coupe = true;
 await ctx.setOffline(true);
+await page.goto(BASE + "/finances", { waitUntil: "domcontentloaded" }).catch(() => {});
+await page.waitForTimeout(3500);
+const fin = (await page.locator("body").innerText()).replace(/\s+/g, " ");
+ok(/Meaux/.test(fin) && /€/.test(fin), "hors ligne : la commune retenue et ses comptes s'affichent");
+ok(/pas pu vérifier/.test(fin) && !/Mis à jour/.test(fin), "hors ligne : la fraîcheur dit « impossible à vérifier », jamais « mis à jour » (invariant 9)");
+await page.goto(BASE + "/", { waitUntil: "domcontentloaded" }).catch(() => {});
 await page.reload({ waitUntil: "domcontentloaded" }).catch(() => {});
 await page.waitForTimeout(3000);
 const texte = (await page.locator("body").innerText()).trim();

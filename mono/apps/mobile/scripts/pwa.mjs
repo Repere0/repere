@@ -9,12 +9,17 @@ import { fileURLToPath } from "node:url";
 export function construireManifeste(appJson) {
   const w = appJson.expo.web, e = appJson.expo;
   return {
-    name: w.name || e.name, short_name: w.shortName || e.name, description: w.description,
-    lang: w.lang || "fr", start_url: "/", scope: "/", display: w.display || "standalone",
+    /* id (17/11/2026) : identite stable de l'application installee, meme si start_url change un jour. */
+    id: "/", name: w.name || e.name, short_name: w.shortName || e.name, description: w.description,
+    lang: w.lang || "fr", dir: "ltr", start_url: "/", scope: "/", display: w.display || "standalone",
     orientation: w.orientation || "portrait", background_color: w.backgroundColor, theme_color: w.themeColor,
     icons: [
       { src: "/icon-192.png", sizes: "192x192", type: "image/png", purpose: "any" },
       { src: "/icon-512.png", sizes: "512x512", type: "image/png", purpose: "any" },
+      /* MASQUABLE (17/11/2026) : Android decoupe l'icone en cercle, en goutte ou en carre arrondi. Sans entree
+         « maskable », il la reduit dans une pastille blanche. Mesure : le logo tient dans un rayon de 171,5 px sur
+         512, la zone sure est de 204,8 px (40 %), fond plein : la meme image convient, sans marge a ajouter. */
+      { src: "/icon-512.png", sizes: "512x512", type: "image/png", purpose: "maskable" },
     ],
   };
 }
