@@ -3,9 +3,9 @@
 Produit par `outils/echantillon_scrutins.py` a partir du fichier telecharge
 par la collecte quotidienne. **Ce document est engendre : ne le modifie pas a la main.**
 
-- Fichiers dans l'archive : **1903**
-- Fichiers ouverts pour le tirage : **1903** (pas de 1)
-- Fichiers decrits : **1903** — tous ceux qui ont ete ouverts
+- Fichiers dans l'archive : **1942**
+- Fichiers ouverts pour le tirage : **1942** (pas de 1)
+- Fichiers decrits : **1942** — tous ceux qui ont ete ouverts
 - Cles distinctes trouvees : **45**
 - Fichier montre en entier plus bas : `QANR5L17QG1.json` (le plus riche de l'echantillon)
 
@@ -19,51 +19,51 @@ une seule fois sont reprises a part, plus bas.
 
 | chemin | type | vu | exemples |
 |---|---|---|---|
-| `question.@xmlns` | texte | 1903 | http://schemas.assemblee-nationale.fr/referentiel |
-| `question.@xmlns:xsi` | texte | 1903 | http://www.w3.org/2001/XMLSchema-instance |
-| `question.@xsi:type` | texte | 1903 | QuestionGouvernement_Type |
-| `question.uid` | texte | 1903 | QANR5L17QG1 · QANR5L17QG10 |
-| `question.identifiant.numero` | texte | 1903 | 1 · 10 |
-| `question.identifiant.regime` | texte | 1903 | 5eme Republique |
-| `question.identifiant.legislature` | texte | 1903 | 17 |
-| `question.type` | texte | 1903 | QG |
-| `question.indexationAN.rubrique` | texte/vide | 1903 | outre-mer · politique extérieure |
-| `question.indexationAN.teteAnalyse` | vide | 1903 |  |
-| `question.indexationAN.analyses.analyse` | texte/vide | 1903 | Situation à Mayotte · Situation en Nouvelle-Calédonie |
-| `question.auteur.identite.acteurRef` | texte | 1903 | PA842279 · PA842299 |
-| `question.auteur.identite.mandatRef` | texte | 1903 | PM843779 · PM843791 |
-| `question.auteur.groupe.organeRef` | texte | 1903 | PO845401 · PO845514 |
-| `question.auteur.groupe.abrege` | texte | 1903 | RN · GDR |
-| `question.auteur.groupe.developpe` | texte | 1903 | Rassemblement National · Gauche Démocrate et Républicaine |
-| `question.minInt.organeRef` | texte | 1903 | PO847643 · PO847640 |
-| `question.minInt.abrege` | texte | 1903 | Intérieur · Premier ministre |
-| `question.minInt.developpe` | texte | 1903 | Ministère de l'intérieur · Premier ministre |
-| `question.minAttribs.minAttrib.infoJO.typeJO` | texte | 1903 | JO_DEBAT |
-| `question.minAttribs.minAttrib.infoJO.dateJO` | texte | 1903 | 2024-10-03 · 2024-10-30 |
-| `question.minAttribs.minAttrib.infoJO.pageJO` | vide | 1903 |  |
-| `question.minAttribs.minAttrib.infoJO.numJO` | vide | 1903 |  |
-| `question.minAttribs.minAttrib.infoJO.urlLegifrance` | vide | 1903 |  |
-| `question.minAttribs.minAttrib.infoJO.referenceNOR` | vide | 1903 |  |
-| `question.minAttribs.minAttrib.denomination.organeRef` | texte | 1903 | PO847643 · PO847640 |
-| `question.minAttribs.minAttrib.denomination.abrege` | texte | 1903 | Intérieur · Premier ministre |
-| `question.minAttribs.minAttrib.denomination.developpe` | texte | 1903 | Ministère de l'intérieur · Premier ministre |
-| `question.textesQuestion` | vide | 1903 |  |
-| `question.textesReponse.texteReponse.infoJO.typeJO` | texte | 1903 | JO_DEBAT |
-| `question.textesReponse.texteReponse.infoJO.dateJO` | texte | 1903 | 2024-10-03 · 2024-10-30 |
-| `question.textesReponse.texteReponse.infoJO.pageJO` | texte/vide | 1903 | 5283 · 5290 |
-| `question.textesReponse.texteReponse.infoJO.numJO` | vide | 1903 |  |
-| `question.textesReponse.texteReponse.infoJO.urlLegifrance` | vide | 1903 |  |
-| `question.textesReponse.texteReponse.infoJO.referenceNOR` | vide | 1903 |  |
-| `question.textesReponse.texteReponse.texte` | texte | 1903 | </p><p align="CENTER"> SITUATION À MAYOTTE <a name=PG1></a> </p><br><strong>Mme la prés... · </p><p align="CENTER"> SITUATION EN NOUVELLE-CALÉDONIE <a name=PG10></a> </p><br><stron... |
-| `question.cloture.codeCloture` | texte | 1903 | REP_PUB |
-| `question.cloture.libelleCloture` | texte | 1903 | Réponse publiée |
-| `question.cloture.dateCloture` | texte | 1903 | 2024-10-03 · 2024-10-30 |
-| `question.cloture.infoJO.typeJO` | texte | 1903 | JO_DEBAT |
-| `question.cloture.infoJO.dateJO` | texte | 1903 | 2024-10-03 · 2024-10-30 |
-| `question.cloture.infoJO.pageJO` | texte/vide | 1903 | 5283 · 5290 |
-| `question.cloture.infoJO.numJO` | vide | 1903 |  |
-| `question.cloture.infoJO.urlLegifrance` | vide | 1903 |  |
-| `question.cloture.infoJO.referenceNOR` | vide | 1903 |  |
+| `question.@xmlns` | texte | 1942 | http://schemas.assemblee-nationale.fr/referentiel |
+| `question.@xmlns:xsi` | texte | 1942 | http://www.w3.org/2001/XMLSchema-instance |
+| `question.@xsi:type` | texte | 1942 | QuestionGouvernement_Type |
+| `question.uid` | texte | 1942 | QANR5L17QG1 · QANR5L17QG10 |
+| `question.identifiant.numero` | texte | 1942 | 1 · 10 |
+| `question.identifiant.regime` | texte | 1942 | 5eme Republique |
+| `question.identifiant.legislature` | texte | 1942 | 17 |
+| `question.type` | texte | 1942 | QG |
+| `question.indexationAN.rubrique` | texte/vide | 1942 | outre-mer · politique extérieure |
+| `question.indexationAN.teteAnalyse` | vide | 1942 |  |
+| `question.indexationAN.analyses.analyse` | texte/vide | 1942 | Situation à Mayotte · Situation en Nouvelle-Calédonie |
+| `question.auteur.identite.acteurRef` | texte | 1942 | PA842279 · PA842299 |
+| `question.auteur.identite.mandatRef` | texte | 1942 | PM843779 · PM843791 |
+| `question.auteur.groupe.organeRef` | texte | 1942 | PO845401 · PO845514 |
+| `question.auteur.groupe.abrege` | texte | 1942 | RN · GDR |
+| `question.auteur.groupe.developpe` | texte | 1942 | Rassemblement National · Gauche Démocrate et Républicaine |
+| `question.minInt.organeRef` | texte | 1942 | PO847643 · PO847640 |
+| `question.minInt.abrege` | texte | 1942 | Intérieur · Premier ministre |
+| `question.minInt.developpe` | texte | 1942 | Ministère de l'intérieur · Premier ministre |
+| `question.minAttribs.minAttrib.infoJO.typeJO` | texte | 1942 | JO_DEBAT |
+| `question.minAttribs.minAttrib.infoJO.dateJO` | texte | 1942 | 2024-10-03 · 2024-10-30 |
+| `question.minAttribs.minAttrib.infoJO.pageJO` | vide | 1942 |  |
+| `question.minAttribs.minAttrib.infoJO.numJO` | vide | 1942 |  |
+| `question.minAttribs.minAttrib.infoJO.urlLegifrance` | vide | 1942 |  |
+| `question.minAttribs.minAttrib.infoJO.referenceNOR` | vide | 1942 |  |
+| `question.minAttribs.minAttrib.denomination.organeRef` | texte | 1942 | PO847643 · PO847640 |
+| `question.minAttribs.minAttrib.denomination.abrege` | texte | 1942 | Intérieur · Premier ministre |
+| `question.minAttribs.minAttrib.denomination.developpe` | texte | 1942 | Ministère de l'intérieur · Premier ministre |
+| `question.textesQuestion` | vide | 1942 |  |
+| `question.textesReponse.texteReponse.infoJO.typeJO` | texte | 1942 | JO_DEBAT |
+| `question.textesReponse.texteReponse.infoJO.dateJO` | texte | 1942 | 2024-10-03 · 2024-10-30 |
+| `question.textesReponse.texteReponse.infoJO.pageJO` | texte/vide | 1942 | 5283 · 5290 |
+| `question.textesReponse.texteReponse.infoJO.numJO` | vide | 1942 |  |
+| `question.textesReponse.texteReponse.infoJO.urlLegifrance` | vide | 1942 |  |
+| `question.textesReponse.texteReponse.infoJO.referenceNOR` | vide | 1942 |  |
+| `question.textesReponse.texteReponse.texte` | texte | 1942 | </p><p align="CENTER"> SITUATION À MAYOTTE <a name=PG1></a> </p><br><strong>Mme la prés... · </p><p align="CENTER"> SITUATION EN NOUVELLE-CALÉDONIE <a name=PG10></a> </p><br><stron... |
+| `question.cloture.codeCloture` | texte | 1942 | REP_PUB |
+| `question.cloture.libelleCloture` | texte | 1942 | Réponse publiée |
+| `question.cloture.dateCloture` | texte | 1942 | 2024-10-03 · 2024-10-30 |
+| `question.cloture.infoJO.typeJO` | texte | 1942 | JO_DEBAT |
+| `question.cloture.infoJO.dateJO` | texte | 1942 | 2024-10-03 · 2024-10-30 |
+| `question.cloture.infoJO.pageJO` | texte/vide | 1942 | 5283 · 5290 |
+| `question.cloture.infoJO.numJO` | vide | 1942 |  |
+| `question.cloture.infoJO.urlLegifrance` | vide | 1942 |  |
+| `question.cloture.infoJO.referenceNOR` | vide | 1942 |  |
 
 ## Cles vues UNE SEULE FOIS
 
